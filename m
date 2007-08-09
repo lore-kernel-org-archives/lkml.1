@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbXHIJbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938505AbXHIJgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751823AbXHIJbZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 05:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765789AbXHIJ3I
+	id S938505AbXHIJgA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 05:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbXHIJfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 05:29:08 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:54060 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764714AbXHIJ3E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 05:29:04 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>
-Subject: [PATCH] IB/ehca: Properly report max #SRQs in query_device()
-User-Agent: KMail/1.8.2
-Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
+	Thu, 9 Aug 2007 05:35:51 -0400
+Received: from antonio.urjc.es ([193.147.184.24]:40847 "EHLO antonio.urjc.es"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751193AbXHIJfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 05:35:50 -0400
+Message-ID: <46BAE005.4000906@urjc.es>
+Date: Thu, 09 Aug 2007 11:36:05 +0200
+From: Javier Pello <javier.pello@urjc.es>
+Organization: Universidad Rey Juan Carlos
+User-Agent: Thunderbird 2.0.0.0 (X11/20070503)
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 2328
-Date: Thu, 9 Aug 2007 11:28:46 +0200
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       GregKH <greg@kroah.com>
+Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not 
+	notified
+References: <46B37CF7.2020803@urjc.es><20070806142451.5d28d41c@gondolin.boeb
+		lingen.de.ibm.com><46B7832B.6010808@urjc.es><20070807125844.4d756b04@gondo
+			l	in.boeblingen.de.ibm.com><3ae72650708070446y6452d13jb7cd802119dab3ce@ma
+	il	 
+	.gmail.com><20070807141030.1bb0f76a@gondolin.boeblingen.de.ibm.com><46B869	
+	C6.3090708@urjc.es><1186491472.3611.33.camel@lov.localdomain><46B87ACA.7010
+	501@urjc.es> <20070807162618.3814ff78@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070807162618.3814ff78@gondolin.boeblingen.de.ibm.com>
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708091128.49165.fenkes@de.ibm.com>
+X-Greylist: Sender DNS name whitelisted, not delayed by 
+	milter-greylist-2.0.2 (antonio.urjc.es [193.147.184.24]); Thu, 09 Aug 2007 
+	11:35:43 +0200 (CEST)
+X-imss-version: 2.047
+X-imss-result: Passed
+X-imss-scanInfo: M:B L:E SM:2
+X-imss-tmaseResult: TT:1 TS:-7.3028 TC:1F TRN:31 TV:3.6.1039(15350.003)
+X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
+X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
+On Tue, 07 Aug 2007, Cornelia Huck wrote:
 
-This patch should apply cleanly on top of Stefan's recent patchset. Please
-review and apply for 2.6.23. Thanks.
+> So it is indeed that this driver wants to fail its probe if it
+> cannot get the firmware.
 
- drivers/infiniband/hw/ehca/ehca_hca.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
+That's right. The driver unbinds itself from the device if it doesn't
+get the firmware.
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_hca.c b/drivers/infiniband/hw/ehca/ehca_hca.c
-index fc19ef9..cf22472 100644
---- a/drivers/infiniband/hw/ehca/ehca_hca.c
-+++ b/drivers/infiniband/hw/ehca/ehca_hca.c
-@@ -93,9 +93,13 @@ int ehca_query_device(struct ib_device *ibdev, struct ib_device_attr *props)
- 	props->max_pd          = min_t(int, rblock->max_pd, INT_MAX);
- 	props->max_ah          = min_t(int, rblock->max_ah, INT_MAX);
- 	props->max_fmr         = min_t(int, rblock->max_mr, INT_MAX);
--	props->max_srq         = 0;
--	props->max_srq_wr      = 0;
--	props->max_srq_sge     = 0;
-+
-+	if (EHCA_BMASK_GET(HCA_CAP_SRQ, shca->hca_cap)) {
-+		props->max_srq         = props->max_qp;
-+		props->max_srq_wr      = props->max_qp_wr;
-+		props->max_srq_sge     = 3;
-+	}
-+
- 	props->max_pkeys       = 16;
- 	props->local_ca_ack_delay
- 		= rblock->local_ca_ack_delay;
--- 
-1.5.2
+> A possibilty to achieve a similar effect would be to use
+> request_firmware_nowait() and to call device_release_driver() from
+> the callback if no firmware is loaded. (This would imply a split of
+> that driver's probe function into two stages.)
+
+The comments in the source code say that request_firmware_nowait()
+is an "asynchronous version of request_firmware() for contexts where
+it is not possible to sleep". So a driver's decision to call one of
+them is not based on whether it wants to wait or not, but whether it
+_can_ wait.
+
+Of course, it can be decided that we never want to wait, but then
+the best course of action would be to make request_firmware itself
+behave as request_firmware_nowait (no need to change drivers).
+
+Anyway, my point is that it is useless to have the kernel block for
+a minute at boot waiting for something that cannot happen, and that
+it should be avoided (even if my proposed solution is not the way
+to go).
+
+Javier
 
 
