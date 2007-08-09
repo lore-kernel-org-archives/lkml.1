@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966184AbXHIPIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966192AbXHIPJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966184AbXHIPIn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 11:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935348AbXHIPI2
+	id S966192AbXHIPJT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 11:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966202AbXHIPIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 11:08:28 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36822 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S940487AbXHIPI1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 11:08:27 -0400
-Message-ID: <46BB2DBB.7050404@sgi.com>
-Date: Thu, 09 Aug 2007 17:07:39 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, lguest <lguest@ozlabs.org>
-Subject: [patch] lguest files should explicitly include asm/paravirt.h
-Content-Type: multipart/mixed;
- boundary="------------030904080000030604070900"
+	Thu, 9 Aug 2007 11:08:53 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3175 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S966187AbXHIPIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 11:08:50 -0400
+Date: Thu, 9 Aug 2007 15:06:35 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Robert Hancock <hancockr@shaw.ca>, Michael Sedkowski <sedmich@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Thomas Renninger <trenn@suse.de>
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+Message-ID: <20070809150634.GA3926@ucw.cz>
+References: <fa.bsWpbo79BZgHoaIGhEMfTEBxs54@ifi.uio.no> <fa.mg6p0itaOQUo/t8deCaYpyqj6Nk@ifi.uio.no> <fa.RxWYL8z8KktgL8LGZ/cTB2nI1Yc@ifi.uio.no> <fa.AyyCtZ2yLjC5noHPHtmzn4ffhhE@ifi.uio.no> <fa.SuAjism+m0z0haqCRVjkc2S978o@ifi.uio.no> <fa.QgWcLG2hfRb92g4blN61qYfRjlQ@ifi.uio.no> <46B7AF53.1040307@shaw.ca> <46B8140E.3000509@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46B8140E.3000509@gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030904080000030604070900
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi!
 
-Hi,
+> >> Oh... crap, so acpi wants to sync cache on shutdown.  I wonder whether
+> >> it spins down the disk correctly.  Does emergency unload count increase
+> >> after each power down?  Also, please post the result of 'dmidecode'.
+> > 
+> > I know that my Compaq X1000-series laptop does do some kind of ACPI
+> > games with the disk on ACPI power off (I assume it is putting the disk
+> > in standby before power-off at least). It also does this if you boot
+> > into DOS, GRUB, etc. and then hit the power button. Could be if the disk
+> > is dumb enough to spin up for sync cache and standby when there is
+> > nothing to flush, and the kernel does its own standby, this could cause
+> > an extra spinup/down..
+> 
+> Yeah, that seems to be what's going on.  I don't think we have any other
+> choice than blacklisting those notebooks.  This is a mess.  How does the
+> other OS cope with this?
+> 
+> I'm thinking about using DMI vendor/product match to detect the affected
+> systems but I think it would be better to match the ACPI implementation
+> directly.  Is there a way to match specific ACPI implementation?
 
-This one makes a few lguest related files that rely on paravirt_ops
-include paravirt.h explicitly. Should be harmless :)
+Well.. unless they use some SMM trick, it is ACPI AML code telling
+kernel to spin the disk down. I guess we could detect that, and simply
+ignore the request.
 
-Jes
-
-
---------------030904080000030604070900
-Content-Type: text/plain;
- name="paravirt-include.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="paravirt-include.diff"
-
-Files using bits from paravirt.h should explicitly include it rather than
-relying on it being pulled in by something else.
-
-Signed-off-by: Jes Sorensen <jes@sgi.com>
-
----
- drivers/char/hvc_lguest.c   |    1 +
- drivers/lguest/lguest_bus.c |    1 +
- 2 files changed, 2 insertions(+)
-
-Index: linux-2.6-lguest/drivers/char/hvc_lguest.c
-===================================================================
---- linux-2.6-lguest.orig/drivers/char/hvc_lguest.c
-+++ linux-2.6-lguest/drivers/char/hvc_lguest.c
-@@ -35,6 +35,7 @@
- #include <linux/err.h>
- #include <linux/init.h>
- #include <linux/lguest_bus.h>
-+#include <asm/paravirt.h>
- #include "hvc_console.h"
- 
- /*D:340 This is our single console input buffer, with associated "struct
-Index: linux-2.6-lguest/drivers/lguest/lguest_bus.c
-===================================================================
---- linux-2.6-lguest.orig/drivers/lguest/lguest_bus.c
-+++ linux-2.6-lguest/drivers/lguest/lguest_bus.c
-@@ -5,6 +5,7 @@
- #include <linux/bootmem.h>
- #include <linux/lguest_bus.h>
- #include <asm/io.h>
-+#include <asm/paravirt.h>
- 
- static ssize_t type_show(struct device *_dev,
-                          struct device_attribute *attr, char *buf)
-
---------------030904080000030604070900--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
