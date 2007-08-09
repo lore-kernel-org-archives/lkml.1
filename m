@@ -1,613 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938801AbXHIFZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937786AbXHIFbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938801AbXHIFZP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 01:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938755AbXHIFY5
+	id S937786AbXHIFbx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 01:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXHIFbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 01:24:57 -0400
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116]:47315 "EHLO
-	gw02.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753316AbXHIFYz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 01:24:55 -0400
-Date: Thu, 9 Aug 2007 08:24:48 +0300
-From: Mikko Rapeli <mikko.rapeli@iki.fi>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: early boot lockup with 2.6.23-rc1
-Message-ID: <20070809052448.GB2342@nalle>
-References: <20070808223120.GA2286@nalle> <20070808170211.4401c019.akpm@linux-foundation.org> <20070809045743.GA2342@nalle> <20070808220918.1e5de16f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070808220918.1e5de16f.akpm@linux-foundation.org>
+	Thu, 9 Aug 2007 01:31:44 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50786 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754591AbXHIFbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 01:31:43 -0400
+Date: Thu, 9 Aug 2007 15:31:33 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jes Sorensen <jes@sgi.com>, Carsten Otte <cotte@de.ibm.com>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 4/5 -v2] Added generic lg.h in the include/linux
+ directory
+Message-Id: <20070809153133.d5dff7b6.sfr@canb.auug.org.au>
+In-Reply-To: <20070809044125.459178259@goodmis.org>
+References: <20070809043626.830486783@goodmis.org>
+	<20070809044125.459178259@goodmis.org>
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__9_Aug_2007_15_31_33_+1000_cLTAAr6tbZXREfb."
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 08, 2007 at 10:09:18PM -0700, Andrew Morton wrote:
-> Often such an early crash is due to a config problem.  eg: chose the
-> wrong CPU type.  So I'd recommend that you triple-check that config,
-> especially under "Processor type and features" before diving into into the
-> bisection hunt.
+--Signature=_Thu__9_Aug_2007_15_31_33_+1000_cLTAAr6tbZXREfb.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Done that many times, but can't see a problem.
+Hi Steven,
 
-diff -up /boot/config-2.6.22.1 /boot/config-2.6.23-rc1
---- /boot/config-2.6.22.1	2007-08-05 11:21:34.000000000 +0300
-+++ /boot/config-2.6.23-rc1	2007-08-08 10:21:07.000000000 +0300
-@@ -1,10 +1,11 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.22.1
--# Sun Aug  5 11:21:34 2007
-+# Linux kernel version: 2.6.23-rc1
-+# Wed Aug  8 10:21:07 2007
- #
- CONFIG_X86_32=y
- CONFIG_GENERIC_TIME=y
-+CONFIG_GENERIC_CMOS_UPDATE=y
- CONFIG_CLOCKSOURCE_WATCHDOG=y
- CONFIG_GENERIC_CLOCKEVENTS=y
- CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
-@@ -37,13 +38,12 @@ CONFIG_LOCALVERSION=""
- # CONFIG_LOCALVERSION_AUTO is not set
- CONFIG_SWAP=y
- CONFIG_SYSVIPC=y
--# CONFIG_IPC_NS is not set
- CONFIG_SYSVIPC_SYSCTL=y
- CONFIG_POSIX_MQUEUE=y
- CONFIG_BSD_PROCESS_ACCT=y
- CONFIG_BSD_PROCESS_ACCT_V3=y
- # CONFIG_TASKSTATS is not set
--# CONFIG_UTS_NS is not set
-+# CONFIG_USER_NS is not set
- CONFIG_AUDIT=y
- # CONFIG_AUDITSYSCALL is not set
- # CONFIG_IKCONFIG is not set
-@@ -80,10 +80,6 @@ CONFIG_SLAB=y
- CONFIG_RT_MUTEXES=y
- # CONFIG_TINY_SHMEM is not set
- CONFIG_BASE_SMALL=0
--
--#
--# Loadable module support
--#
- CONFIG_MODULES=y
- CONFIG_MODULE_UNLOAD=y
- CONFIG_MODULE_FORCE_UNLOAD=y
-@@ -91,14 +87,11 @@ CONFIG_MODVERSIONS=y
- # CONFIG_MODULE_SRCVERSION_ALL is not set
- CONFIG_KMOD=y
- CONFIG_STOP_MACHINE=y
--
--#
--# Block layer
--#
- CONFIG_BLOCK=y
- CONFIG_LBD=y
- # CONFIG_BLK_DEV_IO_TRACE is not set
- CONFIG_LSF=y
-+# CONFIG_BLK_DEV_BSG is not set
- 
- #
- # IO Schedulers
-@@ -116,9 +109,9 @@ CONFIG_DEFAULT_IOSCHED="cfq"
- #
- # Processor type and features
- #
--CONFIG_TICK_ONESHOT=y
--CONFIG_NO_HZ=y
--CONFIG_HIGH_RES_TIMERS=y
-+# CONFIG_TICK_ONESHOT is not set
-+# CONFIG_NO_HZ is not set
-+# CONFIG_HIGH_RES_TIMERS is not set
- CONFIG_SMP=y
- CONFIG_X86_PC=y
- # CONFIG_X86_ELAN is not set
-@@ -129,8 +122,7 @@ CONFIG_X86_PC=y
- # CONFIG_X86_VISWS is not set
- # CONFIG_X86_GENERICARCH is not set
- # CONFIG_X86_ES7000 is not set
--CONFIG_PARAVIRT=y
--CONFIG_VMI=y
-+# CONFIG_PARAVIRT is not set
- # CONFIG_M386 is not set
- CONFIG_M486=y
- # CONFIG_M586 is not set
-@@ -155,9 +147,9 @@ CONFIG_M486=y
- # CONFIG_MCYRIXIII is not set
- # CONFIG_MVIAC3_2 is not set
- # CONFIG_MVIAC7 is not set
--# CONFIG_X86_GENERIC is not set
-+CONFIG_X86_GENERIC=y
- CONFIG_X86_CMPXCHG=y
--CONFIG_X86_L1_CACHE_SHIFT=4
-+CONFIG_X86_L1_CACHE_SHIFT=7
- CONFIG_X86_XADD=y
- CONFIG_RWSEM_XCHGADD_ALGORITHM=y
- # CONFIG_ARCH_HAS_ILOG2_U32 is not set
-@@ -170,7 +162,8 @@ CONFIG_X86_INVLPG=y
- CONFIG_X86_BSWAP=y
- CONFIG_X86_POPAD_OK=y
- CONFIG_X86_ALIGNMENT_16=y
--CONFIG_X86_MINIMUM_CPU_MODEL=4
-+CONFIG_X86_INTEL_USERCOPY=y
-+CONFIG_X86_MINIMUM_CPU_FAMILY=4
- CONFIG_HPET_TIMER=y
- CONFIG_NR_CPUS=8
- CONFIG_SCHED_SMT=y
-@@ -199,6 +192,7 @@ CONFIG_X86_CPUID=m
- CONFIG_EDD=m
- CONFIG_DELL_RBU=m
- CONFIG_DCDBAS=m
-+CONFIG_DMIID=y
- # CONFIG_NOHIGHMEM is not set
- CONFIG_HIGHMEM4G=y
- # CONFIG_HIGHMEM64G is not set
-@@ -218,7 +212,9 @@ CONFIG_SPARSEMEM_STATIC=y
- CONFIG_SPLIT_PTLOCK_CPUS=4
- # CONFIG_RESOURCES_64BIT is not set
- CONFIG_ZONE_DMA_FLAG=1
-+CONFIG_BOUNCE=y
- CONFIG_NR_QUICK=1
-+CONFIG_VIRT_TO_BUS=y
- # CONFIG_HIGHPTE is not set
- # CONFIG_MATH_EMULATION is not set
- CONFIG_MTRR=y
-@@ -234,7 +230,7 @@ CONFIG_KEXEC=y
- CONFIG_PHYSICAL_START=0x100000
- # CONFIG_RELOCATABLE is not set
- CONFIG_PHYSICAL_ALIGN=0x100000
--CONFIG_HOTPLUG_CPU=y
-+# CONFIG_HOTPLUG_CPU is not set
- CONFIG_COMPAT_VDSO=y
- CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
- 
-@@ -308,7 +304,6 @@ CONFIG_ASK_IP_FIB_HASH=y
- CONFIG_IP_FIB_HASH=y
- CONFIG_IP_MULTIPLE_TABLES=y
- CONFIG_IP_ROUTE_MULTIPATH=y
--# CONFIG_IP_ROUTE_MULTIPATH_CACHED is not set
- CONFIG_IP_ROUTE_VERBOSE=y
- # CONFIG_IP_PNP is not set
- CONFIG_NET_IPIP=m
-@@ -406,6 +401,7 @@ CONFIG_IEEE80211_CRYPT_WEP=m
- # CONFIG_IEEE80211_CRYPT_TKIP is not set
- # CONFIG_IEEE80211_SOFTMAC is not set
- # CONFIG_RFKILL is not set
-+# CONFIG_NET_9P is not set
- 
- #
- # Device Drivers
-@@ -420,27 +416,11 @@ CONFIG_FW_LOADER=m
- # CONFIG_DEBUG_DRIVER is not set
- # CONFIG_DEBUG_DEVRES is not set
- # CONFIG_SYS_HYPERVISOR is not set
--
--#
--# Connector - unified userspace <-> kernelspace linker
--#
- CONFIG_CONNECTOR=m
- # CONFIG_MTD is not set
--
--#
--# Parallel port support
--#
- # CONFIG_PARPORT is not set
--
--#
--# Plug and Play support
--#
- # CONFIG_PNP is not set
--# CONFIG_PNPACPI is not set
--
--#
--# Block devices
--#
-+CONFIG_BLK_DEV=y
- CONFIG_BLK_DEV_FD=m
- CONFIG_BLK_DEV_XD=m
- CONFIG_BLK_CPQ_DA=m
-@@ -462,12 +442,10 @@ CONFIG_CDROM_PKTCDVD=m
- CONFIG_CDROM_PKTCDVD_BUFFERS=8
- # CONFIG_CDROM_PKTCDVD_WCACHE is not set
- CONFIG_ATA_OVER_ETH=m
--
--#
--# Misc devices
--#
-+CONFIG_MISC_DEVICES=y
- # CONFIG_IBM_ASM is not set
- # CONFIG_PHANTOM is not set
-+# CONFIG_EEPROM_93CX6 is not set
- # CONFIG_SGI_IOC4 is not set
- CONFIG_TIFM_CORE=m
- # CONFIG_TIFM_7XX1 is not set
-@@ -478,6 +456,7 @@ CONFIG_TIFM_CORE=m
- #
- CONFIG_RAID_ATTRS=m
- CONFIG_SCSI=m
-+CONFIG_SCSI_DMA=y
- CONFIG_SCSI_TGT=m
- CONFIG_SCSI_NETLINK=y
- CONFIG_SCSI_PROC_FS=y
-@@ -508,12 +487,8 @@ CONFIG_SCSI_WAIT_SCAN=m
- CONFIG_SCSI_SPI_ATTRS=m
- CONFIG_SCSI_FC_ATTRS=m
- CONFIG_SCSI_ISCSI_ATTRS=m
--CONFIG_SCSI_SAS_ATTRS=m
- # CONFIG_SCSI_SAS_LIBSAS is not set
--
--#
--# SCSI low-level drivers
--#
-+CONFIG_SCSI_LOWLEVEL=y
- # CONFIG_ISCSI_TCP is not set
- # CONFIG_BLK_DEV_3W_XXXX_RAID is not set
- # CONFIG_SCSI_3W_9XXX is not set
-@@ -624,15 +599,6 @@ CONFIG_PATA_SIS=m
- # CONFIG_PATA_VIA is not set
- CONFIG_PATA_WINBOND=m
- CONFIG_PATA_WINBOND_VLB=m
--
--#
--# Old CD-ROM drivers (not SCSI, not IDE)
--#
--# CONFIG_CD_NO_IDESCSI is not set
--
--#
--# Multi-device support (RAID and LVM)
--#
- CONFIG_MD=y
- CONFIG_BLK_DEV_MD=m
- CONFIG_MD_LINEAR=m
-@@ -651,6 +617,7 @@ CONFIG_DM_MIRROR=m
- CONFIG_DM_ZERO=m
- CONFIG_DM_MULTIPATH=m
- CONFIG_DM_MULTIPATH_EMC=m
-+# CONFIG_DM_MULTIPATH_RDAC is not set
- CONFIG_DM_DELAY=m
- 
- #
-@@ -666,19 +633,13 @@ CONFIG_DM_DELAY=m
- #
- # CONFIG_FIREWIRE is not set
- # CONFIG_IEEE1394 is not set
--
--#
--# I2O device support
--#
- # CONFIG_I2O is not set
- # CONFIG_MACINTOSH_DRIVERS is not set
--
--#
--# Network device support
--#
- CONFIG_NETDEVICES=y
-+# CONFIG_NETDEVICES_MULTIQUEUE is not set
- CONFIG_DUMMY=m
- # CONFIG_BONDING is not set
-+# CONFIG_MACVLAN is not set
- # CONFIG_EQUALIZER is not set
- CONFIG_TUN=m
- # CONFIG_ARCNET is not set
-@@ -695,13 +656,10 @@ CONFIG_CICADA_PHY=m
- CONFIG_VITESSE_PHY=m
- CONFIG_SMSC_PHY=m
- CONFIG_BROADCOM_PHY=m
-+# CONFIG_ICPLUS_PHY is not set
- CONFIG_FIXED_PHY=m
- # CONFIG_FIXED_MII_10_FDX is not set
- # CONFIG_FIXED_MII_100_FDX is not set
--
--#
--# Ethernet (10 or 100Mbit)
--#
- CONFIG_NET_ETHERNET=y
- CONFIG_MII=m
- # CONFIG_HAPPYMEAL is not set
-@@ -711,10 +669,6 @@ CONFIG_MII=m
- # CONFIG_LANCE is not set
- # CONFIG_NET_VENDOR_SMC is not set
- # CONFIG_NET_VENDOR_RACAL is not set
--
--#
--# Tulip family network device support
--#
- # CONFIG_NET_TULIP is not set
- # CONFIG_AT1700 is not set
- # CONFIG_DEPCA is not set
-@@ -778,6 +732,7 @@ CONFIG_PPP_DEFLATE=m
- CONFIG_PPP_BSDCOMP=m
- CONFIG_PPP_MPPE=m
- CONFIG_PPPOE=m
-+# CONFIG_PPPOL2TP is not set
- # CONFIG_SLIP is not set
- CONFIG_SLHC=m
- # CONFIG_NET_FC is not set
-@@ -785,15 +740,7 @@ CONFIG_SLHC=m
- # CONFIG_NETCONSOLE is not set
- # CONFIG_NETPOLL is not set
- # CONFIG_NET_POLL_CONTROLLER is not set
--
--#
--# ISDN subsystem
--#
- # CONFIG_ISDN is not set
--
--#
--# Telephony Support
--#
- # CONFIG_PHONE is not set
- 
- #
-@@ -801,7 +748,7 @@ CONFIG_SLHC=m
- #
- CONFIG_INPUT=y
- CONFIG_INPUT_FF_MEMLESS=m
--# CONFIG_INPUT_POLLDEV is not set
-+CONFIG_INPUT_POLLDEV=m
- 
- #
- # Userland interfaces
-@@ -865,6 +812,8 @@ CONFIG_JOYSTICK_STINGER=m
- CONFIG_JOYSTICK_TWIDJOY=m
- CONFIG_JOYSTICK_JOYDUMP=m
- CONFIG_JOYSTICK_XPAD=m
-+# CONFIG_JOYSTICK_XPAD_FF is not set
-+# CONFIG_JOYSTICK_XPAD_LEDS is not set
- CONFIG_INPUT_TABLET=y
- CONFIG_TABLET_USB_ACECAD=m
- CONFIG_TABLET_USB_AIPTEK=m
-@@ -872,6 +821,7 @@ CONFIG_TABLET_USB_GTCO=m
- CONFIG_TABLET_USB_KBTAB=m
- CONFIG_TABLET_USB_WACOM=m
- CONFIG_INPUT_TOUCHSCREEN=y
-+# CONFIG_TOUCHSCREEN_FUJITSU is not set
- CONFIG_TOUCHSCREEN_GUNZE=m
- CONFIG_TOUCHSCREEN_ELO=m
- CONFIG_TOUCHSCREEN_MTOUCH=m
-@@ -888,6 +838,7 @@ CONFIG_TOUCHSCREEN_USB_ITM=y
- CONFIG_TOUCHSCREEN_USB_ETURBO=y
- CONFIG_TOUCHSCREEN_USB_GUNZE=y
- CONFIG_TOUCHSCREEN_USB_DMC_TSC10=y
-+CONFIG_TOUCHSCREEN_USB_IRTOUCH=y
- CONFIG_INPUT_MISC=y
- CONFIG_INPUT_PCSPKR=m
- CONFIG_INPUT_WISTRON_BTNS=m
-@@ -946,6 +897,7 @@ CONFIG_STALDRV=y
- #
- CONFIG_SERIAL_8250=y
- CONFIG_SERIAL_8250_CONSOLE=y
-+CONFIG_FIX_EARLYCON_MEM=y
- CONFIG_SERIAL_8250_PCI=y
- CONFIG_SERIAL_8250_NR_UARTS=16
- CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-@@ -968,10 +920,6 @@ CONFIG_SERIAL_CORE_CONSOLE=y
- CONFIG_SERIAL_JSM=m
- CONFIG_UNIX98_PTYS=y
- # CONFIG_LEGACY_PTYS is not set
--
--#
--# IPMI
--#
- CONFIG_IPMI_HANDLER=m
- # CONFIG_IPMI_PANIC_EVENT is not set
- CONFIG_IPMI_DEVICE_INTERFACE=m
-@@ -1071,10 +1019,6 @@ CONFIG_CS5535_GPIO=m
- CONFIG_RAW_DRIVER=m
- CONFIG_MAX_RAW_DEVS=256
- CONFIG_HANGCHECK_TIMER=m
--
--#
--# TPM devices
--#
- # CONFIG_TCG_TPM is not set
- CONFIG_TELCLOCK=m
- CONFIG_DEVPORT=y
-@@ -1111,6 +1055,7 @@ CONFIG_SCx200_ACB=m
- CONFIG_I2C_SIS5595=m
- CONFIG_I2C_SIS630=m
- CONFIG_I2C_SIS96X=m
-+# CONFIG_I2C_TAOS_EVM is not set
- CONFIG_I2C_STUB=m
- CONFIG_I2C_TINY_USB=m
- CONFIG_I2C_VIA=m
-@@ -1123,11 +1068,13 @@ CONFIG_I2C_PCA_ISA=m
- #
- CONFIG_SENSORS_DS1337=m
- CONFIG_SENSORS_DS1374=m
-+# CONFIG_DS1682 is not set
- CONFIG_SENSORS_EEPROM=m
- CONFIG_SENSORS_PCF8574=m
- CONFIG_SENSORS_PCA9539=m
- CONFIG_SENSORS_PCF8591=m
- CONFIG_SENSORS_MAX6875=m
-+# CONFIG_SENSORS_TSL2550 is not set
- # CONFIG_I2C_DEBUG_CORE is not set
- # CONFIG_I2C_DEBUG_ALGO is not set
- # CONFIG_I2C_DEBUG_BUS is not set
-@@ -1138,11 +1085,8 @@ CONFIG_SENSORS_MAX6875=m
- #
- # CONFIG_SPI is not set
- # CONFIG_SPI_MASTER is not set
--
--#
--# Dallas's 1-wire bus
--#
- # CONFIG_W1 is not set
-+# CONFIG_POWER_SUPPLY is not set
- # CONFIG_HWMON is not set
- 
- #
-@@ -1166,8 +1110,8 @@ CONFIG_VIDEO_V4L2=y
- # Graphics support
- #
- CONFIG_BACKLIGHT_LCD_SUPPORT=y
--CONFIG_BACKLIGHT_CLASS_DEVICE=y
- # CONFIG_LCD_CLASS_DEVICE is not set
-+CONFIG_BACKLIGHT_CLASS_DEVICE=y
- # CONFIG_BACKLIGHT_PROGEAR is not set
- 
- #
-@@ -1179,6 +1123,7 @@ CONFIG_DISPLAY_SUPPORT=m
- # Display hardware drivers
- #
- # CONFIG_VGASTATE is not set
-+CONFIG_VIDEO_OUTPUT_CONTROL=m
- # CONFIG_FB is not set
- 
- #
-@@ -1195,10 +1140,7 @@ CONFIG_DUMMY_CONSOLE=y
- #
- # CONFIG_SOUND is not set
- CONFIG_AC97_BUS=m
--
--#
--# HID Devices
--#
-+CONFIG_HID_SUPPORT=y
- CONFIG_HID=m
- # CONFIG_HID_DEBUG is not set
- 
-@@ -1212,10 +1154,7 @@ CONFIG_HID=m
- #
- CONFIG_USB_KBD=m
- CONFIG_USB_MOUSE=m
--
--#
--# USB support
--#
-+CONFIG_USB_SUPPORT=y
- CONFIG_USB_ARCH_HAS_HCD=y
- CONFIG_USB_ARCH_HAS_OHCI=y
- CONFIG_USB_ARCH_HAS_EHCI=y
-@@ -1238,6 +1177,7 @@ CONFIG_USB=m
- # CONFIG_USB_OHCI_HCD is not set
- # CONFIG_USB_UHCI_HCD is not set
- # CONFIG_USB_SL811_HCD is not set
-+# CONFIG_USB_R8A66597_HCD is not set
- 
- #
- # USB Device Class drivers
-@@ -1302,11 +1242,8 @@ CONFIG_USB=m
- #
- # CONFIG_USB_GADGET is not set
- # CONFIG_MMC is not set
--
--#
--# LED devices
--#
--# CONFIG_NEW_LEDS is not set
-+CONFIG_NEW_LEDS=y
-+CONFIG_LEDS_CLASS=m
- 
- #
- # LED drivers
-@@ -1315,15 +1252,8 @@ CONFIG_USB=m
- #
- # LED Triggers
- #
--
--#
--# InfiniBand support
--#
-+# CONFIG_LEDS_TRIGGERS is not set
- # CONFIG_INFINIBAND is not set
--
--#
--# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
--#
- # CONFIG_EDAC is not set
- 
- #
-@@ -1345,11 +1275,12 @@ CONFIG_NET_DMA=y
- # DMA Devices
- #
- CONFIG_INTEL_IOATDMA=m
-+# CONFIG_VIRTUALIZATION is not set
- 
- #
--# Virtualization
-+# Userspace I/O
- #
--# CONFIG_KVM is not set
-+# CONFIG_UIO is not set
- 
- #
- # File systems
-@@ -1456,7 +1387,6 @@ CONFIG_UFS_FS=m
- # CONFIG_NCP_FS is not set
- # CONFIG_CODA_FS is not set
- # CONFIG_AFS_FS is not set
--# CONFIG_9P_FS is not set
- 
- #
- # Partition Types
-@@ -1535,10 +1465,7 @@ CONFIG_NLS_UTF8=m
- # Distributed Lock Manager
- #
- # CONFIG_DLM is not set
--
--#
--# Instrumentation Support
--#
-+CONFIG_INSTRUMENTATION=y
- # CONFIG_PROFILING is not set
- # CONFIG_KPROBES is not set
- 
-@@ -1555,6 +1482,7 @@ CONFIG_DEBUG_FS=y
- CONFIG_DEBUG_KERNEL=y
- # CONFIG_DEBUG_SHIRQ is not set
- CONFIG_DETECT_SOFTLOCKUP=y
-+CONFIG_SCHED_DEBUG=y
- # CONFIG_SCHEDSTATS is not set
- CONFIG_TIMER_STATS=y
- # CONFIG_DEBUG_SLAB is not set
-@@ -1564,6 +1492,7 @@ CONFIG_TIMER_STATS=y
- # CONFIG_DEBUG_MUTEXES is not set
- # CONFIG_DEBUG_LOCK_ALLOC is not set
- # CONFIG_PROVE_LOCKING is not set
-+# CONFIG_LOCK_STAT is not set
- # CONFIG_DEBUG_SPINLOCK_SLEEP is not set
- # CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
- # CONFIG_DEBUG_KOBJECT is not set
-@@ -1597,10 +1526,10 @@ CONFIG_SECURITY_NETWORK_XFRM=y
- CONFIG_SECURITY_CAPABILITIES=y
- # CONFIG_SECURITY_ROOTPLUG is not set
- # CONFIG_SECURITY_SELINUX is not set
--
--#
--# Cryptographic options
--#
-+CONFIG_XOR_BLOCKS=m
-+CONFIG_ASYNC_CORE=m
-+CONFIG_ASYNC_MEMCPY=m
-+CONFIG_ASYNC_XOR=m
- CONFIG_CRYPTO=y
- CONFIG_CRYPTO_ALGAPI=y
- CONFIG_CRYPTO_BLKCIPHER=m
-@@ -1642,14 +1571,7 @@ CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_CRC32C=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_TEST=m
--
--#
--# Hardware crypto devices
--#
--CONFIG_CRYPTO_DEV_PADLOCK=m
--CONFIG_CRYPTO_DEV_PADLOCK_AES=m
--CONFIG_CRYPTO_DEV_PADLOCK_SHA=m
--CONFIG_CRYPTO_DEV_GEODE=m
-+# CONFIG_CRYPTO_HW is not set
- 
- #
- # Library routines
-@@ -1659,6 +1581,7 @@ CONFIG_CRC_CCITT=m
- CONFIG_CRC16=m
- CONFIG_CRC_ITU_T=m
- CONFIG_CRC32=y
-+# CONFIG_CRC7 is not set
- CONFIG_LIBCRC32C=m
- CONFIG_AUDIT_GENERIC=y
- CONFIG_ZLIB_INFLATE=y
+I am just being pedantic here (and I should have beaten up on Rusty
+before now ...  :-)
+
+On Thu, 09 Aug 2007 00:36:30 -0400 Steven Rostedt <rostedt@goodmis.org>
+wrote:
+>
+> --- a/include/asm-i386/lg.h
+> +++ b/include/asm-i386/lg.h
+> @@ -1,5 +1,5 @@
+> -#ifndef _LGUEST_H
+> -#define _LGUEST_H
+> +#ifndef _I386_LGUEST_H
+> +#define _I386_LGUEST_H
+
+Maybe _ASM_LG_H or _I386_LG_H ? And there is a comment on the #endif at
+the end of the file that should match.
+
+> +++ b/include/linux/lg.h
+> @@ -0,0 +1,30 @@
+> +#ifndef _LINUX_LGUEST_H
+> +#define _LINUX_LGUEST_H
+
+Maybe _LINUX_LG_H ?
+
+Also (this is for Rusty) include/linux/lguest.h is protected by
+_ASM_LGUEST_H ...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__9_Aug_2007_15_31_33_+1000_cLTAAr6tbZXREfb.
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGuqa6TgG2atn1QN8RAmJPAJ4gcct+revTVWqW6yTxblm3Jt4MawCfRMih
+BHtkczFmBmKURUW89aQUUHM=
+=dKUJ
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__9_Aug_2007_15_31_33_+1000_cLTAAr6tbZXREfb.--
