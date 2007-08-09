@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760989AbXHITbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762990AbXHITcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760989AbXHITbk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 15:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbXHITbb
+	id S1762990AbXHITcR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 15:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762244AbXHITbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 15:31:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:62189 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbXHITba (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 15:31:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=APSJJVvJJVQHq8DmRv/4+qIwEHWe2fA3Wnurvxnsaz5m/SfVFF0e0wXygZ8hxrwc4hH/lum8mL40+E2rnEsAwUpzUEWB0ExoY7ZpnFSSX3DPQTXm5ItTql//WEf4ETvW9Ra4I0g2deB37aQ+gT7FTWMKVhwEoNCV00ByCm2lsYg=
-Message-ID: <1158166a0708091231r21903840mc927b6baa47e4598@mail.gmail.com>
-Date: Thu, 9 Aug 2007 20:31:28 +0100
-From: "Denis Vlasenko" <vda.linux@googlemail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [PATCH] msleep() with hrtimers
-Cc: "Roman Zippel" <zippel@linux-m68k.org>, "Jonathan Corbet" <corbet@lwn.net>,
-       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
-       akpm@linux-foundation.org, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <1186546512.2862.3.camel@laptopd505.fenrus.org>
+	Thu, 9 Aug 2007 15:31:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45343 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751145AbXHITbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 15:31:50 -0400
+Message-ID: <46BB69F8.5000502@redhat.com>
+Date: Thu, 09 Aug 2007 15:24:40 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+References: <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com> <20070809161024.GC8424@linux.vnet.ibm.com> <46BB4281.7010803@redhat.com> <20070809165853.GD8424@linux.vnet.ibm.com> <46BB4B7B.4070007@redhat.com> <20070809174150.GE8424@linux.vnet.ibm.com> <46BB5960.9040009@redhat.com> <20070809184531.GH8424@linux.vnet.ibm.com>
+In-Reply-To: <20070809184531.GH8424@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <15327.1186166232@lwn.net>
-	 <1186255149.2777.3.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0708060150270.1817@scrub.home>
-	 <1186360983.2697.8.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0708060257010.1817@scrub.home>
-	 <1186378798.2697.10.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0708061159370.1817@scrub.home>
-	 <1186415621.2706.4.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0708071417200.1817@scrub.home>
-	 <1186546512.2862.3.camel@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/8/07, Arjan van de Ven <arjan@infradead.org> wrote:
-> You keep claiming that hrtimers are so incredibly expensive; but for
-> msleep()... which is mostly called during driver init ... I really don't
-> buy that it's really expensive. We're not doing this a gazilion times
-> per second obviously...
+Paul E. McKenney wrote:
+> On Thu, Aug 09, 2007 at 02:13:52PM -0400, Chris Snook wrote:
+>> Paul E. McKenney wrote:
+>>> On Thu, Aug 09, 2007 at 01:14:35PM -0400, Chris Snook wrote:
+>>>>                                If you're depending on volatile writes 
+>>>> being visible to other CPUs, you're screwed either way, because the CPU 
+>>>> can hold that data in cache as long as it wants before it writes it to 
+>>>> memory.  When this finally does happen, it will happen atomically, which 
+>>>> is all that atomic_set guarantees.  If you need to guarantee that the 
+>>>> value is written to memory at a particular time in your execution 
+>>>> sequence, you either have to read it from memory to force the compiler to 
+>>>> store it first (and a volatile cast in atomic_read will suffice for this) 
+>>>> or you have to use LOCK_PREFIX instructions which will invalidate remote 
+>>>> cache lines containing the same variable.  This patch doesn't change 
+>>>> either of these cases.
+>>> The case that it -can- change is interactions with interrupt handlers.
+>>> And NMI/SMI handlers, for that matter.
+>> You have a point here, but only if you can guarantee that the interrupt 
+>> handler is running on a processor sharing the cache that has the 
+>> not-yet-written volatile value.  That implies a strictly non-SMP 
+>> architecture.  At the moment, none of those have volatile in their 
+>> declaration of atomic_t, so this patch can't break any of them.
+> 
+> This can also happen when using per-CPU variables.  And there are a
+> number of per-CPU variables that are either atomic themselves or are
+> structures containing atomic fields.
 
-Yes. Optimizing delay or sleep functions for speed is a contradiction
-of terms. IIRC we still optimize udelay for speed, not code size...
-Read it again folks:
+Accessing per-CPU variables in this fashion reliably already requires a suitable 
+smp/non-smp read/write memory barrier.  I maintain that if we break anything 
+with this change, it was really already broken, if less obviously.  Can you give 
+a real or synthetic example of legitimate code that could break?
 
-        We optimize udelay for speed
-
-How fast your udelay do you want to be today?
-
-Oh well.
---
-vda
+	-- Chris
