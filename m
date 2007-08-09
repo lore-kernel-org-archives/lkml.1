@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966192AbXHIPJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939993AbXHIPLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966192AbXHIPJT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 11:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966202AbXHIPIx
+	id S939993AbXHIPLT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 11:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933898AbXHIPLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 11:08:53 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3175 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S966187AbXHIPIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 11:08:50 -0400
-Date: Thu, 9 Aug 2007 15:06:35 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Robert Hancock <hancockr@shaw.ca>, Michael Sedkowski <sedmich@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Thomas Renninger <trenn@suse.de>
-Subject: Re: Disk spin down issue on shut down/suspend to disk
-Message-ID: <20070809150634.GA3926@ucw.cz>
-References: <fa.bsWpbo79BZgHoaIGhEMfTEBxs54@ifi.uio.no> <fa.mg6p0itaOQUo/t8deCaYpyqj6Nk@ifi.uio.no> <fa.RxWYL8z8KktgL8LGZ/cTB2nI1Yc@ifi.uio.no> <fa.AyyCtZ2yLjC5noHPHtmzn4ffhhE@ifi.uio.no> <fa.SuAjism+m0z0haqCRVjkc2S978o@ifi.uio.no> <fa.QgWcLG2hfRb92g4blN61qYfRjlQ@ifi.uio.no> <46B7AF53.1040307@shaw.ca> <46B8140E.3000509@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B8140E.3000509@gmail.com>
-User-Agent: Mutt/1.5.9i
+	Thu, 9 Aug 2007 11:11:07 -0400
+Received: from gw.goop.org ([64.81.55.164]:56401 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763466AbXHIPLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 11:11:06 -0400
+Message-ID: <46BB2E1C.2060100@goop.org>
+Date: Thu, 09 Aug 2007 08:09:16 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Andi Kleen <ak@suse.de>, Glauber de Oliveira Costa <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org
+Subject: Re: [PATCH 25/25] [PATCH] add paravirtualization support for x86_64
+References: <11865467522495-git-send-email-gcosta@redhat.com> <200708081200.13669.ak@suse.de> <46BAB9DD.5030400@goop.org> <200708091626.09316.ak@suse.de> <Pine.LNX.4.58.0708091032300.32067@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0708091032300.32067@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Steven Rostedt wrote:
+> --
+> On Thu, 9 Aug 2007, Andi Kleen wrote:
+>   
+>>> This has to match the normal C calling convention though, doesn't it?
+>>>       
+>> Native cli/sti/save/restore_flags are all only assembly and can be easily
+>> (in fact more easily than in C) written as pure assembler functions. Then
+>> you can use whatever calling convention you want.
+>>     
+>
+> I agree.
+> Should we make a paravirt_ops_asm.S file that can implement these native
+> funcions, and so we can get rid of the C functions only doing asm?
+>
+>   
+>> While some paravirt implementations may have more complicated implementations
+>> i guess it's still a reasonable requirement to make them simple enough
+>> in pure assembler. If not they can use a trampoline, but that's hopefully
+>> not needed.
+>>     
+>
+> It works for lguest64.  I'm sure it should be no problem with other HVs.
+>   
 
-> >> Oh... crap, so acpi wants to sync cache on shutdown.  I wonder whether
-> >> it spins down the disk correctly.  Does emergency unload count increase
-> >> after each power down?  Also, please post the result of 'dmidecode'.
-> > 
-> > I know that my Compaq X1000-series laptop does do some kind of ACPI
-> > games with the disk on ACPI power off (I assume it is putting the disk
-> > in standby before power-off at least). It also does this if you boot
-> > into DOS, GRUB, etc. and then hit the power button. Could be if the disk
-> > is dumb enough to spin up for sync cache and standby when there is
-> > nothing to flush, and the kernel does its own standby, this could cause
-> > an extra spinup/down..
-> 
-> Yeah, that seems to be what's going on.  I don't think we have any other
-> choice than blacklisting those notebooks.  This is a mess.  How does the
-> other OS cope with this?
-> 
-> I'm thinking about using DMI vendor/product match to detect the affected
-> systems but I think it would be better to match the ACPI implementation
-> directly.  Is there a way to match specific ACPI implementation?
+Hm, I can't say the idea thrills me.  Lets get the thing working first,
+and then worry about having special per-pvop calling conventions.
 
-Well.. unless they use some SMM trick, it is ACPI AML code telling
-kernel to spin the disk down. I guess we could detect that, and simply
-ignore the request.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+    J
