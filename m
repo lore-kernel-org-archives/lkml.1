@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763383AbXHITyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763724AbXHIT4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763383AbXHITyU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 15:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbXHITyH
+	id S1763724AbXHIT4E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 15:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbXHITzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 15:54:07 -0400
-Received: from iona.labri.fr ([147.210.8.143]:50922 "EHLO iona.labri.fr"
+	Thu, 9 Aug 2007 15:55:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57641 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753649AbXHITyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 15:54:06 -0400
-Date: Thu, 9 Aug 2007 21:53:59 +0200
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linuxconsole-dev@lists.sourceforge.net,
-       akpm@google.com
-Subject: Re: [PATCH] unicode diacritics support
-Message-ID: <20070809195359.GB3676@interface.famille.thibault.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org,
-	linuxconsole-dev@lists.sourceforge.net, akpm@google.com
-References: <20070808081010.GA3292@implementation.labri.fr> <20070809124642.fbbd3e68.akpm@linux-foundation.org>
+	id S1755559AbXHITzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 15:55:45 -0400
+Message-ID: <46BB6F65.8040204@redhat.com>
+Date: Thu, 09 Aug 2007 15:47:49 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070809124642.fbbd3e68.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Segher Boessenkool <segher@kernel.crashing.org>, wjiang@resilience.com,
+       cfriesen@nortel.com, wensong@linux-vs.org, heiko.carstens@de.ibm.com,
+       linux-kernel@vger.kernel.org, ak@suse.de, netdev@vger.kernel.org,
+       paulmck@linux.vnet.ibm.com, horms@verge.net.au,
+       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       jesper.juhl@gmail.com, torvalds@linux-foundation.org, zlynx@acm.org,
+       rpjday@mindspring.com, schwidefsky@de.ibm.com, davem@davemloft.net
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com> <3bfabd7472d6f019aa1880b14013f7a1@kernel.crashing.org> <46BB3ECF.2070100@redhat.com> <1abc2c621d6b62b3ac9f489d4d18806a@kernel.crashing.org> <46BB656D.6090408@redhat.com> <Pine.LNX.4.64.0708092123270.22584@anakin>
+In-Reply-To: <Pine.LNX.4.64.0708092123270.22584@anakin>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Andrew Morton, le Thu 09 Aug 2007 12:46:42 -0700, a écrit :
-> > Turn the kernel accent_table into unicode, and extend ioctls KDGKBDIACR
-> > and KDSKBDIACR into their equivalents KDGKBDIACRUC and KDSKBDIACR.
-> > 
-> > New function int conv_uni_to_8bit(u32 uni) for converting unicode into 8bit
-> > _input_.  No, we don't want to store the translation, as it is potentially
-> > sparse and large.
+Geert Uytterhoeven wrote:
+> On Thu, 9 Aug 2007, Chris Snook wrote:
+>> Segher Boessenkool wrote:
+>>>>> The only safe way to get atomic accesses is to write
+>>>>> assembler code.  Are there any downsides to that?  I don't
+>>>>> see any.
+>>>> The assumption that aligned word reads and writes are atomic, and that
+>>>> words are aligned unless explicitly packed otherwise, is endemic in the
+>>>> kernel.  No sane compiler violates this assumption.  It's true that we're
+>>>> not portable to insane compilers after this patch, but we never were in
+>>>> the first place.
+>>> You didn't answer my question: are there any downsides to using
+>>> explicit coded-in-assembler accesses for atomic accesses?  You
+>>> can handwave all you want that it should "just work" with
+>>> volatile accesses, but volatility != atomicity, volatile in C
+>>> is really badly defined, GCC never officially gave stronger
+>>> guarantees, and we have a bugzilla full of PRs to show what a
+>>> minefield it is.
+>>>
+>>> So, why not use the well-defined alternative?
+>> Because we don't need to, and it hurts performance.
 > 
-> This changes the kernel ABI a bit.  The KDGKBDIACR ioctl (and friends)
-> now return different data.
+> It hurts performance by implementing 32-bit atomic reads in assembler?
 
-No, they are still returning data encoded in the consolemap.
+No, I misunderstood the question.  Implementing 32-bit atomic reads in assembler 
+is redundant, because any sane compiler, *particularly* and optimizing compiler 
+(and we're only in this mess because of optimizing compilers) will give us that 
+automatically without the assembler.  Yes, it is legal for a compiler to violate 
+this assumption.  It is also legal for us to refuse to maintain compatibility 
+with compilers that suck this badly.  That decision was made a very long time 
+ago, and I consider it the correct decision.
 
-What was happening before is that the diacr variable wasn't always
-encoded in latin1, it was encoded in the consolemap. Now diacr is always
-unicode, so the diacritical translations now have to be translated into
-consolemap for the old ioctl() to work as before.
-
-Samuel
+	-- Chris
