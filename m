@@ -1,98 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940817AbXHIOro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940745AbXHIOrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940817AbXHIOro (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939256AbXHIOra
+	id S940745AbXHIOrD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:47:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936423AbXHIOqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:47:30 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:52783 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936423AbXHIOr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:47:28 -0400
-Date: Thu, 9 Aug 2007 15:47:26 +0100
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Christoph Lameter <clameter@sgi.com>, pj@sgi.com, ak@suse.de,
-       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 0/3] Use one zonelist per node instead of multiple zonelists v2
-Message-ID: <20070809144726.GA22405@skynet.ie>
-References: <20070808161504.32320.79576.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0708081025330.12652@schroedinger.engr.sgi.com> <1186597819.5055.37.camel@localhost> <20070808214420.GD2441@skynet.ie> <1186612807.5055.106.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Thu, 9 Aug 2007 10:46:53 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:48089 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937428AbXHIOqw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 10:46:52 -0400
+Date: Thu, 9 Aug 2007 18:46:54 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jay Estabrook <jay.estabrook@hp.com>, Richard Henderson <rth@twiddle.net>,
+       Oliver Falk <oliver@linux-kernel.at>, linux-kernel@vger.kernel.org
+Subject: [patch] alpha: -Werror fixes for sys_titan.c
+Message-ID: <20070809184654.B25669@jurassic.park.msu.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1186612807.5055.106.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+User-Agent: Mutt/1.2.5i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (08/08/07 18:40), Lee Schermerhorn didst pronounce:
-> On Wed, 2007-08-08 at 22:44 +0100, Mel Gorman wrote:
->
-> <SNIP>
->
-> > With the patch currently, a a nodemask is passed in for
-> > filtering which should be enough as the zonelist being used should be enough
-> > information to indicate the starting node.
-> 
-> It'll take me a while to absorb the patch, so I'll just ask:  Where does
-> the zonelist for the argument come from? If the the bind policy
-> zonelist is removed, then does it come from a node? 
+From: Jay Estabrook <jay.estabrook@hp.com>
 
-Yes, it gets the zonelist from the node and uses a nodemask to ignore
-zones within it.
+Files:
 
-> There'll be only
-> one per node with your other patches, right?  So you had to have a node
-> id, to look up the zonelist? 
+arch/alpha/kernel/sys_titan.c
 
-You have the local node_id to lookup the zonelist with. The policy
-provides a nodemask then instead of a zonelist for filtering purposes.
+This code corrects the usage of the request_irq() routine.
 
-> Do you need the zonelist elsewhere,
-> outside of alloc_pages()?  If not, why not just let alloc_pages look it
-> up from a starting node [which I think can be determined from the
-> policy]?
-> 
 
-The starting node can be determined from where we are currently running
-on. Even if the local node is not in the nodemask, we'd still filter it
-as normal.
+Signed-off-by: Jay Estabrook <jay.estabrook@hp.com>
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 
-> OK, that's a lot of questions.  no need to answer.  That's just what I'm
-> thinking re: all this.  I'll wait and see how the patch develops.
->   
-> > 
-> > The signature of __alloc_pages() becomes
-> > 
-> > static page * fastcall
-> > __alloc_pages_nodemask(gfp_t gfp_mask, nodemask_t *nodemask,
-> >                unsigned int order, struct zonelist *zonelist)
-> > 
-> > >  For various policies, the arguments would look like this:
-> > > Policy		start node	nodemask
-> > > 
-> > > default		local node	cpuset_current_mems_allowed
-> > > 
-> > > preferred	preferred_node	cpuset_current_mems_allowed
-> > > 
-> > > interleave	computed node	cpuset_current_mems_allowed
-> > > 
-> > > bind		local node	policy nodemask [replaces bind
-> > > 				zonelist in mempolicy]
-> > > 
-> > 
-> > The last one is the most interesting. Much of the patch in development
-> > involves deleting the custom node stuff. I've included the patch below if
-> > you're curious. I wanted to get one-zonelist out first to see if we could
-> > agree on that before going further with it.
-> 
-> Again, it'll be a while. 
-> 
+---
 
-Thanks anyway.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+diff -Naurp a/arch/alpha/kernel/sys_titan.c b/arch/alpha/kernel/sys_titan.c
+--- a/arch/alpha/kernel/sys_titan.c	2007-07-08 19:32:17.000000000 -0400
++++ b/arch/alpha/kernel/sys_titan.c	2007-08-01 12:18:58.000000000 -0400
+@@ -271,6 +271,19 @@ titan_dispatch_irqs(u64 mask)
+  * Titan Family
+  */
+ static void __init
++titan_request_irq(unsigned int irq, irq_handler_t handler,
++		  unsigned long irqflags, const char *devname,
++		  void *dev_id)
++{
++	int err;
++	err = request_irq(irq, handler, irqflags, devname, dev_id);
++	if (err) {
++		printk("titan_request_irq for IRQ %d returned %d; ignoring\n",
++		       irq, err);
++	}
++}
++
++static void __init
+ titan_late_init(void)
+ {
+ 	/*
+@@ -278,15 +291,15 @@ titan_late_init(void)
+ 	 * all reported to the kernel as machine checks, so the handler
+ 	 * is a nop so it can be called to count the individual events.
+ 	 */
+-	request_irq(63+16, titan_intr_nop, IRQF_DISABLED,
++	titan_request_irq(63+16, titan_intr_nop, IRQF_DISABLED,
+ 		    "CChip Error", NULL);
+-	request_irq(62+16, titan_intr_nop, IRQF_DISABLED,
++	titan_request_irq(62+16, titan_intr_nop, IRQF_DISABLED,
+ 		    "PChip 0 H_Error", NULL);
+-	request_irq(61+16, titan_intr_nop, IRQF_DISABLED,
++	titan_request_irq(61+16, titan_intr_nop, IRQF_DISABLED,
+ 		    "PChip 1 H_Error", NULL);
+-	request_irq(60+16, titan_intr_nop, IRQF_DISABLED,
++	titan_request_irq(60+16, titan_intr_nop, IRQF_DISABLED,
+ 		    "PChip 0 C_Error", NULL);
+-	request_irq(59+16, titan_intr_nop, IRQF_DISABLED,
++	titan_request_irq(59+16, titan_intr_nop, IRQF_DISABLED,
+ 		    "PChip 1 C_Error", NULL);
+ 
+ 	/* 
+@@ -345,9 +358,9 @@ privateer_init_pci(void)
+ 	 * Hook a couple of extra err interrupts that the
+ 	 * common titan code won't.
+ 	 */
+-	request_irq(53+16, titan_intr_nop, IRQF_DISABLED,
++	titan_request_irq(53+16, titan_intr_nop, IRQF_DISABLED,
+ 		    "NMI", NULL);
+-	request_irq(50+16, titan_intr_nop, IRQF_DISABLED,
++	titan_request_irq(50+16, titan_intr_nop, IRQF_DISABLED,
+ 		    "Temperature Warning", NULL);
+ 
+ 	/*
