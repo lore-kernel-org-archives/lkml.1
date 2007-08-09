@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940350AbXHIOcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940664AbXHIOdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940350AbXHIOcJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935348AbXHIOb5
+	id S940664AbXHIOdL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934475AbXHIOcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:31:57 -0400
-Received: from mail.suse.de ([195.135.220.2]:35344 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935298AbXHIOb4 convert rfc822-to-8bit (ORCPT
+	Thu, 9 Aug 2007 10:32:54 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:45357 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935348AbXHIOcx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:31:56 -0400
-To: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Documentation files in html format?
-References: <20070809113122.3aa508e4@oldman.hamilton.local>
-	<200708091508.20626.hjk@linutronix.de>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 09 Aug 2007 17:26:13 +0200
-In-Reply-To: <200708091508.20626.hjk@linutronix.de>
-Message-ID: <p73hcn8g25m.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Thu, 9 Aug 2007 10:32:53 -0400
+Date: Thu, 9 Aug 2007 16:32:38 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23-rc2-mm1 -- =?utf-8?Q?drivers=2F?=
+	=?utf-8?Q?dma=2Fioat=5Fdca=2Ec=3A177=3A_error=3A_implicit_declaration_of_?=
+	=?utf-8?B?ZnVuY3Rpb24g4oCYY3B1X3BoeXNpY2FsX2lk4oCZ?=
+Message-ID: <20070809143238.GA16717@stusta.de>
+References: <a44ae5cd0708090718v5dc19572k69087f170f9ba857@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <a44ae5cd0708090718v5dc19572k69087f170f9ba857@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hans-Jürgen Koch <hjk@linutronix.de> writes:
+On Thu, Aug 09, 2007 at 10:18:15AM -0400, Miles Lane wrote:
+>   CC      drivers/dma/ioat_dca.o
+> drivers/dma/ioat_dca.c: In function 'ioat_dca_get_tag':
+> drivers/dma/ioat_dca.c:177: error: implicit declaration of function
+> 'cpu_physical_id'
+> make[2]: *** [drivers/dma/ioat_dca.o] Error 1
 
-> Am Donnerstag 09 August 2007 12:31 schrieb Stephen Hemminger:
-> > Since the network device documentation needs a rewrite, I was thinking
-> > of using basic html format instead of just plain text. 
-> 
-> Why don't you simply use DocBook? Then the user has the choice to convert
-> to HTML, PDF, LaTex or whatever.
+-ENODOTCONFIG
 
-In my experience it tends to be challenging to actually find all the packages
-needed for that. And then it's incredibly slow -- seems to be much slower
-than gcc which is somewhat of an archivement. And at least for LinuxDoc TeX usually 
-can't even compile the result.
+cu
+Adrian
 
-I would say the track record of existing DocBook deployment is not good enough
-to justify further use. Plain html can be converted into all these
-formats easily too and overall it makes a much nicer user experience.
+-- 
 
-Also I would expect much more people will know how to write html versus
-DocBook.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
--Andi
