@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966248AbXHIQpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966419AbXHIQpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966248AbXHIQpe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 12:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765949AbXHIQpY
+	id S966419AbXHIQpz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966289AbXHIQpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 12:45:24 -0400
-Received: from mithrandir.softwarenexus.net ([66.98.186.96]:4974 "EHLO
-	mail.genesi-usa.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761550AbXHIQpX (ORCPT
+	Thu, 9 Aug 2007 12:45:39 -0400
+Received: from stout.engsoc.carleton.ca ([134.117.69.22]:54526 "EHLO
+	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966285AbXHIQpg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 12:45:23 -0400
-Message-ID: <46BB44E6.4050308@genesi-usa.com>
-Date: Thu, 09 Aug 2007 17:46:30 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 9 Aug 2007 12:45:36 -0400
+Date: Thu, 9 Aug 2007 12:45:34 -0400
+From: Kyle McMartin <kyle@parisc-linux.org>
+To: Chris Snook <csnook@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
+Subject: Re: [PATCH 14/24] make atomic_read() behave consistently on parisc
+Message-ID: <20070809164534.GC27558@fattire.cabal.ca>
+References: <20070809140154.GA17489@shell.boston.redhat.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-CC: linuxppc-dev@ozlabs.org, Alan Curry <pacman@TheWorld.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
-References: <200708020440.l724edCT290676@shell01.TheWorld.com> <46B79562.9020202@genesi-usa.com> <f4545a576abeddf00f076a0cae9e3fdd@kernel.crashing.org> <46B89C10.7090507@genesi-usa.com> <909c5e405e5cd26bca3aff13fe55adbc@kernel.crashing.org>
-In-Reply-To: <909c5e405e5cd26bca3aff13fe55adbc@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070809140154.GA17489@shell.boston.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Segher Boessenkool wrote:
->> Would you guys rather we shipped a boot script that ran the OS, fixed
->> all these issues in-place in-firmware, so Linux did not have to have 
->> these
->> workarounds,
+On Thu, Aug 09, 2007 at 10:01:54AM -0400, Chris Snook wrote:
+> From: Chris Snook <csnook@redhat.com>
 > 
-> Sure, if you can do that, that would be great.
+> Purify volatile use for atomic[64]_t on parisc.
+> 
+> Signed-off-by: Chris Snook <csnook@redhat.com>
+> 
 
-Right, so don't accept that keyboard fix, and we will work on the script
-instead.
+Sure, why not.
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+ACKed-by: Kyle McMartin <kyle@parisc-linux.org>
