@@ -1,49 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938656AbXHIFKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936262AbXHIFPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938656AbXHIFKs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 01:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbXHIFKb
+	id S936262AbXHIFPq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 01:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbXHIFPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 01:10:31 -0400
-Received: from elasmtp-galgo.atl.sa.earthlink.net ([209.86.89.61]:37739 "EHLO
-	elasmtp-galgo.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754190AbXHIFK2 (ORCPT
+	Thu, 9 Aug 2007 01:15:36 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:56131
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752399AbXHIFPf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 01:10:28 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=earthlink.net;
-  b=fCnJpe72Md+rL7OnD1y7MuZHyPlLy9horgb+C4wCUgarkIOn88p3fl7rBQ1Eznp1;
-  h=Received:Message-ID:Reply-To:From:To:Cc:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <001001c7da42$8022a7c0$6501a8c0@earthlink.net>
-Reply-To: "Mitchell Erblich" <erblichs@earthlink.net>
-From: "Mitchell Erblich" <erblichs@earthlink.net>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Question : sched_rt.c : Loss of stats?? requeue_task_rt() does not call update_curr_rt() which updates stats
-Date: Wed, 8 Aug 2007 22:02:34 -0700
+	Thu, 9 Aug 2007 01:15:35 -0400
+Date: Wed, 8 Aug 2007 22:11:12 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Ray Lee <ray-lk@madrabbit.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, netdev@vger.kernel.org
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+In-Reply-To: <2c0942db0708040901x7ada0fe2mf71f37ecba51005b@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0708081949320.9909@asgard.lang.hm>
+References: <20070803123712.987126000@chello.nl> 
+ <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> 
+ <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> 
+ <Pine.LNX.4.64.0708040032570.6905@asgard.lang.hm>
+ <2c0942db0708040901x7ada0fe2mf71f37ecba51005b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1106
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1106
-X-ELNK-Trace: 074f60c55517ea841aa676d7e74259b7b3291a7d08dfec7941a9aa3d8bd76c78204a360faa68ce26350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 68.164.93.14
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched_rt.c : requeue_task_rt()
+On Sat, 4 Aug 2007, Ray Lee wrote:
 
-The comment states the problem requeue no dequeue.
-Put task to the end of the run list without the overhead of dequeue
-followed by enqueue.
+> On 8/4/07, david@lang.hm <david@lang.hm> wrote:
+>> On Sat, 4 Aug 2007, Ingo Molnar wrote:
+>>
+> At least on a surface level, your report has some similarities to
+> http://lkml.org/lkml/2007/5/21/84 . In that message, John Miller
+> mentions several things he tried without effect:
+>
+> < - I increased the max allowed receive buffer through
+> < proc/sys/net/core/rmem_max and the application calls the right
+> < syscall. "netstat -su" does not show any "packet receive errors".
 
-dequeue_task_rt() updates stats. Where without calling
-it will skip the stat update.
+mercury1:/proc/sys/net/core# cat rmem_*
+124928
+131071
+mercury1:/proc/sys/net/core# netstat -su
+Udp:
+     697853177 packets received
+     10025642 packets to unknown port received.
+     191726680 packet receive errors
+     63194 packets sent
+     RcvbufErrors: 191726680
+UdpLite:
+mercury1:/proc/sys/net/core# echo "512000" >rmem_max
 
-Thus, shouldn't  requeue_task_rt() call
-  update_curr_rt(rq); ???
+> < - After getting "kernel: swapper: page allocation failure.
+> < order:0, mode:0x20", I increased /proc/sys/vm/min_free_kbytes
 
-Mitchell Erblich.
+I have not seen any similar errors
+
+> < - ixgb.txt in kernel network documentation suggests to increase
+> < net.core.netdev_max_backlog to 300000. This did not help.
+
+mercury1:/proc/sys/net/core# cat netdev_*
+300
+1000
+mercury1:/proc/sys/net/core# echo "300000" >netdev_max_backlog
+
+> < - I also had to increase net.core.optmem_max, because the default
+> < value was too small for 700 multicast groups.
+
+I'm not running multicast.
+
+> As they're all pretty simple to test, it may be worthwhile to give
+> them a shot just to rule things out.
+
+unfortunantly the load is not high enough right now to see a real 
+difference (it's only doing ~1400 logs/sec) I'll catch it at a higher load 
+point to see if these make any difference.
+
+David Lang
+
+> Ray
+>
