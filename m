@@ -1,103 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935592AbXHIJFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936263AbXHIJKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935592AbXHIJFi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 05:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764873AbXHIJFa
+	id S936263AbXHIJKo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 05:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765986AbXHIJKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 05:05:30 -0400
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:1864 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761550AbXHIJF3 (ORCPT
+	Thu, 9 Aug 2007 05:10:33 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:51672 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765290AbXHIJKb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 05:05:29 -0400
-Date: Thu, 9 Aug 2007 11:05:26 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [2.6 patch] drivers/i2c/i2c-core.c: make code static
-Message-ID: <20070809110526.5c2c7d6c@hyperion.delvare>
-In-Reply-To: <20070729145708.GL16817@stusta.de>
-References: <20070729145708.GL16817@stusta.de>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Aug 2007 05:10:31 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH] make atomic_t volatile on all architectures
+To: Jerry Jiang <wjiang@resilience.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, akpm@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       cfriesen@nortel.com, zlynx@acm.org
+Reply-To: 7eggert@gmx.de
+Date: Thu, 09 Aug 2007 11:10:16 +0200
+References: <8Q2Pg-8uV-23@gated-at.bofh.it> <8Q7Fa-7rJ-1@gated-at.bofh.it> <8Q8rD-hh-7@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1IJ424-0000d7-HK@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX180J9JAtnnMfWTTpuokb4qhxBNpzg/pduJ+7UI
+ xLKqfMVyGNfpkNGlSNM5kbp2xhe5JEf7H1vOiTZZUYzDOKdEzk
+ jKIsbzP0JoJPE+Sj0Vs1Q==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
+Jerry Jiang <wjiang@resilience.com> wrote:
+> On Wed, 8 Aug 2007 21:18:25 -0700 (PDT)
+>> On Wed, 8 Aug 2007, Chris Snook wrote:
 
-On Sun, 29 Jul 2007 16:57:08 +0200, Adrian Bunk wrote:
-> After the i2c-isa removal some code can become static.
+>> > Some architectures currently do not declare the contents of an atomic_t to
+>> > be
+>> > volatile.  This causes confusion since atomic_read() might not actually
+>> > read anything if an optimizing compiler re-uses a value stored in a
+>> > register, which can break code that loops until something external changes
+>> > the value of an atomic_t.
+>> 
+>> I'd be *much* happier with "atomic_read()" doing the "volatile" instead.
+>> 
+>> The fact is, volatile on data structures is a bug. It's a wart in the C
+>> language. It shouldn't be used.
 > 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> Why? It's a wart! Is it due to unclear C standard on volatile related point?
 > 
-> ---
-> 
->  drivers/i2c/i2c-core.c |    7 +++----
->  include/linux/i2c.h    |    2 --
->  2 files changed, 3 insertions(+), 6 deletions(-)
-> 
-> --- linux-2.6.23-rc1-mm1/include/linux/i2c.h.old	2007-07-26 12:46:44.000000000 +0200
-> +++ linux-2.6.23-rc1-mm1/include/linux/i2c.h	2007-07-26 12:46:53.000000000 +0200
-> @@ -35,8 +35,6 @@
->  #include <linux/sched.h>	/* for completion */
->  #include <linux/mutex.h>
->  
-> -extern struct bus_type i2c_bus_type;
-> -
->  /* --- General options ------------------------------------------------	*/
->  
->  struct i2c_msg;
-> --- linux-2.6.23-rc1-mm1/drivers/i2c/i2c-core.c.old	2007-07-26 08:59:44.000000000 +0200
-> +++ linux-2.6.23-rc1-mm1/drivers/i2c/i2c-core.c	2007-07-26 09:01:42.000000000 +0200
-> @@ -190,7 +190,7 @@
->  	{ },
->  };
->  
-> -struct bus_type i2c_bus_type = {
-> +static struct bus_type i2c_bus_type = {
->  	.name		= "i2c",
->  	.dev_attrs	= i2c_dev_attrs,
->  	.match		= i2c_device_match,
-> @@ -201,7 +201,6 @@
->  	.suspend	= i2c_device_suspend,
->  	.resume		= i2c_device_resume,
->  };
-> -EXPORT_SYMBOL_GPL(i2c_bus_type);
+> Why the *volatile-accesses-in-code* is acceptable, does C standard make it
+> clear?
 
-This one was left exported on request by David Brownell. See this
-discussion thread:
-http://lists.lm-sensors.org/pipermail/i2c/2007-March/000924.html
-
-I am personally fine with removing this export, as it can always be
-added later if needed. But if others share David's point of view, I am
-also fine leaving the export as is.
-
->  
->  /**
->   * i2c_new_device - instantiate an i2c device for use with a new style driver
-> @@ -285,7 +284,7 @@
->  
->  /* I2C bus adapters -- one roots each I2C or SMBUS segment */
->  
-> -void i2c_adapter_dev_release(struct device *dev)
-> +static void i2c_adapter_dev_release(struct device *dev)
->  {
->  	struct i2c_adapter *adap = to_i2c_adapter(dev);
->  	complete(&adap->dev_released);
-> @@ -303,7 +302,7 @@
->  	{ },
->  };
->  
-> -struct class i2c_adapter_class = {
-> +static struct class i2c_adapter_class = {
->  	.owner			= THIS_MODULE,
->  	.name			= "i2c-adapter",
->  	.dev_attrs		= i2c_adapter_attrs,
-
-These ones are unquestionably correct, good catch, thanks.
-
+http://lwn.net/Articles/233482/
 -- 
-Jean Delvare
+Fun things to slip into your budget
+Heisenberg Compensator upgrade kit
+
+Friﬂ, Spammer: uWfuXeviZ@x.7eggert.dyndns.org
