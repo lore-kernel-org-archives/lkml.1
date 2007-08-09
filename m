@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765536AbXHIVDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932353AbXHIVEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765536AbXHIVDt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 17:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbXHIVDi
+	id S932353AbXHIVEp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 17:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbXHIVEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 17:03:38 -0400
-Received: from mga02.intel.com ([134.134.136.20]:62035 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752246AbXHIVDg convert rfc822-to-8bit (ORCPT
+	Thu, 9 Aug 2007 17:04:36 -0400
+Received: from server.klug.on.ca ([205.189.48.131]:4710 "EHLO
+	server.klug.on.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753381AbXHIVEf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 17:03:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,242,1183359600"; 
-   d="scan'208";a="276838506"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 9/24] make atomic_read() behave consistently on ia64
-Date: Thu, 9 Aug 2007 14:03:33 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A02213B3C@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <20070809135107.GA15985@shell.boston.redhat.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 9/24] make atomic_read() behave consistently on ia64
-Thread-Index: AcfaqaDD/d+FqphiT4Wq09/UAs5EGAAG013Q
-References: <20070809135107.GA15985@shell.boston.redhat.com>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Chris Snook" <csnook@redhat.com>, <linux-kernel@vger.kernel.org>,
-       <linux-arch@vger.kernel.org>, <torvalds@linux-foundation.org>
-Cc: <netdev@vger.kernel.org>, <akpm@linux-foundation.org>, <ak@suse.de>,
-       <heiko.carstens@de.ibm.com>, <davem@davemloft.net>,
-       <schwidefsky@de.ibm.com>, <wensong@linux-vs.org>, <horms@verge.net.au>,
-       <wjiang@resilience.com>, <cfriesen@nortel.com>, <zlynx@acm.org>,
-       <rpjday@mindspring.com>, <jesper.juhl@gmail.com>
-X-OriginalArrivalTime: 09 Aug 2007 21:03:35.0520 (UTC) FILETIME=[C0234600:01C7DAC8]
+	Thu, 9 Aug 2007 17:04:35 -0400
+Subject: Re: Re:
+From: "Brian J. Murrell" <brian@interlinx.bc.ca>
+To: Mark Lord <lkml@rtr.ca>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46BB7A29.4080409@rtr.ca>
+References: <1186504459.6949.40.camel@pc.ilinx>  <46BB7A29.4080409@rtr.ca>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-6hDJ4LSYiLy6xlCxXo3h"
+Date: Thu, 09 Aug 2007 17:04:32 -0400
+Message-Id: <1186693472.6259.97.camel@pc.ilinx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +#define atomic_read(v)		(*(volatile __s32 *)&(v)->counter)
-> +#define atomic64_read(v)	(*(volatile __s64 *)&(v)->counter)
-> 
->  #define atomic_set(v,i)		(((v)->counter) = (i))
->  #define atomic64_set(v,i)	(((v)->counter) = (i))
 
+--=-6hDJ4LSYiLy6xlCxXo3h
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Losing the volatile from the "set" variants definitely changes
-the code generated.  Before the patch gcc would give us:
+On Thu, 2007-08-09 at 16:33 -0400, Mark Lord wrote:
+> Probably something to do with either LVM or the Device Mapper having
+> the raw partition already "open" for some remapping purpose.
+> There was a note about that around here somewhere quite recently..
 
-	st4.rel [r37]=r9
+Indeed, that was it.  I posted a followup "Re: [SOLVED] problems while
+mounting /boot partition" reporting such.
 
-after
-	st4 [r37]=r9
+Thanx for the heads up though!
 
-It is unclear whether anyone relies on (or even whether they should
-rely on) the release semantics that are provided by the current
-version of atomic.h.  But making this change would require an
-audit of all the uses of atomic_set() to find an answer.
+b.
 
-There is a more worrying difference in the generated code (this
-from the ancient and venerable gcc 3.4.6 that is on my build
-machine).   In rwsem_down_failed_common I see this change (after
-disassembling vmlinux, I used sed to zap the low 32-bits of addresses
-to make the diff manageable ... that's why the addresses all end
-in xxxxxxxx):
+--=20
+My other computer is your Microsoft Windows server.
 
-712868,712873c712913,712921
-< a0000001xxxxxxxx:                 adds r16=-1,r30
-< a0000001xxxxxxxx:     [MII]       ld8.acq r33=[r32]
-< a0000001xxxxxxxx:                 nop.i 0x0;;
-< a0000001xxxxxxxx:                 add r42=r33,r16
-< a0000001xxxxxxxx:     [MMI]       mov.m ar.ccv=r33;;
-< a0000001xxxxxxxx:                 cmpxchg8.acq r34=[r32],r42,ar.ccv
----
-> a0000001xxxxxxxx:                 adds r16=-1,r31
-> a0000001xxxxxxxx:     [MMI]       ld4.acq r14=[r32];;
-> a0000001xxxxxxxx:                 nop.m 0x0
-> a0000001xxxxxxxx:                 sxt4 r34=r14
-> a0000001xxxxxxxx:     [MMI]       nop.m 0x0;;
-> a0000001xxxxxxxx:                 nop.m 0x0
-> a0000001xxxxxxxx:                 add r15=r34,r16
-> a0000001xxxxxxxx:     [MMI]       mov.m ar.ccv=r34;;
-> a0000001xxxxxxxx:                 cmpxchg8.acq r42=[r32],r15,ar.ccv
+Brian J. Murrell
 
-This code is probably from the rwsem_atomic_update(adjustment, sem) macro
-which is cpp'd to atomic64_add_return().  It looks really bad that the new
-code reads a 32-bit value and sign extends it rather than reading a 64-bit
-value (but I'm perplexed as to why this patch provoked this change in the
-generated code).
+--=-6hDJ4LSYiLy6xlCxXo3h
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
--Tony
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGu4Fgl3EQlGLyuXARAqEQAJ4nxpoDt4o6jq8LGhp5gr+fCCGtPQCffrZR
+f8eVNOIhhPrOmV/4QIpIUVo=
+=7hgq
+-----END PGP SIGNATURE-----
+
+--=-6hDJ4LSYiLy6xlCxXo3h--
+
