@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935970AbXHICUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937432AbXHICVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935970AbXHICUR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 22:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756466AbXHICUG
+	id S937432AbXHICVR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 22:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759431AbXHICVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 22:20:06 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:42649 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757095AbXHICUF (ORCPT
+	Wed, 8 Aug 2007 22:21:05 -0400
+Received: from comcast-smtp-01.tampflrdc.rr.com ([65.32.5.158]:59224 "EHLO
+	comcast-smtp-01.tampflrdc.rr.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758896AbXHICVD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 22:20:05 -0400
-Date: Wed, 8 Aug 2007 22:19:35 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jes Sorensen <jes@sgi.com>, Carsten Otte <cotte@de.ibm.com>
-Subject: Re: [PATCH 4/7] Moved the io struct up to the generic lg.h
-In-Reply-To: <20070809115156.ef5fdc6c.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.58.0708082217470.19189@gandalf.stny.rr.com>
-References: <20070809003211.373543702@goodmis.org> <20070809003343.664528532@goodmis.org>
- <20070809115156.ef5fdc6c.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 8 Aug 2007 22:21:03 -0400
+X-Greylist: delayed 2588 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Aug 2007 22:21:03 EDT
+Subject: Kernel / Fliesystem Error
+From: Chris Holvenstot <saltydog@houston.rr.com>
+To: kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 08 Aug 2007 20:39:15 -0500
+Message-Id: <1186623555.6613.17.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I think that I may have spotted a minor bug in the 2.6.23 kernel and its
+relationship with the EXT3 file system.  I apologize in advance if I am
+mistaken, reporting a problem that is already known (I did not spot it
+in Bugzilla) or if I am reporting it to the wrong forum.  I made the
+decision a just a few weeks ago to participate by running my system on
+the newest kernels and this is the first issue I have attempted to
+report.
 
---
-On Thu, 9 Aug 2007, Stephen Rothwell wrote:
+And I know that you have stumble a few times before you get the hang of
+it.
 
-> On Wed, 08 Aug 2007 20:32:15 -0400 Steven Rostedt <rostedt@goodmis.org>
-> wrote:
-> >
-> > diff --git a/drivers/lguest/i386/lg.h b/drivers/lguest/i386/lg.h
-> > index 64f0abe..c5ea14c 100644
-> > --- a/drivers/lguest/i386/lg.h
-> > +++ b/drivers/lguest/i386/lg.h
-> > @@ -20,6 +20,8 @@
-> >  #include <linux/err.h>
-> >  #include <asm/semaphore.h>
-> >  #include "irq_vectors.h"
-> > +/* some files include this, some include the parent */
-> > +#include "../lg.h"
->
-> Surely everything should just include the parent which allows for easier
-> consolidation over time. (as you are doing here)
+I note that on the 2.6.23-rc1, rc2 and rc2-git1 systems that when I boot
+I receive the following message each and every time:
 
-Yeah, that sounds better. This was my attempt at not modifing the
-i386/ stuff too much.  But I can have those files change to do a "../lg.h"
-include.  Again, doing the move plus change to keep things building. Hmm,
-I guess git can handle that.
+/dev/sda1:  Superblock last write time is in the future.  FIXED
 
->
-> > --- a/drivers/lguest/lg.h
-> > +++ b/drivers/lguest/lg.h
-> > @@ -1,3 +1,19 @@
-> > +#ifndef _LGUEST_LG_GENERIC
-> > +#define _LGUEST_LG_GENERIC
->
-> Maybe _LGUEST_LG_H?  and the arch ones could use _LGUEST_I386_LG_H etc.
+This message is repeated once for each hard drive I have (three
+traditional PATA and two of the newer SATA drives)
 
-Noted. Will do in the next release.
+After the message is issued the system seems to run great.
 
-Thanks,
+This DOES NOT happen when I am coming up with a 2.6.22.1 kernel.
 
--- Steve
+
+A thumbnail of my configuration is:
+
+  AMD-64 Dual Core 4600+ on a MSI motherboard
+  2 gig of memory
+  3 PATA hard disks in an integrated nVidia CK804 controller 
+  2 SAS hard disks on an integrated nVidia CK804 controller
+  1 IDE DVD/CD driver
+  2 USB attached DVD/ CD burner
+  nVidia GeForce 7600 PCI video card
+
+Thank you
+
+
+
+
+
