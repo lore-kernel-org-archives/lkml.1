@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935081AbXHIIkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937217AbXHIIrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935081AbXHIIkZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 04:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbXHIIkI
+	id S937217AbXHIIrZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 04:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760378AbXHIIrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 04:40:08 -0400
-Received: from agave.telenet-ops.be ([195.130.137.77]:57338 "EHLO
-	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754665AbXHIIkF (ORCPT
+	Thu, 9 Aug 2007 04:47:13 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:49726 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755781AbXHIIrM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 04:40:05 -0400
-Date: Thu, 9 Aug 2007 10:40:00 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-fbdev-devel@lists.sourceforge.net
-cc: Andi Kleen <ak@suse.de>, akpm@linux-foundation.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       "Antonino A. Daplas" <adaplas@pol.net>, linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] x86_64 EFI boot support: EFI
- frame buffer driver
-In-Reply-To: <1186647633.15539.15.camel@caritas-dev.intel.com>
-Message-ID: <Pine.LNX.4.64.0708091038060.12872@anakin>
-References: <1186647633.15539.15.camel@caritas-dev.intel.com>
+	Thu, 9 Aug 2007 04:47:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=S6vsmeLOHL8qRbwb+KLDPFvRS5pjj3aEFMCraN3E8xyRtohSOjpSNTLSLLBigc1E7qpb4kQy8FR3T5dypkNHIvfOrE7Bdb4FVVJre77TbXbyJ1OqTzRIxLPzkdktWjql9HZ9P2AFijbLZ5vig7kuByMUPd0oupx8SQcxdwyMGuI=
+Message-ID: <b647ffbd0708090147p2b30e6c8g82aeb8880520265b@mail.gmail.com>
+Date: Thu, 9 Aug 2007 10:47:11 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Mitchell Erblich" <erblichs@earthlink.net>
+Subject: Re: Question: sched_rt.c : is RT check needed within a RT func? dequeue_task_rt() calls update_curr_rt() which checks for priority of RR or FIFO :
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <000a01c7da3d$3f946ae0$6501a8c0@earthlink.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <000a01c7da3d$3f946ae0$6501a8c0@earthlink.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, Huang, Ying wrote:
-> Changelog between this version and previous version (v3 of x86_64 EFI
-> support patch).
-> 
-> 1. The include files of efifb.c is cleaned up.
-> 2. Make CONFIG_FB_EFI do not depend on CONFIG_EFI.
+On 09/08/07, Mitchell Erblich <erblichs@earthlink.net> wrote:
+> 1) * Possible wasted stats overhead during dequeue..
+> sched_rt.c:
+> Is RT check needed within a RT func?
+> dequeue_task_rt() calls update_curr_rt()
+> which checks for priority of RR or FIFO.
+> [ ... ]
+> Thus, I think those two lines could be removed.
+>
+> 2) nit....
+> The comment within sched_rt.c
+> ----->   Adding/removing a task to/from a priority array:
+> Is placed before dequeue_task_rt() where
+> enqueue_task_rt() is placed above the comment
+>
 
-BTW, the recommended place to put changelogs (so the tools will strip
-it automatically when importing your patch) is after the first `---' and
-before the diffstat output
+Both suggestions sound good. I guess, a patch would be welcomed  :-)
 
-> ---
 
-Bogus `---' :-)
+>
+> Mitchell Erblich
+>
 
-> This patch adds Graphics Output Protocol support to the kernel.
-> UEFI2.0 spec deprecates Universal Graphics Adapter (UGA) protocol and
-> only Graphics Output Protocol (GOP) is produced. Therefore, the boot
-> loader needs to query the UEFI firmware with appropriate Output
-> Protocol and pass the video information to the kernel. As a result of
-> GOP protocol, an EFI framebuffer driver is needed for displaying
-> console messages. The patch adds a EFI framebuffer driver. The EFI
-> frame buffer driver in this patch is based on the Intel Mac
-> framebuffer driver.
-> 
-> The ELILO bootloader takes care of passing the video information as
-> appropriate for EFI firmware.
-> 
-> The framebuffer driver has been tested in i386 kernel and x86_64
-> kernel on EFI platform.
-> 
-> Signed-off-by: Chandramouli Narayanan <mouli@linux.intel.com>
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> 
-
-Missing `---' ;-)
-
->  drivers/video/Kconfig       |   11 ++
->  drivers/video/Makefile      |    1 
->  drivers/video/efifb.c       |  232 ++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/screen_info.h |    1 
->  4 files changed, 245 insertions(+)
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Best regards,
+Dmitry Adamushko
