@@ -1,41 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbXHISWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761834AbXHISXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761392AbXHISWX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 14:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbXHISWN
+	id S1761834AbXHISXe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 14:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbXHISX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 14:22:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44612 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754350AbXHISWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 14:22:11 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0708091114180.19611@us.intercode.com.au>
-References: <Pine.LNX.4.64.0708091114180.19611@us.intercode.com.au> <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com> <20070809160535.17906.59852.stgit@warthog.cambridge.redhat.com>
-To: James Morris <jmorris@namei.org>
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
-       trond.myklebust@fys.uio.no, linux-fsdevel@vger.kernel.org,
-       linux-cachefs@redhat.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/14] CacheFiles: Permit an inode's security ID to be obtained [try #2]
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Thu, 09 Aug 2007 19:21:21 +0100
-Message-ID: <21381.1186683681@redhat.com>
+	Thu, 9 Aug 2007 14:23:26 -0400
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115]:44447 "EHLO
+	gw01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752567AbXHISXZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 14:23:25 -0400
+Date: Thu, 9 Aug 2007 21:23:16 +0300
+From: Mikko Rapeli <mikko.rapeli@iki.fi>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: early boot lockup with 2.6.23-rc1
+Message-ID: <20070809182316.GA2289@nalle>
+References: <20070808223120.GA2286@nalle> <46BAC14E.9040604@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46BAC14E.9040604@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Morris <jmorris@namei.org> wrote:
+On Thu, Aug 09, 2007 at 12:25:02AM -0700, H. Peter Anvin wrote:
+> It might be an issue with the new setup code.  What happens if you
+> append "vga=ask" to the kernel command line?
 
-> > +	u32 (*inode_get_secid)(struct inode *inode);
-> 
-> To maintain API consistency, please return an int which only acts as an 
-> error code, and returning the secid via a *u32 function parameter.
+I get to choose the vga mode but nothing visible happens after that.
+This seems like regression since even 2.6.23-rc2 from Debian
+experimental (2.6.23~rc2-1~experimental.1~snapshot.9254) hangs the same
+way. I've tried -git's upto 2.6.22-git5 which fails too.
 
-Does that apply to *all* the functions, irrespective of whether or not they
-return an error?
+Which patch included this new setup code?
 
-David
+-Mikko
