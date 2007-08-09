@@ -1,130 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936182AbXHIGhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933819AbXHIGvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936182AbXHIGhr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 02:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760565AbXHIGhj
+	id S933819AbXHIGvZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 02:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbXHIGvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 02:37:39 -0400
-Received: from gw.goop.org ([64.81.55.164]:57440 "EHLO mail.goop.org"
+	Thu, 9 Aug 2007 02:51:16 -0400
+Received: from mx1.suse.de ([195.135.220.2]:45988 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758869AbXHIGhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 02:37:38 -0400
-Message-ID: <46BAB5C8.5090906@goop.org>
-Date: Wed, 08 Aug 2007 23:35:52 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	id S1751029AbXHIGvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 02:51:15 -0400
+From: Neil Brown <neilb@suse.de>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Date: Thu, 9 Aug 2007 16:50:58 +1000
 MIME-Version: 1.0
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, mingo@elte.hu, chrisw@sous-sol.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 25/25] [PATCH] add paravirtualization support for x86_64
-References: <11865467522495-git-send-email-gcosta@redhat.com> <1186546785346-git-send-email-gcosta@redhat.com> <1186546789356-git-send-email-gcosta@redhat.com> <11865467931543-git-send-email-gcosta@redhat.com> <11865467973510-git-send-email-gcosta@redhat.com> <11865468003673-git-send-email-gcosta@redhat.com> <11865468043920-git-send-email-gcosta@redhat.com> <118654680831-git-send-email-gcosta@redhat.com> <11865468122642-git-send-email-gcosta@redhat.com> <11865468162812-git-send-email-gcosta@redhat.com> <1186546820708-git-send-email-gcosta@redhat.com> <11865468243612-git-send-email-gcosta@redhat.com> <11865468281860-git-send-email-gc! osta@redhat.com> <11865468321629-git-send-email-gcosta@redhat.com> <11865468362401-git-send-email-gcosta@redhat.com> <11865468394005-git-send-email-gcosta@redhat.com> <11865468431616-git-send-email-gcosta@redhat.com> <1186546847263-git-send-email-gcosta@redhat.com> <11865468513077-git-send-email-gcosta@redhat.com>
-In-Reply-To: <11865468513077-git-send-email-gcosta@redhat.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18106.47442.440816.650446@notabene.brown>
+Cc: "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] allow mapping from block-device-file to sysfs entry.
+In-Reply-To: message from Kay Sievers on Tuesday August 7
+References: <18104.3098.696484.970773@notabene.brown>
+	<1186468623.2700.4.camel@laptopd505.fenrus.org>
+	<18104.7056.369176.547630@notabene.brown>
+	<3ae72650708070041s52861b7dr484cacf98353a3c6@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber de Oliveira Costa wrote:
-> +static unsigned native_patch(u8 type, u16 clobbers, void *insns, unsigned len)
-> +{
-> +	const unsigned char *start, *end;
-> +	unsigned ret;
-> +
-> +	switch(type) {
-> +#define SITE(x)	case PARAVIRT_PATCH(x):	start = start_##x; end = end_##x; goto patch_site
-> +		SITE(irq_disable);
-> +		SITE(irq_enable);
-> +		SITE(restore_fl);
-> +		SITE(save_fl);
-> +		SITE(iret);
-> +		SITE(sysret);
-> +		SITE(swapgs);
-> +		SITE(read_cr2);
-> +		SITE(read_cr3);
-> +		SITE(write_cr3);
-> +		SITE(clts);
-> +		SITE(flush_tlb_single);
-> +		SITE(wbinvd);
-> +#undef SITE
-> +
-> +	patch_site:
-> +		ret = paravirt_patch_insns(insns, len, start, end);
-> +		break;
-> +
-> +	case PARAVIRT_PATCH(make_pgd):
-> +	case PARAVIRT_PATCH(pgd_val):
-> +	case PARAVIRT_PATCH(make_pte):
-> +	case PARAVIRT_PATCH(pte_val):
-> +	case PARAVIRT_PATCH(make_pmd):
-> +	case PARAVIRT_PATCH(pmd_val):
-> +	case PARAVIRT_PATCH(make_pud):
-> +	case PARAVIRT_PATCH(pud_val):
-> +		/* These functions end up returning what
-> +		   they're passed in the first argument */
->   
+On Tuesday August 7, kay.sievers@vrfy.org wrote:
+> On 8/7/07, Neil Brown <neilb@suse.de> wrote:
+> > On Monday August 6, arjan@infradead.org wrote:
+> > > On Tue, 2007-08-07 at 16:07 +1000, Neil Brown wrote:
+> > > > Suppose that in a program I have an open file descriptor for a device,
+> > > > and I want to find the /sys/block information for this device.
+> > > > There is currently no direct way to do this.  I need to read
+> > > >    /sys/block/*/dev, /sys/block/*/*/dev
+> > > > and match major/minor numbers with the result from fstat.
+> > > >
+> > > > I would like a more direct mechanism.
+> 
+>   $ udevinfo --query=path --name=sda
+>   /block/sda
 
-Is this still true with 64-bit?  Either way, I don't think its worth
-having this here.  The damage to codegen around all those sites has
-already happened, and the additional cost of a noop direct call is
-pretty trivial.  I think this is a nanooptimisation which risks more
-problems than it could possibly be worth.
+If I interpret the result of 'strace' properly, this looks at
+   /dev/.udev/names/sda
+and prints the result after decoding '\x2f' as '/'.
+I want to go from an open file descriptor, or at least an entry in
+/dev.
 
-> +	case PARAVIRT_PATCH(set_pte):
-> +	case PARAVIRT_PATCH(set_pmd):
-> +	case PARAVIRT_PATCH(set_pud):
-> +	case PARAVIRT_PATCH(set_pgd):
-> +		/* These functions end up storing the second
-> +		 * argument in the location pointed by the first */
-> +		ret = paravirt_patch_store_reg(insns, len);
-> +		break;
->   
+And I don't think I want to depend on udev if I can avoid it....
 
-Ditto, really.  Do this in a later patch if it actually seems to help.
+> >
+> > That makes a lot of sense.
+> > So it would return "block/sda/sda1" now,
+> 
+> Every devpath always starts with a '/' in the kernel, its kind of
+> weird, but we should not introduce a new variation of it. :)
 
-> +unsigned paravirt_patch_copy_reg(void *site, unsigned len)
-> +{
-> +	unsigned char *mov = site;
-> +	if (len < 3)
-> +		return len;
-> +
-> +	/* This is mov %rdi, %rax */
-> +	*mov++ = 0x48;
-> +	*mov++ = 0x89;
-> +	*mov   = 0xf8;
-> +	return 3;
-> +}
-> +
-> +unsigned paravirt_patch_store_reg(void *site, unsigned len)
-> +{
-> +	unsigned char *mov = site;
-> +	if (len < 3)
-> +		return len;
-> +
-> +	/* This is mov %rsi, (%rdi) */
-> +	*mov++ = 0x48;
-> +	*mov++ = 0x89;
-> +	*mov   = 0x37;
-> +	return 3;
-> +}
->   
+Fair comment.  So
+       /block/sda/sda1
+now, and whatever later.
 
-These seem excessively special-purpose.  Are their only uses the ones I
-commented on above.
+> 
+> They can be definitely longer than than 256, probably not longer than
+> 512 today, but you can't be sure about that.
 
-> +/*
-> + * integers must be use with care here. They can break the PARAVIRT_PATCH(x)
-> + * macro, that divides the offset in the structure by 8, to get a number
-> + * associated with the hook. Dividing by four would be a solution, but it
-> + * would limit the future growth of the structure if needed.
->   
+I guess we go for PATH_MAX then?
 
-Why not just stick them at the end of the structure?
+Any idea how to get a sysfs path in a generic way?
+I tried:
+		struct inode *inode = filp->f_path.dentry->d_inode;
+		struct kobject *ko = NULL;
+		char *path = NULL;
+		if (S_ISBLK(inode->i_mode) &&
+		    inode->i_bdev &&
+			inode->i_bdev->bd_disk)
+			ko = &inode->i_bdev->bd_disk->kobj;
+		if (S_ISCHR(inode->i_mode) &&
+		    inode->i_cdev)
+			ko = &inode->i_cdev->kobj;
+		if (ko)
+			path = kobject_get_path(ko, GFP_KERNEL);
 
 
-    J
+For /dev/sda, it returns /block/sda which is good.
+For /dev/sda1 it still returns /block/sda which is not good.
+For /dev/null it returns /mem which doesn't even exist in sysfs
+For /dev/tty it doesn't return anything.
 
+I'm tempted to just implement it for block devices and let someone
+else worry about char devices.
+
+Thanks,
+
+NeilBrown
