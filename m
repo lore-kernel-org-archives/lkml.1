@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939974AbXHIOD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939975AbXHIOFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939974AbXHIOD0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935256AbXHIOC4
+	id S939975AbXHIOFL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:05:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936719AbXHIOEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:02:56 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53105 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S939789AbXHIOCy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:02:54 -0400
-Date: Thu, 9 Aug 2007 15:09:42 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-Cc: Valdis.Kletnieks@vt.edu, Jesper Juhl <jesper.juhl@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] UIO: Documentation
-Message-ID: <20070809150942.2663498d@the-village.bc.nu>
-In-Reply-To: <200708091429.35075.hjk@linutronix.de>
-References: <20070718232332.GA4620@kroah.com>
-	<14166.1186611154@turing-police.cc.vt.edu>
-	<20070809004058.6066fcd1@the-village.bc.nu>
-	<200708091429.35075.hjk@linutronix.de>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 9 Aug 2007 10:04:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51325 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932387AbXHIOEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 10:04:52 -0400
+Date: Thu, 9 Aug 2007 10:04:12 -0400
+From: Chris Snook <csnook@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org
+Cc: netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com
+Subject: [PATCH 15/24] make atomic_read() behave consistently on powerpc
+Message-ID: <20070809140412.GA17660@shell.boston.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O> I disagree. UIO is a documented kernel<->userspace interface, like sysfs
-> or proc. Using your argument, we would also have to say that a userspace
-> software that is unusable without sysfs is a derived work of the kernel.
-> But IANAL, tell me if I missed an important point.
+From: Chris Snook <csnook@redhat.com>
 
-It depends how closely the bits are tied. As far as I can ascertain there
-is no simple yes/no answer and whether you can do so depends a great deal
-upon how tightly bound the two are (consider the difference between the
-intel ipw daemon which is integrated very tightly into the old ipw3945
-driver and  a script monitoring CPU temperature via a sysfs file)
+Purify volatile use for atomic[64]_t on powerpc.
 
-> > so the 
-> > documentation is giving poor advice however
-> 
-> I guess you mean this sentence:
-> 
-> "if you need to keep some parts of your driver closed source, you can do so 
-> without violating the GPL license on the kernel."
-> 
-> What would you write instead?
+Signed-off-by: Chris Snook <csnook@redhat.com>
 
-I would simply remove the statement. Leave it to the lawyers.
-
-Alan
+--- linux-2.6.23-rc2-orig/include/asm-powerpc/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-powerpc/atomic.h	2007-08-09 07:15:21.000000000 -0400
+@@ -5,7 +5,7 @@
+  * PowerPC atomic operations
+  */
+ 
+-typedef struct { volatile int counter; } atomic_t;
++typedef struct { int counter; } atomic_t;
+ 
+ #ifdef __KERNEL__
+ #include <linux/compiler.h>
+@@ -15,7 +15,11 @@ typedef struct { volatile int counter; }
+ 
+ #define ATOMIC_INIT(i)		{ (i) }
+ 
+-#define atomic_read(v)		((v)->counter)
++/*
++ * Casting to volatile here minimizes the need for barriers,
++ * without having to declare the type itself as volatile.
++ */
++#define atomic_read(v)		(*(volatile int *)&(v)->counter)
+ #define atomic_set(v,i)		(((v)->counter) = (i))
+ 
+ static __inline__ void atomic_add(int a, atomic_t *v)
+@@ -240,11 +244,11 @@ static __inline__ int atomic_dec_if_posi
+ 
+ #ifdef __powerpc64__
+ 
+-typedef struct { volatile long counter; } atomic64_t;
++typedef struct { long counter; } atomic64_t;
+ 
+ #define ATOMIC64_INIT(i)	{ (i) }
+ 
+-#define atomic64_read(v)	((v)->counter)
++#define atomic64_read(v)	(*(volatile long *)&(v)->counter)
+ #define atomic64_set(v,i)	(((v)->counter) = (i))
+ 
+ static __inline__ void atomic64_add(long a, atomic64_t *v)
