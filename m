@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938890AbXHIIWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938471AbXHIIYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938890AbXHIIWS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 04:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938220AbXHIIVc
+	id S938471AbXHIIYk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 04:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759596AbXHIIYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 04:21:32 -0400
-Received: from mga02.intel.com ([134.134.136.20]:23214 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938096AbXHIIVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 04:21:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,239,1183359600"; 
-   d="scan'208";a="276570389"
-Subject: [PATCH 2/2] x86_64 EFI boot support: EFI boot document
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Andi Kleen <ak@suse.de>, akpm@linux-foundation.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
+	Thu, 9 Aug 2007 04:24:24 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:38167 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758324AbXHIIYX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 04:24:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZVM4YvI0uYYu5y3MEVXdMKmnK9eiOoj5mN2mbtSM5I5nuYMxL8qlt2/ZX+WBd101hLHbwXZopxa1q/i2m0eVhGw9qBOBdBQyV9WxSl6PIUNQp6P9ISYFUGEeir77Uk403pMEwnvzmPQcQRdYiyF6yaKJCTvWkJtAHUzkEpH7prk=
+Message-ID: <b647ffbd0708090124i2671c73g69148244284b2d0c@mail.gmail.com>
+Date: Thu, 9 Aug 2007 10:24:21 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Mitchell Erblich" <erblichs@earthlink.net>
+Subject: Re: Question : sched_rt.c : Loss of stats?? requeue_task_rt() does not call update_curr_rt() which updates stats
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <001001c7da42$8022a7c0$6501a8c0@earthlink.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Thu, 09 Aug 2007 16:20:36 +0800
-Message-Id: <1186647636.15539.16.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 09 Aug 2007 08:20:23.0232 (UTC) FILETIME=[21CEA400:01C7DA5E]
+Content-Disposition: inline
+References: <001001c7da42$8022a7c0$6501a8c0@earthlink.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds document for EFI x86_64 boot support. The setup and
-operation guide of EFI based system is documented in
-Documentation/x86_64/uefi.txt.
+On 09/08/07, Mitchell Erblich <erblichs@earthlink.net> wrote:
+> sched_rt.c : requeue_task_rt()
+>
+> The comment states the problem requeue no dequeue.
+> Put task to the end of the run list without the overhead of dequeue
+> followed by enqueue.
+>
+> dequeue_task_rt() updates stats. Where without calling
+> it will skip the stat update.
+>
+> Thus, shouldn't  requeue_task_rt() call
+>   update_curr_rt(rq); ???
 
-Signed-off-by: Chandramouli Narayanan <mouli@linux.intel.com>
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+No. As update_curr_rt() suggests it's only about collecting runtime
+statistics, namely
+(a) the longest interval of time a given task was consuming a CPU
+(i.e. == 'current') and
+(b) the total amount of time it was running.
 
- uefi.txt |   29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+To this goal, it would be enough to call it only in
+put_prev_task_rt().. I recall, we do it in dequeue_task_rt() to catch
+a case of SCHED_RR/FIFO --> SCHED_NORMAL transition (e.g. in
+sched_setscheduler()).. so that may make accounting a bit less precise
+for (a).
 
-Index: linux-2.6.23-rc2/Documentation/x86_64/uefi.txt
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.23-rc2/Documentation/x86_64/uefi.txt	2007-08-09 09:58:57.000000000 +0800
-@@ -0,0 +1,29 @@
-+General note on [U]EFI x86_64 support
-+-------------------------------------
-+
-+The nomenclature EFI and UEFI are used interchangeably in this document.
-+
-+Although the tools below are _not_ needed for building the kernel,
-+the needed bootloader support and associated tools for x86_64 platforms
-+with EFI firmware and specifications are listed below.
-+
-+1. UEFI specification:  http://www.uefi.org
-+
-+2. Booting Linux kernel on UEFI x86_64 platform requires bootloader
-+   support. Elilo with x86_64 support can be used.
-+
-+3. x86_64 platform with EFI/UEFI firmware.
-+
-+Mechanics:
-+---------
-+- Build the kernel with the following configuration.
-+	CONFIG_FB_EFI=y
-+	CONFIG_FRAMEBUFFER_CONSOLE=y
-+- Create a VFAT partition on the disk
-+- Copy the following to the VFAT partition:
-+	elilo bootloader with x86_64 support, elilo configuration file,
-+	kernel image built in first step and corresponding
-+	initrd. Instructions on building elilo	and its dependencies
-+	can be found in the elilo sourceforge project.
-+- Boot to EFI shell and invoke elilo choosing the kernel image built
-+  in first step.
+
+-- 
+Best regards,
+Dmitry Adamushko
