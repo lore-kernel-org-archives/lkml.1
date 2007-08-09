@@ -1,72 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936578AbXHIOWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940218AbXHIOWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936578AbXHIOWV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965183AbXHIOV7
+	id S940218AbXHIOWy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938773AbXHIOWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:21:59 -0400
-Received: from ipsec.mad.optenet.com ([213.27.232.70]:41417 "EHLO
-	mta-mad.optenet.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S964952AbXHIOV5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:21:57 -0400
-Subject: [PATCH 1/1] af_packet: don't enable timestamps in mmap'ed sockets
-From: Unai Uribarri <unai.uribarri@optenet.com>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Optenet
-Date: Thu, 09 Aug 2007 16:21:54 +0200
-Message-Id: <1186669314.24669.56.camel@localhost.localdomain>
+	Thu, 9 Aug 2007 10:22:39 -0400
+Received: from mx1.wp.pl ([212.77.101.5]:16939 "EHLO mx1.wp.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S938722AbXHIOWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 10:22:38 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Aug 2007 10:22:37 EDT
+Date: Thu, 9 Aug 2007 16:20:06 +0200
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       drfickle@us.ibm.com, mel@csn.ul.ie
+Subject: Re: 2.6.23-rc2-mm1 -- PPC G5 kernel compile failure (patch)
+Message-Id: <20070809162006.00197118.krzysztof.h1@wp.pl>
+In-Reply-To: <20070809130449.GB3091@shadowen.org>
+References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
+	<20070809130449.GB3091@shadowen.org>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
+X-WP-SPAM: NO 0000000                                      
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello folks,
+On Thu, 9 Aug 2007 14:04:49 +0100
+Andy Whitcroft <apw@shadowen.org> wrote:
 
-I've discovered two strange behaviours (bugs?) about timestamp
-generation:
+> Seeing the following compile error on a G5 mac:
+> 
+>   drivers/video/tdfxfb.c: In function 'tdfxfb_setup':
+>   drivers/video/tdfxfb.c:1341: error: 'opt' undeclared (first use in this
+>                                                                  function)
+>   drivers/video/tdfxfb.c:1341: error: (Each undeclared identifier is
+>                                                         reported only once
+>   drivers/video/tdfxfb.c:1341: error: for each function it appears in.)
+> 
+> This seems to be the following fragment from tdfxfb-hardware-cursor:
+> 
+> +               } else if (!strcmp(this_opt, "hwcursor")) {
+> +                       hwcursor = simple_strtoul(opt + 9, NULL, 0);
+> 
+> I guess the nieve fix would be s/opt/this_opt, but I am also
+> suspicious of the +9 here as hwcursor is only 8 long?  Now this
+> seems to take a numeric value and I assume that is via hwcursor=N,
+> if so then the +9 would make sense _if_ the strcmp was against
+> "hwcursor=".
+> 
 
-1. If a program opens an AF_PACKET socket and setup a reception ring
-with setsockopt(sock, SOL_PACKET, PACKET_RX_RING), timestamps are
-automatically (re)enabled at the reception of every packet.
-
-2. Setting SOL_SOCKET/SO_TIMESTAMP to 0 doesn't disables timestamp
-generation. Every skb continues begin timestamped until you close the
-socket that activated it.
-
-
-Timestamp generation is a heavy task that is consuming more than 50% of
-the CPU (using ACPI PM clock) and is currently the bottleneck in my
-packet capturing application.
-
-The attached patch removes the automatic timestamp activation, that
-only mmap'ed AF_PACKET sockets perform. I known it can break user
-applications, but I believe that it's the correct solution.
-
-I will be very pleased to receive any feedback.
-
-Signed-off-by: Unai Uribarri <unai.uribarri@optenet.com>
+The patch below fixes all issues you have pointed out. It also fixes
+the description of the nomtrr option.
 
 ---
 
-diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-index 1322d62..a4f2da3 100644
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -640,10 +640,6 @@ static int tpacket_rcv(struct sk_buff *skb, struct net_device *dev, struct packe
-        h->tp_snaplen = snaplen;
-        h->tp_mac = macoff;
-        h->tp_net = netoff;
--       if (skb->tstamp.tv64 == 0) {
--               __net_timestamp(skb);
--               sock_enable_timestamp(sk);
--       }
-        tv = ktime_to_timeval(skb->tstamp);
-        h->tp_sec = tv.tv_sec;
-        h->tp_usec = tv.tv_usec;
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
+This patch fixes compilation with setup options bug and corrects
+description of the nomtrr option.
 
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
+---
+
+--- linux-2.6.22.new/drivers/video/tdfxfb.c	2007-08-09 16:11:23.870028259 +0200
++++ linux-2.6.23/drivers/video/tdfxfb.c	2007-08-09 16:15:07.654781024 +0200
+@@ -1337,8 +1337,8 @@ static void tdfxfb_setup(char *options)
+ 			nopan = 1;
+ 		} else if (!strcmp(this_opt, "nowrap")) {
+ 			nowrap = 1;
+-		} else if (!strcmp(this_opt, "hwcursor")) {
+-			hwcursor = simple_strtoul(opt + 9, NULL, 0);
++		} else if (!strncmp(this_opt, "hwcursor=", 9)) {
++			hwcursor = simple_strtoul(this_opt + 9, NULL, 0);
+ #ifdef CONFIG_MTRR
+ 		} else if (!strncmp(this_opt, "nomtrr", 6)) {
+ 			nomtrr = 1;
+@@ -1409,7 +1409,7 @@ MODULE_PARM_DESC(hwcursor, "Enable hardw
+ 			"(1=enable, 0=disable, default=1)");
+ #ifdef CONFIG_MTRR
+ module_param(nomtrr, bool, 0);
+-MODULE_PARM_DESC(nomtrr, "Disable MTRR support (0 or 1=disabled) (default=0)");
++MODULE_PARM_DESC(nomtrr, "Disable MTRR support (default: enabled)");
+ #endif
+ 
+ module_init(tdfxfb_init);
