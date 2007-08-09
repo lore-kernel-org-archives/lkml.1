@@ -1,98 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938745AbXHIMXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939061AbXHIMZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938745AbXHIMXH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758447AbXHIMW4
+	id S939061AbXHIMZl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:25:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbXHIMZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 08:22:56 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:46843 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756682AbXHIMWz (ORCPT
+	Thu, 9 Aug 2007 08:25:33 -0400
+Received: from wx-out-0506.google.com ([66.249.82.230]:45291 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756557AbXHIMZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:22:55 -0400
-Date: Thu, 9 Aug 2007 08:21:52 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jes Sorensen <jes@sgi.com>, Carsten Otte <cotte@de.ibm.com>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 5/5 -v2] Move the lguest files that are i386 specific
-In-Reply-To: <20070809154221.2175efd4.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.58.0708090820120.29847@gandalf.stny.rr.com>
-References: <20070809043626.830486783@goodmis.org> <20070809044125.610944971@goodmis.org>
- <20070809154221.2175efd4.sfr@canb.auug.org.au>
+	Thu, 9 Aug 2007 08:25:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=tbC0eh0UUtcGp6G5T5LaQwQvkJJBvZ9H+hqvSH5YZj5wUb5uMovtGnLR3/juFrbnqoQajhThvEg7foSm3l/Q9ZToOxiDXtUKq3BqOeOdLwdwTIVcPDK42weSYyzx/j8UJqZmwUZFJzCKQH5Be6rnx5EdOxEQ+UuGLtQYpMHxK48=
+Message-ID: <e1d5030b0708090525m355cead1hd9342d1e6726c994@mail.gmail.com>
+Date: Thu, 9 Aug 2007 17:55:32 +0530
+From: "Midhun A" <midhunagni@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Question regarding ADS7846 Touchscreen controller
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi All,
 
+    We are running vanilla 2.6.22 linux kernel in i.MX 21 lite kit,
+patched for our board and utilizing the generic touchscreen driver
+drivers/input/touchscreen/ads7846.c for our touch screen. We have
+changed the register values in spi_imx.c for i.MX21. The code seems to
+run but we are not getting correct values for the touchscreen
+positions. The SPI registers always return a value of 4096. We have
+checked for correct clock. But still it does not help.
 
---
-On Thu, 9 Aug 2007, Stephen Rothwell wrote:
-
-> Hi Steven,
->
-> On Thu, 09 Aug 2007 00:36:31 -0400 Steven Rostedt <rostedt@goodmis.org>
-> wrote:
-> >
-> > Well, some may be merged with x86_64 later, but for now we move them
-> > out of the way.  Later on we can start seeing how we can combine
-> > some of these files to be arch generic.
-> >
-> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> > ---
-> >  drivers/lguest/Makefile                    |    7 +-
-> >  drivers/lguest/core.c                      |  771 -------------------
-> >  drivers/lguest/hypercalls.c                |  300 --------
-> >  drivers/lguest/i386/Makefile               |    7 +
-> >  drivers/lguest/i386/core.c                 |  771 +++++++++++++++++++
-> >  drivers/lguest/i386/hypercalls.c           |  300 ++++++++
-> >  drivers/lguest/i386/interrupts_and_traps.c |  440 +++++++++++
-> >  drivers/lguest/i386/lguest.c               | 1097 ++++++++++++++++++++++++++++
-> >  drivers/lguest/i386/lguest_asm.S           |   93 +++
-> >  drivers/lguest/i386/lguest_user.c          |  382 ++++++++++
-> >  drivers/lguest/i386/page_tables.c          |  680 +++++++++++++++++
-> >  drivers/lguest/i386/segments.c             |  229 ++++++
-> >  drivers/lguest/i386/switcher.S             |  347 +++++++++
-> >  drivers/lguest/interrupts_and_traps.c      |  440 -----------
-> >  drivers/lguest/lguest.c                    | 1097 ----------------------------
-> >  drivers/lguest/lguest_asm.S                |   93 ---
-> >  drivers/lguest/lguest_user.c               |  382 ----------
-> >  drivers/lguest/page_tables.c               |  680 -----------------
-> >  drivers/lguest/segments.c                  |  229 ------
-> >  drivers/lguest/switcher.S                  |  347 ---------
-> >  20 files changed, 4348 insertions(+), 4344 deletions(-)
->
-> if you add -C or -M to "git diff --stat" this looks much better:
->
-> $ git diff --stat -C HEAD^
->  drivers/lguest/Makefile                          |    7 ++-----
->  drivers/lguest/i386/Makefile                     |    7 +++++++
->  drivers/lguest/{ => i386}/core.c                 |    0
->  drivers/lguest/{ => i386}/hypercalls.c           |    0
->  drivers/lguest/{ => i386}/interrupts_and_traps.c |    0
->  drivers/lguest/{ => i386}/lguest.c               |    0
->  drivers/lguest/{ => i386}/lguest_asm.S           |    0
->  drivers/lguest/{ => i386}/lguest_user.c          |    0
->  drivers/lguest/{ => i386}/page_tables.c          |    0
->  drivers/lguest/{ => i386}/segments.c             |    0
->  drivers/lguest/{ => i386}/switcher.S             |    0
->  11 files changed, 9 insertions(+), 5 deletions(-)
->
-
-/me should read the man pages.
-
-Thanks, that's the options I was looking for.  I was using the
-git-format-patch, and thought it would do that automatically.  I
-definitely add those options the next time around!
+   Has anybody faced a similar problem before?
 
 Thanks,
-
--- Steve
-
+Midhun.
