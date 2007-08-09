@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938114AbXHIQGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965746AbXHIQHC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938114AbXHIQGf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 12:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934872AbXHIQFv
+	id S965746AbXHIQHC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:07:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940046AbXHIQGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 12:05:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51391 "EHLO mx1.redhat.com"
+	Thu, 9 Aug 2007 12:06:09 -0400
+Received: from gate.crashing.org ([63.228.1.57]:39606 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934528AbXHIQFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 12:05:49 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 05/14] CacheFiles: Add missing copy_page export for ia64 [try
-	#2]
-To: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
-       trond.myklebust@fys.uio.no
-Cc: linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
-Date: Thu, 09 Aug 2007 17:05:04 +0100
-Message-ID: <20070809160504.17906.53618.stgit@warthog.cambridge.redhat.com>
-In-Reply-To: <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com>
-References: <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S940023AbXHIQGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 12:06:06 -0400
+In-Reply-To: <20070809142430.GA19817@shell.boston.redhat.com>
+References: <20070809142430.GA19817@shell.boston.redhat.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <8f6bb8a9e4f2819a161d732bdb6c70c0@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: wjiang@resilience.com, wensong@linux-vs.org, heiko.carstens@de.ibm.com,
+       linux-kernel@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
+       netdev@vger.kernel.org, horms@verge.net.au, akpm@linux-foundation.org,
+       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       schwidefsky@de.ibm.com, davem@davemloft.net, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 24/24] document volatile atomic_read() behavior
+Date: Thu, 9 Aug 2007 17:59:29 +0200
+To: Chris Snook <csnook@redhat.com>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This one-line patch fixes the missing export of copy_page introduced
-by the cachefile patches.  This patch is not yet upstream, but is required
-for cachefile on ia64.  It will be pushed upstream when cachefile goes
-upstream.
+> Historically this has been
+> +accomplished by declaring the counter itself to be volatile, but the
+> +ambiguity of the C standard on the semantics of volatile make this 
+> practice
+> +vulnerable to overly creative interpretation by compilers.
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-Signed-Off-By: David Howells <dhowells@redhat.com>
----
+It's even worse when accessing through a volatile casted pointer;
+see for example the recent(*) GCC bugs in that area.
 
- arch/ia64/kernel/ia64_ksyms.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+(*) Well, not _all_ that recent.  No one should be using the 3.x
+series anymore, right?
 
-diff --git a/arch/ia64/kernel/ia64_ksyms.c b/arch/ia64/kernel/ia64_ksyms.c
-index bd17190..20c3546 100644
---- a/arch/ia64/kernel/ia64_ksyms.c
-+++ b/arch/ia64/kernel/ia64_ksyms.c
-@@ -43,6 +43,7 @@ EXPORT_SYMBOL(__do_clear_user);
- EXPORT_SYMBOL(__strlen_user);
- EXPORT_SYMBOL(__strncpy_from_user);
- EXPORT_SYMBOL(__strnlen_user);
-+EXPORT_SYMBOL(copy_page);
- 
- /* from arch/ia64/lib */
- extern void __divsi3(void);
+> Explicit
+> +casting in atomic_read() ensures consistent behavior across 
+> architectures
+> +and compilers.
+
+Even modulo compiler bugs, what makes you believe that?
+
+
+Segher
 
