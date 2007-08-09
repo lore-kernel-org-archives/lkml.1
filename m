@@ -1,43 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761746AbXHIW1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762240AbXHIW2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761746AbXHIW1R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 18:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbXHIW1D
+	id S1762240AbXHIW2l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 18:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbXHIW2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 18:27:03 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59311 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752945AbXHIW1B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 18:27:01 -0400
-Message-ID: <46BB94B1.9020307@zytor.com>
-Date: Thu, 09 Aug 2007 15:26:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Mikko Rapeli <mikko.rapeli@iki.fi>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: early boot lockup with 2.6.23-rc1
-References: <20070808223120.GA2286@nalle> <46BAC14E.9040604@zytor.com> <20070809182316.GA2289@nalle> <20070809194348.GA2287@nalle>
-In-Reply-To: <20070809194348.GA2287@nalle>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Aug 2007 18:28:34 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:40332 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750736AbXHIW2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 18:28:33 -0400
+Date: Fri, 10 Aug 2007 00:27:35 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Hans-J?rgen Koch <hjk@linutronix.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Documentation files in html format?
+Message-ID: <20070809222735.GB23596@electric-eye.fr.zoreil.com>
+References: <20070809113122.3aa508e4@oldman.hamilton.local> <200708091508.20626.hjk@linutronix.de> <p73hcn8g25m.fsf@bingen.suse.de> <20070809191036.GA23596@electric-eye.fr.zoreil.com> <20070809193031.GB32280@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070809193031.GB32280@one.firstfloor.org>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikko Rapeli wrote:
-> As I could guess from the changelogs, 2.6.22-git2 works and anything
-> after 2.6.22-git3 doesn't.
+Andi Kleen <andi@firstfloor.org> :
+[...]
+> I don't think that is used by Linuxdoc. Try a make pdfdocs and see
+> for yourself.
 
-Okay, here is something to try.  Don't try this unless you haven't
-already tested 2.6.23-rc2, since there is a bug that was fixed in
-2.6.23-rc2 that might be the cause of your problem (you can test that
-easily by specifying edd=skipmbr on the kernel command line.)
+It reminds me of an old PII but it does not really make clear how
+html to pdf conversion would improve the situation.
 
-Anyway, if that doesn't solve it:
-
-In main() in arch/i386/boot/main.c, please comment out everything from
-query_mca() to query_edd(), inclusively.
-
-	-hpa
+-- 
+Ueimor
