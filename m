@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937432AbXHICVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937322AbXHICXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937432AbXHICVR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 22:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759431AbXHICVF
+	id S937322AbXHICXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 22:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760699AbXHICXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 22:21:05 -0400
-Received: from comcast-smtp-01.tampflrdc.rr.com ([65.32.5.158]:59224 "EHLO
-	comcast-smtp-01.tampflrdc.rr.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758896AbXHICVD (ORCPT
+	Wed, 8 Aug 2007 22:23:09 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46841 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759431AbXHICXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 22:21:03 -0400
-X-Greylist: delayed 2588 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Aug 2007 22:21:03 EDT
-Subject: Kernel / Fliesystem Error
-From: Chris Holvenstot <saltydog@houston.rr.com>
-To: kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 08 Aug 2007 20:39:15 -0500
-Message-Id: <1186623555.6613.17.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 8 Aug 2007 22:23:08 -0400
+Message-ID: <46BA7A9E.1090802@cn.fujitsu.com>
+Date: Thu, 09 Aug 2007 11:23:26 +0900
+From: Miao Xie <miaox@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] timer:Remove clockevents_unregister_notifier
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think that I may have spotted a minor bug in the 2.6.23 kernel and its
-relationship with the EXT3 file system.  I apologize in advance if I am
-mistaken, reporting a problem that is already known (I did not spot it
-in Bugzilla) or if I am reporting it to the wrong forum.  I made the
-decision a just a few weeks ago to participate by running my system on
-the newest kernels and this is the first issue I have attempted to
-report.
+Hi everyone,
 
-And I know that you have stumble a few times before you get the hang of
-it.
+   I find a function(clockevents_unregister_notifier) which is not
+called by anything in tree.
 
-I note that on the 2.6.23-rc1, rc2 and rc2-git1 systems that when I boot
-I receive the following message each and every time:
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
 
-/dev/sda1:  Superblock last write time is in the future.  FIXED
+diff -urN linux-2.6.23-rc2.orig/kernel/time/clockevents.c linux-2.6.23-rc2/kernel/time/clockevents.c
+--- linux-2.6.23-rc2.orig/kernel/time/clockevents.c	2007-08-08 13:20:38.000000000 +0800
++++ linux-2.6.23-rc2/kernel/time/clockevents.c	2007-08-08 13:45:31.000000000 +0800
+@@ -113,16 +113,6 @@
+ 	return ret;
+ }
+ 
+-/**
+- * clockevents_unregister_notifier - unregister a clock events change listener
+- */
+-void clockevents_unregister_notifier(struct notifier_block *nb)
+-{
+-	spin_lock(&clockevents_lock);
+-	raw_notifier_chain_unregister(&clockevents_chain, nb);
+-	spin_unlock(&clockevents_lock);
+-}
+-
+ /*
+  * Notify about a clock event change. Called with clockevents_lock
+  * held.
 
-This message is repeated once for each hard drive I have (three
-traditional PATA and two of the newer SATA drives)
-
-After the message is issued the system seems to run great.
-
-This DOES NOT happen when I am coming up with a 2.6.22.1 kernel.
-
-
-A thumbnail of my configuration is:
-
-  AMD-64 Dual Core 4600+ on a MSI motherboard
-  2 gig of memory
-  3 PATA hard disks in an integrated nVidia CK804 controller 
-  2 SAS hard disks on an integrated nVidia CK804 controller
-  1 IDE DVD/CD driver
-  2 USB attached DVD/ CD burner
-  nVidia GeForce 7600 PCI video card
-
-Thank you
-
-
+diff -urN linux-2.6.23-rc2.orig/include/linux/clockchips.h linux-2.6.23-rc2/include/linux/clockchips.h
+--- linux-2.6.23-rc2.orig/include/linux/clockchips.h	2007-08-08 13:20:29.000000000 +0800
++++ linux-2.6.23-rc2/include/linux/clockchips.h	2007-08-08 13:46:06.000000000 +0800
+@@ -123,7 +123,6 @@
+ extern void clockevents_set_mode(struct clock_event_device *dev,
+ 				 enum clock_event_mode mode);
+ extern int clockevents_register_notifier(struct notifier_block *nb);
+-extern void clockevents_unregister_notifier(struct notifier_block *nb);
+ extern int clockevents_program_event(struct clock_event_device *dev,
+ 				     ktime_t expires, ktime_t now);
+ 
 
 
 
