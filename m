@@ -1,35 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbXHIACw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937502AbXHIAEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932071AbXHIACw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 20:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765542AbXHIAC0
+	id S937502AbXHIAEW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 20:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763318AbXHIAEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 20:02:26 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51070 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764251AbXHIACZ (ORCPT
+	Wed, 8 Aug 2007 20:04:15 -0400
+Received: from sour.ops.eusc.inter.net ([84.23.254.154]:54104 "EHLO
+	sour.ops.eusc.inter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757569AbXHIAEO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 20:02:25 -0400
-Date: Wed, 8 Aug 2007 17:02:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mikko Rapeli <mikko.rapeli@iki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: early boot lockup with 2.6.23-rc1
-Message-Id: <20070808170211.4401c019.akpm@linux-foundation.org>
-In-Reply-To: <20070808223120.GA2286@nalle>
-References: <20070808223120.GA2286@nalle>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 8 Aug 2007 20:04:14 -0400
+X-Trace: 4d7c73656261737469616e2e6b6c6f736b6140736e6166752e64657c38352e3137
+	382e39372e36347c3149497656622d3030304d6e712d564b7c3131383636313738
+	3532
+Message-ID: <46BA59FA.7080706@snafu.de>
+Date: Thu, 09 Aug 2007 02:04:10 +0200
+From: Oncaphillis <oncaphillis@snafu.de>
+Reply-To: oncaphillis@snafu.de
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: UART misbehaves under Linkstation/KuroBoxHG
+References: <46B9CE82.1050000@snafu.de> <Pine.LNX.4.60.0708082219520.6767@poirot.grange> <46BA320E.1030608@snafu.de> <Pine.LNX.4.60.0708082323420.6767@poirot.grange> <46BA3DF5.4050201@snafu.de> <Pine.LNX.4.60.0708090041160.6767@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0708090041160.6767@poirot.grange>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007 01:31:20 +0300
-Mikko Rapeli <mikko.rapeli@iki.fi> wrote:
+  Removing the getty from initd did the trick.
 
-> Since 2.6.23-rc1 I can't boot an old k6 (with a funky IDE drive worth testing
-> with libata). The boot hangs without a sound or letter prints on the
-> screen right after grub, while 2.6.22.1 works fine.
+  And you're right AVR is disabled by the kernel
+  found the code in ./arch/powerpc/platforms/embedded6xx/ls_uart.c
 
-Try adding the `earlyprintk=vga' parameter to the kernel command line?
+  Tkank you
+
+
+Guennadi Liakhovetski wrote:
+> On Thu, 9 Aug 2007, Oncaphillis wrote:
+>>   I hope I found the the misconfigured part. I didn't look
+>>   at /etc/inittab. It opens a getty on /dev/ttyS0. That
+>>   might do the trick. Have to recompile my kernel right now with
+>>   standard config to check this out.
+> 
+> Hm, for that you don't have to recompile the kernel... unless you modified 
+> it before, of course. Just change your inittab and reboot.
+> 
+>>   Well ... it doesn't seem to need the daemons but at least
+>>   the kuro_boot  script or something similar has to be executed
+>>   once sending the right init strings to the AVR or your system
+>>   reboots after a few minutes at least on my box.
+> 
+> No, shouldn't be needed either. You should get a string in dmesg like 
+> "linkstation: disarming the AVR watchdog:", and the watchdog should be 
+> off. Just take the original .dts, unmodified kernel sources and close 
+> enough to original (arch/powerpc/configs/linkstation_defconfig) .config 
+> and it should work.
+> 
+> Thanks
+> Guennadi
+> ---
+> Guennadi Liakhovetski
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
