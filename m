@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbXHISOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757469AbXHISR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbXHISOR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 14:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbXHISN7
+	id S1757469AbXHISR0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 14:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbXHISRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 14:13:59 -0400
-Received: from mta-mad.optenet.com ([213.27.232.70]:39573 "EHLO
-	mta-mad.optenet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752377AbXHISN6 (ORCPT
+	Thu, 9 Aug 2007 14:17:12 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:11609 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752677AbXHISRK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 14:13:58 -0400
-Subject: Re: [PATCH 1/1] af_packet: don't enable timestamps in mmap'ed
-	sockets
-From: Unai Uribarri <unai.uribarri@optenet.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070809143322.GA5345@2ka.mipt.ru>
-References: <1186669314.24669.56.camel@localhost.localdomain>
-	 <20070809143322.GA5345@2ka.mipt.ru>
+	Thu, 9 Aug 2007 14:17:10 -0400
+Subject: Re: [PATCH] make atomic_t volatile on all architectures
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Chris Snook <csnook@redhat.com>,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org
+In-Reply-To: <alpine.LFD.0.999.0708091055080.25146@woody.linux-foundation.org>
+References: <20070808230733.GA17270@shell.boston.redhat.com>
+	 <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org>
+	 <46BAC2BE.1090106@redhat.com> <46BB508B.7050601@redhat.com>
+	 <alpine.LFD.0.999.0708091055080.25146@woody.linux-foundation.org>
 Content-Type: text/plain
-Organization: Optenet
-Date: Thu, 09 Aug 2007 20:13:54 +0200
-Message-Id: <1186683234.24669.65.camel@localhost.localdomain>
+Organization: IBM Corporation
+Date: Thu, 09 Aug 2007 20:20:46 +0200
+Message-Id: <1186683646.9669.20.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On jue, 2007-08-09 at 18:33 +0400, Evgeniy Polyakov wrote:
-> On Thu, Aug 09, 2007 at 04:21:54PM +0200, Unai Uribarri (unai.uribarri@optenet.com) wrote:
-> > The attached patch removes the automatic timestamp activation, that
-> > only mmap'ed AF_PACKET sockets perform. I known it can break user
-> > applications, but I believe that it's the correct solution.
+On Thu, 2007-08-09 at 10:55 -0700, Linus Torvalds wrote:
+> > You can use this forget() macro to make the compiler reread a variable:
+> > 
+> > #define forget(var) asm volatile ("" : "=m"(var))
 > 
-> How tcpdump with mmap libpcap will work with it?
+> No. That will also make the compiler "forget" any previous writes to it, 
+> so it changes behaviour.
+> 
+> You'd have to use "+m".
 
-In Linux, you can enable timestamps on any socket executing:
+Yes, though I would use "=m" on the output list and "m" on the input
+list. The reason is that I've seen gcc fall on its face with an ICE on
+s390 due to "+m". The explanation I've got from our compiler people was
+quite esoteric, as far as I remember gcc splits "+m" to an input operand
+and an output operand. Now it can happen that the compiler chooses two
+different registers to access the same memory location. "+m" requires
+that the two memory references are identical which causes the ICE if
+they are not. I do not know if the current compilers still do this. Has
+anyone else seen this happen ?
 
-int val = 1;
-setsockopt(sock, SOL_SOCKET, SO_TIMESTAMP, &val, sizeof(val));
+-- 
+blue skies,
+  Martin.
 
-PD: Current release of tcpdump doesn't mmap the reception ring and
-timestamps packets at user space with gettimeofday. It isn't the best
-performing alternative, but it's portable.
-
+"Reality continues to ruin my life." - Calvin.
 
 
