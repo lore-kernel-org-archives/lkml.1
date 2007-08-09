@@ -1,71 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932549AbXHIVFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932599AbXHIVG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932549AbXHIVFN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 17:05:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932421AbXHIVEx
+	id S932599AbXHIVG3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 17:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbXHIVGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 17:04:53 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:44249 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932420AbXHIVEw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 17:04:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Z78VLqxqWKqhWFrxUP+rvkjIEyrAeKb/pFYH5eAFxYx4sqZAYMKhj3sagTvx+stZMUjdz9hnbUwhx6PVIrktugU6t1GOalGYWNFIsHmg5Q/hjkqoHx/LlDhc0AYL6hYiOdZhUelOX7Tc37tNtitrdaTkqAG52OTAbfMnAxz76KA=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Fix a memory leak in em28xx_usb_probe()
-Date: Thu, 9 Aug 2007 23:02:36 +0200
-User-Agent: KMail/1.9.7
-Cc: Luca Risolia <luca.risolia@studio.unibo.it>,
-       Ludovico Cavedon <cavedon@sssup.it>,
-       Markus Rechberger <mrechberger@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Sascha Sommer <saschasommer@freenet.de>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Greg Kroah-Hartman <greg@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708092302.36705.jesper.juhl@gmail.com>
+	Thu, 9 Aug 2007 17:06:19 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:38843 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755613AbXHIVGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 17:06:18 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Lee.Schermerhorn@hp.com, ak@suse.de, clameter@sgi.com
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Message-Id: <20070809210616.14702.73376.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/4] Use one zonelist per node instead of multiple zonelists v3
+Date: Thu,  9 Aug 2007 22:06:16 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-EHLO,
+Changelog since V2
+  o shrink_zones() uses zonelist instead of zonelist->zones
+  o hugetlb uses zonelist iterator
+  o zone_idx information is embedded in zonelist pointers
+  o replace NODE_DATA(nid)->node_zonelist with node_zonelist(nid)
 
-If, in em28xx_usb_probe() the memory allocation
-	dev->alt_max_pkt_size = kmalloc(32*
-						dev->num_alt,GFP_KERNEL);
-fails, then we'll bail out and return -ENOMEM.
-The problem is that in that case we don't free the storage allocated 
-to 'dev', thus causing a memory leak.
+Changelog since V1
+  o Break up the patch into 3 patches
+  o Introduce iterators for zonelists
+  o Performance regression test
 
-This patch fixes the leak by freeing 'dev' before we return -ENOMEM.
-This fixes Coverity bug #647.
+The following patches replace multiple zonelists per node with one zonelist
+that is filtered based on the GFP flags. The patches as a set fix a bug
+with regard to the use of MPOL_BIND and ZONE_MOVABLE. With this patchset,
+the MPOL_BIND will apply to the two highest zones when the highest zone
+is ZONE_MOVABLE. This should be considered as an alternative fix for the
+MPOL_BIND+ZONE_MOVABLE in 2.6.23 to the previously discussed hack that
+filters only custom zonelists. As a bonus, the patchset reduces the cache
+footprint of the kernel and should improve performance in a number of cases.
 
+The first patch cleans up an inconsitency where direct reclaim uses
+zonelist->zones where other places use zonelist.
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+The second patch replaces multiple zonelists with one zonelist that is
+filtered.
 
- drivers/media/video/em28xx/em28xx-video.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+The final patch is a fix that depends on the previous two patches. The
+patch changes policy zone so that the MPOL_BIND policy gets applied
+to the two highest populated zones when the highest populated zone is
+ZONE_MOVABLE. Otherwise, MPOL_BIND only applies to the highest populated zone.
 
-diff --git a/drivers/media/video/em28xx/em28xx-video.c b/drivers/media/video/em28xx/em28xx-video.c
-index 2c7b158..40307f3 100644
---- a/drivers/media/video/em28xx/em28xx-video.c
-+++ b/drivers/media/video/em28xx/em28xx-video.c
-@@ -1772,6 +1772,7 @@ static int em28xx_usb_probe(struct usb_interface *interface,
- 	if (dev->alt_max_pkt_size == NULL) {
- 		em28xx_errdev("out of memory!\n");
- 		em28xx_devused&=~(1<<nr);
-+		kfree(dev);
- 		return -ENOMEM;
- 	}
- 
+The tests passed regression tests with numactltest. Performance results
+varied depending on the machine configuration but were usually small
+performance gains. The new algorithm relies heavily on the implementation
+of zone_idx which is currently pretty expensive. Experiments to optimise
+this have shown significant improvements for this algorithm, but is beyond
+the scope of this patchset. Due to the nature of the change, the results
+for other people are likely to vary - it'll usually win but occasionally lose.
 
+In real workloads the gain/loss will depend on how much the userspace
+portion of the benchmark benefits from having more cache available due
+to reduced referencing of zonelists. I expect it'll be more noticable on
+x86_64 with many zones than on IA64 which typically would only have one
+active zonelist-per-node.
 
+These are the range of performance losses/gains I found when running against
+2.6.23-rc1-mm2. The set and these machines are a mix of i386, x86_64 and
+ppc64 both NUMA and non-NUMA.
 
+Total CPU time on Kernbench: -0.02% to  0.27%
+Elapsed   time on Kernbench: -0.21% to  1.26%
+page_test from aim9:         -3.41% to  3.90%
+brk_test  from aim9:         -0.20% to 40.94%
+fork_test from aim9:         -0.42% to  4.59%
+exec_test from aim9:         -0.78% to  1.95%
+Size reduction of pg_dat_t:   0     to  7808 bytes (depends on alignment)
+
+The TBench figures were too variable between runs to draw conclusions from but
+there didn't appear to be any regressions there. The hackbench results for both
+sockets and pipes was within noise. I haven't gone though lmbench.
+
+These four patches are a standalone set which address the MPOL_BIND problem
+with ZONE_MOVABLE as well as reducing memory usage and in many cases the
+cache footprint of the kernel.  They should be considered as a bug fix due to
+the MPOL_BIND fixup.
+
+If these patches are accepted, the follow-on work would entail;
+
+o Encode zone_id in the zonelist pointers to avoid zone_idx() (Christoph's idea)
+o If zone_id works out, eliminate z_to_n from the zonelist cache as unnecessary
+o Remove bind_zonelist() (Patch in progress, very messy right now)
+o Eliminate policy_zone (Trickier)
+
+Comments?
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
