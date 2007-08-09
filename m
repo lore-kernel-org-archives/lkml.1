@@ -1,45 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938688AbXHIR0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966188AbXHIR23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938688AbXHIR0Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 13:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758932AbXHIR0I
+	id S966188AbXHIR23 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 13:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760280AbXHIR2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 13:26:08 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37000 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757232AbXHIR0G (ORCPT
+	Thu, 9 Aug 2007 13:28:22 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:4470 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758932AbXHIR2V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 13:26:06 -0400
-Message-ID: <46BB4E26.6010007@zytor.com>
-Date: Thu, 09 Aug 2007 10:25:58 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 9 Aug 2007 13:28:21 -0400
+Date: Thu, 9 Aug 2007 17:36:39 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Olaf Hering <olaf@aepfle.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] include linux/types.h in if_fddi.h
+In-Reply-To: <20070809145511.GA8244@aepfle.de>
+Message-ID: <Pine.LNX.4.64N.0708091654120.3151@blysk.ds.pg.gda.pl>
+References: <20070809145511.GA8244@aepfle.de>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: huang ying <huang.ying.caritas@gmail.com>,
-       Etienne Lorrain <etienne_lorrain@yahoo.fr>,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
-References: <183884.85434.qm@web26915.mail.ukl.yahoo.com> <200708091251.21726.ak@suse.de> <851fc09e0708090709s4f4fbbf9r91a7300a773f985a@mail.gmail.com> <200708091901.11146.ak@suse.de>
-In-Reply-To: <200708091901.11146.ak@suse.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> 
-> Ah i didn't realize this. Ok then kexec is also quite broken.
-> Somehow this must have been missed this fundamental flaw when this code was 
-> reviewed.
-> 
+On Thu, 9 Aug 2007, Olaf Hering wrote:
 
-It wasn't missed.  It was given the "there is no other way" defence, and
-somehow that was considered sufficient.
+> include/linux/if_fddi.h is an exported header.
+> It uses __be16. Include linux/types.h to get this prototype.
 
-Now, one could argue that kexec can just pass the boot_params from the
-previous kernel boot, except there is no way to read them out, and so
-it's not how it actually works.
+ Please note that for userland it does not matter.  With glibc you should 
+include <netinet/if_fddi.h> which does the necessary bits before including 
+<linux/if_fddi.h>.  Any other C library should likely take a similar 
+approach.
 
-	-hpa
+ It still seems right for Linux itself though.
+
+  Maciej
