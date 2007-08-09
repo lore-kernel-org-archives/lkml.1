@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940282AbXHIPIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966184AbXHIPIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940282AbXHIPIU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 11:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935348AbXHIPII
+	id S966184AbXHIPIn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 11:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935348AbXHIPI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 11:08:08 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57960 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S936647AbXHIPIG (ORCPT
+	Thu, 9 Aug 2007 11:08:28 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36822 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S940487AbXHIPI1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 11:08:06 -0400
-Date: Thu, 9 Aug 2007 11:08:03 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jonathan Corbet <corbet@lwn.net>, <Ingo@sc8-sf-spam2-b.sourceforge.net>,
-       <linux-usb-devel@lists.sourceforge.net>,
-       Roman Zippel <zippel@linux-m68k.org>, <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Molnar <mingo@elte.hu>
-Subject: Re: [linux-usb-devel] [PATCH] msleep() with hrtimers
-In-Reply-To: <20070809001640.ec2f3bfb.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.44L0.0708091105150.3559-100000@iolanthe.rowland.org>
+	Thu, 9 Aug 2007 11:08:27 -0400
+Message-ID: <46BB2DBB.7050404@sgi.com>
+Date: Thu, 09 Aug 2007 17:07:39 +0200
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, lguest <lguest@ozlabs.org>
+Subject: [patch] lguest files should explicitly include asm/paravirt.h
+Content-Type: multipart/mixed;
+ boundary="------------030904080000030604070900"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, Andrew Morton wrote:
+This is a multi-part message in MIME format.
+--------------030904080000030604070900
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> This failed the Vaio test.  I guess it triggered a USB bug.
-> 
-> With this patch applied, when I hotplug my wireless mouse, the little LED
-> on the mouse comes on for a second or so then goes out and no pointy clicky
-> for me.
-> 
-> It says:
-> 
-> [  152.481522] usb 1-1: new low speed USB device using uhci_hcd and address 2
-> 
-> 
-> Without this patch applied, I get
-> 
-> [  195.935445] usb 2-1: new low speed USB device using uhci_hcd and address 2
-> [  196.116183] usb 2-1: configuration #1 chosen from 1 choice
-> [  196.198362] input: Microsoft Microsoft Wireless Optical Mouse 1.00 as /class/input/input7
-> [  196.223724] input: USB HID v1.11 Mouse [Microsoft Microsoft Wireless Optical Mouse 1.00] on usb-0000:00:1d.1-1
-> [  196.224570] usb 2-1: new device found, idVendor=045e, idProduct=00e1
-> [  196.224579] usb 2-1: new device strings: Mfr=1, Product=2, SerialNumber=0
-> [  196.224585] usb 2-1: Product: Microsoft Wireless Optical Mouse 1.00
-> [  196.224590] usb 2-1: Manufacturer: Microsoft
-> 
-> and lots of pointy clickiness.
-> 
-> I would assume that there is some msleep() in USB which is too short, and
-> the present wild rounding-up which msleep() does covered up the
-> incorrectly-chosen sleep duration.
-> 
-> I'm using HZ=250 (http://userweb.kernel.org/~akpm/config-sony.txt) and it
-> could well be that the mouse would fail just by going to HZ=1000, but I
-> didn't bother testing that.
-> 
-> Could one of the USB developers please suggest which msleep()(s) I should
-> start looking at?
+Hi,
 
-It could be one of the calls in drivers/usb/core/hub.c, however almost 
-all of them are at least 10 ms already.  There's a 0-ms msleep near the 
-start of hub_port_wait_reset() which might cause problems.
+This one makes a few lguest related files that rely on paravirt_ops
+include paravirt.h explicitly. Should be harmless :)
 
-It will be easier to pin down the culprit if you turn on 
-CONFIG_USB_DEBUG.
+Jes
 
-Alan Stern
 
+--------------030904080000030604070900
+Content-Type: text/plain;
+ name="paravirt-include.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="paravirt-include.diff"
+
+Files using bits from paravirt.h should explicitly include it rather than
+relying on it being pulled in by something else.
+
+Signed-off-by: Jes Sorensen <jes@sgi.com>
+
+---
+ drivers/char/hvc_lguest.c   |    1 +
+ drivers/lguest/lguest_bus.c |    1 +
+ 2 files changed, 2 insertions(+)
+
+Index: linux-2.6-lguest/drivers/char/hvc_lguest.c
+===================================================================
+--- linux-2.6-lguest.orig/drivers/char/hvc_lguest.c
++++ linux-2.6-lguest/drivers/char/hvc_lguest.c
+@@ -35,6 +35,7 @@
+ #include <linux/err.h>
+ #include <linux/init.h>
+ #include <linux/lguest_bus.h>
++#include <asm/paravirt.h>
+ #include "hvc_console.h"
+ 
+ /*D:340 This is our single console input buffer, with associated "struct
+Index: linux-2.6-lguest/drivers/lguest/lguest_bus.c
+===================================================================
+--- linux-2.6-lguest.orig/drivers/lguest/lguest_bus.c
++++ linux-2.6-lguest/drivers/lguest/lguest_bus.c
+@@ -5,6 +5,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/lguest_bus.h>
+ #include <asm/io.h>
++#include <asm/paravirt.h>
+ 
+ static ssize_t type_show(struct device *_dev,
+                          struct device_attribute *attr, char *buf)
+
+--------------030904080000030604070900--
