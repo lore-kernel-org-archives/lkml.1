@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbXHIJqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938252AbXHIJr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932812AbXHIJqt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 05:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbXHIJqg
+	id S938252AbXHIJr2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 05:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764365AbXHIJrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 05:46:36 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:59050 "EHLO
-	outbound9-dub-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756629AbXHIJqf (ORCPT
+	Thu, 9 Aug 2007 05:47:16 -0400
+Received: from web26915.mail.ukl.yahoo.com ([217.146.177.82]:32993 "HELO
+	web26915.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1764363AbXHIJrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 05:46:35 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
-X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
-From: "Joachim Deguara" <joachim.deguara@amd.com>
-Organization: AMD
-To: "Frank Hale" <frankhale@gmail.com>
-Subject: Re: ACPI on Averatec 2370
-Date: Thu, 9 Aug 2007 11:45:44 +0200
-User-Agent: KMail/1.9.7
-cc: "Andi Kleen" <andi@firstfloor.org>, "Cal Peake" <cp@absolutedigital.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Gabriel C" <nix.or.die@googlemail.com>,
-       "Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel ACPI Mailing List" <linux-acpi@vger.kernel.org>,
-       len.brown@intel.com, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
- <200708081642.00581.joachim.deguara@amd.com>
- <5ebbd9b50708081652h55c85f9avab4500391c6b7ee0@mail.gmail.com>
-In-Reply-To: <5ebbd9b50708081652h55c85f9avab4500391c6b7ee0@mail.gmail.com>
+	Thu, 9 Aug 2007 05:47:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=kFUfpMvyegzdTfo6gsjXZmYctItYVGzEyZm6C0WoBZE8VYdFGHEDGYg/WwAtPIfxK72bVRbd6E8MziUAblIr8jdU1rWd9qrxIzz98v0Wkvt29OQtziZZVj6jWh9EAGdetHl2YBMrLvj2unh1RXY+18ES7A+oiusr4ekgtLmQF8A=;
+X-YMail-OSG: 8D6Ff2oVM1lbCxJ0ezV11NCSE.IINYV5gc62jeHZXJiroAAvS2xI8S8NakGj77rFmPJJng--
+Date: Thu, 9 Aug 2007 11:47:14 +0200 (CEST)
+From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
+To: linux-kernel@vger.kernel.org
+Cc: ebiederm@xmission.com, ak@suse.de
 MIME-Version: 1.0
-Message-ID: <200708091145.46500.joachim.deguara@amd.com>
-X-OriginalArrivalTime: 09 Aug 2007 09:45:49.0470 (UTC)
- FILETIME=[11487BE0:01C7DA6A]
-X-WSS-ID: 6AA43DDA7CS4744758-01-01
-Content-Type: text/plain;
- charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <183884.85434.qm@web26915.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 August 2007 01:52:37 Frank Hale wrote:
-> I have the latest BIOS update for my laptop which is buggy I suppose.
-> There has been only one update this year if my memory serves me
-> correctly. Is there any hope to fix this or am I at the mercy of the
-> hardware vendor which apparenlty doesn't look like they will release
-> another patch this year. 
+Eric W Biederman wrote:
+> >> This is the classic skip the 16bit code and enter the kernel
+> >> in 32bit mode filling in the fields that the 16bit mode code would
+> >> have filled in the same way approach.
+> > ......
+> >
+> > For in tree code it can be just updated. But weirdo-EFI-boot loader
+> > cannot.
+>
+> So far the logic has been.
+>
+> Inspect bzImage.  And get boot protocol version.
+> If field we need for returning data is not supported do not give
+> data.  Or something like that.  Usually the fields always exist
+> and you can just fill them in and we only append to the boot
+> protocol structure.
+>
+> In practice this has been working for the last 7 years or so,
+> for EFI, and LinuxBIOS, and kexec, and Gujin and I don't remember what
+> else.
 
-You can fix this with the kernel parameter nolapic_timer as Cal reported 
-earlier that working right, or try Andi's patch to automagically mark the 
-lapic as bad.  This should work fine with ACPI.
-The BIOS is at fault but Andi's patch just works around the BIOS' 
-incompleteness and has been successful for two other people.
+ Note that Gujin has a simple problem by using that 32 bits entry point:
+there is no way to detect if the bzImage is compiled for 32 bits or 64 bits,
+and Linux-real-mode calls a BIOS service for 64 bits only (to tell the BIOS you
+are going to 64 bits - interrupt not really documented).
+ Gujin can now be set to start at the 16 bits entry point, and load ELF32/ELF64
+where you now the target word size, but the 32 bits entry point will "forget"
+to call that service if the Linux kernel is 64 bits.
+ The 32 bits entry point can still be used (-p parameter of tiny.exe) because
+there seems to be a problem using the 16 bits entry point under DOS, at least
+the old assembly version of the code - no more details known.
 
--Joachim
+ Etienne.
 
 
-
-
+      _____________________________________________________________________________ 
+Ne gardez plus qu'une seule adresse mail ! Copiez vos mails vers Yahoo! Mail 
