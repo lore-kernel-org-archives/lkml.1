@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936659AbXHIQhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939745AbXHIQi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936659AbXHIQhg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 12:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761060AbXHIQh0
+	id S939745AbXHIQi1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765949AbXHIQiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 12:37:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36545 "EHLO mx1.redhat.com"
+	Thu, 9 Aug 2007 12:38:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36798 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758014AbXHIQhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 12:37:24 -0400
+	id S1761060AbXHIQiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 12:38:09 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 09/14] CacheFiles: Permit a process's create SID to be
-	overridden [try #2]
+Subject: [PATCH 06/14] CacheFiles: Add a hook to write a single page of data
+	to an inode [try #2]
 To: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
        trond.myklebust@fys.uio.no
 Cc: linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
        nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
-Date: Thu, 09 Aug 2007 17:05:25 +0100
-Message-ID: <20070809160525.17906.35400.stgit@warthog.cambridge.redhat.com>
+Date: Thu, 09 Aug 2007 17:05:10 +0100
+Message-ID: <20070809160509.17906.37422.stgit@warthog.cambridge.redhat.com>
 In-Reply-To: <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com>
 References: <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com>
 User-Agent: StGIT/0.13
@@ -31,160 +31,205 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make it possible for a process's file creation SID to be temporarily overridden
-by CacheFiles so that files created in the cache have the right label attached.
+Add an address space operation to write one single page of data to an inode at
+a page-aligned location (thus permitting the implementation to be highly
+optimised).
 
-Without this facility, files created in the cache will be given the current
-file creation SID of whatever process happens to have invoked CacheFiles
-indirectly by means of opening a netfs file at the time the cache file is
-created.
+This is used by CacheFiles to store the contents of netfs pages into their
+backing file pages.
+
+Supply a generic implementation for this that uses the prepare_write() and
+commit_write() address_space operations to bound a copy directly into the page
+cache.
+
+Hook the Ext2 and Ext3 operations to the generic implementation.
 
 Signed-Off-By: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/security.h |   35 +++++++++++++++++++++++++++++++++++
- security/dummy.c         |   12 ++++++++++++
- security/selinux/hooks.c |   18 ++++++++++++++++++
- 3 files changed, 65 insertions(+), 0 deletions(-)
+ fs/ext2/inode.c    |    2 +
+ fs/ext3/inode.c    |    3 ++
+ include/linux/fs.h |    7 ++++
+ mm/filemap.c       |   95 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 107 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index c11dc8a..92d3da0 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -1147,6 +1147,13 @@ struct request_sock;
-  *	@secdata contains the security context.
-  *	@seclen contains the length of the security context.
-  *
-+ * @get_fscreate_secid:
-+ *	Get the current FS security ID.
+diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
+index 0079b2c..b3e4b50 100644
+--- a/fs/ext2/inode.c
++++ b/fs/ext2/inode.c
+@@ -695,6 +695,7 @@ const struct address_space_operations ext2_aops = {
+ 	.direct_IO		= ext2_direct_IO,
+ 	.writepages		= ext2_writepages,
+ 	.migratepage		= buffer_migrate_page,
++	.write_one_page		= generic_file_buffered_write_one_page,
+ };
+ 
+ const struct address_space_operations ext2_aops_xip = {
+@@ -713,6 +714,7 @@ const struct address_space_operations ext2_nobh_aops = {
+ 	.direct_IO		= ext2_direct_IO,
+ 	.writepages		= ext2_writepages,
+ 	.migratepage		= buffer_migrate_page,
++	.write_one_page		= generic_file_buffered_write_one_page,
+ };
+ 
+ /*
+diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+index de4e316..93809eb 100644
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -1713,6 +1713,7 @@ static const struct address_space_operations ext3_ordered_aops = {
+ 	.releasepage	= ext3_releasepage,
+ 	.direct_IO	= ext3_direct_IO,
+ 	.migratepage	= buffer_migrate_page,
++	.write_one_page	= generic_file_buffered_write_one_page,
+ };
+ 
+ static const struct address_space_operations ext3_writeback_aops = {
+@@ -1727,6 +1728,7 @@ static const struct address_space_operations ext3_writeback_aops = {
+ 	.releasepage	= ext3_releasepage,
+ 	.direct_IO	= ext3_direct_IO,
+ 	.migratepage	= buffer_migrate_page,
++	.write_one_page	= generic_file_buffered_write_one_page,
+ };
+ 
+ static const struct address_space_operations ext3_journalled_aops = {
+@@ -1740,6 +1742,7 @@ static const struct address_space_operations ext3_journalled_aops = {
+ 	.bmap		= ext3_bmap,
+ 	.invalidatepage	= ext3_invalidatepage,
+ 	.releasepage	= ext3_releasepage,
++	.write_one_page	= generic_file_buffered_write_one_page,
+ };
+ 
+ void ext3_set_aops(struct inode *inode)
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 6bf1395..1b1f288 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -433,6 +433,11 @@ struct address_space_operations {
+ 	int (*migratepage) (struct address_space *,
+ 			struct page *, struct page *);
+ 	int (*launder_page) (struct page *);
++	/* write the contents of the source page over the page at the specified
++	 * index in the target address space (the source page does not need to
++	 * be related to the target address space) */
++	int (*write_one_page)(struct address_space *, pgoff_t, struct page *);
++
+ };
+ 
+ struct backing_dev_info;
+@@ -1669,6 +1674,8 @@ extern ssize_t generic_file_direct_write(struct kiocb *, const struct iovec *,
+ 		unsigned long *, loff_t, loff_t *, size_t, size_t);
+ extern ssize_t generic_file_buffered_write(struct kiocb *, const struct iovec *,
+ 		unsigned long, loff_t, loff_t *, size_t, ssize_t);
++extern int generic_file_buffered_write_one_page(struct address_space *,
++						pgoff_t, struct page *);
+ extern ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos);
+ extern ssize_t do_sync_write(struct file *filp, const char __user *buf, size_t len, loff_t *ppos);
+ extern void do_generic_mapping_read(struct address_space *mapping,
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 7b96487..5e419a2 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -2032,6 +2032,101 @@ zero_length_segment:
+ }
+ EXPORT_SYMBOL(generic_file_buffered_write);
+ 
++/**
++ * generic_file_buffered_write_one_page - Write a single page of data to an
++ *	inode
++ * @mapping - The address space of the target inode
++ * @index - The target page in the target inode to fill
++ * @source - The data to write into the target page
 + *
-+ * @set_fscreate_secid:
-+ *	Set the current FS security ID.
-+ *	@secid contains the security ID to set.
++ * Write the data from the source page to the page in the nominated address
++ * space at the @index specified.  Note that the file will not be extended if
++ * the page crosses the EOF marker, in which case only the first part of the
++ * page will be written.
 + *
-  * This is the main security structure.
-  */
- struct security_operations {
-@@ -1330,6 +1337,8 @@ struct security_operations {
-  	int (*setprocattr)(struct task_struct *p, char *name, void *value, size_t size);
- 	int (*secid_to_secctx)(u32 secid, char **secdata, u32 *seclen);
- 	void (*release_secctx)(char *secdata, u32 seclen);
-+	u32 (*get_fscreate_secid)(void);
-+	u32 (*set_fscreate_secid)(u32 secid);
- 
- #ifdef CONFIG_SECURITY_NETWORK
- 	int (*unix_stream_connect) (struct socket * sock,
-@@ -2127,6 +2136,16 @@ static inline void security_release_secctx(char *secdata, u32 seclen)
- 	return security_ops->release_secctx(secdata, seclen);
- }
- 
-+static inline u32 security_get_fscreate_secid(void)
++ * The @source page does not need to have any association with the file or the
++ * target page offset.
++ */
++int generic_file_buffered_write_one_page(struct address_space *mapping,
++					 pgoff_t index,
++					 struct page *source)
 +{
-+	return security_ops->get_fscreate_secid();
++	const struct address_space_operations *a_ops = mapping->a_ops;
++	struct pagevec	lru_pvec;
++	struct page *page, *cached_page = NULL;
++	unsigned psize;
++	loff_t isize;
++	long status = 0;
++
++	pagevec_init(&lru_pvec, 0);
++
++	page = __grab_cache_page(mapping, index, &cached_page, &lru_pvec);
++	if (!page) {
++		BUG_ON(cached_page);
++		return -ENOMEM;
++	}
++
++	psize = PAGE_CACHE_SIZE;
++	isize = i_size_read(mapping->host);
++	if ((isize >> PAGE_SHIFT) == index)
++		psize = isize & (PAGE_SIZE - 1);
++
++	status = a_ops->prepare_write(NULL, page, 0, psize);
++	if (unlikely(status)) {
++		isize = i_size_read(mapping->host);
++
++		if (status != AOP_TRUNCATED_PAGE)
++			unlock_page(page);
++		page_cache_release(page);
++		if (status == AOP_TRUNCATED_PAGE)
++			goto sync;
++
++		/* prepare_write() may have instantiated a few blocks outside
++		 * i_size.  Trim these off again.
++		 */
++		if ((1ULL << (index + 1)) > isize)
++			vmtruncate(mapping->host, isize);
++		goto sync;
++	}
++
++	copy_highpage(page, source);
++	flush_dcache_page(page);
++
++	status = a_ops->commit_write(NULL, page, 0, psize);
++	if (status == AOP_TRUNCATED_PAGE) {
++		page_cache_release(page);
++		goto sync;
++	}
++
++	if (status > 0)
++		status = 0;
++
++	unlock_page(page);
++	mark_page_accessed(page);
++	page_cache_release(page);
++	if (status < 0)
++		return status;
++
++	balance_dirty_pages_ratelimited(mapping);
++	cond_resched();
++
++sync:
++	if (cached_page)
++		page_cache_release(cached_page);
++
++	/* the caller must handle O_SYNC themselves, but we handle S_SYNC and
++	 * MS_SYNCHRONOUS here */
++	if (unlikely(IS_SYNC(mapping->host)) && !a_ops->writepage)
++		status = generic_osync_inode(mapping->host, mapping,
++					     OSYNC_METADATA | OSYNC_DATA);
++
++	/* the caller must handle O_DIRECT for themselves */
++
++	pagevec_lru_add(&lru_pvec);
++	return status;
 +}
++EXPORT_SYMBOL(generic_file_buffered_write_one_page);
 +
-+static inline u32 security_set_fscreate_secid(u32 secid)
-+{
-+	return security_ops->set_fscreate_secid(secid);
-+}
-+
- /* prototypes */
- extern int security_init	(void);
- extern int register_security	(struct security_operations *ops);
-@@ -2795,6 +2814,11 @@ static inline void securityfs_remove(struct dentry *dentry)
- {
- }
- 
-+static inline int security_to_secctx_secid(char *secdata, u32 seclen, u32 *secid)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
- static inline int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
- {
- 	return -EOPNOTSUPP;
-@@ -2803,6 +2827,17 @@ static inline int security_secid_to_secctx(u32 secid, char **secdata, u32 *secle
- static inline void security_release_secctx(char *secdata, u32 seclen)
- {
- }
-+
-+static inline u32 security_get_fscreate_secid(void)
-+{
-+	return 0;
-+}
-+
-+static inline u32 security_set_fscreate_secid(u32 secid)
-+{
-+	return 0;
-+}
-+
- #endif	/* CONFIG_SECURITY */
- 
- #ifdef CONFIG_SECURITY_NETWORK
-diff --git a/security/dummy.c b/security/dummy.c
-index 19d813d..d463e6f 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -930,6 +930,16 @@ static void dummy_release_secctx(char *secdata, u32 seclen)
- {
- }
- 
-+static u32 dummy_get_fscreate_secid(void)
-+{
-+	return 0;
-+}
-+
-+static u32 dummy_set_fscreate_secid(u32 secid)
-+{
-+	return 0;
-+}
-+
- #ifdef CONFIG_KEYS
- static inline int dummy_key_alloc(struct key *key, struct task_struct *ctx,
- 				  unsigned long flags)
-@@ -1084,6 +1094,8 @@ void security_fixup_ops (struct security_operations *ops)
-  	set_to_dummy_if_null(ops, setprocattr);
-  	set_to_dummy_if_null(ops, secid_to_secctx);
-  	set_to_dummy_if_null(ops, release_secctx);
-+ 	set_to_dummy_if_null(ops, get_fscreate_secid);
-+ 	set_to_dummy_if_null(ops, set_fscreate_secid);
- #ifdef CONFIG_SECURITY_NETWORK
- 	set_to_dummy_if_null(ops, unix_stream_connect);
- 	set_to_dummy_if_null(ops, unix_may_send);
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 6237933..c5905b0 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -4661,6 +4661,22 @@ static void selinux_release_secctx(char *secdata, u32 seclen)
- 	kfree(secdata);
- }
- 
-+static u32 selinux_get_fscreate_secid(void)
-+{
-+	struct task_security_struct *tsec = current->security;
-+
-+	return tsec->create_sid;
-+}
-+
-+static u32 selinux_set_fscreate_secid(u32 secid)
-+{
-+	struct task_security_struct *tsec = current->security;
-+	u32 oldsid = tsec->create_sid;
-+
-+	tsec->create_sid = secid;
-+	return oldsid;
-+}
-+
- #ifdef CONFIG_KEYS
- 
- static int selinux_key_alloc(struct key *k, struct task_struct *tsk,
-@@ -4843,6 +4859,8 @@ static struct security_operations selinux_ops = {
- 
- 	.secid_to_secctx =		selinux_secid_to_secctx,
- 	.release_secctx =		selinux_release_secctx,
-+	.get_fscreate_secid =		selinux_get_fscreate_secid,
-+	.set_fscreate_secid =		selinux_set_fscreate_secid,
- 
-         .unix_stream_connect =		selinux_socket_unix_stream_connect,
- 	.unix_may_send =		selinux_socket_unix_may_send,
+ static ssize_t
+ __generic_file_aio_write_nolock(struct kiocb *iocb, const struct iovec *iov,
+ 				unsigned long nr_segs, loff_t *ppos)
 
