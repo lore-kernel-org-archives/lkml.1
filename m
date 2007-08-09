@@ -1,2557 +1,1430 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762596AbXHISYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760360AbXHISZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762596AbXHISYZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 14:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbXHISYO
+	id S1760360AbXHISZJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 14:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbXHISYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 14:24:14 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:31607 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752775AbXHISYI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 14:24:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=H3flOT+Xxx/EpqqSl7t3EF7E+KBIDIeCK9Sbl3q4zvWD13H2FRT2m8wva5roT2WI4XAddusHhWdHkPgkYuFj5g13ka4gnYNJH4Rsb14Yut8oUjbBG0iojdQj1bCwfbEWqSY/6p+YJFaxmCyC+TEYtf7S16maQ3grz/WxeJ42R9Q=
-Message-ID: <a44ae5cd0708091124l243e8f16ma8df64257c20be51@mail.gmail.com>
-Date: Thu, 9 Aug 2007 14:24:04 -0400
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: =?WINDOWS-1252?Q?Re:_2.6.23-rc2-mm1_--_drivers/dma/ioat=5Fdca.c:177:_err?= =?WINDOWS-1252?Q?or:_implicit_declaration_of?= =?WINDOWS-1252?Q?_function_=91cpu=5Fphysical=5Fid=92?=
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070809143238.GA16717@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 9 Aug 2007 14:24:50 -0400
+Received: from pat.uio.no ([129.240.10.15]:55191 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753261AbXHISYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 14:24:46 -0400
+Subject: Re: [PATCH 14/14] NFS: Use local caching [try #2]
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070809160550.17906.40862.stgit@warthog.cambridge.redhat.com>
+References: <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com>
+	 <20070809160550.17906.40862.stgit@warthog.cambridge.redhat.com>
+Content-Type: text/plain
+Date: Thu, 09 Aug 2007 14:24:29 -0400
+Message-Id: <1186683869.6699.136.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a44ae5cd0708090718v5dc19572k69087f170f9ba857@mail.gmail.com>
-	 <20070809143238.GA16717@stusta.de>
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.0, required=12.0, autolearn=disabled, AWL=-0.045)
+X-UiO-Scanned: B9E653DDD61FA15DAD1A16118417B11654DBA96C
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 185 total 3174316 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/9/07, Adrian Bunk <bunk@kernel.org> wrote:
-> On Thu, Aug 09, 2007 at 10:18:15AM -0400, Miles Lane wrote:
-> >   CC      drivers/dma/ioat_dca.o
-> > drivers/dma/ioat_dca.c: In function 'ioat_dca_get_tag':
-> > drivers/dma/ioat_dca.c:177: error: implicit declaration of function
-> > 'cpu_physical_id'
-> > make[2]: *** [drivers/dma/ioat_dca.o] Error 1
->
-> -ENODOTCONFIG
+Dang, that's a lot of inlines... AFAICS, approx half of fs/nfs/fscache.h
+should really be moved into fscache.c.
+
+Otherwise, this looks a lot less intrusive than previous patches.
+
+See inlined comments.
+
+On Thu, 2007-08-09 at 17:05 +0100, David Howells wrote:
+> The attached patch makes it possible for the NFS filesystem to make use of the
+> network filesystem local caching service (FS-Cache).
+> 
+> To be able to use this, an updated mount program is required.  This can be
+> obtained from:
+> 
+> 	http://people.redhat.com/steved/cachefs/util-linux/
+> 
+> To mount an NFS filesystem to use caching, add an "fsc" option to the mount:
+> 
+> 	mount warthog:/ /a -o fsc
+> 
+> Signed-Off-By: David Howells <dhowells@redhat.com>
+> ---
+> 
+>  fs/Kconfig                 |    8 +
+>  fs/nfs/Makefile            |    1 
+>  fs/nfs/client.c            |   11 +
+>  fs/nfs/file.c              |   38 +++-
+>  fs/nfs/fscache.c           |  303 +++++++++++++++++++++++++++++
+>  fs/nfs/fscache.h           |  464 ++++++++++++++++++++++++++++++++++++++++++++
+>  fs/nfs/inode.c             |   16 ++
+>  fs/nfs/internal.h          |    8 +
+>  fs/nfs/read.c              |   27 ++-
+>  fs/nfs/super.c             |    1 
+>  fs/nfs/sysctl.c            |   43 ++++
+>  fs/nfs/write.c             |    3 
+>  include/linux/nfs4_mount.h |    3 
+>  include/linux/nfs_fs.h     |    6 +
+>  include/linux/nfs_fs_sb.h  |    5 
+>  include/linux/nfs_mount.h  |    3 
+>  16 files changed, 931 insertions(+), 9 deletions(-)
+> 
+> diff --git a/fs/Kconfig b/fs/Kconfig
+> index 7feb4cb..76d5d16 100644
+> --- a/fs/Kconfig
+> +++ b/fs/Kconfig
+> @@ -1600,6 +1600,14 @@ config NFS_V4
+>  
+>  	  If unsure, say N.
+>  
+> +config NFS_FSCACHE
+> +	bool "Provide NFS client caching support (EXPERIMENTAL)"
+> +	depends on EXPERIMENTAL
+> +	depends on NFS_FS=m && FSCACHE || NFS_FS=y && FSCACHE=y
+> +	help
+> +	  Say Y here if you want NFS data to be cached locally on disc through
+> +	  the general filesystem cache manager
+> +
+>  config NFS_DIRECTIO
+>  	bool "Allow direct I/O on NFS files"
+>  	depends on NFS_FS
+> diff --git a/fs/nfs/Makefile b/fs/nfs/Makefile
+> index b55cb23..c9e7c43 100644
+> --- a/fs/nfs/Makefile
+> +++ b/fs/nfs/Makefile
+> @@ -16,4 +16,5 @@ nfs-$(CONFIG_NFS_V4)	+= nfs4proc.o nfs4xdr.o nfs4state.o nfs4renewd.o \
+>  			   nfs4namespace.o
+>  nfs-$(CONFIG_NFS_DIRECTIO) += direct.o
+>  nfs-$(CONFIG_SYSCTL) += sysctl.o
+> +nfs-$(CONFIG_NFS_FSCACHE) += fscache.o
+>  nfs-objs		:= $(nfs-y)
+> diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+> index a49f9fe..7be7807 100644
+> --- a/fs/nfs/client.c
+> +++ b/fs/nfs/client.c
+> @@ -137,6 +137,8 @@ static struct nfs_client *nfs_alloc_client(const char *hostname,
+>  	clp->cl_state = 1 << NFS4CLNT_LEASE_EXPIRED;
+>  #endif
+>  
+> +	nfs_fscache_get_client_cookie(clp);
+> +
+>  	return clp;
+>  
+>  error_3:
+> @@ -168,6 +170,8 @@ static void nfs_free_client(struct nfs_client *clp)
+>  
+>  	nfs4_shutdown_client(clp);
+>  
+> +	nfs_fscache_release_client_cookie(clp);
+> +
+>  	/* -EIO all pending I/O */
+>  	if (!IS_ERR(clp->cl_rpcclient))
+>  		rpc_shutdown_client(clp->cl_rpcclient);
+> @@ -1308,7 +1312,7 @@ static int nfs_volume_list_show(struct seq_file *m, void *v)
+>  
+>  	/* display header on line 1 */
+>  	if (v == &nfs_volume_list) {
+> -		seq_puts(m, "NV SERVER   PORT DEV     FSID\n");
+> +		seq_puts(m, "NV SERVER   PORT DEV     FSID              FSC\n");
+>  		return 0;
+>  	}
+>  	/* display one transport per line on subsequent lines */
+> @@ -1322,12 +1326,13 @@ static int nfs_volume_list_show(struct seq_file *m, void *v)
+>  		 (unsigned long long) server->fsid.major,
+>  		 (unsigned long long) server->fsid.minor);
+>  
+> -	seq_printf(m, "v%d %02x%02x%02x%02x %4hx %-7s %-17s\n",
+> +	seq_printf(m, "v%d %02x%02x%02x%02x %4hx %-7s %-17s %s\n",
+>  		   clp->cl_nfsversion,
+>  		   NIPQUAD(clp->cl_addr.sin_addr),
+>  		   ntohs(clp->cl_addr.sin_port),
+>  		   dev,
+> -		   fsid);
+> +		   fsid,
+> +		   nfs_server_fscache_state(server));
+
+Please send these changes as a separate patch: they change an existing
+interface.
+
+>  
+>  	return 0;
+>  }
+> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+> index c87dc71..dfd36e0 100644
+> --- a/fs/nfs/file.c
+> +++ b/fs/nfs/file.c
+> @@ -34,6 +34,7 @@
+>  
+>  #include "delegation.h"
+>  #include "iostat.h"
+> +#include "internal.h"
+>  
+>  #define NFSDBG_FACILITY		NFSDBG_FILE
+>  
+> @@ -259,6 +260,10 @@ nfs_file_mmap(struct file * file, struct vm_area_struct * vma)
+>  	status = nfs_revalidate_mapping(inode, file->f_mapping);
+>  	if (!status)
+>  		status = generic_file_mmap(file, vma);
+> +
+> +	if (status == 0)
+> +		nfs_fscache_install_vm_ops(inode, vma);
+> +
+> 	return status;
+
+Please note that in 2.6.24 the NFS client will be gaining a
+page_mkwrite() method in order to fix the remaining mmap() races.
+AFAICS, it should be fairly trivial to merge with your
+nfs_file_page_mkwrite.
+
+>  }
+>  
+> @@ -311,22 +316,51 @@ static int nfs_commit_write(struct file *file, struct page *page, unsigned offse
+>  	return status;
+>  }
+>  
+> +/*
+> + * partially or wholly invalidate a page
+> + * - release the private state associated with a page if undergoing complete
+> + *   page invalidation
+> + * - caller holds page lock
+> + */
+>  static void nfs_invalidate_page(struct page *page, unsigned long offset)
+>  {
+>  	if (offset != 0)
+>  		return;
+>  	/* Cancel any unstarted writes on this page */
+>  	nfs_wb_page_priority(page->mapping->host, page, FLUSH_INVALIDATE);
+> +
+> +	nfs_fscache_invalidate_page(page, page->mapping->host, offset);
+> +
+> +	/* we can do this here as the bits are only set with the page lock
+> +	 * held, and our caller is holding that */
+> +	if (!page->private)
+> +		ClearPagePrivate(page);
+
+Why would PG_private be set at this point?
+
+In any case, please send this and other PagePrivate changes as a
+separate patch. Any changes to the PagePrivate semantics must be made
+easy to debug.
+
+>  }
+>  
+> +/*
+> + * release the private state associated with a page, if the page isn't busy
+> + * - caller holds page lock
+> + * - return true (may release) or false (may not)
+> + */
+>  static int nfs_release_page(struct page *page, gfp_t gfp)
+>  {
+> -	/* If PagePrivate() is set, then the page is not freeable */
+> -	return 0;
+> +	/*
+> +	 * Avoid deadlock on nfs_wait_on_request().
+> +	 */
+> +	if (!(gfp & __GFP_FS))
+> +		return 0;
+
+We got rid of this. There should be no race with nfs_wait_on_request().
+Either fix up the comment, or remove the test.
+
+> +
+> +	if (!nfs_fscache_release_page(page, gfp))
+> +		return 0;
+
+This looks _very_ dubious. Why shouldn't I be able to discard a page
+just because fscache isn't done writing it out? I may have very good
+reasons to do so.
+
+> +	BUG_ON(page->private != 0);
+> +	ClearPagePrivate(page);
+> +	return 1;
+>  }
+>  
+>  static int nfs_launder_page(struct page *page)
+>  {
+> +	nfs_fscache_invalidate_page(page, page->mapping->host, 0);
+
+Why? The function of launder_page() is to clean the page, not to
+truncate it.
+
+>  	return nfs_wb_page(page->mapping->host, page);
+>  }
+>  
+> diff --git a/fs/nfs/fscache.c b/fs/nfs/fscache.c
+> new file mode 100644
+> index 0000000..2b2785a
+> --- /dev/null
+> +++ b/fs/nfs/fscache.c
+> @@ -0,0 +1,303 @@
+> +/* fscache.c: NFS filesystem cache interface
+> + *
+> + * Copyright (C) 2006 Red Hat, Inc. All Rights Reserved.
+> + * Written by David Howells (dhowells@redhat.com)
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +
+> +
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/sched.h>
+> +#include <linux/mm.h>
+> +#include <linux/nfs_fs.h>
+> +#include <linux/nfs_fs_sb.h>
+> +#include <linux/in6.h>
+> +
+> +#include "internal.h"
+> +
+> +/*
+> + * Sysctl variables
+> + */
+> +atomic_t nfs_fscache_to_pages;
+> +atomic_t nfs_fscache_from_pages;
+> +atomic_t nfs_fscache_uncache_page;
+> +int nfs_fscache_from_error;
+> +int nfs_fscache_to_error;
+> +
+> +#define NFSDBG_FACILITY		NFSDBG_FSCACHE
+> +
+> +/* the auxiliary data in the cache (used for coherency management) */
+> +struct nfs_fh_auxdata {
+> +	struct timespec	i_mtime;
+> +	struct timespec	i_ctime;
+> +	loff_t		i_size;
+> +};
+> +
+> +static struct fscache_netfs_operations nfs_cache_ops = {
+> +};
+> +
+> +struct fscache_netfs nfs_cache_netfs = {
+> +	.name			= "nfs",
+> +	.version		= 0,
+> +	.ops			= &nfs_cache_ops,
+> +};
+> +
+> +static const uint8_t nfs_cache_ipv6_wrapper_for_ipv4[12] = {
+> +	[0 ... 9]	= 0x00,
+> +	[10 ... 11]	= 0xff
+> +};
+> +
+> +struct nfs_server_key {
+> +	uint16_t nfsversion;
+> +	uint16_t port;
+> +	union {
+> +		struct {
+> +			uint8_t		ipv6wrapper[12];
+> +			struct in_addr	addr;
+> +		} ipv4_addr;
+> +		struct in6_addr ipv6_addr;
+> +	};
+> +};
+> +
+> +static uint16_t nfs_server_get_key(const void *cookie_netfs_data,
+> +				   void *buffer, uint16_t bufmax)
+> +{
+> +	const struct nfs_client *clp = cookie_netfs_data;
+> +	struct nfs_server_key *key = buffer;
+> +	uint16_t len = 0;
+> +
+> +	key->nfsversion = clp->cl_nfsversion;
+> +
+> +	switch (clp->cl_addr.sin_family) {
+> +	case AF_INET:
+> +		key->port = clp->cl_addr.sin_port;
+> +
+> +		memcpy(&key->ipv4_addr.ipv6wrapper,
+> +		       &nfs_cache_ipv6_wrapper_for_ipv4,
+> +		       sizeof(key->ipv4_addr.ipv6wrapper));
+> +		memcpy(&key->ipv4_addr.addr,
+> +		       &clp->cl_addr.sin_addr,
+> +		       sizeof(key->ipv4_addr.addr));
+> +		len = sizeof(struct nfs_server_key);
+> +		break;
+> +
+> +	case AF_INET6:
+> +		key->port = clp->cl_addr.sin_port;
+> +
+> +		memcpy(&key->ipv6_addr,
+> +		       &clp->cl_addr.sin_addr,
+> +		       sizeof(key->ipv6_addr));
+> +		len = sizeof(struct nfs_server_key);
+> +		break;
+> +
+> +	default:
+> +		len = 0;
+> +		printk(KERN_WARNING "NFS: Unknown network family '%d'\n",
+> +			clp->cl_addr.sin_family);
+> +		break;
+> +	}
+> +
+> +	return len;
+> +}
+> +
+> +/*
+> + * the root index for the filesystem is defined by nfsd IP address and ports
+> + */
+> +struct fscache_cookie_def nfs_cache_server_index_def = {
+> +	.name		= "NFS.servers",
+> +	.type 		= FSCACHE_COOKIE_TYPE_INDEX,
+> +	.get_key	= nfs_server_get_key,
+> +};
+> +
+> +static uint16_t nfs_fh_get_key(const void *cookie_netfs_data,
+> +		void *buffer, uint16_t bufmax)
+> +{
+> +	const struct nfs_inode *nfsi = cookie_netfs_data;
+> +	uint16_t nsize;
+> +
+> +	/* set the file handle */
+> +	nsize = nfsi->fh.size;
+> +	memcpy(buffer, nfsi->fh.data, nsize);
+> +	return nsize;
+> +}
+> +
+> +/*
+> + * get an extra reference on a read context
+> + * - this function can be absent if the completion function doesn't
+> + *   require a context
+> + */
+> +static void nfs_fh_get_context(void *cookie_netfs_data, void *context)
+> +{
+> +	get_nfs_open_context(context);
+> +}
+> +
+> +/*
+> + * release an extra reference on a read context
+> + * - this function can be absent if the completion function doesn't
+> + *   require a context
+> + */
+> +static void nfs_fh_put_context(void *cookie_netfs_data, void *context)
+> +{
+> +	if (context)
+> +		put_nfs_open_context(context);
+> +}
+> +
+> +/*
+> + * indication the cookie is no longer uncached
+> + * - this function is called when the backing store currently caching a cookie
+> + *   is removed
+> + * - the netfs should use this to clean up any markers indicating cached pages
+> + * - this is mandatory for any object that may have data
+> + */
+> +static void nfs_fh_now_uncached(void *cookie_netfs_data)
+> +{
+> +	struct nfs_inode *nfsi = cookie_netfs_data;
+> +	struct pagevec pvec;
+> +	pgoff_t first;
+> +	int loop, nr_pages;
+> +
+> +	pagevec_init(&pvec, 0);
+> +	first = 0;
+> +
+> +	dprintk("NFS: nfs_fh_now_uncached: nfs_inode 0x%p\n", nfsi);
+> +
+> +	for (;;) {
+> +		/* grab a bunch of pages to clean */
+> +		nr_pages = pagevec_lookup(&pvec,
+> +					  nfsi->vfs_inode.i_mapping,
+> +					  first,
+> +					  PAGEVEC_SIZE - pagevec_count(&pvec));
+> +		if (!nr_pages)
+> +			break;
+> +
+> +		for (loop = 0; loop < nr_pages; loop++)
+> +			ClearPageFsCache(pvec.pages[loop]);
+> +
+> +		first = pvec.pages[nr_pages - 1]->index + 1;
+> +
+> +		pvec.nr = nr_pages;
+> +		pagevec_release(&pvec);
+> +		cond_resched();
+> +	}
+> +}
+> +
+> +/*
+> + * get certain file attributes from the netfs data
+> + * - this function can be absent for an index
+> + * - not permitted to return an error
+> + * - the netfs data from the cookie being used as the source is
+> + *   presented
+> + */
+> +static void nfs_fh_get_attr(const void *cookie_netfs_data, uint64_t *size)
+> +{
+> +	const struct nfs_inode *nfsi = cookie_netfs_data;
+> +
+> +	*size = nfsi->vfs_inode.i_size;
+> +}
+> +
+> +/*
+> + * get the auxilliary data from netfs data
+> + * - this function can be absent if the index carries no state data
+> + * - should store the auxilliary data in the buffer
+> + * - should return the amount of amount stored
+> + * - not permitted to return an error
+> + * - the netfs data from the cookie being used as the source is
+> + *   presented
+> + */
+> +static uint16_t nfs_fh_get_aux(const void *cookie_netfs_data,
+> +			       void *buffer, uint16_t bufmax)
+> +{
+> +	struct nfs_fh_auxdata auxdata;
+> +	const struct nfs_inode *nfsi = cookie_netfs_data;
+> +
+> +	auxdata.i_size = nfsi->vfs_inode.i_size;
+> +	auxdata.i_mtime = nfsi->vfs_inode.i_mtime;
+> +	auxdata.i_ctime = nfsi->vfs_inode.i_ctime;
+> +
+> +	if (bufmax > sizeof(auxdata))
+> +		bufmax = sizeof(auxdata);
+> +
+> +	memcpy(buffer, &auxdata, bufmax);
+> +	return bufmax;
+> +}
+> +
+> +/*
+> + * consult the netfs about the state of an object
+> + * - this function can be absent if the index carries no state data
+> + * - the netfs data from the cookie being used as the target is
+> + *   presented, as is the auxilliary data
+> + */
+> +static fscache_checkaux_t nfs_fh_check_aux(void *cookie_netfs_data,
+> +					   const void *data, uint16_t datalen)
+> +{
+> +	struct nfs_fh_auxdata auxdata;
+> +	struct nfs_inode *nfsi = cookie_netfs_data;
+> +
+> +	if (datalen > sizeof(auxdata))
+> +		return FSCACHE_CHECKAUX_OBSOLETE;
+> +
+> +	auxdata.i_size = nfsi->vfs_inode.i_size;
+> +	auxdata.i_mtime = nfsi->vfs_inode.i_mtime;
+> +	auxdata.i_ctime = nfsi->vfs_inode.i_ctime;
+> +
+> +	if (memcmp(data, &auxdata, datalen) != 0)
+> +		return FSCACHE_CHECKAUX_OBSOLETE;
+> +
+> +	return FSCACHE_CHECKAUX_OKAY;
+> +}
+> +
+> +/*
+> + * the primary index for each server is simply made up of a series of NFS file
+> + * handles
+> + */
+> +struct fscache_cookie_def nfs_cache_fh_index_def = {
+> +	.name			= "NFS.fh",
+> +	.type			= FSCACHE_COOKIE_TYPE_DATAFILE,
+> +	.get_key		= nfs_fh_get_key,
+> +	.get_attr		= nfs_fh_get_attr,
+> +	.get_aux		= nfs_fh_get_aux,
+> +	.check_aux		= nfs_fh_check_aux,
+> +	.get_context		= nfs_fh_get_context,
+> +	.put_context		= nfs_fh_put_context,
+> +	.now_uncached		= nfs_fh_now_uncached,
+> +};
+> +
+> +static int nfs_file_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+> +{
+> +	wait_on_page_fscache_write(page);
+> +	return 0;
+> +}
+> +
+> +struct vm_operations_struct nfs_fs_vm_operations = {
+> +	.fault		= filemap_fault,
+> +	.page_mkwrite	= nfs_file_page_mkwrite,
+> +};
+> +
+> +/*
+> + * handle completion of a page being read from the cache
+> + * - called in process (keventd) context
+> + */
+> +void nfs_readpage_from_fscache_complete(struct page *page,
+> +					void *context,
+> +					int error)
+> +{
+> +	dfprintk(FSCACHE,
+> +		 "NFS: readpage_from_fscache_complete (0x%p/0x%p/%d)\n",
+> +		 page, context, error);
+> +
+> +	/* if the read completes with an error, we just unlock the page and let
+> +	 * the VM reissue the readpage */
+> +	if (!error) {
+> +		SetPageUptodate(page);
+> +		unlock_page(page);
+> +	} else {
+> +		error = nfs_readpage_async(context, page->mapping->host, page);
+> +		if (error)
+> +			unlock_page(page);
+> +	}
+> +}
+> diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
+> new file mode 100644
+> index 0000000..152309c
+> --- /dev/null
+> +++ b/fs/nfs/fscache.h
+> @@ -0,0 +1,464 @@
+> +/* fscache.h: NFS filesystem cache interface definitions
+> + *
+> + * Copyright (C) 2006 Red Hat, Inc. All Rights Reserved.
+> + * Written by David Howells (dhowells@redhat.com)
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +
+> +#ifndef _NFS_FSCACHE_H
+> +#define _NFS_FSCACHE_H
+> +
+> +#include <linux/nfs_fs.h>
+> +#include <linux/nfs_mount.h>
+> +#include <linux/nfs4_mount.h>
+> +
+> +#ifdef CONFIG_NFS_FSCACHE
+> +#include <linux/fscache.h>
+> +
+> +extern struct fscache_netfs nfs_cache_netfs;
+> +extern struct fscache_cookie_def nfs_cache_server_index_def;
+> +extern struct fscache_cookie_def nfs_cache_fh_index_def;
+> +extern struct vm_operations_struct nfs_fs_vm_operations;
+> +
+> +extern void nfs_invalidatepage(struct page *, unsigned long);
+> +extern int nfs_releasepage(struct page *, gfp_t);
+> +
+> +extern atomic_t nfs_fscache_to_pages;
+> +extern atomic_t nfs_fscache_from_pages;
+> +extern atomic_t nfs_fscache_uncache_page;
+> +extern int nfs_fscache_from_error;
+> +extern int nfs_fscache_to_error;
+> +
+> +/*
+> + * register NFS for caching
+> + */
+> +static inline int nfs_fscache_register(void)
+> +{
+> +	return fscache_register_netfs(&nfs_cache_netfs);
+> +}
+> +
+> +/*
+> + * unregister NFS for caching
+> + */
+> +static inline void nfs_fscache_unregister(void)
+> +{
+> +	fscache_unregister_netfs(&nfs_cache_netfs);
+> +}
+> +
+> +/*
+> + * get the per-client index cookie for an NFS client if the appropriate mount
+> + * flag was set
+> + * - we always try and get an index cookie for the client, but get filehandle
+> + *   cookies on a per-superblock basis, depending on the mount flags
+> + */
+> +static inline void nfs_fscache_get_client_cookie(struct nfs_client *clp)
+> +{
+> +	/* create a cache index for looking up filehandles */
+> +	clp->fscache = fscache_acquire_cookie(nfs_cache_netfs.primary_index,
+> +					      &nfs_cache_server_index_def,
+> +					      clp);
+> +	dfprintk(FSCACHE,"NFS: get client cookie (0x%p/0x%p)\n",
+> +		 clp, clp->fscache);
+> +}
+> +
+> +/*
+> + * dispose of a per-client cookie
+> + */
+> +static inline void nfs_fscache_release_client_cookie(struct nfs_client *clp)
+> +{
+> +	dfprintk(FSCACHE,"NFS: releasing client cookie (0x%p/0x%p)\n",
+> +		clp, clp->fscache);
+> +
+> +	fscache_relinquish_cookie(clp->fscache, 0);
+> +	clp->fscache = NULL;
+> +}
+> +
+> +/*
+> + * indicate the client caching state as readable text
+> + */
+> +static inline const char *nfs_server_fscache_state(struct nfs_server *server)
+> +{
+> +	if (server->nfs_client->fscache && (server->flags & NFS_MOUNT_FSCACHE))
+> +		return "yes";
+> +	return "no ";
+> +}
+> +
+> +/*
+> + * get the per-filehandle cookie for an NFS inode
+> + */
+> +static inline void nfs_fscache_init_fh_cookie(struct inode *inode)
+> +{
+> +	NFS_I(inode)->fscache = NULL;
+> +	if (S_ISREG(inode->i_mode))
+> +		set_bit(NFS_INO_FSCACHE, &NFS_I(inode)->flags);
+> +}
+> +
+> +/*
+> + * get the per-filehandle cookie for an NFS inode
+> + */
+> +static inline void nfs_fscache_enable_fh_cookie(struct inode *inode)
+> +{
+> +	struct super_block *sb = inode->i_sb;
+> +	struct nfs_inode *nfsi = NFS_I(inode);
+> +
+> +	if (nfsi->fscache || !NFS_FSCACHE(inode))
+> +		return;
+> +
+> +	if ((NFS_SB(sb)->flags & NFS_MOUNT_FSCACHE)) {
+> +		nfsi->fscache = fscache_acquire_cookie(
+> +			NFS_SB(sb)->nfs_client->fscache,
+> +			&nfs_cache_fh_index_def,
+> +			nfsi);
+> +
+> +		dfprintk(FSCACHE, "NFS: get FH cookie (0x%p/0x%p/0x%p)\n",
+> +			 sb, nfsi, nfsi->fscache);
+> +	}
+> +}
+> +
+> +/*
+> + * change the filesize associated with a per-filehandle cookie
+> + */
+> +static inline void nfs_fscache_attr_changed(struct inode *inode)
+> +{
+> +	fscache_attr_changed(NFS_I(inode)->fscache);
+> +}
+> +
+> +/*
+> + * replace a per-filehandle cookie due to revalidation detecting a file having
+> + * changed on the server
+> + */
+> +static inline void nfs_fscache_renew_fh_cookie(struct inode *inode)
+> +{
+> +	struct nfs_inode *nfsi = NFS_I(inode);
+> +	struct nfs_server *server = NFS_SERVER(inode);
+> +	struct fscache_cookie *old = nfsi->fscache;
+> +
+> +	if (nfsi->fscache) {
+> +		/* retire the current fscache cache and get a new one */
+> +		fscache_relinquish_cookie(nfsi->fscache, 1);
+> +
+> +		nfsi->fscache = fscache_acquire_cookie(
+> +			server->nfs_client->fscache,
+> +			&nfs_cache_fh_index_def,
+> +			nfsi);
+> +
+> +		dfprintk(FSCACHE,
+> +			 "NFS: revalidation new cookie (0x%p/0x%p/0x%p/0x%p)\n",
+> +			 server, nfsi, old, nfsi->fscache);
+> +	}
+> +}
+> +
+> +/*
+> + * release a per-filehandle cookie
+> + */
+> +static inline void nfs_fscache_release_fh_cookie(struct inode *inode)
+> +{
+> +	struct nfs_inode *nfsi = NFS_I(inode);
+> +
+> +	dfprintk(FSCACHE, "NFS: clear cookie (0x%p/0x%p)\n",
+> +		 nfsi, nfsi->fscache);
+> +
+> +	fscache_relinquish_cookie(nfsi->fscache, 0);
+> +	nfsi->fscache = NULL;
+> +}
+> +
+> +/*
+> + * retire a per-filehandle cookie, destroying the data attached to it
+> + */
+> +static inline void nfs_fscache_zap_fh_cookie(struct inode *inode)
+> +{
+> +	struct nfs_inode *nfsi = NFS_I(inode);
+> +
+> +	dfprintk(FSCACHE,"NFS: zapping cookie (0x%p/0x%p)\n",
+> +		nfsi, nfsi->fscache);
+> +
+> +	fscache_relinquish_cookie(nfsi->fscache, 1);
+> +	nfsi->fscache = NULL;
+> +}
+> +
+> +/*
+> + * turn off the cache with regard to a filehandle cookie if opened for writing,
+> + * invalidating all the pages in the page cache relating to the associated
+> + * inode to clear the per-page caching
+> + */
+> +static inline void nfs_fscache_disable_fh_cookie(struct inode *inode)
+> +{
+> +	clear_bit(NFS_INO_FSCACHE, &NFS_I(inode)->flags);
+> +
+> +	if (NFS_I(inode)->fscache) {
+> +		dfprintk(FSCACHE,
+> +			 "NFS: nfsi 0x%p turning cache off\n", NFS_I(inode));
+> +
+> +		/* Need to invalided any mapped pages that were read in before
+> +		 * turning off the cache.
+> +		 */
+> +		if (inode->i_mapping && inode->i_mapping->nrpages)
+> +			invalidate_inode_pages2(inode->i_mapping);
+> +
+> +		nfs_fscache_zap_fh_cookie(inode);
+> +	}
+> +}
+> +
+> +/*
+> + * decide if we should enable or disable the FS cache for this inode
+> + * - for now, only regular files that are open read-only will be able to use
+> + *   the cache
+> + */
+> +static inline void nfs_fscache_set_fh_cookie(struct inode *inode,
+> +					     struct file *filp)
+> +{
+> +	if (NFS_FSCACHE(inode)) {
+> +		if ((filp->f_flags & O_ACCMODE) != O_RDONLY)
+> +			nfs_fscache_disable_fh_cookie(inode);
+> +		else
+> +			nfs_fscache_enable_fh_cookie(inode);
+> +	}
+> +}
+> +
+> +/*
+> + * install the VM ops for mmap() of an NFS file so that we can hold up writes
+> + * to pages on shared writable mappings until the store to the cache is
+> + * complete
+> + */
+> +static inline void nfs_fscache_install_vm_ops(struct inode *inode,
+> +					      struct vm_area_struct *vma)
+> +{
+> +	if (NFS_I(inode)->fscache)
+> +		vma->vm_ops = &nfs_fs_vm_operations;
+> +}
+> +
+> +/*
+> + * release the caching state associated with a page, if the page isn't busy
+> + * interacting with the cache
+> + * - returns true (can release page) or false (page busy)
+> + */
+> +static inline int nfs_fscache_release_page(struct page *page, gfp_t gfp)
+> +{
+> +	if (PageFsCacheWrite(page)) {
+> +		if (!(gfp & __GFP_WAIT))
+> +			return 0;
+> +		wait_on_page_fscache_write(page);
+> +	}
+> +
+> +	if (PageFsCache(page)) {
+> +		struct nfs_inode *nfsi = NFS_I(page->mapping->host);
+> +
+> +		BUG_ON(!nfsi->fscache);
+> +
+> +		dfprintk(FSCACHE, "NFS: fscache releasepage (0x%p/0x%p/0x%p)\n",
+> +			 nfsi->fscache, page, nfsi);
+> +
+> +		fscache_uncache_page(nfsi->fscache, page);
+> +		atomic_inc(&nfs_fscache_uncache_page);
+> +		ClearPageFsCache(page);
+> +	}
+> +
+> +	return 1;
+> +}
+> +
+> +/*
+> + * release the caching state associated with a page if undergoing complete page
+> + * invalidation
+> + */
+> +static inline void nfs_fscache_invalidate_page(struct page *page,
+> +					       struct inode *inode,
+> +					       unsigned long offset)
+> +{
+> +	struct nfs_inode *nfsi = NFS_I(page->mapping->host);
+> +
+> +	if (PageFsCache(page)) {
+> +		BUG_ON(!nfsi->fscache);
+> +
+> +		dfprintk(FSCACHE,
+> +			 "NFS: fscache invalidatepage (0x%p/0x%p/0x%p)\n",
+> +			 nfsi->fscache, page, nfsi);
+> +
+> +		wait_on_page_fscache_write(page);
+> +
+> +		if (offset == 0) {
+> +			BUG_ON(!PageLocked(page));
+> +			if (!PageWriteback(page)) {
+> +				fscache_uncache_page(nfsi->fscache, page);
+> +				atomic_inc(&nfs_fscache_uncache_page);
+> +				ClearPageFsCache(page);
+> +			}
+> +		}
+> +	}
+> +}
+> +
+> +/*
+> + * store a newly fetched page in fscache
+> + */
+> +static inline void nfs_readpage_to_fscache(struct inode *inode,
+> +					   struct page *page,
+> +					   int sync)
+> +{
+> +	int ret;
+> +
+> +	if (PageFsCache(page)) {
+> +		dfprintk(FSCACHE,
+> +			 "NFS: "
+> +			 "readpage_to_fscache(fsc:%p/p:%p(i:%lx f:%lx)/%d)\n",
+> +			 NFS_I(inode)->fscache, page, page->index, page->flags,
+> +			 sync);
+> +
+> +		ret = fscache_write_page(NFS_I(inode)->fscache, page,
+> +					 GFP_KERNEL);
+> +		dfprintk(FSCACHE,
+> +			 "NFS:     "
+> +			 "readpage_to_fscache: p:%p(i:%lu f:%lx) ret %d\n",
+> +			 page, page->index, page->flags, ret);
+> +
+> +		if (ret != 0) {
+> +			fscache_uncache_page(NFS_I(inode)->fscache, page);
+> +			atomic_inc(&nfs_fscache_uncache_page);
+> +			ClearPageFsCache(page);
+> +			nfs_fscache_to_error = ret;
+> +		} else {
+> +			atomic_inc(&nfs_fscache_to_pages);
+> +		}
+> +	}
+> +}
+> +
+> +/*
+> + * retrieve a page from fscache
+> + */
+> +extern void nfs_readpage_from_fscache_complete(struct page *, void *, int);
+> +
+> +static inline
+> +int nfs_readpage_from_fscache(struct nfs_open_context *ctx,
+> +			      struct inode *inode,
+> +			      struct page *page)
+> +{
+> +	int ret;
+> +
+> +	if (!NFS_I(inode)->fscache)
+> +		return 1;
+> +
+> +	dfprintk(FSCACHE,
+> +		 "NFS: readpage_from_fscache(fsc:%p/p:%p(i:%lx f:%lx)/0x%p)\n",
+> +		 NFS_I(inode)->fscache, page, page->index, page->flags, inode);
+> +
+> +	ret = fscache_read_or_alloc_page(NFS_I(inode)->fscache,
+> +					 page,
+> +					 nfs_readpage_from_fscache_complete,
+> +					 ctx,
+> +					 GFP_KERNEL);
+> +
+> +	switch (ret) {
+> +	case 0: /* read BIO submitted (page in fscache) */
+> +		dfprintk(FSCACHE,
+> +			 "NFS:    readpage_from_fscache: BIO submitted\n");
+> +		atomic_inc(&nfs_fscache_from_pages);
+> +		return ret;
+> +
+> +	case -ENOBUFS: /* inode not in cache */
+> +	case -ENODATA: /* page not in cache */
+> +		dfprintk(FSCACHE,
+> +			 "NFS:    readpage_from_fscache error %d\n", ret);
+> +		return 1;
+> +
+> +	default:
+> +		dfprintk(FSCACHE, "NFS:    readpage_from_fscache %d\n", ret);
+> +		nfs_fscache_from_error = ret;
+> +	}
+> +	return ret;
+> +}
+> +
+> +/*
+> + * retrieve a set of pages from fscache
+> + */
+> +static inline int nfs_readpages_from_fscache(struct nfs_open_context *ctx,
+> +					     struct inode *inode,
+> +					     struct address_space *mapping,
+> +					     struct list_head *pages,
+> +					     unsigned *nr_pages)
+> +{
+> +	int ret, npages = *nr_pages;
+> +
+> +	if (!NFS_I(inode)->fscache)
+> +		return 1;
+> +
+> +	dfprintk(FSCACHE,
+> +		 "NFS: nfs_getpages_from_fscache (0x%p/%u/0x%p)\n",
+> +		 NFS_I(inode)->fscache, *nr_pages, inode);
+> +
+> +	ret = fscache_read_or_alloc_pages(NFS_I(inode)->fscache,
+> +					  mapping, pages, nr_pages,
+> +					  nfs_readpage_from_fscache_complete,
+> +					  ctx,
+> +					  mapping_gfp_mask(mapping));
+> +
+> +
+> +	switch (ret) {
+> +	case 0: /* read BIO submitted (page in fscache) */
+> +		BUG_ON(!list_empty(pages));
+> +		BUG_ON(*nr_pages != 0);
+> +		dfprintk(FSCACHE,
+> +			 "NFS: nfs_getpages_from_fscache: BIO submitted\n");
+> +
+> +		atomic_add(npages, &nfs_fscache_from_pages);
+> +		return ret;
+> +
+> +	case -ENOBUFS: /* inode not in cache */
+> +	case -ENODATA: /* page not in cache */
+> +		dfprintk(FSCACHE,
+> +			 "NFS: nfs_getpages_from_fscache: no page: %d\n", ret);
+> +		return 1;
+> +
+> +	default:
+> +		dfprintk(FSCACHE,
+> +			 "NFS: nfs_getpages_from_fscache: ret  %d\n", ret);
+> +		nfs_fscache_from_error = ret;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +#else /* CONFIG_NFS_FSCACHE */
+> +static inline int nfs_fscache_register(void) { return 0; }
+> +static inline void nfs_fscache_unregister(void) {}
+> +static inline void nfs_fscache_get_client_cookie(struct nfs_client *clp) {}
+> +static inline void nfs4_fscache_get_client_cookie(struct nfs_client *clp) {}
+> +static inline void nfs_fscache_release_client_cookie(struct nfs_client *clp) {}
+> +static inline const char *nfs_server_fscache_state(struct nfs_server *server) { return "no "; }
+> +
+> +static inline void nfs_fscache_init_fh_cookie(struct inode *inode) {}
+> +static inline void nfs_fscache_enable_fh_cookie(struct inode *inode) {}
+> +static inline void nfs_fscache_attr_changed(struct inode *inode) {}
+> +static inline void nfs_fscache_release_fh_cookie(struct inode *inode) {}
+> +static inline void nfs_fscache_zap_fh_cookie(struct inode *inode) {}
+> +static inline void nfs_fscache_renew_fh_cookie(struct inode *inode) {}
+> +static inline void nfs_fscache_disable_fh_cookie(struct inode *inode) {}
+> +static inline void nfs_fscache_set_fh_cookie(struct inode *inode, struct file *filp) {}
+> +static inline void nfs_fscache_install_vm_ops(struct inode *inode, struct vm_area_struct *vma) {}
+> +static inline int nfs_fscache_release_page(struct page *page, gfp_t gfp)
+> +{
+> +	return 1; /* True: may release page */
+> +}
+> +static inline void nfs_fscache_invalidate_page(struct page *page,
+> +					       struct inode *inode,
+> +					       unsigned long offset)
+> +{
+> +}
+> +static inline void nfs_readpage_to_fscache(struct inode *inode, struct page *page, int sync) {}
+> +static inline int nfs_readpage_from_fscache(struct nfs_open_context *ctx,
+> +					    struct inode *inode, struct page *page)
+> +{
+> +	return -ENOBUFS;
+> +}
+> +static inline int nfs_readpages_from_fscache(struct nfs_open_context *ctx,
+> +					     struct inode *inode,
+> +					     struct address_space *mapping,
+> +					     struct list_head *pages,
+> +					     unsigned *nr_pages)
+> +{
+> +	return -ENOBUFS;
+> +}
+> +
+> +#endif /* CONFIG_NFS_FSCACHE */
+> +#endif /* _NFS_FSCACHE_H */
+> diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
+> index bca6cdc..8b7a39c 100644
+> --- a/fs/nfs/inode.c
+> +++ b/fs/nfs/inode.c
+> @@ -88,6 +88,7 @@ void nfs_clear_inode(struct inode *inode)
+>  	BUG_ON(atomic_read(&NFS_I(inode)->data_updates) != 0);
+>  	nfs_zap_acl_cache(inode);
+>  	nfs_access_zap_cache(inode);
+> +	nfs_fscache_release_fh_cookie(inode);
+>  }
+>  
+>  /**
+> @@ -220,6 +221,7 @@ nfs_fhget(struct super_block *sb, struct nfs_fh *fh, struct nfs_fattr *fattr)
+>  	};
+>  	struct inode *inode = ERR_PTR(-ENOENT);
+>  	unsigned long hash;
+> +	int maycache = 1;
+>  
+>  	if ((fattr->valid & NFS_ATTR_FATTR) == 0)
+>  		goto out_no_inode;
+> @@ -269,6 +271,7 @@ nfs_fhget(struct super_block *sb, struct nfs_fh *fh, struct nfs_fattr *fattr)
+>  				else
+>  					inode->i_op = &nfs_mountpoint_inode_operations;
+>  				inode->i_fop = NULL;
+> +				maycache = 0;
+>  			}
+>  		} else if (S_ISLNK(inode->i_mode))
+>  			inode->i_op = &nfs_symlink_inode_operations;
+> @@ -300,6 +303,8 @@ nfs_fhget(struct super_block *sb, struct nfs_fh *fh, struct nfs_fattr *fattr)
+>  		memset(nfsi->cookieverf, 0, sizeof(nfsi->cookieverf));
+>  		nfsi->access_cache = RB_ROOT;
+>  
+> +		nfs_fscache_init_fh_cookie(inode);
+> +
+>  		unlock_new_inode(inode);
+>  	} else
+>  		nfs_refresh_inode(inode, fattr);
+> @@ -573,6 +578,7 @@ int nfs_open(struct inode *inode, struct file *filp)
+>  	ctx->mode = filp->f_mode;
+>  	nfs_file_set_open_context(filp, ctx);
+>  	put_nfs_open_context(ctx);
+> +	nfs_fscache_set_fh_cookie(inode, filp);
+>  	return 0;
+>  }
+>  
+> @@ -698,6 +704,7 @@ static int nfs_invalidate_mapping_nolock(struct inode *inode, struct address_spa
+>  	}
+>  	spin_unlock(&inode->i_lock);
+>  	nfs_inc_stats(inode, NFSIOS_DATAINVALIDATE);
+> +	nfs_fscache_renew_fh_cookie(inode);
+>  	dfprintk(PAGECACHE, "NFS: (%s/%Ld) data cache invalidated\n",
+>  			inode->i_sb->s_id, (long long)NFS_FILEID(inode));
+>  	return 0;
+> @@ -1000,11 +1007,13 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
+>  			if (data_stable) {
+>  				inode->i_size = new_isize;
+>  				invalid |= NFS_INO_INVALID_DATA;
+> +				nfs_fscache_attr_changed(inode);
+
+Can't fscache_attr_changed() call kmalloc(GFP_KERNEL)? You are in a
+spinlocked context here.
+
+>  			}
+>  			invalid |= NFS_INO_INVALID_ATTR;
+>  		} else if (new_isize > cur_isize) {
+>  			inode->i_size = new_isize;
+>  			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA;
+> +			nfs_fscache_attr_changed(inode);
+>  		}
+>  		nfsi->cache_change_attribute = now;
+>  		dprintk("NFS: isize change on server for file %s/%ld\n",
+> @@ -1191,6 +1200,10 @@ static int __init init_nfs_fs(void)
+>  {
+>  	int err;
+>  
+> +	err = nfs_fscache_register();
+> +	if (err < 0)
+> +		goto out6;
+> +
+>  	err = nfs_fs_proc_init();
+>  	if (err)
+>  		goto out5;
+> @@ -1237,6 +1250,8 @@ out3:
+>  out4:
+>  	nfs_fs_proc_exit();
+>  out5:
+> +	nfs_fscache_unregister();
+> +out6:
+>  	return err;
+>  }
+>  
+> @@ -1247,6 +1262,7 @@ static void __exit exit_nfs_fs(void)
+>  	nfs_destroy_readpagecache();
+>  	nfs_destroy_inodecache();
+>  	nfs_destroy_nfspagecache();
+> +	nfs_fscache_unregister();
+>  #ifdef CONFIG_PROC_FS
+>  	rpc_proc_unregister("nfs");
+>  #endif
+> diff --git a/fs/nfs/internal.h b/fs/nfs/internal.h
+> index 76cf55d..fc75251 100644
+> --- a/fs/nfs/internal.h
+> +++ b/fs/nfs/internal.h
+> @@ -27,6 +27,11 @@ struct nfs_clone_mount {
+>  	rpc_authflavor_t authflavor;
+>  };
+>  
+> +/*
+> + * include filesystem caching stuff here
+> + */
+> +#include "fscache.h"
+
+Why? internal.h has no dependencies on anything from fscache.h.
+
+> +
+>  /* client.c */
+>  extern struct rpc_program nfs_program;
+>  
+> @@ -149,6 +154,9 @@ extern int nfs4_path_walk(struct nfs_server *server,
+>  			  const char *path);
+>  #endif
+>  
+> +/* read.c */
+> +extern int nfs_readpage_async(struct nfs_open_context *, struct inode *, struct page *);
+> +
+
+Please put this in nfs_fs.h together with the other NFS read exports.
+
+>  /*
+>   * Determine the device name as a string
+>   */
+> diff --git a/fs/nfs/read.c b/fs/nfs/read.c
+> index 19e0563..ad6f516 100644
+> --- a/fs/nfs/read.c
+> +++ b/fs/nfs/read.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/sunrpc/clnt.h>
+>  #include <linux/nfs_fs.h>
+>  #include <linux/nfs_page.h>
+> +#include <linux/nfs_mount.h>
+>  #include <linux/smp_lock.h>
+>  
+>  #include <asm/system.h>
+> @@ -114,8 +115,8 @@ static void nfs_readpage_truncate_uninitialised_page(struct nfs_read_data *data)
+>  	}
+>  }
+>  
+> -static int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
+> -		struct page *page)
+> +int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
+> +		       struct page *page)
+>  {
+>  	LIST_HEAD(one_request);
+>  	struct nfs_page	*new;
+> @@ -142,6 +143,11 @@ static int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
+>  
+>  static void nfs_readpage_release(struct nfs_page *req)
+>  {
+> +	struct inode *d_inode = req->wb_context->path.dentry->d_inode;
+> +
+> +	if (PageUptodate(req->wb_page))
+> +		nfs_readpage_to_fscache(d_inode, req->wb_page, 0);
+> +
+>  	unlock_page(req->wb_page);
+>  
+>  	dprintk("NFS: read done (%s/%Ld %d@%Ld)\n",
+> @@ -500,8 +506,15 @@ int nfs_readpage(struct file *file, struct page *page)
+>  		ctx = get_nfs_open_context((struct nfs_open_context *)
+>  				file->private_data);
+>  
+> +	if (!IS_SYNC(inode)) {
+> +		error = nfs_readpage_from_fscache(ctx, inode, page);
+> +		if (error == 0)
+> +			goto out;
+> +	}
+> +
+>  	error = nfs_readpage_async(ctx, inode, page);
+>  
+> +out:
+>  	put_nfs_open_context(ctx);
+>  	return error;
+>  out_unlock:
+> @@ -578,6 +591,15 @@ int nfs_readpages(struct file *filp, struct address_space *mapping,
+>  	} else
+>  		desc.ctx = get_nfs_open_context((struct nfs_open_context *)
+>  				filp->private_data);
+> +
+> +	/* attempt to read as many of the pages as possible from the cache
+> +	 * - this returns -ENOBUFS immediately if the cookie is negative
+> +	 */
+> +	ret = nfs_readpages_from_fscache(desc.ctx, inode, mapping,
+> +					 pages, &nr_pages);
+> +	if (ret == 0)
+> +		goto read_complete; /* all pages were read */
+> +
+>  	if (rsize < PAGE_CACHE_SIZE)
+>  		nfs_pageio_init(&pgio, inode, nfs_pagein_multi, rsize, 0);
+>  	else
+> @@ -588,6 +610,7 @@ int nfs_readpages(struct file *filp, struct address_space *mapping,
+>  	nfs_pageio_complete(&pgio);
+>  	npages = (pgio.pg_bytes_written + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
+>  	nfs_add_stats(inode, NFSIOS_READPAGES, npages);
+> +read_complete:
+>  	put_nfs_open_context(desc.ctx);
+>  out:
+>  	return ret;
+> diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+> index b2a851c..7a74677 100644
+> --- a/fs/nfs/super.c
+> +++ b/fs/nfs/super.c
+> @@ -456,6 +456,7 @@ static void nfs_show_mount_options(struct seq_file *m, struct nfs_server *nfss,
+>  		{ NFS_MOUNT_NOACL, ",noacl", "" },
+>  		{ NFS_MOUNT_NORDIRPLUS, ",nordirplus", "" },
+>  		{ NFS_MOUNT_UNSHARED, ",nosharecache", ""},
+> +		{ NFS_MOUNT_FSCACHE, ",fsc", "" },
+>  		{ 0, NULL, NULL }
+>  	};
+>  	const struct proc_nfs_info *nfs_infop;
+> diff --git a/fs/nfs/sysctl.c b/fs/nfs/sysctl.c
+> index b62481d..e522177 100644
+> --- a/fs/nfs/sysctl.c
+> +++ b/fs/nfs/sysctl.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/nfs_fs.h>
+>  
+>  #include "callback.h"
+> +#include "internal.h"
+>  
+>  static const int nfs_set_port_min = 0;
+>  static const int nfs_set_port_max = 65535;
+> @@ -58,6 +59,48 @@ static ctl_table nfs_cb_sysctls[] = {
+>  		.mode		= 0644,
+>  		.proc_handler	= &proc_dointvec,
+>  	},
+> +#ifdef CONFIG_NFS_FSCACHE
+> +	{
+> +		.ctl_name = CTL_UNNUMBERED,
+> +		.procname = "fscache_from_error",
+> +		.data = &nfs_fscache_from_error,
+> +		.maxlen = sizeof(int),
+> +		.mode = 0644,
+> +		.proc_handler = &proc_dointvec,
+> +	},
+> +	{
+> +		.ctl_name = CTL_UNNUMBERED,
+> +		.procname = "fscache_to_error",
+> +		.data = &nfs_fscache_to_error,
+> +		.maxlen = sizeof(int),
+> +		.mode = 0644,
+> +		.proc_handler = &proc_dointvec,
+> +	},
+> +	{
+> +		.ctl_name = CTL_UNNUMBERED,
+> +		.procname = "fscache_uncache_page",
+> +		.data = &nfs_fscache_uncache_page,
+> +		.maxlen = sizeof(int),
+> +		.mode = 0644,
+> +		.proc_handler = &proc_dointvec,
+> +	},
+> +	{
+> +		.ctl_name = CTL_UNNUMBERED,
+> +		.procname = "fscache_to_pages",
+> +		.data = &nfs_fscache_to_pages,
+> +		.maxlen = sizeof(int),
+> +		.mode = 0644,
+> +		.proc_handler = &proc_dointvec_minmax,
+> +	},
+> +	{
+> +		.ctl_name = CTL_UNNUMBERED,
+> +		.procname = "fscache_from_pages",
+> +		.data = &nfs_fscache_from_pages,
+> +		.maxlen = sizeof(int),
+> +		.mode = 0644,
+> +		.proc_handler = &proc_dointvec,
+> +	},
+> +#endif
+>  	{ .ctl_name = 0 }
+>  };
+>  
+> diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+> index ef97e0c..6576738 100644
+> --- a/fs/nfs/write.c
+> +++ b/fs/nfs/write.c
+> @@ -147,6 +147,9 @@ static void nfs_grow_file(struct page *page, unsigned int offset, unsigned int c
+>  		return;
+>  	nfs_inc_stats(inode, NFSIOS_EXTENDWRITE);
+>  	i_size_write(inode, end);
+> +#ifdef FSCACHE_WRITE_SUPPORT
+> +	nfs_set_fscsize(NFS_SERVER(inode), NFS_I(inode), end);
+> +#endif
+
+I can't see how this belongs in this patch.
+
+>  }
+>  
+>  /* A writeback failed: mark the page as bad, and invalidate the page cache */
+> diff --git a/include/linux/nfs4_mount.h b/include/linux/nfs4_mount.h
+> index a0dcf66..40595d0 100644
+> --- a/include/linux/nfs4_mount.h
+> +++ b/include/linux/nfs4_mount.h
+> @@ -66,6 +66,7 @@ struct nfs4_mount_data {
+>  #define NFS4_MOUNT_NOAC		0x0020	/* 1 */
+>  #define NFS4_MOUNT_STRICTLOCK	0x1000	/* 1 */
+>  #define NFS4_MOUNT_UNSHARED	0x8000	/* 1 */
+> -#define NFS4_MOUNT_FLAGMASK	0x9033
+> +#define NFS4_MOUNT_FSCACHE	0x10000	/* 1 */
+> +#define NFS4_MOUNT_FLAGMASK	0x19033
+>  
+>  #endif
+> diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
+> index 9ba4aec..d1d6192 100644
+> --- a/include/linux/nfs_fs.h
+> +++ b/include/linux/nfs_fs.h
+> @@ -172,6 +172,9 @@ struct nfs_inode {
+>  	int			 delegation_state;
+>  	struct rw_semaphore	rwsem;
+>  #endif /* CONFIG_NFS_V4*/
+> +#ifdef CONFIG_NFS_FSCACHE
+> +	struct fscache_cookie	*fscache;
+> +#endif
+>  	struct inode		vfs_inode;
+>  };
+>  
+> @@ -193,6 +196,7 @@ struct nfs_inode {
+>  #define NFS_INO_ADVISE_RDPLUS	(1)		/* advise readdirplus */
+>  #define NFS_INO_STALE		(2)		/* possible stale inode */
+>  #define NFS_INO_ACL_LRU_SET	(3)		/* Inode is on the LRU list */
+> +#define NFS_INO_FSCACHE		(4)		/* inode can be cached by FS-Cache */
+>  
+>  static inline struct nfs_inode *NFS_I(struct inode *inode)
+>  {
+> @@ -218,6 +222,7 @@ static inline struct nfs_inode *NFS_I(struct inode *inode)
+>  
+>  #define NFS_FLAGS(inode)		(NFS_I(inode)->flags)
+>  #define NFS_STALE(inode)		(test_bit(NFS_INO_STALE, &NFS_FLAGS(inode)))
+> +#define NFS_FSCACHE(inode)		(test_bit(NFS_INO_FSCACHE, &NFS_FLAGS(inode)))
+>  
+>  #define NFS_FILEID(inode)		(NFS_I(inode)->fileid)
+>  
+> @@ -553,6 +558,7 @@ extern void * nfs_root_data(void);
+>  #define NFSDBG_CALLBACK		0x0100
+>  #define NFSDBG_CLIENT		0x0200
+>  #define NFSDBG_MOUNT		0x0400
+> +#define NFSDBG_FSCACHE		0x0800
+>  #define NFSDBG_ALL		0xFFFF
+>  
+>  #ifdef __KERNEL__
+> diff --git a/include/linux/nfs_fs_sb.h b/include/linux/nfs_fs_sb.h
+> index 0cac49b..abe1043 100644
+> --- a/include/linux/nfs_fs_sb.h
+> +++ b/include/linux/nfs_fs_sb.h
+> @@ -3,6 +3,7 @@
+>  
+>  #include <linux/list.h>
+>  #include <linux/backing-dev.h>
+> +#include <linux/fscache.h>
+>  
+>  struct nfs_iostats;
+>  
+> @@ -65,6 +66,10 @@ struct nfs_client {
+>  	char			cl_ipaddr[16];
+>  	unsigned char		cl_id_uniquifier;
+>  #endif
+> +
+> +#ifdef CONFIG_NFS_FSCACHE
+> +	struct fscache_cookie	*fscache;	/* client index cache cookie */
+> +#endif
+>  };
+>  
+>  /*
+> diff --git a/include/linux/nfs_mount.h b/include/linux/nfs_mount.h
+> index a3ade89..36971cd 100644
+> --- a/include/linux/nfs_mount.h
+> +++ b/include/linux/nfs_mount.h
+> @@ -63,6 +63,7 @@ struct nfs_mount_data {
+>  #define NFS_MOUNT_SECFLAVOUR	0x2000	/* 5 */
+>  #define NFS_MOUNT_NORDIRPLUS	0x4000	/* 5 */
+>  #define NFS_MOUNT_UNSHARED	0x8000	/* 5 */
+> -#define NFS_MOUNT_FLAGMASK	0xFFFF
+> +#define NFS_MOUNT_FSCACHE	0x10000	/* 5 */
+> +#define NFS_MOUNT_FLAGMASK	0x1FFFF
+>  
+>  #endif
+> 
+
+I'm not too happy about the change to the binary mount interface. As far
+as I'm concerned, the binary interface should really be considered
+frozen, and should not be touched.
+Instead, feel free to update the text-based mount interface (which can
+be found in 2.6.23-rc1 and later). Please put any such mount interface
+changes in a separate patch together with the Kconfig changes.
+
+Cheers
+  Trond
 
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.23-rc2-mm1
-# Thu Aug  9 12:18:45 2007
-#
-CONFIG_X86_32=y
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CMOS_UPDATE=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
-CONFIG_NONIRQ_WAKEUP=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_X86=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_QUICKLIST=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_DMI=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-
-#
-# General setup
-#
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-CONFIG_LOCALVERSION_AUTO=y
-CONFIG_SWAP=y
-CONFIG_SWAP_PREFETCH=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_POSIX_MQUEUE=y
-CONFIG_BSD_PROCESS_ACCT=y
-CONFIG_BSD_PROCESS_ACCT_V3=y
-# CONFIG_TASKSTATS is not set
-# CONFIG_USER_NS is not set
-# CONFIG_AUDIT is not set
-CONFIG_IKCONFIG=y
-CONFIG_IKCONFIG_PROC=y
-CONFIG_LOG_BUF_SHIFT=18
-CONFIG_CONTAINERS=y
-CONFIG_CONTAINER_DEBUG=y
-CONFIG_CONTAINER_NS=y
-CONFIG_CONTAINER_CPUACCT=y
-# CONFIG_SYSFS_DEPRECATED is not set
-CONFIG_RELAY=y
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_INITRAMFS_SOURCE=""
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-# CONFIG_EMBEDDED is not set
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-# CONFIG_KALLSYMS_EXTRA_PASS is not set
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_ANON_INODES=y
-CONFIG_EPOLL=y
-CONFIG_SIGNALFD=y
-CONFIG_TIMERFD=y
-CONFIG_EVENTFD=y
-CONFIG_SHMEM=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_SLUB_DEBUG=y
-# CONFIG_SLAB is not set
-CONFIG_SLUB=y
-# CONFIG_SLOB is not set
-CONFIG_PROC_PAGE_MONITOR=y
-CONFIG_PROC_KPAGEMAP=y
-CONFIG_RT_MUTEXES=y
-# CONFIG_TINY_SHMEM is not set
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_MODULE_FORCE_UNLOAD=y
-# CONFIG_MODVERSIONS is not set
-# CONFIG_MODULE_SRCVERSION_ALL is not set
-CONFIG_KMOD=y
-CONFIG_BLOCK=y
-CONFIG_LBD=y
-# CONFIG_BLK_DEV_IO_TRACE is not set
-# CONFIG_LSF is not set
-# CONFIG_BLK_DEV_BSG is not set
-
-#
-# IO Schedulers
-#
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=m
-CONFIG_IOSCHED_CFQ=m
-CONFIG_DEFAULT_AS=y
-# CONFIG_DEFAULT_DEADLINE is not set
-# CONFIG_DEFAULT_CFQ is not set
-# CONFIG_DEFAULT_NOOP is not set
-CONFIG_DEFAULT_IOSCHED="anticipatory"
-
-#
-# Processor type and features
-#
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_HIGH_RES_TIMERS=y
-# CONFIG_SMP is not set
-CONFIG_X86_PC=y
-# CONFIG_X86_ELAN is not set
-# CONFIG_X86_VOYAGER is not set
-# CONFIG_X86_NUMAQ is not set
-# CONFIG_X86_SUMMIT is not set
-# CONFIG_X86_BIGSMP is not set
-# CONFIG_X86_VISWS is not set
-# CONFIG_X86_GENERICARCH is not set
-# CONFIG_X86_ES7000 is not set
-# CONFIG_PARAVIRT is not set
-# CONFIG_M386 is not set
-# CONFIG_M486 is not set
-# CONFIG_M586 is not set
-# CONFIG_M586TSC is not set
-# CONFIG_M586MMX is not set
-# CONFIG_M686 is not set
-# CONFIG_MPENTIUMII is not set
-# CONFIG_MPENTIUMIII is not set
-# CONFIG_MPENTIUMM is not set
-CONFIG_MPENTIUM4=y
-# CONFIG_MCORE2 is not set
-# CONFIG_MK6 is not set
-# CONFIG_MK7 is not set
-# CONFIG_MK8 is not set
-# CONFIG_MCRUSOE is not set
-# CONFIG_MEFFICEON is not set
-# CONFIG_MWINCHIPC6 is not set
-# CONFIG_MWINCHIP2 is not set
-# CONFIG_MWINCHIP3D is not set
-# CONFIG_MGEODEGX1 is not set
-# CONFIG_MGEODE_LX is not set
-# CONFIG_MCYRIXIII is not set
-# CONFIG_MVIAC3_2 is not set
-# CONFIG_MVIAC7 is not set
-# CONFIG_X86_GENERIC is not set
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=7
-CONFIG_X86_XADD=y
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-# CONFIG_ARCH_HAS_ILOG2_U32 is not set
-# CONFIG_ARCH_HAS_ILOG2_U64 is not set
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=4
-CONFIG_HPET_TIMER=y
-# CONFIG_PREEMPT_NONE is not set
-# CONFIG_PREEMPT_VOLUNTARY is not set
-CONFIG_PREEMPT=y
-CONFIG_PREEMPT_BKL=y
-CONFIG_X86_UP_APIC=y
-CONFIG_X86_UP_IOAPIC=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_IO_APIC=y
-CONFIG_X86_MCE=y
-CONFIG_X86_MCE_NONFATAL=m
-CONFIG_X86_MCE_P4THERMAL=y
-CONFIG_VM86=y
-# CONFIG_TOSHIBA is not set
-# CONFIG_I8K is not set
-# CONFIG_X86_REBOOTFIXUPS is not set
-CONFIG_MICROCODE=m
-CONFIG_MICROCODE_OLD_INTERFACE=y
-CONFIG_X86_MSR=m
-CONFIG_X86_CPUID=m
-
-#
-# Firmware Drivers
-#
-CONFIG_EDD=m
-CONFIG_DELL_RBU=m
-CONFIG_DCDBAS=m
-CONFIG_DMIID=y
-# CONFIG_NOHIGHMEM is not set
-CONFIG_HIGHMEM4G=y
-# CONFIG_HIGHMEM64G is not set
-CONFIG_PAGE_OFFSET=0xC0000000
-CONFIG_HIGHMEM=y
-CONFIG_ARCH_FLATMEM_ENABLE=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-# CONFIG_DISCONTIGMEM_MANUAL is not set
-# CONFIG_SPARSEMEM_MANUAL is not set
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_SPARSEMEM_STATIC=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_RESOURCES_64BIT=y
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_NR_QUICK=1
-CONFIG_VIRT_TO_BUS=y
-CONFIG_HIGHPTE=y
-# CONFIG_MATH_EMULATION is not set
-CONFIG_MTRR=y
-# CONFIG_EFI is not set
-# CONFIG_SECCOMP is not set
-# CONFIG_HZ_100 is not set
-# CONFIG_HZ_250 is not set
-CONFIG_HZ_300=y
-# CONFIG_HZ_1000 is not set
-CONFIG_HZ=300
-CONFIG_KEXEC=y
-# CONFIG_CRASH_DUMP is not set
-CONFIG_PHYSICAL_START=0x100000
-# CONFIG_RELOCATABLE is not set
-CONFIG_PHYSICAL_ALIGN=0x100000
-CONFIG_COMPAT_VDSO=y
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-
-#
-# Power management options (ACPI, APM)
-#
-CONFIG_PM=y
-# CONFIG_PM_LEGACY is not set
-# CONFIG_PM_DEBUG is not set
-CONFIG_PM_SLEEP=y
-CONFIG_SUSPEND=y
-CONFIG_HIBERNATION=y
-CONFIG_PM_STD_PARTITION=""
-CONFIG_ACPI=y
-CONFIG_ACPI_SLEEP=y
-# CONFIG_ACPI_PROCFS is not set
-CONFIG_ACPI_AC=y
-CONFIG_ACPI_BATTERY=y
-CONFIG_ACPI_BUTTON=y
-CONFIG_ACPI_VIDEO=m
-CONFIG_ACPI_FAN=y
-# CONFIG_ACPI_DOCK is not set
-CONFIG_ACPI_PROCESSOR=y
-# CONFIG_ACPI_THERMAL is not set
-# CONFIG_ACPI_ASUS is not set
-# CONFIG_ACPI_TOSHIBA is not set
-CONFIG_ACPI_BLACKLIST_YEAR=2001
-CONFIG_ACPI_DEBUG=y
-CONFIG_ACPI_DEBUG_FUNC_TRACE=y
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_X86_PM_TIMER=y
-# CONFIG_ACPI_CONTAINER is not set
-# CONFIG_ACPI_SBS is not set
-# CONFIG_APM is not set
-
-#
-# CPU Frequency scaling
-#
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_TABLE=y
-CONFIG_CPU_FREQ_DEBUG=y
-CONFIG_CPU_FREQ_STAT=m
-CONFIG_CPU_FREQ_STAT_DETAILS=y
-# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
-CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-# CONFIG_CPU_FREQ_GOV_POWERSAVE is not set
-CONFIG_CPU_FREQ_GOV_USERSPACE=y
-CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-# CONFIG_CPU_FREQ_GOV_CONSERVATIVE is not set
-
-#
-# CPUFreq processor drivers
-#
-CONFIG_X86_ACPI_CPUFREQ=y
-# CONFIG_X86_POWERNOW_K6 is not set
-# CONFIG_X86_POWERNOW_K7 is not set
-# CONFIG_X86_POWERNOW_K8 is not set
-# CONFIG_X86_GX_SUSPMOD is not set
-# CONFIG_X86_SPEEDSTEP_CENTRINO is not set
-CONFIG_X86_SPEEDSTEP_ICH=m
-# CONFIG_X86_SPEEDSTEP_SMI is not set
-# CONFIG_X86_P4_CLOCKMOD is not set
-# CONFIG_X86_CPUFREQ_NFORCE2 is not set
-# CONFIG_X86_LONGRUN is not set
-# CONFIG_X86_LONGHAUL is not set
-# CONFIG_X86_E_POWERSAVER is not set
-
-#
-# shared options
-#
-# CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
-CONFIG_X86_SPEEDSTEP_LIB=m
-# CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK is not set
-
-#
-# CPU idle PM support
-#
-CONFIG_CPU_IDLE=y
-
-#
-# Governors
-#
-CONFIG_CPU_IDLE_GOV_LADDER=y
-CONFIG_CPU_IDLE_GOV_MENU=y
-
-#
-# Bus options (PCI, PCMCIA, EISA, MCA, ISA)
-#
-CONFIG_PCI=y
-# CONFIG_PCI_GOBIOS is not set
-# CONFIG_PCI_GOMMCONFIG is not set
-# CONFIG_PCI_GODIRECT is not set
-CONFIG_PCI_GOANY=y
-CONFIG_PCI_BIOS=y
-CONFIG_PCI_DIRECT=y
-CONFIG_PCI_MMCONFIG=y
-# CONFIG_PCIEPORTBUS is not set
-CONFIG_ARCH_SUPPORTS_MSI=y
-CONFIG_PCI_MSI=y
-# CONFIG_PCI_DEBUG is not set
-CONFIG_HT_IRQ=y
-CONFIG_ISA_DMA_API=y
-# CONFIG_ISA is not set
-# CONFIG_MCA is not set
-# CONFIG_SCx200 is not set
-CONFIG_PCCARD=m
-CONFIG_PCMCIA_DEBUG=y
-CONFIG_PCMCIA=m
-CONFIG_PCMCIA_LOAD_CIS=y
-CONFIG_CARDBUS=y
-
-#
-# PC-card bridges
-#
-CONFIG_YENTA=m
-CONFIG_YENTA_O2=y
-CONFIG_YENTA_RICOH=y
-CONFIG_YENTA_TI=y
-CONFIG_YENTA_ENE_TUNE=y
-CONFIG_YENTA_TOSHIBA=y
-CONFIG_PD6729=m
-CONFIG_I82092=m
-CONFIG_PCCARD_NONSTATIC=m
-# CONFIG_HOTPLUG_PCI is not set
-
-#
-# Executable file formats
-#
-CONFIG_BINFMT_ELF=y
-CONFIG_BINFMT_AOUT=m
-CONFIG_BINFMT_MISC=m
-
-#
-# Networking
-#
-CONFIG_NET=y
-
-#
-# Networking options
-#
-CONFIG_PACKET=y
-# CONFIG_PACKET_MMAP is not set
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-# CONFIG_XFRM_USER is not set
-# CONFIG_XFRM_SUB_POLICY is not set
-CONFIG_XFRM_MIGRATE=y
-CONFIG_NET_KEY=m
-CONFIG_NET_KEY_MIGRATE=y
-CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
-# CONFIG_IP_ADVANCED_ROUTER is not set
-CONFIG_IP_FIB_HASH=y
-CONFIG_IP_PNP=y
-CONFIG_IP_PNP_DHCP=y
-# CONFIG_IP_PNP_BOOTP is not set
-# CONFIG_IP_PNP_RARP is not set
-CONFIG_NET_IPIP=m
-CONFIG_NET_IPGRE=m
-CONFIG_NET_IPGRE_BROADCAST=y
-CONFIG_IP_MROUTE=y
-CONFIG_IP_PIMSM_V1=y
-CONFIG_IP_PIMSM_V2=y
-# CONFIG_ARPD is not set
-# CONFIG_SYN_COOKIES is not set
-CONFIG_INET_AH=m
-CONFIG_INET_ESP=m
-CONFIG_INET_IPCOMP=m
-CONFIG_INET_XFRM_TUNNEL=m
-CONFIG_INET_TUNNEL=y
-CONFIG_INET_XFRM_MODE_TRANSPORT=y
-CONFIG_INET_XFRM_MODE_TUNNEL=y
-CONFIG_INET_XFRM_MODE_BEET=m
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-# CONFIG_TCP_CONG_ADVANCED is not set
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-# CONFIG_TCP_MD5SIG is not set
-# CONFIG_IP_VS is not set
-CONFIG_IPV6=y
-CONFIG_IPV6_PRIVACY=y
-CONFIG_IPV6_ROUTER_PREF=y
-CONFIG_IPV6_ROUTE_INFO=y
-CONFIG_IPV6_OPTIMISTIC_DAD=y
-CONFIG_INET6_AH=m
-CONFIG_INET6_ESP=m
-CONFIG_INET6_IPCOMP=m
-CONFIG_IPV6_MIP6=m
-CONFIG_INET6_XFRM_TUNNEL=m
-CONFIG_INET6_TUNNEL=m
-CONFIG_INET6_XFRM_MODE_TRANSPORT=y
-CONFIG_INET6_XFRM_MODE_TUNNEL=y
-CONFIG_INET6_XFRM_MODE_BEET=m
-CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION=m
-CONFIG_IPV6_SIT=y
-CONFIG_IPV6_TUNNEL=m
-CONFIG_IPV6_MULTIPLE_TABLES=y
-CONFIG_IPV6_SUBTREES=y
-# CONFIG_NETWORK_SECMARK is not set
-CONFIG_NETFILTER=y
-CONFIG_NETFILTER_DEBUG=y
-
-#
-# Core Netfilter Configuration
-#
-CONFIG_NETFILTER_NETLINK=m
-CONFIG_NETFILTER_NETLINK_QUEUE=m
-CONFIG_NETFILTER_NETLINK_LOG=m
-CONFIG_NF_CONNTRACK_ENABLED=m
-CONFIG_NF_CONNTRACK=m
-CONFIG_NF_CT_ACCT=y
-CONFIG_NF_CONNTRACK_MARK=y
-CONFIG_NF_CONNTRACK_EVENTS=y
-CONFIG_NF_CT_PROTO_GRE=m
-CONFIG_NF_CT_PROTO_SCTP=m
-CONFIG_NF_CT_PROTO_UDPLITE=m
-CONFIG_NF_CONNTRACK_AMANDA=m
-CONFIG_NF_CONNTRACK_FTP=m
-CONFIG_NF_CONNTRACK_H323=m
-CONFIG_NF_CONNTRACK_IRC=m
-CONFIG_NF_CONNTRACK_NETBIOS_NS=m
-CONFIG_NF_CONNTRACK_PPTP=m
-CONFIG_NF_CONNTRACK_SANE=m
-CONFIG_NF_CONNTRACK_SIP=m
-CONFIG_NF_CONNTRACK_TFTP=m
-CONFIG_NF_CT_NETLINK=m
-CONFIG_NETFILTER_XTABLES=m
-CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
-CONFIG_NETFILTER_XT_TARGET_CONNMARK=m
-CONFIG_NETFILTER_XT_TARGET_DSCP=m
-CONFIG_NETFILTER_XT_TARGET_MARK=m
-CONFIG_NETFILTER_XT_TARGET_NFQUEUE=m
-CONFIG_NETFILTER_XT_TARGET_NFLOG=m
-CONFIG_NETFILTER_XT_TARGET_NOTRACK=m
-CONFIG_NETFILTER_XT_TARGET_TRACE=m
-CONFIG_NETFILTER_XT_TARGET_TCPMSS=m
-CONFIG_NETFILTER_XT_MATCH_COMMENT=m
-CONFIG_NETFILTER_XT_MATCH_CONNBYTES=m
-CONFIG_NETFILTER_XT_MATCH_CONNLIMIT=m
-CONFIG_NETFILTER_XT_MATCH_CONNMARK=m
-CONFIG_NETFILTER_XT_MATCH_CONNTRACK=m
-CONFIG_NETFILTER_XT_MATCH_DCCP=m
-CONFIG_NETFILTER_XT_MATCH_DSCP=m
-CONFIG_NETFILTER_XT_MATCH_ESP=m
-CONFIG_NETFILTER_XT_MATCH_HELPER=m
-CONFIG_NETFILTER_XT_MATCH_LENGTH=m
-CONFIG_NETFILTER_XT_MATCH_LIMIT=m
-CONFIG_NETFILTER_XT_MATCH_MAC=m
-CONFIG_NETFILTER_XT_MATCH_MARK=m
-CONFIG_NETFILTER_XT_MATCH_POLICY=m
-CONFIG_NETFILTER_XT_MATCH_MULTIPORT=m
-CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
-CONFIG_NETFILTER_XT_MATCH_QUOTA=m
-CONFIG_NETFILTER_XT_MATCH_REALM=m
-CONFIG_NETFILTER_XT_MATCH_SCTP=m
-CONFIG_NETFILTER_XT_MATCH_STATE=m
-CONFIG_NETFILTER_XT_MATCH_STATISTIC=m
-CONFIG_NETFILTER_XT_MATCH_STRING=m
-CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
-CONFIG_NETFILTER_XT_MATCH_U32=m
-CONFIG_NETFILTER_XT_MATCH_HASHLIMIT=m
-
-#
-# IP: Netfilter Configuration
-#
-CONFIG_NF_CONNTRACK_IPV4=m
-CONFIG_NF_CONNTRACK_PROC_COMPAT=y
-CONFIG_IP_NF_QUEUE=m
-CONFIG_IP_NF_IPTABLES=m
-CONFIG_IP_NF_MATCH_IPRANGE=m
-CONFIG_IP_NF_MATCH_TOS=m
-CONFIG_IP_NF_MATCH_RECENT=m
-CONFIG_IP_NF_MATCH_ECN=m
-CONFIG_IP_NF_MATCH_AH=m
-CONFIG_IP_NF_MATCH_TTL=m
-CONFIG_IP_NF_MATCH_OWNER=m
-CONFIG_IP_NF_MATCH_ADDRTYPE=m
-CONFIG_IP_NF_FILTER=m
-CONFIG_IP_NF_TARGET_REJECT=m
-CONFIG_IP_NF_TARGET_LOG=m
-CONFIG_IP_NF_TARGET_ULOG=m
-CONFIG_NF_NAT=m
-CONFIG_NF_NAT_NEEDED=y
-CONFIG_IP_NF_TARGET_MASQUERADE=m
-CONFIG_IP_NF_TARGET_REDIRECT=m
-CONFIG_IP_NF_TARGET_NETMAP=m
-CONFIG_IP_NF_TARGET_SAME=m
-CONFIG_NF_NAT_SNMP_BASIC=m
-CONFIG_NF_NAT_PROTO_GRE=m
-CONFIG_NF_NAT_FTP=m
-CONFIG_NF_NAT_IRC=m
-CONFIG_NF_NAT_TFTP=m
-CONFIG_NF_NAT_AMANDA=m
-CONFIG_NF_NAT_PPTP=m
-CONFIG_NF_NAT_H323=m
-CONFIG_NF_NAT_SIP=m
-CONFIG_IP_NF_MANGLE=m
-CONFIG_IP_NF_TARGET_TOS=m
-CONFIG_IP_NF_TARGET_ECN=m
-CONFIG_IP_NF_TARGET_TTL=m
-CONFIG_IP_NF_TARGET_CLUSTERIP=m
-CONFIG_IP_NF_RAW=m
-CONFIG_IP_NF_ARPTABLES=m
-CONFIG_IP_NF_ARPFILTER=m
-CONFIG_IP_NF_ARP_MANGLE=m
-
-#
-# IPv6: Netfilter Configuration (EXPERIMENTAL)
-#
-CONFIG_NF_CONNTRACK_IPV6=m
-CONFIG_IP6_NF_QUEUE=m
-CONFIG_IP6_NF_IPTABLES=m
-CONFIG_IP6_NF_MATCH_RT=m
-CONFIG_IP6_NF_MATCH_OPTS=m
-CONFIG_IP6_NF_MATCH_FRAG=m
-CONFIG_IP6_NF_MATCH_HL=m
-CONFIG_IP6_NF_MATCH_OWNER=m
-CONFIG_IP6_NF_MATCH_IPV6HEADER=m
-CONFIG_IP6_NF_MATCH_AH=m
-CONFIG_IP6_NF_MATCH_MH=m
-CONFIG_IP6_NF_MATCH_EUI64=m
-CONFIG_IP6_NF_FILTER=m
-CONFIG_IP6_NF_TARGET_LOG=m
-CONFIG_IP6_NF_TARGET_REJECT=m
-CONFIG_IP6_NF_MANGLE=m
-CONFIG_IP6_NF_TARGET_HL=m
-CONFIG_IP6_NF_RAW=m
-# CONFIG_IP_DCCP is not set
-CONFIG_IP_SCTP=m
-# CONFIG_SCTP_DBG_MSG is not set
-# CONFIG_SCTP_DBG_OBJCNT is not set
-# CONFIG_SCTP_HMAC_NONE is not set
-# CONFIG_SCTP_HMAC_SHA1 is not set
-CONFIG_SCTP_HMAC_MD5=y
-# CONFIG_TIPC is not set
-# CONFIG_ATM is not set
-# CONFIG_BRIDGE is not set
-CONFIG_VLAN_8021Q=m
-# CONFIG_DECNET is not set
-CONFIG_LLC=m
-CONFIG_LLC2=m
-CONFIG_IPX=m
-# CONFIG_IPX_INTERN is not set
-CONFIG_ATALK=m
-CONFIG_DEV_APPLETALK=m
-CONFIG_IPDDP=m
-CONFIG_IPDDP_ENCAP=y
-CONFIG_IPDDP_DECAP=y
-# CONFIG_X25 is not set
-# CONFIG_LAPB is not set
-# CONFIG_ECONET is not set
-# CONFIG_WAN_ROUTER is not set
-
-#
-# QoS and/or fair queueing
-#
-# CONFIG_NET_SCHED is not set
-CONFIG_NET_SCH_FIFO=y
-CONFIG_NET_CLS_ROUTE=y
-
-#
-# Network testing
-#
-# CONFIG_NET_PKTGEN is not set
-# CONFIG_NET_TCPPROBE is not set
-# CONFIG_HAMRADIO is not set
-CONFIG_IRDA=m
-
-#
-# IrDA protocols
-#
-CONFIG_IRLAN=m
-CONFIG_IRNET=m
-CONFIG_IRCOMM=m
-CONFIG_IRDA_ULTRA=y
-
-#
-# IrDA options
-#
-CONFIG_IRDA_CACHE_LAST_LSAP=y
-CONFIG_IRDA_FAST_RR=y
-CONFIG_IRDA_DEBUG=y
-
-#
-# Infrared-port device drivers
-#
-
-#
-# SIR device drivers
-#
-CONFIG_IRTTY_SIR=m
-
-#
-# Dongle support
-#
-CONFIG_DONGLE=y
-CONFIG_ESI_DONGLE=m
-CONFIG_ACTISYS_DONGLE=m
-CONFIG_TEKRAM_DONGLE=m
-CONFIG_TOIM3232_DONGLE=m
-CONFIG_LITELINK_DONGLE=m
-CONFIG_MA600_DONGLE=m
-CONFIG_GIRBIL_DONGLE=m
-CONFIG_MCP2120_DONGLE=m
-CONFIG_OLD_BELKIN_DONGLE=m
-CONFIG_ACT200L_DONGLE=m
-CONFIG_KINGSUN_DONGLE=m
-
-#
-# Old SIR device drivers
-#
-CONFIG_IRPORT_SIR=m
-
-#
-# Old Serial dongle support
-#
-CONFIG_DONGLE_OLD=y
-CONFIG_ESI_DONGLE_OLD=m
-CONFIG_ACTISYS_DONGLE_OLD=m
-CONFIG_TEKRAM_DONGLE_OLD=m
-CONFIG_GIRBIL_DONGLE_OLD=m
-CONFIG_LITELINK_DONGLE_OLD=m
-CONFIG_MCP2120_DONGLE_OLD=m
-CONFIG_OLD_BELKIN_DONGLE_OLD=m
-CONFIG_ACT200L_DONGLE_OLD=m
-CONFIG_MA600_DONGLE_OLD=m
-
-#
-# FIR device drivers
-#
-CONFIG_USB_IRDA=m
-CONFIG_SIGMATEL_FIR=m
-CONFIG_NSC_FIR=m
-CONFIG_WINBOND_FIR=m
-CONFIG_TOSHIBA_FIR=m
-CONFIG_SMC_IRCC_FIR=m
-CONFIG_ALI_FIR=m
-CONFIG_VLSI_FIR=m
-CONFIG_VIA_FIR=m
-CONFIG_MCS_FIR=m
-CONFIG_BT=m
-CONFIG_BT_L2CAP=m
-CONFIG_BT_SCO=m
-CONFIG_BT_RFCOMM=m
-CONFIG_BT_RFCOMM_TTY=y
-CONFIG_BT_BNEP=m
-CONFIG_BT_BNEP_MC_FILTER=y
-CONFIG_BT_BNEP_PROTO_FILTER=y
-CONFIG_BT_HIDP=m
-
-#
-# Bluetooth device drivers
-#
-CONFIG_BT_HCIUSB=m
-CONFIG_BT_HCIUSB_SCO=y
-CONFIG_BT_HCIUART=m
-CONFIG_BT_HCIUART_H4=y
-CONFIG_BT_HCIUART_BCSP=y
-CONFIG_BT_HCIBCM203X=m
-CONFIG_BT_HCIBPA10X=m
-CONFIG_BT_HCIBFUSB=m
-CONFIG_BT_HCIDTL1=m
-CONFIG_BT_HCIBT3C=m
-CONFIG_BT_HCIBLUECARD=m
-CONFIG_BT_HCIBTUART=m
-CONFIG_BT_HCIVHCI=m
-# CONFIG_AF_RXRPC is not set
-CONFIG_FIB_RULES=y
-
-#
-# Wireless
-#
-CONFIG_CFG80211=m
-CONFIG_NL80211=y
-CONFIG_WIRELESS_EXT=y
-CONFIG_MAC80211=m
-CONFIG_MAC80211_LEDS=y
-# CONFIG_MAC80211_HT is not set
-# CONFIG_MAC80211_DEBUGFS is not set
-CONFIG_MAC80211_DEBUG=y
-CONFIG_MAC80211_VERBOSE_DEBUG=y
-CONFIG_MAC80211_LOWTX_FRAME_DUMP=y
-CONFIG_TKIP_DEBUG=y
-CONFIG_MAC80211_DEBUG_COUNTERS=y
-CONFIG_HOSTAPD_WPA_TESTING=y
-CONFIG_MAC80211_IBSS_DEBUG=y
-CONFIG_MAC80211_VERBOSE_PS_DEBUG=y
-CONFIG_IEEE80211=m
-CONFIG_IEEE80211_DEBUG=y
-CONFIG_IEEE80211_CRYPT_WEP=m
-CONFIG_IEEE80211_CRYPT_CCMP=m
-CONFIG_IEEE80211_CRYPT_TKIP=m
-CONFIG_IEEE80211_SOFTMAC=m
-CONFIG_IEEE80211_SOFTMAC_DEBUG=y
-# CONFIG_RFKILL is not set
-# CONFIG_NET_9P is not set
-
-#
-# Device Drivers
-#
-
-#
-# Generic Driver Options
-#
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_FW_LOADER=y
-# CONFIG_DEBUG_DRIVER is not set
-# CONFIG_DEBUG_DEVRES is not set
-# CONFIG_SYS_HYPERVISOR is not set
-CONFIG_CONNECTOR=m
-CONFIG_MTD=m
-CONFIG_MTD_DEBUG=y
-CONFIG_MTD_DEBUG_VERBOSE=0
-CONFIG_MTD_CONCAT=m
-CONFIG_MTD_PARTITIONS=y
-CONFIG_MTD_REDBOOT_PARTS=m
-CONFIG_MTD_REDBOOT_DIRECTORY_BLOCK=-1
-CONFIG_MTD_REDBOOT_PARTS_UNALLOCATED=y
-CONFIG_MTD_REDBOOT_PARTS_READONLY=y
-
-#
-# User Modules And Translation Layers
-#
-CONFIG_MTD_CHAR=m
-CONFIG_MTD_BLKDEVS=m
-CONFIG_MTD_BLOCK=m
-CONFIG_MTD_BLOCK_RO=m
-CONFIG_FTL=m
-CONFIG_NFTL=m
-CONFIG_NFTL_RW=y
-CONFIG_INFTL=m
-CONFIG_RFD_FTL=m
-CONFIG_SSFDC=m
-# CONFIG_MTD_OOPS is not set
-
-#
-# RAM/ROM/Flash chip drivers
-#
-CONFIG_MTD_CFI=m
-CONFIG_MTD_JEDECPROBE=m
-CONFIG_MTD_GEN_PROBE=m
-CONFIG_MTD_CFI_ADV_OPTIONS=y
-CONFIG_MTD_CFI_NOSWAP=y
-# CONFIG_MTD_CFI_BE_BYTE_SWAP is not set
-# CONFIG_MTD_CFI_LE_BYTE_SWAP is not set
-CONFIG_MTD_CFI_GEOMETRY=y
-CONFIG_MTD_MAP_BANK_WIDTH_1=y
-CONFIG_MTD_MAP_BANK_WIDTH_2=y
-CONFIG_MTD_MAP_BANK_WIDTH_4=y
-CONFIG_MTD_MAP_BANK_WIDTH_8=y
-CONFIG_MTD_MAP_BANK_WIDTH_16=y
-CONFIG_MTD_MAP_BANK_WIDTH_32=y
-CONFIG_MTD_CFI_I1=y
-CONFIG_MTD_CFI_I2=y
-CONFIG_MTD_CFI_I4=y
-CONFIG_MTD_CFI_I8=y
-CONFIG_MTD_OTP=y
-CONFIG_MTD_CFI_INTELEXT=m
-CONFIG_MTD_CFI_AMDSTD=m
-CONFIG_MTD_CFI_STAA=m
-CONFIG_MTD_CFI_UTIL=m
-CONFIG_MTD_RAM=m
-CONFIG_MTD_ROM=m
-CONFIG_MTD_ABSENT=m
-
-#
-# Mapping drivers for chip access
-#
-CONFIG_MTD_COMPLEX_MAPPINGS=y
-CONFIG_MTD_PHYSMAP=m
-CONFIG_MTD_PHYSMAP_START=0x8000000
-CONFIG_MTD_PHYSMAP_LEN=0x0
-CONFIG_MTD_PHYSMAP_BANKWIDTH=2
-CONFIG_MTD_PNC2000=m
-CONFIG_MTD_SC520CDP=m
-CONFIG_MTD_NETSC520=m
-CONFIG_MTD_TS5500=m
-CONFIG_MTD_SBC_GXX=m
-CONFIG_MTD_AMD76XROM=m
-CONFIG_MTD_ICHXROM=m
-CONFIG_MTD_ESB2ROM=m
-CONFIG_MTD_CK804XROM=m
-CONFIG_MTD_SCB2_FLASH=m
-CONFIG_MTD_NETtel=m
-CONFIG_MTD_DILNETPC=m
-CONFIG_MTD_DILNETPC_BOOTSIZE=0x80000
-CONFIG_MTD_L440GX=m
-CONFIG_MTD_PCI=m
-CONFIG_MTD_PLATRAM=m
-
-#
-# Self-contained MTD device drivers
-#
-CONFIG_MTD_PMC551=m
-CONFIG_MTD_PMC551_BUGFIX=y
-CONFIG_MTD_PMC551_DEBUG=y
-CONFIG_MTD_DATAFLASH=m
-CONFIG_MTD_M25P80=m
-CONFIG_MTD_SLRAM=m
-CONFIG_MTD_PHRAM=m
-CONFIG_MTD_MTDRAM=m
-CONFIG_MTDRAM_TOTAL_SIZE=4096
-CONFIG_MTDRAM_ERASE_SIZE=128
-CONFIG_MTD_BLOCK2MTD=m
-
-#
-# Disk-On-Chip Device Drivers
-#
-CONFIG_MTD_DOC2000=m
-CONFIG_MTD_DOC2001=m
-CONFIG_MTD_DOC2001PLUS=m
-CONFIG_MTD_DOCPROBE=m
-CONFIG_MTD_DOCECC=m
-CONFIG_MTD_DOCPROBE_ADVANCED=y
-CONFIG_MTD_DOCPROBE_ADDRESS=0x0000
-CONFIG_MTD_DOCPROBE_HIGH=y
-CONFIG_MTD_DOCPROBE_55AA=y
-CONFIG_MTD_NAND=m
-CONFIG_MTD_NAND_VERIFY_WRITE=y
-CONFIG_MTD_NAND_ECC_SMC=y
-CONFIG_MTD_NAND_MUSEUM_IDS=y
-CONFIG_MTD_NAND_IDS=m
-CONFIG_MTD_NAND_DISKONCHIP=m
-CONFIG_MTD_NAND_DISKONCHIP_PROBE_ADVANCED=y
-CONFIG_MTD_NAND_DISKONCHIP_PROBE_ADDRESS=0x0
-CONFIG_MTD_NAND_DISKONCHIP_PROBE_HIGH=y
-CONFIG_MTD_NAND_DISKONCHIP_BBTWRITE=y
-CONFIG_MTD_NAND_CAFE=m
-CONFIG_MTD_NAND_CS553X=m
-CONFIG_MTD_NAND_NANDSIM=m
-CONFIG_MTD_NAND_PLATFORM=m
-CONFIG_MTD_ONENAND=m
-CONFIG_MTD_ONENAND_VERIFY_WRITE=y
-CONFIG_MTD_ONENAND_OTP=y
-CONFIG_MTD_ONENAND_2X_PROGRAM=y
-CONFIG_MTD_ONENAND_SIM=m
-
-#
-# UBI - Unsorted block images
-#
-CONFIG_MTD_UBI=m
-CONFIG_MTD_UBI_WL_THRESHOLD=4096
-CONFIG_MTD_UBI_BEB_RESERVE=1
-CONFIG_MTD_UBI_GLUEBI=y
-
-#
-# UBI debugging options
-#
-CONFIG_MTD_UBI_DEBUG=y
-CONFIG_MTD_UBI_DEBUG_MSG=y
-CONFIG_MTD_UBI_DEBUG_PARANOID=y
-CONFIG_MTD_UBI_DEBUG_DISABLE_BGT=y
-CONFIG_MTD_UBI_DEBUG_USERSPACE_IO=y
-CONFIG_MTD_UBI_DEBUG_EMULATE_BITFLIPS=y
-CONFIG_MTD_UBI_DEBUG_EMULATE_WRITE_FAILURES=y
-CONFIG_MTD_UBI_DEBUG_EMULATE_ERASE_FAILURES=y
-
-#
-# Additional UBI debugging messages
-#
-CONFIG_MTD_UBI_DEBUG_MSG_BLD=y
-CONFIG_MTD_UBI_DEBUG_MSG_EBA=y
-CONFIG_MTD_UBI_DEBUG_MSG_WL=y
-CONFIG_MTD_UBI_DEBUG_MSG_IO=y
-CONFIG_PARPORT=m
-CONFIG_PARPORT_PC=m
-CONFIG_PARPORT_SERIAL=m
-CONFIG_PARPORT_PC_FIFO=y
-CONFIG_PARPORT_PC_SUPERIO=y
-CONFIG_PARPORT_PC_PCMCIA=m
-# CONFIG_PARPORT_GSC is not set
-CONFIG_PARPORT_AX88796=m
-CONFIG_PARPORT_1284=y
-CONFIG_PARPORT_NOT_PC=y
-CONFIG_PNP=y
-# CONFIG_PNP_DEBUG is not set
-
-#
-# Protocols
-#
-CONFIG_PNPACPI=y
-CONFIG_BLK_DEV=y
-CONFIG_BLK_DEV_FD=m
-# CONFIG_PARIDE is not set
-# CONFIG_BLK_CPQ_DA is not set
-# CONFIG_BLK_CPQ_CISS_DA is not set
-# CONFIG_BLK_DEV_DAC960 is not set
-# CONFIG_BLK_DEV_UMEM is not set
-# CONFIG_BLK_DEV_COW_COMMON is not set
-CONFIG_BLK_DEV_LOOP=y
-CONFIG_BLK_DEV_CRYPTOLOOP=m
-# CONFIG_BLK_DEV_NBD is not set
-# CONFIG_BLK_DEV_SX8 is not set
-# CONFIG_BLK_DEV_UB is not set
-# CONFIG_BLK_DEV_RAM is not set
-CONFIG_CDROM_PKTCDVD=m
-CONFIG_CDROM_PKTCDVD_BUFFERS=8
-# CONFIG_CDROM_PKTCDVD_WCACHE is not set
-# CONFIG_ATA_OVER_ETH is not set
-CONFIG_MISC_DEVICES=y
-# CONFIG_IBM_ASM is not set
-# CONFIG_PHANTOM is not set
-CONFIG_EEPROM_93CX6=m
-# CONFIG_SGI_IOC4 is not set
-CONFIG_TIFM_CORE=m
-CONFIG_TIFM_7XX1=m
-# CONFIG_ASUS_LAPTOP is not set
-# CONFIG_MSI_LAPTOP is not set
-# CONFIG_SONY_LAPTOP is not set
-# CONFIG_THINKPAD_ACPI is not set
-# CONFIG_IDE is not set
-
-#
-# SCSI device support
-#
-CONFIG_RAID_ATTRS=m
-CONFIG_SCSI=y
-CONFIG_SCSI_DMA=y
-CONFIG_SCSI_TGT=m
-CONFIG_SCSI_NETLINK=y
-# CONFIG_SCSI_PROC_FS is not set
-
-#
-# SCSI support type (disk, tape, CD-ROM)
-#
-CONFIG_BLK_DEV_SD=m
-# CONFIG_CHR_DEV_ST is not set
-# CONFIG_CHR_DEV_OSST is not set
-CONFIG_BLK_DEV_SR=m
-CONFIG_BLK_DEV_SR_VENDOR=y
-CONFIG_CHR_DEV_SG=m
-# CONFIG_CHR_DEV_SCH is not set
-
-#
-# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-#
-# CONFIG_SCSI_MULTI_LUN is not set
-# CONFIG_SCSI_CONSTANTS is not set
-# CONFIG_SCSI_LOGGING is not set
-# CONFIG_SCSI_SCAN_ASYNC is not set
-CONFIG_SCSI_WAIT_SCAN=m
-
-#
-# SCSI Transports
-#
-CONFIG_SCSI_SPI_ATTRS=y
-CONFIG_SCSI_FC_ATTRS=m
-CONFIG_SCSI_ISCSI_ATTRS=m
-CONFIG_SCSI_SAS_ATTRS=m
-CONFIG_SCSI_SAS_LIBSAS=m
-# CONFIG_SCSI_SAS_ATA is not set
-CONFIG_SCSI_SAS_LIBSAS_DEBUG=y
-# CONFIG_SCSI_SRP_ATTRS is not set
-# CONFIG_SCSI_LOWLEVEL is not set
-CONFIG_SCSI_LOWLEVEL_PCMCIA=y
-CONFIG_PCMCIA_AHA152X=m
-CONFIG_PCMCIA_FDOMAIN=m
-CONFIG_PCMCIA_NINJA_SCSI=m
-CONFIG_PCMCIA_QLOGIC=m
-CONFIG_PCMCIA_SYM53C500=m
-CONFIG_ATA=y
-# CONFIG_ATA_NONSTANDARD is not set
-CONFIG_ATA_ACPI=y
-# CONFIG_SATA_AHCI is not set
-# CONFIG_SATA_SVW is not set
-CONFIG_ATA_PIIX=y
-# CONFIG_SATA_MV is not set
-# CONFIG_SATA_NV is not set
-# CONFIG_PDC_ADMA is not set
-# CONFIG_SATA_QSTOR is not set
-# CONFIG_SATA_PROMISE is not set
-# CONFIG_SATA_SX4 is not set
-# CONFIG_SATA_SIL is not set
-# CONFIG_SATA_SIL24 is not set
-# CONFIG_SATA_SIS is not set
-# CONFIG_SATA_ULI is not set
-# CONFIG_SATA_VIA is not set
-# CONFIG_SATA_VITESSE is not set
-# CONFIG_SATA_INIC162X is not set
-# CONFIG_PATA_ALI is not set
-# CONFIG_PATA_AMD is not set
-# CONFIG_PATA_ARTOP is not set
-# CONFIG_PATA_ATIIXP is not set
-# CONFIG_PATA_CMD640_PCI is not set
-# CONFIG_PATA_CMD64X is not set
-# CONFIG_PATA_CS5520 is not set
-# CONFIG_PATA_CS5530 is not set
-# CONFIG_PATA_CS5535 is not set
-# CONFIG_PATA_CYPRESS is not set
-# CONFIG_PATA_EFAR is not set
-# CONFIG_ATA_GENERIC is not set
-# CONFIG_PATA_HPT366 is not set
-# CONFIG_PATA_HPT37X is not set
-# CONFIG_PATA_HPT3X2N is not set
-# CONFIG_PATA_HPT3X3 is not set
-# CONFIG_PATA_IT821X is not set
-# CONFIG_PATA_IT8213 is not set
-# CONFIG_PATA_JMICRON is not set
-# CONFIG_PATA_TRIFLEX is not set
-# CONFIG_PATA_MARVELL is not set
-# CONFIG_PATA_MPIIX is not set
-# CONFIG_PATA_OLDPIIX is not set
-# CONFIG_PATA_NETCELL is not set
-# CONFIG_PATA_NS87410 is not set
-# CONFIG_PATA_OPTI is not set
-# CONFIG_PATA_OPTIDMA is not set
-# CONFIG_PATA_PCMCIA is not set
-# CONFIG_PATA_PDC_OLD is not set
-# CONFIG_PATA_RADISYS is not set
-# CONFIG_PATA_RZ1000 is not set
-# CONFIG_PATA_SC1200 is not set
-# CONFIG_PATA_SERVERWORKS is not set
-# CONFIG_PATA_PDC2027X is not set
-# CONFIG_PATA_SIL680 is not set
-# CONFIG_PATA_SIS is not set
-# CONFIG_PATA_VIA is not set
-# CONFIG_PATA_WINBOND is not set
-CONFIG_MD=y
-# CONFIG_BLK_DEV_MD is not set
-CONFIG_BLK_DEV_DM=y
-# CONFIG_DM_DEBUG is not set
-# CONFIG_DM_CRYPT is not set
-# CONFIG_DM_SNAPSHOT is not set
-# CONFIG_DM_MIRROR is not set
-# CONFIG_DM_ZERO is not set
-# CONFIG_DM_MULTIPATH is not set
-# CONFIG_DM_DELAY is not set
-CONFIG_FUSION=y
-CONFIG_FUSION_SPI=y
-CONFIG_FUSION_FC=m
-CONFIG_FUSION_SAS=m
-CONFIG_FUSION_MAX_SGE=128
-CONFIG_FUSION_CTL=m
-# CONFIG_FUSION_LOGGING is not set
-
-#
-# IEEE 1394 (FireWire) support
-#
-CONFIG_FIREWIRE=m
-CONFIG_FIREWIRE_OHCI=m
-CONFIG_FIREWIRE_SBP2=m
-# CONFIG_IEEE1394 is not set
-CONFIG_I2O=m
-CONFIG_I2O_LCT_NOTIFY_ON_CHANGES=y
-CONFIG_I2O_EXT_ADAPTEC=y
-CONFIG_I2O_CONFIG=m
-# CONFIG_I2O_CONFIG_OLD_IOCTL is not set
-CONFIG_I2O_BUS=m
-CONFIG_I2O_BLOCK=m
-CONFIG_I2O_SCSI=m
-CONFIG_I2O_PROC=m
-# CONFIG_MACINTOSH_DRIVERS is not set
-CONFIG_NETDEVICES=y
-CONFIG_NETDEVICES_MULTIQUEUE=y
-# CONFIG_DUMMY is not set
-# CONFIG_BONDING is not set
-# CONFIG_MACVLAN is not set
-# CONFIG_EQUALIZER is not set
-# CONFIG_TUN is not set
-# CONFIG_NET_SB1000 is not set
-# CONFIG_ARCNET is not set
-CONFIG_PHYLIB=m
-
-#
-# MII PHY device drivers
-#
-CONFIG_MARVELL_PHY=m
-CONFIG_DAVICOM_PHY=m
-CONFIG_QSEMI_PHY=m
-CONFIG_LXT_PHY=m
-CONFIG_CICADA_PHY=m
-CONFIG_VITESSE_PHY=m
-CONFIG_SMSC_PHY=m
-CONFIG_BROADCOM_PHY=m
-CONFIG_ICPLUS_PHY=m
-# CONFIG_FIXED_PHY is not set
-CONFIG_NET_ETHERNET=y
-CONFIG_MII=y
-# CONFIG_HAPPYMEAL is not set
-# CONFIG_SUNGEM is not set
-# CONFIG_CASSINI is not set
-# CONFIG_NET_VENDOR_3COM is not set
-# CONFIG_NET_TULIP is not set
-# CONFIG_HP100 is not set
-CONFIG_NET_PCI=y
-# CONFIG_PCNET32 is not set
-# CONFIG_AMD8111_ETH is not set
-# CONFIG_ADAPTEC_STARFIRE is not set
-# CONFIG_FORCEDETH is not set
-# CONFIG_DGRS is not set
-# CONFIG_EEPRO100 is not set
-# CONFIG_E100 is not set
-# CONFIG_FEALNX is not set
-# CONFIG_NATSEMI is not set
-# CONFIG_NE2K_PCI is not set
-# CONFIG_8139CP is not set
-CONFIG_8139TOO=m
-# CONFIG_8139TOO_PIO is not set
-# CONFIG_8139TOO_TUNE_TWISTER is not set
-# CONFIG_8139TOO_8129 is not set
-# CONFIG_8139_OLD_RX_RESET is not set
-# CONFIG_SIS900 is not set
-# CONFIG_EPIC100 is not set
-# CONFIG_SUNDANCE is not set
-# CONFIG_TLAN is not set
-# CONFIG_VIA_RHINE is not set
-# CONFIG_SC92031 is not set
-CONFIG_NET_POCKET=y
-CONFIG_ATP=m
-CONFIG_DE600=m
-CONFIG_DE620=m
-# CONFIG_NETDEV_1000 is not set
-# CONFIG_NETDEV_10000 is not set
-# CONFIG_TR is not set
-
-#
-# Wireless LAN
-#
-CONFIG_WLAN_PRE80211=y
-CONFIG_STRIP=m
-CONFIG_PCMCIA_WAVELAN=m
-CONFIG_PCMCIA_NETWAVE=m
-CONFIG_WLAN_80211=y
-CONFIG_PCMCIA_RAYCS=m
-CONFIG_IPW2100=m
-CONFIG_IPW2100_MONITOR=y
-CONFIG_IPW2100_DEBUG=y
-CONFIG_IPW2200=m
-CONFIG_IPW2200_MONITOR=y
-CONFIG_IPW2200_RADIOTAP=y
-CONFIG_IPW2200_PROMISCUOUS=y
-# CONFIG_IPW2200_QOS is not set
-CONFIG_IPW2200_DEBUG=y
-CONFIG_LIBERTAS=m
-CONFIG_LIBERTAS_USB=m
-# CONFIG_LIBERTAS_CS is not set
-CONFIG_LIBERTAS_DEBUG=y
-CONFIG_AIRO=m
-CONFIG_HERMES=m
-CONFIG_PLX_HERMES=m
-CONFIG_TMD_HERMES=m
-CONFIG_NORTEL_HERMES=m
-CONFIG_PCI_HERMES=m
-CONFIG_PCMCIA_HERMES=m
-CONFIG_PCMCIA_SPECTRUM=m
-CONFIG_ATMEL=m
-CONFIG_PCI_ATMEL=m
-CONFIG_PCMCIA_ATMEL=m
-CONFIG_AIRO_CS=m
-CONFIG_PCMCIA_WL3501=m
-CONFIG_PRISM54=m
-CONFIG_USB_ZD1201=m
-CONFIG_RTL8187=m
-# CONFIG_ADM8211 is not set
-# CONFIG_P54_COMMON is not set
-# CONFIG_RT2X00 is not set
-CONFIG_IWLWIFI=y
-CONFIG_IWLWIFI_DEBUG=y
-CONFIG_IWL4965=m
-CONFIG_IWL3945=m
-CONFIG_HOSTAP=m
-CONFIG_HOSTAP_FIRMWARE=y
-CONFIG_HOSTAP_FIRMWARE_NVRAM=y
-CONFIG_HOSTAP_PLX=m
-CONFIG_HOSTAP_PCI=m
-CONFIG_HOSTAP_CS=m
-CONFIG_ZD1211RW=m
-CONFIG_ZD1211RW_DEBUG=y
-# CONFIG_ZD1211RW_MAC80211 is not set
-
-#
-# USB Network Adapters
-#
-CONFIG_USB_CATC=m
-CONFIG_USB_KAWETH=m
-CONFIG_USB_PEGASUS=m
-CONFIG_USB_RTL8150=m
-CONFIG_USB_USBNET_MII=m
-CONFIG_USB_USBNET=m
-CONFIG_USB_NET_AX8817X=m
-CONFIG_USB_NET_CDCETHER=m
-CONFIG_USB_NET_DM9601=m
-CONFIG_USB_NET_GL620A=m
-CONFIG_USB_NET_NET1080=m
-CONFIG_USB_NET_PLUSB=m
-CONFIG_USB_NET_MCS7830=m
-CONFIG_USB_NET_RNDIS_HOST=m
-CONFIG_USB_NET_CDC_SUBSET=m
-CONFIG_USB_ALI_M5632=y
-CONFIG_USB_AN2720=y
-CONFIG_USB_BELKIN=y
-CONFIG_USB_ARMLINUX=y
-CONFIG_USB_EPSON2888=y
-CONFIG_USB_KC2190=y
-CONFIG_USB_NET_ZAURUS=m
-CONFIG_NET_PCMCIA=y
-CONFIG_PCMCIA_3C589=m
-CONFIG_PCMCIA_3C574=m
-CONFIG_PCMCIA_FMVJ18X=m
-CONFIG_PCMCIA_PCNET=m
-CONFIG_PCMCIA_NMCLAN=m
-CONFIG_PCMCIA_SMC91C92=m
-CONFIG_PCMCIA_XIRC2PS=m
-CONFIG_PCMCIA_AXNET=m
-# CONFIG_WAN is not set
-# CONFIG_FDDI is not set
-# CONFIG_HIPPI is not set
-CONFIG_PLIP=m
-CONFIG_PPP=m
-CONFIG_PPP_MULTILINK=y
-CONFIG_PPP_FILTER=y
-CONFIG_PPP_ASYNC=m
-CONFIG_PPP_SYNC_TTY=m
-CONFIG_PPP_DEFLATE=m
-CONFIG_PPP_BSDCOMP=m
-CONFIG_PPP_MPPE=m
-CONFIG_PPPOE=m
-CONFIG_PPPOL2TP=m
-# CONFIG_SLIP is not set
-CONFIG_SLHC=m
-# CONFIG_NET_FC is not set
-# CONFIG_SHAPER is not set
-CONFIG_NETCONSOLE=y
-CONFIG_NETCONSOLE_DYNAMIC=y
-CONFIG_NETPOLL=y
-# CONFIG_NETPOLL_TRAP is not set
-CONFIG_NET_POLL_CONTROLLER=y
-# CONFIG_ISDN is not set
-# CONFIG_PHONE is not set
-
-#
-# Input device support
-#
-CONFIG_INPUT=y
-# CONFIG_INPUT_FF_MEMLESS is not set
-CONFIG_INPUT_POLLDEV=m
-
-#
-# Userland interfaces
-#
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_PSAUX=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1280
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-# CONFIG_INPUT_JOYDEV is not set
-# CONFIG_INPUT_TSDEV is not set
-CONFIG_INPUT_EVDEV=m
-# CONFIG_INPUT_EVBUG is not set
-
-#
-# Input Device Drivers
-#
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-# CONFIG_KEYBOARD_SUNKBD is not set
-# CONFIG_KEYBOARD_LKKBD is not set
-# CONFIG_KEYBOARD_XTKBD is not set
-# CONFIG_KEYBOARD_NEWTON is not set
-# CONFIG_KEYBOARD_STOWAWAY is not set
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=m
-CONFIG_MOUSE_PS2_ALPS=y
-CONFIG_MOUSE_PS2_LOGIPS2PP=y
-CONFIG_MOUSE_PS2_SYNAPTICS=y
-CONFIG_MOUSE_PS2_LIFEBOOK=y
-CONFIG_MOUSE_PS2_TRACKPOINT=y
-# CONFIG_MOUSE_PS2_TOUCHKIT is not set
-# CONFIG_MOUSE_SERIAL is not set
-# CONFIG_MOUSE_APPLETOUCH is not set
-# CONFIG_MOUSE_VSXXXAA is not set
-# CONFIG_INPUT_JOYSTICK is not set
-CONFIG_INPUT_TABLET=y
-CONFIG_TABLET_USB_ACECAD=m
-CONFIG_TABLET_USB_AIPTEK=m
-CONFIG_TABLET_USB_GTCO=m
-CONFIG_TABLET_USB_KBTAB=m
-CONFIG_TABLET_USB_WACOM=m
-# CONFIG_INPUT_TOUCHSCREEN is not set
-# CONFIG_INPUT_MISC is not set
-
-#
-# Hardware I/O ports
-#
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-# CONFIG_SERIO_SERPORT is not set
-# CONFIG_SERIO_CT82C710 is not set
-# CONFIG_SERIO_PARKBD is not set
-# CONFIG_SERIO_PCIPS2 is not set
-CONFIG_SERIO_LIBPS2=y
-# CONFIG_SERIO_RAW is not set
-# CONFIG_GAMEPORT is not set
-
-#
-# Character devices
-#
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_VT_HW_CONSOLE_BINDING=y
-# CONFIG_SERIAL_NONSTANDARD is not set
-# CONFIG_NOZOMI is not set
-
-#
-# Serial drivers
-#
-CONFIG_SERIAL_8250=y
-CONFIG_SERIAL_8250_CONSOLE=y
-CONFIG_FIX_EARLYCON_MEM=y
-CONFIG_SERIAL_8250_PCI=y
-CONFIG_SERIAL_8250_PNP=y
-CONFIG_SERIAL_8250_CS=m
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-# CONFIG_SERIAL_8250_EXTENDED is not set
-
-#
-# Non-8250 serial port support
-#
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
-# CONFIG_SERIAL_JSM is not set
-CONFIG_UNIX98_PTYS=y
-# CONFIG_LEGACY_PTYS is not set
-CONFIG_PRINTER=m
-# CONFIG_LP_CONSOLE is not set
-# CONFIG_PPDEV is not set
-# CONFIG_TIPAR is not set
-CONFIG_IPMI_HANDLER=m
-# CONFIG_IPMI_PANIC_EVENT is not set
-CONFIG_IPMI_DEVICE_INTERFACE=m
-CONFIG_IPMI_SI=m
-CONFIG_IPMI_WATCHDOG=m
-CONFIG_IPMI_POWEROFF=m
-CONFIG_WATCHDOG=y
-# CONFIG_WATCHDOG_NOWAYOUT is not set
-
-#
-# Watchdog Device Drivers
-#
-CONFIG_SOFT_WATCHDOG=m
-CONFIG_ACQUIRE_WDT=m
-CONFIG_ADVANTECH_WDT=m
-CONFIG_ALIM1535_WDT=m
-CONFIG_ALIM7101_WDT=m
-CONFIG_SC520_WDT=m
-CONFIG_EUROTECH_WDT=m
-CONFIG_IB700_WDT=m
-CONFIG_IBMASR=m
-CONFIG_WAFER_WDT=m
-CONFIG_I6300ESB_WDT=m
-CONFIG_ITCO_WDT=m
-CONFIG_ITCO_VENDOR_SUPPORT=y
-CONFIG_SC1200_WDT=m
-CONFIG_PC87413_WDT=m
-CONFIG_60XX_WDT=m
-CONFIG_SBC8360_WDT=m
-CONFIG_CPU5_WDT=m
-CONFIG_SMSC37B787_WDT=m
-CONFIG_W83627HF_WDT=m
-CONFIG_W83697HF_WDT=m
-CONFIG_W83877F_WDT=m
-CONFIG_W83977F_WDT=m
-CONFIG_MACHZ_WDT=m
-CONFIG_SBC_EPX_C3_WATCHDOG=m
-
-#
-# PCI-based Watchdog Cards
-#
-CONFIG_PCIPCWATCHDOG=m
-CONFIG_WDTPCI=m
-# CONFIG_WDT_501_PCI is not set
-
-#
-# USB-based Watchdog Cards
-#
-CONFIG_USBPCWATCHDOG=m
-CONFIG_HW_RANDOM=m
-CONFIG_HW_RANDOM_INTEL=m
-# CONFIG_HW_RANDOM_AMD is not set
-# CONFIG_HW_RANDOM_GEODE is not set
-# CONFIG_HW_RANDOM_VIA is not set
-# CONFIG_NVRAM is not set
-CONFIG_RTC=m
-# CONFIG_GEN_RTC is not set
-# CONFIG_R3964 is not set
-# CONFIG_APPLICOM is not set
-# CONFIG_SONYPI is not set
-CONFIG_AGP=y
-# CONFIG_AGP_ALI is not set
-# CONFIG_AGP_ATI is not set
-# CONFIG_AGP_AMD is not set
-# CONFIG_AGP_AMD64 is not set
-CONFIG_AGP_INTEL=y
-# CONFIG_AGP_NVIDIA is not set
-# CONFIG_AGP_SIS is not set
-# CONFIG_AGP_SWORKS is not set
-# CONFIG_AGP_VIA is not set
-# CONFIG_AGP_EFFICEON is not set
-CONFIG_DRM=y
-# CONFIG_DRM_TDFX is not set
-# CONFIG_DRM_R128 is not set
-# CONFIG_DRM_RADEON is not set
-# CONFIG_DRM_I810 is not set
-# CONFIG_DRM_I830 is not set
-CONFIG_DRM_I915=y
-# CONFIG_DRM_MGA is not set
-# CONFIG_DRM_SIS is not set
-# CONFIG_DRM_VIA is not set
-# CONFIG_DRM_SAVAGE is not set
-
-#
-# PCMCIA character devices
-#
-# CONFIG_SYNCLINK_CS is not set
-# CONFIG_CARDMAN_4000 is not set
-# CONFIG_CARDMAN_4040 is not set
-CONFIG_IPWIRELESS_CS=m
-# CONFIG_MWAVE is not set
-# CONFIG_PC8736x_GPIO is not set
-# CONFIG_NSC_GPIO is not set
-# CONFIG_CS5535_GPIO is not set
-CONFIG_RAW_DRIVER=m
-CONFIG_MAX_RAW_DEVS=256
-CONFIG_HPET=y
-CONFIG_HPET_RTC_IRQ=y
-CONFIG_HPET_MMAP=y
-CONFIG_HANGCHECK_TIMER=m
-CONFIG_TCG_TPM=m
-CONFIG_TCG_TIS=m
-CONFIG_TCG_NSC=m
-CONFIG_TCG_ATMEL=m
-CONFIG_TCG_INFINEON=m
-# CONFIG_TELCLOCK is not set
-CONFIG_DEVPORT=y
-CONFIG_I2C=m
-CONFIG_I2C_BOARDINFO=y
-CONFIG_I2C_CHARDEV=m
-
-#
-# I2C Algorithms
-#
-CONFIG_I2C_ALGOBIT=m
-CONFIG_I2C_ALGOPCF=m
-CONFIG_I2C_ALGOPCA=m
-
-#
-# I2C Hardware Bus support
-#
-# CONFIG_I2C_ALI1535 is not set
-# CONFIG_I2C_ALI1563 is not set
-# CONFIG_I2C_ALI15X3 is not set
-# CONFIG_I2C_AMD756 is not set
-# CONFIG_I2C_AMD8111 is not set
-CONFIG_I2C_I801=m
-CONFIG_I2C_I810=m
-CONFIG_I2C_PIIX4=m
-# CONFIG_I2C_NFORCE2 is not set
-CONFIG_I2C_OCORES=m
-CONFIG_I2C_PARPORT=m
-CONFIG_I2C_PARPORT_LIGHT=m
-# CONFIG_I2C_PROSAVAGE is not set
-# CONFIG_I2C_SAVAGE4 is not set
-# CONFIG_I2C_SIMTEC is not set
-# CONFIG_SCx200_ACB is not set
-# CONFIG_I2C_SIS5595 is not set
-# CONFIG_I2C_SIS630 is not set
-# CONFIG_I2C_SIS96X is not set
-# CONFIG_I2C_TAOS_EVM is not set
-CONFIG_I2C_STUB=m
-CONFIG_I2C_TINY_USB=m
-# CONFIG_I2C_VIA is not set
-# CONFIG_I2C_VIAPRO is not set
-# CONFIG_I2C_VOODOO3 is not set
-
-#
-# Miscellaneous I2C Chip support
-#
-CONFIG_SENSORS_DS1337=m
-CONFIG_SENSORS_DS1374=m
-CONFIG_SENSORS_DS1682=m
-CONFIG_SENSORS_EEPROM=m
-CONFIG_SENSORS_PCF8574=m
-CONFIG_SENSORS_PCA9539=m
-CONFIG_SENSORS_PCF8591=m
-CONFIG_SENSORS_MAX6875=m
-CONFIG_SENSORS_TSL2550=m
-# CONFIG_I2C_DEBUG_CORE is not set
-# CONFIG_I2C_DEBUG_ALGO is not set
-# CONFIG_I2C_DEBUG_BUS is not set
-# CONFIG_I2C_DEBUG_CHIP is not set
-
-#
-# SPI support
-#
-CONFIG_SPI=y
-CONFIG_SPI_DEBUG=y
-CONFIG_SPI_MASTER=y
-
-#
-# SPI Master Controller Drivers
-#
-CONFIG_SPI_BITBANG=m
-CONFIG_SPI_BUTTERFLY=m
-CONFIG_SPI_LM70_LLP=m
-
-#
-# SPI Protocol Masters
-#
-CONFIG_SPI_AT25=m
-CONFIG_SPI_SPIDEV=m
-CONFIG_SPI_TLE62X0=m
-CONFIG_W1=m
-CONFIG_W1_CON=y
-
-#
-# 1-wire Bus Masters
-#
-CONFIG_W1_MASTER_MATROX=m
-CONFIG_W1_MASTER_DS2490=m
-CONFIG_W1_MASTER_DS2482=m
-
-#
-# 1-wire Slaves
-#
-CONFIG_W1_SLAVE_THERM=m
-CONFIG_W1_SLAVE_SMEM=m
-CONFIG_W1_SLAVE_DS2433=m
-CONFIG_W1_SLAVE_DS2433_CRC=y
-CONFIG_W1_SLAVE_DS2760=m
-CONFIG_POWER_SUPPLY=m
-CONFIG_POWER_SUPPLY_DEBUG=y
-CONFIG_PDA_POWER=m
-CONFIG_BATTERY_DS2760=m
-CONFIG_HWMON=m
-CONFIG_HWMON_VID=m
-CONFIG_SENSORS_ABITUGURU=m
-CONFIG_SENSORS_ABITUGURU3=m
-CONFIG_SENSORS_AD7418=m
-CONFIG_SENSORS_ADM1021=m
-CONFIG_SENSORS_ADM1025=m
-CONFIG_SENSORS_ADM1026=m
-CONFIG_SENSORS_ADM1029=m
-CONFIG_SENSORS_ADM1031=m
-CONFIG_SENSORS_ADM9240=m
-CONFIG_SENSORS_K8TEMP=m
-CONFIG_SENSORS_ASB100=m
-CONFIG_SENSORS_ATXP1=m
-CONFIG_SENSORS_DS1621=m
-CONFIG_SENSORS_F71805F=m
-CONFIG_SENSORS_FSCHER=m
-CONFIG_SENSORS_FSCPOS=m
-CONFIG_SENSORS_GL518SM=m
-CONFIG_SENSORS_GL520SM=m
-CONFIG_SENSORS_CORETEMP=m
-CONFIG_SENSORS_IT87=m
-CONFIG_SENSORS_LM63=m
-CONFIG_SENSORS_LM70=m
-CONFIG_SENSORS_LM75=m
-CONFIG_SENSORS_LM77=m
-CONFIG_SENSORS_LM78=m
-CONFIG_SENSORS_LM80=m
-CONFIG_SENSORS_LM83=m
-CONFIG_SENSORS_LM85=m
-CONFIG_SENSORS_LM87=m
-CONFIG_SENSORS_LM90=m
-CONFIG_SENSORS_LM92=m
-CONFIG_SENSORS_LM93=m
-CONFIG_SENSORS_MAX1619=m
-CONFIG_SENSORS_MAX6650=m
-CONFIG_SENSORS_PC87360=m
-CONFIG_SENSORS_PC87427=m
-CONFIG_SENSORS_SIS5595=m
-CONFIG_SENSORS_DME1737=m
-CONFIG_SENSORS_SMSC47M1=m
-CONFIG_SENSORS_SMSC47M192=m
-CONFIG_SENSORS_SMSC47B397=m
-CONFIG_SENSORS_THMC50=m
-CONFIG_SENSORS_VIA686A=m
-CONFIG_SENSORS_VT1211=m
-CONFIG_SENSORS_VT8231=m
-CONFIG_SENSORS_W83781D=m
-CONFIG_SENSORS_W83791D=m
-CONFIG_SENSORS_W83792D=m
-CONFIG_SENSORS_W83793=m
-CONFIG_SENSORS_W83L785TS=m
-CONFIG_SENSORS_W83627HF=m
-CONFIG_SENSORS_W83627EHF=m
-CONFIG_SENSORS_HDAPS=m
-CONFIG_SENSORS_APPLESMC=m
-# CONFIG_HWMON_DEBUG_CHIP is not set
-
-#
-# Multifunction device drivers
-#
-CONFIG_MFD_SM501=m
-
-#
-# Multimedia devices
-#
-CONFIG_VIDEO_DEV=m
-CONFIG_VIDEO_V4L1=y
-CONFIG_VIDEO_V4L1_COMPAT=y
-CONFIG_VIDEO_V4L2=y
-CONFIG_VIDEO_CAPTURE_DRIVERS=y
-# CONFIG_VIDEO_ADV_DEBUG is not set
-CONFIG_VIDEO_HELPER_CHIPS_AUTO=y
-CONFIG_VIDEO_TVAUDIO=m
-CONFIG_VIDEO_TDA7432=m
-CONFIG_VIDEO_TDA9875=m
-CONFIG_VIDEO_MSP3400=m
-# CONFIG_VIDEO_VIVI is not set
-CONFIG_VIDEO_BT848=m
-CONFIG_VIDEO_SAA6588=m
-CONFIG_VIDEO_BWQCAM=m
-CONFIG_VIDEO_CQCAM=m
-# CONFIG_VIDEO_W9966 is not set
-CONFIG_VIDEO_CPIA=m
-CONFIG_VIDEO_CPIA_PP=m
-CONFIG_VIDEO_CPIA_USB=m
-CONFIG_VIDEO_CPIA2=m
-# CONFIG_VIDEO_SAA5246A is not set
-# CONFIG_VIDEO_SAA5249 is not set
-# CONFIG_TUNER_3036 is not set
-# CONFIG_TUNER_TEA5761 is not set
-# CONFIG_VIDEO_STRADIS is not set
-# CONFIG_VIDEO_ZORAN is not set
-# CONFIG_VIDEO_SAA7134 is not set
-# CONFIG_VIDEO_MXB is not set
-# CONFIG_VIDEO_DPC is not set
-# CONFIG_VIDEO_HEXIUM_ORION is not set
-# CONFIG_VIDEO_HEXIUM_GEMINI is not set
-# CONFIG_VIDEO_CX88 is not set
-# CONFIG_VIDEO_IVTV is not set
-# CONFIG_VIDEO_CAFE_CCIC is not set
-CONFIG_V4L_USB_DRIVERS=y
-# CONFIG_VIDEO_PVRUSB2 is not set
-# CONFIG_VIDEO_EM28XX is not set
-# CONFIG_VIDEO_USBVISION is not set
-# CONFIG_USB_VICAM is not set
-# CONFIG_USB_IBMCAM is not set
-# CONFIG_USB_KONICAWC is not set
-# CONFIG_USB_QUICKCAM_MESSENGER is not set
-# CONFIG_USB_ET61X251 is not set
-# CONFIG_VIDEO_OVCAMCHIP is not set
-# CONFIG_USB_W9968CF is not set
-CONFIG_USB_OV511=m
-CONFIG_USB_SE401=m
-# CONFIG_USB_SN9C102 is not set
-# CONFIG_USB_STV680 is not set
-# CONFIG_USB_ZC0301 is not set
-# CONFIG_USB_PWC is not set
-# CONFIG_USB_ZR364XX is not set
-# CONFIG_RADIO_ADAPTERS is not set
-# CONFIG_DVB_CORE is not set
-CONFIG_VIDEO_TUNER=m
-CONFIG_VIDEO_BUF=m
-CONFIG_VIDEO_BTCX=m
-CONFIG_VIDEO_IR_I2C=m
-CONFIG_VIDEO_IR=m
-CONFIG_VIDEO_TVEEPROM=m
-CONFIG_DAB=y
-# CONFIG_USB_DABUSB is not set
-
-#
-# Graphics support
-#
-CONFIG_BACKLIGHT_LCD_SUPPORT=y
-CONFIG_LCD_CLASS_DEVICE=y
-CONFIG_BACKLIGHT_CLASS_DEVICE=y
-CONFIG_BACKLIGHT_PROGEAR=y
-
-#
-# Display device support
-#
-CONFIG_DISPLAY_SUPPORT=y
-
-#
-# Display hardware drivers
-#
-# CONFIG_VGASTATE is not set
-CONFIG_VIDEO_OUTPUT_CONTROL=y
-CONFIG_FB=y
-CONFIG_FIRMWARE_EDID=y
-CONFIG_FB_DDC=m
-CONFIG_FB_CFB_FILLRECT=m
-CONFIG_FB_CFB_COPYAREA=m
-CONFIG_FB_CFB_IMAGEBLIT=m
-# CONFIG_FB_SYS_FILLRECT is not set
-# CONFIG_FB_SYS_COPYAREA is not set
-# CONFIG_FB_SYS_IMAGEBLIT is not set
-# CONFIG_FB_SYS_FOPS is not set
-CONFIG_FB_DEFERRED_IO=y
-# CONFIG_FB_SVGALIB is not set
-# CONFIG_FB_MACMODES is not set
-# CONFIG_FB_BACKLIGHT is not set
-CONFIG_FB_MODE_HELPERS=y
-CONFIG_FB_TILEBLITTING=y
-
-#
-# Frame buffer hardware drivers
-#
-# CONFIG_FB_CIRRUS is not set
-# CONFIG_FB_PM2 is not set
-# CONFIG_FB_CYBER2000 is not set
-# CONFIG_FB_ARC is not set
-# CONFIG_FB_ASILIANT is not set
-# CONFIG_FB_IMSTT is not set
-# CONFIG_FB_VGA16 is not set
-# CONFIG_FB_UVESA is not set
-# CONFIG_FB_VESA is not set
-# CONFIG_FB_HECUBA is not set
-# CONFIG_FB_HGA is not set
-# CONFIG_FB_S1D13XXX is not set
-# CONFIG_FB_NVIDIA is not set
-# CONFIG_FB_RIVA is not set
-# CONFIG_FB_I810 is not set
-# CONFIG_FB_LE80578 is not set
-CONFIG_FB_INTEL=m
-CONFIG_FB_INTEL_DEBUG=y
-CONFIG_FB_INTEL_I2C=y
-# CONFIG_FB_MATROX is not set
-# CONFIG_FB_RADEON is not set
-# CONFIG_FB_ATY128 is not set
-# CONFIG_FB_ATY is not set
-# CONFIG_FB_S3 is not set
-# CONFIG_FB_SAVAGE is not set
-# CONFIG_FB_SIS is not set
-# CONFIG_FB_NEOMAGIC is not set
-# CONFIG_FB_KYRO is not set
-# CONFIG_FB_3DFX is not set
-# CONFIG_FB_VOODOO1 is not set
-# CONFIG_FB_VT8623 is not set
-# CONFIG_FB_CYBLA is not set
-# CONFIG_FB_TRIDENT is not set
-# CONFIG_FB_ARK is not set
-# CONFIG_FB_PM3 is not set
-# CONFIG_FB_GEODE is not set
-# CONFIG_FB_SM501 is not set
-# CONFIG_FB_VIRTUAL is not set
-
-#
-# Console display driver support
-#
-CONFIG_VGA_CONSOLE=y
-CONFIG_VGACON_SOFT_SCROLLBACK=y
-CONFIG_VGACON_SOFT_SCROLLBACK_SIZE=128
-CONFIG_VIDEO_SELECT=y
-CONFIG_DUMMY_CONSOLE=y
-# CONFIG_FRAMEBUFFER_CONSOLE is not set
-# CONFIG_LOGO is not set
-
-#
-# Sound
-#
-CONFIG_SOUND=m
-
-#
-# Advanced Linux Sound Architecture
-#
-CONFIG_SND=m
-CONFIG_SND_TIMER=m
-CONFIG_SND_PCM=m
-CONFIG_SND_HWDEP=m
-CONFIG_SND_RAWMIDI=m
-CONFIG_SND_SEQUENCER=m
-CONFIG_SND_SEQ_DUMMY=m
-CONFIG_SND_OSSEMUL=y
-CONFIG_SND_MIXER_OSS=m
-CONFIG_SND_PCM_OSS=m
-CONFIG_SND_PCM_OSS_PLUGINS=y
-CONFIG_SND_SEQUENCER_OSS=y
-CONFIG_SND_RTCTIMER=m
-CONFIG_SND_SEQ_RTCTIMER_DEFAULT=y
-# CONFIG_SND_DYNAMIC_MINORS is not set
-# CONFIG_SND_SUPPORT_OLD_API is not set
-CONFIG_SND_VERBOSE_PROCFS=y
-CONFIG_SND_VERBOSE_PRINTK=y
-CONFIG_SND_DEBUG=y
-CONFIG_SND_DEBUG_DETECT=y
-CONFIG_SND_PCM_XRUN_DEBUG=y
-
-#
-# Generic devices
-#
-CONFIG_SND_MPU401_UART=m
-CONFIG_SND_VX_LIB=m
-CONFIG_SND_AC97_CODEC=m
-# CONFIG_SND_DUMMY is not set
-CONFIG_SND_VIRMIDI=m
-CONFIG_SND_MTPAV=m
-CONFIG_SND_MTS64=m
-CONFIG_SND_SERIAL_U16550=m
-CONFIG_SND_MPU401=m
-CONFIG_SND_PORTMAN2X4=m
-
-#
-# PCI devices
-#
-# CONFIG_SND_AD1889 is not set
-# CONFIG_SND_ALS300 is not set
-# CONFIG_SND_ALS4000 is not set
-# CONFIG_SND_ALI5451 is not set
-# CONFIG_SND_ATIIXP is not set
-# CONFIG_SND_ATIIXP_MODEM is not set
-# CONFIG_SND_AU8810 is not set
-# CONFIG_SND_AU8820 is not set
-# CONFIG_SND_AU8830 is not set
-# CONFIG_SND_AZT3328 is not set
-# CONFIG_SND_BT87X is not set
-# CONFIG_SND_CA0106 is not set
-# CONFIG_SND_CMIPCI is not set
-# CONFIG_SND_CS4281 is not set
-# CONFIG_SND_CS46XX is not set
-# CONFIG_SND_CS5530 is not set
-# CONFIG_SND_CS5535AUDIO is not set
-# CONFIG_SND_DARLA20 is not set
-# CONFIG_SND_GINA20 is not set
-# CONFIG_SND_LAYLA20 is not set
-# CONFIG_SND_DARLA24 is not set
-# CONFIG_SND_GINA24 is not set
-# CONFIG_SND_LAYLA24 is not set
-# CONFIG_SND_MONA is not set
-# CONFIG_SND_MIA is not set
-# CONFIG_SND_ECHO3G is not set
-# CONFIG_SND_INDIGO is not set
-# CONFIG_SND_INDIGOIO is not set
-# CONFIG_SND_INDIGODJ is not set
-# CONFIG_SND_EMU10K1 is not set
-# CONFIG_SND_EMU10K1X is not set
-# CONFIG_SND_ENS1370 is not set
-# CONFIG_SND_ENS1371 is not set
-# CONFIG_SND_ES1938 is not set
-# CONFIG_SND_ES1968 is not set
-# CONFIG_SND_FM801 is not set
-# CONFIG_SND_HDA_INTEL is not set
-# CONFIG_SND_HDSP is not set
-# CONFIG_SND_HDSPM is not set
-# CONFIG_SND_ICE1712 is not set
-# CONFIG_SND_ICE1724 is not set
-CONFIG_SND_INTEL8X0=m
-CONFIG_SND_INTEL8X0M=m
-# CONFIG_SND_KORG1212 is not set
-# CONFIG_SND_MAESTRO3 is not set
-# CONFIG_SND_MIXART is not set
-# CONFIG_SND_NM256 is not set
-# CONFIG_SND_PCXHR is not set
-# CONFIG_SND_RIPTIDE is not set
-# CONFIG_SND_RME32 is not set
-# CONFIG_SND_RME96 is not set
-# CONFIG_SND_RME9652 is not set
-# CONFIG_SND_SONICVIBES is not set
-# CONFIG_SND_TRIDENT is not set
-# CONFIG_SND_VIA82XX is not set
-# CONFIG_SND_VIA82XX_MODEM is not set
-# CONFIG_SND_VX222 is not set
-# CONFIG_SND_YMFPCI is not set
-# CONFIG_SND_AC97_POWER_SAVE is not set
-
-#
-# SPI devices
-#
-
-#
-# USB devices
-#
-CONFIG_SND_USB_AUDIO=m
-CONFIG_SND_USB_USX2Y=m
-CONFIG_SND_USB_CAIAQ=m
-# CONFIG_SND_USB_CAIAQ_INPUT is not set
-
-#
-# PCMCIA devices
-#
-CONFIG_SND_VXPOCKET=m
-CONFIG_SND_PDAUDIOCF=m
-
-#
-# System on Chip audio support
-#
-# CONFIG_SND_SOC is not set
-
-#
-# SoC Audio support for SuperH
-#
-
-#
-# Open Sound System
-#
-# CONFIG_SOUND_PRIME is not set
-CONFIG_AC97_BUS=m
-CONFIG_HID_SUPPORT=y
-CONFIG_HID=y
-# CONFIG_HID_DEBUG is not set
-# CONFIG_HIDRAW is not set
-
-#
-# USB Input Devices
-#
-CONFIG_USB_HID=m
-# CONFIG_USB_HIDINPUT_POWERBOOK is not set
-# CONFIG_HID_FF is not set
-# CONFIG_USB_HIDDEV is not set
-
-#
-# USB HID Boot Protocol drivers
-#
-# CONFIG_USB_KBD is not set
-# CONFIG_USB_MOUSE is not set
-CONFIG_USB_SUPPORT=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_USB=m
-# CONFIG_USB_DEBUG is not set
-
-#
-# Miscellaneous USB options
-#
-CONFIG_USB_DEVICEFS=y
-# CONFIG_USB_DEVICE_CLASS is not set
-# CONFIG_USB_DYNAMIC_MINORS is not set
-# CONFIG_USB_SUSPEND is not set
-# CONFIG_USB_PERSIST is not set
-# CONFIG_USB_OTG is not set
-
-#
-# USB Host Controller Drivers
-#
-CONFIG_USB_EHCI_HCD=m
-# CONFIG_USB_EHCI_SPLIT_ISO is not set
-# CONFIG_USB_EHCI_ROOT_HUB_TT is not set
-# CONFIG_USB_EHCI_TT_NEWSCHED is not set
-CONFIG_USB_ISP116X_HCD=m
-CONFIG_USB_OHCI_HCD=m
-# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
-# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
-CONFIG_USB_OHCI_LITTLE_ENDIAN=y
-CONFIG_USB_UHCI_HCD=m
-# CONFIG_USB_U132_HCD is not set
-CONFIG_USB_SL811_HCD=m
-CONFIG_USB_SL811_CS=m
-CONFIG_USB_R8A66597_HCD=m
-
-#
-# USB Device Class drivers
-#
-CONFIG_USB_ACM=m
-CONFIG_USB_PRINTER=m
-
-#
-# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-#
-
-#
-# may also be needed; see USB_STORAGE Help for more information
-#
-CONFIG_USB_STORAGE=m
-CONFIG_USB_STORAGE_DEBUG=y
-# CONFIG_USB_STORAGE_DATAFAB is not set
-CONFIG_USB_STORAGE_FREECOM=y
-CONFIG_USB_STORAGE_DPCM=y
-CONFIG_USB_STORAGE_USBAT=y
-CONFIG_USB_STORAGE_SDDR09=y
-CONFIG_USB_STORAGE_SDDR55=y
-CONFIG_USB_STORAGE_JUMPSHOT=y
-CONFIG_USB_STORAGE_ALAUDA=y
-CONFIG_USB_STORAGE_KARMA=y
-CONFIG_USB_LIBUSUAL=y
-
-#
-# USB Imaging devices
-#
-CONFIG_USB_MDC800=m
-CONFIG_USB_MICROTEK=m
-CONFIG_USB_MON=y
-
-#
-# USB port drivers
-#
-CONFIG_USB_USS720=m
-
-#
-# USB Serial Converter support
-#
-# CONFIG_USB_SERIAL is not set
-
-#
-# USB Miscellaneous drivers
-#
-CONFIG_USB_EMI62=m
-CONFIG_USB_EMI26=m
-CONFIG_USB_ADUTUX=m
-CONFIG_USB_AUERSWALD=m
-CONFIG_USB_RIO500=m
-CONFIG_USB_LEGOTOWER=m
-CONFIG_USB_LCD=m
-CONFIG_USB_BERRY_CHARGE=m
-CONFIG_USB_LED=m
-CONFIG_USB_CYPRESS_CY7C63=m
-CONFIG_USB_CYTHERM=m
-CONFIG_USB_PHIDGET=m
-CONFIG_USB_PHIDGETKIT=m
-CONFIG_USB_PHIDGETMOTORCONTROL=m
-CONFIG_USB_PHIDGETSERVO=m
-CONFIG_USB_IDMOUSE=m
-CONFIG_USB_FTDI_ELAN=m
-CONFIG_USB_APPLEDISPLAY=m
-# CONFIG_USB_SISUSBVGA is not set
-CONFIG_USB_LD=m
-CONFIG_USB_TRANCEVIBRATOR=m
-CONFIG_USB_IOWARRIOR=m
-# CONFIG_USB_TEST is not set
-# CONFIG_USB_GOTEMP is not set
-
-#
-# USB DSL modem support
-#
-
-#
-# USB Gadget Support
-#
-# CONFIG_USB_GADGET is not set
-CONFIG_MMC=m
-CONFIG_MMC_DEBUG=y
-# CONFIG_MMC_UNSAFE_RESUME is not set
-# CONFIG_MMC_PASSWORDS is not set
-
-#
-# MMC/SD Card Drivers
-#
-CONFIG_MMC_BLOCK=m
-CONFIG_MMC_BLOCK_BOUNCE=y
-# CONFIG_SDIO_UART is not set
-
-#
-# MMC/SD Host Controller Drivers
-#
-CONFIG_MMC_SDHCI=m
-CONFIG_MMC_WBSD=m
-CONFIG_MMC_TIFM_SD=m
-CONFIG_NEW_LEDS=y
-CONFIG_LEDS_CLASS=m
-
-#
-# LED drivers
-#
-
-#
-# LED Triggers
-#
-CONFIG_LEDS_TRIGGERS=y
-CONFIG_LEDS_TRIGGER_TIMER=m
-CONFIG_LEDS_TRIGGER_HEARTBEAT=m
-# CONFIG_INFINIBAND is not set
-# CONFIG_EDAC is not set
-CONFIG_RTC_LIB=m
-CONFIG_RTC_CLASS=m
-
-#
-# RTC interfaces
-#
-CONFIG_RTC_INTF_SYSFS=y
-CONFIG_RTC_INTF_PROC=y
-CONFIG_RTC_INTF_DEV=y
-# CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
-# CONFIG_RTC_DRV_TEST is not set
-
-#
-# I2C RTC drivers
-#
-CONFIG_RTC_DRV_DS1307=m
-CONFIG_RTC_DRV_DS1672=m
-CONFIG_RTC_DRV_MAX6900=m
-CONFIG_RTC_DRV_RS5C372=m
-CONFIG_RTC_DRV_ISL1208=m
-CONFIG_RTC_DRV_X1205=m
-CONFIG_RTC_DRV_PCF8563=m
-CONFIG_RTC_DRV_PCF8583=m
-CONFIG_RTC_DRV_M41T80=m
-# CONFIG_RTC_DRV_M41T80_WDT is not set
-
-#
-# SPI RTC drivers
-#
-CONFIG_RTC_DRV_RS5C348=m
-CONFIG_RTC_DRV_MAX6902=m
-
-#
-# Platform RTC drivers
-#
-CONFIG_RTC_DRV_CMOS=m
-CONFIG_RTC_DRV_DS1553=m
-CONFIG_RTC_DRV_STK17TA8=m
-CONFIG_RTC_DRV_DS1742=m
-CONFIG_RTC_DRV_M48T86=m
-CONFIG_RTC_DRV_M48T59=m
-CONFIG_RTC_DRV_V3020=m
-
-#
-# on-CPU RTC drivers
-#
-
-#
-# DMA Engine support
-#
-CONFIG_DMA_ENGINE=y
-
-#
-# DMA Clients
-#
-CONFIG_NET_DMA=y
-
-#
-# DMA Devices
-#
-CONFIG_INTEL_IOATDMA=y
-CONFIG_DCA=y
-# CONFIG_AUXDISPLAY is not set
-# CONFIG_VIRTUALIZATION is not set
-
-#
-# Userspace I/O
-#
-# CONFIG_UIO is not set
-
-#
-# File systems
-#
-CONFIG_EXT2_FS=y
-CONFIG_EXT2_FS_XATTR=y
-CONFIG_EXT2_FS_POSIX_ACL=y
-# CONFIG_EXT2_FS_SECURITY is not set
-# CONFIG_EXT2_FS_XIP is not set
-CONFIG_EXT3_FS=y
-CONFIG_EXT3_FS_XATTR=y
-CONFIG_EXT3_FS_POSIX_ACL=y
-# CONFIG_EXT3_FS_SECURITY is not set
-# CONFIG_EXT4DEV_FS is not set
-CONFIG_JBD=y
-# CONFIG_JBD_DEBUG is not set
-CONFIG_FS_MBCACHE=y
-# CONFIG_REISER4_FS is not set
-# CONFIG_REISERFS_FS is not set
-# CONFIG_JFS_FS is not set
-CONFIG_FS_POSIX_ACL=y
-# CONFIG_XFS_FS is not set
-# CONFIG_GFS2_FS is not set
-# CONFIG_OCFS2_FS is not set
-# CONFIG_MINIX_FS is not set
-# CONFIG_ROMFS_FS is not set
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-# CONFIG_QUOTA is not set
-CONFIG_DNOTIFY=y
-# CONFIG_AUTOFS_FS is not set
-CONFIG_AUTOFS4_FS=y
-CONFIG_FUSE_FS=m
-CONFIG_GENERIC_ACL=y
-
-#
-# CD-ROM/DVD Filesystems
-#
-CONFIG_ISO9660_FS=m
-CONFIG_JOLIET=y
-CONFIG_ZISOFS=y
-CONFIG_UDF_FS=m
-CONFIG_UDF_NLS=y
-
-#
-# DOS/FAT/NT Filesystems
-#
-CONFIG_FAT_FS=m
-# CONFIG_MSDOS_FS is not set
-CONFIG_VFAT_FS=m
-CONFIG_FAT_DEFAULT_CODEPAGE=437
-CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-# CONFIG_NTFS_FS is not set
-
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_TMPFS_POSIX_ACL=y
-CONFIG_HUGETLBFS=y
-CONFIG_HUGETLB_PAGE=y
-CONFIG_RAMFS=y
-CONFIG_CONFIGFS_FS=y
-
-#
-# Layered filesystems
-#
-CONFIG_UNION_FS=m
-CONFIG_UNION_FS_XATTR=y
-
-#
-# Miscellaneous filesystems
-#
-# CONFIG_ADFS_FS is not set
-# CONFIG_AFFS_FS is not set
-CONFIG_HFS_FS=m
-CONFIG_HFSPLUS_FS=m
-# CONFIG_BEFS_FS is not set
-# CONFIG_BFS_FS is not set
-# CONFIG_EFS_FS is not set
-CONFIG_JFFS2_FS=m
-CONFIG_JFFS2_FS_DEBUG=0
-CONFIG_JFFS2_FS_WRITEBUFFER=y
-# CONFIG_JFFS2_FS_WBUF_VERIFY is not set
-CONFIG_JFFS2_SUMMARY=y
-CONFIG_JFFS2_FS_XATTR=y
-CONFIG_JFFS2_FS_POSIX_ACL=y
-CONFIG_JFFS2_FS_SECURITY=y
-CONFIG_JFFS2_COMPRESSION_OPTIONS=y
-CONFIG_JFFS2_ZLIB=y
-CONFIG_JFFS2_LZO=y
-CONFIG_JFFS2_RTIME=y
-# CONFIG_JFFS2_RUBIN is not set
-# CONFIG_JFFS2_CMODE_NONE is not set
-CONFIG_JFFS2_CMODE_PRIORITY=y
-# CONFIG_JFFS2_CMODE_SIZE is not set
-# CONFIG_JFFS2_CMODE_FAVOURLZO is not set
-# CONFIG_CRAMFS is not set
-# CONFIG_VXFS_FS is not set
-# CONFIG_HPFS_FS is not set
-# CONFIG_QNX4FS_FS is not set
-# CONFIG_SYSV_FS is not set
-# CONFIG_UFS_FS is not set
-
-#
-# Network File Systems
-#
-# CONFIG_NFS_FS is not set
-# CONFIG_NFSD is not set
-# CONFIG_SMB_FS is not set
-CONFIG_CIFS=m
-# CONFIG_CIFS_STATS is not set
-CONFIG_CIFS_WEAK_PW_HASH=y
-CONFIG_CIFS_XATTR=y
-CONFIG_CIFS_POSIX=y
-CONFIG_CIFS_DEBUG2=y
-CONFIG_CIFS_EXPERIMENTAL=y
-# CONFIG_CIFS_UPCALL is not set
-# CONFIG_NCP_FS is not set
-# CONFIG_CODA_FS is not set
-# CONFIG_AFS_FS is not set
-
-#
-# Partition Types
-#
-CONFIG_PARTITION_ADVANCED=y
-# CONFIG_ACORN_PARTITION is not set
-# CONFIG_OSF_PARTITION is not set
-# CONFIG_AMIGA_PARTITION is not set
-# CONFIG_ATARI_PARTITION is not set
-CONFIG_MAC_PARTITION=y
-CONFIG_MSDOS_PARTITION=y
-# CONFIG_BSD_DISKLABEL is not set
-# CONFIG_MINIX_SUBPARTITION is not set
-# CONFIG_SOLARIS_X86_PARTITION is not set
-# CONFIG_UNIXWARE_DISKLABEL is not set
-CONFIG_LDM_PARTITION=y
-CONFIG_LDM_DEBUG=y
-# CONFIG_SGI_PARTITION is not set
-# CONFIG_ULTRIX_PARTITION is not set
-# CONFIG_SUN_PARTITION is not set
-# CONFIG_KARMA_PARTITION is not set
-# CONFIG_EFI_PARTITION is not set
-# CONFIG_SYSV68_PARTITION is not set
-
-#
-# Native Language Support
-#
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="iso8859-1"
-CONFIG_NLS_CODEPAGE_437=y
-# CONFIG_NLS_CODEPAGE_737 is not set
-# CONFIG_NLS_CODEPAGE_775 is not set
-# CONFIG_NLS_CODEPAGE_850 is not set
-# CONFIG_NLS_CODEPAGE_852 is not set
-# CONFIG_NLS_CODEPAGE_855 is not set
-# CONFIG_NLS_CODEPAGE_857 is not set
-# CONFIG_NLS_CODEPAGE_860 is not set
-# CONFIG_NLS_CODEPAGE_861 is not set
-# CONFIG_NLS_CODEPAGE_862 is not set
-# CONFIG_NLS_CODEPAGE_863 is not set
-# CONFIG_NLS_CODEPAGE_864 is not set
-# CONFIG_NLS_CODEPAGE_865 is not set
-# CONFIG_NLS_CODEPAGE_866 is not set
-# CONFIG_NLS_CODEPAGE_869 is not set
-# CONFIG_NLS_CODEPAGE_936 is not set
-# CONFIG_NLS_CODEPAGE_950 is not set
-# CONFIG_NLS_CODEPAGE_932 is not set
-# CONFIG_NLS_CODEPAGE_949 is not set
-# CONFIG_NLS_CODEPAGE_874 is not set
-# CONFIG_NLS_ISO8859_8 is not set
-# CONFIG_NLS_CODEPAGE_1250 is not set
-# CONFIG_NLS_CODEPAGE_1251 is not set
-CONFIG_NLS_ASCII=y
-CONFIG_NLS_ISO8859_1=y
-# CONFIG_NLS_ISO8859_2 is not set
-# CONFIG_NLS_ISO8859_3 is not set
-# CONFIG_NLS_ISO8859_4 is not set
-# CONFIG_NLS_ISO8859_5 is not set
-# CONFIG_NLS_ISO8859_6 is not set
-# CONFIG_NLS_ISO8859_7 is not set
-# CONFIG_NLS_ISO8859_9 is not set
-# CONFIG_NLS_ISO8859_13 is not set
-# CONFIG_NLS_ISO8859_14 is not set
-CONFIG_NLS_ISO8859_15=y
-# CONFIG_NLS_KOI8_R is not set
-# CONFIG_NLS_KOI8_U is not set
-CONFIG_NLS_UTF8=y
-
-#
-# Distributed Lock Manager
-#
-CONFIG_DLM=m
-CONFIG_DLM_DEBUG=y
-CONFIG_INSTRUMENTATION=y
-CONFIG_PROFILING=y
-CONFIG_OPROFILE=y
-CONFIG_KPROBES=y
-
-#
-# Kernel hacking
-#
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-# CONFIG_PRINTK_TIME is not set
-CONFIG_ENABLE_MUST_CHECK=y
-CONFIG_MAGIC_SYSRQ=y
-CONFIG_UNUSED_SYMBOLS=y
-# CONFIG_PAGE_OWNER is not set
-CONFIG_DEBUG_FS=y
-# CONFIG_HEADERS_CHECK is not set
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DEBUG_SHIRQ=y
-CONFIG_DETECT_SOFTLOCKUP=y
-# CONFIG_SCHED_DEBUG is not set
-# CONFIG_SCHEDSTATS is not set
-CONFIG_TIMER_STATS=y
-CONFIG_SLUB_DEBUG_ON=y
-CONFIG_DEBUG_PREEMPT=y
-CONFIG_DEBUG_RT_MUTEXES=y
-CONFIG_DEBUG_PI_LIST=y
-# CONFIG_RT_MUTEX_TESTER is not set
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_LOCK_ALLOC=y
-CONFIG_PROVE_LOCKING=y
-CONFIG_LOCKDEP=y
-# CONFIG_LOCK_STAT is not set
-CONFIG_DEBUG_LOCKDEP=y
-CONFIG_TRACE_IRQFLAGS=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-CONFIG_STACKTRACE=y
-# CONFIG_DEBUG_KOBJECT is not set
-CONFIG_DEBUG_HIGHMEM=y
-CONFIG_DEBUG_BUGVERBOSE=y
-# CONFIG_DEBUG_INFO is not set
-CONFIG_DEBUG_VM=y
-CONFIG_DEBUG_LIST=y
-CONFIG_FRAME_POINTER=y
-# CONFIG_PROFILE_LIKELY is not set
-CONFIG_FORCED_INLINING=y
-# CONFIG_BOOT_PRINTK_DELAY is not set
-# CONFIG_DEBUG_SYNCHRO_TEST is not set
-# CONFIG_RCU_TORTURE_TEST is not set
-# CONFIG_LKDTM is not set
-# CONFIG_FAULT_INJECTION is not set
-# CONFIG_WANT_EXTRA_DEBUG_INFORMATION is not set
-# CONFIG_UNWIND_INFO is not set
-# CONFIG_KGDB is not set
-CONFIG_EARLY_PRINTK=y
-CONFIG_DEBUG_STACKOVERFLOW=y
-# CONFIG_DEBUG_STACK_USAGE is not set
-
-#
-# Page alloc debug is incompatible with Software Suspend on i386
-#
-CONFIG_DEBUG_RODATA=y
-CONFIG_4KSTACKS=y
-CONFIG_X86_FIND_SMP_CONFIG=y
-CONFIG_X86_MPPARSE=y
-CONFIG_DOUBLEFAULT=y
-
-#
-# Security options
-#
-# CONFIG_KEYS is not set
-# CONFIG_SECURITY is not set
-# CONFIG_SECURITY_FILE_CAPABILITIES is not set
-CONFIG_CRYPTO=y
-CONFIG_CRYPTO_ALGAPI=m
-CONFIG_CRYPTO_BLKCIPHER=m
-CONFIG_CRYPTO_HASH=m
-CONFIG_CRYPTO_MANAGER=m
-CONFIG_CRYPTO_HMAC=m
-# CONFIG_CRYPTO_XCBC is not set
-# CONFIG_CRYPTO_NULL is not set
-# CONFIG_CRYPTO_MD4 is not set
-CONFIG_CRYPTO_MD5=m
-CONFIG_CRYPTO_SHA1=m
-CONFIG_CRYPTO_SHA256=m
-# CONFIG_CRYPTO_SHA512 is not set
-# CONFIG_CRYPTO_WP512 is not set
-# CONFIG_CRYPTO_TGR192 is not set
-# CONFIG_CRYPTO_GF128MUL is not set
-CONFIG_CRYPTO_ECB=m
-CONFIG_CRYPTO_CBC=m
-CONFIG_CRYPTO_PCBC=m
-# CONFIG_CRYPTO_LRW is not set
-# CONFIG_CRYPTO_CRYPTD is not set
-CONFIG_CRYPTO_DES=m
-# CONFIG_CRYPTO_FCRYPT is not set
-# CONFIG_CRYPTO_BLOWFISH is not set
-# CONFIG_CRYPTO_TWOFISH is not set
-# CONFIG_CRYPTO_TWOFISH_586 is not set
-# CONFIG_CRYPTO_SERPENT is not set
-CONFIG_CRYPTO_AES=m
-# CONFIG_CRYPTO_AES_586 is not set
-# CONFIG_CRYPTO_CAST5 is not set
-# CONFIG_CRYPTO_CAST6 is not set
-# CONFIG_CRYPTO_TEA is not set
-CONFIG_CRYPTO_ARC4=m
-# CONFIG_CRYPTO_KHAZAD is not set
-# CONFIG_CRYPTO_ANUBIS is not set
-CONFIG_CRYPTO_DEFLATE=m
-CONFIG_CRYPTO_MICHAEL_MIC=m
-# CONFIG_CRYPTO_CRC32C is not set
-# CONFIG_CRYPTO_CAMELLIA is not set
-# CONFIG_CRYPTO_TEST is not set
-CONFIG_CRYPTO_HW=y
-CONFIG_CRYPTO_DEV_PADLOCK=m
-CONFIG_CRYPTO_DEV_PADLOCK_AES=m
-CONFIG_CRYPTO_DEV_PADLOCK_SHA=m
-CONFIG_CRYPTO_DEV_GEODE=m
-
-#
-# Library routines
-#
-CONFIG_BITREVERSE=y
-CONFIG_CRC_CCITT=m
-CONFIG_CRC16=m
-CONFIG_CRC_ITU_T=m
-CONFIG_CRC32=y
-# CONFIG_CRC7 is not set
-# CONFIG_LIBCRC32C is not set
-CONFIG_ZLIB_INFLATE=m
-CONFIG_ZLIB_DEFLATE=m
-CONFIG_LZO_COMPRESS=m
-CONFIG_LZO_DECOMPRESS=m
-CONFIG_REED_SOLOMON=m
-CONFIG_REED_SOLOMON_DEC16=y
-CONFIG_TEXTSEARCH=y
-CONFIG_TEXTSEARCH_KMP=m
-CONFIG_TEXTSEARCH_BM=m
-CONFIG_TEXTSEARCH_FSM=m
-CONFIG_PLIST=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_X86_BIOS_REBOOT=y
-CONFIG_KTIME_SCALAR=y
