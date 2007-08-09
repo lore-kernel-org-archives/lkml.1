@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939251AbXHIM1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939296AbXHIM3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939251AbXHIM1x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760467AbXHIM1q
+	id S939296AbXHIM3t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765504AbXHIM3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 08:27:46 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48399 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756452AbXHIM1o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:27:44 -0400
-Message-ID: <46BB080F.4040905@sgi.com>
-Date: Thu, 09 Aug 2007 14:26:55 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
+	Thu, 9 Aug 2007 08:29:42 -0400
+Received: from www.osadl.org ([213.239.205.134]:38524 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756385AbXHIM3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 08:29:41 -0400
+From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+Organization: Linutronix
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 2/3] UIO: Documentation
+Date: Thu, 9 Aug 2007 14:29:34 +0200
+User-Agent: KMail/1.9.5
+Cc: Valdis.Kletnieks@vt.edu, Jesper Juhl <jesper.juhl@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+References: <20070718232332.GA4620@kroah.com> <14166.1186611154@turing-police.cc.vt.edu> <20070809004058.6066fcd1@the-village.bc.nu>
+In-Reply-To: <20070809004058.6066fcd1@the-village.bc.nu>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Carsten Otte <cotte@de.ibm.com>
-Subject: Re: [PATCH 4/7] Moved the io struct up to the generic lg.h
-References: <20070809003211.373543702@goodmis.org>	<20070809003343.664528532@goodmis.org> <20070809115156.ef5fdc6c.sfr@canb.auug.org.au>
-In-Reply-To: <20070809115156.ef5fdc6c.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708091429.35075.hjk@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> On Wed, 08 Aug 2007 20:32:15 -0400 Steven Rostedt <rostedt@goodmis.org>
-> wrote:
->> diff --git a/drivers/lguest/i386/lg.h b/drivers/lguest/i386/lg.h
->> index 64f0abe..c5ea14c 100644
->> --- a/drivers/lguest/i386/lg.h
->> +++ b/drivers/lguest/i386/lg.h
->> @@ -20,6 +20,8 @@
->>  #include <linux/err.h>
->>  #include <asm/semaphore.h>
->>  #include "irq_vectors.h"
->> +/* some files include this, some include the parent */
->> +#include "../lg.h"
+Am Donnerstag 09 August 2007 01:40 schrieb Alan Cox:
+> > On the other hand, given that we've always said that closed-source stuff in
+> > userspace is OK, the only way to not let *that* horse out of the barn is to
+> > not merge UIO at all.
 > 
-> Surely everything should just include the parent which allows for easier
-> consolidation over time. (as you are doing here)
+> It really makes no difference whether it is merged or not. The test is
+> "derivative work" and not 'linking'. 
+> 
+> A user space driver that is unusuable without a specific GPL kernel chunk
+> is quite likely to be a derived work of the GPL kernel module 
 
-Whats wrong with introducing an include/asm-<arch>/lg.h and have the
-parent do #include <asm/lg.h> ? Seems much cleaner to me.
+I disagree. UIO is a documented kernel<->userspace interface, like sysfs
+or proc. Using your argument, we would also have to say that a userspace
+software that is unusable without sysfs is a derived work of the kernel.
+But IANAL, tell me if I missed an important point.
 
-Cheers,
-Jes
+> so the 
+> documentation is giving poor advice however
 
+I guess you mean this sentence:
+
+"if you need to keep some parts of your driver closed source, you can do so 
+without violating the GPL license on the kernel."
+
+What would you write instead?
+
+Thanks,
+Hans
