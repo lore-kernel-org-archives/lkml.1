@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765309AbXHIULp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764933AbXHIUMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765309AbXHIULp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 16:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764558AbXHIUKz
+	id S1764933AbXHIUMI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 16:12:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759162AbXHIULG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 16:10:55 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:45481 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932148AbXHIUKw (ORCPT
+	Thu, 9 Aug 2007 16:11:06 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:34502 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758368AbXHIULD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 16:10:52 -0400
-Message-ID: <46BB74B9.4070702@nortel.com>
-Date: Thu, 09 Aug 2007 14:10:33 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-CC: Chris Snook <csnook@redhat.com>, wjiang@resilience.com,
-       wensong@linux-vs.org, heiko.carstens@de.ibm.com,
-       linux-kernel@vger.kernel.org, ak@suse.de, netdev@vger.kernel.org,
-       horms@verge.net.au, akpm@linux-foundation.org,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       schwidefsky@de.ibm.com, davem@davemloft.net, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com
-Subject: Re: [PATCH 24/24] document volatile atomic_read() behavior
-References: <20070809142430.GA19817@shell.boston.redhat.com> <8f6bb8a9e4f2819a161d732bdb6c70c0@kernel.crashing.org> <46BB403D.10202@redhat.com> <0a08872e608cf5f7a3d9c0fc746a1051@kernel.crashing.org>
-In-Reply-To: <0a08872e608cf5f7a3d9c0fc746a1051@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Aug 2007 20:10:39.0633 (UTC) FILETIME=[5B296010:01C7DAC1]
+	Thu, 9 Aug 2007 16:11:03 -0400
+To: serge@hallyn.com
+CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, viro@ftp.linux.org.uk, hch@infradead.org
+In-reply-to: <20070809192045.GA16682@vino.hallyn.com> (serge@hallyn.com)
+Subject: Re: [RFC PATCH 4/4] VFS: allow filesystem to override mknod capability checks
+References: <20070809152744.519270818@szeredi.hu> <20070809152909.203254312@szeredi.hu> <20070809192045.GA16682@vino.hallyn.com>
+Message-Id: <E1IJEKl-0007XB-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 09 Aug 2007 22:10:15 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Segher Boessenkool wrote:
+> > From: Miklos Szeredi <mszeredi@suse.cz>
+> > 
+> > Add a new filesystem flag, that results in the VFS not checking if the
+> > current process has enough privileges to do an mknod().
+> > 
+> > This is needed on filesystems, where an unprivileged user may be able
+> > to create a device node, without causing security problems.
+> > 
+> > One such example is "mountlo" a loopback mount utility implemented
+> > with fuse and UML, which runs as an unprivileged userspace process.
+> > In this case the user does in fact have the right to create device
+> > nodes within the filesystem image, as long as the user has write
+> > access to the image.  Since the filesystem is mounted with "nodev",
+> > adding device nodes is not a security concern.
+> 
+> Could we enforce at do_new_mount() that if
+> type->fs_flags&FS_MKNOD_CHECKS_PERM then mnt_flags |= MS_NODEV?
 
-> Anyway, what's the supposed advantage of *(volatile *) vs. using
-> a real volatile object?  That you can access that same object in
-> a non-volatile way?
+Well, the problem with that is, there will be fuse filesystems which
+will want devices to work and for those the capability checks will be
+reenabled inside ->mknod().  In fact, for backward compatibility all
+filesystems will have the mknod checks, except ones which explicitly
+request to turn it off.
 
-That's my understanding.  That way accesses where you don't care about 
-volatility may be optimised.
+Since unprivileged fuse mounts always have "nodev", the only way
+security could be screwed up, is if a filesystem running with
+privileges disabled the mknod checks.
 
-For instance, in cases where there are already other things controlling 
-visibility (as are needed for atomic increment, for example) you don't 
-need to make the access itself volatile.
+I will probably add some safety guards against that into the fuse
+library, but of course there's no way to stop a privileged user from
+screwing up security anyway.
 
-Chris
+If for example there's a loop mount, where the disk image file is
+writable by a user, and root mounts it without "nodev", the user can
+still create device nodes (by modifying the image) even if the mknod
+checks are enabled.
+
+Miklos
