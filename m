@@ -1,89 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939591AbXHIMlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939676AbXHIMln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939591AbXHIMlW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937217AbXHIMlG
+	id S939676AbXHIMln (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939319AbXHIMlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 08:41:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51564 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764314AbXHIMlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:41:04 -0400
-Message-ID: <46BB0B4B.4070300@redhat.com>
-Date: Thu, 09 Aug 2007 08:40:43 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 9 Aug 2007 08:41:15 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52873 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939249AbXHIMlO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 08:41:14 -0400
+Date: Thu, 9 Aug 2007 14:41:12 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Bodo Eggert <7eggert@gmx.de>
+cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Documentation files in html format?
+In-Reply-To: <E1IJ7DO-0000pI-JN@be1.lrz>
+Message-ID: <Pine.LNX.4.64.0708091439270.10387@fbirervta.pbzchgretzou.qr>
+References: <8QdB3-87O-7@gated-at.bofh.it> <8QdUr-5j-11@gated-at.bofh.it>
+ <E1IJ7DO-0000pI-JN@be1.lrz>
 MIME-Version: 1.0
-To: Michael Buesch <mb@bu3sch.de>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       torvalds@osdl.org
-Subject: Re: [patch] ipvs: force read of atomic_t in while loop
-References: <20070808093300.GA14530@osiris.boeblingen.de.ibm.com> <46BA30DC.20207@redhat.com> <20070809001533.GA17798@one.firstfloor.org> <200708091435.18595.mb@bu3sch.de>
-In-Reply-To: <200708091435.18595.mb@bu3sch.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Buesch wrote:
-> On Thursday 09 August 2007 02:15:33 Andi Kleen wrote:
->> On Wed, Aug 08, 2007 at 05:08:44PM -0400, Chris Snook wrote:
->>> Heiko Carstens wrote:
->>>> On Wed, Aug 08, 2007 at 03:21:31AM -0700, David Miller wrote:
->>>>> From: Heiko Carstens <heiko.carstens@de.ibm.com>
->>>>> Date: Wed, 8 Aug 2007 11:33:00 +0200
->>>>>
->>>>>> Just saw this while grepping for atomic_reads in a while loops.
->>>>>> Maybe we should re-add the volatile to atomic_t. Not sure.
->>>>> I think whatever the choice, it should be done consistently
->>>>> on every architecture.
->>>>>
->>>>> It's just asking for trouble if your arch does it differently from
->>>>> every other.
->>>> Well..currently it's i386/x86_64 and s390 which have no volatile
->>>> in atomic_t. And yes, of course I agree it should be consistent
->>>> across all architectures. But it isn't.
->>> Based on recent discussion, it's pretty clear that there's a lot of 
->>> confusion about this.  A lot of people (myself included, until I thought 
->>> about it long and hard) will reasonably assume that calling 
->>> atomic_read() will actually read the value from memory.  Leaving out the 
->>> volatile declaration seems like a pessimization to me.  If you force 
->>> people to use barrier() everywhere they're working with atomic_t, it 
->>> will force re-reads of all the non-atomic data in use as well, which 
->>> will cause more memory fetches of things that generally don't need 
->>> barrier().  That and it's a bug waiting to happen.
->>>
->>> Andi -- your thoughts on the matter?
->> I also think readding volatile makes sense. An alternative would be
->> to stick an rmb() into atomic_read() -- that would also stop speculative reads.
->> Disadvantage is that it clobbers all memory, not just the specific value.
->>
->> But you really have to complain to Linus (cc'ed). He came up
->> with the volatile removale change iirc.
-> 
-> Isn't it possible through some inline assembly trick
-> that only a certain variable has to be reloaded?
-> So we could define something like that:
-> 
-> #define reload_var(x) __asm__ __volatile__ (whatever, x)
-> 
-> I don't know inline assembly that much, but isn't it possible
-> with that to kind of "fake-touch" the variable, so the compiler
-> must reload it (and only it) to make sure it's up to date?
 
-We can do it in C, like this:
+On Aug 9 2007 14:34, Bodo Eggert wrote:
+>
+>I don't think <b> and <i> should be used, instead you should use styles
+>(<span class="code"> etc).
 
--#define atomic_read(v) ((v)->counter)
-+#define atomic_read(v) (*(volatile int *)&(v)->counter)
+<b> does the same as <span style="font-weight: bold;">, and the latter is much
+more verbose for the same thing.
 
-By casting it volatile at the precise piece of code where we want to guarantee a 
-read from memory, there's little risk of the compiler getting creative in its 
-interpretation of the code.
+>Things like <em> and <strong> should be OK, if used consistently.
+>
+>> Perhaps maybe <p class="block"> with .block{text-align:justify;}
+>> because that looks nice in general.
+>
+>If you like that, you can say "p {text-align:justify;}" in the default
+>stylesheet. (And if people would override the alignment, class="block"
+>would be the wrong name).
 
-Stay tuned for the patch set...
+Oh that comes because MS Office calls it "Blocksatz" in German ;-)
 
-	-- Chris
+
+	Jan
+-- 
