@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761592AbXHIT2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763176AbXHIT2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761592AbXHIT2H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 15:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762510AbXHIT1W
+	id S1763176AbXHIT2c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 15:28:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762610AbXHIT1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 15:27:22 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37647 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761011AbXHIT1U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 15:27:20 -0400
-Date: Thu, 9 Aug 2007 12:27:19 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, torvalds@linux-foundation.org
-Subject: Re: [PATCH 17/23] mm: count writeback pages per BDI
-In-Reply-To: <1186687416.11797.182.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0708091225470.28074@schroedinger.engr.sgi.com>
-References: <20070803123712.987126000@chello.nl>  <20070803125237.072937000@chello.nl>
-  <Pine.LNX.4.64.0708091214330.27092@schroedinger.engr.sgi.com>
- <1186687416.11797.182.camel@lappy>
+	Thu, 9 Aug 2007 15:27:31 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51272 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761282AbXHIT13 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 15:27:29 -0400
+Message-ID: <46BB6A9E.5070300@garzik.org>
+Date: Thu, 09 Aug 2007 15:27:26 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.23-rc2-mm1
+References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>	<46BB155D.8050501@googlemail.com>	<20070809113710.bc0e3b80.akpm@linux-foundation.org>	<6bffcb0e0708091204h38f137a7w6475a229199608c6@mail.gmail.com> <20070809121034.3aac9da2.akpm@linux-foundation.org>
+In-Reply-To: <20070809121034.3aac9da2.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, Peter Zijlstra wrote:
+Andrew Morton wrote:
+> umm, I was hoping to find out which of those two patches was the cuplrit.
+> Almost surely it was 9ee6b32a47b9abc565466a9c3b127a5246b452e5?
 
-> Less conditionals. We already have a branch for mapping, why create
-> another?
 
-Ah. Okay. This also avoids an interrupt enable disable since you can use 
-__ functions. Hmmm... Would be good if we could move the vmstat 
-NR_WRITEBACK update there too. Can a page without a mapping be under 
-writeback? (Direct I/O?)
+Highly likely it is my patch in #ALL.
+
+	Jeff
 
 
