@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760470AbXHITrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762254AbXHITsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760470AbXHITrX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 15:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbXHITrO
+	id S1762254AbXHITsV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 15:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbXHITsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 15:47:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59087 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752655AbXHITrN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 15:47:13 -0400
-Date: Thu, 9 Aug 2007 12:46:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc: linux-kernel@vger.kernel.org, linuxconsole-dev@lists.sourceforge.net,
-       akpm@google.com
-Subject: Re: [PATCH] unicode diacritics support
-Message-Id: <20070809124642.fbbd3e68.akpm@linux-foundation.org>
-In-Reply-To: <20070808081010.GA3292@implementation.labri.fr>
-References: <20070808081010.GA3292@implementation.labri.fr>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 9 Aug 2007 15:48:03 -0400
+Received: from gate.crashing.org ([63.228.1.57]:50600 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754181AbXHITsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 15:48:00 -0400
+In-Reply-To: <46BB403D.10202@redhat.com>
+References: <20070809142430.GA19817@shell.boston.redhat.com> <8f6bb8a9e4f2819a161d732bdb6c70c0@kernel.crashing.org> <46BB403D.10202@redhat.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <0a08872e608cf5f7a3d9c0fc746a1051@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: wjiang@resilience.com, wensong@linux-vs.org, heiko.carstens@de.ibm.com,
+       linux-kernel@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
+       netdev@vger.kernel.org, horms@verge.net.au, akpm@linux-foundation.org,
+       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       schwidefsky@de.ibm.com, davem@davemloft.net, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 24/24] document volatile atomic_read() behavior
+Date: Thu, 9 Aug 2007 21:42:01 +0200
+To: Chris Snook <csnook@redhat.com>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Aug 2007 10:10:10 +0200
-Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
+>>> Explicit
+>>> +casting in atomic_read() ensures consistent behavior across 
+>>> architectures
+>>> +and compilers.
+>> Even modulo compiler bugs, what makes you believe that?
+>
+> When you declare a variable volatile, you don't actually tell the 
+> compiler where you want to override its default optimization behavior, 
+> giving it some freedom to guess your intentions incorrectly.  When you 
+> put the cast on the data access itself, there is no question about 
+> precisely where in the code you want to override the compiler's 
+> default optimization behavior.
 
-> There have been issues with non-latin1 diacritics and unicode.
-> http://bugzilla.kernel.org/show_bug.cgi?id=7746
-> 
-> Git 759448f459234bfcf34b82471f0dba77a9aca498 `Kernel utf-8 handling'
-> partly resolved it by adding conversion between diacritics and
-> unicode. The patch below goes further by just turning diacritics into
-> unicode, hence providing better future support. The kbd support can be
-> fetched from
-> http://bugzilla.kernel.org/attachment.cgi?id=12313
-> 
-> This was tested in all of latin1, latin9, latin2 and unicode with french
-> and czech dead keys.
-> 
-> --
-> 
-> Turn the kernel accent_table into unicode, and extend ioctls KDGKBDIACR
-> and KDSKBDIACR into their equivalents KDGKBDIACRUC and KDSKBDIACR.
-> 
-> New function int conv_uni_to_8bit(u32 uni) for converting unicode into 8bit
-> _input_.  No, we don't want to store the translation, as it is potentially
-> sparse and large.
+...except for the small point that this isn't how volatile works.
 
-This changes the kernel ABI a bit.  The KDGKBDIACR ioctl (and friends)
-now return different data.  What are the implications of this?
+Rule of thumb: even people who know the semantics of volatile
+shouldn't use it.
+
+> If the compiler doesn't do what you want with a volatile declaration, 
+> it might have a plausible excuse in the ambiguity of the C standard.  
+> If the compiler doesn't do what you want in a cast specific to a 
+> single dereference, it's just plain broken.
+
+The other way around.  "volatile" has pretty weak semantics, and
+certainly not the semantics you think it has, or that you wish it
+had; but *(volatile XX *) doesn't have *any* semantics.  However
+much you cast that pointer it still doesn't point to a volatile
+object.
+
+GCC will generally take the path of least surprise and perform a
+volatile access anyway, but this has only be decided recently (a
+year ago or so), and there very likely still are some bugs in
+that area.
+
+> We try to be compatible with plausibly correct compilers, but if 
+> they're completely broken, we're screwed no matter what.
+
+If you don't know what to expect, you're screwed for sure.
+
+
+Anyway, what's the supposed advantage of *(volatile *) vs. using
+a real volatile object?  That you can access that same object in
+a non-volatile way?
+
+
+Segher
+
