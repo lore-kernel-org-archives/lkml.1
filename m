@@ -1,62 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934316AbXHIG73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934734AbXHIHCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934316AbXHIG73 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 02:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbXHIG7V
+	id S934734AbXHIHCZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 03:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbXHIHCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 02:59:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43458 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757652AbXHIG7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 02:59:20 -0400
-Date: Thu, 9 Aug 2007 08:59:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mitchell Erblich <erblichs@earthlink.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Question: RT schedular : task_tick_rt(struct rq *rq,
-	structtask_struct *p) : decreases overhead when  rq->nr_running == 1
-Message-ID: <20070809065916.GB30046@elte.hu>
-References: <000501c7da16$838dea40$6501a8c0@earthlink.net>
+	Thu, 9 Aug 2007 03:02:18 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:60354 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753164AbXHIHCR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 03:02:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cL1r+wVSP25PoQPFJ1Ll/YCm0zwKIsT7XxGwSnBjobH3oI8RxrwS9XAGfdDK2n5El2euayFt6dTOkB+35kWxmvEfuSIYV+N3psG1bxcSkG/xzwyup8LGQu6QrBiN7/epfQHGtyswrtUl1e5ekdYKpGY+C8oa+RFCKuq7tsi/AL4=
+Message-ID: <5d6222a80708090002y7fdc6f2dw1dbacd3d27a86433@mail.gmail.com>
+Date: Thu, 9 Aug 2007 04:02:14 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [PATCH 25/25] [PATCH] add paravirtualization support for x86_64
+Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, ak@suse.de, mingo@elte.hu, chrisw@sous-sol.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
+       "Steven Rostedt" <rostedt@goodmis.org>
+In-Reply-To: <46BAB5C8.5090906@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <000501c7da16$838dea40$6501a8c0@earthlink.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <11865467522495-git-send-email-gcosta@redhat.com>
+	 <1186546820708-git-send-email-gcosta@redhat.com>
+	 <11865468243612-git-send-email-gcosta@redhat.com>
+	 <11865468321629-git-send-email-gcosta@redhat.com>
+	 <11865468362401-git-send-email-gcosta@redhat.com>
+	 <11865468394005-git-send-email-gcosta@redhat.com>
+	 <11865468431616-git-send-email-gcosta@redhat.com>
+	 <1186546847263-git-send-email-gcosta@redhat.com>
+	 <11865468513077-git-send-email-gcosta@redhat.com>
+	 <46BAB5C8.5090906@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > +     case PARAVIRT_PATCH(make_pgd):
+> > +     case PARAVIRT_PATCH(pgd_val):
+> > +     case PARAVIRT_PATCH(make_pte):
+> > +     case PARAVIRT_PATCH(pte_val):
+> > +     case PARAVIRT_PATCH(make_pmd):
+> > +     case PARAVIRT_PATCH(pmd_val):
+> > +     case PARAVIRT_PATCH(make_pud):
+> > +     case PARAVIRT_PATCH(pud_val):
+> > +             /* These functions end up returning what
+> > +                they're passed in the first argument */
+> >
+>
+> Is this still true with 64-bit?  Either way, I don't think its worth
+> having this here.  The damage to codegen around all those sites has
+> already happened, and the additional cost of a noop direct call is
+> pretty trivial.  I think this is a nanooptimisation which risks more
+> problems than it could possibly be worth.
 
-* Mitchell Erblich <erblichs@earthlink.net> wrote:
+No it is not. But it is just the comment that is broken. (I forgot to
+update it). The case here, is that they put in rax what they receive
+in rdi.
 
-> First, RT/RR tasks are not deprecated. [...]
+> > +     case PARAVIRT_PATCH(set_pte):
+> > +     case PARAVIRT_PATCH(set_pmd):
+> > +     case PARAVIRT_PATCH(set_pud):
+> > +     case PARAVIRT_PATCH(set_pgd):
+> > +             /* These functions end up storing the second
+> > +              * argument in the location pointed by the first */
+> > +             ret = paravirt_patch_store_reg(insns, len);
+> > +             break;
+> >
+>
+> Ditto, really.  Do this in a later patch if it actually seems to help.
 
-I'm confused, do you say this in reference to anything i said? I did not 
-say that RR tasks are deprecated and you were top-posting so i cannot 
-connect it to anything specific. I only said RR tasks are _rare_:
+Okay, I can remove them both.
 
->> this is a pretty rare codepath because the overwhelming majority of 
->> RT apps uses SCHED_FIFO [...]
+> > +/*
+> > + * integers must be use with care here. They can break the PARAVIRT_PATCH(x)
+> > + * macro, that divides the offset in the structure by 8, to get a number
+> > + * associated with the hook. Dividing by four would be a solution, but it
+> > + * would limit the future growth of the structure if needed.
+> >
+>
+> Why not just stick them at the end of the structure?
 
-and i hope you can see the difference between 'rare' and 'deprecated' 
-;-) And i suspect you also missed the last bit of what i wrote:
+Does it really matter?
 
->> So this is on several levels an uncommon workload and by adding a 
->> check like that we'd increase the codesize. But ... no strong 
->> feelings against this optimization - if you send a proper patch we 
->> can apply it, it certainly makes sense from a logic POV.
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
 
-and you also missed the first bit it appears:
-
->> your change is a possible optimization, [...]
-
-so you are banging, with full force, on completely open doors =B-)
-
-	Ingo
+"The less confident you are, the more serious you have to act."
