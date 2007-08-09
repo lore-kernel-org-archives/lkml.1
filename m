@@ -1,211 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940217AbXHIPhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938803AbXHIPjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940217AbXHIPhn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 11:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760191AbXHIPhb
+	id S938803AbXHIPjN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 11:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965644AbXHIPi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 11:37:31 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:47390 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765477AbXHIPh2 (ORCPT
+	Thu, 9 Aug 2007 11:38:57 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:44819 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965636AbXHIPi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 11:37:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=huuJbRG8XYEIoXZIj8IXDu4Cnahz5U0fPdfzW7w7gJTUGQvF7F5sWvf8oO8FJqkL6mSzHWZ2ZZe/4OgpXwuKUqPmYXyq5uiNQoFwGAAMr2leBPBDsNGiEyBocKv2UuZ1U1D28chOfzBMkwt6npSBIx1QT7R1qzkfCyQmqP7KgnU=
-Message-ID: <46BB3499.5090803@googlemail.com>
-Date: Thu, 09 Aug 2007 17:36:57 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       linux-mm@kvack.org
-Subject: Re: 2.6.23-rc2-mm1
+	Thu, 9 Aug 2007 11:38:56 -0400
+Date: Thu, 9 Aug 2007 16:37:35 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc2-mm1: kernel BUG at mm/swap_state.c:78!
+In-Reply-To: <200708091711.53898.m.kozlowski@tuxland.pl>
+Message-ID: <Pine.LNX.4.64.0708091633540.8627@blonde.wat.veritas.com>
 References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
-In-Reply-To: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+ <200708091711.53898.m.kozlowski@tuxland.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAbS5rb3psb3dza2lAdHV4bGFuZC5wbABucGlnZ2luQHN1c2UuZGUAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton pisze:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc2/2.6.23-rc2-mm1/
+On Thu, 9 Aug 2007, Mariusz Kozlowski wrote:
+> Hello,
 > 
+> 	Nothing unusual happening, allmodconfig compiling etc.
+> Not sure why it says kernel was tainted though ... hmmm.
+> 
+> ------------[ cut here ]------------
+> kernel BUG at mm/swap_state.c:78!
+> invalid opcode: 0000 [#1]
+> PREEMPT 
+> Modules linked in: orinoco_cs orinoco hermes pl2303 usbserial pcmcia 8250_pci 8250 serial_core yenta_socket rsrc_nonstatic pcmcia_core 8139too
+> CPU:    0
+> EIP:    0060:[<c01504b7>]    Tainted: P        VLI
+> EFLAGS: 00010246   (2.6.23-rc2-mm1 #1)
+> EIP is at __add_to_swap_cache+0xc6/0xd7
+> eax: 40000000   ebx: c11285c0   ecx: 000000d0   edx: 00000283
+> esi: c11285c0   edi: 00000283   ebp: c1858f90   esp: c1858f84
+> ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
+> Process kprefetchd (pid: 236, ti=c1858000 task=c18d14d0 task.ti=c1858000)
+> Stack: 00000283 c11285c0 c3d5a3c8 c1858fa0 c01504ea c11285c0 00000000 c1858fcc 
+>        c015307c 00000001 00000007 00000002 00000002 00000283 00000000 fffffffc 
+>        00000000 c0152d5c c1858fe0 c0127f2e c0127ef8 00000000 00000000 00000000 
+> Call Trace:
+>  [<c010456a>] show_trace_log_lvl+0x1a/0x30
+>  [<c0104629>] show_stack_log_lvl+0xa9/0xd5
+>  [<c010486e>] show_registers+0x219/0x38d
+>  [<c0104ae6>] die+0x104/0x23e
+>  [<c0419bd3>] do_trap+0x83/0xad
+>  [<c0104edf>] do_invalid_op+0x88/0x92
+>  [<c04199b2>] error_code+0x6a/0x70
+>  [<c01504ea>] add_to_swap_cache+0x22/0x58
+>  [<c015307c>] kprefetchd+0x320/0x364
+>  [<c0127f2e>] kthread+0x36/0x58
+>  [<c0104233>] kernel_thread_helper+0x7/0x14
+>  =======================
+> INFO: lockdep is turned off.
+> Code: 0f 89 7b 0c 83 05 fc c9 53 c0 01 8b 13 c1 ea 1e 8d 04 12 01 d0 c1 e0 03 29 d0 c1 e0 05 ff 80 b8 c0 53 c0 ff 05 34 1d 68 c0 eb 96 <0f> 0b eb fe 0f 0b eb fe 0f 0b eb fe 8b 53 0c eb be 55 89 e5 56 
+> EIP: [<c01504b7>] __add_to_swap_cache+0xc6/0xd7 SS:ESP 0068:c1858f84
 
-bash_shared_mapping triggered this
-
-[  874.714700] INFO: trying to register non-static key.
-[  874.719659] the code is fine but needs lockdep annotation.
-[  874.725133] turning off the locking correctness validator.
-[  874.730606]  [<c040536b>] show_trace_log_lvl+0x1a/0x30
-[  874.735759]  [<c0405ff3>] show_trace+0x12/0x14
-[  874.740218]  [<c0406128>] dump_stack+0x16/0x18
-[  874.744679]  [<c044b936>] __lock_acquire+0x598/0x125c
-[  874.749745]  [<c044c6a1>] lock_acquire+0xa7/0xc1
-[  874.754378]  [<c069f753>] _spin_lock_irqsave+0x41/0x6e
-[  874.759529]  [<c05259db>] prop_norm_single+0x34/0x8a
-[  874.764508]  [<c0473576>] set_page_dirty+0xa1/0x13b
-[  874.769402]  [<c0482bd1>] try_to_unmap_one+0xb8/0x1e7
-[  874.774467]  [<c0482d8f>] try_to_unmap+0x8f/0x40d
-[  874.779187]  [<c04776fd>] shrink_page_list+0x278/0x750
-[  874.784339]  [<c0477ccb>] shrink_inactive_list+0xf6/0x328
-[  874.789749]  [<c0477faa>] shrink_zone+0xad/0x10b
-[  874.794383]  [<c047866e>] try_to_free_pages+0x178/0x274
-[  874.799620]  [<c0472a36>] __alloc_pages+0x169/0x431
-[  874.804514]  [<c047501d>] __do_page_cache_readahead+0x141/0x207
-[  874.810443]  [<c047545c>] do_page_cache_readahead+0x48/0x5c
-[  874.816027]  [<c046f3a3>] filemap_fault+0x2dd/0x4cf
-[  874.820921]  [<c047b5c9>] __do_fault+0xb6/0x42d
-[  874.825466]  [<c047d0d5>] handle_mm_fault+0x1b6/0x750
-[  874.830533]  [<c041cd7b>] do_page_fault+0x334/0x5f9
-[  874.835425]  [<c069fe72>] error_code+0x72/0x78
-[  874.839886]  =======================
-[  880.621883] BUG: NMI Watchdog detected LOCKUP on CPU1, eip c0529022, registers:
-[  880.629200] Modules linked in: ext2 loop autofs4 af_packet nf_conntrack_netbios_ns nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink ipt_REJECT iptable_filter ip_tables xt_tcpudp ip6t_REJECT ip6table_filter ip6_tables x_tables firmware_class binfmt_misc fan ipv6 nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd soundcore i2c_i801 snd_page_alloc intel_agp agpgart rtc
-[  880.672397] CPU:    1
-[  880.672398] EIP:    0060:[<c0529022>]    Not tainted VLI
-[  880.672400] EFLAGS: 00000046   (2.6.23-rc2-mm1 #3)
-[  880.684735] EIP is at delay_tsc+0xe/0x17
-
-l *delay_tsc+0xe
-0xc1129022 is in delay_tsc (/home/devel/linux-mm/arch/i386/lib/delay.c:49).
-44
-45              rdtscl(bclock);
-46              do {
-47                      rep_nop();
-48                      rdtscl(now);
-49              } while ((now-bclock) < loops);
-50      }
-51
-52      /*
-53       * Since we calibrate only once at boot, this
+Don't worry about reproducing untainted, I got the same earlier
+and was just preparing and testing the hotfix: here it is...
 
 
-[  880.688646] eax: 393e5d7c   ebx: 00000001   ecx: 393e5d04   edx: 0000023f
-[  880.695414] esi: 00000000   edi: cabbf5cc   ebp: caf29ae8   esp: caf29ae4
-[  880.702183] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-[  880.708002] Process firefox-bin (pid: 2625, ti=caf29000 task=cabbe900 task.ti=caf29000)
-[  880.715805] Stack: 02e6eb94 caf29af0 c0528fdd caf29b28 c05375ac 00000046 00000000 caf29b28 
-[  880.724345]        00000046 00000000 a6c999f0 00000001 a6c999f0 00000000 cabbf5e0 cabbf5cc 
-[  880.732887]        00000086 caf29b48 c069f76f 00000000 00000002 c05259db cabbf5c0 00008000 
-[  880.741425] Call Trace:
-[  880.744073]  [<c040536b>] show_trace_log_lvl+0x1a/0x30
-[  880.749233]  [<c040542a>] show_stack_log_lvl+0xa9/0xd5
-[  880.754386]  [<c0405670>] show_registers+0x21a/0x3ac
-[  880.759365]  [<c04061ae>] die_nmi+0x84/0xd7
-[  880.763566]  [<c041859f>] nmi_watchdog_tick+0x14d/0x168
-[  880.768803]  [<c0406582>] do_nmi+0x8b/0x284
-[  880.773004]  [<c069ff1b>] nmi_stack_correct+0x26/0x2b
-[  880.778069]  [<c0528fdd>] __delay+0x9/0xb
-[  880.782098]  [<c05375ac>] _raw_spin_lock+0xd8/0x18a
-[  880.786991]  [<c069f76f>] _spin_lock_irqsave+0x5d/0x6e
-[  880.792143]  [<c05259db>] prop_norm_single+0x34/0x8a
-[  880.797122]  [<c0473576>] set_page_dirty+0xa1/0x13b
-[  880.802015]  [<c0482bd1>] try_to_unmap_one+0xb8/0x1e7
-[  880.807079]  [<c0482d8f>] try_to_unmap+0x8f/0x40d
-[  880.811798]  [<c04776fd>] shrink_page_list+0x278/0x750
-[  880.816950]  [<c0477ccb>] shrink_inactive_list+0xf6/0x328
-[  880.822362]  [<c0477faa>] shrink_zone+0xad/0x10b
-[  880.826997]  [<c047866e>] try_to_free_pages+0x178/0x274
-[  880.832235]  [<c0472a36>] __alloc_pages+0x169/0x431
-[  880.837126]  [<c047501d>] __do_page_cache_readahead+0x141/0x207
-[  880.843056]  [<c047545c>] do_page_cache_readahead+0x48/0x5c
-[  880.848641]  [<c046f3a3>] filemap_fault+0x2dd/0x4cf
-[  880.853534]  [<c047b5c9>] __do_fault+0xb6/0x42d
-[  880.858081]  [<c047d0d5>] handle_mm_fault+0x1b6/0x750
-[  880.863146]  [<c041cd7b>] do_page_fault+0x334/0x5f9
-[  880.868037]  [<c069fe72>] error_code+0x72/0x78
-[  880.872497]  =======================
-[  880.876068] INFO: lockdep is turned off.
-[  880.879983] Code: 8d 0c 1b 01 c9 89 da c1 e2 07 29 ca 01 da 01 d2 f7 e2 8d 42 01 e8 c3 ff ff ff 5b 5d c3 55 89 e5 53 89 c3 0f 31 89 c1 f3 90 0f 31 <29> c8 39 d8 72 f6 5b 5d c3 55 89 e5 53 69 c0 1c 43 00 00 64 8b 
-[  880.900092] Kernel panic - not syncing: Aiee, killing interrupt handler!
-[  880.906791] WARNING: at /home/devel/linux-mm/arch/i386/kernel/smp.c:474 native_smp_send_reschedule()
-[  880.915892]  [<c040536b>] show_trace_log_lvl+0x1a/0x30
-[  880.921043]  [<c0405ff3>] show_trace+0x12/0x14
-[  880.925504]  [<c0406128>] dump_stack+0x16/0x18
-[  880.929964]  [<c0416093>] native_smp_send_reschedule+0x8b/0x98
-[  880.935808]  [<c04203ea>] resched_task+0x81/0x83
-[  880.940440]  [<c04203fa>] check_preempt_curr_idle+0xe/0x10
-[  880.945939]  [<c0422364>] try_to_wake_up+0x2ca/0x3ec
-[  880.950916]  [<c04224ae>] wake_up_process+0xf/0x11
-[  880.955714]  [<c04403e5>] hrtimer_wakeup+0x18/0x1c
-[  880.960513]  [<c044100e>] hrtimer_interrupt+0x15e/0x1e8
-[  880.965751]  [<c0418292>] smp_apic_timer_interrupt+0x57/0x88
-[  880.971420]  [<c0404e0f>] apic_timer_interrupt+0x33/0x38
-[  880.976736]  [<c042d27b>] do_exit+0x639/0xa04
-[  880.981103]  [<c04061e8>] die_nmi+0xbe/0xd7
-[  880.985302]  [<c041859f>] nmi_watchdog_tick+0x14d/0x168
-[  880.990533]  [<c0406582>] do_nmi+0x8b/0x284
-[  880.994735]  [<c069ff1b>] nmi_stack_correct+0x26/0x2b
-[  880.999800]  [<c0528fdd>] __delay+0x9/0xb
-[  881.003827]  [<c05375ac>] _raw_spin_lock+0xd8/0x18a
-[  881.008712]  [<c069f76f>] _spin_lock_irqsave+0x5d/0x6e
-[  881.013865]  [<c05259db>] prop_norm_single+0x34/0x8a
-[  881.018842]  [<c0473576>] set_page_dirty+0xa1/0x13b
-[  881.023728]  [<c0482bd1>] try_to_unmap_one+0xb8/0x1e7
-[  881.028793]  [<c0482d8f>] try_to_unmap+0x8f/0x40d
-[  881.033511]  [<c04776fd>] shrink_page_list+0x278/0x750
-[  881.038664]  [<c0477ccb>] shrink_inactive_list+0xf6/0x328
-[  881.044075]  [<c0477faa>] shrink_zone+0xad/0x10b
-[  881.048709]  [<c047866e>] try_to_free_pages+0x178/0x274
-[  881.053947]  [<c0472a36>] __alloc_pages+0x169/0x431
-[  881.058838]  [<c047501d>] __do_page_cache_readahead+0x141/0x207
-[  881.064760]  [<c047545c>] do_page_cache_readahead+0x48/0x5c
-[  881.070344]  [<c046f3a3>] filemap_fault+0x2dd/0x4cf
-[  881.075229]  [<c047b5c9>] __do_fault+0xb6/0x42d
-[  881.079774]  [<c047d0d5>] handle_mm_fault+0x1b6/0x750
-[  881.084832]  [<c041cd7b>] do_page_fault+0x334/0x5f9
-[  881.089724]  [<c069fe72>] error_code+0x72/0x78
-[  881.094177]  =======================
-[  881.097748] WARNING: at /home/devel/linux-mm/arch/i386/kernel/smp.c:209 send_IPI_mask_bitmask()
-[  881.106417]  [<c040536b>] show_trace_log_lvl+0x1a/0x30
-[  881.111569]  [<c0405ff3>] show_trace+0x12/0x14
-[  881.116029]  [<c0406128>] dump_stack+0x16/0x18
-[  881.120489]  [<c041589a>] send_IPI_mask_bitmask+0xf0/0xf5
-[  881.125900]  [<c0416063>] native_smp_send_reschedule+0x5b/0x98
-[  881.131743]  [<c04203ea>] resched_task+0x81/0x83
-[  881.136367]  [<c04203fa>] check_preempt_curr_idle+0xe/0x10
-[  881.141857]  [<c0422364>] try_to_wake_up+0x2ca/0x3ec
-[  881.146827]  [<c04224ae>] wake_up_process+0xf/0x11
-[  881.151625]  [<c04403e5>] hrtimer_wakeup+0x18/0x1c
-[  881.156422]  [<c044100e>] hrtimer_interrupt+0x15e/0x1e8
-[  881.161653]  [<c0418292>] smp_apic_timer_interrupt+0x57/0x88
-[  881.167322]  [<c0404e0f>] apic_timer_interrupt+0x33/0x38
-[  881.172639]  [<c042d27b>] do_exit+0x639/0xa04
-[  881.177004]  [<c04061e8>] die_nmi+0xbe/0xd7
-[  881.181197]  [<c041859f>] nmi_watchdog_tick+0x14d/0x168
-[  881.186434]  [<c0406582>] do_nmi+0x8b/0x284
-[  881.190627]  [<c069ff1b>] nmi_stack_correct+0x26/0x2b
-[  881.195685]  [<c0528fdd>] __delay+0x9/0xb
-[  881.199713]  [<c05375ac>] _raw_spin_lock+0xd8/0x18a
-[  881.204605]  [<c069f76f>] _spin_lock_irqsave+0x5d/0x6e
-[  881.209748]  [<c05259db>] prop_norm_single+0x34/0x8a
-[  881.214718]  [<c0473576>] set_page_dirty+0xa1/0x13b
-[  881.219603]  [<c0482bd1>] try_to_unmap_one+0xb8/0x1e7
-[  881.224668]  [<c0482d8f>] try_to_unmap+0x8f/0x40d
-[  881.229389]  [<c04776fd>] shrink_page_list+0x278/0x750
-[  881.234539]  [<c0477ccb>] shrink_inactive_list+0xf6/0x328
-[  881.239951]  [<c0477faa>] shrink_zone+0xad/0x10b
-[  881.244584]  [<c047866e>] try_to_free_pages+0x178/0x274
-[  881.249822]  [<c0472a36>] __alloc_pages+0x169/0x431
-[  881.254707]  [<c047501d>] __do_page_cache_readahead+0x141/0x207
-[  881.260637]  [<c047545c>] do_page_cache_readahead+0x48/0x5c
-[  881.266221]  [<c046f3a3>] filemap_fault+0x2dd/0x4cf
-[  881.271113]  [<c047b5c9>] __do_fault+0xb6/0x42d
-[  881.275652]  [<c047d0d5>] handle_mm_fault+0x1b6/0x750
-[  881.280716]  [<c041cd7b>] do_page_fault+0x334/0x5f9
-[  881.285601]  [<c069fe72>] error_code+0x72/0x78
-[  881.290061]  =======================
+Nick's mm-clarify-__add_to_swap_cache-locking.patch is fine for mainline,
+but soon generates a "kernel BUG at mm/swap_state.c:78!" when it meets
+mm-implement-swap-prefetching.patch in 2.6.23-rc2-mm1.  We could add a
+fix to the latter, but I think it's better to adjust Nick's, so that
+it's right for whichever tree it's in: move the responsibility to
+SetPageLocked from read_swap_cache_async to add_to_swap_cache.
 
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.23-rc2-mm1/console.log
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.23-rc2-mm1/mm-config
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
-Regards,
-Michal
+ mm/swap_state.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+--- 2.6.23-rc2-mm1/mm/swap_state.c	2007-08-09 13:15:36.000000000 +0100
++++ linux/mm/swap_state.c	2007-08-09 14:40:27.000000000 +0100
+@@ -100,15 +100,18 @@ int add_to_swap_cache(struct page *page,
+ {
+ 	int error;
+ 
++	BUG_ON(PageLocked(page));
+ 	if (!swap_duplicate(entry)) {
+ 		INC_CACHE_INFO(noent_race);
+ 		return -ENOENT;
+ 	}
++	SetPageLocked(page);
+ 	error = __add_to_swap_cache(page, entry, GFP_KERNEL);
+ 	/*
+ 	 * Anon pages are already on the LRU, we don't run lru_cache_add here.
+ 	 */
+ 	if (error) {
++		ClearPageLocked(page);
+ 		swap_free(entry);
+ 		if (error == -EEXIST)
+ 			INC_CACHE_INFO(exist_race);
+@@ -345,7 +348,6 @@ struct page *read_swap_cache_async(swp_e
+ 								vma, addr);
+ 			if (!new_page)
+ 				break;		/* Out of memory */
+-			SetPageLocked(new_page);/* could be non-atomic op */
+ 		}
+ 
+ 		/*
+@@ -369,9 +371,7 @@ struct page *read_swap_cache_async(swp_e
+ 		}
+ 	} while (err != -ENOENT && err != -ENOMEM);
+ 
+-	if (new_page) {
+-		ClearPageLocked(new_page);
++	if (new_page)
+ 		page_cache_release(new_page);
+-	}
+ 	return found_page;
+ }
