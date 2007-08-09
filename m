@@ -1,136 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965664AbXHIPyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938611AbXHIP4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965664AbXHIPyZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 11:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765537AbXHIPyO
+	id S938611AbXHIP4e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 11:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932428AbXHIP4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 11:54:14 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:41535 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765415AbXHIPyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 11:54:12 -0400
-Date: Thu, 9 Aug 2007 17:54:45 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: John Stoffel <john@stoffel.org>
-Cc: linux-kernel@vger.kernel.org, shemminger@linux-foundation.org,
-       vignaud@xandmail.fr, marcin.slusarz@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu, torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-net@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc2: WARNING: at kernel/irq/resend.c:70 check_irq_resend()
-Message-ID: <20070809155445.GA5161@ff.dom.local>
-References: <18107.11431.838905.331157@stoffel.org>
+	Thu, 9 Aug 2007 11:56:21 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55213 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752110AbXHIP4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 11:56:19 -0400
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Tejun Heo <htejun@gmail.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Michael Sedkowski <sedmich@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-acpi <linux-acpi@vger.kernel.org>,
+       firmwarekit-discuss <firmwarekit-discuss@bughost.org>
+In-Reply-To: <20070809151610.GD3926@ucw.cz>
+References: <1186424492.4355.1.camel@nx6310> <46B76BBC.9010107@gmail.com>
+	 <20070806234509.GC27640@khazad-dum.debian.net> <46B816FF.7060303@gmail.com>
+	 <20070807125104.GC30661@khazad-dum.debian.net> <46B86F21.4030805@gmail.com>
+	 <20070807131651.GE30661@khazad-dum.debian.net> <46B87457.4020704@gmail.com>
+	 <1186494328.8780.66.camel@queen.suse.de> <46B87B4A.1020305@gmail.com>
+	 <20070809151610.GD3926@ucw.cz>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Thu, 09 Aug 2007 17:56:15 +0200
+Message-Id: <1186674976.8780.238.camel@queen.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18107.11431.838905.331157@stoffel.org>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 11:03:03AM -0400, John Stoffel wrote:
+On Thu, 2007-08-09 at 15:16 +0000, Pavel Machek wrote:
+> Hi!
 > 
-> Hi,
+> > > firmwarekit-discuss <firmwarekit-discuss@bughost.org> (added to CC list)
+> > > see: http://linuxfirmwarekit.org/
+> > > 
+> > > But if I understand this problem right, this won't be easy.
+> > > The ACPI tables are just parsed with system ("iasl ...") and syntactical
+> > > errors/warnings are printed out.
+> > > I also thought about a test, interpreting the DSDT and read out values
+> > > of cpufreq tables and sanity check them. AFAIK the linuxfirmwarekit is
+> > > not designed for that atm. You need to compile in most parts of the
+> > > acpica code and parse and interpret DSDT/SSDT code yourself in the
+> > > firmwarekit core or inside a plugin, then do a walk_namespace call or
+> > > whatever to find the functions/parts you like to examine. This is a lot
+> > > work and needs a proper design (providing an interface to plugins to let
+> > > them easily check specific AML/ASL code).
+> > 
+> > Furthermore, we don't really know what we're looking for.  How can you
+> > tell a given write to an ioport is issuing STANDBYNOW to an ATA disk or
+> > trying to power the machine off?  Adding to the fun, many modern ATA
+> > controller have more than one way to issue a command.  Maybe we can
+> > match accesses inside regions specified by PCI BARs....  :-(
+> 
+> Hmmm... perhaps we should do it the other way. ACPI is allowed to
+> touch the embedded controller, what else? Maybe we should warn as soon
+> as API touches non-EC I/O port?
 
-Hi, read below, please...
+This is not working...
+ACPI can and does access all kind of other I/O ports and other
+resources.
+Hmm, are the disk accesses done by ACPI via OperationRegion/Field
+declared variables?
+I try to get a check for those clashing with native drivers (hopefully
+this approach is successful for 2.6.24, can't say for sure yet), I
+wonder whether this one would give a warning like "Libata driver is
+using the same SystemIO/SystemMem resources than ACPI OperationRegion
+declaration XY".
+This would not solve the problem, but at least show the need of such a
+test. Such ACPI vs native driver interference problems are very hard
+nuts (in identifying and solving).
 
-> 
-> I'm opening this ticket as a new subject, even though it looks like it
-> might be related to the thread "Networking dies after random time".
-> Sorry for the wide CC list, but since my network hasn't died since I
-> rebooted into 2.6.23-rc2 (after 30+ days at 2.6.22-rc7), I'm wondering
-> if the problem is more than networking related.  
-> 
-> Honestly, I haven't gone back over the previous thread in detail, so I
-> might be missing info here.
-> 
-> System details: Dell Precision 610MT, Intel 440GX chipset, Dual PIII
-> Xeon, 550Mhz, 2gb RAM (upgraded from 768Mb last night), a mix of IDE,
-> SCSI and SATA disks in the system.  My poor PCI bus!  Just upgraded to
-> 2.6.23-rc2.  Interrupts looks like this:
-> 
->     > cat /proc/interrupts 
-> 	       CPU0       CPU1       
->       0:        280          1   IO-APIC-edge      timer
->       1:        788          0   IO-APIC-edge      i8042
->       6:          1          4   IO-APIC-edge      floppy
->       8:          0          1   IO-APIC-edge      rtc
->       9:          0          0   IO-APIC-fasteoi   acpi
->      11:      82410       1239   IO-APIC-edge      Cyclom-Y
->      12:        279        106   IO-APIC-edge      i8042
->      14:     440901       4266   IO-APIC-edge      libata
->      15:          0          0   IO-APIC-edge      libata
->      16:    2394727      42983   IO-APIC-fasteoi   ohci_hcd:usb3, Ensoniq
-> 	       AudioPCI, mga@pci:0000:01:00.0
->      17:    2237362       1110   IO-APIC-fasteoi   sata_sil,
-> 	       ehci_hcd:usb1, eth0
->      18:     126520      31978   IO-APIC-fasteoi   aic7xxx, aic7xxx, ide2,
-> 	       ide3, ohci1394
->      19:          0          0   IO-APIC-fasteoi   ohci_hcd:usb2,
-> 	       uhci_hcd:usb4
->     NMI:          0          0 
->     LOC:   40672484   40672246 
->     ERR:          0
->     MIS:          0
-> 
-> I've only seen the one Warning oops, and backups and other system
-> processes have been running for the past 12 hours without a problem.  
-> 
-> 
->     [  187.747442] Probing IDE interface ide2...
->     [  188.011634] hde: WDC WD1200JB-00CRA1, ATA DISK drive
->     [  188.623038] WARNING: at kernel/irq/resend.c:70 check_irq_resend()
->     [  188.623105]  [<c0149e38>] check_irq_resend+0xa8/0xc0
->     [  188.623204]  [<c01499d3>] enable_irq+0xc3/0xd0
->     [  188.623295]  [<f8867280>] probe_hwif+0x670/0x7c0 [ide_core]
->     [  188.623448]  [<f8869f04>] do_ide_setup_pci_device+0x154/0x480
->     [ide_core]
->     [  188.623571]  [<f8867d6c>] probe_hwif_init_with_fixup+0xc/0x90
->     [ide_core]
->     [  188.623690]  [<f88817d0>] init_setup_hpt302+0x0/0x30 [hpt366]
->     [  188.623791]  [<f886a39b>] ide_setup_pci_device+0x7b/0xc0 [ide_core]
->     [  188.623909]  [<f88817d0>] init_setup_hpt302+0x0/0x30 [hpt366]
->     [  188.624004]  [<f88811ed>] hpt366_init_one+0x8d/0xa0 [hpt366]
->     [  188.624095]  [<f88817d0>] init_setup_hpt302+0x0/0x30 [hpt366]
->     [  188.624187]  [<f8881e50>] init_chipset_hpt366+0x0/0x680 [hpt366]
->     [  188.624281]  [<f8882680>] init_hwif_hpt366+0x0/0x380 [hpt366]
->     [  188.624372]  [<f8881800>] init_dma_hpt366+0x0/0xe0 [hpt366]
->     [  188.624466]  [<c0265fc6>] pci_device_probe+0x56/0x80
->     [  188.624565]  [<c02d0f8e>] driver_probe_device+0x8e/0x190
->     [  188.624669]  [<c02d11fe>] __driver_attach+0x9e/0xa0
->     [  188.624756]  [<c02d038a>] bus_for_each_dev+0x3a/0x60
->     [  188.624845]  [<c02d0e06>] driver_attach+0x16/0x20
->     [  188.624932]  [<c02d1160>] __driver_attach+0x0/0xa0
->     [  188.625017]  [<c02d075a>] bus_add_driver+0x8a/0x1b0
->     [  188.625107]  [<c0266173>] __pci_register_driver+0x53/0xa0
->     [  188.625197]  [<c0144d5d>] sys_init_module+0x13d/0x1820
->     [  188.625315]  [<f8844000>] snd_timer_find+0x0/0x90 [snd_timer]
->     [  188.625424]  [<c0149530>] disable_irq+0x0/0x30
->     [  188.625513]  [<c0108b7d>] sys_mmap2+0xcd/0xd0
->     [  188.625612]  [<c0104266>] syscall_call+0x7/0xb
->     [  188.625701]  [<c0410000>] rpc_get_inode+0x0/0x80
->     [  188.625798]  =======================
->     [  188.625871] hde: selected mode 0x45
->     [  188.626817] ide2 at 0xecf8-0xecff,0xecf2 on irq 18
->     [  188.627080] Probing IDE interface ide3...
->     [  188.891165] hdg: WDC WD1200JB-00EVA0, ATA DISK drive
->     [  189.502580] hdg: selected mode 0x45
->     [  189.503698] ide3 at 0xece0-0xece7,0xecda on irq 18
-> 
-> 
-> Let 
+Can someone post an ASL code snippet how ACPI actually access the disk
+and in which parts/functions, pls.
 
-I'm not sure I don't miss anything (a little in hurry now), but this
-warning's aim was purely diagnostical and nothing wrong is meant!
-Unless there is something wrong... Then please try to be more explicit.
+Thanks,
 
-If you prefer to not see this, there is my patch proposal somewhere
-in this older thread:
-Subject: [patch] genirq: temporary fix for level-triggered IRQ resend
-Date: Wed, 8 Aug 2007 13:00:37 +0200
+   Thomas
 
-On the other hand, if it works OK, it would be better to let it be
-tested more like this...
-
-Regards,
-Jarek P.
