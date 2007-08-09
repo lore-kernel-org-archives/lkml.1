@@ -1,132 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965884AbXHIO6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965949AbXHIPCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965884AbXHIO6j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbXHIO6a
+	id S965949AbXHIPCV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 11:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965395AbXHIPCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:58:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45200 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760191AbXHIO63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:58:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Subject: Re: [linux-usb-devel] [usb-storage] schedule_timeout: wrong timeout value c1a95554
-Date: Thu, 9 Aug 2007 17:07:42 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-References: <Pine.LNX.4.44L0.0708091042520.3559-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0708091042520.3559-100000@iolanthe.rowland.org>
+	Thu, 9 Aug 2007 11:02:08 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54996 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754921AbXHIPCG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 11:02:06 -0400
+Date: Thu, 9 Aug 2007 08:00:41 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jerry Jiang <wjiang@resilience.com>
+cc: 7eggert@gmx.de, Chris Snook <csnook@redhat.com>, akpm@linux-foundation.org,
+       ak@suse.de, heiko.carstens@de.ibm.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       cfriesen@nortel.com, zlynx@acm.org
+Subject: Re: [PATCH] make atomic_t volatile on all architectures
+In-Reply-To: <20070809171832.1568864b.wjiang@resilience.com>
+Message-ID: <alpine.LFD.0.999.0708090751560.25146@woody.linux-foundation.org>
+References: <8Q2Pg-8uV-23@gated-at.bofh.it> <8Q7Fa-7rJ-1@gated-at.bofh.it>
+ <8Q8rD-hh-7@gated-at.bofh.it> <E1IJ424-0000d7-HK@be1.lrz>
+ <20070809171832.1568864b.wjiang@resilience.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708091707.44742.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 9 August 2007 16:43, Alan Stern wrote:
-> On Thu, 9 Aug 2007, Mariusz Kozlowski wrote:
+
+
+On Thu, 9 Aug 2007, Jerry Jiang wrote:
 > 
-> > Hello,
-> > 
-> > 	Happens every time I reattach usb pen drive.
-> > 
-> > usb 1-2: new high speed USB device using ehci_hcd and address 10
-> > usb 1-2: configuration #1 chosen from 1 choice
-> > scsi6 : SCSI emulation for USB Mass Storage devices
-> > usb 1-2: new device found, idVendor=13fe, idProduct=1a00
-> > usb 1-2: new device strings: Mfr=1, Product=2, SerialNumber=0
-> > usb 1-2: Product: GEIL USB DISK   
-> > usb 1-2: Manufacturer:         
-> > usb-storage: device found at 10
-> > usb-storage: waiting for device to settle before scanning
-> > schedule_timeout: wrong timeout value c1a95554
-> >  [<c010456a>] show_trace_log_lvl+0x1a/0x30
-> >  [<c010508d>] show_trace+0x12/0x14
-> >  [<c01051e0>] dump_stack+0x15/0x17
-> >  [<c04174d1>] schedule_timeout+0x8c/0xa2
-> >  [<c032aeec>] usb_stor_scan_thread+0x100/0x160
-> >  [<c0127f2e>] kthread+0x36/0x58
-> >  [<c0104233>] kernel_thread_helper+0x7/0x14
-> >  =======================
-> > scsi 6:0:0:0: Direct-Access              GEIL USB DISK    >2.0 PQ: 0 ANSI: 0 CCS
-> > sd 6:0:0:0: [sda] 1007616 512-byte hardware sectors (516 MB)
-> > sd 6:0:0:0: [sda] Write Protect is off
-> > sd 6:0:0:0: [sda] Mode Sense: 23 00 00 00
-> > sd 6:0:0:0: [sda] Assuming drive cache: write through
-> > sd 6:0:0:0: [sda] 1007616 512-byte hardware sectors (516 MB)
-> > sd 6:0:0:0: [sda] Write Protect is off
-> > sd 6:0:0:0: [sda] Mode Sense: 23 00 00 00
-> > sd 6:0:0:0: [sda] Assuming drive cache: write through
-> >  sda: sda1
-> > sd 6:0:0:0: [sda] Attached SCSI removable disk
-> > sd 6:0:0:0: Attached scsi generic sg0 type 0
-> > usb-storage: device scan complete
-> 
-> This is a known problem.  See
-> 
-> 	http://marc.info/?l=linux-kernel&m=118641424414399&w=2
-> 
-> Rafael, has this been fixed yet?
+> and still not to said "Why the *volatile-accesses-in-code* is
+> acceptable"
 
-No, I wasn't aware of it.
+I don't think volatile is necessarily wonderful in code _either_. So I 
+think the "atomic_read()" issue would be even better off if we just made 
+sure everybody behaves well and has the right barriers.
 
-I think that something like the appended patch is necessary.
+So the difference between "volatile in code" and "volatile on data 
+structures" is that the latter is *always* wrong (and wrong for very 
+fundamental reasons). 
 
-Mariusz, please see if that helps.
+But "volatile in code" can be perfectly fine. If you hide the volatile in 
+an accessor function, and just specify that the rules for that function is 
+that it always loads from memory but doesn't imply any memory barriers, 
+than that is fine. And I think those kinds of semantics may well be 
+perfectly sane for "atomic_read()".
 
-Greetings,
-Rafael
+So I think a volatile access inside "atomic_read()" at least has 
+well-defined semantics. Are they the best possible semantics? I dunno. I 
+can imagine that it's perfectly fine, but on the other hand, it would be 
+interesting to see any code for which it matters - it's entirely possible 
+that the code itself is the problem, and should instead have a 
+"cpu_relax()" or similar that implies a barrier.
 
-
----
- include/linux/freezer.h |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
-
-Index: linux-2.6.23-rc2/include/linux/freezer.h
-===================================================================
---- linux-2.6.23-rc2.orig/include/linux/freezer.h
-+++ linux-2.6.23-rc2/include/linux/freezer.h
-@@ -134,28 +134,28 @@ static inline void set_freezable(void)
- 
- #define wait_event_freezable(wq, condition)				\
- ({									\
--	int __ret;							\
-+	int __retval;							\
- 	do {								\
--		__ret = wait_event_interruptible(wq, 			\
-+		__retval = wait_event_interruptible(wq, 		\
- 				(condition) || freezing(current));	\
--		if (__ret && !freezing(current))			\
-+		if (__retval && !freezing(current))			\
- 			break;						\
- 		else if (!(condition))					\
--			__ret = -ERESTARTSYS;				\
-+			__retval = -ERESTARTSYS;			\
- 	} while (try_to_freeze());					\
--	__ret;								\
-+	__retval;							\
- })
- 
- 
- #define wait_event_freezable_timeout(wq, condition, timeout)		\
- ({									\
--	long __ret = timeout;						\
-+	long __retval = timeout;					\
- 	do {								\
--		__ret = wait_event_interruptible_timeout(wq,		\
-+		__retval = wait_event_interruptible_timeout(wq,		\
- 				(condition) || freezing(current),	\
--				__ret); 				\
-+				__retval); 				\
- 	} while (try_to_freeze());					\
--	__ret;								\
-+	__retval;							\
- })
- #else /* !CONFIG_PM_SLEEP */
- static inline int frozen(struct task_struct *p) { return 0; }
+			Linus
