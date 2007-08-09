@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965027AbXHIMrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940192AbXHIMr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965027AbXHIMrg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939670AbXHIMlm
+	id S940192AbXHIMr6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939649AbXHIMmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 08:41:42 -0400
-Received: from mx1.suse.de ([195.135.220.2]:50901 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S939666AbXHIMll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:41:41 -0400
-From: Andi Kleen <ak@suse.de>
-References: <20070809241.425881000@suse.de>
-In-Reply-To: <20070809241.425881000@suse.de>
-To: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [12/12] x86_64: Fix start_kernel warning
-Message-Id: <20070809124140.3F8B514F3B@wotan.suse.de>
-Date: Thu,  9 Aug 2007 14:41:40 +0200 (CEST)
+	Thu, 9 Aug 2007 08:42:21 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:53616 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939621AbXHIMmT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 08:42:19 -0400
+Date: Thu, 9 Aug 2007 08:40:49 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jes Sorensen <jes@sgi.com>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Carsten Otte <cotte@de.ibm.com>
+Subject: Re: [PATCH 4/7] Moved the io struct up to the generic lg.h
+In-Reply-To: <46BB080F.4040905@sgi.com>
+Message-ID: <Pine.LNX.4.58.0708090839460.29847@gandalf.stny.rr.com>
+References: <20070809003211.373543702@goodmis.org> <20070809003343.664528532@goodmis.org>
+ <20070809115156.ef5fdc6c.sfr@canb.auug.org.au> <46BB080F.4040905@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Fix
+--
+On Thu, 9 Aug 2007, Jes Sorensen wrote:
 
-WARNING: vmlinux.o(.text+0x183): Section mismatch: reference to .init.text:start_kernel (between 'is386' and 'check_x87')
+> Stephen Rothwell wrote:
+> > On Wed, 08 Aug 2007 20:32:15 -0400 Steven Rostedt <rostedt@goodmis.org>
+> > wrote:
+> >> diff --git a/drivers/lguest/i386/lg.h b/drivers/lguest/i386/lg.h
+> >> index 64f0abe..c5ea14c 100644
+> >> --- a/drivers/lguest/i386/lg.h
+> >> +++ b/drivers/lguest/i386/lg.h
+> >> @@ -20,6 +20,8 @@
+> >>  #include <linux/err.h>
+> >>  #include <asm/semaphore.h>
+> >>  #include "irq_vectors.h"
+> >> +/* some files include this, some include the parent */
+> >> +#include "../lg.h"
+> >
+> > Surely everything should just include the parent which allows for easier
+> > consolidation over time. (as you are doing here)
+>
+> Whats wrong with introducing an include/asm-<arch>/lg.h and have the
+> parent do #include <asm/lg.h> ? Seems much cleaner to me.
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+Seems cleaner to me to!  I think I'll do that.
 
----
- arch/i386/kernel/head.S |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Oh, wait! I did.  ;-)
 
-Index: linux/arch/i386/kernel/head.S
-===================================================================
---- linux.orig/arch/i386/kernel/head.S
-+++ linux/arch/i386/kernel/head.S
-@@ -163,7 +163,7 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
-  */
- 
- #ifdef CONFIG_HOTPLUG_CPU
--.section .text,"ax",@progbits
-+.section .text.init,"ax",@progbits
- #else
- .section .init.text,"ax",@progbits
- #endif
+-- Steve
+
+P.S. Sorry, couldn't resist.
+
