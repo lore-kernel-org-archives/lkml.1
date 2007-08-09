@@ -1,75 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965856AbXHIOoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940427AbXHIOp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965856AbXHIOoR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765477AbXHIOoB
+	id S940427AbXHIOp3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935832AbXHIOpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:44:01 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:40333 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1765067AbXHIOn7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:43:59 -0400
-Date: Thu, 9 Aug 2007 10:43:53 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Andrew Morton <akpm@linux-foundation.org>, <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] [usb-storage] schedule_timeout: wrong timeout
- value c1a95554
-In-Reply-To: <200708091210.21383.m.kozlowski@tuxland.pl>
-Message-ID: <Pine.LNX.4.44L0.0708091042520.3559-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 9 Aug 2007 10:45:18 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:53261 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936637AbXHIOpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 10:45:17 -0400
+Date: Thu, 9 Aug 2007 16:45:11 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Cc: "??" <wux@landicorp.com>, Linux Kernel list <linux-kernel@vger.kernel.org>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH] mmc: at91_mci: add multiwrite cap
+Message-ID: <20070809164511.6f40fa7b@poseidon.drzeus.cx>
+In-Reply-To: <46BB200F.5090300@rfo.atmel.com>
+References: <46B9926B.3090707@rfo.atmel.com>
+	<20070808121147.1433d055@poseidon.drzeus.cx>
+	<46B9D6EE.4040705@rfo.atmel.com>
+	<20070808170108.4db814d1@poseidon.drzeus.cx>
+	<46BB200F.5090300@rfo.atmel.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-14570-1186670712-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, Mariusz Kozlowski wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> Hello,
-> 
-> 	Happens every time I reattach usb pen drive.
-> 
-> usb 1-2: new high speed USB device using ehci_hcd and address 10
-> usb 1-2: configuration #1 chosen from 1 choice
-> scsi6 : SCSI emulation for USB Mass Storage devices
-> usb 1-2: new device found, idVendor=13fe, idProduct=1a00
-> usb 1-2: new device strings: Mfr=1, Product=2, SerialNumber=0
-> usb 1-2: Product: GEIL USB DISK   
-> usb 1-2: Manufacturer:         
-> usb-storage: device found at 10
-> usb-storage: waiting for device to settle before scanning
-> schedule_timeout: wrong timeout value c1a95554
->  [<c010456a>] show_trace_log_lvl+0x1a/0x30
->  [<c010508d>] show_trace+0x12/0x14
->  [<c01051e0>] dump_stack+0x15/0x17
->  [<c04174d1>] schedule_timeout+0x8c/0xa2
->  [<c032aeec>] usb_stor_scan_thread+0x100/0x160
->  [<c0127f2e>] kthread+0x36/0x58
->  [<c0104233>] kernel_thread_helper+0x7/0x14
->  =======================
-> scsi 6:0:0:0: Direct-Access              GEIL USB DISK    >2.0 PQ: 0 ANSI: 0 CCS
-> sd 6:0:0:0: [sda] 1007616 512-byte hardware sectors (516 MB)
-> sd 6:0:0:0: [sda] Write Protect is off
-> sd 6:0:0:0: [sda] Mode Sense: 23 00 00 00
-> sd 6:0:0:0: [sda] Assuming drive cache: write through
-> sd 6:0:0:0: [sda] 1007616 512-byte hardware sectors (516 MB)
-> sd 6:0:0:0: [sda] Write Protect is off
-> sd 6:0:0:0: [sda] Mode Sense: 23 00 00 00
-> sd 6:0:0:0: [sda] Assuming drive cache: write through
->  sda: sda1
-> sd 6:0:0:0: [sda] Attached SCSI removable disk
-> sd 6:0:0:0: Attached scsi generic sg0 type 0
-> usb-storage: device scan complete
+--=_hera.drzeus.cx-14570-1186670712-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-This is a known problem.  See
+On Thu, 09 Aug 2007 16:09:19 +0200
+Nicolas Ferre <nicolas.ferre@rfo.atmel.com> wrote:
 
-	http://marc.info/?l=linux-kernel&m=118641424414399&w=2
+>=20
+> Ok thank you : it was the point.
+>=20
+> Results : in brief :
+> - there is work to be done ;-)
+> - multiwrite test result is : OK
+>=20
 
-Rafael, has this been fixed yet?
+I'm starting to get the feeling that writing this test driver was a
+good idea. :)
 
-Alan Stern
+> I had to modify the mmc_test to workaround the driver being stuck.
+> I attach the patch so you can figure out the testcase I ran :
+>=20
+> diff -u b/drivers/mmc/card/mmc_test.c b/drivers/mmc/card/mmc_test.c
+> --- b/drivers/mmc/card/mmc_test.c
+> +++ b/drivers/mmc/card/mmc_test.c
+> @@ -149,7 +149,8 @@
+>  	printk(KERN_INFO "%s: Testing reading power of two block
+> sizes...\n", mmc_hostname(card->host));
+> =20
+> -	for (i =3D 1;i <=3D 512;i <<=3D 1) {
+> +//	for (i =3D 1;i <=3D 512;i <<=3D 1) {
+> +	for (i =3D 512;i <=3D 512;i <<=3D 2) { /*must have size%4 =3D=3D 0*/
+>  		memset(&mrq, 0, sizeof(struct mmc_request));
+> =20
+>  		mrq.cmd =3D &cmd;
 
+These "fixes" shouldn't be needed with the recent patch by Marc Pignat.
+
+>=20
+> And here is the output :
+>=20
+> With a SD card :
+> root@at91sam9263ek:~$ mmc0: card is read-write
+> mmc0: new SD card at address 0002
+> mmc0: About to test mmc subsystem
+> mmc0: Testing writing power of two block sizes...
+> .<7>mmc0: starting CMD16 arg 00000200 flags 00000015
+>=20
+> mmc0: Result: OK
+> mmc0: Testing reading power of two block sizes...
+> mmc0: Result: OK
+> mmc0: Testing correct bytes_xfered for a single block...
+> mmc0: Result: OK
+> mmc0: Testing correct bytes_xfered for multiple blocks...
+> mmc0: Result: OK
+
+This looks ok (although this test doesn't verify the more exotic cases
+of updating bytes_xfered).
+
+> I do not know if the OOps is due to a bad behavior of the driver
+> during the wait for busy test...
+>=20
+
+I don't suppose you could do a bit more digging? I'm not getting that
+crash here.
+
+> And with a MMC : quite the same results but with :
+>=20
+> mmc0: Testing correct bytes_xfered for a single block...
+> mmc0: Result: FAIL
+>=20
+
+This is very odd. Could you test some more MMC and SD cards and see if
+this is just a fluke? This test shouldn't be card dependent.
+
+Rgds
+Pierre
+
+--=_hera.drzeus.cx-14570-1186670712-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFGuyh37b8eESbyJLgRAp1PAJwOXkQ9hWgPgcBMFP4dVTjjYhqJNQCfea10
+SJapm7I7p5XT55uGmayjJLg=
+=Aw7H
+-----END PGP SIGNATURE-----
+
+--=_hera.drzeus.cx-14570-1186670712-0001-2--
