@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939567AbXHIMgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939458AbXHIMjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939567AbXHIMgY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936551AbXHIMf7
+	id S939458AbXHIMjX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756452AbXHIMjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 08:35:59 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:38254
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933912AbXHIMf6 (ORCPT
+	Thu, 9 Aug 2007 08:39:14 -0400
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:48430 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932690AbXHIMjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:35:58 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch] ipvs: force read of atomic_t in while loop
-Date: Thu, 9 Aug 2007 14:35:18 +0200
-User-Agent: KMail/1.9.6
-Cc: Chris Snook <csnook@redhat.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       torvalds@osdl.org
-References: <20070808093300.GA14530@osiris.boeblingen.de.ibm.com> <46BA30DC.20207@redhat.com> <20070809001533.GA17798@one.firstfloor.org>
-In-Reply-To: <20070809001533.GA17798@one.firstfloor.org>
+	Thu, 9 Aug 2007 08:39:13 -0400
+Date: Thu, 9 Aug 2007 08:38:34 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Robert de Vries <robert.h.de.vries@gmail.com>
+cc: Darren Hart <dvhltc@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       RT <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH RT] Only run softirqs from the irq thread if the irq
+ affinity is set to 1 CPU
+In-Reply-To: <47db5b910708090249k2c80e3e8tdc062d89ed4359fc@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0708090832070.29847@gandalf.stny.rr.com>
+References: <1186605752.29097.18.camel@localhost.localdomain> 
+ <200708081416.27500.dvhltc@us.ibm.com>  <1186609529.14769.8.camel@localhost.localdomain>
+ <47db5b910708090249k2c80e3e8tdc062d89ed4359fc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708091435.18595.mb@bu3sch.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 August 2007 02:15:33 Andi Kleen wrote:
-> On Wed, Aug 08, 2007 at 05:08:44PM -0400, Chris Snook wrote:
-> > Heiko Carstens wrote:
-> > >On Wed, Aug 08, 2007 at 03:21:31AM -0700, David Miller wrote:
-> > >>From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > >>Date: Wed, 8 Aug 2007 11:33:00 +0200
-> > >>
-> > >>>Just saw this while grepping for atomic_reads in a while loops.
-> > >>>Maybe we should re-add the volatile to atomic_t. Not sure.
-> > >>I think whatever the choice, it should be done consistently
-> > >>on every architecture.
-> > >>
-> > >>It's just asking for trouble if your arch does it differently from
-> > >>every other.
-> > >
-> > >Well..currently it's i386/x86_64 and s390 which have no volatile
-> > >in atomic_t. And yes, of course I agree it should be consistent
-> > >across all architectures. But it isn't.
-> > 
-> > Based on recent discussion, it's pretty clear that there's a lot of 
-> > confusion about this.  A lot of people (myself included, until I thought 
-> > about it long and hard) will reasonably assume that calling 
-> > atomic_read() will actually read the value from memory.  Leaving out the 
-> > volatile declaration seems like a pessimization to me.  If you force 
-> > people to use barrier() everywhere they're working with atomic_t, it 
-> > will force re-reads of all the non-atomic data in use as well, which 
-> > will cause more memory fetches of things that generally don't need 
-> > barrier().  That and it's a bug waiting to happen.
-> > 
-> > Andi -- your thoughts on the matter?
-> 
-> I also think readding volatile makes sense. An alternative would be
-> to stick an rmb() into atomic_read() -- that would also stop speculative reads.
-> Disadvantage is that it clobbers all memory, not just the specific value.
-> 
-> But you really have to complain to Linus (cc'ed). He came up
-> with the volatile removale change iirc.
 
-Isn't it possible through some inline assembly trick
-that only a certain variable has to be reloaded?
-So we could define something like that:
+--
+On Thu, 9 Aug 2007, Robert de Vries wrote:
+> On 8/8/07, Steven Rostedt <rostedt@goodmis.org> wrote:
+>
+> Wouldn't a developer of a real-time system configure the system so
+> that interrupts do not interfere with the real-time tasks running on a
+> specific CPU?
 
-#define reload_var(x) __asm__ __volatile__ (whatever, x)
+You would think. But that's something that the Linux kernel should expect.
+This can happen on a system where it's not no RT, but more soft RT (God I
+hate that term). Meaning, the "optimization" of running softirqs as
+threads can actually cause longer latencies to the interrupt. Since any
+time an RT task preempts the IRQ while running bounded to a CPU, it will
+be like masking that interrupt for the full time the RT task is running.
 
-I don't know inline assembly that much, but isn't it possible
-with that to kind of "fake-touch" the variable, so the compiler
-must reload it (and only it) to make sure it's up to date?
+> In other words, is this problem not simply a misconfiguration of the system?
+> I personally redirect all interrupts away from the CPU's where my
+> real-time tasks run and only allow the interrupts that I want to
+> handle in my application on the CPU's where I handle them so as to
+> minimize latency.
 
--- 
-Greetings Michael.
+This can't always be done. Say you only have two CPUS, and there's two RT
+tasks that run at high priorities, on each. But it could be period that
+the two don't always run at the same time. You don't want to stop
+an IRQ when it gets preempted by one of the RT tasks.
+
+So my answer to you is, no, it is not just a misconfiguration of the
+system. By making an optimization, we just added a latency that would not
+be there without that optimization. And it wouldn't be something that one
+would expect.
+
+-- Steve
+
