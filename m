@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938808AbXHIHZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937104AbXHIH3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938808AbXHIHZY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 03:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764643AbXHIHZJ
+	id S937104AbXHIH3r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 03:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762815AbXHIH3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 03:25:09 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48416 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762289AbXHIHZH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 03:25:07 -0400
-Message-ID: <46BAC14E.9040604@zytor.com>
-Date: Thu, 09 Aug 2007 00:25:02 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 9 Aug 2007 03:29:39 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:25584 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762109AbXHIH3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 03:29:39 -0400
+Date: Thu, 9 Aug 2007 09:29:35 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: starvik@axis.com, linux-kernel@vger.kernel.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, dev-etrax@axis.com
+Subject: Re: [2.6.23 regression fix] cris: drivers/cdrom/Kconfig no longer  exists
+Message-ID: <20070809072935.GZ5245@kernel.dk>
+References: <20070808232629.GL6997@stusta.de>
 MIME-Version: 1.0
-To: Mikko Rapeli <mikko.rapeli@iki.fi>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: early boot lockup with 2.6.23-rc1
-References: <20070808223120.GA2286@nalle>
-In-Reply-To: <20070808223120.GA2286@nalle>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070808232629.GL6997@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikko Rapeli wrote:
-> Hello,
+On Thu, Aug 09 2007, Adrian Bunk wrote:
+> This patch fixes the following 2.6.23 regression:
 > 
-> Since 2.6.23-rc1 I can't boot an old k6 (with a funky IDE drive worth testing
-> with libata). The boot hangs without a sound or letter prints on the
-> screen right after grub, while 2.6.22.1 works fine.
+> <--  snip  -->
 > 
-
-So it's not printing "Uncompressing kernel... " at all?
-
-> Is my .config broken in ways I can't see, or is this perhaps regression?
+> ...
+> scripts/kconfig/conf -d arch/cris/Kconfig
+> arch/cris/Kconfig:183: can't open file "drivers/cdrom/Kconfig"
+> make[2]: *** [defconfig] Error 1
 > 
+> <--  snip  -->
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-It might be an issue with the new setup code.  What happens if you
-append "vga=ask" to the kernel command line?
+Obviously good, thanks Adrian. I'm assuming this will go in through the
+cris merges?
 
-	-hpa
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
+
+-- 
+Jens Axboe
+
