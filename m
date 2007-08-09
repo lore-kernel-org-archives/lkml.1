@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938946AbXHIHyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934461AbXHIIB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938946AbXHIHyi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 03:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938007AbXHIHyX
+	id S934461AbXHIIB0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 04:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbXHIIBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 03:54:23 -0400
-Received: from ns1.suse.de ([195.135.220.2]:52150 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936872AbXHIHyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 03:54:17 -0400
-Date: Thu, 9 Aug 2007 00:19:32 -0700
-From: Greg KH <gregkh@suse.de>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
-       linux-kernel@vger.kernel.org, "Hans J. Koch" <hjk@linutronix.de>
-Subject: Re: [PATCH 2/3] UIO: Documentation
-Message-ID: <20070809071932.GA22318@suse.de>
-References: <20070718232332.GA4620@kroah.com> <11848012053678-git-send-email-gregkh@suse.de> <11848012122374-git-send-email-gregkh@suse.de> <9a8748490708081436g23c8f01cga585d6612b380f16@mail.gmail.com> <14166.1186611154@turing-police.cc.vt.edu> <9a8748490708081603k65746311sad595947fd5ab971@mail.gmail.com>
+	Thu, 9 Aug 2007 04:01:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:21758 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752786AbXHIIBR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 04:01:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=mGTs+cpS3N3ak47Uh3CEFyory99w6lkePzPIMJD3cTrwKtwEK4h8jsiB6Je+liCHNrYia53oHYwRxK1N71h1WxQkchP1bEgBm1mFNqjgEkoBy/h5yDpz8pDQ2l4V7WTAeCJrurX374pj4K9T7PHvhWm8YPAGbG83NhTzsPTYWE4=
+Message-ID: <d592e5da0708090101q4ba81470s5a6d02fcd11837bd@mail.gmail.com>
+Date: Thu, 9 Aug 2007 11:01:15 +0300
+From: "jonatan perry" <jonatan44@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: usb device module probing
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <9a8748490708081603k65746311sad595947fd5ab971@mail.gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 01:03:39AM +0200, Jesper Juhl wrote:
-> >
-> I think the only way to avoid it is to not provide something like UIO.
+hello,
+i have a linux kernel usb module driver and would like to probe it,
+i'v worked by the usbled.c file and didn't understand who the
+   led_probe(struct usb_interface *interface, const struct usb_device_id *id)
+function receive it's paramerts, the struct have the
+  .probe =	led_probe,
+filed and called by the
+  static int __init usb_led_init(void)
+but who the function receives the parameters?
 
-Problem is, things like UIO provide a real solution for a wide range of
-different types of devices.  Like the one provided in the kernel right
-now, and a bunch of others that I am currently discussing with different
-manufacturers (think high-speed DSPs that just want to give userspace
-direct access to the card and have the kernel get the hell out of the
-way so data can be read and processed as fast as possible.)
-
-And also realize that some types of systems have been doing this very
-same kind of kernel/userspace interface for many years, namely X :)
-
-As for the legalities of using closed source userspace code with the UIO
-interface, consult a lawyer if you have questions, and be sure to bring
-up Alan's comments about derivative works :)
-
-thanks,
-
-greg k-h
+thanks.
