@@ -1,87 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbXHIStm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbXHISu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756740AbXHIStm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 14:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbXHIStd
+	id S1757207AbXHISu1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 14:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbXHIStz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 14:49:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:10768 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751195AbXHISta (ORCPT
+	Thu, 9 Aug 2007 14:49:55 -0400
+Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:32843 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751592AbXHISty (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 14:49:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=JeEvnSB2wK/8CbolTZftjHRxE9o+dAaRF6PysSNyx1rZ6viAvWYkMLrKQsqS7lWCuotOENxVg1epeoZhDGHbzORCtSnz4fr+/OoNDa0cCNNsgqUX0tM4hv0dVR2HV9b8jmMT9LWHWOj+uZAdZpp41KaZ/GgOK/NwWCrZiHCdOaY=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: James Smart <james.smart@emulex.com>
-Subject: [PATCH] Emulex FC HBA driver: fix overflow of statically allocated array
-Date: Thu, 9 Aug 2007 20:47:15 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Thu, 9 Aug 2007 14:49:54 -0400
+Message-ID: <46BB61D0.4090101@opengridcomputing.com>
+Date: Thu, 09 Aug 2007 13:49:52 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Roland Dreier <rdreier@cisco.com>, "David S. Miller" <davem@davemloft.net>
+CC: netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Sean Hefty <sean.hefty@intel.com>,
+       OpenFabrics General <general@lists.openfabrics.org>
+Subject: Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports from the host TCP
+ port space.
+References: <46B883B5.8040702@opengridcomputing.com>
+In-Reply-To: <46B883B5.8040702@opengridcomputing.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708092047.16101.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-The Coverity checker noticed that we may overrun a statically allocated 
-array in drivers/scsi/lpfc/lpfc_sli.c::lpfc_sli_hbqbuf_find().
-
-The case is this; In 'struct lpfc_hba' we have 
-
-	#define LPFC_MAX_HBQS  4
-	...
-	struct lpfc_hba {
-		...
-		struct hbq_s hbqs[LPFC_MAX_HBQS];
-		...
-	};
-
-But then in lpfc_sli_hbqbuf_find() we have this code 
-
-	hbqno = tag >> 16;
-	if (hbqno > LPFC_MAX_HBQS)
-		return NULL;
-
-if 'hbqno' ends up as exactely 4, then we won't return, and then this
-
-	list_for_each_entry(d_buf, &phba->hbqs[hbqno].hbq_buffer_list, list) {
-
-will cause an overflow of the statically allocated array at index 4, 
-since the valid indices are only 0-3. 
-
-I propose this patch, that simply changes the 'hbqno > LPFC_MAX_HBQS' 
-into 'hbqno >= LPFC_MAX_HBQS' as a possible fix.
+Any more comments?
 
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- drivers/scsi/lpfc/lpfc_sli.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/scsi/lpfc/lpfc_sli.c b/drivers/scsi/lpfc/lpfc_sli.c
-index ce5ff2b..e5337ad 100644
---- a/drivers/scsi/lpfc/lpfc_sli.c
-+++ b/drivers/scsi/lpfc/lpfc_sli.c
-@@ -675,7 +675,7 @@ lpfc_sli_hbqbuf_find(struct lpfc_hba *phba, uint32_t tag)
- 	uint32_t hbqno;
- 
- 	hbqno = tag >> 16;
--	if (hbqno > LPFC_MAX_HBQS)
-+	if (hbqno >= LPFC_MAX_HBQS)
- 		return NULL;
- 
- 	list_for_each_entry(d_buf, &phba->hbqs[hbqno].hbq_buffer_list, list) {
-
-
-
+Steve Wise wrote:
+> Networking experts,
+> 
+> I'd like input on the patch below, and help in solving this bug 
+> properly.  iWARP devices that support both native stack TCP and iWARP 
+> (aka RDMA over TCP/IP/Ethernet) connections on the same interface need 
+> the fix below or some similar fix to the RDMA connection manager.
+> 
+> This is a BUG in the Linux RDMA-CMA code as it stands today.
+> 
+> Here is the issue:
+> 
+> Consider an mpi cluster running mvapich2.  And the cluster runs 
+> MPI/Sockets jobs concurrently with MPI/RDMA jobs.  It is possible, 
+> without the patch below, for MPI/Sockets processes to mistakenly get 
+> incoming RDMA connections and vice versa.  The way mvapich2 works is 
+> that the ranks all bind and listen to a random port (retrying new random 
+> ports if the bind fails with "in use").  Once they get a free port and
+> bind/listen, they advertise that port number to the peers to do 
+> connection setup.  Currently, without the patch below, the mpi/rdma 
+> processes can end up binding/listening to the _same_ port number as the 
+> mpi/sockets processes running over the native tcp stack.  This is due to 
+> duplicate port spaces for native stack TCP and the rdma cm's RDMA_PS_TCP 
+> port space.  If this happens, then the connections can get screwed up.
+> 
+> The correct solution in my mind is to use the host stack's TCP port 
+> space for _all_ RDMA_PS_TCP port allocations.   The patch below is a 
+> minimal delta to unify the port spaces by using the kernel stack to bind 
+> ports.  This is done by allocating a kernel socket and binding to the 
+> appropriate local addr/port.  It also allows the kernel stack to pick 
+> ephemeral ports by virtue of just passing in port 0 on the kernel bind 
+> operation.
+> 
+> There has been a discussion already on the RDMA list if anyone is 
+> interested:
+> 
+> http://www.mail-archive.com/general@lists.openfabrics.org/msg05162.html
+> 
+> 
+> Thanks,
+> 
+> Steve.
+> 
+> 
+> ---
+> 
+> RDMA/CMA: Allocate PS_TCP ports from the host TCP port space.
+> 
+> This is needed for iwarp providers that support native and rdma
+> connections over the same interface.
+> 
+> Signed-off-by: Steve Wise <swise@opengridcomputing.com>
+> ---
+> 
+> drivers/infiniband/core/cma.c |   27 ++++++++++++++++++++++++++-
+> 1 files changed, 26 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/infiniband/core/cma.c b/drivers/infiniband/core/cma.c
+> index 9e0ab04..e4d2d7f 100644
+> --- a/drivers/infiniband/core/cma.c
+> +++ b/drivers/infiniband/core/cma.c
+> @@ -111,6 +111,7 @@ struct rdma_id_private {
+>     struct rdma_cm_id    id;
+> 
+>     struct rdma_bind_list    *bind_list;
+> +    struct socket        *sock;
+>     struct hlist_node    node;
+>     struct list_head    list;
+>     struct list_head    listen_list;
+> @@ -695,6 +696,8 @@ static void cma_release_port(struct rdma
+>         kfree(bind_list);
+>     }
+>     mutex_unlock(&lock);
+> +    if (id_priv->sock)
+> +        sock_release(id_priv->sock);
+> }
+> 
+> void rdma_destroy_id(struct rdma_cm_id *id)
+> @@ -1790,6 +1793,25 @@ static int cma_use_port(struct idr *ps,
+>     return 0;
+> }
+> 
+> +static int cma_get_tcp_port(struct rdma_id_private *id_priv)
+> +{
+> +    int ret;
+> +    struct socket *sock;
+> +
+> +    ret = sock_create_kern(AF_INET, SOCK_STREAM, IPPROTO_TCP, &sock);
+> +    if (ret)
+> +        return ret;
+> +    ret = sock->ops->bind(sock,
+> +              (struct sockaddr *)&id_priv->id.route.addr.src_addr,
+> +              ip_addr_size(&id_priv->id.route.addr.src_addr));
+> +    if (ret) {
+> +        sock_release(sock);
+> +        return ret;
+> +    }
+> +    id_priv->sock = sock;
+> +    return 0;   
+> +}
+> +
+> static int cma_get_port(struct rdma_id_private *id_priv)
+> {
+>     struct idr *ps;
+> @@ -1801,6 +1823,9 @@ static int cma_get_port(struct rdma_id_p
+>         break;
+>     case RDMA_PS_TCP:
+>         ps = &tcp_ps;
+> +        ret = cma_get_tcp_port(id_priv); /* Synch with native stack */
+> +        if (ret)
+> +            goto out;
+>         break;
+>     case RDMA_PS_UDP:
+>         ps = &udp_ps;
+> @@ -1815,7 +1840,7 @@ static int cma_get_port(struct rdma_id_p
+>     else
+>         ret = cma_use_port(ps, id_priv);
+>     mutex_unlock(&lock);
+> -
+> +out:
+>     return ret;
+> }
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
