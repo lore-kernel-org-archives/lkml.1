@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966480AbXHIPco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966236AbXHIPg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966480AbXHIPco (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 11:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965947AbXHIPap
+	id S966236AbXHIPg0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 11:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762075AbXHIPgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 11:30:45 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35845 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965892AbXHIPan (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 11:30:43 -0400
-Subject: Re: 2.6.23-rc2-mm1: hang, prop_norm_single involved
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, apw <apw@shadowen.org>
-In-Reply-To: <1186663502.20108.28.camel@twins>
-References: <20070809111044.GA6575@localhost.sw.ru>
-	 <1186663502.20108.28.camel@twins>
-Content-Type: text/plain
-Date: Thu, 09 Aug 2007 17:30:32 +0200
-Message-Id: <1186673432.20108.32.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 9 Aug 2007 11:36:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35339 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934429AbXHIPgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 11:36:08 -0400
+Message-ID: <46BB31A6.4080507@redhat.com>
+Date: Thu, 09 Aug 2007 11:24:22 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com>
+In-Reply-To: <20070809150445.GB8424@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-09 at 14:45 +0200, Peter Zijlstra wrote:
-> On Thu, 2007-08-09 at 15:10 +0400, Alexey Dobriyan wrote:
-> > LTP run reproducably hangs during rwtest01 test
-> > rwtest -N rwtest01 -c -q -i 60s -f sync 10%25000:rs-sync=$$
-> > Calltrace is always the same:
-> > 
-
-> [root@opteron ~]# PATH=/testcases/bin/:$PATH /testcases/bin/rwtest -N rwtest01 -c -q -i 60s -f sync 10%25000:rs-sync=$$
-> rwtest01    1  PASS  :  Test passed
-> [root@opteron ~]# PATH=/testcases/bin/:$PATH /testcases/bin/rwtest -N rwtest01 -c -q -i 60s -f sync 10%25000:rs-sync=$$
->    
-> I can reproduce, but not always.
+Paul E. McKenney wrote:
+> On Thu, Aug 09, 2007 at 10:53:14AM -0400, Chris Snook wrote:
+>> Paul E. McKenney wrote:
+>>> Why not the same access-once semantics for atomic_set() as
+>>> for atomic_read()?  As this patch stands, it might introduce
+>>> architecture-specific compiler-induced bugs due to the fact that
+>>> atomic_set() used to imply volatile behavior but no longer does.
+>> When we make the volatile cast in atomic_read(), we're casting an rvalue to 
+>> volatile.  This unambiguously tells the compiler that we want to re-load 
+>> that register from memory.  What's "volatile behavior" for an lvalue?
 > 
-> Also, since the task->dirties member is initialized in fork.c this
-> should either _always_ happen or never. So this does point to some
-> memory corruption, ->dirties is the very last member of the task struct.
+> I was absolutely -not- suggesting volatile behavior for lvalues.
 > 
-> /me goes try with slab_debug,...
+> Instead, I am asking for volatile behavior from an -rvalue-.  In the
+> case of atomic_read(), it is the atomic_t being read from.  In the case
+> of atomic_set(), it is the atomic_t being written to.  As suggested in
+> my previous email:
+> 
+> #define atomic_set(v,i)		((*(volatile int *)&(v)->counter) = (i))
+> #define atomic64_set(v,i)	((*(volatile long *)&(v)->counter) = (i))
 
-to no avail, banging head against the wall what is happening here.
+That looks like a volatile lvalue to me.  I confess I didn't exactly ace 
+compilers.  Care to explain this?
 
-Andrew, could you:
+> Again, the architectures that used to have their "counter" declared
+> as volatile will lose volatile semantics on atomic_set() with your
+> patch, which might result in bugs due to overly imaginative compiler
+> optimizations.  The above would prevent any such bugs from appearing.
+> 
+>>                                                                       A 
+>> write to an lvalue already implies an eventual write to memory, so this 
+>> would be a no-op. Maybe you'll write to the register a few times before 
+>> flushing it to memory, but it will happen eventually.  With an rvalue, 
+>> there's no guarantee that it will *ever* load from memory, which is what 
+>> volatile fixes.
+>>
+>> I think what you have in mind is LOCK_PREFIX behavior, which is not the 
+>> purpose of atomic_set.  We use LOCK_PREFIX in the inline assembly for the 
+>> atomic_* operations that read, modify, and write a value, only because it 
+>> is necessary to perform that entire transaction atomically.
+> 
+> No LOCK_PREFIX, thank you!!!  I just want to make sure that the compiler
+> doesn't push the store down out of a loop, split the store, allow the
+> store to happen twice (e.g., to allow different code paths to be merged),
+> and all the other tricks that the C standard permits compilers to pull.
 
-# mm-dirty-balancing-for-tasks.patch
+We can't have split stores because we don't use atomic64_t on 32-bit 
+architectures.  volatile won't save you from pushing stores out of loops unless 
+you're also doing reads.  This is why we use reads to flush writes to mmio 
+registers.  In this case, an atomic_read() with volatile in it will suffice. 
+Storing twice is perfectly legal here, though it's unlikely that an optimizing 
+compiler smart enough to create the problem we're addressing would ever do that.
 
-while I try to figure this one out?
-
-That seems to make the unhappies I could reproduce here go away.
-
+	-- Chris
