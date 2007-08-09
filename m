@@ -1,38 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939416AbXHINIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939389AbXHINLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939416AbXHINIf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 09:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935657AbXHINIZ
+	id S939389AbXHINLi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 09:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934951AbXHINLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 09:08:25 -0400
-Received: from www.osadl.org ([213.239.205.134]:50635 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756385AbXHINIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 09:08:25 -0400
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: Documentation files in html format?
-Date: Thu, 9 Aug 2007 15:08:20 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <20070809113122.3aa508e4@oldman.hamilton.local>
-In-Reply-To: <20070809113122.3aa508e4@oldman.hamilton.local>
-Organization: Linutronix
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Aug 2007 09:11:30 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:31890 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934939AbXHINL3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 09:11:29 -0400
+Date: Thu, 9 Aug 2007 16:11:21 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Andi Kleen <ak@suse.de>
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [4/12] x86_64: Disable CLFLUSH support again
+Message-ID: <20070809131121.GL3311@rhun.haifa.ibm.com>
+References: <20070809241.425881000@suse.de> <20070809124131.B6E6114F3B@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708091508.20626.hjk@linutronix.de>
+In-Reply-To: <20070809124131.B6E6114F3B@wotan.suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 09 August 2007 12:31 schrieb Stephen Hemminger:
-> Since the network device documentation needs a rewrite, I was thinking
-> of using basic html format instead of just plain text. 
+On Thu, Aug 09, 2007 at 02:41:31PM +0200, Andi Kleen wrote:
+> 
+> It turns out CLFLUSH support is still not complete; we
+> flush the wrong pages.  Again disable it for the release.
+> Noticed by Jan Beulich.
+> 
+> Signed-off-by: Andi Kleen <ak@suse.de>
 
-Why don't you simply use DocBook? Then the user has the choice to convert
-to HTML, PDF, LaTex or whatever.
+Aside from the bug Jan pointed out with the patch, we're also using
+cflflush in other places (arch/i386/kernel/alternative.c and
+arch/x86_64/kernel/tce.c). Is the issue with clflush support specific
+to pageattr.c or should it be disabled every else too? what
+specifically is the issue?
 
-Thanks,
-Hans
+Cheers,
+Muli
+
