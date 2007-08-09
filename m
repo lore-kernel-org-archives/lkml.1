@@ -1,50 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965873AbXHIOqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940817AbXHIOro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965873AbXHIOqS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965529AbXHIOqE
+	id S940817AbXHIOro (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939256AbXHIOra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:46:04 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41271 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965521AbXHIOqB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:46:01 -0400
-Date: Thu, 9 Aug 2007 15:53:24 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: chuck.lever@oracle.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: DMA CRC errors with SiS chipset and notebook drive
-Message-ID: <20070809155324.3a9499ca@the-village.bc.nu>
-In-Reply-To: <46BB190E.2030102@oracle.com>
-References: <46BB190E.2030102@oracle.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Aug 2007 10:47:30 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:52783 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936423AbXHIOr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 10:47:28 -0400
+Date: Thu, 9 Aug 2007 15:47:26 +0100
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Christoph Lameter <clameter@sgi.com>, pj@sgi.com, ak@suse.de,
+       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 0/3] Use one zonelist per node instead of multiple zonelists v2
+Message-ID: <20070809144726.GA22405@skynet.ie>
+References: <20070808161504.32320.79576.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0708081025330.12652@schroedinger.engr.sgi.com> <1186597819.5055.37.camel@localhost> <20070808214420.GD2441@skynet.ie> <1186612807.5055.106.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1186612807.5055.106.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Aug  9 07:41:29 monet kernel: ata1.00: limiting speed to UDMA/66:PIO4
-> Aug  9 07:41:29 monet kernel: ata1.00: exception Emask 0x0 SAct 0x0 SErr
-> 0x0 action 0x2
-> Aug  9 07:41:29 monet kernel: ata1.00: (BMDMA stat 0x64)
-> Aug  9 07:41:29 monet kernel: ata1.00: cmd
-> c8/00:08:fb:7c:a1/00:00:00:00:00/e0 tag 0 cdb 0x12 data 4096 in
-> Aug  9 07:41:29 monet kernel:          res
-> 51/84:00:00:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA bus error)
-> Aug  9 07:41:29 monet kernel: ata1: soft resetting port
-> Aug  9 07:41:29 monet kernel: ata1.00: configured for UDMA/66
-> Aug  9 07:41:29 monet kernel: ata1.01: configured for UDMA/33
-> Aug  9 07:41:29 monet kernel: ata1: EH complete
+On (08/08/07 18:40), Lee Schermerhorn didst pronounce:
+> On Wed, 2007-08-08 at 22:44 +0100, Mel Gorman wrote:
+>
+> <SNIP>
+>
+> > With the patch currently, a a nodemask is passed in for
+> > filtering which should be enough as the zonelist being used should be enough
+> > information to indicate the starting node.
+> 
+> It'll take me a while to absorb the patch, so I'll just ask:  Where does
+> the zonelist for the argument come from? If the the bind policy
+> zonelist is removed, then does it come from a node? 
 
-Drops to UDMA33 for 40 wire cable.
+Yes, it gets the zonelist from the node and uses a nodemask to ignore
+zones within it.
 
+> There'll be only
+> one per node with your other patches, right?  So you had to have a node
+> id, to look up the zonelist? 
 
-Looks to me like your cabling is out of spec or you have electrical noise
-problems.
+You have the local node_id to lookup the zonelist with. The policy
+provides a nodemask then instead of a zonelist for filtering purposes.
 
-Alan
+> Do you need the zonelist elsewhere,
+> outside of alloc_pages()?  If not, why not just let alloc_pages look it
+> up from a starting node [which I think can be determined from the
+> policy]?
+> 
+
+The starting node can be determined from where we are currently running
+on. Even if the local node is not in the nodemask, we'd still filter it
+as normal.
+
+> OK, that's a lot of questions.  no need to answer.  That's just what I'm
+> thinking re: all this.  I'll wait and see how the patch develops.
+>   
+> > 
+> > The signature of __alloc_pages() becomes
+> > 
+> > static page * fastcall
+> > __alloc_pages_nodemask(gfp_t gfp_mask, nodemask_t *nodemask,
+> >                unsigned int order, struct zonelist *zonelist)
+> > 
+> > >  For various policies, the arguments would look like this:
+> > > Policy		start node	nodemask
+> > > 
+> > > default		local node	cpuset_current_mems_allowed
+> > > 
+> > > preferred	preferred_node	cpuset_current_mems_allowed
+> > > 
+> > > interleave	computed node	cpuset_current_mems_allowed
+> > > 
+> > > bind		local node	policy nodemask [replaces bind
+> > > 				zonelist in mempolicy]
+> > > 
+> > 
+> > The last one is the most interesting. Much of the patch in development
+> > involves deleting the custom node stuff. I've included the patch below if
+> > you're curious. I wanted to get one-zonelist out first to see if we could
+> > agree on that before going further with it.
+> 
+> Again, it'll be a while. 
+> 
+
+Thanks anyway.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
