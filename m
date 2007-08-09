@@ -1,85 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966715AbXHIRBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966758AbXHIRCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966715AbXHIRBu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 13:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966573AbXHIRBV
+	id S966758AbXHIRCp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 13:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966710AbXHIRBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 13:01:21 -0400
-Received: from ns1.suse.de ([195.135.220.2]:53967 "EHLO mx1.suse.de"
+	Thu, 9 Aug 2007 13:01:50 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:49482 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966582AbXHIRBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 13:01:18 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "huang ying" <huang.ying.caritas@gmail.com>
-Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
-Date: Thu, 9 Aug 2007 19:01:10 +0200
-User-Agent: KMail/1.9.6
-Cc: "Etienne Lorrain" <etienne_lorrain@yahoo.fr>, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com, "H. Peter Anvin" <hpa@zytor.com>
-References: <183884.85434.qm@web26915.mail.ukl.yahoo.com> <200708091251.21726.ak@suse.de> <851fc09e0708090709s4f4fbbf9r91a7300a773f985a@mail.gmail.com>
-In-Reply-To: <851fc09e0708090709s4f4fbbf9r91a7300a773f985a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S966700AbXHIRBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 13:01:48 -0400
+Date: Thu, 9 Aug 2007 21:03:53 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>
+Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Paul E McKenney <paulmck@us.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
+Subject: rt ptracer can monopolize CPU (was: Cpu-Hotplug and Real-Time)
+Message-ID: <20070809170353.GA82@tv-sign.ru>
+References: <20070807131216.GA20424@in.ibm.com> <20070807151336.GA507@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708091901.11146.ak@suse.de>
+In-Reply-To: <20070807151336.GA507@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 August 2007 16:09:23 huang ying wrote:
-> On 8/9/07, Andi Kleen <ak@suse.de> wrote:
-> > There is really no 32bit entry point today usable for external users. Or rather
-> > it might by chance work today, but if we change the zero page (and there
-> > is no guarantee it'll not be changed). I can pretty much guarantee it'll
-> > be changed at some point. And you'll break if you use it.
+On 08/07, Oleg Nesterov wrote:
+>
+> On 08/07, Gautham R Shenoy wrote:
+> >
+> > A will now call kthread_bind(B, cpu1).
+> > kthread_bind(), calls wait_task_inactive(B), to ensures that 
+> > B has scheduled itself out.
+> > 
+> > B is still on the runqueue, so A calls yield() in wait_task_inactive().
+> > But since A is the task with the highest prio, scheduler schedules it
+> > back again.
+> > 
+> > Thus B never gets to run to schedule itself out.
+> > A loops waiting for B to schedule out leading  to system hang.
 > 
-> Yes, there is no official 32bit external entry point. But on EFI
-> platform, the 16bit entry point can not be used because there is no
-> 16bit BIOS call available. So, I think it is necessary to define a
-> 32bit external entry point.
+> But I think we have another case. An RT ptracer can share the same CPU
+> with ptracee. The latter sets TASK_STOPPED, unlocks ->siglock, and takes
+> a preemption. Ptracer does ptrace_check_attach(), sees TASK_STOPPED, and
+> yields in wait_task_inactive.
 
-Ok. How do you collect all the data in the zero page then?
-There's much more in there than just the memory map.
+Even simpler.
 
-Anyways for EFI the best way is probably to define a EFI entry
-point that does the same work as the real mode code today just
-using EFI services.
+#include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/ptrace.h>
+#include <sys/wait.h>
+#define	__USE_GNU
+#include <sched.h>
 
-And for kexec :- well need a proper protocol.
+void die(const char *msg)
+{
+	printf("ERR!! %s: %m\n", msg);
+        kill(0, SIGKILL);
+}
 
-> 
-> > kexec can use the 32bit entry, but only because it is in tree so it can be fixed
-> > up for any changes.
-> 
-> The kexec uses the 32bit entry point in a user space tool named
-> kexec-tools, not in the kernel.
+void set_cpu(int cpu)
+{
+	unsigned cpuval = 1 << cpu;
+	if (sched_setaffinity(0, 4, (void*)&cpuval) < 0)
+		die("setaffinity");
+}
 
-Ah i didn't realize this. Ok then kexec is also quite broken.
-Somehow this must have been missed this fundamental flaw when this code was 
-reviewed.
+// __wake_up_parent() does SYNC wake up, we need a handler to provoke
+// signal_wake_up().
+// otherwise ptrace_stop() is not preempted after read_unlock(tasklist).
+static void sigchld(int sig)
+{
+}
 
-> 
-> > If you want to use it you would need to define some versionable protocol
-> > first similar to the real mode boot protocol. That would require some work
-> > and some thought to make sure it is forwards and backwards compatible.
-> 
-> I think at least the following should be done to make it a external
-> boot protocol.
-> 
-> 1. A version number field should be added.
-> 2. The pointers (especially these come from firmware) should be 64bit
-> to make the entry point can be used for both 32bit and 64bit platform.
+int main(void)
+{
+	set_cpu(0);
 
-32bit pointers are not too bad; it needs to be all physical anyways
-because kernel virtual mapping can change any time.
+	int pid = fork();
+	if (!pid)
+		for (;;)
+			;
 
-> 3. More complete and formal document.
-> 
-> Can you kindly tell me what's more should be done?
+	struct sched_param sp = { 99 };
+	if (sched_setscheduler(0, SCHED_FIFO, &sp))
+		die("setscheduler");
 
-It's a minimum start. But at least for EFI I still think it's better
-to just move that code back into the kernel. Just cleanly separated.
+	signal(SIGCHLD, sigchld);
 
--Andi
+	if (ptrace(PTRACE_ATTACH, pid, NULL, NULL))
+		die("attach");
+
+	wait(NULL);
+
+	if (ptrace(PTRACE_DETACH, pid, NULL, NULL))
+		die("detach");
+
+	kill(pid, SIGKILL);
+
+	return 0;
+}
+
+Locks CPU 0. Not a security problem, needs CAP_SYS_NICE and the task
+could be reniced and killed, but still not good.
+
+ptracee does ptrace_stop()->do_notify_parent_cldstop(), ptracer preempts
+the child before it calls schedule(), ptrace(PTRACE_DETACH) goes to
+wait_task_inactive() and yields forever.
+
+Can we just replace yield() with schedule_timeout_uninterruptible(1) ?
+wait_task_inactive() has no time-critical callers, and as it currently
+used "on_rq" case is really unlikely.
+
+Oleg.
+
