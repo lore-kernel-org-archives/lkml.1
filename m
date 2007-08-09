@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765824AbXHIUet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765579AbXHIUkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765824AbXHIUet (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 16:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765057AbXHIUeB
+	id S1765579AbXHIUkU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 16:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbXHIUkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 16:34:01 -0400
-Received: from web36615.mail.mud.yahoo.com ([209.191.85.32]:46230 "HELO
-	web36615.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762426AbXHIUd6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 16:33:58 -0400
-X-YMail-OSG: e0QUJ6AVM1mwIJIIROJF.M9WLPn9O3XIBTq_LZVCW19DbSrRAzapEhQgeUCcz4XFH_Qho2sQpg--
-X-RocketYMMF: rancidfat
-Date: Thu, 9 Aug 2007 13:33:57 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 11/14] CacheFiles: Permit an inode's security ID to be obtained [try #2]
-To: James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>
-Cc: Casey Schaufler <casey@schaufler-ca.com>, torvalds@osdl.org, akpm@osdl.org,
-       steved@redhat.com, trond.myklebust@fys.uio.no,
-       linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0708091223330.19611@us.intercode.com.au>
+	Thu, 9 Aug 2007 16:40:04 -0400
+Received: from sandeen.net ([209.173.210.139]:13595 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754370AbXHIUkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 16:40:02 -0400
+Message-ID: <46BB7BA0.70107@sandeen.net>
+Date: Thu, 09 Aug 2007 15:40:00 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <503721.44439.qm@web36615.mail.mud.yahoo.com>
+To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: [PATCH V2] limit minixfs printks on corrupted dir i_size, CVE-2006-6058
+References: <46BB6101.4030307@redhat.com>
+In-Reply-To: <46BB6101.4030307@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Perhaps this is simpler, and preferable.  Thanks to adilger for
+reminding me about printk_ratelimit.  :)
 
---- James Morris <jmorris@namei.org> wrote:
+----
 
-> On Thu, 9 Aug 2007, David Howells wrote:
-> 
-> > James Morris <jmorris@namei.org> wrote:
-> > 
-> > > David, I've looked at the code and can't see that you need to access the 
-> > > label itself outside the LSM.  Could you instead simply pass the inode 
-> > > pointer around?
-> > 
-> > It's not quite that simple.  I need to impose *two* security labels in
-> > cachefiles_begin_secure() when I'm about to act on behalf of a process
-> that's
-> > tried to access a netfs file:
-> 
-> Ah ok, we had a similar problem with NFS mount options.
-> 
-> While I'm concerned about encoding SELinux-optimized secid labels into 
-> general kernel structures, moving to more generalized pointers introduces 
-> lifecycle maintenance issues and complexity which is not needed in the 
-> mainline kernel.  i.e. it'll be unused infrastructure maintained by 
-> upstream, and used only by out-of-tree modules.
-> 
-> So, given that the kernel has no stable API, I suggest accepting the u32 
-> secid as you propose, and if someone wants to merge a module which also 
-> uses these hooks, but is entirely unable to use u32 labels, then they can 
-> also justify making the interface more generalized and provide the code 
-> for it.
+This attempts to address CVE-2006-6058 
+http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6058
+ 
+first reported at http://projects.info-pull.com/mokb/MOKB-17-11-2006.html
 
-Grumble. Yet another thing to undo in the near future. I still
-hope to suggest what I would consider a viable alternative "soon".
+Essentially a corrupted minix dir inode reporting a very large
+i_size will loop for a very long time in minix_readdir, minix_find_entry,
+etc, because on EIO they just move on to try the next page.  This is
+under the BKL, printk-storming as well.  This can lock up the machine 
+for a very long time.  Simply ratelimiting the printks gets things back
+under control.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+
+Index: linux-2.6.22-rc4/fs/minix/itree_v1.c
+===================================================================
+--- linux-2.6.22-rc4.orig/fs/minix/itree_v1.c
++++ linux-2.6.22-rc4/fs/minix/itree_v1.c
+@@ -27,7 +27,8 @@ static int block_to_path(struct inode * 
+ 	if (block < 0) {
+ 		printk("minix_bmap: block<0\n");
+ 	} else if (block >= (minix_sb(inode->i_sb)->s_max_size/BLOCK_SIZE)) {
+-		printk("minix_bmap: block>big\n");
++		if (printk_ratelimit())
++			printk("minix_bmap: block>big\n");
+ 	} else if (block < 7) {
+ 		offsets[n++] = block;
+ 	} else if ((block -= 7) < 512) {
+Index: linux-2.6.22-rc4/fs/minix/itree_v2.c
+===================================================================
+--- linux-2.6.22-rc4.orig/fs/minix/itree_v2.c
++++ linux-2.6.22-rc4/fs/minix/itree_v2.c
+@@ -28,7 +28,8 @@ static int block_to_path(struct inode * 
+ 	if (block < 0) {
+ 		printk("minix_bmap: block<0\n");
+ 	} else if (block >= (minix_sb(inode->i_sb)->s_max_size/sb->s_blocksize)) {
+-		printk("minix_bmap: block>big\n");
++		if (printk_ratelimit())
++			printk("minix_bmap: block>big\n");
+ 	} else if (block < 7) {
+ 		offsets[n++] = block;
+ 	} else if ((block -= 7) < 256) {
 
 
-Casey Schaufler
-casey@schaufler-ca.com
+
