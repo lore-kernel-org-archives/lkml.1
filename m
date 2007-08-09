@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941000AbXHIRZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938688AbXHIR0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941000AbXHIRZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 13:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937916AbXHIRZH
+	id S938688AbXHIR0Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 13:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758932AbXHIR0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 13:25:07 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:41347 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765488AbXHIRZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 13:25:05 -0400
-Subject: Re: [PATCH 11/14] CacheFiles: Permit an inode's security ID to be
-	obtained [try #2]
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: casey@schaufler-ca.com
-Cc: David Howells <dhowells@redhat.com>, torvalds@osdl.org, akpm@osdl.org,
-       steved@redhat.com, trond.myklebust@fys.uio.no,
-       linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <162335.27499.qm@web36605.mail.mud.yahoo.com>
-References: <162335.27499.qm@web36605.mail.mud.yahoo.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Thu, 09 Aug 2007 13:22:04 -0400
-Message-Id: <1186680124.6916.624.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Thu, 9 Aug 2007 13:26:08 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37000 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757232AbXHIR0G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 13:26:06 -0400
+Message-ID: <46BB4E26.6010007@zytor.com>
+Date: Thu, 09 Aug 2007 10:25:58 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: huang ying <huang.ying.caritas@gmail.com>,
+       Etienne Lorrain <etienne_lorrain@yahoo.fr>,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
+References: <183884.85434.qm@web26915.mail.ukl.yahoo.com> <200708091251.21726.ak@suse.de> <851fc09e0708090709s4f4fbbf9r91a7300a773f985a@mail.gmail.com> <200708091901.11146.ak@suse.de>
+In-Reply-To: <200708091901.11146.ak@suse.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-09 at 10:07 -0700, Casey Schaufler wrote:
-> --- David Howells <dhowells@redhat.com> wrote:
+Andi Kleen wrote:
 > 
-> > Permit an inode's security ID to be obtained by the CacheFiles module.  This
-> > is
-> > then used as the SID with which files and directories will be created in the
-> > cache.
+> Ah i didn't realize this. Ok then kexec is also quite broken.
+> Somehow this must have been missed this fundamental flaw when this code was 
+> reviewed.
 > 
-> This is SELinux specific functionality. It should not be an LSM
-> interface. 
 
-Odd, you proposed exactly the same hook (aside from naming convention
-and secid as argument vs. as retval) in recent postings on linux-audit
-and selinux list for use by the audit system.
+It wasn't missed.  It was given the "there is no other way" defence, and
+somehow that was considered sufficient.
 
--- 
-Stephen Smalley
-National Security Agency
+Now, one could argue that kexec can just pass the boot_params from the
+previous kernel boot, except there is no way to read them out, and so
+it's not how it actually works.
 
+	-hpa
