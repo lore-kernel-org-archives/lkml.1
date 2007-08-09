@@ -1,81 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940069AbXHIMxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939557AbXHIMxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940069AbXHIMxW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763610AbXHIMxL
+	id S939557AbXHIMxw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939138AbXHIMxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 08:53:11 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:34738
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756385AbXHIMxJ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:53:09 -0400
-Message-Id: <46BB2AA3.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Thu, 09 Aug 2007 13:54:27 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Andi Kleen" <ak@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
-Subject: Re: [patches] [PATCH] [4/12] x86_64: Disable CLFLUSH support
-	again
-References: <20070809241.425881000@suse.de>
- <20070809124131.B6E6114F3B@wotan.suse.de>
-In-Reply-To: <20070809124131.B6E6114F3B@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 9 Aug 2007 08:53:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54886 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932812AbXHIMxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 08:53:13 -0400
+Message-ID: <46BB0E1F.2030003@redhat.com>
+Date: Thu, 09 Aug 2007 08:52:47 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Jerry Jiang <wjiang@resilience.com>, Chris Friesen <cfriesen@nortel.com>,
+       Zan Lynx <zlynx@acm.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: why are some atomic_t's not volatile, while most are?
+References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain> <20070806123551.a6c3c154.wjiang@resilience.com> <46B72C58.5030502@redhat.com> <46B894E4.4010501@nortel.com> <46B8D6D7.2020206@redhat.com> <46B8DDF3.7050008@nortel.com> <46B8E1D3.8050501@redhat.com> <46B8E64E.7010708@nortel.com> <1186525977.232321.43.camel@localhost> <46B91D0C.5050704@redhat.com> <46B94B94.6000600@nortel.com> <46B96719.3050006@redhat.com> <20070808162755.61f50fbf.wjiang@resilience.com> <46BA2D72.9060202@redhat.com> <Pine.LNX.4.64.0708090836070.10666@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0708090836070.10666@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 64-bit conditional seems wrong to me, I'd assume you mean
+Robert P. J. Day wrote:
+> On Wed, 8 Aug 2007, Chris Snook wrote:
+> 
+>> Jerry Jiang wrote:
+>>> On Wed, 08 Aug 2007 02:47:53 -0400
+>>> Chris Snook <csnook@redhat.com> wrote:
+>>>
+>>>> Chris Friesen wrote:
+>>>>> Chris Snook wrote:
+>>>>>
+>>>>>> This is not a problem, since indirect references will cause the CPU to
+>>>>>> fetch the data from memory/cache anyway.
+>>>>> Isn't Zan's sample code (that shows the problem) already using indirect
+>>>>> references?
+>>>> Yeah, I misinterpreted his conclusion.  I thought about this for a while,
+>>>> and realized that it's perfectly legal for the compiler to re-use a value
+>>>> obtained from atomic_read.  All that matters is that the read itself was
+>>>> atomic.  The use (or non-use) of the volatile keyword is really more
+>>>> relevant to the other atomic operations.  If you want to guarantee a
+>>>> re-read from memory, use barrier().  This, incidentally, uses volatile
+>>>> under the hood.
+>>>>
+>>>
+>>> So for example, without volatile
+>>>
+>>> int a = read_atomic(v);
+>>> int b = read_atomic(v);
+>>>
+>>> the compiler will optimize it as b = a, But with volatile, it will be forced
+>>> to fetch v's value from memory
+>>> again.
+>>>
+>>> So, come back our initial question,
+>>> include/asm-v850/atomic.h:typedef struct { int counter; } atomic_t;
+>>>
+>>> Why is it right without volatile?
+>> Because atomic_t doesn't promise a memory fetch every time.  It merely
+>> promises that any atomic_* operations will, in fact, be atomic.  For example,
+>> posted today:
+>>
+>> http://lkml.org/lkml/2007/8/8/122
+> 
+> i'm sure that, when this is all done, i'll finally have an answer to
+> my original question, "why are some atomic_t's not volatile, while
+> most are?"
+> 
+> i'm almost scared to ask any more questions.  :-)
+> 
+> rday
 
-	if (1 || !cpu_has_clflush)
+Momentarily I'll be posting a patchset that makes all atomic_t and atomic64_t 
+declarations non-volatile, and casts them to volatile inside of atomic[64]_read. 
+  This will ensure consistent behavior across all architectures, and is in 
+keeping with the philosophy that memory reads should be enforced in running 
+code, not declarations.
 
-Jan
+I hope you don't mind that we're mooting the question by making the code more 
+sensible.
 
->>> Andi Kleen <ak@suse.de> 09.08.07 14:41 >>>
-
-It turns out CLFLUSH support is still not complete; we
-flush the wrong pages.  Again disable it for the release.
-Noticed by Jan Beulich.
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
----
- arch/i386/mm/pageattr.c   |    2 +-
- arch/x86_64/mm/pageattr.c |    3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
-Index: linux/arch/i386/mm/pageattr.c
-===================================================================
---- linux.orig/arch/i386/mm/pageattr.c
-+++ linux/arch/i386/mm/pageattr.c
-@@ -82,7 +82,7 @@ static void flush_kernel_map(void *arg)
- 	struct page *p;
- 
- 	/* High level code is not ready for clflush yet */
--	if (cpu_has_clflush) {
-+	if (0 && cpu_has_clflush) {
- 		list_for_each_entry (p, lh, lru)
- 			cache_flush_page(p);
- 	} else if (boot_cpu_data.x86_model >= 4)
-Index: linux/arch/x86_64/mm/pageattr.c
-===================================================================
---- linux.orig/arch/x86_64/mm/pageattr.c
-+++ linux/arch/x86_64/mm/pageattr.c
-@@ -75,7 +75,8 @@ static void flush_kernel_map(void *arg)
- 
- 	/* When clflush is available always use it because it is
- 	   much cheaper than WBINVD. */
--	if (!cpu_has_clflush)
-+	/* clflush is still broken. Disable for now. */
-+	if (0 && !cpu_has_clflush)
- 		asm volatile("wbinvd" ::: "memory");
- 	else list_for_each_entry(pg, l, lru) {
- 		void *adr = page_address(pg);
-_______________________________________________
-patches mailing list
-patches@x86-64.org 
-https://www.x86-64.org/mailman/listinfo/patches
-
+	-- Chris
