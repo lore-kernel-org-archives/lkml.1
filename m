@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965231AbXHINvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939738AbXHINvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965231AbXHINvB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 09:51:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936719AbXHINuq
+	id S939738AbXHINvs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 09:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbXHINvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 09:50:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45877 "EHLO mx1.redhat.com"
+	Thu, 9 Aug 2007 09:51:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46168 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764050AbXHINuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 09:50:44 -0400
-Date: Thu, 9 Aug 2007 09:44:51 -0400
+	id S1754921AbXHINvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 09:51:31 -0400
+Date: Thu, 9 Aug 2007 09:51:07 -0400
 From: Chris Snook <csnook@redhat.com>
 To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
        torvalds@linux-foundation.org
@@ -18,8 +18,8 @@ Cc: netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
        wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
        cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
        jesper.juhl@gmail.com
-Subject: [PATCH 7/24] make atomic_read() behave consistently on h8300
-Message-ID: <20070809134451.GA15406@shell.boston.redhat.com>
+Subject: [PATCH 9/24] make atomic_read() behave consistently on ia64
+Message-ID: <20070809135107.GA15985@shell.boston.redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -29,24 +29,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Chris Snook <csnook@redhat.com>
 
-Make atomic_read() volatile on h8300.  This ensures that busy-waiting
-for an interrupt handler to change an atomic_t won't get compiled to an
-infinite loop, consistent with SMP architectures.
+Purify volatile use for atomic[64]_t on ia64.
 
 Signed-off-by: Chris Snook <csnook@redhat.com>
 
---- linux-2.6.23-rc2-orig/include/asm-h8300/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-h8300/atomic.h	2007-08-09 06:45:43.000000000 -0400
-@@ -9,7 +9,11 @@
- typedef struct { int counter; } atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
+--- linux-2.6.23-rc2-orig/include/asm-ia64/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-ia64/atomic.h	2007-08-09 06:53:48.000000000 -0400
+@@ -17,18 +17,18 @@
+ #include <asm/intrinsics.h>
+ #include <asm/system.h>
+ 
+-/*
+- * On IA-64, counter must always be volatile to ensure that that the
+- * memory accesses are ordered.
+- */
+-typedef struct { volatile __s32 counter; } atomic_t;
+-typedef struct { volatile __s64 counter; } atomic64_t;
++typedef struct { __s32 counter; } atomic_t;
++typedef struct { __s64 counter; } atomic64_t;
+ 
+ #define ATOMIC_INIT(i)		((atomic_t) { (i) })
+ #define ATOMIC64_INIT(i)	((atomic64_t) { (i) })
  
 -#define atomic_read(v)		((v)->counter)
+-#define atomic64_read(v)	((v)->counter)
 +/*
 + * Casting to volatile here minimizes the need for barriers,
 + * without having to declare the type itself as volatile.
 + */
-+#define atomic_read(v)		(*(volatile int *)&(v)->counter)
- #define atomic_set(v, i)	(((v)->counter) = i)
++#define atomic_read(v)		(*(volatile __s32 *)&(v)->counter)
++#define atomic64_read(v)	(*(volatile __s64 *)&(v)->counter)
  
- #include <asm/system.h>
+ #define atomic_set(v,i)		(((v)->counter) = (i))
+ #define atomic64_set(v,i)	(((v)->counter) = (i))
