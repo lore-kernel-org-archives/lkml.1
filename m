@@ -1,330 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940644AbXHIQNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939949AbXHIQUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940644AbXHIQNQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 12:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932126AbXHIQM4
+	id S939949AbXHIQUS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934804AbXHIQUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 12:12:56 -0400
-Received: from mga03.intel.com ([143.182.124.21]:38016 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758718AbXHIQMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 12:12:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,241,1183359600"; 
-   d="scan'208";a="261012649"
-Date: Thu, 9 Aug 2007 09:10:01 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, edwintorok@gmail.com, axboe@kernel.dk
-Subject: Re: [patch 2/4] Expose Power Management Policy option to users
-Message-Id: <20070809091001.149fcc45.kristen.c.accardi@intel.com>
-In-Reply-To: <20070801141651.a746763b.kristen.c.accardi@intel.com>
-References: <20070705194909.337398431@intel.com>
-	<20070705130518.135e4e3c.kristen.c.accardi@intel.com>
-	<46AE12B6.6090408@garzik.org>
-	<46AED656.8070407@gmail.com>
-	<1185891382.2750.8.camel@laptopd505.fenrus.org>
-	<46AF4B05.4010700@gmail.com>
-	<1185898532.2766.2.camel@laptopd505.fenrus.org>
-	<46AF7F7E.6060300@gmail.com>
-	<46B05109.4080007@gmail.com>
-	<20070801141651.a746763b.kristen.c.accardi@intel.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 9 Aug 2007 12:20:06 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:24305 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933000AbXHIQUD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 12:20:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=JpTTZJM4JFRPo++MuTlduyT2hC97UliUNxbHl9I2gDpeVAH/pPtaOHsZjt9O0l91e9ybtu+P/Zz4hVKUdXrf/nf+wJv8tqU/WY8XZqSW1AWDM8Rk35cTbZxWypRlZN7Utg7FBcChBLnk0kkPHALcYF3eXnQNZiX3tP6OoPqAkLY=
+Message-ID: <46BB3E92.5040007@googlemail.com>
+Date: Thu, 09 Aug 2007 18:19:30 +0200
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Michal Piotrowski <michal.k.k.piotrowski@googlemail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org
+Subject: Re: 2.6.23-rc2-mm1
+References: <20070809015106.cd0bfc53.akpm@linux-foundation.org> <46BB3499.5090803@googlemail.com>
+In-Reply-To: <46BB3499.5090803@googlemail.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2007 14:16:51 -0700
-Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
+Michal Piotrowski pisze:
+> Andrew Morton pisze:
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc2/2.6.23-rc2-mm1/
+>>
+> 
+> bash_shared_mapping triggered this
+> 
+> [  874.714700] INFO: trying to register non-static key.
+> [  874.719659] the code is fine but needs lockdep annotation.
+> [  874.725133] turning off the locking correctness validator.
+> [  874.730606]  [<c040536b>] show_trace_log_lvl+0x1a/0x30
+> [  874.735759]  [<c0405ff3>] show_trace+0x12/0x14
+> [  874.740218]  [<c0406128>] dump_stack+0x16/0x18
+> [  874.744679]  [<c044b936>] __lock_acquire+0x598/0x125c
+> [  874.749745]  [<c044c6a1>] lock_acquire+0xa7/0xc1
+> [  874.754378]  [<c069f753>] _spin_lock_irqsave+0x41/0x6e
+> [  874.759529]  [<c05259db>] prop_norm_single+0x34/0x8a
+> [  874.764508]  [<c0473576>] set_page_dirty+0xa1/0x13b
+> [  874.769402]  [<c0482bd1>] try_to_unmap_one+0xb8/0x1e7
+> [  874.774467]  [<c0482d8f>] try_to_unmap+0x8f/0x40d
+> [  874.779187]  [<c04776fd>] shrink_page_list+0x278/0x750
+> [  874.784339]  [<c0477ccb>] shrink_inactive_list+0xf6/0x328
+> [  874.789749]  [<c0477faa>] shrink_zone+0xad/0x10b
+> [  874.794383]  [<c047866e>] try_to_free_pages+0x178/0x274
+> [  874.799620]  [<c0472a36>] __alloc_pages+0x169/0x431
+> [  874.804514]  [<c047501d>] __do_page_cache_readahead+0x141/0x207
+> [  874.810443]  [<c047545c>] do_page_cache_readahead+0x48/0x5c
+> [  874.816027]  [<c046f3a3>] filemap_fault+0x2dd/0x4cf
+> [  874.820921]  [<c047b5c9>] __do_fault+0xb6/0x42d
+> [  874.825466]  [<c047d0d5>] handle_mm_fault+0x1b6/0x750
+> [  874.830533]  [<c041cd7b>] do_page_fault+0x334/0x5f9
+> [  874.835425]  [<c069fe72>] error_code+0x72/0x78
+> [  874.839886]  =======================
+> [  880.621883] BUG: NMI Watchdog detected LOCKUP on CPU1, eip c0529022, registers:
+> [  880.629200] Modules linked in: ext2 loop autofs4 af_packet nf_conntrack_netbios_ns nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink ipt_REJECT iptable_filter ip_tables xt_tcpudp ip6t_REJECT ip6table_filter ip6_tables x_tables firmware_class binfmt_misc fan ipv6 nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd soundcore i2c_i801 snd_page_alloc intel_agp agpgart rtc
+> [  880.672397] CPU:    1
+> [  880.672398] EIP:    0060:[<c0529022>]    Not tainted VLI
+> [  880.672400] EFLAGS: 00000046   (2.6.23-rc2-mm1 #3)
+> [  880.684735] EIP is at delay_tsc+0xe/0x17
+> 
+> l *delay_tsc+0xe
+> 0xc1129022 is in delay_tsc (/home/devel/linux-mm/arch/i386/lib/delay.c:49).
+> 44
+> 45              rdtscl(bclock);
+> 46              do {
+> 47                      rep_nop();
+> 48                      rdtscl(now);
+> 49              } while ((now-bclock) < loops);
+> 50      }
+> 51
+> 52      /*
+> 53       * Since we calibrate only once at boot, this
+> 
+> 
+> [  880.688646] eax: 393e5d7c   ebx: 00000001   ecx: 393e5d04   edx: 0000023f
+> [  880.695414] esi: 00000000   edi: cabbf5cc   ebp: caf29ae8   esp: caf29ae4
+> [  880.702183] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> [  880.708002] Process firefox-bin (pid: 2625, ti=caf29000 task=cabbe900 task.ti=caf29000)
+> [  880.715805] Stack: 02e6eb94 caf29af0 c0528fdd caf29b28 c05375ac 00000046 00000000 caf29b28 
+> [  880.724345]        00000046 00000000 a6c999f0 00000001 a6c999f0 00000000 cabbf5e0 cabbf5cc 
+> [  880.732887]        00000086 caf29b48 c069f76f 00000000 00000002 c05259db cabbf5c0 00008000 
+> [  880.741425] Call Trace:
+> [  880.744073]  [<c040536b>] show_trace_log_lvl+0x1a/0x30
+> [  880.749233]  [<c040542a>] show_stack_log_lvl+0xa9/0xd5
+> [  880.754386]  [<c0405670>] show_registers+0x21a/0x3ac
+> [  880.759365]  [<c04061ae>] die_nmi+0x84/0xd7
+> [  880.763566]  [<c041859f>] nmi_watchdog_tick+0x14d/0x168
+> [  880.768803]  [<c0406582>] do_nmi+0x8b/0x284
+> [  880.773004]  [<c069ff1b>] nmi_stack_correct+0x26/0x2b
+> [  880.778069]  [<c0528fdd>] __delay+0x9/0xb
+> [  880.782098]  [<c05375ac>] _raw_spin_lock+0xd8/0x18a
+> [  880.786991]  [<c069f76f>] _spin_lock_irqsave+0x5d/0x6e
+> [  880.792143]  [<c05259db>] prop_norm_single+0x34/0x8a
+> [  880.797122]  [<c0473576>] set_page_dirty+0xa1/0x13b
+> [  880.802015]  [<c0482bd1>] try_to_unmap_one+0xb8/0x1e7
+> [  880.807079]  [<c0482d8f>] try_to_unmap+0x8f/0x40d
+> [  880.811798]  [<c04776fd>] shrink_page_list+0x278/0x750
+> [  880.816950]  [<c0477ccb>] shrink_inactive_list+0xf6/0x328
+> [  880.822362]  [<c0477faa>] shrink_zone+0xad/0x10b
+> [  880.826997]  [<c047866e>] try_to_free_pages+0x178/0x274
+> [  880.832235]  [<c0472a36>] __alloc_pages+0x169/0x431
+> [  880.837126]  [<c047501d>] __do_page_cache_readahead+0x141/0x207
+> [  880.843056]  [<c047545c>] do_page_cache_readahead+0x48/0x5c
+> [  880.848641]  [<c046f3a3>] filemap_fault+0x2dd/0x4cf
+> [  880.853534]  [<c047b5c9>] __do_fault+0xb6/0x42d
+> [  880.858081]  [<c047d0d5>] handle_mm_fault+0x1b6/0x750
+> [  880.863146]  [<c041cd7b>] do_page_fault+0x334/0x5f9
+> [  880.868037]  [<c069fe72>] error_code+0x72/0x78
+> [  880.872497]  =======================
+> [  880.876068] INFO: lockdep is turned off.
+> [  880.879983] Code: 8d 0c 1b 01 c9 89 da c1 e2 07 29 ca 01 da 01 d2 f7 e2 8d 42 01 e8 c3 ff ff ff 5b 5d c3 55 89 e5 53 89 c3 0f 31 89 c1 f3 90 0f 31 <29> c8 39 d8 72 f6 5b 5d c3 55 89 e5 53 69 c0 1c 43 00 00 64 8b 
+> [  880.900092] Kernel panic - not syncing: Aiee, killing interrupt handler!
+> [  880.906791] WARNING: at /home/devel/linux-mm/arch/i386/kernel/smp.c:474 native_smp_send_reschedule()
+> [  880.915892]  [<c040536b>] show_trace_log_lvl+0x1a/0x30
+> [  880.921043]  [<c0405ff3>] show_trace+0x12/0x14
+> [  880.925504]  [<c0406128>] dump_stack+0x16/0x18
+> [  880.929964]  [<c0416093>] native_smp_send_reschedule+0x8b/0x98
+> [  880.935808]  [<c04203ea>] resched_task+0x81/0x83
+> [  880.940440]  [<c04203fa>] check_preempt_curr_idle+0xe/0x10
+> [  880.945939]  [<c0422364>] try_to_wake_up+0x2ca/0x3ec
+> [  880.950916]  [<c04224ae>] wake_up_process+0xf/0x11
+> [  880.955714]  [<c04403e5>] hrtimer_wakeup+0x18/0x1c
+> [  880.960513]  [<c044100e>] hrtimer_interrupt+0x15e/0x1e8
+> [  880.965751]  [<c0418292>] smp_apic_timer_interrupt+0x57/0x88
+> [  880.971420]  [<c0404e0f>] apic_timer_interrupt+0x33/0x38
+> [  880.976736]  [<c042d27b>] do_exit+0x639/0xa04
+> [  880.981103]  [<c04061e8>] die_nmi+0xbe/0xd7
+> [  880.985302]  [<c041859f>] nmi_watchdog_tick+0x14d/0x168
+> [  880.990533]  [<c0406582>] do_nmi+0x8b/0x284
+> [  880.994735]  [<c069ff1b>] nmi_stack_correct+0x26/0x2b
+> [  880.999800]  [<c0528fdd>] __delay+0x9/0xb
+> [  881.003827]  [<c05375ac>] _raw_spin_lock+0xd8/0x18a
+> [  881.008712]  [<c069f76f>] _spin_lock_irqsave+0x5d/0x6e
+> [  881.013865]  [<c05259db>] prop_norm_single+0x34/0x8a
+> [  881.018842]  [<c0473576>] set_page_dirty+0xa1/0x13b
+> [  881.023728]  [<c0482bd1>] try_to_unmap_one+0xb8/0x1e7
+> [  881.028793]  [<c0482d8f>] try_to_unmap+0x8f/0x40d
+> [  881.033511]  [<c04776fd>] shrink_page_list+0x278/0x750
+> [  881.038664]  [<c0477ccb>] shrink_inactive_list+0xf6/0x328
+> [  881.044075]  [<c0477faa>] shrink_zone+0xad/0x10b
+> [  881.048709]  [<c047866e>] try_to_free_pages+0x178/0x274
+> [  881.053947]  [<c0472a36>] __alloc_pages+0x169/0x431
+> [  881.058838]  [<c047501d>] __do_page_cache_readahead+0x141/0x207
+> [  881.064760]  [<c047545c>] do_page_cache_readahead+0x48/0x5c
+> [  881.070344]  [<c046f3a3>] filemap_fault+0x2dd/0x4cf
+> [  881.075229]  [<c047b5c9>] __do_fault+0xb6/0x42d
+> [  881.079774]  [<c047d0d5>] handle_mm_fault+0x1b6/0x750
+> [  881.084832]  [<c041cd7b>] do_page_fault+0x334/0x5f9
+> [  881.089724]  [<c069fe72>] error_code+0x72/0x78
+> [  881.094177]  =======================
+> [  881.097748] WARNING: at /home/devel/linux-mm/arch/i386/kernel/smp.c:209 send_IPI_mask_bitmask()
+> [  881.106417]  [<c040536b>] show_trace_log_lvl+0x1a/0x30
+> [  881.111569]  [<c0405ff3>] show_trace+0x12/0x14
+> [  881.116029]  [<c0406128>] dump_stack+0x16/0x18
+> [  881.120489]  [<c041589a>] send_IPI_mask_bitmask+0xf0/0xf5
+> [  881.125900]  [<c0416063>] native_smp_send_reschedule+0x5b/0x98
+> [  881.131743]  [<c04203ea>] resched_task+0x81/0x83
+> [  881.136367]  [<c04203fa>] check_preempt_curr_idle+0xe/0x10
+> [  881.141857]  [<c0422364>] try_to_wake_up+0x2ca/0x3ec
+> [  881.146827]  [<c04224ae>] wake_up_process+0xf/0x11
+> [  881.151625]  [<c04403e5>] hrtimer_wakeup+0x18/0x1c
+> [  881.156422]  [<c044100e>] hrtimer_interrupt+0x15e/0x1e8
+> [  881.161653]  [<c0418292>] smp_apic_timer_interrupt+0x57/0x88
+> [  881.167322]  [<c0404e0f>] apic_timer_interrupt+0x33/0x38
+> [  881.172639]  [<c042d27b>] do_exit+0x639/0xa04
+> [  881.177004]  [<c04061e8>] die_nmi+0xbe/0xd7
+> [  881.181197]  [<c041859f>] nmi_watchdog_tick+0x14d/0x168
+> [  881.186434]  [<c0406582>] do_nmi+0x8b/0x284
+> [  881.190627]  [<c069ff1b>] nmi_stack_correct+0x26/0x2b
+> [  881.195685]  [<c0528fdd>] __delay+0x9/0xb
+> [  881.199713]  [<c05375ac>] _raw_spin_lock+0xd8/0x18a
+> [  881.204605]  [<c069f76f>] _spin_lock_irqsave+0x5d/0x6e
+> [  881.209748]  [<c05259db>] prop_norm_single+0x34/0x8a
+> [  881.214718]  [<c0473576>] set_page_dirty+0xa1/0x13b
+> [  881.219603]  [<c0482bd1>] try_to_unmap_one+0xb8/0x1e7
+> [  881.224668]  [<c0482d8f>] try_to_unmap+0x8f/0x40d
+> [  881.229389]  [<c04776fd>] shrink_page_list+0x278/0x750
+> [  881.234539]  [<c0477ccb>] shrink_inactive_list+0xf6/0x328
+> [  881.239951]  [<c0477faa>] shrink_zone+0xad/0x10b
+> [  881.244584]  [<c047866e>] try_to_free_pages+0x178/0x274
+> [  881.249822]  [<c0472a36>] __alloc_pages+0x169/0x431
+> [  881.254707]  [<c047501d>] __do_page_cache_readahead+0x141/0x207
+> [  881.260637]  [<c047545c>] do_page_cache_readahead+0x48/0x5c
+> [  881.266221]  [<c046f3a3>] filemap_fault+0x2dd/0x4cf
+> [  881.271113]  [<c047b5c9>] __do_fault+0xb6/0x42d
+> [  881.275652]  [<c047d0d5>] handle_mm_fault+0x1b6/0x750
+> [  881.280716]  [<c041cd7b>] do_page_fault+0x334/0x5f9
+> [  881.285601]  [<c069fe72>] error_code+0x72/0x78
+> [  881.290061]  =======================
+> 
+> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.23-rc2-mm1/console.log
+> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.23-rc2-mm1/mm-config
 
-> I was able to duplicate Tejun's problem on an ATAPI device I had here.
-> this updated patch fixed my problem.  These devices are just setting 
-> PhyReady (N) and CommWake (W) in Serror on power state changes, ignoring
-> them seems to be fine, and fixed the problem for me.
+This might be related. The kernel is tainted because I hit
+kernel BUG at /home/devel/linux-mm/mm/swap_state.c:78!
 
-Hi Tejun,
-Were you able to test out this patch and see if it solved your ATAPI
-device/ALPM issues?
+[ 2599.530633] BUG: NMI Watchdog detected LOCKUP on CPU0, eip c053759e, registers:
+[ 2599.537953] Modules linked in: loop isofs nls_base zlib_inflate autofs4 af_packet nf_conntrack_netbios_ns nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink ipt_REJECT iptable_filter ip_tables xt_tcpudp ip6t_REJECT ip6table_filter ip6_tables x_tables firmware_class binfmt_misc fan ipv6 nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd soundcore snd_page_alloc evdev i2c_i801 intel_agp agpgart rtc
+[ 2599.583078] CPU:    0
+[ 2599.583079] EIP:    0060:[<c053759e>]    Tainted: G      D VLI
+[ 2599.583081] EFLAGS: 00200046   (2.6.23-rc2-mm1 #3)
+[ 2599.595933] EIP is at _raw_spin_lock+0xca/0x18a
+[ 2599.600451] eax: 00000000   ebx: 02821a83   ecx: 047ccfb8   edx: a45a5513
+[ 2599.607217] esi: 00000000   edi: c7688ccc   ebp: e9c5ce68   esp: e9c5ce38
+[ 2599.613986] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+[ 2599.619805] Process fsx-linux (pid: 15528, ti=e9c5c000 task=c7688000 task.ti=e9c5c000)
+[ 2599.627522] Stack: 00200046 00000000 e9c5ce68 00200046 00000000 a6d84f90 00000001 a6d84f90 
+[ 2599.636021]        00000000 c7688ce0 c7688ccc 00200082 e9c5ce88 c069f76f 00000000 00000002 
+[ 2599.644526]        c05259db c7688cc0 00008000 c0bbdf84 e9c5cea8 c05259db c7688ccc 00008000 
+[ 2599.653031] Call Trace:
+[ 2599.655670]  [<c040536b>] show_trace_log_lvl+0x1a/0x30
+[ 2599.660821]  [<c040542a>] show_stack_log_lvl+0xa9/0xd5
+[ 2599.665972]  [<c0405670>] show_registers+0x21a/0x3ac
+[ 2599.670952]  [<c04061ae>] die_nmi+0x84/0xd7
+[ 2599.675161]  [<c041859f>] nmi_watchdog_tick+0x14d/0x168
+[ 2599.680408]  [<c0406582>] do_nmi+0x8b/0x284
+[ 2599.684637]  [<c069ff1b>] nmi_stack_correct+0x26/0x2b
+[ 2599.689729]  [<c069f76f>] _spin_lock_irqsave+0x5d/0x6e
+[ 2599.694915]  [<c05259db>] prop_norm_single+0x34/0x8a
+[ 2599.699916]  [<c0473576>] set_page_dirty+0xa1/0x13b
+[ 2599.704825]  [<c0474909>] set_page_dirty_balance+0xc/0x75
+[ 2599.710249]  [<c047b8c8>] __do_fault+0x3b5/0x42d
+[ 2599.714892]  [<c047d0d5>] handle_mm_fault+0x1b6/0x750
+[ 2599.719957]  [<c041cd7b>] do_page_fault+0x334/0x5f9
+[ 2599.724851]  [<c069fe72>] error_code+0x72/0x78
+[ 2599.729310]  =======================
+[ 2599.732879] INFO: lockdep is turned off.
+[ 2599.736796] Code: e4 89 45 ec c7 45 f0 00 00 00 00 c7 45 e8 01 00 00 00 8b 75 e4 85 f6 74 34 31 c0 86 07 84 c0 7f 7d 31 db 31 f6 eb 08 31 c0 86 07 <84> c0 7f 6f b8 01 00 00 00 e8 28 1a ff ff 83 c3 01 83 d6 00 8b 
+[ 2599.757294] Kernel panic - not syncing: Aiee, killing interrupt handler!
 
-Thanks,
-Kristen
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.23-rc2-mm1/console2.log
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.23-rc2-mm1/mm-config
 
+Regards,
+Michal
 
-> 
-> 
-> Enable Aggressive Link Power management for AHCI controllers.
-> 
-> This patch will set the correct bits to turn on Aggressive
-> Link Power Management (ALPM) for the ahci driver.  This
-> will cause the controller and disk to negotiate a lower
-> power state for the link when there is no activity (see
-> the AHCI 1.x spec for details).  This feature is mutually
-> exclusive with Hot Plug, so when ALPM is enabled, Hot Plug
-> is disabled.  ALPM will be enabled by default, but it is
-> settable via the scsi host syfs interface.  Possible 
-> settings for this feature are:
-> 
-> Setting		Effect
-> ----------------------------------------------------------
-> min_power	ALPM is enabled, and link set to enter 
-> 		lowest power state (SLUMBER) when idle
-> 		Hot plug not allowed.
-> 
-> max_performance	ALPM is disabled, Hot Plug is allowed
-> 
-> medium_power	ALPM is enabled, and link set to enter
-> 		second lowest power state (PARTIAL) when
-> 		idle.  Hot plug not allowed.
-> 
-> Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> 
-> Index: 2.6-git/drivers/ata/ahci.c
-> ===================================================================
-> --- 2.6-git.orig/drivers/ata/ahci.c
-> +++ 2.6-git/drivers/ata/ahci.c
-> @@ -48,6 +48,9 @@
->  #define DRV_NAME	"ahci"
->  #define DRV_VERSION	"2.3"
->  
-> +static int ahci_enable_alpm(struct ata_port *ap,
-> +		enum link_pm policy);
-> +static int ahci_disable_alpm(struct ata_port *ap);
->  
->  enum {
->  	AHCI_PCI_BAR		= 5,
-> @@ -98,6 +101,7 @@ enum {
->  	/* HOST_CAP bits */
->  	HOST_CAP_SSC		= (1 << 14), /* Slumber capable */
->  	HOST_CAP_CLO		= (1 << 24), /* Command List Override support */
-> +	HOST_CAP_ALPM		= (1 << 26), /* Aggressive Link PM support */
->  	HOST_CAP_SSS		= (1 << 27), /* Staggered Spin-up */
->  	HOST_CAP_SNTF		= (1 << 29), /* SNotification register */
->  	HOST_CAP_NCQ		= (1 << 30), /* Native Command Queueing */
-> @@ -153,6 +157,8 @@ enum {
->  				  PORT_IRQ_PIOS_FIS | PORT_IRQ_D2H_REG_FIS,
->  
->  	/* PORT_CMD bits */
-> +	PORT_CMD_ASP		= (1 << 27), /* Aggressive Slumber/Partial */
-> +	PORT_CMD_ALPE		= (1 << 26), /* Aggressive Link PM enable */
->  	PORT_CMD_ATAPI		= (1 << 24), /* Device is ATAPI */
->  	PORT_CMD_LIST_ON	= (1 << 15), /* cmd list DMA engine running */
->  	PORT_CMD_FIS_ON		= (1 << 14), /* FIS DMA engine running */
-> @@ -244,6 +250,11 @@ static int ahci_pci_device_suspend(struc
->  static int ahci_pci_device_resume(struct pci_dev *pdev);
->  #endif
->  
-> +static struct class_device_attribute *ahci_shost_attrs[] = {
-> +	&class_device_attr_link_power_management_policy,
-> +	NULL
-> +};
-> +
->  static struct scsi_host_template ahci_sht = {
->  	.module			= THIS_MODULE,
->  	.name			= DRV_NAME,
-> @@ -261,6 +272,7 @@ static struct scsi_host_template ahci_sh
->  	.slave_configure	= ata_scsi_slave_config,
->  	.slave_destroy		= ata_scsi_slave_destroy,
->  	.bios_param		= ata_std_bios_param,
-> +	.shost_attrs		= ahci_shost_attrs,
->  };
->  
->  static const struct ata_port_operations ahci_ops = {
-> @@ -292,6 +304,8 @@ static const struct ata_port_operations 
->  	.port_suspend		= ahci_port_suspend,
->  	.port_resume		= ahci_port_resume,
->  #endif
-> +	.enable_pm		= ahci_enable_alpm,
-> +	.disable_pm		= ahci_disable_alpm,
->  
->  	.port_start		= ahci_port_start,
->  	.port_stop		= ahci_port_stop,
-> @@ -778,6 +792,156 @@ static void ahci_power_up(struct ata_por
->  	writel(cmd | PORT_CMD_ICC_ACTIVE, port_mmio + PORT_CMD);
->  }
->  
-> +static int ahci_disable_alpm(struct ata_port *ap)
-> +{
-> +	void __iomem *port_mmio = ahci_port_base(ap);
-> +	u32 cmd, scontrol;
-> +	struct ahci_port_priv *pp = ap->private_data;
-> +
-> +	/*
-> + 	 * disable Interface Power Management State Transitions
-> + 	 * This is accomplished by setting bits 8:11 of the
-> + 	 * SATA Control register
-> + 	 */
-> +	scontrol = readl(port_mmio + PORT_SCR_CTL);
-> +	scontrol |= (0x3 << 8);
-> +	writel(scontrol, port_mmio + PORT_SCR_CTL);
-> +
-> +	/* get the existing command bits */
-> +	cmd = readl(port_mmio + PORT_CMD);
-> +
-> +	/* disable ALPM and ASP */
-> +	cmd &= ~PORT_CMD_ASP;
-> +	cmd &= ~PORT_CMD_ALPE;
-> +
-> +	/* force the interface back to active */
-> +	cmd |= PORT_CMD_ICC_ACTIVE;
-> +
-> +	/* write out new cmd value */
-> +	writel(cmd, port_mmio + PORT_CMD);
-> +	cmd = readl(port_mmio + PORT_CMD);
-> +
-> +	/* wait 10ms to be sure we've come out of any low power state */
-> +	msleep(10);
-> +
-> +	/* clear out any PhyRdy stuff from interrupt status */
-> +	writel(PORT_IRQ_PHYRDY, port_mmio + PORT_IRQ_STAT);
-> +
-> +	/* go ahead and clean out PhyRdy Change from Serror too */
-> +	ahci_scr_write(ap, SCR_ERROR, ((1 << 16) | (1 << 18)));
-> +
-> +	/*
-> + 	 * Clear flag to indicate that we should ignore all PhyRdy
-> + 	 * state changes
-> + 	 */
-> +	ap->flags &= ~AHCI_FLAG_NO_HOTPLUG;
-> +
-> +	/*
-> + 	 * Enable interrupts on Phy Ready.
-> + 	 */
-> +	pp->intr_mask |= PORT_IRQ_PHYRDY;
-> +	writel(pp->intr_mask, port_mmio + PORT_IRQ_MASK);
-> +
-> +	/*
-> + 	 * don't change the link pm policy - we can be called
-> + 	 * just to turn of link pm temporarily
-> + 	 */
-> +	return 0;
-> +}
-> +
-> +static int ahci_enable_alpm(struct ata_port *ap,
-> +	enum link_pm policy)
-> +{
-> +	struct ahci_host_priv *hpriv = ap->host->private_data;
-> +	void __iomem *port_mmio = ahci_port_base(ap);
-> +	u32 cmd, scontrol, sstatus;
-> +	struct ahci_port_priv *pp = ap->private_data;
-> +	u32 asp;
-> +
-> +	/* Make sure the host is capable of link power management */
-> +	if (!(hpriv->cap & HOST_CAP_ALPM)) {
-> +		ap->pm_policy = NOT_AVAILABLE;
-> +		return -EINVAL;
-> +	}
-> +
-> +	/* make sure we have a device attached */
-> +	sstatus = readl(port_mmio + PORT_SCR_STAT);
-> +	if (!(sstatus & 0xf00)) {
-> +		ap->pm_policy = NOT_AVAILABLE;
-> +		return -EINVAL;
-> +	}
-> +
-> +	switch (policy) {
-> +	case MAX_PERFORMANCE:
-> +	case NOT_AVAILABLE:
-> +		/*
-> + 		 * if we came here with NOT_AVAILABLE,
-> + 		 * it just means this is the first time we
-> + 		 * have tried to enable - default to max performance,
-> + 		 * and let the user go to lower power modes on request.
-> + 		 */
-> +		ahci_disable_alpm(ap);
-> +		ap->pm_policy = MAX_PERFORMANCE;
-> +		return 0;
-> +	case MIN_POWER:
-> +		/* configure HBA to enter SLUMBER */
-> +		asp = PORT_CMD_ASP;
-> +		break;
-> +	case MEDIUM_POWER:
-> +		/* configure HBA to enter PARTIAL */
-> +		asp = 0;
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +	ap->pm_policy = policy;
-> +
-> +	/*
-> + 	 * Disable interrupts on Phy Ready. This keeps us from
-> + 	 * getting woken up due to spurious phy ready interrupts
-> +	 * TBD - Hot plug should be done via polling now, is
-> +	 * that even supported?
-> + 	 */
-> +	pp->intr_mask &= ~PORT_IRQ_PHYRDY;
-> +	writel(pp->intr_mask, port_mmio + PORT_IRQ_MASK);
-> +
-> +	/*
-> + 	 * Set a flag to indicate that we should ignore all PhyRdy
-> + 	 * state changes since these can happen now whenever we
-> + 	 * change link state
-> + 	 */
-> +	ap->flags |= AHCI_FLAG_NO_HOTPLUG;
-> +
-> +	/* get the existing command bits */
-> +	cmd = readl(port_mmio + PORT_CMD);
-> +
-> +	/*
-> + 	 * enable Interface Power Management State Transitions
-> + 	 * This is accomplished by clearing bits 8:11 of the
-> + 	 * SATA Control register
-> + 	 */
-> +	scontrol = readl(port_mmio + PORT_SCR_CTL);
-> +	scontrol &= ~(0x3 << 8);
-> +	writel(scontrol, port_mmio + PORT_SCR_CTL);
-> +
-> +	/*
-> + 	 * Set ASP based on Policy
-> + 	 */
-> +	cmd |= asp;
-> +
-> +	/*
-> + 	 * Setting this bit will instruct the HBA to aggressively
-> + 	 * enter a lower power link state when it's appropriate and
-> + 	 * based on the value set above for ASP
-> + 	 */
-> +	cmd |= PORT_CMD_ALPE;
-> +
-> +	/* write out new cmd value */
-> +	writel(cmd, port_mmio + PORT_CMD);
-> +	cmd = readl(port_mmio + PORT_CMD);
-> +	return 0;
-> +}
-> +
->  #ifdef CONFIG_PM
->  static void ahci_power_down(struct ata_port *ap)
->  {
-> @@ -1355,6 +1519,17 @@ static void ahci_port_intr(struct ata_po
->  	status = readl(port_mmio + PORT_IRQ_STAT);
->  	writel(status, port_mmio + PORT_IRQ_STAT);
->  
-> +	/* If we are getting PhyRdy, this is
-> + 	 * just a power state change, we should
-> + 	 * clear out this, plus the PhyRdy/Comm
-> + 	 * Wake bits from Serror
-> + 	 */
-> +	if ((ap->flags & AHCI_FLAG_NO_HOTPLUG) &&
-> +		(status & PORT_IRQ_PHYRDY)) {
-> +		status &= ~PORT_IRQ_PHYRDY;
-> +		ahci_scr_write(ap, SCR_ERROR, ((1 << 16) | (1 << 18)));
-> +	}
-> +
->  	if (unlikely(status & PORT_IRQ_ERROR)) {
->  		ahci_error_intr(ap, status);
->  		return;
-> @@ -1861,6 +2036,9 @@ static int ahci_init_one(struct pci_dev 
->  		struct ata_port *ap = host->ports[i];
->  		void __iomem *port_mmio = ahci_port_base(ap);
->  
-> +		/* set initial link pm policy */
-> +		ap->pm_policy = NOT_AVAILABLE;
-> +
->  		/* standard SATA port setup */
->  		if (hpriv->port_map & (1 << i))
->  			ap->ioaddr.cmd_addr = port_mmio;
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
