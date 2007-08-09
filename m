@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965746AbXHIQHC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965971AbXHIQHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965746AbXHIQHC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 12:07:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940046AbXHIQGJ
+	id S965971AbXHIQHw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940163AbXHIQGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 12:06:09 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39606 "EHLO gate.crashing.org"
+	Thu, 9 Aug 2007 12:06:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51467 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S940023AbXHIQGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 12:06:06 -0400
-In-Reply-To: <20070809142430.GA19817@shell.boston.redhat.com>
-References: <20070809142430.GA19817@shell.boston.redhat.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <8f6bb8a9e4f2819a161d732bdb6c70c0@kernel.crashing.org>
+	id S940092AbXHIQGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 12:06:10 -0400
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 00/14] Permit filesystem local caching [try #2]
+To: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
+       trond.myklebust@fys.uio.no
+Cc: linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
+Date: Thu, 09 Aug 2007 17:04:38 +0100
+Message-ID: <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Cc: wjiang@resilience.com, wensong@linux-vs.org, heiko.carstens@de.ibm.com,
-       linux-kernel@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
-       netdev@vger.kernel.org, horms@verge.net.au, akpm@linux-foundation.org,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       schwidefsky@de.ibm.com, davem@davemloft.net, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 24/24] document volatile atomic_read() behavior
-Date: Thu, 9 Aug 2007 17:59:29 +0200
-To: Chris Snook <csnook@redhat.com>
-X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Historically this has been
-> +accomplished by declaring the counter itself to be volatile, but the
-> +ambiguity of the C standard on the semantics of volatile make this 
-> practice
-> +vulnerable to overly creative interpretation by compilers.
-
-It's even worse when accessing through a volatile casted pointer;
-see for example the recent(*) GCC bugs in that area.
-
-(*) Well, not _all_ that recent.  No one should be using the 3.x
-series anymore, right?
-
-> Explicit
-> +casting in atomic_read() ensures consistent behavior across 
-> architectures
-> +and compilers.
-
-Even modulo compiler bugs, what makes you believe that?
 
 
-Segher
+These patches add local caching for network filesystems such as NFS and AFS.
 
+FS-Cache now runs fully asynchronously as required by Trond Myklebust for NFS.
+
+--
+Changes:
+
+ (*) The CacheFiles module no longer accepts directory fds in its cull and
+     inuse commands from cachefilesd.  Instead it uses the current working
+     directory of the calling process as the basis for looking up the object.
+     Corollary to this, fget_light() no longer needs to be exported.
+
+--
+A tarball of the patches is available at:
+
+	http://people.redhat.com/~dhowells/fscache/patches/nfs+fscache-21.tar.bz2
+
+
+To use this version of CacheFiles, the cachefilesd-0.9 is also required.  It
+is available as an SRPM:
+
+	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9-1.fc7.src.rpm
+
+Or as individual bits:
+
+	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9.tar.bz2
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.fc
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.if
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.te
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.spec
+
+The .fc, .if and .te files are for manipulating SELinux.
+
+David
