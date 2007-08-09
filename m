@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbXHIXjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764768AbXHIXkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760882AbXHIXjd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 19:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbXHIXjZ
+	id S1764768AbXHIXkb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 19:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbXHIXkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 19:39:25 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60166 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754020AbXHIXjZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 19:39:25 -0400
-Date: Fri, 10 Aug 2007 01:39:10 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, akpm@linux-foundation.org
-Subject: Re: [2.6 patch] cpqphp_ctrl.c: remove dead code
-Message-ID: <20070809233910.GB18938@stusta.de>
-References: <20070723145105.GK26212@stusta.de> <20070809145140.654303a0.kristen.c.accardi@intel.com> <20070809222427.GA32127@suse.de> <20070809154702.caa67a61.kristen.c.accardi@intel.com> <20070809230436.GA18938@stusta.de> <20070809162001.a5dc0b76.kristen.c.accardi@intel.com>
+	Thu, 9 Aug 2007 19:40:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45511 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753954AbXHIXkD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 19:40:03 -0400
+Date: Thu, 9 Aug 2007 19:40:00 -0400
+From: Dave Jones <davej@redhat.com>
+To: shacky <shacky83@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Unable to handle kernel paging request at virtual address
+Message-ID: <20070809234000.GA19549@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	shacky <shacky83@gmail.com>, linux-kernel@vger.kernel.org
+References: <7fedbc910708091617o7ae25fd8i36e7ec32c2b9ba86@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070809162001.a5dc0b76.kristen.c.accardi@intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <7fedbc910708091617o7ae25fd8i36e7ec32c2b9ba86@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 04:20:01PM -0700, Kristen Carlson Accardi wrote:
-> On Fri, 10 Aug 2007 01:04:36 +0200
-> Adrian Bunk <bunk@stusta.de> wrote:
-> 
-> > On Thu, Aug 09, 2007 at 03:47:02PM -0700, Kristen Carlson Accardi wrote:
-> > > 
-> > > fine by me - let's NAK this patch (and all future ones for this driver) until 
-> > > someone with hardware steps up to maintain this driver.  Eventually it
-> > > will just die I guess.
-> > 
-> > We have tons of unmaintained drivers and none of them has such a silly 
-> > auto-NAK policy.
-> > 
-> > cu
-> > Adrian
-> 
-> OK - "all future ones" was too extreme.  I'll take trivial patches (of
-> which this one is not).
+On Fri, Aug 10, 2007 at 01:17:14AM +0200, shacky wrote:
 
-As I've wrote in the patch description, all it does is to remove an if() 
-check that could never be false (which is easily verifyable if you look 
-at the source code).
+ > [87.935473] BUG: unable to handle kernel paging request at virtual
+ > address 6d207972
+ > [...........] printing eip:
+ > [...........] 6d207972
+ > [...........] *pde = 00000000
+ > [...........] Oops: 000 [#2]
+ > [...........] SMP
+ > [...........] Modules linked in: bluetooth capability lirc_dev
+ > speedstep_lib cpufreq_powersave cpufreq_stats cpufreq_userspace
+ > cpufreq_ondemand cpufreq_conservative freq_table video container sbs
+ > button dock ac battery ipv6 sbp2 lp fuse snd_emu10k1_synth
+ > snd_emux_synth snd_seq_virmidi snd_seq_midi_emul  [....] etc.
+ > 
+ > I'm using the kernel 2.6.22.
+ > 
+ > I'm omitting the rest of the error because it is very very long and I
+ > have to rewrite it because I can't copy&paste it. If you need some
+ > other information please ask. :-)
 
-I've also verified that my patch does not change a single bit in the 
-object file (after compilation with gcc 4.2.1).
+You snipped the most important part.  Even a digital photo of the
+crash would be more useful than what we have above.
+So far, there's not really much to go on.
 
-What's your definition of a trivial patch?
-
-cu
-Adrian
+	Dave
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+http://www.codemonkey.org.uk
