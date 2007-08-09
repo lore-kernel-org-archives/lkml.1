@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940259AbXHIOJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940364AbXHIOJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940259AbXHIOJi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936769AbXHIOJ0
+	id S940364AbXHIOJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940015AbXHIOJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:09:26 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:30492 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932126AbXHIOJZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:09:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GLS1fmRZnlvL1lK3Rv1Si+l0gNe7QaA2eZ3plmwmhQo23ZPLKCPjtaZ0rMR6pNn4wJTFu6/fw5MHa8hJRGAIUfbHg7TewhLSrzrSK72Gkc4bpJTk3iT1NiCe+aJ9csi4xhv/5OIAJd3lRKJyL16t4EyMdt+/PwVBCFd4pDCJ52c=
-Message-ID: <851fc09e0708090709s4f4fbbf9r91a7300a773f985a@mail.gmail.com>
-Date: Thu, 9 Aug 2007 22:09:23 +0800
-From: "huang ying" <huang.ying.caritas@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
-Cc: "Etienne Lorrain" <etienne_lorrain@yahoo.fr>, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <200708091251.21726.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Aug 2007 10:09:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53173 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S939558AbXHIOJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 10:09:32 -0400
+Date: Thu, 9 Aug 2007 10:09:08 -0400
+From: Chris Snook <csnook@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org
+Cc: netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com
+Subject: [PATCH 17/24] make atomic_read() behave consistently on sh64
+Message-ID: <20070809140908.GA18208@shell.boston.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <183884.85434.qm@web26915.mail.ukl.yahoo.com>
-	 <200708091251.21726.ak@suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/9/07, Andi Kleen <ak@suse.de> wrote:
-> There is really no 32bit entry point today usable for external users. Or rather
-> it might by chance work today, but if we change the zero page (and there
-> is no guarantee it'll not be changed). I can pretty much guarantee it'll
-> be changed at some point. And you'll break if you use it.
+From: Chris Snook <csnook@redhat.com>
 
-Yes, there is no official 32bit external entry point. But on EFI
-platform, the 16bit entry point can not be used because there is no
-16bit BIOS call available. So, I think it is necessary to define a
-32bit external entry point.
+Purify volatile use for atomic_t on sh64.
 
-> kexec can use the 32bit entry, but only because it is in tree so it can be fixed
-> up for any changes.
+Signed-off-by: Chris Snook <csnook@redhat.com>
 
-The kexec uses the 32bit entry point in a user space tool named
-kexec-tools, not in the kernel.
-
-> If you want to use it you would need to define some versionable protocol
-> first similar to the real mode boot protocol. That would require some work
-> and some thought to make sure it is forwards and backwards compatible.
-
-I think at least the following should be done to make it a external
-boot protocol.
-
-1. A version number field should be added.
-2. The pointers (especially these come from firmware) should be 64bit
-to make the entry point can be used for both 32bit and 64bit platform.
-3. More complete and formal document.
-
-Can you kindly tell me what's more should be done?
-
-Best Regards,
-Huang Ying
+--- linux-2.6.23-rc2-orig/include/asm-sh64/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-sh64/atomic.h	2007-08-09 07:22:50.000000000 -0400
+@@ -19,11 +19,15 @@
+  *
+  */
+ 
+-typedef struct { volatile int counter; } atomic_t;
++typedef struct { int counter; } atomic_t;
+ 
+ #define ATOMIC_INIT(i)	( (atomic_t) { (i) } )
+ 
+-#define atomic_read(v)		((v)->counter)
++/*
++ * Casting to volatile here minimizes the need for barriers,
++ * without having to declare the type itself as volatile.
++ */
++#define atomic_read(v)		(*(volatile int *)&(v)->counter)
+ #define atomic_set(v,i)		((v)->counter = (i))
+ 
+ #include <asm/system.h>
