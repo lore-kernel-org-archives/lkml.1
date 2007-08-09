@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbXHISo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753218AbXHISp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757312AbXHISo6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 14:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbXHISo1
+	id S1753218AbXHISp0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 14:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbXHISoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 14:44:27 -0400
-Received: from ipsec.mad.optenet.com ([213.27.232.70]:38684 "EHLO
-	mta-mad.optenet.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752423AbXHISoX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 14:44:23 -0400
-Subject: Re: [PATCH 1/1] af_packet: don't enable timestamps in mmap'ed
-	sockets
-From: Unai Uribarri <unai.uribarri@optenet.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070809181823.GA32449@2ka.mipt.ru>
-References: <1186669314.24669.56.camel@localhost.localdomain>
-	 <20070809143322.GA5345@2ka.mipt.ru>
-	 <1186683234.24669.65.camel@localhost.localdomain>
-	 <20070809181823.GA32449@2ka.mipt.ru>
-Content-Type: text/plain
-Organization: Optenet
-Date: Thu, 09 Aug 2007 20:44:21 +0200
-Message-Id: <1186685061.24669.76.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 9 Aug 2007 14:44:54 -0400
+Received: from gate.crashing.org ([63.228.1.57]:51062 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757206AbXHISow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 14:44:52 -0400
+In-Reply-To: <46BB3ECF.2070100@redhat.com>
+References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com> <3bfabd7472d6f019aa1880b14013f7a1@kernel.crashing.org> <46BB3ECF.2070100@redhat.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1abc2c621d6b62b3ac9f489d4d18806a@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: wjiang@resilience.com, cfriesen@nortel.com, wensong@linux-vs.org,
+       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, ak@suse.de,
+       netdev@vger.kernel.org, paulmck@linux.vnet.ibm.com, horms@verge.net.au,
+       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       jesper.juhl@gmail.com, torvalds@linux-foundation.org, zlynx@acm.org,
+       rpjday@mindspring.com, schwidefsky@de.ibm.com, davem@davemloft.net
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+Date: Thu, 9 Aug 2007 20:38:24 +0200
+To: Chris Snook <csnook@redhat.com>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is another option:
+>> The only safe way to get atomic accesses is to write
+>> assembler code.  Are there any downsides to that?  I don't
+>> see any.
+>
+> The assumption that aligned word reads and writes are atomic, and that 
+> words are aligned unless explicitly packed otherwise, is endemic in 
+> the kernel.  No sane compiler violates this assumption.  It's true 
+> that we're not portable to insane compilers after this patch, but we 
+> never were in the first place.
 
-1. Move timestampt activation to packet_set_ring(), so it's activated
-only once at setup instead of every time a packet arrives.
-2. Fix sock_setsockopt() so setting SO_TIMESTAMP to 0 effectively
-disables timestamp.
+You didn't answer my question: are there any downsides to using
+explicit coded-in-assembler accesses for atomic accesses?  You
+can handwave all you want that it should "just work" with
+volatile accesses, but volatility != atomicity, volatile in C
+is really badly defined, GCC never officially gave stronger
+guarantees, and we have a bugzilla full of PRs to show what a
+minefield it is.
 
-My first patch set did that. I sent that patches in mime multipart
-format and they were removed from the list archives. I can resent them
-in plain text if needed.
+So, why not use the well-defined alternative?
 
 
-On jue, 2007-08-09 at 22:18 +0400, Evgeniy Polyakov wrote:
-> On Thu, Aug 09, 2007 at 08:13:54PM +0200, Unai Uribarri (unai.uribarri@optenet.com) wrote:
-> > On jue, 2007-08-09 at 18:33 +0400, Evgeniy Polyakov wrote:
-> > > On Thu, Aug 09, 2007 at 04:21:54PM +0200, Unai Uribarri (unai.uribarri@optenet.com) wrote:
-> > > > The attached patch removes the automatic timestamp activation, that
-> > > > only mmap'ed AF_PACKET sockets perform. I known it can break user
-> > > > applications, but I believe that it's the correct solution.
-> > > 
-> > > How tcpdump with mmap libpcap will work with it?
-> > 
-> > In Linux, you can enable timestamps on any socket executing:
-> > 
-> > int val = 1;
-> > setsockopt(sock, SOL_SOCKET, SO_TIMESTAMP, &val, sizeof(val));
-> > 
-> > PD: Current release of tcpdump doesn't mmap the reception ring and
-> > timestamps packets at user space with gettimeofday. It isn't the best
-> > performing alternative, but it's portable.
->  
-> IIRC, there was/is a libpcap which worked with mapped sockets, mybe not 
-> official though. Any application which depened on having timestamps with
-> packets will not work now. Why not to implement an
-> absolutely_turn_off_timestamps option instead of breaking compatibility?
-> 
-
+Segher
 
