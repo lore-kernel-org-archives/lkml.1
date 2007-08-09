@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937738AbXHIRR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939553AbXHIRSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937738AbXHIRR6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 13:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765745AbXHIRRs
+	id S939553AbXHIRSZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 13:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765745AbXHIRSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 13:17:48 -0400
-Received: from xmrt0101.northgrum.com ([208.20.220.55]:3522 "EHLO
-	xmrt0101.northgrum.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765534AbXHIRRr (ORCPT
+	Thu, 9 Aug 2007 13:18:15 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4085 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932460AbXHIRSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 13:17:47 -0400
-Subject: Re: [PATCH] at91 pm: Compilation fix for at91sam926x
-From: Andy Herzig <andrew.herzig@ngc.com>
-To: Marc Pignat <marc.pignat@hevs.ch>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       =?ISO-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>,
-       andrew@sanpeople.com, trivial@kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200708091801.20077.marc.pignat@hevs.ch>
-References: <1186661447.6370.19.camel@leoh9-18574.nges.northgrum.com>
-	 <200708091653.35226.hjk@linutronix.de>
-	 <200708091801.20077.marc.pignat@hevs.ch>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 09 Aug 2007 13:17:53 -0400
-Message-Id: <1186679874.17413.12.camel@leoh9-18574.nges.northgrum.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-X-OriginalArrivalTime: 09 Aug 2007 17:17:43.0767 (UTC) FILETIME=[32A9DE70:01C7DAA9]
+	Thu, 9 Aug 2007 13:18:14 -0400
+Date: Thu, 9 Aug 2007 18:17:39 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, drfickle@us.ibm.com, mel@csn.ul.ie
+Subject: Re: 2.6.23-rc2-mm1 -- spinlock bad magic
+Message-ID: <20070809171739.GA7060@shadowen.org>
+References: <20070809015106.cd0bfc53.akpm@linux-foundation.org> <20070809125306.GA3091@shadowen.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070809125306.GA3091@shadowen.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-09 at 18:01 +0200, Marc Pignat wrote:
+On Thu, Aug 09, 2007 at 01:53:06PM +0100, Andy Whitcroft wrote:
+> Seeing spinlock bad magic BUG's from x86 and x86_64 test boxes,
+> fsx-linux seems to be tickling it.  Adding Peter as prop_norm_single
+> seems to be his:
 
-> > > +#if defined(CONFIG_ARCH_AT91RM9200)
-> > >                         at91_sys_write(AT91_SDRAMC_SRR, 1);     /*
-> > > self-refresh mode */
-> Why don't use:
-> if (cpu_is_at91rm9200())
-> 	at91_sys_write(AT91_SDRAMC_SRR, 1);
-> 
-No reason. That looks good to me.
+Talking to Peter on IRC he suggested I back out the patch below and
+retest on these machines:
 
-> > >  #ifdef CONFIG_PM
-> > > +extern int at91_suspend_entering_slow_clock(void);
-> Why do you define 3 times this function?
-> Can't you place it in a .h?
-I considered a .h, but I didn't see one that all drivers included. I
-declare it in the 3 separate driver .c files that I saw needed it. There
-is no pm.h and I didn't see the point in creating one just for that.
-That of course will work if everyone likes that better. In either case,
-you still have to add something to all three files.
+	mm-dirty-balancing-for-tasks
 
--Andy H.
+One machine seems to have hung elsewhere (probabally another bug sigh),
+and one has run the fsx-linux tests successfully.  So this patch does
+seem suspect.  I will report back on the other tests when they complete.
+
+-apw
