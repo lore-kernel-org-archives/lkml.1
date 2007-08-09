@@ -1,62 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937882AbXHIHia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938908AbXHIHlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937882AbXHIHia (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 03:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764955AbXHIHiR
+	id S938908AbXHIHlV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 03:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932787AbXHIHlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 03:38:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35706 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764889AbXHIHiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 03:38:16 -0400
-Message-ID: <46BAC2BE.1090106@redhat.com>
-Date: Thu, 09 Aug 2007 03:31:10 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 9 Aug 2007 03:41:14 -0400
+Received: from www.osadl.org ([213.239.205.134]:38338 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932713AbXHIHlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 03:41:13 -0400
+From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: [PATCH 2/3] UIO: Documentation
+Date: Thu, 9 Aug 2007 09:41:09 +0200
+User-Agent: KMail/1.9.5
+Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, linux-kernel@vger.kernel.org
+References: <20070718232332.GA4620@kroah.com> <11848012122374-git-send-email-gregkh@suse.de> <9a8748490708081436g23c8f01cga585d6612b380f16@mail.gmail.com>
+In-Reply-To: <9a8748490708081436g23c8f01cga585d6612b380f16@mail.gmail.com>
+Organization: Linutronix
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
-       zlynx@acm.org
-Subject: Re: [PATCH] make atomic_t volatile on all architectures
-References: <20070808230733.GA17270@shell.boston.redhat.com> <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708090941.09484.hjk@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+Am Mittwoch 08 August 2007 23:36 schrieb Jesper Juhl:
+> On 19/07/2007, Greg Kroah-Hartman <gregkh@suse.de> wrote:
+> > From: Hans J. Koch <hjk@linutronix.de>
+> >
+> > Documentation for the UIO interface
+> >
+> ...
+> > +<para>If you use UIO for your card's driver, here's what you get:</para>
+> > +
+> ...
+> > +<listitem>
+> > +       <para>if you need to keep some parts of your driver closed source,
+> > +       you can do so without violating the GPL license on the kernel.</para>
+> > +</listitem>
+> > +</itemizedlist>
+> > +
+> ...
 > 
-> On Wed, 8 Aug 2007, Chris Snook wrote:
->> Some architectures currently do not declare the contents of an atomic_t to be
->> volatile.  This causes confusion since atomic_read() might not actually read
->> anything if an optimizing compiler re-uses a value stored in a register, which
->> can break code that loops until something external changes the value of an
->> atomic_t.
-> 
-> I'd be *much* happier with "atomic_read()" doing the "volatile" instead.
-> 
-> The fact is, volatile on data structures is a bug. It's a wart in the C 
-> language. It shouldn't be used. 
-> 
-> Volatile accesses in *code* can be ok, and if we have "atomic_read()" 
-> expand to a "*(volatile int *)&(x)->value", then I'd be ok with that.
-> 
-> But marking data structures volatile just makes the compiler screw up 
-> totally, and makes code for initialization sequences etc much worse.
-> 
-> 		Linus
+> Do we really want this?
 
-Fair enough.  Casting to (volatile int *) will give us the behavior people 
-expect when using atomic_t without needing to use inefficient barriers.
+Yes. Please remember that UIO is for industrial I/O cards, not mainstream
+PC hardware. You'll never see an UIO driver for an USB Scanner or a TV card.
+Just try to write one. You will see that an UIO kernel driver for a device 
+that has to interact with lots of kernel subsystems will become almost as
+big as a normal kernel driver. Not much left for user space.
 
-While we have the hood up, should we convert all the atomic_t's to non-volatile 
-and put volatile casts in all the atomic_reads?  I don't know enough about the 
-various arches to say with confidence that those changes alone will preserve 
-existing behavior.  We might need some arch-specific tweaking of the atomic 
-operations.
+Typical industrial IO cards are simple PCI cards with loads of 
+functions that don't fit in any kernel subsystem. A pure kernel driver
+is usually _big_ and ugly and introduces 50 new ioctls and will never
+make it into mainline.
 
-	-- Chris
+> 
+> In my oppinion we run the risk here of encouraging behaviour akin to
+> what NVidia is doing - release a small kernel "glue" module and then
+> keep the driver proper in a binary blob (in userspace, but still a
+> binary blob).
+
+If a company wants to do that, they'll do it, with or without UIO.
+
+> If the company goes out of business and take their driver source with
+> them then users are left with a useless, un-debugable, un-maintainable
+> binary blob.
+> Don't we instead want to encourage/pressure people to release specs
+> and/or source code for their hardware/drivers so open, modifiable
+> drivers can be written?
+
+No. Please note that there _are_ reasons to keep code closed. I agree
+with you when it comes to mass market hardware like graphics cards.
+But in embedded systems with custom hardware for military or other
+critical applications, you can't force a manufacturer to show you
+his concepts. Usually, he's not allowed to.
+
+UIO offers a legal way for these people to implement their driver.
+Without it, they'll violate the GPL or don't use Linux at all.
+
+> 
+> This opens the door for people to start writing closed drivers. 
+
+No. UIO doesn't change anything. You were always free to choose
+your license for userspace stuff.
+
+What we want to achieve is that IO cards, for which you get a
+driver with 5000 lines of unreadable code for 2.6.12 from the
+manufacturer at the moment, can get a sensible driver with
+mainline support. That's all. We will see if that encourages
+manufacturers to make drivers closed source.
+
+Thanks,
+Hans
