@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966158AbXHIPFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966085AbXHIPHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966158AbXHIPFN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 11:05:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965702AbXHIPEx
+	id S966085AbXHIPHb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 11:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765067AbXHIPHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 11:04:53 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:37505 "EHLO e6.ny.us.ibm.com"
+	Thu, 9 Aug 2007 11:07:22 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40819 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965421AbXHIPEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 11:04:51 -0400
-Date: Thu, 9 Aug 2007 08:04:45 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
-       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
-Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
-Message-ID: <20070809150445.GB8424@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com>
+	id S1760191AbXHIPHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 11:07:20 -0400
+To: Phil Moors <pmoors@speakeasy.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: EDAC k8 MC1: unknown syndrome
+References: <20070809141333.GA10188@speakeasy.net>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 09 Aug 2007 18:01:38 +0200
+In-Reply-To: <20070809141333.GA10188@speakeasy.net>
+Message-ID: <p73d4xwg0il.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46BB2A5A.5090006@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 10:53:14AM -0400, Chris Snook wrote:
-> Paul E. McKenney wrote:
-> >Why not the same access-once semantics for atomic_set() as
-> >for atomic_read()?  As this patch stands, it might introduce
-> >architecture-specific compiler-induced bugs due to the fact that
-> >atomic_set() used to imply volatile behavior but no longer does.
+Phil Moors <pmoors@speakeasy.net> writes:
 > 
-> When we make the volatile cast in atomic_read(), we're casting an rvalue to 
-> volatile.  This unambiguously tells the compiler that we want to re-load 
-> that register from memory.  What's "volatile behavior" for an lvalue?
+> But is the error really reporting a DIMM problem or a race condition in
+> the kernel code handling ECC?
 
-I was absolutely -not- suggesting volatile behavior for lvalues.
+First if you don't use a mainline kernel you should at least mention
+it in the report.
 
-Instead, I am asking for volatile behavior from an -rvalue-.  In the
-case of atomic_read(), it is the atomic_t being read from.  In the case
-of atomic_set(), it is the atomic_t being written to.  As suggested in
-my previous email:
+It could well be a race -- the k8 DAC code is always racing against
+the builtin machine check handler which reads the same registers.
+That is why it was never accepted for mainline and shouldn't be used.
 
-#define atomic_set(v,i)		((*(volatile int *)&(v)->counter) = (i))
-#define atomic64_set(v,i)	((*(volatile long *)&(v)->counter) = (i))
+However these races should normally only cause lost events, not
+bogus data, so it's probably something the CPU really reported
+and EDAC doesn't understand.
 
-Again, the architectures that used to have their "counter" declared
-as volatile will lose volatile semantics on atomic_set() with your
-patch, which might result in bugs due to overly imaginative compiler
-optimizations.  The above would prevent any such bugs from appearing.
+The builtin machine check code will report all the same information
+through mcelog (on x86-64) or syslog (on i386)
 
->                                                                       A 
-> write to an lvalue already implies an eventual write to memory, so this 
-> would be a no-op. Maybe you'll write to the register a few times before 
-> flushing it to memory, but it will happen eventually.  With an rvalue, 
-> there's no guarantee that it will *ever* load from memory, which is what 
-> volatile fixes.
-> 
-> I think what you have in mind is LOCK_PREFIX behavior, which is not the 
-> purpose of atomic_set.  We use LOCK_PREFIX in the inline assembly for the 
-> atomic_* operations that read, modify, and write a value, only because it 
-> is necessary to perform that entire transaction atomically.
-
-No LOCK_PREFIX, thank you!!!  I just want to make sure that the compiler
-doesn't push the store down out of a loop, split the store, allow the
-store to happen twice (e.g., to allow different code paths to be merged),
-and all the other tricks that the C standard permits compilers to pull.
-
-						Thanx, Paul
+-Andi
