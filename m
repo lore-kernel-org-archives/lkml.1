@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940539AbXHIOQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940661AbXHIOR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940539AbXHIOQp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbXHIOQg
+	id S940661AbXHIOR0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938502AbXHIORL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:16:36 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:39371 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760191AbXHIOQf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:16:35 -0400
-Date: Thu, 9 Aug 2007 16:16:21 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: jidong xiao <jidong.xiao@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: What does 'if EMBEDDED' mean?
-Message-ID: <20070809141621.GO6997@stusta.de>
-References: <4104961b0708090711j291974cbx933e1262ba1935f6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 9 Aug 2007 10:17:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55477 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935895AbXHIORJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 10:17:09 -0400
+Date: Thu, 9 Aug 2007 10:16:36 -0400
+From: Chris Snook <csnook@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org
+Cc: netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com
+Subject: [PATCH 21/24] make atomic_read() behave consistently on v850
+Message-ID: <20070809141636.GA18860@shell.boston.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4104961b0708090711j291974cbx933e1262ba1935f6@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 10:11:33PM +0800, jidong xiao wrote:
-> For example,
-> 
-> config SYSFS
->         bool "sysfs file system support" if EMBEDDED
->         default y
-> 
-> What does 'if EMBEDDED' mean?Can I choose n here?
+From: Chris Snook <csnook@redhat.com>
 
-The "if EMBEDDED" means that you only see this question if 
-CONFIG_EMBEDDED=y.
+Make atomic_read() volatile on v850.  This ensures that busy-waiting
+for an interrupt handler to change an atomic_t won't get compiled to an
+infinite loop, consistent with SMP architectures.
 
-Otherwise, the default is used without the question being asked.
+Signed-off-by: Chris Snook <csnook@redhat.com>
 
-> I saw there is no corresponding option within `make menuconfig`, so I
-> am wondering what can I do if I wanna to disable this option, directly
-> change
-> "default y" to "default n" in the Kconfig file?
-
-Say "y" at
-  General setup
-    Configure standard kernel features (for small systems)
-
-> Thanks
-> Jason
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+--- linux-2.6.23-rc2-orig/include/asm-v850/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-v850/atomic.h	2007-08-09 07:50:15.000000000 -0400
+@@ -27,7 +27,11 @@ typedef struct { int counter; } atomic_t
+ 
+ #ifdef __KERNEL__
+ 
+-#define atomic_read(v)		((v)->counter)
++/*
++ * Casting to volatile here minimizes the need for barriers,
++ * without having to declare the type itself as volatile.
++ */
++#define atomic_read(v)		(*(volatile int *)&(v)->counter)
+ #define atomic_set(v,i)		(((v)->counter) = (i))
+ 
+ static inline int atomic_add_return (int i, volatile atomic_t *v)
