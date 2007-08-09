@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939067AbXHIJ0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763056AbXHIJ1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939067AbXHIJ0q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 05:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938491AbXHIJ0H
+	id S1763056AbXHIJ1P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 05:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765504AbXHIJ0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 05:26:07 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:38927 "EHLO
+	Thu, 9 Aug 2007 05:26:12 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:38949 "EHLO
 	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932649AbXHIJ0F (ORCPT
+	with ESMTP id S938531AbXHIJ0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 05:26:05 -0400
-Message-Id: <20070809092455.212609837@szeredi.hu>
+	Thu, 9 Aug 2007 05:26:09 -0400
+Message-Id: <20070809092502.976382639@szeredi.hu>
 References: <20070809092046.656183199@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Thu, 09 Aug 2007 11:20:48 +0200
+Date: Thu, 09 Aug 2007 11:20:50 +0200
 From: miklos@szeredi.hu
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 2/9] VFS: check nanoseconds in utimensat
-Content-Disposition: inline; filename=utimens_check_fix.patch
-CC: Ulrich Drepper <drepper@redhat.com>
+Subject: [patch 4/9] exec: remove unnecessary check for MNT_NOEXEC
+Content-Disposition: inline; filename=mnt_noexec_cleanup.patch
+CC: Christoph Hellwig <hch@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-utimensat() (and possibly other callers of do_utimes()) didn't check
-if the nanosecond value was within the allowed range.
+vfs_permission(MAY_EXEC) checks if the filesystem is mounted with
+"noexec", so there's no need to repeat this check in sys_uselib() and
+open_exec().
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/utimes.c
+Index: linux/fs/exec.c
 ===================================================================
---- linux.orig/fs/utimes.c	2007-08-09 11:01:30.000000000 +0200
-+++ linux/fs/utimes.c	2007-08-09 11:04:19.000000000 +0200
-@@ -38,6 +38,14 @@ asmlinkage long sys_utime(char __user *f
- 
- #endif
- 
-+static bool nsec_valid(long nsec)
-+{
-+	if (nsec == UTIME_OMIT || nsec == UTIME_NOW)
-+		return true;
-+
-+	return nsec >= 0 && nsec <= 999999999;
-+}
-+
- /* If times==NULL, set access and modification to current time,
-  * must be owner or have write permission.
-  * Else, update from *times, must be owner or super user.
-@@ -52,6 +60,11 @@ long do_utimes(int dfd, char __user *fil
- 	struct file *f = NULL;
- 
- 	error = -EINVAL;
-+	if (times && (!nsec_valid(times[0].tv_nsec) ||
-+		      !nsec_valid(times[1].tv_nsec))) {
-+		goto out;
-+	}
-+
- 	if (flags & ~AT_SYMLINK_NOFOLLOW)
+--- linux.orig/fs/exec.c	2007-08-09 11:01:54.000000000 +0200
++++ linux/fs/exec.c	2007-08-09 11:04:24.000000000 +0200
+@@ -113,9 +113,6 @@ asmlinkage long sys_uselib(const char __
+ 	if (error)
  		goto out;
  
+-	error = -EACCES;
+-	if (nd.mnt->mnt_flags & MNT_NOEXEC)
+-		goto exit;
+ 	error = -EINVAL;
+ 	if (!S_ISREG(nd.dentry->d_inode->i_mode))
+ 		goto exit;
+@@ -659,8 +656,7 @@ struct file *open_exec(const char *name)
+ 	if (!err) {
+ 		struct inode *inode = nd.dentry->d_inode;
+ 		file = ERR_PTR(-EACCES);
+-		if (!(nd.mnt->mnt_flags & MNT_NOEXEC) &&
+-		    S_ISREG(inode->i_mode)) {
++		if (S_ISREG(inode->i_mode)) {
+ 			int err = vfs_permission(&nd, MAY_EXEC);
+ 			file = ERR_PTR(err);
+ 			if (!err) {
 
 --
