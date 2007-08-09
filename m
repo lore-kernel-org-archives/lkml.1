@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940782AbXHIPPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940871AbXHIPQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940782AbXHIPPk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 11:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940722AbXHIPPB
+	id S940871AbXHIPQi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 11:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937428AbXHIPQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 11:15:01 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:60656 "EHLO poczta.o2.pl"
+	Thu, 9 Aug 2007 11:16:26 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4330 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S940676AbXHIPO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 11:14:59 -0400
-Date: Thu, 9 Aug 2007 17:15:33 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: =?us-ascii?B?PT9JU08tODg1OS0yP1E/SGFucy1KPUZDcmdlbl9Lb2NoPz0=?= 
-	<hjk@linutronix.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Documentation files in html format?
-Message-ID: <20070809151533.GA4955@ff.dom.local>
+	id S936386AbXHIPQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 11:16:24 -0400
+Date: Thu, 9 Aug 2007 15:16:10 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Tejun Heo <htejun@gmail.com>
+Cc: trenn@suse.de, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Michael Sedkowski <sedmich@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-acpi <linux-acpi@vger.kernel.org>,
+       firmwarekit-discuss <firmwarekit-discuss@bughost.org>
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+Message-ID: <20070809151610.GD3926@ucw.cz>
+References: <1186424492.4355.1.camel@nx6310> <46B76BBC.9010107@gmail.com> <20070806234509.GC27640@khazad-dum.debian.net> <46B816FF.7060303@gmail.com> <20070807125104.GC30661@khazad-dum.debian.net> <46B86F21.4030805@gmail.com> <20070807131651.GE30661@khazad-dum.debian.net> <46B87457.4020704@gmail.com> <1186494328.8780.66.camel@queen.suse.de> <46B87B4A.1020305@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <p73hcn8g25m.fsf@bingen.suse.de>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <46B87B4A.1020305@gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09-08-2007 17:26, Andi Kleen wrote:
-> Hans-Jürgen Koch <hjk@linutronix.de> writes:
-> 
->> Am Donnerstag 09 August 2007 12:31 schrieb Stephen Hemminger:
->>> Since the network device documentation needs a rewrite, I was thinking
->>> of using basic html format instead of just plain text. 
->> Why don't you simply use DocBook? Then the user has the choice to convert
->> to HTML, PDF, LaTex or whatever.
-> 
-> In my experience it tends to be challenging to actually find all the packages
-> needed for that. And then it's incredibly slow -- seems to be much slower
-> than gcc which is somewhat of an archivement. And at least for LinuxDoc TeX usually 
-> can't even compile the result.
-> 
-> I would say the track record of existing DocBook deployment is not good enough
-> to justify further use. Plain html can be converted into all these
-> formats easily too and overall it makes a much nicer user experience.
-> 
-> Also I would expect much more people will know how to write html versus
-> DocBook.
+Hi!
 
-In case of some counting: my vote is for Andi! 
+> > firmwarekit-discuss <firmwarekit-discuss@bughost.org> (added to CC list)
+> > see: http://linuxfirmwarekit.org/
+> > 
+> > But if I understand this problem right, this won't be easy.
+> > The ACPI tables are just parsed with system ("iasl ...") and syntactical
+> > errors/warnings are printed out.
+> > I also thought about a test, interpreting the DSDT and read out values
+> > of cpufreq tables and sanity check them. AFAIK the linuxfirmwarekit is
+> > not designed for that atm. You need to compile in most parts of the
+> > acpica code and parse and interpret DSDT/SSDT code yourself in the
+> > firmwarekit core or inside a plugin, then do a walk_namespace call or
+> > whatever to find the functions/parts you like to examine. This is a lot
+> > work and needs a proper design (providing an interface to plugins to let
+> > them easily check specific AML/ASL code).
+> 
+> Furthermore, we don't really know what we're looking for.  How can you
+> tell a given write to an ioport is issuing STANDBYNOW to an ATA disk or
+> trying to power the machine off?  Adding to the fun, many modern ATA
+> controller have more than one way to issue a command.  Maybe we can
+> match accesses inside regions specified by PCI BARs....  :-(
 
-Down with DocBook!!! Go txt!!! Go html!!! Andi for president!!!
-
-Jarek P.
+Hmmm... perhaps we should do it the other way. ACPI is allowed to
+touch the embedded controller, what else? Maybe we should warn as soon
+as API touches non-EC I/O port?
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
