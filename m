@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938182AbXHIFIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938719AbXHIFJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938182AbXHIFIr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 01:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbXHIFIi
+	id S938719AbXHIFJk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 01:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbXHIFJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 01:08:38 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55433
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753316AbXHIFIh (ORCPT
+	Thu, 9 Aug 2007 01:09:33 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60645 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754591AbXHIFJc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 01:08:37 -0400
-Date: Wed, 08 Aug 2007 22:08:38 -0700 (PDT)
-Message-Id: <20070808.220838.88002572.davem@davemloft.net>
-To: kamezawa.hiroyu@jp.fujitsu.com
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, Zoltan.Menyhart@bull.net, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] flush icache before set_pte() on ia64 take9 [2/2]
- flush icache at set_pte
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070809135721.08841cd7.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070809135311.0676a947.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070809135721.08841cd7.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Thu, 9 Aug 2007 01:09:32 -0400
+Date: Wed, 8 Aug 2007 22:09:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mikko Rapeli <mikko.rapeli@iki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: early boot lockup with 2.6.23-rc1
+Message-Id: <20070808220918.1e5de16f.akpm@linux-foundation.org>
+In-Reply-To: <20070809045743.GA2342@nalle>
+References: <20070808223120.GA2286@nalle>
+	<20070808170211.4401c019.akpm@linux-foundation.org>
+	<20070809045743.GA2342@nalle>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Thu, 9 Aug 2007 13:57:21 +0900
+On Thu, 9 Aug 2007 07:57:43 +0300 Mikko Rapeli <mikko.rapeli@iki.fi> wrote:
 
-> Changelog v8 -> v9.
->  - removed sync_icache_dcache().
->  - modified set_pte() rather than adding new complexed macro.
+> On Wed, Aug 08, 2007 at 05:02:11PM -0700, Andrew Morton wrote:
+> > On Thu, 9 Aug 2007 01:31:20 +0300
+> > Mikko Rapeli <mikko.rapeli@iki.fi> wrote:
+> > 
+> > > Since 2.6.23-rc1 I can't boot an old k6 (with a funky IDE drive worth testing
+> > > with libata). The boot hangs without a sound or letter prints on the
+> > > screen right after grub, while 2.6.22.1 works fine.
+> > 
+> > Try adding the `earlyprintk=vga' parameter to the kernel command line?
 > 
-> Old stories
->  - For synching icache and dcache before set_pte(), I added a new macro for
->    ia64, sync_icache_dcache(). I inserted it in proper places.
->    Comments from reviewer was negative becasue ia64 specific codes are
->    scattered over vm codes and it will not be able to be maintained.
->    An advice was hide all in set_pte() because flush_xxx_cache cannot pass
->    enough information to arch.
-> 
-> Current ia64 kernel flushes icache by lazy_mmu_prot_update() *after*
-> set_pte(). This is too late. This patch removes lazy_mmu_prot_update and
-> add modfied set_pte() for flushing if necessary.
-> 
-> This patch flush icache of a page when
-> 	new pte has exec bit.
-> 	&& new pte has present bit
-> 	&& new pte is user's page.
-> 	&& (old *ptep is not present 
->             || new pte's pfn is not same to old *ptep's ptn)
-> 	&& new pte's page has no Pg_arch_1 bit.
-> 	   Pg_arch_1 is set when a page is cache consistent.
-> 
-> I think this condition checks are much easier to understand than considering
-> "Where sync_icache_dcache() should be inserted ?".
-> 
-> pte_user() for ia64 was removed by http://lkml.org/lkml/2007/6/12/67 as
-> clean-up. So, I added it again.
-> 
-> Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Tried but didn't see anything.
 
-If this patch works I am very happy with it, since lazy_mmu_prot_update()
-is now completely gone as a result.
+So it died super-early.
 
-Acked-by: David S. Miller <davem@davemloft.net>
+> I'll try some git snapshots...
+
+That would be good, thanks.
+
+Often such an early crash is due to a config problem.  eg: chose the
+wrong CPU type.  So I'd recommend that you triple-check that config,
+especially under "Processor type and features" before diving into into the
+bisection hunt.
