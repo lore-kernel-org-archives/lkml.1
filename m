@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937322AbXHICXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938384AbXHICYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937322AbXHICXT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 22:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760699AbXHICXJ
+	id S938384AbXHICYZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 22:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760699AbXHICYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 22:23:09 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46841 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759431AbXHICXI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 22:23:08 -0400
-Message-ID: <46BA7A9E.1090802@cn.fujitsu.com>
-Date: Thu, 09 Aug 2007 11:23:26 +0900
-From: Miao Xie <miaox@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 8 Aug 2007 22:24:16 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54577 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759277AbXHICYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 22:24:16 -0400
+Message-ID: <46BA7ACB.20706@garzik.org>
+Date: Wed, 08 Aug 2007 22:24:11 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] timer:Remove clockevents_unregister_notifier
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Ross Fawcett <claymen@parkingdenied.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: sata_sil24 problems
+References: <46BA6E79.8090706@parkingdenied.com>
+In-Reply-To: <46BA6E79.8090706@parkingdenied.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone,
+Ross Fawcett wrote:
+> The errors I get are like these.
+> 
+> [ 1073.018375] ata4.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x0
+> [ 1073.018382] ata4.00: (irq_stat 0x00020002, device error via SDB FIS)
+> [ 1073.018389] ata4.00: cmd 60/80:00:80:6f:b6/00:00:04:00:00/40 tag 0
+> cdb 0x0 data 65536 in
+> [ 1073.018391]          res 41/40:00:f3:6f:b6/00:00:04:00:00/40 Emask
+> 0x9 (media error)
 
-   I find a function(clockevents_unregister_notifier) which is not
-called by anything in tree.
 
-Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Your device is signalling a media error.  That's hardware going 
+ker-flop, with the controller happily reporting that fact back to us.
 
-diff -urN linux-2.6.23-rc2.orig/kernel/time/clockevents.c linux-2.6.23-rc2/kernel/time/clockevents.c
---- linux-2.6.23-rc2.orig/kernel/time/clockevents.c	2007-08-08 13:20:38.000000000 +0800
-+++ linux-2.6.23-rc2/kernel/time/clockevents.c	2007-08-08 13:45:31.000000000 +0800
-@@ -113,16 +113,6 @@
- 	return ret;
- }
- 
--/**
-- * clockevents_unregister_notifier - unregister a clock events change listener
-- */
--void clockevents_unregister_notifier(struct notifier_block *nb)
--{
--	spin_lock(&clockevents_lock);
--	raw_notifier_chain_unregister(&clockevents_chain, nb);
--	spin_unlock(&clockevents_lock);
--}
--
- /*
-  * Notify about a clock event change. Called with clockevents_lock
-  * held.
-
-diff -urN linux-2.6.23-rc2.orig/include/linux/clockchips.h linux-2.6.23-rc2/include/linux/clockchips.h
---- linux-2.6.23-rc2.orig/include/linux/clockchips.h	2007-08-08 13:20:29.000000000 +0800
-+++ linux-2.6.23-rc2/include/linux/clockchips.h	2007-08-08 13:46:06.000000000 +0800
-@@ -123,7 +123,6 @@
- extern void clockevents_set_mode(struct clock_event_device *dev,
- 				 enum clock_event_mode mode);
- extern int clockevents_register_notifier(struct notifier_block *nb);
--extern void clockevents_unregister_notifier(struct notifier_block *nb);
- extern int clockevents_program_event(struct clock_event_device *dev,
- 				     ktime_t expires, ktime_t now);
- 
-
+	Jeff
 
 
