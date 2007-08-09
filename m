@@ -1,38 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936535AbXHIHyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938946AbXHIHyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936535AbXHIHyP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 03:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760565AbXHIHx6
+	id S938946AbXHIHyi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 03:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938007AbXHIHyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 03:53:58 -0400
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115]:43593 "EHLO
-	gw01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758869AbXHIHx6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 03:53:58 -0400
-Date: Thu, 9 Aug 2007 10:53:52 +0300
-From: Mikko Rapeli <mikko.rapeli@iki.fi>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: early boot lockup with 2.6.23-rc1
-Message-ID: <20070809075351.GC2342@nalle>
-References: <20070808223120.GA2286@nalle> <46BAC14E.9040604@zytor.com>
+	Thu, 9 Aug 2007 03:54:23 -0400
+Received: from ns1.suse.de ([195.135.220.2]:52150 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936872AbXHIHyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 03:54:17 -0400
+Date: Thu, 9 Aug 2007 00:19:32 -0700
+From: Greg KH <gregkh@suse.de>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       linux-kernel@vger.kernel.org, "Hans J. Koch" <hjk@linutronix.de>
+Subject: Re: [PATCH 2/3] UIO: Documentation
+Message-ID: <20070809071932.GA22318@suse.de>
+References: <20070718232332.GA4620@kroah.com> <11848012053678-git-send-email-gregkh@suse.de> <11848012122374-git-send-email-gregkh@suse.de> <9a8748490708081436g23c8f01cga585d6612b380f16@mail.gmail.com> <14166.1186611154@turing-police.cc.vt.edu> <9a8748490708081603k65746311sad595947fd5ab971@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46BAC14E.9040604@zytor.com>
+In-Reply-To: <9a8748490708081603k65746311sad595947fd5ab971@mail.gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 12:25:02AM -0700, H. Peter Anvin wrote:
-> So it's not printing "Uncompressing kernel... " at all?
+On Thu, Aug 09, 2007 at 01:03:39AM +0200, Jesper Juhl wrote:
+> >
+> I think the only way to avoid it is to not provide something like UIO.
 
-Yes, nothing comes up. Machine responds to three-finger-salute and
-numlock status can be changed, though.
+Problem is, things like UIO provide a real solution for a wide range of
+different types of devices.  Like the one provided in the kernel right
+now, and a bunch of others that I am currently discussing with different
+manufacturers (think high-speed DSPs that just want to give userspace
+direct access to the card and have the kernel get the hell out of the
+way so data can be read and processed as fast as possible.)
 
-> It might be an issue with the new setup code.  What happens if you
-> append "vga=ask" to the kernel command line?
+And also realize that some types of systems have been doing this very
+same kind of kernel/userspace interface for many years, namely X :)
 
-I'll try later today.
+As for the legalities of using closed source userspace code with the UIO
+interface, consult a lawyer if you have questions, and be sure to bring
+up Alan's comments about derivative works :)
 
--Mikko
+thanks,
+
+greg k-h
