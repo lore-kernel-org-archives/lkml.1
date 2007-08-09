@@ -1,92 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936262AbXHIFPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934993AbXHIFXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936262AbXHIFPq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 01:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbXHIFPg
+	id S934993AbXHIFXI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 01:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXHIFWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 01:15:36 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:56131
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752399AbXHIFPf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 01:15:35 -0400
-Date: Wed, 8 Aug 2007 22:11:12 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Ray Lee <ray-lk@madrabbit.org>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, netdev@vger.kernel.org
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-In-Reply-To: <2c0942db0708040901x7ada0fe2mf71f37ecba51005b@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0708081949320.9909@asgard.lang.hm>
-References: <20070803123712.987126000@chello.nl> 
- <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> 
- <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> 
- <Pine.LNX.4.64.0708040032570.6905@asgard.lang.hm>
- <2c0942db0708040901x7ada0fe2mf71f37ecba51005b@mail.gmail.com>
+	Thu, 9 Aug 2007 01:22:55 -0400
+Received: from gw.goop.org ([64.81.55.164]:47037 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753316AbXHIFWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 01:22:54 -0400
+Message-ID: <46BAA447.9010504@goop.org>
+Date: Wed, 08 Aug 2007 22:21:11 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, Ingo Molnar <mingo@elte.hu>, chrisw@sous-sol.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org
+Subject: Re: [PATCH 18/25] [PATCH] turn priviled operations into macros in
+ entry.S
+References: <11865467522495-git-send-email-gcosta@redhat.com> <200708081138.23018.ak@suse.de> <Pine.LNX.4.58.0708080740490.5921@gandalf.stny.rr.com> <200708081424.49896.ak@suse.de> <Pine.LNX.4.58.0708080835350.6751@gandalf.stny.rr.com> <p738x8mrv4m.fsf@bingen.suse.de> <Pine.LNX.4.58.0708080919330.7236@gandalf.stny.rr.com> <Pine.LNX.4.58.0708080924590.7236@gandalf.stny.rr.com> <20070808133001.GD14419@one.firstfloor.org> <Pine.LNX.4.58.0708080936070.7516@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0708080936070.7516@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 4 Aug 2007, Ray Lee wrote:
+Steven Rostedt wrote:
+> 	/*
+> 	 * x86 arch doesn't have an easy way to find out where
+> 	 * gs is located. So we need to read the MSR. But first
+> 	 * we need to save off the rcx, rax and rdx.
+>   
+Why don't you store it in gs?  movq %gs:my_gs_base, %rax?
 
-> On 8/4/07, david@lang.hm <david@lang.hm> wrote:
->> On Sat, 4 Aug 2007, Ingo Molnar wrote:
->>
-> At least on a surface level, your report has some similarities to
-> http://lkml.org/lkml/2007/5/21/84 . In that message, John Miller
-> mentions several things he tried without effect:
->
-> < - I increased the max allowed receive buffer through
-> < proc/sys/net/core/rmem_max and the application calls the right
-> < syscall. "netstat -su" does not show any "packet receive errors".
-
-mercury1:/proc/sys/net/core# cat rmem_*
-124928
-131071
-mercury1:/proc/sys/net/core# netstat -su
-Udp:
-     697853177 packets received
-     10025642 packets to unknown port received.
-     191726680 packet receive errors
-     63194 packets sent
-     RcvbufErrors: 191726680
-UdpLite:
-mercury1:/proc/sys/net/core# echo "512000" >rmem_max
-
-> < - After getting "kernel: swapper: page allocation failure.
-> < order:0, mode:0x20", I increased /proc/sys/vm/min_free_kbytes
-
-I have not seen any similar errors
-
-> < - ixgb.txt in kernel network documentation suggests to increase
-> < net.core.netdev_max_backlog to 300000. This did not help.
-
-mercury1:/proc/sys/net/core# cat netdev_*
-300
-1000
-mercury1:/proc/sys/net/core# echo "300000" >netdev_max_backlog
-
-> < - I also had to increase net.core.optmem_max, because the default
-> < value was too small for 700 multicast groups.
-
-I'm not running multicast.
-
-> As they're all pretty simple to test, it may be worthwhile to give
-> them a shot just to rule things out.
-
-unfortunantly the load is not high enough right now to see a real 
-difference (it's only doing ~1400 logs/sec) I'll catch it at a higher load 
-point to see if these make any difference.
-
-David Lang
-
-> Ray
->
+    J
