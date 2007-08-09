@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938505AbXHIJgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbXHIJqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938505AbXHIJgA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 05:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbXHIJfv
+	id S932812AbXHIJqt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 05:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbXHIJqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 05:35:51 -0400
-Received: from antonio.urjc.es ([193.147.184.24]:40847 "EHLO antonio.urjc.es"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751193AbXHIJfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 05:35:50 -0400
-Message-ID: <46BAE005.4000906@urjc.es>
-Date: Thu, 09 Aug 2007 11:36:05 +0200
-From: Javier Pello <javier.pello@urjc.es>
-Organization: Universidad Rey Juan Carlos
-User-Agent: Thunderbird 2.0.0.0 (X11/20070503)
+	Thu, 9 Aug 2007 05:46:36 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:59050 "EHLO
+	outbound9-dub-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756629AbXHIJqf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 05:46:35 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
+X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
+From: "Joachim Deguara" <joachim.deguara@amd.com>
+Organization: AMD
+To: "Frank Hale" <frankhale@gmail.com>
+Subject: Re: ACPI on Averatec 2370
+Date: Thu, 9 Aug 2007 11:45:44 +0200
+User-Agent: KMail/1.9.7
+cc: "Andi Kleen" <andi@firstfloor.org>, "Cal Peake" <cp@absolutedigital.net>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Gabriel C" <nix.or.die@googlemail.com>,
+       "Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel ACPI Mailing List" <linux-acpi@vger.kernel.org>,
+       len.brown@intel.com, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
+ <200708081642.00581.joachim.deguara@amd.com>
+ <5ebbd9b50708081652h55c85f9avab4500391c6b7ee0@mail.gmail.com>
+In-Reply-To: <5ebbd9b50708081652h55c85f9avab4500391c6b7ee0@mail.gmail.com>
 MIME-Version: 1.0
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-CC: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       GregKH <greg@kroah.com>
-Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not 
-	notified
-References: <46B37CF7.2020803@urjc.es><20070806142451.5d28d41c@gondolin.boeb
-		lingen.de.ibm.com><46B7832B.6010808@urjc.es><20070807125844.4d756b04@gondo
-			l	in.boeblingen.de.ibm.com><3ae72650708070446y6452d13jb7cd802119dab3ce@ma
-	il	 
-	.gmail.com><20070807141030.1bb0f76a@gondolin.boeblingen.de.ibm.com><46B869	
-	C6.3090708@urjc.es><1186491472.3611.33.camel@lov.localdomain><46B87ACA.7010
-	501@urjc.es> <20070807162618.3814ff78@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070807162618.3814ff78@gondolin.boeblingen.de.ibm.com>
+Message-ID: <200708091145.46500.joachim.deguara@amd.com>
+X-OriginalArrivalTime: 09 Aug 2007 09:45:49.0470 (UTC)
+ FILETIME=[11487BE0:01C7DA6A]
+X-WSS-ID: 6AA43DDA7CS4744758-01-01
 Content-Type: text/plain;
-	charset=ISO-8859-1
+ charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender DNS name whitelisted, not delayed by 
-	milter-greylist-2.0.2 (antonio.urjc.es [193.147.184.24]); Thu, 09 Aug 2007 
-	11:35:43 +0200 (CEST)
-X-imss-version: 2.047
-X-imss-result: Passed
-X-imss-scanInfo: M:B L:E SM:2
-X-imss-tmaseResult: TT:1 TS:-7.3028 TC:1F TRN:31 TV:3.6.1039(15350.003)
-X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
-X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 07 Aug 2007, Cornelia Huck wrote:
+On Thursday 09 August 2007 01:52:37 Frank Hale wrote:
+> I have the latest BIOS update for my laptop which is buggy I suppose.
+> There has been only one update this year if my memory serves me
+> correctly. Is there any hope to fix this or am I at the mercy of the
+> hardware vendor which apparenlty doesn't look like they will release
+> another patch this year. 
 
-> So it is indeed that this driver wants to fail its probe if it
-> cannot get the firmware.
+You can fix this with the kernel parameter nolapic_timer as Cal reported 
+earlier that working right, or try Andi's patch to automagically mark the 
+lapic as bad.  This should work fine with ACPI.
+The BIOS is at fault but Andi's patch just works around the BIOS' 
+incompleteness and has been successful for two other people.
 
-That's right. The driver unbinds itself from the device if it doesn't
-get the firmware.
+-Joachim
 
-> A possibilty to achieve a similar effect would be to use
-> request_firmware_nowait() and to call device_release_driver() from
-> the callback if no firmware is loaded. (This would imply a split of
-> that driver's probe function into two stages.)
 
-The comments in the source code say that request_firmware_nowait()
-is an "asynchronous version of request_firmware() for contexts where
-it is not possible to sleep". So a driver's decision to call one of
-them is not based on whether it wants to wait or not, but whether it
-_can_ wait.
-
-Of course, it can be decided that we never want to wait, but then
-the best course of action would be to make request_firmware itself
-behave as request_firmware_nowait (no need to change drivers).
-
-Anyway, my point is that it is useless to have the kernel block for
-a minute at boot waiting for something that cannot happen, and that
-it should be avoided (even if my proposed solution is not the way
-to go).
-
-Javier
 
 
