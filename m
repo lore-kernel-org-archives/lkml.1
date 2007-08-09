@@ -1,101 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940226AbXHIMs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939931AbXHIMsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940226AbXHIMs2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936551AbXHIMnG
+	id S939931AbXHIMsq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939725AbXHIMpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 08:43:06 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:47743 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939367AbXHIMnD (ORCPT
+	Thu, 9 Aug 2007 08:45:09 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:8020 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S939679AbXHIMpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:43:03 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 9 Aug 2007 08:37:27 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Chris Snook <csnook@redhat.com>
-cc: Jerry Jiang <wjiang@resilience.com>, Chris Friesen <cfriesen@nortel.com>,
-       Zan Lynx <zlynx@acm.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why are some atomic_t's not volatile, while most are?
-In-Reply-To: <46BA2D72.9060202@redhat.com>
-Message-ID: <Pine.LNX.4.64.0708090836070.10666@localhost.localdomain>
-References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain>
- <20070806123551.a6c3c154.wjiang@resilience.com> <46B72C58.5030502@redhat.com>
- <46B894E4.4010501@nortel.com> <46B8D6D7.2020206@redhat.com>
- <46B8DDF3.7050008@nortel.com> <46B8E1D3.8050501@redhat.com>
- <46B8E64E.7010708@nortel.com> <1186525977.232321.43.camel@localhost>
- <46B91D0C.5050704@redhat.com> <46B94B94.6000600@nortel.com>
- <46B96719.3050006@redhat.com> <20070808162755.61f50fbf.wjiang@resilience.com>
- <46BA2D72.9060202@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Thu, 9 Aug 2007 08:45:06 -0400
+Subject: Re: 2.6.23-rc2-mm1: hang, prop_norm_single involved
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070809111044.GA6575@localhost.sw.ru>
+References: <20070809111044.GA6575@localhost.sw.ru>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ikPTjTfXxFRhbVOdpbbv"
+Date: Thu, 09 Aug 2007 14:45:02 +0200
+Message-Id: <1186663502.20108.28.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Aug 2007, Chris Snook wrote:
 
-> Jerry Jiang wrote:
-> > On Wed, 08 Aug 2007 02:47:53 -0400
-> > Chris Snook <csnook@redhat.com> wrote:
-> >
-> > > Chris Friesen wrote:
-> > > > Chris Snook wrote:
-> > > >
-> > > > > This is not a problem, since indirect references will cause the CPU to
-> > > > > fetch the data from memory/cache anyway.
-> > > > Isn't Zan's sample code (that shows the problem) already using indirect
-> > > > references?
-> > > Yeah, I misinterpreted his conclusion.  I thought about this for a while,
-> > > and realized that it's perfectly legal for the compiler to re-use a value
-> > > obtained from atomic_read.  All that matters is that the read itself was
-> > > atomic.  The use (or non-use) of the volatile keyword is really more
-> > > relevant to the other atomic operations.  If you want to guarantee a
-> > > re-read from memory, use barrier().  This, incidentally, uses volatile
-> > > under the hood.
-> > >
-> >
-> >
-> > So for example, without volatile
-> >
-> > int a = read_atomic(v);
-> > int b = read_atomic(v);
-> >
-> > the compiler will optimize it as b = a, But with volatile, it will be forced
-> > to fetch v's value from memory
-> > again.
-> >
-> > So, come back our initial question,
-> > include/asm-v850/atomic.h:typedef struct { int counter; } atomic_t;
-> >
-> > Why is it right without volatile?
->
-> Because atomic_t doesn't promise a memory fetch every time.  It merely
-> promises that any atomic_* operations will, in fact, be atomic.  For example,
-> posted today:
->
-> http://lkml.org/lkml/2007/8/8/122
+--=-ikPTjTfXxFRhbVOdpbbv
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-i'm sure that, when this is all done, i'll finally have an answer to
-my original question, "why are some atomic_t's not volatile, while
-most are?"
+On Thu, 2007-08-09 at 15:10 +0400, Alexey Dobriyan wrote:
+> LTP run reproducably hangs during rwtest01 test
+> rwtest -N rwtest01 -c -q -i 60s -f sync 10%25000:rs-sync=3D$$
+> Calltrace is always the same:
+>=20
+> INFO: trying to register non-static key
+> 	__lock_acquire+0x210/0xc9e
+> 	lock_acquire+0x87/0xa3
+> 	_spin_lock_irqsave+0x2f/0x5f
+> 	prop_norm_single+0x32/0x74
+> 	set_page_dirty+0xd6/0x151
+> 	set_page_dirty_balance+0xc/0x71
+> 	do_wp_page+0x4ae/0x52b
+> 	handle_mm_fault+0x616/0x6c4
+> 	do_page_fault+0x1b0/0x51c
 
-i'm almost scared to ask any more questions.  :-)
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+[root@opteron ~]# PATH=3D/testcases/bin/:$PATH /testcases/bin/rwtest -N rwt=
+est01 -c -q -i 60s -f sync 10%25000:rs-sync=3D$$
+rwtest01    1  PASS  :  Test passed
+[root@opteron ~]# PATH=3D/testcases/bin/:$PATH /testcases/bin/rwtest -N rwt=
+est01 -c -q -i 60s -f sync 10%25000:rs-sync=3D$$
+  =20
+I can reproduce, but not always.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Also, since the task->dirties member is initialized in fork.c this
+should either _always_ happen or never. So this does point to some
+memory corruption, ->dirties is the very last member of the task struct.
+
+/me goes try with slab_debug,...
+
+
+--=-ikPTjTfXxFRhbVOdpbbv
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGuwxOXA2jU0ANEf4RAoMiAJ41S+bSM2fVwuqfNt/PgUX/WGXM6QCcDz5E
+CprC6Yhpe8mgEjBicxTPC+U=
+=dxfP
+-----END PGP SIGNATURE-----
+
+--=-ikPTjTfXxFRhbVOdpbbv--
+
