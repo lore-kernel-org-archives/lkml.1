@@ -1,55 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940781AbXHIOSK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965434AbXHIOSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940781AbXHIOSK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:18:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939406AbXHIORk
+	id S965434AbXHIOSm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934475AbXHIOST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:17:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55633 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S940701AbXHIORi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:17:38 -0400
-Date: Thu, 9 Aug 2007 09:39:48 -0400
-From: Chris Snook <csnook@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org
-Cc: netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com
-Subject: [PATCH 5/24] make atomic_read() behave consistently on cris
-Message-ID: <20070809133948.GA14828@shell.boston.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 9 Aug 2007 10:18:19 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:20016 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S940625AbXHIOSR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 10:18:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=C61f0SXlYOgfybALxOjdjNHshbtpqpmL55ayvMR8KrtEThb4dmb+tWvLF+zL2lTWSs4UiWmSxurPIdHdDjgIxe8GSh1hdflBGxYUyzyQebJwy9TbZw/sS13UaxXPyStPY6ds7esEFMLZALOwlVHK5SAnkGP8440jraidzIla5+M=
+Message-ID: <a44ae5cd0708090718v5dc19572k69087f170f9ba857@mail.gmail.com>
+Date: Thu, 9 Aug 2007 10:18:15 -0400
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: =?WINDOWS-1252?Q?2.6.23-rc2-mm1_--_drivers/dma/ioat=5Fdca.c:177:_error?= =?WINDOWS-1252?Q?:_implicit_declaration_of_?= =?WINDOWS-1252?Q?function_=91cpu=5Fphysical=5Fid=92?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Snook <csnook@redhat.com>
-
-Purify volatile use for atomic_t on cris.
-
-Signed-off-by: Chris Snook <csnook@redhat.com>
-
---- linux-2.6.23-rc2-orig/include/asm-cris/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-cris/atomic.h	2007-08-09 06:38:28.000000000 -0400
-@@ -11,11 +11,15 @@
-  * resource counting etc..
-  */
- 
--typedef struct { volatile int counter; } atomic_t;
-+typedef struct { int counter; } atomic_t;
- 
- #define ATOMIC_INIT(i)  { (i) }
- 
--#define atomic_read(v) ((v)->counter)
-+/*
-+ * Casting to volatile here minimizes the need for barriers,
-+ * without having to declare the type itself as volatile.
-+ */
-+#define atomic_read(v) (*(volatile int *)&(v)->counter)
- #define atomic_set(v,i) (((v)->counter) = (i))
- 
- /* These should be written in asm but we do it in C for now. */
+  CC      drivers/dma/ioat_dca.o
+drivers/dma/ioat_dca.c: In function 'ioat_dca_get_tag':
+drivers/dma/ioat_dca.c:177: error: implicit declaration of function
+'cpu_physical_id'
+make[2]: *** [drivers/dma/ioat_dca.o] Error 1
