@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760749AbXHISUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760349AbXHISVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760749AbXHISUd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 14:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758144AbXHISTz
+	id S1760349AbXHISVP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 14:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbXHISU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 14:19:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43900 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757558AbXHISTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 14:19:53 -0400
-Message-ID: <46BB5960.9040009@redhat.com>
-Date: Thu, 09 Aug 2007 14:13:52 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 9 Aug 2007 14:20:57 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:54293 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752202AbXHISUz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 14:20:55 -0400
+From: Darren Hart <dvhltc@us.ibm.com>
+Organization: IBM Linux Technology Center
+To: "Robert de Vries" <robert.h.de.vries@gmail.com>
+Subject: Re: [PATCH RT] Only run softirqs from the irq thread if the irq affinity is set to 1 CPU
+Date: Thu, 9 Aug 2007 11:20:42 -0700
+User-Agent: KMail/1.9.6
+Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
+       RT <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "john stultz" <johnstul@us.ibm.com>
+References: <1186605752.29097.18.camel@localhost.localdomain> <1186609529.14769.8.camel@localhost.localdomain> <47db5b910708090249k2c80e3e8tdc062d89ed4359fc@mail.gmail.com>
+In-Reply-To: <47db5b910708090249k2c80e3e8tdc062d89ed4359fc@mail.gmail.com>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
-       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
-Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
-References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com> <20070809161024.GC8424@linux.vnet.ibm.com> <46BB4281.7010803@redhat.com> <20070809165853.GD8424@linux.vnet.ibm.com> <46BB4B7B.4070007@redhat.com> <20070809174150.GE8424@linux.vnet.ibm.com>
-In-Reply-To: <20070809174150.GE8424@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708091120.42281.dvhltc@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Thu, Aug 09, 2007 at 01:14:35PM -0400, Chris Snook wrote:
->>                                 If you're depending on volatile writes 
->> being visible to other CPUs, you're screwed either way, because the CPU can 
->> hold that data in cache as long as it wants before it writes it to memory.  
->> When this finally does happen, it will happen atomically, which is all that 
->> atomic_set guarantees.  If you need to guarantee that the value is written 
->> to memory at a particular time in your execution sequence, you either have 
->> to read it from memory to force the compiler to store it first (and a 
->> volatile cast in atomic_read will suffice for this) or you have to use 
->> LOCK_PREFIX instructions which will invalidate remote cache lines 
->> containing the same variable.  This patch doesn't change either of these 
->> cases.
-> 
-> The case that it -can- change is interactions with interrupt handlers.
-> And NMI/SMI handlers, for that matter.
+On Thursday 09 August 2007 02:49:27 Robert de Vries wrote:
+> On 8/8/07, Steven Rostedt <rostedt@goodmis.org> wrote:
+> > On Wed, 2007-08-08 at 14:16 -0700, Darren Hart wrote:
+> > > It seems to me that this patch will reduce the frequency of
+> > > irqd/softirqd starvation, but the core problem still exists: softirq
+> > > tasks can't migrate to other CPUs to perform their work if a higher
+> > > priority task preempts them. I'm wondering if we want to keep special
+> > > casing things to minimize the problem or not - seems to me the worst
+> > > case is still the same - and isn't the worst case the only case that
+> > > matters (for -rt)?
+> >
+> > softirq tasks should never migrate to other CPUs. A softirq exists in
+> > every CPU. So if you trigger a softirq on CPU1 it will only run on CPU1.
+> > If a high priority task preempts it, that same softirq can still run on
+> > other CPUS. Only the thread that was preempted wont switch. But that's
+> > the characteristic of softirqs, and that's how people who use them in
+> > development expect them to work.
+>
+> Wouldn't a developer of a real-time system configure the system so
+> that interrupts do not interfere with the real-time tasks running on a
+> specific CPU?
+> In other words, is this problem not simply a misconfiguration of the
+> system? I personally redirect all interrupts away from the CPU's where my
+> real-time tasks run and only allow the interrupts that I want to
+> handle in my application on the CPU's where I handle them so as to
+> minimize latency.
 
-You have a point here, but only if you can guarantee that the interrupt handler 
-is running on a processor sharing the cache that has the not-yet-written 
-volatile value.  That implies a strictly non-SMP architecture.  At the moment, 
-none of those have volatile in their declaration of atomic_t, so this patch 
-can't break any of them.
+I think the goal is to try and have a generally robust default setup - but the 
+interrupt shielding you are suggesting seems like it will become more and 
+more relevant as the number of CPUs increases.
 
-	-- Chris
+-- 
+Darren Hart
+IBM Linux Technology Center
+Realtime Linux Team
