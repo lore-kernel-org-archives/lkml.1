@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940661AbXHIOR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940726AbXHIORs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940661AbXHIOR0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938502AbXHIORL
+	id S940726AbXHIORs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940644AbXHIORW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:17:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55477 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935895AbXHIORJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:17:09 -0400
-Date: Thu, 9 Aug 2007 10:16:36 -0400
-From: Chris Snook <csnook@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org
-Cc: netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com
-Subject: [PATCH 21/24] make atomic_read() behave consistently on v850
-Message-ID: <20070809141636.GA18860@shell.boston.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 9 Aug 2007 10:17:22 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:55018
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S940637AbXHIORV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 10:17:21 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.23-rc2-mm1: no bcm43xx
+Date: Thu, 9 Aug 2007 16:16:49 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070809015106.cd0bfc53.akpm@linux-foundation.org> <200708091624.58160.rjw@sisk.pl>
+In-Reply-To: <200708091624.58160.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Message-Id: <200708091616.49237.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Snook <csnook@redhat.com>
+On Thursday 09 August 2007 16:24:57 Rafael J. Wysocki wrote:
+> On Thursday, 9 August 2007 10:51, Andrew Morton wrote:
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc2/2.6.23-rc2-mm1/
+> > 
+> > - Added new NFSD development tree as git-nfsd ("J.  Bruce Fields"
+> >   <bfields@fieldses.org>)
+> > 
+> > - There is a new e1000 driver in git-netdev-all, called e1000e.  I'm sure
+> >   the developers would like it tested.  Please cc netdev@vger.kernel.org on
+> >   any reports.
+> > 
+> > - I dropped the SSB patches due to various catastrophes and they are being
+> >   redone.  But git-wireless.patch had some dependencies upon SSB which were
+> >   plugged with some nasty bandaids.  So there are some kconfig warnings whcih
+> >   come out of there.  Don't worry about it for now.
+> 
+> This caused the bcm43xx driver to be unselectable. :-(
 
-Make atomic_read() volatile on v850.  This ensures that busy-waiting
-for an interrupt handler to change an atomic_t won't get compiled to an
-infinite loop, consistent with SMP architectures.
+That is expected. It will be fixed when we managed to merge all
+that stuff properly together. Hopefully next mm.
 
-Signed-off-by: Chris Snook <csnook@redhat.com>
-
---- linux-2.6.23-rc2-orig/include/asm-v850/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-v850/atomic.h	2007-08-09 07:50:15.000000000 -0400
-@@ -27,7 +27,11 @@ typedef struct { int counter; } atomic_t
- 
- #ifdef __KERNEL__
- 
--#define atomic_read(v)		((v)->counter)
-+/*
-+ * Casting to volatile here minimizes the need for barriers,
-+ * without having to declare the type itself as volatile.
-+ */
-+#define atomic_read(v)		(*(volatile int *)&(v)->counter)
- #define atomic_set(v,i)		(((v)->counter) = (i))
- 
- static inline int atomic_add_return (int i, volatile atomic_t *v)
+-- 
+Greetings Michael.
