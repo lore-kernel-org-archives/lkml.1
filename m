@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939966AbXHIN2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940054AbXHIN3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939966AbXHIN2u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 09:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939203AbXHIN2m
+	id S940054AbXHIN3h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 09:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939231AbXHIN32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 09:28:42 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:36522
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S939197AbXHIN2l convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 09:28:41 -0400
-Message-Id: <46BB32F6.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Thu, 09 Aug 2007 14:29:58 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Muli Ben-Yehuda" <muli@il.ibm.com>, "Andi Kleen" <ak@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
-Subject: Re: [patches] [PATCH] [4/12] x86_64: Disable CLFLUSH support
-	again
-References: <20070809241.425881000@suse.de>
- <20070809124131.B6E6114F3B@wotan.suse.de>
- <20070809131121.GL3311@rhun.haifa.ibm.com>
-In-Reply-To: <20070809131121.GL3311@rhun.haifa.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 9 Aug 2007 09:29:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:59217 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939203AbXHIN31 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 09:29:27 -0400
+Date: Thu, 9 Aug 2007 15:29:18 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Bodo Eggert <7eggert@gmx.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Documentation files in html format?
+In-Reply-To: <Pine.LNX.4.64.0708091439270.10387@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.58.0708091508330.3273@be1.lrz>
+References: <8QdB3-87O-7@gated-at.bofh.it> <8QdUr-5j-11@gated-at.bofh.it>
+ <E1IJ7DO-0000pI-JN@be1.lrz> <Pine.LNX.4.64.0708091439270.10387@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1+54SsQ7j9uPApOlqXXT2ryycixcKu4KjAHB0e
+ iRKfh7gCRbfjKjspeMlZ3bWbcYmk21TuxKJVxQVZ0FomdPJqzk
+ y1SvK9OKzzlTfWbXMtogg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Muli Ben-Yehuda <muli@il.ibm.com> 09.08.07 15:11 >>>
->On Thu, Aug 09, 2007 at 02:41:31PM +0200, Andi Kleen wrote:
->> 
->> It turns out CLFLUSH support is still not complete; we
->> flush the wrong pages.  Again disable it for the release.
->> Noticed by Jan Beulich.
->> 
->> Signed-off-by: Andi Kleen <ak@suse.de>
->
->Aside from the bug Jan pointed out with the patch, we're also using
->cflflush in other places (arch/i386/kernel/alternative.c and
->arch/x86_64/kernel/tce.c). Is the issue with clflush support specific
->to pageattr.c or should it be disabled every else too? what
->specifically is the issue?
+On Thu, 9 Aug 2007, Jan Engelhardt wrote:
+> On Aug 9 2007 14:34, Bodo Eggert wrote:
 
-The issue here is not with clflush by itself, but with what pages it is being
-applied to. Here, it gets used on page table pages when flushing really is
-needed on what one or more page table entries in that page table page
-point(ed) to.
+> >I don't think <b> and <i> should be used, instead you should use styles
+> >(<span class="code"> etc).
+> 
+> <b> does the same as <span style="font-weight: bold;">, and the latter is much
+> more verbose for the same thing.
 
-Jan
+You shoud use neither. It's OK on homepages, but for documents, you should
+be able to change the formating using stylesheet.
 
+> >Things like <em> and <strong> should be OK, if used consistently.
+> >
+> >> Perhaps maybe <p class="block"> with .block{text-align:justify;}
+> >> because that looks nice in general.
+> >
+> >If you like that, you can say "p {text-align:justify;}" in the default
+> >stylesheet. (And if people would override the alignment, class="block"
+> >would be the wrong name).
+> 
+> Oh that comes because MS Office calls it "Blocksatz" in German ;-)
+
+I missed that point. What I wanted to say was: If the user overrides 
+":justify", it would still be called "justified", which would be not 
+justified.-)
+-- 
+"A slipping gear could let your M203 grenade launcher fire when you
+least expect it. That would make you quite unpopular in what's left of
+your unit."
+-Army's magazine of preventive maintenance.
