@@ -1,40 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763176AbXHIT2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbXHITak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763176AbXHIT2c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 15:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762610AbXHIT1b
+	id S1755409AbXHITak (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 15:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbXHITad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 15:27:31 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51272 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761282AbXHIT13 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 15:27:29 -0400
-Message-ID: <46BB6A9E.5070300@garzik.org>
-Date: Thu, 09 Aug 2007 15:27:26 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.23-rc2-mm1
-References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>	<46BB155D.8050501@googlemail.com>	<20070809113710.bc0e3b80.akpm@linux-foundation.org>	<6bffcb0e0708091204h38f137a7w6475a229199608c6@mail.gmail.com> <20070809121034.3aac9da2.akpm@linux-foundation.org>
-In-Reply-To: <20070809121034.3aac9da2.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	Thu, 9 Aug 2007 15:30:33 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57476 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751539AbXHITac (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 15:30:32 -0400
+Date: Thu, 9 Aug 2007 21:30:31 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Documentation files in html format?
+Message-ID: <20070809193031.GB32280@one.firstfloor.org>
+References: <20070809113122.3aa508e4@oldman.hamilton.local> <200708091508.20626.hjk@linutronix.de> <p73hcn8g25m.fsf@bingen.suse.de> <20070809191036.GA23596@electric-eye.fr.zoreil.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070809191036.GA23596@electric-eye.fr.zoreil.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> umm, I was hoping to find out which of those two patches was the cuplrit.
-> Almost surely it was 9ee6b32a47b9abc565466a9c3b127a5246b452e5?
+> xsltproc converts from docbook to html fast enough (PDF with a docbook
 
+I don't think that is used by Linuxdoc. Try a make pdfdocs and see
+for yourself.
 
-Highly likely it is my patch in #ALL.
-
-	Jeff
-
-
+-Andi
