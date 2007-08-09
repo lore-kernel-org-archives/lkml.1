@@ -1,56 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939812AbXHIOi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940625AbXHIOkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939812AbXHIOi6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936284AbXHIOiu
+	id S940625AbXHIOkU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935593AbXHIOkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:38:50 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:39585 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934912AbXHIOit (ORCPT
+	Thu, 9 Aug 2007 10:40:01 -0400
+Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:57820 "EHLO
+	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934429AbXHIOkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:38:49 -0400
-Date: Thu, 9 Aug 2007 10:37:21 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andi Kleen <ak@suse.de>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org
-Subject: Re: [PATCH 25/25] [PATCH] add paravirtualization support for x86_64
-In-Reply-To: <200708091626.09316.ak@suse.de>
-Message-ID: <Pine.LNX.4.58.0708091032300.32067@gandalf.stny.rr.com>
-References: <11865467522495-git-send-email-gcosta@redhat.com>
- <200708081200.13669.ak@suse.de> <46BAB9DD.5030400@goop.org>
- <200708091626.09316.ak@suse.de>
+	Thu, 9 Aug 2007 10:40:00 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Aug 2007 10:40:00 EDT
+From: Phil Moors <pmoors@speakeasy.net>
+Date: Thu, 9 Aug 2007 10:13:33 -0400
+To: linux-kernel@vger.kernel.org
+Subject: EDAC k8 MC1: unknown syndrome
+Message-ID: <20070809141333.GA10188@speakeasy.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---
-On Thu, 9 Aug 2007, Andi Kleen wrote:
->
-> > This has to match the normal C calling convention though, doesn't it?
->
-> Native cli/sti/save/restore_flags are all only assembly and can be easily
-> (in fact more easily than in C) written as pure assembler functions. Then
-> you can use whatever calling convention you want.
+I'm getting these in the log:
 
-I agree.
-Should we make a paravirt_ops_asm.S file that can implement these native
-funcions, and so we can get rid of the C functions only doing asm?
+EDAC k8 MC1: unknown syndrome 0x9391 - possible error reporting race
+EDAC MC1: CE - no information available: k8_edac
 
->
-> While some paravirt implementations may have more complicated implementations
-> i guess it's still a reasonable requirement to make them simple enough
-> in pure assembler. If not they can use a trampoline, but that's hopefully
-> not needed.
+>From looking about, I think that MC1 is memory controller 1 (on 2nd cpu)
+and that CE is about error correction in ECC.
 
-It works for lguest64.  I'm sure it should be no problem with other HVs.
+But is the error really reporting a DIMM problem or a race condition in
+the kernel code handling ECC?
 
--- Steve
+Thanks,
+Phil
 
