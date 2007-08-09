@@ -1,35 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932967AbXHIDkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935412AbXHIDpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932967AbXHIDkP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 23:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbXHIDkB
+	id S935412AbXHIDpn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 23:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbXHIDpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 23:40:01 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:32832 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754940AbXHIDkA (ORCPT
+	Wed, 8 Aug 2007 23:45:35 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:11730 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751342AbXHIDpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 23:40:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=bO38VQOWO0qIdiF1mKVFHXy8mfUPQCQMW9bQhjBKL15uoznIsLQa1H+RCOMzQfgXJhB4Qgs9gGUPH7Iqw+dUwlbqn9vl5udsxnp0M1C2Ou/0xvrNZQxxL//nBvFEzY9ZmOqVxTfvRPIDIorCeyU6/n/UGj8vMHvCuE6s79IoNOQ=
-Message-ID: <d592e5da0708082039i739c8045o12c953d7dd7778cb@mail.gmail.com>
-Date: Thu, 9 Aug 2007 06:39:58 +0300
-From: "jonatan perry" <jonatan44@gmail.com>
+	Wed, 8 Aug 2007 23:45:34 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:to:cc:subject:message-id:mime-version:
+	content-type:content-disposition:user-agent;
+	b=IVzg0bSqug6BaRIAQ3AYYvjKbF5UNqg5HY94Rlt+4GZQInBCVXdPyuqXsi1FSjxd2
+	HwC1kL6iLCNyZst/DM1Ew==
+Date: Wed, 8 Aug 2007 20:45:19 -0700
+From: Aaron Durbin <adurbin@google.com>
 To: linux-kernel@vger.kernel.org
-Subject: linux USB Device.
+Cc: ak@suse.de, akpm@osdl.org
+Subject: [PATCH] x86_64: Avoid NMI Watchdog and/or long wait in setup_APIC_timer
+Message-ID: <20070809034519.GA22644@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-I would like to know who the USB system works under linux, I mean,
-I would like to write a kernel module who will create a virtual USB
-device, so that the kernel will think that a hardware USB device is
-exists, were can I start?
 
-Thanks.
+In setup_APIC_timer with the HPET in use, a condition can arise while
+waiting for the next irq slice to expire on the HPET which will either
+cause an NMI watchdog to fire or a 3 minute busy loop if the NMI
+watchdog is disabled.
+
+The HPET comparator and the counter keep incrementing during its normal
+operation. When a comparison event fires the comparator will increment
+by the designated period. If the HPET trigger occurs right after
+the 'int trigger = hpet_readl(HPET_T0_CMP);' line, we will will spin
+for up to 3 minutes (with a clock of 25MHz) waiting for the HPET
+counter to wrap around. However, when the NMI watchdog is enabled the
+NMI watchdog will detect a lockup and reboot the machine. This
+scenario can be exasperated by the presence of an SMI which will
+increase the window of opportunity for the condition to occur.
+
+The fix is to wait for the compartor to change which signals the
+end of the tick slice.
+
+Signed-off-by: Aaron Durbin <adurbin@google.com>
+
+---
+
+This time w/ the 'Signed-off-by' line. I swear I am not trying to spam.
+
+diff --git a/arch/x86_64/kernel/apic.c b/arch/x86_64/kernel/apic.c
+index 900ff38..06797e2 100644
+--- a/arch/x86_64/kernel/apic.c
++++ b/arch/x86_64/kernel/apic.c
+@@ -791,10 +791,12 @@ static void setup_APIC_timer(unsigned in
+ 
+ 	/* wait for irq slice */
+ 	if (hpet_address && hpet_use_timer) {
++		/*
++		 * Wait for the comparator value to change which signals that
++		 * the tick slice has expired.
++		 */
+ 		int trigger = hpet_readl(HPET_T0_CMP);
+-		while (hpet_readl(HPET_COUNTER) >= trigger)
+-			/* do nothing */ ;
+-		while (hpet_readl(HPET_COUNTER) <  trigger)
++		while (trigger == hpet_readl(HPET_T0_CMP))
+ 			/* do nothing */ ;
+ 	} else {
+ 		int c1, c2;
+
+
