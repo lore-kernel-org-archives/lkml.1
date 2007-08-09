@@ -1,80 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762130AbXHISx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760264AbXHIS6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762130AbXHISx7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 14:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760954AbXHISxi
+	id S1760264AbXHIS6A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 14:58:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbXHIS5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 14:53:38 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59063 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760562AbXHISxg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 14:53:36 -0400
-Date: Thu, 9 Aug 2007 11:52:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "shannon.nelson@intel.com" <shannon.nelson@intel.com>,
-       Andi Kleen <ak@suse.de>, "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: 2.6.23-rc2-mm1 -- drivers/dma/ioat_dca.c:177: error: implicit
- declaration of function =?ISO-8859-1?Q?=5F=5F=5Fcpu=5Fphysical=5Fid?=
- =?ISO-8859-1?Q?=5F=5F=5F?=
-Message-Id: <20070809115258.5372f76e.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0708090718v5dc19572k69087f170f9ba857@mail.gmail.com>
-References: <a44ae5cd0708090718v5dc19572k69087f170f9ba857@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 9 Aug 2007 14:57:47 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58184 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753203AbXHIS5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 14:57:45 -0400
+In-Reply-To: <46BB4281.7010803@redhat.com>
+References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com> <20070809161024.GC8424@linux.vnet.ibm.com> <46BB4281.7010803@redhat.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <06d22e947a5357cd53adb070225bc7c1@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: wjiang@resilience.com, rpjday@mindspring.com, wensong@linux-vs.org,
+       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, ak@suse.de,
+       netdev@vger.kernel.org, paulmck@linux.vnet.ibm.com, horms@verge.net.au,
+       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       jesper.juhl@gmail.com, torvalds@linux-foundation.org,
+       schwidefsky@de.ibm.com, davem@davemloft.net, cfriesen@nortel.com,
+       zlynx@acm.org
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+Date: Thu, 9 Aug 2007 20:51:31 +0200
+To: Chris Snook <csnook@redhat.com>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007 10:18:15 -0400
-"Miles Lane" <miles.lane@gmail.com> wrote:
+>> The compiler is within its rights to read a 32-bit quantity 16 bits at
+>> at time, even on a 32-bit machine.  I would be glad to help pummel any
+>> compiler writer that pulls such a dirty trick, but the C standard 
+>> really
+>> does permit this.
+>
+> Yes, but we don't write code for these compilers.  There are countless 
+> pieces of kernel code which would break in this condition, and there 
+> doesn't seem to be any interest in fixing this.
 
->   CC      drivers/dma/ioat_dca.o
-> drivers/dma/ioat_dca.c: In function 'ioat_dca_get_tag':
-> drivers/dma/ioat_dca.c:177: error: implicit declaration of function
-> 'cpu_physical_id'
+"Other things are broken too".  Great argument :-)
 
-Looks like cpu_physical_id() doesn't get implemented if CONFIG_SMP=n.
+> Sequence points enforce read-after-write ordering, not 
+> write-after-write.
 
-Either ioat needs to stop using cpu_physical_id() if SMP=n, or the
-supported architectures (i386, x86_64, ia64) should provide a non-SMP
-version of cpu_physical_id().  Preferably the latter, I'd say.
+Sequence points order *all* side effects; sequence points exist in the
+domain of the abstract sequential model of the C language only.  The
+compiler translates that to machine code that is equivalent to that C
+code under the "as-if" rule; but this is still in that abstract model,
+which doesn't include things such as SMP, visibility by I/O devices,
+store queues, etc. etc.
 
-Something like this, I suppose...
+> We flush writes with reads for MMIO because of this effect as well as 
+> the CPU/bus effects.
+
+You cannot flush all MMIO writes with reads; this is a PCI-specific
+thing.  And even then, you need more than just the read itself: you
+have to make sure the read completed and returned data.
+
+>> In short, please retain atomic_set()'s volatility, especially on those
+>> architectures that declared the atomic_t's counter to be volatile.
+>
+> Like i386 and x86_64?  These used to have volatile in the atomic_t 
+> declaration.  We removed it, and the sky did not fall.
+
+And this proves what?  Lots of stuff "works" by accident.
 
 
-From: Andrew Morton <akpm@linux-foundation.org>
-
-i386, x86_64 and ia64 implement cpu_physical_id() if CONFIG_SMP=y.
-
-Provide a uniprocessor stub so that callers will dtrt.
-
-Cc: Andi Kleen <ak@suse.de>
-Cc: "Luck, Tony" <tony.luck@intel.com>
-Cc: Shannon Nelson <shannon.nelson@intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- include/linux/smp.h |    5 +++++
- 1 files changed, 5 insertions(+)
-
-diff -puN include/linux/smp.h~implement-cpu_physical_id-on-smp=n include/linux/smp.h
---- a/include/linux/smp.h~implement-cpu_physical_id-on-smp=n
-+++ a/include/linux/smp.h
-@@ -108,6 +108,11 @@ static inline void smp_send_reschedule(i
- 	0;			\
- })
- 
-+static inline unsigned cpu_physical_id(unsigned cpu)
-+{
-+	return 0;
-+}
-+
- #endif /* !SMP */
- 
- /*
-_
+Segher
 
