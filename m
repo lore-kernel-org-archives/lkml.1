@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755125AbXHISID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbXHISIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755125AbXHISID (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 14:08:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbXHISHu
+	id S1756721AbXHISIa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 14:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbXHISIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 14:07:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39991 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752425AbXHISHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 14:07:48 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <162335.27499.qm@web36605.mail.mud.yahoo.com>
-References: <162335.27499.qm@web36605.mail.mud.yahoo.com>
-To: casey@schaufler-ca.com
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
-       trond.myklebust@fys.uio.no, linux-fsdevel@vger.kernel.org,
-       linux-cachefs@redhat.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov
-Subject: Re: [PATCH 11/14] CacheFiles: Permit an inode's security ID to be obtained [try #2]
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Thu, 09 Aug 2007 19:06:55 +0100
-Message-ID: <20932.1186682815@redhat.com>
+	Thu, 9 Aug 2007 14:08:13 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:57729 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755329AbXHISIL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 14:08:11 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 9 Aug 2007 14:02:13 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Chris Snook <csnook@redhat.com>
+cc: Jerry Jiang <wjiang@resilience.com>, Chris Friesen <cfriesen@nortel.com>,
+       Zan Lynx <zlynx@acm.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: why are some atomic_t's not volatile, while most are?
+In-Reply-To: <46BB0E1F.2030003@redhat.com>
+Message-ID: <Pine.LNX.4.64.0708091359180.25299@localhost.localdomain>
+References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain>
+ <20070806123551.a6c3c154.wjiang@resilience.com> <46B72C58.5030502@redhat.com>
+ <46B894E4.4010501@nortel.com> <46B8D6D7.2020206@redhat.com>
+ <46B8DDF3.7050008@nortel.com> <46B8E1D3.8050501@redhat.com>
+ <46B8E64E.7010708@nortel.com> <1186525977.232321.43.camel@localhost>
+ <46B91D0C.5050704@redhat.com> <46B94B94.6000600@nortel.com>
+ <46B96719.3050006@redhat.com> <20070808162755.61f50fbf.wjiang@resilience.com>
+ <46BA2D72.9060202@redhat.com> <Pine.LNX.4.64.0708090836070.10666@localhost.localdomain>
+ <46BB0E1F.2030003@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler <casey@schaufler-ca.com> wrote:
+On Thu, 9 Aug 2007, Chris Snook wrote:
 
-> This is SELinux specific functionality. It should not be an LSM
-> interface. 
+> Robert P. J. Day wrote:
 
-This is what I worked out in conjunction with the denizens of the SELinux
-mailing list.  What would you have me do differently?  Change things like:
+> > i'm almost scared to ask any more questions.  :-)
+> >
+> > rday
+>
+> Momentarily I'll be posting a patchset that makes all atomic_t and
+> atomic64_t declarations non-volatile, and casts them to volatile
+> inside of atomic[64]_read.  This will ensure consistent behavior
+> across all architectures, and is in keeping with the philosophy that
+> memory reads should be enforced in running code, not declarations.
+>
+> I hope you don't mind that we're mooting the question by making the
+> code more sensible.
 
-	u32 (*act_as_secid)(u32 secid);
+not at all, but it does bring up the obvious next question -- once all
+these definitions are made consistent, is there any reason some of
+that content can't be centralized in a single atomic.h header file,
+rather than duplicating it across a couple dozen architectures?
 
-to something like:
+surely, after this process, there's going to be some content that's
+identical across all arches, no?
 
-	void (*act_as_secid)(const char *newsecdata, u32 newseclen,
-			     char *oldsecdata, u32 *oldseclen);
+rday
 
-David
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
