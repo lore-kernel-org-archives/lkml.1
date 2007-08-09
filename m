@@ -1,49 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940664AbXHIOdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938820AbXHIOdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940664AbXHIOdL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934475AbXHIOcy
+	id S938820AbXHIOdf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940466AbXHIOdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:32:54 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:45357 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S935348AbXHIOcx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:32:53 -0400
-Date: Thu, 9 Aug 2007 16:32:38 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-rc2-mm1 -- =?utf-8?Q?drivers=2F?=
-	=?utf-8?Q?dma=2Fioat=5Fdca=2Ec=3A177=3A_error=3A_implicit_declaration_of_?=
-	=?utf-8?B?ZnVuY3Rpb24g4oCYY3B1X3BoeXNpY2FsX2lk4oCZ?=
-Message-ID: <20070809143238.GA16717@stusta.de>
-References: <a44ae5cd0708090718v5dc19572k69087f170f9ba857@mail.gmail.com>
+	Thu, 9 Aug 2007 10:33:00 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:36521 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S939883AbXHIOc6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 10:32:58 -0400
+Date: Thu, 9 Aug 2007 07:32:55 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+Message-ID: <20070809143255.GA8424@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070809132442.GA13042@shell.boston.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a44ae5cd0708090718v5dc19572k69087f170f9ba857@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20070809132442.GA13042@shell.boston.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 10:18:15AM -0400, Miles Lane wrote:
->   CC      drivers/dma/ioat_dca.o
-> drivers/dma/ioat_dca.c: In function 'ioat_dca_get_tag':
-> drivers/dma/ioat_dca.c:177: error: implicit declaration of function
-> 'cpu_physical_id'
-> make[2]: *** [drivers/dma/ioat_dca.o] Error 1
+On Thu, Aug 09, 2007 at 09:24:42AM -0400, Chris Snook wrote:
+> From: Chris Snook <csnook@redhat.com>
+> 
+> Purify volatile use for atomic[64]_t on alpha.
 
--ENODOTCONFIG
+Why not the same access-once semantics for atomic_set() as
+for atomic_read()?  As this patch stands, it might introduce
+architecture-specific compiler-induced bugs due to the fact that
+atomic_set() used to imply volatile behavior but no longer does.
 
-cu
-Adrian
+See below for one approach to fixing this.
 
--- 
+> Signed-off-by: Chris Snook <csnook@redhat.com>
+> 
+> --- linux-2.6.23-rc2-orig/include/asm-alpha/atomic.h	2007-07-08 19:32:17.000000000 -0400
+> +++ linux-2.6.23-rc2/include/asm-alpha/atomic.h	2007-08-09 09:19:00.000000000 -0400
+> @@ -14,18 +14,22 @@
+> 
+> 
+>  /*
+> - * Counter is volatile to make sure gcc doesn't try to be clever
+> - * and move things around on us. We need to use _exactly_ the address
+> - * the user gave us, not some alias that contains the same information.
+> + * Make sure gcc doesn't try to be clever and move things around
+> + * on us. We need to use _exactly_ the address the user gave us,
+> + * not some alias that contains the same information.
+>   */
+> -typedef struct { volatile int counter; } atomic_t;
+> -typedef struct { volatile long counter; } atomic64_t;
+> +typedef struct { int counter; } atomic_t;
+> +typedef struct { long counter; } atomic64_t;
+> 
+>  #define ATOMIC_INIT(i)		( (atomic_t) { (i) } )
+>  #define ATOMIC64_INIT(i)	( (atomic64_t) { (i) } )
+> 
+> -#define atomic_read(v)		((v)->counter + 0)
+> -#define atomic64_read(v)	((v)->counter + 0)
+> +/*
+> + * Casting to volatile here minimizes the need for barriers,
+> + * without having to declare the type itself as volatile.
+> + */
+> +#define atomic_read(v)		(*(volatile int *)&(v)->counter + 0)
+> +#define atomic64_read(v)	(*(volatile long *)&(v)->counter + 0)
+> 
+>  #define atomic_set(v,i)		((v)->counter = (i))
+>  #define atomic64_set(v,i)	((v)->counter = (i))
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+How about:
 
+#define atomic_set(v,i)		((*(volatile int *)&(v)->counter) = (i))
+#define atomic64_set(v,i)	((*(volatile long *)&(v)->counter) = (i))
+
+						Thanx, Paul
+
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
