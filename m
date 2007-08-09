@@ -1,51 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939638AbXHINPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939791AbXHINRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939638AbXHINPc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 09:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933756AbXHINPK
+	id S939791AbXHINRH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 09:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933756AbXHINQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 09:15:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33367 "EHLO mx1.redhat.com"
+	Thu, 9 Aug 2007 09:16:54 -0400
+Received: from ns2.bglans.net ([217.79.67.244]:35955 "EHLO mail.bglans.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758447AbXHINPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 09:15:08 -0400
-Date: Thu, 9 Aug 2007 09:14:23 -0400
-From: Chris Snook <csnook@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org
-Cc: netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com
-Subject: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070809131423.GA9927@shell.boston.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	id S932856AbXHINQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 09:16:54 -0400
+X-Greylist: delayed 1337 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Aug 2007 09:16:53 EDT
+Date: Thu, 9 Aug 2007 15:54:30 +0300 (EEST)
+From: ivaylo@bglans.net
+To: linux-kernel@vger.kernel.org
+Subject: 2.4.XX and JMicron
+Message-ID: <Pine.LNX.4.62.0708091550270.25126@mail.bglans.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As recent discussions[1], and bugs[2] have shown, there is a great deal of
-confusion about the expected behavior of atomic_read(), compounded by the
-fact that it is not the same on all architectures.  Since users expect calls
-to atomic_read() to actually perform a read, it is not desirable to allow
-the compiler to optimize this away.  Requiring the use of barrier() in this
-case is inefficient, since we only want to re-load the atomic_t variable,
-not everything else in scope.
 
-This patchset makes the behavior of atomic_read uniform by removing the
-volatile keyword from all atomic_t and atomic64_t definitions that currently
-have it, and instead explicitly casts the variable as volatile in
-atomic_read().  This leaves little room for creative optimization by the
-compiler, and is in keeping with the principles behind "volatile considered
-harmful".
+Hello,
 
-Busy-waiters should still use cpu_relax(), but fast paths may be able to
-reduce their use of barrier() between some atomic_read() calls.
+I have ASUS P5B-VM DO mobo with JMicron SATA/PATA controler. I write mail 
+to Alan Cox and he told me that PATA part of JMicron controler can be 
+pressant as generic ide. So I make some changes to generic ide driver in 
+kernel 2.4.35 to be support JMicron PATA controler, but I'm not advanced 
+in C programing and not sure what I did is right. It works for me.
 
-	-- Chris
+If there are any interes I send you (see bellow) changes.
 
-1)	http://lkml.org/lkml/2007/7/1/52
-2)	http://lkml.org/lkml/2007/8/8/122
+
+Best Regards.
+Ivaylo Josifov
+
+--- /home/ivaylo/boza/linux-2.4.35/include/linux/pci_ids.h      2007-07-26 23:53:41.000000000 +0300
++++ include/linux/pci_ids.h     2007-08-02 19:51:18.000000000 +0300 @@ -2100,3 +2100,7 @@
+
+  #define PCI_VENDOR_ID_WORKBIT          0x1145
+  #define PCI_DEVICE_ID_WORKBIT_CB       0xf021
++
++#define PCI_VENDOR_ID_JMICRON          0x197b
++#define PCI_DEVICE_ID_JMICRON_20363    0x2363
++
+
+
+--- /home/ivaylo/boza/linux-2.4.35/drivers/ide/pci/generic.h    2007-07-26 23:53:41.000000000 +0300
++++ drivers/ide/pci/generic.h   2007-08-02 19:58:53.000000000 +0300 @@ -157,6 +157,16 @@
+                 .channels       = 2,
+                 .autodma        = NOAUTODMA,
+                 .bootable       = ON_BOARD,
++       },{     /* 12 */
++               .vendor         = PCI_VENDOR_ID_JMICRON,
++               .device         = PCI_DEVICE_ID_JMICRON_20363,
++               .name           = "JMICRON_20363",
++               .init_chipset   = init_chipset_generic,
++               .init_hwif      = init_hwif_generic,
++               .init_dma       = init_dma_generic,
++               .channels       = 1,
++               .autodma        = NOAUTODMA,
++               .bootable       = ON_BOARD,
+         },{
+                 .vendor         = 0,
+                 .device         = 0,
+
+
+--- /home/ivaylo/boza/linux-2.4.35/drivers/ide/pci/generic.c    2007-07-26 23:53:41.000000000 +0300
++++ drivers/ide/pci/generic.c   2007-08-02 19:51:15.000000000 +0300 @@ -143,6 +143,7 @@
+         { PCI_VENDOR_ID_TOSHIBA, PCI_DEVICE_ID_TOSHIBA_PICCOLO,PCI_ANY_ID, PCI_ANY_ID, 0, 0, 9},
+         { PCI_VENDOR_ID_TOSHIBA, PCI_DEVICE_ID_TOSHIBA_PICCOLO_1,PCI_ANY_ID, PCI_ANY_ID, 0, 0, 10},
+         { PCI_VENDOR_ID_TOSHIBA, PCI_DEVICE_ID_TOSHIBA_PICCOLO_2,PCI_ANY_ID, PCI_ANY_ID, 0, 0, 11},
++       { PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_20363,PCI_ANY_ID, PCI_ANY_ID, 0, 0, 12},
+         { 0, },
+  };
+
