@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbXHIKGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764930AbXHIKKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932812AbXHIKGy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 06:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbXHIKGn
+	id S1764930AbXHIKKc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 06:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbXHIKK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 06:06:43 -0400
-Received: from ns2.suse.de ([195.135.220.15]:51589 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751193AbXHIKGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 06:06:42 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: EFI e820 map handling
-Date: Thu, 9 Aug 2007 12:06:37 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
+	Thu, 9 Aug 2007 06:10:26 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1514 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756629AbXHIKKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 06:10:25 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de
+Subject: [usb-storage] schedule_timeout: wrong timeout value c1a95554
+Date: Thu, 9 Aug 2007 12:10:20 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
+In-Reply-To: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708091206.37302.ak@suse.de>
+Message-Id: <200708091210.21383.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-Hallo,
+	Happens every time I reattach usb pen drive.
 
-I thought a bit about the zero page problem. I really would prefer to not
-having it used in a boot loader right now because it's not extensible anymore
-when external users start (ab)using it.
+usb 1-2: new high speed USB device using ehci_hcd and address 10
+usb 1-2: configuration #1 chosen from 1 choice
+scsi6 : SCSI emulation for USB Mass Storage devices
+usb 1-2: new device found, idVendor=13fe, idProduct=1a00
+usb 1-2: new device strings: Mfr=1, Product=2, SerialNumber=0
+usb 1-2: Product: GEIL USB DISK   
+usb 1-2: Manufacturer:         
+usb-storage: device found at 10
+usb-storage: waiting for device to settle before scanning
+schedule_timeout: wrong timeout value c1a95554
+ [<c010456a>] show_trace_log_lvl+0x1a/0x30
+ [<c010508d>] show_trace+0x12/0x14
+ [<c01051e0>] dump_stack+0x15/0x17
+ [<c04174d1>] schedule_timeout+0x8c/0xa2
+ [<c032aeec>] usb_stor_scan_thread+0x100/0x160
+ [<c0127f2e>] kthread+0x36/0x58
+ [<c0104233>] kernel_thread_helper+0x7/0x14
+ =======================
+scsi 6:0:0:0: Direct-Access              GEIL USB DISK    >2.0 PQ: 0 ANSI: 0 CCS
+sd 6:0:0:0: [sda] 1007616 512-byte hardware sectors (516 MB)
+sd 6:0:0:0: [sda] Write Protect is off
+sd 6:0:0:0: [sda] Mode Sense: 23 00 00 00
+sd 6:0:0:0: [sda] Assuming drive cache: write through
+sd 6:0:0:0: [sda] 1007616 512-byte hardware sectors (516 MB)
+sd 6:0:0:0: [sda] Write Protect is off
+sd 6:0:0:0: [sda] Mode Sense: 23 00 00 00
+sd 6:0:0:0: [sda] Assuming drive cache: write through
+ sda: sda1
+sd 6:0:0:0: [sda] Attached SCSI removable disk
+sd 6:0:0:0: Attached scsi generic sg0 type 0
+usb-storage: device scan complete
 
-When I asked for separate EFI->e820 functions I was really thinking
-of the kernel to do the conversion; not the boot loader.
+Regards,
 
-Could you move that code into the kernel early boot code please? 
-e.g. on x86-64 it could be in head64.c.  It could stuff the result
-into the zero page to pass it cleanly on without special cases later.
+	Mariusz
 
-On i386 a head32.c that runs before start_kernel() could be also 
-introduced for this.
-
-As long as it's localized there it is fine.
-
-This would also allow to define new private e820 types and extend
-the string decoding in e820; so that dmesg will correctly contain
-
-EFI: ....
-
-instead of
-
-BIOS-e820: ... 
-
-Thanks,
-
--Andi
- 
