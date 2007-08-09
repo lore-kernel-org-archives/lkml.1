@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934993AbXHIFXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938649AbXHIFYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934993AbXHIFXI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 01:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXHIFWz
+	id S938649AbXHIFYs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 01:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbXHIFYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 01:22:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:47037 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753316AbXHIFWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 01:22:54 -0400
-Message-ID: <46BAA447.9010504@goop.org>
-Date: Wed, 08 Aug 2007 22:21:11 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 9 Aug 2007 01:24:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:41573 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbXHIFYj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 01:24:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=X2X//GBQauqnQWC2+WrV5fPQNr//YCPXx85rtZlhygOpR7h/giv0hoBfiwpo5WQbE6ujyeRbiLpgQREGbjWVTau8EAHcyF4+mwGFhW4jjLO2HIJm1vxL8YITMJ1CBS4ofSL0XseTVsG4Z5wdNzmO2AMSpj8Wnz8Y9Xb3derpvgA=
+Date: Thu, 9 Aug 2007 09:24:33 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [2.6.22.2 review 09/84] Fix rfkill IRQ flags.
+Message-ID: <20070809052433.GB5875@martell.zuzino.mipt.ru>
+References: <20070807204034.882009319@mini.kroah.org> <20070807204308.GJ23028@kroah.com> <Pine.LNX.4.64.0708072336030.26397@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, Ingo Molnar <mingo@elte.hu>, chrisw@sous-sol.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org
-Subject: Re: [PATCH 18/25] [PATCH] turn priviled operations into macros in
- entry.S
-References: <11865467522495-git-send-email-gcosta@redhat.com> <200708081138.23018.ak@suse.de> <Pine.LNX.4.58.0708080740490.5921@gandalf.stny.rr.com> <200708081424.49896.ak@suse.de> <Pine.LNX.4.58.0708080835350.6751@gandalf.stny.rr.com> <p738x8mrv4m.fsf@bingen.suse.de> <Pine.LNX.4.58.0708080919330.7236@gandalf.stny.rr.com> <Pine.LNX.4.58.0708080924590.7236@gandalf.stny.rr.com> <20070808133001.GD14419@one.firstfloor.org> <Pine.LNX.4.58.0708080936070.7516@gandalf.stny.rr.com>
-In-Reply-To: <Pine.LNX.4.58.0708080936070.7516@gandalf.stny.rr.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708072336030.26397@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> 	/*
-> 	 * x86 arch doesn't have an easy way to find out where
-> 	 * gs is located. So we need to read the MSR. But first
-> 	 * we need to save off the rcx, rax and rdx.
->   
-Why don't you store it in gs?  movq %gs:my_gs_base, %rax?
+On Tue, Aug 07, 2007 at 11:37:06PM +0200, Jan Engelhardt wrote:
+> 
+> On Aug 7 2007 13:43, Greg KH wrote:
+> >
+> >added this 64-bit bug:
+> >
+> >        ....
+> >	unsigned int flags;
+> >
+> > 	spin_lock_irqsave(&task->lock, flags);
+> >        ....
+> >
+> >irq 'flags' must be unsigned long, not unsigned int. The -rt tree has
+> >strict checks about this on 64-bit so this triggered a build failure.
+> 
+> Since the check is a compile-time one, would not it be good to add
+> it to the regular linux tree too?
 
-    J
+BUILD_BUG_ON was tried, but due to amazingly wrong moment of merging
+survived only for a day or so. There will be a second try, though.
+
