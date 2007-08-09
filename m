@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938875AbXHIMHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935611AbXHIMSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938875AbXHIMHS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762898AbXHIMHF
+	id S935611AbXHIMSk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762911AbXHIMS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 08:07:05 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46422 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762136AbXHIMHE (ORCPT
+	Thu, 9 Aug 2007 08:18:29 -0400
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:47088 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763610AbXHIMSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:07:04 -0400
-Message-ID: <46BB0337.6040701@sgi.com>
-Date: Thu, 09 Aug 2007 14:06:15 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
+	Thu, 9 Aug 2007 08:18:17 -0400
+Date: Thu, 9 Aug 2007 08:17:26 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Andi Kleen <andi@firstfloor.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, Ingo Molnar <mingo@elte.hu>, chrisw@sous-sol.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org
+Subject: Re: [PATCH 18/25] [PATCH] turn priviled operations into macros in
+ entry.S
+In-Reply-To: <46BAA447.9010504@goop.org>
+Message-ID: <Pine.LNX.4.58.0708090813450.29847@gandalf.stny.rr.com>
+References: <11865467522495-git-send-email-gcosta@redhat.com>
+ <200708081138.23018.ak@suse.de> <Pine.LNX.4.58.0708080740490.5921@gandalf.stny.rr.com>
+ <200708081424.49896.ak@suse.de> <Pine.LNX.4.58.0708080835350.6751@gandalf.stny.rr.com>
+ <p738x8mrv4m.fsf@bingen.suse.de> <Pine.LNX.4.58.0708080919330.7236@gandalf.stny.rr.com>
+ <Pine.LNX.4.58.0708080924590.7236@gandalf.stny.rr.com>
+ <20070808133001.GD14419@one.firstfloor.org> <Pine.LNX.4.58.0708080936070.7516@gandalf.stny.rr.com>
+ <46BAA447.9010504@goop.org>
 MIME-Version: 1.0
-To: Glauber de Oliveira Costa <glommer@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Carsten Otte <cotte@de.ibm.com>
-Subject: Re: [PATCH 2/7] Added generic lg.h in lguest directory.
-References: <20070809003211.373543702@goodmis.org>	 <20070809003343.310187242@goodmis.org> <5d6222a80708081756r21bbc7e3ifd357c9c548ac57f@mail.gmail.com>
-In-Reply-To: <5d6222a80708081756r21bbc7e3ifd357c9c548ac57f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber de Oliveira Costa wrote:
-> On 8/8/07, Steven Rostedt <rostedt@goodmis.org> wrote:
->> Add a generic lg.h file to call the architecture specific one.
->>
->> diff --git a/drivers/lguest/lg.h b/drivers/lguest/lg.h
->> new file mode 100644
->> index 0000000..4c4356e
->> --- /dev/null
->> +++ b/drivers/lguest/lg.h
->> @@ -0,0 +1,3 @@
->> +#ifdef CONFIG_X86_32
->> +#include "i386/lg.h"
->> +#endif
-> 
-> Wouldn't it be cleaner to do something like the asm/ includes?
-> I understand that lguest now lives in drivers/ and so we don't put
-> headers directly in asm-i386 , but we could come up with a similar
-> thing here. 
+--
+On Wed, 8 Aug 2007, Jeremy Fitzhardinge wrote:
 
-Yeah, that would be much better, and I don't like having something in
-a header file including arch specific files like that. I target to get
-lguest going on non x86, so I would like to encourage anyone to think
-more than x86 when trying to seperate out something :)
+> Steven Rostedt wrote:
+> > 	/*
+> > 	 * x86 arch doesn't have an easy way to find out where
+> > 	 * gs is located. So we need to read the MSR. But first
+> > 	 * we need to save off the rcx, rax and rdx.
+> >
+> Why don't you store it in gs?  movq %gs:my_gs_base, %rax?
 
-IMHO we should avoid any header files with asm specific code in
-drivers/lguest - in a way I prefer having arch/<foo>/lguest to
-drivers/lguest/<arch>, would be more esthetically compliant with
-the include/asm-<arch> approach too, but thats not a big deal.
+Because it can't be trusted.  After the swapgs, we are pointing to the RW
+section of the HV. But by running the guest kernel in ring 1, we have no
+protection from the guest writing into that area too. So we can't put
+anything in that section and expect it to be safe after jumping to guest
+code.  The only trusted values, is jumping in after getting there by an
+interrupt, where the hardware places the values onto the stack.
 
-Cheers,
-Jes
+But with Andi's comments, I realized I can point the gs pointer to the
+RO area. And make a constant offset that will point up into the RW area,
+so we could save the stack and replace it.
+
+-- Steve
+
