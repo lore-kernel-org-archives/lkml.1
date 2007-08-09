@@ -1,65 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938886AbXHIJti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939054AbXHIJvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938886AbXHIJti (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 05:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbXHIJt3
+	id S939054AbXHIJvQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 05:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757045AbXHIJu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 05:49:29 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:51825 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760644AbXHIJt2 (ORCPT
+	Thu, 9 Aug 2007 05:50:59 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:56189 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764009AbXHIJu5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 05:49:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=juNa229IJO2L1ZgKIzfMGEC/PhnSwY8xGQ+Udr5JcnO7x5Qm8+6mVgWPNnJJ105YZ3dXiPwqC3i35kRQx3afShE22F62ytqoKAKdaxY9nApgvLdux8u9YgPUFle9m5Skz8E0OF/h7l+Vtu+3bxQNFpHxUV6LtHjw6i/ObdRNpLI=
-Message-ID: <47db5b910708090249k2c80e3e8tdc062d89ed4359fc@mail.gmail.com>
-Date: Thu, 9 Aug 2007 11:49:27 +0200
-From: "Robert de Vries" <robert.h.de.vries@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH RT] Only run softirqs from the irq thread if the irq affinity is set to 1 CPU
-Cc: "Darren Hart" <dvhltc@us.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
-       RT <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "john stultz" <johnstul@us.ibm.com>
-In-Reply-To: <1186609529.14769.8.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 9 Aug 2007 05:50:57 -0400
+Subject: Re: [PATCH/RFC] allow mapping from block-device-file to sysfs
+	entry.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Neil Brown <neilb@suse.de>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <18106.47442.440816.650446@notabene.brown>
+References: <18104.3098.696484.970773@notabene.brown>
+	 <1186468623.2700.4.camel@laptopd505.fenrus.org>
+	 <18104.7056.369176.547630@notabene.brown>
+	 <3ae72650708070041s52861b7dr484cacf98353a3c6@mail.gmail.com>
+	 <18106.47442.440816.650446@notabene.brown>
+Content-Type: text/plain
+Date: Thu, 09 Aug 2007 11:54:10 +0200
+Message-Id: <1186653250.21247.37.camel@lov.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1186605752.29097.18.camel@localhost.localdomain>
-	 <200708081416.27500.dvhltc@us.ibm.com>
-	 <1186609529.14769.8.camel@localhost.localdomain>
+X-Provags-ID: V01U2FsdGVkX19W2ZKDW34aeOD2COoHhWYlv5Flf8jNT13VGDk
+ wojO0DJSem+E+Ye4xce1m/m9sKP237vb0pifgv+6uOQaLCO9O6
+ XmuNtSUdABk4pEPFyC4KOptapIFIEXC
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/8/07, Steven Rostedt <rostedt@goodmis.org> wrote:
-> On Wed, 2007-08-08 at 14:16 -0700, Darren Hart wrote:
->
-> > It seems to me that this patch will reduce the frequency of irqd/softirqd
-> > starvation, but the core problem still exists: softirq tasks can't migrate to
-> > other CPUs to perform their work if a higher priority task preempts them.
-> > I'm wondering if we want to keep special casing things to minimize the
-> > problem or not - seems to me the worst case is still the same - and isn't the
-> > worst case the only case that matters (for -rt)?
-> >
->
-> softirq tasks should never migrate to other CPUs. A softirq exists in
-> every CPU. So if you trigger a softirq on CPU1 it will only run on CPU1.
-> If a high priority task preempts it, that same softirq can still run on
-> other CPUS. Only the thread that was preempted wont switch. But that's
-> the characteristic of softirqs, and that's how people who use them in
-> development expect them to work.
+On Thu, 2007-08-09 at 16:50 +1000, Neil Brown wrote:
+> On Tuesday August 7, kay.sievers@vrfy.org wrote:
+> > On 8/7/07, Neil Brown <neilb@suse.de> wrote:
+> > > On Monday August 6, arjan@infradead.org wrote:
+> > > > On Tue, 2007-08-07 at 16:07 +1000, Neil Brown wrote:
+> > > > > Suppose that in a program I have an open file descriptor for a device,
+> > > > > and I want to find the /sys/block information for this device.
+> > > > > There is currently no direct way to do this.  I need to read
+> > > > >    /sys/block/*/dev, /sys/block/*/*/dev
+> > > > > and match major/minor numbers with the result from fstat.
+> > > > >
+> > > > > I would like a more direct mechanism.
+> > 
+> >   $ udevinfo --query=path --name=sda
+> >   /block/sda
+> 
+> If I interpret the result of 'strace' properly, this looks at
+>    /dev/.udev/names/sda
+> and prints the result after decoding '\x2f' as '/'.
+> I want to go from an open file descriptor, or at least an entry in
+> /dev.
 
-Wouldn't a developer of a real-time system configure the system so
-that interrupts do not interfere with the real-time tasks running on a
-specific CPU?
-In other words, is this problem not simply a misconfiguration of the system?
-I personally redirect all interrupts away from the CPU's where my
-real-time tasks run and only allow the interrupts that I want to
-handle in my application on the CPU's where I handle them so as to
-minimize latency.
+Right, it maintains two indices, one from the devpath to the /dev-name,
+and one from the /dev-name to the devpath.
 
-    Robert
+> And I don't think I want to depend on udev if I can avoid it....
+> 
+> > >
+> > > That makes a lot of sense.
+> > > So it would return "block/sda/sda1" now,
+> > 
+> > Every devpath always starts with a '/' in the kernel, its kind of
+> > weird, but we should not introduce a new variation of it. :)
+> 
+> Fair comment.  So
+>        /block/sda/sda1
+> now, and whatever later.
+
+Right.
+
+> > They can be definitely longer than than 256, probably not longer than
+> > 512 today, but you can't be sure about that.
+> 
+> I guess we go for PATH_MAX then?
+
+Maybe, yes.
+
+> Any idea how to get a sysfs path in a generic way?
+
+No, no idea.
+
+> I tried:
+> 		struct inode *inode = filp->f_path.dentry->d_inode;
+> 		struct kobject *ko = NULL;
+> 		char *path = NULL;
+> 		if (S_ISBLK(inode->i_mode) &&
+> 		    inode->i_bdev &&
+> 			inode->i_bdev->bd_disk)
+> 			ko = &inode->i_bdev->bd_disk->kobj;
+> 		if (S_ISCHR(inode->i_mode) &&
+> 		    inode->i_cdev)
+> 			ko = &inode->i_cdev->kobj;
+> 		if (ko)
+> 			path = kobject_get_path(ko, GFP_KERNEL);
+> 
+> 
+> For /dev/sda, it returns /block/sda which is good.
+> For /dev/sda1 it still returns /block/sda which is not good.
+
+You have to explicitely handle partitions by looking at the minor
+number. They are not registered in the kobj_map.
+
+> For /dev/null it returns /mem which doesn't even exist in sysfs
+
+In the kobj_map is only the minor _range_ of the subsystem, which is
+able to resolve the minor to the object.
+
+> For /dev/tty it doesn't return anything.
+
+Same here.
+
+> I'm tempted to just implement it for block devices and let someone
+> else worry about char devices.
+
+We probably want to extend kobj_map with something where _every_ device
+is registered, not only the "handler" for a region of devices.
+
+Today, when you open a device, the "driver" gets called and it looks up
+the device by traversing over a list of known devices, or some using idr
+internally for this. In /proc/devices are the registered "handlers", you
+can't get more than this. The "mem" entry there, is what you are looking
+up, but which device (devpath) it is, is hidden inside the mem class.
+
+Seems block devices are special here, and register every genhd directly
+and make them accessible the way you try to do it. Not sure if that will
+work for all block devices in all cases though.
+
+Would be nice if generic kernel code (the kobj_map) could just return a
+pointer back to the kobject for _every_ major/minor combination, instead
+of only the pointer into the subsystem (which registered a range). Today
+every subsystem implements its own way of doing the lookup for the
+object the minor number belongs to. That would be the right place to
+solve this problem. :)
+
+Kay
+
