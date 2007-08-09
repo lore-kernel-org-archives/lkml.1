@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759068AbXHITfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762745AbXHITg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759068AbXHITfF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 15:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbXHITex
+	id S1762745AbXHITg1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 15:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbXHITgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 15:34:53 -0400
-Received: from namei.org ([69.55.235.186]:43325 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751029AbXHITew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 15:34:52 -0400
-Date: Thu, 9 Aug 2007 12:34:13 -0700 (PDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: David Howells <dhowells@redhat.com>
-cc: Casey Schaufler <casey@schaufler-ca.com>, torvalds@osdl.org, akpm@osdl.org,
-       steved@redhat.com, trond.myklebust@fys.uio.no,
-       linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/14] CacheFiles: Permit an inode's security ID to be
- obtained [try #2]
-In-Reply-To: <22259.1186686459@redhat.com>
-Message-ID: <Pine.LNX.4.64.0708091223330.19611@us.intercode.com.au>
-References: <Pine.LNX.4.64.0708091143440.19611@us.intercode.com.au>
- <162335.27499.qm@web36605.mail.mud.yahoo.com> <22259.1186686459@redhat.com>
+	Thu, 9 Aug 2007 15:36:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46749 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751474AbXHITgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 15:36:10 -0400
+Message-ID: <46BB6B44.90009@redhat.com>
+Date: Thu, 09 Aug 2007 15:30:12 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Segher Boessenkool <segher@kernel.crashing.org>
+CC: wjiang@resilience.com, rpjday@mindspring.com, wensong@linux-vs.org,
+       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, ak@suse.de,
+       netdev@vger.kernel.org, paulmck@linux.vnet.ibm.com, horms@verge.net.au,
+       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       jesper.juhl@gmail.com, torvalds@linux-foundation.org,
+       schwidefsky@de.ibm.com, davem@davemloft.net, cfriesen@nortel.com,
+       zlynx@acm.org
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com> <20070809161024.GC8424@linux.vnet.ibm.com> <46BB4281.7010803@redhat.com> <06d22e947a5357cd53adb070225bc7c1@kernel.crashing.org>
+In-Reply-To: <06d22e947a5357cd53adb070225bc7c1@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, David Howells wrote:
-
-> James Morris <jmorris@namei.org> wrote:
+Segher Boessenkool wrote:
+>>> The compiler is within its rights to read a 32-bit quantity 16 bits at
+>>> at time, even on a 32-bit machine.  I would be glad to help pummel any
+>>> compiler writer that pulls such a dirty trick, but the C standard really
+>>> does permit this.
+>>
+>> Yes, but we don't write code for these compilers.  There are countless 
+>> pieces of kernel code which would break in this condition, and there 
+>> doesn't seem to be any interest in fixing this.
 > 
-> > David, I've looked at the code and can't see that you need to access the 
-> > label itself outside the LSM.  Could you instead simply pass the inode 
-> > pointer around?
+> "Other things are broken too".  Great argument :-)
+
+We make plenty of practical assumptions in the kernel, and declare incorrect 
+things which violate them, even in cases where there's no commandment from the 
+heavens forbidding them.  Since the whole point of this exercise is to prevent 
+badness with *optimizing* compilers, it's quite reasonable to declare broken any 
+so-called optimizer which violates these trivial assumptions.
+
+>>> In short, please retain atomic_set()'s volatility, especially on those
+>>> architectures that declared the atomic_t's counter to be volatile.
+>>
+>> Like i386 and x86_64?  These used to have volatile in the atomic_t 
+>> declaration.  We removed it, and the sky did not fall.
 > 
-> It's not quite that simple.  I need to impose *two* security labels in
-> cachefiles_begin_secure() when I'm about to act on behalf of a process that's
-> tried to access a netfs file:
+> And this proves what?  Lots of stuff "works" by accident.
 
-Ah ok, we had a similar problem with NFS mount options.
+If something breaks because of this, it was already broken, but hidden a lot 
+better.  I don't see much of a downside to exposing and fixing those bugs.
 
-While I'm concerned about encoding SELinux-optimized secid labels into 
-general kernel structures, moving to more generalized pointers introduces 
-lifecycle maintenance issues and complexity which is not needed in the 
-mainline kernel.  i.e. it'll be unused infrastructure maintained by 
-upstream, and used only by out-of-tree modules.
-
-So, given that the kernel has no stable API, I suggest accepting the u32 
-secid as you propose, and if someone wants to merge a module which also 
-uses these hooks, but is entirely unable to use u32 labels, then they can 
-also justify making the interface more generalized and provide the code 
-for it.
-
-
-
-- James 
--- 
-James Morris
-<jmorris@namei.org>
+	-- Chris
