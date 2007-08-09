@@ -1,77 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939017AbXHILoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935165AbXHILze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939017AbXHILoz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 07:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932189AbXHILoo
+	id S935165AbXHILze (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 07:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbXHILzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 07:44:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34293 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932135AbXHILon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 07:44:43 -0400
-Message-ID: <46BAFE08.5070906@redhat.com>
-Date: Thu, 09 Aug 2007 07:44:08 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Herbert Xu <herbert.xu@redhat.com>
-CC: akpm@linux-foundation.org, torvalds@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org
-Subject: Re: [PATCH] make atomic_t volatile on all architectures
-References: <E1IIwQx-000468-00@gondolin.me.apana.org.au> <46BAC6AD.7050603@redhat.com> <20070809083055.GA19048@gondor.apana.org.au>
-In-Reply-To: <20070809083055.GA19048@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 9 Aug 2007 07:55:25 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:59955 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756135AbXHILzY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 07:55:24 -0400
+Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not 
+	notified
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Javier Pello <javier.pello@urjc.es>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
+       GregKH <greg@kroah.com>
+In-Reply-To: <46BAE005.4000906@urjc.es>
+References: <46B37CF7.2020803@urjc.es>
+	 <20070806142451.5d28d41c@gondolin.boeb lingen.de.ibm.com>
+	 <46B7832B.6010808@urjc.es>
+	 <20070807125844.4d756b04@gondo l	in.boeblingen.de.ibm.com>
+	 <3ae72650708070446y6452d13jb7cd802119dab3ce@ma il	  .gmail.com>
+	 <20070807141030.1bb0f76a@gondolin.boeblingen.de.ibm.com>
+	 <46B869	 C6.3090708@urjc.es><1186491472.3611.33.camel@lov.localdomain>
+	 <46B87ACA.7010 501@urjc.es>
+	 <20070807162618.3814ff78@gondolin.boeblingen.de.ibm.com>
+	 <46BAE005.4000906@urjc.es>
+Content-Type: text/plain
+Date: Thu, 09 Aug 2007 13:58:36 +0200
+Message-Id: <1186660716.21247.94.camel@lov.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/eIkLWhXcoEFRaE2vggwt/N0KAYoZkRpJgT/w
+ 4ApGLH6a0Iz/XJA6Jfcgn7AfEwa0uNa7z0Dqpp7vGOVANX5nYc
+ udtAtodc6szwdIktxDrMSB+wxXY5ohk
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> On Thu, Aug 09, 2007 at 03:47:57AM -0400, Chris Snook wrote:
->> If they're not doing anything, sure.  Plenty of loops actually do some sort 
->> of real work while waiting for their halt condition, possibly even work 
->> which is necessary for their halt condition to occur, and you definitely 
->> don't want to be doing cpu_relax() in this case.  On register-rich 
->> architectures you can do quite a lot of work without needing to reuse the 
->> register containing the result of the atomic_read().  Those are precisely 
->> the architectures where barrier() hurts the most.
+On Thu, 2007-08-09 at 11:36 +0200, Javier Pello wrote:
+> On Tue, 07 Aug 2007, Cornelia Huck wrote:
 > 
-> I have a problem with this argument.  The same loop could be
-> using a non-atomic as long as the updaters are serialised.  Would
-> you suggest that we turn such non-atomics into volatiles too?
+> > So it is indeed that this driver wants to fail its probe if it
+> > cannot get the firmware.
+> 
+> That's right. The driver unbinds itself from the device if it doesn't
+> get the firmware.
+> 
+> > A possibilty to achieve a similar effect would be to use
+> > request_firmware_nowait() and to call device_release_driver() from
+> > the callback if no firmware is loaded. (This would imply a split of
+> > that driver's probe function into two stages.)
+> 
+> The comments in the source code say that request_firmware_nowait()
+> is an "asynchronous version of request_firmware() for contexts where
+> it is not possible to sleep". So a driver's decision to call one of
+> them is not based on whether it wants to wait or not, but whether it
+> _can_ wait.
+> 
+> Of course, it can be decided that we never want to wait, but then
+> the best course of action would be to make request_firmware itself
+> behave as request_firmware_nowait (no need to change drivers).
+> 
+> Anyway, my point is that it is useless to have the kernel block for
+> a minute at boot waiting for something that cannot happen, and that
+> it should be avoided (even if my proposed solution is not the way
+> to go).
 
-No.  I'm simply saying that when people call atomic_read, they expect a read to 
-occur.  When this doesn't happen, people get confused.  Merely referencing a 
-variable doesn't carry the same connotation.
+That's true. And it sounds all reasonable from your point of view, and
+the firmware loader needs fixing, and the silly blocking request needs
+to be removed from the kernel, that's known for a very long time now,
+but nobody did the work so far.
 
-Anyway, I'm taking Linus's advice and putting the cast in atomic_read(), rather 
-than the counter declaration itself.  Everything else uses __asm__ __volatile__, 
-or calls atomic_read() with interrupts disabled.  This ensures that 
-atomic_read() works as expected across all architectures, without the cruft the 
-compiler generates when you declare the variable itself volatile.
+But in this specific case, it is more the combination of your options,
+what causes this problem to appear. You don't have an initramfs, you
+don't use modules, but you are linking a driver into the kernel image
+which depends on a conceptually broken blocking userspace transaction to
+initialize.
+This combination of options just doesn't make sense. Either use
+initramfs, or use a kernel module for the driver that needs userspace to
+initialize, or patch the driver not to block in the request, or patch
+the driver to optionally include the firmware in the driver.
 
-> Any loop that's waiting for an external halt condition either
-> has to schedule away (which is a barrier) or you'd be busy
-> waiting in which case you should use cpu_relax.
+You just picked a set of options that doesn't work nicely together. No
+distro setup has this problem, that's probably why nobody really cared
+and it didn't get fixed so far.
 
-Not necessarily.  Some code uses atomic_t for a sort of lightweight semaphore. 
-If your loop is actually doing real work, perhaps in a softirq handler 
-negotiating shared resources with a hard irq handler, you're not busy-waiting.
+Kay
 
-> Do you have an example where this isn't the case?
-
-a) No, and that's sort of the point.  We shouldn't have to audit the whole 
-kernel to find cases where a misleadingly-named function is doing what its users 
-are not expecting.  If we can make it always do the right thing without any 
-substantial drawbacks, we should.
-
-b) Loops are just one case, which came to mind because of the IPVS bug recently 
-discussed.  I recall seeing some scheduler code recently which does an 
-atomic_read() twice on the same variable, with a barrier in between.  It's in a 
-very hot path, so if we can remove that barrier, we save a bunch of register 
-loads.  When you're context switching every microsecond in SCHED_RR, that really 
-matters.
-
-	-- Chris
