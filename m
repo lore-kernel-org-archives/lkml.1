@@ -1,51 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759562AbXHIET3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761999AbXHIEXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759562AbXHIET3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 00:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbXHIETS
+	id S1761999AbXHIEXG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 00:23:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbXHIEWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 00:19:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47870 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751293AbXHIETR (ORCPT
+	Thu, 9 Aug 2007 00:22:55 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51962 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751478AbXHIEWz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 00:19:17 -0400
-Date: Wed, 8 Aug 2007 21:18:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Chris Snook <csnook@redhat.com>
-cc: akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
-       zlynx@acm.org
-Subject: Re: [PATCH] make atomic_t volatile on all architectures
-In-Reply-To: <20070808230733.GA17270@shell.boston.redhat.com>
-Message-ID: <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org>
-References: <20070808230733.GA17270@shell.boston.redhat.com>
+	Thu, 9 Aug 2007 00:22:55 -0400
+Date: Wed, 8 Aug 2007 21:22:53 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <ak@suse.de>
+cc: linux-kernel@vger.kernel.org, travis@sgi.com
+Subject: Re: [PATCH] Remove x86_cpu_to_log_apicid
+In-Reply-To: <200708090334.49456.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0708082122120.3243@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0708081400430.15668@schroedinger.engr.sgi.com>
+ <200708090334.49456.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 9 Aug 2007, Andi Kleen wrote:
 
-
-On Wed, 8 Aug 2007, Chris Snook wrote:
+> On Wednesday 08 August 2007 23:01, Christoph Lameter wrote:
+> > From: Mike Travis <travis@sgi.com>
 > 
-> Some architectures currently do not declare the contents of an atomic_t to be
-> volatile.  This causes confusion since atomic_read() might not actually read
-> anything if an optimizing compiler re-uses a value stored in a register, which
-> can break code that loops until something external changes the value of an
-> atomic_t.
+> Why does Mike not submit his patches by himself? 
 
-I'd be *much* happier with "atomic_read()" doing the "volatile" instead.
+Its his first patch and I wanted to help out a bit .... He will submit 
+them himself in the future.
 
-The fact is, volatile on data structures is a bug. It's a wart in the C 
-language. It shouldn't be used. 
-
-Volatile accesses in *code* can be ok, and if we have "atomic_read()" 
-expand to a "*(volatile int *)&(x)->value", then I'd be ok with that.
-
-But marking data structures volatile just makes the compiler screw up 
-totally, and makes code for initialization sequences etc much worse.
-
-		Linus
