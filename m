@@ -1,76 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765579AbXHIUkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761004AbXHIUru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765579AbXHIUkU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 16:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbXHIUkE
+	id S1761004AbXHIUru (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 16:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbXHIUrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 16:40:04 -0400
-Received: from sandeen.net ([209.173.210.139]:13595 "EHLO sandeen.net"
+	Thu, 9 Aug 2007 16:47:42 -0400
+Received: from mga03.intel.com ([143.182.124.21]:38228 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754370AbXHIUkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 16:40:02 -0400
-Message-ID: <46BB7BA0.70107@sandeen.net>
-Date: Thu, 09 Aug 2007 15:40:00 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
-MIME-Version: 1.0
-To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: [PATCH V2] limit minixfs printks on corrupted dir i_size, CVE-2006-6058
-References: <46BB6101.4030307@redhat.com>
-In-Reply-To: <46BB6101.4030307@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1753590AbXHIUrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 16:47:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,242,1183359600"; 
+   d="scan'208";a="261124829"
+Subject: [GIT PULL] async_tx: update MAINTAINERS for async_tx and iop-adma
+From: Dan Williams <dan.j.williams@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Shannon Nelson <shannon.nelson@intel.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Thu, 09 Aug 2007 13:47:39 -0700
+Message-Id: <1186692459.21486.7.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Perhaps this is simpler, and preferable.  Thanks to adilger for
-reminding me about printk_ratelimit.  :)
+Linus, please pull from:
 
-----
+	git://lost.foo-projects.org/~dwillia2/git/iop async-tx-fixes-for-linus
 
-This attempts to address CVE-2006-6058 
-http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6058
+to receive:
+
+async_tx: update MAINTAINERS for async_tx and iop-adma
+
+Also, rename the dma engine entry since it is now a generic offload engine
+subsystem, not just memcpy.
+
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+---
+
+ MAINTAINERS |   21 +++++++++++++++++++--
+ 1 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e65e96a..fa52a30 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -612,6 +612,15 @@ W:	http://sourceforge.net/projects/acpi4asus
+ W:	http://xf.iksaif.net/acpi4asus
+ S:	Maintained
  
-first reported at http://projects.info-pull.com/mokb/MOKB-17-11-2006.html
-
-Essentially a corrupted minix dir inode reporting a very large
-i_size will loop for a very long time in minix_readdir, minix_find_entry,
-etc, because on EIO they just move on to try the next page.  This is
-under the BKL, printk-storming as well.  This can lock up the machine 
-for a very long time.  Simply ratelimiting the printks gets things back
-under control.
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-
-Index: linux-2.6.22-rc4/fs/minix/itree_v1.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/minix/itree_v1.c
-+++ linux-2.6.22-rc4/fs/minix/itree_v1.c
-@@ -27,7 +27,8 @@ static int block_to_path(struct inode * 
- 	if (block < 0) {
- 		printk("minix_bmap: block<0\n");
- 	} else if (block >= (minix_sb(inode->i_sb)->s_max_size/BLOCK_SIZE)) {
--		printk("minix_bmap: block>big\n");
-+		if (printk_ratelimit())
-+			printk("minix_bmap: block>big\n");
- 	} else if (block < 7) {
- 		offsets[n++] = block;
- 	} else if ((block -= 7) < 512) {
-Index: linux-2.6.22-rc4/fs/minix/itree_v2.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/minix/itree_v2.c
-+++ linux-2.6.22-rc4/fs/minix/itree_v2.c
-@@ -28,7 +28,8 @@ static int block_to_path(struct inode * 
- 	if (block < 0) {
- 		printk("minix_bmap: block<0\n");
- 	} else if (block >= (minix_sb(inode->i_sb)->s_max_size/sb->s_blocksize)) {
--		printk("minix_bmap: block>big\n");
-+		if (printk_ratelimit())
-+			printk("minix_bmap: block>big\n");
- 	} else if (block < 7) {
- 		offsets[n++] = block;
- 	} else if ((block -= 7) < 256) {
-
-
-
++ASYNCHRONOUS TRANSFERS/TRANSFORMS API
++P:	Dan Williams
++M:	dan.j.williams@intel.com
++P:	Shannon Nelson
++M:	shannon.nelson@intel.com
++L:	linux-kernel@vger.kernel.org
++W:	http://sourceforge.net/projects/xscaleiop
++S:	Supported
++
+ ATA OVER ETHERNET DRIVER
+ P:	Ed L. Cashin
+ M:	ecashin@coraid.com
+@@ -1277,11 +1286,13 @@ M:	tori@unhappy.mine.nu
+ L:	netdev@vger.kernel.org
+ S:	Maintained
+ 
+-DMA GENERIC MEMCPY SUBSYSTEM
++DMA GENERIC OFFLOAD ENGINE SUBSYSTEM
+ P:	Shannon Nelson
+ M:	shannon.nelson@intel.com
++P:	Dan Williams
++M:	dan.j.williams@intel.com
+ L:	linux-kernel@vger.kernel.org
+-S:	Maintained
++S:	Supported
+ 
+ DME1737 HARDWARE MONITOR DRIVER
+ P:	Juerg Haefliger
+@@ -1958,6 +1969,12 @@ M:	shannon.nelson@intel.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
+ 
++INTEL IOP-ADMA DMA DRIVER
++P:	Dan Williams
++M:	dan.j.williams@intel.com
++L:	linux-kernel@vger.kernel.org
++S:	Supported
++
+ INTEL IXP4XX RANDOM NUMBER GENERATOR SUPPORT
+ P:	Deepak Saxena
+ M:	dsaxena@plexity.net
