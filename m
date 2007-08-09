@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763323AbXHIUSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764799AbXHIUSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763323AbXHIUSO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 16:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbXHIUR6
+	id S1764799AbXHIUSe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 16:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbXHIUSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 16:17:58 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:50189 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757149AbXHIUR5 (ORCPT
+	Thu, 9 Aug 2007 16:18:21 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:41452 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763844AbXHIUSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 16:17:57 -0400
-Date: Thu, 9 Aug 2007 22:17:42 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: jidong xiao <jidong.xiao@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: What does 'if EMBEDDED' mean?
-Message-ID: <20070809201742.GA14250@stusta.de>
-References: <4104961b0708090711j291974cbx933e1262ba1935f6@mail.gmail.com> <20070809141621.GO6997@stusta.de> <4104961b0708090743t810dadbp37521425120c2ed2@mail.gmail.com>
+	Thu, 9 Aug 2007 16:18:17 -0400
+Date: Thu, 9 Aug 2007 21:17:20 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc2-mm1: silly df numbers on 32bit extN
+In-Reply-To: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708092108540.10254@blonde.wat.veritas.com>
+References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4104961b0708090743t810dadbp37521425120c2ed2@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAA2luYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBhLnAuemlqbHN0cmFAY2hlbGxvLm5sAA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 10:43:10PM +0800, jidong xiao wrote:
-> On 8/9/07, Adrian Bunk <bunk@kernel.org> wrote:
-> >
-> > Say "y" at
-> >  General setup
-> >    Configure standard kernel features (for small systems)
-> >
-> > cu
-> > Adrian
-> >
+On Thu, 9 Aug 2007, Andrew Morton wrote:
 > 
-> Thank you, Adrian, it's very clear.
-> 
-> By the way, can sysfs be compiled as a module?Does bool type mean this
-> option cannot be compiled as a module?
+> +lib-make-percpu_counter_add-take-s64.patch
 
-"bool" means it can't be compiled as a module.
+lib-make-percpu_counter_add-take-s64.patch looks sensible, but it doesn't
+actually work on 32-bit architectures: several users of percpu_counter_add
+are passing -unsignedlong as the amount, which is not promoted to s64 in
+the desired way, so "df" on extN filesystems is showing silly numbers.
 
-Why do you want to compile it as a module?
+The hack below (say long instead of s64 or s32) may be good as hotfix for
+2.6.23-rc2-mm1, but is probably the worst of solutions.  Perhaps take-s64
+should be reverted, perhaps there should be a percpu_counter_sub and the
+filesystems use that instead of saying -unsignedlong, perhaps they should
+use a cast or a long or an s64.  I don't know, but here's this for now...
 
-> Regards
-> Jason
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
-cu
-Adrian
+ include/linux/percpu_counter.h |   13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+--- 2.6.23-rc2-mm1/include/linux/percpu_counter.h	2007-08-09 13:15:35.000000000 +0100
++++ linux/include/linux/percpu_counter.h	2007-08-09 20:34:23.000000000 +0100
+@@ -37,7 +37,7 @@ void percpu_counter_set(struct percpu_co
+ void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
+ s64 __percpu_counter_sum(struct percpu_counter *fbc);
+ 
+-static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
++static inline void percpu_counter_add(struct percpu_counter *fbc, long amount)
+ {
+ 	__percpu_counter_add(fbc, amount, FBC_BATCH);
+ }
+@@ -96,11 +96,16 @@ static inline void percpu_counter_set(st
+ 	fbc->count = amount;
+ }
+ 
+-#define __percpu_counter_add(fbc, amount, batch) \
+-	percpu_counter_add(fbc, amount)
++static inline void
++__percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
++{
++	preempt_disable();
++	fbc->count += amount;
++	preempt_enable();
++}
+ 
+ static inline void
+-percpu_counter_add(struct percpu_counter *fbc, s64 amount)
++percpu_counter_add(struct percpu_counter *fbc, long amount)
+ {
+ 	preempt_disable();
+ 	fbc->count += amount;
