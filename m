@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939138AbXHILNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937026AbXHILYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939138AbXHILNS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 07:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932189AbXHILNK
+	id S937026AbXHILYH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 07:24:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762136AbXHILX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 07:13:10 -0400
-Received: from server001.webpack.hosteurope.de ([80.237.130.9]:57359 "EHLO
-	server001.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932209AbXHILNI (ORCPT
+	Thu, 9 Aug 2007 07:23:59 -0400
+Received: from web26910.mail.ukl.yahoo.com ([217.146.176.99]:20199 "HELO
+	web26910.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756682AbXHILX6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 07:13:08 -0400
-X-Greylist: delayed 1823 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Aug 2007 07:13:08 EDT
-From: Andi Drebes <lists-receive@programmierforen.de>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] cramfs: Error message about endianess
-Date: Thu, 9 Aug 2007 12:42:38 +0200
-User-Agent: KMail/1.9.5
+	Thu, 9 Aug 2007 07:23:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=hjJ42zAHLZ6oqBtiqmCfyKvKnZd6rKGmFW2ugEof0OAzas+Q6PtgFqVptKGSOoEzzxK2+LB8ujZCfN1DFD0iDLTgWcIUfLLq6Lv4Hb1ig6KFo58InGHZuLINco8r6gGjF4208dPlzycQ9+1lGB86Z8L64TFQXI1FSzFTkKCc1gY=;
+X-YMail-OSG: 8FbRkYMVM1mNLAVF70W67A7DBxf13AWDwPeTs1wfrrIx_TDc8SoXJytrbn0WrHEZAUDXjw--
+Date: Thu, 9 Aug 2007 13:23:56 +0200 (CEST)
+From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Subject: RE : Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
+In-Reply-To: <200708091251.21726.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708091242.38235.lists-receive@programmierforen.de>
-X-bounce-key: webpack.hosteurope.de;lists-receive@programmierforen.de;1186657988;06fd989f;
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <741983.8529.qm@web26910.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The README file in the cramfs subdirectory says:
+--- Andi Kleen <ak@suse.de> wrote:
+> >  Note that Gujin has a simple problem by using that 32 bits entry point:
+> 
+> There is really no 32bit entry point today usable for external users.
 
-"All data is currently in host-endian format; neither mkcramfs nor the
-kernel ever do swabbing."
+ That is why I added the 16 bits entry point support (selected by default),
+my target with Gujin was not only to load Linux but also another simpler
+format - gzip'ed ELF 32/64 files with real-mode embedded at address 0 .
+ I also had to show that it was possible to write the Linux-real-mode
+code in C with GCC so that someone else would do it and maintain it.
+ I may (in few version) remove Gujin code which fills Linux zero-page
+structure if the 16 bit entry point works in all cases (mostly in DOS
+which help me to create a DBG debug file to sort out Gujin/BIOS problems
+remotely).
+ I may maintain another patch to produce this gzip'ed ELF32/64 for Linux
+as an example of how to use that Gujin interface, but that is not really
+related. That patch is in Gujin Sourceforge download.
+ Note that I call (instead of jump to) the 16 bits entry point so that
+this "function" can return to the bootloader if it detects a problem.
 
-If somebody tries to mount a cramfs with the wrong endianess,
-cramfs only complains about a wrong magic but doesn't inform
-the user that only the endianess isn't right.
+ Etienne.
 
-The following patch adds an error message to the cramfs sources.
-If a user tries to mount a cramfs with the wrong endianess using the
-patched sources, cramfs will display the message "cramfs: wrong
-endianess".
 
-I'm currently not subscribed to the list, so please CC me for any comments.
-
-Tested on an i386 box. Diffed against Linus' git-tree.
-
-Signed-off-by: Andi Drebes <lists-receive@programmierforen.de>
----
-diff --git a/fs/cramfs/inode.c b/fs/cramfs/inode.c
-index 3d194a2..34c9b91 100644
---- a/fs/cramfs/inode.c
-+++ b/fs/cramfs/inode.c
-@@ -258,12 +258,21 @@ static int cramfs_fill_super(struct super_block *sb, void *data, int silent)
- 
- 	/* Do sanity checks on the superblock */
- 	if (super.magic != CRAMFS_MAGIC) {
-+		/* check for wrong endianess */
-+		if(super.magic == CRAMFS_MAGIC_WEND) {
-+			if (!silent)
-+				printk(KERN_ERR "cramfs: wrong endianess\n");
-+			goto out;
-+		}
-+	
- 		/* check at 512 byte offset */
- 		mutex_lock(&read_mutex);
- 		memcpy(&super, cramfs_read(sb, 512, sizeof(super)), sizeof(super));
- 		mutex_unlock(&read_mutex);
- 		if (super.magic != CRAMFS_MAGIC) {
--			if (!silent)
-+			if(super.magic == CRAMFS_MAGIC_WEND && !silent)
-+				printk(KERN_ERR "cramfs: wrong endianess\n");
-+			else if (!silent)
- 				printk(KERN_ERR "cramfs: wrong magic\n");
- 			goto out;
- 		}
-diff --git a/include/linux/cramfs_fs.h b/include/linux/cramfs_fs.h
-index 1dba681..3be4e5a 100644
---- a/include/linux/cramfs_fs.h
-+++ b/include/linux/cramfs_fs.h
-@@ -4,6 +4,7 @@
- #include <linux/types.h>
- 
- #define CRAMFS_MAGIC		0x28cd3d45	/* some random number */
-+#define CRAMFS_MAGIC_WEND	0x453dcd28	/* magic number with the wrong endianess */
- #define CRAMFS_SIGNATURE	"Compressed ROMFS"
- 
- /*
+      _____________________________________________________________________________ 
+Ne gardez plus qu'une seule adresse mail ! Copiez vos mails vers Yahoo! Mail 
