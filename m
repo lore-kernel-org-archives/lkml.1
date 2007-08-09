@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938292AbXHIQg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936659AbXHIQhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938292AbXHIQg0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 12:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763860AbXHIQgK
+	id S936659AbXHIQhg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761060AbXHIQh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 12:36:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35979 "EHLO mx1.redhat.com"
+	Thu, 9 Aug 2007 12:37:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36545 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755146AbXHIQgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 12:36:08 -0400
+	id S1758014AbXHIQhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 12:37:24 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 12/14] CacheFiles: Get the SID under which the CacheFiles
-	module should operate [try #2]
+Subject: [PATCH 09/14] CacheFiles: Permit a process's create SID to be
+	overridden [try #2]
 To: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
        trond.myklebust@fys.uio.no
 Cc: linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
        nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
-Date: Thu, 09 Aug 2007 17:05:40 +0100
-Message-ID: <20070809160540.17906.72214.stgit@warthog.cambridge.redhat.com>
+Date: Thu, 09 Aug 2007 17:05:25 +0100
+Message-ID: <20070809160525.17906.35400.stgit@warthog.cambridge.redhat.com>
 In-Reply-To: <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com>
 References: <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com>
 User-Agent: StGIT/0.13
@@ -31,63 +31,90 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Get the SID under which the CacheFiles module should operate so that the
-SELinux security system can control the accesses it makes.
+Make it possible for a process's file creation SID to be temporarily overridden
+by CacheFiles so that files created in the cache have the right label attached.
+
+Without this facility, files created in the cache will be given the current
+file creation SID of whatever process happens to have invoked CacheFiles
+indirectly by means of opening a netfs file at the time the cache file is
+created.
 
 Signed-Off-By: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/security.h |   20 ++++++++++++++++++++
- security/dummy.c         |    7 +++++++
- security/selinux/hooks.c |    7 +++++++
- 3 files changed, 34 insertions(+), 0 deletions(-)
+ include/linux/security.h |   35 +++++++++++++++++++++++++++++++++++
+ security/dummy.c         |   12 ++++++++++++
+ security/selinux/hooks.c |   18 ++++++++++++++++++
+ 3 files changed, 65 insertions(+), 0 deletions(-)
 
 diff --git a/include/linux/security.h b/include/linux/security.h
-index 21cadea..9cb417e 100644
+index c11dc8a..92d3da0 100644
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -1164,6 +1164,14 @@ struct request_sock;
-  *      owning security ID, and return the security ID as which the process was
-  *      previously acting.
+@@ -1147,6 +1147,13 @@ struct request_sock;
+  *	@secdata contains the security context.
+  *	@seclen contains the length of the security context.
   *
-+ * @cachefiles_get_secid:
-+ *	Determine the security ID for the CacheFiles module to use when
-+ *	accessing the filesystem containing the cache.
-+ *	@secid contains the security ID under which cachefiles daemon is
-+ *      running.
-+ *	@modsecid contains the pointer to where the security ID for the module
-+ *	is to be stored.
++ * @get_fscreate_secid:
++ *	Get the current FS security ID.
++ *
++ * @set_fscreate_secid:
++ *	Set the current FS security ID.
++ *	@secid contains the security ID to set.
 + *
   * This is the main security structure.
   */
  struct security_operations {
-@@ -1352,6 +1360,7 @@ struct security_operations {
- 	u32 (*set_fscreate_secid)(u32 secid);
- 	u32 (*act_as_secid)(u32 secid);
- 	u32 (*act_as_self)(void);
-+	int (*cachefiles_get_secid)(u32 secid, u32 *modsecid);
+@@ -1330,6 +1337,8 @@ struct security_operations {
+  	int (*setprocattr)(struct task_struct *p, char *name, void *value, size_t size);
+ 	int (*secid_to_secctx)(u32 secid, char **secdata, u32 *seclen);
+ 	void (*release_secctx)(char *secdata, u32 seclen);
++	u32 (*get_fscreate_secid)(void);
++	u32 (*set_fscreate_secid)(u32 secid);
  
  #ifdef CONFIG_SECURITY_NETWORK
  	int (*unix_stream_connect) (struct socket * sock,
-@@ -2176,6 +2185,11 @@ static inline u32 security_act_as_self(void)
- 	return security_ops->act_as_self();
+@@ -2127,6 +2136,16 @@ static inline void security_release_secctx(char *secdata, u32 seclen)
+ 	return security_ops->release_secctx(secdata, seclen);
  }
  
-+static inline int security_cachefiles_get_secid(u32 secid, u32 *modsecid)
++static inline u32 security_get_fscreate_secid(void)
 +{
-+	return security_ops->cachefiles_get_secid(secid, modsecid);
++	return security_ops->get_fscreate_secid();
++}
++
++static inline u32 security_set_fscreate_secid(u32 secid)
++{
++	return security_ops->set_fscreate_secid(secid);
 +}
 +
  /* prototypes */
  extern int security_init	(void);
  extern int register_security	(struct security_operations *ops);
-@@ -2883,6 +2897,12 @@ static inline u32 security_act_as_self(void)
- 	return 0;
+@@ -2795,6 +2814,11 @@ static inline void securityfs_remove(struct dentry *dentry)
+ {
  }
  
-+static inline int security_cachefiles_get_secid(u32 secid, u32 *modsecid)
++static inline int security_to_secctx_secid(char *secdata, u32 seclen, u32 *secid)
 +{
-+	*modsecid = 0;
++	return -EOPNOTSUPP;
++}
++
+ static inline int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
+ {
+ 	return -EOPNOTSUPP;
+@@ -2803,6 +2827,17 @@ static inline int security_secid_to_secctx(u32 secid, char **secdata, u32 *secle
+ static inline void security_release_secctx(char *secdata, u32 seclen)
+ {
+ }
++
++static inline u32 security_get_fscreate_secid(void)
++{
++	return 0;
++}
++
++static inline u32 security_set_fscreate_secid(u32 secid)
++{
 +	return 0;
 +}
 +
@@ -95,52 +122,68 @@ index 21cadea..9cb417e 100644
  
  #ifdef CONFIG_SECURITY_NETWORK
 diff --git a/security/dummy.c b/security/dummy.c
-index 6a7a317..2c1fd16 100644
+index 19d813d..d463e6f 100644
 --- a/security/dummy.c
 +++ b/security/dummy.c
-@@ -955,6 +955,12 @@ static u32 dummy_act_as_self(void)
- 	return 0;
+@@ -930,6 +930,16 @@ static void dummy_release_secctx(char *secdata, u32 seclen)
+ {
  }
  
-+static int dummy_cachefiles_get_secid(u32 secid, u32 *modsecid)
++static u32 dummy_get_fscreate_secid(void)
 +{
-+	*modsecid = 0;
++	return 0;
++}
++
++static u32 dummy_set_fscreate_secid(u32 secid)
++{
 +	return 0;
 +}
 +
  #ifdef CONFIG_KEYS
  static inline int dummy_key_alloc(struct key *key, struct task_struct *ctx,
  				  unsigned long flags)
-@@ -1114,6 +1120,7 @@ void security_fixup_ops (struct security_operations *ops)
-  	set_to_dummy_if_null(ops, set_fscreate_secid);
-  	set_to_dummy_if_null(ops, act_as_secid);
-  	set_to_dummy_if_null(ops, act_as_self);
-+ 	set_to_dummy_if_null(ops, cachefiles_get_secid);
+@@ -1084,6 +1094,8 @@ void security_fixup_ops (struct security_operations *ops)
+  	set_to_dummy_if_null(ops, setprocattr);
+  	set_to_dummy_if_null(ops, secid_to_secctx);
+  	set_to_dummy_if_null(ops, release_secctx);
++ 	set_to_dummy_if_null(ops, get_fscreate_secid);
++ 	set_to_dummy_if_null(ops, set_fscreate_secid);
  #ifdef CONFIG_SECURITY_NETWORK
  	set_to_dummy_if_null(ops, unix_stream_connect);
  	set_to_dummy_if_null(ops, unix_may_send);
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index c05d662..725f657 100644
+index 6237933..c5905b0 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -4718,6 +4718,12 @@ static u32 selinux_act_as_self(void)
- 	return oldactor_sid;
+@@ -4661,6 +4661,22 @@ static void selinux_release_secctx(char *secdata, u32 seclen)
+ 	kfree(secdata);
  }
  
-+static int selinux_cachefiles_get_secid(u32 secid, u32 *modsecid)
++static u32 selinux_get_fscreate_secid(void)
 +{
-+	return security_transition_sid(secid, SECINITSID_KERNEL,
-+				       SECCLASS_PROCESS, modsecid);
++	struct task_security_struct *tsec = current->security;
++
++	return tsec->create_sid;
++}
++
++static u32 selinux_set_fscreate_secid(u32 secid)
++{
++	struct task_security_struct *tsec = current->security;
++	u32 oldsid = tsec->create_sid;
++
++	tsec->create_sid = secid;
++	return oldsid;
 +}
 +
  #ifdef CONFIG_KEYS
  
  static int selinux_key_alloc(struct key *k, struct task_struct *tsk,
-@@ -4905,6 +4911,7 @@ static struct security_operations selinux_ops = {
- 	.set_fscreate_secid =		selinux_set_fscreate_secid,
- 	.act_as_secid =			selinux_act_as_secid,
- 	.act_as_self =			selinux_act_as_self,
-+	.cachefiles_get_secid =		selinux_cachefiles_get_secid,
+@@ -4843,6 +4859,8 @@ static struct security_operations selinux_ops = {
+ 
+ 	.secid_to_secctx =		selinux_secid_to_secctx,
+ 	.release_secctx =		selinux_release_secctx,
++	.get_fscreate_secid =		selinux_get_fscreate_secid,
++	.set_fscreate_secid =		selinux_set_fscreate_secid,
  
          .unix_stream_connect =		selinux_socket_unix_stream_connect,
  	.unix_may_send =		selinux_socket_unix_may_send,
