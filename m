@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934499AbXHIQd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936430AbXHIQfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934499AbXHIQd7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 12:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937483AbXHIQdh
+	id S936430AbXHIQfR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:35:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbXHIQe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 12:33:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34817 "EHLO mx1.redhat.com"
+	Thu, 9 Aug 2007 12:34:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35486 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936354AbXHIQde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 12:33:34 -0400
+	id S1755245AbXHIQe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 12:34:57 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 07/14] CacheFiles: Permit the page lock state to be monitored
-	[try #2]
+Subject: [PATCH 11/14] CacheFiles: Permit an inode's security ID to be
+	obtained [try #2]
 To: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
        trond.myklebust@fys.uio.no
 Cc: linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
        nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
-Date: Thu, 09 Aug 2007 17:05:15 +0100
-Message-ID: <20070809160515.17906.57457.stgit@warthog.cambridge.redhat.com>
+Date: Thu, 09 Aug 2007 17:05:35 +0100
+Message-ID: <20070809160535.17906.59852.stgit@warthog.cambridge.redhat.com>
 In-Reply-To: <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com>
 References: <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com>
 User-Agent: StGIT/0.13
@@ -31,63 +31,104 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a function to install a monitor on the page lock waitqueue for a particular
-page, thus allowing the page being unlocked to be detected.
-
-This is used by CacheFiles to detect read completion on a page in the backing
-filesystem so that it can then copy the data to the waiting netfs page.
+Permit an inode's security ID to be obtained by the CacheFiles module.  This is
+then used as the SID with which files and directories will be created in the
+cache.
 
 Signed-Off-By: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/pagemap.h |    5 +++++
- mm/filemap.c            |   19 +++++++++++++++++++
- 2 files changed, 24 insertions(+), 0 deletions(-)
+ include/linux/security.h |   13 +++++++++++++
+ security/dummy.c         |    6 ++++++
+ security/selinux/hooks.c |    8 ++++++++
+ 3 files changed, 27 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index d1049b6..452fdcf 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -220,6 +220,11 @@ static inline void wait_on_page_fscache_write(struct page *page)
- extern void end_page_fscache_write(struct page *page);
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 422015d..21cadea 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -1252,6 +1252,7 @@ struct security_operations {
+   	int (*inode_getsecurity)(const struct inode *inode, const char *name, void *buffer, size_t size, int err);
+   	int (*inode_setsecurity)(struct inode *inode, const char *name, const void *value, size_t size, int flags);
+   	int (*inode_listsecurity)(struct inode *inode, char *buffer, size_t buffer_size);
++	u32 (*inode_get_secid)(struct inode *inode);
  
- /*
-+ * Add an arbitrary waiter to a page's wait queue
-+ */
-+extern void add_page_wait_queue(struct page *page, wait_queue_t *waiter);
-+
-+/*
-  * Fault a userspace page into pagetables.  Return non-zero on a fault.
-  *
-  * This assumes that two userspace pages are always sufficient.  That's
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 5e419a2..c60c24e 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -518,6 +518,25 @@ void fastcall wait_on_page_bit(struct page *page, int bit_nr)
- EXPORT_SYMBOL(wait_on_page_bit);
+ 	int (*file_permission) (struct file * file, int mask);
+ 	int (*file_alloc_security) (struct file * file);
+@@ -1814,6 +1815,13 @@ static inline int security_inode_listsecurity(struct inode *inode, char *buffer,
+ 	return security_ops->inode_listsecurity(inode, buffer, buffer_size);
+ }
  
- /**
-+ * add_page_wait_queue - Add an arbitrary waiter to a page's wait queue
-+ * @page - Page defining the wait queue of interest
-+ * @waiter - Waiter to add to the queue
-+ *
-+ * Add an arbitrary @waiter to the wait queue for the nominated @page.
-+ */
-+void add_page_wait_queue(struct page *page, wait_queue_t *waiter)
++static inline u32 security_inode_get_secid(struct inode *inode)
 +{
-+	wait_queue_head_t *q = page_waitqueue(page);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&q->lock, flags);
-+	__add_wait_queue(q, waiter);
-+	spin_unlock_irqrestore(&q->lock, flags);
++	if (unlikely(IS_PRIVATE(inode)))
++		return 0;
++	return security_ops->inode_get_secid(inode);
 +}
 +
-+EXPORT_SYMBOL_GPL(add_page_wait_queue);
+ static inline int security_file_permission (struct file *file, int mask)
+ {
+ 	return security_ops->file_permission (file, mask);
+@@ -2514,6 +2522,11 @@ static inline int security_inode_listsecurity(struct inode *inode, char *buffer,
+ 	return 0;
+ }
+ 
++static inline u32 security_inode_get_secid(struct inode *inode)
++{
++	return 0;
++}
 +
-+/**
-  * unlock_page - unlock a locked page
-  * @page: the page
-  *
+ static inline int security_file_permission (struct file *file, int mask)
+ {
+ 	return 0;
+diff --git a/security/dummy.c b/security/dummy.c
+index 77ec75d..6a7a317 100644
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -392,6 +392,11 @@ static int dummy_inode_listsecurity(struct inode *inode, char *buffer, size_t bu
+ 	return 0;
+ }
+ 
++static u32 dummy_inode_get_secid(struct inode *inode)
++{
++	return 0;
++}
++
+ static const char *dummy_inode_xattr_getsuffix(void)
+ {
+ 	return NULL;
+@@ -1042,6 +1047,7 @@ void security_fixup_ops (struct security_operations *ops)
+ 	set_to_dummy_if_null(ops, inode_getsecurity);
+ 	set_to_dummy_if_null(ops, inode_setsecurity);
+ 	set_to_dummy_if_null(ops, inode_listsecurity);
++	set_to_dummy_if_null(ops, inode_get_secid);
+ 	set_to_dummy_if_null(ops, file_permission);
+ 	set_to_dummy_if_null(ops, file_alloc_security);
+ 	set_to_dummy_if_null(ops, file_free_security);
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 66af819..c05d662 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2464,6 +2464,13 @@ static int selinux_inode_listsecurity(struct inode *inode, char *buffer, size_t
+ 	return len;
+ }
+ 
++static u32 selinux_inode_get_secid(struct inode *inode)
++{
++	struct inode_security_struct *isec = inode->i_security;
++
++	return isec->sid;
++}
++
+ /* file security operations */
+ 
+ static int selinux_file_permission(struct file *file, int mask)
+@@ -4822,6 +4829,7 @@ static struct security_operations selinux_ops = {
+ 	.inode_getsecurity =            selinux_inode_getsecurity,
+ 	.inode_setsecurity =            selinux_inode_setsecurity,
+ 	.inode_listsecurity =           selinux_inode_listsecurity,
++	.inode_get_secid =		selinux_inode_get_secid,
+ 
+ 	.file_permission =		selinux_file_permission,
+ 	.file_alloc_security =		selinux_file_alloc_security,
 
