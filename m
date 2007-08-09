@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbXHITIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbXHITLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757900AbXHITIp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 15:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbXHITIg
+	id S1757350AbXHITLM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 15:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbXHITKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 15:08:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36330 "EHLO mx1.redhat.com"
+	Thu, 9 Aug 2007 15:10:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37597 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751302AbXHITIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 15:08:35 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0708091143440.19611@us.intercode.com.au>
-References: <Pine.LNX.4.64.0708091143440.19611@us.intercode.com.au> <162335.27499.qm@web36605.mail.mud.yahoo.com>
-To: James Morris <jmorris@namei.org>
-Cc: dhowells@redhat.com, Casey Schaufler <casey@schaufler-ca.com>,
-       torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
-       trond.myklebust@fys.uio.no, linux-fsdevel@vger.kernel.org,
-       linux-cachefs@redhat.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/14] CacheFiles: Permit an inode's security ID to be obtained [try #2]
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Thu, 09 Aug 2007 20:07:39 +0100
-Message-ID: <22259.1186686459@redhat.com>
+	id S1751043AbXHITKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 15:10:52 -0400
+Message-ID: <46BB656D.6090408@redhat.com>
+Date: Thu, 09 Aug 2007 15:05:17 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+CC: wjiang@resilience.com, cfriesen@nortel.com, wensong@linux-vs.org,
+       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, ak@suse.de,
+       netdev@vger.kernel.org, paulmck@linux.vnet.ibm.com, horms@verge.net.au,
+       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       jesper.juhl@gmail.com, torvalds@linux-foundation.org, zlynx@acm.org,
+       rpjday@mindspring.com, schwidefsky@de.ibm.com, davem@davemloft.net
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com> <3bfabd7472d6f019aa1880b14013f7a1@kernel.crashing.org> <46BB3ECF.2070100@redhat.com> <1abc2c621d6b62b3ac9f489d4d18806a@kernel.crashing.org>
+In-Reply-To: <1abc2c621d6b62b3ac9f489d4d18806a@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Morris <jmorris@namei.org> wrote:
+Segher Boessenkool wrote:
+>>> The only safe way to get atomic accesses is to write
+>>> assembler code.  Are there any downsides to that?  I don't
+>>> see any.
+>>
+>> The assumption that aligned word reads and writes are atomic, and that 
+>> words are aligned unless explicitly packed otherwise, is endemic in 
+>> the kernel.  No sane compiler violates this assumption.  It's true 
+>> that we're not portable to insane compilers after this patch, but we 
+>> never were in the first place.
+> 
+> You didn't answer my question: are there any downsides to using
+> explicit coded-in-assembler accesses for atomic accesses?  You
+> can handwave all you want that it should "just work" with
+> volatile accesses, but volatility != atomicity, volatile in C
+> is really badly defined, GCC never officially gave stronger
+> guarantees, and we have a bugzilla full of PRs to show what a
+> minefield it is.
+> 
+> So, why not use the well-defined alternative?
 
-> David, I've looked at the code and can't see that you need to access the 
-> label itself outside the LSM.  Could you instead simply pass the inode 
-> pointer around?
-
-It's not quite that simple.  I need to impose *two* security labels in
-cachefiles_begin_secure() when I'm about to act on behalf of a process that's
-tried to access a netfs file:
-
- (1) The security label to act as.  This is the label attached to the
-     cachefilesd process when it starts the cache.  This is obtained by
-     cachefiles_get_security_ID().
-
- (2) The security label to create files as.  This is the label attached to
-     root directory of the cache.  This is obtained by
-     cachefiles_determine_cache_secid().
-
-David
+Because we don't need to, and it hurts performance.
