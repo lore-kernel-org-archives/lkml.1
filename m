@@ -1,95 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761004AbXHIUru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763181AbXHIUvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761004AbXHIUru (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 16:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbXHIUrm
+	id S1763181AbXHIUvh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 16:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbXHIUva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 16:47:42 -0400
-Received: from mga03.intel.com ([143.182.124.21]:38228 "EHLO mga03.intel.com"
+	Thu, 9 Aug 2007 16:51:30 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:59689 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753590AbXHIUrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 16:47:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,242,1183359600"; 
-   d="scan'208";a="261124829"
-Subject: [GIT PULL] async_tx: update MAINTAINERS for async_tx and iop-adma
-From: Dan Williams <dan.j.williams@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Shannon Nelson <shannon.nelson@intel.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 09 Aug 2007 13:47:39 -0700
-Message-Id: <1186692459.21486.7.camel@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+	id S1755427AbXHIUv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 16:51:29 -0400
+Date: Thu, 9 Aug 2007 21:51:27 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Lee.Schermerhorn@hp.com, pj@sgi.com, ak@suse.de,
+       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 0/3] Use one zonelist per node instead of multiple zonelists v2
+Message-ID: <20070809205126.GA8746@skynet.ie>
+References: <20070808161504.32320.79576.sendpatchset@skynet.skynet.ie> <20070809131943.64cb0921.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070809131943.64cb0921.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from:
+On (09/08/07 13:19), Andrew Morton didst pronounce:
+> On Wed,  8 Aug 2007 17:15:04 +0100 (IST)
+> Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > The following patches replace multiple zonelists per node with one zonelist
+> > that is filtered based on the GFP flags.
+> 
+> I think I'll duck this for now on im-trying-to-vaguely-stabilize-mm grounds.
+> Let's go with the horrible-hack for 2.6.23, then revert it and get this
+> new approach merged and stabilised over the next week or two?
+> 
 
-	git://lost.foo-projects.org/~dwillia2/git/iop async-tx-fixes-for-linus
+I'm happy with that plan. I am about to release V3 of the one-zonelist
+patchset that includes optimisations so I'm reasonably confident we can
+get it to a state we like over the next few weeks.
 
-to receive:
-
-async_tx: update MAINTAINERS for async_tx and iop-adma
-
-Also, rename the dma engine entry since it is now a generic offload engine
-subsystem, not just memcpy.
-
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
----
-
- MAINTAINERS |   21 +++++++++++++++++++--
- 1 files changed, 19 insertions(+), 2 deletions(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e65e96a..fa52a30 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -612,6 +612,15 @@ W:	http://sourceforge.net/projects/acpi4asus
- W:	http://xf.iksaif.net/acpi4asus
- S:	Maintained
- 
-+ASYNCHRONOUS TRANSFERS/TRANSFORMS API
-+P:	Dan Williams
-+M:	dan.j.williams@intel.com
-+P:	Shannon Nelson
-+M:	shannon.nelson@intel.com
-+L:	linux-kernel@vger.kernel.org
-+W:	http://sourceforge.net/projects/xscaleiop
-+S:	Supported
-+
- ATA OVER ETHERNET DRIVER
- P:	Ed L. Cashin
- M:	ecashin@coraid.com
-@@ -1277,11 +1286,13 @@ M:	tori@unhappy.mine.nu
- L:	netdev@vger.kernel.org
- S:	Maintained
- 
--DMA GENERIC MEMCPY SUBSYSTEM
-+DMA GENERIC OFFLOAD ENGINE SUBSYSTEM
- P:	Shannon Nelson
- M:	shannon.nelson@intel.com
-+P:	Dan Williams
-+M:	dan.j.williams@intel.com
- L:	linux-kernel@vger.kernel.org
--S:	Maintained
-+S:	Supported
- 
- DME1737 HARDWARE MONITOR DRIVER
- P:	Juerg Haefliger
-@@ -1958,6 +1969,12 @@ M:	shannon.nelson@intel.com
- L:	linux-kernel@vger.kernel.org
- S:	Supported
- 
-+INTEL IOP-ADMA DMA DRIVER
-+P:	Dan Williams
-+M:	dan.j.williams@intel.com
-+L:	linux-kernel@vger.kernel.org
-+S:	Supported
-+
- INTEL IXP4XX RANDOM NUMBER GENERATOR SUPPORT
- P:	Deepak Saxena
- M:	dsaxena@plexity.net
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
