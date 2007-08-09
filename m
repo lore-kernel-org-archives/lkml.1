@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932749AbXHIKtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936214AbXHIKve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932749AbXHIKtw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 06:49:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbXHIKtm
+	id S936214AbXHIKve (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 06:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbXHIKv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 06:49:42 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:36295 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754517AbXHIKtm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 06:49:42 -0400
-Date: Thu, 9 Aug 2007 12:49:41 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Documentation files in html format?
-In-Reply-To: <20070809113122.3aa508e4@oldman.hamilton.local>
-Message-ID: <Pine.LNX.4.64.0708091244540.10387@fbirervta.pbzchgretzou.qr>
-References: <20070809113122.3aa508e4@oldman.hamilton.local>
+	Thu, 9 Aug 2007 06:51:26 -0400
+Received: from ns2.suse.de ([195.135.220.15]:54783 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751193AbXHIKvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 06:51:25 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
+Date: Thu, 9 Aug 2007 12:51:21 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
+References: <183884.85434.qm@web26915.mail.ukl.yahoo.com>
+In-Reply-To: <183884.85434.qm@web26915.mail.ukl.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708091251.21726.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Aug 9 2007 11:31, Stephen Hemminger wrote:
->
->Since the network device documentation needs a rewrite, I was thinking
->of using basic html format instead of just plain text. But since this would
->be starting an new precedent for kernel documentation, some it seemed
->like a worthwhile topic for discussion.
->
->Advantages of html:
->  * basic formatting like lists, italics, etc
->  * easier to integrate into other places and retain formatting
->  * ability to link documents and to external sources easier
->
->Downsides:
->  * can become too formatted and unclear
+>  Note that Gujin has a simple problem by using that 32 bits entry point:
 
-So only use <h1> to <h6>, <p>, <b>, <i>, <u>, <ul>, <ol> and <li>.
-Perhaps maybe <p class="block"> with .block{text-align:justify;}
-because that looks nice in general.
+There is really no 32bit entry point today usable for external users. Or rather
+it might by chance work today, but if we change the zero page (and there
+is no guarantee it'll not be changed). I can pretty much guarantee it'll
+be changed at some point. And you'll break if you use it.
 
->  * accessibility and translation issues?
+kexec can use the 32bit entry, but only because it is in tree so it can be fixed 
+up for any changes.
 
-Accessibility, well, just run w3m instead of less, and you've got it.
-Or `w3m -dump xxx.html | less` if you really need it paged.
+If you want to use it you would need to define some versionable protocol
+first similar to the real mode boot protocol. That would require some work
+and some thought to make sure it is forwards and backwards compatible.
 
-Translation, no I do not think that is a big issue. But people should
-perhaps be kept on the utf-8 toe since html can specify the encoding.
+I'll add a comment to zero-page.txt to make this more clear. Just because
+something is documented in Documentation doesn't mean it's an external stable
+ABI.
 
->  * even more style issues
-
-- two lines between block elements, e.g.
-  <h1></h1>\n\n<p></p>\n\n<ol></ol>\n\n..
-
-- tabs used, <ol>\t<li>long long text\n\t\twrapped line</li>\n</ol>
-
-There is not much to it I think. Use of WYSIWYG editors should be prohibited,
-since some reformat the code in terms of line length, "aol-ize" it
-(<ol> to <OL>) or replace tags by some synonym.
-
-
-	Jan
--- 
+-Andi
