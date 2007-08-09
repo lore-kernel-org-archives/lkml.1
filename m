@@ -1,99 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934771AbXHIGzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934316AbXHIG73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934771AbXHIGzR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 02:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759025AbXHIGzD
+	id S934316AbXHIG73 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 02:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbXHIG7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 02:55:03 -0400
-Received: from gw.goop.org ([64.81.55.164]:38235 "EHLO mail.goop.org"
+	Thu, 9 Aug 2007 02:59:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43458 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751694AbXHIGzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 02:55:00 -0400
-Message-ID: <46BAB9DD.5030400@goop.org>
-Date: Wed, 08 Aug 2007 23:53:17 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	id S1757652AbXHIG7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 02:59:20 -0400
+Date: Thu, 9 Aug 2007 08:59:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mitchell Erblich <erblichs@earthlink.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Question: RT schedular : task_tick_rt(struct rq *rq,
+	structtask_struct *p) : decreases overhead when  rq->nr_running == 1
+Message-ID: <20070809065916.GB30046@elte.hu>
+References: <000501c7da16$838dea40$6501a8c0@earthlink.net>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 25/25] [PATCH] add paravirtualization support for x86_64
-References: <11865467522495-git-send-email-gcosta@redhat.com> <1186546847263-git-send-email-gcosta@redhat.com> <11865468513077-git-send-email-gcosta@redhat.com> <200708081200.13669.ak@suse.de>
-In-Reply-To: <200708081200.13669.ak@suse.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <000501c7da16$838dea40$6501a8c0@earthlink.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> +	if (opfunc == NULL)
->> +		/* If there's no function, patch it with a ud2a (BUG) */
->> +		ret = paravirt_patch_insns(site, len, start_ud2a, end_ud2a);
->>     
->
-> This will actually give corrupted BUGs because you don't supply
-> the full inline BUG header. Perhaps another trap would be better.
->   
 
-The BUG handler will still report it as a normal illegal instruction. 
-It should never happen; the main thing is that it clearly points out
-where the problem is (as opposed to jumping to a NULL pointer and
-getting the unhelpful "oh, eip is zero" symptom).
+* Mitchell Erblich <erblichs@earthlink.net> wrote:
 
->> +EXPORT_SYMBOL(paravirt_ops);
->>     
->
-> Definitely _GPL at least.
->   
+> First, RT/RR tasks are not deprecated. [...]
 
-No, for the same reason as i386.
+I'm confused, do you say this in reference to anything i said? I did not 
+say that RR tasks are deprecated and you were top-posting so i cannot 
+connect it to anything specific. I only said RR tasks are _rare_:
 
->> +extern struct paravirt_ops paravirt_ops;
->>     
->
-> Should be native_paravirt_ops I guess
->
->   
+>> this is a pretty rare codepath because the overwhelming majority of 
+>> RT apps uses SCHED_FIFO [...]
 
-No, because its the current set of pv_ops.  It starts all native, but it
-is either completely or partially overwritten by hypervisor-specific ops.
+and i hope you can see the difference between 'rare' and 'deprecated' 
+;-) And i suspect you also missed the last bit of what i wrote:
 
->> +
->> + * This generates an indirect call based on the operation type number.
->>     
->
-> The macros here don't
->   
+>> So this is on several levels an uncommon workload and by adding a 
+>> check like that we'd increase the codesize. But ... no strong 
+>> feelings against this optimization - if you send a proper patch we 
+>> can apply it, it certainly makes sense from a logic POV.
 
-Yes, PARAVIRT_CALL does: "call *(paravirt_ops+%c[paravirt_typenum]*8);"
+and you also missed the first bit it appears:
 
+>> your change is a possible optimization, [...]
 
->> +			     : "=a"(f)
->> +			     : paravirt_type(save_fl),
->> +			       paravirt_clobber(CLBR_RAX)
->> +			     : "memory", "cc");
->> +	return f;
->> +}
->> +
->> +static inline void raw_local_irq_restore(unsigned long f)
->> +{
->> +	__asm__ __volatile__(paravirt_alt(PARAVIRT_CALL)
->> +			     :
->> +			     : "D" (f),
->>     
->
-> Have you investigated if a different input register generates better/smaller 
-> code? I would assume rdi to be usually used already for the caller's 
-> arguments so it will produce spilling
->
-> Similar for the rax return in the other functions.
->   
+so you are banging, with full force, on completely open doors =B-)
 
-This has to match the normal C calling convention though, doesn't it?
-
-    J
+	Ingo
