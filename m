@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939296AbXHIM3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939322AbXHIMbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939296AbXHIM3t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765504AbXHIM3m
+	id S939322AbXHIMbx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765504AbXHIMbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 08:29:42 -0400
-Received: from www.osadl.org ([213.239.205.134]:38524 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756385AbXHIM3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:29:41 -0400
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Organization: Linutronix
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 2/3] UIO: Documentation
-Date: Thu, 9 Aug 2007 14:29:34 +0200
-User-Agent: KMail/1.9.5
-Cc: Valdis.Kletnieks@vt.edu, Jesper Juhl <jesper.juhl@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-References: <20070718232332.GA4620@kroah.com> <14166.1186611154@turing-police.cc.vt.edu> <20070809004058.6066fcd1@the-village.bc.nu>
-In-Reply-To: <20070809004058.6066fcd1@the-village.bc.nu>
+	Thu, 9 Aug 2007 08:31:44 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:36155 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763610AbXHIMbn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 08:31:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ONwhBPyyIcVxs+VQhXZUH/RG9kAJaX017AVtpiizwrALkGyl09HfavTY22ZdHrFDNpluoEVzAH9fo29nitYmqkgFhuGj54mlJhVD2PD1yAS8ypO/RsXciM2BofjSDh5No2sTphgW9GXTMcfDkEWPQbkClKFX6amI/OSCCi4KEhA=
+Message-ID: <40f323d00708090531p34f1fffcub5186d358f9beafb@mail.gmail.com>
+Date: Thu, 9 Aug 2007 14:31:41 +0200
+From: "Benoit Boissinot" <bboissin@gmail.com>
+To: "Chris Holvenstot" <cholvenstot@comcast.net>
+Subject: Re: Kernel / Fliesystem Error
+Cc: "Chris Holvenstot" <saltydog@houston.rr.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1186658730.7018.8.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708091429.35075.hjk@linutronix.de>
+References: <1186623555.6613.17.camel@localhost>
+	 <1186658730.7018.8.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 09 August 2007 01:40 schrieb Alan Cox:
-> > On the other hand, given that we've always said that closed-source stuff in
-> > userspace is OK, the only way to not let *that* horse out of the barn is to
-> > not merge UIO at all.
-> 
-> It really makes no difference whether it is merged or not. The test is
-> "derivative work" and not 'linking'. 
-> 
-> A user space driver that is unusuable without a specific GPL kernel chunk
-> is quite likely to be a derived work of the GPL kernel module 
+On 8/9/07, Chris Holvenstot <cholvenstot@comcast.net> wrote:
+> > Chris Snook wrote:
+> >
+> >The problem here is that your clock is wrong either at mount (boot)
+> >time or unmount (shutdown) time. There's nothing wrong with ext3,
+> >except that it happens to be noticing this condition.
+>
+> 1.  This happens even when the system is rebooted via the shutdown -r
+> command - not much time for my fat fingers to get in there and dork up
+> the system clock.
+>
+> 2.  As I stated in the original note, this does NOT happen with kernel
+> 2.6.22.1 - so far I have only seen it with the 2.6.23-rc1, rc2, and
+> rc2-git1 kernels.
+>
 
-I disagree. UIO is a documented kernel<->userspace interface, like sysfs
-or proc. Using your argument, we would also have to say that a userspace
-software that is unusable without sysfs is a derived work of the kernel.
-But IANAL, tell me if I missed an important point.
+But very likely time keeping was broken between .22 and .23-rc.
+Probably not ext3.
 
-> so the 
-> documentation is giving poor advice however
+regards,
 
-I guess you mean this sentence:
-
-"if you need to keep some parts of your driver closed source, you can do so 
-without violating the GPL license on the kernel."
-
-What would you write instead?
-
-Thanks,
-Hans
+Benoit
