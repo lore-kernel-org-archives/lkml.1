@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761278AbXHIWZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761746AbXHIW1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761278AbXHIWZH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 18:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbXHIWYx
+	id S1761746AbXHIW1R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 18:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbXHIW1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 18:24:53 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39499 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753453AbXHIWYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 18:24:52 -0400
-In-Reply-To: <46BB74B9.4070702@nortel.com>
-References: <20070809142430.GA19817@shell.boston.redhat.com> <8f6bb8a9e4f2819a161d732bdb6c70c0@kernel.crashing.org> <46BB403D.10202@redhat.com> <0a08872e608cf5f7a3d9c0fc746a1051@kernel.crashing.org> <46BB74B9.4070702@nortel.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9452870655b1844283961f8e9e406464@kernel.crashing.org>
+	Thu, 9 Aug 2007 18:27:03 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59311 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752945AbXHIW1B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 18:27:01 -0400
+Message-ID: <46BB94B1.9020307@zytor.com>
+Date: Thu, 09 Aug 2007 15:26:57 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Mikko Rapeli <mikko.rapeli@iki.fi>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: early boot lockup with 2.6.23-rc1
+References: <20070808223120.GA2286@nalle> <46BAC14E.9040604@zytor.com> <20070809182316.GA2289@nalle> <20070809194348.GA2287@nalle>
+In-Reply-To: <20070809194348.GA2287@nalle>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Cc: wjiang@resilience.com, rpjday@mindspring.com, wensong@linux-vs.org,
-       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, ak@suse.de,
-       netdev@vger.kernel.org, horms@verge.net.au, akpm@linux-foundation.org,
-       linux-arch@vger.kernel.org, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, schwidefsky@de.ibm.com,
-       davem@davemloft.net, zlynx@acm.org, Chris Snook <csnook@redhat.com>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 24/24] document volatile atomic_read() behavior
-Date: Fri, 10 Aug 2007 00:23:47 +0200
-To: "Chris Friesen" <cfriesen@nortel.com>
-X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Anyway, what's the supposed advantage of *(volatile *) vs. using
->> a real volatile object?  That you can access that same object in
->> a non-volatile way?
->
-> That's my understanding.  That way accesses where you don't care about 
-> volatility may be optimised.
+Mikko Rapeli wrote:
+> As I could guess from the changelogs, 2.6.22-git2 works and anything
+> after 2.6.22-git3 doesn't.
 
-But those accesses might be done non-atomically then (for example,
-if the compiler knows it only needs to write one byte, it might not
-bother writing the rest), so that's no good if you want to read the
-thing atomically too.
+Okay, here is something to try.  Don't try this unless you haven't
+already tested 2.6.23-rc2, since there is a bug that was fixed in
+2.6.23-rc2 that might be the cause of your problem (you can test that
+easily by specifying edd=skipmbr on the kernel command line.)
 
-> For instance, in cases where there are already other things 
-> controlling visibility (as are needed for atomic increment, for 
-> example) you don't need to make the access itself volatile.
+Anyway, if that doesn't solve it:
 
-Hrm, you mean within a lock or similar?  You'll get the same semantics
-as volatile anyway there.
+In main() in arch/i386/boot/main.c, please comment out everything from
+query_mca() to query_edd(), inclusively.
 
-
-Segher
-
+	-hpa
