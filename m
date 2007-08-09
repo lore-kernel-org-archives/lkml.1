@@ -1,346 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964828AbXHILLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939138AbXHILNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964828AbXHILLS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 07:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764009AbXHILLD
+	id S939138AbXHILNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 07:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932189AbXHILNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 07:11:03 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:39167 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763045AbXHILLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 07:11:00 -0400
-Date: Thu, 9 Aug 2007 15:10:44 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl
-Subject: 2.6.23-rc2-mm1: hang, prop_norm_single involved
-Message-ID: <20070809111044.GA6575@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 9 Aug 2007 07:13:10 -0400
+Received: from server001.webpack.hosteurope.de ([80.237.130.9]:57359 "EHLO
+	server001.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932209AbXHILNI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 07:13:08 -0400
+X-Greylist: delayed 1823 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Aug 2007 07:13:08 EDT
+From: Andi Drebes <lists-receive@programmierforen.de>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] cramfs: Error message about endianess
+Date: Thu, 9 Aug 2007 12:42:38 +0200
+User-Agent: KMail/1.9.5
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Message-Id: <200708091242.38235.lists-receive@programmierforen.de>
+X-bounce-key: webpack.hosteurope.de;lists-receive@programmierforen.de;1186657988;06fd989f;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LTP run reproducably hangs during rwtest01 test
-rwtest -N rwtest01 -c -q -i 60s -f sync 10%25000:rs-sync=$$
-Calltrace is always the same:
+The README file in the cramfs subdirectory says:
 
-INFO: trying to register non-static key
-	__lock_acquire+0x210/0xc9e
-	lock_acquire+0x87/0xa3
-	_spin_lock_irqsave+0x2f/0x5f
-	prop_norm_single+0x32/0x74
-	set_page_dirty+0xd6/0x151
-	set_page_dirty_balance+0xc/0x71
-	do_wp_page+0x4ae/0x52b
-	handle_mm_fault+0x616/0x6c4
-	do_page_fault+0x1b0/0x51c
+"All data is currently in host-endian format; neither mkcramfs nor the
+kernel ever do swabbing."
 
-Box is UP 2.66GHz Celeron, 1G of RAM. Pretty much every debugging option
-is on, it's -mm after all...
+If somebody tries to mount a cramfs with the wrong endianess,
+cramfs only complains about a wrong magic but doesn't inform
+the user that only the endianess isn't right.
 
+The following patch adds an error message to the cramfs sources.
+If a user tries to mount a cramfs with the wrong endianess using the
+patched sources, cramfs will display the message "cramfs: wrong
+endianess".
 
-CONFIG_X86_32=y
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CMOS_UPDATE=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
-CONFIG_NONIRQ_WAKEUP=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_X86=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_QUICKLIST=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_DMI=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_IKCONFIG=y
-CONFIG_IKCONFIG_PROC=y
-CONFIG_LOG_BUF_SHIFT=17
-CONFIG_SYSFS_DEPRECATED=y
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-CONFIG_EMBEDDED=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_SHMEM=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_SLAB=y
-CONFIG_PROC_PAGE_MONITOR=y
-CONFIG_PROC_KPAGEMAP=y
-CONFIG_RT_MUTEXES=y
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_KMOD=y
-CONFIG_BLOCK=y
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_CFQ=y
-CONFIG_DEFAULT_IOSCHED="cfq"
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_X86_PC=y
-CONFIG_MPENTIUM4=y
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=7
-CONFIG_X86_XADD=y
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=4
-CONFIG_HPET_TIMER=y
-CONFIG_HPET_EMULATE_RTC=y
-CONFIG_PREEMPT=y
-CONFIG_PREEMPT_BKL=y
-CONFIG_X86_UP_APIC=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_MCE=y
-CONFIG_X86_MCE_NONFATAL=y
-CONFIG_VM86=y
-CONFIG_X86_MSR=y
-CONFIG_HIGHMEM4G=y
-CONFIG_VMSPLIT_3G=y
-CONFIG_PAGE_OFFSET=0xC0000000
-CONFIG_HIGHMEM=y
-CONFIG_ARCH_FLATMEM_ENABLE=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_SPARSEMEM_STATIC=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_NR_QUICK=1
-CONFIG_VIRT_TO_BUS=y
-CONFIG_HIGHPTE=y
-CONFIG_MTRR=y
-CONFIG_HZ_300=y
-CONFIG_HZ=300
-CONFIG_PHYSICAL_START=0x100000
-CONFIG_PHYSICAL_ALIGN=0x100000
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-CONFIG_PM=y
-CONFIG_ACPI=y
-CONFIG_ACPI_FAN=m
-CONFIG_ACPI_BLACKLIST_YEAR=0
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_X86_PM_TIMER=y
-CONFIG_PCI=y
-CONFIG_PCI_GOANY=y
-CONFIG_PCI_BIOS=y
-CONFIG_PCI_DIRECT=y
-CONFIG_PCI_MMCONFIG=y
-CONFIG_ISA_DMA_API=y
-CONFIG_BINFMT_ELF=y
-CONFIG_NET=y
-CONFIG_PACKET=m
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_INET=y
-CONFIG_IP_FIB_HASH=y
-CONFIG_SYN_COOKIES=y
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_PNP=y
-CONFIG_PNPACPI=y
-CONFIG_BLK_DEV=y
-CONFIG_BLK_DEV_LOOP=m
-CONFIG_MISC_DEVICES=y
-CONFIG_IDE=y
-CONFIG_IDE_MAX_HWIFS=4
-CONFIG_BLK_DEV_IDE=y
-CONFIG_BLK_DEV_IDEDISK=y
-CONFIG_BLK_DEV_IDECD=m
-CONFIG_IDE_GENERIC=y
-CONFIG_BLK_DEV_IDEPCI=y
-CONFIG_IDEPCI_SHARE_IRQ=y
-CONFIG_IDEPCI_PCIBUS_ORDER=y
-CONFIG_BLK_DEV_GENERIC=y
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-CONFIG_BLK_DEV_PIIX=y
-CONFIG_BLK_DEV_IDEDMA=y
-CONFIG_SCSI=y
-CONFIG_SCSI_DMA=y
-CONFIG_BLK_DEV_SD=y
-CONFIG_SCSI_WAIT_SCAN=m
-CONFIG_SCSI_LOWLEVEL=y
-CONFIG_ATA=y
-CONFIG_ATA_ACPI=y
-CONFIG_ATA_PIIX=y
-CONFIG_NETDEVICES=y
-CONFIG_NET_ETHERNET=y
-CONFIG_MII=y
-CONFIG_NET_PCI=y
-CONFIG_8139TOO=y
-CONFIG_8139TOO_PIO=y
-CONFIG_NETDEV_1000=y
-CONFIG_E1000=y
-CONFIG_NETCONSOLE=m
-CONFIG_NETPOLL=y
-CONFIG_NET_POLL_CONTROLLER=y
-CONFIG_INPUT=y
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-CONFIG_INPUT_EVDEV=y
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=y
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-CONFIG_SERIO_SERPORT=y
-CONFIG_SERIO_LIBPS2=y
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_SERIAL_8250=y
-CONFIG_SERIAL_8250_CONSOLE=y
-CONFIG_FIX_EARLYCON_MEM=y
-CONFIG_SERIAL_8250_PCI=y
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_LEGACY_PTYS=y
-CONFIG_LEGACY_PTY_COUNT=256
-CONFIG_RTC=y
-CONFIG_AGP=y
-CONFIG_AGP_INTEL=y
-CONFIG_DRM=y
-CONFIG_DRM_I915=y
-CONFIG_DEVPORT=y
-CONFIG_I2C=y
-CONFIG_I2C_BOARDINFO=y
-CONFIG_I2C_ALGOBIT=y
-CONFIG_FB=y
-CONFIG_FB_DDC=y
-CONFIG_FB_CFB_FILLRECT=y
-CONFIG_FB_CFB_COPYAREA=y
-CONFIG_FB_CFB_IMAGEBLIT=y
-CONFIG_FB_DEFERRED_IO=y
-CONFIG_FB_MODE_HELPERS=y
-CONFIG_FB_INTEL=y
-CONFIG_FB_INTEL_I2C=y
-CONFIG_VGA_CONSOLE=y
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_HID_SUPPORT=y
-CONFIG_USB_SUPPORT=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_EXT2_FS=y
-CONFIG_EXT3_FS=y
-CONFIG_JBD=y
-CONFIG_QUOTA=y
-CONFIG_QFMT_V2=y
-CONFIG_QUOTACTL=y
-CONFIG_ISO9660_FS=m
-CONFIG_FAT_FS=m
-CONFIG_VFAT_FS=m
-CONFIG_FAT_DEFAULT_CODEPAGE=866
-CONFIG_FAT_DEFAULT_IOCHARSET="koi8-r"
-CONFIG_PROC_FS=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_RAMFS=y
-CONFIG_MSDOS_PARTITION=y
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="iso8859-1"
-CONFIG_NLS_CODEPAGE_437=m
-CONFIG_NLS_CODEPAGE_855=m
-CONFIG_NLS_CODEPAGE_866=m
-CONFIG_NLS_CODEPAGE_1251=m
-CONFIG_NLS_ASCII=m
-CONFIG_NLS_ISO8859_1=m
-CONFIG_NLS_ISO8859_5=m
-CONFIG_NLS_KOI8_R=m
-CONFIG_NLS_UTF8=m
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_MAGIC_SYSRQ=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_SCHED_DEBUG=y
-CONFIG_SCHEDSTATS=y
-CONFIG_TIMER_STATS=y
-CONFIG_DEBUG_SLAB=y
-CONFIG_DEBUG_SLAB_LEAK=y
-CONFIG_DEBUG_PREEMPT=y
-CONFIG_DEBUG_RT_MUTEXES=y
-CONFIG_DEBUG_PI_LIST=y
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_LOCK_ALLOC=y
-CONFIG_PROVE_LOCKING=y
-CONFIG_LOCKDEP=y
-CONFIG_LOCK_STAT=y
-CONFIG_TRACE_IRQFLAGS=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-CONFIG_STACKTRACE=y
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_DEBUG_VM=y
-CONFIG_DEBUG_LIST=y
-CONFIG_FRAME_POINTER=y
-CONFIG_PROFILE_LIKELY=y
-CONFIG_DEBUG_STACKOVERFLOW=y
-CONFIG_DEBUG_STACK_USAGE=y
-CONFIG_DEBUG_PAGEALLOC=y
-CONFIG_DEBUG_RODATA=y
-CONFIG_4KSTACKS=y
-CONFIG_X86_FIND_SMP_CONFIG=y
-CONFIG_X86_MPPARSE=y
-CONFIG_DOUBLEFAULT=y
-CONFIG_BITREVERSE=y
-CONFIG_CRC32=y
-CONFIG_PLIST=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_X86_BIOS_REBOOT=y
-CONFIG_KTIME_SCALAR=y
+I'm currently not subscribed to the list, so please CC me for any comments.
 
+Tested on an i386 box. Diffed against Linus' git-tree.
+
+Signed-off-by: Andi Drebes <lists-receive@programmierforen.de>
+---
+diff --git a/fs/cramfs/inode.c b/fs/cramfs/inode.c
+index 3d194a2..34c9b91 100644
+--- a/fs/cramfs/inode.c
++++ b/fs/cramfs/inode.c
+@@ -258,12 +258,21 @@ static int cramfs_fill_super(struct super_block *sb, void *data, int silent)
+ 
+ 	/* Do sanity checks on the superblock */
+ 	if (super.magic != CRAMFS_MAGIC) {
++		/* check for wrong endianess */
++		if(super.magic == CRAMFS_MAGIC_WEND) {
++			if (!silent)
++				printk(KERN_ERR "cramfs: wrong endianess\n");
++			goto out;
++		}
++	
+ 		/* check at 512 byte offset */
+ 		mutex_lock(&read_mutex);
+ 		memcpy(&super, cramfs_read(sb, 512, sizeof(super)), sizeof(super));
+ 		mutex_unlock(&read_mutex);
+ 		if (super.magic != CRAMFS_MAGIC) {
+-			if (!silent)
++			if(super.magic == CRAMFS_MAGIC_WEND && !silent)
++				printk(KERN_ERR "cramfs: wrong endianess\n");
++			else if (!silent)
+ 				printk(KERN_ERR "cramfs: wrong magic\n");
+ 			goto out;
+ 		}
+diff --git a/include/linux/cramfs_fs.h b/include/linux/cramfs_fs.h
+index 1dba681..3be4e5a 100644
+--- a/include/linux/cramfs_fs.h
++++ b/include/linux/cramfs_fs.h
+@@ -4,6 +4,7 @@
+ #include <linux/types.h>
+ 
+ #define CRAMFS_MAGIC		0x28cd3d45	/* some random number */
++#define CRAMFS_MAGIC_WEND	0x453dcd28	/* magic number with the wrong endianess */
+ #define CRAMFS_SIGNATURE	"Compressed ROMFS"
+ 
+ /*
