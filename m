@@ -1,69 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760349AbXHISVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbXHISWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760349AbXHISVP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 14:21:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbXHISU5
+	id S1761392AbXHISWX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 14:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbXHISWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 14:20:57 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:54293 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752202AbXHISUz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 14:20:55 -0400
-From: Darren Hart <dvhltc@us.ibm.com>
-Organization: IBM Linux Technology Center
-To: "Robert de Vries" <robert.h.de.vries@gmail.com>
-Subject: Re: [PATCH RT] Only run softirqs from the irq thread if the irq affinity is set to 1 CPU
-Date: Thu, 9 Aug 2007 11:20:42 -0700
-User-Agent: KMail/1.9.6
-Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
-       RT <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "john stultz" <johnstul@us.ibm.com>
-References: <1186605752.29097.18.camel@localhost.localdomain> <1186609529.14769.8.camel@localhost.localdomain> <47db5b910708090249k2c80e3e8tdc062d89ed4359fc@mail.gmail.com>
-In-Reply-To: <47db5b910708090249k2c80e3e8tdc062d89ed4359fc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708091120.42281.dvhltc@us.ibm.com>
+	Thu, 9 Aug 2007 14:22:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44612 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754350AbXHISWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 14:22:11 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0708091114180.19611@us.intercode.com.au>
+References: <Pine.LNX.4.64.0708091114180.19611@us.intercode.com.au> <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com> <20070809160535.17906.59852.stgit@warthog.cambridge.redhat.com>
+To: James Morris <jmorris@namei.org>
+Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
+       trond.myklebust@fys.uio.no, linux-fsdevel@vger.kernel.org,
+       linux-cachefs@redhat.com, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 11/14] CacheFiles: Permit an inode's security ID to be obtained [try #2]
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Thu, 09 Aug 2007 19:21:21 +0100
+Message-ID: <21381.1186683681@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 August 2007 02:49:27 Robert de Vries wrote:
-> On 8/8/07, Steven Rostedt <rostedt@goodmis.org> wrote:
-> > On Wed, 2007-08-08 at 14:16 -0700, Darren Hart wrote:
-> > > It seems to me that this patch will reduce the frequency of
-> > > irqd/softirqd starvation, but the core problem still exists: softirq
-> > > tasks can't migrate to other CPUs to perform their work if a higher
-> > > priority task preempts them. I'm wondering if we want to keep special
-> > > casing things to minimize the problem or not - seems to me the worst
-> > > case is still the same - and isn't the worst case the only case that
-> > > matters (for -rt)?
-> >
-> > softirq tasks should never migrate to other CPUs. A softirq exists in
-> > every CPU. So if you trigger a softirq on CPU1 it will only run on CPU1.
-> > If a high priority task preempts it, that same softirq can still run on
-> > other CPUS. Only the thread that was preempted wont switch. But that's
-> > the characteristic of softirqs, and that's how people who use them in
-> > development expect them to work.
->
-> Wouldn't a developer of a real-time system configure the system so
-> that interrupts do not interfere with the real-time tasks running on a
-> specific CPU?
-> In other words, is this problem not simply a misconfiguration of the
-> system? I personally redirect all interrupts away from the CPU's where my
-> real-time tasks run and only allow the interrupts that I want to
-> handle in my application on the CPU's where I handle them so as to
-> minimize latency.
+James Morris <jmorris@namei.org> wrote:
 
-I think the goal is to try and have a generally robust default setup - but the 
-interrupt shielding you are suggesting seems like it will become more and 
-more relevant as the number of CPUs increases.
+> > +	u32 (*inode_get_secid)(struct inode *inode);
+> 
+> To maintain API consistency, please return an int which only acts as an 
+> error code, and returning the secid via a *u32 function parameter.
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Realtime Linux Team
+Does that apply to *all* the functions, irrespective of whether or not they
+return an error?
+
+David
