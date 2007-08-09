@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938611AbXHIP4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939216AbXHIP76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938611AbXHIP4e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 11:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932428AbXHIP4V
+	id S939216AbXHIP76 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 11:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935614AbXHIP7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 11:56:21 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55213 "EHLO mx2.suse.de"
+	Thu, 9 Aug 2007 11:59:44 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42095 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752110AbXHIP4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 11:56:19 -0400
-Subject: Re: Disk spin down issue on shut down/suspend to disk
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Tejun Heo <htejun@gmail.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Michael Sedkowski <sedmich@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-acpi <linux-acpi@vger.kernel.org>,
-       firmwarekit-discuss <firmwarekit-discuss@bughost.org>
-In-Reply-To: <20070809151610.GD3926@ucw.cz>
-References: <1186424492.4355.1.camel@nx6310> <46B76BBC.9010107@gmail.com>
-	 <20070806234509.GC27640@khazad-dum.debian.net> <46B816FF.7060303@gmail.com>
-	 <20070807125104.GC30661@khazad-dum.debian.net> <46B86F21.4030805@gmail.com>
-	 <20070807131651.GE30661@khazad-dum.debian.net> <46B87457.4020704@gmail.com>
-	 <1186494328.8780.66.camel@queen.suse.de> <46B87B4A.1020305@gmail.com>
-	 <20070809151610.GD3926@ucw.cz>
-Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Thu, 09 Aug 2007 17:56:15 +0200
-Message-Id: <1186674976.8780.238.camel@queen.suse.de>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	id S1752110AbXHIP7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 11:59:43 -0400
+In-Reply-To: <46BB31A6.4080507@redhat.com>
+References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <3bfabd7472d6f019aa1880b14013f7a1@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: wjiang@resilience.com, rpjday@mindspring.com, wensong@linux-vs.org,
+       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, ak@suse.de,
+       netdev@vger.kernel.org, paulmck@linux.vnet.ibm.com, horms@verge.net.au,
+       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       jesper.juhl@gmail.com, torvalds@linux-foundation.org,
+       schwidefsky@de.ibm.com, davem@davemloft.net, cfriesen@nortel.com,
+       zlynx@acm.org
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+Date: Thu, 9 Aug 2007 17:50:32 +0200
+To: Chris Snook <csnook@redhat.com>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-09 at 15:16 +0000, Pavel Machek wrote:
-> Hi!
-> 
-> > > firmwarekit-discuss <firmwarekit-discuss@bughost.org> (added to CC list)
-> > > see: http://linuxfirmwarekit.org/
-> > > 
-> > > But if I understand this problem right, this won't be easy.
-> > > The ACPI tables are just parsed with system ("iasl ...") and syntactical
-> > > errors/warnings are printed out.
-> > > I also thought about a test, interpreting the DSDT and read out values
-> > > of cpufreq tables and sanity check them. AFAIK the linuxfirmwarekit is
-> > > not designed for that atm. You need to compile in most parts of the
-> > > acpica code and parse and interpret DSDT/SSDT code yourself in the
-> > > firmwarekit core or inside a plugin, then do a walk_namespace call or
-> > > whatever to find the functions/parts you like to examine. This is a lot
-> > > work and needs a proper design (providing an interface to plugins to let
-> > > them easily check specific AML/ASL code).
-> > 
-> > Furthermore, we don't really know what we're looking for.  How can you
-> > tell a given write to an ioport is issuing STANDBYNOW to an ATA disk or
-> > trying to power the machine off?  Adding to the fun, many modern ATA
-> > controller have more than one way to issue a command.  Maybe we can
-> > match accesses inside regions specified by PCI BARs....  :-(
-> 
-> Hmmm... perhaps we should do it the other way. ACPI is allowed to
-> touch the embedded controller, what else? Maybe we should warn as soon
-> as API touches non-EC I/O port?
+> We can't have split stores because we don't use atomic64_t on 32-bit 
+> architectures.
 
-This is not working...
-ACPI can and does access all kind of other I/O ports and other
-resources.
-Hmm, are the disk accesses done by ACPI via OperationRegion/Field
-declared variables?
-I try to get a check for those clashing with native drivers (hopefully
-this approach is successful for 2.6.24, can't say for sure yet), I
-wonder whether this one would give a warning like "Libata driver is
-using the same SystemIO/SystemMem resources than ACPI OperationRegion
-declaration XY".
-This would not solve the problem, but at least show the need of such a
-test. Such ACPI vs native driver interference problems are very hard
-nuts (in identifying and solving).
+That's not true; the compiler is free to split all stores
+(and reads) from memory however it wants.  It is debatable
+whether "volatile" would prevent this as well, certainly
+it is unsafe if you want to be portable.  GCC will do its
+best to not split volatile memory accesses, but bugs in
+this area do happen a lot (because the compiler code for
+volatile isn't as well exercised as most other compiler
+code, and because it is simply a hard subject; and there
+is no real formalised model for what GCC should do).
 
-Can someone post an ASL code snippet how ACPI actually access the disk
-and in which parts/functions, pls.
+The only safe way to get atomic accesses is to write
+assembler code.  Are there any downsides to that?  I don't
+see any.
 
-Thanks,
 
-   Thomas
+Segher
 
