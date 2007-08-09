@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939380AbXHIMnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939914AbXHIMnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939380AbXHIMnc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939636AbXHIMle
+	id S939914AbXHIMnw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939640AbXHIMle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 9 Aug 2007 08:41:34 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50881 "EHLO mx1.suse.de"
+Received: from mx2.suse.de ([195.135.220.15]:34958 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S939626AbXHIMlb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:41:31 -0400
+	id S939630AbXHIMlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 08:41:32 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070809241.425881000@suse.de>
 In-Reply-To: <20070809241.425881000@suse.de>
-To: bernarde@br.ibm.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [2/12] x86_64: Calgary - Fix mis-handled PCI topology
-Message-Id: <20070809124129.9471514F3A@wotan.suse.de>
-Date: Thu,  9 Aug 2007 14:41:29 +0200 (CEST)
+To: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [4/12] x86_64: Disable CLFLUSH support again
+Message-Id: <20070809124131.B6E6114F3B@wotan.suse.de>
+Date: Thu,  9 Aug 2007 14:41:31 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Murillo Fernandes Bernardes <bernarde@br.ibm.com>
-Subject: x86-64: Calgary - Fix mis-handled PCI topology
+It turns out CLFLUSH support is still not complete; we
+flush the wrong pages.  Again disable it for the release.
+Noticed by Jan Beulich.
 
-Current code assumed that devices were directly connected to a Calgary
-bridge, as it tried to get the iommu table directly from the parent bus 
-controller.
-
-When we have another bridge between the Calgary/CalIOC2 bridge and the 
-device we should look upwards until we get to the top (Calgary/CalIOC2 
-bridge), where the iommu table resides.
-
-Signed-off-by: Murillo Fernandes Bernardes <mfb@br.ibm.com>
-Signed-off-by: Muli Ben-Yehuda <muli@il.ibm.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
- arch/x86_64/kernel/pci-calgary.c |   13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+---
+ arch/i386/mm/pageattr.c   |    2 +-
+ arch/x86_64/mm/pageattr.c |    3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-Index: linux/arch/x86_64/kernel/pci-calgary.c
+Index: linux/arch/i386/mm/pageattr.c
 ===================================================================
---- linux.orig/arch/x86_64/kernel/pci-calgary.c
-+++ linux/arch/x86_64/kernel/pci-calgary.c
-@@ -367,16 +367,15 @@ static inline struct iommu_table *find_i
+--- linux.orig/arch/i386/mm/pageattr.c
++++ linux/arch/i386/mm/pageattr.c
+@@ -82,7 +82,7 @@ static void flush_kernel_map(void *arg)
+ 	struct page *p;
  
- 	pdev = to_pci_dev(dev);
+ 	/* High level code is not ready for clflush yet */
+-	if (cpu_has_clflush) {
++	if (0 && cpu_has_clflush) {
+ 		list_for_each_entry (p, lh, lru)
+ 			cache_flush_page(p);
+ 	} else if (boot_cpu_data.x86_model >= 4)
+Index: linux/arch/x86_64/mm/pageattr.c
+===================================================================
+--- linux.orig/arch/x86_64/mm/pageattr.c
++++ linux/arch/x86_64/mm/pageattr.c
+@@ -75,7 +75,8 @@ static void flush_kernel_map(void *arg)
  
--	/* is the device behind a bridge? */
--	if (unlikely(pdev->bus->parent))
--		pbus = pdev->bus->parent;
--	else
--		pbus = pdev->bus;
-+	pbus = pdev->bus;
-+
-+	/* is the device behind a bridge? Look for the root bus */
-+	while (pbus->parent)
-+		pbus = pbus->parent;
- 
- 	tbl = pci_iommu(pbus);
- 
--	BUG_ON(pdev->bus->parent &&
--	       (tbl->it_busno != pdev->bus->parent->number));
-+	BUG_ON(tbl && (tbl->it_busno != pbus->number));
- 
- 	return tbl;
- }
+ 	/* When clflush is available always use it because it is
+ 	   much cheaper than WBINVD. */
+-	if (!cpu_has_clflush)
++	/* clflush is still broken. Disable for now. */
++	if (0 && !cpu_has_clflush)
+ 		asm volatile("wbinvd" ::: "memory");
+ 	else list_for_each_entry(pg, l, lru) {
+ 		void *adr = page_address(pg);
