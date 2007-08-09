@@ -1,119 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966758AbXHIRCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939261AbXHIREV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966758AbXHIRCp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 13:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966710AbXHIRBu
+	id S939261AbXHIREV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 13:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765497AbXHIREL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 13:01:50 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:49482 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966700AbXHIRBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 13:01:48 -0400
-Date: Thu, 9 Aug 2007 21:03:53 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Paul E McKenney <paulmck@us.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
-Subject: rt ptracer can monopolize CPU (was: Cpu-Hotplug and Real-Time)
-Message-ID: <20070809170353.GA82@tv-sign.ru>
-References: <20070807131216.GA20424@in.ibm.com> <20070807151336.GA507@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070807151336.GA507@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+	Thu, 9 Aug 2007 13:04:11 -0400
+Received: from mailhub.lawrence.edu ([143.44.0.14]:42542 "EHLO lawrence.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762285AbXHIREJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 13:04:09 -0400
+Message-ID: <46BB47C9.3030609@gmail.com>
+Date: Thu, 09 Aug 2007 12:58:49 -0400
+From: Dan Zwell <dzwell@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: Oliver Neukum <oliver@neukum.org>
+CC: Tino Keitel <tino.keitel@gmx.de>, David Brownell <david-b@pacbell.net>,
+       linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: 2.6.23-rc1: USB hard disk broken
+References: <20070725072343.GA3483@dose.home.local> <200707261006.41368.oliver@neukum.org> <20070805110942.GA26278@dose.home.local> <200708051746.32439.oliver@neukum.org>
+In-Reply-To: <200708051746.32439.oliver@neukum.org>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/07, Oleg Nesterov wrote:
->
-> On 08/07, Gautham R Shenoy wrote:
-> >
-> > A will now call kthread_bind(B, cpu1).
-> > kthread_bind(), calls wait_task_inactive(B), to ensures that 
-> > B has scheduled itself out.
-> > 
-> > B is still on the runqueue, so A calls yield() in wait_task_inactive().
-> > But since A is the task with the highest prio, scheduler schedules it
-> > back again.
-> > 
-> > Thus B never gets to run to schedule itself out.
-> > A loops waiting for B to schedule out leading  to system hang.
+Oliver Neukum wrote:
+> Am Sonntag 05 August 2007 schrieb Tino Keitel:
+>> On Thu, Jul 26, 2007 at 10:06:40 +0200, Oliver Neukum wrote:
+>>> Am Mittwoch 25 Juli 2007 schrieb Tino Keitel:
+>>>> On Wed, Jul 25, 2007 at 10:24:36 +0200, Oliver Neukum wrote:
+>>>>> Am Mittwoch 25 Juli 2007 schrieb Tino Keitel:
+>>>>>> Hi,
+>>>>>>
+>>>>>> I just tried 2.6.23-rc1 and shortly after the boot my external USB hard
+>>>>>> disk went mad.
+>>>> [...]
+>>>>
+>>>>> Please recompile with CONFIG_USB_DEBUG set.
+>>>>>
+>> I tried again -rc1 without USB_DEBUG, and was able to reproduce the
+>> bug 2 times. At the second time, the kernel log shows this:
+>>
+>> 2007-08-05_10:30:27.75572 kern.err: ehci_hcd 0000:00:1d.7: dev 6 ep1in scatterli
+>> st error 0/-121
+>> 2007-08-05_10:30:27.86576 kern.info: usb 1-6: reset high speed USB device using ehci_hcd and address 5
+>> 2007-08-05_10:30:55.95293 kern.info: usb 1-6: USB disconnect, address 5
+>> 2007-08-05_10:30:55.95300 kern.err: ehci_hcd 0000:00:1d.7: dev 6 ep1in scatterlist error -108/-108
 > 
-> But I think we have another case. An RT ptracer can share the same CPU
-> with ptracee. The latter sets TASK_STOPPED, unlocks ->siglock, and takes
-> a preemption. Ptracer does ptrace_check_attach(), sees TASK_STOPPED, and
-> yields in wait_task_inactive.
+> David, does this error say anything to you?
+> 
+> 	Regards
+> 		Oliver
 
-Even simpler.
+Hi,
 
-#include <stdio.h>
-#include <signal.h>
-#include <unistd.h>
-#include <sys/ptrace.h>
-#include <sys/wait.h>
-#define	__USE_GNU
-#include <sched.h>
+I just completed a git bisect, and commit 
+8dfe4b14869fd185ca25ee88b02ada58a3005eaf was the commit that introduced 
+this problem. This is "usb-storage: implement autosuspend". I don't 
+think there have been many changes in drivers/usb since I last verified 
+this problem, so I'm pretty sure this is still happening in the latest 
+kernel.
 
-void die(const char *msg)
-{
-	printf("ERR!! %s: %m\n", msg);
-        kill(0, SIGKILL);
-}
+The first thing I am going to do is pull the latest sources, attempt to 
+revert this patch, and see whether the kernel compiles and works 
+properly with my USB hard drive. Please let me know of anything I can do 
+to help.
 
-void set_cpu(int cpu)
-{
-	unsigned cpuval = 1 << cpu;
-	if (sched_setaffinity(0, 4, (void*)&cpuval) < 0)
-		die("setaffinity");
-}
-
-// __wake_up_parent() does SYNC wake up, we need a handler to provoke
-// signal_wake_up().
-// otherwise ptrace_stop() is not preempted after read_unlock(tasklist).
-static void sigchld(int sig)
-{
-}
-
-int main(void)
-{
-	set_cpu(0);
-
-	int pid = fork();
-	if (!pid)
-		for (;;)
-			;
-
-	struct sched_param sp = { 99 };
-	if (sched_setscheduler(0, SCHED_FIFO, &sp))
-		die("setscheduler");
-
-	signal(SIGCHLD, sigchld);
-
-	if (ptrace(PTRACE_ATTACH, pid, NULL, NULL))
-		die("attach");
-
-	wait(NULL);
-
-	if (ptrace(PTRACE_DETACH, pid, NULL, NULL))
-		die("detach");
-
-	kill(pid, SIGKILL);
-
-	return 0;
-}
-
-Locks CPU 0. Not a security problem, needs CAP_SYS_NICE and the task
-could be reniced and killed, but still not good.
-
-ptracee does ptrace_stop()->do_notify_parent_cldstop(), ptracer preempts
-the child before it calls schedule(), ptrace(PTRACE_DETACH) goes to
-wait_task_inactive() and yields forever.
-
-Can we just replace yield() with schedule_timeout_uninterruptible(1) ?
-wait_task_inactive() has no time-critical callers, and as it currently
-used "on_rq" case is really unlikely.
-
-Oleg.
-
+Dan
