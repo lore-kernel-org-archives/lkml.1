@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966419AbXHIQpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966490AbXHIQqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966419AbXHIQpz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 12:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966289AbXHIQpj
+	id S966490AbXHIQqy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965952AbXHIQqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 12:45:39 -0400
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:54526 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966285AbXHIQpg (ORCPT
+	Thu, 9 Aug 2007 12:46:44 -0400
+Received: from livid.absolutedigital.net ([66.92.46.173]:53472 "EHLO
+	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965672AbXHIQqm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 12:45:36 -0400
-Date: Thu, 9 Aug 2007 12:45:34 -0400
-From: Kyle McMartin <kyle@parisc-linux.org>
-To: Chris Snook <csnook@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
-       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
-Subject: Re: [PATCH 14/24] make atomic_read() behave consistently on parisc
-Message-ID: <20070809164534.GC27558@fattire.cabal.ca>
-References: <20070809140154.GA17489@shell.boston.redhat.com>
+	Thu, 9 Aug 2007 12:46:42 -0400
+Date: Thu, 9 Aug 2007 12:46:01 -0400 (EDT)
+From: Cal Peake <cp@absolutedigital.net>
+To: Andi Kleen <ak@suse.de>
+cc: tglx@linutronix.de, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [8/12] x86_64: Use global flag to disable broken local
+ apic timer on AMD CPUs.
+In-Reply-To: <20070809124136.00A6C14F3B@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0708091245070.31931@lancer.cnet.absolutedigital.net>
+References: <20070809241.425881000@suse.de> <20070809124136.00A6C14F3B@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070809140154.GA17489@shell.boston.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 10:01:54AM -0400, Chris Snook wrote:
-> From: Chris Snook <csnook@redhat.com>
-> 
-> Purify volatile use for atomic[64]_t on parisc.
-> 
-> Signed-off-by: Chris Snook <csnook@redhat.com>
-> 
+On Thu, 9 Aug 2007, Andi Kleen wrote:
 
-Sure, why not.
+> Index: linux/arch/i386/kernel/apic.c
+> ===================================================================
+> --- linux.orig/arch/i386/kernel/apic.c
+> +++ linux/arch/i386/kernel/apic.c
+> @@ -61,8 +61,9 @@ static int enable_local_apic __initdata 
+>  
+>  /* Local APIC timer verification ok */
+>  static int local_apic_timer_verify_ok;
+> -/* Disable local APIC timer from the kernel commandline or via dmi quirk */
+> -static int local_apic_timer_disabled;
+> +/* Disable local APIC timer from the kernel commandline or via dmi quirk
+> +   or using CPU MSR check */
+> +int local_apic_timer_disabled;
+>  /* Local APIC timer works in C2 */
+>  int local_apic_timer_c2_ok;
+>  EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
+> @@ -370,9 +371,6 @@ void __init setup_boot_APIC_clock(void)
+>  	long delta, deltapm;
+>  	int pm_referenced = 0;
+>  
+> -	if (boot_cpu_has(X86_FEATURE_LAPIC_TIMER_BROKEN))
+> -		local_apic_timer_disabled = 1;
+> -
+>  	/*
+>  	 * The local apic timer can be disabled via the kernel
+>  	 * commandline or from the test above. Register the lapic
 
-ACKed-by: Kyle McMartin <kyle@parisc-linux.org>
+Andi, just noticed that the comment above needs to be updated now.
+
+-- 
+Cal Peake
+
