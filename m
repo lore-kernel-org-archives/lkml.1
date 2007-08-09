@@ -1,105 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbXHIUao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764318AbXHIUbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760882AbXHIUao (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 16:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbXHIUag
+	id S1764318AbXHIUbX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 16:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755658AbXHIUbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 16:30:36 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:27273 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754195AbXHIUaf (ORCPT
+	Thu, 9 Aug 2007 16:31:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35490 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755605AbXHIUbE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 16:30:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nVxamyAVq+JUqwzn3573KBSawVnvTrM+hIZhszP3PoNZyYzi/uCqfugWsxQNwFugz9oI0qxtiHdnnkdUXTqmrJIw0VRS3opgnIW0RCFAcxPuQepmVlvuQo+0B/m0tTppw//4xU/r4iZFS6LF2e348s2tGcMdoirST/K2KUJxl7A=
-Message-ID: <9a8748490708091330u687f2ca8sc85b7696be420973@mail.gmail.com>
-Date: Thu, 9 Aug 2007 22:30:33 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc2-mm1
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 9 Aug 2007 16:31:04 -0400
+Date: Thu, 9 Aug 2007 13:30:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Aaron Durbin <adurbin@google.com>
+Cc: linux-kernel@vger.kernel.org, ak@suse.de, Robin Holt <holt@sgi.com>
+Subject: Re: [PATCH] x86_64: Avoid NMI Watchdog and/or long wait in
+ setup_APIC_timer
+Message-Id: <20070809133011.2d03c04a.akpm@linux-foundation.org>
+In-Reply-To: <20070808231719.GA7101@google.com>
+References: <20070808231719.GA7101@google.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/08/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-...
-> - If there's a patch in here which you think should be in 2.6.23 but I do
->   not have it designated in that way, please be sure to let me know.
-...
+On Wed, 8 Aug 2007 16:17:19 -0700
+Aaron Durbin <adurbin@google.com> wrote:
 
-Well, if you want to clean up your patch queue a bit then I have a few
-suggestions for some patches of mine that are currently in -mm that
-you could push to Linus.  They are not really important, so if you'd
-rather keep them around in -mm until the next merge window then that's
-fine by me, but they should be safe to push and would get cut down on
-the number of patches you track a bit :-)
+> In setup_APIC_timer with the HPET in use, a condition can arise while
+> waiting for the next irq slice to expire on the HPET which will either
+> cause an NMI watchdog to fire or a 3 minute busy loop if the NMI
+> watchdog is disabled.
+> 
+> The HPET comparator and the counter keep incrementing during its normal
+> operation. When a comparison event fires the comparator will increment
+> by the designated period. If the HPET trigger occurs right after
+> the 'int trigger = hpet_readl(HPET_T0_CMP);' line, we will will spin
+> for up to 3 minutes (with a clock of 25MHz) waiting for the HPET
+> counter to wrap around. However, when the NMI watchdog is enabled the
+> NMI watchdog will detect a lockup and reboot the machine. This
+> scenario can be exasperated by the presence of an SMI which will
+> increase the window of opportunity for the condition to occur.
+> 
+> The fix is to wait for the compartor to change which signals the
+> end of the tick slice.
+> 
+> ---
+> 
+> The last patch had a typo in the diff which really would cause the
+> problem state above. Sorry.
+> 
+> diff --git a/arch/x86_64/kernel/apic.c b/arch/x86_64/kernel/apic.c
+> index 900ff38..06797e2 100644
+> --- a/arch/x86_64/kernel/apic.c
+> +++ b/arch/x86_64/kernel/apic.c
+> @@ -791,10 +791,12 @@ static void setup_APIC_timer(unsigned in
+>  
+>  	/* wait for irq slice */
+>  	if (hpet_address && hpet_use_timer) {
+> +		/*
+> +		 * Wait for the comparator value to change which signals that
+> +		 * the tick slice has expired.
+> +		 */
+>  		int trigger = hpet_readl(HPET_T0_CMP);
+> -		while (hpet_readl(HPET_COUNTER) >= trigger)
+> -			/* do nothing */ ;
+> -		while (hpet_readl(HPET_COUNTER) <  trigger)
+> +		while (trigger == hpet_readl(HPET_T0_CMP))
+>  			/* do nothing */ ;
+>  	} else {
+>  		int c1, c2;
 
-
-This fix was already merged for the ati side of things, this is an
-identical fix for the amd side of things - I see no reason why we
-shouldn't get this fix into 2.6.23 as well :
-
- fix-use-after-free--double-free-bug-in-amd_create_gatt_pages--amd_free_gatt_pages.patch
-
-
-This patch only changes the output of the script when run without
-arguments, so as far as building the kernel goes it can't cause any
-regressions and it's a clear improvement over what we currently have,
-so might as well get it out of your queue and upstream :
-
- improve-scripts-gcc-versionsh-output-a-bit-when-called-without-args.patch
-
-
-When people use scripts/ver_linux in bugreports we want correct info -
-currently we often print wrong info for the binutils version. This
-patch doesn't hurt existing working scenarios but does fix a few
-broken ones, might as well get that merged, it's a clear fix :
-
- scripts-ver_linux-correct-printing-of-binutils-version.patch
-
-
-These should all be trivially correct since they just remove duplicate
-#include's of the same header into a .c file outside any #ifdef and
-similar magic, so they should be quite safe to push. Also, I haven't
-seen anything but ACK's in response to them (when I've seen a
-response), and a few of my similar patches have already been merged :
-
- powerpc-clean-out-a-bunch-of-duplicate-includes.patch
- clean-up-duplicate-includes-in-drivers-input.patch
- clean-up-duplicate-includes-in-drivers-net.patch
- clean-up-duplicate-includes-in-drivers-atm.patch
- clean-up-duplicate-includes-in-net-atm.patch
- clean-up-duplicate-includes-in-net-ipv4.patch
- clean-up-duplicate-includes-in-net-ipv6.patch
- clean-up-duplicate-includes-in-net-sched.patch
- clean-up-duplicate-includes-in-net-sunrpc.patch
- clean-up-duplicate-includes-in-net-tipc.patch
- clean-up-duplicate-includes-in-net-xfrm.patch
- clean-up-duplicate-includes-in-include-linux-nfs_fsh.patch
- clean-up-duplicate-includes-in-fs-ntfs.patch
- clean-up-duplicate-includes-in-drivers-scsi.patch
- clean-up-duplicate-includes-in-drivers-block.patch
- clean-up-duplicate-includes-in-arch-i386-xen.patch
- clean-up-duplicate-includes-in-include-linux-memory_hotplugh.patch
- clean-up-duplicate-includes-in-mm.patch
- clean-up-duplicate-includes-in-drivers-char.patch
- clean-up-duplicate-includes-in-drivers-w1.patch
- clean-up-duplicate-includes-in-fs.patch
- clean-up-duplicate-includes-in-fs-ecryptfs.patch
- clean-up-duplicate-includes-in-kernel.patch
- clean-up-duplicate-includes-in-drivers-spi.patch
- clean-up-duplicate-includes-in-documentation.patch
-
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+but, but.  Didn't this get fixed by
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc2/2.6.23-rc2-mm1/broken-out/fix-hpet-init-race.patch
+?
