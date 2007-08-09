@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764189AbXHIXfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbXHIXjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764189AbXHIXfy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 19:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbXHIXfp
+	id S1760882AbXHIXjd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 19:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbXHIXjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 19:35:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41181 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752049AbXHIXfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 19:35:45 -0400
-Message-ID: <46BBA4CB.7070009@redhat.com>
-Date: Thu, 09 Aug 2007 19:35:39 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Thu, 9 Aug 2007 19:39:25 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60166 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754020AbXHIXjZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 19:39:25 -0400
+Date: Fri, 10 Aug 2007 01:39:10 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, akpm@linux-foundation.org
+Subject: Re: [2.6 patch] cpqphp_ctrl.c: remove dead code
+Message-ID: <20070809233910.GB18938@stusta.de>
+References: <20070723145105.GK26212@stusta.de> <20070809145140.654303a0.kristen.c.accardi@intel.com> <20070809222427.GA32127@suse.de> <20070809154702.caa67a61.kristen.c.accardi@intel.com> <20070809230436.GA18938@stusta.de> <20070809162001.a5dc0b76.kristen.c.accardi@intel.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: i386 doublefault handler is broken with CONFIG_DEBUG_SPINLOCK
-References: <46BB4599.2020900@redhat.com> <p73zm10egym.fsf@bingen.suse.de> <46BB5F9B.6050808@redhat.com> <20070809231618.GC1845@one.firstfloor.org>
-In-Reply-To: <20070809231618.GC1845@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070809162001.a5dc0b76.kristen.c.accardi@intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/09/2007 07:16 PM, Andi Kleen wrote:
+On Thu, Aug 09, 2007 at 04:20:01PM -0700, Kristen Carlson Accardi wrote:
+> On Fri, 10 Aug 2007 01:04:36 +0200
+> Adrian Bunk <bunk@stusta.de> wrote:
 > 
-> I tested it. Even on a box without spin lock debugging I get a hard
-> hang after
+> > On Thu, Aug 09, 2007 at 03:47:02PM -0700, Kristen Carlson Accardi wrote:
+> > > 
+> > > fine by me - let's NAK this patch (and all future ones for this driver) until 
+> > > someone with hardware steps up to maintain this driver.  Eventually it
+> > > will just die I guess.
+> > 
+> > We have tons of unmaintained drivers and none of them has such a silly 
+> > auto-NAK policy.
+> > 
+> > cu
+> > Adrian
 > 
-> double fault, gdt at c1404000 [255 bytes]
-> 
-> even though it should have printed the registers.
-> So it looks like there is more broken in the DF handler than just
-> this.
+> OK - "all future ones" was too extreme.  I'll take trivial patches (of
+> which this one is not).
 
-Looks like it just fails the ptr_ok() test:
+As I've wrote in the patch description, all it does is to remove an if() 
+check that could never be false (which is easily verifyable if you look 
+at the source code).
 
-#define ptr_ok(x) ((x) > PAGE_OFFSET && (x) < PAGE_OFFSET + 0x1000000)
+I've also verified that my patch does not change a single bit in the 
+object file (after compilation with gcc 4.2.1).
 
-page_offset  c0000000
-            + 1000000
+What's your definition of a trivial patch?
 
-           < c1404000
+cu
+Adrian
 
-What should that be changed to, or is there some easier way to test that?
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
