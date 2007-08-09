@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938461AbXHIApp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936462AbXHIAu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938461AbXHIApp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 20:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762232AbXHIApe
+	id S936462AbXHIAu5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 20:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757783AbXHIAus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 20:45:34 -0400
-Received: from ozlabs.org ([203.10.76.45]:40849 "EHLO ozlabs.org"
+	Wed, 8 Aug 2007 20:50:48 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53658 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761622AbXHIApd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 20:45:33 -0400
-Subject: Re: [PATCH 25/25] [PATCH] add paravirtualization support for x86_64
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <ak@suse.de>
-Cc: Glauber de Oliveira Costa <glommer@gmail.com>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       chrisw@sous-sol.org, jeremy@goop.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       lguest@ozlabs.org, Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <200708090224.16328.ak@suse.de>
-References: <11865467522495-git-send-email-gcosta@redhat.com>
-	 <5d6222a80708080749t35c5c0ceo8b3b8f0cce50c666@mail.gmail.com>
-	 <1186615137.17470.100.camel@localhost.localdomain>
-	 <200708090224.16328.ak@suse.de>
-Content-Type: text/plain
-Date: Thu, 09 Aug 2007 10:44:55 +1000
-Message-Id: <1186620295.17752.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1755165AbXHIAur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 20:50:47 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Aaron Durbin" <adurbin@google.com>
+Subject: Re: [PATCH] x86_64: Avoid NMI Watchdog and/or long wait in setup_APIC_timer
+Date: Thu, 9 Aug 2007 02:50:43 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
+References: <20070808231719.GA7101@google.com> <200708090226.24002.ak@suse.de> <8f95bb250708081744le5e5216k13087d05211a4056@mail.gmail.com>
+In-Reply-To: <8f95bb250708081744le5e5216k13087d05211a4056@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708090250.43467.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-09 at 02:24 +0200, Andi Kleen wrote:
-> Not sure what's best. Ok using a normal export is easiest and not
-> that big an issue.
 
-Yeah, there's also been talk of breaking up paravirt_ops into multiple
-structs by area, which would lead naturally into finer-grained export
-control.
+> 
+> I was thinking along the same lines as well, but I really didn't know how
+> important all that code was for waiting for the next irq slice. I'm not time
+> expert, but I would imagine we would resynchronize correctly in the future after
+> this code path?
 
-Cheers,
-Rusty.
+The idea is to just have the apic timers roughly at the same times + some fixed
+offset as the main timer.  Otherwise e.g. add_timer could jitter up to a jiffie
+regarding the jiffies counter. But long term drift will destroy the synchronization 
+anyways.
+
+I guess i'll send it in anyways for .23; it would be too risky to change anything 
+radical in this area that late. Then later it can be revisited.
+
+-Andi 
+
 
