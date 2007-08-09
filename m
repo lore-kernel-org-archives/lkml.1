@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760736AbXHIWWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761278AbXHIWZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760736AbXHIWWa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 18:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbXHIWWW
+	id S1761278AbXHIWZH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 18:25:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbXHIWYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 18:22:22 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53166 "EHLO mx2.suse.de"
+	Thu, 9 Aug 2007 18:24:53 -0400
+Received: from gate.crashing.org ([63.228.1.57]:39499 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751973AbXHIWWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 18:22:22 -0400
-Date: Thu, 9 Aug 2007 15:24:27 -0700
-From: Greg KH <gregkh@suse.de>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [2.6 patch] cpqphp_ctrl.c: remove dead code
-Message-ID: <20070809222427.GA32127@suse.de>
-References: <20070723145105.GK26212@stusta.de> <20070809145140.654303a0.kristen.c.accardi@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070809145140.654303a0.kristen.c.accardi@intel.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	id S1753453AbXHIWYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 18:24:52 -0400
+In-Reply-To: <46BB74B9.4070702@nortel.com>
+References: <20070809142430.GA19817@shell.boston.redhat.com> <8f6bb8a9e4f2819a161d732bdb6c70c0@kernel.crashing.org> <46BB403D.10202@redhat.com> <0a08872e608cf5f7a3d9c0fc746a1051@kernel.crashing.org> <46BB74B9.4070702@nortel.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9452870655b1844283961f8e9e406464@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: wjiang@resilience.com, rpjday@mindspring.com, wensong@linux-vs.org,
+       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, ak@suse.de,
+       netdev@vger.kernel.org, horms@verge.net.au, akpm@linux-foundation.org,
+       linux-arch@vger.kernel.org, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, schwidefsky@de.ibm.com,
+       davem@davemloft.net, zlynx@acm.org, Chris Snook <csnook@redhat.com>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 24/24] document volatile atomic_read() behavior
+Date: Fri, 10 Aug 2007 00:23:47 +0200
+To: "Chris Friesen" <cfriesen@nortel.com>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 02:51:40PM -0700, Kristen Carlson Accardi wrote:
-> On Mon, 23 Jul 2007 16:51:05 +0200
-> Adrian Bunk <bunk@stusta.de> wrote:
-> 
-> > If !mem_node we did already return -ENOMEM above in the function.
-> > 
-> > Spotted by the Coverity checker.
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> 
-> Greg - you are listed as the maintainer for this driver.
+>> Anyway, what's the supposed advantage of *(volatile *) vs. using
+>> a real volatile object?  That you can access that same object in
+>> a non-volatile way?
+>
+> That's my understanding.  That way accesses where you don't care about 
+> volatility may be optimised.
 
-Not anymore, look at 2.6.23-rc1 :)
+But those accesses might be done non-atomically then (for example,
+if the compiler knows it only needs to write one byte, it might not
+bother writing the rest), so that's no good if you want to read the
+thing atomically too.
 
-> Can you either
-> point me to someone who can review this patch or review it yourself?  
-> Looking at the code, it looks like it's possible that the driver writer
-> wanted this code patch to be able to be taken if it got IO resources
-> and not MEM resources, and if they didn't there's other cleanups that
-> should be done for the no iomem case.
+> For instance, in cases where there are already other things 
+> controlling visibility (as are needed for atomic increment, for 
+> example) you don't need to make the access itself volatile.
 
-Hm, I agree that this looks like the way the code was intended to work,
-but as this code has been working just fine so far the way it is, I'm
-not inclined to change it much, if any.
+Hrm, you mean within a lock or similar?  You'll get the same semantics
+as volatile anyway there.
 
-Especially as I no longer even have the hardware to test it on :(
 
-So, how about we just leave it alone?
+Segher
 
-thanks,
-
-greg k-h
