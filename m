@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939873AbXHIN1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939966AbXHIN2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939873AbXHIN1k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 09:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937323AbXHIN1c
+	id S939966AbXHIN2u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 09:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939203AbXHIN2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 09:27:32 -0400
-Received: from alnrmhc11.comcast.net ([206.18.177.51]:55532 "EHLO
-	alnrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936261AbXHIN1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 09:27:32 -0400
-From: cholvenstot@comcast.net
-To: "Benoit Boissinot" <bboissin@gmail.com>
-Cc: "Chris Holvenstot" <saltydog@houston.rr.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-Subject: Re: Kernel / Fliesystem Error
-Date: Thu, 09 Aug 2007 13:27:31 +0000
-Message-Id: <080920071327.29425.46BB1642000EB0AD000072F122165258569B019B9C020A900401080C@comcast.net>
-X-Mailer: AT&T Message Center Version 1 (Oct  4 2006)
-X-Authenticated-Sender: Y2hvbHZlbnN0b3RAY29tY2FzdC5uZXQ=
+	Thu, 9 Aug 2007 09:28:42 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:36522
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S939197AbXHIN2l convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 09:28:41 -0400
+Message-Id: <46BB32F6.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Thu, 09 Aug 2007 14:29:58 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Muli Ben-Yehuda" <muli@il.ibm.com>, "Andi Kleen" <ak@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
+Subject: Re: [patches] [PATCH] [4/12] x86_64: Disable CLFLUSH support
+	again
+References: <20070809241.425881000@suse.de>
+ <20070809124131.B6E6114F3B@wotan.suse.de>
+ <20070809131121.GL3311@rhun.haifa.ibm.com>
+In-Reply-To: <20070809131121.GL3311@rhun.haifa.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benoit - 
+>>> Muli Ben-Yehuda <muli@il.ibm.com> 09.08.07 15:11 >>>
+>On Thu, Aug 09, 2007 at 02:41:31PM +0200, Andi Kleen wrote:
+>> 
+>> It turns out CLFLUSH support is still not complete; we
+>> flush the wrong pages.  Again disable it for the release.
+>> Noticed by Jan Beulich.
+>> 
+>> Signed-off-by: Andi Kleen <ak@suse.de>
+>
+>Aside from the bug Jan pointed out with the patch, we're also using
+>cflflush in other places (arch/i386/kernel/alternative.c and
+>arch/x86_64/kernel/tce.c). Is the issue with clflush support specific
+>to pageattr.c or should it be disabled every else too? what
+>specifically is the issue?
 
-Thank you for the response - I think that you are correct in your analysis that the probem has something to do with timing and not with EXT3 itself.  
+The issue here is not with clflush by itself, but with what pages it is being
+applied to. Here, it gets used on page table pages when flushing really is
+needed on what one or more page table entries in that page table page
+point(ed) to.
 
-However, I have been thinking this through and this cold little shadow is now hanging over my head - there was a difference in the process used to build the system between 2.6.22.1 and 2.6.23-rcx and I would like to account for it before anyone burns their valuable time chasing ghosts I may have created.,
-
-Specifically I am refering to the process I used ot build the initrd image.
-
-Traditionally, I used the old standby mkinitrd whcih still builds a useable image.  However, when tracking down a series of messages about a failure to mount devfs devices I discovered that the approved method is now to use mkinitramfs.
-
-And mkinitramfs did eliminate the messages about devfs just as the documentation said it would.
-
-However, the initrd image for my 2.6.22.1 was built using the older mkinitrd command and it DOES NOT seem to have the timestamp issue buring boot.  With the 2.23.6-rcx series of kernels I used the mkinitramfs process - and my 2.6.23-rcx kernels is where I am seeing the problem.
-
-I am at work now and don't have a way of seeing the early boot messages on my system at home.  When I get home this afternoon I will build the initrd image for the 2.6.22.1 system using the mkinitramfs command and I will post an updated status at that time.
-
-Chris
- -------------- Original message ----------------------
-From: "Benoit Boissinot" <bboissin@gmail.com>
-> On 8/9/07, Chris Holvenstot <cholvenstot@comcast.net> wrote:
-> > > Chris Snook wrote:
-> > >
-> > >The problem here is that your clock is wrong either at mount (boot)
-> > >time or unmount (shutdown) time. There's nothing wrong with ext3,
-> > >except that it happens to be noticing this condition.
-> >
-> > 1.  This happens even when the system is rebooted via the shutdown -r
-> > command - not much time for my fat fingers to get in there and dork up
-> > the system clock.
-> >
-> > 2.  As I stated in the original note, this does NOT happen with kernel
-> > 2.6.22.1 - so far I have only seen it with the 2.6.23-rc1, rc2, and
-> > rc2-git1 kernels.
-> >
-> 
-> But very likely time keeping was broken between .22 and .23-rc.
-> Probably not ext3.
-> 
-> regards,
-> 
-> Benoit
+Jan
 
