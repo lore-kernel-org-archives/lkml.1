@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764302AbXHIU4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765933AbXHIU6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764302AbXHIU4s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 16:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757422AbXHIU4a
+	id S1765933AbXHIU6G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 16:58:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756677AbXHIU54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 16:56:30 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53937 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755863AbXHIU42 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 16:56:28 -0400
-Date: Thu, 9 Aug 2007 13:56:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc2-mm1: silly df numbers on 32bit extN
-Message-Id: <20070809135614.cf1493b7.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0708092108540.10254@blonde.wat.veritas.com>
-References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0708092108540.10254@blonde.wat.veritas.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 9 Aug 2007 16:57:56 -0400
+Received: from il.qumranet.com ([82.166.9.18]:43390 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755919AbXHIU5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 16:57:55 -0400
+Message-ID: <46BB7FCC.4040509@qumranet.com>
+Date: Thu, 09 Aug 2007 23:57:48 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Zachary Amsden <zach@vmware.com>
+CC: Gabriel Barazer <gabriel@oxeva.fr>, Andi Kleen <ak@suse.de>,
+       Jim Mattson <jmattson@vmware.com>, linux-kernel@vger.kernel.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: 2.6.22 x86_64 : kernel initial decompression hangs on vmware
+References: <46A7E606.4030001@oxeva.fr> <46B4A7E4.4030907@vmware.com>
+In-Reply-To: <46B4A7E4.4030907@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007 21:17:20 +0100 (BST)
-Hugh Dickins <hugh@veritas.com> wrote:
+Zachary Amsden wrote:
+>
+> Since I was just involved in the boot decompressor for another bug, I 
+> took a look at this.  2.6.22 switches it to be 64-bit code.  VT is 
+> very picky about what state it can run in.  Not using VT on Intel 
+> 64-bit hardware cripples performance, running at far below normal 
+> speed, and taking minutes to decompress the kernel, which is nearly 
+> instantaneous otherwise.
+>
+> To get back into VT in this case, not only do we need to load FS and 
+> GS, we also need to setup an initial LDT and task.  Can you try the 
+> attached patch and see that it does the right thing?
+>
+> I've also cc'd the KVM developers, as the same problem will affect 
+> them, and hopefully the same patch will fix it.
+>
 
-> On Thu, 9 Aug 2007, Andrew Morton wrote:
-> > 
-> > +lib-make-percpu_counter_add-take-s64.patch
-> 
-> lib-make-percpu_counter_add-take-s64.patch looks sensible, but it doesn't
-> actually work on 32-bit architectures: several users of percpu_counter_add
-> are passing -unsignedlong as the amount, which is not promoted to s64 in
-> the desired way, so "df" on extN filesystems is showing silly numbers.
-> 
-> The hack below (say long instead of s64 or s32) may be good as hotfix for
-> 2.6.23-rc2-mm1, but is probably the worst of solutions.  Perhaps take-s64
-> should be reverted, perhaps there should be a percpu_counter_sub and the
-> filesystems use that instead of saying -unsignedlong, perhaps they should
-> use a cast or a long or an s64.  I don't know, but here's this for now...
+We haven't seen any issue with the 2.6.22 boot decompressor.  Which of 
+the four (fs, gs, ldt, or tr) were proving problematic and why?
 
-Thanks.  I think I'll quietly tip the whole patch series overboard and
-shoot for a quick rc2-mm2 rather than trying to patch it up in-situ.
-
-I haven't had a chance to review it all in recent months.  Vague first
-impressions are that it all goes a bit rampant and changes more than it
-needs to, but I'll take a closer look at that if Peter can provide us with
-the next version (please).
 
