@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937151AbXHIAba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937257AbXHIAeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937151AbXHIAba (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 20:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765544AbXHIAbV
+	id S937257AbXHIAeT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 20:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763828AbXHIAeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 20:31:21 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:42105 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765542AbXHIAbU (ORCPT
+	Wed, 8 Aug 2007 20:34:10 -0400
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:61566 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763312AbXHIAeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 20:31:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TzbBon6V0P9qiAOT/0xcuatE1TAR0Sn50Ex4y+8KsiSU9wnnJqsMnDKHmsp/91d97xdxYWbw41l01tfIqk227I1ua2TIM3HvRnBx/EDG54MO4fVMuCRaUURcJ14e48Yi2r8nPrwcmgSHcYlGNcdaYHtefptqqaqr0tiXzEiyZJw=
-Message-ID: <5d6222a80708081731y4e20e0a4oedc27e0766283b6a@mail.gmail.com>
-Date: Wed, 8 Aug 2007 21:31:17 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Nakajima, Jun" <jun.nakajima@intel.com>
-Subject: Re: Introducing paravirt_ops for x86_64
-Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, lguest@ozlabs.org,
-       virtualization@lists.linux-foundation.org, chrisw@sous-sol.org,
-       anthony@codemonkey.ws, akpm@linux-foundation.org, mingo@elte.hu
-In-Reply-To: <97D612E30E1F88419025B06CB4CF1BE10326E924@scsmsx412.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5d6222a80708080758t1b937d0ej14c5e60ac23a20c5@mail.gmail.com>
-	 <97D612E30E1F88419025B06CB4CF1BE10326E924@scsmsx412.amr.corp.intel.com>
+	Wed, 8 Aug 2007 20:34:08 -0400
+Message-Id: <20070809003211.373543702@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 08 Aug 2007 20:32:11 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: lguest <lguest@ozlabs.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jes Sorensen <jes@sgi.com>, Carsten Otte <cotte@de.ibm.com>
+Subject: [PATCH 0/7] Modify lguest32 to make room for lguest64
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/8/07, Nakajima, Jun <jun.nakajima@intel.com> wrote:
-> > So, unless I'm very wrong,  it only makes sense to talk about not
-> > supporting large pages in the guest level. But it is not a
-> > paravirt_ops problem.
->
-> Some MMU-related PV techiniques (including Xen, and direct paging mode
-> for Xen/KVM) need to write-protect page tables, avoiding to use 2MB
-> pages when mapping page tables. Looks like you did not, and that
-> exaplains why the patches are missing the relevant (many) paravirt_ops
-> in include/asm-x86_64/pgalloc.h, for example, compared with the i386
-> tree.
-I see.
+Hi all,
 
-I'll address this in the next version of the patch.
+I've been working on lguest64 and in order to do this, I had to move
+a lot of the i386 specific out of the way.  Well, the lguest64 port
+is still not ready to display, but before Rusty makes too many changes
+I would like this in upstream so I don't have to keep repeating my
+changes :-)
 
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+So this patch series moves lguest32 out of the way for other archs.
 
-"The less confident you are, the more serious you have to act."
+-- Steve
+
