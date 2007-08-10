@@ -1,55 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761505AbXHJMFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936606AbXHJMJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761505AbXHJMFI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 08:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757876AbXHJMEg
+	id S936606AbXHJMJQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 08:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758347AbXHJMJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 08:04:36 -0400
-Received: from ozlabs.org ([203.10.76.45]:53577 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756648AbXHJMEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 08:04:34 -0400
-Subject: Re: [Lguest] [PATCH] lguest: Fix Malicious Guest GDT Host Crash
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, lguest <lguest@ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <46BB3692.5010003@vmware.com>
-References: <1186657033.17752.58.camel@localhost.localdomain>
-	 <46BB3692.5010003@vmware.com>
-Content-Type: text/plain
-Date: Fri, 10 Aug 2007 22:04:00 +1000
-Message-Id: <1186747440.23993.34.camel@localhost.localdomain>
+	Fri, 10 Aug 2007 08:09:00 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:46818 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756262AbXHJMI7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 08:08:59 -0400
+Date: Fri, 10 Aug 2007 14:09:36 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, devel@openvz.org
+Subject: Re: [PATCH] Fix OOPS in show_uevent()
+Message-ID: <20070810140936.55f297b5@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <46BC3A57.5070404@openvz.org>
+References: <46BC3A57.5070404@openvz.org>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-09 at 08:45 -0700, Zachary Amsden wrote:
-> Rusty Russell wrote:
-> > We kill the Guest if it causes a fault in the Switcher: it's the
-> > Guest's responsibility to make sure it's not using segments when it
-> > changes them.
+On Fri, 10 Aug 2007 14:13:43 +0400,
+Pavel Emelyanov <xemul@openvz.org> wrote:
+
+> The last hunk in this patch fixes this.
+
+Looks sane.
+
+> The other problem is that the envp passed to bus, type and platform callbacks
+> from dev_uevent() is the same, so the callbacks can overwrite the info, written
+> by the others. Did I miss something important?
+
+I don't think so. 
+
 > 
-> Linux doesn't obey that rule.  It changes descriptors behind FS/GS all 
-> over the place.  Well, not all over the place, only when updating LDT 
-> entries
+> This is for 2.6.23-rc2-mm1
+> 
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> 
+> ---
+> 
+> --- ./drivers/base/core.c.ubug	2007-08-10 14:07:26.000000000 +0400
+> +++ ./drivers/base/core.c	2007-08-10 14:07:15.000000000 +0400
+> @@ -222,6 +222,11 @@ static int dev_uevent(struct kset *kset,
+>  		if (retval)
+>  			pr_debug ("%s: bus uevent() returned %d\n",
+>  				  __FUNCTION__, retval);
+> +
+> +		while (*envp != NULL) {
+> +			envp++;
+> +			num_envp--;
+> +		}
 
-Hi Zach,
+Hm, we may also want to adjust the remaining buffer size here, but only
+the ->uevent() method has that knowledge...
 
-	I think it's OK.  To clarify, it's only fatal when the guest changes
-them in a way that will fault if they're reloaded: not any change.
-Lguest doesn't support LDT, so that's not a problem.
-
-> , TLS entries, and during context switch.
-
-These two go through load_TLS -> lguest_load_tls which is patched by
-this same change to load 0 into gs before doing the hypercall.  The
-other segment registers are set by the kernel, and so we know they don't
-refer to changing entries.
-
-Is there anything I've missed?
-Rusty.
-
+>  	}
+> 
+>  	if (dev->class && dev->class->dev_uevent) {
+> @@ -230,6 +235,11 @@ static int dev_uevent(struct kset *kset,
+>  		if (retval)
+>  			pr_debug("%s: class uevent() returned %d\n",
+>  				 __FUNCTION__, retval);
+> +
+> +		while (*envp != NULL) {
+> +			envp++;
+> +			num_envp--;
+> +		}
+>  	}
+> 
+>  	if (dev->type && dev->type->uevent) {
+> @@ -238,6 +248,11 @@ static int dev_uevent(struct kset *kset,
+>  		if (retval)
+>  			pr_debug("%s: dev_type uevent() returned %d\n",
+>  				 __FUNCTION__, retval);
+> +
+> +		while (*envp != NULL) {
+> +			envp++;
+> +			num_envp--;
+> +		}
+>  	}
+> 
+>  	return retval;
+> --- ./drivers/base/platform.c.ubug	2007-08-10 14:07:44.000000000 +0400
+> +++ ./drivers/base/platform.c	2007-08-10 13:58:55.000000000 +0400
+> @@ -547,6 +547,7 @@ static int platform_uevent(struct device
+> 
+>  	envp[0] = buffer;
+>  	snprintf(buffer, buffer_size, "MODALIAS=%s", pdev->name);
+> +	envp[1] = NULL;
+>  	return 0;
+>  }
+> 
