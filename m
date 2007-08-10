@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbXHJCfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765066AbXHJChM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759329AbXHJCfO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 22:35:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbXHJCfD
+	id S1765066AbXHJChM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 22:37:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbXHJCg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 22:35:03 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46125 "EHLO
+	Thu, 9 Aug 2007 22:36:56 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46131 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751277AbXHJCfA convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751485AbXHJCgz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 22:35:00 -0400
+	Thu, 9 Aug 2007 22:36:55 -0400
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: YOSHIFUJI Hideaki / =?euc-jp?B?tcjGo7HRzMA=?= 
 	<yoshfuji@linux-ipv6.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, devel@openvz.org,
-       adobriyan@sw.ru
-Subject: Re: [PATCH 3/3] sysctl: Error on bad sysctl tables
-References: <m1tzr8a3ms.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1wa3kf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcn8a2rq.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070810.110144.117508471.yoshfuji@linux-ipv6.org>
-Date: Thu, 09 Aug 2007 20:15:37 -0600
-In-Reply-To: <20070810.110144.117508471.yoshfuji@linux-ipv6.org> (YOSHIFUJI
-	Hideaki's message of "Fri, 10 Aug 2007 11:01:44 +0900 (JST)")
-Message-ID: <m1wsw46som.fsf@ebiederm.dsl.xmission.com>
+Cc: davem@davemloft.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, devel@openvz.org, adobriyan@sw.ru,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 04/10] sysctl: Fix neighbour table sysctls.
+References: <20070809.184921.11594412.davem@davemloft.net>
+	<20070810.111420.29442251.yoshfuji@linux-ipv6.org>
+	<m1odhg6sbv.fsf@ebiederm.dsl.xmission.com>
+	<20070810.112915.63714468.yoshfuji@linux-ipv6.org>
+Date: Thu, 09 Aug 2007 20:35:55 -0600
+In-Reply-To: <20070810.112915.63714468.yoshfuji@linux-ipv6.org> (YOSHIFUJI
+	Hideaki's message of "Fri, 10 Aug 2007 11:29:15 +0900 (JST)")
+Message-ID: <m1k5s46rqs.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=euc-jp
@@ -33,28 +34,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 YOSHIFUJI Hideaki / µ»∆£±—Ã¿ <yoshfuji@linux-ipv6.org> writes:
 
-> Hello.
+> In article <m1odhg6sbv.fsf@ebiederm.dsl.xmission.com> (at Thu, 09 Aug 2007
+> 20:23:16 -0600), ebiederm@xmission.com (Eric W. Biederman) says:
 >
-> In article <m1hcn8a2rq.fsf_-_@ebiederm.dsl.xmission.com> (at Thu, 09 Aug 2007
-> 14:09:29 -0600), ebiederm@xmission.com (Eric W. Biederman) says:
+>> YOSHIFUJI Hideaki / µ»∆£±—Ã¿ <yoshfuji@linux-ipv6.org> writes:
+>> 
+>> > Would you explain why it does not work properly
+>> > for those cases?
+>> 
+>> Mostly no appropriate strategy routine was setup to 
+>> report the data to the caller of sys_sysctl.
 >
->> After going through the kernels sysctl tables several times it has
->> become clear that code review and testing is just not effective in
->> prevent problematic sysctl tables from being used in the stable
->> kernel.  I certainly can't seem to fix the problems as fast as
->> they are introduced.
-> :
->> The biggest part of the code is the table of valid binary sysctl
->> entries, but since we have frozen our set of binary sysctls this table
->> should not need to change, and it makes it much easier to detect
->> when someone unintentionally adds a new binary sysctl value.
->
-> I don't think everyone needs to have this code, so
-> it is better to make it configurable via
-> CONFIG_SYSCTL_DEBUG or something..., ...no?
+> I assume that default strategy have been existing for it, no?!
+> Maybe, I do miss something...
 
-I wouldn't reject such a patch.  We are a ways out from the next
-stable kernel merge window and I'd love to see what else falls out so
-I'd like to have it on by default for a bit.
+I'd have to go through it case by case.  But in general
+unless your proc_handler is proc_dointvec the default
+strategy routine which does a raw binary copy of your data
+out will generally do the wrong thing.
+
+So especially if your data is jiffies or otherwise needs
+processing you don't want to use the default strategy
+routine.
+
+Until relatively recently no one was really policing the
+sysctl interfaces and even now it isn't too serious.
 
 Eric
