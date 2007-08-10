@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933414AbXHJJOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765064AbXHJJTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933414AbXHJJOT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 05:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbXHJJOK
+	id S1765064AbXHJJTb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 05:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbXHJJTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 05:14:10 -0400
-Received: from server009.webpack.hosteurope.de ([80.237.130.17]:37772 "EHLO
-	server009.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754678AbXHJJOJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 05:14:09 -0400
-X-Greylist: delayed 1683 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Aug 2007 05:14:09 EDT
-From: Daniel Exner <dex@dragonslave.de>
-Reply-To: webmaster@dragonslave.de
-To: linux-kernel@vger.kernel.org
-Subject: EHCI Regression in 2.6.23-rc2
-Date: Fri, 10 Aug 2007 10:45:57 +0200
-User-Agent: KMail/1.9.7
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Aug 2007 05:19:20 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:47602 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751783AbXHJJTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 05:19:18 -0400
+Date: Fri, 10 Aug 2007 11:19:54 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       "marcin\.slusarz" <marcin.slusarz@gmail.com>, tglx <tglx@linutronix.de>,
+       torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch (testing)] Re: 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070810091954.GI1764@ff.dom.local>
+References: <JMJTMH$F1699B57C9B0E170ED337488612E649B@xandmail.com> <20070810083720.GE1764@ff.dom.local> <20070810084841.GA11086@elte.hu> <20070810090318.GG1764@ff.dom.local> <20070810090833.GA15121@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708101045.57166.dex@dragonslave.de>
-X-bounce-key: webpack.hosteurope.de;dex@dragonslave.de;1186737249;bdcca566;
+In-Reply-To: <20070810090833.GA15121@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, Aug 10, 2007 at 11:08:33AM +0200, Ingo Molnar wrote:
+> 
+> * Jarek Poplawski <jarkao2@o2.pl> wrote:
+> 
+> > On 10-08-2007 10:05, Thomas Gleixner wrote:
+> > ...
+> > > But suppressing the resend is not fixing the driver problem. The 
+> > > problem can show up with spurious interrupts and with interrupts on 
+> > > a shared PCI interrupt line at any time. It just might take weeks 
+> > > instead of minutes.
+> > 
+> > Maybe I miss something but it's not the same!
+> 
+> _now_ i finally understand what you probably meant: because sw-resend 
+> worked and hw-resend didnt, it's hw-resend that is causing the breakage, 
+> not any driver or irqflow bug - correct?
 
-Please CC me, as I'm currently not subscribed to this list, thx.
+All correct! There was also checked a possibility it can be not
+hw itself, but wrong way of handling after hw (acking too late). This
+was false idea (or bad implementation), so it looks like hw vs lapic
+problem.
 
-After some serious hangs with 2.6.23-rc2 I did some bisects and this was the 
-result:
-
-196705c9bbc03540429b0f7cf9ee35c2f928a534 is first bad commit
-commit 196705c9bbc03540429b0f7cf9ee35c2f928a534
-Author: Stuart_Hayes@Dell.com <Stuart_Hayes@Dell.com>
-Date:   Thu May 3 08:58:49 2007 -0700
-
-    USB: EHCI cpufreq fix
-
-    EHCI controllers that don't cache enough microframes can get MMF errors
-    when CPU frequency changes occur between the start and completion of
-    split interrupt transactions, due to delays in reading main memory
-    (caused by CPU cache snoop delays).
-
-    This patch adds a cpufreq notifier to the EHCI driver that will
-    inactivate split interrupt transactions during frequency transitions.
-    It was tested on Intel ICH7 and Serverworks/Broadcom HT1000 EHCI
-    controllers.
-
-    Signed-off-by: Stuart Hayes <stuart_hayes@dell.com>
-    Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-:040000 040000 0e6d518de17cf18155c7529f7b044a4660ca24e9 
-736bbcc7d3fb138138ee1840d8a6b83b959c07fc M      drivers
-
-As expected my system only hangs when cpufreq, powernow-k8 and ehci modules 
-are loaded, and some transition should occur.
-(Simulated by using userspace governour and changing freq manually)
-
-The corresponding EHCI Controller is:
-
-00:10.4 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 86) (prog-if 20
-[EHCI])
-        Subsystem: ASUSTeK Computer Inc. A7V600/K8V-X/A8V Deluxe motherboard
-
-I could not get my hands on any output while the hang occurs, seems like the 
-CPU is really bad locked.
-
-Greetings
-Daniel Exner
+Jarek P.
