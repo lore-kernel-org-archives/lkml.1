@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941579AbXHJTct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941647AbXHJTdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941579AbXHJTct (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 15:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933577AbXHJTcl
+	id S941647AbXHJTdL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 15:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939698AbXHJTcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 15:32:41 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45572 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758793AbXHJTck (ORCPT
+	Fri, 10 Aug 2007 15:32:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41956 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938172AbXHJTcn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 15:32:40 -0400
-Date: Fri, 10 Aug 2007 12:32:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       Wim Van Sebroeck <wim@iguana.be>,
-       "shannon.nelson@intel.com" <shannon.nelson@intel.com>
-Subject: Re: Section mismatch warnings ( Re: 2.6.23-rc2-mm2 )
-Message-Id: <20070810123215.904369e8.akpm@linux-foundation.org>
-In-Reply-To: <46BCB6D5.1070506@googlemail.com>
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-	<46BC3CB1.2090503@googlemail.com>
-	<46BC5C1D.50205@googlemail.com>
-	<46BCB6D5.1070506@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 10 Aug 2007 15:32:43 -0400
+Message-ID: <46BCBD57.3030406@zytor.com>
+Date: Fri, 10 Aug 2007 12:32:39 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Mikko Rapeli <mikko.rapeli@iki.fi>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: early boot lockup with 2.6.23-rc1
+References: <20070808223120.GA2286@nalle> <46BAC14E.9040604@zytor.com> <20070809182316.GA2289@nalle> <20070809194348.GA2287@nalle> <46BB94B1.9020307@zytor.com> <20070810163324.GA1916@nalle> <46BC962B.9030209@zytor.com> <20070810192030.GB1916@nalle>
+In-Reply-To: <20070810192030.GB1916@nalle>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007 21:04:53 +0200
-Gabriel C <nix.or.die@googlemail.com> wrote:
+Mikko Rapeli wrote:
+> On Fri, Aug 10, 2007 at 09:45:31AM -0700, H. Peter Anvin wrote:
+>> Let me get this straight... "edd=skipmbr" boots fine, but commenting out
+>> the call to query_edd() didn't?  Could you please try that (and, I
+>> guess, only that), and make sure everything necessary is rebuild.
+>>
+>> 2.6.23-*rc2* you say boots fine with "edd=skipmbr", but not without?
+> 
+> Yes, vanilla 2.6.23-rc2 with edd=skipmbr boots fine.
 
-> Some more
-> 
-> ...
-> 
-> WARNING: vmlinux.o(.text+0xce2ce): Section mismatch: reference to .init.data:lowhsync (between 'pm2fb_set_par' and 'pm2fb_pan_display')
-> WARNING: vmlinux.o(.text+0xce2e8): Section mismatch: reference to .init.data:lowvsync (between 'pm2fb_set_par' and 'pm2fb_pan_display')
-> WARNING: vmlinux.o(.text+0x180d3b): Section mismatch: reference to .init.data: (between 'iTCO_wdt_probe' and 'supermicro_new_unlock_watchdog')
-> WARNING: vmlinux.o(.text+0x180e1d): Section mismatch: reference to .init.data: (between 'iTCO_wdt_probe' and 'supermicro_new_unlock_watchdog')
-> WARNING: vmlinux.o(.text+0x180e25): Section mismatch: reference to .init.data:iTCO_chipset_info (between 'iTCO_wdt_probe' and 'supermicro_new_unlock_watchdog')
-> WARNING: vmlinux.o(.data+0xa74f0): Section mismatch: reference to .init.text:ioat_probe (between 'ioat_pci_drv' and 'ioat_pci_tbl')
-> 
-> ...
-> 
-> http://194.231.229.228/kernel/mm/2.6.23-rc2-mm2/randconfig-auto-28
+Could you please describe your hardware configuration, in particular:
 
-(suitable cc's added)
+- what BIOS are you using;
+- what disks, floppies, CD-ROMs, USB drives, etc are in your system;
+- are any of them RAIDed;
+- what device and bootloader are you using for boot.
+
+	-hpa
