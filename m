@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762036AbXHJHpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763406AbXHJHpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762036AbXHJHpZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 03:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbXHJHpM
+	id S1763406AbXHJHpk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 03:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760048AbXHJHpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 03:45:12 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:46740 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751783AbXHJHpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 03:45:10 -0400
-Date: Fri, 10 Aug 2007 11:44:59 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com, ak@suse.de
-Subject: Re: + sysctl-x86_64-remove-unnecessary-binary-paths.patch added to -mm tree
-Message-ID: <20070810074459.GC6639@localhost.sw.ru>
-References: <200708100142.l7A1g1ZZ029579@imap1.linux-foundation.org>
+	Fri, 10 Aug 2007 03:45:22 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:51005 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758444AbXHJHpU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 03:45:20 -0400
+Subject: Re: [PATCH] [MTD] Fix CFI build error with meaningless
+	nonfunctional .config
+From: David Woodhouse <dwmw2@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070810074140.GB28264@elte.hu>
+References: <20070806161537.GA1269@elte.hu>
+	 <1186717841.7282.104.camel@shinybook.infradead.org>
+	 <20070810074140.GB28264@elte.hu>
+Content-Type: text/plain
+Date: Fri, 10 Aug 2007 15:45:02 +0800
+Message-Id: <1186731902.3571.1.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708100142.l7A1g1ZZ029579@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.3 (2.10.3-3.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 06:42:01PM -0700, akpm@linux-foundation.org wrote:
-> --- a/arch/x86_64/ia32/ia32_binfmt.c~sysctl-x86_64-remove-unnecessary-binary-paths
-> +++ a/arch/x86_64/ia32/ia32_binfmt.c
-> @@ -258,7 +258,6 @@ static void elf32_init(struct pt_regs *r
->  
->  static ctl_table abi_table2[] = {
->  	{
-> -		.ctl_name	= 99,
->  		.procname	= "vsyscall32",
->  		.data		= &sysctl_vsyscall32,
->  		.maxlen		= sizeof(int),
-> diff -puN arch/x86_64/kernel/vsyscall.c~sysctl-x86_64-remove-unnecessary-binary-paths arch/x86_64/kernel/vsyscall.c
-> --- a/arch/x86_64/kernel/vsyscall.c~sysctl-x86_64-remove-unnecessary-binary-paths
-> +++ a/arch/x86_64/kernel/vsyscall.c
-> @@ -260,18 +260,10 @@ out:
->  	return ret;
->  }
->  
-> -static int vsyscall_sysctl_nostrat(ctl_table *t, int __user *name, int nlen,
-> -				void __user *oldval, size_t __user *oldlenp,
-> -				void __user *newval, size_t newlen)
-> -{
-> -	return -ENOSYS;
-> -}
-> -
->  static ctl_table kernel_table2[] = {
-> -	{ .ctl_name = 99, .procname = "vsyscall64",
-> +	{ .procname = "vsyscall64",
->  	  .data = &vsyscall_gtod_data.sysctl_enabled, .maxlen = sizeof(int),
->  	  .mode = 0644,
-> -	  .strategy = vsyscall_sysctl_nostrat,
->  	  .proc_handler = vsyscall_sysctl_change },
+On Fri, 2007-08-10 at 09:41 +0200, Ingo Molnar wrote:
+> looks quite quirky. Is there no Kconfig-space solution for this?
 
-Looks good. It clearly newer worked.
+I thought about that, but decided against it. We have altogether too
+much munging of config options without the user's knowledge already; I
+didn't want to make it worse.
+
+-- 
+dwmw2
 
