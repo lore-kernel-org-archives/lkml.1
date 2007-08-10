@@ -1,68 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964806AbXHJPx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937542AbXHJP43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964806AbXHJPx2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 11:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932452AbXHJPxR
+	id S937542AbXHJP43 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 11:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762545AbXHJP4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 11:53:17 -0400
-Received: from styx.suse.cz ([82.119.242.94]:40803 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932447AbXHJPxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 11:53:16 -0400
-Date: Fri, 10 Aug 2007 17:54:23 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Renato Golin <rengolin@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: joydev.c and saitek cyborg evo force
-In-Reply-To: <Pine.LNX.4.64.0708101643360.11054@jikos.suse.cz>
-Message-ID: <Pine.LNX.4.64.0708101753410.11054@jikos.suse.cz>
-References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com> 
- <Pine.LNX.4.64.0706050008160.5177@jikos.suse.cz> 
- <d9b9d95f0706041546h4eef0b4eo2e191968be13d59a@mail.gmail.com> 
- <Pine.LNX.4.64.0706121436070.10204@jikos.suse.cz> 
- <d9b9d95f0706120608g979b89oc79dbc277d19862b@mail.gmail.com> 
- <d120d5000706120613o7a328e59v3cba37f0ced88e77@mail.gmail.com> 
- <d9b9d95f0706120631l20e6f91duaa110e72a0e955a6@mail.gmail.com> 
- <Pine.LNX.4.64.0706121715480.10204@jikos.suse.cz> 
- <d9b9d95f0706141524p3686a41cn882d8f086e4f62cc@mail.gmail.com> 
- <Pine.LNX.4.64.0706201156410.23812@jikos.suse.cz>
- <d9b9d95f0707201710g14d8a905s222c1209358f0196@mail.gmail.com>
- <Pine.LNX.4.64.0708101643360.11054@jikos.suse.cz>
+	Fri, 10 Aug 2007 11:56:20 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47356 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754696AbXHJP4T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 11:56:19 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alexey Dobriyan <adobriyan@sw.ru>, axboe@kernel.dk
+Subject: Re: [PATCH 08/10] sysctl: Remove broken cdrom binary sysctls
+References: <20070726164518.GB16937@localhost.sw.ru>
+	<m13azbulhf.fsf@ebiederm.dsl.xmission.com>
+	<20070727145235.GC6924@localhost.sw.ru>
+	<20070806124530.GD6634@localhost.sw.ru>
+	<m1tzr8a3ms.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1ps1wa3kf.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1hcn8a2rq.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1d4xw9psl.fsf_-_@ebiederm.dsl.xmission.com>
+	<m18x8k9ppv.fsf_-_@ebiederm.dsl.xmission.com>
+	<m14pj89pmt.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1zm108axi.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1vebo8avf.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1r6mc8at5.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1myx08arh.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1ir7o8ap1.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070810143342.173d2637@the-village.bc.nu>
+Date: Fri, 10 Aug 2007 09:55:09 -0600
+In-Reply-To: <20070810143342.173d2637@the-village.bc.nu> (Alan Cox's message
+	of "Fri, 10 Aug 2007 14:33:42 +0100")
+Message-ID: <m17io3z8o2.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007, Jiri Kosina wrote:
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-> Renato, does force feedback work properly in Linux with this device? If 
-> so, that would mean that the device has logical maximum and minimum for 
-> X and Y axes different in input and output, and we would need to handle 
-> this properly (we currently don't).
+> On Thu, 09 Aug 2007 19:01:14 -0600
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
+>
+>> 
+>> The binary interface for the cdrom sysctls can't possilby work.
+>> So remove the binary sysctls and update the test for finding
+>> out which sysctl table entry we are dealy with to use the procname
+>> and not the ctl_name (which I am removing).
+>
+> NAK
+>
+> I've no problem with the basic idea of removing the names from user
+> space, but you've just demonstrated with the patch below that it causes
+> some quite revolting changes for the bad in code which previously was
+> nicely done switch statements and is now a nest of string compares and
+> inline code.
+>
+> There are very good reasons to have a cookie in the sysctl entry for
+> internal use and which is private to the subsystem using the sysctl (ie
+> not for sysctl() use and not neccessarily unique).
 
-Renato,
+Sure.  We currently have 3 fields for that: data, extra1, and extra2.
+You need to cast them to get an integer values but their definition
+especially extra1 and extra2 are left up to the caller.
 
-does the attached patch (against 2.6.23-rc2) fix the problem with axis 
-ranges for you please?
+In that code we could just do a test on valp (i.e. data in struct
+ctl_table).
 
-diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-index 8edbd30..97dbdb6 100644
---- a/drivers/hid/hid-input.c
-+++ b/drivers/hid/hid-input.c
-@@ -351,6 +351,12 @@ static void hidinput_configure_usage(struct hid_input *hidinput, struct hid_fiel
- 	if (field->flags & HID_MAIN_ITEM_CONSTANT)
- 		goto ignore;
- 
-+	if (field->report_type == HID_OUTPUT_REPORT &&
-+			(usage->hid & HID_USAGE_PAGE) != HID_UP_LED) {
-+		dbg_hid_line(" [non-LED output field ]");
-+		goto ignore;
-+	}
-+
- 	switch (usage->hid & HID_USAGE_PAGE) {
- 
- 		case HID_UP_UNDEFINED:
+I just wanted something stupid and simple, so the -mm tree would not
+be full of broken sysctls.
 
--- 
-Jiri Kosina
-SUSE Labs
+At least to my eyes the code doesn't look much worse.  But if you
+want to do something better feel free.
+
+Eric
+
+
