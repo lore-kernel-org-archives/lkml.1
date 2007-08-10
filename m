@@ -1,104 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939636AbXHJQEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940096AbXHJQFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939636AbXHJQEP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 12:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933475AbXHJQEA
+	id S940096AbXHJQFi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 12:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765167AbXHJQFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 12:04:00 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36139 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765475AbXHJQD7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 12:03:59 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com
-Subject: Re: 2.6.23-rc2-mm2
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-	<46BC3CB1.2090503@googlemail.com>
-Date: Fri, 10 Aug 2007 10:03:36 -0600
-In-Reply-To: <46BC3CB1.2090503@googlemail.com> (Gabriel C.'s message of "Fri,
-	10 Aug 2007 12:23:45 +0200")
-Message-ID: <m1wsw3xtpj.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 10 Aug 2007 12:05:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54769 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760490AbXHJQFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 12:05:20 -0400
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 00/16] Permit filesystem local caching [try #3]
+To: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
+       trond.myklebust@fys.uio.no
+Cc: linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov
+Date: Fri, 10 Aug 2007 17:04:55 +0100
+Message-ID: <20070810160455.24698.30983.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C <nix.or.die@googlemail.com> writes:
 
-> ...
->
->> +sysctl-core-stop-using-the-unnecessary-ctl_table-typedef.patch
->> +sysctl-factor-out-sysctl_data.patch
->> +sysctl-error-on-bad-sysctl-tables.patch
->> +sysctl-update-sysctl_check_table.patch
->> +sysct-mqueue-remove-the-binary-sysctl-numbers.patch
->> +sysctl-remove-binary-sysctl-support-where-it-clearly-doesnt-work.patch
->> +sysctl-fix-neighbour-table-sysctls.patch
->> +sysctl-ipv6-route-flushing-kill-binary-path.patch
->> +sysctl-remove-broken-sunrpc-debug-binary-sysctls.patch
->> +sysctl-x86_64-remove-unnecessary-binary-paths.patch
->> +sysctl-remove-broken-cdrom-binary-sysctls.patch
->> +sysctl-ipv4-remove-binary-sysctl-paths-where-they-are-broken.patch
->>
-> +sysctl-remove-the-binary-interface-for-aio-nr-aio-max-nr-acpi_video_flags.patch
->> 
->>  sysctl cleanups
->> 
->
-> ...
->
->
-> Getting all this on boot :
->
-> ...
->
-> [ 484.984331] sysctl table check failed: /dev/parport/default/timeslice
-> .7.3.-3.1 Missing strategy
-> [ 484.984515] sysctl table check failed: /dev/parport/default/spintime .7.3.-3.2
-> Missing strategy
-> [ 485.001254] sysctl table check failed: /dev/parport/parport0/devices/Device ID
-> probe .7.3.1.6.1 Directory with extra1
-> [ 485.001472] sysctl table check failed: /dev/parport/parport0/devices/Device ID
-> probe/timeslice .7.3.1.6.1.1 Missing strategy
-> [ 485.042786] sysctl table check failed: /dev/parport/parport0/devices/Device ID
-> probe .7.3.1.6.1 Directory with extra1
-> [ 485.042962] sysctl table check failed: /dev/parport/parport0/devices/Device ID
-> probe/timeslice .7.3.1.6.1.1 Missing strategy
-> [ 485.083586] sysctl table check failed: /dev/parport/parport0/spintime .7.3.1.1
-> Missing strategy
-> [ 485.083731] sysctl table check failed: /dev/parport/parport0/base-addr
-> .7.3.1.2 Missing strategy
-> [ 485.083878] sysctl table check failed: /dev/parport/parport0/irq .7.3.1.3
-> Missing strategy
-> [ 485.084022] sysctl table check failed: /dev/parport/parport0/dma .7.3.1.4
-> Missing strategy
-> [ 485.084166] sysctl table check failed: /dev/parport/parport0/modes .7.3.1.5
-> Missing strategy
-> [ 485.084317] sysctl table check failed: /dev/parport/parport0/devices .7.3.1.6
-> Directory with extra1
-> [ 485.084470] sysctl table check failed: /dev/parport/parport0/devices/active
-> .7.3.1.6.-3 Missing strategy
-> [ 485.084653] sysctl table check failed: /dev/parport/parport0/autoprobe
-> .7.3.1.16 Missing strategy
-> [ 485.084806] sysctl table check failed: /dev/parport/parport0/autoprobe0
-> .7.3.1.17 Missing strategy
-> [ 485.084954] sysctl table check failed: /dev/parport/parport0/autoprobe1
-> .7.3.1.18 Missing strategy
-> [ 485.085103] sysctl table check failed: /dev/parport/parport0/autoprobe2
-> .7.3.1.19 Missing strategy
-> [ 485.085253] sysctl table check failed: /dev/parport/parport0/autoprobe3
-> .7.3.1.20 Missing strategy
-> [ 485.114655] sysctl table check failed: /dev/parport/parport0/devices/lp
-> .7.3.1.6.1 Directory with extra1
-> [ 485.114856] sysctl table check failed:
-> /dev/parport/parport0/devices/lp/timeslice .7.3.1.6.1.1 Missing strategy
 
-Hmm.  Thanks it doesn't like I had the parport code enabled in my test kernel.
-With a little luck it looks like we can just nuke the binary sysctl interface
-here.  And get the /proc/sys interface working again.
+These patches add local caching for network filesystems such as NFS and AFS.
 
-Eric
+FS-Cache now runs fully asynchronously as required by Trond Myklebust for NFS.
+
+--
+Changes:
+[try #3]:
+
+ (*) Added missing file to CacheFiles patch.
+
+ (*) Made new security functions return errors and pass actual return data via
+     argument pointer.
+
+ (*) Cleaned up NFS patch.
+
+ (*) The 'fsc' flag must now be passed to NFS mount by the string options.
+
+ (*) Split the NFS patch into three as requested by Trond.
+
+[try #2]:
+
+ (*) The CacheFiles module no longer accepts directory fds in its cull and
+     inuse commands from cachefilesd.  Instead it uses the current working
+     directory of the calling process as the basis for looking up the object.
+     Corollary to this, fget_light() no longer needs to be exported.
+
+--
+A tarball of the patches is available at:
+
+	http://people.redhat.com/~dhowells/fscache/patches/nfs+fscache-22.tar.bz2
+
+
+To use this version of CacheFiles, the cachefilesd-0.9 is also required.  It
+is available as an SRPM:
+
+	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9-1.fc7.src.rpm
+
+Or as individual bits:
+
+	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9.tar.bz2
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.fc
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.if
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.te
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.spec
+
+The .fc, .if and .te files are for manipulating SELinux.
+
+David
