@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764654AbXHJITA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762839AbXHJIXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764654AbXHJITA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 04:19:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764252AbXHJISk
+	id S1762839AbXHJIXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 04:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbXHJIXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 04:18:40 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:47596 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764243AbXHJISi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 04:18:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uSlc12lpkazMRj/KQ3WeV1ciCynZ6Zok1ysEqjr89G92jLoLrW47lT2PwQiQq9jIeazz3t6mZ5AbnYN/MIFQGlnQiL15SF7oKE1d19uVh0r9NAVVEXljEh1/ZVijZM+xJPsUFxcBb19t1xnNrWBe5fsLyO/8oF+CzVw+L5ri/xU=
-Message-ID: <a8e1da0708100118r779068i64ffdc11e452be9b@mail.gmail.com>
-Date: Fri, 10 Aug 2007 16:18:38 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc2-mm2
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070809224254.11f42716.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Aug 2007 04:23:17 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:53878 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752828AbXHJIXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 04:23:11 -0400
+Date: Fri, 10 Aug 2007 10:23:46 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
+       shemminger@linux-foundation.org, vignaud@xandmail.fr,
+       marcin.slusarz@gmail.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       linux-net@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc2: WARNING: at kernel/irq/resend.c:70 check_irq_resend()
+Message-ID: <20070810082346.GD1764@ff.dom.local>
+References: <18107.11431.838905.331157@stoffel.org> <20070809155445.GA5161@ff.dom.local> <1186733140.12828.45.camel@chaos>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
+In-Reply-To: <1186733140.12828.45.camel@chaos>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-2.6.23-rc2-mm2:
-config with CONFIG_NF_CONNTRACK_AMANDA=y
-boot  oops:
+On Fri, Aug 10, 2007 at 10:05:40AM +0200, Thomas Gleixner wrote:
+> On Thu, 2007-08-09 at 17:54 +0200, Jarek Poplawski wrote:
+> > I'm not sure I don't miss anything (a little in hurry now), but this
+> > warning's aim was purely diagnostical and nothing wrong is meant!
+> > Unless there is something wrong... Then please try to be more explicit.
+> > 
+> > If you prefer to not see this, there is my patch proposal somewhere
+> > in this older thread:
+> > Subject: [patch] genirq: temporary fix for level-triggered IRQ resend
+> > Date: Wed, 8 Aug 2007 13:00:37 +0200
+> > 
+> > On the other hand, if it works OK, it would be better to let it be
+> > tested more like this...
+> 
+> Hmm. This solution is still just pampering over the real problem. The
+> delayed disable just re-sends level interrupts unnecessarily. I have a
+> fix (needs some testing) for this, which I send out tomorrow, when I'm
+> really back from vacation.
+> 
+> But suppressing the resend is not fixing the driver problem. The problem
+> can show up with spurious interrupts and with interrupts on a shared PCI
+> interrupt line at any time. It just might take weeks instead of minutes.
 
-hand copyed :
-the EIP: helper_hash
+Doesn't it look like a little change of mind? Well, there are probably
+(but need more testing) two other solutions: _SW_RESEND and disabling
+without delay for levels only...
 
-backtrace:
-do_basic_setup
-...
-nf_conntrack_amanda_init
-error_code
-do_vivide_error
-...
-
-Regards
-dave
+Jarek P.
