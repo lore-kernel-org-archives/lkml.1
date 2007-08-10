@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936334AbXHJR2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934755AbXHJRej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936334AbXHJR2y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 13:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbXHJR2r
+	id S934755AbXHJRej (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 13:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbXHJRe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 13:28:47 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55461 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752792AbXHJR2q (ORCPT
+	Fri, 10 Aug 2007 13:34:28 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36471 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752389AbXHJRe1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 13:28:46 -0400
-Date: Fri, 10 Aug 2007 19:28:32 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: Aurelien Jarno <aurelien@aurel32.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+	Fri, 10 Aug 2007 13:34:27 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Netdev <netdev@vger.kernel.org>, coreteam@netfilter.org
 Subject: Re: 2.6.23-rc2-mm2
-Message-ID: <20070810172832.GA20659@stusta.de>
-References: <20070809224254.11f42716.akpm@linux-foundation.org> <20070810092334.GA15285@hall.aurel32.net> <26090.1186764049@turing-police.cc.vt.edu> <20070810165906.GI18938@stusta.de> <28698.1186766481@turing-police.cc.vt.edu>
+References: <20070809224254.11f42716.akpm@linux-foundation.org>
+	<46BC8F71.3070006@googlemail.com> <46BC944F.9020801@googlemail.com>
+Date: Fri, 10 Aug 2007 11:33:41 -0600
+In-Reply-To: <46BC944F.9020801@googlemail.com> (Gabriel C.'s message of "Fri,
+	10 Aug 2007 18:37:35 +0200")
+Message-ID: <m1fy2rxpje.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <28698.1186766481@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 01:21:21PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Fri, 10 Aug 2007 18:59:06 +0200, Adrian Bunk said:
-> 
-> > It must be included on *all* architectures, and the architectures where 
-> > asm/page.h wasn't by chance already included indirectly included by some 
-> > other header don't compile.
-> 
-> Wow. So it happened to work by chance on *most* architectures (or at
-> least enough so Andrew shipped it)?  I wasn't expecting "MIPS was the
-> first one to correctly barf because the header wasn't included"... :)
+Gabriel C <nix.or.die@googlemail.com> writes:
 
-According to [1] it broke compilation on the following architectures:
-- arm
-- frv
-- mips
-- parisc
-- v850
-- xtensa
+> Michal Piotrowski wrote:
+>> Andrew Morton pisze:
+>>>
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc2/2.6.23-rc2-mm2/
+>>>
+>> 
+>> Yet another sysctl table check failed
+>> 
+>> [   88.949055] Netfilter messages via NETLINK v0.30.
+>> [   89.485399] nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
+>> [ 89.491892] sysctl table check failed:
+> /net/netfilter/nf_conntrack_generic_timeout .3.19.13 Missing strategy
+>> [   89.558178] xt_state: Unknown symbol nf_conntrack_untracked
+>> [   89.563942] xt_state: Unknown symbol nf_ct_l3proto_module_put
+>> [   89.569870] xt_state: Unknown symbol nf_ct_l3proto_try_module_get
+>> [   90.852319] NET: Registered protocol family 17
+>>
+>
+> And maybe this ?
 
-cu
-Adrian
+Could be.
 
-[1] http://l4x.org/k
+sysctl table check failure looks legitimate.
+At a quick skim I can't tell for certain if failure to register the
+sysctl table will keep the module from loading but it might.
 
--- 
+It looks like another canidate on the pile of kill the broken
+binary sysctl.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Eric
