@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935459AbXHJOTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939499AbXHJOTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935459AbXHJOTS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 10:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938605AbXHJOS4
+	id S939499AbXHJOTo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 10:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936452AbXHJOT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 10:18:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37090 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938387AbXHJOSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 10:18:54 -0400
-Date: Fri, 10 Aug 2007 16:18:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-Message-ID: <20070810141841.GA5473@elte.hu>
-References: <Pine.LNX.4.64.0708011511530.1817@scrub.home> <20070801150742.GA23670@elte.hu> <p73ps27npu0.fsf@bingen.suse.de> <alpine.LFD.0.999.0708010924490.3582@woody.linux-foundation.org> <20070801175004.GA17936@elte.hu> <Pine.LNX.4.64.0708011955430.1817@scrub.home> <20070801190556.GA1199@elte.hu> <Pine.LNX.4.64.0708100037460.1817@scrub.home> <20070810054948.GA5908@elte.hu> <Pine.LNX.4.64.0708101459530.1817@scrub.home>
+	Fri, 10 Aug 2007 10:19:28 -0400
+Received: from imsc1.euromail.se ([217.174.79.93]:39801 "HELO
+	garland.euromail.se" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S939358AbXHJOTY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 10:19:24 -0400
+Message-ID: <00a801c7db58$ed84d920$dcc4af0a@atmel.com>
+From: "Ulf Samuelsson" <ulf@atmel.com>
+To: "Marc Pignat" <marc.pignat@hevs.ch>,
+       =?iso-8859-15?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+Cc: <linux-arm-kernel@lists.arm.linux.org.uk>, <andrew@sanpeople.com>,
+       <trivial@kernel.org>, <linux-kernel@vger.kernel.org>,
+       "Andy Herzig" <andrew.herzig@ngc.com>
+References: <1186661447.6370.19.camel@leoh9-18574.nges.northgrum.com> <018a01c7dad3$10ca8190$dcc4af0a@atmel.com> <200708100912.35485.hjk@linutronix.de> <200708100933.46235.marc.pignat@hevs.ch>
+Subject: Re: [PATCH] at91 pm: Compilation fix for at91sam926x
+Date: Fri, 10 Aug 2007 15:54:50 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708101459530.1817@scrub.home>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;
+	charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-OriginalArrivalTime: 10 Aug 2007 14:17:18.0913 (UTC) FILETIME=[28F5FB10:01C7DB59]
+X-NAI-Spam-Score: -2.5
+X-NAI-Spam-Report: 2 Rules triggered
+	*  -2.5 -- BAYES_00 -- Bayesian spam probability is 0 to 1%
+	*  0 -- HAS_X_HELO -- Mail contains HAS_X-HELO header
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+----- Original Message ----- 
+From: "Marc Pignat" <marc.pignat@hevs.ch>
+To: "Hans-Jürgen Koch" <hjk@linutronix.de>
+Cc: <linux-arm-kernel@lists.arm.linux.org.uk>; "Ulf Samuelsson" <ulf@atmel.com>; <andrew@sanpeople.com>; <trivial@kernel.org>; <linux-kernel@vger.kernel.org>; "Andy Herzig" <andrew.herzig@ngc.com>
+Sent: Friday, August 10, 2007 9:33 AM
+Subject: Re: [PATCH] at91 pm: Compilation fix for at91sam926x
 
-* Roman Zippel <zippel@linux-m68k.org> wrote:
 
-> > Also, could you please send me 
-> > the cfs-debug-info.sh:
+On Friday 10 August 2007 09:12, Hans-Jürgen Koch wrote:
+> Am Freitag 10 August 2007 00:15 schrieb Ulf Samuelsson:
 > > 
-> >   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
+> > > > +#if defined(CONFIG_ARCH_AT91RM9200)
+> > > >                         at91_sys_write(AT91_SDRAMC_SRR, 1);     /*
+> > > > self-refresh mode */
 > > 
-> > captured _while_ the above workload is running. This is the third time 
-> > i've asked for that :-)
+> > > Why don't use:
+> > > if (cpu_is_at91rm9200())
+> > > at91_sys_write(AT91_SDRAMC_SRR, 1);
+> > 
+> > What is the benefit?
+More readable. (see '#ifdefs are ugly' in Documentation/SubmittingPatches)
+
+> > Will the optimizer remove the code if the CPU is not the at91rm9200?
+Optimizer will remove that code if at91rm9200 support is not compiled and 
+choose at runtime if the cpu support is compiled in.
+
 > 
-> Is there any reason to believe my analysis is wrong?
+> No, it won't. cpu_is_something() is intended for runtime decisions.
+> Remember that the purpose of this patch was to solve a compile time
+> issue (see subject). AT91_SDRAMC_SRR isn't defined properly for
+> non-9200 processors because they don't have that register. So we need
+> something like #ifdef to include this line only on 9200.
+Oops, I missed that problem, sorry...
 
-please first give me the debug data captured with the script above 
-(while the workload is running) - so that i can see the full picture 
-about what's happening. Thanks,
+and what about this:
+#ifdef CONFIG_ARCH_AT91RM9200
+#define sdram_lowpower_enable() at91_sys_write(AT91_SDRAMC_SRR, 1)
+#define sdram_lowpower_disable() at91_sys_write(AT91_SDRAMC_SRR, 0)
+#else
+#define sdram_lowpower_enable()
+#define sdram_lowpower_disable()
+#endif
 
-	Ingo
+and using sdram_lowpower_{enable,disable}() when requiered?
+
+==> That is hiding the fact that the low power is not performed
+        when it it not an AT91RM9200.
+        I think the original approach is the best.
+
+Best Regards
+Ulf Samuelsson
+
