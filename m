@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932476AbXHJJJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933139AbXHJJKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932476AbXHJJJW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 05:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762709AbXHJJIs
+	id S933139AbXHJJKQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 05:10:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbXHJJJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 05:08:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38853 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761910AbXHJJIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 05:08:45 -0400
-Date: Fri, 10 Aug 2007 11:08:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       "marcin.slusarz" <marcin.slusarz@gmail.com>, tglx <tglx@linutronix.de>,
-       torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch (testing)] Re: 2.6.20->2.6.21 - networking dies after
-	random time
-Message-ID: <20070810090833.GA15121@elte.hu>
-References: <JMJTMH$F1699B57C9B0E170ED337488612E649B@xandmail.com> <20070810083720.GE1764@ff.dom.local> <20070810084841.GA11086@elte.hu> <20070810090318.GG1764@ff.dom.local>
+	Fri, 10 Aug 2007 05:09:57 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52509 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757386AbXHJJJz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 05:09:55 -0400
+Message-ID: <46BC2B6F.9060508@jp.fujitsu.com>
+Date: Fri, 10 Aug 2007 18:10:07 +0900
+From: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070810090318.GG1764@ff.dom.local>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: james.smart@emulex.com, gregkh@suse.de
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH][Take2] PCI legacy I/O port free driver - Making Emulex lpfc
+ driver legacy I/O port free
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-* Jarek Poplawski <jarkao2@o2.pl> wrote:
+This patch makes Emulex lpfc driver legacy I/O port free.
+It has already been acked quite long time ago.
+So I resubmit the patch.
+http://lkml.org/lkml/2006/11/22/28
 
-> On 10-08-2007 10:05, Thomas Gleixner wrote:
-> ...
-> > But suppressing the resend is not fixing the driver problem. The 
-> > problem can show up with spurious interrupts and with interrupts on 
-> > a shared PCI interrupt line at any time. It just might take weeks 
-> > instead of minutes.
-> 
-> Maybe I miss something but it's not the same!
+Current lpfc driver is already using pci_select_bars()
+and pci_enable_device_bars() when the PCI bus has been reset.
+So I think this patch should also be acked.
 
-_now_ i finally understand what you probably meant: because sw-resend 
-worked and hw-resend didnt, it's hw-resend that is causing the breakage, 
-not any driver or irqflow bug - correct?
+Tomohiro Kusumi
 
-	Ingo
+Signed-off-by: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
+
+---
+diff -Nurp linux-2.6.22.org/drivers/scsi/lpfc/lpfc_init.c linux-2.6.22/drivers/scsi/lpfc/lpfc_init.c
+--- linux-2.6.22.org/drivers/scsi/lpfc/lpfc_init.c	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.22/drivers/scsi/lpfc/lpfc_init.c	2007-08-10 17:11:55.000000000 +0900
+@@ -1356,6 +1356,7 @@ lpfc_scsi_free(struct lpfc_hba * phba)
+ void lpfc_remove_device(struct lpfc_hba *phba)
+ {
+ 	unsigned long iflag;
++	int bars = pci_select_bars(phba->pcidev, IORESOURCE_MEM);
+
+ 	lpfc_free_sysfs_attr(phba);
+
+@@ -1400,7 +1401,7 @@ void lpfc_remove_device(struct lpfc_hba
+ 	iounmap(phba->ctrl_regs_memmap_p);
+ 	iounmap(phba->slim_memmap_p);
+
+-	pci_release_regions(phba->pcidev);
++	pci_release_selected_regions(phba->pcidev, bars);
+ 	pci_disable_device(phba->pcidev);
+
+ 	idr_remove(&lpfc_hba_index, phba->brd_no);
+@@ -1515,10 +1516,11 @@ lpfc_pci_probe_one(struct pci_dev *pdev,
+ 	int error = -ENODEV, retval;
+ 	int i;
+ 	uint16_t iotag;
++	int bars = pci_select_bars(pdev, IORESOURCE_MEM);
+
+-	if (pci_enable_device(pdev))
++	if (pci_enable_device_bars(pdev, bars))
+ 		goto out;
+-	if (pci_request_regions(pdev, LPFC_DRIVER_NAME))
++	if (pci_request_selected_regions(pdev, bars, LPFC_DRIVER_NAME))
+ 		goto out_disable_device;
+
+ 	host = scsi_host_alloc(&lpfc_template, sizeof (struct lpfc_hba));
+@@ -1748,7 +1750,7 @@ out_put_host:
+ 	phba->host = NULL;
+ 	scsi_host_put(host);
+ out_release_regions:
+-	pci_release_regions(pdev);
++	pci_release_selected_regions(pdev, bars);
+ out_disable_device:
+ 	pci_disable_device(pdev);
+
