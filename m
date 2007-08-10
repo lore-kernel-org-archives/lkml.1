@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763122AbXHJAaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760695AbXHJAez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763122AbXHJAaz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 20:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbXHJAas
+	id S1760695AbXHJAez (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 20:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbXHJAes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 20:30:48 -0400
-Received: from ns2.suse.de ([195.135.220.15]:60230 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754061AbXHJAar (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 20:30:47 -0400
-Date: Fri, 10 Aug 2007 02:30:45 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc2-mm1: kernel BUG at mm/swap_state.c:78!
-Message-ID: <20070810003045.GA19591@wotan.suse.de>
-References: <20070809015106.cd0bfc53.akpm@linux-foundation.org> <200708091711.53898.m.kozlowski@tuxland.pl> <Pine.LNX.4.64.0708091633540.8627@blonde.wat.veritas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 9 Aug 2007 20:34:48 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:11448 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753873AbXHJAer (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 20:34:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=NjISo7NVKYkgc+BfgTaOvIJW4T6/si4fYHn5GSIgeJymLEWJcLtB3s2OgUHiKVuCsZVg3bfu4dB9gQvGibZZlMZAxP9TVqjtMvs4/Xndrw4HKW1/LfpF6VbF2MUl2mIHxgP+3fG81tRagKNqY64z0bQ0i5rGBGO47mQBhh2ftBQ=
+Message-ID: <dc1166600708091734p22612a72g7fcc3e229203918f@mail.gmail.com>
+Date: Fri, 10 Aug 2007 10:34:46 +1000
+From: "Michael Ellerman" <michael@ellerman.id.au>
+To: ljhc@br.ibm.com
+Subject: Re: SLUB doesn't work with kdump kernel on Cell
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Arnd Bergmann" <arndb@arndb.de>, cbe-oss-dev@ozlabs.org
+In-Reply-To: <1186667828.3038.18.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708091633540.8627@blonde.wat.veritas.com>
-User-Agent: Mutt/1.5.9i
+References: <1186604151.3608.46.camel@localhost.localdomain>
+	 <200708082310.59997.arnd@arndb.de>
+	 <1186667828.3038.18.camel@localhost.localdomain>
+X-Google-Sender-Auth: 58ff4a3cc9f5cc0e
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 04:37:35PM +0100, Hugh Dickins wrote:
-> On Thu, 9 Aug 2007, Mariusz Kozlowski wrote:
-> > Hello,
-> > 
-> > 	Nothing unusual happening, allmodconfig compiling etc.
-> > Not sure why it says kernel was tainted though ... hmmm.
-> > 
-> > ------------[ cut here ]------------
-> > kernel BUG at mm/swap_state.c:78!
-> > invalid opcode: 0000 [#1]
-> > PREEMPT 
-> > Modules linked in: orinoco_cs orinoco hermes pl2303 usbserial pcmcia 8250_pci 8250 serial_core yenta_socket rsrc_nonstatic pcmcia_core 8139too
-> > CPU:    0
-> > EIP:    0060:[<c01504b7>]    Tainted: P        VLI
-> > EFLAGS: 00010246   (2.6.23-rc2-mm1 #1)
-> > EIP is at __add_to_swap_cache+0xc6/0xd7
-> > eax: 40000000   ebx: c11285c0   ecx: 000000d0   edx: 00000283
-> > esi: c11285c0   edi: 00000283   ebp: c1858f90   esp: c1858f84
-> > ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
-> > Process kprefetchd (pid: 236, ti=c1858000 task=c18d14d0 task.ti=c1858000)
-> > Stack: 00000283 c11285c0 c3d5a3c8 c1858fa0 c01504ea c11285c0 00000000 c1858fcc 
-> >        c015307c 00000001 00000007 00000002 00000002 00000283 00000000 fffffffc 
-> >        00000000 c0152d5c c1858fe0 c0127f2e c0127ef8 00000000 00000000 00000000 
-> > Call Trace:
-> >  [<c010456a>] show_trace_log_lvl+0x1a/0x30
-> >  [<c0104629>] show_stack_log_lvl+0xa9/0xd5
-> >  [<c010486e>] show_registers+0x219/0x38d
-> >  [<c0104ae6>] die+0x104/0x23e
-> >  [<c0419bd3>] do_trap+0x83/0xad
-> >  [<c0104edf>] do_invalid_op+0x88/0x92
-> >  [<c04199b2>] error_code+0x6a/0x70
-> >  [<c01504ea>] add_to_swap_cache+0x22/0x58
-> >  [<c015307c>] kprefetchd+0x320/0x364
-> >  [<c0127f2e>] kthread+0x36/0x58
-> >  [<c0104233>] kernel_thread_helper+0x7/0x14
-> >  =======================
-> > INFO: lockdep is turned off.
-> > Code: 0f 89 7b 0c 83 05 fc c9 53 c0 01 8b 13 c1 ea 1e 8d 04 12 01 d0 c1 e0 03 29 d0 c1 e0 05 ff 80 b8 c0 53 c0 ff 05 34 1d 68 c0 eb 96 <0f> 0b eb fe 0f 0b eb fe 0f 0b eb fe 8b 53 0c eb be 55 89 e5 56 
-> > EIP: [<c01504b7>] __add_to_swap_cache+0xc6/0xd7 SS:ESP 0068:c1858f84
-> 
-> Don't worry about reproducing untainted, I got the same earlier
-> and was just preparing and testing the hotfix: here it is...
-> 
-> 
-> Nick's mm-clarify-__add_to_swap_cache-locking.patch is fine for mainline,
-> but soon generates a "kernel BUG at mm/swap_state.c:78!" when it meets
-> mm-implement-swap-prefetching.patch in 2.6.23-rc2-mm1.  We could add a
-> fix to the latter, but I think it's better to adjust Nick's, so that
-> it's right for whichever tree it's in: move the responsibility to
-> SetPageLocked from read_swap_cache_async to add_to_swap_cache.
+On 8/9/07, Lucio Correia <ljhc@br.ibm.com> wrote:
+> On Wed, 2007-08-08 at 23:10 +0200, Arnd Bergmann wrote:
+> > On Wednesday 08 August 2007, Lucio Correia wrote:
+> > >   DMA             0 ->    12288
+> > >   Normal      12288 ->    12288
+> > > early_node_map[2] active PFN ranges
+> > >     0:        0 ->     2560
+> > >     1:    12287 ->    12288
+> >
+> > As Christoph found, this memory map is really strange. Other machines
+> > have something like
+> >
+> > Zone PFN ranges:
+> >   DMA             0 ->    16384
+> >   Normal      16384 ->    16384
+> > early_node_map[2] active PFN ranges
+> >     0:        0 ->     8192
+> >     1:     8192 ->    16384
+> >
+> > Lucio,
+> > What code builds the memory map that gets passed to the kdump kernel?
 
-Hmm, yeah I like this better, it is more like add_to_page_cache now.
-Thanks.
+It comes out of the device tree, just like a regular kernel. The
+device tree for the kdump kernel is built by kexec-tools, it parses
+/proc/device-tree and does a bunch of logic to avoid various reserved
+regions: the kernel, TCE tables, RTAS etc.
 
+> I also tried to pass maxcpus=1 for the command line of second kernel,
+> and it didn't work. How can I alternatively disable the node?
+
+maxcpus is poorly tested and is known to be broken on Cell, please
+don't use it, or fix it first :)
+
+cheers
