@@ -1,65 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941445AbXHJQld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964953AbXHJQnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941445AbXHJQld (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 12:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935183AbXHJQlP
+	id S964953AbXHJQnk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 12:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933797AbXHJQnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 12:41:15 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:41012 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939707AbXHJQlN (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 12:41:13 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Aurelien Jarno <aurelien@aurel32.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc2-mm2
-In-Reply-To: Your message of "Fri, 10 Aug 2007 11:23:34 +0200."
-             <20070810092334.GA15285@hall.aurel32.net>
-From: Valdis.Kletnieks@vt.edu
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-            <20070810092334.GA15285@hall.aurel32.net>
+	Fri, 10 Aug 2007 12:43:32 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:34507 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932531AbXHJQna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 12:43:30 -0400
+Date: Fri, 10 Aug 2007 20:45:46 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, devel@openvz.org
+Subject: Re: [PATCH] Make access to task's nsproxy liter
+Message-ID: <20070810164546.GA273@tv-sign.ru>
+References: <46BAE3A3.7030608@openvz.org> <20070810134003.GA22368@sergelap.austin.ibm.com> <20070810140545.GA74@tv-sign.ru> <46BC7FAC.2080208@openvz.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1186764049_6376P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 10 Aug 2007 12:40:49 -0400
-Message-ID: <26090.1186764049@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46BC7FAC.2080208@openvz.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1186764049_6376P
-Content-Type: text/plain; charset=us-ascii
-
-On Fri, 10 Aug 2007 11:23:34 +0200, Aurelien Jarno said:
-> I have just tried it, and it fails to build for MIPS with the following
-> error:
+On 08/10, Pavel Emelyanov wrote:
+>
+> Oleg Nesterov wrote:
+> >On 08/10, Serge E. Hallyn wrote:
+> >>Quoting Pavel Emelyanov (xemul@openvz.org):
+> >>>+/*
+> >>>+ * the namespaces access rules are:
+> >>>+ *
+> >>>+ *  1. only current task is allowed to change tsk->nsproxy pointer or
+> >>>+ *     any pointer on the nsproxy itself
+> >>>+ *
+> >>>+ *  2. when accessing (i.e. reading) current task's namespaces - no
+> >>>+ *     precautions should be taken - just dereference the pointers
+> >>>+ *
+> >>>+ *  3. the access to other task namespaces is performed like this
+> >>>+ *     rcu_read_lock();
+> >>>+ *     nsproxy = task_nsproxy(tsk);
+> >>>+ *     if (nsproxy != NULL) {
+> >>>+ *             / *
+> >>>+ *               * work with the namespaces here
+> >>>+ *               * e.g. get the reference on one of them
+> >>>+ *               * /
+> >>>+ *     } / *
+> >>>+ *         * NULL task_nsproxy() means that this task is
+> >>>+ *         * almost dead (zombie)
+> >>>+ *         * /
+> >>>+ *     rcu_read_unlock();
+> >>And lastly, I guess that the caller to switch_task_namespaces() has
+> >>to ensure that new_nsproxy either (1) is the init namespace, (2) is a
+> >>brand-new namespace to which noone else has a reference, or (3) the
+> >>caller has to hold a reference to the new_nsproxy across the call to
+> >>switch_task_namespaces().
+> >>
+> >>As it happens the current calls fit (1) or (2).  Again if we happen to
+> >>jump into the game of switching a task into another task's nsproxy,
+> >>we'll need to be mindful of (3) so that new_nsproxy can't be tossed into
+> >>the bin between
+> >>
+> >>	if (new)
+> >>		get_nsproxy(new);
+> >
+> >4) Unless tsk == current, get_task_namespaces(tsk) and get_nsproxy(tsk)
+> >   are racy even if done under rcu_read_lock().
 > 
->   CC      arch/mips/kernel/asm-offsets.s
-> In file included from include/linux/sched.h:58,
->                  from arch/mips/kernel/asm-offsets.c:13:
-> include/linux/mm_types.h:115: error: expected specifier-qualifier-list before 'pgprot_t'
-> include/linux/mm_types.h:169: warning: 'struct file' declared inside parameter list
-> include/linux/mm_types.h:169: warning: its scope is only this definition or declaration, which is probably not what you want
-> include/linux/mm_types.h:175: error: expected specifier-qualifier-list before 'pgd_t'
+> Yup :)
 > 
-> 
-> The trivial patch below fixes this problem.
+> It is already written in comment that only the current is allowed
+> to change its nsproxy. I.e. when switch_task_nsproxy() is called
+> for tsk other than current it's a BUG
 
-Rather than adding it to an include/linux file, where it then gets dragged
-in on *all* architectures, maybe we should investigate why it dies on MIPS,
-and fix it for *that* arch?
+Yes, but what I meant is that this code
 
---==_Exmh_1186764049_6376P
-Content-Type: application/pgp-signature
+        rcu_read_lock();
+        nsproxy = task_nsproxy(tsk);
+        if (nsproxy != NULL)
+                get_nsproxy(nsproxy);
+        rcu_read_unlock();
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+	if (nsproxy) {
+		use_it(nsproxy);
+		put_nsproxy(nsproxy);
+	}
 
-iD8DBQFGvJURcC3lWbTT17ARAlurAKD2/PI4ff6hhTtm/OT/cBmuLpf5kQCgtcDQ
-JmmxHucUInsjRbeDlOjVVoo=
-=BQQH
------END PGP SIGNATURE-----
+is not safe despite the fact we are _not_ changing tsk->nsproxy.
 
---==_Exmh_1186764049_6376P--
+The patch itself is correct because we don't do that, and the comment
+is right. Just it is not immediately obvious.
+
+Oleg.
+
