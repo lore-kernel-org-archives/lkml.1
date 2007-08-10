@@ -1,38 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbXHJGZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758987AbXHJGeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758530AbXHJGZv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 02:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbXHJGZm
+	id S1758987AbXHJGeg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 02:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbXHJGe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 02:25:42 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46734 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751813AbXHJGZl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 02:25:41 -0400
-Date: Thu, 9 Aug 2007 23:25:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	Fri, 10 Aug 2007 02:34:26 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:53348 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751977AbXHJGeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 02:34:25 -0400
+Message-ID: <386727659.27809@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Message-Id: <20070810063412.238042387@mail.ustc.edu.cn>
+User-Agent: quilt/0.46-1
+Date: Fri, 10 Aug 2007 14:34:12 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Ken Chen <kenchen@google.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: Softlockup detected with 2.6.23-rc2-mm1
-Message-Id: <20070809232504.c28a3c93.akpm@linux-foundation.org>
-In-Reply-To: <46BC02B9.1000307@linux.vnet.ibm.com>
-References: <46BC02B9.1000307@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: linux-fsdevel@vger.kernel.org
+Subject: [PATCH 0/4] [RFC][PATCH] fs-writeback: redefining the dirty inode queues
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007 11:46:25 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Andrew,
 
-> I get call trace, when the file system stress is run on the
-> 2.6.23-rc2-mm1 kernel on a Dual Core AMD Opteron
-> (processor 270)
-> 
-> ============================================\BUG: spinlock bad magic on 
-> CPU#1, fsx-linux/19721
+I'd like to propose a cleaner way of using the s_dirty, s_io, s_more_io
+queues for the writeback of dirty inodes. The basic idea is to clearly
+define the function of the queues, especially to decouple s_diry from
+s_io/s_more_io.  The details are in the changelog of patch 2.
 
-Yes, sorry, mm-dirty-balancing-for-tasks.patch had a bug.  Those patches were
-removed from 2.6.23-rc2-mm2 - please test that instead.
+The patches are some cleanups on top of Andrew's s_dirty time-ordering
+patches and Ken's s_more_io patch:
+
+[PATCH 1/4] writeback: check time-ordering of s_io and s_more_io
+[PATCH 2/4] writeback: 3-queue based writeback schedule
+[PATCH 3/4] writeback: function renames and cleanups
+[PATCH 4/4] writeback: fix ntfs with sb_has_dirty_inodes()
+
+ fs/fs-writeback.c  |  196 +++++++++++++++++++++++--------------------
+ fs/ntfs/super.c    |    4 
+ include/linux/fs.h |    1 
+ 3 files changed, 108 insertions(+), 93 deletions(-)
+
+Note that the patches need rework for inserting into the right place of
+your queue of -mm patches. I'll take care of it in the next take.
+
+Thank you,
+Fengguang
+-- 
