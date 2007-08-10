@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939750AbXHJPMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939376AbXHJPP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939750AbXHJPMZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 11:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765225AbXHJPMM
+	id S939376AbXHJPP4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 11:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXHJPPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 11:12:12 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:49675 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752583AbXHJPMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 11:12:10 -0400
-Date: Fri, 10 Aug 2007 08:12:08 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Josh Triplett <josh@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc2-mm1: rcutorture xtime usage
-Message-ID: <20070810151208.GC8511@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070809015106.cd0bfc53.akpm@linux-foundation.org> <20070810013146.GD18938@stusta.de> <20070810020040.GK8424@linux.vnet.ibm.com> <20070809190623.f60dcf70.akpm@linux-foundation.org>
+	Fri, 10 Aug 2007 11:15:48 -0400
+Received: from ausc60pc101.us.dell.com ([143.166.85.206]:1754 "EHLO
+	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759002AbXHJPPr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 11:15:47 -0400
+DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=oNL7p9QczYnxrlY6m9fVkJQJJi7xHxxH+WFq+CNhvIi/EGPJE4q8SxAR2cXzyAP3eYffveqXnhMHat2/TKlSKiP2BgVzISmMjQ9fE/Rbmjv+WxywYBt/HGMiz3xoi1so;
+X-IronPort-AV: E=Sophos;i="4.19,245,1183352400"; 
+   d="scan'208";a="336311852"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070809190623.f60dcf70.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: EHCI Regression in 2.6.23-rc2
+Date: Fri, 10 Aug 2007 10:14:56 -0500
+Message-ID: <DFEF91B22ED07447AB6AA4B237F913F9B18E19@ausx3mpc125.aus.amer.dell.com>
+In-Reply-To: <Pine.LNX.4.64.0708101125120.3948@twin.jikos.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: EHCI Regression in 2.6.23-rc2
+Thread-Index: AcfbMMIM8i7lO3aDT2KzSiwnsHr4ugAL0OEg
+References: <200708101045.57166.dex@dragonslave.de> <Pine.LNX.4.64.0708101125120.3948@twin.jikos.cz>
+From: <Stuart_Hayes@Dell.com>
+To: <jikos@jikos.cz>, <webmaster@dragonslave.de>
+Cc: <linux-kernel@vger.kernel.org>, <linux-usb-devel@lists.sourceforge.net>
+X-OriginalArrivalTime: 10 Aug 2007 15:15:29.0672 (UTC) FILETIME=[499D8880:01C7DB61]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 07:06:23PM -0700, Andrew Morton wrote:
-> On Thu, 9 Aug 2007 19:00:40 -0700 "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+Jiri Kosina wrote:
+> On Fri, 10 Aug 2007, Daniel Exner wrote:
 > 
-> > On Fri, Aug 10, 2007 at 03:31:46AM +0200, Adrian Bunk wrote:
-> > > On Thu, Aug 09, 2007 at 01:51:06AM -0700, Andrew Morton wrote:
-> > > >...
-> > > > Changes since 2.6.23-rc2-mm1:
-> > > >...
-> > > > +allow-rcutorture-to-handle-synchronize_sched.patch
-> > > >...
-> > > >  2.6.23 queue
-> > > >...
-> > > 
-> > > All drivers were converted to no longer use xtime directly since it 
-> > > might be quite outdated, but this patch adds a usage of xtime.tv_nsec
-> > > as RNG...
-> > 
-> > This code doesn't care if the time is outdated, as it is simply
-> > periodically perturbing an RNG, but OK.
-> > 
-> > So, what interface are we supposed to be using instead?  I cannot use
-> > get_random_bytes() due to locking issues.  This is not a cryptographically
-> > secure usage, so the perturbation does not need to be extremely high
-> > quality.
-> > 
-> > On x86, I would just grab the low-order bits of the TSC, but all of the
-> > world is not an x86.  ;-)
+>> After some serious hangs with 2.6.23-rc2 I did some bisects and this
+>> was the result:
+>> 196705c9bbc03540429b0f7cf9ee35c2f928a534 is first bad commit commit
+>> 196705c9bbc03540429b0f7cf9ee35c2f928a534
+>> Author: Stuart_Hayes@Dell.com <Stuart_Hayes@Dell.com>
+>> Date:   Thu May 3 08:58:49 2007 -0700
 > 
-> One used to use sched_clock() for this, then get frowned at.  Now we
-> have cpu_clock()...
+> I guess that the patch attached to bug 8535 in kernel.org bugzilla --
+> http://bugzilla.kernel.org/attachment.cgi?id=12228&action=view --
+> solves your issues, right?  
+> 
+> Stuart, did you submit this fix for upstream already please?
 
-Hmmm...  And cpu_clock() is not in 2.6.22, so must appear in some later
-release.  Which means that the rate of API change in this area is a
-bit high, so I should avoid it like the plague.  Therefore, I should
-look for some other convenient source of entropy.
+Yes... http://marc.info/?l=linux-usb-devel&m=118598561010046&w=2
 
-One convenient source would the per-CPU statistics that rcutorture
-maintains.  Of course, a given CPU's RNG is nearly in lock-step with
-its own statistics, but not with the adjacent CPU's statistics...
+However, I have not tested this with a VIA EHCI controller (though it's
+been tested with Intel, Broadcom, and nVidia).  This patch uses the
+"inactivate" bit in the QH, which wasn't previously used by the linux
+kernel, and I found that the different vendors of EHCI controllers
+(Intel, Broadcom, nVidia) all handle this a little differently.  There's
+probably something about the way VIA controllers respond to seeing this
+bit set that is breaking things.
 
-I will send a patch.
-
-						Thanx, Paul
+I'll try to get my hands on a VIA EHCI controller so I can look at
+this... if you happen to know of an add-in card that has one of these,
+please let me know!  It would be a lot easier for me to debug this
+myself here than to try to get someone else to run test kernels for
+me...
