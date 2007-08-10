@@ -1,82 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764937AbXHJIZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764992AbXHJI1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764937AbXHJIZQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 04:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757030AbXHJIYy
+	id S1764992AbXHJI1n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 04:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757030AbXHJI13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 04:24:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:41980 "EHLO ozlabs.org"
+	Fri, 10 Aug 2007 04:27:29 -0400
+Received: from ns1.suse.de ([195.135.220.2]:54979 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753721AbXHJIYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 04:24:52 -0400
-From: Michael Neuling <mikey@neuling.org>
-To: linux-kernel@vger.kernel.org
-cc: akpm@osdl.org, Balbir Singh <balbir@linux.vnet.ibm.com>
-X-GPG-Fingerprint: 9B25 DC2A C58D 2C8D 47C2  457E 0887 E86F 32E6 BE16
+	id S1752161AbXHJI11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 04:27:27 -0400
+Date: Fri, 10 Aug 2007 10:27:26 +0200
+From: Olaf Hering <olh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
+Cc: Michael Matz <matz@suse.de>
+Subject: Re: [PATCH] remove strict ansi check from __u64 in asm/types.h
+Message-ID: <20070810082726.GA26232@suse.de>
+References: <20070806172331.GA8102@suse.de>
 MIME-Version: 1.0
-Subject: [PATCH] Documentation: fix getdelays.c example -l option and segv
-X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 21.4.1
-Date: Fri, 10 Aug 2007 18:24:45 +1000
-Message-ID: <18240.1186734285@neuling.org>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070806172331.GA8102@suse.de>
+X-DOS: I got your 640K Real Mode Right Here Buddy!
+X-Homeland-Security: You are not supposed to read this line! You are a terrorist!
+User-Agent: Mutt und vi sind doch schneller als Notes (und GroupWise)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a couple of minor issues with the getdelays.c example code. 
+On Mon, Aug 06, Olaf Hering wrote:
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- Documentation/accounting/getdelays.c |   21 +++++++++++----------
- 1 file changed, 11 insertions(+), 10 deletions(-)
+> Remove the __STRICT_ANSI__ check from the __u64/__s64 declaration on
+> 32bit targets.
 
-Index: linux-2.6-ozlabs/Documentation/accounting/getdelays.c
-===================================================================
---- linux-2.6-ozlabs.orig/Documentation/accounting/getdelays.c
-+++ linux-2.6-ozlabs/Documentation/accounting/getdelays.c
-@@ -196,7 +196,7 @@ void print_delayacct(struct taskstats *t
- 	       "IO    %15s%15s\n"
- 	       "      %15llu%15llu\n"
- 	       "MEM   %15s%15s\n"
--	       "      %15llu%15llu\n"
-+	       "      %15llu%15llu\n",
- 	       "count", "real total", "virtual total", "delay total",
- 	       t->cpu_count, t->cpu_run_real_total, t->cpu_run_virtual_total,
- 	       t->cpu_delay_total,
-@@ -335,17 +335,17 @@ int main(int argc, char *argv[])
- 		}
- 	}
- 
--	if (tid) {
--		rc = send_cmd(nl_sd, id, mypid, TASKSTATS_CMD_GET,
--			      cmd_type, &tid, sizeof(__u32));
--		PRINTF("Sent pid/tgid, retval %d\n", rc);
--		if (rc < 0) {
--			fprintf(stderr, "error sending tid/tgid cmd\n");
--			goto done;
-+	do {
-+		if (tid) {
-+			rc = send_cmd(nl_sd, id, mypid, TASKSTATS_CMD_GET,
-+				      cmd_type, &tid, sizeof(__u32));
-+			PRINTF("Sent pid/tgid, retval %d\n", rc);
-+			if (rc < 0) {
-+				fprintf(stderr, "error sending tid/tgid cmd\n");
-+				goto done;
-+			}
- 		}
--	}
- 
--	do {
- 		int i;
- 
- 		rep_len = recv(nl_sd, &msg, sizeof(msg), 0);
-@@ -430,6 +430,7 @@ int main(int argc, char *argv[])
- 			}
- 			na = (struct nlattr *) (GENLMSG_DATA(&msg) + len);
- 		}
-+		sleep(2);
- 	} while (loop);
- done:
- 	if (maskset) {
+> (Currently) untested patch below.
 
+We tested this now, and it did not cause failures.
 
-
-
+Andrew, will you pick this up?
