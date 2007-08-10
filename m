@@ -1,37 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759468AbXHJCxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbXHJDI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759468AbXHJCxs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 22:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbXHJCxh
+	id S1757869AbXHJDI3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 23:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbXHJDIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 22:53:37 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:60421 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751277AbXHJCxg (ORCPT
+	Thu, 9 Aug 2007 23:08:17 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:39950 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751699AbXHJDIP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 22:53:36 -0400
-Date: Thu, 9 Aug 2007 22:53:22 -0400
-Message-Id: <200708100253.l7A2rMWG024728@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, dwmw2@infradead.org
-Subject: Re: JFFS2/mtdsuper modprobe "unknown symbol" in 2.6.23-rc1 
-In-reply-to: Your message of "Fri, 10 Aug 2007 04:44:22 +0200."
-             <20070810024422.GF18938@stusta.de> 
-X-MailKey: Erez_Zadok
+	Thu, 9 Aug 2007 23:08:15 -0400
+Message-ID: <46BBD6D7.3050402@suse.de>
+Date: Fri, 10 Aug 2007 11:09:11 +0800
+From: Coly Li <coyli@suse.de>
+Reply-To: coyli@suse.de
+Organization: SuSE Labs
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH] obsolete fragment from ext4
+X-Enigmail-Version: 0.94.4.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20070810024422.GF18938@stusta.de>, Adrian Bunk writes:
-> On Thu, Aug 09, 2007 at 10:38:18PM -0400, Erez Zadok wrote:
-> > I'm getting an error modprobing jffs2 due to mtdsuper failing to insmod:
-> >...
-> > Does anyone know what am I missing?
-> 
-> You miss that 2.6.23-rc2 with this bug fixed has already been released.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Great, I'll upgrade to rc2 (I've had this problem since .22-rc).  Thanks for
-the quick response.
+Once ext4 will not implement fragment, it is believed it will never be implement
+in future. Therefore fragment related source code in ext4 should be obsoleted --
+no one will use it.
 
-Erez.
+This patch obsolete fragment from ext4.
+Another patch posted on linux-ext4 removing fragment supporting from e2fsprogs.
+I tested both patch.
+
+
+Signed-Off-By: Coly Li <coyli@suse.de>
+
+diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
+index 427f830..b8b538d 100644
+- --- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -576,11 +576,6 @@ got:
+ 	/* dirsync only applies to directories */
+ 	if (!S_ISDIR(mode))
+ 		ei->i_flags &= ~EXT4_DIRSYNC_FL;
+- -#ifdef EXT4_FRAGMENTS
+- -	ei->i_faddr = 0;
+- -	ei->i_frag_no = 0;
+- -	ei->i_frag_size = 0;
+- -#endif
+ 	ei->i_file_acl = 0;
+ 	ei->i_dir_acl = 0;
+ 	ei->i_dtime = 0;
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index a4848e0..f283522 100644
+- --- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -2645,11 +2645,6 @@ void ext4_read_inode(struct inode * inode)
+ 	}
+ 	inode->i_blocks = le32_to_cpu(raw_inode->i_blocks);
+ 	ei->i_flags = le32_to_cpu(raw_inode->i_flags);
+- -#ifdef EXT4_FRAGMENTS
+- -	ei->i_faddr = le32_to_cpu(raw_inode->i_faddr);
+- -	ei->i_frag_no = raw_inode->i_frag;
+- -	ei->i_frag_size = raw_inode->i_fsize;
+- -#endif
+ 	ei->i_file_acl = le32_to_cpu(raw_inode->i_file_acl);
+ 	if (EXT4_SB(inode->i_sb)->s_es->s_creator_os !=
+ 	    cpu_to_le32(EXT4_OS_HURD))
+@@ -2794,11 +2789,6 @@ static int ext4_do_update_inode(handle_t *handle,
+ 	raw_inode->i_blocks = cpu_to_le32(inode->i_blocks);
+ 	raw_inode->i_dtime = cpu_to_le32(ei->i_dtime);
+ 	raw_inode->i_flags = cpu_to_le32(ei->i_flags);
+- -#ifdef EXT4_FRAGMENTS
+- -	raw_inode->i_faddr = cpu_to_le32(ei->i_faddr);
+- -	raw_inode->i_frag = ei->i_frag_no;
+- -	raw_inode->i_fsize = ei->i_frag_size;
+- -#endif
+ 	if (EXT4_SB(inode->i_sb)->s_es->s_creator_os !=
+ 	    cpu_to_le32(EXT4_OS_HURD))
+ 		raw_inode->i_file_acl_high =
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 75adbb6..5e04d68 100644
+- --- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -1655,14 +1655,6 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+ 		if (sbi->s_inode_size > EXT4_GOOD_OLD_INODE_SIZE)
+ 			sb->s_time_gran = 1 << (EXT4_EPOCH_BITS - 2);
+ 	}
+- -	sbi->s_frag_size = EXT4_MIN_FRAG_SIZE <<
+- -				   le32_to_cpu(es->s_log_frag_size);
+- -	if (blocksize != sbi->s_frag_size) {
+- -		printk(KERN_ERR
+- -		       "EXT4-fs: fragsize %lu != blocksize %u (unsupported)\n",
+- -		       sbi->s_frag_size, blocksize);
+- -		goto failed_mount;
+- -	}
+ 	sbi->s_desc_size = le16_to_cpu(es->s_desc_size);
+ 	if (EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_64BIT)) {
+ 		if (sbi->s_desc_size < EXT4_MIN_DESC_SIZE_64BIT ||
+@@ -1676,7 +1668,6 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+ 	} else
+ 		sbi->s_desc_size = EXT4_MIN_DESC_SIZE;
+ 	sbi->s_blocks_per_group = le32_to_cpu(es->s_blocks_per_group);
+- -	sbi->s_frags_per_group = le32_to_cpu(es->s_frags_per_group);
+ 	sbi->s_inodes_per_group = le32_to_cpu(es->s_inodes_per_group);
+ 	if (EXT4_INODE_SIZE(sb) == 0)
+ 		goto cantfind_ext4;
+@@ -1700,12 +1691,6 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+ 			sbi->s_blocks_per_group);
+ 		goto failed_mount;
+ 	}
+- -	if (sbi->s_frags_per_group > blocksize * 8) {
+- -		printk (KERN_ERR
+- -			"EXT4-fs: #fragments per group too big: %lu\n",
+- -			sbi->s_frags_per_group);
+- -		goto failed_mount;
+- -	}
+ 	if (sbi->s_inodes_per_group > blocksize * 8) {
+ 		printk (KERN_ERR
+ 			"EXT4-fs: #inodes per group too big: %lu\n",
+diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
+index cdee7aa..3baeb99 100644
+- --- a/include/linux/ext4_fs.h
++++ b/include/linux/ext4_fs.h
+@@ -105,20 +105,6 @@
+ #define EXT4_BLOCK_ALIGN(size, blkbits)		ALIGN((size), (1 << (blkbits)))
+
+ /*
+- - * Macro-instructions used to manage fragments
+- - */
+- -#define EXT4_MIN_FRAG_SIZE		1024
+- -#define	EXT4_MAX_FRAG_SIZE		4096
+- -#define EXT4_MIN_FRAG_LOG_SIZE		  10
+- -#ifdef __KERNEL__
+- -# define EXT4_FRAG_SIZE(s)		(EXT4_SB(s)->s_frag_size)
+- -# define EXT4_FRAGS_PER_BLOCK(s)	(EXT4_SB(s)->s_frags_per_block)
+- -#else
+- -# define EXT4_FRAG_SIZE(s)		(EXT4_MIN_FRAG_SIZE << (s)->s_log_frag_size)
+- -# define EXT4_FRAGS_PER_BLOCK(s)	(EXT4_BLOCK_SIZE(s) / EXT4_FRAG_SIZE(s))
+- -#endif
+- -
+- -/*
+  * Structure of a blocks group descriptor
+  */
+ struct ext4_group_desc
+@@ -311,27 +297,24 @@ struct ext4_inode {
+ 	__le32	i_generation;	/* File version (for NFS) */
+ 	__le32	i_file_acl;	/* File ACL */
+ 	__le32	i_dir_acl;	/* Directory ACL */
+- -	__le32	i_faddr;	/* Fragment address */
++	__le32	i_obso_faddr;	/* Obsoleted fragment address */
+ 	union {
+ 		struct {
+- -			__u8	l_i_frag;	/* Fragment number */
+- -			__u8	l_i_fsize;	/* Fragment size */
++			__le16	l_i_reserved1;	/* Obsoleted fragment number/size which are removed in ext4 */
+ 			__le16	l_i_file_acl_high;
+ 			__le16	l_i_uid_high;	/* these 2 fields */
+ 			__le16	l_i_gid_high;	/* were reserved2[0] */
+ 			__u32	l_i_reserved2;
+ 		} linux2;
+ 		struct {
+- -			__u8	h_i_frag;	/* Fragment number */
+- -			__u8	h_i_fsize;	/* Fragment size */
++			__le16	h_i_reserved1;	/* Obsoleted fragment number/size which are removed in ext4 */
+ 			__u16	h_i_mode_high;
+ 			__u16	h_i_uid_high;
+ 			__u16	h_i_gid_high;
+ 			__u32	h_i_author;
+ 		} hurd2;
+ 		struct {
+- -			__u8	m_i_frag;	/* Fragment number */
+- -			__u8	m_i_fsize;	/* Fragment size */
++			__le16	h_i_reserved1;	/* Obsoleted fragment number/size which are removed in ext4 */
+ 			__le16	m_i_file_acl_high;
+ 			__u32	m_i_reserved2[2];
+ 		} masix2;
+@@ -419,8 +402,6 @@ do {									       \
+
+ #if defined(__KERNEL__) || defined(__linux__)
+ #define i_reserved1	osd1.linux1.l_i_reserved1
+- -#define i_frag		osd2.linux2.l_i_frag
+- -#define i_fsize		osd2.linux2.l_i_fsize
+ #define i_file_acl_high	osd2.linux2.l_i_file_acl_high
+ #define i_uid_low	i_uid
+ #define i_gid_low	i_gid
+@@ -431,8 +412,6 @@ do {									       \
+ #elif defined(__GNU__)
+
+ #define i_translator	osd1.hurd1.h_i_translator
+- -#define i_frag		osd2.hurd2.h_i_frag;
+- -#define i_fsize		osd2.hurd2.h_i_fsize;
+ #define i_uid_high	osd2.hurd2.h_i_uid_high
+ #define i_gid_high	osd2.hurd2.h_i_gid_high
+ #define i_author	osd2.hurd2.h_i_author
+@@ -440,8 +419,6 @@ do {									       \
+ #elif defined(__masix__)
+
+ #define i_reserved1	osd1.masix1.m_i_reserved1
+- -#define i_frag		osd2.masix2.m_i_frag
+- -#define i_fsize		osd2.masix2.m_i_fsize
+ #define i_file_acl_high	osd2.masix2.m_i_file_acl_high
+ #define i_reserved2	osd2.masix2.m_i_reserved2
+
+@@ -528,9 +505,9 @@ struct ext4_super_block {
+ /*10*/	__le32	s_free_inodes_count;	/* Free inodes count */
+ 	__le32	s_first_data_block;	/* First Data Block */
+ 	__le32	s_log_block_size;	/* Block size */
+- -	__le32	s_log_frag_size;	/* Fragment size */
++	__le32	s_obso_log_frag_size;	/* Obsoleted fragment size */
+ /*20*/	__le32	s_blocks_per_group;	/* # Blocks per group */
+- -	__le32	s_frags_per_group;	/* # Fragments per group */
++	__le32	s_obso_frags_per_group;	/* Obsoleted fragments per group */
+ 	__le32	s_inodes_per_group;	/* # Inodes per group */
+ 	__le32	s_mtime;		/* Mount time */
+ /*30*/	__le32	s_wtime;		/* Write time */
+diff --git a/include/linux/ext4_fs_i.h b/include/linux/ext4_fs_i.h
+index 1a511e9..86ddfe2 100644
+- --- a/include/linux/ext4_fs_i.h
++++ b/include/linux/ext4_fs_i.h
+@@ -78,11 +78,6 @@ struct ext4_ext_cache {
+ struct ext4_inode_info {
+ 	__le32	i_data[15];	/* unconverted */
+ 	__u32	i_flags;
+- -#ifdef EXT4_FRAGMENTS
+- -	__u32	i_faddr;
+- -	__u8	i_frag_no;
+- -	__u8	i_frag_size;
+- -#endif
+ 	ext4_fsblk_t	i_file_acl;
+ 	__u32	i_dir_acl;
+ 	__u32	i_dtime;
+diff --git a/include/linux/ext4_fs_sb.h b/include/linux/ext4_fs_sb.h
+index 1b2ffee..a978fba 100644
+- --- a/include/linux/ext4_fs_sb.h
++++ b/include/linux/ext4_fs_sb.h
+@@ -28,11 +28,8 @@
+  * third extended-fs super-block data in memory
+  */
+ struct ext4_sb_info {
+- -	unsigned long s_frag_size;	/* Size of a fragment in bytes */
+ 	unsigned long s_desc_size;	/* Size of a group descriptor in bytes */
+- -	unsigned long s_frags_per_block;/* Number of fragments per block */
+ 	unsigned long s_inodes_per_block;/* Number of inodes per block */
+- -	unsigned long s_frags_per_group;/* Number of fragments in a group */
+ 	unsigned long s_blocks_per_group;/* Number of blocks in a group */
+ 	unsigned long s_inodes_per_group;/* Number of inodes in a group */
+ 	unsigned long s_itb_per_group;	/* Number of inode table blocks per group */
+
+
+
+
+- --
+Coly Li
+SuSE PRC Labs
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFGu9bWuTp8cyZ5lTERAgRMAJ9o64SXzyuU6hnCMI92c2zJiLLOUACglma3
+RZUEdVO3shEMTnZQX6O/oFM=
+=/u8w
+-----END PGP SIGNATURE-----
