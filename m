@@ -1,69 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934031AbXHJCBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933905AbXHJCD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934031AbXHJCBz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 22:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758689AbXHJCBo
+	id S933905AbXHJCD4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 22:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758269AbXHJCDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 22:01:44 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40369 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759221AbXHJCBn (ORCPT
+	Thu, 9 Aug 2007 22:03:50 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49730 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758607AbXHJCDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 22:01:43 -0400
-Date: Thu, 9 Aug 2007 19:01:41 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Daniel Phillips <daniel.raymond.phillips@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 04/10] mm: slub: add knowledge of reserve pages
-In-Reply-To: <4a5909270708091854n7c84ae9aj84170092a5eb61db@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0708091857230.3368@schroedinger.engr.sgi.com>
-References: <20070806102922.907530000@chello.nl>  <20070806103658.603735000@chello.nl>
-  <Pine.LNX.4.64.0708071702560.4941@schroedinger.engr.sgi.com> 
- <20070808014435.GG30556@waste.org>  <Pine.LNX.4.64.0708081004290.12652@schroedinger.engr.sgi.com>
-  <Pine.LNX.4.64.0708081050590.12652@schroedinger.engr.sgi.com> 
- <20070808114636.7c6f26ab.akpm@linux-foundation.org>
- <4a5909270708091854n7c84ae9aj84170092a5eb61db@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 9 Aug 2007 22:03:49 -0400
+Date: Thu, 9 Aug 2007 19:03:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Josh Triplett <josht@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com
+Subject: Re: [PATCH] Fix typo in arch/i386/kernel/tsc.c
+Message-Id: <20070809190340.26757a64.akpm@linux-foundation.org>
+In-Reply-To: <1186711089.6899.29.camel@josh-work.beaverton.ibm.com>
+References: <1186711089.6899.29.camel@josh-work.beaverton.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, Daniel Phillips wrote:
+On Thu, 09 Aug 2007 18:58:09 -0700 Josh Triplett <josht@linux.vnet.ibm.com> wrote:
 
-> No matter how you look at this problem, you still need to have _some_
-> sort of reserve, and limit access to it.  We extend existing methods,
+> - *  We can use khz divisor instead of mhz to keep a better percision, since
+> + *  We can use khz divisor instead of mhz to keep a better precision, since
 
-The reserve is in the memory in the zone and reclaim can guarantee that 
-there are a sufficient number of easily reclaimable pages in it.
-
-> you are proposing to what seems like an entirely new reserve
-
-The reserve always has been managed by per zone counters. Nothing new 
-there.
-
-> management system.  Great idea, maybe, but it does not solve the
-> deadlocks.  You still need some organized way of being sure that your
-> reserve is as big as you need (hopefully not an awful lot bigger) and
-> you still have to make sure that nobody dips into that reserve further
-> than they are allowed to.
-
-Nope there is no need to have additional reserves. You delay the writeout 
-until you are finished with reclaim. Then you do the writeout. During 
-writeout reclaim may be called as needed. After the writeout is complete 
-then you recheck the vm counters again to be sure that dirty ratio / 
-easily reclaimable ratio and mem low / high boundaries are still okay. If not go 
-back to reclaim.
-
-> So translation: reclaim from "easily freeable" lists is an
-> optimization, maybe a great one.  Probably great.  Reclaim from atomic
-> context is also a great idea, probably. But you are talking about a
-> whole nuther patch set.  Neither of those are in themselves a fix for
-> these deadlocks.
-
-Yes they are a much better fix and may allow code cleanup by getting rid 
-of checks for PF_MEMALLOC. They integrate in a straightforward way 
-into the existing reclaim methods.
+I have an arbitrary i-dont-do-typos policy (unless they're in a printk or
+in documentation).  trivial@kernel.org is the home for patches such as this,
+please.
