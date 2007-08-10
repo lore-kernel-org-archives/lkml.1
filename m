@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939410AbXHJShY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940069AbXHJSip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939410AbXHJShY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 14:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756553AbXHJShL
+	id S940069AbXHJSip (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 14:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757627AbXHJSih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 14:37:11 -0400
-Received: from smtp3.hushmail.com ([65.39.178.135]:64261 "EHLO
+	Fri, 10 Aug 2007 14:38:37 -0400
+Received: from smtp3.hushmail.com ([65.39.178.135]:59120 "EHLO
 	smtp3.hushmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756531AbXHJShJ (ORCPT
+	with ESMTP id S1756553AbXHJSig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 14:37:09 -0400
-Date: Fri, 10 Aug 2007 14:37:06 -0400
+	Fri, 10 Aug 2007 14:38:36 -0400
+Date: Fri, 10 Aug 2007 14:38:34 -0400
 To: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
        <kernel-janitors@vger.kernel.org>
-Subject: [PATCH 1/4]  /drivers/net ioremap balancing/returncode check (es3210.c)
+Subject: [PATCH 2/4]  /drivers/net ioremap balancing/returncode check (lne390.c)
 Reply-to: postfail@hushmail.com
 From: "Scott Thompson" <postfail@hushmail.com>
 Content-type: text/plain; charset="UTF-8"
-Message-Id: <20070810183707.36A1ADA81F@mailserver7.hushmail.com>
+Message-Id: <20070810183834.B00E3DA81F@mailserver7.hushmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -40,18 +40,20 @@ I split patches up by file changed as each file had different
 
 Signed-off-by: Scott Thompson <postfail <at> hushmail.com>
 ----------------------------------------------------------
-diff --git a/drivers/net/es3210.c b/drivers/net/es3210.c
-index 822e5bf..d7d6b90 100644
---- a/drivers/net/es3210.c
-+++ b/drivers/net/es3210.c
-@@ -307,6 +307,10 @@ out1:
- 	free_irq(dev->irq, dev);
- out:
- 	release_region(ioaddr + ES_SA_PROM, ES_IO_EXTENT);
-+
+diff --git a/drivers/net/lne390.c b/drivers/net/lne390.c
+index 0a08d0c..f6d9fb6 100644
+--- a/drivers/net/lne390.c
++++ b/drivers/net/lne390.c
+@@ -290,7 +290,7 @@ static int __init lne390_probe1(struct 
+net_device *dev, int ioaddr)
+ 		goto unmap;
+ 	return 0;
+ unmap:
+-	if (ei_status.reg0)
 +	if (ei_status.mem)
-+		iounmap(ei_status.mem);
-+	
- 	return retval;
-}
+ 		iounmap(ei_status.mem);
+ cleanup:
+ 	free_irq(dev->irq, dev);
+
+
 
