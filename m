@@ -1,114 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbXHJFhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbXHJFk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754930AbXHJFhB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 01:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbXHJFgx
+	id S1756806AbXHJFk6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 01:40:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbXHJFks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 01:36:53 -0400
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:49641 "EHLO
-	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751130AbXHJFgw (ORCPT
+	Fri, 10 Aug 2007 01:40:48 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35186 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751304AbXHJFkq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 01:36:52 -0400
-Message-ID: <46BBF965.5030203@freedesktop.org>
-Date: Thu, 09 Aug 2007 22:36:37 -0700
-From: Josh Triplett <josh@freedesktop.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
+	Fri, 10 Aug 2007 01:40:46 -0400
+Message-ID: <46BBFA5D.3040000@jp.fujitsu.com>
+Date: Fri, 10 Aug 2007 14:40:45 +0900
+From: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: Re: 2.6.23-rc2-mm1: sleeping function called from invalid context
- at kernel/mutex.c:86
-References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>	<200708100123.07762.m.kozlowski@tuxland.pl> <20070809171128.03f40dff.akpm@linux-foundation.org>
-In-Reply-To: <20070809171128.03f40dff.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: auke-jan.h.kok@intel.com, cramerj@intel.com, john.ronciak@intel.com,
+       jesse.brandeburg@intel.com, jeffrey.t.kirsher@intel.com
+Cc: gregkh@suse.de, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][Take2] PCI legacy I/O port free driver - Making Intel
+ e1000 driver legacy I/O port free
+References: <46BBF49F.6060701@jp.fujitsu.com>
+In-Reply-To: <46BBF49F.6060701@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 10 Aug 2007 01:23:07 +0200
-> Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
-> 
->> Hello,
->>
->> 	This probably doesn't have great impact ;) but ...
->> To reproduce: run torture tests for RCU and then sysrq+q.
->>
->> SysRq : Show Pending Timers
->> Timer List Version: v0.3
->> HRTIMER_MAX_CLOCK_BASES: 2
->> now at 1764338760370 nsecs
->>
->> cpu: 0
->>  clock 0:
->>   .index:      0
->>   .resolution: 1 nsecs
->>   .get_time:   ktime_get_real
->>   .offset:     1186699025823815427 nsecs
->> active timers:
->>  clock 1:
->>   .index:      1
->>   .resolution: 1 nsecs
->>   .get_time:   ktime_get
->>   .offset:     0 nsecs
->> active timers:
->>  #0: <3>BUG: sleeping function called from invalid context at kernel/mutex.c:86
->> in_atomic():1, irqs_disabled():1
->> INFO: lockdep is turned off.
->> irq event stamp: 0
->> hardirqs last  enabled at (0): [<00000000>] 0x0
->> hardirqs last disabled at (0): [<c0117def>] copy_process+0x4a8/0x144c
->> softirqs last  enabled at (0): [<c0117e0d>] copy_process+0x4c6/0x144c
->> softirqs last disabled at (0): [<00000000>] 0x0
->>  [<c0104869>] show_trace_log_lvl+0x1a/0x30
->>  [<c01053ad>] show_trace+0x12/0x14
->>  [<c0105515>] dump_stack+0x15/0x17
->>  [<c0114da7>] __might_sleep+0xb7/0xc9
->>  [<c0451771>] mutex_lock+0x15/0x1f
->>  [<c0141b75>] lookup_module_symbol_name+0x17/0xc0
->>  [<c014272a>] lookup_symbol_name+0x3f/0x43
->>  [<c013287e>] print_name_offset+0x1f/0x96
->>  [<c01330f7>] timer_list_show+0x802/0xcbd
->>  [<c01335be>] sysrq_timer_list_show+0xc/0xe
->>  [<c02cc4a1>] sysrq_handle_show_timers+0x8/0xa
->>  [<c02cc3ac>] __handle_sysrq+0x7b/0x115
->>  [<c02cc466>] handle_sysrq+0x20/0x24
->>  [<c02c69c1>] kbd_event+0x3a8/0x5c7
->>  [<c0362f8f>] input_pass_event+0x8f/0x91
->>  [<c0363e77>] input_handle_event+0x98/0x38d
->>  [<c0364e6d>] input_event+0x54/0x67
->>  [<c03682c2>] atkbd_interrupt+0x200/0x59e
->>  [<c0360cd0>] serio_interrupt+0x7c/0x80
->>  [<c0361965>] i8042_interrupt+0x17a/0x289
->>  [<c0147a5d>] handle_IRQ_event+0x28/0x59
->>  [<c01493ca>] handle_level_irq+0xad/0x10b
->>  [<c0105a13>] do_IRQ+0x93/0xd0
->>  [<c010441e>] common_interrupt+0x2e/0x34
->>  [<df39d7e3>] rcu_read_delay+0x8/0x36 [rcutorture]
->>  [<df39d99a>] rcu_torture_reader+0x6e/0x169 [rcutorture]
->>  [<c012c11e>] kthread+0x36/0x58
->>  [<c010451b>] kernel_thread_helper+0x7/0x1c
->>  =======================
-> 
-> We seem to have made a mess in there.  timer_list_show() ends up calling
-> lookup_module_symbol_name(), which takes a mutex.  However print_symbol()
-> (which is called at oops time, interrupt time, etc) calls
-> module_address_lookup(), which is basically the same, only it doesn't take
-> the mutex.
-> 
-> I guess a quicky fix would be to switch
-> kernel/time/timer_list.c:print_name_offset() from
-> lookup_module_symbol_name() to module_address_lookup().  But we'd still
-> have a mess in there.
-> 
-> (adds ccs, runs away)
+Dear Auke
 
-I don't think rcutorture matters for this bug.  As far as I can tell, Andrew's
-description of this problem will always apply to this particular sysrq: the
-keyboard interrupt leads to handle_sysrq, which leads to timer_list_show,
-which leads to lookup_module_symbol_name, which acquires a mutex.
+Sorry I sent the wrong patch.
+I resubmit the patch.
 
-- Josh Triplett
+Tomohiro Kusumi
+
+Signed-off-by: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
+
+---
+diff -Nurp linux-2.6.22.org/drivers/net/e1000/e1000.h linux-2.6.22/drivers/net/e1000/e1000.h
+--- linux-2.6.22.org/drivers/net/e1000/e1000.h	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.22/drivers/net/e1000/e1000.h	2007-08-10 09:56:03.000000000 +0900
+@@ -342,6 +342,9 @@ struct e1000_adapter {
+ 	boolean_t quad_port_a;
+ 	unsigned long flags;
+ 	uint32_t eeprom_wol;
++
++	int use_ioport;
++	int bars;
+ };
+
+ enum e1000_state_t {
+diff -Nurp linux-2.6.22.org/drivers/net/e1000/e1000_main.c linux-2.6.22/drivers/net/e1000/e1000_main.c
+--- linux-2.6.22.org/drivers/net/e1000/e1000_main.c	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.22/drivers/net/e1000/e1000_main.c	2007-08-10 14:27:41.000000000 +0900
+@@ -222,6 +222,11 @@ static pci_ers_result_t e1000_io_error_d
+ static pci_ers_result_t e1000_io_slot_reset(struct pci_dev *pdev);
+ static void e1000_io_resume(struct pci_dev *pdev);
+
++static unsigned int enable_legacy_ioport_free = 0;
++module_param(enable_legacy_ioport_free, uint, 0644);
++MODULE_PARM_DESC(enable_legacy_ioport_free, "Enable legacy I/O port free (default:0)");
++static int e1000_test_legacy_ioport(struct pci_dev *pdev);
++
+ static struct pci_error_handlers e1000_err_handler = {
+ 	.error_detected = e1000_io_error_detected,
+ 	.slot_reset = e1000_io_slot_reset,
+@@ -868,8 +873,25 @@ e1000_probe(struct pci_dev *pdev,
+ 	int i, err, pci_using_dac;
+ 	uint16_t eeprom_data = 0;
+ 	uint16_t eeprom_apme_mask = E1000_EEPROM_APME;
+-	if ((err = pci_enable_device(pdev)))
++	int bars = 0;
++	int use_ioport = 0;
++
++	if (enable_legacy_ioport_free) {
++		if ((use_ioport = e1000_test_legacy_ioport(pdev)) < 0) {
++			E1000_ERR("e1000_test_legacy_ioport failed, aborting\n");
++			return -1;
++		}
++		if (use_ioport)
++			bars = pci_select_bars(pdev, IORESOURCE_MEM | IORESOURCE_IO);
++		else
++			bars = pci_select_bars(pdev, IORESOURCE_MEM);
++
++		if ((err = pci_enable_device_bars(pdev, bars)))
++			return err;
++	}
++	else if ((err = pci_enable_device(pdev))) {
+ 		return err;
++	}
+
+ 	if (!(err = pci_set_dma_mask(pdev, DMA_64BIT_MASK)) &&
+ 	    !(err = pci_set_consistent_dma_mask(pdev, DMA_64BIT_MASK))) {
+@@ -883,7 +905,8 @@ e1000_probe(struct pci_dev *pdev,
+ 		pci_using_dac = 0;
+ 	}
+
+-	if ((err = pci_request_regions(pdev, e1000_driver_name)))
++	if ((enable_legacy_ioport_free && (err = pci_request_selected_regions(pdev, bars, e1000_driver_name))) ||
++	    (err = pci_request_regions(pdev, e1000_driver_name)))
+ 		goto err_pci_reg;
+
+ 	pci_set_master(pdev);
+@@ -902,6 +925,10 @@ e1000_probe(struct pci_dev *pdev,
+ 	adapter->pdev = pdev;
+ 	adapter->hw.back = adapter;
+ 	adapter->msg_enable = (1 << debug) - 1;
++	if (enable_legacy_ioport_free) {
++		adapter->use_ioport = use_ioport;
++		adapter->bars = bars;
++	}
+
+ 	mmio_start = pci_resource_start(pdev, BAR_0);
+ 	mmio_len = pci_resource_len(pdev, BAR_0);
+@@ -911,12 +938,14 @@ e1000_probe(struct pci_dev *pdev,
+ 	if (!adapter->hw.hw_addr)
+ 		goto err_ioremap;
+
+-	for (i = BAR_1; i <= BAR_5; i++) {
+-		if (pci_resource_len(pdev, i) == 0)
+-			continue;
+-		if (pci_resource_flags(pdev, i) & IORESOURCE_IO) {
+-			adapter->hw.io_base = pci_resource_start(pdev, i);
+-			break;
++	if (!enable_legacy_ioport_free || adapter->use_ioport) {
++		for (i = BAR_1; i <= BAR_5; i++) {
++			if (pci_resource_len(pdev, i) == 0)
++				continue;
++			if (pci_resource_flags(pdev, i) & IORESOURCE_IO) {
++				adapter->hw.io_base = pci_resource_start(pdev, i);
++				break;
++			}
+ 		}
+ 	}
+
+@@ -1182,7 +1211,10 @@ err_sw_init:
+ err_ioremap:
+ 	free_netdev(netdev);
+ err_alloc_etherdev:
+-	pci_release_regions(pdev);
++	if (enable_legacy_ioport_free)
++		pci_release_selected_regions(pdev, bars);
++	else
++		pci_release_regions(pdev);
+ err_pci_reg:
+ err_dma:
+ 	pci_disable_device(pdev);
+@@ -1234,7 +1266,10 @@ e1000_remove(struct pci_dev *pdev)
+ 	iounmap(adapter->hw.hw_addr);
+ 	if (adapter->hw.flash_address)
+ 		iounmap(adapter->hw.flash_address);
+-	pci_release_regions(pdev);
++	if (enable_legacy_ioport_free)
++		pci_release_selected_regions(pdev, adapter->bars);
++	else
++		pci_release_regions(pdev);
+
+ 	free_netdev(netdev);
+
+@@ -5175,7 +5210,8 @@ e1000_resume(struct pci_dev *pdev)
+
+ 	pci_set_power_state(pdev, PCI_D0);
+ 	pci_restore_state(pdev);
+-	if ((err = pci_enable_device(pdev))) {
++	if ((enable_legacy_ioport_free && (err = pci_enable_device_bars(pdev, adapter->bars))) ||
++	    (err = pci_enable_device(pdev))) {
+ 		printk(KERN_ERR "e1000: Cannot enable PCI device from suspend\n");
+ 		return err;
+ 	}
+@@ -5320,4 +5356,43 @@ static void e1000_io_resume(struct pci_d
+
+ }
+
++/*
++ * e1000_test_legacy_ioport - see if the device uses legacy I/O port
++ * @pdev: Pointer to PCI device
++ *
++ * This function tests if the PCI device uses I/O port.
++ * If yes the function returns 1, if no the function returns 0.
++ * The function returns -1 if there is an error.
++ */
++
++static int e1000_test_legacy_ioport(struct pci_dev *pdev)
++{
++	int ret;
++	struct e1000_hw hw;
++	memset(&hw, 0, sizeof(hw));
++	
++	hw.mac_type = e1000_undefined;
++	hw.device_id = pdev->device;
++	pci_read_config_byte(pdev, PCI_REVISION_ID, &hw.revision_id);
++
++	if (e1000_set_mac_type(&hw) < 0)
++		return -1;
++
++	switch (hw.mac_type) {
++	case e1000_82540:
++	case e1000_82541:
++	case e1000_82541_rev_2:
++	case e1000_82544:
++	case e1000_82545:
++	case e1000_82546:
++		ret = 1;
++		break;
++	default:
++		ret = 0;
++		break;
++	}
++	
++	return ret;
++}
++
+ /* e1000_main.c */
+
