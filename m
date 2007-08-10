@@ -1,59 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936452AbXHJPJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938587AbXHJPKC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936452AbXHJPJm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 11:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756365AbXHJPJf
+	id S938587AbXHJPKC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 11:10:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935354AbXHJPJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 11:09:35 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:45870 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754696AbXHJPJe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 11:09:34 -0400
-Subject: Re: [SCSI] aic94xx: new driver
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>
-In-Reply-To: <200609240400.k8O403OJ024220@hera.kernel.org>
-References: <200609240400.k8O403OJ024220@hera.kernel.org>
-Content-Type: text/plain
-Date: Fri, 10 Aug 2007 23:09:22 +0800
-Message-Id: <1186758562.7615.6.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-3.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 10 Aug 2007 11:09:43 -0400
+Received: from styx.suse.cz ([82.119.242.94]:34226 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S935111AbXHJPJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 11:09:41 -0400
+Date: Fri, 10 Aug 2007 17:10:47 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Renato Golin <rengolin@gmail.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: joydev.c and saitek cyborg evo force
+In-Reply-To: <d9b9d95f0707201710g14d8a905s222c1209358f0196@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0708101643360.11054@jikos.suse.cz>
+References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com> 
+ <Pine.LNX.4.64.0706050008160.5177@jikos.suse.cz> 
+ <d9b9d95f0706041546h4eef0b4eo2e191968be13d59a@mail.gmail.com> 
+ <Pine.LNX.4.64.0706121436070.10204@jikos.suse.cz> 
+ <d9b9d95f0706120608g979b89oc79dbc277d19862b@mail.gmail.com> 
+ <d120d5000706120613o7a328e59v3cba37f0ced88e77@mail.gmail.com> 
+ <d9b9d95f0706120631l20e6f91duaa110e72a0e955a6@mail.gmail.com> 
+ <Pine.LNX.4.64.0706121715480.10204@jikos.suse.cz> 
+ <d9b9d95f0706141524p3686a41cn882d8f086e4f62cc@mail.gmail.com> 
+ <Pine.LNX.4.64.0706201156410.23812@jikos.suse.cz>
+ <d9b9d95f0707201710g14d8a905s222c1209358f0196@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2006-09-24 at 04:00 +0000, Linux Kernel Mailing List wrote:
-> --- a/include/scsi/scsi.h
-> +++ b/include/scsi/scsi.h
-> @@ -429,4 +429,10 @@ #define SCSI_IOCTL_GET_BUS_NUMBER  0x5386
->  /* Used to obtain the PCI location of a device */
->  #define SCSI_IOCTL_GET_PCI             0x5387
->  
-> +/* Pull a u32 out of a SCSI message (using BE SCSI conventions) */
-> +static inline u32 scsi_to_u32(u8 *ptr)
-> +{
-> +       return (ptr[0]<<24) + (ptr[1]<<16) + (ptr[2]<<8) + ptr[3];
-> +}
-> +
->  #endif /* _SCSI_SCSI_H */ 
+On Sat, 21 Jul 2007, Renato Golin wrote:
 
-Please explain why it's necessary to export this to userspace.
+> sorry for the delay, below the report descriptor and attached is the 
+> full report when I've connected the joystick.
 
-The files in /usr/include/scsi are actually shipped by glibc, and most
-distributions use glibc's version instead of the one from the kernel --
-so this additional userspace interface is automatically incompatible
-with most people's installations.
+Hi Renato,
 
-It would perhaps make sense to stop glibc providing these files, and let
-distributions use the version from the kernel -- but that's a separate
-issue. And still doesn't seem to justify the addition of the above
-function.
+I guess I can now see the problem. The important parts of the dump are
+
+[11165.496717]   INPUT(6)[INPUT]
+[11165.496722]     Field(0)
+[11165.496726]       Physical(GenericDesktop.Pointer)
+[11165.496733]       Usage(1)
+[11165.496738]         GenericDesktop.X
+[11165.496744]       Logical Minimum(0)
+[11165.496749]       Logical Maximum(4096)
+[11165.496754]       Physical Minimum(0)
+[11165.496758]       Physical Maximum(4096)
+[11165.496763]       Report Size(16)
+[11165.496767]       Report Count(1)
+[11165.496772]       Report Offset(0)
+[11165.496776]       Flags( Variable Absolute )
+[11165.496785]     Field(1)
+[11165.496788]       Physical(GenericDesktop.Pointer)
+[11165.496795]       Usage(1)
+[11165.496799]         GenericDesktop.Y
+[11165.496806]       Logical Minimum(0)
+[11165.496810]       Logical Maximum(4096)
+[11165.496815]       Physical Minimum(0)
+[11165.496819]       Physical Maximum(4096)
+[11165.496824]       Report Size(16)
+[11165.496828]       Report Count(1)
+[11165.496832]       Report Offset(16)
+[11165.496837]       Flags( Variable Absolute )
+
+... but later on we have
+
+[11165.499897]   OUTPUT(129)[OUTPUT]
+[11165.499901]     Field(0)
+[11165.499904]       Logical(00ff.0100)
+[11165.499912]       Usage(1)
+[11165.499916]         GenericDesktop.X
+[11165.499923]       Logical Minimum(-127)
+[11165.499927]       Logical Maximum(127)
+[11165.499932]       Physical Minimum(-10000)
+[11165.499936]       Physical Maximum(10000)
+[11165.499941]       Report Size(8)
+[11165.499945]       Report Count(1)
+[11165.499949]       Report Offset(0)
+[11165.499954]       Flags( Variable Absolute )
+[11165.499962]     Field(1)
+[11165.499965]       Logical(00ff.0100)
+[11165.499972]       Usage(1)
+[11165.499976]         GenericDesktop.Y
+[11165.499983]       Logical Minimum(-127)
+[11165.499987]       Logical Maximum(127)
+[11165.499992]       Physical Minimum(-10000)
+[11165.499996]       Physical Maximum(10000)
+[11165.500001]       Report Size(8)
+[11165.500005]       Report Count(1)
+[11165.500010]       Report Offset(8)
+[11165.500014]       Flags( Variable Absolute )
+[11165.500022]   FEATURE(11)[FEATURE]
+
+As we call input_set_abs_params() both for input and output fields, I can 
+easily see how the range gets corrupted.
+
+Renato, does force feedback work properly in Linux with this device? If 
+so, that would mean that the device has logical maximum and minimum for X 
+and Y axes different in input and output, and we would need to handle this 
+properly (we currently don't).
+
+Thanks,
 
 -- 
-dwmw2
-
+Jiri Kosina
+SUSE Labs
