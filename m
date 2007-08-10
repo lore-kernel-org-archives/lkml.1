@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765493AbXHJWfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763942AbXHJWiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765493AbXHJWfA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 18:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbXHJWev
+	id S1763942AbXHJWiU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 18:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbXHJWiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 18:34:51 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35959 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754588AbXHJWeu (ORCPT
+	Fri, 10 Aug 2007 18:38:13 -0400
+Received: from gw02.mail.saunalahti.fi ([195.197.172.116]:40364 "EHLO
+	gw02.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752686AbXHJWiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 18:34:50 -0400
-Date: Fri, 10 Aug 2007 15:34:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: serial patches from -mm
-Message-Id: <20070810153416.d7eab8ab.akpm@linux-foundation.org>
-In-Reply-To: <20070810143835.2d65be8c.akpm@linux-foundation.org>
-References: <20070810143835.2d65be8c.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Aug 2007 18:38:12 -0400
+Date: Sat, 11 Aug 2007 01:38:07 +0300
+From: Mikko Rapeli <mikko.rapeli@iki.fi>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: early boot lockup with 2.6.23-rc1
+Message-ID: <20070810223807.GA1915@nalle>
+References: <20070808223120.GA2286@nalle> <46BAC14E.9040604@zytor.com> <20070809182316.GA2289@nalle> <20070809194348.GA2287@nalle> <46BB94B1.9020307@zytor.com> <20070810163324.GA1916@nalle> <46BC962B.9030209@zytor.com> <20070810192030.GB1916@nalle>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070810192030.GB1916@nalle>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007 14:38:35 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
+On Fri, Aug 10, 2007 at 10:20:31PM +0300, Mikko Rapeli wrote:
+> On Fri, Aug 10, 2007 at 09:45:31AM -0700, H. Peter Anvin wrote:
+> > Let me get this straight... "edd=skipmbr" boots fine, but commenting out
+> > the call to query_edd() didn't?  Could you please try that (and, I
+> > guess, only that), and make sure everything necessary is rebuild.
+> >
+> > 2.6.23-*rc2* you say boots fine with "edd=skipmbr", but not without?
 > 
-> I'll send these
+> Yes, vanilla 2.6.23-rc2 with edd=skipmbr boots fine.
 > 
-> dont-optimise-away-baud-rate-changes-when-bother-is-used.patch
-> serial-add-support-for-ite-887x-chips.patch
-> serial_txx9-fix-modem-control-line-handling.patch
-> serial_txx9-cleanup-includes.patch
-> serial-8250-handle-saving-the-clear-on-read-bits-from-the-lsr.patch
-> add-blacklisting-capability-to-serial_pci-to-avoid-misdetection.patch
+> > Did you try the above commenting-out on rc2?
 > 
-> for review, please.
-> 
-> I've identified these as not-for-2.6.23 which may of course have been
-> incorrect.
-> 
+> Yes, didn't work with 2.6.23-rc2 but printed one dot in the upper left
+> corner after grub stuff.
 
-Based on an Alan ack and my own review I have queued these:
+Oops, I was wrong and bad enough to think nesting #ifdef's would work;
+2.6.23-rc2 with query_mca() to query_edd() in arch/i386/boot/main.c
+commented out works.
 
-dont-optimise-away-baud-rate-changes-when-bother-is-used.patch
-serial-add-support-for-ite-887x-chips.patch
-serial_txx9-fix-modem-control-line-handling.patch
-serial-8250-handle-saving-the-clear-on-read-bits-from-the-lsr.patch
-add-blacklisting-capability-to-serial_pci-to-avoid-misdetection.patch
+Sorry about that one.
 
-for 2.6.23 and this:
-
-serial_txx9-cleanup-includes.patch
-
-for 2.6.24.
-
+-Mikko
