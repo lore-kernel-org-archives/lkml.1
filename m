@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941439AbXHJTOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941358AbXHJTRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941439AbXHJTOY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 15:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935669AbXHJTOP
+	id S941358AbXHJTRu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 15:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936275AbXHJTRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 15:14:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51737 "EHLO ogre.sisk.pl"
+	Fri, 10 Aug 2007 15:17:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34594 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756531AbXHJTOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 15:14:14 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Meelis Roos <mroos@linux.ee>
-Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
-Date: Fri, 10 Aug 2007 21:24:00 +0200
-User-Agent: KMail/1.9.5
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
-References: <46B9F664.9060600@googlemail.com> <200708082210.25836.rjw@sisk.pl> <Pine.SOC.4.64.0708102202400.13577@math.ut.ee>
-In-Reply-To: <Pine.SOC.4.64.0708102202400.13577@math.ut.ee>
+	id S935286AbXHJTRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 15:17:41 -0400
+Message-ID: <46BCB9C5.4050103@redhat.com>
+Date: Fri, 10 Aug 2007 16:17:25 -0300
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Glauber de Oliveira Costa <glommer@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, lguest@ozlabs.org,
+       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
+       anthony@codemonkey.ws, Steven@smtp2.linux-foundation.org,
+       akpm@linux-foundation.org, virtualization@lists.linux-foundation.org,
+       mingo@elte.hu
+Subject: Re: [PATCH 23/25] [PATCH] paravirt hooks for arch initialization
+References: <11865467522495-git-send-email-gcosta@redhat.com>	 <11865468394005-git-send-email-gcosta@redhat.com>	 <11865468431616-git-send-email-gcosta@redhat.com>	 <200708081144.04119.ak@suse.de> <46BB5258.8040609@goop.org>	 <20070809190303.214e5457@the-village.bc.nu> <5d6222a80708101108y62ebfa26n9f47bfc52b48f4a8@mail.gmail.com> <46BCB3A5.8090504@goop.org>
+In-Reply-To: <46BCB3A5.8090504@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708102124.01218.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 10 August 2007 21:03, Meelis Roos wrote:
-> > > Power management
-> > > 
-> > > Subject         : Kconfig: 'SUSPEND_SMP' refers to undefined symbol 'HOTPLUG_CPU'
-> > > References      : http://lkml.org/lkml/2007/8/4/39
-> > > Last known good : ?
-> > > Submitter       : Meelis Roos <mroos@linux.ee>
-> > > Caused-By       : ?
-> > > Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-> > > Status          : unknown
-> > 
-> > I can't reproduce this with my cross compilation toolchain for PPC.
+Jeremy Fitzhardinge escreveu:
+> Glauber de Oliveira Costa wrote:
+>> On 8/9/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>>   
+>>>> What's the EBDA actually used for?  The only place which seems to use
+>>>> ebda_addr is in the e820 code to avoid that area as RAM.
+>>>>       
+>>> It belongs to the firmware.
+>>>     
+>> Wouldn't it be better, then, to just skip this step unconditionally if
+>> we are running a paravirtualized guest? What do we from doing it?
+>>   
 > 
-> Still present with todays git and make oldconfig, on native powerpc with 
-> Debian unstable.
+> It's better to make discover_ebda() quietly cope with a missing ebda for
+> whatever reason.  We could add an explicit interface to paravirt_ops to
+> handle this one little corner, but it isn't very important, not very
+> general and really its just clutter.  Its much better to have things
+> cope with being virtualized quietly on their own rather than hit them
+> all with the pv_ops hammer.   pv_ops is really for things where the
+> hypervisor-specific code really has to get actively involved.
+> 
+I think the idea you gave me earlier of using probe_kernel_address could
+work. Xen/lguest/put_yours_here that won't use an ebda would then have 
+to unmap the page, to make sure a read would fault.
 
-1. Is that with the same .config you sent me previously?
 
-2. What exactly is the consequence of this warning?
-
-3. Can you please check if this patch changes anything:
-http://marc.info/?l=linux-mm-commits&m=118669680811669&w=2
-
-Greetings,
-Rafael
