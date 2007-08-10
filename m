@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933072AbXHJJMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933414AbXHJJOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933072AbXHJJMS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 05:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbXHJJL5
+	id S933414AbXHJJOT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 05:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbXHJJOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 05:11:57 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:33456 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752417AbXHJJL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 05:11:56 -0400
-Date: Fri, 10 Aug 2007 11:12:31 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, John Stoffel <john@stoffel.org>,
-       linux-kernel@vger.kernel.org, shemminger@linux-foundation.org,
-       vignaud@xandmail.fr, marcin.slusarz@gmail.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-net@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc2: WARNING: at kernel/irq/resend.c:70 check_irq_resend()
-Message-ID: <20070810091231.GH1764@ff.dom.local>
-References: <18107.11431.838905.331157@stoffel.org> <20070809155445.GA5161@ff.dom.local> <1186733140.12828.45.camel@chaos> <20070810082346.GD1764@ff.dom.local> <20070810083050.GA4545@elte.hu> <20070810084924.GF1764@ff.dom.local> <20070810085611.GA11639@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 10 Aug 2007 05:14:10 -0400
+Received: from server009.webpack.hosteurope.de ([80.237.130.17]:37772 "EHLO
+	server009.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754678AbXHJJOJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 05:14:09 -0400
+X-Greylist: delayed 1683 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Aug 2007 05:14:09 EDT
+From: Daniel Exner <dex@dragonslave.de>
+Reply-To: webmaster@dragonslave.de
+To: linux-kernel@vger.kernel.org
+Subject: EHCI Regression in 2.6.23-rc2
+Date: Fri, 10 Aug 2007 10:45:57 +0200
+User-Agent: KMail/1.9.7
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070810085611.GA11639@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200708101045.57166.dex@dragonslave.de>
+X-bounce-key: webpack.hosteurope.de;dex@dragonslave.de;1186737249;bdcca566;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 10:56:11AM +0200, Ingo Molnar wrote:
-...
-> this changes the picture completely and makes the IO-APIC/local-APIC hw 
-> retrigger code/logic the main suspect. I think you right that it's quite 
-> bogus to hw-retrigger level irqs, and that could be confusing the 
-> IO-APIC (or the local APIC, or both).
-> 
-> and i think i see why my first sw-resend patch didnt do the trick:
-> 
-> > > -               if (!desc->chip || !desc->chip->retrigger ||
-> > > -                                       !desc->chip->retrigger(irq)) {
-> > > +               if (desc->handle_irq == handle_edge_irq) {
-> > > +                       if (desc->chip->retrigger)
-> > > +                               desc->chip->retrigger(irq);
-> > > +                       return;
-> > > +               }
-> > >  #ifdef CONFIG_HARDIRQS_SW_RESEND
-> 
-> we used the hw-resend method unconditionally, right?
+Hi!
 
-Right: unconditionally on a condition they are not edges...
+Please CC me, as I'm currently not subscribed to this list, thx.
 
-But, since not resending at all seems to work so good in testing,
-I thought, _SW_RESEND could be considered as an unnecessarily
-complicated alternative.
+After some serious hangs with 2.6.23-rc2 I did some bisects and this was the 
+result:
 
-Now, I'm a bit confused...
+196705c9bbc03540429b0f7cf9ee35c2f928a534 is first bad commit
+commit 196705c9bbc03540429b0f7cf9ee35c2f928a534
+Author: Stuart_Hayes@Dell.com <Stuart_Hayes@Dell.com>
+Date:   Thu May 3 08:58:49 2007 -0700
 
-Jarek P.
+    USB: EHCI cpufreq fix
+
+    EHCI controllers that don't cache enough microframes can get MMF errors
+    when CPU frequency changes occur between the start and completion of
+    split interrupt transactions, due to delays in reading main memory
+    (caused by CPU cache snoop delays).
+
+    This patch adds a cpufreq notifier to the EHCI driver that will
+    inactivate split interrupt transactions during frequency transitions.
+    It was tested on Intel ICH7 and Serverworks/Broadcom HT1000 EHCI
+    controllers.
+
+    Signed-off-by: Stuart Hayes <stuart_hayes@dell.com>
+    Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+:040000 040000 0e6d518de17cf18155c7529f7b044a4660ca24e9 
+736bbcc7d3fb138138ee1840d8a6b83b959c07fc M      drivers
+
+As expected my system only hangs when cpufreq, powernow-k8 and ehci modules 
+are loaded, and some transition should occur.
+(Simulated by using userspace governour and changing freq manually)
+
+The corresponding EHCI Controller is:
+
+00:10.4 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 86) (prog-if 20
+[EHCI])
+        Subsystem: ASUSTeK Computer Inc. A7V600/K8V-X/A8V Deluxe motherboard
+
+I could not get my hands on any output while the hang occurs, seems like the 
+CPU is really bad locked.
+
+Greetings
+Daniel Exner
