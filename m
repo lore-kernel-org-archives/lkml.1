@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934191AbXHJJXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934416AbXHJJYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934191AbXHJJXd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 05:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757875AbXHJJXZ
+	id S934416AbXHJJYr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 05:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762180AbXHJJYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 05:23:25 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60004 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753942AbXHJJXY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 05:23:24 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: + sysctl-error-on-bad-sysctl-tables.patch added to -mm tree
-References: <200708092211.l79MBoVR022139@imap1.linux-foundation.org>
-	<20070810080952.GA6670@localhost.sw.ru>
-Date: Fri, 10 Aug 2007 03:22:23 -0600
-In-Reply-To: <20070810080952.GA6670@localhost.sw.ru> (Alexey Dobriyan's
-	message of "Fri, 10 Aug 2007 12:09:52 +0400")
-Message-ID: <m1k5s3zquo.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 10 Aug 2007 05:24:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45211 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762075AbXHJJYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 05:24:32 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <46BB46B2.60808@redhat.com>
+References: <46BB46B2.60808@redhat.com> <20070809134150.GA14890@shell.boston.redhat.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com
+Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Fri, 10 Aug 2007 10:23:46 +0100
+Message-ID: <2708.1186737826@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan <adobriyan@sw.ru> writes:
+Chris Snook <csnook@redhat.com> wrote:
 
-> It gives false positive on kernel.pty.nr:
->
-> 	sysctl table check failed: /kernel/pty/nr .1.62.2 No data
->
-> However, ->data is set in unix98_pty_init().
+> To head off the criticism, I admit this is an oversimplification, and true
+> busy-waiters should be using cpu_relax(), which contains a barrier.
 
-It's a race.  
+Why would you want to use cpu_relax()?  That's there to waste time efficiently,
+isn't it?  Shouldn't you be using smp_rmb() or something like that?
 
-Data isn't set until after we enable the sysctl subsystem.
-
-In practice I doubt it matters but I think would rather fix
-that one case (by using register_sysctl_table) then not have
-the check.
-
-Eric
+David
