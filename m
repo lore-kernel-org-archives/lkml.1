@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760684AbXHJVmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761909AbXHJVn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760684AbXHJVmK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 17:42:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbXHJVjb
+	id S1761909AbXHJVn2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 17:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbXHJVnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 17:39:31 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46116 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754929AbXHJVj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 17:39:28 -0400
-X-Authenticated: #441233
-X-Provags-ID: V01U2FsdGVkX18/0bc/xVA/Ubcp4MPgDKrT4EtgVEsvrCETKqP66s
-	4sibzfLy7AsDQz
-Date: Fri, 10 Aug 2007 23:39:25 +0200
-From: Michael Mauch <michael.mauch@gmx.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-serial@vger.kernel.org
-Subject: Serial ports rearranged in 2.6.22?
-Message-ID: <20070810213925.GB10855@elmicha>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	linux-serial@vger.kernel.org
+	Fri, 10 Aug 2007 17:43:15 -0400
+Received: from mx2.suse.de ([195.135.220.15]:52351 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750994AbXHJVnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 17:43:13 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: "Chris Snook" <csnook@redhat.com>, <linux-kernel@vger.kernel.org>,
+       <linux-arch@vger.kernel.org>, <torvalds@linux-foundation.org>,
+       <netdev@vger.kernel.org>, <akpm@linux-foundation.org>, <ak@suse.de>,
+       <heiko.carstens@de.ibm.com>, <davem@davemloft.net>,
+       <schwidefsky@de.ibm.com>, <wensong@linux-vs.org>, <horms@verge.net.au>,
+       <wjiang@resilience.com>, <cfriesen@nortel.com>, <zlynx@acm.org>,
+       <rpjday@mindspring.com>, <jesper.juhl@gmail.com>
+Subject: Re: [PATCH 9/24] make atomic_read() behave consistently on ia64
+References: <20070809135107.GA15985@shell.boston.redhat.com>
+	<617E1C2C70743745A92448908E030B2A02213B3C@scsmsx411.amr.corp.intel.com>
+	<46BCC1AF.5050204@redhat.com>
+	<617E1C2C70743745A92448908E030B2A0224C777@scsmsx411.amr.corp.intel.com>
+X-Yow: SANTA CLAUS comes down a FIRE ESCAPE wearing bright
+ blue LEG WARMERS..  He scrubs the POPE with a mild
+ soap or detergent for 15 minutes, starring JANE FONDA!!
+Date: Fri, 10 Aug 2007 23:42:59 +0200
+In-Reply-To: <617E1C2C70743745A92448908E030B2A0224C777@scsmsx411.amr.corp.intel.com>
+	(Tony Luck's message of "Fri\, 10 Aug 2007 14\:19\:29 -0700")
+Message-ID: <jewsw3oyl8.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+"Luck, Tony" <tony.luck@intel.com> writes:
 
-until 2.6.21, I had the normal assignments for ttyS0 and ttyS1:
+>> That's distressing.  I'm about to resubmit with a volatile cast in 
+>> atomic_set as well, since people expect that behavior and I've been 
+>> shown a legitimate case where it could matter.  Does the assembly look 
+>> right with that cast in atomic_set() as well?
+>
+> No.  With the casts to volatile in atomic_set and atomic64_set I
+> still see places where ld8 is changed to ld4 + sign-extend.
 
-00:08: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-00:09: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+Use atomic64_read to read an atomic64_t.
 
-With 2.6.22 I get the names <-> ports/irqs the other way around:
+Signed-off-by: Andreas Schwab <schwab@suse.de>
 
-00:08: ttyS0 at I/O 0x2f8 (irq = 3) is a 16550A
-00:09: ttyS1 at I/O 0x3f8 (irq = 4) is a 16550A
+diff --git a/include/asm-ia64/atomic.h b/include/asm-ia64/atomic.h
+index 1fc3b83..50c2b83 100644
+--- a/include/asm-ia64/atomic.h
++++ b/include/asm-ia64/atomic.h
+@@ -55,7 +55,7 @@ ia64_atomic64_add (__s64 i, atomic64_t *v)
+ 
+ 	do {
+ 		CMPXCHG_BUGCHECK(v);
+-		old = atomic_read(v);
++		old = atomic64_read(v);
+ 		new = old + i;
+ 	} while (ia64_cmpxchg(acq, v, old, new, sizeof(atomic64_t)) != old);
+ 	return new;
+@@ -83,7 +83,7 @@ ia64_atomic64_sub (__s64 i, atomic64_t *v)
+ 
+ 	do {
+ 		CMPXCHG_BUGCHECK(v);
+-		old = atomic_read(v);
++		old = atomic64_read(v);
+ 		new = old - i;
+ 	} while (ia64_cmpxchg(acq, v, old, new, sizeof(atomic64_t)) != old);
+ 	return new;
 
-Is this supposed to be that way? Should we reassign these names with
-udev? udev-114 doesn't seem to have built-in rules to assign the
-traditional names.
+Andreas.
 
-Or could it be related to some brokeness in my BIOS (ACPI/PNP)? 
-
-I'm using the 8250_pnp module (and it's the same with builtin serial
-modules). I made sure that I did not accidentally change the BIOS
-settings for the serial ports.
-
-I'm using Gentoo, but on the lirc list was a Fedora user with the same
-symptoms.
-
-Regards...
-		Michael
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
