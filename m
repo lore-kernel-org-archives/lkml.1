@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbXHJEuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbXHJEuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756254AbXHJEuw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 00:50:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbXHJEum
+	id S1754154AbXHJEuU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 00:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbXHJEuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 00:50:42 -0400
-Received: from mail.tmr.com ([64.65.253.246]:60825 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754925AbXHJEui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 00:50:38 -0400
-Message-ID: <46BBEF90.7000808@tmr.com>
-Date: Fri, 10 Aug 2007 00:54:40 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Fri, 10 Aug 2007 00:50:07 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:53825 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbXHJEuF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 00:50:05 -0400
+Message-ID: <46BBEE6D.1040704@linux.vnet.ibm.com>
+Date: Fri, 10 Aug 2007 10:19:49 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Niels <zorglub_olsen@hotmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Problems with USB disk
-References: <f9akh8$ori$1@sea.gmane.org> <20070807211847.GA25391@kroah.com>
-In-Reply-To: <20070807211847.GA25391@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Eric W Biederman <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [-mm PATCH 0/9] Memory controller introduction (v4)
+References: <20070727200937.31565.78623.sendpatchset@balbir-laptop> <20070808125139.7cfe702c.kamezawa.hiroyu@jp.fujitsu.com> <20070808165131.b4ab4e92.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070808165131.b4ab4e92.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Tue, Aug 07, 2007 at 10:26:15PM +0200, Niels wrote:
->> Hi,
->>
->> I'm having problems with a new 500 GB USB disk. It works, but sometimes I
->> get these in dmesg:
->>
->>
->> usb 1-3: reset high speed USB device using ehci_hcd and address 2
->> usb 5-1: USB disconnect, address 2
->> drivers/usb/class/usblp.c: usblp0: removed
->> sd 0:0:0:0: Device not ready: <6>: Sense Key : 0x2 [current]
->> : ASC=0x4 ASCQ=0x2
->> end_request: I/O error, dev sda, sector 254148215
->> sd 0:0:0:0: Device not ready: <6>: Sense Key : 0x2 [current]
->> : ASC=0x4 ASCQ=0x2
->> end_request: I/O error, dev sda, sector 252434023
->> EXT3-fs error (device sda1): ext3_find_entry: reading directory #15761836
->> offset 0
->>
->>
->> There's also a printer connected. This is on a pci/usb2 card. When the above
->> happens, I get I/O errors. When I mount the drive next, there are errors
->> and often missing files. Quite annoying!
->>
->> Kernel is 2.6.21
->>
->> What's going on?
+
+KAMEZAWA Hiroyuki wrote:
+> On Wed, 8 Aug 2007 12:51:39 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> You have a low voltage issue, or a bad cable.  The device is
-> electronically disconnecting itself.  Try using a externally-powered
-> hub, or a new cable.
-> 
-I see the external drive becoming read-only, although I haven't checked 
-the dmesg for the events, since other things in my system generate a 
-bunch of output I have to wade through.
+>> On Sat, 28 Jul 2007 01:39:37 +0530
+>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>> At OLS, the resource management BOF, it was discussed that we need to manage
+>>> RSS and unmapped page cache together. This patchset is a step towards that
+>>>
+>> Can I make a question ? Why limiting RSS instead of # of used pages per
+>> container ? Maybe bacause of shared pages between container.... 
+> Sorry....Ignore above question.
+> I didn't understand what mem_container_charge() accounts and limits.
+> It controls # of meta_pages.
 
-New cable, separate power, doesn't do it under 2.6.20-* Fedora or 
-2.6.21.x kernel.org kernels.
+Hi Kame,
 
-I'll check the dmesg next time it happens, but I doubt a kernel version 
-change would heal the hardware issues you mention.
+Actually the number of pages resident in memory brought in by a
+container is charged.  However each such page will have a meta_page
+allocated to keep the extra data.
 
+Yes, the accounting counts the number of meta_page which is same as
+the number of mapped and unmapped (pagecache) pages brought into the
+system memory by this container.  Whether pagecache pages should be
+included or not is configurable per container through the 'type' file
+in containerfs.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+--Vaidy
+
