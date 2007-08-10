@@ -1,59 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938633AbXHJSTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933475AbXHJScO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938633AbXHJSTU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 14:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757959AbXHJSTI
+	id S933475AbXHJScO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 14:32:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbXHJSb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 14:19:08 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:44762 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757515AbXHJSTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 14:19:06 -0400
-Date: Fri, 10 Aug 2007 19:25:43 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Glauber de Oliveira Costa" <glommer@gmail.com>
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>, lguest@ozlabs.org,
-       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
-       anthony@codemonkey.ws, Steven@smtp2.linux-foundation.org,
-       akpm@linux-foundation.org,
-       "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       virtualization@lists.linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 23/25] [PATCH] paravirt hooks for arch initialization
-Message-ID: <20070810192543.605f350f@the-village.bc.nu>
-In-Reply-To: <5d6222a80708101108y62ebfa26n9f47bfc52b48f4a8@mail.gmail.com>
-References: <11865467522495-git-send-email-gcosta@redhat.com>
-	<11865468394005-git-send-email-gcosta@redhat.com>
-	<11865468431616-git-send-email-gcosta@redhat.com>
-	<200708081144.04119.ak@suse.de>
-	<46BB5258.8040609@goop.org>
-	<20070809190303.214e5457@the-village.bc.nu>
-	<5d6222a80708101108y62ebfa26n9f47bfc52b48f4a8@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Aug 2007 14:31:59 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37344 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753790AbXHJSb6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 14:31:58 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alexey Dobriyan <adobriyan@sw.ru>, axboe@kernel.dk
+Subject: Re: [PATCH 08/10] sysctl: Remove broken cdrom binary sysctls
+References: <20070726164518.GB16937@localhost.sw.ru>
+	<m13azbulhf.fsf@ebiederm.dsl.xmission.com>
+	<20070727145235.GC6924@localhost.sw.ru>
+	<20070806124530.GD6634@localhost.sw.ru>
+	<m1tzr8a3ms.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1ps1wa3kf.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1hcn8a2rq.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1d4xw9psl.fsf_-_@ebiederm.dsl.xmission.com>
+	<m18x8k9ppv.fsf_-_@ebiederm.dsl.xmission.com>
+	<m14pj89pmt.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1zm108axi.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1vebo8avf.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1r6mc8at5.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1myx08arh.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1ir7o8ap1.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070810143342.173d2637@the-village.bc.nu>
+	<m17io3z8o2.fsf@ebiederm.dsl.xmission.com>
+	<20070810181632.3a491575@the-village.bc.nu>
+Date: Fri, 10 Aug 2007 12:30:07 -0600
+In-Reply-To: <20070810181632.3a491575@the-village.bc.nu> (Alan Cox's message
+	of "Fri, 10 Aug 2007 18:16:32 +0100")
+Message-ID: <m1y7gjw8cw.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007 15:08:35 -0300
-"Glauber de Oliveira Costa" <glommer@gmail.com> wrote:
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-> On 8/9/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > > What's the EBDA actually used for?  The only place which seems to use
-> > > ebda_addr is in the e820 code to avoid that area as RAM.
-> >
-> > It belongs to the firmware.
-> 
-> Wouldn't it be better, then, to just skip this step unconditionally if
-> we are running a paravirtualized guest? What do we from doing it?
+>> I just wanted something stupid and simple, so the -mm tree would not
+>> be full of broken sysctls.
+>
+> Well I'd like you to not replace one pile of hard to clean up but easy to
+> locate crap by smearing other hard to fix in one go crap over the kernel.
 
-An EBDA is an optional BIOS feature so providing you virtualise the
-relevant entry in the zero page (to avoid guest applications trying to
-scan the EBDA for some system tables they may want to use like DMI) as
-a zero entry you can ignore the EBDA.
+I'm not certain I see the difference. I just replaced the comparison
+of one label with another.  There may have been more beauty in one or
+the other but it really should not have made a difference maintenance
+wise.  Perhaps I'm just short some cdrom context here to understand
+your problem.
 
-That probably the right thing to do since the host EBDA won't match the
-guest environment and the guest might migrate anyway
+Regardless.  Looking at the code I think we can do something straightforward
+and even more stupid without needing any comparisons.
+
+Alan does this look a little better?
+
+static int cdrom_sysctl_handler(struct ctl_table *ctl, int write, struct file * filp,
+				void __user *buffer, size_t *lenp, loff_t *ppos)
+{
+	int *valp = ctl->data;
+	int val = *valp;
+	int ret;
+	
+	ret = proc_dointvec(ctl, write, filp, buffer, lenp, ppos);
+
+	if (write) {
+	
+		/* we only care for 1 or 0. */
+		autoclose        = !!cdrom_sysctl_settings.autoclose;
+		autoeject        = !!cdrom_sysctl_settings.autoeject;
+		debug	         = !!cdrom_sysctl_settings.debug;
+		lockdoor         = !!cdrom_sysctl_settings.lock;
+		check_media_type = !!cdrom_sysctl_settings.check;
+
+		/* update the option flags according to the changes. we
+		   don't have per device options through sysctl yet,
+		   but we will have and then this will disappear. */
+		cdrom_update_settings();
+	}
+
+        return ret;
+}
+
+Eric
