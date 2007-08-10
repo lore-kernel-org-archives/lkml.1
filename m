@@ -1,237 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752132AbXHJVjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbXHJVjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752132AbXHJVjg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 17:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbXHJVi6
+	id S1757397AbXHJVjz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 17:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbXHJVi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 17:38:58 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39394 "EHLO
+	Fri, 10 Aug 2007 17:38:59 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43875 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754582AbXHJVi4 (ORCPT
+	by vger.kernel.org with ESMTP id S1751058AbXHJVi5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 17:38:56 -0400
-Message-Id: <200708102138.l7ALcjpH010828@imap1.linux-foundation.org>
-Subject: [patch 5/6] Serial 8250: handle saving the clear-on-read bits from the LSR and MSR
+	Fri, 10 Aug 2007 17:38:57 -0400
+Message-Id: <200708102138.l7ALcg3U010819@imap1.linux-foundation.org>
+Subject: [patch 2/6] serial: add support for ITE 887x chips
 To: linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, minyard@acm.org,
-       bjorn.helgaas@hp.com, rmk+lkml@arm.linux.org.uk, yinghai.lu@sun.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       niels.devos@wincor-nixdorf.com, rmk@arm.linux.org.uk
 From: akpm@linux-foundation.org
-Date: Fri, 10 Aug 2007 14:38:44 -0700
+Date: Fri, 10 Aug 2007 14:38:42 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Corey Minyard <minyard@acm.org>
+From: Niels de Vos <niels.devos@wincor-nixdorf.com>
 
-Reading the LSR clears the break, parity, frame error, and overrun bits in
-the 8250 chip, but these are not being saved in all places that read the
-LSR.  Same goes for the MSR delta bits.  Save the LSR bits off whenever the
-lsr is read so they can be handled later in the receive routine.  Save the
-MSR bits to be handled in the modem status routine.
+Add support for the it887x-chips (PCI) manufactured by ITE.
 
-Also, clear the stored bits and clear the interrupt registers before
-enabling interrupts, to avoid handling old values of the stored bits in the
-interrupt routines.
-
-[akpm@linux-foundation.org: clean up pre-existing code]
-Signed-off-by: Corey Minyard <minyard@acm.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Yinghai Lu <yinghai.lu@sun.com>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- drivers/serial/8250.c      |   85 +++++++++++++++++++++++------------
- include/linux/serial_reg.h |    1 
- 2 files changed, 57 insertions(+), 29 deletions(-)
+ drivers/serial/8250_pci.c |  159 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 159 insertions(+)
 
-diff -puN drivers/serial/8250.c~serial-8250-handle-saving-the-clear-on-read-bits-from-the-lsr drivers/serial/8250.c
---- a/drivers/serial/8250.c~serial-8250-handle-saving-the-clear-on-read-bits-from-the-lsr
-+++ a/drivers/serial/8250.c
-@@ -129,7 +129,16 @@ struct uart_8250_port {
- 	unsigned char		mcr;
- 	unsigned char		mcr_mask;	/* mask of user bits */
- 	unsigned char		mcr_force;	/* mask of forced bits */
--	unsigned char		lsr_break_flag;
-+
-+	/*
-+	 * Some bits in registers are cleared on a read, so they must
-+	 * be saved whenever the register is read but the bits will not
-+	 * be immediately processed.
-+	 */
-+#define LSR_SAVE_FLAGS UART_LSR_BRK_ERROR_BITS
-+	unsigned char		lsr_saved_flags;
-+#define MSR_SAVE_FLAGS UART_MSR_ANY_DELTA
-+	unsigned char		msr_saved_flags;
- 
- 	/*
- 	 * We provide a per-port pm hook.
-@@ -1238,6 +1247,7 @@ static void serial8250_start_tx(struct u
- 		if (up->bugs & UART_BUG_TXEN) {
- 			unsigned char lsr, iir;
- 			lsr = serial_in(up, UART_LSR);
-+			up->lsr_saved_flags |= lsr & LSR_SAVE_FLAGS;
- 			iir = serial_in(up, UART_IIR) & 0x0f;
- 			if ((up->port.type == PORT_RM9000) ?
- 				(lsr & UART_LSR_THRE &&
-@@ -1290,18 +1300,10 @@ receive_chars(struct uart_8250_port *up,
- 		flag = TTY_NORMAL;
- 		up->port.icount.rx++;
- 
--#ifdef CONFIG_SERIAL_8250_CONSOLE
--		/*
--		 * Recover the break flag from console xmit
--		 */
--		if (up->port.line == up->port.cons->index) {
--			lsr |= up->lsr_break_flag;
--			up->lsr_break_flag = 0;
--		}
--#endif
-+		lsr |= up->lsr_saved_flags;
-+		up->lsr_saved_flags = 0;
- 
--		if (unlikely(lsr & (UART_LSR_BI | UART_LSR_PE |
--				    UART_LSR_FE | UART_LSR_OE))) {
-+		if (unlikely(lsr & UART_LSR_BRK_ERROR_BITS)) {
- 			/*
- 			 * For statistics only
- 			 */
-@@ -1392,6 +1394,8 @@ static unsigned int check_modem_status(s
- {
- 	unsigned int status = serial_in(up, UART_MSR);
- 
-+	status |= up->msr_saved_flags;
-+	up->msr_saved_flags = 0;
- 	if (status & UART_MSR_ANY_DELTA && up->ier & UART_IER_MSI &&
- 	    up->port.info != NULL) {
- 		if (status & UART_MSR_TERI)
-@@ -1591,7 +1595,8 @@ static void serial8250_timeout(unsigned 
- static void serial8250_backup_timeout(unsigned long data)
- {
- 	struct uart_8250_port *up = (struct uart_8250_port *)data;
--	unsigned int iir, ier = 0;
-+	unsigned int iir, ier = 0, lsr;
-+	unsigned long flags;
- 
- 	/*
- 	 * Must disable interrupts or else we risk racing with the interrupt
-@@ -1610,9 +1615,13 @@ static void serial8250_backup_timeout(un
- 	 * the "Diva" UART used on the management processor on many HP
- 	 * ia64 and parisc boxes.
- 	 */
-+	spin_lock_irqsave(&up->port.lock, flags);
-+	lsr = serial_in(up, UART_LSR);
-+	up->lsr_saved_flags |= lsr & LSR_SAVE_FLAGS;
-+	spin_unlock_irqrestore(&up->port.lock, flags);
- 	if ((iir & UART_IIR_NO_INT) && (up->ier & UART_IER_THRI) &&
- 	    (!uart_circ_empty(&up->port.info->xmit) || up->port.x_char) &&
--	    (serial_in(up, UART_LSR) & UART_LSR_THRE)) {
-+	    (lsr & UART_LSR_THRE)) {
- 		iir &= ~(UART_IIR_ID | UART_IIR_NO_INT);
- 		iir |= UART_IIR_THRI;
- 	}
-@@ -1631,13 +1640,14 @@ static unsigned int serial8250_tx_empty(
- {
- 	struct uart_8250_port *up = (struct uart_8250_port *)port;
- 	unsigned long flags;
--	unsigned int ret;
-+	unsigned int lsr;
- 
- 	spin_lock_irqsave(&up->port.lock, flags);
--	ret = serial_in(up, UART_LSR) & UART_LSR_TEMT ? TIOCSER_TEMT : 0;
-+	lsr = serial_in(up, UART_LSR);
-+	up->lsr_saved_flags |= lsr & LSR_SAVE_FLAGS;
- 	spin_unlock_irqrestore(&up->port.lock, flags);
- 
--	return ret;
-+	return lsr & UART_LSR_TEMT ? TIOCSER_TEMT : 0;
+diff -puN drivers/serial/8250_pci.c~serial-add-support-for-ite-887x-chips drivers/serial/8250_pci.c
+--- a/drivers/serial/8250_pci.c~serial-add-support-for-ite-887x-chips
++++ a/drivers/serial/8250_pci.c
+@@ -580,6 +580,138 @@ static int pci_netmos_init(struct pci_de
+ 	return num_serial;
  }
  
- static unsigned int serial8250_get_mctrl(struct uart_port *port)
-@@ -1708,8 +1718,7 @@ static inline void wait_for_xmitr(struct
- 	do {
- 		status = serial_in(up, UART_LSR);
- 
--		if (status & UART_LSR_BI)
--			up->lsr_break_flag = UART_LSR_BI;
-+		up->lsr_saved_flags |= status & LSR_SAVE_FLAGS;
- 
- 		if (--tmout == 0)
- 			break;
-@@ -1718,8 +1727,12 @@ static inline void wait_for_xmitr(struct
- 
- 	/* Wait up to 1s for flow control if necessary */
- 	if (up->port.flags & UPF_CONS_FLOW) {
--		tmout = 1000000;
--		while (!(serial_in(up, UART_MSR) & UART_MSR_CTS) && --tmout) {
-+		unsigned int tmout;
-+		for (tmout = 1000000; tmout; tmout--) {
-+			unsigned int msr = serial_in(up, UART_MSR);
-+			up->msr_saved_flags |= msr & MSR_SAVE_FLAGS;
-+			if (msr & UART_MSR_CTS)
++/*
++ * ITE support by Niels de Vos <niels.devos@wincor-nixdorf.com>
++ *
++ * These chips are available with optionally one parallel port and up to
++ * two serial ports. Unfortunately they all have the same product id.
++ *
++ * Basic configuration is done over a region of 32 I/O ports. The base
++ * ioport is called INTA or INTC, depending on docs/other drivers.
++ *
++ * The region of the 32 I/O ports is configured in POSIO0R...
++ */
++
++/* registers */
++#define ITE_887x_MISCR		0x9c
++#define ITE_887x_INTCBAR	0x78
++#define ITE_887x_UARTBAR	0x7c
++#define ITE_887x_PS0BAR		0x10
++#define ITE_887x_POSIO0		0x60
++
++/* I/O space size */
++#define ITE_887x_IOSIZE		32
++/* I/O space size (bits 26-24; 8 bytes = 011b) */
++#define ITE_887x_POSIO_IOSIZE_8		(3 << 24)
++/* I/O space size (bits 26-24; 32 bytes = 101b) */
++#define ITE_887x_POSIO_IOSIZE_32	(5 << 24)
++/* Decoding speed (1 = slow, 2 = medium, 3 = fast) */
++#define ITE_887x_POSIO_SPEED		(3 << 29)
++/* enable IO_Space bit */
++#define ITE_887x_POSIO_ENABLE		(1 << 31)
++
++static int __devinit pci_ite887x_init(struct pci_dev *dev)
++{
++	/* inta_addr are the configuration addresses of the ITE */
++	static const short inta_addr[] = { 0x2a0, 0x2c0, 0x220, 0x240, 0x1e0,
++							0x200, 0x280, 0 };
++	int ret, i, type;
++	struct resource *iobase = NULL;
++	u32 miscr, uartbar, ioport;
++
++	/* search for the base-ioport */
++	i = 0;
++	while (inta_addr[i] && iobase == NULL) {
++		iobase = request_region(inta_addr[i], ITE_887x_IOSIZE,
++								"ite887x");
++		if (iobase != NULL) {
++			/* write POSIO0R - speed | size | ioport */
++			pci_write_config_dword(dev, ITE_887x_POSIO0,
++				ITE_887x_POSIO_ENABLE | ITE_887x_POSIO_SPEED |
++				ITE_887x_POSIO_IOSIZE_32 | inta_addr[i]);
++			/* write INTCBAR - ioport */
++			pci_write_config_dword(dev, ITE_887x_INTCBAR, inta_addr[i]);
++			ret = inb(inta_addr[i]);
++			if (ret != 0xff) {
++				/* ioport connected */
 +				break;
- 			udelay(1);
- 			touch_nmi_watchdog();
- 		}
-@@ -1889,6 +1902,18 @@ static int serial8250_startup(struct uar
- 	spin_unlock_irqrestore(&up->port.lock, flags);
++			}
++			release_region(iobase->start, ITE_887x_IOSIZE);
++			iobase = NULL;
++		}
++		i++;
++	}
++
++	if (!inta_addr[i]) {
++		printk(KERN_ERR "ite887x: could not find iobase\n");
++		return -ENODEV;
++	}
++
++	/* start of undocumented type checking (see parport_pc.c) */
++	type = inb(iobase->start + 0x18) & 0x0f;
++
++	switch (type) {
++	case 0x2:	/* ITE8871 (1P) */
++	case 0xa:	/* ITE8875 (1P) */
++		ret = 0;
++		break;
++	case 0xe:	/* ITE8872 (2S1P) */
++		ret = 2;
++		break;
++	case 0x6:	/* ITE8873 (1S) */
++		ret = 1;
++		break;
++	case 0x8:	/* ITE8874 (2S) */
++		ret = 2;
++		break;
++	default:
++		moan_device("Unknown ITE887x", dev);
++		ret = -ENODEV;
++	}
++
++	/* configure all serial ports */
++	for (i = 0; i < ret; i++) {
++		/* read the I/O port from the device */
++		pci_read_config_dword(dev, ITE_887x_PS0BAR + (0x4 * (i + 1)),
++								&ioport);
++		ioport &= 0x0000FF00;	/* the actual base address */
++		pci_write_config_dword(dev, ITE_887x_POSIO0 + (0x4 * (i + 1)),
++			ITE_887x_POSIO_ENABLE | ITE_887x_POSIO_SPEED |
++			ITE_887x_POSIO_IOSIZE_8 | ioport);
++
++		/* write the ioport to the UARTBAR */
++		pci_read_config_dword(dev, ITE_887x_UARTBAR, &uartbar);
++		uartbar &= ~(0xffff << (16 * i));	/* clear half the reg */
++		uartbar |= (ioport << (16 * i));	/* set the ioport */
++		pci_write_config_dword(dev, ITE_887x_UARTBAR, uartbar);
++
++		/* get current config */
++		pci_read_config_dword(dev, ITE_887x_MISCR, &miscr);
++		/* disable interrupts (UARTx_Routing[3:0]) */
++		miscr &= ~(0xf << (12 - 4 * i));
++		/* activate the UART (UARTx_En) */
++		miscr |= 1 << (23 - i);
++		/* write new config with activated UART */
++		pci_write_config_dword(dev, ITE_887x_MISCR, miscr);
++	}
++
++	if (ret <= 0) {
++		/* the device has no UARTs if we get here */
++		release_region(iobase->start, ITE_887x_IOSIZE);
++	}
++
++	return ret;
++}
++
++static void __devexit pci_ite887x_exit(struct pci_dev *dev)
++{
++	u32 ioport;
++	/* the ioport is bit 0-15 in POSIO0R */
++	pci_read_config_dword(dev, ITE_887x_POSIO0, &ioport);
++	ioport &= 0xffff;
++	release_region(ioport, ITE_887x_IOSIZE);
++}
++
+ static int
+ pci_default_setup(struct serial_private *priv, struct pciserial_board *board,
+ 		  struct uart_port *port, int idx)
+@@ -653,6 +785,18 @@ static struct pci_serial_quirk pci_seria
+ 		.setup		= pci_default_setup,
+ 	},
+ 	/*
++	 * ITE
++	 */
++	{
++		.vendor		= PCI_VENDOR_ID_ITE,
++		.device		= PCI_DEVICE_ID_ITE_8872,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ite887x_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ite887x_exit),
++	},
++	/*
+ 	 * Panacom
+ 	 */
+ 	{
+@@ -933,6 +1077,7 @@ enum pci_board_num_t {
+ 
+ 	pbn_b1_2_1250000,
+ 
++	pbn_b1_bt_1_115200,
+ 	pbn_b1_bt_2_921600,
+ 
+ 	pbn_b1_1_1382400,
+@@ -1211,6 +1356,13 @@ static struct pciserial_board pci_boards
+ 		.uart_offset	= 8,
+ 	},
+ 
++	[pbn_b1_bt_1_115200] = {
++		.flags		= FL_BASE1|FL_BASE_BARS,
++		.num_ports	= 1,
++		.base_baud	= 115200,
++		.uart_offset	= 8,
++	},
++
+ 	[pbn_b1_bt_2_921600] = {
+ 		.flags		= FL_BASE1|FL_BASE_BARS,
+ 		.num_ports	= 2,
+@@ -2364,6 +2516,13 @@ static struct pci_device_id serial_pci_t
+ 	{	PCI_VENDOR_ID_TOPIC, PCI_DEVICE_ID_TOPIC_TP560,
+ 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+ 		pbn_b0_1_115200 },
++	/*
++	 * ITE
++	 */
++	{	PCI_VENDOR_ID_ITE, PCI_DEVICE_ID_ITE_8872,
++		PCI_ANY_ID, PCI_ANY_ID,
++		0, 0,
++		pbn_b1_bt_1_115200 },
  
  	/*
-+	 * Clear the interrupt registers again for luck, and clear the
-+	 * saved flags to avoid getting false values from polling
-+	 * routines or the previous session.
-+	 */
-+	serial_inp(up, UART_LSR);
-+	serial_inp(up, UART_RX);
-+	serial_inp(up, UART_IIR);
-+	serial_inp(up, UART_MSR);
-+	up->lsr_saved_flags = 0;
-+	up->msr_saved_flags = 0;
-+
-+	/*
- 	 * Finally, enable interrupts.  Note: Modem status interrupts
- 	 * are set via set_termios(), which will be occurring imminently
- 	 * anyway, so we don't enable them here.
-@@ -1906,14 +1931,6 @@ static int serial8250_startup(struct uar
- 		(void) inb_p(icp);
- 	}
- 
--	/*
--	 * And clear the interrupt registers again for luck.
--	 */
--	(void) serial_inp(up, UART_LSR);
--	(void) serial_inp(up, UART_RX);
--	(void) serial_inp(up, UART_IIR);
--	(void) serial_inp(up, UART_MSR);
--
- 	return 0;
- }
- 
-@@ -2484,6 +2501,16 @@ serial8250_console_write(struct console 
- 	wait_for_xmitr(up, BOTH_EMPTY);
- 	serial_out(up, UART_IER, ier);
- 
-+	/*
-+	 *	The receive handling will happen properly because the
-+	 *	receive ready bit will still be set; it is not cleared
-+	 *	on read.  However, modem control will not, we must
-+	 *	call it if we have saved something in the saved flags
-+	 *	while processing with interrupts off.
-+	 */
-+	if (up->msr_saved_flags)
-+		check_modem_status(up);
-+
- 	if (locked)
- 		spin_unlock(&up->port.lock);
- 	local_irq_restore(flags);
-diff -puN include/linux/serial_reg.h~serial-8250-handle-saving-the-clear-on-read-bits-from-the-lsr include/linux/serial_reg.h
---- a/include/linux/serial_reg.h~serial-8250-handle-saving-the-clear-on-read-bits-from-the-lsr
-+++ a/include/linux/serial_reg.h
-@@ -118,6 +118,7 @@
- #define UART_LSR_PE		0x04 /* Parity error indicator */
- #define UART_LSR_OE		0x02 /* Overrun error indicator */
- #define UART_LSR_DR		0x01 /* Receiver data ready */
-+#define UART_LSR_BRK_ERROR_BITS	0x1E /* BI, FE, PE, OE bits */
- 
- #define UART_MSR	6	/* In:  Modem Status Register */
- #define UART_MSR_DCD		0x80 /* Data Carrier Detect */
+ 	 * IntaShield IS-200
 _
