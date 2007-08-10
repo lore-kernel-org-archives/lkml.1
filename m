@@ -1,69 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965084AbXHJUWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965527AbXHJUXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965084AbXHJUWY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 16:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964985AbXHJUVo
+	id S965527AbXHJUXI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 16:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937457AbXHJUWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 16:21:44 -0400
-Received: from relay1.vsu.ru ([62.76.169.14]:49760 "EHLO relay1.vsu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932333AbXHJUVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 16:21:42 -0400
-X-Greylist: delayed 3605 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Aug 2007 16:21:32 EDT
-From: Vladimir Volovich <vvv@vsu.ru>
-To: linux-kernel@vger.kernel.org
-Subject: nfs - duplicate directory entries
-Date: Fri, 10 Aug 2007 23:21:15 +0400
-Message-ID: <87fy2rgpqs.fsf@vvv.vsu.ru>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.95 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 10 Aug 2007 16:22:53 -0400
+Received: from smtp-105-friday.nerim.net ([62.4.16.105]:63466 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935845AbXHJUWv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 16:22:51 -0400
+Date: Fri, 10 Aug 2007 22:22:51 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Joe Perches <joe@perches.com>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org, adaplas@pol.net, greg@kroah.com,
+       jeff@garzik.org
+Subject: Re: + remove-current-defines-and-uses-of-pr_err-add-pr_emerg.patch
+ added to -mm tree
+Message-ID: <20070810222251.7a53ce2b@hyperion.delvare>
+In-Reply-To: <1186611713.3073.41.camel@localhost>
+References: <tI4NY5SL.1186153543.0764100.khali@localhost>
+	<1186179369.13852.36.camel@localhost>
+	<20070807131949.fa060048.akpm@linux-foundation.org>
+	<20070808220226.1dc03a67@hyperion.delvare>
+	<1186605086.11897.67.camel@localhost>
+	<Pine.LNX.4.64.0708082237210.10387@fbirervta.pbzchgretzou.qr>
+	<1186608977.3073.30.camel@localhost>
+	<Pine.LNX.4.64.0708082345320.10387@fbirervta.pbzchgretzou.qr>
+	<1186611713.3073.41.camel@localhost>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi Joe,
 
-we have an NFS server (windows-based), and mount a directory from this
-server on a linux box; there is some bug appearing sometimes, namely
-some of the directory entries are reported twice:
+On Wed, 08 Aug 2007 15:21:53 -0700, Joe Perches wrote:
+> On Wed, 2007-08-08 at 23:57 +0200, Jan Engelhardt wrote:
+> > fs/freevxfs/vxfs_bmap.c:line 169 (near "case VXFS_TYPED_DATA_DEV4")
+> > 
+> >                         printk(KERN_INFO "\n\nTYPED_DEV4 detected!\n");
+> > Seems normal.
+> 
+> The second output log line of the first printk isn't prefixed
+> with KERN_INFO.  It's output with log_level_unknown.
 
-$ ls | wc
-   5968    5968   41776
-$ ls | uniq | wc
-   5964    5964   41748
-$ ls | uniq -d
-112920
-112921
-112922
-112923
-$ ls -li | grep '11292[0123]'
-8507232 drwx------ 2 web web 64 2007-02-09 10:54 112920
-8507232 drwx------ 2 web web 64 2007-02-09 10:54 112920
-8507219 drwx------ 2 web web 64 2007-02-09 10:54 112921
-8507219 drwx------ 2 web web 64 2007-02-09 10:54 112921
-8507195 drwx------ 2 web web 64 2007-02-09 10:54 112922
-8507195 drwx------ 2 web web 64 2007-02-09 10:54 112922
-8507188 drwx------ 2 web web 64 2007-02-09 10:54 112923
-8507188 drwx------ 2 web web 64 2007-02-09 10:54 112923
+True. This simply means that the leading \n's shouldn't be there.
+Pretty easy to fix.
 
-i.e. the current directory contains sub-directory 112920 twice,
-sub-directory 112921 twice, etc. - and the inode numbers are the same.
+> > So it looks like your regex has some false positives.
+> > (which nothing can be done about - the 61 must be hand-sorted)
+> 
+> Must have copy/pasted the wrong regex
+> 
+> $ egrep -r "printk[[:space:]]*\([[:space:]]*KERN.*\\\n[A-JL-Za-jl-z[:space:]]" --include=*.[ch] * | wc -l
+> 61
+> 
+> > [My idea is above]
+> 
+> Any sequence of printks can be interleaved.  I don't see
+> how your suggestion changes that.
+> 
+> > >Maybe an external tool to reassemble complete messages from
+> > >prefixed {{cookie}} message logs would be fine for awhile.
+> > >
+> > >Perhaps something like:
+> > >
+> > >cookie = printk_block_start()
+> > >printk_block[s](cookie)
+> > >printk_block_end(cookie)?
+> > >
+> > >where printk_block emits cookie when multiple cookies
+> > >are active.
+> > 
+> > How is this supposed to work? Are you suggesting that the printk buffer is
+> > locked?
+> 
+> No, just another identifier placed into logs that allow messages
+> to be reassembled into something readable when multiple printk_block's
+> are active.
+> 
+> > Now, if you hold the output of a printk block until it's _end()
+> > counterpart is executed, the user does not get any output when the
+> > machine locks up during the for loop.
+> 
+> External tool scans logs.  No blocking or delay in output.
 
-i wonder if you have ever seen such strange behavior?  sometimes this
-behavior is cured by unmounting and remounting the directory; but it
-occurs regularly and reliably.
+Assuming that the related messages are prefixed in a similar way (as
+dev_info and friends do), grouping them is already possible, and pretty
+trivial: grep can select whatever you are interested in.
 
-this does not happen if the directory from the same NFS server is
-mounted on FreeBSD box.
+I'm not saying that your ideas are all bad. The ability to build a
+kernel without the least interesting messages is valuable. Having a
+more standard formatting for log messages is interesting as well,
+although dev_info and friends already offer this to some extent. But
+you have to realize that kernel logging must stay something very
+simple, and that the first tool to read them is "dmesg" and not some
+funky log scanner. So the current implementation can't be that far from
+what we need.
 
-linux version is 2.6.22 (from debian "sid").
-
-the following information may of may not be related to the above bug:
-the nfs server always reports link count for any directory as 2,
-regardless of the number of subdirectories. (so e.g. find(1) says one
-should use the -noleaf option).
-
-if you need me to provide more information, please let me know.
-
-Best,
-v.
+Thanks,
+-- 
+Jean Delvare
