@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937542AbXHJP43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934316AbXHJP5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937542AbXHJP43 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 11:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762545AbXHJP4U
+	id S934316AbXHJP5W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 11:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762545AbXHJP5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 11:56:20 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47356 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754696AbXHJP4T (ORCPT
+	Fri, 10 Aug 2007 11:57:13 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:40188 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764611AbXHJP5M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 11:56:19 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alexey Dobriyan <adobriyan@sw.ru>, axboe@kernel.dk
-Subject: Re: [PATCH 08/10] sysctl: Remove broken cdrom binary sysctls
-References: <20070726164518.GB16937@localhost.sw.ru>
-	<m13azbulhf.fsf@ebiederm.dsl.xmission.com>
-	<20070727145235.GC6924@localhost.sw.ru>
-	<20070806124530.GD6634@localhost.sw.ru>
-	<m1tzr8a3ms.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1wa3kf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcn8a2rq.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1d4xw9psl.fsf_-_@ebiederm.dsl.xmission.com>
-	<m18x8k9ppv.fsf_-_@ebiederm.dsl.xmission.com>
-	<m14pj89pmt.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1zm108axi.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1vebo8avf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1r6mc8at5.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1myx08arh.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ir7o8ap1.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070810143342.173d2637@the-village.bc.nu>
-Date: Fri, 10 Aug 2007 09:55:09 -0600
-In-Reply-To: <20070810143342.173d2637@the-village.bc.nu> (Alan Cox's message
-	of "Fri, 10 Aug 2007 14:33:42 +0100")
-Message-ID: <m17io3z8o2.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 10 Aug 2007 11:57:12 -0400
+Date: Fri, 10 Aug 2007 17:56:56 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Samuel Thibault <samuel.thibault@ens-lyon.org>, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: 2.6.23-rc2-mm2: drivers/s390/char/keyboard.c compile error
+Message-ID: <20070810155656.GH18938@stusta.de>
+References: <20070809224254.11f42716.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070809224254.11f42716.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+On Thu, Aug 09, 2007 at 10:42:54PM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.23-rc1-mm2:
+>...
+> +unicode-diacritics-support.patch
+>...
+>  misc
+>...
 
-> On Thu, 09 Aug 2007 19:01:14 -0600
-> ebiederm@xmission.com (Eric W. Biederman) wrote:
->
->> 
->> The binary interface for the cdrom sysctls can't possilby work.
->> So remove the binary sysctls and update the test for finding
->> out which sysctl table entry we are dealy with to use the procname
->> and not the ctl_name (which I am removing).
->
-> NAK
->
-> I've no problem with the basic idea of removing the names from user
-> space, but you've just demonstrated with the patch below that it causes
-> some quite revolting changes for the bad in code which previously was
-> nicely done switch statements and is now a nest of string compares and
-> inline code.
->
-> There are very good reasons to have a cookie in the sysctl entry for
-> internal use and which is private to the subsystem using the sysctl (ie
-> not for sysctl() use and not neccessarily unique).
+The change to drivers/s390/char/keyboard.c doesn't compile:
 
-Sure.  We currently have 3 fields for that: data, extra1, and extra2.
-You need to cast them to get an integer values but their definition
-especially extra1 and extra2 are left up to the caller.
+<--  snip  -->
 
-In that code we could just do a test on valp (i.e. data in struct
-ctl_table).
+...
+  LD      .tmp_vmlinux1
+drivers/s390/built-in.o: In function `kbd_ioctl':
+(.text+0x2d666): undefined reference to `conv_uni_to_8bit'
+drivers/s390/built-in.o: In function `kbd_ioctl':
+(.text+0x2d67c): undefined reference to `conv_uni_to_8bit'
+drivers/s390/built-in.o: In function `kbd_ioctl':
+(.text+0x2d692): undefined reference to `conv_uni_to_8bit'
+drivers/s390/built-in.o: In function `kbd_ioctl':
+(.text+0x2d906): undefined reference to `conv_8bit_to_uni'
+drivers/s390/built-in.o: In function `kbd_ioctl':
+(.text+0x2d920): undefined reference to `conv_8bit_to_uni'
+drivers/s390/built-in.o: In function `kbd_ioctl':
+(.text+0x2d93a): undefined reference to `conv_8bit_to_uni'
+make[1]: *** [.tmp_vmlinux1] Error 1
+make: *** [_all] Error 2
 
-I just wanted something stupid and simple, so the -mm tree would not
-be full of broken sysctls.
+<--  snip  -->
 
-At least to my eyes the code doesn't look much worse.  But if you
-want to do something better feel free.
 
-Eric
+cu
+Adrian
 
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
