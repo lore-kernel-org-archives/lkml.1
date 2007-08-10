@@ -1,75 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761396AbXHJHXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761005AbXHJH1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761396AbXHJHXt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 03:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbXHJHXk
+	id S1761005AbXHJH1W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 03:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbXHJH1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 03:23:40 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33161 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752607AbXHJHXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 03:23:39 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+juKJkbBOjTJSSnuWdelhe98hFszr10GlM7KZe/Y
-	8wZuRWHX6gYLAe
-Subject: Re: CFS review
-From: Mike Galbraith <efault@gmx.de>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0708100037460.1817@scrub.home>
-References: <Pine.LNX.4.64.0707131728070.1817@scrub.home>
-	 <1184389456.6632.13.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0708010439050.1817@scrub.home>
-	 <20070801071230.GA16375@elte.hu>
-	 <Pine.LNX.4.64.0708011511530.1817@scrub.home>
-	 <20070801150742.GA23670@elte.hu> <p73ps27npu0.fsf@bingen.suse.de>
-	 <alpine.LFD.0.999.0708010924490.3582@woody.linux-foundation.org>
-	 <20070801175004.GA17936@elte.hu>
-	 <Pine.LNX.4.64.0708011955430.1817@scrub.home>
-	 <20070801190556.GA1199@elte.hu>
-	 <Pine.LNX.4.64.0708100037460.1817@scrub.home>
-Content-Type: text/plain
-Date: Fri, 10 Aug 2007 09:23:35 +0200
-Message-Id: <1186730615.19991.12.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Fri, 10 Aug 2007 03:27:14 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2241 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754074AbXHJH1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 03:27:13 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Josh Triplett <josh@freedesktop.org>
+Subject: Re: 2.6.23-rc2-mm1: sleeping function called from invalid context at kernel/mutex.c:86
+Date: Fri, 10 Aug 2007 09:27:08 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, "Randy.Dunlap" <rdunlap@xenotime.net>
+References: <20070809015106.cd0bfc53.akpm@linux-foundation.org> <20070809171128.03f40dff.akpm@linux-foundation.org> <46BBF965.5030203@freedesktop.org>
+In-Reply-To: <46BBF965.5030203@freedesktop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Disposition: inline
+Message-Id: <200708100927.09526.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-10 at 01:14 +0200, Roman Zippel wrote:
-> Hi,
-
-Greetings,
-
-> On Wed, 1 Aug 2007, Ingo Molnar wrote:
-> 
-> > just to make sure, how does 'top' output of the l + "lt 3" testcase look 
-> > like now on your laptop? Yesterday it was this:
+> >> 	This probably doesn't have great impact ;) but ...
+> >> To reproduce: run torture tests for RCU and then sysrq+q.
+> >>
+> >> SysRq : Show Pending Timers
+> >> Timer List Version: v0.3
+> >> HRTIMER_MAX_CLOCK_BASES: 2
+> >> now at 1764338760370 nsecs
+> >>
+> >> cpu: 0
+> >>  clock 0:
+> >>   .index:      0
+> >>   .resolution: 1 nsecs
+> >>   .get_time:   ktime_get_real
+> >>   .offset:     1186699025823815427 nsecs
+> >> active timers:
+> >>  clock 1:
+> >>   .index:      1
+> >>   .resolution: 1 nsecs
+> >>   .get_time:   ktime_get
+> >>   .offset:     0 nsecs
+> >> active timers:
+> >>  #0: <3>BUG: sleeping function called from invalid context at kernel/mutex.c:86
+> >> in_atomic():1, irqs_disabled():1
+> >> INFO: lockdep is turned off.
+> >> irq event stamp: 0
+> >> hardirqs last  enabled at (0): [<00000000>] 0x0
+> >> hardirqs last disabled at (0): [<c0117def>] copy_process+0x4a8/0x144c
+> >> softirqs last  enabled at (0): [<c0117e0d>] copy_process+0x4c6/0x144c
+> >> softirqs last disabled at (0): [<00000000>] 0x0
+> >>  [<c0104869>] show_trace_log_lvl+0x1a/0x30
+> >>  [<c01053ad>] show_trace+0x12/0x14
+> >>  [<c0105515>] dump_stack+0x15/0x17
+> >>  [<c0114da7>] __might_sleep+0xb7/0xc9
+> >>  [<c0451771>] mutex_lock+0x15/0x1f
+> >>  [<c0141b75>] lookup_module_symbol_name+0x17/0xc0
+> >>  [<c014272a>] lookup_symbol_name+0x3f/0x43
+> >>  [<c013287e>] print_name_offset+0x1f/0x96
+> >>  [<c01330f7>] timer_list_show+0x802/0xcbd
+> >>  [<c01335be>] sysrq_timer_list_show+0xc/0xe
+> >>  [<c02cc4a1>] sysrq_handle_show_timers+0x8/0xa
+> >>  [<c02cc3ac>] __handle_sysrq+0x7b/0x115
+> >>  [<c02cc466>] handle_sysrq+0x20/0x24
+> >>  [<c02c69c1>] kbd_event+0x3a8/0x5c7
+> >>  [<c0362f8f>] input_pass_event+0x8f/0x91
+> >>  [<c0363e77>] input_handle_event+0x98/0x38d
+> >>  [<c0364e6d>] input_event+0x54/0x67
+> >>  [<c03682c2>] atkbd_interrupt+0x200/0x59e
+> >>  [<c0360cd0>] serio_interrupt+0x7c/0x80
+> >>  [<c0361965>] i8042_interrupt+0x17a/0x289
+> >>  [<c0147a5d>] handle_IRQ_event+0x28/0x59
+> >>  [<c01493ca>] handle_level_irq+0xad/0x10b
+> >>  [<c0105a13>] do_IRQ+0x93/0xd0
+> >>  [<c010441e>] common_interrupt+0x2e/0x34
+> >>  [<df39d7e3>] rcu_read_delay+0x8/0x36 [rcutorture]
+> >>  [<df39d99a>] rcu_torture_reader+0x6e/0x169 [rcutorture]
+> >>  [<c012c11e>] kthread+0x36/0x58
+> >>  [<c010451b>] kernel_thread_helper+0x7/0x1c
+> >>  =======================
 > > 
-> >  4544 roman     20   0  1796  520  432 S 32.1  0.4   0:21.08 lt
-> >  4545 roman     20   0  1796  344  256 R 32.1  0.3   0:21.07 lt
-> >  4546 roman     20   0  1796  344  256 R 31.7  0.3   0:21.07 lt
-> >  4547 roman     20   0  1532  272  216 R  3.3  0.2   0:01.94 l
+> > We seem to have made a mess in there.  timer_list_show() ends up calling
+> > lookup_module_symbol_name(), which takes a mutex.  However print_symbol()
+> > (which is called at oops time, interrupt time, etc) calls
+> > module_address_lookup(), which is basically the same, only it doesn't take
+> > the mutex.
 > > 
-> > and i'm still wondering how that output was possible.
+> > I guess a quicky fix would be to switch
+> > kernel/time/timer_list.c:print_name_offset() from
+> > lookup_module_symbol_name() to module_address_lookup().  But we'd still
+> > have a mess in there.
+> > 
+> > (adds ccs, runs away)
 > 
-> I disabled the jiffies logic and the result is still the same, so this 
-> problem isn't related to resolution at all.
-> I traced it a little and what's happing is that the busy loop really only 
-> gets little time, it only runs inbetween the timer tasks. When the timer 
-> task is woken up __enqueue_sleeper() updates sleeper_bonus and a little 
-> later when the busy loop is preempted __update_curr() is called a last 
-> time and it's fully hit by the sleeper_bonus. So the timer tasks use less 
-> time than they actually get and thus produce overflows, the busy loop OTOH 
-> is punished and underflows.
+> I don't think rcutorture matters for this bug. 
 
-I still can't reproduce this here.  Can you please send your .config, so
-I can try again with a config as close to yours as possible?
+Maybe not but that's the only way I could trigger it (insmod rcutorture and sysrq+q).
 
-	-Mike
+Thanks,
 
+	Mariusz
