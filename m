@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933728AbXHJIjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933029AbXHJImg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933728AbXHJIjZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 04:39:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765609AbXHJIjH
+	id S933029AbXHJImg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 04:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbXHJImW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 04:39:07 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3240 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757030AbXHJIjB (ORCPT
+	Fri, 10 Aug 2007 04:42:22 -0400
+Received: from mail.xandmail.com ([212.155.184.97]:36083 "EHLO
+	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751397AbXHJImV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 04:39:01 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
-Cc: csnook@redhat.com, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com
-Organization: Core
-In-Reply-To: <20070809161024.GC8424@linux.vnet.ibm.com>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1IJPkg-0000x0-00@gondolin.me.apana.org.au>
-Date: Fri, 10 Aug 2007 16:21:46 +0800
+	Fri, 10 Aug 2007 04:42:21 -0400
+Date: Fri, 10 Aug 2007 10:41:17 +0200
+Message-Id: <JMJUST$9BEA6C68F4D3CDC22D78DD1BF4340016@xandmail.com>
+Subject: Re: [patch (testing)] Re: 2.6.20->2.6.21 - networking dies after 
+	random time
+MIME-Version: 1.0
+X-Sensitivity: 3
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
+To: "jarkao2" <jarkao2@o2.pl>
+Cc: "marcin\.slusarz" <marcin.slusarz@gmail.com>, "mingo" <mingo@elte.hu>,
+       "tglx" <tglx@linutronix.de>, "torvalds" <torvalds@linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "shemminger" <shemminger@linux-foundation.org>,
+       "linux-net" <linux-net@vger.kernel.org>,
+       "netdev" <netdev@vger.kernel.org>, "akpm" <akpm@linux-foundation.org>,
+       "alan" <alan@lxorguk.ukuu.org.uk>
+X-XaM3-API-Version: 4.2(R3) (B21)
+X-type: 0
+X-SenderIP: 212.155.184.109
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
->
-> The compiler is within its rights to read a 32-bit quantity 16 bits at
-> at time, even on a 32-bit machine.  I would be glad to help pummel any
-> compiler writer that pulls such a dirty trick, but the C standard really
-> does permit this.
+> For me it's enough too but Thomas seems to doubt.
+> 
+> You've written earlier that you've 2.6.23-rc1 with HARDIRQS_SW_RESEND
+> prepared too. So, if this is not a great problem maybe you could try
+> this first. Tomorrow Thomas may send something, so this 100HZ could
+> wait yet, I hope?
 
-Code all over the kernel assumes that 32-bit reads/writes
-are atomic so while such a compiler might be legal it certainly
-can't compile Linux.
+Ok, i'll test 2.6.23-rc1 with HARDIRQS_SW_RESEND first.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Jb
+
