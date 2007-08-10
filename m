@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941219AbXHJQOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941124AbXHJQPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941219AbXHJQOl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 12:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938289AbXHJQGr
+	id S941124AbXHJQPV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 12:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940446AbXHJQHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 12:06:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55269 "EHLO mx1.redhat.com"
+	Fri, 10 Aug 2007 12:07:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55400 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S940230AbXHJQGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 12:06:43 -0400
+	id S940459AbXHJQHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 12:07:05 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 12/16] CacheFiles: Get the SID under which the CacheFiles
-	module should operate [try #3]
+Subject: [PATCH 15/16] NFS: Configuration and mount option changes to enable
+	local caching on NFS [try #3]
 To: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
        trond.myklebust@fys.uio.no
 Cc: linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
        nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        selinux@tycho.nsa.gov
-Date: Fri, 10 Aug 2007 17:05:58 +0100
-Message-ID: <20070810160558.24698.11275.stgit@warthog.cambridge.redhat.com>
+Date: Fri, 10 Aug 2007 17:06:13 +0100
+Message-ID: <20070810160613.24698.9814.stgit@warthog.cambridge.redhat.com>
 In-Reply-To: <20070810160455.24698.30983.stgit@warthog.cambridge.redhat.com>
 References: <20070810160455.24698.30983.stgit@warthog.cambridge.redhat.com>
 User-Agent: StGIT/0.13
@@ -32,117 +32,288 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Get the SID under which the CacheFiles module should operate so that the
-SELinux security system can control the accesses it makes.
+Changes to the kernel configuration defintions and to the NFS mount options to
+allow the local caching support added by the previous patch to be enabled.
 
-Signed-Off-By: David Howells <dhowells@redhat.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/security.h |   20 ++++++++++++++++++++
- security/dummy.c         |    7 +++++++
- security/selinux/hooks.c |    7 +++++++
- 3 files changed, 34 insertions(+), 0 deletions(-)
+ fs/Kconfig        |    8 ++++++++
+ fs/nfs/client.c   |   14 ++++++++++----
+ fs/nfs/internal.h |    2 ++
+ fs/nfs/super.c    |   40 ++++++++++++++++++++++++++++++++++------
+ 4 files changed, 54 insertions(+), 10 deletions(-)
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index a54958a..593a4d0 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -1173,6 +1173,14 @@ struct request_sock;
-  *      previously acting.
-  *	@oldsecid points the location in which to return the displaced security ID.
-  *
-+ * @cachefiles_get_secid:
-+ *	Determine the security ID for the CacheFiles module to use when
-+ *	accessing the filesystem containing the cache.
-+ *	@secid contains the security ID under which cachefiles daemon is
-+ *      running.
-+ *	@modsecid contains the pointer to where the security ID for the module
-+ *	is to be stored.
-+ *
-  * This is the main security structure.
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 7feb4cb..76d5d16 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1600,6 +1600,14 @@ config NFS_V4
+ 
+ 	  If unsure, say N.
+ 
++config NFS_FSCACHE
++	bool "Provide NFS client caching support (EXPERIMENTAL)"
++	depends on EXPERIMENTAL
++	depends on NFS_FS=m && FSCACHE || NFS_FS=y && FSCACHE=y
++	help
++	  Say Y here if you want NFS data to be cached locally on disc through
++	  the general filesystem cache manager
++
+ config NFS_DIRECTIO
+ 	bool "Allow direct I/O on NFS files"
+ 	depends on NFS_FS
+diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+index f1783b2..0de4db4 100644
+--- a/fs/nfs/client.c
++++ b/fs/nfs/client.c
+@@ -543,7 +543,8 @@ error:
+ /*
+  * Create a version 2 or 3 client
   */
- struct security_operations {
-@@ -1361,6 +1369,7 @@ struct security_operations {
- 	int (*set_fscreate_secid)(u32 secid, u32 *oldsecid);
- 	int (*act_as_secid)(u32 secid, u32 *oldsecid);
- 	int (*act_as_self)(u32 *oldsecid);
-+	int (*cachefiles_get_secid)(u32 secid, u32 *modsecid);
+-static int nfs_init_server(struct nfs_server *server, const struct nfs_mount_data *data)
++static int nfs_init_server(struct nfs_server *server, const struct nfs_mount_data *data,
++			   unsigned int extra_options)
+ {
+ 	struct nfs_client *clp;
+ 	int error, nfsvers = 2;
+@@ -580,6 +581,7 @@ static int nfs_init_server(struct nfs_server *server, const struct nfs_mount_dat
+ 	server->acregmax = data->acregmax * HZ;
+ 	server->acdirmin = data->acdirmin * HZ;
+ 	server->acdirmax = data->acdirmax * HZ;
++	server->options = extra_options;
  
- #ifdef CONFIG_SECURITY_NETWORK
- 	int (*unix_stream_connect) (struct socket * sock,
-@@ -2185,6 +2194,11 @@ static inline int security_act_as_self(u32 *oldsecid)
- 	return security_ops->act_as_self(oldsecid);
+ 	/* Start lockd here, before we might error out */
+ 	error = nfs_start_lockd(server);
+@@ -776,6 +778,7 @@ void nfs_free_server(struct nfs_server *server)
+  * - keyed on server and FSID
+  */
+ struct nfs_server *nfs_create_server(const struct nfs_mount_data *data,
++				     unsigned extra_options,
+ 				     struct nfs_fh *mntfh)
+ {
+ 	struct nfs_server *server;
+@@ -787,7 +790,7 @@ struct nfs_server *nfs_create_server(const struct nfs_mount_data *data,
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	/* Get a client representation */
+-	error = nfs_init_server(server, data);
++	error = nfs_init_server(server, data, extra_options);
+ 	if (error < 0)
+ 		goto error;
+ 
+@@ -911,7 +914,8 @@ error:
+  * Create a version 4 volume record
+  */
+ static int nfs4_init_server(struct nfs_server *server,
+-		const struct nfs4_mount_data *data, rpc_authflavor_t authflavour)
++		const struct nfs4_mount_data *data, rpc_authflavor_t authflavour,
++		unsigned int extra_options)
+ {
+ 	int error;
+ 
+@@ -930,6 +934,7 @@ static int nfs4_init_server(struct nfs_server *server,
+ 	server->acregmax = data->acregmax * HZ;
+ 	server->acdirmin = data->acdirmin * HZ;
+ 	server->acdirmax = data->acdirmax * HZ;
++	server->options = extra_options;
+ 
+ 	error = nfs_init_server_rpcclient(server, authflavour);
+ 
+@@ -948,6 +953,7 @@ struct nfs_server *nfs4_create_server(const struct nfs4_mount_data *data,
+ 				      const char *mntpath,
+ 				      const char *ip_addr,
+ 				      rpc_authflavor_t authflavour,
++				      unsigned int extra_options,
+ 				      struct nfs_fh *mntfh)
+ {
+ 	struct nfs_fattr fattr;
+@@ -967,7 +973,7 @@ struct nfs_server *nfs4_create_server(const struct nfs4_mount_data *data,
+ 		goto error;
+ 
+ 	/* set up the general RPC client */
+-	error = nfs4_init_server(server, data, authflavour);
++	error = nfs4_init_server(server, data, authflavour, extra_options);
+ 	if (error < 0)
+ 		goto error;
+ 
+diff --git a/fs/nfs/internal.h b/fs/nfs/internal.h
+index 76cf55d..34ef000 100644
+--- a/fs/nfs/internal.h
++++ b/fs/nfs/internal.h
+@@ -33,6 +33,7 @@ extern struct rpc_program nfs_program;
+ extern void nfs_put_client(struct nfs_client *);
+ extern struct nfs_client *nfs_find_client(const struct sockaddr_in *, int);
+ extern struct nfs_server *nfs_create_server(const struct nfs_mount_data *,
++					    unsigned int,
+ 					    struct nfs_fh *);
+ extern struct nfs_server *nfs4_create_server(const struct nfs4_mount_data *,
+ 					     const char *,
+@@ -40,6 +41,7 @@ extern struct nfs_server *nfs4_create_server(const struct nfs4_mount_data *,
+ 					     const char *,
+ 					     const char *,
+ 					     rpc_authflavor_t,
++					     unsigned int,
+ 					     struct nfs_fh *);
+ extern struct nfs_server *nfs4_create_referral_server(struct nfs_clone_mount *,
+ 						      struct nfs_fh *);
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index b2a851c..17473f6 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -67,6 +67,7 @@ struct nfs_parsed_mount_data {
+ 				acdirmin, acdirmax;
+ 	int			namlen;
+ 	unsigned int		bsize;
++	unsigned int		options;
+ 	unsigned int		auth_flavor_len;
+ 	rpc_authflavor_t	auth_flavors[1];
+ 	char			*client_address;
+@@ -101,6 +102,7 @@ enum {
+ 	Opt_acl, Opt_noacl,
+ 	Opt_rdirplus, Opt_nordirplus,
+ 	Opt_sharecache, Opt_nosharecache,
++	Opt_fscache, Opt_nofscache,
+ 
+ 	/* Mount options that take integer arguments */
+ 	Opt_port,
+@@ -149,6 +151,8 @@ static match_table_t nfs_mount_option_tokens = {
+ 	{ Opt_nordirplus, "nordirplus" },
+ 	{ Opt_sharecache, "sharecache" },
+ 	{ Opt_nosharecache, "nosharecache" },
++	{ Opt_fscache, "fsc" },
++	{ Opt_nofscache, "nofsc" },
+ 
+ 	{ Opt_port, "port=%u" },
+ 	{ Opt_rsize, "rsize=%u" },
+@@ -495,6 +499,8 @@ static void nfs_show_mount_options(struct seq_file *m, struct nfs_server *nfss,
+ 	seq_printf(m, ",timeo=%lu", 10U * clp->retrans_timeo / HZ);
+ 	seq_printf(m, ",retrans=%u", clp->retrans_count);
+ 	seq_printf(m, ",sec=%s", nfs_pseudoflavour_to_name(nfss->client->cl_auth->au_flavor));
++	if (nfss->options & NFS_OPTION_FSCACHE)
++		seq_printf(m, ",fsc");
  }
  
-+static inline int security_cachefiles_get_secid(u32 secid, u32 *modsecid)
-+{
-+	return security_ops->cachefiles_get_secid(secid, modsecid);
-+}
+ /*
+@@ -725,6 +731,15 @@ static int nfs_parse_mount_options(char *raw,
+ 			break;
+ 		case Opt_nosharecache:
+ 			mnt->flags |= NFS_MOUNT_UNSHARED;
++			mnt->options &= ~NFS_OPTION_FSCACHE;
++			break;
++		case Opt_fscache:
++			/* sharing is mandatory with fscache */
++			mnt->options |= NFS_OPTION_FSCACHE;
++			mnt->flags &= ~NFS_MOUNT_UNSHARED;
++			break;
++		case Opt_nofscache:
++			mnt->options &= ~NFS_OPTION_FSCACHE;
+ 			break;
+ 
+ 		case Opt_port:
+@@ -1081,10 +1096,13 @@ out_err:
+  */
+ static int nfs_validate_mount_data(struct nfs_mount_data **options,
+ 				   struct nfs_fh *mntfh,
+-				   const char *dev_name)
++				   const char *dev_name,
++				   unsigned int *_extra_options)
+ {
+ 	struct nfs_mount_data *data = *options;
+ 
++	*_extra_options = 0;
 +
- /* prototypes */
- extern int security_init	(void);
- extern int register_security	(struct security_operations *ops);
-@@ -2897,6 +2911,12 @@ static inline u32 security_act_as_self(u32 *oldsecid)
- 	return 0;
- }
+ 	if (data == NULL)
+ 		goto out_no_data;
  
-+static inline int security_cachefiles_get_secid(u32 secid, u32 *modsecid)
-+{
-+	*modsecid = 0;
-+	return 0;
-+}
+@@ -1131,6 +1149,7 @@ static int nfs_validate_mount_data(struct nfs_mount_data **options,
+ 			.acregmax	= 60,
+ 			.acdirmin	= 30,
+ 			.acdirmax	= 60,
++			.options	= 0,
+ 			.mount_server.protocol = IPPROTO_UDP,
+ 			.mount_server.program = NFS_MNT_PROGRAM,
+ 			.nfs_server.protocol = IPPROTO_TCP,
+@@ -1139,6 +1158,7 @@ static int nfs_validate_mount_data(struct nfs_mount_data **options,
+ 
+ 		if (nfs_parse_mount_options((char *) *options, &args) == 0)
+ 			return -EINVAL;
++		*_extra_options = args.options;
+ 
+ 		data = kzalloc(sizeof(*data), GFP_KERNEL);
+ 		if (data == NULL)
+@@ -1372,16 +1392,17 @@ static int nfs_get_sb(struct file_system_type *fs_type,
+ 	struct nfs_fh mntfh;
+ 	struct nfs_mount_data *data = raw_data;
+ 	struct dentry *mntroot;
++	unsigned int extra_options;
+ 	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
+ 	int error;
+ 
+ 	/* Validate the mount data */
+-	error = nfs_validate_mount_data(&data, &mntfh, dev_name);
++	error = nfs_validate_mount_data(&data, &mntfh, dev_name, &extra_options);
+ 	if (error < 0)
+ 		goto out;
+ 
+ 	/* Get a volume representation */
+-	server = nfs_create_server(data, &mntfh);
++	server = nfs_create_server(data, extra_options, &mntfh);
+ 	if (IS_ERR(server)) {
+ 		error = PTR_ERR(server);
+ 		goto out;
+@@ -1556,11 +1577,14 @@ static int nfs4_validate_mount_data(struct nfs4_mount_data **options,
+ 				    rpc_authflavor_t *authflavour,
+ 				    char **hostname,
+ 				    char **mntpath,
+-				    char **ip_addr)
++				    char **ip_addr,
++				    unsigned int *_extra_options)
+ {
+ 	struct nfs4_mount_data *data = *options;
+ 	char *c;
+ 
++	*_extra_options = 0;
 +
- #endif	/* CONFIG_SECURITY */
+ 	if (data == NULL)
+ 		goto out_no_data;
  
- #ifdef CONFIG_SECURITY_NETWORK
-diff --git a/security/dummy.c b/security/dummy.c
-index 6be18fe..6e79dd4 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -960,6 +960,12 @@ static int dummy_act_as_self(u32 *oldsecid)
- 	return 0;
- }
+@@ -1616,11 +1640,13 @@ static int nfs4_validate_mount_data(struct nfs4_mount_data **options,
+ 			.acregmax	= 60,
+ 			.acdirmin	= 30,
+ 			.acdirmax	= 60,
++			.options	= 0,
+ 			.nfs_server.protocol = IPPROTO_TCP,
+ 		};
  
-+static int dummy_cachefiles_get_secid(u32 secid, u32 *modsecid)
-+{
-+	*modsecid = 0;
-+	return 0;
-+}
-+
- #ifdef CONFIG_KEYS
- static inline int dummy_key_alloc(struct key *key, struct task_struct *ctx,
- 				  unsigned long flags)
-@@ -1119,6 +1125,7 @@ void security_fixup_ops (struct security_operations *ops)
-  	set_to_dummy_if_null(ops, set_fscreate_secid);
-  	set_to_dummy_if_null(ops, act_as_secid);
-  	set_to_dummy_if_null(ops, act_as_self);
-+ 	set_to_dummy_if_null(ops, cachefiles_get_secid);
- #ifdef CONFIG_SECURITY_NETWORK
- 	set_to_dummy_if_null(ops, unix_stream_connect);
- 	set_to_dummy_if_null(ops, unix_may_send);
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 34646f8..54542b4 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -4723,6 +4723,12 @@ static int selinux_act_as_self(u32 *oldsecid)
- 	return 0;
- }
+ 		if (nfs_parse_mount_options((char *) *options, &args) == 0)
+ 			return -EINVAL;
++		*_extra_options = args.options;
  
-+static int selinux_cachefiles_get_secid(u32 secid, u32 *modsecid)
-+{
-+	return security_transition_sid(secid, SECINITSID_KERNEL,
-+				       SECCLASS_PROCESS, modsecid);
-+}
-+
- #ifdef CONFIG_KEYS
+ 		if (!nfs_verify_server_address((struct sockaddr *)
+ 						&args.nfs_server.address))
+@@ -1727,19 +1753,21 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
+ 	rpc_authflavor_t authflavour;
+ 	struct nfs_fh mntfh;
+ 	struct dentry *mntroot;
++	unsigned extra_options;
+ 	char *mntpath = NULL, *hostname = NULL, *ip_addr = NULL;
+ 	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
+ 	int error;
  
- static int selinux_key_alloc(struct key *k, struct task_struct *tsk,
-@@ -4910,6 +4916,7 @@ static struct security_operations selinux_ops = {
- 	.set_fscreate_secid =		selinux_set_fscreate_secid,
- 	.act_as_secid =			selinux_act_as_secid,
- 	.act_as_self =			selinux_act_as_self,
-+	.cachefiles_get_secid =		selinux_cachefiles_get_secid,
+ 	/* Validate the mount data */
+ 	error = nfs4_validate_mount_data(&data, dev_name, &addr, &authflavour,
+-					 &hostname, &mntpath, &ip_addr);
++					 &hostname, &mntpath, &ip_addr,
++					 &extra_options);
+ 	if (error < 0)
+ 		goto out;
  
-         .unix_stream_connect =		selinux_socket_unix_stream_connect,
- 	.unix_may_send =		selinux_socket_unix_may_send,
+ 	/* Get a volume representation */
+ 	server = nfs4_create_server(data, hostname, &addr, mntpath, ip_addr,
+-				    authflavour, &mntfh);
++				    authflavour, extra_options, &mntfh);
+ 	if (IS_ERR(server)) {
+ 		error = PTR_ERR(server);
+ 		goto out;
 
