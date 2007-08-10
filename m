@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935954AbXHJMjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934561AbXHJMoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935954AbXHJMjx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 08:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbXHJMjr
+	id S934561AbXHJMoP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 08:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761317AbXHJMoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 08:39:47 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:20152 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756731AbXHJMjp (ORCPT
+	Fri, 10 Aug 2007 08:44:00 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:34914 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755484AbXHJMn7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 08:39:45 -0400
+	Fri, 10 Aug 2007 08:43:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ATtpduk3U0RkvFaVztQcTAQCVN+ho0yD4jfoJJKtkSuKuFAYnDxw2Fow12LQLBbnBJof2engpwPfMVUgpn6oUcGvvt7frLe8K24tmqih9y1I+dhIKQB5fRJ92iBPhy/sPFYv9g9hanWCQ72sE8ENl+3dTdh09mPC9Sb0eu9OVQU=
-Message-ID: <46BC5C1D.50205@googlemail.com>
-Date: Fri, 10 Aug 2007 14:37:49 +0200
+        b=iVWkS87thUJ5uyPpf2mn5O05CHVgVplHiWmmZXDyI7tZJjtqQJzDznYrFg9SntUjvibu9cJgW/IAqQHE63QbomkAzuwAatc2SWZoe0MJcF7y08gpQ4C9AjMzljbSz+2IG8Grv/imwyvBES9GyKGTtv7NwsVvs3U8dCLMHHbNbNU=
+Message-ID: <46BC5D18.9060906@googlemail.com>
+Date: Fri, 10 Aug 2007 14:42:00 +0200
 From: Gabriel C <nix.or.die@googlemail.com>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+CC: linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg KH <greg@kroah.com>
 Subject: Re: 2.6.23-rc2-mm2
 References: <20070809224254.11f42716.akpm@linux-foundation.org> <46BC3CB1.2090503@googlemail.com>
 In-Reply-To: <46BC3CB1.2090503@googlemail.com>
@@ -29,36 +31,22 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some new section mismatch warnings:
+Getting that with gcc 4.2.1 :
+
 
 ...
 
-  MODPOST vmlinux.o
-WARNING: vmlinux.o(.text+0x17e): Section mismatch: reference to .init.text:initialize_secondary (between 'is386' and 'check_x87')
-WARNING: vmlinux.o(.text+0x183): Section mismatch: reference to .init.text:start_kernel (between 'is386' and 'check_x87')
-WARNING: vmlinux.o(.text+0x8c82): Section mismatch: reference to .init.text:register_cpu (between 'arch_register_cpu' and 'alternatives_smp_switch')
-WARNING: vmlinux.o(.text+0x984d): Section mismatch: reference to .init.data:disable_pse (between 'identify_cpu' and 'identify_secondary_cpu')
-WARNING: vmlinux.o(.text+0xac59): Section mismatch: reference to .init.text:calibrate_delay (between 'init_cyrix' and 'init_nsc')
-WARNING: vmlinux.o(.text+0xb4ac): Section mismatch: reference to .init.text:select_idle_routine (between 'init_intel' and 'init_intel_cacheinfo')
-WARNING: vmlinux.o(.text+0xe49c): Section mismatch: reference to .init.data:cpu_idle_tasks (between 'do_boot_cpu' and 'do_warm_boot_cpu')
-WARNING: vmlinux.o(.text+0xe881): Section mismatch: reference to .init.data:cpu_idle_tasks (between 'do_boot_cpu' and 'do_warm_boot_cpu')
-WARNING: vmlinux.o(.text+0xecd8): Section mismatch: reference to .init.data:smp_b_stepping (between 'smp_store_cpu_info' and '__cpu_die')
-WARNING: vmlinux.o(.text+0xecdd): Section mismatch: reference to .init.data:smp_b_stepping (between 'smp_store_cpu_info' and '__cpu_die')
-WARNING: vmlinux.o(.text+0xf055): Section mismatch: reference to .init.text:setup_local_APIC (between 'start_secondary' and 'check_tsc_warp')
-WARNING: vmlinux.o(.text+0xf05f): Section mismatch: reference to .init.text:calibrate_delay (between 'start_secondary' and 'check_tsc_warp')
-WARNING: vmlinux.o(.text+0xf08e): Section mismatch: reference to .init.text:setup_secondary_APIC_clock (between 'start_secondary' and 'check_tsc_warp')
-WARNING: vmlinux.o(.text+0x1fe6e): Section mismatch: reference to .init.text:idle_regs (between 'fork_idle' and '__put_task_struct')
-WARNING: vmlinux.o(.text+0x2717a): Section mismatch: reference to .init.data:tvec_base_done.16336 (between 'timer_cpu_notify' and 'run_timer_softirq')
-WARNING: vmlinux.o(.text+0x272df): Section mismatch: reference to .init.data:tvec_base_done.16336 (between 'timer_cpu_notify' and 'run_timer_softirq')
-WARNING: vmlinux.o(.text+0x51df3): Section mismatch: reference to .init.text:start_cpu_timer (between 'vmstat_cpuup_callback' and 'refresh_cpu_vm_stats')
-WARNING: vmlinux.o(.text+0xcac51): Section mismatch: reference to .init.text:pcibios_fixup_bus (between 'pci_scan_child_bus' and 'pci_scan_bus_parented')
-WARNING: vmlinux.o(.data+0x5480): Section mismatch: reference to .init.text:workqueue_cpu_callback (between 'workqueue_cpu_callback_nb.12121' and 'workqueue_mutex')
-WARNING: vmlinux.o(.data+0x90c4): Section mismatch: reference to .init.text:cpu_callback (between 'cpu_callback_nb.18502' and 'shrinker_rwsem')
-WARNING: vmlinux.o(.data+0x14d84): Section mismatch: reference to .init.text:pci_ite887x_init (between 'pci_serial_quirks' and 'serial_pci_tbl')
+  CC      drivers/usb/host/ohci-hcd.o
+  CC      drivers/usb/misc/usbled.o
+  CC      drivers/usb/core/driver.o
+In file included from drivers/usb/host/ohci-hcd.c:86:
+drivers/usb/host/ohci-dbg.c: In function 'show_registers':
+drivers/usb/host/ohci-dbg.c:620: warning: the address of 'next' will always evaluate as 'true'
+drivers/usb/host/ohci-dbg.c:639: warning: the address of 'next' will always evaluate as 'true'
 
 ...
 
 
-config :
+config : http://194.231.229.228/kernel/mm/2.6.23-rc2-mm2/randconfig-auto-5
 
-http://194.231.229.228/kernel/mm/2.6.23-rc2-mm2/randconfig-auto-5
+
