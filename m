@@ -1,93 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933532AbXHJJwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934488AbXHJJyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933532AbXHJJwe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 05:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757995AbXHJJwK
+	id S934488AbXHJJyc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 05:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760234AbXHJJyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 05:52:10 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:44926 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759299AbXHJJwE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 05:52:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qxQ3B87qcpQ+Bosv/oZLuztgq0QLJ07intqabT+YMXBFE9E7cOtYnBBPkgutVbKrv5MLg4yKnXQEglaIYkREu0BZNT25r8JiC48ZltvdAXD+Kl8p6qNBj+sZ0pXEx70Kivo3eECDdgPmkmFfQ2BQ51COYZsUIZZA+8RdAECrrHU=
-Message-ID: <a8e1da0708100252g5597da63j9cb665ade26f7654@mail.gmail.com>
-Date: Fri, 10 Aug 2007 17:52:04 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc2-mm2
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <a8e1da0708100137t48c5c673vf0c98fb5f0cd058b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Aug 2007 05:54:25 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:42912 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759756AbXHJJyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 05:54:24 -0400
+Date: Fri, 10 Aug 2007 13:53:02 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dipankar@in.ibm.com
+Subject: Re: + sysctl-remove-binary-sysctl-support-where-it-clearly-doesnt-work.patch added to -mm tree
+Message-ID: <20070810095301.GA6726@localhost.sw.ru>
+References: <200708100141.l7A1ftnd029565@imap1.linux-foundation.org> <20070810081810.GB6670@localhost.sw.ru> <m1fy2rzqn7.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-	 <a8e1da0708100118r779068i64ffdc11e452be9b@mail.gmail.com>
-	 <20070810013210.1b2f121c.akpm@linux-foundation.org>
-	 <a8e1da0708100137t48c5c673vf0c98fb5f0cd058b@mail.gmail.com>
+In-Reply-To: <m1fy2rzqn7.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On 8/10/07, Dave Young <hidave.darkstar@gmail.com> wrote:
-> >On 8/10/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Fri, 10 Aug 2007 16:18:38 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
+On Fri, Aug 10, 2007 at 03:26:52AM -0600, Eric W. Biederman wrote:
+> Alexey Dobriyan <adobriyan@sw.ru> writes:
+> 
+> >> @@ -1124,7 +1118,6 @@ static struct ctl_table fs_table[] = {
+> >>  		.proc_handler	= &proc_dointvec,
+> >>  	},
+> >>  	{
+> >> -		.ctl_name	= FS_NRFILE,
+> >>  		.procname	= "file-nr",
+> >>  		.data		= &files_stat,
+> >>  		.maxlen		= 3*sizeof(int),
 > >
-> > > Hi,
-> > > 2.6.23-rc2-mm2:
-> > > config with CONFIG_NF_CONNTRACK_AMANDA=y
-> > > boot  oops:
-> > >
-> > > hand copyed :
-> > > the EIP: helper_hash
-> > >
-> > > backtrace:
-> > > do_basic_setup
-> > > ...
-> > > nf_conntrack_amanda_init
-> > > error_code
-> > > do_vivide_error
-> > > ...
-> > >
-> >
-> > cc netdev
-> >
-> > please send config
-> >
-> > presumably nf_ct_helper_hsize is zero
-> >
-> > I'd have thought that the same bug would be present in mainline - there's
-> > nothing in git-net.patch.
-> >
-> > (hunts around, discovers that there's a net-2.6.24 tree now.  Bah)
-> >
-> MY config file for test:
->-----cut---
-Hi,
-config the CONFIG_NF_CONNTRACK_AMANDA=m, reboot , still oops, but this
-time the point is nf_conntrack_ftp_init, (I doubt the
-nf_conntrack_core is not initialized.)
+> > Why? It will work just fine through default sysctl(2) writeback.
+> 
+> 
+> Well write doesn't happen.  But even more so proc_nr_files() dynamically
+> generates files_stat.nr_files.  That doesn't happen on the generic
+> sysctl path, and thus it's broken.
 
-boot with vga_ask and select 80x60, copyed more infomations:
----------pre oops:-----------
-sysctl table check failed: /net/netfilter/nf_conntrack_generic_timeout
-.3.19.13 Missing strategy
-...
-nf_conntrack_14_proto_sctp4 protocol register failed
-...
----------oops:----------------
-divide error: 0000 [#1] SMP
-EIP: 0060: [<c088477b>] EFLAGS 00010246
-Process swapper
-...
-nf_conntrack_ftp_init
-...
+I see now, thanks. CC'ing Dipankar who probably want to fix this.
+Dipankar, fs.file-nr always contains stale data in nr_files field unless
+you regenerate it by reading /proc/sys/fs/file-nr :)
 
-Code: <...>
-EIP <...> helper_hash +0x1b/0x24
+> Yes.  I'm being picky, because at some point in the past before
+> that was a per cpu variable the code worked, and won't look broken
+> now unless you examine the contents of the data.
 
-Regards
-dave
+More than year passed, nobody noticed until now, probably FS_NRFILE
+should go.
+
