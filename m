@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760516AbXHJIGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbXHJIKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760516AbXHJIGN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 04:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbXHJIFs
+	id S1759177AbXHJIKU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 04:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbXHJIKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 04:05:48 -0400
-Received: from www.osadl.org ([213.239.205.134]:55492 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752105AbXHJIFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 04:05:45 -0400
-Subject: Re: 2.6.23-rc2: WARNING: at kernel/irq/resend.c:70
-	check_irq_resend()
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
-       shemminger@linux-foundation.org, vignaud@xandmail.fr,
-       marcin.slusarz@gmail.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-net@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20070809155445.GA5161@ff.dom.local>
-References: <18107.11431.838905.331157@stoffel.org>
-	 <20070809155445.GA5161@ff.dom.local>
-Content-Type: text/plain
-Date: Fri, 10 Aug 2007 10:05:40 +0200
-Message-Id: <1186733140.12828.45.camel@chaos>
+	Fri, 10 Aug 2007 04:10:01 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:37230 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751397AbXHJIJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 04:09:58 -0400
+Date: Fri, 10 Aug 2007 12:09:52 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: Re: + sysctl-error-on-bad-sysctl-tables.patch added to -mm tree
+Message-ID: <20070810080952.GA6670@localhost.sw.ru>
+References: <200708092211.l79MBoVR022139@imap1.linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708092211.l79MBoVR022139@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-09 at 17:54 +0200, Jarek Poplawski wrote:
-> I'm not sure I don't miss anything (a little in hurry now), but this
-> warning's aim was purely diagnostical and nothing wrong is meant!
-> Unless there is something wrong... Then please try to be more explicit.
+On Thu, Aug 09, 2007 at 03:11:50PM -0700, akpm@linux-foundation.org wrote:
+> Subject: sysctl: Error on bad sysctl tables
+> From: Eric W. Biederman <ebiederm@xmission.com>
 > 
-> If you prefer to not see this, there is my patch proposal somewhere
-> in this older thread:
-> Subject: [patch] genirq: temporary fix for level-triggered IRQ resend
-> Date: Wed, 8 Aug 2007 13:00:37 +0200
+> After going through the kernels sysctl tables several times it has become
+> clear that code review and testing is just not effective in prevent
+> problematic sysctl tables from being used in the stable kernel.  I certainly
+> can't seem to fix the problems as fast as they are introduced.
 > 
-> On the other hand, if it works OK, it would be better to let it be
-> tested more like this...
+> Therefore this patch adds sysctl_check_table which is called when a sysctl
+> table is registered and checks to see if we have a problematic sysctl table.
+> 
+> The biggest part of the code is the table of valid binary sysctl entries, but
+> since we have frozen our set of binary sysctls this table should not need to
+> change, and it makes it much easier to detect when someone unintentionally
+> adds a new binary sysctl value.
+> 
+> As best as I can determine all of the several hundred errors spewed on boot up
+> now are legitimate.
 
-Hmm. This solution is still just pampering over the real problem. The
-delayed disable just re-sends level interrupts unnecessarily. I have a
-fix (needs some testing) for this, which I send out tomorrow, when I'm
-really back from vacation.
+It gives false positive on kernel.pty.nr:
 
-But suppressing the resend is not fixing the driver problem. The problem
-can show up with spurious interrupts and with interrupts on a shared PCI
-interrupt line at any time. It just might take weeks instead of minutes.
+	sysctl table check failed: /kernel/pty/nr .1.62.2 No data
 
-Alan,
-
-is there anything which can be done on the driver level ?
-
-	tglx
-
+However, ->data is set in unix98_pty_init().
 
