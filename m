@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762661AbXHJWEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763967AbXHJWEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762661AbXHJWEG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 18:04:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbXHJWAZ
+	id S1763967AbXHJWEe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 18:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758206AbXHJWAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 18:00:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57387 "EHLO mx1.redhat.com"
+	Fri, 10 Aug 2007 18:00:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57567 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755363AbXHJWAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 18:00:21 -0400
+	id S1757936AbXHJWAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 18:00:53 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
@@ -17,142 +17,261 @@ Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
        lguest@ozlabs.org, glommer@gmail.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 4/25 -v2] Add debugreg/load_rsp native hooks
-Date: Fri, 10 Aug 2007 16:12:16 -0300
-Message-Id: <11867731781610-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 11/25 -v2] native versions for set pagetables
+Date: Fri, 10 Aug 2007 16:12:23 -0300
+Message-Id: <11867732121974-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11867731732274-git-send-email-gcosta@redhat.com>
-References: <1186773157329-git-send-email-gcosta@redhat.com> <11867731633002-git-send-email-gcosta@redhat.com> <11867731681763-git-send-email-gcosta@redhat.com> <11867731732274-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11867732082735-git-send-email-gcosta@redhat.com>
+References: <1186773157329-git-send-email-gcosta@redhat.com> <11867731633002-git-send-email-gcosta@redhat.com> <11867731681763-git-send-email-gcosta@redhat.com> <11867731732274-git-send-email-gcosta@redhat.com> <11867731781610-git-send-email-gcosta@redhat.com> <11867731831138-git-send-email-gcosta@redhat.com> <11867731882768-git-send-email-gcosta@redhat.com> <11867731932688-git-send-email-gcosta@redhat.com> <11867731981891-git-send-email-gcosta@redhat.com> <1186773203887-git-send-email-gcosta@redhat.com> <11867732082735-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds native hooks for debugreg handling functions,
-and for the native load_rsp0 function. The later also have its
-call sites patched.
+This patch turns the set_p{te,md,ud,gd} functions into their
+native_ versions. There is no need to patch any caller.
+
+Also, it adds pte_update() and pte_update_defer() calls whenever
+we modify a page table entry. This last part was coded to match
+i386 as close as possible.
+
+Pieces of the header are moved to below the #ifdef CONFIG_PARAVIRT
+site, as they are users of the newly defined set_* macros.
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- arch/x86_64/kernel/process.c   |    2 +-
- arch/x86_64/kernel/smpboot.c   |    2 +-
- include/asm-x86_64/processor.h |   71 ++++++++++++++++++++++++++++++++++++----
- 3 files changed, 66 insertions(+), 9 deletions(-)
+ include/asm-x86_64/pgtable.h |  152 ++++++++++++++++++++++++-----------------
+ 1 files changed, 89 insertions(+), 63 deletions(-)
 
-diff --git a/arch/x86_64/kernel/process.c b/arch/x86_64/kernel/process.c
-index 2842f50..33046f1 100644
---- a/arch/x86_64/kernel/process.c
-+++ b/arch/x86_64/kernel/process.c
-@@ -595,7 +595,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 	/*
- 	 * Reload esp0, LDT and the page table pointer:
- 	 */
--	tss->rsp0 = next->rsp0;
-+	load_rsp0(tss, next);
+diff --git a/include/asm-x86_64/pgtable.h b/include/asm-x86_64/pgtable.h
+index c9d8764..dd572a2 100644
+--- a/include/asm-x86_64/pgtable.h
++++ b/include/asm-x86_64/pgtable.h
+@@ -57,55 +57,77 @@ extern unsigned long empty_zero_page[PAGE_SIZE/sizeof(unsigned long)];
+  */
+ #define PTRS_PER_PTE	512
  
- 	/* 
- 	 * Switch DS and ES.
-diff --git a/arch/x86_64/kernel/smpboot.c b/arch/x86_64/kernel/smpboot.c
-index 32f5078..f99ced6 100644
---- a/arch/x86_64/kernel/smpboot.c
-+++ b/arch/x86_64/kernel/smpboot.c
-@@ -620,7 +620,7 @@ do_rest:
- 	start_rip = setup_trampoline();
- 
- 	init_rsp = c_idle.idle->thread.rsp;
--	per_cpu(init_tss,cpu).rsp0 = init_rsp;
-+	load_rsp0(&per_cpu(init_tss,cpu), &c_idle.idle->thread);
- 	initial_code = start_secondary;
- 	clear_tsk_thread_flag(c_idle.idle, TIF_FORK);
- 
-diff --git a/include/asm-x86_64/processor.h b/include/asm-x86_64/processor.h
-index 1952517..65f689b 100644
---- a/include/asm-x86_64/processor.h
-+++ b/include/asm-x86_64/processor.h
-@@ -249,6 +249,12 @@ struct thread_struct {
- 	.rsp0 = (unsigned long)&init_stack + sizeof(init_stack) \
- }
- 
-+static inline void native_load_rsp0(struct tss_struct *tss,
-+				    struct thread_struct *thread)
-+{
-+	tss->rsp0 = thread->rsp0;
-+}
-+
- #define INIT_MMAP \
- { &init_mm, 0, 0, NULL, PAGE_SHARED, VM_READ | VM_WRITE | VM_EXEC, 1, NULL, NULL }
- 
-@@ -264,13 +270,64 @@ struct thread_struct {
- 	set_fs(USER_DS);							 \
- } while(0) 
- 
--#define get_debugreg(var, register)				\
--		__asm__("movq %%db" #register ", %0"		\
--			:"=r" (var))
--#define set_debugreg(value, register)			\
--		__asm__("movq %0,%%db" #register		\
--			: /* no output */			\
--			:"r" (value))
-+static inline unsigned long native_get_debugreg(int regno)
-+{
-+	unsigned long val;
-+
-+	switch (regno) {
-+	case 0:
-+		asm("movq %%db0, %0" :"=r" (val)); break;
-+	case 1:
-+		asm("movq %%db1, %0" :"=r" (val)); break;
-+	case 2:
-+		asm("movq %%db2, %0" :"=r" (val)); break;
-+	case 3:
-+		asm("movq %%db3, %0" :"=r" (val)); break;
-+	case 6:
-+		asm("movq %%db6, %0" :"=r" (val)); break;
-+	case 7:
-+		asm("movq %%db7, %0" :"=r" (val)); break;
-+	default:
-+		val = 0; /* assign it to keep gcc quiet */
-+		WARN_ON(1);
-+	}
-+	return val;
-+}
-+
-+static inline void native_set_debugreg(unsigned long value, int regno)
-+{
-+	switch (regno) {
-+	case 0:
-+		asm("movq %0,%%db0"	: /* no output */ :"r" (value));
-+		break;
-+	case 1:
-+		asm("movq %0,%%db1"	: /* no output */ :"r" (value));
-+		break;
-+	case 2:
-+		asm("movq %0,%%db2"	: /* no output */ :"r" (value));
-+		break;
-+	case 3:
-+		asm("movq %0,%%db3"	: /* no output */ :"r" (value));
-+		break;
-+	case 6:
-+		asm("movq %0,%%db6"	: /* no output */ :"r" (value));
-+		break;
-+	case 7:
-+		asm("movq %0,%%db7"	: /* no output */ :"r" (value));
-+		break;
-+	default:
-+		BUG();
-+	}
-+}
-+
+-#ifndef __ASSEMBLY__
 +#ifdef CONFIG_PARAVIRT
 +#include <asm/paravirt.h>
 +#else
-+#define paravirt_enabled()	0
-+#define load_rsp0 		native_load_rsp0
-+#define set_debugreg(val, reg)	native_set_debugreg(reg, val)
-+#define get_debugreg(var, reg)	(var) = native_get_debugreg(reg)
-+#endif
  
- struct task_struct;
+-#define pte_ERROR(e) \
+-	printk("%s:%d: bad pte %p(%016lx).\n", __FILE__, __LINE__, &(e), pte_val(e))
+-#define pmd_ERROR(e) \
+-	printk("%s:%d: bad pmd %p(%016lx).\n", __FILE__, __LINE__, &(e), pmd_val(e))
+-#define pud_ERROR(e) \
+-	printk("%s:%d: bad pud %p(%016lx).\n", __FILE__, __LINE__, &(e), pud_val(e))
+-#define pgd_ERROR(e) \
+-	printk("%s:%d: bad pgd %p(%016lx).\n", __FILE__, __LINE__, &(e), pgd_val(e))
++#define set_pte native_set_pte
++#define set_pte_at(mm,addr,ptep,pteval) set_pte(ptep,pteval)
++#define set_pmd native_set_pmd
++#define set_pud native_set_pud
++#define set_pgd native_set_pgd
++#define pte_clear(mm,addr,xp)	do { set_pte_at(mm, addr, xp, __pte(0)); } while (0)
++#define pmd_clear(xp)	do { set_pmd(xp, __pmd(0)); } while (0)
++#define pud_clear native_pud_clear
++#define pgd_clear native_pgd_clear
++#define pte_update(mm, addr, ptep)              do { } while (0)
++#define pte_update_defer(mm, addr, ptep)        do { } while (0)
+ 
+-#define pgd_none(x)	(!pgd_val(x))
+-#define pud_none(x)	(!pud_val(x))
++#endif
++
++#ifndef __ASSEMBLY__
+ 
+-static inline void set_pte(pte_t *dst, pte_t val)
++static inline void native_set_pte(pte_t *dst, pte_t val)
+ {
+-	pte_val(*dst) = pte_val(val);
++	dst->pte = pte_val(val);
+ } 
+-#define set_pte_at(mm,addr,ptep,pteval) set_pte(ptep,pteval)
+ 
+-static inline void set_pmd(pmd_t *dst, pmd_t val)
++
++static inline void native_set_pmd(pmd_t *dst, pmd_t val)
+ {
+-        pmd_val(*dst) = pmd_val(val); 
++	dst->pmd = pmd_val(val);
+ } 
+ 
+-static inline void set_pud(pud_t *dst, pud_t val)
++static inline void native_set_pud(pud_t *dst, pud_t val)
+ {
+-	pud_val(*dst) = pud_val(val);
++	dst->pud = pud_val(val);
+ }
+ 
+-static inline void pud_clear (pud_t *pud)
++static inline void native_set_pgd(pgd_t *dst, pgd_t val)
+ {
+-	set_pud(pud, __pud(0));
++	dst->pgd = pgd_val(val);
+ }
+-
+-static inline void set_pgd(pgd_t *dst, pgd_t val)
++static inline void native_pud_clear (pud_t *pud)
+ {
+-	pgd_val(*dst) = pgd_val(val); 
+-} 
++	set_pud(pud, __pud(0));
++}
+ 
+-static inline void pgd_clear (pgd_t * pgd)
++static inline void native_pgd_clear (pgd_t * pgd)
+ {
+ 	set_pgd(pgd, __pgd(0));
+ }
+ 
+-#define ptep_get_and_clear(mm,addr,xp)	__pte(xchg(&(xp)->pte, 0))
++#define pte_ERROR(e) \
++	printk("%s:%d: bad pte %p(%016lx).\n", __FILE__, __LINE__, &(e), pte_val(e))
++#define pmd_ERROR(e) \
++	printk("%s:%d: bad pmd %p(%016lx).\n", __FILE__, __LINE__, &(e), pmd_val(e))
++#define pud_ERROR(e) \
++	printk("%s:%d: bad pud %p(%016lx).\n", __FILE__, __LINE__, &(e), pud_val(e))
++#define pgd_ERROR(e) \
++	printk("%s:%d: bad pgd %p(%016lx).\n", __FILE__, __LINE__, &(e), pgd_val(e))
++
++#define pgd_none(x)	(!pgd_val(x))
++#define pud_none(x)	(!pud_val(x))
+ 
  struct mm_struct;
+ 
++static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
++{
++	pte_t pte = __pte(xchg(&ptep->pte, 0));
++	pte_update(mm, addr, ptep);
++	return pte;
++}
++
+ static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm, unsigned long addr, pte_t *ptep, int full)
+ {
+ 	pte_t pte;
+@@ -245,7 +267,6 @@ static inline unsigned long pmd_bad(pmd_t pmd)
+ 
+ #define pte_none(x)	(!pte_val(x))
+ #define pte_present(x)	(pte_val(x) & (_PAGE_PRESENT | _PAGE_PROTNONE))
+-#define pte_clear(mm,addr,xp)	do { set_pte_at(mm, addr, xp, __pte(0)); } while (0)
+ 
+ #define pages_to_mb(x) ((x) >> (20-PAGE_SHIFT))	/* FIXME: is this
+ 						   right? */
+@@ -254,11 +275,11 @@ static inline unsigned long pmd_bad(pmd_t pmd)
+ 
+ static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
+ {
+-	pte_t pte;
+-	pte_val(pte) = (page_nr << PAGE_SHIFT);
+-	pte_val(pte) |= pgprot_val(pgprot);
+-	pte_val(pte) &= __supported_pte_mask;
+-	return pte;
++	unsigned long pte;
++	pte = (page_nr << PAGE_SHIFT);
++	pte |= pgprot_val(pgprot);
++	pte &= __supported_pte_mask;
++	return __pte(pte);
+ }
+ 
+ /*
+@@ -282,30 +303,6 @@ static inline pte_t pte_mkwrite(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) |
+ static inline pte_t pte_mkhuge(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_PSE)); return pte; }
+ static inline pte_t pte_clrhuge(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_PSE)); return pte; }
+ 
+-struct vm_area_struct;
+-
+-static inline int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr, pte_t *ptep)
+-{
+-	if (!pte_young(*ptep))
+-		return 0;
+-	return test_and_clear_bit(_PAGE_BIT_ACCESSED, &ptep->pte);
+-}
+-
+-static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
+-{
+-	clear_bit(_PAGE_BIT_RW, &ptep->pte);
+-}
+-
+-/*
+- * Macro to mark a page protection value as "uncacheable".
+- */
+-#define pgprot_noncached(prot)	(__pgprot(pgprot_val(prot) | _PAGE_PCD | _PAGE_PWT))
+-
+-static inline int pmd_large(pmd_t pte) { 
+-	return (pmd_val(pte) & __LARGE_PTE) == __LARGE_PTE; 
+-} 	
+-
+-
+ /*
+  * Conversion functions: convert a page and protection to a page entry,
+  * and a page entry and page directory to the page they refer to.
+@@ -339,7 +336,6 @@ static inline int pmd_large(pmd_t pte) {
+ 			pmd_index(address))
+ #define pmd_none(x)	(!pmd_val(x))
+ #define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
+-#define pmd_clear(xp)	do { set_pmd(xp, __pmd(0)); } while (0)
+ #define pfn_pmd(nr,prot) (__pmd(((nr) << PAGE_SHIFT) | pgprot_val(prot)))
+ #define pmd_pfn(x)  ((pmd_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
+ 
+@@ -352,14 +348,43 @@ static inline int pmd_large(pmd_t pte) {
+ /* page, protection -> pte */
+ #define mk_pte(page, pgprot)	pfn_pte(page_to_pfn(page), (pgprot))
+ #define mk_pte_huge(entry) (pte_val(entry) |= _PAGE_PRESENT | _PAGE_PSE)
+- 
++
++struct vm_area_struct;
++
++#include <linux/mm.h>
++static inline int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr, pte_t *ptep)
++{
++	int ret = 0;
++	if (!pte_young(*ptep))
++		return 0;
++	ret = test_and_clear_bit(_PAGE_BIT_ACCESSED, &ptep->pte);
++	pte_update(vma->vm_mm, addr, ptep);
++	return ret;
++}
++
++static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
++{
++	clear_bit(_PAGE_BIT_RW, &ptep->pte);
++	pte_update(mm, addr, ptep);
++}
++
++/*
++ * Macro to mark a page protection value as "uncacheable".
++ */
++#define pgprot_noncached(prot)	(__pgprot(pgprot_val(prot) | _PAGE_PCD | _PAGE_PWT))
++
++static inline int pmd_large(pmd_t pte) {
++	return (pmd_val(pte) & __LARGE_PTE) == __LARGE_PTE;
++}
++
+ /* Change flags of a PTE */
+-static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
++static inline pte_t pte_modify(pte_t pte_old, pgprot_t newprot)
+ { 
+-	pte_val(pte) &= _PAGE_CHG_MASK;
+-	pte_val(pte) |= pgprot_val(newprot);
+-	pte_val(pte) &= __supported_pte_mask;
+-       return pte; 
++	unsigned long pte = pte_val(pte_old);
++	pte &= _PAGE_CHG_MASK;
++	pte |= pgprot_val(newprot);
++	pte &= __supported_pte_mask;
++	return __pte(pte);
+ }
+ 
+ #define pte_index(address) \
+@@ -386,6 +411,7 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+ 	int __changed = !pte_same(*(__ptep), __entry);			  \
+ 	if (__changed && __dirty) {					  \
+ 		set_pte(__ptep, __entry);			  	  \
++		pte_update_defer((__vma)->vm_mm, (__address), (__ptep));  \
+ 		flush_tlb_page(__vma, __address);		  	  \
+ 	}								  \
+ 	__changed;							  \
 -- 
 1.4.4.2
 
