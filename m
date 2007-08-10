@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937058AbXHJN1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934761AbXHJNfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937058AbXHJN1z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 09:27:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbXHJN1r
+	id S934761AbXHJNfS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 09:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757619AbXHJNfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 09:27:47 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53024 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754696AbXHJN1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 09:27:46 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc2-mm1 -- drivers/dma/ioat_dca.c:177: error: implicit declaration of function ___cpu_physical_id___
-Date: Fri, 10 Aug 2007 15:27:42 +0200
-User-Agent: KMail/1.9.6
-Cc: "Miles Lane" <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       "shannon.nelson@intel.com" <shannon.nelson@intel.com>,
-       "Luck, Tony" <tony.luck@intel.com>
-References: <a44ae5cd0708090718v5dc19572k69087f170f9ba857@mail.gmail.com> <20070809115258.5372f76e.akpm@linux-foundation.org>
-In-Reply-To: <20070809115258.5372f76e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 10 Aug 2007 09:35:04 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:38732 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757593AbXHJNfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 09:35:03 -0400
+Date: Fri, 10 Aug 2007 15:34:57 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmc: ignore bad max block size in sdhci
+Message-ID: <20070810153457.57369903@poseidon.drzeus.cx>
+In-Reply-To: <46BC591F.90505@csr.com>
+References: <46BC58E8.50300@csr.com>
+	<46BC591F.90505@csr.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708101527.42628.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 August 2007 20:52:58 Andrew Morton wrote:
-> On Thu, 9 Aug 2007 10:18:15 -0400
-> "Miles Lane" <miles.lane@gmail.com> wrote:
+On Fri, 10 Aug 2007 13:25:03 +0100
+David Vrabel <david.vrabel@csr.com> wrote:
+
+> mmc: ignore bad max block size in sdhci
 > 
-> >   CC      drivers/dma/ioat_dca.o
-> > drivers/dma/ioat_dca.c: In function 'ioat_dca_get_tag':
-> > drivers/dma/ioat_dca.c:177: error: implicit declaration of function
-> > 'cpu_physical_id'
+> Some SDHC cards report an invalid maximum block size, in these cases
+> assume they support block sizes up to 512 bytes instead of returning
+> an error.
 > 
-> Looks like cpu_physical_id() doesn't get implemented if CONFIG_SMP=n.
-> 
-> Either ioat needs to stop using cpu_physical_id() if SMP=n, or the
-> supported architectures (i386, x86_64, ia64) should provide a non-SMP
-> version of cpu_physical_id().  Preferably the latter, I'd say.
+> Signed-off-by: David Vrabel <david.vrabel@csr.com>
 
+Thanks. Applied.
 
-It doesn't make much sense in smp.h because there is not really
-a concept of physical id on most architectures i expect. Better 
-to put it into the individual asm files.
+I find it rather amusing that this is for a controller from a vendor
+that brags about its conformance testing kits. Go figure.
 
--Andi
+-- 
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
