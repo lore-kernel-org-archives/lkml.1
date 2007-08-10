@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933617AbXHJXTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762135AbXHJXZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933617AbXHJXTV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 19:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755753AbXHJXTO
+	id S1762135AbXHJXZp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 19:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbXHJXZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 19:19:14 -0400
-Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:47494 "EHLO
-	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755363AbXHJXTN (ORCPT
+	Fri, 10 Aug 2007 19:25:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:6333 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753577AbXHJXZf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 19:19:13 -0400
-Date: Fri, 10 Aug 2007 16:19:12 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Markus Rechberger <mrechberger@gmail.com>
-cc: Manu Abraham <abraham.manu@gmail.com>, v4l-dvb-maintainer@linuxtv.org,
-       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>
-Subject: Re: [v4l-dvb-maintainer] [2.6 patch] dvb_frontend_ioctl(): fix
- check-after-use
-In-Reply-To: <d9def9db0708101047u27c939a4ve57b28cf4319aaf2@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0708101546170.26791@shell4.speakeasy.net>
-References: <20070730222817.GE3972@stusta.de>
- <1a297b360707312052l14adb72el8ee59c74b7757605@mail.gmail.com>
- <d9def9db0708101047u27c939a4ve57b28cf4319aaf2@mail.gmail.com>
+	Fri, 10 Aug 2007 19:25:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=E5dR8t88pUpW4drRoNACoM1RgDSe96oeM8znPU7Dc/XzMdIyxK2X/SsYVcPakybq87ME1PE5n10bdVMQfUzd+Mjkjxh1D+QZZM9M3P2RVyR7874z0mrXkRKy3db/wnjfpv131xHbnrnVeNuYUvanStl3RVKV5DbgkXHXFKsbH+0=
+Message-ID: <4a5909270708101625q407a240ck6109ef536fdbed4a@mail.gmail.com>
+Date: Fri, 10 Aug 2007 19:25:34 -0400
+From: "Daniel Phillips" <daniel.raymond.phillips@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
+Cc: "Daniel Phillips" <phillips@phunq.net>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Matt Mackall" <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "David Miller" <davem@davemloft.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Daniel Phillips" <phillips@google.com>
+In-Reply-To: <Pine.LNX.4.64.0708101041040.12758@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070806102922.907530000@chello.nl>
+	 <Pine.LNX.4.64.0708081106230.12652@schroedinger.engr.sgi.com>
+	 <4a5909270708091141tb259eddyb2bba1270751ef1@mail.gmail.com>
+	 <Pine.LNX.4.64.0708091146410.25220@schroedinger.engr.sgi.com>
+	 <4a5909270708091717n2f93fcb5i284d82edfd235145@mail.gmail.com>
+	 <Pine.LNX.4.64.0708091844450.3185@schroedinger.engr.sgi.com>
+	 <4a5909270708092034yaa0a583w70084ef93266df48@mail.gmail.com>
+	 <Pine.LNX.4.64.0708092045120.27164@schroedinger.engr.sgi.com>
+	 <4a5909270708100115v4ad10c4es697d216edf29b07d@mail.gmail.com>
+	 <Pine.LNX.4.64.0708101041040.12758@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007, Markus Rechberger wrote:
-> On 8/1/07, Manu Abraham <abraham.manu@gmail.com> wrote:
-> > On 7/31/07, Adrian Bunk <bunk@stusta.de> wrote:
-> > > The Coverity checker spotted that we have already oops'ed if "fe" was
-> > NULL.
-> > >
-> > > --- linux-2.6.23-rc1-mm1/drivers/media/dvb/dvb-core/dvb_frontend.c.old
-> > > +++ linux-2.6.23-rc1-mm1/drivers/media/dvb/dvb-core/dvb_frontend.c
-> > > @@ -706,11 +706,11 @@ static int dvb_frontend_ioctl(struct ino
-> > > -       if (!fe || fepriv->exit)
-> > > +       if (fepriv->exit)
-> > >                 return -ENODEV;
->
-> This issue has been known for a while including some other problems at
-> that part.
->
-> http://article.gmane.org/gmane.linux.drivers.dvb/35351/match=patch+dvb_net+hotplugging+support
->
-> this includes a link where this and more got discussed in May.
+On 8/10/07, Christoph Lameter <clameter@sgi.com> wrote:
+> The idea of adding code to deal with "I have no memory" situations
+> in a kernel that based on have as much memory as possible in use at all
+> times is plainly the wrong approach.
 
-For dvb_net_close, I like the patch I already posted better.  To fix the
-check-after-use, it's not "use" part that's the problem, it's the "check" part
-that isn't necessary.
+No.  It is you who have read the patches wrongly, because what you
+imply here is exactly backwards.
 
-I traced the dvb-net code, http://article.gmane.org/gmane.linux.kernel/543689,
-and I'm sure that dvbdev can't be NULL.
+> If you need memory then memory needs
+> to be reclaimed. That is the basic way that things work
 
-My patch also deletes a few pieces of duplicated code by calling
-dvb_generic_release().
+Wrong.  A naive reading of your comment would suggest you do not
+understand how PF_MEMALLOC works, and that it has worked that way from
+day one (well, since long before I arrived) and that we just do more
+of the same, except better.
 
-The only problem is that practically no one uses dvb-net, so it's very hard to
-test these patches.
+> and following that
+> through brings about a much less invasive solution without all the issues
+> that the proposed solution creates.
 
-In all the dvb code, were is the locking for device open and release?  I don't
-see it.  What is preventing two threads from trying to open and/or close the
-same dvb device at the same time?
+What issues?  Test case please, a real one that you have run yourself.
+ Please, no more theoretical issues that cannot be demonstrated in
+practice because they do not exist.
+
+Regards,
+
+Daniel
