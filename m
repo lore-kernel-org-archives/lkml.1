@@ -1,93 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765275AbXHJQrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941494AbXHJQr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765275AbXHJQrg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 12:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932531AbXHJQrX
+	id S941494AbXHJQr4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 12:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938650AbXHJQr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 12:47:23 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:39039 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S937238AbXHJQrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 12:47:21 -0400
-Message-ID: <386764436.02604@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Sat, 11 Aug 2007 00:47:15 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Ken Chen <kenchen@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 2/4] writeback: 3-queue based writeback schedule
-Message-ID: <20070810164715.GA5508@mail.ustc.edu.cn>
-Mail-Followup-To: Andrew Morton <akpm@osdl.org>,
-	Ken Chen <kenchen@google.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <20070810063412.238042387@mail.ustc.edu.cn> <20070810063419.549052142@mail.ustc.edu.cn>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070810063419.549052142@mail.ustc.edu.cn>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 10 Aug 2007 12:47:26 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37571 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S937799AbXHJQrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 12:47:25 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+jlhcxdnejMpsbagaDv7TdHjIyGaYDPyslMGMrWK
+	10rYNCjAad92U8
+Subject: Re: CFS review
+From: Mike Galbraith <efault@gmx.de>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0708101459530.1817@scrub.home>
+References: <Pine.LNX.4.64.0708010439050.1817@scrub.home>
+	 <20070801071230.GA16375@elte.hu>
+	 <Pine.LNX.4.64.0708011511530.1817@scrub.home>
+	 <20070801150742.GA23670@elte.hu> <p73ps27npu0.fsf@bingen.suse.de>
+	 <alpine.LFD.0.999.0708010924490.3582@woody.linux-foundation.org>
+	 <20070801175004.GA17936@elte.hu>
+	 <Pine.LNX.4.64.0708011955430.1817@scrub.home>
+	 <20070801190556.GA1199@elte.hu>
+	 <Pine.LNX.4.64.0708100037460.1817@scrub.home>
+	 <20070810054948.GA5908@elte.hu>
+	 <Pine.LNX.4.64.0708101459530.1817@scrub.home>
+Content-Type: text/plain
+Date: Fri, 10 Aug 2007 18:47:17 +0200
+Message-Id: <1186764437.6397.15.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 02:34:14PM +0800, Fengguang Wu wrote:
-> Properly manage the 3 queues of sb->s_dirty/s_io/s_more_io so that
-> 	- time-ordering of dirtied_when can be easily maintained
-> 	- writeback can continue from where previous run left out
-> 
-> The majority work has been done by Andrew Morton and Ken Chen,
-> this patch just clarifies the roles of the 3 queues:
-> - s_dirty   for io delay(up to dirty_expire_interval)
-> - s_io      for io run(a full scan of s_io may involve multiple runs)
-> - s_more_io for io continuation
-> 
-> The following paradigm shows the data flow.
-> 
->                             requeue on new scan(empty s_io)
->                             +-----------------------------+
->                             |                             |
->  dirty           old        |                             |
->  inodes          enough     V                             |
->  ======> s_dirty ======> s_io                             |
->          ^                |     requeue io                |
->          |                +---------------------> s_more_io
->          |   hold back    |
->          +----------------+----------> disk write requests
-> 
-> sb->s_dirty: a FIFO queue
-> - s_dirty hosts not-yet-expired(recently dirtied) dirty inodes
-> - once expired, inodes will be moved out of s_dirty and *never put back*
->   (unless for some reason we have to hold on the inode for some time)
-> 
-> sb->s_io and sb->s_more_io: a cyclic queue scanned for io
-> - on each run of generic_sync_sb_inodes(), some more s_dirty inodes may be
->   appended to s_io
-> - on each full scan of s_io, all s_more_io inodes will be moved back to s_io
-> - large files that cannot be synced in one run will be moved to s_more_io for
->   retry on next full scan
+I guess I'm going to have to give up on trying to reproduce this... my
+3GHz P4 is just not getting there from here.  Last attempt, compiled UP,
+HZ=1000 dynticks, full preempt and highres timers fwiw.
 
-In fact s_more_io is no longer necessary. We end up with a priority
-io-delaying queue s_dirty and a cyclic io-syncing queue s_io. They are
-properly decoupled.  More flexible data structure can be used for
-s_dirty, if we want to redirty an inode with arbitrary delays. Also
-more priority queues can be introduced in addition to s_dirty. For
-example, we can designate a queue s_dirty_atime for inodes dirtied
-only by `atime', and sync them lazily.
+6392 root      20   0  1696  332  248 R 25.5  0.0   3:00.14 0 lt
+6393 root      20   0  1696  332  248 R 24.9  0.0   3:00.15 0 lt
+6391 root      20   0  1696  488  404 R 24.7  0.0   3:00.20 0 lt
+6394 root      20   0  2888 1232 1028 R 24.5  0.1   2:58.58 0 sh
 
-> inode->dirtied_when
-> - inode->dirtied_when is updated to the *current* jiffies on pushing into
->   s_dirty, and is never changed in other cases.
-> - time-ordering thus can be simply ensured while moving inodes between lists,
->   since (time order == enqueue order)
-> 
-> Cc: Ken Chen <kenchen@google.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> ---
->  fs/fs-writeback.c |  106 +++++++++++++++++++++-----------------------
->  1 file changed, 52 insertions(+), 54 deletions(-)
+	-Mike
 
