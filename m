@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936698AbXHJN0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937058AbXHJN1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936698AbXHJN0t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 09:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763696AbXHJN0l
+	id S937058AbXHJN1z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 09:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbXHJN1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 09:26:41 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34005 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759019AbXHJN0k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 09:26:40 -0400
-Date: Fri, 10 Aug 2007 14:33:42 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alexey Dobriyan <adobriyan@sw.ru>, axboe@kernel.dk
-Subject: Re: [PATCH 08/10] sysctl: Remove broken cdrom binary sysctls
-Message-ID: <20070810143342.173d2637@the-village.bc.nu>
-In-Reply-To: <m1ir7o8ap1.fsf_-_@ebiederm.dsl.xmission.com>
-References: <20070726164518.GB16937@localhost.sw.ru>
-	<m13azbulhf.fsf@ebiederm.dsl.xmission.com>
-	<20070727145235.GC6924@localhost.sw.ru>
-	<20070806124530.GD6634@localhost.sw.ru>
-	<m1tzr8a3ms.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1wa3kf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcn8a2rq.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1d4xw9psl.fsf_-_@ebiederm.dsl.xmission.com>
-	<m18x8k9ppv.fsf_-_@ebiederm.dsl.xmission.com>
-	<m14pj89pmt.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1zm108axi.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1vebo8avf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1r6mc8at5.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1myx08arh.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ir7o8ap1.fsf_-_@ebiederm.dsl.xmission.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 10 Aug 2007 09:27:47 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53024 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754696AbXHJN1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 09:27:46 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc2-mm1 -- drivers/dma/ioat_dca.c:177: error: implicit declaration of function ___cpu_physical_id___
+Date: Fri, 10 Aug 2007 15:27:42 +0200
+User-Agent: KMail/1.9.6
+Cc: "Miles Lane" <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       "shannon.nelson@intel.com" <shannon.nelson@intel.com>,
+       "Luck, Tony" <tony.luck@intel.com>
+References: <a44ae5cd0708090718v5dc19572k69087f170f9ba857@mail.gmail.com> <20070809115258.5372f76e.akpm@linux-foundation.org>
+In-Reply-To: <20070809115258.5372f76e.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708101527.42628.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 09 Aug 2007 19:01:14 -0600
-ebiederm@xmission.com (Eric W. Biederman) wrote:
-
+On Thursday 09 August 2007 20:52:58 Andrew Morton wrote:
+> On Thu, 9 Aug 2007 10:18:15 -0400
+> "Miles Lane" <miles.lane@gmail.com> wrote:
 > 
-> The binary interface for the cdrom sysctls can't possilby work.
-> So remove the binary sysctls and update the test for finding
-> out which sysctl table entry we are dealy with to use the procname
-> and not the ctl_name (which I am removing).
+> >   CC      drivers/dma/ioat_dca.o
+> > drivers/dma/ioat_dca.c: In function 'ioat_dca_get_tag':
+> > drivers/dma/ioat_dca.c:177: error: implicit declaration of function
+> > 'cpu_physical_id'
+> 
+> Looks like cpu_physical_id() doesn't get implemented if CONFIG_SMP=n.
+> 
+> Either ioat needs to stop using cpu_physical_id() if SMP=n, or the
+> supported architectures (i386, x86_64, ia64) should provide a non-SMP
+> version of cpu_physical_id().  Preferably the latter, I'd say.
 
-NAK
 
-I've no problem with the basic idea of removing the names from user
-space, but you've just demonstrated with the patch below that it causes
-some quite revolting changes for the bad in code which previously was
-nicely done switch statements and is now a nest of string compares and
-inline code.
+It doesn't make much sense in smp.h because there is not really
+a concept of physical id on most architectures i expect. Better 
+to put it into the individual asm files.
 
-There are very good reasons to have a cookie in the sysctl entry for
-internal use and which is private to the subsystem using the sysctl (ie
-not for sysctl() use and not neccessarily unique).
+-Andi
 
