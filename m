@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937194AbXHJSRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938633AbXHJSTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937194AbXHJSRr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 14:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbXHJSRj
+	id S938633AbXHJSTU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 14:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757959AbXHJSTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 14:17:39 -0400
-Received: from mga02.intel.com ([134.134.136.20]:10410 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754909AbXHJSRh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 14:17:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,245,1183359600"; 
-   d="scan'208";a="277213950"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
+	Fri, 10 Aug 2007 14:19:08 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:44762 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757515AbXHJSTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 14:19:06 -0400
+Date: Fri, 10 Aug 2007 19:25:43 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Glauber de Oliveira Costa" <glommer@gmail.com>
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>, lguest@ozlabs.org,
+       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
+       anthony@codemonkey.ws, Steven@smtp2.linux-foundation.org,
+       akpm@linux-foundation.org,
+       "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       virtualization@lists.linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 23/25] [PATCH] paravirt hooks for arch initialization
+Message-ID: <20070810192543.605f350f@the-village.bc.nu>
+In-Reply-To: <5d6222a80708101108y62ebfa26n9f47bfc52b48f4a8@mail.gmail.com>
+References: <11865467522495-git-send-email-gcosta@redhat.com>
+	<11865468394005-git-send-email-gcosta@redhat.com>
+	<11865468431616-git-send-email-gcosta@redhat.com>
+	<200708081144.04119.ak@suse.de>
+	<46BB5258.8040609@goop.org>
+	<20070809190303.214e5457@the-village.bc.nu>
+	<5d6222a80708101108y62ebfa26n9f47bfc52b48f4a8@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] flush icache before set_pte() on ia64  take9 [2/2] flush icache at set_pte
-Date: Fri, 10 Aug 2007 11:17:30 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A0224C511@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <20070809135721.08841cd7.kamezawa.hiroyu@jp.fujitsu.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] flush icache before set_pte() on ia64  take9 [2/2] flush icache at set_pte
-Thread-Index: AcfaQaU3+R2ZqeLNQjGP5Jca2AzHJABMdNyw
-References: <20070809135311.0676a947.kamezawa.hiroyu@jp.fujitsu.com> <20070809135721.08841cd7.kamezawa.hiroyu@jp.fujitsu.com>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: <linux-ia64@vger.kernel.org>, "LKML" <linux-kernel@vger.kernel.org>,
-       <davem@davemloft.net>, <Zoltan.Menyhart@bull.net>,
-       <nickpiggin@yahoo.com.au>
-X-OriginalArrivalTime: 10 Aug 2007 18:17:31.0293 (UTC) FILETIME=[B768A4D0:01C7DB7A]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This version looks really clean.  Thank for keeping working on
-this through 9 versions!
+On Fri, 10 Aug 2007 15:08:35 -0300
+"Glauber de Oliveira Costa" <glommer@gmail.com> wrote:
 
-A couple of small issues.
+> On 8/9/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > > What's the EBDA actually used for?  The only place which seems to use
+> > > ebda_addr is in the e820 code to avoid that area as RAM.
+> >
+> > It belongs to the firmware.
+> 
+> Wouldn't it be better, then, to just skip this step unconditionally if
+> we are running a paravirtualized guest? What do we from doing it?
 
-1) In arch/ia64/mm/init.c: __ia64_sync_icache_dcache()
+An EBDA is an optional BIOS feature so providing you virtualise the
+relevant entry in the zero page (to avoid guest applications trying to
+scan the EBDA for some system tables they may want to use like DMI) as
+a zero entry you can ignore the EBDA.
 
--	if (!pte_exec(pte))
--		return;				/* not an executable page... */
-+	BUG_ON(!pte_exec(pte));
-
-In this latest version the only route to this routine is from set_pte()
-inside the test :
-
-	if (pte_exec(pteval) && ....) {
-	}
-
-So this BUG_ON is now redundant.
-
-2) In include/asm-ia64/pgtable.h
-
-+	if (pte_exec(pteval) &&    // flush only new executable page.
-+	    pte_present(pteval) && // swap out ?
-+	    pte_user(pteval) &&    // ignore kernel page
-+	    (!pte_present(*ptep) ||// do_no_page or swap in, migration,
-+		pte_pfn(*ptep) != pte_pfn(pteval))) // do_wp_page(), page copy
-+		/* load_module() calles flush_icache_range() explicitly*/
-+		__ia64_sync_icache_dcache(pteval);
-
-Just above this there is a comment saying that pte_exec() only works
-when pte_present() is true.  So we must re-order the conditions so that
-we check that the pteval satisfies pte_present() before using either of
-pte_exec() or pte_user() on it like this:
-
-	if (pte_present(pteval) &&
-          pte_exec(pteval) &&
-          pte_user(pteval) &&
-
-I put in some crude counters to see whether we should check pte_exec() or
-pte_user() next ... and it was very clear that the pte_exec() check gets
-us out of the if() faster (at least during a kernel build).
-
-I also compared how often the old code called lazy_mmu_prot_update()
-with how often the new code calls __ia64_sync_icache_dcache() (again
-using kernel build as my workload) ... and the answer is about the
-same (less than 0.2% change ... probably less than run-to-run variation).
-
-
-So now the only remaining task is to convince myself that this
-new version covers all the cases.
-
--Tony
+That probably the right thing to do since the host EBDA won't match the
+guest environment and the guest might migrate anyway
