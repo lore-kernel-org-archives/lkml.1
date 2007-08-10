@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760695AbXHJAez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbXHJAoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760695AbXHJAez (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 20:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbXHJAes
+	id S1758599AbXHJAoK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 20:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbXHJAnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 20:34:48 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:11448 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753873AbXHJAer (ORCPT
+	Thu, 9 Aug 2007 20:43:55 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:59277 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755867AbXHJAny (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 20:34:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=NjISo7NVKYkgc+BfgTaOvIJW4T6/si4fYHn5GSIgeJymLEWJcLtB3s2OgUHiKVuCsZVg3bfu4dB9gQvGibZZlMZAxP9TVqjtMvs4/Xndrw4HKW1/LfpF6VbF2MUl2mIHxgP+3fG81tRagKNqY64z0bQ0i5rGBGO47mQBhh2ftBQ=
-Message-ID: <dc1166600708091734p22612a72g7fcc3e229203918f@mail.gmail.com>
-Date: Fri, 10 Aug 2007 10:34:46 +1000
-From: "Michael Ellerman" <michael@ellerman.id.au>
-To: ljhc@br.ibm.com
-Subject: Re: SLUB doesn't work with kdump kernel on Cell
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Arnd Bergmann" <arndb@arndb.de>, cbe-oss-dev@ozlabs.org
-In-Reply-To: <1186667828.3038.18.camel@localhost.localdomain>
+	Thu, 9 Aug 2007 20:43:54 -0400
+Date: Fri, 10 Aug 2007 02:43:40 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Shannon Nelson <shannon.nelson@intel.com>, linux-kernel@vger.kernel.org,
+       Wolfgang Denk <wd@denx.de>
+Subject: Re: [-mm patch] DMA engine kconfig improvements
+Message-ID: <20070810004340.GC18938@stusta.de>
+References: <20070725040304.111550f4.akpm@linux-foundation.org> <20070726052628.GL3572@stusta.de> <e9c3a7c20708031915y1fee8c62i9da0f42cddbb44dd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <1186604151.3608.46.camel@localhost.localdomain>
-	 <200708082310.59997.arnd@arndb.de>
-	 <1186667828.3038.18.camel@localhost.localdomain>
-X-Google-Sender-Auth: 58ff4a3cc9f5cc0e
+In-Reply-To: <e9c3a7c20708031915y1fee8c62i9da0f42cddbb44dd@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/9/07, Lucio Correia <ljhc@br.ibm.com> wrote:
-> On Wed, 2007-08-08 at 23:10 +0200, Arnd Bergmann wrote:
-> > On Wednesday 08 August 2007, Lucio Correia wrote:
-> > >   DMA             0 ->    12288
-> > >   Normal      12288 ->    12288
-> > > early_node_map[2] active PFN ranges
-> > >     0:        0 ->     2560
-> > >     1:    12287 ->    12288
+On Fri, Aug 03, 2007 at 07:15:31PM -0700, Dan Williams wrote:
+> On 7/25/07, Adrian Bunk <bunk@stusta.de> wrote:
+> > On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
+> > >...
+> > > Changes since 2.6.22-rc6-mm1:
+> > >...
+> > > +dma-arch-fix.patch
+> > >
+> > >  Fix git-dma.patch
+> > >...
 > >
-> > As Christoph found, this memory map is really strange. Other machines
-> > have something like
+> > This results in an ARM-only driver in an X86-only menu...
 > >
-> > Zone PFN ranges:
-> >   DMA             0 ->    16384
-> >   Normal      16384 ->    16384
-> > early_node_map[2] active PFN ranges
-> >     0:        0 ->     8192
-> >     1:     8192 ->    16384
-> >
-> > Lucio,
-> > What code builds the memory map that gets passed to the kdump kernel?
+> > What about the patch below instead that also improves a few other things?
+> I like it, just a few nits:
+> 
+> > -menu "DMA Engine support"
+> > -       depends on HAS_DMA
+> > +menuconfig DMADEVICES
+> > +       bool "DMA Engine support"
+> > +       depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX
+> > +       help
+> > +         Intel(R) DMA engines
+> > +
+> Perhaps we should go ahead and define ARCH_HAS_DMA_OFFLOAD and have
+> DMADEVICES depend on that option.  A ppc32 driver is in the works:
+> http://marc.info/?l=linux-raid&m=117400143317440&w=2
+>...
 
-It comes out of the device tree, just like a regular kernel. The
-device tree for the kdump kernel is built by kexec-tools, it parses
-/proc/device-tree and does a bunch of logic to avoid various reserved
-regions: the kernel, TCE tables, RTAS etc.
+That would be overkill - what my patch does here is just a minor 
+cosmetical thing that could be dropped if it would become a problem.
 
-> I also tried to pass maxcpus=1 for the command line of second kernel,
-> and it didn't work. How can I alternatively disable the node?
+> Regards,
+> Dan (for Shannon while he is on vacation)
 
-maxcpus is poorly tested and is known to be broken on Cell, please
-don't use it, or fix it first :)
+cu
+Adrian
 
-cheers
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
