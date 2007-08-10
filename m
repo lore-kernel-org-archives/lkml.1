@@ -1,267 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761277AbXHJGgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbXHJGsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761277AbXHJGgk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 02:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759299AbXHJGey
+	id S1758203AbXHJGsy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 02:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbXHJGsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 02:34:54 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:53369 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1753805AbXHJGeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 02:34:25 -0400
-Message-ID: <386727660.82703@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070810063419.657077419@mail.ustc.edu.cn>
-References: <20070810063412.238042387@mail.ustc.edu.cn>
-User-Agent: quilt/0.46-1
-Date: Fri, 10 Aug 2007 14:34:15 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Ken Chen <kenchen@google.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org
-Subject: [PATCH 3/4] writeback: function renames and cleanups
-Content-Disposition: inline; filename=fs-writeback-cleanup.patch
+	Fri, 10 Aug 2007 02:48:45 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:46905 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751813AbXHJGso (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 02:48:44 -0400
+Message-ID: <46BC0A34.9050806@linux.vnet.ibm.com>
+Date: Fri, 10 Aug 2007 12:18:20 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: kernel BUG at mm/swap_state.c:78 with the 2.6.23-rc2-mm1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two function renames:
-	- rename redirty_tail() to queue_dirty_inode()
-	- rename requeue_io() to queue_for_more_io()
+Hi,
 
-Also some code cleanups on fs-writeback.c. No behavior changes.
+I got the following kernel Bug  on the 2.6.23-rc2-mm1 kernel on
+a Dual Core AMD Opteron (processor 270),  while testing the  LTP
+runall
 
-Cc: Ken Chen <kenchen@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
----
- fs/fs-writeback.c |  133 ++++++++++++++++++++------------------------
- 1 file changed, 62 insertions(+), 71 deletions(-)
+================================================
+kernel BUG at mm/swap_state.c:78!
 
---- linux-2.6.23-rc1-mm2.orig/fs/fs-writeback.c
-+++ linux-2.6.23-rc1-mm2/fs/fs-writeback.c
-@@ -102,6 +102,55 @@ int sb_has_dirty_inodes(struct super_blo
- }
- EXPORT_SYMBOL(sb_has_dirty_inodes);
- 
-+/*
-+ * Enqueue a newly dirtied inode:
-+ * 	- set its when-it-was dirtied timestamp
-+ * 	- move it to the furthest end of its superblock's dirty-inode list
-+ */
-+static void queue_dirty_inode(struct inode *inode)
-+{
-+	check_dirty_inode(inode);
-+	inode->dirtied_when = jiffies;
-+	list_move(&inode->i_list, &inode->i_sb->s_dirty);
-+	check_dirty_inode(inode);
-+}
-+
-+/*
-+ * Queue an inode for more io in the next full scan of s_io.
-+ */
-+static void queue_for_more_io(struct inode *inode)
-+{
-+	check_dirty_inode(inode);
-+	list_move(&inode->i_list, &inode->i_sb->s_more_io);
-+	check_dirty_inode(inode);
-+}
-+
-+/*
-+ * Queue all possible inodes for a run of io.
-+ * The resulting s_io is in order of:
-+ * 	- inodes queued for more io from s_more_io(once for a full scan of s_io)
-+ * 	- possible remaining inodes in s_io(was a partial scan)
-+ * 	- dirty inodes (old enough) from s_dirty
-+ */
-+static void queue_inodes_for_io(struct super_block *sb,
-+				unsigned long *older_than_this)
-+{
-+	check_dirty_inode_list(sb);
-+	if (list_empty(&sb->s_io))
-+		list_splice_init(&sb->s_more_io, &sb->s_io); /* eldest first */
-+	check_dirty_inode_list(sb);
-+	while (!list_empty(&sb->s_dirty)) {
-+		struct inode *inode = list_entry(sb->s_dirty.prev,
-+						struct inode, i_list);
-+		/* Was this inode dirtied too recently? */
-+		if (older_than_this &&
-+			time_after(inode->dirtied_when, *older_than_this))
-+			break;
-+		list_move(&inode->i_list, &sb->s_io);
-+	}
-+	check_dirty_inode_list(sb);
-+}
-+
- /**
-  *	__mark_inode_dirty -	internal function
-  *	@inode: inode to mark
-@@ -199,12 +248,8 @@ void __mark_inode_dirty(struct inode *in
- 		 * If the inode was already on s_dirty/s_io/s_more_io, don't
- 		 * reposition it (that would break s_dirty time-ordering).
- 		 */
--		if (!was_dirty) {
--			check_dirty_inode(inode);
--			inode->dirtied_when = jiffies;
--			list_move(&inode->i_list, &sb->s_dirty);
--			check_dirty_inode(inode);
--		}
-+		if (!was_dirty)
-+			queue_dirty_inode(inode);
- 	}
- out:
- 	spin_unlock(&inode_lock);
-@@ -219,55 +264,6 @@ static int write_inode(struct inode *ino
- 	return 0;
- }
- 
--/*
-- * Enqueue a newly dirtied inode:
-- * 	- set its when-it-was dirtied timestamp
-- * 	- move it to the furthest end of its superblock's dirty-inode list
-- */
--static void redirty_tail(struct inode *inode)
--{
--	check_dirty_inode(inode);
--	inode->dirtied_when = jiffies;
--	list_move(&inode->i_list, &inode->i_sb->s_dirty);
--	check_dirty_inode(inode);
--}
--
--/*
-- * Queue an inode for more io in the next full scan of s_io.
-- */
--static void requeue_io(struct inode *inode)
--{
--	check_dirty_inode(inode);
--	list_move(&inode->i_list, &inode->i_sb->s_more_io);
--	check_dirty_inode(inode);
--}
--
--/*
-- * Queue all possible inodes for a run of io.
-- * The resulting s_io is in order of:
-- * 	- inodes queued for more io from s_more_io(once for a full scan of s_io)
-- * 	- possible remaining inodes in s_io(was a partial scan)
-- * 	- dirty inodes (old enough) from s_dirty
-- */
--static void queue_inodes_for_io(struct super_block *sb,
--				unsigned long *older_than_this)
--{
--	check_dirty_inode_list(sb);
--	if (list_empty(&sb->s_io))
--		list_splice_init(&sb->s_more_io, &sb->s_io); /* eldest first */
--	check_dirty_inode_list(sb);
--	while (!list_empty(&sb->s_dirty)) {
--		struct inode *inode = list_entry(sb->s_dirty.prev,
--						struct inode, i_list);
--		/* Was this inode dirtied too recently? */
--		if (older_than_this &&
--			time_after(inode->dirtied_when, *older_than_this))
--			break;
--		list_move(&inode->i_list, &sb->s_io);
--	}
--	check_dirty_inode_list(sb);
--}
--
- static void inode_sync_complete(struct inode *inode)
- {
- 	/*
-@@ -329,6 +325,7 @@ __sync_single_inode(struct inode *inode,
- 			 * sometimes bales out without doing anything. Redirty
- 			 * the inode; Move it from s_io onto s_more_io/s_dirty.
- 			 */
-+			inode->i_state |= I_DIRTY_PAGES;
- 			/*
- 			 * akpm: if the caller was the kupdate function we put
- 			 * this inode at the head of s_dirty so it gets first
-@@ -344,8 +341,7 @@ __sync_single_inode(struct inode *inode,
- 				 * to s_more_io so it will get more writeout as
- 				 * soon as the queue becomes uncongested.
- 				 */
--				inode->i_state |= I_DIRTY_PAGES;
--				requeue_io(inode);
-+				queue_for_more_io(inode);
- 			} else {
- 				/*
- 				 * Otherwise fully redirty the inode so that
-@@ -354,15 +350,14 @@ __sync_single_inode(struct inode *inode,
- 				 * file would indefinitely suspend writeout of
- 				 * all the other files.
- 				 */
--				inode->i_state |= I_DIRTY_PAGES;
--				redirty_tail(inode);
-+				queue_dirty_inode(inode);
- 			}
- 		} else if (inode->i_state & I_DIRTY) {
- 			/*
- 			 * Someone redirtied the inode while were writing back
- 			 * the pages.
- 			 */
--			redirty_tail(inode);
-+			queue_dirty_inode(inode);
- 		} else if (atomic_read(&inode->i_count)) {
- 			/*
- 			 * The inode is clean, inuse
-@@ -405,7 +400,7 @@ __writeback_single_inode(struct inode *i
- 		 * on s_io.  We'll have another go at writing back this inode
- 		 * when we completed a full scan of s_io.
- 		 */
--		requeue_io(inode);
-+		queue_for_more_io(inode);
- 
- 		/*
- 		 * Even if we don't actually write the inode itself here,
-@@ -482,7 +477,7 @@ int generic_sync_sb_inodes(struct super_
- 		long pages_skipped;
- 
- 		if (!bdi_cap_writeback_dirty(bdi)) {
--			redirty_tail(inode);
-+			queue_dirty_inode(inode);
- 			if (sb_is_blkdev_sb(sb)) {
- 				/*
- 				 * Dirty memory-backed blockdev: the ramdisk
-@@ -502,14 +497,14 @@ int generic_sync_sb_inodes(struct super_
- 			wbc->encountered_congestion = 1;
- 			if (!sb_is_blkdev_sb(sb))
- 				break;		/* Skip a congested fs */
--			requeue_io(inode);
-+			queue_for_more_io(inode);
- 			continue;		/* Skip a congested blockdev */
- 		}
- 
- 		if (wbc->bdi && bdi != wbc->bdi) {
- 			if (!sb_is_blkdev_sb(sb))
- 				break;		/* fs has the wrong queue */
--			requeue_io(inode);
-+			queue_for_more_io(inode);
- 			continue;		/* blockdev has wrong queue */
- 		}
- 
-@@ -523,12 +518,8 @@ int generic_sync_sb_inodes(struct super_
- 		err = __writeback_single_inode(inode, wbc);
- 		if (!ret)
- 			ret = err;
--		if (wbc->sync_mode == WB_SYNC_HOLD) {
--			check_dirty_inode(inode);
--			inode->dirtied_when = jiffies;
--			list_move(&inode->i_list, &sb->s_dirty);
--			check_dirty_inode(inode);
--		}
-+		if (wbc->sync_mode == WB_SYNC_HOLD)
-+			queue_dirty_inode(inode);
- 		if (current_is_pdflush())
- 			writeback_release(bdi);
- 		if (wbc->pages_skipped != pages_skipped) {
-@@ -536,7 +527,7 @@ int generic_sync_sb_inodes(struct super_
- 			 * writeback is not making progress due to locked
- 			 * buffers.  Skip this inode for now.
- 			 */
--			redirty_tail(inode);
-+			queue_dirty_inode(inode);
- 		}
- 		spin_unlock(&inode_lock);
- 		iput(inode);
+invalid opcode: 0000 [1] SMP
 
--- 
+CPU 0
+
+Modules linked in: ipv6 hidp rfcomm l2cap bluetooth sunrpc battery ac lp 
+parport_pc parport nvram amd_rng rng_core i2c_amd756 i2c_core button
+
+Pid: 262, comm: kprefetchd Not tainted 2.6.23-rc2-mm1-autokern1 #1
+
+RIP: 0010:[<ffffffff8027c443>]  [<ffffffff8027c443>] 
+__add_to_swap_cache+0x12/0xa6
+
+RSP: 0018:ffff81000299bea0  EFLAGS: 00010246
+
+RAX: 0000000000000000 RBX: ffff81003f3baec0 RCX: ffff8100048c33b0
+
+RDX: 00000000000000d0 RSI: 0000000000000001 RDI: 00000000000000d0
+
+RBP: ffff81003f3baec0 R08: ffff810001423f14 R09: 000000000000bb27
+
+R10: 0000000000000000 R11: 0000000000000001 R12: 0000000000000001
+
+R13: 0000000000000002 R14: 0000000000000001 R15: ffff8100048c33b0
+
+FS:  00002b941f4a40f0(0000) GS:ffffffff80670000(0000) knlGS:0000000000000000
+
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+
+CR2: 00000000005b9db0 CR3: 0000000004ed7000 CR4: 00000000000006e0
+
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+
+Process kprefetchd (pid: 262, threadinfo ffff81000299a000, task 
+ffff810001c98040)
+
+Stack:  0000000000000001 ffff81003f3baec0 0000000000000000 ffffffff8027c50d
+
+ 0000000000000002 ffff81003f3baec0 0000000000000000 ffffffff8027f318
+
+ 0000000000000000 0000000000000000 ffff81000299bf20 0000000000000000
+
+Call Trace:
+
+ [<ffffffff8027c50d>] add_to_swap_cache+0x36/0x5f
+
+ [<ffffffff8027f318>] kprefetchd+0x248/0x40c
+
+ [<ffffffff8027f0d0>] kprefetchd+0x0/0x40c
+
+ [<ffffffff80248360>] kthread+0x47/0x73
+
+ [<ffffffff8020ca78>] child_rip+0xa/0x12
+
+ [<ffffffff80248319>] kthread+0x0/0x73
+
+ [<ffffffff8020ca6e>] child_rip+0x0/0x12
+
+
+
+
+
+Code: 0f 0b eb fe 8b 03 66 85 c0 79 04 0f 0b eb fe 8b 03 f6 c4 08
+
+Thanks,
+Kamalesh Babulal.
