@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941153AbXHJQwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941418AbXHJQyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941153AbXHJQwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 12:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933661AbXHJQwG
+	id S941418AbXHJQyw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 12:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936478AbXHJQyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 12:52:06 -0400
-Received: from web36609.mail.mud.yahoo.com ([209.191.85.26]:46846 "HELO
-	web36609.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762484AbXHJQwE (ORCPT
+	Fri, 10 Aug 2007 12:54:43 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:50579 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935832AbXHJQym (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 12:52:04 -0400
-X-YMail-OSG: uYuSMecVM1kqWbM390inIWJxwIyZmXAG3T.70hQ37pFXlrGgX16OEKOgF05PRTEvtlzUtba.bA--
-X-RocketYMMF: rancidfat
-Date: Fri, 10 Aug 2007 09:52:02 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 09/16] CacheFiles: Permit a process's create SID to be overridden [try #3]
-To: David Howells <dhowells@redhat.com>, torvalds@osdl.org, akpm@osdl.org,
-       steved@redhat.com, trond.myklebust@fys.uio.no
-Cc: linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <20070810160543.24698.80481.stgit@warthog.cambridge.redhat.com>
+	Fri, 10 Aug 2007 12:54:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oGXSmPu4xC0sJz2szJvCMcKLNBvI6oEcHe7etQ70aloIIddYTividgmz5rbU7AmpBuq89NM33DQ99fnbps9TWqi5sCl+qoaJrldu2CawvAvAZch+cu56hRLVneyrMfD6k3d9TBUnTsDodB0PXxkEIpoJyOcVbTTZpWMZZAcZzNw=
+Message-ID: <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com>
+Date: Fri, 10 Aug 2007 12:54:41 -0400
+From: "Michael Chang" <thenewme91@gmail.com>
+To: "Roman Zippel" <zippel@linux-m68k.org>
+Subject: Re: CFS review
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andi Kleen" <andi@firstfloor.org>, "Mike Galbraith" <efault@gmx.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0708101459530.1817@scrub.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <236828.6019.qm@web36609.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0708010439050.1817@scrub.home>
+	 <20070801150742.GA23670@elte.hu> <p73ps27npu0.fsf@bingen.suse.de>
+	 <alpine.LFD.0.999.0708010924490.3582@woody.linux-foundation.org>
+	 <20070801175004.GA17936@elte.hu>
+	 <Pine.LNX.4.64.0708011955430.1817@scrub.home>
+	 <20070801190556.GA1199@elte.hu>
+	 <Pine.LNX.4.64.0708100037460.1817@scrub.home>
+	 <20070810054948.GA5908@elte.hu>
+	 <Pine.LNX.4.64.0708101459530.1817@scrub.home>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 8/10/07, Roman Zippel <zippel@linux-m68k.org> wrote:
+> Is there any reason to believe my analysis is wrong?
 
---- David Howells <dhowells@redhat.com> wrote:
+Not yet, but if you give Ingo what he wants (as opposed to what you're
+giving him) it'll be easier for him to answer what's going wrong, and
+perhaps "fix" the problem to boot.
 
-> Make it possible for a process's file creation SID to be temporarily
-> overridden
-> by CacheFiles so that files created in the cache have the right label
-> attached.
+(The scripts gives info about CPU characteristics, interrupts,
+modules, etc. -- you know, all those "unknown" variables.)
 
-I still object to the use of sids in LSM interfaces. I still owe you
-a viable alternative.
+And perhaps a patch to show what parts you commented out, too, so one
+can tell if anything got broken (unintentionally).
 
+-- 
+Michael Chang
 
-Casey Schaufler
-casey@schaufler-ca.com
+Please avoid sending me Word or PowerPoint attachments. Send me ODT,
+RTF, or HTML instead.
+See http://www.gnu.org/philosophy/no-word-attachments.html
+Thank you.
