@@ -1,94 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935454AbXHJMat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936368AbXHJMb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935454AbXHJMat (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 08:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760983AbXHJMai
+	id S936368AbXHJMb2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 08:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757771AbXHJMbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 08:30:38 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:1639 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755588AbXHJMah (ORCPT
+	Fri, 10 Aug 2007 08:31:15 -0400
+Received: from cluster-g.mailcontrol.com ([85.115.41.190]:54470 "EHLO
+	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754671AbXHJMbN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 08:30:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pZRHajDDXCqfZldi1OHVYIy/z7BEmSkI2PjII4LyaFh/2qFPSjhwiPWmisaCYxbuN1tD833hwIw9G4F3O1OfYJMtKKJXhHjIdxmMvj6FXOSuJAFe06OoDXSCXgYWAA1NwTPXixyO4pb2NfIhDoVrHIGt03FtRYpBp/S+ykl14Ns=
-Message-ID: <6bffcb0e0708100530u6087a963re61dddd8f48eb630@mail.gmail.com>
-Date: Fri, 10 Aug 2007 14:30:36 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: Jegadeesh <kovaiteam@gmail.com>
-Subject: Re: Partition information lost on reboot.
-Cc: linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
-       aacraid@adaptec.com
-In-Reply-To: <2e1f41c80708100517y736b8cd7xaebed333a0748a3@mail.gmail.com>
+	Fri, 10 Aug 2007 08:31:13 -0400
+Message-ID: <46BC5A07.80107@csr.com>
+Date: Fri, 10 Aug 2007 13:28:55 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2e1f41c80708100517y736b8cd7xaebed333a0748a3@mail.gmail.com>
+To: linux-kernel@vger.kernel.org
+CC: Pierre Ossman <drzeus-list@drzeus.cx>,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: sdio: add CSR vendor/device IDs
+References: <46BC58E8.50300@csr.com>
+In-Reply-To: <46BC58E8.50300@csr.com>
+Content-Type: multipart/mixed;
+ boundary="------------020808010300000207000701"
+X-OriginalArrivalTime: 10 Aug 2007 12:29:08.0008 (UTC) FILETIME=[0C147A80:01C7DB4A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Adding linux-scsi and Adaptec support to CC]
-
-On 10/08/07, Jegadeesh <kovaiteam@gmail.com> wrote:
-> Hi,
->
-> I have a scsi disk on Adaptec ASC-29320 U320. I have created a linux
-> partition and ext3 filesystem over it.
-> Now the problem is, whenever the machine is rebooted, the partition
-> information to the OS is lost and I get an error saying it as a not valid
-> block device.
-> But fdisk tool shows the partitions, but "cat /proc/partitions" doesnt have
-> this. I need to do a "partprobe" and then have to mount it explicitly.
->
-> What could be causing this problem. Given below are some of the command
-> outputs.
->
-> # uname -a
-> Linux pr.vionline.net 2.6.18-1.2798.fc6 #1 SMP Mon Oct 16 14:37:32 EDT 2006
-> i686 i686 i386 GNU/Linux
->
-> # mount /dev/sda1 /disk1
-> mount: /dev/sda1 is not a valid block device
->
-> # fdisk -l /dev/sda
->
-> Disk /dev/sda: 73.4 GB, 73407900160 bytes
-> 255 heads, 63 sectors/track, 8924 cylinders
-> Units = cylinders of 16065 * 512 = 8225280 bytes
->
-> Device Boot Start End Blocks Id System
-> /dev/sda1 1 7417 59577021 83 Linux
-> /dev/sda2 7418 8924 12104977+ 83 Linux
->
-> # cat /proc/partitions
-> major minor #blocks name
->
-> 3 0 60051600 hda
-> 3 1 409626 hda1
-> 3 2 10482412 hda2
-> 3 3 10482412 hda3
-> 3 4 1 hda4
-> 3 5 10482381 hda5
-> 3 6 2096451 hda6
-> 3 7 2096451 hda7
-> 3 8 2096451 hda8
-> 8 0 71687402 sda
->
-> Thanks
-> -Jag
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-Regards,
-Michal
+This is a multi-part message in MIME format.
+--------------020808010300000207000701
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
 -- 
-LOG
-http://www.stardust.webpages.pl/log/
+David Vrabel, Software Engineer, Drivers group  Tel: +44 (0)1223 692562
+CSR plc, Churchill House, Cambridge Business Park, Cowley Road, CB4 0WZ
+
+
+.
+
+--------------020808010300000207000701
+Content-Type: text/x-patch;
+ name="sdio-csr-ids.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="sdio-csr-ids.patch"
+
+sdio: add CSR vendor/device IDs
+
+Signed-off-by: David Vrabel <david.vrabel@csr.com>
+---
+Index: mmc/include/linux/mmc/sdio_ids.h
+===================================================================
+--- mmc.orig/include/linux/mmc/sdio_ids.h	2007-08-10 01:15:54.000000000 +0100
++++ mmc/include/linux/mmc/sdio_ids.h	2007-08-10 01:16:19.000000000 +0100
+@@ -19,5 +19,13 @@
+ #define SDIO_CLASS_WLAN		0x07	/* WLAN interface */
+ #define SDIO_CLASS_ATA		0x08	/* Embedded SDIO-ATA std interface */
+ 
++/*
++ * Vendor and device IDs.
++ */
++
++#define SDIO_VENDOR_ID_CSR		0x032a
++#define SDIO_DEVICE_ID_CSR_UNIFI_1	0x0001
++#define SDIO_DEVICE_ID_CSR_UNIFI_2	0x0002
++#define SDIO_DEVICE_ID_CSR_BC6		0x0004
+ 
+ #endif
+
+--------------020808010300000207000701--
