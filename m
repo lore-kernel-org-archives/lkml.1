@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbXHJRKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbXHJRL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbXHJRKn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 13:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750996AbXHJRKf
+	id S1757434AbXHJRL2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 13:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbXHJRLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 13:10:35 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59858 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750851AbXHJRKe (ORCPT
+	Fri, 10 Aug 2007 13:11:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50064 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750996AbXHJRLH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 13:10:34 -0400
-Date: Fri, 10 Aug 2007 18:16:32 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alexey Dobriyan <adobriyan@sw.ru>, axboe@kernel.dk
-Subject: Re: [PATCH 08/10] sysctl: Remove broken cdrom binary sysctls
-Message-ID: <20070810181632.3a491575@the-village.bc.nu>
-In-Reply-To: <m17io3z8o2.fsf@ebiederm.dsl.xmission.com>
-References: <20070726164518.GB16937@localhost.sw.ru>
-	<m13azbulhf.fsf@ebiederm.dsl.xmission.com>
-	<20070727145235.GC6924@localhost.sw.ru>
-	<20070806124530.GD6634@localhost.sw.ru>
-	<m1tzr8a3ms.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1wa3kf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcn8a2rq.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1d4xw9psl.fsf_-_@ebiederm.dsl.xmission.com>
-	<m18x8k9ppv.fsf_-_@ebiederm.dsl.xmission.com>
-	<m14pj89pmt.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1zm108axi.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1vebo8avf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1r6mc8at5.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1myx08arh.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ir7o8ap1.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070810143342.173d2637@the-village.bc.nu>
-	<m17io3z8o2.fsf@ebiederm.dsl.xmission.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 10 Aug 2007 13:11:07 -0400
+Date: Fri, 10 Aug 2007 10:10:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: 2.6.23-rc2-mm2
+Message-Id: <20070810101053.dd4aad69.akpm@linux-foundation.org>
+In-Reply-To: <20070810160519.GA27500@elte.hu>
+References: <20070809224254.11f42716.akpm@linux-foundation.org>
+	<46BC7BDA.3000305@googlemail.com>
+	<6bffcb0e0708100805i417834e5t87a1ebf122c1e264@mail.gmail.com>
+	<m11webz8dx.fsf@ebiederm.dsl.xmission.com>
+	<20070810160519.GA27500@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In that code we could just do a test on valp (i.e. data in struct
-> ctl_table).
+On Fri, 10 Aug 2007 18:05:19 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-Or you could pass the struct pointer and subtract the array start
+> > Yes.  For the sched debug case I sent Ingo and friends but apparently 
+> > other changes in Ingos tree kept it from applying and Andrew dropped 
+> > it.
 
-> I just wanted something stupid and simple, so the -mm tree would not
-> be full of broken sysctls.
+No, I know nothing about such a patch.
 
-Well I'd like you to not replace one pile of hard to clean up but easy to
-locate crap by smearing other hard to fix in one go crap over the kernel.
+>  So instead the code now screams at you and refuses to register 
+> > Ingo sysctl table.
 > 
-> At least to my eyes the code doesn't look much worse.  But if you
-> want to do something better feel free.
+> the commit below is now upstream
 
-I'll add it to my todo list. But in the meantime I still NAK the change.
-I'll try and get a patch sorted but it'll be after the kernel summit for
-sure.
+and it's in rc2-mm2.
+
+> - is your patch still needed?
+
+Something's needed ;)
