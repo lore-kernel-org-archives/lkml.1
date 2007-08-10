@@ -1,117 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbXHJSGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934152AbXHJSIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762801AbXHJSGv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 14:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbXHJSGm
+	id S934152AbXHJSIr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 14:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbXHJSIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 14:06:42 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47840 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751851AbXHJSGk (ORCPT
+	Fri, 10 Aug 2007 14:08:38 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:27879 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752697AbXHJSIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 14:06:40 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Pavel Emelyanov <xemul@openvz.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, devel@openvz.org
-Subject: Re: [PATCH] Make access to task's nsproxy liter
-References: <46BAE3A3.7030608@openvz.org>
-	<20070810134003.GA22368@sergelap.austin.ibm.com>
-	<20070810140545.GA74@tv-sign.ru> <46BC7FAC.2080208@openvz.org>
-	<20070810164546.GA273@tv-sign.ru>
-Date: Fri, 10 Aug 2007 12:03:19 -0600
-In-Reply-To: <20070810164546.GA273@tv-sign.ru> (Oleg Nesterov's message of
-	"Fri, 10 Aug 2007 20:45:46 +0400")
-Message-ID: <m13ayrxo60.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 10 Aug 2007 14:08:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cBUsCUKx4oM9K3vdYyegrrPVFGGZC9CBzKG5/gd7Km0loZS/x4tR8XpeVShqn+h93hsTwDUrdV6aKClhFeb5dclvyj7ZFWAAjwZygMIjnGhTec+eR7bc3WTAzXuPRqWayMHXuo/OJii4wz7zdHwd4gO+L1l6toj26IL99g8MLNs=
+Message-ID: <5d6222a80708101108y62ebfa26n9f47bfc52b48f4a8@mail.gmail.com>
+Date: Fri, 10 Aug 2007 15:08:35 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 23/25] [PATCH] paravirt hooks for arch initialization
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>, lguest@ozlabs.org,
+       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
+       anthony@codemonkey.ws, Steven@smtp2.linux-foundation.org,
+       akpm@linux-foundation.org,
+       "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       virtualization@lists.linux-foundation.org, mingo@elte.hu
+In-Reply-To: <20070809190303.214e5457@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11865467522495-git-send-email-gcosta@redhat.com>
+	 <11865468394005-git-send-email-gcosta@redhat.com>
+	 <11865468431616-git-send-email-gcosta@redhat.com>
+	 <200708081144.04119.ak@suse.de> <46BB5258.8040609@goop.org>
+	 <20070809190303.214e5457@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
-
-> On 08/10, Pavel Emelyanov wrote:
->>
->> Oleg Nesterov wrote:
->> >On 08/10, Serge E. Hallyn wrote:
->> >>Quoting Pavel Emelyanov (xemul@openvz.org):
->> >>>+/*
->> >>>+ * the namespaces access rules are:
->> >>>+ *
->> >>>+ *  1. only current task is allowed to change tsk->nsproxy pointer or
->> >>>+ *     any pointer on the nsproxy itself
->> >>>+ *
->> >>>+ *  2. when accessing (i.e. reading) current task's namespaces - no
->> >>>+ *     precautions should be taken - just dereference the pointers
->> >>>+ *
->> >>>+ *  3. the access to other task namespaces is performed like this
->> >>>+ *     rcu_read_lock();
->> >>>+ *     nsproxy = task_nsproxy(tsk);
->> >>>+ *     if (nsproxy != NULL) {
->> >>>+ *             / *
->> >>>+ *               * work with the namespaces here
->> >>>+ *               * e.g. get the reference on one of them
->> >>>+ *               * /
->> >>>+ *     } / *
->> >>>+ *         * NULL task_nsproxy() means that this task is
->> >>>+ *         * almost dead (zombie)
->> >>>+ *         * /
->> >>>+ *     rcu_read_unlock();
->> >>And lastly, I guess that the caller to switch_task_namespaces() has
->> >>to ensure that new_nsproxy either (1) is the init namespace, (2) is a
->> >>brand-new namespace to which noone else has a reference, or (3) the
->> >>caller has to hold a reference to the new_nsproxy across the call to
->> >>switch_task_namespaces().
->> >>
->> >>As it happens the current calls fit (1) or (2).  Again if we happen to
->> >>jump into the game of switching a task into another task's nsproxy,
->> >>we'll need to be mindful of (3) so that new_nsproxy can't be tossed into
->> >>the bin between
->> >>
->> >>	if (new)
->> >>		get_nsproxy(new);
->> >
->> >4) Unless tsk == current, get_task_namespaces(tsk) and get_nsproxy(tsk)
->> >   are racy even if done under rcu_read_lock().
->> 
->> Yup :)
->> 
->> It is already written in comment that only the current is allowed
->> to change its nsproxy. I.e. when switch_task_nsproxy() is called
->> for tsk other than current it's a BUG
+On 8/9/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > What's the EBDA actually used for?  The only place which seems to use
+> > ebda_addr is in the e820 code to avoid that area as RAM.
 >
-> Yes, but what I meant is that this code
->
->         rcu_read_lock();
->         nsproxy = task_nsproxy(tsk);
->         if (nsproxy != NULL)
->                 get_nsproxy(nsproxy);
->         rcu_read_unlock();
->
-> 	if (nsproxy) {
-> 		use_it(nsproxy);
-> 		put_nsproxy(nsproxy);
-> 	}
->
-> is not safe despite the fact we are _not_ changing tsk->nsproxy.
->
-> The patch itself is correct because we don't do that, and the comment
-> is right. Just it is not immediately obvious.
+> It belongs to the firmware.
 
-Ugh.  That is nasty, non obvious and almost a problem.  I don't want
-to do get_net(nsproxy->net_ns) from another task so I can migrate
-network between namespaces.
+Wouldn't it be better, then, to just skip this step unconditionally if
+we are running a paravirtualized guest? What do we from doing it?
 
-But thinking about it because we don't do the other decrements
-until later we can still increment the counts on the individual
-namespaces.  We just can't share nsproxy.
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
 
-So if you did want to do an enter thing you could copy the
-nsproxy object of a task under the rcu_read_lock(), and
-you would be fine.
-
-Eric
+"The less confident you are, the more serious you have to act."
