@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934562AbXHJWkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932543AbXHJWoD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934562AbXHJWkj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 18:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757145AbXHJWkR
+	id S932543AbXHJWoD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 18:44:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbXHJWnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 18:40:17 -0400
-Received: from ns2.lanforge.com ([66.165.47.211]:50560 "EHLO ns2.lanforge.com"
+	Fri, 10 Aug 2007 18:43:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40853 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759088AbXHJWkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 18:40:15 -0400
-Message-ID: <46BCE942.1030107@candelatech.com>
-Date: Fri, 10 Aug 2007 15:40:02 -0700
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	id S1752571AbXHJWnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 18:43:45 -0400
+Message-ID: <46BCE9F8.4060009@redhat.com>
+Date: Fri, 10 Aug 2007 18:43:04 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: jeff@garzik.org, auke-jan.h.kok@intel.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] Add ETHTOOL_[GS]FLAGS sub-ioctls
-References: <20070810202426.GA25050@havoc.gtf.org>	<46BCD263.6050807@garzik.org>	<46BCD47C.9060408@candelatech.com> <20070810.151039.31642625.davem@davemloft.net>
-In-Reply-To: <20070810.151039.31642625.davem@davemloft.net>
+To: "Luck, Tony" <tony.luck@intel.com>
+CC: Andreas Schwab <schwab@suse.de>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com
+Subject: Re: [PATCH 9/24] make atomic_read() behave consistently on ia64
+References: <20070809135107.GA15985@shell.boston.redhat.com><617E1C2C70743745A92448908E030B2A02213B3C@scsmsx411.amr.corp.intel.com><46BCC1AF.5050204@redhat.com><617E1C2C70743745A92448908E030B2A0224C777@scsmsx411.amr.corp.intel.com> <jewsw3oyl8.fsf@sykes.suse.de> <617E1C2C70743745A92448908E030B2A0224C88B@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <617E1C2C70743745A92448908E030B2A0224C88B@scsmsx411.amr.corp.intel.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Ben Greear <greearb@candelatech.com>
-
->> I believe LRO is going to have to be disabled for routing/bridging,
->> so the stack will probably need to become aware of it at some point...
+Luck, Tony wrote:
+>> Use atomic64_read to read an atomic64_t.
 > 
-> The packet will be GSO'd on output I believe, so it won't
-> break anything.
+> Thanks Andreas!
 > 
-> Alternatively, we could make the driver only LRO accumulate if the
-> packet is unicast and matches one of the MAC's programmed into the
-> chip.
+> Chris: This bug is why the 8-byte loads got changed to 4-byte + sign-extend
+> by your change to atomic_read().
 
-I think even this would fail if you are doing something clever with
-NAT or other iptables stuff.  Probably we're going to have to put this
-in the hands of the users..who hopefully can determine whether they
-can allow LRO or not...
+I figured as much.  Thanks for confirming this.
 
-For GSO on output, is there a generic fallback for any driver that
-does not specifically implement GSO?
+> With this applied together with shuffling the volatile from the
+> declaration to the usage (in both atomic_read() and atomic_set()
+> the generated code *almost* reverts to the original.
+> 
+> There are some differences where ld4 have turned into ld8 though.
+> Are these bugs in the use of atomic_add() and atomic_sub().  E.g.
+> the first of these changes is in: ipc/msg.c:freeque() where we have:
+> 
+> 	atomic_sub(msg->q_cbytes, &msg_bytes);
+> 
+> Now the type of msg->q_cbytes is "unsigned long" ... so it seems a
+> poor idea to subtract such a large typed object from "msg_bytes"
+> which is a mere slip of an atomic_t.
+> 
+> Or is there some other type-wrangling that needs to happen in
+> include/asm-ia64/atomic.h?  There are a total of nineteen of
+> these ld4->ld8 transforms.
 
-Thanks,
-Ben
+Possibly.  Either that or we've uncovered some latent bugs.  Maybe a 
+combination of the two.  Can you list those 19 changes so we can 
+evaluate them?  I'm told there were some *(volatile *) bugs fixed in gcc 
+recently, so it's also possible your 3.4.6 is showing those.  I can test 
+that on a more recent gcc on ia64 if it's inconvenient for you to do so 
+on your test box.
 
--- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
-
+	-- Chris
