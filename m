@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940421AbXHJTCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940989AbXHJTDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940421AbXHJTCa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 15:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbXHJTCX
+	id S940989AbXHJTDt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 15:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765848AbXHJTDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 15:02:23 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43087 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753790AbXHJTCW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 15:02:22 -0400
-Date: Fri, 10 Aug 2007 12:02:21 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: Mel Gorman <mel@skynet.ie>, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones
- pointer
-In-Reply-To: <200708102013.49170.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0708101201240.17549@schroedinger.engr.sgi.com>
-References: <20070809210616.14702.73376.sendpatchset@skynet.skynet.ie>
- <20070810104749.GA14300@skynet.ie> <Pine.LNX.4.64.0708101035020.12758@schroedinger.engr.sgi.com>
- <200708102013.49170.ak@suse.de>
+	Fri, 10 Aug 2007 15:03:42 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:58312 "EHLO smtp2.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755702AbXHJTDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 15:03:40 -0400
+Date: Fri, 10 Aug 2007 22:03:38 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
+In-Reply-To: <200708082210.25836.rjw@sisk.pl>
+Message-ID: <Pine.SOC.4.64.0708102202400.13577@math.ut.ee>
+References: <46B9F664.9060600@googlemail.com> <46B9F983.9020700@googlemail.com>
+ <200708082210.25836.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007, Andi Kleen wrote:
-
+> > Power management
+> > 
+> > Subject         : Kconfig: 'SUSPEND_SMP' refers to undefined symbol 'HOTPLUG_CPU'
+> > References      : http://lkml.org/lkml/2007/8/4/39
+> > Last known good : ?
+> > Submitter       : Meelis Roos <mroos@linux.ee>
+> > Caused-By       : ?
+> > Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+> > Status          : unknown
 > 
-> > x86_64 does not support ZONE_HIGHMEM.
-> 
-> I also plan to eliminate ZONE_DMA soon (and replace all its users
-> with a new allocator that sits outside the normal fallback lists) 
+> I can't reproduce this with my cross compilation toolchain for PPC.
 
-Hallelujah. You are my hero! x86_64 will switch off CONFIG_ZONE_DMA?
+Still present with todays git and make oldconfig, on native powerpc with 
+Debian unstable.
 
-
+-- 
+Meelis Roos (mroos@linux.ee)
