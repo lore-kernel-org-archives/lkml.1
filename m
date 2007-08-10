@@ -1,225 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941332AbXHJVCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937457AbXHJVCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941332AbXHJVCS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 17:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbXHJVB6
+	id S937457AbXHJVCt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 17:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbXHJVCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 17:01:58 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52134 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754778AbXHJVB4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 17:01:56 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       coreteam@netfilter.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 2/7] sysctl: parport remove binary paths.
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-	<46BC8F71.3070006@googlemail.com> <46BC944F.9020801@googlemail.com>
-	<m1fy2rxpje.fsf@ebiederm.dsl.xmission.com>
-	<20070810124156.2de9710e.akpm@linux-foundation.org>
-	<m1ps1vw1ey.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Fri, 10 Aug 2007 15:01:39 -0600
-In-Reply-To: <m1ps1vw1ey.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Fri, 10 Aug 2007 15:00:05 -0600")
-Message-ID: <m1lkcjw1cc.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 10 Aug 2007 17:02:32 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49703 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753446AbXHJVCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 17:02:30 -0400
+Message-ID: <46BCD263.6050807@garzik.org>
+Date: Fri, 10 Aug 2007 17:02:27 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Auke Kok <auke-jan.h.kok@intel.com>, netdev@vger.kernel.org
+CC: davem@davemloft.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/4] Add ETHTOOL_[GS]FLAGS sub-ioctls
+References: <20070810202426.GA25050@havoc.gtf.org>
+In-Reply-To: <20070810202426.GA25050@havoc.gtf.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff Garzik wrote:
+> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+> index 4a616d7..559a4dc 100644
+> --- a/include/linux/netdevice.h
+> +++ b/include/linux/netdevice.h
+> @@ -341,6 +341,7 @@ struct net_device
+>  #define NETIF_F_GSO		2048	/* Enable software GSO. */
+>  #define NETIF_F_LLTX		4096	/* LockLess TX */
+>  #define NETIF_F_MULTI_QUEUE	16384	/* Has multiple TX/RX queues */
+> +#define NETIF_F_LRO		32768	/* large receive offload */
+>  
+>  	/* Segmentation offload features */
+>  #define NETIF_F_GSO_SHIFT	16
+> diff --git a/net/core/ethtool.c b/net/core/ethtool.c
+> index 2ab0a60..6e8563e 100644
+> --- a/net/core/ethtool.c
+> +++ b/net/core/ethtool.c
+> @@ -109,6 +109,32 @@ int ethtool_op_set_ufo(struct net_device *dev, u32 data)
+>  	return 0;
+>  }
+>  
+> +/* the following list of flags are the same as their associated
+> + * NETIF_F_xxx values in include/linux/netdevice.h
+> + */
+> +static const u32 flags_dup_features =
+> +	ETH_FLAG_LRO;
+> +
+> +u32 ethtool_op_get_flags(struct net_device *dev)
+> +{
+> +	/* in the future, this function will probably contain additional
+> +	 * handling for flags which are not so easily handled
+> +	 * by a simple masking operation
+> +	 */
+> +	
+> +	return dev->features & flags_dup_features;
+> +}
+> +
+> +int ethtool_op_set_flags(struct net_device *dev, u32 data)
+> +{
+> +	if (data & ETH_FLAG_LRO)
+> +		dev->features |= NETIF_F_LRO;
+> +	else
+> +		dev->features &= ~NETIF_F_LRO;
+> +
 
-The sysctl binary paths don't look as if they even code work,
-.data is not filled in, and all of the proc_handlers look at
-extra1 and there is not strategy routine.
+And, a side discussion:
 
-So just kill the binary paths.
+This patch copies Auke in adding NETIF_F_LRO.  Is that just for 
+temporary merging, or does the net core really not touch it at all?
 
-In addition this patch removes the setting of extra1
-on directories.  It doesn't look like the parport code
-ever examines it, and it's bad sysctl form.
+Because, logically, if NETIF_F_LRO exists nowhere else but this patch, 
+we should not add it to dev->features.  LRO knowledge can be contained 
+entirely within the driver, if the net core never tests NETIF_F_LRO.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- drivers/parport/procfs.c |   38 +++++---------------------------------
- 1 files changed, 5 insertions(+), 33 deletions(-)
+I haven't reviewed the other NETIF_F_XXX flags, but, that logic can be 
+applied to any other NETIF_F_XXX flag:  if the net stack isn't using it, 
+it's a piece of information specific to that driver.
 
-diff --git a/drivers/parport/procfs.c b/drivers/parport/procfs.c
-index bdbdab9..ed82e41 100644
---- a/drivers/parport/procfs.c
-+++ b/drivers/parport/procfs.c
-@@ -237,7 +237,7 @@ static int do_hardware_modes (ctl_table *table, int write,
- #define PARPORT_PARPORT_DIR(CHILD) { .ctl_name = DEV_PARPORT, .procname = "parport", \
-                                      .mode = 0555, .child = CHILD }
- #define PARPORT_DEV_DIR(CHILD) { .ctl_name = CTL_DEV, .procname = "dev", .mode = 0555, .child = CHILD }
--#define PARPORT_DEVICES_ROOT_DIR  { .ctl_name = DEV_PARPORT_DEVICES, .procname = "devices", \
-+#define PARPORT_DEVICES_ROOT_DIR  {  .procname = "devices", \
-                                     .mode = 0555, .child = NULL }
- 
- static const unsigned long parport_min_timeslice_value =
-@@ -266,7 +266,6 @@ static const struct parport_sysctl_table parport_sysctl_template = {
- 	.sysctl_header = NULL,
-         {
- 		{
--			.ctl_name	= DEV_PARPORT_SPINTIME,
- 			.procname	= "spintime",
- 			.data		= NULL,
- 			.maxlen		= sizeof(int),
-@@ -276,7 +275,6 @@ static const struct parport_sysctl_table parport_sysctl_template = {
- 			.extra2		= (void*) &parport_max_spintime_value
- 		},
- 		{
--			.ctl_name	= DEV_PARPORT_BASE_ADDR,
- 			.procname	= "base-addr",
- 			.data		= NULL,
- 			.maxlen		= 0,
-@@ -284,7 +282,6 @@ static const struct parport_sysctl_table parport_sysctl_template = {
- 			.proc_handler	= &do_hardware_base_addr
- 		},
- 		{
--			.ctl_name	= DEV_PARPORT_IRQ,
- 			.procname	= "irq",
- 			.data		= NULL,
- 			.maxlen		= 0,
-@@ -292,7 +289,6 @@ static const struct parport_sysctl_table parport_sysctl_template = {
- 			.proc_handler	= &do_hardware_irq
- 		},
- 		{
--			.ctl_name	= DEV_PARPORT_DMA,
- 			.procname	= "dma",
- 			.data		= NULL,
- 			.maxlen		= 0,
-@@ -300,7 +296,6 @@ static const struct parport_sysctl_table parport_sysctl_template = {
- 			.proc_handler	= &do_hardware_dma
- 		},
- 		{
--			.ctl_name	= DEV_PARPORT_MODES,
- 			.procname	= "modes",
- 			.data		= NULL,
- 			.maxlen		= 0,
-@@ -310,7 +305,6 @@ static const struct parport_sysctl_table parport_sysctl_template = {
- 		PARPORT_DEVICES_ROOT_DIR,
- #ifdef CONFIG_PARPORT_1284
- 		{
--			.ctl_name	= DEV_PARPORT_AUTOPROBE,
- 			.procname	= "autoprobe",
- 			.data		= NULL,
- 			.maxlen		= 0,
-@@ -318,7 +312,6 @@ static const struct parport_sysctl_table parport_sysctl_template = {
- 			.proc_handler	= &do_autoprobe
- 		},
- 		{
--			.ctl_name	= DEV_PARPORT_AUTOPROBE + 1,
- 			.procname	= "autoprobe0",
- 			.data		= NULL,
- 			.maxlen		= 0,
-@@ -326,7 +319,6 @@ static const struct parport_sysctl_table parport_sysctl_template = {
- 			.proc_handler	=  &do_autoprobe
- 		},
- 		{
--			.ctl_name	= DEV_PARPORT_AUTOPROBE + 2,
- 			.procname	= "autoprobe1",
- 			.data		= NULL,
- 			.maxlen		= 0,
-@@ -334,7 +326,6 @@ static const struct parport_sysctl_table parport_sysctl_template = {
- 			.proc_handler	= &do_autoprobe
- 		},
- 		{
--			.ctl_name	= DEV_PARPORT_AUTOPROBE + 3,
- 			.procname	= "autoprobe2",
- 			.data		= NULL,
- 			.maxlen		= 0,
-@@ -342,7 +333,6 @@ static const struct parport_sysctl_table parport_sysctl_template = {
- 			.proc_handler	= &do_autoprobe
- 		},
- 		{
--			.ctl_name	= DEV_PARPORT_AUTOPROBE + 4,
- 			.procname	= "autoprobe3",
- 			.data		= NULL,
- 			.maxlen		= 0,
-@@ -354,7 +344,6 @@ static const struct parport_sysctl_table parport_sysctl_template = {
- 	},
- 	{
- 		{
--			.ctl_name	= DEV_PARPORT_DEVICES_ACTIVE,
- 			.procname	= "active",
- 			.data		= NULL,
- 			.maxlen		= 0,
-@@ -393,7 +382,6 @@ parport_device_sysctl_template = {
- 	.sysctl_header = NULL,
- 	{
- 		{
--			.ctl_name 	= DEV_PARPORT_DEVICE_TIMESLICE,
- 			.procname 	= "timeslice",
- 			.data		= NULL,
- 			.maxlen		= sizeof(int),
-@@ -449,7 +437,6 @@ parport_default_sysctl_table = {
- 	.sysctl_header	= NULL,
- 	{
- 		{
--			.ctl_name	= DEV_PARPORT_DEFAULT_TIMESLICE,
- 			.procname	= "timeslice",
- 			.data		= &parport_default_timeslice,
- 			.maxlen		= sizeof(parport_default_timeslice),
-@@ -459,7 +446,6 @@ parport_default_sysctl_table = {
- 			.extra2		= (void*) &parport_max_timeslice_value
- 		},
- 		{
--			.ctl_name	= DEV_PARPORT_DEFAULT_SPINTIME,
- 			.procname	= "spintime",
- 			.data		= &parport_default_spintime,
- 			.maxlen		= sizeof(parport_default_spintime),
-@@ -502,7 +488,7 @@ int parport_proc_register(struct parport *port)
- 
- 	t->device_dir[0].extra1 = port;
- 
--	for (i = 0; i < 8; i++)
-+	for (i = 0; i < 5; i++)
- 		t->vars[i].extra1 = port;
- 
- 	t->vars[0].data = &port->spintime;
-@@ -512,7 +498,7 @@ int parport_proc_register(struct parport *port)
- 		t->vars[6 + i].extra2 = &port->probe_info[i];
- 
- 	t->port_dir[0].procname = port->name;
--	t->port_dir[0].ctl_name = port->number + 1; /* nb 0 isn't legal here */
-+	t->port_dir[0].ctl_name = 0;
- 
- 	t->port_dir[0].child = t->vars;
- 	t->parport_dir[0].child = t->port_dir;
-@@ -551,26 +537,12 @@ int parport_device_proc_register(struct pardevice *device)
- 	t->dev_dir[0].child = t->parport_dir;
- 	t->parport_dir[0].child = t->port_dir;
- 	t->port_dir[0].procname = port->name;
--	t->port_dir[0].ctl_name = port->number + 1; /* nb 0 isn't legal here */
-+	t->port_dir[0].ctl_name = 0;
- 	t->port_dir[0].child = t->devices_root_dir;
- 	t->devices_root_dir[0].child = t->device_dir;
- 
--#ifdef CONFIG_PARPORT_1284
--
--	t->device_dir[0].ctl_name =
--		parport_device_num(port->number, port->muxport,
--				   device->daisy)
--		+ 1;  /* nb 0 isn't legal here */ 
--
--#else /* No IEEE 1284 support */
--
--	/* parport_device_num isn't available. */
--	t->device_dir[0].ctl_name = 1;
--	
--#endif /* IEEE 1284 support or not */
--
-+	t->device_dir[0].ctl_name = 0;
- 	t->device_dir[0].procname = device->name;
--	t->device_dir[0].extra1 = device;
- 	t->device_dir[0].child = t->vars;
- 	t->vars[0].data = &device->timeslice;
- 
--- 
-1.5.1.1.181.g2de0
+	Jeff
+
 
