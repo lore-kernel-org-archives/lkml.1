@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941647AbXHJTvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941686AbXHJTwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941647AbXHJTvE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 15:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938121AbXHJTuu
+	id S941686AbXHJTwL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 15:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938132AbXHJTvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 15:50:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51856 "EHLO ogre.sisk.pl"
+	Fri, 10 Aug 2007 15:51:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45911 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938330AbXHJTut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 15:50:49 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arkadiusz Miskiewicz <arekm@maven.pl>
-Subject: Re: resume from ram much slower
-Date: Fri, 10 Aug 2007 22:00:10 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200708101848.37222.arekm@maven.pl>
-In-Reply-To: <200708101848.37222.arekm@maven.pl>
+	id S937912AbXHJTvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 15:51:48 -0400
+Message-ID: <46BCC1AF.5050204@redhat.com>
+Date: Fri, 10 Aug 2007 15:51:11 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: "Luck, Tony" <tony.luck@intel.com>
+CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
+Subject: Re: [PATCH 9/24] make atomic_read() behave consistently on ia64
+References: <20070809135107.GA15985@shell.boston.redhat.com> <617E1C2C70743745A92448908E030B2A02213B3C@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <617E1C2C70743745A92448908E030B2A02213B3C@scsmsx411.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708102200.10840.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 10 August 2007 18:48, Arkadiusz Miskiewicz wrote:
-> Hi,
+Luck, Tony wrote:
+>> +#define atomic_read(v)		(*(volatile __s32 *)&(v)->counter)
+>> +#define atomic64_read(v)	(*(volatile __s64 *)&(v)->counter)
+>>
+>>  #define atomic_set(v,i)		(((v)->counter) = (i))
+>>  #define atomic64_set(v,i)	(((v)->counter) = (i))
 > 
-> Starting 1-2 weeks ago I have very long resume from
-> ram times. It takes more than 1 min to resume. Does anyone see such behaviour?
 > 
-> Kernel from yesterday git, thinkpad z60m, suspend.sf.net tools 20070801
+> Losing the volatile from the "set" variants definitely changes
+> the code generated.  Before the patch gcc would give us:
 > 
-> "ACPI handle has no context!" are interesting btw.
+> 	st4.rel [r37]=r9
+> 
+> after
+> 	st4 [r37]=r9
+> 
+> It is unclear whether anyone relies on (or even whether they should
+> rely on) the release semantics that are provided by the current
+> version of atomic.h.  But making this change would require an
+> audit of all the uses of atomic_set() to find an answer.
+> 
+> There is a more worrying difference in the generated code (this
+> from the ancient and venerable gcc 3.4.6 that is on my build
+> machine).   In rwsem_down_failed_common I see this change (after
+> disassembling vmlinux, I used sed to zap the low 32-bits of addresses
+> to make the diff manageable ... that's why the addresses all end
+> in xxxxxxxx):
+> 
+> 712868,712873c712913,712921
+> < a0000001xxxxxxxx:                 adds r16=-1,r30
+> < a0000001xxxxxxxx:     [MII]       ld8.acq r33=[r32]
+> < a0000001xxxxxxxx:                 nop.i 0x0;;
+> < a0000001xxxxxxxx:                 add r42=r33,r16
+> < a0000001xxxxxxxx:     [MMI]       mov.m ar.ccv=r33;;
+> < a0000001xxxxxxxx:                 cmpxchg8.acq r34=[r32],r42,ar.ccv
+> ---
+>> a0000001xxxxxxxx:                 adds r16=-1,r31
+>> a0000001xxxxxxxx:     [MMI]       ld4.acq r14=[r32];;
+>> a0000001xxxxxxxx:                 nop.m 0x0
+>> a0000001xxxxxxxx:                 sxt4 r34=r14
+>> a0000001xxxxxxxx:     [MMI]       nop.m 0x0;;
+>> a0000001xxxxxxxx:                 nop.m 0x0
+>> a0000001xxxxxxxx:                 add r15=r34,r16
+>> a0000001xxxxxxxx:     [MMI]       mov.m ar.ccv=r34;;
+>> a0000001xxxxxxxx:                 cmpxchg8.acq r42=[r32],r15,ar.ccv
+> 
+> This code is probably from the rwsem_atomic_update(adjustment, sem) macro
+> which is cpp'd to atomic64_add_return().  It looks really bad that the new
+> code reads a 32-bit value and sign extends it rather than reading a 64-bit
+> value (but I'm perplexed as to why this patch provoked this change in the
+> generated code).
+> 
+> -Tony
 
-Let's try to find out something.
+That's distressing.  I'm about to resubmit with a volatile cast in 
+atomic_set as well, since people expect that behavior and I've been 
+shown a legitimate case where it could matter.  Does the assembly look 
+right with that cast in atomic_set() as well?
 
-Please apply the patch below and see if anything changes.
-
-Greetings,
-Rafael
-
-
----
- drivers/pnp/pnpacpi/core.c |   20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
-
-Index: linux-2.6.23-rc2/drivers/pnp/pnpacpi/core.c
-===================================================================
---- linux-2.6.23-rc2.orig/drivers/pnp/pnpacpi/core.c
-+++ linux-2.6.23-rc2/drivers/pnp/pnpacpi/core.c
-@@ -130,11 +130,21 @@ static int pnpacpi_disable_resources(str
- #ifdef CONFIG_ACPI_SLEEP
- static int pnpacpi_suspend(struct pnp_dev *dev, pm_message_t state)
- {
--	return acpi_bus_set_power((acpi_handle) dev->data,
--				  acpi_pm_device_sleep_state(&dev->dev,
--							     device_may_wakeup
--							     (&dev->dev),
--							     NULL));
-+	int power_state;
-+
-+	power_state = acpi_pm_device_sleep_state(&dev->dev,
-+						device_may_wakeup(&dev->dev),
-+						NULL);
-+
-+	if (power_state < 0) {
-+		printk(KERN_ERR
-+			"%s: Could not choose power state for device!\n",
-+			dev->name);
-+		power_state = (state.event == PM_EVENT_ON) ?
-+				ACPI_STATE_D0 : ACPI_STATE_D3;
-+	}
-+
-+	return acpi_bus_set_power((acpi_handle) dev->data, power_state);
- }
- 
- static int pnpacpi_resume(struct pnp_dev *dev)
-
-
+	-- Chris
