@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932319AbXHJRqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938839AbXHJRsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932319AbXHJRqm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 13:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbXHJRqe
+	id S938839AbXHJRsH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 13:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbXHJRry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 13:46:34 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36812 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754445AbXHJRqd (ORCPT
+	Fri, 10 Aug 2007 13:47:54 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:22691 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753381AbXHJRrx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 13:46:33 -0400
-Date: Fri, 10 Aug 2007 10:46:30 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Daniel Phillips <daniel.raymond.phillips@gmail.com>
-cc: Daniel Phillips <phillips@phunq.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>
-Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
-In-Reply-To: <4a5909270708100115v4ad10c4es697d216edf29b07d@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0708101041040.12758@schroedinger.engr.sgi.com>
-References: <20070806102922.907530000@chello.nl> 
- <Pine.LNX.4.64.0708071513290.3683@schroedinger.engr.sgi.com> 
- <4a5909270708080037n32be2a73k5c28d33bb02f770b@mail.gmail.com> 
- <Pine.LNX.4.64.0708081106230.12652@schroedinger.engr.sgi.com> 
- <4a5909270708091141tb259eddyb2bba1270751ef1@mail.gmail.com> 
- <Pine.LNX.4.64.0708091146410.25220@schroedinger.engr.sgi.com> 
- <4a5909270708091717n2f93fcb5i284d82edfd235145@mail.gmail.com> 
- <Pine.LNX.4.64.0708091844450.3185@schroedinger.engr.sgi.com> 
- <4a5909270708092034yaa0a583w70084ef93266df48@mail.gmail.com> 
- <Pine.LNX.4.64.0708092045120.27164@schroedinger.engr.sgi.com>
- <4a5909270708100115v4ad10c4es697d216edf29b07d@mail.gmail.com>
+	Fri, 10 Aug 2007 13:47:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=S92toFE0Q0JOJQbRdnF4UQriKBmpXr/y5T9Yg2WjUil6G04pq0bKjKAAY47uJvrdktqq+CJgZkn7pzTwjm0zURhYq1niSpSVw6tYk1a6oeePHiX8zvBksPsf5HiGBmiu6+VVJYuTg9viYTn21fTu7K6j9ndHKlR/h2585I+dvAc=
+Message-ID: <d9def9db0708101047u27c939a4ve57b28cf4319aaf2@mail.gmail.com>
+Date: Fri, 10 Aug 2007 19:47:52 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Manu Abraham" <abraham.manu@gmail.com>
+Subject: Re: [v4l-dvb-maintainer] [2.6 patch] dvb_frontend_ioctl(): fix check-after-use
+Cc: "Adrian Bunk" <bunk@stusta.de>, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1a297b360707312052l14adb72el8ee59c74b7757605@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070730222817.GE3972@stusta.de>
+	 <1a297b360707312052l14adb72el8ee59c74b7757605@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007, Daniel Phillips wrote:
+On 8/1/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> On 7/31/07, Adrian Bunk <bunk@stusta.de> wrote:
+> > The Coverity checker spotted that we have already oops'ed if "fe" was
+> NULL.
+> >
+> > Since "fe" being NULL seems impossible at this point this patch removes
+> > the NULL check.
+> >
+> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> >
+> > ---
+> > --- linux-2.6.23-rc1-mm1/drivers/media/dvb/dvb-core/dvb_frontend.c.old
+> 2007-07-29 21:41:56.000000000 +0200
+> > +++ linux-2.6.23-rc1-mm1/drivers/media/dvb/dvb-core/dvb_frontend.c
+> 2007-07-29 21:42:16.000000000 +0200
+> > @@ -706,11 +706,11 @@ static int dvb_frontend_ioctl(struct ino
+> >         struct dvb_frontend_private *fepriv = fe->frontend_priv;
+> >         int err = -EOPNOTSUPP;
+> >
+> >         dprintk ("%s\n", __FUNCTION__);
+> >
+> > -       if (!fe || fepriv->exit)
+> > +       if (fepriv->exit)
+> >                 return -ENODEV;
+> >
+> >         if ((file->f_flags & O_ACCMODE) == O_RDONLY &&
+> >             (_IOC_DIR(cmd) != _IOC_READ || cmd == FE_GET_EVENT ||
+> >              cmd == FE_DISEQC_RECV_SLAVE_REPLY))
+> >
+> > -
+>
+> Acked-by: Manu Abraham <manu@linuxtv.org>
+>
 
-> It is quite clear what is in your patch.  Instead of just grabbing a
-> page off the buddy free lists in a critical allocation situation you
-> go invoke shrink_caches.  Why oh why?  All the memory needed to get
+This issue has been known for a while including some other problems at
+that part.
 
-Because we get to the code of interest when we have no memory on the 
-buddy free lists and need to reclaim memory to fill them up again.
+http://article.gmane.org/gmane.linux.drivers.dvb/35351/match=patch+dvb_net+hotplugging+support
 
-> You do not do anything to prevent mixing of ordinary slab allocations
-> of unknown duration with critical allocations of controlled duration.
->  This  is _very important_ for sk_alloc.  How are you going to take
-> care of that?
+this includes a link where this and more got discussed in May.
 
-It is not necessary because you can reclaim memory as needed.
-
-> There are certainly improvements that can be made to the posted patch
-> set.  Running off and learning from scratch how to do this is not
-> really helpful.
-
-The idea of adding code to deal with "I have no memory" situations 
-in a kernel that based on have as much memory as possible in use at all 
-times is plainly the wrong approach. If you need memory then memory needs 
-to be reclaimed. That is the basic way that things work and following that 
-through brings about a much less invasive solution without all the issues 
-that the proposed solution creates.
+Markus
