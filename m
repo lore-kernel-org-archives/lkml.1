@@ -1,90 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933383AbXHJBGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933747AbXHJBHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933383AbXHJBGe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 21:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757682AbXHJBGX
+	id S933747AbXHJBHX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 21:07:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764616AbXHJBHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 21:06:23 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44960 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756116AbXHJBGW (ORCPT
+	Thu, 9 Aug 2007 21:07:05 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47968 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764262AbXHJBHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 21:06:22 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@sw.ru>,
-       <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       trond.myklebust@fys.uio.no
-Subject: [PATCH 06/10] sysctl: Remove broken sunrpc debug binary sysctls
-In-Reply-To: <m1vebo8avf.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Thu, 09 Aug 2007 18:57:24 -0600")
-References: <20070726164518.GB16937@localhost.sw.ru>
-	<m13azbulhf.fsf@ebiederm.dsl.xmission.com>
-	<20070727145235.GC6924@localhost.sw.ru>
-	<20070806124530.GD6634@localhost.sw.ru>
-	<m1tzr8a3ms.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1wa3kf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcn8a2rq.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1d4xw9psl.fsf_-_@ebiederm.dsl.xmission.com>
-	<m18x8k9ppv.fsf_-_@ebiederm.dsl.xmission.com>
-	<m14pj89pmt.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1zm108axi.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1vebo8avf.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-Date: Thu, 09 Aug 2007 19:04:35 -0600
-Message-ID: <m18x8k8ajg.fsf_-_@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
+	Thu, 9 Aug 2007 21:07:03 -0400
+Date: Thu, 9 Aug 2007 20:06:59 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, tony.luck@intel.com, jes@sgi.com
+Subject: [RFC 0/3] SGI Altix cross partition memory (XPMEM)
+Message-ID: <20070810010659.GA25427@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This is debug code so no need to support binary sysctl,
-and the binary sysctls as they were written were not
-consistent with what showed up in /proc so remove
-the binary sysctl support.
+    Terminology
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- net/sunrpc/sysctl.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+The term 'partition', adopted by the SGI hardware designers and which
+perculated up into the software, is used in reference to a single SSI
+when multiple SSIs are running on a single Altix. An Altix running
+multiple SSIs is said to be 'partitioned', whereas one that is running
+only a single SSI is said to be 'unpartitioned'.
 
-diff --git a/net/sunrpc/sysctl.c b/net/sunrpc/sysctl.c
-index 738db32..864b541 100644
---- a/net/sunrpc/sysctl.c
-+++ b/net/sunrpc/sysctl.c
-@@ -114,7 +114,6 @@ done:
- 
- static ctl_table debug_table[] = {
- 	{
--		.ctl_name	= CTL_RPCDEBUG,
- 		.procname	= "rpc_debug",
- 		.data		= &rpc_debug,
- 		.maxlen		= sizeof(int),
-@@ -122,7 +121,6 @@ static ctl_table debug_table[] = {
- 		.proc_handler	= &proc_dodebug
- 	},
- 	{
--		.ctl_name	= CTL_NFSDEBUG,
- 		.procname	= "nfs_debug",
- 		.data		= &nfs_debug,
- 		.maxlen		= sizeof(int),
-@@ -130,7 +128,6 @@ static ctl_table debug_table[] = {
- 		.proc_handler	= &proc_dodebug
- 	},
- 	{
--		.ctl_name	= CTL_NFSDDEBUG,
- 		.procname	= "nfsd_debug",
- 		.data		= &nfsd_debug,
- 		.maxlen		= sizeof(int),
-@@ -138,7 +135,6 @@ static ctl_table debug_table[] = {
- 		.proc_handler	= &proc_dodebug
- 	},
- 	{
--		.ctl_name	= CTL_NLMDEBUG,
- 		.procname	= "nlm_debug",
- 		.data		= &nlm_debug,
- 		.maxlen		= sizeof(int),
--- 
-1.5.1.1.181.g2de0
+The term '[a]cross partition' refers to a functionality that spans between
+two SSIs on a multi-SSI Altix. ('XP' is its abbreviation.)
+
+    Introduction
+
+This feature provides cross partition access to user memory (XPMEM) when
+running multiple partitions on a single SGI Altix. XPMEM, like XPNET,
+utilizes XPC to communicate between the partitions.
+
+XPMEM allows a user process to identify portion(s) of its address space
+that other user processes can attach (i.e. map) into their own address
+spaces. These processes can be running on the same or a different
+partition from the one whose memory they are attaching.
+
+    Known Issues
+
+XPMEM is not currently using the kthread API (which is also true for XPC)
+because it was in the process of being changed to require a kthread_stop()
+be done for every kthread_create() and the kthread_stop() couldn't be called
+for a thread that had already exited. In talking with Eric Biederman, there
+was some thought of creating a kthread_orphan() which would eliminate the
+need for a call to kthread_stop() being required.
 
