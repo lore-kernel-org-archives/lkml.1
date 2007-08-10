@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933374AbXHJJe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932677AbXHJJjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933374AbXHJJe2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 05:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758986AbXHJJeN
+	id S932677AbXHJJjO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 05:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbXHJJiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 05:34:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49137 "EHLO mx2.mail.elte.hu"
+	Fri, 10 Aug 2007 05:38:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40291 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753211AbXHJJeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 05:34:11 -0400
-Date: Fri, 10 Aug 2007 11:33:53 +0200
+	id S1754628AbXHJJiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 05:38:52 -0400
+Date: Fri, 10 Aug 2007 11:38:39 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Thomas Gleixner <tglx@linutronix.de>, John Stoffel <john@stoffel.org>,
-       linux-kernel@vger.kernel.org, shemminger@linux-foundation.org,
-       vignaud@xandmail.fr, marcin.slusarz@gmail.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-net@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc2: WARNING: at kernel/irq/resend.c:70
-	check_irq_resend()
-Message-ID: <20070810093353.GA19777@elte.hu>
-References: <18107.11431.838905.331157@stoffel.org> <20070809155445.GA5161@ff.dom.local> <1186733140.12828.45.camel@chaos> <20070810082346.GD1764@ff.dom.local> <20070810083050.GA4545@elte.hu> <20070810084924.GF1764@ff.dom.local> <20070810085611.GA11639@elte.hu> <20070810091231.GH1764@ff.dom.local>
+Cc: Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       "marcin.slusarz" <marcin.slusarz@gmail.com>, tglx <tglx@linutronix.de>,
+       torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch (testing)] Re: 2.6.20->2.6.21 - networking dies after
+	random time
+Message-ID: <20070810093839.GB19777@elte.hu>
+References: <JMJTMH$F1699B57C9B0E170ED337488612E649B@xandmail.com> <20070810083720.GE1764@ff.dom.local> <20070810084841.GA11086@elte.hu> <20070810090318.GG1764@ff.dom.local> <20070810090833.GA15121@elte.hu> <20070810091954.GI1764@ff.dom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070810091231.GH1764@ff.dom.local>
+In-Reply-To: <20070810091954.GI1764@ff.dom.local>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.0
@@ -41,51 +42,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Jarek Poplawski <jarkao2@o2.pl> wrote:
 
-> > > > +               }
-> > > >  #ifdef CONFIG_HARDIRQS_SW_RESEND
-> > 
-> > we used the hw-resend method unconditionally, right?
-> 
-> Right: unconditionally on a condition they are not edges...
-> 
-> But, since not resending at all seems to work so good in testing, I 
-> thought, _SW_RESEND could be considered as an unnecessarily 
-> complicated alternative.
-> 
-> Now, I'm a bit confused...
+> All correct! There was also checked a possibility it can be not hw 
+> itself, but wrong way of handling after hw (acking too late). This was 
+> false idea (or bad implementation), so it looks like hw vs lapic 
+> problem.
 
-the idea is multi-pronged:
-
- - Primarily, we want to fix the regression. 2.6.20 worked, 2.6.21 
-   didnt, that has to be fixed, no matter what - end of story. But we've 
-   got a wide selection of patches for that purpose now, so what matters 
-   at this point is the secondary question:
-
- - we want to know _why exactly_ the hang happens. We now have a pretty 
-   good theory: hw-resend hangs the IO-APIC. (there is a delicate dance
-   between local APICs and IO-APICs for level-triggered irqs, and if we
-   interject via hw-resending via the local APIC, existing races, hw
-   bugs or weaknesses in our hw-resend implementation might be exposed)
-
-and even though we now have a wide selection of patches we really want 
-to get to the bottom of the problem so that we can fix the bug that got 
-exposed: apparently hw resend doesnt always work with level-triggered 
-irqs.
-
-Note that the hw-resend sequence can trigger _even without our original 
-patch that triggered the regression_, it's just much less likely to 
-happen, so this is a pre-existing IO-APIC/APIC code bug that could 
-trigger anytime, and which we want to see fixed.
-
-To confirm this theory - does the debug-patch below fix the hang? If it 
-fixes the hang then the theory is confirmed and then the right solution 
-is to retrigger an IRQ for level-triggered irqs with the proper 
-trigger-type set.
+i think the problem is that local APIC 'self vectors' might be 
+edge-triggered by default. I'm not exactly sure whether passing in 
+APIC_INT_LEVELTRIG to send_IPI_self() will truly be interpreted by the 
+local APIC into any external IO-APIC ACK sequence (the local APIC might 
+just treat self-vectors as always-edge) - and it might also be that the 
+pure act of mixing self-triggered vectors with level-triggered external 
+irqs sometimes confuses the IO-APIC <-> local-APIC messaging. One more 
+test of the patch below will tell us a bit more about this part of the 
+story.
 
 	Ingo
-
------------------->
-Not-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 Index: linux/arch/i386/kernel/io_apic.c
 ===================================================================
