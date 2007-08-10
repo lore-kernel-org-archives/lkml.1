@@ -1,92 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933475AbXHJScO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939610AbXHJSci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933475AbXHJScO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 14:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbXHJSb7
+	id S939610AbXHJSci (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 14:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765853AbXHJScM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 14:31:59 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37344 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753790AbXHJSb6 (ORCPT
+	Fri, 10 Aug 2007 14:32:12 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:32732 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762039AbXHJScK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 14:31:58 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alexey Dobriyan <adobriyan@sw.ru>, axboe@kernel.dk
-Subject: Re: [PATCH 08/10] sysctl: Remove broken cdrom binary sysctls
-References: <20070726164518.GB16937@localhost.sw.ru>
-	<m13azbulhf.fsf@ebiederm.dsl.xmission.com>
-	<20070727145235.GC6924@localhost.sw.ru>
-	<20070806124530.GD6634@localhost.sw.ru>
-	<m1tzr8a3ms.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1wa3kf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcn8a2rq.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1d4xw9psl.fsf_-_@ebiederm.dsl.xmission.com>
-	<m18x8k9ppv.fsf_-_@ebiederm.dsl.xmission.com>
-	<m14pj89pmt.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1zm108axi.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1vebo8avf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1r6mc8at5.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1myx08arh.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ir7o8ap1.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070810143342.173d2637@the-village.bc.nu>
-	<m17io3z8o2.fsf@ebiederm.dsl.xmission.com>
-	<20070810181632.3a491575@the-village.bc.nu>
-Date: Fri, 10 Aug 2007 12:30:07 -0600
-In-Reply-To: <20070810181632.3a491575@the-village.bc.nu> (Alan Cox's message
-	of "Fri, 10 Aug 2007 18:16:32 +0100")
-Message-ID: <m1y7gjw8cw.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 10 Aug 2007 14:32:10 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:subject:from:to:content-type:organization:date:
+	message-id:mime-version:x-mailer:content-transfer-encoding;
+	b=QFwOJlxxuAVz5nrIdc/k7/NHYNHizF5z7PCR4a9AaC+970tQIciHTBDC5HohMZYuQ
+	Xe7R/bbb80+IfhLv0mUfw==
+Subject: [PATCH 2.6.23-rc2] getrusage: return ru_maxrss
+From: Frank Mayhar <fmayhar@google.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Google, Inc.
+Date: Fri, 10 Aug 2007 11:31:51 -0700
+Message-Id: <1186770711.18535.9.camel@peace.smo.corp.google.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+Fill in ru_maxrss by, for RUSAGE_BOTH or RUSAGE_CHILDREN, walking the
+list of children and summing the hiwater_rss for each.  For RUSAGE_BOTH
+or RUSAGE_SELF also include the hiwater_rss for the calling process.
 
->> I just wanted something stupid and simple, so the -mm tree would not
->> be full of broken sysctls.
->
-> Well I'd like you to not replace one pile of hard to clean up but easy to
-> locate crap by smearing other hard to fix in one go crap over the kernel.
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 449b81b..71b2850 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -2101,6 +2101,19 @@ static void k_getrusage(struct task_stru
+ 			r->ru_inblock = p->signal->cinblock;
+ 			r->ru_oublock = p->signal->coublock;
+ 
++			read_lock(&tasklist_lock);
++			list_for_each(_p, &p->children) {
++				struct task_struct *mp;
++
++				mp = list_entry(_p, struct task_struct, sibling);
++				mm = get_task_mm(mp);
++				hiwater_rss = get_mm_rss(mm);
++				if (hiwater_rss < mm->hiwater_rss)
++					hiwater_rss = mm->hiwater_rss;
++				r->ru_maxrss += hiwater_rss;
++			}
++			read_unlock(&tasklist_lock);
++
+ 			if (who == RUSAGE_CHILDREN)
+ 				break;
+ 
+@@ -2125,6 +2138,11 @@ static void k_getrusage(struct task_stru
+ 				r->ru_oublock += task_io_get_oublock(t);
+ 				t = next_thread(t);
+ 			} while (t != p);
++			mm = get_task_mm(p);
++			hiwater_rss = get_mm_rss(mm);
++			if (hiwater_rss < mm->hiwater_rss)
++				hiwater_rss = mm->hiwater_rss;
++			r->ru_maxrss += hiwater_rss;
+ 			break;
+ 
+ 		default:
+---
 
-I'm not certain I see the difference. I just replaced the comparison
-of one label with another.  There may have been more beauty in one or
-the other but it really should not have made a difference maintenance
-wise.  Perhaps I'm just short some cdrom context here to understand
-your problem.
+Like a number of other folks, we recently had a need for a non-/proc way
+of getting the RSS of a process and happened on getrusage().  Unlike the
+rest, though, we fixed the system call to do what we want.
 
-Regardless.  Looking at the code I think we can do something straightforward
-and even more stupid without needing any comparisons.
+The code itself was lifted from task_mem() in proc/task_mmu.c.  The only
+questionable bit is where it does the read_lock() of the tasklist_lock;
+although it seems safe enough, I would appreciate if those more
+knowledgeable about that locking vet it (briefly) for safety.
 
-Alan does this look a little better?
+Signed-off-by:  Frank Mayhar <fmayhar@google.com>
+-- 
+Frank Mayhar <fmayhar@google.com>
+Google, Inc.
 
-static int cdrom_sysctl_handler(struct ctl_table *ctl, int write, struct file * filp,
-				void __user *buffer, size_t *lenp, loff_t *ppos)
-{
-	int *valp = ctl->data;
-	int val = *valp;
-	int ret;
-	
-	ret = proc_dointvec(ctl, write, filp, buffer, lenp, ppos);
-
-	if (write) {
-	
-		/* we only care for 1 or 0. */
-		autoclose        = !!cdrom_sysctl_settings.autoclose;
-		autoeject        = !!cdrom_sysctl_settings.autoeject;
-		debug	         = !!cdrom_sysctl_settings.debug;
-		lockdoor         = !!cdrom_sysctl_settings.lock;
-		check_media_type = !!cdrom_sysctl_settings.check;
-
-		/* update the option flags according to the changes. we
-		   don't have per device options through sysctl yet,
-		   but we will have and then this will disappear. */
-		cdrom_update_settings();
-	}
-
-        return ret;
-}
-
-Eric
