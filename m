@@ -1,58 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965304AbXHJVJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S942084AbXHJVJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965304AbXHJVJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 17:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759087AbXHJVI6
+	id S942084AbXHJVJm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 17:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965190AbXHJVJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 17:08:58 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42953 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755535AbXHJVI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 17:08:56 -0400
-Message-ID: <46BCD3E7.1050403@garzik.org>
-Date: Fri, 10 Aug 2007 17:08:55 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Fri, 10 Aug 2007 17:09:19 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45161 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965059AbXHJVJQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 17:09:16 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 5/7] sysctl: Cleanup the sched debug sysctl usage.
+References: <20070809224254.11f42716.akpm@linux-foundation.org>
+	<46BC8F71.3070006@googlemail.com> <46BC944F.9020801@googlemail.com>
+	<m1fy2rxpje.fsf@ebiederm.dsl.xmission.com>
+	<20070810124156.2de9710e.akpm@linux-foundation.org>
+	<m1ps1vw1ey.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1lkcjw1cc.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1hcn7w18w.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1d4xvw14e.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Fri, 10 Aug 2007 15:08:52 -0600
+In-Reply-To: <m1d4xvw14e.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Fri, 10 Aug 2007 15:06:25 -0600")
+Message-ID: <m18x8jw10b.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Rick Jones <rick.jones2@hp.com>
-CC: netdev@vger.kernel.org, davem@davemloft.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Driver writer hints (was [PATCH 3/4] Add ETHTOOL_[GS]PFLAGS	sub-ioctls)
-References: <20070810202426.GA25050@havoc.gtf.org>	<20070810202630.GB25095@havoc.gtf.org> <46BCCE57.1060802@garzik.org> <46BCD223.6020304@hp.com>
-In-Reply-To: <46BCD223.6020304@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rick Jones wrote:
->> If we are getting (retrieving) flags:
->>
->>     3) Userland issues ETHTOOL_GPFLAGS, to obtain a 32-bit bitmap
->>
->>     4) Userland prints out a tag returned from ETHTOOL_GSTRINGS
->>        for each bit set to one in the bitmap.  If a bit is set,
->>        but there is no string to describe it, that bit is ignored.
->>        (i.e. a list of 5 strings is returned, but bit 24 is set)
-> 
-> Is that to enable "hidden" bits?  If not I'd think that emitting some 
-> sort of "UNKNOWN_FLAG" might help flush-out little oopses like 
-> forgetting a string.
 
-No purpose other than attempting to define sane edge case behavior.
+- The ctl_name for the kernel directory is CTL_KERN
+- It is impoosible to write to sysctl directories so do not
+  give users write permissions.
 
-The bitmap interface is completely invisible to the user (who sees UTF8 
-strings on the command line), and given the interface I felt the easiest 
-thing to do would be to define an "ignore any garbage" default policy.
+This is enough to stop sysctl_check_table from complaining about
+the sched debug sysctls. 
 
-Due to the way the interface is designed, each userland user must be 
-aware of the precise number of valid bits in the bitmap /anyway/, thus 
-making clipping/ignoring garbage bits almost a trivial side effect.
+My apologies for not sending this earlier I had the impression
+Ingo's tree had diverged significantly from what was in the
+stable tree.
 
-	Jeff
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ kernel/sched.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b0afd8d..47afd80 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5223,15 +5223,16 @@ static void migrate_dead_tasks(unsigned int dead_cpu)
+ static struct ctl_table sd_ctl_dir[] = {
+ 	{
+ 		.procname	= "sched_domain",
+-		.mode		= 0755,
++		.mode		= 0555,
+ 	},
+ 	{0,},
+ };
+ 
+ static struct ctl_table sd_ctl_root[] = {
+ 	{
++		.ctl_name	= CTL_KERN,
+ 		.procname	= "kernel",
+-		.mode		= 0755,
++		.mode		= 0555,
+ 		.child		= sd_ctl_dir,
+ 	},
+ 	{0,},
+@@ -5307,7 +5308,7 @@ static ctl_table *sd_alloc_ctl_cpu_table(int cpu)
+ 	for_each_domain(cpu, sd) {
+ 		snprintf(buf, 32, "domain%d", i);
+ 		entry->procname = kstrdup(buf, GFP_KERNEL);
+-		entry->mode = 0755;
++		entry->mode = 0555;
+ 		entry->child = sd_alloc_ctl_domain_table(sd);
+ 		entry++;
+ 		i++;
+@@ -5327,7 +5328,7 @@ static void init_sched_domain_sysctl(void)
+ 	for (i = 0; i < cpu_num; i++, entry++) {
+ 		snprintf(buf, 32, "cpu%d", i);
+ 		entry->procname = kstrdup(buf, GFP_KERNEL);
+-		entry->mode = 0755;
++		entry->mode = 0555;
+ 		entry->child = sd_alloc_ctl_cpu_table(i);
+ 	}
+ 	sd_sysctl_header = register_sysctl_table(sd_ctl_root);
+-- 
+1.5.1.1.181.g2de0
 
