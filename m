@@ -1,60 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941147AbXHJSxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939722AbXHJTA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941147AbXHJSxd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 14:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932961AbXHJSxV
+	id S939722AbXHJTA3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 15:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbXHJTAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 14:53:21 -0400
-Received: from gw.goop.org ([64.81.55.164]:36496 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757883AbXHJSxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 14:53:20 -0400
-Message-ID: <46BCB3A5.8090504@goop.org>
-Date: Fri, 10 Aug 2007 11:51:17 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Glauber de Oliveira Costa <glommer@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, lguest@ozlabs.org,
-       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
-       anthony@codemonkey.ws, Steven@smtp2.linux-foundation.org,
-       akpm@linux-foundation.org,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       virtualization@lists.linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 23/25] [PATCH] paravirt hooks for arch initialization
-References: <11865467522495-git-send-email-gcosta@redhat.com>	 <11865468394005-git-send-email-gcosta@redhat.com>	 <11865468431616-git-send-email-gcosta@redhat.com>	 <200708081144.04119.ak@suse.de> <46BB5258.8040609@goop.org>	 <20070809190303.214e5457@the-village.bc.nu> <5d6222a80708101108y62ebfa26n9f47bfc52b48f4a8@mail.gmail.com>
-In-Reply-To: <5d6222a80708101108y62ebfa26n9f47bfc52b48f4a8@mail.gmail.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 10 Aug 2007 15:00:19 -0400
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:60471 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756531AbXHJTAR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 15:00:17 -0400
+Date: Fri, 10 Aug 2007 15:00:12 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andi Kleen <ak@suse.de>
+Cc: jbeulich@novell.com, "S. P. Prasanna" <prasanna@in.ibm.com>,
+       linux-kernel@vger.kernel.org, patches@x86-64.org
+Subject: Re: new text patching for review
+Message-ID: <20070810190012.GA24556@Krystal>
+References: <200707191105.44056.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <200707191105.44056.ak@suse.de>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:57:21 up 11 days, 19:16,  5 users,  load average: 1.72, 1.23, 0.99
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber de Oliveira Costa wrote:
-> On 8/9/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->   
->>> What's the EBDA actually used for?  The only place which seems to use
->>> ebda_addr is in the e820 code to avoid that area as RAM.
->>>       
->> It belongs to the firmware.
->>     
->
-> Wouldn't it be better, then, to just skip this step unconditionally if
-> we are running a paravirtualized guest? What do we from doing it?
->   
+* Andi Kleen (ak@suse.de) wrote:
+> 
+> Hallo,
+> 
+> I had some second thoughts about the text patching of DEBUG_RODATA kernels
+> using change_page_attr(). Change_page_attr is intrusive and slow and using
+> a separate mapping is a little more gentle. I came up with this patch.
+> For your review and testing pleasure.
+> 
+> The main quirk is that it doesn't fully follow the cross-modifying code
+> recommendations; but i'm not sure that's really needed.
+> 
+> Also I admit nop_out is quite inefficient, but that's a very slow path
+> and it was easier to do it this way than handle all the corner cases
+> explicitely.
+> 
+> Comments,
+> 
+> -Andi
+> 
+> x86: Fix alternatives and kprobes to remap write-protected kernel text
+> 
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> +/*
+> + * RED-PEN Intel recommends stopping the other CPUs for such
+> + * "cross-modifying code".
+> + */
+> +void __kprobes text_poke(void *oaddr, u8 opcode)
+> +{
+> +        u8 *addr = oaddr;
+> +	if (!pte_write(*lookup_address((unsigned long)addr))) {
+> +		struct page *p = virt_to_page(addr);
+> +		addr = vmap(&p, 1, VM_MAP, PAGE_KERNEL);
+> +		if (!addr)
+> +			return;
+> +		addr += ((unsigned long)oaddr) % PAGE_SIZE;
+> +	}
+> +	*addr = opcode;
+> +	/* Not strictly needed, but can speed CPU recovery up */
+> +	if (cpu_has_clflush)
+> +		asm("clflush (%0) " :: "r" (addr) : "memory");
+> +	if (addr != oaddr)
+> +		vunmap(addr);
+> +}
 
-It's better to make discover_ebda() quietly cope with a missing ebda for
-whatever reason.  We could add an explicit interface to paravirt_ops to
-handle this one little corner, but it isn't very important, not very
-general and really its just clutter.  Its much better to have things
-cope with being virtualized quietly on their own rather than hit them
-all with the pv_ops hammer.   pv_ops is really for things where the
-hypervisor-specific code really has to get actively involved.
+Hi Andi,
 
-For Xen-domU and lguest, there probably won't be an ebda, but its quite
-likely that it will be present in some form for vmware, kvm and
-xen-dom0; in those cases the (presumably virtual) ebda will be put in
-place as it would be in the native case, eliminating the need for any
-special handling.
+I was trying to make this work, but I find out that it seems incredibly
+slow when I call it multiple times. Trying to understand why, I come
+with a few questions:
 
-    J
+- Is this supposed to work with large pages ?
+- Is this supposed to work module text ?
+
+Thanks,
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
