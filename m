@@ -1,145 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941156AbXHJT3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941555AbXHJTab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941156AbXHJT3g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 15:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934786AbXHJT3Q
+	id S941555AbXHJTab (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 15:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936780AbXHJTaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 15:29:16 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:54319 "EHLO smtp2.it.da.ut.ee"
+	Fri, 10 Aug 2007 15:30:18 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:54331 "EHLO smtp2.it.da.ut.ee"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758479AbXHJT3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 15:29:11 -0400
-Date: Fri, 10 Aug 2007 22:29:07 +0300 (EEST)
+	id S934786AbXHJTaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 15:30:12 -0400
+Date: Fri, 10 Aug 2007 22:30:09 +0300 (EEST)
 From: Meelis Roos <mroos@linux.ee>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
-In-Reply-To: <200708102124.01218.rjw@sisk.pl>
-Message-ID: <Pine.SOC.4.64.0708102220290.14225@math.ut.ee>
-References: <46B9F664.9060600@googlemail.com> <200708082210.25836.rjw@sisk.pl>
- <Pine.SOC.4.64.0708102202400.13577@math.ut.ee> <200708102124.01218.rjw@sisk.pl>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: New section mismatch warnings on ppc
+Message-ID: <Pine.SOC.4.64.0708102222200.14225@math.ut.ee>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 1. Is that with the same .config you sent me previously?
+Tried 2.6.23-rc2+git on ARCH=ppc machine:
 
-Yes, just ran it through make oldconfig again, included below.
+  MODPOST vmlinux.o
+WARNING: vmlinux.o(.text+0x24): Section mismatch: reference to .init.text:early_init (between '__start' and '__after_mmu_off')
+WARNING: vmlinux.o(.text+0x3298): Section mismatch: reference to .init.text:machine_init (between 'start_here' and 'set_context')
+WARNING: vmlinux.o(.text+0x329c): Section mismatch: reference to .init.text:MMU_init (between 'start_here' and 'set_context')
+WARNING: vmlinux.o(.text+0x32c6): Section mismatch: reference to .init.text:start_kernel (between 'start_here' and 'set_context')
+WARNING: vmlinux.o(.text+0x32ca): Section mismatch: reference to .init.text:start_kernel (between 'start_here' and 'set_context')
+WARNING: vmlinux.o(.text+0x11b814): Section mismatch: reference to .init.text:pcibios_fixup_bus (between 'pci_scan_child_bus' and 'pci_scan_bus_parented')
+WARNING: vmlinux.o(.text+0x11c1a0): Section mismatch: reference to .init.text:pcibios_setup (between 'pci_setup' and 'pci_init')
 
-> 2. What exactly is the consequence of this warning?
-
-I hope no big trouble (i.e. only a warning during make *config) but I 
-haven't boot-tested rc2 and newer kernels yet because it's a remote 
-machine. Will try some day now.
-
-> 3. Can you please check if this patch changes anything:
-> http://marc.info/?l=linux-mm-commits&m=118669680811669&w=2
-
-Tried it on current git, kernel/power/Kconfig gave 2 rejects.
-Tried on 2.6.23-rc2, still 2 rejects from the same file, .rej below:
-
-*************** config PM_TRACE
-*** 72,86 ****
-  	CAUTION: this option will cause your machine's real-time clock to be
-  	set to an invalid time after a resume.
-  
-- config SUSPEND_SMP_POSSIBLE
-- 	bool
-- 	depends on (X86 &amp;&amp; !X86_VOYAGER) || (PPC64 &amp;&amp; (PPC_PSERIES || PPC_PMAC))
-- 	depends on SMP
-- 	default y
-- 
-- config SUSPEND_SMP
-  	bool
-- 	depends on SUSPEND_SMP_POSSIBLE &amp;&amp; PM_SLEEP
-  	select HOTPLUG_CPU
-  	default y
-  
---- 72,81 ----
-  	CAUTION: this option will cause your machine's real-time clock to be
-  	set to an invalid time after a resume.
-  
-+ config PM_SLEEP_SMP
-  	bool
-+ 	depends on SUSPEND_SMP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
-+ 	depends on PM_SLEEP
-  	select HOTPLUG_CPU
-  	default y
-  
-*************** config PM_SLEEP
-*** 89,108 ****
-  	depends on SUSPEND || HIBERNATION
-  	default y
-  
-  config SUSPEND
-  	bool "Suspend to RAM and standby"
-  	depends on PM
-- 	depends on !SMP || SUSPEND_SMP_POSSIBLE
-  	default y
-  	---help---
-  	  Allow the system to enter sleep states in which main memory is
-  	  powered and thus its contents are preserved, such as the
-  	  suspend-to-RAM state (i.e. the ACPI S3 state).
-  
-  config HIBERNATION
-  	bool "Hibernation (aka 'suspend to disk')"
-  	depends on PM &amp;&amp; SWAP
-- 	depends on ((X86 || PPC64_SWSUSP || FRV || PPC32) &amp;&amp; !SMP) || SUSPEND_SMP_POSSIBLE
-  	---help---
-  	  Enable the suspend to disk (STD) functionality, which is usually
-  	  called "hibernation" in user interfaces.  STD checkpoints the
---- 84,129 ----
-  	depends on SUSPEND || HIBERNATION
-  	default y
-  
-+ config SUSPEND_UP_POSSIBLE
-+ 	bool
-+ 	depends on (X86 &amp;&amp; !X86_VOYAGER) || PPC || ARM || BLACKFIN || MIPS \
-+ 		   || SUPERH || FRV
-+ 	depends on !SMP
-+ 	default y
-+ 
-+ config SUSPEND_SMP_POSSIBLE
-+ 	bool
-+ 	depends on (X86 &amp;&amp; !X86_VOYAGER) \
-+ 		   || (PPC &amp;&amp; (PPC_PSERIES || PPC_PMAC)) || ARM
-+ 	depends on SMP
-+ 	default y
-+ 
-  config SUSPEND
-  	bool "Suspend to RAM and standby"
-  	depends on PM
-+ 	depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
-  	default y
-  	---help---
-  	  Allow the system to enter sleep states in which main memory is
-  	  powered and thus its contents are preserved, such as the
-  	  suspend-to-RAM state (i.e. the ACPI S3 state).
-  
-+ config HIBERNATION_UP_POSSIBLE
-+ 	bool
-+ 	depends on X86 || PPC64_SWSUSP || FRV || PPC32
-+ 	depends on !SMP
-+ 	default y
-+ 
-+ config HIBERNATION_SMP_POSSIBLE
-+ 	bool
-+ 	depends on (X86 &amp;&amp; !X86_VOYAGER) || PPC64_SWSUSP
-+ 	depends on SMP
-+ 	default y
-+ 
-  config HIBERNATION
-  	bool "Hibernation (aka 'suspend to disk')"
-  	depends on PM &amp;&amp; SWAP
-+ 	depends on HIBERNATION_UP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
-  	---help---
-  	  Enable the suspend to disk (STD) functionality, which is usually
-  	  called "hibernation" in user interfaces.  STD checkpoints the
+I seem to remember they were not there a week ago (maybe scrolled away) 
+- but anyway, they are there.
 
 #
 # Automatically generated make config: don't edit
@@ -2230,7 +2122,6 @@ CONFIG_CRYPTO_CRC32C=m
 CONFIG_CRYPTO_CAMELLIA=m
 # CONFIG_CRYPTO_TEST is not set
 CONFIG_CRYPTO_HW=y
-
 
 -- 
 Meelis Roos (mroos@linux.ee)
