@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939062AbXHJPKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938345AbXHJPLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939062AbXHJPKz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 11:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932760AbXHJPKA
+	id S938345AbXHJPLZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 11:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935111AbXHJPK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 11:10:00 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50824 "EHLO ogre.sisk.pl"
+	Fri, 10 Aug 2007 11:10:27 -0400
+Received: from z2.cat.iki.fi ([212.16.98.133]:59859 "EHLO z2.cat.iki.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932111AbXHJPJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 11:09:57 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "jidong xiao" <jidong.xiao@gmail.com>
-Subject: Re: Question about PF_NOFREEZE
-Date: Fri, 10 Aug 2007 17:19:27 +0200
-User-Agent: KMail/1.9.5
+	id S937746AbXHJPKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 11:10:24 -0400
+Date: Fri, 10 Aug 2007 18:10:14 +0300
+From: Matti Aarnio <matti.aarnio@zmailer.org>
+To: Vlad <vladc6@yahoo.com>
 Cc: linux-kernel@vger.kernel.org
-References: <4104961b0708092219r6fbc5854pc41a4a98a2b79c2a@mail.gmail.com>
-In-Reply-To: <4104961b0708092219r6fbc5854pc41a4a98a2b79c2a@mail.gmail.com>
+Subject: Re: Noatime vs relatime
+Message-ID: <20070810151014.GT6372@mea-ext.zmailer.org>
+References: <233939.75965.qm@web54403.mail.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708101719.27558.rjw@sisk.pl>
+In-Reply-To: <233939.75965.qm@web54403.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 10 August 2007 07:19, jidong xiao wrote:
-> if one thread set its current->flag with PF_NOFREEZE, then it means
-> this thread is unfreezable,does this mean, when the system entered
-> into a suspended state, even though all the other threads have already
-> gone sleep, this thread still keeps awaken?
+On Fri, Aug 10, 2007 at 07:26:46AM -0700, Vlad wrote:
+... 
+> "Warning: Atime will be disabled by default in future kernel versions,
+> but you will still be able to turn it on when configuring the kernel."
+> 
+> This should give a heads-up to the 0.001% of people who still use
+> atime so that they know to customize this option or start using modern
+> file-monitoring techniques like inotify.
 
-It will be able to run when all freezable threads are frozen.
+NO for two reasons:
+  - atime semantics are just fine in server environments
+  - inotify IS NOT scalable to millions of files, nor
+    to situations where we want to check alteration weeks
+    or months after the fact
 
-> One thing I am very confused is, if all the other threads goes to
-> sleep,can this only one thread(assume only one thread marked itself as
-> unfreezable.) still works well?
+In reality I would perhaps prefer mount-behaviour being altered
+from 'by default do atime' to 'by default do noatime.
 
-The question is rather theoretical, because there are some unfreezable threads
-in the system.  In theory, such a thread can work well as long as it doesn't
-need to wait for another thread that is frozen.
-
-Greetings,
-Rafael
+There MUST be an easy way to tell system that "yes, I want to track
+last accesstime."
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+I did recently an embedded Linux PC system where the entire
+system disk is a single Compact Flash -card.  I tried to play
+with  noatime  option, but the system still kept writing things,
+and thus I had to do full and somewhat drastic  read-only.
+
+
+> Vlad
+
+/Matti Aarnio
