@@ -1,71 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934037AbXHJO05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933100AbXHJOdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934037AbXHJO05 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 10:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbXHJO0q
+	id S933100AbXHJOdh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 10:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757745AbXHJOd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 10:26:46 -0400
-Received: from mail-in-09.arcor-online.net ([151.189.21.49]:47007 "EHLO
-	mail-in-09.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751654AbXHJO0p (ORCPT
+	Fri, 10 Aug 2007 10:33:29 -0400
+Received: from web54403.mail.yahoo.com ([206.190.49.133]:45918 "HELO
+	web54403.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757594AbXHJOd2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 10:26:45 -0400
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: Linux 2.6.22.2
-Date: Fri, 10 Aug 2007 16:26:21 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org, aabdulla@nvidia.com
-References: <20070809214716.GA31414@kroah.com> <20070809214745.GA31425@kroah.com>
-In-Reply-To: <20070809214745.GA31425@kroah.com>
+	Fri, 10 Aug 2007 10:33:28 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Aug 2007 10:33:27 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=3ZKESlx1ZInxQbr0v7Tl++pbDN+N/b8vW0I2rjPVA8dRqHRUPP5lSm/IM1QGElq3FbqiDtaUtGxHjpIuN5kfMazLTy3kGRByLdFtnynfjPiqW1UTel+I8rg58S9tPMJDjS7A+yHUOL3AIQYLtDaAp0SSDWDUryBmu/ciPwDJTE0=;
+X-YMail-OSG: 1NxIoMAVM1lSdyesjRQgJ50_.W_hykd_GF2VtxelqLq.07F3zk6klu2Z28RRNMPqNOsXvZ29sNZ.mKliMMQNl.fqlJYgPkym6HnOnUuL4UfhtV1Ln2pvPyFHJ7d1
+Date: Fri, 10 Aug 2007 07:26:46 -0700 (PDT)
+From: Vlad <vladc6@yahoo.com>
+Subject: Noatime vs relatime
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1495117.7V9ypDGmmh";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200708101626.21927.prakash@punnoor.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <233939.75965.qm@web54403.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1495117.7V9ypDGmmh
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Linus Torvalds wrote:
+> What we could do is to make "relatime" updates a bit smarter.
+> 
+> A bit smarter would be:
+> 
+> - update atime if the old atime is <= than mtime/ctime
+>
+> Logic: things like mailers can care about whether some
+> new state has 
+> been read or not. This is the current relatime.
+> 
+> - update atime if the old atime is more than X seconds
+> in the past (defaulting to one day or something)
+> 
+> Logic: things like tmpwatch and backup
+> software may want to remove 
+> stuff that hasn't been touched in a long time, but they
+> sure don't care about "exact" atime.
 
-Hi,
+Relatime seems to be wasteful of both IO resources _and_ CPU cycles.
+Instead of performing a single IO operation (as atime does), relatime
+performs at least three IO operations and three CPU-dependent
+operations:
 
-I just noticed that PHY_OUI_VITESSE =3D=3D PHY_OUI_REALTEK. Is that really=
-=20
-intentional?
+1) a read IO operation to find out the old atime
+2) a read IO operation to find out the old ctime
+3) a read IO operation to find out the old mtime
+4) Comparison of "old atime is <= than mtime/ctime"
+5) Find out current time
+6) Comparison of "current time minus old atime is > X"
 
-> diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
-> index 42ba1c0..a361dba 100644
-> --- a/drivers/net/forcedeth.c
-> +++ b/drivers/net/forcedeth.c
-> @@ -550,6 +550,8 @@ union ring_type {
->  /* PHY defines */
->  #define PHY_OUI_MARVELL	0x5043
->  #define PHY_OUI_CICADA	0x03f1
-> +#define PHY_OUI_VITESSE	0x01c1
-> +#define PHY_OUI_REALTEK	0x01c1
-=2D=20
-(=B0=3D                 =3D=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
+People are going to wonder why all of the sudden everything is running
+so slow due to atimes being updated after a long break.
 
---nextPart1495117.7V9ypDGmmh
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+I suggest treating atime as if it were a subsystem that is scheduled
+for an overhaul - there have been plenty of those in the past. Give
+users/distros a config option to disable atime, but default this
+option in favor of atime for a couple of kernel release cycles. Print
+a line in dmesg that states something like:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
+"Warning: Atime will be disabled by default in future kernel versions,
+but you will still be able to turn it on when configuring the kernel."
 
-iD8DBQBGvHWNxU2n/+9+t5gRAu/oAKD1Yhes+ZspYF1P1u0yYWvU2TOA7QCeKBwG
-zrcNLgX115FG6c9qKzFrduk=
-=rgtg
------END PGP SIGNATURE-----
+This should give a heads-up to the 0.001% of people who still use
+atime so that they know to customize this option or start using modern
+file-monitoring techniques like inotify.
 
---nextPart1495117.7V9ypDGmmh--
+Vlad
+
+
+       
+____________________________________________________________________________________
+Pinpoint customers who are looking for what you sell. 
+http://searchmarketing.yahoo.com/
