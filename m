@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937382AbXHJQZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940478AbXHJQcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937382AbXHJQZZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 12:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932772AbXHJQYz
+	id S940478AbXHJQcN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 12:32:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932345AbXHJQcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 12:24:55 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:34121 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765177AbXHJQYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 12:24:53 -0400
-Subject: Re: [PATCH] Fix typo in arch/i386/kernel/tsc.c
-From: Josh Triplett <josht@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com
-In-Reply-To: <20070809190340.26757a64.akpm@linux-foundation.org>
-References: <1186711089.6899.29.camel@josh-work.beaverton.ibm.com>
-	 <20070809190340.26757a64.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 10 Aug 2007 09:25:30 -0700
-Message-Id: <1186763130.2713.2.camel@josh-work.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Fri, 10 Aug 2007 12:32:01 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:62993 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765275AbXHJQcA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 12:32:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SyHgCwrT5izZrmxXXmEiqphenuTrZtv7Cn66yhnF4d8YE0VwFfyUfq6RxryT7gugJeSdbcsegn1sz5k+pFjUZuc46nl/bIpQoIxQpB7ekF+2LhKQ3yg5sNgNrjZqQg3pVJdqYQO3me39RFnLT8QD1dvbFBCL38x2iAr9msu7jo8=
+Message-ID: <d9b9d95f0708100931q3fad7f45la3e4046fa650482f@mail.gmail.com>
+Date: Fri, 10 Aug 2007 17:31:58 +0100
+From: "Renato Golin" <rengolin@gmail.com>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: joydev.c and saitek cyborg evo force
+Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0708101643360.11054@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
+	 <Pine.LNX.4.64.0706121436070.10204@jikos.suse.cz>
+	 <d9b9d95f0706120608g979b89oc79dbc277d19862b@mail.gmail.com>
+	 <d120d5000706120613o7a328e59v3cba37f0ced88e77@mail.gmail.com>
+	 <d9b9d95f0706120631l20e6f91duaa110e72a0e955a6@mail.gmail.com>
+	 <Pine.LNX.4.64.0706121715480.10204@jikos.suse.cz>
+	 <d9b9d95f0706141524p3686a41cn882d8f086e4f62cc@mail.gmail.com>
+	 <Pine.LNX.4.64.0706201156410.23812@jikos.suse.cz>
+	 <d9b9d95f0707201710g14d8a905s222c1209358f0196@mail.gmail.com>
+	 <Pine.LNX.4.64.0708101643360.11054@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-09 at 19:03 -0700, Andrew Morton wrote:
-> On Thu, 09 Aug 2007 18:58:09 -0700 Josh Triplett <josht@linux.vnet.ibm.com> wrote:
-> 
-> > - *  We can use khz divisor instead of mhz to keep a better percision, since
-> > + *  We can use khz divisor instead of mhz to keep a better precision, since
-> 
-> I have an arbitrary i-dont-do-typos policy (unless they're in a printk or
-> in documentation).  trivial@kernel.org is the home for patches such as this,
-> please.
+On 10/08/07, Jiri Kosina <jkosina@suse.cz> wrote:
+> Renato, does force feedback work properly in Linux with this device? If
+> so, that would mean that the device has logical maximum and minimum for X
+> and Y axes different in input and output, and we would need to handle this
+> properly (we currently don't).
 
-Sorry about that; I had intended to CC trivial as well, but apparently
-didn't.  Resent to trivial.
+Hi Jiri,
 
-- Josh Triplett
+Makes total sense to me.
 
+I've never tried force-feedback with it (or it never worked) as I
+don't know which games support it (I thought none did).
 
+I'll apply the patch and let you know.
+
+thanks!
+--renato
+
+Reclaim your digital rights, eliminate DRM, learn more at
+http://www.defectivebydesign.org/what_is_drm
