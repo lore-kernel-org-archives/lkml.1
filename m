@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941670AbXHJT4D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941806AbXHJT53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941670AbXHJT4D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 15:56:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965222AbXHJTzV
+	id S941806AbXHJT53 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 15:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757113AbXHJT5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 15:55:21 -0400
-Received: from 1wt.eu ([62.212.114.60]:1286 "EHLO 1wt.eu"
+	Fri, 10 Aug 2007 15:57:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51896 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965221AbXHJTzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 15:55:18 -0400
-Date: Fri, 10 Aug 2007 21:47:05 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Michael Chang <thenewme91@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+	id S1758530AbXHJT5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 15:57:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Meelis Roos <mroos@linux.ee>
+Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
+Date: Fri, 10 Aug 2007 22:06:57 +0200
+User-Agent: KMail/1.9.5
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-Message-ID: <20070810194705.GH6002@1wt.eu>
-References: <p73ps27npu0.fsf@bingen.suse.de> <alpine.LFD.0.999.0708010924490.3582@woody.linux-foundation.org> <20070801175004.GA17936@elte.hu> <Pine.LNX.4.64.0708011955430.1817@scrub.home> <20070801190556.GA1199@elte.hu> <Pine.LNX.4.64.0708100037460.1817@scrub.home> <20070810054948.GA5908@elte.hu> <Pine.LNX.4.64.0708101459530.1817@scrub.home> <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com> <Pine.LNX.4.64.0708101919270.1817@scrub.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
+References: <46B9F664.9060600@googlemail.com> <200708102124.01218.rjw@sisk.pl> <Pine.SOC.4.64.0708102220290.14225@math.ut.ee>
+In-Reply-To: <Pine.SOC.4.64.0708102220290.14225@math.ut.ee>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708101919270.1817@scrub.home>
-User-Agent: Mutt/1.5.11
+Message-Id: <200708102206.58438.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 07:25:57PM +0200, Roman Zippel wrote:
-> Hi,
+On Friday, 10 August 2007 21:29, Meelis Roos wrote:
+> > 1. Is that with the same .config you sent me previously?
 > 
-> On Fri, 10 Aug 2007, Michael Chang wrote:
+> Yes, just ran it through make oldconfig again, included below.
 > 
-> > On 8/10/07, Roman Zippel <zippel@linux-m68k.org> wrote:
-> > > Is there any reason to believe my analysis is wrong?
-> > 
-> > Not yet, but if you give Ingo what he wants (as opposed to what you're
-> > giving him) it'll be easier for him to answer what's going wrong, and
-> > perhaps "fix" the problem to boot.
-> > 
-> > (The scripts gives info about CPU characteristics, interrupts,
-> > modules, etc. -- you know, all those "unknown" variables.)
+> > 2. What exactly is the consequence of this warning?
 > 
-> He already has most of this information and the trace shows _exactly_ 
-> what's going on. All this information should be more than enough to allow 
-> an initial judgement whether my analysis is correct.
-> Also none of this information is needed to explain the CFS logic a little 
-> more, which I'm still waiting for...
+> I hope no big trouble (i.e. only a warning during make *config) but I 
+> haven't boot-tested rc2 and newer kernels yet because it's a remote 
+> machine. Will try some day now.
+> 
+> > 3. Can you please check if this patch changes anything:
+> > http://marc.info/?l=linux-mm-commits&m=118669680811669&w=2
+> 
+> Tried it on current git, kernel/power/Kconfig gave 2 rejects.
+> Tried on 2.6.23-rc2, still 2 rejects from the same file, .rej below:
 
-Roman,
+Sorry, but:
 
-fortunately all bug reporters are not like you. It's amazing how long
-you can resist sending a simple bug report to a developer! Maybe you
-consider that you need to fix the bug by yourself after you understand
-the code, but if you systematically refuse to return the small information
-Ingo asks you, we will have to wait for some more cooperative users to be
-hit by the same bug when 2.6.23 is released, which is stupid.
+rafael@albercik:~/src/linux-2.6> git-pull git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+Already up-to-date.
+rafael@albercik:~/src/linux-2.6> cat ~/pm-fix-dependencies-of-config_suspend-and-config_hibernation-updated-3x.patch | patch -p1
+patching file arch/x86_64/defconfig
+patching file include/linux/cpu.h
+patching file kernel/cpu.c
+patching file kernel/power/Kconfig
 
-I thought you could at least understand that one developer who is used
-to read traces from the same tool every day will be far faster at decoding
-a trace from the same tool than trying to figure out what your self-maid
-dump means.
+How come?
 
-It's the exact same reason I ask for pcap files when people send me
-outputs of tcpdumps without the information I *need*.
-
-I you definitely do not want to cooperate, stop asking for a personal
-explanation, and go figure by yourself how the code works. BTW, in the
-trace you "kindly offered" in exchange for the cfs-debug-info dump,
-you show several useful variables, but nothing says where they are
-captured. And as you can see, they're changing. That's a fantastic
-trace for a developer, really...
-
-Please try to be a little bit more transparent if you really want the
-bugs fixed, and don't behave as if you wanted this bug to survive
-till -final.
-
-Thanks,
-Willy
-
+Greetings,
+Rafael
