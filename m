@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbXHJVl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751032AbXHJVlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbXHJVl0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 17:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbXHJVjQ
+	id S1751032AbXHJVlr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 17:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134AbXHJVjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 17:39:16 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41100 "EHLO
+	Fri, 10 Aug 2007 17:39:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57124 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751355AbXHJVjN (ORCPT
+	by vger.kernel.org with ESMTP id S1753545AbXHJVjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 17:39:13 -0400
-Message-Id: <200708102138.l7ALcj4R010831@imap1.linux-foundation.org>
-Subject: [patch 6/6] Add blacklisting capability to serial_pci to avoid misdetection of serial ports
+	Fri, 10 Aug 2007 17:39:17 -0400
+Message-Id: <200708102138.l7ALcfhb010811@imap1.linux-foundation.org>
+Subject: [patch 1/6] serial: don't optimise away baud rate changes when BOTHER is used
 To: linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, schmidt@digadd.de,
-       alan@lxorguk.ukuu.org.uk, bjorn.helgaas@hp.com,
-       rmk+lkml@arm.linux.org.uk, yinghai.lu@sun.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dwmw2@infradead.org, alan@redhat.com, m.kozlowski@tuxland.pl,
+       rmk@arm.linux.org.uk
 From: akpm@linux-foundation.org
-Date: Fri, 10 Aug 2007 14:38:45 -0700
+Date: Fri, 10 Aug 2007 14:38:41 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Schmidt <schmidt@digadd.de>
+From: David Woodhouse <dwmw2@infradead.org>
 
-The serial_pci driver tries to guess serial ports on unknown devices based
-on the PCI class (modem or serial).  On certain softmodems (AC'97 modems)
-this can lead to the recognition of non-existing serial ports.
+The uart_set_termios() function will bail out early without bothering to
+touch the hardware, if it decides that nothing "relevant" has changed. 
+Unfortunately, its idea of "relevant" doesn't include c_[io]speed.  So if
+the baud rate bits are BOTHER and you just change the speed, the change
+gets optimised away.
 
-This patch adds a blacklist of PCI IDs that are to be ignored by the driver.
+This patch makes it ignore the old Bfoo bits in c_cflag and just check
+whether c_ispeed and c_ospeed have changed.  Those integers are always set
+appropriately for us by set_termios().
 
-[akpm@linux-foundation.org: cleanups]
-Signed-off-by: Christian Schmidt <schmidt@digadd.de>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Yinghai Lu <yinghai.lu@sun.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+Acked-by: Alan Cox <alan@redhat.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
+Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- drivers/serial/8250_pci.c |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+)
+ drivers/serial/serial_core.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff -puN drivers/serial/8250_pci.c~add-blacklisting-capability-to-serial_pci-to-avoid-misdetection drivers/serial/8250_pci.c
---- a/drivers/serial/8250_pci.c~add-blacklisting-capability-to-serial_pci-to-avoid-misdetection
-+++ a/drivers/serial/8250_pci.c
-@@ -1652,6 +1652,10 @@ static struct pciserial_board pci_boards
- 	},
- };
+diff -puN drivers/serial/serial_core.c~dont-optimise-away-baud-rate-changes-when-bother-is-used drivers/serial/serial_core.c
+--- a/drivers/serial/serial_core.c~dont-optimise-away-baud-rate-changes-when-bother-is-used
++++ a/drivers/serial/serial_core.c
+@@ -1146,11 +1146,14 @@ static void uart_set_termios(struct tty_
  
-+static const struct pci_device_id softmodem_blacklist[] = {
-+	{ PCI_VDEVICE ( AL, 0x5457 ), }, /* ALi Corporation M5457 AC'97 Modem */
-+};
-+
- /*
-  * Given a complete unknown PCI device, try to use some heuristics to
-  * guess what the configuration might be, based on the pitiful PCI
-@@ -1660,6 +1664,7 @@ static struct pciserial_board pci_boards
- static int __devinit
- serial_pci_guess_board(struct pci_dev *dev, struct pciserial_board *board)
- {
-+	const struct pci_device_id *blacklist;
- 	int num_iomem, num_port, first_port = -1, i;
- 	
  	/*
-@@ -1674,6 +1679,18 @@ serial_pci_guess_board(struct pci_dev *d
- 	    (dev->class & 0xff) > 6)
- 		return -ENODEV;
+ 	 * These are the bits that are used to setup various
+-	 * flags in the low level driver.
++	 * flags in the low level driver. We can ignore the Bfoo
++	 * bits in c_cflag; c_[io]speed will always be set
++	 * appropriately by set_termios() in tty_ioctl.c
+ 	 */
+ #define RELEVANT_IFLAG(iflag)	((iflag) & (IGNBRK|BRKINT|IGNPAR|PARMRK|INPCK))
+-
+ 	if ((cflag ^ old_termios->c_cflag) == 0 &&
++	    tty->termios->c_ospeed == old_termios->c_ospeed &&
++	    tty->termios->c_ispeed == old_termios->c_ispeed &&
+ 	    RELEVANT_IFLAG(tty->termios->c_iflag ^ old_termios->c_iflag) == 0)
+ 		return;
  
-+	/*
-+	 * Do not access blacklisted devices that are known not to
-+	 * feature serial ports.
-+	 */
-+	for (blacklist = softmodem_blacklist;
-+	     blacklist < softmodem_blacklist + ARRAY_SIZE(softmodem_blacklist);
-+	     blacklist++) {
-+		if (dev->vendor == blacklist->vendor &&
-+		    dev->device == blacklist->device)
-+			return -ENODEV;
-+	}
-+
- 	num_iomem = num_port = 0;
- 	for (i = 0; i < PCI_NUM_BAR_RESOURCES; i++) {
- 		if (pci_resource_flags(dev, i) & IORESOURCE_IO) {
 _
