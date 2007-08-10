@@ -1,42 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765988AbXHJWPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765006AbXHJWYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765988AbXHJWPj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 18:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765280AbXHJWOZ
+	id S1765006AbXHJWYt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 18:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbXHJWYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 18:14:25 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:36705 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S935050AbXHJWOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 18:14:22 -0400
-Date: Fri, 10 Aug 2007 23:21:57 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "roland" <devzero@web.de>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: Software based ECC ?
-Message-ID: <20070810232157.15db64a5@the-village.bc.nu>
-In-Reply-To: <000a01c7db93$c75b66c0$eeeea8c0@aldipc>
-References: <000a01c7db93$c75b66c0$eeeea8c0@aldipc>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 10 Aug 2007 18:24:38 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39167 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757446AbXHJWYg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 18:24:36 -0400
+Date: Sat, 11 Aug 2007 07:23:52 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, Zoltan.Menyhart@bull.net, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] flush icache before set_pte() on ia64  take9 [2/2]
+ flush icache at set_pte
+Message-Id: <20070811072352.6be17307.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <617E1C2C70743745A92448908E030B2A0224C511@scsmsx411.amr.corp.intel.com>
+References: <20070809135311.0676a947.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070809135721.08841cd7.kamezawa.hiroyu@jp.fujitsu.com>
+	<617E1C2C70743745A92448908E030B2A0224C511@scsmsx411.amr.corp.intel.com>
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007 23:16:45 +0200
-"roland" <devzero@web.de> wrote:
+On Fri, 10 Aug 2007 11:17:30 -0700
+"Luck, Tony" <tony.luck@intel.com> wrote:
 
-> Hello !
+> 1) In arch/ia64/mm/init.c: __ia64_sync_icache_dcache()
 > 
-> since ECC (speaking in terms of ram/memory) is some widespread hardware
-> technology
-> within server/enterprise computing for protection of memory failure,  i
-> wonder:
+> -	if (!pte_exec(pte))
+> -		return;				/* not an executable page... */
+> +	BUG_ON(!pte_exec(pte));
 > 
-> Can`t this be done in software, too ?
+> In this latest version the only route to this routine is from set_pte()
+> inside the test :
+> 
+> 	if (pte_exec(pteval) && ....) {
+> 	}
+> 
+> So this BUG_ON is now redundant.
+> 
+I see.
 
-Only one way to find out. If it interest you - have a go at it
+> 2) In include/asm-ia64/pgtable.h
+> 
+> +	if (pte_exec(pteval) &&    // flush only new executable page.
+> +	    pte_present(pteval) && // swap out ?
+> +	    pte_user(pteval) &&    // ignore kernel page
+> +	    (!pte_present(*ptep) ||// do_no_page or swap in, migration,
+> +		pte_pfn(*ptep) != pte_pfn(pteval))) // do_wp_page(), page copy
+> +		/* load_module() calles flush_icache_range() explicitly*/
+> +		__ia64_sync_icache_dcache(pteval);
+> 
+> Just above this there is a comment saying that pte_exec() only works
+> when pte_present() is true.  So we must re-order the conditions so that
+> we check that the pteval satisfies pte_present() before using either of
+> pte_exec() or pte_user() on it like this:
+> 
+> 	if (pte_present(pteval) &&
+>           pte_exec(pteval) &&
+>           pte_user(pteval) &&
+> 
+> I put in some crude counters to see whether we should check pte_exec() or
+> pte_user() next ... and it was very clear that the pte_exec() check gets
+> us out of the if() faster (at least during a kernel build).
+> 
+ok.
+
+I'm sorry that I'll be offlined until next Wednesday. So, I'll post above
+fix in a week or so.
+
+
+> I also compared how often the old code called lazy_mmu_prot_update()
+> with how often the new code calls __ia64_sync_icache_dcache() (again
+> using kernel build as my workload) ... and the answer is about the
+> same (less than 0.2% change ... probably less than run-to-run variation).
+> 
+> 
+> So now the only remaining task is to convince myself that this
+> new version covers all the cases.
+> 
+yes. I want more eyes for review. 
+
+Thanks,
+-Kame
+
