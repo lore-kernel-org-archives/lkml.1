@@ -1,83 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761909AbXHJVn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbXHJWAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761909AbXHJVn2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 17:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbXHJVnP
+	id S1755888AbXHJWAZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 18:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbXHJWAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 17:43:15 -0400
-Received: from mx2.suse.de ([195.135.220.15]:52351 "EHLO mx2.suse.de"
+	Fri, 10 Aug 2007 18:00:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57214 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750994AbXHJVnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 17:43:13 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: "Chris Snook" <csnook@redhat.com>, <linux-kernel@vger.kernel.org>,
-       <linux-arch@vger.kernel.org>, <torvalds@linux-foundation.org>,
-       <netdev@vger.kernel.org>, <akpm@linux-foundation.org>, <ak@suse.de>,
-       <heiko.carstens@de.ibm.com>, <davem@davemloft.net>,
-       <schwidefsky@de.ibm.com>, <wensong@linux-vs.org>, <horms@verge.net.au>,
-       <wjiang@resilience.com>, <cfriesen@nortel.com>, <zlynx@acm.org>,
-       <rpjday@mindspring.com>, <jesper.juhl@gmail.com>
-Subject: Re: [PATCH 9/24] make atomic_read() behave consistently on ia64
-References: <20070809135107.GA15985@shell.boston.redhat.com>
-	<617E1C2C70743745A92448908E030B2A02213B3C@scsmsx411.amr.corp.intel.com>
-	<46BCC1AF.5050204@redhat.com>
-	<617E1C2C70743745A92448908E030B2A0224C777@scsmsx411.amr.corp.intel.com>
-X-Yow: SANTA CLAUS comes down a FIRE ESCAPE wearing bright
- blue LEG WARMERS..  He scrubs the POPE with a mild
- soap or detergent for 15 minutes, starring JANE FONDA!!
-Date: Fri, 10 Aug 2007 23:42:59 +0200
-In-Reply-To: <617E1C2C70743745A92448908E030B2A0224C777@scsmsx411.amr.corp.intel.com>
-	(Tony Luck's message of "Fri\, 10 Aug 2007 14\:19\:29 -0700")
-Message-ID: <jewsw3oyl8.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	id S1752640AbXHJWAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 18:00:00 -0400
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
+       mingo@elte.hu, chrisw@sous-sol.org, jeremy@goop.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       lguest@ozlabs.org, glommer@gmail.com,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH 5/25 -v2] native versions for system.h functions
+Date: Fri, 10 Aug 2007 16:12:17 -0300
+Message-Id: <11867731831138-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <11867731781610-git-send-email-gcosta@redhat.com>
+References: <1186773157329-git-send-email-gcosta@redhat.com> <11867731633002-git-send-email-gcosta@redhat.com> <11867731681763-git-send-email-gcosta@redhat.com> <11867731732274-git-send-email-gcosta@redhat.com> <11867731781610-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Luck, Tony" <tony.luck@intel.com> writes:
+This patch adds the native hook for the functions in system.h
+They are the read/write_crX, clts and wbinvd. The later, also
+gets its call sites patched.
 
->> That's distressing.  I'm about to resubmit with a volatile cast in 
->> atomic_set as well, since people expect that behavior and I've been 
->> shown a legitimate case where it could matter.  Does the assembly look 
->> right with that cast in atomic_set() as well?
->
-> No.  With the casts to volatile in atomic_set and atomic64_set I
-> still see places where ld8 is changed to ld4 + sign-extend.
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ arch/x86_64/kernel/tce.c    |    2 +-
+ arch/x86_64/mm/pageattr.c   |    2 +-
+ include/asm-x86_64/system.h |   54 +++++++++++++++++++++++++++++-------------
+ 3 files changed, 39 insertions(+), 19 deletions(-)
 
-Use atomic64_read to read an atomic64_t.
-
-Signed-off-by: Andreas Schwab <schwab@suse.de>
-
-diff --git a/include/asm-ia64/atomic.h b/include/asm-ia64/atomic.h
-index 1fc3b83..50c2b83 100644
---- a/include/asm-ia64/atomic.h
-+++ b/include/asm-ia64/atomic.h
-@@ -55,7 +55,7 @@ ia64_atomic64_add (__s64 i, atomic64_t *v)
+diff --git a/arch/x86_64/kernel/tce.c b/arch/x86_64/kernel/tce.c
+index e3f2569..587f0c2 100644
+--- a/arch/x86_64/kernel/tce.c
++++ b/arch/x86_64/kernel/tce.c
+@@ -42,7 +42,7 @@ static inline void flush_tce(void* tceaddr)
+ 	if (cpu_has_clflush)
+ 		asm volatile("clflush (%0)" :: "r" (tceaddr));
+ 	else
+-		asm volatile("wbinvd":::"memory");
++		wbinvd();
+ }
  
- 	do {
- 		CMPXCHG_BUGCHECK(v);
--		old = atomic_read(v);
-+		old = atomic64_read(v);
- 		new = old + i;
- 	} while (ia64_cmpxchg(acq, v, old, new, sizeof(atomic64_t)) != old);
- 	return new;
-@@ -83,7 +83,7 @@ ia64_atomic64_sub (__s64 i, atomic64_t *v)
+ void tce_build(struct iommu_table *tbl, unsigned long index,
+diff --git a/arch/x86_64/mm/pageattr.c b/arch/x86_64/mm/pageattr.c
+index 7e161c6..b497afd 100644
+--- a/arch/x86_64/mm/pageattr.c
++++ b/arch/x86_64/mm/pageattr.c
+@@ -76,7 +76,7 @@ static void flush_kernel_map(void *arg)
+ 	/* When clflush is available always use it because it is
+ 	   much cheaper than WBINVD. */
+ 	if (!cpu_has_clflush)
+-		asm volatile("wbinvd" ::: "memory");
++		wbinvd();
+ 	else list_for_each_entry(pg, l, lru) {
+ 		void *adr = page_address(pg);
+ 		cache_flush_page(adr);
+diff --git a/include/asm-x86_64/system.h b/include/asm-x86_64/system.h
+index 02175aa..20ed9df 100644
+--- a/include/asm-x86_64/system.h
++++ b/include/asm-x86_64/system.h
+@@ -68,53 +68,56 @@ extern void load_gs_index(unsigned);
+ /*
+  * Clear and set 'TS' bit respectively
+  */
+-#define clts() __asm__ __volatile__ ("clts")
++static inline void native_clts(void)
++{
++	asm volatile ("clts");
++}
  
- 	do {
- 		CMPXCHG_BUGCHECK(v);
--		old = atomic_read(v);
-+		old = atomic64_read(v);
- 		new = old - i;
- 	} while (ia64_cmpxchg(acq, v, old, new, sizeof(atomic64_t)) != old);
- 	return new;
-
-Andreas.
-
+-static inline unsigned long read_cr0(void)
+-{ 
++static inline unsigned long native_read_cr0(void)
++{
+ 	unsigned long cr0;
+ 	asm volatile("movq %%cr0,%0" : "=r" (cr0));
+ 	return cr0;
+ }
+ 
+-static inline void write_cr0(unsigned long val) 
+-{ 
++static inline void native_write_cr0(unsigned long val)
++{
+ 	asm volatile("movq %0,%%cr0" :: "r" (val));
+ }
+ 
+-static inline unsigned long read_cr2(void)
++static inline unsigned long native_read_cr2(void)
+ {
+ 	unsigned long cr2;
+ 	asm("movq %%cr2,%0" : "=r" (cr2));
+ 	return cr2;
+ }
+ 
+-static inline void write_cr2(unsigned long val)
++static inline void native_write_cr2(unsigned long val)
+ {
+ 	asm volatile("movq %0,%%cr2" :: "r" (val));
+ }
+ 
+-static inline unsigned long read_cr3(void)
+-{ 
++static inline unsigned long native_read_cr3(void)
++{
+ 	unsigned long cr3;
+ 	asm("movq %%cr3,%0" : "=r" (cr3));
+ 	return cr3;
+ }
+ 
+-static inline void write_cr3(unsigned long val)
++static inline void native_write_cr3(unsigned long val)
+ {
+ 	asm volatile("movq %0,%%cr3" :: "r" (val) : "memory");
+ }
+ 
+-static inline unsigned long read_cr4(void)
+-{ 
++static inline unsigned long native_read_cr4(void)
++{
+ 	unsigned long cr4;
+ 	asm("movq %%cr4,%0" : "=r" (cr4));
+ 	return cr4;
+ }
+ 
+-static inline void write_cr4(unsigned long val)
+-{ 
++static inline void native_write_cr4(unsigned long val)
++{
+ 	asm volatile("movq %0,%%cr4" :: "r" (val) : "memory");
+ }
+ 
+@@ -130,10 +133,27 @@ static inline void write_cr8(unsigned long val)
+ 	asm volatile("movq %0,%%cr8" :: "r" (val) : "memory");
+ }
+ 
+-#define stts() write_cr0(8 | read_cr0())
++static inline void native_wbinvd(void)
++{
++	asm volatile ("wbinvd" ::: "memory");
++}
+ 
+-#define wbinvd() \
+-	__asm__ __volatile__ ("wbinvd": : :"memory")
++#ifdef CONFIG_PARAVIRT
++#include <asm/paravirt.h>
++#else
++#define clts		native_clts
++#define wbinvd		native_wbinvd
++#define read_cr0 	native_read_cr0
++#define read_cr2 	native_read_cr2
++#define read_cr3 	native_read_cr3
++#define read_cr4 	native_read_cr4
++#define write_cr0	native_write_cr0
++#define write_cr2	native_write_cr2
++#define write_cr3	native_write_cr3
++#define write_cr4	native_write_cr4
++#endif
++
++#define stts() write_cr0(8 | read_cr0())
+ 
+ #endif	/* __KERNEL__ */
+ 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.4.4.2
+
