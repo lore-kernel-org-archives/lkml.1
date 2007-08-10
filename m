@@ -1,138 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942385AbXHJVN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbXHJVPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942385AbXHJVN2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 17:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761742AbXHJVNH
+	id S1753882AbXHJVPq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 17:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbXHJVPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 17:13:07 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:54963 "EHLO atlrel6.hp.com"
+	Fri, 10 Aug 2007 17:15:36 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1076 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934162AbXHJVND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 17:13:03 -0400
-Subject: Re: [patch][rfc] 2.6.23-rc1 mm: NUMA replicated pagecache
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Joachim Deguara <joachim.deguara@amd.com>,
-       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
-       Eric Whitney <eric.whitney@hp.com>
-In-Reply-To: <1186604723.5055.47.camel@localhost>
-References: <20070727084252.GA9347@wotan.suse.de>
-	 <1186604723.5055.47.camel@localhost>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 10 Aug 2007 17:08:18 -0400
-Message-Id: <1186780099.5246.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	id S1752790AbXHJVPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 17:15:35 -0400
+Date: Fri, 10 Aug 2007 23:15:55 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Willy Tarreau <w@1wt.eu>
+cc: Michael Chang <thenewme91@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+In-Reply-To: <20070810194705.GH6002@1wt.eu>
+Message-ID: <Pine.LNX.4.64.0708102235320.1817@scrub.home>
+References: <p73ps27npu0.fsf@bingen.suse.de>
+ <alpine.LFD.0.999.0708010924490.3582@woody.linux-foundation.org>
+ <20070801175004.GA17936@elte.hu> <Pine.LNX.4.64.0708011955430.1817@scrub.home>
+ <20070801190556.GA1199@elte.hu> <Pine.LNX.4.64.0708100037460.1817@scrub.home>
+ <20070810054948.GA5908@elte.hu> <Pine.LNX.4.64.0708101459530.1817@scrub.home>
+ <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com>
+ <Pine.LNX.4.64.0708101919270.1817@scrub.home> <20070810194705.GH6002@1wt.eu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-08 at 16:25 -0400, Lee Schermerhorn wrote:
-> On Fri, 2007-07-27 at 10:42 +0200, Nick Piggin wrote:
-> > Hi,
-> > 
-> > Just got a bit of time to take another look at the replicated pagecache
-> > patch. The nopage vs invalidate race and clear_page_dirty_for_io fixes
-> > gives me more confidence in the locking now; the new ->fault API makes
-> > MAP_SHARED write faults much more efficient; and a few bugs were found
-> > and fixed.
-> > 
-> > More stats were added: *repl* in /proc/vmstat. Survives some kbuilding
-> > tests...
-> > 
-> 
-> Sending this out to give Nick an update and to give the list a
-> heads up on what I've found so far with the replication patch.
-> 
-> I have rebased Nick's recent pagecache replication patch against
-> 2.6.23-rc1-mm2, atop my memory policy and auto/lazy migration
-> patch sets.  These include:
-> 
-> + shared policy
-> + migrate-on-fault a.k.a. lazy migration
-> + auto-migration - trigger lazy migration on inter-node task
->                    task migration
-> + migration cache - pseudo-swap cache for parking unmapped
->                     anon pages awaiting migrate-on-fault
-> 
-> I added a couple of patches to fix up the interaction of replication
-> with migration [discussed more below] and a per cpuset control to
-> enable/disable replication.  The latter allowed me to boot successfully
-> and to survive any bugs encountered by restricting the effects to 
-> tasks in the test cpuset with replication enabled.  That was the
-> theory, anyway :-).  Mostly worked...
+Hi,
 
-After I sent out the last update, I ran a usex job mix overnight ~19.5 hours.
-When I came in the next morning, the console window was full of soft lockups
-on various cpus with varions stack traces.  /var/log/messages showed 142, in
-all.
+On Fri, 10 Aug 2007, Willy Tarreau wrote:
 
-I've placed the soft lockup reports from /var/log/messages in the Replication
-directory on free.linux:
+> fortunately all bug reporters are not like you. It's amazing how long
+> you can resist sending a simple bug report to a developer!
 
-	http://free.linux.hp.com/~lts/Patches/Replication.
+I'm more amazed how long Ingo can resist providing some explanations (not 
+just about this problem).
+It's not like I haven't given him anything, he already has the test 
+programs, he already knows the system configuration.
+Well, I've sent him the stuff now...
 
-The lockups appeared in several places in the traces I looked at.  Here's a
-couple of examples:
+> Maybe you
+> consider that you need to fix the bug by yourself after you understand
+> the code,
 
-+ unlink_file_vma() from free_pgtables() during task exit:
-	mapping->i_mmap_lock ???
+Fixing the bug requires some knowledge what the code is intended to do.
 
-+ smp_call_function() from ia64_global_tlb_purge().
-	  Maybe the 'call_lock' in arch/ia64/kernel/smp.c ?
-  Traces show us getting to here in one of 2 ways:
+> Please try to be a little bit more transparent if you really want the
+> bugs fixed, and don't behave as if you wanted this bug to survive
+> till -final.
 
-  1) try_to_unmap* during auto task migration [migrate_pages_unmap_only()...]
+Could you please ask Ingo the same? I'm simply trying to get some 
+transparancy into the CFS design. Without further information it's 
+difficult to tell, whether something is supposed to work this way or it's 
+a bug.
 
-  2) from zap_page_range() when __unreplicate_pcache() calls unmap_mapping_range.
+In this case it's quite possible that due to a recent change my testcase 
+doesn't work anymore. Should I consider the problem fixed or did it just 
+go into hiding? Without more information it's difficult to verify this 
+independently.
 
-+ get_page_from_freelist -> zone_lru_lock?
-
-An interesting point:  all of the soft lockup messages said that the cpu was
-locked for 11s.  Ring any bells?
-
-
-I should note that I was trying to unmap all mappings to the file backed pages
-on internode task migration, instead of just the current task's pte's.  However,
-I was only attempting this on pages with  mapcount <= 4.  So, I don't think I 
-was looping trying to unmap pages with mapcounts of several 10s--such as I see
-on some page cache pages in my traces.
-
-Today, after rebasing to 23-rc2-mm2, I added a patch to unmap only the current
-task's ptes for ALL !anon pages, regardless of mapcount.  I've started the test
-again and will let it run over the weekend--or as long as it stays up, which 
-ever is shorter :-).
-
-I put a tarball with the rebased series in the Replication directory linked
-above, in case you're interested.  I haven't added the patch description for
-the new patch yet, but it's pretty simple.  Maybe even correct.
-
-----
-
-Unrelated to the lockups  [I think]:
-
-I forgot to look before I rebooted, but earlier the previous evening, I checked
-the vmstats and at that point [~1.5 hours into the test] we had done ~4.88 million
-replications and ~4.8 million "zaps" [collapse of replicated page].  That's around
-98% zaps.  Do we need some filter in the fault path to reduce the "thrashing"--if
-that's what I'm seeing.  
-
-A while back I took a look at the Virtual Iron page replication patch.  They had
-set VM_DENY_WRITE when mapping shared executable segments, and only replicated pages
-in those VMAs.  Maybe 'DENY_WRITE isn't exactly what we want.  Possibly set another
-flag for shared executables, if we can detect them, and any shared mapping that has
-no writable mappings ?
-
-I'll try to remember to check the replication statistics after the currently
-running test.  If the system stays up, that is.  A quick look < 10 minutes into
-the test shows that zaps are now ~84% of replications.  Also, ~47k replicated pages
-out of ~287K file pages.
-
-Lee
-
-
-
-
+bye, Roman
