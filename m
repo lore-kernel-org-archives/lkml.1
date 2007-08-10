@@ -1,68 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940576AbXHJU7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941899AbXHJVAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940576AbXHJU7a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 16:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbXHJU7X
+	id S941899AbXHJVAy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 17:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765867AbXHJVAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 16:59:23 -0400
-Received: from 1wt.eu ([62.212.114.60]:1292 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755089AbXHJU7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 16:59:23 -0400
-Date: Fri, 10 Aug 2007 22:51:17 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Documentation files in html format?
-Message-ID: <20070810205117.GJ6002@1wt.eu>
-References: <20070809113122.3aa508e4@oldman.hamilton.local> <20070810201704.GI6002@1wt.eu> <20070810204025.GC29549@fieldses.org>
-Mime-Version: 1.0
+	Fri, 10 Aug 2007 17:00:37 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52129 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759936AbXHJVAf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 17:00:35 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       coreteam@netfilter.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 1/7] sysctl: Remove broken cdrom binary sysctls
+References: <20070809224254.11f42716.akpm@linux-foundation.org>
+	<46BC8F71.3070006@googlemail.com> <46BC944F.9020801@googlemail.com>
+	<m1fy2rxpje.fsf@ebiederm.dsl.xmission.com>
+	<20070810124156.2de9710e.akpm@linux-foundation.org>
+Date: Fri, 10 Aug 2007 15:00:05 -0600
+In-Reply-To: <20070810124156.2de9710e.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Fri, 10 Aug 2007 12:41:56 -0700")
+Message-ID: <m1ps1vw1ey.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070810204025.GC29549@fieldses.org>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 04:40:25PM -0400, J. Bruce Fields wrote:
-> On Fri, Aug 10, 2007 at 10:17:04PM +0200, Willy Tarreau wrote:
-> > I've read pro-plain text arguments, so I'll not repeat them. I also see
-> > another advantage to plain text : it's very easy to draw ascii-art
-> > diagrams of anything. It only takes a few minutes, is always inline
-> > and readable with any tool.
-> 
-> Asciidoc should preserve ascii-art diagrams OK; the git docs use them
-> all over.
-> 
-> Not that I'd necessarily push asciidoc.  But:
-> 
-> > I'd prefer that you define some writing conventions for plain-text
-> > documents that anyone should try follow, starting with the 80-cols
-> > limit to make Davem happy. I think that many of us can help define
-> > such a "standard" indicating how to underline subtitles, how to
-> > enumerate a list, how to avoid using tabs, how to write boxes and
-> > arrows in their diagrams, etc...
-> 
-> ... at the point where you actually start setting standards for subtitle
-> underlining and list enumeration, you'd want to take another look at
-> asciidoc; since it already defines conventions for that stuff (which
-> are probably close to what people would do anyway), it might make sense
-> just to start using asciidoc.
 
-The problem I have with asciidoc is that it's a nightmare to get it
-to work. It's what GIT uses, and after spending a whole day trying
-to *build* that thing, I finally resigned and asked Junio if he could
-publish the pre-formatted manpages himself, which he agreed to.
+The binary interface for the cdrom sysctls can't possilby work.
+So remove the binary sysctls and reduce cdrom_sysctl_handler
+to it's essentials (to kill the uses of ctl_name).
 
-All I remember is that there was a very deep level of dependencies
-through XML craps^H^H^H^H^Hpackages and I don't remember what magic
-things, but one full day trying to build something to read a doc is
-too much, so I imagine that I would not even have tried that long
-if I had wanted to complete a doc and check that my changes looked
-right.
+Since the last time this patch was posted I radically
+simplified cdrom_sysctl_helper to meet address Alan's objections.
 
-Maybe the language is fine, but the tool needs to build first.
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
 
-Willy
+ drivers/cdrom/cdrom.c |   46 ++++++----------------------------------------
+ 1 files changed, 6 insertions(+), 40 deletions(-)
+
+diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
+index 67ee3d4..679c7c0 100644
+--- a/drivers/cdrom/cdrom.c
++++ b/drivers/cdrom/cdrom.c
+@@ -3454,47 +3454,19 @@ static void cdrom_update_settings(void)
+ static int cdrom_sysctl_handler(ctl_table *ctl, int write, struct file * filp,
+ 				void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+-	int *valp = ctl->data;
+-	int val = *valp;
+ 	int ret;
+ 	
+ 	ret = proc_dointvec(ctl, write, filp, buffer, lenp, ppos);
+ 
+-	if (write && *valp != val) {
++	if (write) {
+ 	
+ 		/* we only care for 1 or 0. */
+-		if (*valp)
+-			*valp = 1;
+-		else
+-			*valp = 0;
++		autoclose        = !!cdrom_sysctl_settings.autoclose;
++		autoeject        = !!cdrom_sysctl_settings.autoeject;
++		debug	         = !!cdrom_sysctl_settings.debug;
++		lockdoor         = !!cdrom_sysctl_settings.lock;
++		check_media_type = !!cdrom_sysctl_settings.check;
+ 
+-		switch (ctl->ctl_name) {
+-		case DEV_CDROM_AUTOCLOSE: {
+-			if (valp == &cdrom_sysctl_settings.autoclose)
+-				autoclose = cdrom_sysctl_settings.autoclose;
+-			break;
+-			}
+-		case DEV_CDROM_AUTOEJECT: {
+-			if (valp == &cdrom_sysctl_settings.autoeject)
+-				autoeject = cdrom_sysctl_settings.autoeject;
+-			break;
+-			}
+-		case DEV_CDROM_DEBUG: {
+-			if (valp == &cdrom_sysctl_settings.debug)
+-				debug = cdrom_sysctl_settings.debug;
+-			break;
+-			}
+-		case DEV_CDROM_LOCK: {
+-			if (valp == &cdrom_sysctl_settings.lock)
+-				lockdoor = cdrom_sysctl_settings.lock;
+-			break;
+-			}
+-		case DEV_CDROM_CHECK_MEDIA: {
+-			if (valp == &cdrom_sysctl_settings.check)
+-				check_media_type = cdrom_sysctl_settings.check;
+-			break;
+-			}
+-		}
+ 		/* update the option flags according to the changes. we
+ 		   don't have per device options through sysctl yet,
+ 		   but we will have and then this will disappear. */
+@@ -3507,7 +3479,6 @@ static int cdrom_sysctl_handler(ctl_table *ctl, int write, struct file * filp,
+ /* Place files in /proc/sys/dev/cdrom */
+ static ctl_table cdrom_table[] = {
+ 	{
+-		.ctl_name	= DEV_CDROM_INFO,
+ 		.procname	= "info",
+ 		.data		= &cdrom_sysctl_settings.info, 
+ 		.maxlen		= CDROM_STR_SIZE,
+@@ -3515,7 +3486,6 @@ static ctl_table cdrom_table[] = {
+ 		.proc_handler	= &cdrom_sysctl_info,
+ 	},
+ 	{
+-		.ctl_name	= DEV_CDROM_AUTOCLOSE,
+ 		.procname	= "autoclose",
+ 		.data		= &cdrom_sysctl_settings.autoclose,
+ 		.maxlen		= sizeof(int),
+@@ -3523,7 +3493,6 @@ static ctl_table cdrom_table[] = {
+ 		.proc_handler	= &cdrom_sysctl_handler,
+ 	},
+ 	{
+-		.ctl_name	= DEV_CDROM_AUTOEJECT,
+ 		.procname	= "autoeject",
+ 		.data		= &cdrom_sysctl_settings.autoeject,
+ 		.maxlen		= sizeof(int),
+@@ -3531,7 +3500,6 @@ static ctl_table cdrom_table[] = {
+ 		.proc_handler	= &cdrom_sysctl_handler,
+ 	},
+ 	{
+-		.ctl_name	= DEV_CDROM_DEBUG,
+ 		.procname	= "debug",
+ 		.data		= &cdrom_sysctl_settings.debug,
+ 		.maxlen		= sizeof(int),
+@@ -3539,7 +3507,6 @@ static ctl_table cdrom_table[] = {
+ 		.proc_handler	= &cdrom_sysctl_handler,
+ 	},
+ 	{
+-		.ctl_name	= DEV_CDROM_LOCK,
+ 		.procname	= "lock",
+ 		.data		= &cdrom_sysctl_settings.lock,
+ 		.maxlen		= sizeof(int),
+@@ -3547,7 +3514,6 @@ static ctl_table cdrom_table[] = {
+ 		.proc_handler	= &cdrom_sysctl_handler,
+ 	},
+ 	{
+-		.ctl_name	= DEV_CDROM_CHECK_MEDIA,
+ 		.procname	= "check_media",
+ 		.data		= &cdrom_sysctl_settings.check,
+ 		.maxlen		= sizeof(int),
+-- 
+1.5.1.1.181.g2de0
 
