@@ -1,67 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938653AbXHJL7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938914AbXHJL7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938653AbXHJL7K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 07:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936856AbXHJLzR
+	id S938914AbXHJL7n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 07:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937260AbXHJL4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 07:55:17 -0400
-Received: from mta-mad.optenet.com ([213.27.232.70]:54409 "EHLO
-	mta-mad.optenet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936829AbXHJLzN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 07:55:13 -0400
-Subject: Re: [PATCH 1/1] af_packet: don't enable timestamps in mmap'ed
-	sockets
-From: Unai Uribarri <unai.uribarri@optenet.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070810083418.GA25479@2ka.mipt.ru>
-References: <1186669314.24669.56.camel@localhost.localdomain>
-	 <20070809143322.GA5345@2ka.mipt.ru>
-	 <1186683234.24669.65.camel@localhost.localdomain>
-	 <20070809181823.GA32449@2ka.mipt.ru>
-	 <1186685061.24669.76.camel@localhost.localdomain>
-	 <20070810083418.GA25479@2ka.mipt.ru>
-Content-Type: text/plain
-Organization: Optenet
-Date: Fri, 10 Aug 2007 13:55:07 +0200
-Message-Id: <1186746907.24669.107.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 10 Aug 2007 07:56:15 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:30719 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937234AbXHJL4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 07:56:13 -0400
+Date: Fri, 10 Aug 2007 15:47:57 +0400
+From: xemul@openvz.org
+To: akpm@osdl.org
+Cc: xemul@openvz.org, devel@openvz.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, oleg@tv-sign.ru, sukadev@us.ibm.com
+Subject: [PATCH 4/20] Prepare proc_flust_task() to flush entries from 
+ multiple proc trees
+Message-ID: <46BC506D.mailGJ111V6ET@openvz.org>
+User-Agent: nail 11.4 8/29/04
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On vie, 2007-08-10 at 12:34 +0400, Evgeniy Polyakov wrote:
-> Hi Unai.
-> 
-> On Thu, Aug 09, 2007 at 08:44:21PM +0200, Unai Uribarri (unai.uribarri@optenet.com) wrote:
-> > There is another option:
-> > 
-> > 1. Move timestampt activation to packet_set_ring(), so it's activated
-> > only once at setup instead of every time a packet arrives.
-> 
-> Does this break existing systems which expects timestamp be turned on
-> always if there are packet sockets.
-> 
+The first part is trivial - we just make the proc_flush_task() to
+operate on arbitrary vfsmount with arbitrary ids and pass the pid and
+global proc_mnt to it.
 
-Well, current behaviour is that all packets get always timestamped if
-the socket has a reception ring. We are just activating it a bit sooner
-at the setsockopt(SOL_PACKET, PACKET_RX_RING) call instead of waiting
-until the reception of the first packet. And current applications can't
-disable it if we use a new socket option. So I can see how an
-application can break.
+The other change is more tricky: I moved the proc_flush_task() call in
+release_task() higher to address the following problem.
 
-> > 2. Fix sock_setsockopt() so setting SO_TIMESTAMP to 0 effectively
-> > disables timestamp.
-> 
-> This breaks compatibility. Add new socket option, which will really
-> disable it and do all your logic, but not breaking existing
-> applications.
-> 
+When flushing task from many proc trees we need to know the set of ids
+(not just one pid) to find the dentries' names to flush. Thus we need
+to pass the task's pid to proc_flush_task() as struct pid is the only
+object that can provide all the pid numbers. But after __exit_signal()
+task has detached all his pids and this information is lost.
 
-Is SO_TIMESTAMP2 a valid name? I can't imagine how to call it.
+This creates a tiny gap for proc_pid_lookup() to bring some dentries
+back to tree and keep them in hash (since pids are still alive before
+__exit_signal()) till the next shrink, but since proc_flush_task()
+does not provide a 100% guarantee that the dentries will be flushed,
+this is OK to do so.
 
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
 
+---
 
+ fs/proc/base.c          |   27 ++++++++++++++++++++-------
+ include/linux/proc_fs.h |    4 +++-
+ kernel/exit.c           |    2 +-
+ 3 files changed, 24 insertions(+), 9 deletions(-)
 
+--- ./fs/proc/base.c.ve5	2007-08-06 12:44:54.000000000 +0400
++++ ./fs/proc/base.c	2007-08-06 12:44:56.000000000 +0400
+@@ -74,6 +74,7 @@
+ #include <linux/nsproxy.h>
+ #include <linux/oom.h>
+ #include <linux/elf.h>
++#include <linux/pid_namespace.h>
+ #include "internal.h"
+ 
+ /* NOTE:
+@@ -2115,27 +2116,27 @@ static const struct inode_operations pro
+  *       that no dcache entries will exist at process exit time it
+  *       just makes it very unlikely that any will persist.
+  */
+-void proc_flush_task(struct task_struct *task)
++static void proc_flush_task_mnt(struct vfsmount *mnt, pid_t pid, pid_t tgid)
+ {
+ 	struct dentry *dentry, *leader, *dir;
+ 	char buf[PROC_NUMBUF];
+ 	struct qstr name;
+ 
+ 	name.name = buf;
+-	name.len = snprintf(buf, sizeof(buf), "%d", task->pid);
+-	dentry = d_hash_and_lookup(proc_mnt->mnt_root, &name);
++	name.len = snprintf(buf, sizeof(buf), "%d", pid);
++	dentry = d_hash_and_lookup(mnt->mnt_root, &name);
+ 	if (dentry) {
+ 		shrink_dcache_parent(dentry);
+ 		d_drop(dentry);
+ 		dput(dentry);
+ 	}
+ 
+-	if (thread_group_leader(task))
++	if (tgid == 0)
+ 		goto out;
+ 
+ 	name.name = buf;
+-	name.len = snprintf(buf, sizeof(buf), "%d", task->tgid);
+-	leader = d_hash_and_lookup(proc_mnt->mnt_root, &name);
++	name.len = snprintf(buf, sizeof(buf), "%d", tgid);
++	leader = d_hash_and_lookup(mnt->mnt_root, &name);
+ 	if (!leader)
+ 		goto out;
+ 
+@@ -2146,7 +2147,7 @@ void proc_flush_task(struct task_struct 
+ 		goto out_put_leader;
+ 
+ 	name.name = buf;
+-	name.len = snprintf(buf, sizeof(buf), "%d", task->pid);
++	name.len = snprintf(buf, sizeof(buf), "%d", pid);
+ 	dentry = d_hash_and_lookup(dir, &name);
+ 	if (dentry) {
+ 		shrink_dcache_parent(dentry);
+@@ -2161,6 +2162,18 @@ out:
+ 	return;
+ }
+ 
++/*
++ * when flushing dentries from proc one need to flush them from global
++ * proc (proc_mnt) and from all the namespaces' procs this task was seen
++ * in. this call is supposed to make all this job.
++ */
++
++void proc_flush_task(struct task_struct *task)
++{
++	proc_flush_task_mnt(proc_mnt, task->pid,
++			thread_group_leader(task) ? 0 : task->tgid);
++}
++
+ static struct dentry *proc_pid_instantiate(struct inode *dir,
+ 					   struct dentry * dentry,
+ 					   struct task_struct *task, const void *ptr)
+--- ./include/linux/proc_fs.h.ve5	2007-08-06 12:44:54.000000000 +0400
++++ ./include/linux/proc_fs.h	2007-08-06 12:44:56.000000000 +0400
+@@ -223,7 +223,9 @@ static inline void proc_net_remove(const
+ #define proc_net_create(name, mode, info)	({ (void)(mode), NULL; })
+ static inline void proc_net_remove(const char *name) {}
+ 
+-static inline void proc_flush_task(struct task_struct *task) { }
++static inline void proc_flush_task(struct task_struct *task)
++{
++}
+ 
+ static inline struct proc_dir_entry *create_proc_entry(const char *name,
+ 	mode_t mode, struct proc_dir_entry *parent) { return NULL; }
+--- ./kernel/exit.c.ve5	2007-08-06 12:44:56.000000000 +0400
++++ ./kernel/exit.c	2007-08-06 12:44:56.000000000 +0400
+@@ -157,6 +157,7 @@ void release_task(struct task_struct * p
+ 	int zap_leader;
+ repeat:
+ 	atomic_dec(&p->user->processes);
++	proc_flush_task(p);
+ 	write_lock_irq(&tasklist_lock);
+ 	ptrace_unlink(p);
+ 	BUG_ON(!list_empty(&p->ptrace_list) || !list_empty(&p->ptrace_children));
+@@ -184,7 +185,6 @@ repeat:
+ 	}
+ 
+ 	write_unlock_irq(&tasklist_lock);
+-	proc_flush_task(p);
+ 	release_thread(p);
+ 	call_rcu(&p->rcu, delayed_put_task_struct);
+ 
