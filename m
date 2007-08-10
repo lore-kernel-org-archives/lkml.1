@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761664AbXHJW7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764395AbXHJW77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761664AbXHJW7T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 18:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbXHJW7G
+	id S1764395AbXHJW77 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 18:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXHJW7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 18:59:06 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:39922 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752807AbXHJW7F (ORCPT
+	Fri, 10 Aug 2007 18:59:48 -0400
+Received: from mga01.intel.com ([192.55.52.88]:12452 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752095AbXHJW7q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 18:59:05 -0400
-Message-ID: <46BCECED.7050002@gmail.com>
-Date: Sat, 11 Aug 2007 00:55:41 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 10 Aug 2007 18:59:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,246,1183359600"; 
+   d="scan'208";a="279420569"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Matti Aarnio <matti.aarnio@zmailer.org>
-CC: Vlad <vladc6@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: Re: Noatime vs relatime
-References: <233939.75965.qm@web54403.mail.yahoo.com> <20070810151014.GT6372@mea-ext.zmailer.org>
-In-Reply-To: <20070810151014.GT6372@mea-ext.zmailer.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 9/24] make atomic_read() behave consistently on ia64
+Date: Fri, 10 Aug 2007 15:59:44 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A0224C8D7@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <46BCE9F8.4060009@redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 9/24] make atomic_read() behave consistently on ia64
+Thread-Index: Acfbn9UhFk01w3aqTHeIYAbo/zeVAgAAM7AQ
+References: <20070809135107.GA15985@shell.boston.redhat.com><617E1C2C70743745A92448908E030B2A02213B3C@scsmsx411.amr.corp.intel.com><46BCC1AF.5050204@redhat.com><617E1C2C70743745A92448908E030B2A0224C777@scsmsx411.amr.corp.intel.com> <jewsw3oyl8.fsf@sykes.suse.de> <617E1C2C70743745A92448908E030B2A0224C88B@scsmsx411.amr.corp.intel.com> <46BCE9F8.4060009@redhat.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Chris Snook" <csnook@redhat.com>
+Cc: "Andreas Schwab" <schwab@suse.de>, <linux-kernel@vger.kernel.org>,
+       <linux-arch@vger.kernel.org>, <torvalds@linux-foundation.org>,
+       <netdev@vger.kernel.org>, <akpm@linux-foundation.org>, <ak@suse.de>,
+       <heiko.carstens@de.ibm.com>, <davem@davemloft.net>,
+       <schwidefsky@de.ibm.com>, <wensong@linux-vs.org>, <horms@verge.net.au>,
+       <wjiang@resilience.com>, <cfriesen@nortel.com>, <zlynx@acm.org>,
+       <rpjday@mindspring.com>, <jesper.juhl@gmail.com>
+X-OriginalArrivalTime: 10 Aug 2007 22:59:45.0551 (UTC) FILETIME=[250359F0:01C7DBA2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/10/2007 05:10 PM, Matti Aarnio wrote:
+> Possibly.  Either that or we've uncovered some latent bugs.  Maybe a 
+> combination of the two.  Can you list those 19 changes so we can 
+evaluate them?
 
-> On Fri, Aug 10, 2007 at 07:26:46AM -0700, Vlad wrote:
-> ... 
->> "Warning: Atime will be disabled by default in future kernel versions,
->> but you will still be able to turn it on when configuring the kernel."
->>
->> This should give a heads-up to the 0.001% of people who still use
->> atime so that they know to customize this option or start using modern
->> file-monitoring techniques like inotify.
-> 
-> NO for two reasons:
->   - atime semantics are just fine in server environments
->   - inotify IS NOT scalable to millions of files, nor
->     to situations where we want to check alteration weeks
->     or months after the fact
-> 
-> In reality I would perhaps prefer mount-behaviour being altered
-> from 'by default do atime' to 'by default do noatime.
+Here are the functions in which they occur in the object file. You
+may have to chase down some inlining to find the function that
+actually uses atomic_*().
 
-I must say I've been wondering about relatime a bit as well. Are there 
-actually users who do really want atime, but not badly enough to want real 
-atime?
+freeque
+do_msgrcv
+sk_free
+sock_wfree
+sock_rfree
+sock_kmalloc
+sock_kfree_s
+sock_setsockopt
+skb_release_data
+__sk_stream_mem_reclaim
+sk_tream_mem_schedule
+sk_stream_rfree
+sk_attach_filter
+ip_frag_destroy * 2
+ip_frag_queue * 2
+ip_frag_reasm * 2
 
-I've been running with noatime for years now and do not plan on changing 
-that so have been shrugging this entire discussion off with "no care of 
-mine", but whose care _is_ it?
-
-> There MUST be an easy way to tell system that "yes, I want to track
-> last accesstime."
-
-mount -o atime. Or as far as I'm concerned, keep the default as posixly 
-compliant as one wants and teach people and distributions to mount "noatime" 
-as I hear some have already been doing. I may be wrong, but to me, relatime 
-sounds like compromising for the sake of compromising...
-
-Rene.
+-Tony
 
