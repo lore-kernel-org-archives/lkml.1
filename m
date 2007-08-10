@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937175AbXHJSrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941061AbXHJSrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937175AbXHJSrG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 14:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935664AbXHJSqk
+	id S941061AbXHJSrh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 14:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936822AbXHJSr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 14:46:40 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:32864 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760720AbXHJSqj (ORCPT
+	Fri, 10 Aug 2007 14:47:27 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:11872 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935664AbXHJSr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 14:46:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=O1EduXiF/TAW5vUO7lzghM4C3PqT+Yo9T2kH3D0AYWFkewD0N36OLQENvOBV1EckPE3AwjuKL+yIJRH43+UfqHmDsRmKOq/9HufL7th4mE5nw+jvQkq4Or7hQIfH4ed+q6+ne/u6U9j0BR9v8MJMDy15sRJp2QwOHx3u9bnIOCU=
-Message-ID: <ed5aea430708101146w3c08b499g99317930c7ecbd79@mail.gmail.com>
-Date: Fri, 10 Aug 2007 12:46:36 -0600
-From: "David Mosberger-Tang" <dmosberger@gmail.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: [PATCH] flush icache before set_pte() on ia64 take9 [2/2] flush icache at set_pte
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-ia64@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       davem@davemloft.net, Zoltan.Menyhart@bull.net, nickpiggin@yahoo.com.au
-In-Reply-To: <617E1C2C70743745A92448908E030B2A0224C511@scsmsx411.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 10 Aug 2007 14:47:26 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:subject:from:to:in-reply-to:references:
+	content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+	b=Q6AmHPpNdSWgDoeQFynRHi7pKw7+hp2tr3tDR9ET2I0XoqosHIj3eU10JIgEgs54Q
+	BL6ZUZkVUCel7VGkF1zBg==
+Subject: Re: [PATCH 2.6.23-rc2] getrusage: return ru_maxrss *WITHDRAWN*
+From: Frank Mayhar <fmayhar@google.com>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1186770711.18535.9.camel@peace.smo.corp.google.com>
+References: <1186770711.18535.9.camel@peace.smo.corp.google.com>
+Content-Type: text/plain
+Organization: Google, Inc.
+Date: Fri, 10 Aug 2007 11:47:16 -0700
+Message-Id: <1186771636.18535.12.camel@peace.smo.corp.google.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070809135311.0676a947.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20070809135721.08841cd7.kamezawa.hiroyu@jp.fujitsu.com>
-	 <617E1C2C70743745A92448908E030B2A0224C511@scsmsx411.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/10/07, Luck, Tony <tony.luck@intel.com> wrote:
+For some reason, the first twenty times I read the doc, I missed the
+"terminated and waited-for" bit for RUSAGE_CHILDREN.
 
-> +       if (pte_exec(pteval) &&    // flush only new executable page.
-> +           pte_present(pteval) && // swap out ?
-> +           pte_user(pteval) &&    // ignore kernel page
-> +           (!pte_present(*ptep) ||// do_no_page or swap in, migration,
-> +               pte_pfn(*ptep) != pte_pfn(pteval))) // do_wp_page(), page copy
-> +               /* load_module() calles flush_icache_range() explicitly*/
-> +               __ia64_sync_icache_dcache(pteval);
->
-
-> So now the only remaining task is to convince myself that this
-> new version covers all the cases.
-
-What about code-size?
-
-Also, is it OK to call a function from all places where a set_pte() is
-being done?  I'd hope so, but it's a really low-level operation...
-
-  --david
+Patch withdrawn, for the moment anyway.  (And the right fix won't solve
+our problem, sigh.)
 -- 
-Mosberger Consulting LLC, http://www.mosberger-consulting.com/
+Frank Mayhar <fmayhar@google.com>
+Google, Inc.
+
