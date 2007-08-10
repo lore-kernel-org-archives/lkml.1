@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763461AbXHJWDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762661AbXHJWEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763461AbXHJWDl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 18:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbXHJWAT
+	id S1762661AbXHJWEG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 18:04:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbXHJWAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 18:00:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57358 "EHLO mx1.redhat.com"
+	Fri, 10 Aug 2007 18:00:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57387 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755015AbXHJWAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 18:00:17 -0400
+	id S1755363AbXHJWAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 18:00:21 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
@@ -17,122 +17,142 @@ Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
        lguest@ozlabs.org, glommer@gmail.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 3/25 -v2] irq_flags / halt routines
-Date: Fri, 10 Aug 2007 16:12:15 -0300
-Message-Id: <11867731732274-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 4/25 -v2] Add debugreg/load_rsp native hooks
+Date: Fri, 10 Aug 2007 16:12:16 -0300
+Message-Id: <11867731781610-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11867731681763-git-send-email-gcosta@redhat.com>
-References: <1186773157329-git-send-email-gcosta@redhat.com> <11867731633002-git-send-email-gcosta@redhat.com> <11867731681763-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11867731732274-git-send-email-gcosta@redhat.com>
+References: <1186773157329-git-send-email-gcosta@redhat.com> <11867731633002-git-send-email-gcosta@redhat.com> <11867731681763-git-send-email-gcosta@redhat.com> <11867731732274-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch turns the irq_flags and halt routines into the
-native versions.
-
-[ updates from v1
-Move raw_irqs_disabled_flags outside of the PARAVIRT ifdef to
-avoid increasing the mess, suggested by Andi Kleen
-]
+This patch adds native hooks for debugreg handling functions,
+and for the native load_rsp0 function. The later also have its
+call sites patched.
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/asm-x86_64/irqflags.h |   37 ++++++++++++++++++++++++++-----------
- 1 files changed, 26 insertions(+), 11 deletions(-)
+ arch/x86_64/kernel/process.c   |    2 +-
+ arch/x86_64/kernel/smpboot.c   |    2 +-
+ include/asm-x86_64/processor.h |   71 ++++++++++++++++++++++++++++++++++++----
+ 3 files changed, 66 insertions(+), 9 deletions(-)
 
-diff --git a/include/asm-x86_64/irqflags.h b/include/asm-x86_64/irqflags.h
-index 86e70fe..fe0d346 100644
---- a/include/asm-x86_64/irqflags.h
-+++ b/include/asm-x86_64/irqflags.h
-@@ -16,6 +16,10 @@
-  * Interrupt control:
-  */
+diff --git a/arch/x86_64/kernel/process.c b/arch/x86_64/kernel/process.c
+index 2842f50..33046f1 100644
+--- a/arch/x86_64/kernel/process.c
++++ b/arch/x86_64/kernel/process.c
+@@ -595,7 +595,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 	/*
+ 	 * Reload esp0, LDT and the page table pointer:
+ 	 */
+-	tss->rsp0 = next->rsp0;
++	load_rsp0(tss, next);
  
-+#ifdef CONFIG_PARAVIRT
-+#include <asm/paravirt.h>
-+#else /* PARAVIRT */
-+
- static inline unsigned long __raw_local_save_flags(void)
- {
- 	unsigned long flags;
-@@ -31,9 +35,6 @@ static inline unsigned long __raw_local_save_flags(void)
- 	return flags;
+ 	/* 
+ 	 * Switch DS and ES.
+diff --git a/arch/x86_64/kernel/smpboot.c b/arch/x86_64/kernel/smpboot.c
+index 32f5078..f99ced6 100644
+--- a/arch/x86_64/kernel/smpboot.c
++++ b/arch/x86_64/kernel/smpboot.c
+@@ -620,7 +620,7 @@ do_rest:
+ 	start_rip = setup_trampoline();
+ 
+ 	init_rsp = c_idle.idle->thread.rsp;
+-	per_cpu(init_tss,cpu).rsp0 = init_rsp;
++	load_rsp0(&per_cpu(init_tss,cpu), &c_idle.idle->thread);
+ 	initial_code = start_secondary;
+ 	clear_tsk_thread_flag(c_idle.idle, TIF_FORK);
+ 
+diff --git a/include/asm-x86_64/processor.h b/include/asm-x86_64/processor.h
+index 1952517..65f689b 100644
+--- a/include/asm-x86_64/processor.h
++++ b/include/asm-x86_64/processor.h
+@@ -249,6 +249,12 @@ struct thread_struct {
+ 	.rsp0 = (unsigned long)&init_stack + sizeof(init_stack) \
  }
  
--#define raw_local_save_flags(flags) \
--		do { (flags) = __raw_local_save_flags(); } while (0)
--
- static inline void raw_local_irq_restore(unsigned long flags)
- {
- 	__asm__ __volatile__(
-@@ -64,11 +65,6 @@ static inline void raw_local_irq_enable(void)
- 	raw_local_irq_restore((flags | X86_EFLAGS_IF) & (~X86_EFLAGS_AC));
- }
- 
--static inline int raw_irqs_disabled_flags(unsigned long flags)
--{
--	return !(flags & X86_EFLAGS_IF) || (flags & X86_EFLAGS_AC);
--}
--
- #else /* CONFIG_X86_VSMP */
- 
- static inline void raw_local_irq_disable(void)
-@@ -81,13 +77,27 @@ static inline void raw_local_irq_enable(void)
- 	__asm__ __volatile__("sti" : : : "memory");
- }
- 
-+#endif /* CONFIG_X86_VSMP */
-+#endif /* CONFIG_PARAVIRT */
-+
-+/* Those are not paravirt stubs, so they live out of the PARAVIRT ifdef */
-+
-+#ifdef CONFIG_X86_VSMP
-+static inline int raw_irqs_disabled_flags(unsigned long flags)
++static inline void native_load_rsp0(struct tss_struct *tss,
++				    struct thread_struct *thread)
 +{
-+	return !(flags & X86_EFLAGS_IF) || (flags & X86_EFLAGS_AC);
++	tss->rsp0 = thread->rsp0;
 +}
 +
-+#else
- static inline int raw_irqs_disabled_flags(unsigned long flags)
- {
- 	return !(flags & X86_EFLAGS_IF);
- }
+ #define INIT_MMAP \
+ { &init_mm, 0, 0, NULL, PAGE_SHARED, VM_READ | VM_WRITE | VM_EXEC, 1, NULL, NULL }
  
--#endif
-+#endif /* CONFIG_X86_VSMP */
+@@ -264,13 +270,64 @@ struct thread_struct {
+ 	set_fs(USER_DS);							 \
+ } while(0) 
  
-+#define raw_local_save_flags(flags) \
-+		do { (flags) = __raw_local_save_flags(); } while (0)
- /*
-  * For spinlocks, etc.:
-  */
-@@ -115,7 +125,7 @@ static inline int raw_irqs_disabled(void)
-  * Used in the idle loop; sti takes one instruction cycle
-  * to complete:
-  */
--static inline void raw_safe_halt(void)
-+static inline void native_raw_safe_halt(void)
- {
- 	__asm__ __volatile__("sti; hlt" : : : "memory");
- }
-@@ -124,11 +134,16 @@ static inline void raw_safe_halt(void)
-  * Used when interrupts are already enabled or to
-  * shutdown the processor:
-  */
--static inline void halt(void)
-+static inline void native_halt(void)
- {
- 	__asm__ __volatile__("hlt": : :"memory");
- }
- 
-+#ifndef CONFIG_PARAVIRT
-+#define raw_safe_halt	native_raw_safe_halt
-+#define halt		native_halt
-+#endif /* ! CONFIG_PARAVIRT */
+-#define get_debugreg(var, register)				\
+-		__asm__("movq %%db" #register ", %0"		\
+-			:"=r" (var))
+-#define set_debugreg(value, register)			\
+-		__asm__("movq %0,%%db" #register		\
+-			: /* no output */			\
+-			:"r" (value))
++static inline unsigned long native_get_debugreg(int regno)
++{
++	unsigned long val;
 +
- #else /* __ASSEMBLY__: */
- # ifdef CONFIG_TRACE_IRQFLAGS
- #  define TRACE_IRQS_ON		call trace_hardirqs_on_thunk
++	switch (regno) {
++	case 0:
++		asm("movq %%db0, %0" :"=r" (val)); break;
++	case 1:
++		asm("movq %%db1, %0" :"=r" (val)); break;
++	case 2:
++		asm("movq %%db2, %0" :"=r" (val)); break;
++	case 3:
++		asm("movq %%db3, %0" :"=r" (val)); break;
++	case 6:
++		asm("movq %%db6, %0" :"=r" (val)); break;
++	case 7:
++		asm("movq %%db7, %0" :"=r" (val)); break;
++	default:
++		val = 0; /* assign it to keep gcc quiet */
++		WARN_ON(1);
++	}
++	return val;
++}
++
++static inline void native_set_debugreg(unsigned long value, int regno)
++{
++	switch (regno) {
++	case 0:
++		asm("movq %0,%%db0"	: /* no output */ :"r" (value));
++		break;
++	case 1:
++		asm("movq %0,%%db1"	: /* no output */ :"r" (value));
++		break;
++	case 2:
++		asm("movq %0,%%db2"	: /* no output */ :"r" (value));
++		break;
++	case 3:
++		asm("movq %0,%%db3"	: /* no output */ :"r" (value));
++		break;
++	case 6:
++		asm("movq %0,%%db6"	: /* no output */ :"r" (value));
++		break;
++	case 7:
++		asm("movq %0,%%db7"	: /* no output */ :"r" (value));
++		break;
++	default:
++		BUG();
++	}
++}
++
++#ifdef CONFIG_PARAVIRT
++#include <asm/paravirt.h>
++#else
++#define paravirt_enabled()	0
++#define load_rsp0 		native_load_rsp0
++#define set_debugreg(val, reg)	native_set_debugreg(reg, val)
++#define get_debugreg(var, reg)	(var) = native_get_debugreg(reg)
++#endif
+ 
+ struct task_struct;
+ struct mm_struct;
 -- 
 1.4.4.2
 
