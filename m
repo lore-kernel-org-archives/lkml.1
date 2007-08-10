@@ -1,49 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932820AbXHJR6L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbXHJSGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932820AbXHJR6L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 13:58:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756339AbXHJR54
+	id S1762801AbXHJSGv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 14:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbXHJSGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 13:57:56 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:17899 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755364AbXHJR5z (ORCPT
+	Fri, 10 Aug 2007 14:06:42 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47840 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbXHJSGk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 13:57:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=cu/TRuvRHUjU/4BTrQMvnrAYMpGm8wqS+tRDfrkPKy5bicQsRVh79UxWVy5LWGj7yTbb8iL5laV8V5nsbaGIh87YygYERgHdP03IOcGg18Z8bjs4tW4peaKbeY7ockIftoaKISbc92AtIAhxTyjv3SeL7q6oGPOxMPNStJPFUQs=
-Message-ID: <46BCA6A9.6000402@googlemail.com>
-Date: Fri, 10 Aug 2007 19:55:53 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+	Fri, 10 Aug 2007 14:06:40 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Pavel Emelyanov <xemul@openvz.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, devel@openvz.org
+Subject: Re: [PATCH] Make access to task's nsproxy liter
+References: <46BAE3A3.7030608@openvz.org>
+	<20070810134003.GA22368@sergelap.austin.ibm.com>
+	<20070810140545.GA74@tv-sign.ru> <46BC7FAC.2080208@openvz.org>
+	<20070810164546.GA273@tv-sign.ru>
+Date: Fri, 10 Aug 2007 12:03:19 -0600
+In-Reply-To: <20070810164546.GA273@tv-sign.ru> (Oleg Nesterov's message of
+	"Fri, 10 Aug 2007 20:45:46 +0400")
+Message-ID: <m13ayrxo60.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: arch/i386/kernel/setup.c - compile error (Re: 2.6.23-rc2-mm2)
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-In-Reply-To: <20070809224254.11f42716.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Oleg Nesterov <oleg@tv-sign.ru> writes:
 
->  git-newsetup.patch
+> On 08/10, Pavel Emelyanov wrote:
+>>
+>> Oleg Nesterov wrote:
+>> >On 08/10, Serge E. Hallyn wrote:
+>> >>Quoting Pavel Emelyanov (xemul@openvz.org):
+>> >>>+/*
+>> >>>+ * the namespaces access rules are:
+>> >>>+ *
+>> >>>+ *  1. only current task is allowed to change tsk->nsproxy pointer or
+>> >>>+ *     any pointer on the nsproxy itself
+>> >>>+ *
+>> >>>+ *  2. when accessing (i.e. reading) current task's namespaces - no
+>> >>>+ *     precautions should be taken - just dereference the pointers
+>> >>>+ *
+>> >>>+ *  3. the access to other task namespaces is performed like this
+>> >>>+ *     rcu_read_lock();
+>> >>>+ *     nsproxy = task_nsproxy(tsk);
+>> >>>+ *     if (nsproxy != NULL) {
+>> >>>+ *             / *
+>> >>>+ *               * work with the namespaces here
+>> >>>+ *               * e.g. get the reference on one of them
+>> >>>+ *               * /
+>> >>>+ *     } / *
+>> >>>+ *         * NULL task_nsproxy() means that this task is
+>> >>>+ *         * almost dead (zombie)
+>> >>>+ *         * /
+>> >>>+ *     rcu_read_unlock();
+>> >>And lastly, I guess that the caller to switch_task_namespaces() has
+>> >>to ensure that new_nsproxy either (1) is the init namespace, (2) is a
+>> >>brand-new namespace to which noone else has a reference, or (3) the
+>> >>caller has to hold a reference to the new_nsproxy across the call to
+>> >>switch_task_namespaces().
+>> >>
+>> >>As it happens the current calls fit (1) or (2).  Again if we happen to
+>> >>jump into the game of switching a task into another task's nsproxy,
+>> >>we'll need to be mindful of (3) so that new_nsproxy can't be tossed into
+>> >>the bin between
+>> >>
+>> >>	if (new)
+>> >>		get_nsproxy(new);
+>> >
+>> >4) Unless tsk == current, get_task_namespaces(tsk) and get_nsproxy(tsk)
+>> >   are racy even if done under rcu_read_lock().
+>> 
+>> Yup :)
+>> 
+>> It is already written in comment that only the current is allowed
+>> to change its nsproxy. I.e. when switch_task_nsproxy() is called
+>> for tsk other than current it's a BUG
+>
+> Yes, but what I meant is that this code
+>
+>         rcu_read_lock();
+>         nsproxy = task_nsproxy(tsk);
+>         if (nsproxy != NULL)
+>                 get_nsproxy(nsproxy);
+>         rcu_read_unlock();
+>
+> 	if (nsproxy) {
+> 		use_it(nsproxy);
+> 		put_nsproxy(nsproxy);
+> 	}
+>
+> is not safe despite the fact we are _not_ changing tsk->nsproxy.
+>
+> The patch itself is correct because we don't do that, and the comment
+> is right. Just it is not immediately obvious.
 
-...
+Ugh.  That is nasty, non obvious and almost a problem.  I don't want
+to do get_net(nsproxy->net_ns) from another task so I can migrate
+network between namespaces.
 
-arch/i386/kernel/setup.c: In function 'setup_arch':
-arch/i386/kernel/setup.c:547: error: 'PARAM' undeclared (first use in this function)
-arch/i386/kernel/setup.c:547: error: (Each undeclared identifier is reported only once
-arch/i386/kernel/setup.c:547: error: for each function it appears in.)
-make[1]: *** [arch/i386/kernel/setup.o] Error 1
-make: *** [arch/i386/kernel] Error 2
-make: *** Waiting for unfinished jobs....
- 
-....
+But thinking about it because we don't do the other decrements
+until later we can still increment the counts on the individual
+namespaces.  We just can't share nsproxy.
 
-Got it on a randconfig :
+So if you did want to do an enter thing you could copy the
+nsproxy object of a task under the rcu_read_lock(), and
+you would be fine.
 
-http://194.231.229.228/kernel/mm/2.6.23-rc2-mm2/randconfig-auto-25
+Eric
