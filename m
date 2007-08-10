@@ -1,112 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935984AbXHJNSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936317AbXHJNWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935984AbXHJNSz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 09:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761675AbXHJNSp
+	id S936317AbXHJNWf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 09:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762822AbXHJNW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 09:18:45 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:49817 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761515AbXHJNSo (ORCPT
+	Fri, 10 Aug 2007 09:22:28 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:15715 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762348AbXHJNW0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 09:18:44 -0400
+	Fri, 10 Aug 2007 09:22:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=i2ROW78PtN29pZL+5cEAefHco7mM07NGYDj7fIyqjF/kiuKFpPZX2pSlksV+Wex8xBzLuhLgVRn5Kaw+MOr3jnXZSqH5JE6QwoHgbaIwwC+He3pjNeivesfoPjP2QyKWcWXffbrptkB6dxexaAt388iILZlmMxL7RysUrNMfWEg=
-Message-ID: <9a8748490708100618m4a2480d5k2dc39035f6843051@mail.gmail.com>
-Date: Fri, 10 Aug 2007 15:18:41 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Sinisa Segvic" <sinisa.segvic@tugraz.at>
-Subject: Re: Kernel oops report
-Cc: linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
-In-Reply-To: <20070810122614.zm7yplmk0skgg080@webmail.tugraz.at>
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=dNW4IeLnModRAFPY8cWmhImT9A8+OHaw7G4s/9ev72iB0ISNkGJwt4HhqRtW5SEw57Ay+8UKoR6/i82KhDh5omGgwG3PbG9OSCkwvb5K+GUYjpKl+ednHqIZXcbP6FiOBRcVnGGmP1Q3JIIggLJlpjelKoMc8jkIQ6TM5NX0kVo=
+Message-ID: <46BC661E.9000006@googlemail.com>
+Date: Fri, 10 Aug 2007 15:20:30 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH -mm] Fix some section mismatch warnings
+References: <20070809224254.11f42716.akpm@linux-foundation.org> <46BC3CB1.2090503@googlemail.com> <46BC5C1D.50205@googlemail.com>
+In-Reply-To: <46BC5C1D.50205@googlemail.com>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070810122614.zm7yplmk0skgg080@webmail.tugraz.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(this one looks like it should go to netdev as well - added to Cc)
+Gabriel C wrote:
+> Some new section mismatch warnings:
+> 
+> ...
+> 
+>   MODPOST vmlinux.o
+> WARNING: vmlinux.o(.text+0x17e): Section mismatch: reference to .init.text:initialize_secondary (between 'is386' and 'check_x87')
+> WARNING: vmlinux.o(.text+0x183): Section mismatch: reference to .init.text:start_kernel (between 'is386' and 'check_x87')
+> WARNING: vmlinux.o(.text+0x8c82): Section mismatch: reference to .init.text:register_cpu (between 'arch_register_cpu' and 'alternatives_smp_switch')
+> WARNING: vmlinux.o(.text+0x984d): Section mismatch: reference to .init.data:disable_pse (between 'identify_cpu' and 'identify_secondary_cpu')
+> WARNING: vmlinux.o(.text+0xac59): Section mismatch: reference to .init.text:calibrate_delay (between 'init_cyrix' and 'init_nsc')
+> WARNING: vmlinux.o(.text+0xb4ac): Section mismatch: reference to .init.text:select_idle_routine (between 'init_intel' and 'init_intel_cacheinfo')
+> WARNING: vmlinux.o(.text+0xe49c): Section mismatch: reference to .init.data:cpu_idle_tasks (between 'do_boot_cpu' and 'do_warm_boot_cpu')
+> WARNING: vmlinux.o(.text+0xe881): Section mismatch: reference to .init.data:cpu_idle_tasks (between 'do_boot_cpu' and 'do_warm_boot_cpu')
+> WARNING: vmlinux.o(.text+0xecd8): Section mismatch: reference to .init.data:smp_b_stepping (between 'smp_store_cpu_info' and '__cpu_die')
+> WARNING: vmlinux.o(.text+0xecdd): Section mismatch: reference to .init.data:smp_b_stepping (between 'smp_store_cpu_info' and '__cpu_die')
+> WARNING: vmlinux.o(.text+0xf055): Section mismatch: reference to .init.text:setup_local_APIC (between 'start_secondary' and 'check_tsc_warp')
+> WARNING: vmlinux.o(.text+0xf05f): Section mismatch: reference to .init.text:calibrate_delay (between 'start_secondary' and 'check_tsc_warp')
+> WARNING: vmlinux.o(.text+0xf08e): Section mismatch: reference to .init.text:setup_secondary_APIC_clock (between 'start_secondary' and 'check_tsc_warp')
+> WARNING: vmlinux.o(.text+0x1fe6e): Section mismatch: reference to .init.text:idle_regs (between 'fork_idle' and '__put_task_struct')
+> WARNING: vmlinux.o(.text+0x2717a): Section mismatch: reference to .init.data:tvec_base_done.16336 (between 'timer_cpu_notify' and 'run_timer_softirq')
+> WARNING: vmlinux.o(.text+0x272df): Section mismatch: reference to .init.data:tvec_base_done.16336 (between 'timer_cpu_notify' and 'run_timer_softirq')
+> WARNING: vmlinux.o(.text+0x51df3): Section mismatch: reference to .init.text:start_cpu_timer (between 'vmstat_cpuup_callback' and 'refresh_cpu_vm_stats')
+> WARNING: vmlinux.o(.text+0xcac51): Section mismatch: reference to .init.text:pcibios_fixup_bus (between 'pci_scan_child_bus' and 'pci_scan_bus_parented')
+> WARNING: vmlinux.o(.data+0x5480): Section mismatch: reference to .init.text:workqueue_cpu_callback (between 'workqueue_cpu_callback_nb.12121' and 'workqueue_mutex')
+> WARNING: vmlinux.o(.data+0x90c4): Section mismatch: reference to .init.text:cpu_callback (between 'cpu_callback_nb.18502' and 'shrinker_rwsem')
+> WARNING: vmlinux.o(.data+0x14d84): Section mismatch: reference to .init.text:pci_ite887x_init (between 'pci_serial_quirks' and 'serial_pci_tbl')
+> 
+> ...
+> 
+> 
+> config :
+> 
+> http://194.231.229.228/kernel/mm/2.6.23-rc2-mm2/randconfig-auto-5
+> 
 
-On 10/08/07, Sinisa Segvic <sinisa.segvic@tugraz.at> wrote:
-> Hi,
->
-> I've just got a kernel oops.
->
-> http://lxr.linux.no/source/Documentation/oops-tracing.txt
-> seems to suggest that oops reports are welcome at this address.
->
-> Cheers,
->
-> Sinisa
->
-> $ uname -a
-> Linux PCs129.EMT.tugraz.at 2.6.20-16-386 #2 Thu Jun 7 20:16:13 UTC
-> 2007 i686 GNU/Linux
->
->
->
-> [326735.692443] BUG: unable to handle kernel NULL pointer dereference
-> at virtual address 0000001b
-> [326735.692454]  printing eip:
-> [326735.692457] c015f581
-> [326735.692458] *pde = 00000000
-> [326735.692463] Oops: 0000 [#1]
-> [326735.692466] Modules linked in: nls_cp437 isofs udf binfmt_misc
-> rfcomm l2cap bluetooth nfs lockd sunrpc xt_limit xt_tcpudp
-> iptable_mangle ipt_LOG ipt_MASQUERADE nf_nat ipt_TOS ipt_REJECT
-> nf_conntrack_irc nf_conntrack_ftp nf_conntrack_ipv4 xt_state
-> nf_conntrack nfnetlink iptable_filter ip_tables x_tables ppdev radeon
-> drm cpufreq_userspace cpufreq_stats cpufreq_powersave cpufreq_ondemand
-> freq_table cpufreq_conservative tc1100_wmi pcc_acpi dev_acpi sony_acpi
-> video sbs i2c_ec dock button battery container ac asus_acpi backlight
-> ipv6 fuse lp snd_cmipci gameport snd_pcm_oss snd_mixer_oss snd_pcm
-> snd_page_alloc snd_opl3_lib snd_hwdep snd_mpu401_uart snd_seq_dummy
-> snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event i2c_viapro
-> parport_pc parport pcspkr psmouse i2c_core snd_seq snd_timer
-> snd_seq_device rtc via_ircc snd irda soundcore crc_ccitt serio_raw
-> via_agp agpgart shpchp pci_hotplug af_packet evdev tsdev ext3 jbd
-> mbcache ide_cd cdrom ide_disk ata_generic libata scsi_mod via82cxxx
-> 8139too floppy 8139cp mii generic ohci1394 ieee1394 ehci_hcd uhci_hcd
-> usbcore raid10 raid456 xor raid1 raid0 multipath linear md_mod thermal
-> processor fan dm_mod fbcon tileblit font bitblit softcursor vesafb
-> capability commoncap
-> [326735.692550] CPU:    0
-> [326735.692552] EIP:    0060:[<c015f581>]    Not tainted VLI
-> [326735.692553] EFLAGS: 00210082   (2.6.20-16-386 #2)
-> [326735.692565] EIP is at kfree+0x41/0x80
-> [326735.692568] eax: 40000080   ebx: 0000001b   ecx: dfffb3c4   edx: c11ce340
-> [326735.692572] esi: ce71ac00   edi: 00200286   ebp: cb2d64a0   esp: d0e4bdd8
-> [326735.692575] ds: 007b   es: 007b   ss: 0068
-> [326735.692579] Process firefox-bin (pid: 6763, ti=d0e4a000
-> task=cf56c590 task.ti=d0e4a000)
-> [326735.692582] Stack: cb2d64a0 d0e4bedc d0e4bea0 c02701f8 00000020
-> c02d0c4d c026d39d ffffffff
-> [326735.692589]        d032bc80 d032bdc0 cb2d64d0 d032bcd4 d0e4bea0
-> cf12d8c0 00000020 00000001
-> [326735.692596]        00000001 ffffffa1 00000000 d0e4be80 00001302
-> 00000000 00000000 00000000
-> [326735.692601] Call Trace:
-> [326735.692608]  [<c02701f8>] kfree_skbmem+0x8/0x80
-> [326735.692619]  [<c02d0c4d>] unix_stream_recvmsg+0x1ad/0x540
-> [326735.692627]  [<c026d39d>] sock_alloc_send_skb+0x16d/0x1c0
-> [326735.692659]  [<c011fad6>] current_fs_time+0x46/0x50
-> [326735.692670]  [<c026a37f>] sock_aio_read+0x11f/0x130
-> [326735.692679]  [<c0168f2b>] pipe_write+0x22b/0x470
-> [326735.692706]  [<c0162ce5>] do_sync_read+0xd5/0x120
-> [326735.692729]  [<c012ded0>] autoremove_wake_function+0x0/0x50
-> [326735.692746]  [<c0130a72>] hrtimer_run_queues+0xf2/0x120
-> [326735.692754]  [<c02cfb79>] unix_ioctl+0x89/0xc0
-> [326735.692771]  [<c016375c>] vfs_read+0x17c/0x190
-> [326735.692782]  [<c0163b11>] sys_read+0x41/0x70
-> [326735.692793]  [<c0102fc0>] sysenter_past_esp+0x69/0xa9
-> [326735.692817]  =======================
-> [326735.692819] Code: 05 00 00 00 00 8d 96 00 00 00 40 89 c7 c1 ea 0c
-> c1 e2 05 03 15 80 ba 44 c0 8b 02 f6 c4 40 75 2b 8b 02 84 c0 79 37 8b
-> 4a 18 8b 19 <8b> 03 3b 43 04 73 1e 89 74 83 10 83 c0 01 89 03 89 f8 50
-> 9d 8d
-> [326735.692843] EIP: [<c015f581>] kfree+0x41/0x80 SS:ESP 0068:d0e4bdd8
-> [326735.692849]
+
+This patch fixes the .init.data ones
+
+Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
+
+---
+
+
+diff -Nurp linux-2.6.23-rc2-mm2/arch/i386/kernel/setup.c linux-2.6.23-rc2-mm2-p/arch/i386/kernel/setup.c
+--- linux-2.6.23-rc2-mm2/arch/i386/kernel/setup.c	2007-08-10 15:05:26.000000000 +0200
++++ linux-2.6.23-rc2-mm2-p/arch/i386/kernel/setup.c	2007-08-10 15:10:41.000000000 +0200
+@@ -68,7 +68,7 @@
+    address, and must not be in the .bss segment! */
+ unsigned long init_pg_tables_end __initdata = ~0UL;
+ 
+-int disable_pse __devinitdata = 0;
++int disable_pse __cpuinitdata = 0;
+ 
+ /*
+  * Machine setup..
+diff -Nurp linux-2.6.23-rc2-mm2/arch/i386/kernel/smpboot.c linux-2.6.23-rc2-mm2-p/arch/i386/kernel/smpboot.c
+--- linux-2.6.23-rc2-mm2/arch/i386/kernel/smpboot.c	2007-08-10 15:05:26.000000000 +0200
++++ linux-2.6.23-rc2-mm2-p/arch/i386/kernel/smpboot.c	2007-08-10 15:12:19.000000000 +0200
+@@ -60,7 +60,7 @@
+ #include <asm/mtrr.h>
+ 
+ /* Set if we find a B stepping CPU */
+-static int __devinitdata smp_b_stepping;
++static int __cpuinitdata smp_b_stepping;
+ 
+ /* Number of siblings per CPU package */
+ int smp_num_siblings = 1;
+@@ -736,7 +736,7 @@ static inline int alloc_cpu_id(void)
+ }
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-static struct task_struct * __devinitdata cpu_idle_tasks[NR_CPUS];
++static struct task_struct * __cpuinitdata cpu_idle_tasks[NR_CPUS];
+ static inline struct task_struct * alloc_idle_task(int cpu)
+ {
+ 	struct task_struct *idle;
+diff -Nurp linux-2.6.23-rc2-mm2/kernel/timer.c linux-2.6.23-rc2-mm2-p/kernel/timer.c
+--- linux-2.6.23-rc2-mm2/kernel/timer.c	2007-08-10 15:05:34.000000000 +0200
++++ linux-2.6.23-rc2-mm2-p/kernel/timer.c	2007-08-10 15:13:14.000000000 +0200
+@@ -1216,7 +1216,7 @@ static int __devinit init_timers_cpu(int
+ {
+ 	int j;
+ 	tvec_base_t *base;
+-	static char __devinitdata tvec_base_done[NR_CPUS];
++	static char __cpuinitdata tvec_base_done[NR_CPUS];
+ 
+ 	if (!tvec_base_done[cpu]) {
+ 		static char boot_done;
