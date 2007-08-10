@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbXHJOyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936618AbXHJPCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753459AbXHJOyB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 10:54:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759957AbXHJOxy
+	id S936618AbXHJPCa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 11:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756365AbXHJPCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 10:53:54 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:64085 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754696AbXHJOxx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 10:53:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=qncRv396jAPinW94Jz5j9wSrauw5Ita6ZULQmw5rS3Jns54yb/tbtlsnD2KjSs22FKMcsMaMY5GHdFNendc/T2yTfvVW5PYLkSJPHLqDK8ZZZTJ+jXQzTD0dkRIZTRZSs/HCny7jMZcHU3cmc3vJWsIxNLCh3Xab9O41xeNnF+E=
-Message-ID: <46BC7BDA.3000305@googlemail.com>
-Date: Fri, 10 Aug 2007 16:53:14 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Fri, 10 Aug 2007 11:02:19 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:52731 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754786AbXHJPCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 11:02:17 -0400
+Date: Fri, 10 Aug 2007 08:02:13 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, csnook@redhat.com,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+Message-ID: <20070810150213.GB8511@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <E1IJPkg-0000x0-00@gondolin.me.apana.org.au> <200708101108.20897.ak@suse.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.23-rc2-mm2
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-In-Reply-To: <20070809224254.11f42716.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708101108.20897.ak@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Andrew Morton pisze:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc2/2.6.23-rc2-mm2/
+On Fri, Aug 10, 2007 at 11:08:20AM +0200, Andi Kleen wrote:
+> On Friday 10 August 2007 10:21:46 Herbert Xu wrote:
+> > Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > >
+> > > The compiler is within its rights to read a 32-bit quantity 16 bits at
+> > > at time, even on a 32-bit machine.  I would be glad to help pummel any
+> > > compiler writer that pulls such a dirty trick, but the C standard really
+> > > does permit this.
+> > 
+> > Code all over the kernel assumes that 32-bit reads/writes
+> > are atomic so while such a compiler might be legal it certainly
+> > can't compile Linux.
 > 
-[..]
-> +sysctl-core-stop-using-the-unnecessary-ctl_table-typedef.patch
-> +sysctl-factor-out-sysctl_data.patch
-> +sysctl-error-on-bad-sysctl-tables.patch
-> +sysctl-update-sysctl_check_table.patch
-> +sysct-mqueue-remove-the-binary-sysctl-numbers.patch
-> +sysctl-remove-binary-sysctl-support-where-it-clearly-doesnt-work.patch
-> +sysctl-fix-neighbour-table-sysctls.patch
-> +sysctl-ipv6-route-flushing-kill-binary-path.patch
-> +sysctl-remove-broken-sunrpc-debug-binary-sysctls.patch
-> +sysctl-x86_64-remove-unnecessary-binary-paths.patch
-> +sysctl-remove-broken-cdrom-binary-sysctls.patch
-> +sysctl-ipv4-remove-binary-sysctl-paths-where-they-are-broken.patch
-> +sysctl-remove-the-binary-interface-for-aio-nr-aio-max-nr-acpi_video_flags.patch
-> 
->  sysctl cleanups
+> Yes, the kernel requirements are much stricter than ISO-C. And besides
+> it is a heavy user of C extensions anyways. On the other hand some of the
+> C99 extensions are not allowed. And then there is sparse, which enforces
+> a language which sometimes is quite far from standard C. You could say it is 
+> written in Linux-C, not ISO C. 
 
-There is something wrong with sysctl
+Understood.  My question is "why do we want the semantics of atomic_read()
+and atomic_set() to differ?"
 
-[   25.120741] sysctl_check_dir: failed: /kernel  ref: /kernel .1
-[   25.127102] sysctl table check failed: /kernel  Writable sysctl directory
-[   25.134157] sysctl table check failed: /kernel  Inconsistent directory names
-[   25.141477] sysctl table check failed: /kernel/sched_domain  Writable sysctl directory
-[   25.149755] sysctl table check failed: /kernel/sched_domain/cpu0  Writable sysctl directory
-[   25.158529] sysctl table check failed: /kernel/sched_domain/cpu0/domain0  Writable sysctl directory
-[   25.168102] sysctl table check failed: /kernel/sched_domain/cpu1  Writable sysctl directory
-[   25.176862] sysctl table check failed: /kernel/sched_domain/cpu1/domain0  Writable sysctl directory
-
-Eric?
-
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+						Thanx, Paul
