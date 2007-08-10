@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937718AbXHJL4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937316AbXHJL5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937718AbXHJL4t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 07:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936179AbXHJLw3
+	id S937316AbXHJL5W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 07:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936402AbXHJLwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 07:52:29 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:2763 "EHLO relay.sw.ru"
+	Fri, 10 Aug 2007 07:52:31 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:26272 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935986AbXHJLw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 07:52:26 -0400
-Date: Fri, 10 Aug 2007 15:48:14 +0400
+	id S936038AbXHJLw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 07:52:28 -0400
+Date: Fri, 10 Aug 2007 15:48:26 +0400
 From: xemul@openvz.org
 To: akpm@osdl.org
 Cc: xemul@openvz.org, devel@openvz.org, linux-kernel@vger.kernel.org,
        containers@lists.osdl.org, oleg@tv-sign.ru, sukadev@us.ibm.com
-Subject: [PATCH 12/20] Miscelaneous preparations for pid namespaces
-Message-ID: <46BC507E.mailGKD1OUF88@openvz.org>
+Subject: [PATCH 18/20] Destroy pid namespace on init's death
+Message-ID: <46BC508A.mailGLD11F1LE@openvz.org>
 User-Agent: nail 11.4 8/29/04
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -23,131 +23,120 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* remove pid.h from pid_namespaces.h;
-* rework is_(container|global)_init;
-* optimize (get|put)_pid_ns for init_pid_ns;
-* declare task_child_reaper to return actual reaper.
+From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Terminate all processes in a namespace when the reaper of the namespace
+is exiting. We do this by walking the pidmap of the namespace and sending
+SIGKILL to all processes.
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Acked-by: Pavel Emelyanov <xemul@openvz.org>
 Cc: Oleg Nesterov <oleg@tv-sign.ru>
 
 ---
 
- include/linux/pid_namespace.h |   10 ++++++----
- include/linux/sched.h         |   12 +++++-------
- kernel/pid.c                  |   21 ++++++++++++++-------
- 3 files changed, 25 insertions(+), 18 deletions(-)
+ include/linux/pid.h |    1 +
+ kernel/exit.c       |   27 ++++++++++++++++++++++++++-
+ kernel/pid.c        |   38 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 65 insertions(+), 1 deletion(-)
 
---- ./include/linux/pid_namespace.h.ve11	2007-08-10 12:40:09.000000000 +0400
-+++ ./include/linux/pid_namespace.h	2007-08-10 12:40:09.000000000 +0400
-@@ -4,7 +4,6 @@
- #include <linux/sched.h>
- #include <linux/mm.h>
- #include <linux/threads.h>
--#include <linux/pid.h>
- #include <linux/nsproxy.h>
- #include <linux/kref.h>
+--- ./include/linux/pid.h.ve18	2007-08-06 18:27:33.000000000 +0400
++++ ./include/linux/pid.h	2007-08-06 18:27:33.000000000 +0400
+@@ -125,6 +125,7 @@ extern struct pid *find_ge_pid(int nr, s
  
-@@ -32,7 +31,8 @@ extern struct pid_namespace init_pid_ns;
+ extern struct pid *alloc_pid(struct pid_namespace *ns);
+ extern void FASTCALL(free_pid(struct pid *pid));
++extern void zap_pid_ns_processes(struct pid_namespace *pid_ns);
  
- static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)
- {
--	kref_get(&ns->kref);
-+	if (ns != &init_pid_ns)
-+		kref_get(&ns->kref);
- 	return ns;
+ /*
+  * the helpers to get the pid's id seen from different namespaces
+--- ./kernel/exit.c.ve18	2007-08-06 18:27:33.000000000 +0400
++++ ./kernel/exit.c	2007-08-06 18:27:33.000000000 +0400
+@@ -900,7 +900,32 @@ static inline void exit_child_reaper(str
+ 	if (likely(tsk->group_leader != task_child_reaper(tsk)))
+ 		return;
+ 
+-	panic("Attempted to kill init!");
++	if (tsk->nsproxy->pid_ns == &init_pid_ns)
++		panic("Attempted to kill init!");
++
++	/*
++	 * @tsk is the last thread in the 'container-init' and is exiting.
++	 * Terminate all remaining processes in the namespace and reap them
++	 * before exiting @tsk.
++	 *
++	 * Note that @tsk (last thread of container-init) may not necessarily
++	 * be the child-reaper (i.e main thread of container-init) of the
++	 * namespace i.e the child_reaper may have already exited.
++	 *
++	 * Even after a child_reaper exits, we let it inherit orphaned children,
++	 * because, pid_ns->child_reaper remains valid as long as there is
++	 * at least one living sub-thread in the container init.
++
++	 * This living sub-thread of the container-init will be notified when
++	 * a child inherited by the 'child-reaper' exits (do_notify_parent()
++	 * uses __group_send_sig_info()). Further, when reaping child processes,
++	 * do_wait() iterates over children of all living sub threads.
++
++	 * i.e even though 'child_reaper' thread is listed as the parent of the
++	 * orphaned children, any living sub-thread in the container-init can
++	 * perform the role of the child_reaper.
++	 */
++	zap_pid_ns_processes(tsk->nsproxy->pid_ns);
  }
  
-@@ -41,7 +41,8 @@ extern void free_pid_ns(struct kref *kre
+ fastcall NORET_TYPE void do_exit(long code)
+--- ./kernel/pid.c.ve18	2007-08-06 18:27:33.000000000 +0400
++++ ./kernel/pid.c	2007-08-06 18:34:08.000000000 +0400
+@@ -28,6 +28,7 @@
+ #include <linux/hash.h>
+ #include <linux/pid_namespace.h>
+ #include <linux/init_task.h>
++#include <linux/syscalls.h>
  
- static inline void put_pid_ns(struct pid_namespace *ns)
- {
--	kref_put(&ns->kref, free_pid_ns);
-+	if (ns != &init_pid_ns)
-+		kref_put(&ns->kref, free_pid_ns);
+ #define pid_hashfn(nr, ns)	\
+ 	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
+@@ -558,6 +559,43 @@ void free_pid_ns(struct kref *kref)
+ 		put_pid_ns(parent);
  }
  
- static inline struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
-@@ -51,7 +52,8 @@ static inline struct pid_namespace *task
- 
- static inline struct task_struct *task_child_reaper(struct task_struct *tsk)
- {
--	return init_pid_ns.child_reaper;
-+	BUG_ON(tsk != current);
-+	return tsk->nsproxy->pid_ns->child_reaper;
- }
- 
- #endif /* _LINUX_PID_NS_H */
---- ./include/linux/sched.h.ve11	2007-08-10 12:40:08.000000000 +0400
-+++ ./include/linux/sched.h	2007-08-10 12:40:09.000000000 +0400
-@@ -1373,19 +1373,17 @@ static inline int pid_alive(struct task_
-  * @tsk: Task structure to be checked.
-  *
-  * Check if a task structure is the first user space task the kernel created.
-- *
-- * TODO: We should inline this function after some cleanups in pid_namespace.h
-  */
--extern int is_global_init(struct task_struct *tsk);
-+static inline int is_global_init(struct task_struct *tsk)
++void zap_pid_ns_processes(struct pid_namespace *pid_ns)
 +{
-+	return tsk->pid == 1;
++	int nr;
++	int rc;
++
++	/*
++	 * The last thread in the container-init thread group is terminating.
++	 * Find remaining pid_ts in the namespace, signal and wait for them
++	 * to exit.
++	 *
++	 * Note:  This signals each threads in the namespace - even those that
++	 * 	  belong to the same thread group, To avoid this, we would have
++	 * 	  to walk the entire tasklist looking a processes in this
++	 * 	  namespace, but that could be unnecessarily expensive if the
++	 * 	  pid namespace has just a few processes. Or we need to
++	 * 	  maintain a tasklist for each pid namespace.
++	 *
++	 */
++	read_lock(&tasklist_lock);
++	nr = next_pidmap(pid_ns, 1);
++	while (nr > 0) {
++		kill_proc_info(SIGKILL, SEND_SIG_PRIV, nr);
++		nr = next_pidmap(pid_ns, nr);
++	}
++	read_unlock(&tasklist_lock);
++
++	do {
++		clear_thread_flag(TIF_SIGPENDING);
++		rc = sys_wait4(-1, NULL, __WALL, NULL);
++	} while (rc != -ECHILD);
++
++
++	/* Child reaper for the pid namespace is going away */
++	pid_ns->child_reaper = NULL;
++	return;
 +}
- 
- /*
-  * is_container_init:
-  * check whether in the task is init in its own pid namespace.
-  */
--static inline int is_container_init(struct task_struct *tsk)
--{
--	return tsk->pid == 1;
--}
-+extern int is_container_init(struct task_struct *tsk);
- 
- extern struct pid *cad_pid;
- 
---- ./kernel/pid.c.ve11	2007-08-10 12:40:08.000000000 +0400
-+++ ./kernel/pid.c	2007-08-10 12:40:30.000000000 +0400
-@@ -72,10 +72,20 @@ struct pid_namespace init_pid_ns = {
- 	.child_reaper = &init_task,
- };
- 
--int is_global_init(struct task_struct *tsk)
-+int is_container_init(struct task_struct *tsk)
- {
--	return tsk == init_pid_ns.child_reaper;
-+	int ret = 0;
-+	struct pid *pid;
 +
-+	rcu_read_lock();
-+	pid = task_pid(tsk);
-+	if (pid != NULL && pid->numbers[pid->level].nr == 1)
-+		ret = 1;
-+	rcu_read_unlock();
-+
-+	return ret;
- }
-+EXPORT_SYMBOL(is_container_init);
- 
  /*
-  * Note: disable interrupts while the pidmap_lock is held as an
-@@ -191,8 +201,7 @@ fastcall void put_pid(struct pid *pid)
- 	if ((atomic_read(&pid->count) == 1) ||
- 	     atomic_dec_and_test(&pid->count)) {
- 		kmem_cache_free(ns->pid_cachep, pid);
--		if (ns != &init_pid_ns)
--			put_pid_ns(ns);
-+		put_pid_ns(ns);
- 	}
- }
- EXPORT_SYMBOL_GPL(put_pid);
-@@ -243,9 +252,7 @@ struct pid *alloc_pid(struct pid_namespa
- 		tmp = tmp->parent;
- 	}
- 
--	if (ns != &init_pid_ns)
--		get_pid_ns(ns);
--
-+	get_pid_ns(ns);
- 	pid->level = ns->level;
- 	pid->nr = pid->numbers[0].nr;
- 	atomic_set(&pid->count, 1);
+  * The pid hash table is scaled according to the amount of memory in the
+  * machine.  From a minimum of 16 slots up to 4096 slots at one gigabyte or
