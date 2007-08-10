@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936991AbXHJODi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938029AbXHJOFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936991AbXHJODi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 10:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759632AbXHJOD3
+	id S938029AbXHJOFW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 10:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbXHJOFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 10:03:29 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:40953 "EHLO mail.screens.ru"
+	Fri, 10 Aug 2007 10:05:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34659 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759002AbXHJOD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 10:03:28 -0400
-Date: Fri, 10 Aug 2007 18:05:45 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, devel@openvz.org
-Subject: Re: [PATCH] Make access to task's nsproxy liter
-Message-ID: <20070810140545.GA74@tv-sign.ru>
-References: <46BAE3A3.7030608@openvz.org> <20070810134003.GA22368@sergelap.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070810134003.GA22368@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.11
+	id S932299AbXHJOFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 10:05:04 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1186687557.6699.167.camel@heimdal.trondhjem.org>
+References: <1186687557.6699.167.camel@heimdal.trondhjem.org> <1186683869.6699.136.camel@heimdal.trondhjem.org> <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com> <20070809160550.17906.40862.stgit@warthog.cambridge.redhat.com> <21984.1186685548@redhat.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 14/14] NFS: Use local caching [try #2]
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Fri, 10 Aug 2007 15:04:40 +0100
+Message-ID: <24071.1186754680@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/10, Serge E. Hallyn wrote:
->
-> Quoting Pavel Emelyanov (xemul@openvz.org):
-> > +/*
-> > + * the namespaces access rules are:
-> > + *
-> > + *  1. only current task is allowed to change tsk->nsproxy pointer or
-> > + *     any pointer on the nsproxy itself
-> > + *
-> > + *  2. when accessing (i.e. reading) current task's namespaces - no
-> > + *     precautions should be taken - just dereference the pointers
-> > + *
-> > + *  3. the access to other task namespaces is performed like this
-> > + *     rcu_read_lock();
-> > + *     nsproxy = task_nsproxy(tsk);
-> > + *     if (nsproxy != NULL) {
-> > + *             / *
-> > + *               * work with the namespaces here
-> > + *               * e.g. get the reference on one of them
-> > + *               * /
-> > + *     } / *
-> > + *         * NULL task_nsproxy() means that this task is
-> > + *         * almost dead (zombie)
-> > + *         * /
-> > + *     rcu_read_unlock();
-> 
-> And lastly, I guess that the caller to switch_task_namespaces() has
-> to ensure that new_nsproxy either (1) is the init namespace, (2) is a
-> brand-new namespace to which noone else has a reference, or (3) the
-> caller has to hold a reference to the new_nsproxy across the call to
-> switch_task_namespaces().
-> 
-> As it happens the current calls fit (1) or (2).  Again if we happen to
-> jump into the game of switching a task into another task's nsproxy,
-> we'll need to be mindful of (3) so that new_nsproxy can't be tossed into
-> the bin between
-> 
-> 	if (new)
-> 		get_nsproxy(new);
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-4) Unless tsk == current, get_task_namespaces(tsk) and get_nsproxy(tsk)
-   are racy even if done under rcu_read_lock().
+> > > Dang, that's a lot of inlines... AFAICS, approx half of fs/nfs/fscache.h
+> > > should really be moved into fscache.c.
+> > 
+> > If you wish.  It seems a shame since a lot of them have only one caller.
+> 
+> ...however it also forces you to export a lot of stuff which is really
+> private to fscache.c (the atomics etc).
 
-Oleg.
+The atomics is actually a bad example.  These are referred to directly by part
+of the table in fs/nfs/sysctl.c.  Is there a better way of exporting
+statistics than through /proc/sys/ files?
 
+David
