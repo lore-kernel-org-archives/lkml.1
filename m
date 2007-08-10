@@ -1,90 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939499AbXHJOTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763952AbXHJO01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939499AbXHJOTo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 10:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936452AbXHJOT2
+	id S1763952AbXHJO01 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 10:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbXHJO0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 10:19:28 -0400
-Received: from imsc1.euromail.se ([217.174.79.93]:39801 "HELO
-	garland.euromail.se" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S939358AbXHJOTY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 10:19:24 -0400
-Message-ID: <00a801c7db58$ed84d920$dcc4af0a@atmel.com>
-From: "Ulf Samuelsson" <ulf@atmel.com>
-To: "Marc Pignat" <marc.pignat@hevs.ch>,
-       =?iso-8859-15?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Cc: <linux-arm-kernel@lists.arm.linux.org.uk>, <andrew@sanpeople.com>,
-       <trivial@kernel.org>, <linux-kernel@vger.kernel.org>,
-       "Andy Herzig" <andrew.herzig@ngc.com>
-References: <1186661447.6370.19.camel@leoh9-18574.nges.northgrum.com> <018a01c7dad3$10ca8190$dcc4af0a@atmel.com> <200708100912.35485.hjk@linutronix.de> <200708100933.46235.marc.pignat@hevs.ch>
-Subject: Re: [PATCH] at91 pm: Compilation fix for at91sam926x
-Date: Fri, 10 Aug 2007 15:54:50 +0200
+	Fri, 10 Aug 2007 10:26:18 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:57255 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752997AbXHJO0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 10:26:17 -0400
+Date: Fri, 10 Aug 2007 09:26:15 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, devel@openvz.org
+Subject: Re: [PATCH] Make access to task's nsproxy liter
+Message-ID: <20070810142615.GA1490@sergelap.austin.ibm.com>
+References: <46BAE3A3.7030608@openvz.org> <20070810134003.GA22368@sergelap.austin.ibm.com> <20070810140545.GA74@tv-sign.ru> <20070810141501.GB74@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-X-OriginalArrivalTime: 10 Aug 2007 14:17:18.0913 (UTC) FILETIME=[28F5FB10:01C7DB59]
-X-NAI-Spam-Score: -2.5
-X-NAI-Spam-Report: 2 Rules triggered
-	*  -2.5 -- BAYES_00 -- Bayesian spam probability is 0 to 1%
-	*  0 -- HAS_X_HELO -- Mail contains HAS_X-HELO header
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070810141501.GB74@tv-sign.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----- 
-From: "Marc Pignat" <marc.pignat@hevs.ch>
-To: "Hans-Jürgen Koch" <hjk@linutronix.de>
-Cc: <linux-arm-kernel@lists.arm.linux.org.uk>; "Ulf Samuelsson" <ulf@atmel.com>; <andrew@sanpeople.com>; <trivial@kernel.org>; <linux-kernel@vger.kernel.org>; "Andy Herzig" <andrew.herzig@ngc.com>
-Sent: Friday, August 10, 2007 9:33 AM
-Subject: Re: [PATCH] at91 pm: Compilation fix for at91sam926x
-
-
-On Friday 10 August 2007 09:12, Hans-Jürgen Koch wrote:
-> Am Freitag 10 August 2007 00:15 schrieb Ulf Samuelsson:
+Quoting Oleg Nesterov (oleg@tv-sign.ru):
+> On 08/10, Oleg Nesterov wrote:
+> >
+> > On 08/10, Serge E. Hallyn wrote:
+> > >
+> > > Quoting Pavel Emelyanov (xemul@openvz.org):
+> > > > +/*
+> > > > + * the namespaces access rules are:
+> > > > + *
+> > > > + *  1. only current task is allowed to change tsk->nsproxy pointer or
+> > > > + *     any pointer on the nsproxy itself
+> > > > + *
+> > > > + *  2. when accessing (i.e. reading) current task's namespaces - no
+> > > > + *     precautions should be taken - just dereference the pointers
+> > > > + *
+> > > > + *  3. the access to other task namespaces is performed like this
+> > > > + *     rcu_read_lock();
+> > > > + *     nsproxy = task_nsproxy(tsk);
+> > > > + *     if (nsproxy != NULL) {
+> > > > + *             / *
+> > > > + *               * work with the namespaces here
+> > > > + *               * e.g. get the reference on one of them
+> > > > + *               * /
+> > > > + *     } / *
+> > > > + *         * NULL task_nsproxy() means that this task is
+> > > > + *         * almost dead (zombie)
+> > > > + *         * /
+> > > > + *     rcu_read_unlock();
+> > > 
+> > > And lastly, I guess that the caller to switch_task_namespaces() has
+> > > to ensure that new_nsproxy either (1) is the init namespace, (2) is a
+> > > brand-new namespace to which noone else has a reference, or (3) the
+> > > caller has to hold a reference to the new_nsproxy across the call to
+> > > switch_task_namespaces().
+> > > 
+> > > As it happens the current calls fit (1) or (2).  Again if we happen to
+> > > jump into the game of switching a task into another task's nsproxy,
+> > > we'll need to be mindful of (3) so that new_nsproxy can't be tossed into
+> > > the bin between
+> > > 
+> > > 	if (new)
+> > > 		get_nsproxy(new);
 > > 
-> > > > +#if defined(CONFIG_ARCH_AT91RM9200)
-> > > >                         at91_sys_write(AT91_SDRAMC_SRR, 1);     /*
-> > > > self-refresh mode */
-> > 
-> > > Why don't use:
-> > > if (cpu_is_at91rm9200())
-> > > at91_sys_write(AT91_SDRAMC_SRR, 1);
-> > 
-> > What is the benefit?
-More readable. (see '#ifdefs are ugly' in Documentation/SubmittingPatches)
-
-> > Will the optimizer remove the code if the CPU is not the at91rm9200?
-Optimizer will remove that code if at91rm9200 support is not compiled and 
-choose at runtime if the cpu support is compiled in.
-
+> > 4) Unless tsk == current, get_task_namespaces(tsk) and get_nsproxy(tsk)
+> >    are racy even if done under rcu_read_lock().
 > 
-> No, it won't. cpu_is_something() is intended for runtime decisions.
-> Remember that the purpose of this patch was to solve a compile time
-> issue (see subject). AT91_SDRAMC_SRR isn't defined properly for
-> non-9200 processors because they don't have that register. So we need
-> something like #ifdef to include this line only on 9200.
-Oops, I missed that problem, sorry...
+> (sorry for noise, but I'm afraid I was not clear again...)
+> 
+> This looks OK, we don't do get_nsproxy(not_a_current), but perhaps it is
+> not immediately obvious that we shouldn't.
 
-and what about this:
-#ifdef CONFIG_ARCH_AT91RM9200
-#define sdram_lowpower_enable() at91_sys_write(AT91_SDRAMC_SRR, 1)
-#define sdram_lowpower_disable() at91_sys_write(AT91_SDRAMC_SRR, 0)
-#else
-#define sdram_lowpower_enable()
-#define sdram_lowpower_disable()
-#endif
+Yes, agreed, the code as it stands is fine.
 
-and using sdram_lowpower_{enable,disable}() when requiered?
+I'm only warning that several people want the ability to enter another
+task's namespace (and other people are squarely against it :), and
+if/when we try to implement that again, then simply using
+switch_task_namespaces() will not suffice.  The caller will have to grab
+an extra reference to the new nsproxy (as you imply, I guess under the
+task_lock(target)), call switch_task_namespaces(), then drop the extra
+reference.  (Or implement a whole new helper.)
 
-==> That is hiding the fact that the low power is not performed
-        when it it not an AT91RM9200.
-        I think the original approach is the best.
+I don't even know whether this warrants a warning or not.  Hopefully
+anyone who'll try to implement that will be able to deduce that for
+themselves.  But still I usually like to see such things warned against...
 
-Best Regards
-Ulf Samuelsson
-
+-serge
