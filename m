@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933550AbXHJCib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934295AbXHJCit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933550AbXHJCib (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 22:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbXHJCiW
+	id S934295AbXHJCit (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 22:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932560AbXHJCi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 22:38:22 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46519 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753357AbXHJCiW convert rfc822-to-8bit (ORCPT
+	Thu, 9 Aug 2007 22:38:28 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:59608 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757815AbXHJCi0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 22:38:22 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: YOSHIFUJI Hideaki / =?euc-jp?B?tcjGo7HRzMA=?= 
-	<yoshfuji@linux-ipv6.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, devel@openvz.org,
-       adobriyan@sw.ru
-Subject: Re: [PATCH 3/3] sysctl: Error on bad sysctl tables
-References: <m1tzr8a3ms.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1wa3kf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcn8a2rq.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070810.110144.117508471.yoshfuji@linux-ipv6.org>
-Date: Thu, 09 Aug 2007 20:18:53 -0600
-In-Reply-To: <20070810.110144.117508471.yoshfuji@linux-ipv6.org> (YOSHIFUJI
-	Hideaki's message of "Fri, 10 Aug 2007 11:01:44 +0900 (JST)")
-Message-ID: <m1sl6s6sj6.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=euc-jp
-Content-Transfer-Encoding: 8BIT
+	Thu, 9 Aug 2007 22:38:26 -0400
+Date: Thu, 9 Aug 2007 22:38:18 -0400
+Message-Id: <200708100238.l7A2cIZm024347@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+CC: dwmw2@infradead.org
+Subject: JFFS2/mtdsuper modprobe "unknown symbol" in 2.6.23-rc1
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YOSHIFUJI Hideaki / µ»∆£±—Ã¿ <yoshfuji@linux-ipv6.org> writes:
+I'm getting an error modprobing jffs2 due to mtdsuper failing to insmod:
 
-> Hello.
->
-> In article <m1hcn8a2rq.fsf_-_@ebiederm.dsl.xmission.com> (at Thu, 09 Aug 2007
-> 14:09:29 -0600), ebiederm@xmission.com (Eric W. Biederman) says:
->
->> After going through the kernels sysctl tables several times it has
->> become clear that code review and testing is just not effective in
->> prevent problematic sysctl tables from being used in the stable
->> kernel.  I certainly can't seem to fix the problems as fast as
->> they are introduced.
-> :
->> The biggest part of the code is the table of valid binary sysctl
->> entries, but since we have frozen our set of binary sysctls this table
->> should not need to change, and it makes it much easier to detect
->> when someone unintentionally adds a new binary sysctl value.
->
-> I don't think everyone needs to have this code, so
-> it is better to make it configurable via
-> CONFIG_SYSCTL_DEBUG or something..., ...no?
+# modprobe jffs2
+WARNING: Error inserting mtdsuper
+(/lib/modules/2.6.23-rc1/kernel/drivers/mtd/mtdsuper.ko):
+Unknown symbol in module, or unknown parameter (see dmesg)
+FATAL: Error inserting jffs2
+(/lib/modules/2.6.23-rc1/kernel/fs/jffs2/jffs2.ko): Unknown
+symbol in module, or unknown parameter (see dmesg)
 
-I guess the other thing is.  Except for code size it doesn't matter.
-As register_sysctl_table gets called very rarely.
+# dmesg | tail
+mtdsuper: Unknown symbol get_mtd_device
+mtdsuper: Unknown symbol put_mtd_device
+jffs2: Unknown symbol get_sb_mtd
+jffs2: Unknown symbol kill_mtd_super
 
-Eric
+My relevant .config is:
+
+CONFIG_MTD=m
+CONFIG_MTD_BLKDEVS=m
+CONFIG_MTD_BLOCK=m
+CONFIG_MTD_MAP_BANK_WIDTH_1=y
+CONFIG_MTD_MAP_BANK_WIDTH_2=y
+CONFIG_MTD_MAP_BANK_WIDTH_4=y
+CONFIG_MTD_CFI_I1=y
+CONFIG_MTD_CFI_I2=y
+CONFIG_MTD_BLOCK2MTD=m
+CONFIG_JFFS2_FS=m
+CONFIG_JFFS2_FS_DEBUG=0
+CONFIG_JFFS2_FS_WRITEBUFFER=y
+CONFIG_JFFS2_SUMMARY=y
+CONFIG_JFFS2_FS_XATTR=y
+CONFIG_JFFS2_FS_POSIX_ACL=y
+CONFIG_JFFS2_FS_SECURITY=y
+CONFIG_JFFS2_COMPRESSION_OPTIONS=y
+CONFIG_JFFS2_ZLIB=y
+CONFIG_JFFS2_RTIME=y
+CONFIG_JFFS2_CMODE_PRIORITY=y
+
+A "quick hack" around this which I found is to add
+
+  MODULE_LICENSE("GPL");
+
+to the end of drivers/mtd/mtdsuper.c, but that doesn't sound like the right
+fix.
+
+Does anyone know what am I missing?
+
+Thanks,
+Erez.
