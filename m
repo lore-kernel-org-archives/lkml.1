@@ -1,156 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760504AbXHJHXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761396AbXHJHXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760504AbXHJHXH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 03:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbXHJHWz
+	id S1761396AbXHJHXt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 03:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbXHJHXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 03:22:55 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:36675 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754154AbXHJHWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 03:22:54 -0400
-Date: Fri, 10 Aug 2007 11:22:48 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: + sysctl-factor-out-sysctl_data.patch added to -mm tree
-Message-ID: <20070810072247.GB6639@localhost.sw.ru>
-References: <200708092211.l79MBmr8022134@imap1.linux-foundation.org>
+	Fri, 10 Aug 2007 03:23:40 -0400
+Received: from mail.gmx.net ([213.165.64.20]:33161 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752607AbXHJHXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 03:23:39 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+juKJkbBOjTJSSnuWdelhe98hFszr10GlM7KZe/Y
+	8wZuRWHX6gYLAe
+Subject: Re: CFS review
+From: Mike Galbraith <efault@gmx.de>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0708100037460.1817@scrub.home>
+References: <Pine.LNX.4.64.0707131728070.1817@scrub.home>
+	 <1184389456.6632.13.camel@Homer.simpson.net>
+	 <Pine.LNX.4.64.0708010439050.1817@scrub.home>
+	 <20070801071230.GA16375@elte.hu>
+	 <Pine.LNX.4.64.0708011511530.1817@scrub.home>
+	 <20070801150742.GA23670@elte.hu> <p73ps27npu0.fsf@bingen.suse.de>
+	 <alpine.LFD.0.999.0708010924490.3582@woody.linux-foundation.org>
+	 <20070801175004.GA17936@elte.hu>
+	 <Pine.LNX.4.64.0708011955430.1817@scrub.home>
+	 <20070801190556.GA1199@elte.hu>
+	 <Pine.LNX.4.64.0708100037460.1817@scrub.home>
+Content-Type: text/plain
+Date: Fri, 10 Aug 2007 09:23:35 +0200
+Message-Id: <1186730615.19991.12.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708092211.l79MBmr8022134@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 03:11:48PM -0700, akpm@linux-foundation.org wrote:
-> From: Eric W. Biederman <ebiederm@xmission.com>
-> 
-> There as been no easy way to wrap the default sysctl strategy routine except
-> for returning 0.  Which is not always what we want.  The few instances I have
-> seen that want different behaviour have written their own version of
-> sysctl_data.  While not too hard it is unnecessary code and has the potential
-> for extra bugs.
-> 
-> So to make these situations easier and make that part of sysctl more symetric
-> I have factord sysctl_data out of do_sysctl_strategy and exported as a
-> function everyone can use.
-> 
-> Further having sysctl_data be an explicit function makes checking for badly
-> formed sysctl tables much easier.
+On Fri, 2007-08-10 at 01:14 +0200, Roman Zippel wrote:
+> Hi,
 
-OK with idea, though naming sucks. generic_sysctl_strategy is much better.
+Greetings,
 
-> --- a/include/linux/sysctl.h~sysctl-factor-out-sysctl_data
-> +++ a/include/linux/sysctl.h
-> @@ -972,6 +972,7 @@ extern int do_sysctl_strategy (struct ct
->  			       void __user *oldval, size_t __user *oldlenp,
->  			       void __user *newval, size_t newlen);
->  
-> +extern ctl_handler sysctl_data;
->  extern ctl_handler sysctl_string;
->  extern ctl_handler sysctl_intvec;
->  extern ctl_handler sysctl_jiffies;
-> diff -puN kernel/sysctl.c~sysctl-factor-out-sysctl_data kernel/sysctl.c
-> --- a/kernel/sysctl.c~sysctl-factor-out-sysctl_data
-> +++ a/kernel/sysctl.c
-> @@ -1457,7 +1457,6 @@ int do_sysctl_strategy (struct ctl_table
->  			void __user *newval, size_t newlen)
->  {
->  	int op = 0, rc;
-> -	size_t len;
->  
->  	if (oldval)
->  		op |= 004;
-> @@ -1478,25 +1477,10 @@ int do_sysctl_strategy (struct ctl_table
->  	/* If there is no strategy routine, or if the strategy returns
->  	 * zero, proceed with automatic r/w */
->  	if (table->data && table->maxlen) {
-> -		if (oldval && oldlenp) {
-> -			if (get_user(len, oldlenp))
-> -				return -EFAULT;
-> -			if (len) {
-> -				if (len > table->maxlen)
-> -					len = table->maxlen;
-> -				if(copy_to_user(oldval, table->data, len))
-> -					return -EFAULT;
-> -				if(put_user(len, oldlenp))
-> -					return -EFAULT;
-> -			}
-> -		}
-> -		if (newval && newlen) {
-> -			len = newlen;
-> -			if (len > table->maxlen)
-> -				len = table->maxlen;
-> -			if(copy_from_user(table->data, newval, len))
-> -				return -EFAULT;
-> -		}
-> +		rc = sysctl_data(table, name, nlen, oldval, oldlenp,
-> +				 newval, newlen);
-> +		if (rc < 0)
-> +			return rc;
->  	}
->  	return 0;
->  }
-> @@ -2395,6 +2379,40 @@ int proc_doulongvec_ms_jiffies_minmax(st
->   * General sysctl support routines 
->   */
->  
-> +/* The generic sysctl data routine (used if no strategy routine supplied) */
-> +int sysctl_data(struct ctl_table *table, int __user *name, int nlen,
-> +		void __user *oldval, size_t __user *oldlenp,
-> +		void __user *newval, size_t newlen)
-> +{
-> +	size_t len;
-> +
-> +	/* Get out of I don't have a variable */
-> +	if (!table->data || !table->maxlen)
-> +		return -ENOTDIR;
-> +
-> +	if (oldval && oldlenp) {
-> +		if (get_user(len, oldlenp))
-> +			return -EFAULT;
-> +		if (len) {
-> +			if (len > table->maxlen)
-> +				len = table->maxlen;
-> +			if (copy_to_user(oldval, table->data, len))
-> +				return -EFAULT;
-> +			if (put_user(len, oldlenp))
-> +				return -EFAULT;
-> +		}
-> +	}
-> +
-> +	if (newval && newlen) {
-> +		if (newlen > table->maxlen)
-> +			newlen = table->maxlen;
-> +
-> +		if (copy_from_user(table->data, newval, newlen))
-> +			return -EFAULT;
-> +	}
-> +	return 1;
-> +}
-> +
->  /* The generic string strategy routine: */
->  int sysctl_string(struct ctl_table *table, int __user *name, int nlen,
->  		  void __user *oldval, size_t __user *oldlenp,
-> @@ -2583,6 +2601,13 @@ out:
->  	return -ENOSYS;
->  }
->  
-> +int sysctl_data(struct ctl_table *table, int __user *name, int nlen,
-> +		  void __user *oldval, size_t __user *oldlenp,
-> +		  void __user *newval, size_t newlen)
-> +{
-> +	return -ENOSYS;
-> +}
-> +
->  int sysctl_string(struct ctl_table *table, int __user *name, int nlen,
->  		  void __user *oldval, size_t __user *oldlenp,
->  		  void __user *newval, size_t newlen)
-> @@ -2630,4 +2655,5 @@ EXPORT_SYMBOL(sysctl_intvec);
->  EXPORT_SYMBOL(sysctl_jiffies);
->  EXPORT_SYMBOL(sysctl_ms_jiffies);
->  EXPORT_SYMBOL(sysctl_string);
-> +EXPORT_SYMBOL(sysctl_data);
+> On Wed, 1 Aug 2007, Ingo Molnar wrote:
+> 
+> > just to make sure, how does 'top' output of the l + "lt 3" testcase look 
+> > like now on your laptop? Yesterday it was this:
+> > 
+> >  4544 roman     20   0  1796  520  432 S 32.1  0.4   0:21.08 lt
+> >  4545 roman     20   0  1796  344  256 R 32.1  0.3   0:21.07 lt
+> >  4546 roman     20   0  1796  344  256 R 31.7  0.3   0:21.07 lt
+> >  4547 roman     20   0  1532  272  216 R  3.3  0.2   0:01.94 l
+> > 
+> > and i'm still wondering how that output was possible.
+> 
+> I disabled the jiffies logic and the result is still the same, so this 
+> problem isn't related to resolution at all.
+> I traced it a little and what's happing is that the busy loop really only 
+> gets little time, it only runs inbetween the timer tasks. When the timer 
+> task is woken up __enqueue_sleeper() updates sleeper_bonus and a little 
+> later when the busy loop is preempted __update_curr() is called a last 
+> time and it's fully hit by the sleeper_bonus. So the timer tasks use less 
+> time than they actually get and thus produce overflows, the busy loop OTOH 
+> is punished and underflows.
+
+I still can't reproduce this here.  Can you please send your .config, so
+I can try again with a config as close to yours as possible?
+
+	-Mike
 
