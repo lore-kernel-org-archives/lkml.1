@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935698AbXHJMde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933787AbXHJMhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935698AbXHJMde (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 08:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbXHJMd1
+	id S933787AbXHJMhN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 08:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757771AbXHJMg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 08:33:27 -0400
-Received: from wasp.net.au ([203.190.192.17]:48154 "EHLO wasp.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755588AbXHJMd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 08:33:26 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Aug 2007 08:33:26 EDT
-Message-ID: <46BC59E3.2010402@wasp.net.au>
-Date: Fri, 10 Aug 2007 16:28:19 +0400
-From: Brad Campbell <brad@wasp.net.au>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Fri, 10 Aug 2007 08:36:58 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:27455 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756806AbXHJMg5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 08:36:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=MjIZe4iWhbJRQwVTo5coghfI+w80UdPQknbP61kz0st5699JELw+fe8IIME/SoaKembKg3uORkUBcC0ZAPsUexKPhAaYQRJYMPECIVNm5CEYua9ihoXcVorFsVES+Vz2aVwskZE0/bGUNTEtny2LMVA5tXfD2be1+eVgZC2KlCc=
+Message-ID: <46BC5B75.80102@googlemail.com>
+Date: Fri, 10 Aug 2007 14:35:01 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: Advice on a userspace tty serial driver
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: 2.6.23-rc2-mm2
+References: <20070809224254.11f42716.akpm@linux-foundation.org> <46BC3CB1.2090503@googlemail.com>
+In-Reply-To: <46BC3CB1.2090503@googlemail.com>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-G'day all,
+Some new warnings here :
 
-I'm building a bit of hardware. It's basically a serial multiplexer that communicates to the PC 
-using a single usb-serial port. It has the ability to run between 2 and 8 standard async ports over 
-this single interface.
+...
 
-I'd rather not write a kernel driverif possible as I figure this would be a perfect application for 
-a userspace daemon to do the control and mux/demux. I'd prefer to present standard serial style 
-devices (/dev/ttySxx) to userspace giving me the ability to run unmodified software to talk to the 
-multiplexed ports.
+In file included from include/linux/blkdev.h:17,
+                 from kernel/sched.c:45:
+include/linux/bsg.h:67: warning: 'struct request_queue' declared inside parameter list
+include/linux/bsg.h:67: warning: its scope is only this definition or declaration, which is probably not what you want
+include/linux/bsg.h:71: warning: 'struct request_queue' declared inside parameter list
 
-I think tty/pty pairs looks roughly what I'm after, but will they allow me to use standard IOCTLS 
-for conveying baud rate and other standard serial parameters to the daemon?
+...
 
-I've spotted several userspace serial driver projects in the last 7 or so years, but I can't seem to 
-find any that made it into the kernel.
+In file included from include/linux/blkdev.h:17,
+                 from mm/filemap.c:29:
+include/linux/bsg.h:67: warning: 'struct request_queue' declared inside parameter list
+include/linux/bsg.h:67: warning: its scope is only this definition or declaration, which is probably not what you want
+include/linux/bsg.h:71: warning: 'struct request_queue' declared inside parameter list
 
-Am I on the right track with tty/pty or is there a better way?
+...
 
-Regards,
-Brad
--- 
-"Human beings, who are almost unique in having the ability
-to learn from the experience of others, are also remarkable
-for their apparent disinclination to do so." -- Douglas Adams
+Some more of these , all from bsg.h:{67,71}
+
+config there :
+
+http://194.231.229.228/kernel/mm/2.6.23-rc2-mm2/randconfig-auto-5
+
+
+
+
+
+
+
