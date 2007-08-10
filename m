@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935721AbXHJLvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936065AbXHJLvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935721AbXHJLvT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 07:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759172AbXHJLvJ
+	id S936065AbXHJLvk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 07:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764440AbXHJLvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 07:51:09 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:47172 "EHLO relay.sw.ru"
+	Fri, 10 Aug 2007 07:51:14 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:21371 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756685AbXHJLvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 07:51:08 -0400
-Date: Fri, 10 Aug 2007 15:47:53 +0400
+	id S1760948AbXHJLvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 07:51:13 -0400
+Date: Fri, 10 Aug 2007 15:47:59 +0400
 From: xemul@openvz.org
 To: akpm@osdl.org
 Cc: xemul@openvz.org, devel@openvz.org, linux-kernel@vger.kernel.org,
        containers@lists.osdl.org, oleg@tv-sign.ru, sukadev@us.ibm.com
-Subject: [PATCH 2/20] Move exit_task_namespaces()
-Message-ID: <46BC5069.mailGIP11AV7A@openvz.org>
+Subject: [PATCH 5/20] Introduce struct upid
+Message-ID: <46BC506F.mailGJ711PNHE@openvz.org>
 User-Agent: nail 11.4 8/29/04
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -23,45 +23,79 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Makve task release its namespaces after it has reparented all his children
-to child_reaper, but before it notifies its parent about its death.
+From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
 
-The reason to release namespaces after reparenting is that when task exits
-it may send a signal to its parent (SIGCHLD), but if the parent has already
-exited its namespaces there will be no way to decide what pid to dever to
-him - parent can be from different namespace.
+Since task will be visible from different pid namespaces each of them have to
+be addressed by multiple pids. struct upid is to store the information about
+which id refers to which namespace.
 
-The reason to release namespace before notifying the parent it that when
-task sends a SIGCHLD to parent it can call wait() on this taks and release
-it. But releasing the mnt namespace implies dropping of all the mounts in
-the mnt namespace and NFS expects the task to have valid sighand pointer.
+The constuciton looks like this. Each struct pid carried the reference counter
+and the list of tasks attached to this pid. At its end it has a variable length
+array of struct upid-s. Each struct upid has a numerical id (pid itself),
+pointer to the namespace, this ID is valid in and is hashed into a pid_hash
+for searching the pids.
 
-Thanks to Oleg for pointing out some races that can apear and helping with
-patches and fixes.
+The nr and pid_chain fields are kept in struct pid for a while to make kernel
+still work (no patch initialize the upids yet), but it will be removed at the
+end of this series when we switch to upids completely.
 
+Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
 Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 Cc: Oleg Nesterov <oleg@tv-sign.ru>
 
 ---
 
- exit.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ init_task.h |    6 ++++++
+ pid.h       |   16 ++++++++++++++++
+ 2 files changed, 22 insertions(+)
 
---- ./kernel/exit.c.ve2	2007-07-27 12:45:46.000000000 +0400
-+++ ./kernel/exit.c	2007-07-27 12:46:08.000000000 +0400
-@@ -796,6 +796,7 @@ static void exit_notify(struct task_stru
- 	 *	jobs, send them a SIGHUP and then a SIGCONT.  (POSIX 3.2.2.2)
- 	 */
- 	forget_original_parent(tsk);
-+	exit_task_namespaces(tsk);
+diff -upr linux-2.6.23-rc1-mm1.orig/include/linux/init_task.h linux-2.6.23-rc1-mm1-7/include/linux/init_task.h
+--- linux-2.6.23-rc1-mm1.orig/include/linux/init_task.h	2007-07-26 16:34:45.000000000 +0400
++++ linux-2.6.23-rc1-mm1-7/include/linux/init_task.h	2007-07-26 16:36:36.000000000 +0400
+@@ -93,6 +93,12 @@ extern struct group_info init_groups;
+ 		{ .first = &init_task.pids[PIDTYPE_SID].node },		\
+ 	},								\
+ 	.rcu		= RCU_HEAD_INIT,				\
++	.level		= 0,						\
++	.numbers	= { {						\
++		.nr		= 0,					\
++		.ns		= &init_pid_ns,				\
++		.pid_chain	= { .next = NULL, .pprev = NULL },	\
++	}, }								\
+ }
  
- 	write_lock_irq(&tasklist_lock);
- 	/*
-@@ -1003,7 +1004,6 @@ fastcall NORET_TYPE void do_exit(long co
+ #define INIT_PID_LINK(type) 					\
+diff -upr linux-2.6.23-rc1-mm1.orig/include/linux/pid.h linux-2.6.23-rc1-mm1-7/include/linux/pid.h
+--- linux-2.6.23-rc1-mm1.orig/include/linux/pid.h	2007-07-26 16:34:45.000000000 +0400
++++ linux-2.6.23-rc1-mm1-7/include/linux/pid.h	2007-07-26 16:36:37.000000000 +0400
+@@ -40,6 +40,20 @@ enum pid_type
+  * processes.
+  */
  
- 	tsk->exit_code = code;
- 	proc_exit_connector(tsk);
--	exit_task_namespaces(tsk);
- 	exit_notify(tsk);
- #ifdef CONFIG_NUMA
- 	mpol_free(tsk->mempolicy);
++
++/*
++ * struct upid is used to get the id of the struct pid, as it is
++ * seen in particular namespace. Later the struct pid is found with
++ * find_pid_ns() using the int nr and struct pid_namespace *ns.
++ */
++
++struct upid {
++	/* Try to keep pid_chain in the same cacheline as nr for find_pid */
++	int nr;
++	struct pid_namespace *ns;
++	struct hlist_node pid_chain;
++};
++
+ struct pid
+ {
+ 	atomic_t count;
+@@ -50,6 +50,8 @@ struct pid
+ 	/* lists of tasks that use this pid */
+ 	struct hlist_head tasks[PIDTYPE_MAX];
+ 	struct rcu_head rcu;
++	int level;
++	struct upid numbers[1];
+ };
+ 
+ extern struct pid init_struct_pid;
+
