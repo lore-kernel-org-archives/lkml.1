@@ -1,92 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758416AbXHJDvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbXHJEC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758416AbXHJDvS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 23:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbXHJDvF
+	id S1752884AbXHJEC5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 00:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750714AbXHJECs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 23:51:05 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:41597 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752209AbXHJDvE (ORCPT
+	Fri, 10 Aug 2007 00:02:48 -0400
+Received: from mail.tmr.com ([64.65.253.246]:60767 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750710AbXHJECq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 23:51:04 -0400
-Subject: [PATCH] [MTD] Fix CFI build error with meaningless nonfunctional
-	.config
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070806161537.GA1269@elte.hu>
-References: <20070806161537.GA1269@elte.hu>
-Content-Type: text/plain
-Date: Fri, 10 Aug 2007 11:50:41 +0800
-Message-Id: <1186717841.7282.104.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-3.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 10 Aug 2007 00:02:46 -0400
+Message-ID: <46BBE3DD.2090209@tmr.com>
+Date: Fri, 10 Aug 2007 00:04:45 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: david@lang.hm
+CC: Diego Calleja <diegocg@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, J??rn Engel <joern@logfs.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+References: <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804224834.5187f9b7@the-village.bc.nu> <20070805071320.GC515@elte.hu> <20070805152231.aba9428a.diegocg@gmail.com> <Pine.LNX.4.64.0708051158260.6905@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0708051158260.6905@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-06 at 18:15 +0200, Ingo Molnar wrote:
-> randconfig testing on .23-rc2 triggered the following build error:
+david@lang.hm wrote:
+> On Sun, 5 Aug 2007, Diego Calleja wrote:
+> 
+>> El Sun, 5 Aug 2007 09:13:20 +0200, Ingo Molnar <mingo@elte.hu> escribió:
+>>
+>>> Measurements show that noatime helps 20-30% on regular desktop
+>>> workloads, easily 50% for kernel builds and much more than that (in
+>>> excess of 100%) for file-read-intense workloads. We cannot just walk
+>>
+>>
+>> And as everybody knows in servers is a popular practice to disable it.
+>> According to an interview to the kernel.org admins....
+>>
+>> "Beyond that, Peter noted, "very little fancy is going on, and that is 
+>> good
+>> because fancy is hard to maintain." He explained that the only fancy 
+>> thing
+>> being done is that all filesystems are mounted noatime meaning that the
+>> system doesn't have to make writes to the filesystem for files which are
+>> simply being read, "that cut the load average in half."
+>>
+>> I bet that some people would consider such performance hit a bug...
+>>
+> 
+> actually, it's popular practice to disable it by people who know how big 
+> a hit it is and know how few programs use it.
+> 
+> i've been a linux sysadmin for 10 years, and have known about noatime 
+> for at least 7 years, but I always thought of it in the catagory of 'use 
+> it only on your performance critical machines where you are trying to 
+> extract every ounce of performance, and keep an eye out for things 
+> misbehaving'
+> 
+> I never imagined that itwas the 20%+ hit that is being described, and 
+> with so little impact, or I would have switched to it across the board 
+> years ago.
+> 
+To get that magnitude you need slow disk with very fast CPU. It helps 
+most of systems where the disk hardware is marginal or worse for the i/o 
+load. Don't take that as typical.
 
-When building NOR flash support, you have compile-time options for the
-bus width and the number of individual chips which are interleaved
-together onto that bus. The code to deal with arbitrary geometry is a
-bit convoluted, and people want to just configure it for the specific
-hardware they have, to avoid the runtime overhead.
-
-Selecting _none_ of the available options doesn't make any sense. You
-should have at least one. This makes it build though, since people
-persist in trying.
-
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-
-diff --git a/include/linux/mtd/cfi.h b/include/linux/mtd/cfi.h
-index 123948b..e17c534 100644
---- a/include/linux/mtd/cfi.h
-+++ b/include/linux/mtd/cfi.h
-@@ -57,6 +57,15 @@
- #define cfi_interleave_is_8(cfi) (0)
- #endif
- 
-+#ifndef cfi_interleave
-+#warning No CONFIG_MTD_CFI_Ix selected. No NOR chip support can work.
-+static inline int cfi_interleave(void *cfi)
-+{
-+	BUG();
-+	return 0;
-+}
-+#endif
-+
- static inline int cfi_interleave_supported(int i)
- {
- 	switch (i) {
-diff --git a/include/linux/mtd/map.h b/include/linux/mtd/map.h
-index 81f3a31..a9fae03 100644
---- a/include/linux/mtd/map.h
-+++ b/include/linux/mtd/map.h
-@@ -125,7 +125,15 @@
- #endif
- 
- #ifndef map_bankwidth
--#error "No bus width supported. What's the point?"
-+#warning "No CONFIG_MTD_MAP_BANK_WIDTH_xx selected. No NOR chip support can work"
-+static inline int map_bankwidth(void *map)
-+{
-+	BUG();
-+	return 0;
-+}
-+#define map_bankwidth_is_large(map) (0)
-+#define map_words(map) (0)
-+#define MAX_MAP_BANKWIDTH 1
- #endif
- 
- static inline int map_bankwidth_supported(int w)
-
+> I'll bet there are a lot of admins out there in the same boat.
+> 
+> adding an option in the kernel to change the default sounds like a very 
+> good first step, even if the default isn't changed today.
+> 
 
 -- 
-dwmw2
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
