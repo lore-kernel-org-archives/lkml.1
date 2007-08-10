@@ -1,52 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942357AbXHJVMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S942385AbXHJVN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942357AbXHJVMA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 17:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933748AbXHJVLn
+	id S942385AbXHJVN2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 17:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761742AbXHJVNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 17:11:43 -0400
-Received: from ns2.lanforge.com ([66.165.47.211]:50890 "EHLO ns2.lanforge.com"
+	Fri, 10 Aug 2007 17:13:07 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:54963 "EHLO atlrel6.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756259AbXHJVLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 17:11:41 -0400
-Message-ID: <46BCD47C.9060408@candelatech.com>
-Date: Fri, 10 Aug 2007 14:11:24 -0700
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Auke Kok <auke-jan.h.kok@intel.com>, netdev@vger.kernel.org,
-       davem@davemloft.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/4] Add ETHTOOL_[GS]FLAGS sub-ioctls
-References: <20070810202426.GA25050@havoc.gtf.org> <46BCD263.6050807@garzik.org>
-In-Reply-To: <46BCD263.6050807@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S934162AbXHJVND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 17:13:03 -0400
+Subject: Re: [patch][rfc] 2.6.23-rc1 mm: NUMA replicated pagecache
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Joachim Deguara <joachim.deguara@amd.com>,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
+       Eric Whitney <eric.whitney@hp.com>
+In-Reply-To: <1186604723.5055.47.camel@localhost>
+References: <20070727084252.GA9347@wotan.suse.de>
+	 <1186604723.5055.47.camel@localhost>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Fri, 10 Aug 2007 17:08:18 -0400
+Message-Id: <1186780099.5246.6.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-
-> This patch copies Auke in adding NETIF_F_LRO.  Is that just for 
-> temporary merging, or does the net core really not touch it at all?
+On Wed, 2007-08-08 at 16:25 -0400, Lee Schermerhorn wrote:
+> On Fri, 2007-07-27 at 10:42 +0200, Nick Piggin wrote:
+> > Hi,
+> > 
+> > Just got a bit of time to take another look at the replicated pagecache
+> > patch. The nopage vs invalidate race and clear_page_dirty_for_io fixes
+> > gives me more confidence in the locking now; the new ->fault API makes
+> > MAP_SHARED write faults much more efficient; and a few bugs were found
+> > and fixed.
+> > 
+> > More stats were added: *repl* in /proc/vmstat. Survives some kbuilding
+> > tests...
+> > 
 > 
-> Because, logically, if NETIF_F_LRO exists nowhere else but this patch, 
-> we should not add it to dev->features.  LRO knowledge can be contained 
-> entirely within the driver, if the net core never tests NETIF_F_LRO.
+> Sending this out to give Nick an update and to give the list a
+> heads up on what I've found so far with the replication patch.
 > 
-> I haven't reviewed the other NETIF_F_XXX flags, but, that logic can be 
-> applied to any other NETIF_F_XXX flag:  if the net stack isn't using it, 
-> it's a piece of information specific to that driver.
+> I have rebased Nick's recent pagecache replication patch against
+> 2.6.23-rc1-mm2, atop my memory policy and auto/lazy migration
+> patch sets.  These include:
+> 
+> + shared policy
+> + migrate-on-fault a.k.a. lazy migration
+> + auto-migration - trigger lazy migration on inter-node task
+>                    task migration
+> + migration cache - pseudo-swap cache for parking unmapped
+>                     anon pages awaiting migrate-on-fault
+> 
+> I added a couple of patches to fix up the interaction of replication
+> with migration [discussed more below] and a per cpuset control to
+> enable/disable replication.  The latter allowed me to boot successfully
+> and to survive any bugs encountered by restricting the effects to 
+> tasks in the test cpuset with replication enabled.  That was the
+> theory, anyway :-).  Mostly worked...
 
-I believe LRO is going to have to be disabled for routing/bridging,
-so the stack will probably need to become aware of it at some point...
+After I sent out the last update, I ran a usex job mix overnight ~19.5 hours.
+When I came in the next morning, the console window was full of soft lockups
+on various cpus with varions stack traces.  /var/log/messages showed 142, in
+all.
 
-Thanks,
-Ben
+I've placed the soft lockup reports from /var/log/messages in the Replication
+directory on free.linux:
+
+	http://free.linux.hp.com/~lts/Patches/Replication.
+
+The lockups appeared in several places in the traces I looked at.  Here's a
+couple of examples:
+
++ unlink_file_vma() from free_pgtables() during task exit:
+	mapping->i_mmap_lock ???
+
++ smp_call_function() from ia64_global_tlb_purge().
+	  Maybe the 'call_lock' in arch/ia64/kernel/smp.c ?
+  Traces show us getting to here in one of 2 ways:
+
+  1) try_to_unmap* during auto task migration [migrate_pages_unmap_only()...]
+
+  2) from zap_page_range() when __unreplicate_pcache() calls unmap_mapping_range.
+
++ get_page_from_freelist -> zone_lru_lock?
+
+An interesting point:  all of the soft lockup messages said that the cpu was
+locked for 11s.  Ring any bells?
 
 
--- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
+I should note that I was trying to unmap all mappings to the file backed pages
+on internode task migration, instead of just the current task's pte's.  However,
+I was only attempting this on pages with  mapcount <= 4.  So, I don't think I 
+was looping trying to unmap pages with mapcounts of several 10s--such as I see
+on some page cache pages in my traces.
+
+Today, after rebasing to 23-rc2-mm2, I added a patch to unmap only the current
+task's ptes for ALL !anon pages, regardless of mapcount.  I've started the test
+again and will let it run over the weekend--or as long as it stays up, which 
+ever is shorter :-).
+
+I put a tarball with the rebased series in the Replication directory linked
+above, in case you're interested.  I haven't added the patch description for
+the new patch yet, but it's pretty simple.  Maybe even correct.
+
+----
+
+Unrelated to the lockups  [I think]:
+
+I forgot to look before I rebooted, but earlier the previous evening, I checked
+the vmstats and at that point [~1.5 hours into the test] we had done ~4.88 million
+replications and ~4.8 million "zaps" [collapse of replicated page].  That's around
+98% zaps.  Do we need some filter in the fault path to reduce the "thrashing"--if
+that's what I'm seeing.  
+
+A while back I took a look at the Virtual Iron page replication patch.  They had
+set VM_DENY_WRITE when mapping shared executable segments, and only replicated pages
+in those VMAs.  Maybe 'DENY_WRITE isn't exactly what we want.  Possibly set another
+flag for shared executables, if we can detect them, and any shared mapping that has
+no writable mappings ?
+
+I'll try to remember to check the replication statistics after the currently
+running test.  If the system stays up, that is.  A quick look < 10 minutes into
+the test shows that zaps are now ~84% of replications.  Also, ~47k replicated pages
+out of ~287K file pages.
+
+Lee
+
+
+
 
