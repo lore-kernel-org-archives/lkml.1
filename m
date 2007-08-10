@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933272AbXHJBLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933747AbXHJBM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933272AbXHJBLT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 21:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbXHJBLI
+	id S933747AbXHJBM5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 21:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbXHJBMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 21:11:08 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58902 "EHLO
+	Thu, 9 Aug 2007 21:12:48 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48148 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752646AbXHJBLG (ORCPT
+	with ESMTP id S1754825AbXHJBMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 21:11:06 -0400
-Date: Thu, 9 Aug 2007 20:11:04 -0500
+	Thu, 9 Aug 2007 21:12:47 -0400
+Date: Thu, 9 Aug 2007 20:12:45 -0500
 From: Dean Nelson <dcn@sgi.com>
 To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, tony.luck@intel.com, jes@sgi.com
-Subject: Re: [RFC 1/3] SGI Altix cross partition memory (XPMEM)
-Message-ID: <20070810011104.GB25427@sgi.com>
+Subject: [RFC 2/3] SGI Altix cross partition memory (XPMEM)
+Message-ID: <20070810011245.GC25427@sgi.com>
 References: <20070810010659.GA25427@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,37 +25,28 @@ User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch exports __put_task_struct as it is needed by XPMEM.
+This patch exports zap_page_range as it is needed by XPMEM.
 
 Signed-off-by: Dean Nelson <dcn@sgi.com>
 
 ---
 
-One struct file_operations registered by XPMEM, xpmem_open(), calls
-'get_task_struct(current->group_leader)' and another, xpmem_flush(), calls
-'put_task_struct(tg->group_leader)'. The reason for this is given in the
-comment block that appears in xpmem_open().
+XPMEM would have used sys_madvise() except that madvise_dontneed()
+madvise_dontneed() returns an -EINVAL if VM_PFNMAP is set, which is
+always true for the pages XPMEM imports from other partitions and is
+also true for uncached pages allocated locally via the mspec allocator.
+XPMEM needs zap_page_range() functionality for these types of pages as
+well as 'normal' pages.
 
-        /*
-         * Increment 'usage' and 'mm->mm_users' for the current task's thread
-         * group leader. This ensures that both its task_struct and mm_struct
-         * will still be around when our thread group exits. (The Linux kernel
-         * normally tears down the mm_struct prior to calling a module's
-         * 'flush' function.) Since all XPMEM thread groups must go through
-         * this path, this extra reference to mm_users also allows us to
-         * directly inc/dec mm_users in xpmem_ensure_valid_PFNs() and avoid
-         * mmput() which has a scaling issue with the mmlist_lock.
-         */
-
-Index: linux-2.6/kernel/fork.c
+Index: linux-2.6/mm/memory.c
 ===================================================================
---- linux-2.6.orig/kernel/fork.c	2007-08-09 07:07:55.426611601 -0500
-+++ linux-2.6/kernel/fork.c	2007-08-09 07:15:43.246391700 -0500
-@@ -127,6 +127,7 @@
- 	if (!profile_handoff_task(tsk))
- 		free_task(tsk);
+--- linux-2.6.orig/mm/memory.c	2007-08-09 07:07:55.762651612 -0500
++++ linux-2.6/mm/memory.c	2007-08-09 07:15:43.226389312 -0500
+@@ -894,6 +894,7 @@
+ 		tlb_finish_mmu(tlb, address, end);
+ 	return end;
  }
-+EXPORT_SYMBOL_GPL(__put_task_struct);
++EXPORT_SYMBOL_GPL(zap_page_range);
  
- void __init fork_init(unsigned long mempages)
- {
+ /*
+  * Do a quick page-table lookup for a single page.
