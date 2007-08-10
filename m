@@ -1,111 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934639AbXHJKQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935291AbXHJKR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934639AbXHJKQp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 06:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758241AbXHJKQi
+	id S935291AbXHJKR0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 06:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764869AbXHJKRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 06:16:38 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:11738 "EHLO relay.sw.ru"
+	Fri, 10 Aug 2007 06:17:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35656 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754339AbXHJKQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 06:16:37 -0400
-Message-ID: <46BC3A57.5070404@openvz.org>
-Date: Fri, 10 Aug 2007 14:13:43 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1758241AbXHJKQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 06:16:58 -0400
+Date: Fri, 10 Aug 2007 12:16:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Thomas Gleixner <tglx@linutronix.de>, John Stoffel <john@stoffel.org>,
+       linux-kernel@vger.kernel.org, shemminger@linux-foundation.org,
+       vignaud@xandmail.fr, marcin.slusarz@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-net@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc2: WARNING: at kernel/irq/resend.c:70
+	check_irq_resend()
+Message-ID: <20070810101641.GA31396@elte.hu>
+References: <18107.11431.838905.331157@stoffel.org> <20070809155445.GA5161@ff.dom.local> <1186733140.12828.45.camel@chaos> <20070810082346.GD1764@ff.dom.local> <20070810083050.GA4545@elte.hu> <20070810084924.GF1764@ff.dom.local> <20070810085611.GA11639@elte.hu> <20070810091231.GH1764@ff.dom.local> <20070810093353.GA19777@elte.hu> <20070810100513.GA3279@ff.dom.local>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@osdl.org>, devel@openvz.org
-Subject: [PATCH] Fix OOPS in show_uevent()
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070810100513.GA3279@ff.dom.local>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The platform_uevent() callback called via
-  show_uevent()
-  dev_uevent()
-  platform_uevent()
-forgot to set NULL to the last envp pointer and this caused the
-show_uevent() oops while printing all the envp pointers like this:
 
-BUG: unable to handle kernel paging request at virtual address 000280d0
-...
-Call Trace:
- [<c04d3d2d>] vsnprintf+0x2c7/0x48c
- [<c04d3f6d>] sprintf+0x17/0x19
- [<c052efa2>] show_uevent+0xeb/0x110
- [<c0457649>] buffered_rmqueue+0x1bf/0x1ed
- [<c04577b7>] get_page_from_freelist+0x82/0xa2
- [<c0457836>] __alloc_pages+0x5f/0x286
- [<c052eeb7>] show_uevent+0x0/0x110
- [<c052ec32>] dev_attr_show+0x15/0x1c
- [<c04aa7c3>] fill_read_buffer+0x57/0x89
- [<c04aa81d>] sysfs_read_file+0x28/0x53
- [<c0471762>] vfs_read+0x7f/0xef
- [<c04719f7>] sys_read+0x3c/0x62
- [<c0404bd6>] sysenter_past_esp+0x5f/0x99
-...
+* Jarek Poplawski <jarkao2@o2.pl> wrote:
 
-The last hunk in this patch fixes this.
+> Ingo: I think, you have to do this in x86_64, and there is probably 
+> send_IPI_mask used for this (but I can miss something...).
 
-The other problem is that the envp passed to bus, type and platform callbacks
-from dev_uevent() is the same, so the callbacks can overwrite the info, written
-by the others. Did I miss something important?
+indeed - full patch below.
 
-This is for 2.6.23-rc2-mm1
-
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+	Ingo
 
 ---
+ arch/i386/kernel/io_apic.c   |    3 ++-
+ arch/x86_64/kernel/genapic.c |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
---- ./drivers/base/core.c.ubug	2007-08-10 14:07:26.000000000 +0400
-+++ ./drivers/base/core.c	2007-08-10 14:07:15.000000000 +0400
-@@ -222,6 +222,11 @@ static int dev_uevent(struct kset *kset,
- 		if (retval)
- 			pr_debug ("%s: bus uevent() returned %d\n",
- 				  __FUNCTION__, retval);
-+
-+		while (*envp != NULL) {
-+			envp++;
-+			num_envp--;
-+		}
- 	}
+Index: linux/arch/i386/kernel/io_apic.c
+===================================================================
+--- linux.orig/arch/i386/kernel/io_apic.c
++++ linux/arch/i386/kernel/io_apic.c
+@@ -735,7 +735,8 @@ void fastcall send_IPI_self(int vector)
+ 	 * Wait for idle.
+ 	 */
+ 	apic_wait_icr_idle();
+-	cfg = APIC_DM_FIXED | APIC_DEST_SELF | vector | APIC_DEST_LOGICAL;
++	cfg = APIC_DM_FIXED | APIC_DEST_SELF | vector | APIC_DEST_LOGICAL |
++		APIC_INT_LEVELTRIG;
+ 	/*
+ 	 * Send the IPI. The write to APIC_ICR fires this off.
+ 	 */
+Index: linux/arch/x86_64/kernel/genapic.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/genapic.c
++++ linux/arch/x86_64/kernel/genapic.c
+@@ -62,5 +62,6 @@ void __init setup_apic_routing(void)
  
- 	if (dev->class && dev->class->dev_uevent) {
-@@ -230,6 +235,11 @@ static int dev_uevent(struct kset *kset,
- 		if (retval)
- 			pr_debug("%s: class uevent() returned %d\n",
- 				 __FUNCTION__, retval);
-+
-+		while (*envp != NULL) {
-+			envp++;
-+			num_envp--;
-+		}
- 	}
- 
- 	if (dev->type && dev->type->uevent) {
-@@ -238,6 +248,11 @@ static int dev_uevent(struct kset *kset,
- 		if (retval)
- 			pr_debug("%s: dev_type uevent() returned %d\n",
- 				 __FUNCTION__, retval);
-+
-+		while (*envp != NULL) {
-+			envp++;
-+			num_envp--;
-+		}
- 	}
- 
- 	return retval;
---- ./drivers/base/platform.c.ubug	2007-08-10 14:07:44.000000000 +0400
-+++ ./drivers/base/platform.c	2007-08-10 13:58:55.000000000 +0400
-@@ -547,6 +547,7 @@ static int platform_uevent(struct device
- 
- 	envp[0] = buffer;
- 	snprintf(buffer, buffer_size, "MODALIAS=%s", pdev->name);
-+	envp[1] = NULL;
- 	return 0;
+ void send_IPI_self(int vector)
+ {
+-	__send_IPI_shortcut(APIC_DEST_SELF, vector, APIC_DEST_PHYSICAL);
++	__send_IPI_shortcut(APIC_DEST_SELF, vector, APIC_DEST_PHYSICAL |
++			    APIC_INT_LEVELTRIG);
  }
- 
-
