@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763372AbXHJXD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765626AbXHJXH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763372AbXHJXD4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 19:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbXHJXDt
+	id S1765626AbXHJXH0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 19:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbXHJXHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 19:03:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45566 "EHLO mx1.redhat.com"
+	Fri, 10 Aug 2007 19:07:14 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:52665 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753399AbXHJXDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 19:03:48 -0400
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerfc fix for assembler -g
-X-Fcc: ~/Mail/linus
-X-Windows: the joke that kills.
-Message-Id: <20070810230311.34CFFD0136@magilla.localdomain>
-Date: Fri, 10 Aug 2007 16:03:11 -0700 (PDT)
+	id S1754182AbXHJXHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 19:07:13 -0400
+Date: Sat, 11 Aug 2007 01:08:30 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Documentation files in html format?
+Message-ID: <20070810230830.GA5922@uranus.ravnborg.org>
+References: <20070809113122.3aa508e4@oldman.hamilton.local> <20070810201704.GI6002@1wt.eu> <20070810204025.GC29549@fieldses.org> <20070810205117.GJ6002@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070810205117.GJ6002@1wt.eu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ppc64 does the unusual thing of using #include on a compiler-generated
-assembly file (lparmap.s) from an assembly source file (head_64.S).
-This runs afoul of my recent patch to pass -gdwarf2 to the assembler
-under CONFIG_DEBUG_INFO.  This patch avoids the problem by disabling
-DWARF generation (-g0) when producing lparmap.s.
+> 
+> The problem I have with asciidoc is that it's a nightmare to get it
+> to work. It's what GIT uses, and after spending a whole day trying
+> to *build* that thing, I finally resigned and asked Junio if he could
+> publish the pre-formatted manpages himself, which he agreed to.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/powerpc/kernel/Makefile |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Bit uses in addition to asciidoc also docbook and a bit more.
+As asciidoc is some phython scripts it should be trivial to
+install with no build required.
+Maybe it was the docbook stuff you had trouble with?
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index f39a72f..b0cb2e6 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -81,6 +81,7 @@ obj-y				+= iomap.o
- endif
- 
- ifeq ($(CONFIG_PPC_ISERIES),y)
-+CFLAGS_lparmap.s		+= -g0
- extra-y += lparmap.s
- $(obj)/head_64.o:	$(obj)/lparmap.s
- AFLAGS_head_64.o += -I$(obj)
+My Kbuild example were made without using other tools than asciidoc but
+if pdf is desired some additional tools are needed.
+
+	Sam
