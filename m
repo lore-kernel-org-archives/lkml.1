@@ -1,47 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763762AbXHJJ2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933374AbXHJJe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763762AbXHJJ2b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 05:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932308AbXHJJ2L
+	id S933374AbXHJJe2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 05:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758986AbXHJJeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 05:28:11 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:52631 "EHLO twin.jikos.cz"
+	Fri, 10 Aug 2007 05:34:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49137 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765836AbXHJJ2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 05:28:09 -0400
-Date: Fri, 10 Aug 2007 11:27:52 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: webmaster@dragonslave.de
-cc: linux-kernel@vger.kernel.org, Stuart_Hayes@Dell.com,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: EHCI Regression in 2.6.23-rc2
-In-Reply-To: <200708101045.57166.dex@dragonslave.de>
-Message-ID: <Pine.LNX.4.64.0708101125120.3948@twin.jikos.cz>
-References: <200708101045.57166.dex@dragonslave.de>
+	id S1753211AbXHJJeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 05:34:11 -0400
+Date: Fri, 10 Aug 2007 11:33:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Thomas Gleixner <tglx@linutronix.de>, John Stoffel <john@stoffel.org>,
+       linux-kernel@vger.kernel.org, shemminger@linux-foundation.org,
+       vignaud@xandmail.fr, marcin.slusarz@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-net@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc2: WARNING: at kernel/irq/resend.c:70
+	check_irq_resend()
+Message-ID: <20070810093353.GA19777@elte.hu>
+References: <18107.11431.838905.331157@stoffel.org> <20070809155445.GA5161@ff.dom.local> <1186733140.12828.45.camel@chaos> <20070810082346.GD1764@ff.dom.local> <20070810083050.GA4545@elte.hu> <20070810084924.GF1764@ff.dom.local> <20070810085611.GA11639@elte.hu> <20070810091231.GH1764@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070810091231.GH1764@ff.dom.local>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007, Daniel Exner wrote:
 
-> Please CC me, as I'm currently not subscribed to this list, thx.
+* Jarek Poplawski <jarkao2@o2.pl> wrote:
 
-Please also don't forget to CC relevant people/lists when reporting bugs, 
-thanks.
+> > > > +               }
+> > > >  #ifdef CONFIG_HARDIRQS_SW_RESEND
+> > 
+> > we used the hw-resend method unconditionally, right?
+> 
+> Right: unconditionally on a condition they are not edges...
+> 
+> But, since not resending at all seems to work so good in testing, I 
+> thought, _SW_RESEND could be considered as an unnecessarily 
+> complicated alternative.
+> 
+> Now, I'm a bit confused...
 
-> After some serious hangs with 2.6.23-rc2 I did some bisects and this was the 
-> result:
-> 196705c9bbc03540429b0f7cf9ee35c2f928a534 is first bad commit
-> commit 196705c9bbc03540429b0f7cf9ee35c2f928a534
-> Author: Stuart_Hayes@Dell.com <Stuart_Hayes@Dell.com>
-> Date:   Thu May 3 08:58:49 2007 -0700
+the idea is multi-pronged:
 
-I guess that the patch attached to bug 8535 in kernel.org bugzilla -- 
-http://bugzilla.kernel.org/attachment.cgi?id=12228&action=view -- solves 
-your issues, right?
+ - Primarily, we want to fix the regression. 2.6.20 worked, 2.6.21 
+   didnt, that has to be fixed, no matter what - end of story. But we've 
+   got a wide selection of patches for that purpose now, so what matters 
+   at this point is the secondary question:
 
-Stuart, did you submit this fix for upstream already please?
+ - we want to know _why exactly_ the hang happens. We now have a pretty 
+   good theory: hw-resend hangs the IO-APIC. (there is a delicate dance
+   between local APICs and IO-APICs for level-triggered irqs, and if we
+   interject via hw-resending via the local APIC, existing races, hw
+   bugs or weaknesses in our hw-resend implementation might be exposed)
 
--- 
-Jiri Kosina
+and even though we now have a wide selection of patches we really want 
+to get to the bottom of the problem so that we can fix the bug that got 
+exposed: apparently hw resend doesnt always work with level-triggered 
+irqs.
+
+Note that the hw-resend sequence can trigger _even without our original 
+patch that triggered the regression_, it's just much less likely to 
+happen, so this is a pre-existing IO-APIC/APIC code bug that could 
+trigger anytime, and which we want to see fixed.
+
+To confirm this theory - does the debug-patch below fix the hang? If it 
+fixes the hang then the theory is confirmed and then the right solution 
+is to retrigger an IRQ for level-triggered irqs with the proper 
+trigger-type set.
+
+	Ingo
+
+------------------>
+Not-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+Index: linux/arch/i386/kernel/io_apic.c
+===================================================================
+--- linux.orig/arch/i386/kernel/io_apic.c
++++ linux/arch/i386/kernel/io_apic.c
+@@ -735,7 +735,8 @@ void fastcall send_IPI_self(int vector)
+ 	 * Wait for idle.
+ 	 */
+ 	apic_wait_icr_idle();
+-	cfg = APIC_DM_FIXED | APIC_DEST_SELF | vector | APIC_DEST_LOGICAL;
++	cfg = APIC_DM_FIXED | APIC_DEST_SELF | vector | APIC_DEST_LOGICAL |
++		APIC_INT_LEVELTRIG;
+ 	/*
+ 	 * Send the IPI. The write to APIC_ICR fires this off.
+ 	 */
