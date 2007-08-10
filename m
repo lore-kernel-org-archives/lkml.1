@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934641AbXHJJ4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764619AbXHJJ4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934641AbXHJJ4V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 05:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758988AbXHJJ4O
+	id S1764619AbXHJJ4h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 05:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934624AbXHJJ4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 05:56:14 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:5763 "EHLO relay.sw.ru"
+	Fri, 10 Aug 2007 05:56:21 -0400
+Received: from hall.aurel32.net ([88.191.38.19]:45371 "EHLO hall.aurel32.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757995AbXHJJ4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 05:56:13 -0400
-Date: Fri, 10 Aug 2007 13:55:54 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: + sysct-mqueue-remove-the-binary-sysctl-numbers.patch added to -mm tree
-Message-ID: <20070810095554.GB6726@localhost.sw.ru>
-References: <200708100141.l7A1fsdV029562@imap1.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1765983AbXHJJ4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 05:56:19 -0400
+X-Greylist: delayed 1961 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Aug 2007 05:56:19 EDT
+Date: Fri, 10 Aug 2007 11:23:34 +0200
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc2-mm2
+Message-ID: <20070810092334.GA15285@hall.aurel32.net>
+Mail-Followup-To: Aurelien Jarno <aurelien@aurel32.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070809224254.11f42716.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <200708100141.l7A1fsdV029562@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070809224254.11f42716.akpm@linux-foundation.org>
+X-Mailer: Mutt 1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 06:41:54PM -0700, akpm@linux-foundation.org wrote:
-> Subject: sysctl mqueue: remove the binary sysctl numbers
-> From: Eric W. Biederman <ebiederm@xmission.com>
+On Thu, Aug 09, 2007 at 10:42:54PM -0700, Andrew Morton wrote:
 > 
-> Because of a conflict with FS_INODE_NR none of the binary sysctl numbers use
-> by mqueue, were available to user space.  So just remove them.
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc2/2.6.23-rc2-mm2/
+> 
+> - Various problems from 2.6.23-rc2-mm1 were fixed
 
-OK with me. FS_INODE_NR was there first. :)
+I have just tried it, and it fails to build for MIPS with the following
+error:
 
-> --- a/ipc/mqueue.c~sysct-mqueue-remove-the-binary-sysctl-numbers
-> +++ a/ipc/mqueue.c
-> @@ -44,12 +44,6 @@
->  #define STATE_PENDING	1
->  #define STATE_READY	2
->  
-> -/* used by sysctl */
-> -#define FS_MQUEUE 	1
-> -#define CTL_QUEUESMAX 	2
-> -#define CTL_MSGMAX 	3
-> -#define CTL_MSGSIZEMAX 	4
-> -
->  /* default values */
->  #define DFLT_QUEUESMAX	256	/* max number of message queues */
->  #define DFLT_MSGMAX 	10	/* max number of messages in each queue */
-> @@ -1197,7 +1191,6 @@ static int msg_maxsize_limit_max = INT_M
->  
->  static ctl_table mq_sysctls[] = {
->  	{
-> -		.ctl_name	= CTL_QUEUESMAX,
->  		.procname	= "queues_max",
->  		.data		= &queues_max,
->  		.maxlen		= sizeof(int),
-> @@ -1205,7 +1198,6 @@ static ctl_table mq_sysctls[] = {
->  		.proc_handler	= &proc_dointvec,
->  	},
->  	{
-> -		.ctl_name	= CTL_MSGMAX,
->  		.procname	= "msg_max",
->  		.data		= &msg_max,
->  		.maxlen		= sizeof(int),
-> @@ -1215,7 +1207,6 @@ static ctl_table mq_sysctls[] = {
->  		.extra2		= &msg_max_limit_max,
->  	},
->  	{
-> -		.ctl_name	= CTL_MSGSIZEMAX,
->  		.procname	= "msgsize_max",
->  		.data		= &msgsize_max,
->  		.maxlen		= sizeof(int),
-> @@ -1229,7 +1220,6 @@ static ctl_table mq_sysctls[] = {
->  
->  static ctl_table mq_sysctl_dir[] = {
->  	{
-> -		.ctl_name	= FS_MQUEUE,
->  		.procname	= "mqueue",
->  		.mode		= 0555,
->  		.child		= mq_sysctls,
+  CC      arch/mips/kernel/asm-offsets.s
+In file included from include/linux/sched.h:58,
+                 from arch/mips/kernel/asm-offsets.c:13:
+include/linux/mm_types.h:115: error: expected specifier-qualifier-list before 'pgprot_t'
+include/linux/mm_types.h:169: warning: 'struct file' declared inside parameter list
+include/linux/mm_types.h:169: warning: its scope is only this definition or declaration, which is probably not what you want
+include/linux/mm_types.h:175: error: expected specifier-qualifier-list before 'pgd_t'
 
+
+The trivial patch below fixes this problem.
+
+Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
+
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -10,6 +10,7 @@
+ #include <linux/rbtree.h>
+ #include <linux/rwsem.h>
+ #include <linux/completion.h>
++#include <asm/page.h>
+ #include <asm/mmu.h>
+ 
+ struct address_space;
+
+-- 
+  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
+ : :' :  Debian developer           | Electrical Engineer
+ `. `'   aurel32@debian.org         | aurelien@aurel32.net
+   `-    people.debian.org/~aurel32 | www.aurel32.net
