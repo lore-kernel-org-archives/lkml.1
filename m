@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941521AbXHJUkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941823AbXHJUmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941521AbXHJUkj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 16:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933655AbXHJUka
+	id S941823AbXHJUmW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 16:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933655AbXHJUmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 16:40:30 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:38808 "EHLO fieldses.org"
+	Fri, 10 Aug 2007 16:42:14 -0400
+Received: from pat.uio.no ([129.240.10.15]:48538 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765956AbXHJUk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 16:40:29 -0400
-Date: Fri, 10 Aug 2007 16:40:25 -0400
-To: Willy Tarreau <w@1wt.eu>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Documentation files in html format?
-Message-ID: <20070810204025.GC29549@fieldses.org>
-References: <20070809113122.3aa508e4@oldman.hamilton.local> <20070810201704.GI6002@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070810201704.GI6002@1wt.eu>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	id S1758882AbXHJUmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 16:42:13 -0400
+Subject: Re: nfs - duplicate directory entries
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Vladimir Volovich <vvv@vsu.ru>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <87fy2rgpqs.fsf@vvv.vsu.ru>
+References: <87fy2rgpqs.fsf@vvv.vsu.ru>
+Content-Type: text/plain
+Date: Fri, 10 Aug 2007 16:42:09 -0400
+Message-Id: <1186778529.6642.52.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.079)
+X-UiO-Scanned: 351061CC81A8278DF554A708579F66566F42EABD
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 192 total 3191830 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 10:17:04PM +0200, Willy Tarreau wrote:
-> I've read pro-plain text arguments, so I'll not repeat them. I also see
-> another advantage to plain text : it's very easy to draw ascii-art
-> diagrams of anything. It only takes a few minutes, is always inline
-> and readable with any tool.
+On Fri, 2007-08-10 at 23:21 +0400, Vladimir Volovich wrote:
+> Hi!
+> 
+> we have an NFS server (windows-based), and mount a directory from this
+> server on a linux box; there is some bug appearing sometimes, namely
+> some of the directory entries are reported twice:
+> 
+> $ ls | wc
+>    5968    5968   41776
+> $ ls | uniq | wc
+>    5964    5964   41748
+> $ ls | uniq -d
+> 112920
+> 112921
+> 112922
+> 112923
+> $ ls -li | grep '11292[0123]'
+> 8507232 drwx------ 2 web web 64 2007-02-09 10:54 112920
+> 8507232 drwx------ 2 web web 64 2007-02-09 10:54 112920
+> 8507219 drwx------ 2 web web 64 2007-02-09 10:54 112921
+> 8507219 drwx------ 2 web web 64 2007-02-09 10:54 112921
+> 8507195 drwx------ 2 web web 64 2007-02-09 10:54 112922
+> 8507195 drwx------ 2 web web 64 2007-02-09 10:54 112922
+> 8507188 drwx------ 2 web web 64 2007-02-09 10:54 112923
+> 8507188 drwx------ 2 web web 64 2007-02-09 10:54 112923
+> 
+> i.e. the current directory contains sub-directory 112920 twice,
+> sub-directory 112921 twice, etc. - and the inode numbers are the same.
 
-Asciidoc should preserve ascii-art diagrams OK; the git docs use them
-all over.
+That can happen if the NFS server doesn't send unique cookies.
 
-Not that I'd necessarily push asciidoc.  But:
+Trond
 
-> I'd prefer that you define some writing conventions for plain-text
-> documents that anyone should try follow, starting with the 80-cols
-> limit to make Davem happy. I think that many of us can help define
-> such a "standard" indicating how to underline subtitles, how to
-> enumerate a list, how to avoid using tabs, how to write boxes and
-> arrows in their diagrams, etc...
-
-... at the point where you actually start setting standards for subtitle
-underlining and list enumeration, you'd want to take another look at
-asciidoc; since it already defines conventions for that stuff (which
-are probably close to what people would do anyway), it might make sense
-just to start using asciidoc.
-
---b.
