@@ -1,199 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941167AbXHJQMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941186AbXHJQNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941167AbXHJQMx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 12:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938080AbXHJQGh
+	id S941186AbXHJQNe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 12:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940390AbXHJQGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 12:06:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55205 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S940387AbXHJQGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 12:06:32 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 09/16] CacheFiles: Permit a process's create SID to be
-	overridden [try #3]
-To: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
-       trond.myklebust@fys.uio.no
-Cc: linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov
-Date: Fri, 10 Aug 2007 17:05:43 +0100
-Message-ID: <20070810160543.24698.80481.stgit@warthog.cambridge.redhat.com>
-In-Reply-To: <20070810160455.24698.30983.stgit@warthog.cambridge.redhat.com>
-References: <20070810160455.24698.30983.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Fri, 10 Aug 2007 12:06:42 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:38676 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S940196AbXHJQGk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 12:06:40 -0400
+Subject: Re: [SCSI] aic94xx: new driver
+From: David Woodhouse <dwmw2@infradead.org>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1186761166.3335.6.camel@localhost.localdomain>
+References: <200609240400.k8O403OJ024220@hera.kernel.org>
+	 <1186758562.7615.6.camel@shinybook.infradead.org>
+	 <1186761166.3335.6.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 11 Aug 2007 00:06:28 +0800
+Message-Id: <1186761988.7615.10.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-3.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make it possible for a process's file creation SID to be temporarily overridden
-by CacheFiles so that files created in the cache have the right label attached.
+On Fri, 2007-08-10 at 08:52 -0700, James Bottomley wrote:
+> On Fri, 2007-08-10 at 23:09 +0800, David Woodhouse wrote:
+> > On Sun, 2006-09-24 at 04:00 +0000, Linux Kernel Mailing List wrote:
+> > > --- a/include/scsi/scsi.h
+> > > +++ b/include/scsi/scsi.h
+> > > @@ -429,4 +429,10 @@ #define SCSI_IOCTL_GET_BUS_NUMBER  0x5386
+> > >  /* Used to obtain the PCI location of a device */
+> > >  #define SCSI_IOCTL_GET_PCI             0x5387
+> > >  
+> > > +/* Pull a u32 out of a SCSI message (using BE SCSI conventions) */
+> > > +static inline u32 scsi_to_u32(u8 *ptr)
+> > > +{
+> > > +       return (ptr[0]<<24) + (ptr[1]<<16) + (ptr[2]<<8) + ptr[3];
+> > > +}
+> > > +
+> > >  #endif /* _SCSI_SCSI_H */ 
+> > 
+> > Please explain why it's necessary to export this to userspace.
+> 
+> Er it's not ... but then it's not necessary to export this entire file,
+> either.
 
-Without this facility, files created in the cache will be given the current
-file creation SID of whatever process happens to have invoked CacheFiles
-indirectly by means of opening a netfs file at the time the cache file is
-created.
+That's an acceptable answer, I suppose, given that glibc ships its own
+copy of the file in question.
 
-Signed-Off-By: David Howells <dhowells@redhat.com>
----
+But it does contain ioctl definitions, and if we ever added any new
+ioctls presumably they'd be added there too? It does seem to be the kind
+of thing we _do_ want to export from the kernel, surely?
 
- include/linux/security.h |   39 +++++++++++++++++++++++++++++++++++++++
- security/dummy.c         |   14 ++++++++++++++
- security/selinux/hooks.c |   20 ++++++++++++++++++++
- 3 files changed, 73 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index c11dc8a..edd1677 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -1147,6 +1147,15 @@ struct request_sock;
-  *	@secdata contains the security context.
-  *	@seclen contains the length of the security context.
-  *
-+ * @get_fscreate_secid:
-+ *	Get the current FS security ID.
-+ *	@secid points the location in which to return the security ID.
-+ *
-+ * @set_fscreate_secid:
-+ *	Set the current FS security ID.
-+ *	@secid contains the security ID to set.
-+ *	@oldsecid points the location in which to return the old security ID.
-+ *
-  * This is the main security structure.
-  */
- struct security_operations {
-@@ -1330,6 +1339,8 @@ struct security_operations {
-  	int (*setprocattr)(struct task_struct *p, char *name, void *value, size_t size);
- 	int (*secid_to_secctx)(u32 secid, char **secdata, u32 *seclen);
- 	void (*release_secctx)(char *secdata, u32 seclen);
-+	int (*get_fscreate_secid)(u32 *secid);
-+	int (*set_fscreate_secid)(u32 secid, u32 *oldsecid);
- 
- #ifdef CONFIG_SECURITY_NETWORK
- 	int (*unix_stream_connect) (struct socket * sock,
-@@ -2127,6 +2138,16 @@ static inline void security_release_secctx(char *secdata, u32 seclen)
- 	return security_ops->release_secctx(secdata, seclen);
- }
- 
-+static inline int security_get_fscreate_secid(u32 *secid)
-+{
-+	return security_ops->get_fscreate_secid(secid);
-+}
-+
-+static inline int security_set_fscreate_secid(u32 secid, u32 *oldsecid)
-+{
-+	return security_ops->set_fscreate_secid(secid, oldsecid);
-+}
-+
- /* prototypes */
- extern int security_init	(void);
- extern int register_security	(struct security_operations *ops);
-@@ -2795,6 +2816,11 @@ static inline void securityfs_remove(struct dentry *dentry)
- {
- }
- 
-+static inline int security_to_secctx_secid(char *secdata, u32 seclen, u32 *secid)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
- static inline int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
- {
- 	return -EOPNOTSUPP;
-@@ -2803,6 +2829,19 @@ static inline int security_secid_to_secctx(u32 secid, char **secdata, u32 *secle
- static inline void security_release_secctx(char *secdata, u32 seclen)
- {
- }
-+
-+static inline int security_get_fscreate_secid(u32 *secid)
-+{
-+	*secid = 0;
-+	return 0;
-+}
-+
-+static inline int security_set_fscreate_secid(u32 secid, u32 *oldsecid)
-+{
-+	*oldsecid = 0;
-+	return 0;
-+}
-+
- #endif	/* CONFIG_SECURITY */
- 
- #ifdef CONFIG_SECURITY_NETWORK
-diff --git a/security/dummy.c b/security/dummy.c
-index 19d813d..9e81edb 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -930,6 +930,18 @@ static void dummy_release_secctx(char *secdata, u32 seclen)
- {
- }
- 
-+static int dummy_get_fscreate_secid(u32 *secid)
-+{
-+	*secid = 0;
-+	return 0;
-+}
-+
-+static int dummy_set_fscreate_secid(u32 secid, u32 *oldsecid)
-+{
-+	*oldsecid = 0;
-+	return 0;
-+}
-+
- #ifdef CONFIG_KEYS
- static inline int dummy_key_alloc(struct key *key, struct task_struct *ctx,
- 				  unsigned long flags)
-@@ -1084,6 +1096,8 @@ void security_fixup_ops (struct security_operations *ops)
-  	set_to_dummy_if_null(ops, setprocattr);
-  	set_to_dummy_if_null(ops, secid_to_secctx);
-  	set_to_dummy_if_null(ops, release_secctx);
-+ 	set_to_dummy_if_null(ops, get_fscreate_secid);
-+ 	set_to_dummy_if_null(ops, set_fscreate_secid);
- #ifdef CONFIG_SECURITY_NETWORK
- 	set_to_dummy_if_null(ops, unix_stream_connect);
- 	set_to_dummy_if_null(ops, unix_may_send);
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 6237933..f82a03d 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -4661,6 +4661,24 @@ static void selinux_release_secctx(char *secdata, u32 seclen)
- 	kfree(secdata);
- }
- 
-+static int selinux_get_fscreate_secid(u32 *secid)
-+{
-+	struct task_security_struct *tsec = current->security;
-+
-+	*secid = tsec->create_sid;
-+	return 0;
-+}
-+
-+static int selinux_set_fscreate_secid(u32 secid, u32 *oldsecid)
-+{
-+	struct task_security_struct *tsec = current->security;
-+	u32 oldsid = tsec->create_sid;
-+
-+	tsec->create_sid = secid;
-+	*oldsecid = oldsid;
-+	return 0;
-+}
-+
- #ifdef CONFIG_KEYS
- 
- static int selinux_key_alloc(struct key *k, struct task_struct *tsk,
-@@ -4843,6 +4861,8 @@ static struct security_operations selinux_ops = {
- 
- 	.secid_to_secctx =		selinux_secid_to_secctx,
- 	.release_secctx =		selinux_release_secctx,
-+	.get_fscreate_secid =		selinux_get_fscreate_secid,
-+	.set_fscreate_secid =		selinux_set_fscreate_secid,
- 
-         .unix_stream_connect =		selinux_socket_unix_stream_connect,
- 	.unix_may_send =		selinux_socket_unix_may_send,
+> From the SCSI point of view, the function definitely belongs in that
+> file because it's an accessor to facilitate the processing of commands
+> and their replies, which is what that file contains ... in fact it
+> contains a lot of the internal mechanics of the SCSI layer that the user
+> shouldn't necessarily be seeing.
+
+All the more reason for us to export it for ourselves and exert some
+editorial control, perhaps?
+
+-- 
+dwmw2
 
