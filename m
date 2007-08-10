@@ -1,134 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936432AbXHJP70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940005AbXHJP7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936432AbXHJP70 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 11:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933195AbXHJP67
+	id S940005AbXHJP7m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 11:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939783AbXHJP7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 11:58:59 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:49125 "EHLO
+	Fri, 10 Aug 2007 11:59:20 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:49199 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939463AbXHJP65 (ORCPT
+	with ESMTP id S938219AbXHJP7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 11:58:57 -0400
-Message-ID: <46BC8B47.7090106@bull.net>
-Date: Fri, 10 Aug 2007 17:59:03 +0200
+	Fri, 10 Aug 2007 11:59:16 -0400
+Message-ID: <46BC8B59.3060908@bull.net>
+Date: Fri, 10 Aug 2007 17:59:21 +0200
 From: Laurent Vivier <Laurent.Vivier@bull.net>
 Organization: Bull S.A.S.
 User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
 To: kvm-devel <kvm-devel@lists.sourceforge.net>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2][KVM] introduce a new field in cpustat
+Subject: [PATCH 2/2][KVM] modify account_system_time() to add cputime to cpustat->guest
 X-Enigmail-Version: 0.94.0.0
 X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 10/08/2007 18:03:59,
+ 10/08/2007 18:04:17,
 	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 10/08/2007 18:04:00,
-	Serialize complete at 10/08/2007 18:04:00
+ 10/08/2007 18:04:18,
+	Serialize complete at 10/08/2007 18:04:18
 Content-Type: multipart/mixed;
- boundary="------------010500050209080004040500"
+ boundary="------------080409050804080108030907"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------010500050209080004040500
+--------------080409050804080108030907
 Content-Transfer-Encoding: 7bit
 Content-Type: text/plain; charset=ISO-8859-1
 
-introduce a new field, "guest", in cpustat to store the time used by the CPU to
-run virtual CPU. Modify /proc/stat to display this new field.
+modify account_system_time() to add cputime to cpustat->guest if we are running
+a VCPU. We add this cputime to cpustat->user too instead of cpustat->system
+because this part of KVM code is in fact user code although it is executed in
+the kernel. We duplicate VCPU time between guest and user to allow an unmodified
+"top(1)" to display correct value. A modified "top(1)" is able to display good
+cpu user time and cpu guest time by subtracting cpu guest time from cpu user time.
 
 Signed-Off-by: Laurent Vivier <Laurent.Vivier@bull.net>
 -- 
 ------------- Laurent.Vivier@bull.net  --------------
           "Software is hard" - Donald Knuth
 
---------------010500050209080004040500
+--------------080409050804080108030907
 Content-Transfer-Encoding: 7bit
 Content-Type: text/plain;
- name="proc_stat_guest"
+ name="kvm_stat_guest"
 Content-Disposition: inline;
- filename="proc_stat_guest"
+ filename="kvm_stat_guest"
 
-Index: kvm/fs/proc/proc_misc.c
+Index: kvm/drivers/kvm/vmx.c
 ===================================================================
---- kvm.orig/fs/proc/proc_misc.c	2007-08-10 16:49:42.000000000 +0200
-+++ kvm/fs/proc/proc_misc.c	2007-08-10 16:51:34.000000000 +0200
-@@ -443,6 +443,7 @@
- 	int i;
- 	unsigned long jif;
- 	cputime64_t user, nice, system, idle, iowait, irq, softirq, steal;
-+	cputime64_t guest;
- 	u64 sum = 0;
- 	struct timespec boottime;
- 	unsigned int *per_irq_sum;
-@@ -452,7 +453,7 @@
- 		return -ENOMEM;
+--- kvm.orig/drivers/kvm/vmx.c	2007-08-10 16:49:40.000000000 +0200
++++ kvm/drivers/kvm/vmx.c	2007-08-10 17:21:46.000000000 +0200
+@@ -2078,6 +2078,7 @@
+ 	local_irq_disable();
  
- 	user = nice = system = idle = iowait =
--		irq = softirq = steal = cputime64_zero;
-+		irq = softirq = steal = guest = cputime64_zero;
- 	getboottime(&boottime);
- 	jif = boottime.tv_sec;
- 
-@@ -467,6 +468,7 @@
- 		irq = cputime64_add(irq, kstat_cpu(i).cpustat.irq);
- 		softirq = cputime64_add(softirq, kstat_cpu(i).cpustat.softirq);
- 		steal = cputime64_add(steal, kstat_cpu(i).cpustat.steal);
-+		guest = cputime64_add(guest, kstat_cpu(i).cpustat.guest);
- 		for (j = 0; j < NR_IRQS; j++) {
- 			unsigned int temp = kstat_cpu(i).irqs[j];
- 			sum += temp;
-@@ -474,7 +476,7 @@
- 		}
- 	}
- 
--	seq_printf(p, "cpu  %llu %llu %llu %llu %llu %llu %llu %llu\n",
-+	seq_printf(p, "cpu  %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
- 		(unsigned long long)cputime64_to_clock_t(user),
- 		(unsigned long long)cputime64_to_clock_t(nice),
- 		(unsigned long long)cputime64_to_clock_t(system),
-@@ -482,7 +484,8 @@
- 		(unsigned long long)cputime64_to_clock_t(iowait),
- 		(unsigned long long)cputime64_to_clock_t(irq),
- 		(unsigned long long)cputime64_to_clock_t(softirq),
--		(unsigned long long)cputime64_to_clock_t(steal));
-+		(unsigned long long)cputime64_to_clock_t(steal),
-+		(unsigned long long)cputime64_to_clock_t(guest));
- 	for_each_online_cpu(i) {
- 
- 		/* Copy values here to work around gcc-2.95.3, gcc-2.96 */
-@@ -494,7 +497,8 @@
- 		irq = kstat_cpu(i).cpustat.irq;
- 		softirq = kstat_cpu(i).cpustat.softirq;
- 		steal = kstat_cpu(i).cpustat.steal;
--		seq_printf(p, "cpu%d %llu %llu %llu %llu %llu %llu %llu %llu\n",
-+		guest = kstat_cpu(i).cpustat.guest;
-+		seq_printf(p, "cpu%d %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
- 			i,
- 			(unsigned long long)cputime64_to_clock_t(user),
- 			(unsigned long long)cputime64_to_clock_t(nice),
-@@ -503,7 +507,8 @@
- 			(unsigned long long)cputime64_to_clock_t(iowait),
- 			(unsigned long long)cputime64_to_clock_t(irq),
- 			(unsigned long long)cputime64_to_clock_t(softirq),
--			(unsigned long long)cputime64_to_clock_t(steal));
-+			(unsigned long long)cputime64_to_clock_t(steal),
-+			(unsigned long long)cputime64_to_clock_t(guest));
- 	}
- 	seq_printf(p, "intr %llu", (unsigned long long)sum);
- 
-Index: kvm/include/linux/kernel_stat.h
+ 	vcpu->guest_mode = 1;
++	current->flags |= PF_VCPU;
+ 	if (vcpu->requests)
+ 		if (test_and_clear_bit(KVM_TLB_FLUSH, &vcpu->requests))
+ 		    vmx_flush_tlb(vcpu);
+Index: kvm/drivers/kvm/svm.c
 ===================================================================
---- kvm.orig/include/linux/kernel_stat.h	2007-08-10 16:49:42.000000000 +0200
-+++ kvm/include/linux/kernel_stat.h	2007-08-10 16:49:59.000000000 +0200
-@@ -23,6 +23,7 @@
- 	cputime64_t idle;
- 	cputime64_t iowait;
- 	cputime64_t steal;
-+	cputime64_t guest;
- };
+--- kvm.orig/drivers/kvm/svm.c	2007-08-10 16:49:40.000000000 +0200
++++ kvm/drivers/kvm/svm.c	2007-08-10 16:52:29.000000000 +0200
+@@ -1404,6 +1404,7 @@
+ 	clgi();
  
- struct kernel_stat {
+ 	vcpu->guest_mode = 1;
++	current->flags |= PF_VCPU;
+ 	if (vcpu->requests)
+ 		if (test_and_clear_bit(KVM_TLB_FLUSH, &vcpu->requests))
+ 		    svm_flush_tlb(vcpu);
+Index: kvm/include/linux/sched.h
+===================================================================
+--- kvm.orig/include/linux/sched.h	2007-08-10 16:49:40.000000000 +0200
++++ kvm/include/linux/sched.h	2007-08-10 16:52:29.000000000 +0200
+@@ -1310,6 +1310,7 @@
+ #define PF_STARTING	0x00000002	/* being created */
+ #define PF_EXITING	0x00000004	/* getting shut down */
+ #define PF_EXITPIDONE	0x00000008	/* pi exit done on shut down */
++#define PF_VCPU		0x00000010	/* I'm virtual CPU */
+ #define PF_FORKNOEXEC	0x00000040	/* forked but didn't exec */
+ #define PF_SUPERPRIV	0x00000100	/* used super-user privileges */
+ #define PF_DUMPCORE	0x00000200	/* dumped core */
+Index: kvm/kernel/sched.c
+===================================================================
+--- kvm.orig/kernel/sched.c	2007-08-10 16:49:40.000000000 +0200
++++ kvm/kernel/sched.c	2007-08-10 17:21:30.000000000 +0200
+@@ -3246,10 +3246,18 @@
+ 	struct rq *rq = this_rq();
+ 	cputime64_t tmp;
+ 
++	tmp = cputime_to_cputime64(cputime);
++	if (p->flags & PF_VCPU) {
++		p->utime = cputime_add(p->utime, cputime);
++		cpustat->user = cputime64_add(cpustat->user, tmp);
++		cpustat->guest = cputime64_add(cpustat->guest, tmp);
++		p->flags &= ~PF_VCPU;
++		return;
++	}
++
+ 	p->stime = cputime_add(p->stime, cputime);
+ 
+ 	/* Add system time to cpustat. */
+-	tmp = cputime_to_cputime64(cputime);
+ 	if (hardirq_count() - hardirq_offset)
+ 		cpustat->irq = cputime64_add(cpustat->irq, tmp);
+ 	else if (softirq_count())
 
---------------010500050209080004040500--
+--------------080409050804080108030907--
