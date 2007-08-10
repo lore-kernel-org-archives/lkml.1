@@ -1,72 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759776AbXHJHd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761109AbXHJHha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759776AbXHJHd5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 03:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbXHJHdr
+	id S1761109AbXHJHha (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 03:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbXHJHhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 03:33:47 -0400
-Received: from mail.hevs.ch ([153.109.23.15]:43276 "EHLO mail.hevs.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753834AbXHJHdq convert rfc822-to-8bit (ORCPT
+	Fri, 10 Aug 2007 03:37:21 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:41426 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754076AbXHJHhU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 03:33:46 -0400
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: =?iso-8859-15?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Subject: Re: [PATCH] at91 pm: Compilation fix for at91sam926x
-Date: Fri, 10 Aug 2007 09:33:45 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, "Ulf Samuelsson" <ulf@atmel.com>,
-       andrew@sanpeople.com, trivial@kernel.org, linux-kernel@vger.kernel.org,
-       Andy Herzig <andrew.herzig@ngc.com>
-References: <1186661447.6370.19.camel@leoh9-18574.nges.northgrum.com> <018a01c7dad3$10ca8190$dcc4af0a@atmel.com> <200708100912.35485.hjk@linutronix.de>
-In-Reply-To: <200708100912.35485.hjk@linutronix.de>
+	Fri, 10 Aug 2007 03:37:20 -0400
+Message-ID: <46BC159A.9060900@linux.vnet.ibm.com>
+Date: Fri, 10 Aug 2007 13:06:58 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200708100933.46235.marc.pignat@hevs.ch>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Softlockup detected with 2.6.23-rc2-mm1
+References: <46BC02B9.1000307@linux.vnet.ibm.com> <20070809232504.c28a3c93.akpm@linux-foundation.org>
+In-Reply-To: <20070809232504.c28a3c93.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 10 August 2007 09:12, Hans-Jürgen Koch wrote:
-> Am Freitag 10 August 2007 00:15 schrieb Ulf Samuelsson:
-> > 
-> > > > +#if defined(CONFIG_ARCH_AT91RM9200)
-> > > >                         at91_sys_write(AT91_SDRAMC_SRR, 1);     /*
-> > > > self-refresh mode */
-> > 
-> > > Why don't use:
-> > > if (cpu_is_at91rm9200())
-> > > at91_sys_write(AT91_SDRAMC_SRR, 1);
-> > 
-> > What is the benefit?
-More readable. (see '#ifdefs are ugly' in Documentation/SubmittingPatches)
+Andrew Morton wrote:
+> On Fri, 10 Aug 2007 11:46:25 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+>
+>   
+>> I get call trace, when the file system stress is run on the
+>> 2.6.23-rc2-mm1 kernel on a Dual Core AMD Opteron
+>> (processor 270)
+>>
+>> ============================================\BUG: spinlock bad magic on 
+>> CPU#1, fsx-linux/19721
+>>     
+>
+> Yes, sorry, mm-dirty-balancing-for-tasks.patch had a bug.  Those patches were
+> removed from 2.6.23-rc2-mm2 - please test that instead.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
+I get different call trace on AMD Opteron(tm) Processor 844 machine
+, I am not sure where it is related to the same patch
 
-> > Will the optimizer remove the code if the CPU is not the at91rm9200?
-Optimizer will remove that code if at91rm9200 support is not compiled and 
-choose at runtime if the cpu support is compiled in.
+=====================================================
+BUG: soft lockup - CPU#3 stuck for 11s! [pdflush:272]
+CPU 3:
+Modules linked in:
+Pid: 272, comm: pdflush Not tainted 2.6.23-rc2-mm1-autokern1 #1
+RIP: 0010:[<ffffffff8021a9c3>]  [<ffffffff8021a9c3>] 
+flush_tlb_others+0x69/0x95
+RSP: 0000:ffff810001f15a90  EFLAGS: 00000202
+RAX: 0000000000000003 RBX: ffff810001f15ac0 RCX: 0000000000000008
+RDX: 00000000000008f3 RSI: 00000000000000f3 RDI: 0000000000000002
+RBP: 0000000000000000 R08: ffff810082f05210 R09: ffffffff802e60c1
+R10: ffff8100815e6e70 R11: 0000000000000000 R12: ffff8101ffc38080
+R13: ffffffff80358b47 R14: ffff810001f15a40 R15: ffff810081d73208
+FS:  0000000000000000(0000) GS:ffff810180724280(0000) knlGS:00000000f7f75b80
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 00000000f7e20494 CR3: 00000000029f0000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
 
-> 
-> No, it won't. cpu_is_something() is intended for runtime decisions.
-> Remember that the purpose of this patch was to solve a compile time
-> issue (see subject). AT91_SDRAMC_SRR isn't defined properly for
-> non-9200 processors because they don't have that register. So we need
-> something like #ifdef to include this line only on 9200.
-Oops, I missed that problem, sorry...
+Call Trace:
+ [<ffffffff8021abd0>] flush_tlb_page+0x8f/0x97
+ [<ffffffff8026daee>] page_mkclean+0x120/0x171
+ [<ffffffff802e6227>] ext3_ordered_writepage+0x13f/0x16c
+ [<ffffffff8025ed09>] clear_page_dirty_for_io+0x52/0xba
+ [<ffffffff8025f002>] write_cache_pages+0x1b2/0x33a
+ [<ffffffff8022a149>] update_curr+0xd9/0xf8
+ [<ffffffff8025e9ca>] __writepage+0x0/0x2a
+ [<ffffffff8025f1a9>] generic_writepages+0x1f/0x25
+ [<ffffffff8025f1db>] do_writepages+0x2c/0x35
+ [<ffffffff8029b453>] __writeback_single_inode+0x1c9/0x346
+ [<ffffffff8023b809>] try_to_del_timer_sync+0x55/0x60
+ [<ffffffff8023b826>] del_timer_sync+0x12/0x1f
+ [<ffffffff8022a149>] update_curr+0xd9/0xf8
+ [<ffffffff8022a446>] dequeue_entity+0x7d/0x92
+ [<ffffffff8029ba20>] generic_sync_sb_inodes+0x216/0x372
+ [<ffffffff8029bb99>] sync_sb_inodes+0x1d/0x1f
+ [<ffffffff8029bdd9>] writeback_inodes+0x83/0xd6
+ [<ffffffff8025e82b>] wb_kupdate+0xa0/0x113
+ [<ffffffff8025f658>] pdflush+0x156/0x206
+ [<ffffffff8025e78b>] wb_kupdate+0x0/0x113
+ [<ffffffff8025f502>] pdflush+0x0/0x206
+ [<ffffffff80245660>] kthread+0x44/0x6d
+ [<ffffffff8020c5e8>] child_rip+0xa/0x12
+ [<ffffffff8024561c>] kthread+0x0/0x6d
+ [<ffffffff8020c5de>] child_rip+0x0/0x12
 
-and what about this:
-#ifdef CONFIG_ARCH_AT91RM9200
-#define sdram_lowpower_enable() at91_sys_write(AT91_SDRAMC_SRR, 1)
-#define sdram_lowpower_disable() at91_sys_write(AT91_SDRAMC_SRR, 0)
-#else
-#define sdram_lowpower_enable()
-#define sdram_lowpower_disable()
-#endif
-
-and using sdram_lowpower_{enable,disable}() when requiered?
-
-Regards
-
-Marc
+Thanks
+Kamalesh Babulal.
