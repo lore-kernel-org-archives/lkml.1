@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765064AbXHJJTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933450AbXHJJVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765064AbXHJJTb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 05:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbXHJJTU
+	id S933450AbXHJJVV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 05:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbXHJJVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 05:19:20 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:47602 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751783AbXHJJTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 05:19:18 -0400
-Date: Fri, 10 Aug 2007 11:19:54 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>, tglx <tglx@linutronix.de>,
-       torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch (testing)] Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070810091954.GI1764@ff.dom.local>
-References: <JMJTMH$F1699B57C9B0E170ED337488612E649B@xandmail.com> <20070810083720.GE1764@ff.dom.local> <20070810084841.GA11086@elte.hu> <20070810090318.GG1764@ff.dom.local> <20070810090833.GA15121@elte.hu>
-Mime-Version: 1.0
+	Fri, 10 Aug 2007 05:21:14 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1176 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754628AbXHJJVN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 05:21:13 -0400
+Date: Fri, 10 Aug 2007 10:20:06 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Softlockup detected with 2.6.23-rc2-mm1
+Message-ID: <20070810092006.GA9765@shadowen.org>
+References: <46BC02B9.1000307@linux.vnet.ibm.com> <20070809232504.c28a3c93.akpm@linux-foundation.org> <46BC159A.9060900@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070810090833.GA15121@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <46BC159A.9060900@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 11:08:33AM +0200, Ingo Molnar wrote:
+On Fri, Aug 10, 2007 at 01:06:58PM +0530, Kamalesh Babulal wrote:
+> Andrew Morton wrote:
+> >On Fri, 10 Aug 2007 11:46:25 +0530 Kamalesh Babulal 
+> ><kamalesh@linux.vnet.ibm.com> wrote:
+> >
+> >  
+> >>I get call trace, when the file system stress is run on the
+> >>2.6.23-rc2-mm1 kernel on a Dual Core AMD Opteron
+> >>(processor 270)
+> >>
+> >>============================================\BUG: spinlock bad magic on 
+> >>CPU#1, fsx-linux/19721
+> >>    
+> >
+> >Yes, sorry, mm-dirty-balancing-for-tasks.patch had a bug.  Those patches 
+> >were
+> >removed from 2.6.23-rc2-mm2 - please test that instead.
+> >-
+> >To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> >the body of a message to majordomo@vger.kernel.org
+> >More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >Please read the FAQ at  http://www.tux.org/lkml/
+> >  
+> I get different call trace on AMD Opteron(tm) Processor 844 machine
+> , I am not sure where it is related to the same patch
 > 
-> * Jarek Poplawski <jarkao2@o2.pl> wrote:
-> 
-> > On 10-08-2007 10:05, Thomas Gleixner wrote:
-> > ...
-> > > But suppressing the resend is not fixing the driver problem. The 
-> > > problem can show up with spurious interrupts and with interrupts on 
-> > > a shared PCI interrupt line at any time. It just might take weeks 
-> > > instead of minutes.
-> > 
-> > Maybe I miss something but it's not the same!
-> 
-> _now_ i finally understand what you probably meant: because sw-resend 
-> worked and hw-resend didnt, it's hw-resend that is causing the breakage, 
-> not any driver or irqflow bug - correct?
+> =====================================================
+> BUG: soft lockup - CPU#3 stuck for 11s! [pdflush:272]
+> CPU 3:
+> Modules linked in:
+> Pid: 272, comm: pdflush Not tainted 2.6.23-rc2-mm1-autokern1 #1
+> RIP: 0010:[<ffffffff8021a9c3>]  [<ffffffff8021a9c3>] 
+> flush_tlb_others+0x69/0x95
 
-All correct! There was also checked a possibility it can be not
-hw itself, but wrong way of handling after hw (acking too late). This
-was false idea (or bad implementation), so it looks like hw vs lapic
-problem.
+Cannot be 100% sure but of the group of machines showing your original
+problem one showed this form.  Dropping the patches indicated by Andrew
+seemed to fix both symptoms.  So I think it is highly likely the same
+thing.
 
-Jarek P.
+-apw
