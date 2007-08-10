@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759648AbXHJWNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762221AbXHJWNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759648AbXHJWNT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 18:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760739AbXHJWBp
+	id S1762221AbXHJWNs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 18:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757092AbXHJWBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 18:01:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57847 "EHLO mx1.redhat.com"
+	Fri, 10 Aug 2007 18:01:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57864 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756966AbXHJWB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 18:01:29 -0400
+	id S1760309AbXHJWBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 18:01:34 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
@@ -17,148 +17,147 @@ Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
        lguest@ozlabs.org, glommer@gmail.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 24/25 -v2] paravirt hooks for arch initialization
-Date: Fri, 10 Aug 2007 16:12:36 -0300
-Message-Id: <11867732763070-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 25/25 -v2] add paravirtualization support for x86_64
+Date: Fri, 10 Aug 2007 16:12:37 -0300
+Message-Id: <11867732811935-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11867732713519-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11867732763070-git-send-email-gcosta@redhat.com>
 References: <1186773157329-git-send-email-gcosta@redhat.com> <11867731633002-git-send-email-gcosta@redhat.com> <11867731681763-git-send-email-gcosta@redhat.com> <11867731732274-git-send-email-gcosta@redhat.com> <11867731781610-git-send-email-gcosta@redhat.com> <11867731831138-git-send-email-gcosta@redhat.com> <11867731882768-git-send-email-gcosta@redhat.com> <11867731932688-git-send-email-gcosta@redhat.com> <11867731981891-git-send-email-gcosta@redhat.com> <1186773203887-git-send-email-gcosta@redhat.com> <11867732082735-git-send-email-gcosta@redhat.com> <11867732121974-git-send-email-gcosta@redhat.com> <1186773217875-git-send-email-gcosta@redhat.com> <11867732221652-git-send-email-gcosta@redhat.com> <11867732273108-git-send-email-gcosta@redhat.com> <11867732323106-git-send-email-gcosta@redhat.com> <11867732373232-git-send-email-gcosta@redhat.com> <11867732424024-git-send-email-gcosta@redhat.com> <11867732461037-git-send-email-gcosta@redhat.com> <11867732511513-git-send-email!
- -gcosta@redhat.com> <11867732562020-git-send-email-gcosta@redhat.com> <1186773261537-git-send-email-gcosta@redhat.com> <11867732661840-git-send-email-gcosta@redhat.com> <11867732713519-git-send-email-gcosta@redhat.com>
+ -gcosta@redhat.com> <11867732562020-git-send-email-gcosta@redhat.com> <1186773261537-git-send-email-gcosta@redhat.com> <11867732661840-git-send-email-gcosta@redhat.com> <11867732713519-git-send-email-gcosta@redhat.com> <11867732763070-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add paravirtualization hooks in the arch initialization
-process. paravirt_arch_setup() lets the guest issue any specific
-initialization routine
+This is finally, the patch we were all looking for. This
+patch adds a paravirt.h header with the definition of paravirt_ops
+struct. Also, it defines a bunch of inline functions that will
+replace, or hook, the other calls. Every one of those functions
+adds an entry in the parainstructions section (see vmlinux.lds.S).
+Those entries can then be used to runtime-patch the paravirt_ops
+functions.
 
-Also, there is memory_setup(), so guests can handle it their way.
+paravirt.c contains implementations of paravirt functions that
+are used natively, such as the native_patch. It also fill the
+paravirt_ops structure with the whole lot of functions that
+were (re)defined throughout this patch set.
+
+There are also changes in asm-offsets.c. paravirt.h needs it
+to find out the offsets into the structure of functions
+such as irq_enable, used in assembly files.
 
 [  updates from v1
-   * Don't use a separate ebda pv hook (Jeremy/Andi)
-   * Make paravirt_setup_arch() void (Andi)
+   * make PARAVIRT hidden in Kconfig (Andi Kleen)
+   * cleanups in paravirt.h (Andi Kleen)
+   * modifications needed to accomodate other parts of the
+   patch that changed, such as getting rid of ebda_info
+   * put the integers at struct paravirt_ops at the end
+   (Jeremy)
 ]
-
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- arch/x86_64/kernel/setup.c |   32 +++++++++++++++++++++++++++++++-
- include/asm-x86_64/e820.h  |    6 ++++++
- include/asm-x86_64/page.h  |    1 +
- 3 files changed, 38 insertions(+), 1 deletions(-)
+ arch/x86_64/Kconfig              |   11 +++++++++++
+ arch/x86_64/kernel/Makefile      |    1 +
+ arch/x86_64/kernel/asm-offsets.c |   14 ++++++++++++++
+ arch/x86_64/kernel/vmlinux.lds.S |    6 ++++++
+ include/asm-x86_64/smp.h         |    2 +-
+ 5 files changed, 33 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86_64/kernel/setup.c b/arch/x86_64/kernel/setup.c
-index af838f6..19e0d90 100644
---- a/arch/x86_64/kernel/setup.c
-+++ b/arch/x86_64/kernel/setup.c
-@@ -44,6 +44,7 @@
- #include <linux/dmi.h>
- #include <linux/dma-mapping.h>
- #include <linux/ctype.h>
-+#include <linux/uaccess.h>
+diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
+index ffa0364..00b2fc9 100644
+--- a/arch/x86_64/Kconfig
++++ b/arch/x86_64/Kconfig
+@@ -373,6 +373,17 @@ config NODES_SHIFT
  
- #include <asm/mtrr.h>
- #include <asm/uaccess.h>
-@@ -65,6 +66,12 @@
- #include <asm/sections.h>
- #include <asm/dmi.h>
+ # Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
  
++config PARAVIRT
++       bool
++       depends on EXPERIMENTAL
++       help
++         Paravirtualization is a way of running multiple instances of
++         Linux on the same machine, under a hypervisor.  This option
++         changes the kernel so it can modify itself when it is run
++         under a hypervisor, improving performance significantly.
++         However, when run without a hypervisor the kernel is
++         theoretically slower.  If in doubt, say N.
++
+ config X86_64_ACPI_NUMA
+        bool "ACPI NUMA detection"
+        depends on NUMA
+diff --git a/arch/x86_64/kernel/Makefile b/arch/x86_64/kernel/Makefile
+index ff5d8c9..120467f 100644
+--- a/arch/x86_64/kernel/Makefile
++++ b/arch/x86_64/kernel/Makefile
+@@ -38,6 +38,7 @@ obj-$(CONFIG_X86_VSMP)		+= vsmp.o
+ obj-$(CONFIG_K8_NB)		+= k8.o
+ obj-$(CONFIG_AUDIT)		+= audit.o
+ 
++obj-$(CONFIG_PARAVIRT)		+= paravirt.o
+ obj-$(CONFIG_MODULES)		+= module.o
+ obj-$(CONFIG_PCI)		+= early-quirks.o
+ 
+diff --git a/arch/x86_64/kernel/asm-offsets.c b/arch/x86_64/kernel/asm-offsets.c
+index 778953b..f5eff70 100644
+--- a/arch/x86_64/kernel/asm-offsets.c
++++ b/arch/x86_64/kernel/asm-offsets.c
+@@ -15,6 +15,9 @@
+ #include <asm/segment.h>
+ #include <asm/thread_info.h>
+ #include <asm/ia32.h>
 +#ifdef CONFIG_PARAVIRT
 +#include <asm/paravirt.h>
-+#else
-+#define paravirt_arch_setup()  do {} while (0)
 +#endif
-+
- /*
-  * Machine setup..
-  */
-@@ -208,6 +215,16 @@ static void discover_ebda(void)
- 	 * 4K EBDA area at 0x40E
- 	 */
- 	ebda_addr = *(unsigned short *)__va(EBDA_ADDR_POINTER);
-+	/*
-+	 * There can be some situations, like paravirtualized guests,
-+	 * in which there is no available ebda information. In such
-+	 * case, just skip it
-+	 */
-+	if (!ebda_addr) {
-+		ebda_size = 0;
-+		return;
-+	}
-+
- 	ebda_addr <<= 4;
  
- 	ebda_size = *(unsigned short *)__va(ebda_addr);
-@@ -221,6 +238,13 @@ static void discover_ebda(void)
- 		ebda_size = 64*1024;
- }
- 
-+/* Overridden in paravirt.c if CONFIG_PARAVIRT */
-+void __attribute__((weak)) memory_setup(void)
-+{
-+       return setup_memory_region();
-+}
-+
-+
- void __init setup_arch(char **cmdline_p)
- {
- 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
-@@ -231,12 +255,18 @@ void __init setup_arch(char **cmdline_p)
- 	saved_video_mode = SAVED_VIDEO_MODE;
- 	bootloader_type = LOADER_TYPE;
- 
-+	/*
-+	 * By returning non-zero here, a paravirt impl can choose to
-+	 * skip the rest of the setup process
-+	 */
-+	paravirt_arch_setup();
-+
- #ifdef CONFIG_BLK_DEV_RAM
- 	rd_image_start = RAMDISK_FLAGS & RAMDISK_IMAGE_START_MASK;
- 	rd_prompt = ((RAMDISK_FLAGS & RAMDISK_PROMPT_FLAG) != 0);
- 	rd_doload = ((RAMDISK_FLAGS & RAMDISK_LOAD_FLAG) != 0);
+ #define DEFINE(sym, val) \
+         asm volatile("\n->" #sym " %0 " #val : : "i" (val))
+@@ -72,6 +75,17 @@ int main(void)
+ 	       offsetof (struct rt_sigframe32, uc.uc_mcontext));
+ 	BLANK();
  #endif
--	setup_memory_region();
-+	memory_setup();
- 	copy_edd();
- 
- 	if (!MOUNT_ROOT_RDONLY)
-diff --git a/include/asm-x86_64/e820.h b/include/asm-x86_64/e820.h
-index 3486e70..2ced3ba 100644
---- a/include/asm-x86_64/e820.h
-+++ b/include/asm-x86_64/e820.h
-@@ -20,7 +20,12 @@
- #define E820_ACPI	3
- #define E820_NVS	4
- 
-+#define MAP_TYPE_STR	"BIOS-e820"
-+
- #ifndef __ASSEMBLY__
-+
-+void native_ebda_info(unsigned *addr, unsigned *size);
-+
- struct e820entry {
- 	u64 addr;	/* start of memory segment */
- 	u64 size;	/* size of memory segment */
-@@ -56,6 +61,7 @@ extern struct e820map e820;
- 
- extern unsigned ebda_addr, ebda_size;
- extern unsigned long nodemap_addr, nodemap_size;
-+
- #endif/*!__ASSEMBLY__*/
- 
- #endif/*__E820_HEADER*/
-diff --git a/include/asm-x86_64/page.h b/include/asm-x86_64/page.h
-index ec8b245..8c40fb2 100644
---- a/include/asm-x86_64/page.h
-+++ b/include/asm-x86_64/page.h
-@@ -149,6 +149,7 @@ extern unsigned long __phys_addr(unsigned long);
- #define __boot_pa(x)		__pa(x)
- #ifdef CONFIG_FLATMEM
- #define pfn_valid(pfn)		((pfn) < end_pfn)
-+
++#ifdef CONFIG_PARAVIRT
++#define ENTRY(entry) DEFINE(PARAVIRT_ ## entry, offsetof(struct paravirt_ops, entry))
++	ENTRY(paravirt_enabled);
++	ENTRY(irq_disable);
++	ENTRY(irq_enable);
++	ENTRY(syscall_return);
++	ENTRY(iret);
++	ENTRY(read_cr2);
++	ENTRY(swapgs);
++	BLANK();
++#endif
+ 	DEFINE(pbe_address, offsetof(struct pbe, address));
+ 	DEFINE(pbe_orig_address, offsetof(struct pbe, orig_address));
+ 	DEFINE(pbe_next, offsetof(struct pbe, next));
+diff --git a/arch/x86_64/kernel/vmlinux.lds.S b/arch/x86_64/kernel/vmlinux.lds.S
+index ba8ea97..c3fce85 100644
+--- a/arch/x86_64/kernel/vmlinux.lds.S
++++ b/arch/x86_64/kernel/vmlinux.lds.S
+@@ -185,6 +185,12 @@ SECTIONS
+   .altinstr_replacement : AT(ADDR(.altinstr_replacement) - LOAD_OFFSET) {
+ 	*(.altinstr_replacement)
+   }
++  . = ALIGN(8);
++  .parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
++  __parainstructions = .;
++	*(.parainstructions)
++  __parainstructions_end = .;
++  }
+   /* .exit.text is discard at runtime, not link time, to deal with references
+      from .altinstructions and .eh_frame */
+   .exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) { *(.exit.text) }
+diff --git a/include/asm-x86_64/smp.h b/include/asm-x86_64/smp.h
+index 6b11114..403901b 100644
+--- a/include/asm-x86_64/smp.h
++++ b/include/asm-x86_64/smp.h
+@@ -22,7 +22,7 @@ extern int disable_apic;
+ #ifdef CONFIG_PARAVIRT
+ #include <asm/paravirt.h>
+ void native_flush_tlb_others(cpumask_t cpumask, struct mm_struct *mm,
+-						unsigned long va);
++							unsigned long va);
+ #else
+ #define startup_ipi_hook(apicid, rip, rsp) do { } while (0)
  #endif
- 
- #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
 -- 
 1.4.4.2
 
