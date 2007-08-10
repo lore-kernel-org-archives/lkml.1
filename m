@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939376AbXHJPP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939499AbXHJPQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939376AbXHJPP4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 11:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXHJPPs
+	id S939499AbXHJPQr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 11:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760297AbXHJPQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 11:15:48 -0400
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:1754 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759002AbXHJPPr convert rfc822-to-8bit (ORCPT
+	Fri, 10 Aug 2007 11:16:37 -0400
+Received: from cluster-g.mailcontrol.com ([85.115.41.190]:42994 "EHLO
+	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753692AbXHJPQg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 11:15:47 -0400
-DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=oNL7p9QczYnxrlY6m9fVkJQJJi7xHxxH+WFq+CNhvIi/EGPJE4q8SxAR2cXzyAP3eYffveqXnhMHat2/TKlSKiP2BgVzISmMjQ9fE/Rbmjv+WxywYBt/HGMiz3xoi1so;
-X-IronPort-AV: E=Sophos;i="4.19,245,1183352400"; 
-   d="scan'208";a="336311852"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 10 Aug 2007 11:16:36 -0400
+Message-ID: <46BC8083.9020506@csr.com>
+Date: Fri, 10 Aug 2007 16:13:07 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: EHCI Regression in 2.6.23-rc2
-Date: Fri, 10 Aug 2007 10:14:56 -0500
-Message-ID: <DFEF91B22ED07447AB6AA4B237F913F9B18E19@ausx3mpc125.aus.amer.dell.com>
-In-Reply-To: <Pine.LNX.4.64.0708101125120.3948@twin.jikos.cz>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: EHCI Regression in 2.6.23-rc2
-Thread-Index: AcfbMMIM8i7lO3aDT2KzSiwnsHr4ugAL0OEg
-References: <200708101045.57166.dex@dragonslave.de> <Pine.LNX.4.64.0708101125120.3948@twin.jikos.cz>
-From: <Stuart_Hayes@Dell.com>
-To: <jikos@jikos.cz>, <webmaster@dragonslave.de>
-Cc: <linux-kernel@vger.kernel.org>, <linux-usb-devel@lists.sourceforge.net>
-X-OriginalArrivalTime: 10 Aug 2007 15:15:29.0672 (UTC) FILETIME=[499D8880:01C7DB61]
+To: Marcel Holtmann <marcel@holtmann.org>
+CC: linux-kernel@vger.kernel.org, Nicolas Pitre <npitre@mvista.com>
+Subject: Re: Driver for Bluetooth SDIO cards
+References: <1186309908.5868.344.camel@violet>  <46BA02D6.9000108@csr.com>	 <1186662739.20129.170.camel@violet>  <46BB4C8F.4080007@csr.com>	 <1186683438.20129.183.camel@violet>  <46BC5C12.5070603@csr.com>	 <1186753060.20129.222.camel@violet>  <46BC7A2E.60502@csr.com> <1186758533.20129.234.camel@violet>
+In-Reply-To: <1186758533.20129.234.camel@violet>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Aug 2007 15:13:21.0085 (UTC) FILETIME=[FCF8B6D0:01C7DB60]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Fri, 10 Aug 2007, Daniel Exner wrote:
+Marcel Holtmann wrote:
 > 
->> After some serious hangs with 2.6.23-rc2 I did some bisects and this
->> was the result:
->> 196705c9bbc03540429b0f7cf9ee35c2f928a534 is first bad commit commit
->> 196705c9bbc03540429b0f7cf9ee35c2f928a534
->> Author: Stuart_Hayes@Dell.com <Stuart_Hayes@Dell.com>
->> Date:   Thu May 3 08:58:49 2007 -0700
-> 
-> I guess that the patch attached to bug 8535 in kernel.org bugzilla --
-> http://bugzilla.kernel.org/attachment.cgi?id=12228&action=view --
-> solves your issues, right?  
-> 
-> Stuart, did you submit this fix for upstream already please?
+> In that case my card has TPL_SDIOBT_RTC set to 0x00. Does the BlueCore6
+> implement Retry Control Support?
 
-Yes... http://marc.info/?l=linux-usb-devel&m=118598561010046&w=2
+It should, but it doesn't work (with the current firmware) so we don't
+enable it and always ack reads.
 
-However, I have not tested this with a VIA EHCI controller (though it's
-been tested with Intel, Broadcom, and nVidia).  This patch uses the
-"inactivate" bit in the QH, which wasn't previously used by the linux
-kernel, and I found that the different vendors of EHCI controllers
-(Intel, Broadcom, nVidia) all handle this a little differently.  There's
-probably something about the way VIA controllers respond to seeing this
-bit set that is breaking things.
+David
+-- 
+David Vrabel, Software Engineer, Drivers group  Tel: +44 (0)1223 692562
+CSR plc, Churchill House, Cambridge Business Park, Cowley Road, CB4 0WZ
 
-I'll try to get my hands on a VIA EHCI controller so I can look at
-this... if you happen to know of an add-in card that has one of these,
-please let me know!  It would be a lot easier for me to debug this
-myself here than to try to get someone else to run test kernels for
-me...
+
+.
