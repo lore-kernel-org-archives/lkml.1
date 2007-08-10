@@ -1,55 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934152AbXHJSIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932333AbXHJSPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934152AbXHJSIr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 14:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbXHJSIi
+	id S932333AbXHJSPs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 14:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbXHJSPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 14:08:38 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:27879 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752697AbXHJSIh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 14:08:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cBUsCUKx4oM9K3vdYyegrrPVFGGZC9CBzKG5/gd7Km0loZS/x4tR8XpeVShqn+h93hsTwDUrdV6aKClhFeb5dclvyj7ZFWAAjwZygMIjnGhTec+eR7bc3WTAzXuPRqWayMHXuo/OJii4wz7zdHwd4gO+L1l6toj26IL99g8MLNs=
-Message-ID: <5d6222a80708101108y62ebfa26n9f47bfc52b48f4a8@mail.gmail.com>
-Date: Fri, 10 Aug 2007 15:08:35 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 23/25] [PATCH] paravirt hooks for arch initialization
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>, lguest@ozlabs.org,
-       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
-       anthony@codemonkey.ws, Steven@smtp2.linux-foundation.org,
-       akpm@linux-foundation.org,
-       "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       virtualization@lists.linux-foundation.org, mingo@elte.hu
-In-Reply-To: <20070809190303.214e5457@the-village.bc.nu>
+	Fri, 10 Aug 2007 14:15:39 -0400
+Received: from mx1.suse.de ([195.135.220.2]:48719 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752699AbXHJSPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 14:15:38 -0400
+From: Andi Kleen <ak@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones pointer
+Date: Fri, 10 Aug 2007 20:13:48 +0200
+User-Agent: KMail/1.9.1
+Cc: Mel Gorman <mel@skynet.ie>, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20070809210616.14702.73376.sendpatchset@skynet.skynet.ie> <20070810104749.GA14300@skynet.ie> <Pine.LNX.4.64.0708101035020.12758@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0708101035020.12758@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <11865467522495-git-send-email-gcosta@redhat.com>
-	 <11865468394005-git-send-email-gcosta@redhat.com>
-	 <11865468431616-git-send-email-gcosta@redhat.com>
-	 <200708081144.04119.ak@suse.de> <46BB5258.8040609@goop.org>
-	 <20070809190303.214e5457@the-village.bc.nu>
+Message-Id: <200708102013.49170.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/9/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > What's the EBDA actually used for?  The only place which seems to use
-> > ebda_addr is in the e820 code to avoid that area as RAM.
->
-> It belongs to the firmware.
 
-Wouldn't it be better, then, to just skip this step unconditionally if
-we are running a paravirtualized guest? What do we from doing it?
+> x86_64 does not support ZONE_HIGHMEM.
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+I also plan to eliminate ZONE_DMA soon (and replace all its users
+with a new allocator that sits outside the normal fallback lists) 
 
-"The less confident you are, the more serious you have to act."
+-Andi
