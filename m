@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940855AbXHJSo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965126AbXHJSqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940855AbXHJSo5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 14:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbXHJSop
+	id S965126AbXHJSqs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 14:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762577AbXHJSqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 14:44:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50008 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753790AbXHJSoo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 14:44:44 -0400
-Date: Fri, 10 Aug 2007 11:44:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: arch/i386/kernel/setup.c - compile error (Re: 2.6.23-rc2-mm2)
-Message-Id: <20070810114435.c6353b2a.akpm@linux-foundation.org>
-In-Reply-To: <46BCA6A9.6000402@googlemail.com>
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-	<46BCA6A9.6000402@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 10 Aug 2007 14:46:39 -0400
+Received: from smtp23.orange.fr ([80.12.242.97]:63241 "EHLO smtp23.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759831AbXHJSqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 14:46:38 -0400
+X-Greylist: delayed 14516 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Aug 2007 14:46:37 EDT
+X-ME-UUID: 20070810144439399.619031C00087@mwinf2344.orange.fr
+Subject: Re: Noatime vs relatime
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Vlad <vladc6@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <233939.75965.qm@web54403.mail.yahoo.com>
+References: <233939.75965.qm@web54403.mail.yahoo.com>
+Content-Type: text/plain
+Date: Fri, 10 Aug 2007 16:44:35 +0200
+Message-Id: <1186757075.17619.32.camel@frg-rhel40-em64t-04>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007 19:55:53 +0200
-Gabriel C <nix.or.die@googlemail.com> wrote:
+On Fri, 2007-08-10 at 07:26 -0700, Vlad wrote:
+> Relatime seems to be wasteful of both IO resources _and_ CPU cycles.
+> Instead of performing a single IO operation (as atime does), relatime
+> performs at least three IO operations and three CPU-dependent
+> operations:
+> 
+> 1) a read IO operation to find out the old atime
+> 2) a read IO operation to find out the old ctime
+> 3) a read IO operation to find out the old mtime
+> 4) Comparison of "old atime is <= than mtime/ctime"
+> 5) Find out current time
+> 6) Comparison of "current time minus old atime is > X"
 
-> 
-> >  git-newsetup.patch
-> 
-> ...
-> 
-> arch/i386/kernel/setup.c: In function 'setup_arch':
-> arch/i386/kernel/setup.c:547: error: 'PARAM' undeclared (first use in this function)
-> arch/i386/kernel/setup.c:547: error: (Each undeclared identifier is reported only once
-> arch/i386/kernel/setup.c:547: error: for each function it appears in.)
-> make[1]: *** [arch/i386/kernel/setup.o] Error 1
-> make: *** [arch/i386/kernel] Error 2
-> make: *** Waiting for unfinished jobs....
->  
-> ....
-> 
-> Got it on a randconfig :
-> 
-> http://194.231.229.228/kernel/mm/2.6.23-rc2-mm2/randconfig-auto-25
+As all [acm]times are stored in the same block (inode), I bet all this
+is one single IO, plus some insignificant computation (3 comparisons
+plus reading time is really smaller than one block IO).
 
-PARAM got removed, but include/asm-i386/mach-voyager/setup_arch.h still
-uses it.
+	Xav
 
 
