@@ -1,107 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965598AbXHJUeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940806AbXHJUjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965598AbXHJUeW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 16:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765166AbXHJUeN
+	id S940806AbXHJUjO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 16:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932648AbXHJUi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 16:34:13 -0400
-Received: from smtp-105-friday.nerim.net ([62.4.16.105]:59368 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760305AbXHJUeM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 16:34:12 -0400
-Date: Fri, 10 Aug 2007 22:34:20 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-Cc: "Joe Perches" <joe@perches.com>, linux-kernel@vger.kernel.org,
-       "Greg KH" <gregkh@suse.de>, "Jeff Garzik" <jeff@garzik.org>,
-       "Tony Luck" <tony.luck@intel.com>, "Jiri Slaby" <jirislaby@gmail.com>,
-       "Roland Dreier" <rolandd@cisco.com>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "James Smart" <james.smart@emulex.com>,
-       "Hansjoerg Lipp" <hjlipp@web.de>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       "Jeremy Fitzhardinge" <jeremy@xensource.com>
-Subject: Re: [PATCH] Add missing newlines to some uses of dev_<level>
- messages
-Message-ID: <20070810223420.3d20f771@hyperion.delvare>
-In-Reply-To: <29495f1d0708072000m3d6d6febpad0db101ed48aa24@mail.gmail.com>
-References: <1186535381.11897.29.camel@localhost>
-	<29495f1d0708072000m3d6d6febpad0db101ed48aa24@mail.gmail.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Fri, 10 Aug 2007 16:38:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33275 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765463AbXHJUi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 16:38:58 -0400
+Date: Fri, 10 Aug 2007 21:38:54 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Jan Blunck <jblunck@suse.de>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 05/11] dm-snap: remove SECTOR_SHIFT define
+Message-ID: <20070810203854.GG2064@agk.fab.redhat.com>
+Mail-Followup-To: Jan Blunck <jblunck@suse.de>, dm-devel@redhat.com,
+	linux-kernel@vger.kernel.org
+References: <20070810200204.455820246@suse.de>> <20070810200205.703776854@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070810200205.703776854@suse.de>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nish,
+On Fri, Aug 10, 2007 at 10:02:09PM +0200, Jan Blunck wrote:
+> Sector size on Linux is always 512 bytes. Don't even try to give the
+> impression this is changeable.
 
-On Tue, 7 Aug 2007 20:00:24 -0700, Nish Aravamudan wrote:
-> On 8/7/07, Joe Perches <joe@perches.com> wrote:
-> > Found these while looking at printk uses.
-> >
-> > Add missing newlines to dev_<level> uses
-> > Add missing KERN_<level> prefixes to multiline dev_<level>s
-> > Fixed a wierd->weird spelling typo
-> > Added a newline to a printk
-> 
-> I think these should have been split logically into 4 groups of
-> patches (except perhaps where they touched the same file for the first
-> two and the last).
+If that's what worries you, add a comment next to the definition,
+perhaps?
 
-Not worth splitting IMHO, these are all misuses of printk.
+It's there so you can easily locate all the places within dm that
+perform these conversions by using a simple search.  Searching for '9'
+wouldn't be as easy.  (I don't know about other people, but I find the
+code easier to read the way it is.)
 
-> The third type should go through trivial.
+BTW When changing one thing across the whole of dm, you may combine
+the sub-component patches into a single patch.
 
-Except for this one, which really doesn't belong to this patch, granted.
-
-> And they should have been split logically by subsystem, most likely?
-
-Depends. If Andrew is going to pick the patch quickly and apply it,
-then it's fine (except that I see that Andrew wasn't Cc'd, so it's
-unlikely to happen.) But if Andrew doesn't want to take this patch,
-then indeed, the only way to get it applied is to split it by
-subsystem.
-
-> 
-> <snip diffstat>
-> 
-> > diff --git a/arch/ia64/sn/kernel/xpnet.c b/arch/ia64/sn/kernel/xpnet.c
-> > index e58fcad..a5df672 100644
-> > --- a/arch/ia64/sn/kernel/xpnet.c
-> > +++ b/arch/ia64/sn/kernel/xpnet.c
-> > @@ -269,8 +269,9 @@ xpnet_receive(partid_t partid, int channel, struct xpnet_message *msg)
-> >         skb->protocol = eth_type_trans(skb, xpnet_device);
-> >         skb->ip_summed = CHECKSUM_UNNECESSARY;
-> >
-> > -       dev_dbg(xpnet, "passing skb to network layer; \n\tskb->head=0x%p "
-> > -               "skb->data=0x%p skb->tail=0x%p skb->end=0x%p skb->len=%d\n",
-> > +       dev_dbg(xpnet, "passing skb to network layer\n"
-> > +               KERN_DEBUG "\tskb->head=0x%p skb->data=0x%p skb->tail=0x%p "
-> > +               "skb->end=0x%p skb->len=%d\n",
-> >                 (void *)skb->head, (void *)skb->data, skb_tail_pointer(skb),
-> >                 skb_end_pointer(skb), skb->len);
-> 
-> <snip>
-> 
-> I'm not a maintainer of any code by any means, but it seems odd,
-> redundant and visually confusing to me to use the dev_dbg() function
-> and have KERN_DEBUG's inside the string -- makes me question every
-> time why there isn't one for the first line too.
-
-The code above looks correct to me.
-
-> Perhaps these multi-line debug statements should simply be split into
-> multiple dev_dbg() calls? Similar for the other dev_ functions. I
-> think it might look cleaner, at least. Just my two cents, not a NAK or
-> anything.
-
-The benefit of having a single call is that other calls to printk()
-won't be interlaced with our message. This has been discussed lately in
-a different thread. So you may think that the code above is confusing,
-but it is currently the best way to ensure that related lines stay
-grouped in the kernel log.
-
+Alasdair
 -- 
-Jean Delvare
+agk@redhat.com
