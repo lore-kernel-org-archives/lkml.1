@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763747AbXHJRVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764275AbXHJRZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763747AbXHJRVt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 13:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbXHJRVm
+	id S1764275AbXHJRZs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 13:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755444AbXHJRZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 13:21:42 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:46807 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754393AbXHJRVl (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 13:21:41 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Aurelien Jarno <aurelien@aurel32.net>,
+	Fri, 10 Aug 2007 13:25:41 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:3207 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754471AbXHJRZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 13:25:40 -0400
+Date: Fri, 10 Aug 2007 19:25:57 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Michael Chang <thenewme91@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc2-mm2
-In-Reply-To: Your message of "Fri, 10 Aug 2007 18:59:06 +0200."
-             <20070810165906.GI18938@stusta.de>
-From: Valdis.Kletnieks@vt.edu
-References: <20070809224254.11f42716.akpm@linux-foundation.org> <20070810092334.GA15285@hall.aurel32.net> <26090.1186764049@turing-police.cc.vt.edu>
-            <20070810165906.GI18938@stusta.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1186766481_6376P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 10 Aug 2007 13:21:21 -0400
-Message-ID: <28698.1186766481@turing-police.cc.vt.edu>
+Subject: Re: CFS review
+In-Reply-To: <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0708101919270.1817@scrub.home>
+References: <Pine.LNX.4.64.0708010439050.1817@scrub.home>  <20070801150742.GA23670@elte.hu>
+ <p73ps27npu0.fsf@bingen.suse.de>  <alpine.LFD.0.999.0708010924490.3582@woody.linux-foundation.org>
+  <20070801175004.GA17936@elte.hu>  <Pine.LNX.4.64.0708011955430.1817@scrub.home>
+  <20070801190556.GA1199@elte.hu>  <Pine.LNX.4.64.0708100037460.1817@scrub.home>
+  <20070810054948.GA5908@elte.hu>  <Pine.LNX.4.64.0708101459530.1817@scrub.home>
+ <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1186766481_6376P
-Content-Type: text/plain; charset=us-ascii
+Hi,
 
-On Fri, 10 Aug 2007 18:59:06 +0200, Adrian Bunk said:
+On Fri, 10 Aug 2007, Michael Chang wrote:
 
-> It must be included on *all* architectures, and the architectures where 
-> asm/page.h wasn't by chance already included indirectly included by some 
-> other header don't compile.
+> On 8/10/07, Roman Zippel <zippel@linux-m68k.org> wrote:
+> > Is there any reason to believe my analysis is wrong?
+> 
+> Not yet, but if you give Ingo what he wants (as opposed to what you're
+> giving him) it'll be easier for him to answer what's going wrong, and
+> perhaps "fix" the problem to boot.
+> 
+> (The scripts gives info about CPU characteristics, interrupts,
+> modules, etc. -- you know, all those "unknown" variables.)
 
-Wow. So it happened to work by chance on *most* architectures (or at
-least enough so Andrew shipped it)?  I wasn't expecting "MIPS was the
-first one to correctly barf because the header wasn't included"... :)
+He already has most of this information and the trace shows _exactly_ 
+what's going on. All this information should be more than enough to allow 
+an initial judgement whether my analysis is correct.
+Also none of this information is needed to explain the CFS logic a little 
+more, which I'm still waiting for...
 
-
-
---==_Exmh_1186766481_6376P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD4DBQFGvJ6RcC3lWbTT17ARAjkjAKCy6tnewkhzEu1Py/fbrzgeUY7TgQCY3yLo
-d6pBp4ELT5dFB5i05/Bdng==
-=HCRl
------END PGP SIGNATURE-----
-
---==_Exmh_1186766481_6376P--
+bye, Roman
