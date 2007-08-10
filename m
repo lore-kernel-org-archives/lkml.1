@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764556AbXHJKn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932760AbXHJKsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764556AbXHJKn6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 06:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbXHJKnq
+	id S932760AbXHJKsA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 06:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbXHJKrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 06:43:46 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:55154 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753557AbXHJKno (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 06:43:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DsdCmXB/zcCcF5XCeQbH09csW02WoBzeTeBFzn9UVAvD/KET6PnX1hXJL5uIJbbAApdzUBZIebJwemNVsQDRl5dg1+n61kAqtoFE5hEx5duPakP2REz9hZkEiKRvkj/L2I9n0b96vgbJhzjvhehb72mzX9s7IYN3rGyYMIbGO8I=
-Message-ID: <4bacf17f0708100343r950cf90kbf826e2afc826df5@mail.gmail.com>
-Date: Fri, 10 Aug 2007 12:43:43 +0200
-From: "=?ISO-8859-2?Q?Marcin_=A6lusarz?=" <marcin.slusarz@gmail.com>
-To: "Jarek Poplawski" <jarkao2@o2.pl>
-Subject: Re: [patch (testing)] Re: 2.6.20->2.6.21 - networking dies after random time
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070810071038.GA1764@ff.dom.local>
+	Fri, 10 Aug 2007 06:47:53 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:36673 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754339AbXHJKrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 06:47:52 -0400
+Date: Fri, 10 Aug 2007 11:47:49 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Lee.Schermerhorn@hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones pointer
+Message-ID: <20070810104749.GA14300@skynet.ie>
+References: <20070809210616.14702.73376.sendpatchset@skynet.skynet.ie> <20070809210716.14702.43074.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0708091431560.32324@schroedinger.engr.sgi.com> <20070809233300.GA31644@skynet.ie> <Pine.LNX.4.64.0708091843230.3185@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-References: <20070806070300.GA4509@elte.hu>
-	 <20070807082321.GB2120@ff.dom.local>
-	 <4bacf17f0708070237w19d184b3p7f74b53612edb9a6@mail.gmail.com>
-	 <20070807095246.GB3223@ff.dom.local>
-	 <20070807121339.GA3946@ff.dom.local>
-	 <4bacf17f0708080409t116b5c84ye60dff7da51d0fdf@mail.gmail.com>
-	 <20070808114243.GC2426@ff.dom.local>
-	 <20070809091919.GB2423@ff.dom.local>
-	 <4bacf17f0708092333n17e0ba19jf2c769531610868d@mail.gmail.com>
-	 <20070810071038.GA1764@ff.dom.local>
+In-Reply-To: <Pine.LNX.4.64.0708091843230.3185@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/8/10, Jarek Poplawski <jarkao2@o2.pl>:
-> (..)
-> I think, there is this one possible for your testing yet?:
-> Subject: [patch] genirq: temporary fix for level-triggered IRQ resend
-> Date: Wed, 8 Aug 2007 13:00:37 +0200
-I think I already tested this patch, but this thread is sooo big and I
-can't find my response...
+On (09/08/07 18:44), Christoph Lameter didst pronounce:
+> 
+> On Fri, 10 Aug 2007, Mel Gorman wrote:
+> 
+> > > > +#if defined(CONFIG_SMP) && INTERNODE_CACHE_SHIFT > ZONES_SHIFT
+> > > 
+> > > Is this necessary? ZONES_SHIFT is always <= 2 so it will work with 
+> > > any pointer. Why disable this for UP?
+> > > 
+> > 
+> > Caution in case the number of zones increases. There was no guarantee of
+> > zone alignment. It's the same reason I have a BUG_ON in the encode
+> > function so that if we don't catch problems at compile-time, it'll go
+> > BANG in a nice predictable fashion.
+> 
+> Caution would lead to a BUG_ON but why the #if? Why exclude UP?
 
-> If it's not a great problem it would be interesting to try this with
-> different CONFIG_HZ too e.g. you could start with 100 (I guess, you
-> tested very similar thing in 2.6.23-rc2 with 1000(?) already).
-My all tests were done on 2.6.22.1
+On x86_64 would have ZONE_DMA, ZONE_DMA32, ZONE_NORMAL, ZONE_HIGHMEM and
+ZONE_MOVABLE. On SMP, that's more than two bits worth and would fail t
+runtime. Well, it should at least I didn't actually try it out.
 
-Marcin
+However, I accept that the SMP check is less than than ideal. I considered
+comparing it against MAX_NR_ZONES but as it's an enum, it can't be checked
+at compile time. What else would make a better check?
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
