@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940504AbXHJQ73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964912AbXHJRFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940504AbXHJQ73 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 12:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764475AbXHJQ7V
+	id S964912AbXHJRFv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 13:05:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763018AbXHJRFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 12:59:21 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:57502 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760297AbXHJQ7U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 12:59:20 -0400
-Date: Fri, 10 Aug 2007 18:59:06 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: Aurelien Jarno <aurelien@aurel32.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc2-mm2
-Message-ID: <20070810165906.GI18938@stusta.de>
-References: <20070809224254.11f42716.akpm@linux-foundation.org> <20070810092334.GA15285@hall.aurel32.net> <26090.1186764049@turing-police.cc.vt.edu>
+	Fri, 10 Aug 2007 13:05:40 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:54886 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1756636AbXHJRFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 13:05:38 -0400
+Message-ID: <386765535.06914@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sat, 11 Aug 2007 01:05:34 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@osdl.org>, Ken Chen <kenchen@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 2/4] writeback: 3-queue based writeback schedule
+Message-ID: <20070810170534.GA5137@mail.ustc.edu.cn>
+Mail-Followup-To: Andrew Morton <akpm@osdl.org>,
+	Ken Chen <kenchen@google.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org
+References: <20070810063412.238042387@mail.ustc.edu.cn> <20070810063419.549052142@mail.ustc.edu.cn> <20070810164715.GA5508@mail.ustc.edu.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <26090.1186764049@turing-police.cc.vt.edu>
+In-Reply-To: <20070810164715.GA5508@mail.ustc.edu.cn>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 12:40:49PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Fri, 10 Aug 2007 11:23:34 +0200, Aurelien Jarno said:
-> > I have just tried it, and it fails to build for MIPS with the following
-> > error:
-> > 
-> >   CC      arch/mips/kernel/asm-offsets.s
-> > In file included from include/linux/sched.h:58,
-> >                  from arch/mips/kernel/asm-offsets.c:13:
-> > include/linux/mm_types.h:115: error: expected specifier-qualifier-list before 'pgprot_t'
-> > include/linux/mm_types.h:169: warning: 'struct file' declared inside parameter list
-> > include/linux/mm_types.h:169: warning: its scope is only this definition or declaration, which is probably not what you want
-> > include/linux/mm_types.h:175: error: expected specifier-qualifier-list before 'pgd_t'
-> > 
-> > 
-> > The trivial patch below fixes this problem.
-> 
-> Rather than adding it to an include/linux file, where it then gets dragged
-> in on *all* architectures, maybe we should investigate why it dies on MIPS,
-> and fix it for *that* arch?
+On Sat, Aug 11, 2007 at 12:47:15AM +0800, Fengguang Wu wrote:
+> In fact s_more_io is no longer necessary. We end up with a priority
 
-It must be included on *all* architectures, and the architectures where 
-asm/page.h wasn't by chance already included indirectly included by some 
-other header don't compile.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Ah sorry, s_more_io is still needed to keep the time-ordering. I was
+thinking of schedule fairness, in which sense only one cyclic list
+will be sufficient.
 
