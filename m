@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941806AbXHJT53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965358AbXHJUDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941806AbXHJT53 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 15:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757113AbXHJT5V
+	id S965358AbXHJUDf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 16:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758530AbXHJUD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 15:57:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51896 "EHLO ogre.sisk.pl"
+	Fri, 10 Aug 2007 16:03:27 -0400
+Received: from gw.goop.org ([64.81.55.164]:51707 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758530AbXHJT5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 15:57:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Meelis Roos <mroos@linux.ee>
-Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
-Date: Fri, 10 Aug 2007 22:06:57 +0200
-User-Agent: KMail/1.9.5
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
-References: <46B9F664.9060600@googlemail.com> <200708102124.01218.rjw@sisk.pl> <Pine.SOC.4.64.0708102220290.14225@math.ut.ee>
-In-Reply-To: <Pine.SOC.4.64.0708102220290.14225@math.ut.ee>
+	id S1756841AbXHJUD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 16:03:26 -0400
+Message-ID: <46BCC414.7060504@goop.org>
+Date: Fri, 10 Aug 2007 13:01:24 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+CC: Glauber de Oliveira Costa <glommer@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, lguest@ozlabs.org,
+       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
+       anthony@codemonkey.ws, Steven@smtp2.linux-foundation.org,
+       akpm@linux-foundation.org, virtualization@lists.linux-foundation.org,
+       mingo@elte.hu
+Subject: Re: [PATCH 23/25] [PATCH] paravirt hooks for arch initialization
+References: <11865467522495-git-send-email-gcosta@redhat.com>	 <11865468394005-git-send-email-gcosta@redhat.com>	 <11865468431616-git-send-email-gcosta@redhat.com>	 <200708081144.04119.ak@suse.de> <46BB5258.8040609@goop.org>	 <20070809190303.214e5457@the-village.bc.nu> <5d6222a80708101108y62ebfa26n9f47bfc52b48f4a8@mail.gmail.com> <46BCB3A5.8090504@goop.org> <46BCB9C5.4050103@redhat.com>
+In-Reply-To: <46BCB9C5.4050103@redhat.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708102206.58438.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 10 August 2007 21:29, Meelis Roos wrote:
-> > 1. Is that with the same .config you sent me previously?
-> 
-> Yes, just ran it through make oldconfig again, included below.
-> 
-> > 2. What exactly is the consequence of this warning?
-> 
-> I hope no big trouble (i.e. only a warning during make *config) but I 
-> haven't boot-tested rc2 and newer kernels yet because it's a remote 
-> machine. Will try some day now.
-> 
-> > 3. Can you please check if this patch changes anything:
-> > http://marc.info/?l=linux-mm-commits&m=118669680811669&w=2
-> 
-> Tried it on current git, kernel/power/Kconfig gave 2 rejects.
-> Tried on 2.6.23-rc2, still 2 rejects from the same file, .rej below:
+Glauber de Oliveira Costa wrote:
+> I think the idea you gave me earlier of using probe_kernel_address could
+> work. Xen/lguest/put_yours_here that won't use an ebda would then have
+> to unmap the page, to make sure a read would fault.
 
-Sorry, but:
+Hm, the memory might be mapped anyway, but we could make sure its all
+zero.  discover_ebda should be able to deal with that OK.
 
-rafael@albercik:~/src/linux-2.6> git-pull git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-Already up-to-date.
-rafael@albercik:~/src/linux-2.6> cat ~/pm-fix-dependencies-of-config_suspend-and-config_hibernation-updated-3x.patch | patch -p1
-patching file arch/x86_64/defconfig
-patching file include/linux/cpu.h
-patching file kernel/cpu.c
-patching file kernel/power/Kconfig
-
-How come?
-
-Greetings,
-Rafael
+    J
