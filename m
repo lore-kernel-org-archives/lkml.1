@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764275AbXHJRZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933778AbXHJR0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764275AbXHJRZs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 13:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755444AbXHJRZl
+	id S933778AbXHJR0q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 13:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755988AbXHJR0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 13:25:41 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:3207 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754471AbXHJRZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 13:25:40 -0400
-Date: Fri, 10 Aug 2007 19:25:57 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Michael Chang <thenewme91@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-In-Reply-To: <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0708101919270.1817@scrub.home>
-References: <Pine.LNX.4.64.0708010439050.1817@scrub.home>  <20070801150742.GA23670@elte.hu>
- <p73ps27npu0.fsf@bingen.suse.de>  <alpine.LFD.0.999.0708010924490.3582@woody.linux-foundation.org>
-  <20070801175004.GA17936@elte.hu>  <Pine.LNX.4.64.0708011955430.1817@scrub.home>
-  <20070801190556.GA1199@elte.hu>  <Pine.LNX.4.64.0708100037460.1817@scrub.home>
-  <20070810054948.GA5908@elte.hu>  <Pine.LNX.4.64.0708101459530.1817@scrub.home>
- <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 10 Aug 2007 13:26:36 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47827 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750866AbXHJR0e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 13:26:34 -0400
+Date: Fri, 10 Aug 2007 18:33:43 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: bzolnier@gmail.com, jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pata_artop: fix UDMA5 for AEC6280[R] and UDMA6 for
+ AEC6880[R]
+Message-ID: <20070810183343.6f1ebed0@the-village.bc.nu>
+In-Reply-To: <200708101438.l7AEcNna029762@harpo.it.uu.se>
+References: <200708101438.l7AEcNna029762@harpo.it.uu.se>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> Tested on ATP865 (1191:0008 rev 07) in a DS101 box (an ARM-based NAS).
+> Seems to work fine.
 
-On Fri, 10 Aug 2007, Michael Chang wrote:
+Its tested fairly hard on several NAS boxes (and still needs a fix for
+one)
 
-> On 8/10/07, Roman Zippel <zippel@linux-m68k.org> wrote:
-> > Is there any reason to believe my analysis is wrong?
-> 
-> Not yet, but if you give Ingo what he wants (as opposed to what you're
-> giving him) it'll be easier for him to answer what's going wrong, and
-> perhaps "fix" the problem to boot.
-> 
-> (The scripts gives info about CPU characteristics, interrupts,
-> modules, etc. -- you know, all those "unknown" variables.)
+> However, I'm gettting consistently lower read throughput with pata_artop
+> (13-19 MB/s) than with aec62xx (22 MB/s) on an oldish WD drive, and using
+> pata_artop triggers a WARN_ON(irqs_disabled()) in arch/arm/mm/consistent.c:
 
-He already has most of this information and the trace shows _exactly_ 
-what's going on. All this information should be more than enough to allow 
-an initial judgement whether my analysis is correct.
-Also none of this information is needed to explain the CFS logic a little 
-more, which I'm still waiting for...
+It would be nice to know why - is the cable detet coming out right on
+this ?
 
-bye, Roman
+> WARNING: at arch/arm/mm/consistent.c:364 dma_free_coherent()
+
+ARM has a problem with dma_free_coherent with IRQ disabled. Unfortunately
+under high load ARM decides to use dma_free_coherent inside
+dma_unmap_sg(). This as far as I can see is an ARM problem not a libata
+problem and one you can duplicate with other drivers under high load.
+
+If any ARM people can tell me what is going on and help fix it either in
+ARM or libata that would be great.
+
+Alan
