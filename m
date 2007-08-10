@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932685AbXHJBtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933033AbXHJBtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932685AbXHJBtF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 21:49:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757723AbXHJBsx
+	id S933033AbXHJBtk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 21:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757930AbXHJBtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 21:48:53 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36961 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757658AbXHJBsw (ORCPT
+	Thu, 9 Aug 2007 21:49:24 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43545
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757658AbXHJBtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 21:48:52 -0400
-Date: Thu, 9 Aug 2007 18:48:50 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Daniel Phillips <daniel.raymond.phillips@gmail.com>
-cc: Daniel Phillips <phillips@phunq.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>
-Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
-In-Reply-To: <4a5909270708091717n2f93fcb5i284d82edfd235145@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0708091844450.3185@schroedinger.engr.sgi.com>
-References: <20070806102922.907530000@chello.nl>  <200708061559.41680.phillips@phunq.net>
-  <Pine.LNX.4.64.0708061605400.5090@schroedinger.engr.sgi.com> 
- <200708061649.56487.phillips@phunq.net>  <Pine.LNX.4.64.0708071513290.3683@schroedinger.engr.sgi.com>
-  <4a5909270708080037n32be2a73k5c28d33bb02f770b@mail.gmail.com> 
- <Pine.LNX.4.64.0708081106230.12652@schroedinger.engr.sgi.com> 
- <4a5909270708091141tb259eddyb2bba1270751ef1@mail.gmail.com> 
- <Pine.LNX.4.64.0708091146410.25220@schroedinger.engr.sgi.com>
- <4a5909270708091717n2f93fcb5i284d82edfd235145@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 9 Aug 2007 21:49:21 -0400
+Date: Thu, 09 Aug 2007 18:49:21 -0700 (PDT)
+Message-Id: <20070809.184921.11594412.davem@davemloft.net>
+To: yoshfuji@linux-ipv6.org
+Cc: ebiederm@xmission.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, devel@openvz.org, adobriyan@sw.ru,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 04/10] sysctl: Fix neighbour table sysctls.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070810.104710.28739250.yoshfuji@linux-ipv6.org>
+References: <m14pj89pmt.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1zm108axi.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070810.104710.28739250.yoshfuji@linux-ipv6.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, Daniel Phillips wrote:
+From: YOSHIFUJI Hideaki / 吉藤英明 <yoshfuji@linux-ipv6.org>
+Date: Fri, 10 Aug 2007 10:47:10 +0900 (JST)
 
-> You can fix reclaim as much as you want and the basic deadlock will
-> still not go away.  When you finally do get to writing something out,
-> memory consumers in the writeout path are going to cause problems,
-> which this patch set fixes.
+> I disagree.  It is bad to remove existing interface.
+> Ditto for other patches.
 
-We currently also do *not* write out immediately. I/O is queued when 
-submitted so it does *not* reduce memory. It is better to actually delay 
-writeout until you have thrown out clean pages. At that point the free 
-memory is at its high point. If memory goes below the high point again by 
-these writes then we can again reclaim until things are right.
+I think perhaps you misunderstand what Eric is doing.
 
-> Agreed that the idea of mempool always sounded strange, and we show
-> how to get rid of them, but that is not the immediate purpose of this
-> patch set.
+sys_sysctl() isn't working properly for these cases and it is both a
+deprecated interface and not worth the pain of adding support
+in these cases.
 
-Ok mempools are unrelated. The allocations problems that this patch 
-addresses can be fixed by making reclaim more intelligent. This may likely 
-make mempools less of an issue in the kernel. If we can reclaim in an 
-emergency even in ATOMIC contexts then things get much easier.
-
+The fact that nobody complains that none of this stuff works
+via sys_sysctl() to me proves that it is never used.
