@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763967AbXHJXQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933617AbXHJXTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763967AbXHJXQZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 19:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbXHJXQT
+	id S933617AbXHJXTV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 19:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755753AbXHJXTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 19:16:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48511 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754040AbXHJXQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 19:16:17 -0400
-Message-ID: <46BCF19E.5000702@redhat.com>
-Date: Fri, 10 Aug 2007 19:15:42 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
+	Fri, 10 Aug 2007 19:19:14 -0400
+Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:47494 "EHLO
+	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755363AbXHJXTN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 19:19:13 -0400
+Date: Fri, 10 Aug 2007 16:19:12 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell4.speakeasy.net
+To: Markus Rechberger <mrechberger@gmail.com>
+cc: Manu Abraham <abraham.manu@gmail.com>, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>
+Subject: Re: [v4l-dvb-maintainer] [2.6 patch] dvb_frontend_ioctl(): fix
+ check-after-use
+In-Reply-To: <d9def9db0708101047u27c939a4ve57b28cf4319aaf2@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0708101546170.26791@shell4.speakeasy.net>
+References: <20070730222817.GE3972@stusta.de>
+ <1a297b360707312052l14adb72el8ee59c74b7757605@mail.gmail.com>
+ <d9def9db0708101047u27c939a4ve57b28cf4319aaf2@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Luck, Tony" <tony.luck@intel.com>, Andreas Schwab <schwab@suse.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com
-Subject: Re: [PATCH 9/24] make atomic_read() behave consistently on ia64
-References: <20070809135107.GA15985@shell.boston.redhat.com><617E1C2C70743745A92448908E030B2A02213B3C@scsmsx411.amr.corp.intel.com><46BCC1AF.5050204@redhat.com><617E1C2C70743745A92448908E030B2A0224C777@scsmsx411.amr.corp.intel.com> <jewsw3oyl8.fsf@sykes.suse.de> <617E1C2C70743745A92448908E030B2A0224C88B@scsmsx411.amr.corp.intel.com> <46BCE9F8.4060009@redhat.com> <617E1C2C70743745A92448908E030B2A0224C8D7@scsmsx411.amr.corp.intel.com> <alpine.LFD.0.999.0708101607130.30176@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0708101607130.30176@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Fri, 10 Aug 2007, Luck, Tony wrote:
->> Here are the functions in which they occur in the object file. You
->> may have to chase down some inlining to find the function that
->> actually uses atomic_*().
-> 
-> Could you just make the "atomic_read()" and "atomic_set()" functions be 
-> inline functions instead?
-> 
-> That way you get nice compiler warnings when you pass the wrong kind of 
-> object around.  So
-> 
-> 	static void atomic_set(atomic_t *p, int value)
-> 	{
-> 		*(volatile int *)&p->value = value;
-> 	}
-> 
-> 	static int atomic_read(atomic_t *p)
-> 	{
-> 		return *(volatile int *)&p->value;
-> 	}
-> 
-> etc...
+On Fri, 10 Aug 2007, Markus Rechberger wrote:
+> On 8/1/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> > On 7/31/07, Adrian Bunk <bunk@stusta.de> wrote:
+> > > The Coverity checker spotted that we have already oops'ed if "fe" was
+> > NULL.
+> > >
+> > > --- linux-2.6.23-rc1-mm1/drivers/media/dvb/dvb-core/dvb_frontend.c.old
+> > > +++ linux-2.6.23-rc1-mm1/drivers/media/dvb/dvb-core/dvb_frontend.c
+> > > @@ -706,11 +706,11 @@ static int dvb_frontend_ioctl(struct ino
+> > > -       if (!fe || fepriv->exit)
+> > > +       if (fepriv->exit)
+> > >                 return -ENODEV;
+>
+> This issue has been known for a while including some other problems at
+> that part.
+>
+> http://article.gmane.org/gmane.linux.drivers.dvb/35351/match=patch+dvb_net+hotplugging+support
+>
+> this includes a link where this and more got discussed in May.
 
-I'll do this for the whole patchset.  Stay tuned for the resubmit.
+For dvb_net_close, I like the patch I already posted better.  To fix the
+check-after-use, it's not "use" part that's the problem, it's the "check" part
+that isn't necessary.
 
-	-- Chris
+I traced the dvb-net code, http://article.gmane.org/gmane.linux.kernel/543689,
+and I'm sure that dvbdev can't be NULL.
+
+My patch also deletes a few pieces of duplicated code by calling
+dvb_generic_release().
+
+The only problem is that practically no one uses dvb-net, so it's very hard to
+test these patches.
+
+In all the dvb code, were is the locking for device open and release?  I don't
+see it.  What is preventing two threads from trying to open and/or close the
+same dvb device at the same time?
