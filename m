@@ -1,141 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935188AbXHJMBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933473AbXHJMEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935188AbXHJMBE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 08:01:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938020AbXHJMAu
+	id S933473AbXHJMEn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 08:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756806AbXHJMEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 08:00:50 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:19082 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937953AbXHJMAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 08:00:48 -0400
-Date: Fri, 10 Aug 2007 15:48:20 +0400
-From: xemul@openvz.org
-To: akpm@osdl.org
-Cc: xemul@openvz.org, devel@openvz.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, oleg@tv-sign.ru, sukadev@us.ibm.com
-Subject: [PATCH 15/20] Initialize the namespace's proc_mnt
-Message-ID: <46BC5084.mailGKV11N3RE@openvz.org>
-User-Agent: nail 11.4 8/29/04
+	Fri, 10 Aug 2007 08:04:35 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:29937 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753799AbXHJMEe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 08:04:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tX2L+3TJwbWEJYCxGsSjmt3WvM9ITrahnF4mnH8M1euZAqp26nUtlXGLJK54lTgZ0TUmoKxJfFVe6Dwi/KJWKgYz0C2a5tqC77vEgeJL92gAEYpS4JsCe3/6/HQpHC0Md+7J81olnulaE3eHvyqaDA8f5ZEdImHBWBHQLwyazSw=
+Message-ID: <6bffcb0e0708100504n7fbafb5bt6a35165277dc767a@mail.gmail.com>
+Date: Fri, 10 Aug 2007 14:04:33 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Paolo Ornati" <ornati@fastwebnet.it>
+Subject: Re: WARNING: at arch/x86_64/kernel/smp.c:379 smp_call_function_single()
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Avi Kivity" <avi@qumranet.com>, kvm-devel@lists.sourceforge.net
+In-Reply-To: <20070810134140.2806b587@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070810134140.2806b587@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The namespace's proc_mnt must be kern_mount-ed to make this
-pointer always valid, independently of whether the user space
-mounted the proc or not. This solves raced in proc_flush_task,
-etc. with the proc_mnt switching from NULL to not-NULL.
+Hi,
 
-The initialization is done after the init's pid is created and
-hashed to make proc_get_sb() finr it and get for root inode.
+On 10/08/07, Paolo Ornati <ornati@fastwebnet.it> wrote:
+> Just got this warning during suspend2ram (2.6.23-rc2-gac078602).
+>
+> Config and full dmesg attached.
+>
+>
+> [  756.707601] Disabling non-boot CPUs ...
+> [  756.712034] kvm: disabling virtualization on CPU1
+> [  756.712037] WARNING: at arch/x86_64/kernel/smp.c:379 smp_call_function_single()
+> [  756.712039]
+> [  756.712039] Call Trace:
+> [  756.712046]  [<ffffffff8021d159>] smp_call_function_single+0x119/0x120
+> [  756.712050]  [<ffffffff80542169>] thread_return+0x1bf/0x626
+> [  756.712054]  [<ffffffff80234b5b>] sys_sched_yield+0x2b/0x80
+> [  756.712057]  [<ffffffff8043684b>] kvm_cpu_hotplug+0x4b/0xa0
+> [  756.712060]  [<ffffffff80247c83>] notifier_call_chain+0x53/0x80
+> [  756.712062]  [<ffffffff80247d09>] __raw_notifier_call_chain+0x9/0x10
+> [  756.712065]  [<ffffffff80247d21>] raw_notifier_call_chain+0x11/0x20
+> [  756.712068]  [<ffffffff8026184b>] take_cpu_down+0x1b/0x30
+> [  756.712071]  [<ffffffff802699d2>] do_stop+0xd2/0x150
+> [  756.712073]  [<ffffffff80269900>] do_stop+0x0/0x150
+> [  756.712076]  [<ffffffff8024f84d>] kthread+0x4d/0x80
+> [  756.712079]  [<ffffffff8020cb28>] child_rip+0xa/0x12
+> [  756.712081]  [<ffffffff8020c23c>] restore_args+0x0/0x30
+> [  756.712084]  [<ffffffff8024f800>] kthread+0x0/0x80
+> [  756.712086]  [<ffffffff8020cb1e>] child_rip+0x0/0x12
+> [  756.712087]
+> [  756.815693] CPU 1 is now offline
+> [  756.815697] lockdep: not fixing up alternatives.
+> [  756.819276] CPU1 is down
+>
 
-Sice the namespace holds the vfsmnt, vfsmnt holds the superblock
-and the superblock holds the namespace we must explicitly break
-this circle to destroy all the stuff. This is done after the init
-of the namespace dies. Running a few steps forward - when init
-exits it will kill all its children, so no proc_mnt will be
-needed after its death.
+Added to KR list, thanks for the report.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-Cs: Oleg Nesterov <oleg@tv-sign.ru>
+Regrads,
+Michal
 
----
-
- fs/proc/base.c          |    4 ++++
- fs/proc/root.c          |   16 ++++++++++++++++
- include/linux/proc_fs.h |   12 ++++++++++++
- kernel/fork.c           |    7 +++++++
- 4 files changed, 39 insertions(+)
-
---- ./fs/proc/base.c.ve12	2007-08-06 14:58:51.000000000 +0400
-+++ ./fs/proc/base.c	2007-08-06 14:58:51.000000000 +0400
-@@ -2170,6 +2170,10 @@ out:
- 		proc_flush_task_mnt(upid->ns->proc_mnt, upid->nr,
- 				leader ? 0 : tgid->numbers[i].nr);
- 	}
-+
-+	upid = &pid->numbers[pid->level];
-+	if (upid->nr == 1)
-+		pid_ns_release_proc(upid->ns);
- }
- 
- static struct dentry *proc_pid_instantiate(struct inode *dir,
---- ./fs/proc/root.c.ve12	2007-08-06 14:54:42.000000000 +0400
-+++ ./fs/proc/root.c	2007-08-06 14:58:51.000000000 +0400
-@@ -153,6 +212,22 @@ struct proc_dir_entry proc_root = {
- 	.parent		= &proc_root,
- };
- 
-+int pid_ns_prepare_proc(struct pid_namespace *ns)
-+{
-+	struct vfsmount *mnt;
-+
-+	mnt = kern_mount_data(&proc_fs_type, ns);
-+	if (IS_ERR(mnt))
-+		return PTR_ERR(mnt);
-+
-+	return 0;
-+}
-+
-+void pid_ns_release_proc(struct pid_namespace *ns)
-+{
-+	mntput(ns->proc_mnt);
-+}
-+
- EXPORT_SYMBOL(proc_symlink);
- EXPORT_SYMBOL(proc_mkdir);
- EXPORT_SYMBOL(create_proc_entry);
---- ./include/linux/proc_fs.h.ve12	2007-08-06 14:58:51.000000000 +0400
-+++ ./include/linux/proc_fs.h	2007-08-06 14:58:51.000000000 +0400
-@@ -143,6 +144,9 @@ extern const struct file_operations proc
- extern const struct file_operations proc_kmsg_operations;
- extern const struct file_operations ppc_htab_operations;
- 
-+extern int pid_ns_prepare_proc(struct pid_namespace *ns);
-+extern void pid_ns_release_proc(struct pid_namespace *ns);
-+
- /*
-  * proc_tty.c
-  */
-@@ -250,6 +254,15 @@ static inline void proc_tty_unregister_d
- 
- extern struct proc_dir_entry proc_root;
- 
-+static inline int pid_ns_prepare_proc(struct pid_namespace *ns)
-+{
-+	return 0;
-+}
-+
-+static inline void pid_ns_release_proc(struct pid_namespace *ns)
-+{
-+}
-+
- #endif /* CONFIG_PROC_FS */
- 
- #if !defined(CONFIG_PROC_KCORE)
---- ./kernel/fork.c.ve12	2007-08-06 14:58:51.000000000 +0400
-+++ ./kernel/fork.c	2007-08-06 14:58:51.000000000 +0400
-@@ -50,6 +50,7 @@
- #include <linux/taskstats_kern.h>
- #include <linux/random.h>
- #include <linux/tty.h>
-+#include <linux/proc_fs.h>
- 
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -1134,6 +1135,12 @@ static struct task_struct *copy_process(
- 		pid = alloc_pid(task_active_pid_ns(p));
- 		if (!pid)
- 			goto bad_fork_cleanup_namespaces;
-+
-+		if (clone_flags & CLONE_NEWPID) {
-+			retval = pid_ns_prepare_proc(task_active_pid_ns(p));
-+			if (retval < 0)
-+				goto bad_fork_free_pid;
-+		}
- 	}
- 
- 	p->pid = pid_nr(pid);
-
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
