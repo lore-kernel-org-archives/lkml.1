@@ -1,153 +1,283 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbXHJGfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbXHJGgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759997AbXHJGfq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 02:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbXHJGe2
+	id S1759561AbXHJGgL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 02:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759306AbXHJGe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 02:34:28 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:53349 "HELO ustc.edu.cn"
+	Fri, 10 Aug 2007 02:34:57 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:53351 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1753604AbXHJGeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753292AbXHJGeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 10 Aug 2007 02:34:25 -0400
-Message-ID: <386727659.45705@ustc.edu.cn>
+Message-ID: <386727659.72627@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070810063419.454829766@mail.ustc.edu.cn>
+Message-Id: <20070810063419.549052142@mail.ustc.edu.cn>
 References: <20070810063412.238042387@mail.ustc.edu.cn>
 User-Agent: quilt/0.46-1
-Date: Fri, 10 Aug 2007 14:34:13 +0800
+Date: Fri, 10 Aug 2007 14:34:14 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
 Cc: Ken Chen <kenchen@google.com>, Andrew Morton <akpm@linux-foundation.org>
 Cc: Miklos Szeredi <miklos@szeredi.hu>
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org
-Subject: [PATCH 1/4] writeback: check time-ordering of s_io and s_more_io
-Content-Disposition: inline; filename=io-dirty-check.patch
+Subject: [PATCH 2/4] writeback: 3-queue based writeback schedule
+Content-Disposition: inline; filename=io-dirty-order-fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It helps catch bugs like this:
+Properly manage the 3 queues of sb->s_dirty/s_io/s_more_io so that
+	- time-ordering of dirtied_when can be easily maintained
+	- writeback can continue from where previous run left out
 
-[  738.645689] fs/fs-writeback.c:535: s_dirty got screwed up
-[  738.646114] ffff8100028532b0:4295082249
-[  738.646255] ffff810002856858:4295082259
-[  738.646388] ffff810002831b58:4295082667
-[  738.646520] ffff81000281b1b0:4295082671
-[  738.646651] ffff81000281d798:4295083507
-========================================== s_dirty/s_io
-[  738.646783] ffff81000287e998:4295081393
-[  738.646916] ffff81000287e430:4295081403
-[  738.647068] ffff8100028789d8:4295081409
-[  738.647212] ffff810002878470:4295081415
-[  738.647358] ffff810002884a18:4295081421
-[  738.647503] ffff8100028844b0:4295081427
-[  738.647648] ffff810002890a58:4295081433
-[  738.647782] ffff8100028904f0:4295081441
-[  738.647894] ffff81000288da98:4295081449
-[  738.648011] ffff81000288d530:4295081455
-[  738.648123] ffff810002897ad8:4295081461
-[  738.648235] ffff810002897570:4295081469
-[  738.648347] ffff810002894b18:4295081477
-[  738.648459] ffff8100028945b0:4295081483
+The majority work has been done by Andrew Morton and Ken Chen,
+this patch just clarifies the roles of the 3 queues:
+- s_dirty   for io delay(up to dirty_expire_interval)
+- s_io      for io run(a full scan of s_io may involve multiple runs)
+- s_more_io for io continuation
 
-The buggy line 534 is
- 			list_splice_init(&sb->s_io, sb->s_dirty.prev);
+The following paradigm shows the data flow.
 
-This is not the only time-ordering bug in linux-2.6.23-rc1-mm2.
-Let's fix them all.
+                            requeue on new scan(empty s_io)
+                            +-----------------------------+
+                            |                             |
+ dirty           old        |                             |
+ inodes          enough     V                             |
+ ======> s_dirty ======> s_io                             |
+         ^                |     requeue io                |
+         |                +---------------------> s_more_io
+         |   hold back    |
+         +----------------+----------> disk write requests
+
+sb->s_dirty: a FIFO queue
+- s_dirty hosts not-yet-expired(recently dirtied) dirty inodes
+- once expired, inodes will be moved out of s_dirty and *never put back*
+  (unless for some reason we have to hold on the inode for some time)
+
+sb->s_io and sb->s_more_io: a cyclic queue scanned for io
+- on each run of generic_sync_sb_inodes(), some more s_dirty inodes may be
+  appended to s_io
+- on each full scan of s_io, all s_more_io inodes will be moved back to s_io
+- large files that cannot be synced in one run will be moved to s_more_io for
+  retry on next full scan
+
+inode->dirtied_when
+- inode->dirtied_when is updated to the *current* jiffies on pushing into
+  s_dirty, and is never changed in other cases.
+- time-ordering thus can be simply ensured while moving inodes between lists,
+  since (time order == enqueue order)
 
 Cc: Ken Chen <kenchen@google.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
 ---
- fs/fs-writeback.c |   37 +++++++++++++++++++++++++++++++------
- 1 file changed, 31 insertions(+), 6 deletions(-)
+ fs/fs-writeback.c |  106 +++++++++++++++++++++-----------------------
+ 1 file changed, 52 insertions(+), 54 deletions(-)
 
 --- linux-2.6.23-rc1-mm2.orig/fs/fs-writeback.c
 +++ linux-2.6.23-rc1-mm2/fs/fs-writeback.c
-@@ -26,12 +26,12 @@
+@@ -93,6 +93,15 @@ static void __check_dirty_inode_list(str
+ 						__FILE__, __LINE__);	\
+ 	} while (0)
  
- int sysctl_inode_debug __read_mostly;
++
++int sb_has_dirty_inodes(struct super_block *sb)
++{
++	return !list_empty(&sb->s_dirty) ||
++	       !list_empty(&sb->s_io) ||
++	       !list_empty(&sb->s_more_io);
++}
++EXPORT_SYMBOL(sb_has_dirty_inodes);
++
+ /**
+  *	__mark_inode_dirty -	internal function
+  *	@inode: inode to mark
+@@ -187,7 +196,7 @@ void __mark_inode_dirty(struct inode *in
+ 			goto out;
  
--static int __check(struct super_block *sb, int print_stuff)
-+static int __check(struct list_head *head, int print_stuff)
- {
--	struct list_head *cursor = &sb->s_dirty;
-+	struct list_head *cursor = head;
- 	unsigned long dirtied_when = 0;
- 
--	while ((cursor = cursor->prev) != &sb->s_dirty) {
-+	while ((cursor = cursor->prev) != head) {
- 		struct inode *inode = list_entry(cursor, struct inode, i_list);
- 		if (print_stuff) {
- 			printk("%p:%lu\n", inode, inode->dirtied_when);
-@@ -51,14 +51,32 @@ static void __check_dirty_inode_list(str
- 	if (!sysctl_inode_debug)
- 		return;
- 
--	if (__check(sb, 0)) {
-+	if (__check(&sb->s_dirty, 0)) {
- 		sysctl_inode_debug = 0;
- 		if (inode)
- 			printk("%s:%d: s_dirty got screwed up.  inode=%p:%lu\n",
- 					file, line, inode, inode->dirtied_when);
- 		else
- 			printk("%s:%d: s_dirty got screwed up\n", file, line);
--		__check(sb, 1);
-+		__check(&sb->s_dirty, 1);
-+	}
-+	if (__check(&sb->s_io, 0)) {
-+		sysctl_inode_debug = 0;
-+		if (inode)
-+			printk("%s:%d: s_io got screwed up.  inode=%p:%lu\n",
-+					file, line, inode, inode->dirtied_when);
-+		else
-+			printk("%s:%d: s_io got screwed up\n", file, line);
-+		__check(&sb->s_io, 1);
-+	}
-+	if (__check(&sb->s_more_io, 0)) {
-+		sysctl_inode_debug = 0;
-+		if (inode)
-+			printk("%s:%d: s_more_io got screwed up.  inode=%p:%lu\n",
-+					file, line, inode, inode->dirtied_when);
-+		else
-+			printk("%s:%d: s_more_io got screwed up\n", file, line);
-+		__check(&sb->s_more_io, 1);
- 	}
+ 		/*
+-		 * If the inode was already on s_dirty or s_io, don't
++		 * If the inode was already on s_dirty/s_io/s_more_io, don't
+ 		 * reposition it (that would break s_dirty time-ordering).
+ 		 */
+ 		if (!was_dirty) {
+@@ -211,33 +220,20 @@ static int write_inode(struct inode *ino
  }
  
-@@ -223,7 +241,9 @@ static void redirty_tail(struct inode *i
+ /*
+- * Redirty an inode: set its when-it-was dirtied timestamp and move it to the
+- * furthest end of its superblock's dirty-inode list.
+- *
+- * Before stamping the inode's ->dirtied_when, we check to see whether it is
+- * already the most-recently-dirtied inode on the s_dirty list.  If that is
+- * the case then the inode must have been redirtied while it was being written
+- * out and we don't reset its dirtied_when.
++ * Enqueue a newly dirtied inode:
++ * 	- set its when-it-was dirtied timestamp
++ * 	- move it to the furthest end of its superblock's dirty-inode list
+  */
+ static void redirty_tail(struct inode *inode)
+ {
+-	struct super_block *sb = inode->i_sb;
+-
+ 	check_dirty_inode(inode);
+-	if (!list_empty(&sb->s_dirty)) {
+-		struct inode *tail_inode;
+-
+-		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
+-		if (!time_after_eq(inode->dirtied_when,
+-				tail_inode->dirtied_when))
+-			inode->dirtied_when = jiffies;
+-	}
+-	list_move(&inode->i_list, &sb->s_dirty);
++	inode->dirtied_when = jiffies;
++	list_move(&inode->i_list, &inode->i_sb->s_dirty);
+ 	check_dirty_inode(inode);
+ }
+ 
+ /*
+- * requeue inode for re-scanning after sb->s_io list is exhausted.
++ * Queue an inode for more io in the next full scan of s_io.
   */
  static void requeue_io(struct inode *inode)
  {
-+	check_dirty_inode(inode);
- 	list_move(&inode->i_list, &inode->i_sb->s_more_io);
-+	check_dirty_inode(inode);
+@@ -246,6 +242,32 @@ static void requeue_io(struct inode *ino
+ 	check_dirty_inode(inode);
  }
  
++/*
++ * Queue all possible inodes for a run of io.
++ * The resulting s_io is in order of:
++ * 	- inodes queued for more io from s_more_io(once for a full scan of s_io)
++ * 	- possible remaining inodes in s_io(was a partial scan)
++ * 	- dirty inodes (old enough) from s_dirty
++ */
++static void queue_inodes_for_io(struct super_block *sb,
++				unsigned long *older_than_this)
++{
++	check_dirty_inode_list(sb);
++	if (list_empty(&sb->s_io))
++		list_splice_init(&sb->s_more_io, &sb->s_io); /* eldest first */
++	check_dirty_inode_list(sb);
++	while (!list_empty(&sb->s_dirty)) {
++		struct inode *inode = list_entry(sb->s_dirty.prev,
++						struct inode, i_list);
++		/* Was this inode dirtied too recently? */
++		if (older_than_this &&
++			time_after(inode->dirtied_when, *older_than_this))
++			break;
++		list_move(&inode->i_list, &sb->s_io);
++	}
++	check_dirty_inode_list(sb);
++}
++
  static void inode_sync_complete(struct inode *inode)
-@@ -483,7 +503,9 @@ int generic_sync_sb_inodes(struct super_
- 		/* Was this inode dirtied too recently? */
- 		if (wbc->older_than_this && time_after(inode->dirtied_when,
- 						*wbc->older_than_this)) {
-+			check_dirty_inode_list(sb);
- 			list_splice_init(&sb->s_io, sb->s_dirty.prev);
-+			check_dirty_inode_list(sb);
- 			break;
+ {
+ 	/*
+@@ -305,7 +327,7 @@ __sync_single_inode(struct inode *inode,
+ 			/*
+ 			 * We didn't write back all the pages.  nfs_writepages()
+ 			 * sometimes bales out without doing anything. Redirty
+-			 * the inode.  It is moved from s_io onto s_dirty.
++			 * the inode; Move it from s_io onto s_more_io/s_dirty.
+ 			 */
+ 			/*
+ 			 * akpm: if the caller was the kupdate function we put
+@@ -318,10 +340,9 @@ __sync_single_inode(struct inode *inode,
+ 			 */
+ 			if (wbc->for_kupdate) {
+ 				/*
+-				 * For the kupdate function we leave the inode
+-				 * at the head of sb_dirty so it will get more
+-				 * writeout as soon as the queue becomes
+-				 * uncongested.
++				 * For the kupdate function we move the inode
++				 * to s_more_io so it will get more writeout as
++				 * soon as the queue becomes uncongested.
+ 				 */
+ 				inode->i_state |= I_DIRTY_PAGES;
+ 				requeue_io(inode);
+@@ -380,9 +401,9 @@ __writeback_single_inode(struct inode *i
+ 		/*
+ 		 * We're skipping this inode because it's locked, and we're not
+ 		 * doing writeback-for-data-integrity.  Move it to the head of
+-		 * s_dirty so that writeback can proceed with the other inodes
++		 * s_more_io so that writeback can proceed with the other inodes
+ 		 * on s_io.  We'll have another go at writing back this inode
+-		 * when the s_dirty iodes get moved back onto s_io.
++		 * when we completed a full scan of s_io.
+ 		 */
+ 		requeue_io(inode);
+ 
+@@ -444,16 +465,12 @@ __writeback_single_inode(struct inode *i
+ int generic_sync_sb_inodes(struct super_block *sb,
+ 			struct writeback_control *wbc)
+ {
+-	const unsigned long start = jiffies;	/* livelock avoidance */
+ 	int ret = 0;
+ 
+ 	spin_lock(&inode_lock);
+ 
+-	if (!wbc->for_kupdate || list_empty(&sb->s_io)) {
+-		check_dirty_inode_list(sb);
+-		list_splice_init(&sb->s_dirty, &sb->s_io);
+-		check_dirty_inode_list(sb);
+-	}
++	if (!wbc->for_kupdate || list_empty(&sb->s_io))
++		queue_inodes_for_io(sb, wbc->older_than_this);
+ 
+ 	while (!list_empty(&sb->s_io)) {
+ 		int err;
+@@ -496,19 +513,6 @@ int generic_sync_sb_inodes(struct super_
+ 			continue;		/* blockdev has wrong queue */
  		}
  
-@@ -520,8 +542,11 @@ int generic_sync_sb_inodes(struct super_
+-		/* Was this inode dirtied after sync_sb_inodes was called? */
+-		if (time_after(inode->dirtied_when, start))
+-			break;
+-
+-		/* Was this inode dirtied too recently? */
+-		if (wbc->older_than_this && time_after(inode->dirtied_when,
+-						*wbc->older_than_this)) {
+-			check_dirty_inode_list(sb);
+-			list_splice_init(&sb->s_io, sb->s_dirty.prev);
+-			check_dirty_inode_list(sb);
+-			break;
+-		}
+-
+ 		/* Is another pdflush already flushing this queue? */
+ 		if (current_is_pdflush() && !writeback_acquire(bdi))
+ 			break;
+@@ -541,12 +545,6 @@ int generic_sync_sb_inodes(struct super_
+ 		if (wbc->nr_to_write <= 0)
  			break;
  	}
- 
--	if (list_empty(&sb->s_io))
-+	if (list_empty(&sb->s_io)) {
-+		check_dirty_inode_list(sb);
- 		list_splice_init(&sb->s_more_io, &sb->s_io);
-+		check_dirty_inode_list(sb);
-+	}
+-
+-	if (list_empty(&sb->s_io)) {
+-		check_dirty_inode_list(sb);
+-		list_splice_init(&sb->s_more_io, &sb->s_io);
+-		check_dirty_inode_list(sb);
+-	}
  	spin_unlock(&inode_lock);
  	return ret;		/* Leave any unwritten inodes on s_io */
  }
+@@ -566,7 +564,7 @@ static int sync_sb_inodes(struct super_b
+  * Note:
+  * We don't need to grab a reference to superblock here. If it has non-empty
+  * ->s_dirty it's hadn't been killed yet and kill_super() won't proceed
+- * past sync_inodes_sb() until both the ->s_dirty and ->s_io lists are
++ * past sync_inodes_sb() until the ->s_dirty/s_io/s_more_io lists are all
+  * empty. Since __sync_single_inode() regains inode_lock before it finally moves
+  * inode from superblock lists we are OK.
+  *
+@@ -589,7 +587,7 @@ int writeback_inodes(struct writeback_co
+ restart:
+ 	sb = sb_entry(super_blocks.prev);
+ 	for (; sb != sb_entry(&super_blocks); sb = sb_entry(sb->s_list.prev)) {
+-		if (!list_empty(&sb->s_dirty) || !list_empty(&sb->s_io)) {
++		if (sb_has_dirty_inodes(sb)) {
+ 			/* we're making our own get_super here */
+ 			sb->s_count++;
+ 			spin_unlock(&sb_lock);
 
 -- 
