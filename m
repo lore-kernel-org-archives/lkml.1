@@ -1,50 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940207AbXHJQpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940608AbXHJQrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940207AbXHJQpu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 12:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765174AbXHJQpm
+	id S940608AbXHJQrJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 12:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932531AbXHJQqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 12:45:42 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53423 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759908AbXHJQpk (ORCPT
+	Fri, 10 Aug 2007 12:46:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35586 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935524AbXHJQqx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 12:45:40 -0400
-Message-ID: <46BC962B.9030209@zytor.com>
-Date: Fri, 10 Aug 2007 09:45:31 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Mikko Rapeli <mikko.rapeli@iki.fi>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: early boot lockup with 2.6.23-rc1
-References: <20070808223120.GA2286@nalle> <46BAC14E.9040604@zytor.com> <20070809182316.GA2289@nalle> <20070809194348.GA2287@nalle> <46BB94B1.9020307@zytor.com> <20070810163324.GA1916@nalle>
-In-Reply-To: <20070810163324.GA1916@nalle>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 10 Aug 2007 12:46:53 -0400
+Date: Fri, 10 Aug 2007 09:46:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+Cc: "Miles Lane" <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       "shannon.nelson@intel.com" <shannon.nelson@intel.com>,
+       "Luck, Tony" <tony.luck@intel.com>
+Subject: Re: 2.6.23-rc2-mm1 -- drivers/dma/ioat_dca.c:177: error: implicit
+ declaration of function ___cpu_physical_id___
+Message-Id: <20070810094601.fa436707.akpm@linux-foundation.org>
+In-Reply-To: <200708101527.42628.ak@suse.de>
+References: <a44ae5cd0708090718v5dc19572k69087f170f9ba857@mail.gmail.com>
+	<20070809115258.5372f76e.akpm@linux-foundation.org>
+	<200708101527.42628.ak@suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikko Rapeli wrote:
+On Fri, 10 Aug 2007 15:27:42 +0200 Andi Kleen <ak@suse.de> wrote:
+
+> On Thursday 09 August 2007 20:52:58 Andrew Morton wrote:
+> > On Thu, 9 Aug 2007 10:18:15 -0400
+> > "Miles Lane" <miles.lane@gmail.com> wrote:
+> > 
+> > >   CC      drivers/dma/ioat_dca.o
+> > > drivers/dma/ioat_dca.c: In function 'ioat_dca_get_tag':
+> > > drivers/dma/ioat_dca.c:177: error: implicit declaration of function
+> > > 'cpu_physical_id'
+> > 
+> > Looks like cpu_physical_id() doesn't get implemented if CONFIG_SMP=n.
+> > 
+> > Either ioat needs to stop using cpu_physical_id() if SMP=n, or the
+> > supported architectures (i386, x86_64, ia64) should provide a non-SMP
+> > version of cpu_physical_id().  Preferably the latter, I'd say.
 > 
-> Nice, 2.6.23-rc2 with edd=skipmbr boots just fine.
 > 
->> Anyway, if that doesn't solve it:
->>
->> In main() in arch/i386/boot/main.c, please comment out everything from
->> query_mca() to query_edd(), inclusively.
-> 
-> This didn't help.
+> It doesn't make much sense in smp.h because there is not really
+> a concept of physical id on most architectures i expect. Better 
+> to put it into the individual asm files.
 > 
 
-Let me get this straight... "edd=skipmbr" boots fine, but commenting out
-the call to query_edd() didn't?  Could you please try that (and, I
-guess, only that), and make sure everything necessary is rebuild.
+I gave up and did this:
 
-2.6.23-*rc2* you say boots fine with "edd=skipmbr", but not without?
-Did you try the above commenting-out on rc2?
+From: Andrew Morton <akpm@linux-foundation.org>
 
-Just don't want to be chasing ghosts.
+drivers/dma/ioat_dca.c: In function 'ioat_dca_get_tag':
+drivers/dma/ioat_dca.c:177: error: implicit declaration of function 'cpu_physical_id'
 
-	-hpa
+This is soooo screwed up.  Root cause: linux/smp.h only includes asm/smp.h if
+CONFIG_SMP=y.
+
+To get at cpu_physical_id() on UP, the user must include asm/smp.h, not
+linux/smp.h.
+
+Cc: "Luck, Tony" <tony.luck@intel.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Shannon Nelson <shannon.nelson@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/dma/ioat_dca.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+diff -puN drivers/dma/ioat_dca.c~git-dma-up-fix drivers/dma/ioat_dca.c
+--- a/drivers/dma/ioat_dca.c~git-dma-up-fix
++++ a/drivers/dma/ioat_dca.c
+@@ -25,6 +25,9 @@
+ #include <linux/smp.h>
+ #include <linux/interrupt.h>
+ #include <linux/dca.h>
++
++#include <asm/smp.h>
++
+ #include "ioatdma.h"
+ #include "ioatdma_registers.h"
+ 
+_
+
