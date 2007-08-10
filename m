@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933787AbXHJMhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934987AbXHJMi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933787AbXHJMhN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 08:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757771AbXHJMg6
+	id S934987AbXHJMi3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 08:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbXHJMiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 08:36:58 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:27455 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756806AbXHJMg5 (ORCPT
+	Fri, 10 Aug 2007 08:38:20 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:35426 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752181AbXHJMiT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 08:36:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=MjIZe4iWhbJRQwVTo5coghfI+w80UdPQknbP61kz0st5699JELw+fe8IIME/SoaKembKg3uORkUBcC0ZAPsUexKPhAaYQRJYMPECIVNm5CEYua9ihoXcVorFsVES+Vz2aVwskZE0/bGUNTEtny2LMVA5tXfD2be1+eVgZC2KlCc=
-Message-ID: <46BC5B75.80102@googlemail.com>
-Date: Fri, 10 Aug 2007 14:35:01 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: 2.6.23-rc2-mm2
-References: <20070809224254.11f42716.akpm@linux-foundation.org> <46BC3CB1.2090503@googlemail.com>
-In-Reply-To: <46BC3CB1.2090503@googlemail.com>
+	Fri, 10 Aug 2007 08:38:19 -0400
+Date: Fri, 10 Aug 2007 14:39:27 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Cc: "Pavel Emelyanov" <xemul@openvz.org>, "Greg KH" <gregkh@suse.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>, devel@openvz.org
+Subject: Re: [PATCH] Fix OOPS in show_uevent()
+Message-ID: <20070810143927.619d0640@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <3ae72650708100523w45b4d5cbxf0ffbdc11cfb5e45@mail.gmail.com>
+References: <46BC3A57.5070404@openvz.org>
+	<3ae72650708100523w45b4d5cbxf0ffbdc11cfb5e45@mail.gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some new warnings here :
+On Fri, 10 Aug 2007 14:23:56 +0200,
+"Kay Sievers" <kay.sievers@vrfy.org> wrote:
 
-...
+> But we still don't update the remaining buffer size and the remaining
+> array fields which are left after the call. Shouldn't we instead just
+> change the:
+>    int (*dev_uevent)(struct device *dev,
+>                                 char **envp, int num_envp,
+>                                 char *buffer, int buffer_size);
+> to:
+>   int (*dev_uevent)(struct device *dev,
+>                                char **envp, int num_envp, int *cur_index,
+>                                char *buffer, int buffer_size, int *cur_len);
+> 
+> like we do for:
+>   int add_uevent_var(char **envp, int num_envp, int *cur_index,
+>                                   char *buffer, int buffer_size, int *cur_len,
+>                                   const char *format, ...)
+> 
+> and along with the change of the callers, we would update the values
+> properly, so the next call has the correct numbers? There are 6
+> classes and something like 12 buses using this method, so it shouldn't
+> be too much trouble.
 
-In file included from include/linux/blkdev.h:17,
-                 from kernel/sched.c:45:
-include/linux/bsg.h:67: warning: 'struct request_queue' declared inside parameter list
-include/linux/bsg.h:67: warning: its scope is only this definition or declaration, which is probably not what you want
-include/linux/bsg.h:71: warning: 'struct request_queue' declared inside parameter list
-
-...
-
-In file included from include/linux/blkdev.h:17,
-                 from mm/filemap.c:29:
-include/linux/bsg.h:67: warning: 'struct request_queue' declared inside parameter list
-include/linux/bsg.h:67: warning: its scope is only this definition or declaration, which is probably not what you want
-include/linux/bsg.h:71: warning: 'struct request_queue' declared inside parameter list
-
-...
-
-Some more of these , all from bsg.h:{67,71}
-
-config there :
-
-http://194.231.229.228/kernel/mm/2.6.23-rc2-mm2/randconfig-auto-5
-
-
-
-
-
-
-
+Sounds like a sensible approach. We may want the remaining non-users to
+add_uevent_var() at the same time, I guess.
