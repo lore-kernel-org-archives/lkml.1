@@ -1,206 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965755AbXHJUYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965826AbXHJUZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965755AbXHJUYk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 16:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935518AbXHJUY3
+	id S965826AbXHJUZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 16:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935518AbXHJUZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 16:24:29 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:47462 "EHLO havoc.gtf.org"
+	Fri, 10 Aug 2007 16:25:20 -0400
+Received: from 1wt.eu ([62.212.114.60]:1288 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932906AbXHJUY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 16:24:27 -0400
-Date: Fri, 10 Aug 2007 16:24:26 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: netdev@vger.kernel.org
-Cc: davem@davemloft.net, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/4] Add ETHTOOL_[GS]FLAGS sub-ioctls
-Message-ID: <20070810202426.GA25050@havoc.gtf.org>
-MIME-Version: 1.0
+	id S1760554AbXHJUZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 16:25:19 -0400
+Date: Fri, 10 Aug 2007 22:17:04 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Documentation files in html format?
+Message-ID: <20070810201704.GI6002@1wt.eu>
+References: <20070809113122.3aa508e4@oldman.hamilton.local>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070809113122.3aa508e4@oldman.hamilton.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Stephen,
 
-Also, adds support for the first flag, LRO.
+On Thu, Aug 09, 2007 at 11:31:22AM +0100, Stephen Hemminger wrote:
+> Since the network device documentation needs a rewrite, I was thinking
+> of using basic html format instead of just plain text. But since this would
+> be starting an new precedent for kernel documentation, some it seemed
+> like a worthwhile topic for discussion.
 
-Earlier version of this patch posted about 12 hours ago.
+I've read pro-plain text arguments, so I'll not repeat them. I also see
+another advantage to plain text : it's very easy to draw ascii-art
+diagrams of anything. It only takes a few minutes, is always inline
+and readable with any tool. Look at the bonding doc I wrote and updated
+in 2000, people have updated or duplicated some of the diagrams when
+they have added features. Something they would definitely not have done
+if it had required some strange tool.
 
+Also, the advantage of plain text is that it stays compatible with
+everything though the years. Had I used some random tool in 2000 for
+this, I'm not sure the tool would still exist right now. Look at RFCs.
+Nothing fancy, just readable. Even the TCP FSM in rfc793 from 26 years
+ago is readable, understandable, and updatable by anybody (though it's
+a little mit messy). And it's somewhat an extreme case ;-)
 
-commit 84bf82f38dacde0fa86986e23c061728e819810e
-Author: Jeff Garzik <jeff@garzik.org>
-Date:   Fri Aug 10 05:27:23 2007 -0400
+I'd prefer that you define some writing conventions for plain-text
+documents that anyone should try follow, starting with the 80-cols
+limit to make Davem happy. I think that many of us can help define
+such a "standard" indicating how to underline subtitles, how to
+enumerate a list, how to avoid using tabs, how to write boxes and
+arrows in their diagrams, etc...
 
-    [ETHTOOL] Add ETHTOOL_[GS]FLAGS sub-ioctls
-    
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+Best regards,
+Willy
 
- include/linux/ethtool.h   |   21 +++++++++++++++
- include/linux/netdevice.h |    1 
- net/core/ethtool.c        |   61 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 83 insertions(+)
-
-84bf82f38dacde0fa86986e23c061728e819810e
-diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
-index 23ccea8..0e5de2f 100644
---- a/include/linux/ethtool.h
-+++ b/include/linux/ethtool.h
-@@ -256,6 +256,19 @@ struct ethtool_perm_addr {
- 	__u8	data[0];
- };
- 
-+/* boolean flags controlling per-interface behavior characteristics.
-+ * When reading, the flag indicates whether or not a certain behavior
-+ * is enabled/present.  When writing, the flag indicates whether
-+ * or not the driver should turn on (set) or off (clear) a behavior.
-+ *
-+ * Some behaviors may read-only (unconditionally absent or present).
-+ * If such is the case, return EINVAL in the set-flags operation if the
-+ * flag differs from the read-only value.
-+ */
-+enum ethtool_flags {
-+	ETH_FLAG_LRO		= (1 << 15),	/* LRO is enabled */
-+};
-+
- #ifdef __KERNEL__
- 
- struct net_device;
-@@ -272,6 +285,8 @@ u32 ethtool_op_get_tso(struct net_device *dev);
- int ethtool_op_set_tso(struct net_device *dev, u32 data);
- u32 ethtool_op_get_ufo(struct net_device *dev);
- int ethtool_op_set_ufo(struct net_device *dev, u32 data);
-+u32 ethtool_op_get_flags(struct net_device *dev);
-+int ethtool_op_set_flags(struct net_device *dev, u32 data);
- 
- /**
-  * &ethtool_ops - Alter and report network device settings
-@@ -307,6 +322,8 @@ int ethtool_op_set_ufo(struct net_device *dev, u32 data);
-  * get_strings: Return a set of strings that describe the requested objects 
-  * phys_id: Identify the device
-  * get_stats: Return statistics about the device
-+ * get_flags: get 32-bit flags bitmap
-+ * set_flags: set 32-bit flags bitmap
-  * 
-  * Description:
-  *
-@@ -369,6 +386,8 @@ struct ethtool_ops {
- 	void	(*complete)(struct net_device *);
- 	u32     (*get_ufo)(struct net_device *);
- 	int     (*set_ufo)(struct net_device *, u32);
-+	u32     (*get_flags)(struct net_device *);
-+	int     (*set_flags)(struct net_device *, u32);
- };
- #endif /* __KERNEL__ */
- 
-@@ -410,6 +429,8 @@ struct ethtool_ops {
- #define ETHTOOL_SUFO		0x00000022 /* Set UFO enable (ethtool_value) */
- #define ETHTOOL_GGSO		0x00000023 /* Get GSO enable (ethtool_value) */
- #define ETHTOOL_SGSO		0x00000024 /* Set GSO enable (ethtool_value) */
-+#define ETHTOOL_GFLAGS		0x00000025 /* Get flags bitmap(ethtool_value) */
-+#define ETHTOOL_SFLAGS		0x00000026 /* Set flags bitmap(ethtool_value) */
- 
- /* compatibility with older code */
- #define SPARC_ETH_GSET		ETHTOOL_GSET
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 4a616d7..559a4dc 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -341,6 +341,7 @@ struct net_device
- #define NETIF_F_GSO		2048	/* Enable software GSO. */
- #define NETIF_F_LLTX		4096	/* LockLess TX */
- #define NETIF_F_MULTI_QUEUE	16384	/* Has multiple TX/RX queues */
-+#define NETIF_F_LRO		32768	/* large receive offload */
- 
- 	/* Segmentation offload features */
- #define NETIF_F_GSO_SHIFT	16
-diff --git a/net/core/ethtool.c b/net/core/ethtool.c
-index 2ab0a60..6e8563e 100644
---- a/net/core/ethtool.c
-+++ b/net/core/ethtool.c
-@@ -109,6 +109,32 @@ int ethtool_op_set_ufo(struct net_device *dev, u32 data)
- 	return 0;
- }
- 
-+/* the following list of flags are the same as their associated
-+ * NETIF_F_xxx values in include/linux/netdevice.h
-+ */
-+static const u32 flags_dup_features =
-+	ETH_FLAG_LRO;
-+
-+u32 ethtool_op_get_flags(struct net_device *dev)
-+{
-+	/* in the future, this function will probably contain additional
-+	 * handling for flags which are not so easily handled
-+	 * by a simple masking operation
-+	 */
-+	
-+	return dev->features & flags_dup_features;
-+}
-+
-+int ethtool_op_set_flags(struct net_device *dev, u32 data)
-+{
-+	if (data & ETH_FLAG_LRO)
-+		dev->features |= NETIF_F_LRO;
-+	else
-+		dev->features &= ~NETIF_F_LRO;
-+
-+	return 0;
-+}
-+
- /* Handlers for each ethtool command */
- 
- static int ethtool_get_settings(struct net_device *dev, void __user *useraddr)
-@@ -783,6 +809,33 @@ static int ethtool_get_perm_addr(struct net_device *dev, void __user *useraddr)
- 	return 0;
- }
- 
-+static int ethtool_get_flags(struct net_device *dev, char __user *useraddr)
-+{
-+	struct ethtool_value edata = { ETHTOOL_GFLAGS };
-+
-+	if (!dev->ethtool_ops->get_flags)
-+		return -EOPNOTSUPP;
-+
-+	edata.data = dev->ethtool_ops->get_flags(dev);
-+
-+	if (copy_to_user(useraddr, &edata, sizeof(edata)))
-+		return -EFAULT;
-+	return 0;
-+}
-+
-+static int ethtool_set_flags(struct net_device *dev, char __user *useraddr)
-+{
-+	struct ethtool_value edata;
-+
-+	if (!dev->ethtool_ops->set_flags)
-+		return -EOPNOTSUPP;
-+
-+	if (copy_from_user(&edata, useraddr, sizeof(edata)))
-+		return -EFAULT;
-+
-+	return dev->ethtool_ops->set_flags(dev, edata.data);
-+}
-+
- /* The main entry point in this file.  Called from net/core/dev.c */
- 
- int dev_ethtool(struct ifreq *ifr)
-@@ -935,6 +988,12 @@ int dev_ethtool(struct ifreq *ifr)
- 	case ETHTOOL_SGSO:
- 		rc = ethtool_set_gso(dev, useraddr);
- 		break;
-+	case ETHTOOL_GFLAGS:
-+		rc = ethtool_get_flags(dev, useraddr);
-+		break;
-+	case ETHTOOL_SFLAGS:
-+		rc = ethtool_set_flags(dev, useraddr);
-+		break;
- 	default:
- 		rc = -EOPNOTSUPP;
- 	}
-@@ -960,3 +1019,5 @@ EXPORT_SYMBOL(ethtool_op_set_tx_hw_csum);
- EXPORT_SYMBOL(ethtool_op_set_tx_ipv6_csum);
- EXPORT_SYMBOL(ethtool_op_set_ufo);
- EXPORT_SYMBOL(ethtool_op_get_ufo);
-+EXPORT_SYMBOL(ethtool_op_set_flags);
-+EXPORT_SYMBOL(ethtool_op_get_flags);
