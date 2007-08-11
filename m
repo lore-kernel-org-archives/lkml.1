@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761299AbXHKPtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbXHKPxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761299AbXHKPtl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 11:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbXHKPtc
+	id S1759289AbXHKPxT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 11:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbXHKPxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 11:49:32 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40676 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755410AbXHKPtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 11:49:31 -0400
-X-Authenticated: #441233
-X-Provags-ID: V01U2FsdGVkX18jAL1JB4ojzKMFpnT6tDx2mr64dv0/uQ0qmQDzw6
-	OUpuhztkiRRVme
-Date: Sat, 11 Aug 2007 17:49:25 +0200
-From: Michael Mauch <michael.mauch@gmx.de>
-To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: Serial ports rearranged in 2.6.22?
-Message-ID: <20070811154925.GA9618@elmicha>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	linux-serial@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>
-References: <20070810213925.GB10855@elmicha> <86802c440708102154r59e1acbj90fa0d5b73197fb9@mail.gmail.com>
+	Sat, 11 Aug 2007 11:53:12 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45786 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763AbXHKPxL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 11:53:11 -0400
+Date: Sat, 11 Aug 2007 17:53:10 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Documentation files in html format?
+In-Reply-To: <20070810201235.GA4133@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0708111749540.3101@fbirervta.pbzchgretzou.qr>
+References: <20070809113122.3aa508e4@oldman.hamilton.local>
+ <200708091508.20626.hjk@linutronix.de> <p73hcn8g25m.fsf@bingen.suse.de>
+ <20070810074047.GC31307@uranus.ravnborg.org> <46BC6DA9.1050903@s5r6.in-berlin.de>
+ <20070810201235.GA4133@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440708102154r59e1acbj90fa0d5b73197fb9@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
+Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
+Content-ID: <Pine.LNX.4.64.0708111750101.3101@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
 
-> On 8/10/07, Michael Mauch <michael.mauch@gmx.de> wrote:
-> > Hi,
-> >
-> > until 2.6.21, I had the normal assignments for ttyS0 and ttyS1:
-> >
-> > 00:08: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-> > 00:09: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-> >
-> > With 2.6.22 I get the names <-> ports/irqs the other way around:
-> >
-> > 00:08: ttyS0 at I/O 0x2f8 (irq = 3) is a 16550A
-> > 00:09: ttyS1 at I/O 0x3f8 (irq = 4) is a 16550A
-> >
-> > Is this supposed to be that way? Should we reassign these names with
-> > udev? udev-114 doesn't seem to have built-in rules to assign the
-> > traditional names.
-> >
-> > Or could it be related to some brokeness in my BIOS (ACPI/PNP)?
-> >
-> > I'm using the 8250_pnp module (and it's the same with builtin serial
-> > modules). I made sure that I did not accidentally change the BIOS
-> > settings for the serial ports.
-> >
-> > I'm using Gentoo, but on the lirc list was a Fedora user with the same
-> > symptoms.
-> 
-> http://lkml.org/lkml/2007/7/25/455
+On Aug 10 2007 22:12, Sam Ravnborg wrote:
+>Asciidoc is quite close to plaintext and it looks to me that the
+>formatting possibilities are quite good.
 
-Thanks - I applied that patch and the names are back to normal again:
+How about mediwiki text?
 
-00:06: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-00:07: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+'''Users'''
+:are people who build kernels.
 
-Regards...
-		Michael
+'''Normal developers'''
+:are this and that....
+
+
+>+=== Goal definitions
+>+
+>+Goal definitions are the main part (heart) of the kbuild Makefile.
+>+These lines define the files to be built, any special compilation
+>+options, and any subdirectories to be entered recursively.
+>+
+>+The most simple kbuild makefile contains one line:
+>+
+>+----
+>+	obj-y += foo.o
+>+----
+>+This tells kbuild that there is one object in that directory, named
+>+foo.o. foo.o will be built from foo.c or foo.S.
+
+(wikitext continued)
+The most simple kbuild makefile contains one line:
+
+ obj-y += foo.o
+
+This tells kbuild that...
+
+
+
+	Jan
+-- 
