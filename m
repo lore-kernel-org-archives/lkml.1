@@ -1,40 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760585AbXHKAJC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760773AbXHKAPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760585AbXHKAJC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 20:09:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbXHKAIv
+	id S1760773AbXHKAPu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 20:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756778AbXHKAPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 20:08:51 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:52851 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756263AbXHKAIu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 20:08:50 -0400
-Message-ID: <46BCFE01.2040703@zytor.com>
-Date: Fri, 10 Aug 2007 17:08:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Mark Cannon <random.bits@rogers.com>, linux-kernel@vger.kernel.org
-Subject: Re: Use of directories to hold root?
-References: <200708101724.26724.random.bits@rogers.com> <Pine.LNX.4.64.0708102332580.3054@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0708102332580.3054@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Aug 2007 20:15:41 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47498 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756412AbXHKAPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 20:15:40 -0400
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Cc: paulus@samba.org, Segher Boessenkool <segher@kernel.crashing.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: Implement atomic{,64}_{read,write}() without volatile
+Date: Sat, 11 Aug 2007 02:15:30 +0200
+Message-Id: <11867913303733-git-send-email-segher@kernel.crashing.org>
+X-Mailer: git-send-email 1.5.2.1.144.gabc40-dirty
+Message-Id: <d6775e129db48371cdf86e94ddfaa1d15617bb8f.1186773842.git.segher@kernel.crashing.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Aug 10 2007 17:24, Mark Cannon wrote:
->> You pass the kernel the root option to specify the root partition.
->> Is there a way to identify a directory in that partition that holds the
->> root or something equivalent to this?
-> 
-> No, but you can use pivot_root.
+Instead, use asm() like all other atomic operations already do.
 
-Or better yet, use an initramfs with MS_MOVE; same as you would with the
-"normal" use of initramfs.
+Also use inline functions instead of macros; this actually
+improves code generation (some code becomes a little smaller,
+probably because of improved alias information -- just a few
+hundred bytes total on a default kernel build, nothing shocking).
 
-	-hpa
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+---
+ include/asm-powerpc/atomic.h |   34 ++++++++++++++++++++++++++++------
+ 1 files changed, 28 insertions(+), 6 deletions(-)
+
+diff --git a/include/asm-powerpc/atomic.h b/include/asm-powerpc/atomic.h
+index c44810b..bc17506 100644
+--- a/include/asm-powerpc/atomic.h
++++ b/include/asm-powerpc/atomic.h
+@@ -5,7 +5,7 @@
+  * PowerPC atomic operations
+  */
+ 
+-typedef struct { volatile int counter; } atomic_t;
++typedef struct { int counter; } atomic_t;
+ 
+ #ifdef __KERNEL__
+ #include <linux/compiler.h>
+@@ -15,8 +15,19 @@ typedef struct { volatile int counter; } atomic_t;
+ 
+ #define ATOMIC_INIT(i)		{ (i) }
+ 
+-#define atomic_read(v)		((v)->counter)
+-#define atomic_set(v,i)		(((v)->counter) = (i))
++static __inline__ int atomic_read(const atomic_t *v)
++{
++	int t;
++
++	__asm__ __volatile__("lwz%U1%X1 %0,%1" : "=r"(t) : "m"(v->counter));
++
++	return t;
++}
++
++static __inline__ void atomic_set(atomic_t *v, int i)
++{
++	__asm__ __volatile__("stw%U0%X0 %1,%0" : "=m"(v->counter) : "r"(i));
++}
+ 
+ static __inline__ void atomic_add(int a, atomic_t *v)
+ {
+@@ -240,12 +251,23 @@ static __inline__ int atomic_dec_if_positive(atomic_t *v)
+ 
+ #ifdef __powerpc64__
+ 
+-typedef struct { volatile long counter; } atomic64_t;
++typedef struct { long counter; } atomic64_t;
+ 
+ #define ATOMIC64_INIT(i)	{ (i) }
+ 
+-#define atomic64_read(v)	((v)->counter)
+-#define atomic64_set(v,i)	(((v)->counter) = (i))
++static __inline__ long atomic64_read(const atomic_t *v)
++{
++	long t;
++
++	__asm__ __volatile__("ld%U1%X1 %0,%1" : "=r"(t) : "m"(v->counter));
++
++	return t;
++}
++
++static __inline__ void atomic64_set(atomic_t *v, long i)
++{
++	__asm__ __volatile__("std%U0%X0 %1,%0" : "=m"(v->counter) : "r"(i));
++}
+ 
+ static __inline__ void atomic64_add(long a, atomic64_t *v)
+ {
+-- 
+1.5.2.1.144.gabc40-dirty
+
