@@ -1,53 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbXHKO1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbXHKOa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757424AbXHKO1D (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 10:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbXHKO0w
+	id S1759598AbXHKOa3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 10:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbXHKOaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 10:26:52 -0400
-Received: from 1wt.eu ([62.212.114.60]:1408 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753480AbXHKO0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 10:26:51 -0400
-Date: Sat, 11 Aug 2007 16:17:19 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Documentation files in html format?
-Message-ID: <20070811141718.GK6002@1wt.eu>
-References: <20070809113122.3aa508e4@oldman.hamilton.local> <20070810201704.GI6002@1wt.eu> <20070810204025.GC29549@fieldses.org> <20070810205117.GJ6002@1wt.eu> <20070811141925.GA21866@fieldses.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 11 Aug 2007 10:30:14 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:59297 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753667AbXHKOaN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 10:30:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=pXfGtdct6mUDEEEmFmjDFsYPmEWTVOrKCTgHc/zcGtrd811aK4rT/GTbADBBep7QXf+zwweWOucImUOD8SB8+S9y1vSjCACTL+EsfZxzX3/ZuicYa63mEVPowgAO3EhmY2Zo56Z6LbglMlx8M8HynAs++TI3r+mqxGY3O8fVP1Y=
+Message-ID: <661de9470708110730r1267bdfdp1e76546e11b64f78@mail.gmail.com>
+Date: Sat, 11 Aug 2007 20:00:12 +0530
+From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
+In-Reply-To: <386838491.27058@ustc.edu.cn>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070811141925.GA21866@fieldses.org>
-User-Agent: Mutt/1.5.11
+References: <386838491.27058@ustc.edu.cn>
+X-Google-Sender-Auth: e7cc106324d7b368
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 11, 2007 at 10:19:25AM -0400, J. Bruce Fields wrote:
-> On Fri, Aug 10, 2007 at 10:51:17PM +0200, Willy Tarreau wrote:
-> > The problem I have with asciidoc is that it's a nightmare to get it
-> > to work. It's what GIT uses, and after spending a whole day trying
-> > to *build* that thing, I finally resigned and asked Junio if he could
-> > publish the pre-formatted manpages himself, which he agreed to.
-> 
-> I wasn't actually suggesting we use the asciidoc tools--that's a
-> separate question.  We could ignore them, or wait till they solve
-> whatever problems they may have.
-> 
-> I was just suggesting that if we took your suggestion of standardizing
-> on plain text plus some conventions for formatting lists and headers and
-> such, one easy way to do that might just be to adopt the asciidoc format
-> (or some subset thereof).  Is there any part of the asciidoc *syntax*
-> that you object to?
+On 8/11/07, Fengguang Wu <fengguang.wu@gmail.com> wrote:
+> Andrew,
+>
+> I'm not sure if this patch is the right fix for the bug.  But it do
+> stops the oops message. The bug also happens in 2.6.23-rc1-mm2/2.6.23-rc2-mm2.
+> I'm running debian/sid. The .config is attached.
+>
+>
+> Unable to handle kernel NULL pointer dereference at 0000000000000138 RIP
+>  [<ffffffff81092f66>] __vm_enough_memory+0x76/0x120
+> PGD 7cd84067 PUD 7d9c3067 PMD 0
+> Oops: 0000 [2] SMP
+> CPU 1
+> Modules linked in: eeprom lm85 hwmon_vid i2c_core tun fuse kvm snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm snd_timer sg snd soundcore sr_mod cdrom snd_page_alloc pcspkr evdev button raid0 usbhid sd_mod uhci_hcd ehci_hcd ata_piix ahci ohci1394 ieee1394 thermal processor fan
+> Pid: 4305, comm: khelper Tainted: G      D 2.6.23-rc2 #9
+> RIP: 0010:[<ffffffff81092f66>]  [<ffffffff81092f66>] __vm_enough_memory+0x76/0x120
+> RSP: 0000:ffff81007a3d1d30  EFLAGS: 00010206
+> RAX: 0000000000000000 RBX: 0000000000000001 RCX: 000000000003e142
+> RDX: 00000000000004f4 RSI: 0000000000000001 RDI: 0000000000000001
+> RBP: ffff81007a3d1d40 R08: ffff81007a3d1d78 R09: 0000000000000000
+> R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000001
+> R13: 0000000000000000 R14: ffff81007d0c0188 R15: ffff81007d577b18
+> FS:  0000000000000000(0000) GS:ffff81007efa11d0(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 0000000000000138 CR3: 000000003799b000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process khelper (pid: 4305, threadinfo ffff81007a3d0000, task ffff81007a30acc0)
+> Stack:  0000000000000001 ffff81007d577b18 ffff81007a3d1d60 ffffffff811297ff
+>  0000000000000001 ffff810037c84bb8 ffff81007a3d1da0 ffffffff81092532
+>  ffff81007d0c0188 0000000000000000 ffff81007d577b20 0000000000000000
+> Call Trace:
+>  [<ffffffff811297ff>] cap_vm_enough_memory+0x2f/0x40
+>  [<ffffffff81092532>] insert_vm_struct+0xa2/0xb0
+>  [<ffffffff810b020e>] bprm_mm_init+0x11e/0x1b0
+>  [<ffffffff810b1b71>] do_execve+0x81/0x220
+>  [<ffffffff8104bf90>] __call_usermodehelper+0x0/0x90
+>  [<ffffffff8100abc6>] sys_execve+0x46/0xb0
+>  [<ffffffff8104bf90>] __call_usermodehelper+0x0/0x90
+>  [<ffffffff8100cf64>] kernel_execve+0x64/0xd0
+>  [<ffffffff8104bf90>] __call_usermodehelper+0x0/0x90
+>  [<ffffffff8104c384>] ____call_usermodehelper+0x174/0x190
+>  [<ffffffff8100cef8>] child_rip+0xa/0x12
+>  [<ffffffff810356f8>] schedule_tail+0x78/0x100
+>  [<ffffffff8100c60c>] restore_args+0x0/0x30
+>  [<ffffffff8104c210>] ____call_usermodehelper+0x0/0x190
+>  [<ffffffff8100ceee>] child_rip+0x0/0x12
+>
+>
+> Code: 48 8b 80 38 01 00 00 48 c1 e8 05 48 29 c1 48 39 ca 0f 8c 89
+> RIP  [<ffffffff81092f66>] __vm_enough_memory+0x76/0x120
+>  RSP <ffff81007a3d1d30>
+> CR2: 0000000000000138
+>
+> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+> ---
+>  mm/mmap.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> --- linux-2.6.23-rc2-mm2.orig/mm/mmap.c
+> +++ linux-2.6.23-rc2-mm2/mm/mmap.c
+> @@ -166,7 +166,8 @@ int __vm_enough_memory(long pages, int c
+>
+>         /* Don't let a single process grow too big:
+>            leave 3% of the size of this process for other processes */
+> -       allowed -= current->mm->total_vm / 32;
+> +       if (current->mm)
+> +               allowed -= current->mm->total_vm / 32;
+>
+>         /*
+>          * cast `allowed' as a signed long because vm_committed_space
+>
+>
 
-Not particularly. It's just slightly less readable as plain text but
-OTOH produces nice documents when you have a working toolchain. But
-that's a language which needs to be learned, as every such language.
-Plain text on the contrary, requires no learning. The conventions are
-more like suggestions to newcomers. Everyone is free to proceed as he
-wants, judging by the result while writing the text.
+Shouldn't we just not stop vm accounting for kernel threads?
 
-Willy
-
+Warm Regards,
+Balbir Singh
