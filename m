@@ -1,77 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbXHKFWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbXHKFbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242AbXHKFWY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 01:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXHKFWP
+	id S1755427AbXHKFbD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 01:31:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXHKFax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 01:22:15 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:44969 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751021AbXHKFWO (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 01:22:14 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: david@lang.hm, Diego Calleja <diegocg@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       J??rn Engel <joern@logfs.org>, Jeff Garzik <jeff@garzik.org>,
+	Sat, 11 Aug 2007 01:30:53 -0400
+Received: from 1wt.eu ([62.212.114.60]:1301 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750910AbXHKFaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 01:30:52 -0400
+Date: Sat, 11 Aug 2007 07:15:48 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Michael Chang <thenewme91@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-In-Reply-To: Your message of "Fri, 10 Aug 2007 00:04:45 EDT."
-             <46BBE3DD.2090209@tmr.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804224834.5187f9b7@the-village.bc.nu> <20070805071320.GC515@elte.hu> <20070805152231.aba9428a.diegocg@gmail.com> <Pine.LNX.4.64.0708051158260.6905@asgard.lang.hm>
-            <46BBE3DD.2090209@tmr.com>
+       Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+Message-ID: <20070811051548.GA24082@1wt.eu>
+References: <20070801175004.GA17936@elte.hu> <Pine.LNX.4.64.0708011955430.1817@scrub.home> <20070801190556.GA1199@elte.hu> <Pine.LNX.4.64.0708100037460.1817@scrub.home> <20070810054948.GA5908@elte.hu> <Pine.LNX.4.64.0708101459530.1817@scrub.home> <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com> <Pine.LNX.4.64.0708101919270.1817@scrub.home> <20070810194705.GH6002@1wt.eu> <Pine.LNX.4.64.0708102235320.1817@scrub.home>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1186809557_3018P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 11 Aug 2007 01:19:17 -0400
-Message-ID: <10215.1186809557@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708102235320.1817@scrub.home>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1186809557_3018P
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, Aug 10, 2007 at 11:15:55PM +0200, Roman Zippel wrote:
+> Hi,
+> 
+> On Fri, 10 Aug 2007, Willy Tarreau wrote:
+> 
+> > fortunately all bug reporters are not like you. It's amazing how long
+> > you can resist sending a simple bug report to a developer!
+> 
+> I'm more amazed how long Ingo can resist providing some explanations (not 
+> just about this problem).
 
-On Fri, 10 Aug 2007 00:04:45 EDT, Bill Davidsen said:
+It's a matter of time balance. It takes a short time to send the output
+of a script, and it takes a very long time to explain how things work.
+I often encounter the same situation with haproxy. People ask me to
+explain them in detail how this or that would apply to their context, and
+it's often easier for me to provide them with a 5-lines patch to add the
+feature they need, than to spend half an hour explaining why and how it
+would badly behave.
 
-> > I never imagined that itwas the 20%+ hit that is being described, and=
-=20
-> > with so little impact, or I would have switched to it across the boar=
-d=20
-> > years ago.
-> >=20
-> To get that magnitude you need slow disk with very fast CPU. It helps=20
-> most of systems where the disk hardware is marginal or worse for the i/=
-o=20
-> load. Don't take that as typical.
+> It's not like I haven't given him anything, he already has the test 
+> programs, he already knows the system configuration.
+> Well, I've sent him the stuff now...
 
-I suspect that almost every single laptop with a Core2 Duo in it falls in=
-to
-that classification, and it's getting worse every year, as we see more
-disparity between CPU speeds (increasing) and disk seek times (basically =
-nailed
-to the floor for the last decade).
+fine, thanks.
 
+> > Maybe you
+> > consider that you need to fix the bug by yourself after you understand
+> > the code,
+> 
+> Fixing the bug requires some knowledge what the code is intended to do.
+> 
+> > Please try to be a little bit more transparent if you really want the
+> > bugs fixed, and don't behave as if you wanted this bug to survive
+> > till -final.
+> 
+> Could you please ask Ingo the same? I'm simply trying to get some 
+> transparancy into the CFS design. Without further information it's 
+> difficult to tell, whether something is supposed to work this way or it's 
+> a bug.
 
---==_Exmh_1186809557_3018P
-Content-Type: application/pgp-signature
+I know that Ingo tends to reply to a question with another question. But
+as I said, imagine if he has to explain the same things to each person
+who asks him for it. I think that a more constructive approach would be
+to point what is missing/unclear/inexact in the doc so that he adds some
+paragraphs for you and everyone else. If you need this information to debug,
+most likely other people will need it too.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+> In this case it's quite possible that due to a recent change my testcase 
+> doesn't work anymore. Should I consider the problem fixed or did it just 
+> go into hiding? Without more information it's difficult to verify this 
+> independently.
 
-iD8DBQFGvUbVcC3lWbTT17ARAuPXAJ9SqM6bwtjumsVtyAuumj927ov+KgCeO7v9
-zXyrLmOV51EQiA3Js4pUJ1k=
-=wgKI
------END PGP SIGNATURE-----
+generally, problems that appear only on one person's side and which suddenly
+disappear are either caused by some random buggy patch left in the tree (not
+your case it seems), or by an obscure bug of the feature being tested which
+will resurface from time to time as long as it's not identified.
 
---==_Exmh_1186809557_3018P--
+Willy
+
