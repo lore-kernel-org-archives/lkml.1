@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934464AbXHJXdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbXHKACW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934464AbXHJXdQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 19:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934341AbXHJXcr
+	id S1759438AbXHKACW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 20:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbXHKACI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 19:32:47 -0400
-Received: from mga09.intel.com ([134.134.136.24]:34079 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933294AbXHJXco convert rfc822-to-8bit (ORCPT
+	Fri, 10 Aug 2007 20:02:08 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4868 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755040AbXHKACG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 19:32:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,246,1183359600"; 
-   d="scan'208";a="116114923"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 9/24] make atomic_read() behave consistently on ia64
-Date: Fri, 10 Aug 2007 16:32:42 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A0224C94A@scsmsx411.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 9/24] make atomic_read() behave consistently on ia64
-Thread-Index: Acfbn9UhFk01w3aqTHeIYAbo/zeVAgAAM7AQAAFfSJA=
-References: <20070809135107.GA15985@shell.boston.redhat.com><617E1C2C70743745A92448908E030B2A02213B3C@scsmsx411.amr.corp.intel.com><46BCC1AF.5050204@redhat.com><617E1C2C70743745A92448908E030B2A0224C777@scsmsx411.amr.corp.intel.com> <jewsw3oyl8.fsf@sykes.suse.de> <617E1C2C70743745A92448908E030B2A0224C88B@scsmsx411.amr.corp.intel.com> <46BCE9F8.4060009@redhat.com> 
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Luck, Tony" <tony.luck@intel.com>, "Chris Snook" <csnook@redhat.com>
-Cc: "Andreas Schwab" <schwab@suse.de>, <linux-kernel@vger.kernel.org>,
-       <linux-arch@vger.kernel.org>, <torvalds@linux-foundation.org>,
-       <netdev@vger.kernel.org>, <akpm@linux-foundation.org>, <ak@suse.de>,
-       <heiko.carstens@de.ibm.com>, <davem@davemloft.net>,
-       <schwidefsky@de.ibm.com>, <wensong@linux-vs.org>, <horms@verge.net.au>,
-       <wjiang@resilience.com>, <cfriesen@nortel.com>, <zlynx@acm.org>,
-       <rpjday@mindspring.com>, <jesper.juhl@gmail.com>
-X-OriginalArrivalTime: 10 Aug 2007 23:32:43.0773 (UTC) FILETIME=[C02012D0:01C7DBA6]
+	Fri, 10 Aug 2007 20:02:06 -0400
+Date: Sat, 11 Aug 2007 08:00:29 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: paulmck@linux.vnet.ibm.com, heiko.carstens@de.ibm.com, horms@verge.net.au,
+       linux-kernel@vger.kernel.org, csnook@redhat.com, rpjday@mindspring.com,
+       netdev@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
+       schwidefsky@de.ibm.com, davem@davemloft.net, wensong@linux-vs.org,
+       wjiang@resilience.com
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+Message-ID: <20070811000029.GA12779@gondor.apana.org.au>
+References: <E1IJPkg-0000x0-00@gondolin.me.apana.org.au> <442f95ba19f8622ce04cf0334f34be11@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <442f95ba19f8622ce04cf0334f34be11@kernel.crashing.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Here are the functions in which they occur in the object file. You
-> may have to chase down some inlining to find the function that
-> actually uses atomic_*().
+On Fri, Aug 10, 2007 at 10:07:27PM +0200, Segher Boessenkool wrote:
+> 
+> That means GCC cannot compile Linux; it already optimises
+> some accesses to scalars to smaller accesses when it knows
+> it is allowed to.  Not often though, since it hardly ever
+> helps in the cost model it employs.
 
-Ignore this ... Andreas' patch was only two lines so I
-thought I'd "save time" by just hand-editing the source over
-on my build machine.  I managed to goof that by editing the
-wrong  function for one of the cases. :-(
+Please give an example code snippet + gcc version + arch
+to back this up.
 
-New result.  With Andreas's patch correctly applied, the generated
-vmlinux is identical with/without your patch.
-
--Tony
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
