@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbXHKPxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbXHKPzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759289AbXHKPxT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 11:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbXHKPxM
+	id S1757557AbXHKPzp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 11:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbXHKPzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 11:53:12 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:45786 "EHLO
+	Sat, 11 Aug 2007 11:55:38 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:33569 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbXHKPxL (ORCPT
+	with ESMTP id S1750801AbXHKPzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 11:53:11 -0400
-Date: Sat, 11 Aug 2007 17:53:10 +0200 (CEST)
+	Sat, 11 Aug 2007 11:55:38 -0400
+Date: Sat, 11 Aug 2007 17:55:37 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Documentation files in html format?
-In-Reply-To: <20070810201235.GA4133@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0708111749540.3101@fbirervta.pbzchgretzou.qr>
-References: <20070809113122.3aa508e4@oldman.hamilton.local>
- <200708091508.20626.hjk@linutronix.de> <p73hcn8g25m.fsf@bingen.suse.de>
- <20070810074047.GC31307@uranus.ravnborg.org> <46BC6DA9.1050903@s5r6.in-berlin.de>
- <20070810201235.GA4133@uranus.ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Mark Cannon <random.bits@rogers.com>, linux-kernel@vger.kernel.org
+Subject: Re: Use of directories to hold root?
+In-Reply-To: <46BCFE01.2040703@zytor.com>
+Message-ID: <Pine.LNX.4.64.0708111753510.3101@fbirervta.pbzchgretzou.qr>
+References: <200708101724.26724.random.bits@rogers.com>
+ <Pine.LNX.4.64.0708102332580.3054@fbirervta.pbzchgretzou.qr>
+ <46BCFE01.2040703@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
-Content-ID: <Pine.LNX.4.64.0708111750101.3101@fbirervta.pbzchgretzou.qr>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Aug 10 2007 22:12, Sam Ravnborg wrote:
->Asciidoc is quite close to plaintext and it looks to me that the
->formatting possibilities are quite good.
+On Aug 10 2007 17:08, H. Peter Anvin wrote:
+>Jan Engelhardt wrote:
+>> On Aug 10 2007 17:24, Mark Cannon wrote:
+>>> You pass the kernel the root option to specify the root partition.
+>>> Is there a way to identify a directory in that partition that holds the
+>>> root or something equivalent to this?
+>> 
+>> No, but you can use pivot_root.
+>
+>Or better yet, use an initramfs with MS_MOVE; same as you would with the
+>"normal" use of initramfs.
 
-How about mediwiki text?
+mount --move /foo /
+=> error
 
-'''Users'''
-:are people who build kernels.
-
-'''Normal developers'''
-:are this and that....
-
-
->+=== Goal definitions
->+
->+Goal definitions are the main part (heart) of the kbuild Makefile.
->+These lines define the files to be built, any special compilation
->+options, and any subdirectories to be entered recursively.
->+
->+The most simple kbuild makefile contains one line:
->+
->+----
->+	obj-y += foo.o
->+----
->+This tells kbuild that there is one object in that directory, named
->+foo.o. foo.o will be built from foo.c or foo.S.
-
-(wikitext continued)
-The most simple kbuild makefile contains one line:
-
- obj-y += foo.o
-
-This tells kbuild that...
+What did I miss?
 
 
 
