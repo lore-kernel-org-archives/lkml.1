@@ -1,103 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765227AbXHKTQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765194AbXHKTSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765227AbXHKTQp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 15:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758005AbXHKTQe
+	id S1765194AbXHKTSl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 15:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbXHKTSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 15:16:34 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:37265 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758067AbXHKTQc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 15:16:32 -0400
-Message-ID: <46BE0A32.7030004@gmail.com>
-Date: Sat, 11 Aug 2007 21:12:50 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
-       =?ISO-8859-15?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Documentation files in html format?
-References: <20070809113122.3aa508e4@oldman.hamilton.local> <200708091508.20626.hjk@linutronix.de> <p73hcn8g25m.fsf@bingen.suse.de> <20070810074047.GC31307@uranus.ravnborg.org> <46BC6DA9.1050903@s5r6.in-berlin.de> <20070810201235.GA4133@uranus.ravnborg.org> <46BCF458.7010300@gmail.com> <46BD57AA.4050405@s5r6.in-berlin.de>
-In-Reply-To: <46BD57AA.4050405@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Sat, 11 Aug 2007 15:18:34 -0400
+Received: from smtpout.mac.com ([17.250.248.171]:64258 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756484AbXHKTSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 15:18:32 -0400
+In-Reply-To: <46BDF88B.2060301@schaufler-ca.com>
+References: <46BDF88B.2060301@schaufler-ca.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <55459F0C-3B27-4C26-9308-B2775C512398@mac.com>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, torvalds@osdl.org
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
+Date: Sat, 11 Aug 2007 15:18:22 -0400
+To: casey@schaufler-ca.com
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/11/2007 08:31 AM, Stefan Richter wrote:
+On Aug 11, 2007, at 13:57:31, Casey Schaufler wrote:
+> Smack implements mandatory access control (MAC) using labels  
+> attached to tasks and data containers, including files, SVIPC, and  
+> other tasks. Smack is a kernel based scheme that requires an  
+> absolute minimum of application support and a very small amount of  
+> configuration data.
 
-> Rene Herman wrote:
->> On 08/10/2007 10:12 PM, Sam Ravnborg wrote:
->>
->>>> What primary requirements does in-tree Linux kernel documentation have
->>>> to fulfill in general?
->>> Skipping the obvious ones such as correct, up-to-date etc.
->>> o Readable as-is
->>> o Grepable
->>> o buildable as structured documents or almost like a single book
->>> o Easy to replicate structure
->>> o Maintainable in any decent text-editor (emacs, vim, whatever)
-> 
-> Low entry barrier for patches from unsuspecting occasional contributors?
+For starters, we would appear to already have a very capable  
+labelling system which can do *all* of this, completely and without  
+exceptions, in a much more flexible way.  Admittedly it's more  
+complicated, but one does have to have complexity in order to handle  
+everything from CD burning in X, to Apache daemons, to only allowing  
+Top-Secret-level logins over the IPsec tunnel on the Top Secret  
+network, etc.  Do you see any particular reason this couldn't be  
+implemented as a very *very* simplified SELinux wrapper?  For  
+example, this set of rules basically defines your described "read-vs- 
+write-vs-exec" policy as best I can figure out:
 
-Indeed, and AsciiDoc seems to fit nicely; it's easy to work from example. 
-Look at:
+user uu roles rr;
 
-http://www.methods.co.nz/asciidoc/asciidoc.txt
+role rr types { star floor hat huh };
 
-which is the source for:
+define(`r',`
+allow $1 $2:file { read getattr };
+allow $1 $2:socket { read getattr getopt recvfrom recv_msg };
+allow $1 $2:ipc { getattr read associate unix_read };
+## List of more "read" allow rules for different types of objects... ##
+')
 
-http://www.methods.co.nz/asciidoc/asciidoc.css-embedded.html
+define(`w',`
+allow $1 $2:file { ioctl write create setattr lock append unlink link  
+rename swapon quotaon mounton };
+allow $1 $2:socket { ioctl write create setattr lock append bind  
+connect listen accept setopt shutdown sendto send_msg name_bind };
+allow $1 $2:ipc { create destroy setattr write unix_write };
+## List of more "write" allow rules for different types of objects... ##
+')
 
-In fact, one of the more important things for lowering the entry barrier is 
-providing contributors with infrastructure so that a contributor is free to 
-concentrate more on the what than the how and as was already argued in this 
-thread, when you start laying down structure and rules for Documentation/, 
-you end up with something close to AsciiDoc anyway.
+define(`x',`
+allow $1 $2:file { execute };
+allow $1 $2:dir { search };
+## List of more "execute" allow rules for different types of  
+objects... ##
+')
 
->> Easy to put online?
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=tree;f=Documentation
-> http://lxr.linux.no/source/Documentation/
-> http://users.sosdg.org/~qiyong/lxr/source/Documentation/
-> http://www.linux-m32r.org/lxr/http/source/Documentation/
-> http://lxr.free-electrons.com/source/Documentation/
 
-Easy to put online in a nice way. Compare:
+And now to describe these rules:
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/kbuild/makefiles.txt;h=e08ef8759a0780caaa237a5a88ad8d921208af98;hb=HEAD
+> Smack defines and uses these labels:
+>   "*" - pronounced "star"
+>   "_" - pronounced "floor"
+>   "^" - pronounced "hat"
+>   "?" - pronounced "huh"
+>
+> The access rules enforced by Smack are, in order:
+>
+> 1. Any access requested by a task labeled "*" is denied.
+> 2. A read or execute access requested by a task labeled "^"
+>    is permitted.
+> 3. A read or execute access requested on an object labeled "_"
+>    is permitted.
+> 4. Any access requested on an object labeled "*" is permitted.
+> 5. Any access requested by a task on an object with the same
+>    label is permitted.
+> 6. Any access requested that is explicitly defined in the loaded
+>    rule set is permitted.
+> 7. Any other access is denied.
 
-and
+## These are calls to the above macros which plug in the necessary  
+arguments
+r(hat, {*})
+x(hat, {*})
+r(~{star}, floor)
+x(~{star}, floor)
+r(~{star}, star)
+w(~{star}, star)
+x(~{star}, star)
+r(~{star}, self)
+w(~{star}, self)
+x(~{star}, self)
+## Include your "loaded rule set" here ##
 
-http://www.ravnborg.org/kbuild/makefiles.html
 
-as Sam posted. I certainly think the latter reads nicer (it's missing the 
-table of content for now, but that appears to be a tool option).
+> Rules may be explicitly defined by writing subject,object,access  
+> triples to /smack/load.
 
-> (I admit though that formats like asciidoc or docbook are beneficial for
-> larger documentation files which want chapters, table of contents, and
-> internal crossreferences.)
+Maybe worth a little utility to convert a file full of  
+"subject,object,access" triples to an appropriate SELinux policy  
+would be appropriate?
 
-I personally wouldn't want to rudely outlaw plain text -- the discussion 
-happened due to someone suggesting redoing some documentation in HTML. Some 
-people suggested DocBook (hnnng!) and now asciidoc.
 
-I think that DocBook is a bloody trainwreck (yes, "make pdfdocs" bombs out 
-for me at the moment as well -- has it ever been different) but that some 
-simple formatting quite often makes for an improvement over plain text.
+> Smack rule sets can be easily defined that describe Bell&LaPadula  
+> sensitivity, Biba integrity, and a variety of interesting  
+> configurations. Smack rule sets can be modified on the fly to  
+> accomodate changes in the operating environment or even the time of  
+> day.
 
-HTML directly would do as far as I'm concerned, but AsciiDoc can also 
-generate that and additionally imposes more structure (in the sense of 
-uniformity) than direct HTML would. On the downside it still requires some 
-external software, on the upside it directly translates to many more formats 
-when viewed as a DocBook pre-processor.
+SELinux can do this as well.  It even includes support for  
+conditional policy:
 
-Works for me...
+bool foo_can_do_logging true;
+if (foo_can_do_logging) {
+	allow foo_t foo_log_t:file { create read getattr append };
+}
 
-Rene.
+The SELinux tools also have support for policy modules, so you can  
+extend the policy without modifying the base system.  Plus the stuff  
+has been very heavily tested and even supports X (as soon as the beta  
+X code gets improved and merged in the upstream X.org codebase).
+
+
+> Some practical use cases:
+>
+> Hierarchical levels. The less common of the two usual uses for MLS  
+> systems is to define hierarchical levels, often unclassified,  
+> confidential, secret, and so on. To set up smack to support this,  
+> these rules could be defined:
+>
+>    C        Unclass rx
+>    S        C       rx
+>    S        Unclass rx
+>    TS       S       rx
+>    TS       C       rx
+>    TS       Unclass rx
+>
+> A TS process can read S, C, and Unclass data, but cannot write it.
+> An S process can read C and Unclass. Note that specifying that
+> TS can read S and S can read C does not imply TS can read C, it
+> has to be explicitly stated.
+
+The big problem here is the duplication.  Say you have a locked-down  
+Apache configuration and you want to run 2 apache processes, one at  
+Secret and one at Top-Secret.  Under your model you have to copy- 
+paste the policy and make sure to apply fixes/changes to both  
+places.  Under SELinux, you can have processes as:
+   system_u:system_r:httpd_t:Secret:UFOSightings,AlienDissection
+   system_u:system_r:httpd_t:TopSecret:NukeTests
+
+They can only read and write objects for which multiple conditions  
+are true:  First, the object must match the Bell-Padula model with  
+respect to the sensitivities and categories  
+("Secret:UFOSightings,AlienDissection", etc) *and* it must also be  
+objects that httpd_t is allowed to read/write.  That also includes  
+network traffic, and your firewall can appropriately label data over  
+a given IPsec link as one classification level while data over the  
+raw network is labeled as another.  Oh, and you can tweak the MLS  
+constraints of the Bell-Padula model as necessary too.
+
+
+> Another case that I especially like:
+>
+>     SatData Guard   w
+>     Guard   Publish w
+>
+> A program running with the Guard label opens a UDP socket and  
+> accepts messages sent by a program running with a SatData label.   
+> The Guard program inspects the message to ensure it is wholesome  
+> and if it is sends it to a program running with the Publish label.   
+> This program then puts the information passed in an appropriate  
+> place. Note that the Guard program cannot write to a Publish file  
+> system object because file system semanitic require read aswell as  
+> write.
+
+This is exactly what my company does, but the ability to restrict  
+*exactly* what mechanisms are used is important.  You restrict  
+against file-system access implicitly, whereas SELinux does it  
+explicitly:
+   allow foo_t foo_sock_t:socket { .... };
+versus:
+   allow foo_t foo_log_t:file { ... };
+
+With SELinux you can also allow your program to create files labelled  
+as "log files" in one directory in one type and "transfer files" in  
+another directory in a completely different type.
+
+
+> The four cases (categories, levels, mutual read, guardbox) here are  
+> all quite real, and problems I've been asked to solve over the  
+> years. The first two are easy to do with traditonal MLS systems  
+> while the last two you can't without invoking privilege, at least  
+> for a while.
+
+I'm proud to say that the software of the company I work for does not  
+need any extra privilege at all (aside from binding to ports <1024)  
+to run under SELinux with strict MLS.  Under Trusted Solaris and such  
+we needed all sorts of dirty privilege hacks to relabel the files  
+consistently, but under SELinux the policy does all the relabeling  
+for us, we don't need to do a thing.
+
+Cheers,
+Kyle Moffett
+
