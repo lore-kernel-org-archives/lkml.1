@@ -1,86 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763454AbXHKV1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763498AbXHKVc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763454AbXHKV1y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 17:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbXHKV1p
+	id S1763498AbXHKVc2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 17:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbXHKVcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 17:27:45 -0400
-Received: from xenotime.net ([66.160.160.81]:50855 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756661AbXHKV1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 17:27:44 -0400
-Date: Sat, 11 Aug 2007 14:33:34 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Rob Landley <rob@landley.net>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: Re: [PATCH] Minor fix to Documentation/powerpc/00-INDEX
-Message-Id: <20070811143334.60f90af4.rdunlap@xenotime.net>
-In-Reply-To: <200708092342.35238.rob@landley.net>
-References: <200708092342.35238.rob@landley.net>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 11 Aug 2007 17:32:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55985 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755118AbXHKVcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 17:32:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Meelis Roos <mroos@linux.ee>
+Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
+Date: Sat, 11 Aug 2007 23:42:01 +0200
+User-Agent: KMail/1.9.5
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
+References: <46B9F664.9060600@googlemail.com> <200708102206.58438.rjw@sisk.pl> <Pine.SOC.4.64.0708111349520.725@math.ut.ee>
+In-Reply-To: <Pine.SOC.4.64.0708111349520.725@math.ut.ee>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708112342.01989.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007 23:42:35 -0500 Rob Landley wrote:
+On Saturday, 11 August 2007 12:53, Meelis Roos wrote:
+> > > > 3. Can you please check if this patch changes anything:
+> > > > http://marc.info/?l=linux-mm-commits&m=118669680811669&w=2
+> > > 
+> > > Tried it on current git, kernel/power/Kconfig gave 2 rejects.
+> > > Tried on 2.6.23-rc2, still 2 rejects from the same file, .rej below:
+> > 
+> > Sorry, but:
+> > 
+> > rafael@albercik:~/src/linux-2.6> git-pull git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+> > Already up-to-date.
+> > rafael@albercik:~/src/linux-2.6> cat ~/pm-fix-dependencies-of-config_suspend-and-config_hibernation-updated-3x.patch | patch -p1
+> > patching file arch/x86_64/defconfig
+> > patching file include/linux/cpu.h
+> > patching file kernel/cpu.c
+> > patching file kernel/power/Kconfig
+> > 
+> > How come?
+> 
+> Hmm, must have been mangled on the web (downloaded via wget so should be 
+> byte-by-byte exact). I now downloaded it from akpm-s broken-out tarball 
+> and this one applied fine.
+> 
+> The patch changes the warning to a different warning, it's now
+> kernel/power/Kconfig:79:warning: 'select' used by config symbol 'PM_SLEEP_SMP' refers to undefined symbol 'HOTPLUG_CPU'
+> 
+> The warning also appears when running just "make ARCH=ppc" after
+> "make ARCH=ppc oldconfig".
 
-> Signed-off-by: Rob Landley <rob@landley.net>
-> 
-> I have a python script to convert 00-INDEX files into index.html files, and a
-> second script to show 404 errors in the result as well as files/directories
-> nothing links to.   (It's not very useful yet, but in case you're wondering
-> http://kernel.org/doc/docdiridx.py and http://kernel.org/doc/doclinkcheck.py
-> .)
-> 
-> Anyway, my simple index.html generator breaks on the Documentation/powerpc
-> directory because one of the description lines is two lines long.  This
-> patch joins those two lines together into one line.  This is the only
-> instance (so far) of this problem.
+Yes, I have reproduced it now.
 
-If Paul wants to merge this, then OK, but I'm not aware of any rule
-that the file descriptions inside INDEX files must be only one line
-long... is that documented somewhere?  (if so, where?)
+Well, it's clearly a false positive, since none of the options PM_SLEEP_SMP
+depends on is set in your .config.  Also, it seems to be ppc-specific (for
+example, if I change the architecture to powerpc, the warning doesn't show up).
 
-Maybe the script should allow for this?
+The only problem I see here is that the warning in fact should not be printed,
+but I don't know how to make the build system stop printing it.
 
-> ---
-> 
-> In case you're wondering, here are the current the 404 errors in the
-> various 00-INDEX files.  Fixing all this is on my todo list:
-> 
-> Documentation/ecryptfs.txt
-> Documentation/time_interpolators.txt
-> Documentation/arm/SA1100
-> Documentation/arm/XScale
-> Documentation/arm/empeg
-> Documentation/arm/nwfpe
-> Documentation/isdn/README.eicon
-> Documentation/fb/clgenfb.txt
-> Documentation/networking/ethertap.txt
-> Documentation/filesystems/reiser4.txt
-> Documentation/scsi/AM53C974.txt
-> Documentation/scsi/ChangeLog
-> 
-> The "files and directories not linked to" list is 679 lines long.
-> 
-> diff -r /dev/null Documentation/powerpc/00-INDEX
-> --- a/Documentation/powerpc/00-INDEX	Thu Aug 09 08:40:21 2007 -0700
-> +++ b/Documentation/powerpc/00-INDEX	Thu Aug 09 20:49:03 2007 -0500
-> @@ -6,8 +6,7 @@ 00-INDEX
->  00-INDEX
->  	- this file
->  cpu_features.txt
-> -	- info on how we support a variety of CPUs with minimal compile-time
-> -	options.
-> +	- info on how we support a variety of CPUs with minimal compile-time options.
->  eeh-pci-error-recovery.txt
->  	- info on PCI Bus EEH Error Recovery
->  hvcs.txt
+Greetings,
+Rafael
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
