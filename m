@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbXHKIfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759179AbXHKIgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757338AbXHKIfx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 04:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbXHKIfn
+	id S1759179AbXHKIgZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 04:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbXHKIgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 04:35:43 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:51517 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753672AbXHKIfl (ORCPT
+	Sat, 11 Aug 2007 04:36:09 -0400
+Received: from pih-relay06.plus.net ([212.159.14.133]:42584 "EHLO
+	pih-relay06.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758130AbXHKIgE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 04:35:41 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Noatime vs relatime
-To: Rene Herman <rene.herman@gmail.com>,
-       Matti Aarnio <matti.aarnio@zmailer.org>, Vlad <vladc6@yahoo.com>,
-       linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Sat, 11 Aug 2007 10:33:17 +0200
-References: <8QDOX-78C-15@gated-at.bofh.it> <8QErs-8dz-1@gated-at.bofh.it> <8QLCI-2zy-15@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1IJmPN-0000bQ-4C@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19QCWesJ+2f3//HMuWueBKsBgKmrzA9UKQPkwW
- 7OrlFNDquHckkJ/ZXBmlzoDgkxaobajp3EbZSipX6w29OkgSCg
- hd/MfiBJ0COzl0Yt+65vA==
+	Sat, 11 Aug 2007 04:36:04 -0400
+X-Greylist: delayed 2994 seconds by postgrey-1.27 at vger.kernel.org; Sat, 11 Aug 2007 04:36:04 EDT
+Date: Sat, 11 Aug 2007 08:39:59 +0100
+From: Shish <shish@shishnet.org>
+To: linux-kernel@vger.kernel.org
+Subject: Weird network problems with 2.6.23-rc2
+Message-Id: <20070811083959.305b0421.shish@shishnet.org>
+Organization: ShishNet.org
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman <rene.herman@gmail.com> wrote:
+Something seems to have broken in 2.6.23-rc2, and I'm not sure what, or
+where I should look for further debugging. The info I have:
 
-> I must say I've been wondering about relatime a bit as well. Are there
-> actually users who do really want atime, but not badly enough to want real
-> atime?
+On my 2.6.23-rc2 desktop, things run fine.
 
-Anyone using /var/spool/mail.
+On my test server, built from the same source tree, networking goes
+strange every few minutes, with the following symptoms:
+
+o) running ping against the server, the first ping goes through;
+further pings go AWOL until about icmp_seq=30, when I get 4-5 icmp
+replies (marked as DUP!), then no pings for a while, then dups, and so
+on.
+
+o) the server doesn't see ARP replies. According to tcpdump, the server
+will send eg "who has 192.168.0.2? tell 192.168.0.1"; the client in
+question will recieve the packet and send a response, but nothing shows
+up in the server-side tcpdump.
+
+o) after a few minutes of random network troubles, everything will work
+fine again, (ping is normal, arp replies are seen, tcp sessions work)
+for a few minutes.
+
+o) The server's dmesg shows lots of "short udp packet" messages
+
+o) ifdown then ifup'ing the interfaces fixes things, temporarily.
+
+Reverting to 2.6.22, everything seems to be running fine (but no lguest,
+which is what I came for :( )
+
+I've also tried with the latest code from git, the behaviour is the same
+as 2.6.23-rc2.
+
 -- 
-Programming is an art form that fights back. 
+Shish
 
-Friﬂ, Spammer: unhZ6GcWf@CQ.7eggert.dyndns.org
- BpD@ejtlDUeA.7eggert.dyndns.org T@e.7eggert.dyndns.org
+PS. First message to the list, please don't hurt me :P
