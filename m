@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbXHKG34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbXHKGat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755390AbXHKG34 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 02:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796AbXHKG3k
+	id S1756391AbXHKGat (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 02:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbXHKG3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 02:29:40 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:6107 "EHLO
+	Sat, 11 Aug 2007 02:29:52 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:3058 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751854AbXHKG3h (ORCPT
+	with ESMTP id S1754235AbXHKG3r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 02:29:37 -0400
+	Sat, 11 Aug 2007 02:29:47 -0400
 From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 1/13] cxgb3 - MAC workaround update
+Subject: [PATCH 3/13] cxgb3 - SGE doorbell overflow warning
 To: jeff@garzik.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Date: Fri, 10 Aug 2007 23:29:33 -0700
-Message-ID: <20070811062933.8022.51781.stgit@speedy5>
+Date: Fri, 10 Aug 2007 23:29:44 -0700
+Message-ID: <20070811062944.8058.38057.stgit@speedy5>
 User-Agent: StGIT/0.12
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,97 +26,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Update the MAC workaround to deal with switches that do not
-honor pause frames.
+Log doorbell Fifo overflow
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/common.h |    1 +
- drivers/net/cxgb3/xgmac.c  |   22 +++++++++++-----------
- 2 files changed, 12 insertions(+), 11 deletions(-)
+ drivers/net/cxgb3/regs.h |    8 ++++++++
+ drivers/net/cxgb3/sge.c  |    4 ++++
+ 2 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/cxgb3/common.h b/drivers/net/cxgb3/common.h
-index 1637800..c46c249 100644
---- a/drivers/net/cxgb3/common.h
-+++ b/drivers/net/cxgb3/common.h
-@@ -507,6 +507,7 @@ struct cmac {
- 	unsigned int tx_xcnt;
- 	u64 tx_mcnt;
- 	unsigned int rx_xcnt;
-+	unsigned int rx_ocnt;
- 	u64 rx_mcnt;
- 	unsigned int toggle_cnt;
- 	unsigned int txen;
-diff --git a/drivers/net/cxgb3/xgmac.c b/drivers/net/cxgb3/xgmac.c
-index c302b1a..1d1c391 100644
---- a/drivers/net/cxgb3/xgmac.c
-+++ b/drivers/net/cxgb3/xgmac.c
-@@ -437,12 +437,13 @@ int t3_mac_enable(struct cmac *mac, int which)
- 	struct mac_stats *s = &mac->stats;
- 	
- 	if (which & MAC_DIRECTION_TX) {
--		t3_write_reg(adap, A_XGM_TX_CTRL + oft, F_TXEN);
- 		t3_write_reg(adap, A_TP_PIO_ADDR, A_TP_TX_DROP_CFG_CH0 + idx);
- 		t3_write_reg(adap, A_TP_PIO_DATA, 0xc0ede401);
- 		t3_write_reg(adap, A_TP_PIO_ADDR, A_TP_TX_DROP_MODE);
- 		t3_set_reg_field(adap, A_TP_PIO_DATA, 1 << idx, 1 << idx);
+diff --git a/drivers/net/cxgb3/regs.h b/drivers/net/cxgb3/regs.h
+index aa80313..2824278 100644
+--- a/drivers/net/cxgb3/regs.h
++++ b/drivers/net/cxgb3/regs.h
+@@ -172,6 +172,14 @@
  
-+		t3_write_reg(adap, A_XGM_TX_CTRL + oft, F_TXEN);
+ #define A_SG_INT_CAUSE 0x5c
+ 
++#define S_HIPIODRBDROPERR    11
++#define V_HIPIODRBDROPERR(x) ((x) << S_HIPIODRBDROPERR)
++#define F_HIPIODRBDROPERR    V_HIPIODRBDROPERR(1U)
 +
- 		t3_write_reg(adap, A_TP_PIO_ADDR, A_TP_TX_DROP_CNT_CH0 + idx);
- 		mac->tx_mcnt = s->tx_frames;
- 		mac->tx_tcnt = (G_TXDROPCNTCH0RCVD(t3_read_reg(adap,
-@@ -454,6 +455,7 @@ int t3_mac_enable(struct cmac *mac, int which)
- 		mac->rx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
- 						A_XGM_RX_SPI4_SOP_EOP_CNT +
- 						oft)));
-+		mac->rx_ocnt = s->rx_fifo_ovfl;
- 		mac->txen = F_TXEN;
- 		mac->toggle_cnt = 0;
- 	}
-@@ -464,24 +466,19 @@ int t3_mac_enable(struct cmac *mac, int which)
- 
- int t3_mac_disable(struct cmac *mac, int which)
- {
--	int idx = macidx(mac);
- 	struct adapter *adap = mac->adapter;
--	int val;
- 
- 	if (which & MAC_DIRECTION_TX) {
- 		t3_write_reg(adap, A_XGM_TX_CTRL + mac->offset, 0);
--		t3_write_reg(adap, A_TP_PIO_ADDR, A_TP_TX_DROP_CFG_CH0 + idx);
--		t3_write_reg(adap, A_TP_PIO_DATA, 0xc000001f);
--		t3_write_reg(adap, A_TP_PIO_ADDR, A_TP_TX_DROP_MODE);
--		t3_set_reg_field(adap, A_TP_PIO_DATA, 1 << idx, 1 << idx);
- 		mac->txen = 0;
- 	}
- 	if (which & MAC_DIRECTION_RX) {
-+		int val = F_MAC_RESET_;
++#define S_LOPIODRBDROPERR    10
++#define V_LOPIODRBDROPERR(x) ((x) << S_LOPIODRBDROPERR)
++#define F_LOPIODRBDROPERR    V_LOPIODRBDROPERR(1U)
 +
- 		t3_set_reg_field(mac->adapter, A_XGM_RESET_CTRL + mac->offset,
- 				 F_PCS_RESET_, 0);
- 		msleep(100);
- 		t3_write_reg(adap, A_XGM_RX_CTRL + mac->offset, 0);
--		val = F_MAC_RESET_;
- 		if (is_10G(adap))
- 			val |= F_PCS_RESET_;
- 		else if (uses_xaui(adap))
-@@ -541,11 +538,14 @@ int t3b2_mac_watchdog_task(struct cmac *mac)
+ #define S_RSPQDISABLED    3
+ #define V_RSPQDISABLED(x) ((x) << S_RSPQDISABLED)
+ #define F_RSPQDISABLED    V_RSPQDISABLED(1U)
+diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
+index a2cfd68..9213cda 100644
+--- a/drivers/net/cxgb3/sge.c
++++ b/drivers/net/cxgb3/sge.c
+@@ -2476,6 +2476,10 @@ void t3_sge_err_intr_handler(struct adapter *adapter)
+ 			 "(0x%x)\n", (v >> S_RSPQ0DISABLED) & 0xff);
  	}
  
- rxcheck:
--	if (rx_mcnt != mac->rx_mcnt)
-+	if (rx_mcnt != mac->rx_mcnt) {
- 		rx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
- 						A_XGM_RX_SPI4_SOP_EOP_CNT +
--						mac->offset)));
--	else
-+						mac->offset))) +
-+						(s->rx_fifo_ovfl -
-+						 mac->rx_ocnt);
-+		mac->rx_ocnt = s->rx_fifo_ovfl;
-+	} else
- 		goto out;
- 
- 	if (mac->rx_mcnt != s->rx_frames && rx_xcnt == 0 &&
++	if (status & (F_HIPIODRBDROPERR | F_LOPIODRBDROPERR))
++		CH_ALERT(adapter, "SGE dropped %s priority doorbell\n",
++			 status & F_HIPIODRBDROPERR ? "high" : "lo");
++
+ 	t3_write_reg(adapter, A_SG_INT_CAUSE, status);
+ 	if (status & (F_RSPQCREDITOVERFOW | F_RSPQDISABLED))
+ 		t3_fatal_err(adapter);
