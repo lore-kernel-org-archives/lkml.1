@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbXHKEaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbXHKEke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbXHKEaL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 00:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbXHKE35
+	id S1753340AbXHKEke (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 00:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbXHKEkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 00:29:57 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:54698 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750897AbXHKE3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 00:29:55 -0400
-Date: Fri, 10 Aug 2007 21:29:43 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Chris Snook <csnook@redhat.com>, dhowells@redhat.com,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
-       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
-Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
-Message-ID: <20070811042943.GA13410@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <46BCC26B.6080600@redhat.com> <E1IJfFe-0003Sq-00@gondolin.me.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1IJfFe-0003Sq-00@gondolin.me.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 11 Aug 2007 00:40:22 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:45759 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763AbXHKEkU (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 00:40:20 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, paulmck@linux.vnet.ibm.com,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       linux-kernel@vger.kernel.org, csnook@redhat.com, rpjday@mindspring.com,
+       netdev@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
+       schwidefsky@de.ibm.com, davem@davemloft.net, wensong@linux-vs.org,
+       wjiang@resilience.com
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+In-Reply-To: Your message of "Sat, 11 Aug 2007 02:38:40 +0200."
+             <ef7e94b08a6515d33039d187e04db5db@kernel.crashing.org>
+From: Valdis.Kletnieks@vt.edu
+References: <E1IJPkg-0000x0-00@gondolin.me.apana.org.au> <442f95ba19f8622ce04cf0334f34be11@kernel.crashing.org> <20070811000029.GA12779@gondor.apana.org.au>
+            <ef7e94b08a6515d33039d187e04db5db@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1186807115_3018P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Sat, 11 Aug 2007 00:38:35 -0400
+Message-ID: <7943.1186807115@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 11, 2007 at 08:54:46AM +0800, Herbert Xu wrote:
-> Chris Snook <csnook@redhat.com> wrote:
-> > 
-> > cpu_relax() contains a barrier, so it should do the right thing.  For 
-> > non-smp architectures, I'm concerned about interacting with interrupt 
-> > handlers.  Some drivers do use atomic_* operations.
+--==_Exmh_1186807115_3018P
+Content-Type: text/plain; charset=us-ascii
+
+On Sat, 11 Aug 2007 02:38:40 +0200, Segher Boessenkool said:
+> >> That means GCC cannot compile Linux; it already optimises
+> >> some accesses to scalars to smaller accesses when it knows
+> >> it is allowed to.  Not often though, since it hardly ever
+> >> helps in the cost model it employs.
+> >
+> > Please give an example code snippet + gcc version + arch
+> > to back this up.
 > 
-> What problems with interrupt handlers? Access to int/long must
-> be atomic or we're in big trouble anyway.
+> 	unsigned char f(unsigned long *p)
+> 	{
+> 	        return *p & 1;
+> 	}
 
-Reordering due to compiler optimizations.  CPU reordering does not
-affect interactions with interrupt handlers on a given CPU, but
-reordering due to compiler code-movement optimization does.  Since
-volatile can in some cases suppress code-movement optimizations,
-it can affect interactions with interrupt handlers.
+Not really valid, because it's still able to do one atomic access to
+compute the result.
 
-						Thanx, Paul
+Now, if you had found an example where it converts a 32-bit atomic access into
+2 separate 16-bit accesses that weren't atomic as a whole....
+
+--==_Exmh_1186807115_3018P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGvT1LcC3lWbTT17ARAmccAKCRd2ZxCdpo0ruAOJZXkpds4qazcwCff1OA
+WRSvt/dpaznIWvvdf7+Q/1o=
+=uesa
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1186807115_3018P--
