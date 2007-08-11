@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbXHKTGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765856AbXHKTG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932185AbXHKTGe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 15:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762316AbXHKS6k
+	id S1765856AbXHKTG4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 15:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762767AbXHKS6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 14:58:40 -0400
-Received: from 1wt.eu ([62.212.114.60]:1584 "EHLO 1wt.eu"
+	Sat, 11 Aug 2007 14:58:46 -0400
+Received: from 1wt.eu ([62.212.114.60]:1594 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762681AbXHKS6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 14:58:32 -0400
+	id S1762729AbXHKS6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 14:58:44 -0400
 From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20070811184835.%N@1wt.eu>
+Message-Id: <20070811184848.%N@1wt.eu>
 References: <20070811184752.%N@1wt.eu>
 User-Agent: quilt/0.46-1
-Date: Sat, 11 Aug 2007 21:47:58 +0200
+Date: Sat, 11 Aug 2007 21:48:14 +0200
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Auke Kok <auke-jan.h.kok@intel.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Doug Chapman <doug.chapman@hp.com>, Jeff Garzik <jeff@garzik.org>,
-       Chris Wright <chrisw@sous-sol.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [2.6.20.16 review 06/28] e1000: disable polling before registering netdevice
-Content-Disposition: inline; filename=0006-PATCH-e1000-disable-polling-before-registering-ne.patch
+Cc: Paul Mackerras <paulus@samba.org>, Chris Wright <chrisw@sous-sol.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [2.6.20.16 review 22/28] POWERPC: Fix subtle FP state corruption bug in signal return on SMP
+Content-Disposition: inline; filename=0022-POWERPC-Fix-subtle-FP-state-corruption-bug-in-signa.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To assure the symmetry of poll enable/disable in up/down, we should
-initialize the netdevice to be poll_disabled at load time. Doing
-this after register_netdevice leaves us open to another race, so
-lets move all the netif_* calls above register_netdevice so the
-stack starts out how we expect it to be.
+This fixes a bug which can cause corruption of the floating-point state
+on return from a signal handler.  If we have a signal handler that has
+used the floating-point registers, and it happens to context-switch to
+another task while copying the interrupted floating-point state from the
+user stack into the thread struct (e.g. because of a page fault, or
+because it gets preempted), the context switch code will think that the
+FP registers contain valid FP state that needs to be copied into the
+thread_struct, and will thus overwrite the values that the signal return
+code has put into the thread_struct.
 
-Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Doug Chapman <doug.chapman@hp.com>
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
+This can occur because we clear the MSR bits that indicate the presence
+of valid FP state after copying the state into the thread_struct.  To fix
+this we just move the clearing of the MSR bits to before the copy.  A
+similar potential problem also occurs with the Altivec state, and this
+fixes that in the same way.
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/e1000/e1000_main.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/signal_64.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index c6259c7..40bdcf9 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -1157,13 +1157,16 @@ e1000_probe(struct pci_dev *pdev,
- 	    !e1000_check_mng_mode(&adapter->hw))
- 		e1000_get_hw_control(adapter);
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index f72e8e8..a84304e 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -177,6 +177,13 @@ static long restore_sigcontext(struct pt_regs *regs, sigset_t *set, int sig,
+ 	 */
+ 	discard_lazy_cpu_state();
  
--	strcpy(netdev->name, "eth%d");
--	if ((err = register_netdev(netdev)))
--		goto err_register;
--
- 	/* tell the stack to leave us alone until e1000_open() is called */
- 	netif_carrier_off(netdev);
- 	netif_stop_queue(netdev);
-+#ifdef CONFIG_E1000_NAPI
-+	netif_poll_disable(netdev);
-+#endif
++	/*
++	 * Force reload of FP/VEC.
++	 * This has to be done before copying stuff into current->thread.fpr/vr
++	 * for the reasons explained in the previous comment.
++	 */
++	regs->msr &= ~(MSR_FP | MSR_FE0 | MSR_FE1 | MSR_VEC);
 +
-+	strcpy(netdev->name, "eth%d");
-+	if ((err = register_netdev(netdev)))
-+		goto err_register;
+ 	err |= __copy_from_user(&current->thread.fpr, &sc->fp_regs, FP_REGS_SIZE);
  
- 	DPRINTK(PROBE, INFO, "Intel(R) PRO/1000 Network Connection
-");
+ #ifdef CONFIG_ALTIVEC
+@@ -198,9 +205,6 @@ static long restore_sigcontext(struct pt_regs *regs, sigset_t *set, int sig,
+ 		current->thread.vrsave = 0;
+ #endif /* CONFIG_ALTIVEC */
+ 
+-	/* Force reload of FP/VEC */
+-	regs->msr &= ~(MSR_FP | MSR_FE0 | MSR_FE1 | MSR_VEC);
+-
+ 	return err;
+ }
  
 -- 
 1.5.2.4
