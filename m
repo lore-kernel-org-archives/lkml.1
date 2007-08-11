@@ -1,128 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761472AbXHKSCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761845AbXHKSGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761472AbXHKSCT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 14:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbXHKSCG
+	id S1761845AbXHKSGR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 14:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbXHKSGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 14:02:06 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:36243 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752101AbXHKSCE (ORCPT
+	Sat, 11 Aug 2007 14:06:10 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:16707 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754059AbXHKSGI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 14:02:04 -0400
-Message-ID: <46BDF965.3050402@linux.vnet.ibm.com>
-Date: Sat, 11 Aug 2007 23:31:09 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Sat, 11 Aug 2007 14:06:08 -0400
+Date: Sat, 11 Aug 2007 21:06:02 +0300
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: lenb@kernel.org, "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
+       Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] ACPI: thinkpad-acpi: change thinkpad-acpi input
+	default and kconfig help
+Message-ID: <20070811180602.GA17843@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+References: <11868017142597-git-send-email-hmh@hmh.eng.br>
+	<11868017143582-git-send-email-hmh@hmh.eng.br>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       WU Fengguang <wfg@mail.ustc.edu.cn>
-Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
-References: <386838491.27058@ustc.edu.cn> <661de9470708110730r1267bdfdp1e76546e11b64f78@mail.gmail.com> <20070811100015.2417788e.akpm@linux-foundation.org>
-In-Reply-To: <20070811100015.2417788e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11868017143582-git-send-email-hmh@hmh.eng.br>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 11 Aug 2007 20:00:12 +0530 "Balbir Singh" <balbir@linux.vnet.ibm.com> wrote:
+> Quoting Henrique de Moraes Holschuh <hmh@hmh.eng.br>:
+> Subject: [PATCH 3/3] ACPI: thinkpad-acpi: change thinkpad-acpi input default and kconfig help
 > 
->> On 8/11/07, Fengguang Wu <fengguang.wu@gmail.com> wrote:
+> The current kconfig help text was misleading users.  Also, the default for
+> an input-layer-optimized support caused way too many problems without
+> up-to-date userspace in place.
 > 
-> hm, both people who replied to this removed Fengguang from cc.  Disagreement
-> between headers and MUAs, perhaps?
-> 
+> So, rework the help text, and change the default to N.  Note that
+> distributions are supposed to enable this option as soon as they update HAL
+> to a version that handles the thinkpad-acpi new input layer interface.
 
-Oops... Not sure how that happened. I'll check my sent mail.
+I don't really know the details here, so I could be completely wrong.
 
->>> Andrew,
->>>
->>> I'm not sure if this patch is the right fix for the bug.  But it do
->>> stops the oops message. The bug also happens in 2.6.23-rc1-mm2/2.6.23-rc2-mm2.
->>> I'm running debian/sid. The .config is attached.
->>>
->>>
->>> Unable to handle kernel NULL pointer dereference at 0000000000000138 RIP
->>>  [<ffffffff81092f66>] __vm_enough_memory+0x76/0x120
->>> PGD 7cd84067 PUD 7d9c3067 PMD 0
->>> Oops: 0000 [2] SMP
->>> CPU 1
->>> Modules linked in: eeprom lm85 hwmon_vid i2c_core tun fuse kvm snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm snd_timer sg snd soundcore sr_mod cdrom snd_page_alloc pcspkr evdev button raid0 usbhid sd_mod uhci_hcd ehci_hcd ata_piix ahci ohci1394 ieee1394 thermal processor fan
->>> Pid: 4305, comm: khelper Tainted: G      D 2.6.23-rc2 #9
->>> RIP: 0010:[<ffffffff81092f66>]  [<ffffffff81092f66>] __vm_enough_memory+0x76/0x120
->>> RSP: 0000:ffff81007a3d1d30  EFLAGS: 00010206
->>> RAX: 0000000000000000 RBX: 0000000000000001 RCX: 000000000003e142
->>> RDX: 00000000000004f4 RSI: 0000000000000001 RDI: 0000000000000001
->>> RBP: ffff81007a3d1d40 R08: ffff81007a3d1d78 R09: 0000000000000000
->>> R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000001
->>> R13: 0000000000000000 R14: ffff81007d0c0188 R15: ffff81007d577b18
->>> FS:  0000000000000000(0000) GS:ffff81007efa11d0(0000) knlGS:0000000000000000
->>> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
->>> CR2: 0000000000000138 CR3: 000000003799b000 CR4: 00000000000006e0
->>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->>> Process khelper (pid: 4305, threadinfo ffff81007a3d0000, task ffff81007a30acc0)
->>> Stack:  0000000000000001 ffff81007d577b18 ffff81007a3d1d60 ffffffff811297ff
->>>  0000000000000001 ffff810037c84bb8 ffff81007a3d1da0 ffffffff81092532
->>>  ffff81007d0c0188 0000000000000000 ffff81007d577b20 0000000000000000
->>> Call Trace:
->>>  [<ffffffff811297ff>] cap_vm_enough_memory+0x2f/0x40
->>>  [<ffffffff81092532>] insert_vm_struct+0xa2/0xb0
->>>  [<ffffffff810b020e>] bprm_mm_init+0x11e/0x1b0
->>>  [<ffffffff810b1b71>] do_execve+0x81/0x220
->>>  [<ffffffff8104bf90>] __call_usermodehelper+0x0/0x90
->>>  [<ffffffff8100abc6>] sys_execve+0x46/0xb0
->>>  [<ffffffff8104bf90>] __call_usermodehelper+0x0/0x90
->>>  [<ffffffff8100cf64>] kernel_execve+0x64/0xd0
->>>  [<ffffffff8104bf90>] __call_usermodehelper+0x0/0x90
->>>  [<ffffffff8104c384>] ____call_usermodehelper+0x174/0x190
->>>  [<ffffffff8100cef8>] child_rip+0xa/0x12
->>>  [<ffffffff810356f8>] schedule_tail+0x78/0x100
->>>  [<ffffffff8100c60c>] restore_args+0x0/0x30
->>>  [<ffffffff8104c210>] ____call_usermodehelper+0x0/0x190
->>>  [<ffffffff8100ceee>] child_rip+0x0/0x12
->>>
->>>
->>> Code: 48 8b 80 38 01 00 00 48 c1 e8 05 48 29 c1 48 39 ca 0f 8c 89
->>> RIP  [<ffffffff81092f66>] __vm_enough_memory+0x76/0x120
->>>  RSP <ffff81007a3d1d30>
->>> CR2: 0000000000000138
->>>
->>> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
->>> ---
->>>  mm/mmap.c |    3 ++-
->>>  1 file changed, 2 insertions(+), 1 deletion(-)
->>>
->>> --- linux-2.6.23-rc2-mm2.orig/mm/mmap.c
->>> +++ linux-2.6.23-rc2-mm2/mm/mmap.c
->>> @@ -166,7 +166,8 @@ int __vm_enough_memory(long pages, int c
->>>
->>>         /* Don't let a single process grow too big:
->>>            leave 3% of the size of this process for other processes */
->>> -       allowed -= current->mm->total_vm / 32;
->>> +       if (current->mm)
->>> +               allowed -= current->mm->total_vm / 32;
->>>
->>>         /*
->>>          * cast `allowed' as a signed long because vm_committed_space
->>>
->>>
->> Shouldn't we just not stop vm accounting for kernel threads?
->>
-> 
-> Could be.  It'd help heaps if we knew which patch in -mm caused
-> this, but from a quick peek it seems to me that mainline should be
-> vulnerable as well.
+However, generally, forcing HAL and kernel to be in sync really
+looks to me like a non-ideal way to handle interface change.
+For example, this would mean that one can't use the same kernel
+for multiple distributions, and for a person like me
+that needs to switch distros all the time, it seems like a pain.
 
-Thats a valid point. It would be interesting to see what the overcommit
-setting was, when the panic occurred.
+Could not the kernel expose both new and old interfaces
+somehow, so that HAL can be updated without recompiling the kernel?
+For example, there could be a sysfs interface which let the HAL set
+the desired interface version.
+
+Couldn't that work?
+This seems easy to code up.
+Want a patch like that?
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+MST
