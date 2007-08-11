@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbXHKRid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760386AbXHKRyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758827AbXHKRid (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 13:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbXHKRiX
+	id S1760386AbXHKRyO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 13:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbXHKRyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 13:38:23 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:35039 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753595AbXHKRiW (ORCPT
+	Sat, 11 Aug 2007 13:54:00 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:53172 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbXHKRx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 13:38:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ESO8GLIE0XBEEx2QEaSqPJUyQJ66UZa7tWs3g4DXOSE9i7bSFgw03Lse7GYczFPECgRJ0+ABtBr10UU1LwkW0O4orCeUdpF3z4PTj/lxQs6DMq4+5jJ4u4ECb9RLETvMWUbBuR27kUbXw264Siu6blVECaoYQ5ZJ9JQoEG8GVug=
-Message-ID: <d9b9d95f0708111038p48f18660me02d3e75280b37e@mail.gmail.com>
-Date: Sat, 11 Aug 2007 18:38:20 +0100
-From: "Renato Golin" <rengolin@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: joydev.c and saitek cyborg evo force
-Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0708101753410.11054@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
-	 <d9b9d95f0706120608g979b89oc79dbc277d19862b@mail.gmail.com>
-	 <d120d5000706120613o7a328e59v3cba37f0ced88e77@mail.gmail.com>
-	 <d9b9d95f0706120631l20e6f91duaa110e72a0e955a6@mail.gmail.com>
-	 <Pine.LNX.4.64.0706121715480.10204@jikos.suse.cz>
-	 <d9b9d95f0706141524p3686a41cn882d8f086e4f62cc@mail.gmail.com>
-	 <Pine.LNX.4.64.0706201156410.23812@jikos.suse.cz>
-	 <d9b9d95f0707201710g14d8a905s222c1209358f0196@mail.gmail.com>
-	 <Pine.LNX.4.64.0708101643360.11054@jikos.suse.cz>
-	 <Pine.LNX.4.64.0708101753410.11054@jikos.suse.cz>
+	Sat, 11 Aug 2007 13:53:59 -0400
+Date: Sat, 11 Aug 2007 13:53:56 -0400
+Message-Id: <200708111753.l7BHruNV009717@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: viro@zeniv.linux.org.uk
+Subject: [PATCH] 2.6.23-rc2 error compiling fs/drop_caches.c (struct super_block errors)
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/08/07, Jiri Kosina <jkosina@suse.cz> wrote:
-> does the attached patch (against 2.6.23-rc2) fix the problem with axis
-> ranges for you please?
+I'm getting a lot of warnings about struct super_block in 2.6.23-rc2.  Then,
+a compile error when compiling fs/drop_caches.o:
 
-Hi Jiri,
+  CC      fs/drop_caches.o
+In file included from fs/drop_caches.c:7:
+include/linux/mm.h:1210: warning: 'struct super_block' declared inside parameter list
+include/linux/mm.h:1210: warning: its scope is only this definition or declaration, which is probably not what you want
+fs/drop_caches.c:17: error: conflicting types for 'drop_pagecache_sb'
+include/linux/mm.h:1210: error: previous declaration of 'drop_pagecache_sb' was here
+fs/drop_caches.c:28: error: conflicting types for 'drop_pagecache_sb'
+include/linux/mm.h:1210: error: previous declaration of 'drop_pagecache_sb' was here
+make[1]: *** [fs/drop_caches.o] Error 1
+make: *** [fs] Error 2
 
-fixes perfectly. But it probably breaks the output range and kills the
-force-feedback.
+I'm using Linus's tree, which is 2.6.23-rc2 plus all patches up to this
+commit:
 
-I couldn't find fftest for debian (the package with jstest doesn't
-have it) but I'll compile and run here to test.
+  commit ac07860264bd2b18834d3fa3be47032115524cea
+  Author: Jesper Juhl <jesper.juhl@gmail.com>
+  Date:   Wed Aug 8 16:31:30 2007 -0700
 
-thanks,
---renato
+I didn't check if this is fixed already in the latest -mm.  The following
+small fix seems to get rid of all warnings and compile errors I've seen:
 
-Reclaim your digital rights, eliminate DRM, learn more at
-http://www.defectivebydesign.org/what_is_drm
+
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 324c151..ed90191 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -20,6 +20,7 @@ struct anon_vma;
+ struct file_ra_state;
+ struct user_struct;
+ struct writeback_control;
++struct super_block;
+ 
+ #ifndef CONFIG_DISCONTIGMEM          /* Don't use mapnrs, do it properly */
+ extern unsigned long max_mapnr;
+
+
+Cheers,
+Erez.
