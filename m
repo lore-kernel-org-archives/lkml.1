@@ -1,119 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761440AbXHKA37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762329AbXHKAbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761440AbXHKA37 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 20:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbXHKA3w
+	id S1762329AbXHKAbU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 20:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbXHKAbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 20:29:52 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:60073 "EHLO e6.ny.us.ibm.com"
+	Fri, 10 Aug 2007 20:31:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35453 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755854AbXHKA3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 20:29:51 -0400
-Date: Fri, 10 Aug 2007 17:29:49 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Josh Triplett <josh@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc2-mm1: rcutorture xtime usage
-Message-ID: <20070811002949.GA7918@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070809015106.cd0bfc53.akpm@linux-foundation.org> <20070810013146.GD18938@stusta.de> <20070810020040.GK8424@linux.vnet.ibm.com> <20070809190623.f60dcf70.akpm@linux-foundation.org> <20070810151208.GC8511@linux.vnet.ibm.com> <20070810101212.d59ce24a.akpm@linux-foundation.org> <20070810203055.GE8511@linux.vnet.ibm.com>
+	id S1756213AbXHKAbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 20:31:06 -0400
+Date: Sat, 11 Aug 2007 02:30:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Willy Tarreau <w@1wt.eu>, Michael Chang <thenewme91@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+Message-ID: <20070811003052.GA18812@elte.hu>
+References: <Pine.LNX.4.64.0708011955430.1817@scrub.home> <20070801190556.GA1199@elte.hu> <Pine.LNX.4.64.0708100037460.1817@scrub.home> <20070810054948.GA5908@elte.hu> <Pine.LNX.4.64.0708101459530.1817@scrub.home> <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com> <Pine.LNX.4.64.0708101919270.1817@scrub.home> <20070810194705.GH6002@1wt.eu> <Pine.LNX.4.64.0708102235320.1817@scrub.home> <20070810213630.GA13910@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070810203055.GE8511@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070810213630.GA13910@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 01:30:55PM -0700, Paul E. McKenney wrote:
-> On Fri, Aug 10, 2007 at 10:12:12AM -0700, Andrew Morton wrote:
-> > On Fri, 10 Aug 2007 08:12:08 -0700 "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > > One used to use sched_clock() for this, then get frowned at.  Now we
-> > > > have cpu_clock()...
-> > > 
-> > > Hmmm...  And cpu_clock() is not in 2.6.22, so must appear in some later
-> > > release.  Which means that the rate of API change in this area is a
-> > > bit high, so I should avoid it like the plague.
-> > 
-> > eh, it's been there for weeks.  It is dust-encrusted.
-> > 
-> > >  Therefore, I should
-> > > look for some other convenient source of entropy.
-> > > 
-> > > One convenient source would the per-CPU statistics that rcutorture
-> > > maintains.  Of course, a given CPU's RNG is nearly in lock-step with
-> > > its own statistics, but not with the adjacent CPU's statistics...
-> > > 
-> > > I will send a patch.
-> > 
-> > Please use cpu_clock().  It ain't going away.
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> * Roman Zippel <zippel@linux-m68k.org> wrote:
 > 
-> D'accord...
+> > Well, I've sent him the stuff now...
+> 
+> received it - thanks alot, looking at it!
 
-Errmmm...  No joy.
+everything looks good in your debug output and the TSC dump data, except 
+for the wait_runtime values, they are quite out of balance - and that 
+balance cannot be explained with jiffies granularity or with any sort of 
+sched_clock() artifact. So this clearly looks like a CFS regression that 
+should be fixed.
 
-	ERROR: "cpu_clock" [kernel/rcutorture.ko] undefined!
+the only relevant thing that comes to mind at the moment is that last 
+week Peter noticed a buggy aspect of sleeper bonuses (in that we do not 
+rate-limit their output, hence we 'waste' them instead of redistributing 
+them), and i've got the small patch below in my queue to fix that - 
+could you give it a try?
 
-Turns out that cpu_clock also ain't exported, and rcutorture.c is
-a module.  Would adding an EXPORT_SYMBOL_GPL() as in the patch below
-be acceptable?
+this is just a blind stab into the dark - i couldnt see any real impact 
+from that patch in various workloads (and it's not upstream yet), so it 
+might not make a big difference. The trace you did (could you send the 
+source for that?) seems to implicate sleeper bonuses though.
 
-If not, I have a tested patch to rcutorture.c that leverages statistical
-counters.  Your choice.
+if this patch doesnt help, could you check the general theory whether 
+it's related to sleeper-fairness, via turning it off:
 
-						Thanx, Paul
+   echo 30 > /proc/sys/kernel/sched_features
 
-Add an EXPORT_SYMBOL_GPL() for cpu_clock() and make rcutorture.c use it.
-Compiles, but not yet tested.
+does the bug go away if you do that? If sleeper bonuses are showing too 
+many artifacts then we could turn it off for final .23.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+	Ingo
+
+--------------------->
+Subject: sched: fix sleeper bonus
+From: Ingo Molnar <mingo@elte.hu>
+
+Peter Ziljstra noticed that the sleeper bonus deduction code was not 
+properly rate-limited: a task that scheduled more frequently would get a 
+disproportionately large deduction. So limit the deduction to delta_exec 
+and limit production to runtime_limit.
+
+Not-Yet-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ kernel/sched_fair.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
- rcutorture.c |    8 ++------
- sched.c      |    2 ++
- 2 files changed, 4 insertions(+), 6 deletions(-)
-
-diff -urpNa -X dontdiff linux-2.6.23-rc2/kernel/rcutorture.c linux-2.6.23-rc2-rcutorturesched/kernel/rcutorture.c
---- linux-2.6.23-rc2/kernel/rcutorture.c	2007-08-03 19:49:55.000000000 -0700
-+++ linux-2.6.23-rc2-rcutorturesched/kernel/rcutorture.c	2007-08-10 17:15:22.000000000 -0700
-@@ -42,7 +42,6 @@
- #include <linux/notifier.h>
- #include <linux/freezer.h>
- #include <linux/cpu.h>
--#include <linux/random.h>
- #include <linux/delay.h>
- #include <linux/byteorder/swabb.h>
- #include <linux/stat.h>
-@@ -166,16 +165,13 @@ struct rcu_random_state {
+Index: linux/kernel/sched_fair.c
+===================================================================
+--- linux.orig/kernel/sched_fair.c
++++ linux/kernel/sched_fair.c
+@@ -75,7 +75,7 @@ enum {
  
- /*
-  * Crude but fast random-number generator.  Uses a linear congruential
-- * generator, with occasional help from get_random_bytes().
-+ * generator, with occasional help from cpu_clock().
-  */
- static unsigned long
- rcu_random(struct rcu_random_state *rrsp)
- {
--	long refresh;
+ unsigned int sysctl_sched_features __read_mostly =
+ 		SCHED_FEAT_FAIR_SLEEPERS	*1 |
+-		SCHED_FEAT_SLEEPER_AVG		*1 |
++		SCHED_FEAT_SLEEPER_AVG		*0 |
+ 		SCHED_FEAT_SLEEPER_LOAD_AVG	*1 |
+ 		SCHED_FEAT_PRECISE_CPU_LOAD	*1 |
+ 		SCHED_FEAT_START_DEBIT		*1 |
+@@ -304,11 +304,9 @@ __update_curr(struct cfs_rq *cfs_rq, str
+ 	delta_mine = calc_delta_mine(delta_exec, curr->load.weight, lw);
+ 
+ 	if (cfs_rq->sleeper_bonus > sysctl_sched_granularity) {
+-		delta = calc_delta_mine(cfs_rq->sleeper_bonus,
+-					curr->load.weight, lw);
+-		if (unlikely(delta > cfs_rq->sleeper_bonus))
+-			delta = cfs_rq->sleeper_bonus;
 -
- 	if (--rrsp->rrs_count < 0) {
--		get_random_bytes(&refresh, sizeof(refresh));
--		rrsp->rrs_state += refresh;
-+		rrsp->rrs_state += (unsigned long)cpu_clock(smp_processor_id());
- 		rrsp->rrs_count = RCU_RANDOM_REFRESH;
++		delta = min(cfs_rq->sleeper_bonus, (u64)delta_exec);
++		delta = calc_delta_mine(delta, curr->load.weight, lw);
++		delta = min((u64)delta, cfs_rq->sleeper_bonus);
+ 		cfs_rq->sleeper_bonus -= delta;
+ 		delta_mine -= delta;
  	}
- 	rrsp->rrs_state = rrsp->rrs_state * RCU_RANDOM_MULT + RCU_RANDOM_ADD;
-diff -urpNa -X dontdiff linux-2.6.23-rc2/kernel/sched.c linux-2.6.23-rc2-rcutorturesched/kernel/sched.c
---- linux-2.6.23-rc2/kernel/sched.c	2007-08-03 19:49:55.000000000 -0700
-+++ linux-2.6.23-rc2-rcutorturesched/kernel/sched.c	2007-08-10 17:22:57.000000000 -0700
-@@ -394,6 +394,8 @@ unsigned long long cpu_clock(int cpu)
- 	return now;
- }
+@@ -521,6 +519,8 @@ static void __enqueue_sleeper(struct cfs
+ 	 * Track the amount of bonus we've given to sleepers:
+ 	 */
+ 	cfs_rq->sleeper_bonus += delta_fair;
++	if (unlikely(cfs_rq->sleeper_bonus > sysctl_sched_runtime_limit))
++		cfs_rq->sleeper_bonus = sysctl_sched_runtime_limit;
  
-+EXPORT_SYMBOL_GPL(cpu_clock);
-+
- #ifdef CONFIG_FAIR_GROUP_SCHED
- /* Change a task's ->cfs_rq if it moves across CPUs */
- static inline void set_task_cfs_rq(struct task_struct *p)
+ 	schedstat_add(cfs_rq, wait_runtime, se->wait_runtime);
+ }
