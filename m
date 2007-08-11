@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758707AbXHKGcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758276AbXHKGdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758707AbXHKGcl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 02:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbXHKGaH
+	id S1758276AbXHKGdJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 02:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931AbXHKGaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 02:30:07 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:5984 "EHLO
+	Sat, 11 Aug 2007 02:30:21 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:7447 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753523AbXHKG3x (ORCPT
+	with ESMTP id S1754821AbXHKGaQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 02:29:53 -0400
+	Sat, 11 Aug 2007 02:30:16 -0400
 From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 4/13] cxgb3 - use immediate data for offload Tx
+Subject: [PATCH 8/13] cxgb3 - log adapter derial number
 To: jeff@garzik.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Date: Fri, 10 Aug 2007 23:29:49 -0700
-Message-ID: <20070811062949.8076.42523.stgit@speedy5>
+Date: Fri, 10 Aug 2007 23:30:10 -0700
+Message-ID: <20070811063010.8148.57462.stgit@speedy5>
 User-Agent: StGIT/0.12
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,65 +26,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Send small TX_DATA work requests as immediate data even when
-there are fragments.
+Log HW serial number when cxgb3 module is loaded.
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/sge.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
+ drivers/net/cxgb3/common.h     |    2 ++
+ drivers/net/cxgb3/cxgb3_main.c |    6 ++++--
+ drivers/net/cxgb3/t3_hw.c      |    3 ++-
+ 3 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-index 9213cda..dca2716 100644
---- a/drivers/net/cxgb3/sge.c
-+++ b/drivers/net/cxgb3/sge.c
-@@ -1182,8 +1182,8 @@ int t3_eth_xmit(struct sk_buff *skb, struct net_device *dev)
-  *
-  *	Writes a packet as immediate data into a Tx descriptor.  The packet
-  *	contains a work request at its beginning.  We must write the packet
-- *	carefully so the SGE doesn't read accidentally before it's written in
-- *	its entirety.
-+ *	carefully so the SGE doesn't read it accidentally before it's written
-+ *	in its entirety.
-  */
- static inline void write_imm(struct tx_desc *d, struct sk_buff *skb,
- 			     unsigned int len, unsigned int gen)
-@@ -1191,7 +1191,11 @@ static inline void write_imm(struct tx_desc *d, struct sk_buff *skb,
- 	struct work_request_hdr *from = (struct work_request_hdr *)skb->data;
- 	struct work_request_hdr *to = (struct work_request_hdr *)d;
- 
--	memcpy(&to[1], &from[1], len - sizeof(*from));
-+	if (likely(!skb->data_len))
-+		memcpy(&to[1], &from[1], len - sizeof(*from));
-+	else
-+		skb_copy_bits(skb, sizeof(*from), &to[1], len - sizeof(*from));
-+
- 	to->wr_hi = from->wr_hi | htonl(F_WR_SOP | F_WR_EOP |
- 					V_WR_BCNTLFLT(len & 7));
- 	wmb();
-@@ -1261,7 +1265,7 @@ static inline void reclaim_completed_tx_imm(struct sge_txq *q)
- 
- static inline int immediate(const struct sk_buff *skb)
- {
--	return skb->len <= WR_LEN && !skb->data_len;
-+	return skb->len <= WR_LEN;
+diff --git a/drivers/net/cxgb3/common.h b/drivers/net/cxgb3/common.h
+index 55922ed..d54446f 100644
+--- a/drivers/net/cxgb3/common.h
++++ b/drivers/net/cxgb3/common.h
+@@ -97,6 +97,7 @@ enum {
+ 	MAX_NPORTS = 2,		/* max # of ports */
+ 	MAX_FRAME_SIZE = 10240,	/* max MAC frame size, including header + FCS */
+ 	EEPROMSIZE = 8192,	/* Serial EEPROM size */
++	SERNUM_LEN     = 16,    /* Serial # length */
+ 	RSS_TABLE_SIZE = 64,	/* size of RSS lookup and mapping tables */
+ 	TCB_SIZE = 128,		/* TCB size */
+ 	NMTUS = 16,		/* size of MTU table */
+@@ -391,6 +392,7 @@ struct vpd_params {
+ 	unsigned int uclk;
+ 	unsigned int mdc;
+ 	unsigned int mem_timing;
++	u8 sn[SERNUM_LEN + 1];
+ 	u8 eth_base[6];
+ 	u8 port_type[MAX_NPORTS];
+ 	unsigned short xauicfg[2];
+diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+index a1f94cf..e5744e7 100644
+--- a/drivers/net/cxgb3/cxgb3_main.c
++++ b/drivers/net/cxgb3/cxgb3_main.c
+@@ -2333,10 +2333,12 @@ static void __devinit print_port_info(struct adapter *adap,
+ 		       (adap->flags & USING_MSIX) ? " MSI-X" :
+ 		       (adap->flags & USING_MSI) ? " MSI" : "");
+ 		if (adap->name == dev->name && adap->params.vpd.mclk)
+-			printk(KERN_INFO "%s: %uMB CM, %uMB PMTX, %uMB PMRX\n",
++			printk(KERN_INFO
++			       "%s: %uMB CM, %uMB PMTX, %uMB PMRX, S/N: %s\n",
+ 			       adap->name, t3_mc7_size(&adap->cm) >> 20,
+ 			       t3_mc7_size(&adap->pmtx) >> 20,
+-			       t3_mc7_size(&adap->pmrx) >> 20);
++			       t3_mc7_size(&adap->pmrx) >> 20,
++			       adap->params.vpd.sn);
+ 	}
  }
  
- /**
-@@ -1467,12 +1471,13 @@ static void write_ofld_wr(struct adapter *adap, struct sk_buff *skb,
-  */
- static inline unsigned int calc_tx_descs_ofld(const struct sk_buff *skb)
- {
--	unsigned int flits, cnt = skb_shinfo(skb)->nr_frags;
-+	unsigned int flits, cnt;
+diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
+index dd3149d..23b1a16 100644
+--- a/drivers/net/cxgb3/t3_hw.c
++++ b/drivers/net/cxgb3/t3_hw.c
+@@ -505,7 +505,7 @@ struct t3_vpd {
+ 	u8 vpdr_len[2];
+ 	VPD_ENTRY(pn, 16);	/* part number */
+ 	VPD_ENTRY(ec, 16);	/* EC level */
+-	VPD_ENTRY(sn, 16);	/* serial number */
++	VPD_ENTRY(sn, SERNUM_LEN); /* serial number */
+ 	VPD_ENTRY(na, 12);	/* MAC address base */
+ 	VPD_ENTRY(cclk, 6);	/* core clock */
+ 	VPD_ENTRY(mclk, 6);	/* mem clock */
+@@ -648,6 +648,7 @@ static int get_vpd_params(struct adapter *adapter, struct vpd_params *p)
+ 	p->uclk = simple_strtoul(vpd.uclk_data, NULL, 10);
+ 	p->mdc = simple_strtoul(vpd.mdc_data, NULL, 10);
+ 	p->mem_timing = simple_strtoul(vpd.mt_data, NULL, 10);
++	memcpy(p->sn, vpd.sn_data, SERNUM_LEN);
  
--	if (skb->len <= WR_LEN && cnt == 0)
-+	if (skb->len <= WR_LEN)
- 		return 1;	/* packet fits as immediate data */
- 
- 	flits = skb_transport_offset(skb) / 8;	/* headers */
-+	cnt = skb_shinfo(skb)->nr_frags;
- 	if (skb->tail != skb->transport_header)
- 		cnt++;
- 	return flits_to_desc(flits + sgl_len(cnt));
+ 	/* Old eeproms didn't have port information */
+ 	if (adapter->params.rev == 0 && !vpd.port0_data[0]) {
