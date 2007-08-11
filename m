@@ -1,132 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762139AbXHKSNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761505AbXHKSkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762139AbXHKSNf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 14:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbXHKSN2
+	id S1761505AbXHKSkm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 14:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755953AbXHKSkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 14:13:28 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:20259 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752101AbXHKSN1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 14:13:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Qg0fobj0lGGPoU8DX1AXNhIDM55WXzfyLRpf6XvI9jF3D10NvDX4uzR9pc5b8R0T1nXVKZyNHS33hLKLzDTw5o55cWtjjLe++nghQwR+o73yqjWO+A86b3T4YyQwgyy+vyV00rjw29Pd+O1nwRaL+vXhblhRHWn5d8M5L/xzvWM=
-Date: Sat, 11 Aug 2007 22:13:10 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
+	Sat, 11 Aug 2007 14:40:33 -0400
+Received: from mx28.mail.ru ([194.67.23.67]:33036 "EHLO mx28.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754348AbXHKSkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 14:40:31 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+Date: Sat, 11 Aug 2007 22:39:35 +0400
+User-Agent: KMail/1.9.7
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       WU Fengguang <wfg@mail.ustc.edu.cn>
-Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
-Message-ID: <20070811181310.GB7232@cvg>
-References: <386838491.27058@ustc.edu.cn> <661de9470708110730r1267bdfdp1e76546e11b64f78@mail.gmail.com> <20070811100015.2417788e.akpm@linux-foundation.org> <46BDF965.3050402@linux.vnet.ibm.com>
+       Samuel Ortiz <samuel@sortiz.org>,
+       "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>,
+       linux-kernel@vger.kernel.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, ambx1@neo.rr.com,
+       linux-pcmcia@lists.infradead.org
+References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <200706301116.19501.arvidjaar@mail.ru> <200706300545.43181.bjorn.helgaas@hp.com>
+In-Reply-To: <200706300545.43181.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46BDF965.3050402@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: multipart/signed;
+  boundary="nextPart10892948.fJBhMzST4Y";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200708112239.37475.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Balbir Singh - Sat, Aug 11, 2007 at 11:31:09PM +0530]
-| Andrew Morton wrote:
-| > On Sat, 11 Aug 2007 20:00:12 +0530 "Balbir Singh" <balbir@linux.vnet.ibm.com> wrote:
-| > 
-| >> On 8/11/07, Fengguang Wu <fengguang.wu@gmail.com> wrote:
-| > 
-| > hm, both people who replied to this removed Fengguang from cc.  Disagreement
-| > between headers and MUAs, perhaps?
-| > 
-| 
-| Oops... Not sure how that happened. I'll check my sent mail.
-| 
-| >>> Andrew,
-| >>>
-| >>> I'm not sure if this patch is the right fix for the bug.  But it do
-| >>> stops the oops message. The bug also happens in 2.6.23-rc1-mm2/2.6.23-rc2-mm2.
-| >>> I'm running debian/sid. The .config is attached.
-| >>>
-| >>>
-| >>> Unable to handle kernel NULL pointer dereference at 0000000000000138 RIP
-| >>>  [<ffffffff81092f66>] __vm_enough_memory+0x76/0x120
-| >>> PGD 7cd84067 PUD 7d9c3067 PMD 0
-| >>> Oops: 0000 [2] SMP
-| >>> CPU 1
-| >>> Modules linked in: eeprom lm85 hwmon_vid i2c_core tun fuse kvm snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm snd_timer sg snd soundcore sr_mod cdrom snd_page_alloc pcspkr evdev button raid0 usbhid sd_mod uhci_hcd ehci_hcd ata_piix ahci ohci1394 ieee1394 thermal processor fan
-| >>> Pid: 4305, comm: khelper Tainted: G      D 2.6.23-rc2 #9
-| >>> RIP: 0010:[<ffffffff81092f66>]  [<ffffffff81092f66>] __vm_enough_memory+0x76/0x120
-| >>> RSP: 0000:ffff81007a3d1d30  EFLAGS: 00010206
-| >>> RAX: 0000000000000000 RBX: 0000000000000001 RCX: 000000000003e142
-| >>> RDX: 00000000000004f4 RSI: 0000000000000001 RDI: 0000000000000001
-| >>> RBP: ffff81007a3d1d40 R08: ffff81007a3d1d78 R09: 0000000000000000
-| >>> R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000001
-| >>> R13: 0000000000000000 R14: ffff81007d0c0188 R15: ffff81007d577b18
-| >>> FS:  0000000000000000(0000) GS:ffff81007efa11d0(0000) knlGS:0000000000000000
-| >>> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-| >>> CR2: 0000000000000138 CR3: 000000003799b000 CR4: 00000000000006e0
-| >>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-| >>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-| >>> Process khelper (pid: 4305, threadinfo ffff81007a3d0000, task ffff81007a30acc0)
-| >>> Stack:  0000000000000001 ffff81007d577b18 ffff81007a3d1d60 ffffffff811297ff
-| >>>  0000000000000001 ffff810037c84bb8 ffff81007a3d1da0 ffffffff81092532
-| >>>  ffff81007d0c0188 0000000000000000 ffff81007d577b20 0000000000000000
-| >>> Call Trace:
-| >>>  [<ffffffff811297ff>] cap_vm_enough_memory+0x2f/0x40
-| >>>  [<ffffffff81092532>] insert_vm_struct+0xa2/0xb0
-| >>>  [<ffffffff810b020e>] bprm_mm_init+0x11e/0x1b0
-| >>>  [<ffffffff810b1b71>] do_execve+0x81/0x220
-| >>>  [<ffffffff8104bf90>] __call_usermodehelper+0x0/0x90
-| >>>  [<ffffffff8100abc6>] sys_execve+0x46/0xb0
-| >>>  [<ffffffff8104bf90>] __call_usermodehelper+0x0/0x90
-| >>>  [<ffffffff8100cf64>] kernel_execve+0x64/0xd0
-| >>>  [<ffffffff8104bf90>] __call_usermodehelper+0x0/0x90
-| >>>  [<ffffffff8104c384>] ____call_usermodehelper+0x174/0x190
-| >>>  [<ffffffff8100cef8>] child_rip+0xa/0x12
-| >>>  [<ffffffff810356f8>] schedule_tail+0x78/0x100
-| >>>  [<ffffffff8100c60c>] restore_args+0x0/0x30
-| >>>  [<ffffffff8104c210>] ____call_usermodehelper+0x0/0x190
-| >>>  [<ffffffff8100ceee>] child_rip+0x0/0x12
-| >>>
-| >>>
-| >>> Code: 48 8b 80 38 01 00 00 48 c1 e8 05 48 29 c1 48 39 ca 0f 8c 89
-| >>> RIP  [<ffffffff81092f66>] __vm_enough_memory+0x76/0x120
-| >>>  RSP <ffff81007a3d1d30>
-| >>> CR2: 0000000000000138
-| >>>
-| >>> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-| >>> ---
-| >>>  mm/mmap.c |    3 ++-
-| >>>  1 file changed, 2 insertions(+), 1 deletion(-)
-| >>>
-| >>> --- linux-2.6.23-rc2-mm2.orig/mm/mmap.c
-| >>> +++ linux-2.6.23-rc2-mm2/mm/mmap.c
-| >>> @@ -166,7 +166,8 @@ int __vm_enough_memory(long pages, int c
-| >>>
-| >>>         /* Don't let a single process grow too big:
-| >>>            leave 3% of the size of this process for other processes */
-| >>> -       allowed -= current->mm->total_vm / 32;
-| >>> +       if (current->mm)
-| >>> +               allowed -= current->mm->total_vm / 32;
-| >>>
-| >>>         /*
-| >>>          * cast `allowed' as a signed long because vm_committed_space
-| >>>
-| >>>
-| >> Shouldn't we just not stop vm accounting for kernel threads?
-| >>
-| > 
-| > Could be.  It'd help heaps if we knew which patch in -mm caused
-| > this, but from a quick peek it seems to me that mainline should be
-| > vulnerable as well.
-| 
-| Thats a valid point. It would be interesting to see what the overcommit
-| setting was, when the panic occurred.
+--nextPart10892948.fJBhMzST4Y
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-May I suggest - could it be commit b6a2fea39318e43fee84fa7b0b90d68bed92d2ba
-Not sure but take a look please
+On Saturday 30 June 2007, Bjorn Helgaas wrote:
+> On Saturday 30 June 2007 01:16:18 am Andrey Borzenkov wrote:
+> > > This patch fixes the 2.6.22 regression:
+> > >     "no irda0 interface (2.6.21 was OK), smsc does not find chip"
+> >
+> > does not work, sorry.
+>
+> Sigh ;-)  Thanks for your patience in dealing with this.
+>
 
-		Cyrill
+This stopped working again in 2.6.23-rc. In 2.6.22 we decided to disable Pn=
+P=20
+by default; it is apparently enabled now and fails to activte IrDA=20
+completely. So it moves to post-2.6.22 regressions :)
 
+let me know which information you need
+
+[ 2192.666450] pnp: PnP ACPI init
+[ 2192.666589] ACPI: bus type pnp registered
+[ 2192.686035] pnp: Device 00:0a activated.
+[ 2192.686089]  00:0a: SMCf010 not responding at SIR 0x100, FIR 0x2e8;=20
+auto-configuring
+[ 2192.687610] pnp: Device 00:0a disabled.
+[ 2192.693179] pnp: Device 00:0a activated.
+[ 2192.693210]  00:0a: not responding at SIR 0x100, FIR 0x2e8; swapping=20
+SIR/FIR and reconfiguring
+[ 2192.694720] pnp: Device 00:0a disabled.
+[ 2192.701232] pnp: Device 00:0a activated.
+[ 2192.701259]  00:0a: responds at SIR 0x2e8, FIR 0x100
+[ 2192.709309] pnp: PnP ACPI: found 12 devices
+[ 2192.709351] ACPI: ACPI bus type pnp unregistered
+
+=2E...
+
+[ 2207.986550] Detected unconfigured Toshiba laptop with ALi ISA bridge SMS=
+C=20
+IrDA chip, pre-configuring device.
+[ 2207.986587] Activated ALi 1533 ISA bridge port 0x02e8.
+[ 2207.986602] Activated ALi 1533 ISA bridge port 0x02f8.
+[ 2207.986817] found SMC SuperIO Chip (devid=3D0x5a rev=3D00 base=3D0x002e)=
+:=20
+LPC47N227
+[ 2207.986851] smsc_superio_flat(): fir: 0x2f8, sir: 0x2e8, dma: 03, irq: 7=
+,=20
+mode: 0x0e
+[ 2207.986873] smsc_ircc_present: can't get sir_base of 0x2e8
+
+
+
+--nextPart10892948.fJBhMzST4Y
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBGvgJpR6LMutpd94wRAixZAKCHIwScbmkgyqlfbYpGnfy1cfaKawCcC9wW
+HpzxDORT131yuEnzS0JBCM4=
+=FM0g
+-----END PGP SIGNATURE-----
+
+--nextPart10892948.fJBhMzST4Y--
