@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbXHKEke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915AbXHKEme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753340AbXHKEke (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 00:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbXHKEkW
+	id S1753915AbXHKEme (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 00:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbXHKEmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 00:40:22 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:45759 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbXHKEkU (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 00:40:20 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, paulmck@linux.vnet.ibm.com,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, csnook@redhat.com, rpjday@mindspring.com,
-       netdev@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       schwidefsky@de.ibm.com, davem@davemloft.net, wensong@linux-vs.org,
-       wjiang@resilience.com
-Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
-In-Reply-To: Your message of "Sat, 11 Aug 2007 02:38:40 +0200."
-             <ef7e94b08a6515d33039d187e04db5db@kernel.crashing.org>
-From: Valdis.Kletnieks@vt.edu
-References: <E1IJPkg-0000x0-00@gondolin.me.apana.org.au> <442f95ba19f8622ce04cf0334f34be11@kernel.crashing.org> <20070811000029.GA12779@gondor.apana.org.au>
-            <ef7e94b08a6515d33039d187e04db5db@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1186807115_3018P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 11 Aug 2007 00:38:35 -0400
-Message-ID: <7943.1186807115@turing-police.cc.vt.edu>
+	Sat, 11 Aug 2007 00:42:24 -0400
+Received: from gw03.mail.saunalahti.fi ([195.197.172.111]:57558 "EHLO
+	gw03.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751036AbXHKEmX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 00:42:23 -0400
+Date: Sat, 11 Aug 2007 07:42:18 +0300
+From: Mikko Rapeli <mikko.rapeli@iki.fi>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: early boot lockup with 2.6.23-rc1
+Message-ID: <20070811044218.GA1899@nalle>
+References: <20070808223120.GA2286@nalle> <46BAC14E.9040604@zytor.com> <20070809182316.GA2289@nalle> <20070809194348.GA2287@nalle> <46BB94B1.9020307@zytor.com> <20070810163324.GA1916@nalle> <46BC962B.9030209@zytor.com> <20070810192030.GB1916@nalle>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070810192030.GB1916@nalle>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1186807115_3018P
-Content-Type: text/plain; charset=us-ascii
+On Fri, Aug 10, 2007 at 10:20:31PM +0300, Mikko Rapeli wrote:
+> I've bisected thus far, if it helps:
 
-On Sat, 11 Aug 2007 02:38:40 +0200, Segher Boessenkool said:
-> >> That means GCC cannot compile Linux; it already optimises
-> >> some accesses to scalars to smaller accesses when it knows
-> >> it is allowed to.  Not often though, since it hardly ever
-> >> helps in the cost model it employs.
-> >
-> > Please give an example code snippet + gcc version + arch
-> > to back this up.
-> 
-> 	unsigned char f(unsigned long *p)
-> 	{
-> 	        return *p & 1;
-> 	}
+Bisect came to this conclusion:
 
-Not really valid, because it's still able to do one atomic access to
-compute the result.
+git-bisect start
+# good: [4eb6bf6bfb580afaf1e1a1d30cba17a078530cf4] lots-of-architectures: enable arbitary speed tty support
+git-bisect good 4eb6bf6bfb580afaf1e1a1d30cba17a078530cf4
+# bad: [773208946a132fb733ba273ee8562814f828cc28] Revert "USB: fix gregkh-usb-usb-use-menuconfig-objects"
+git-bisect bad 773208946a132fb733ba273ee8562814f828cc28
+# bad: [dc690d8ef842b464f1c429a376ca16cb8dbee6ae] Merge master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6
+git-bisect bad dc690d8ef842b464f1c429a376ca16cb8dbee6ae
+# good: [15028aad00ddf241581fbe74a02ec89cbb28d35d] [TG3]: Update version to 3.78.
+git-bisect good 15028aad00ddf241581fbe74a02ec89cbb28d35d
+# bad: [82afee684fe3badaf5ee3fc5b6fda687d558bfb5] Merge master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6
+git-bisect bad 82afee684fe3badaf5ee3fc5b6fda687d558bfb5
+# bad: [c39736823232bc3ca113c8228fa852c09fba300e] Remove old i386 setup code
+git-bisect bad c39736823232bc3ca113c8228fa852c09fba300e
+# good: [5be865661516263d90317a6b35b588a2d7c3cb55] String-handling functions for the new x86 setup code.
+git-bisect good 5be865661516263d90317a6b35b588a2d7c3cb55
+# good: [3b53d3045bbb8ea3c9dce663b102eab0903817c5] MCA support for new x86 setup code
+git-bisect good 3b53d3045bbb8ea3c9dce663b102eab0903817c5
+# good: [7052fdd890bda0b3904674b69a1d24aec0a10d67] Code for actual protected-mode entry
+git-bisect good 7052fdd890bda0b3904674b69a1d24aec0a10d67
+# good: [f2d98ae63dc64dedb00499289e13a50677f771f9] Linker script for the new x86 setup code
+git-bisect good f2d98ae63dc64dedb00499289e13a50677f771f9
+# bad: [91a6c462b02d8dc02dbe95e5a407d78078a38d01] Use the new x86 setup code for x86-64; unify with i386
+git-bisect bad 91a6c462b02d8dc02dbe95e5a407d78078a38d01
+# bad: [4fd06960f120e02e9abc802a09f9511c400042a5] Use the new x86 setup code for i386
+git-bisect bad 4fd06960f120e02e9abc802a09f9511c400042a5
 
-Now, if you had found an example where it converts a 32-bit atomic access into
-2 separate 16-bit accesses that weren't atomic as a whole....
 
---==_Exmh_1186807115_3018P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGvT1LcC3lWbTT17ARAmccAKCRd2ZxCdpo0ruAOJZXkpds4qazcwCff1OA
-WRSvt/dpaznIWvvdf7+Q/1o=
-=uesa
------END PGP SIGNATURE-----
-
---==_Exmh_1186807115_3018P--
