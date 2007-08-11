@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760458AbXHKOnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762070AbXHKOoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760458AbXHKOnN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 10:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757502AbXHKOm5
+	id S1762070AbXHKOoH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 10:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758562AbXHKOnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 10:42:57 -0400
-Received: from ipn26-148.piekary.net ([83.238.26.148]:49232 "EHLO spock.one.pl"
+	Sat, 11 Aug 2007 10:43:52 -0400
+Received: from ipn26-148.piekary.net ([83.238.26.148]:49237 "EHLO spock.one.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753667AbXHKOm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 10:42:56 -0400
-Date: Sat, 11 Aug 2007 16:42:32 +0200
+	id S1758225AbXHKOnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 10:43:51 -0400
+Date: Sat, 11 Aug 2007 16:43:27 +0200
 From: Michal Januszewski <spock@gentoo.org>
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 6/7] uvesafb: use the default refresh rate if the monitor
-	limits are not set
-Message-ID: <20070811144232.GG13632@spock.one.pl>
+Subject: [PATCH 7/7] uvesafb: try to set mode with default timings if
+	setting it with our own timings failed
+Message-ID: <20070811144327.GH13632@spock.one.pl>
 Reply-To: spock@gentoo.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -25,48 +25,51 @@ User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the default refresh rate if the monitor limits aren't set (either using
-data from the EDID block, or explicitly by the user).
+Sometimes the BIOS might not perform the mode switch correctly because of
+the timings that we requested.  In case this happens, try to set the video
+mode with the default timings instead.
 
 Signed-off-by: Michal Januszewski <spock@gentoo.org>
 ---
 diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index 2f1e5af..2e5f1b5 100644
+index 2e5f1b5..853323e 100644
 --- a/drivers/video/uvesafb.c
 +++ b/drivers/video/uvesafb.c
-@@ -689,10 +689,13 @@ static void __devinit uvesafb_vbe_getmonspecs(struct uvesafb_ktask *task,
+@@ -1218,6 +1218,7 @@ static int uvesafb_set_par(struct fb_info *info)
+ 	task = uvesafb_prep();
+ 	if (!task)
+ 		return -ENOMEM;
++setmode:
+ 	task->t.regs.eax = 0x4f02;
+ 	task->t.regs.ebx = mode->mode_id | 0x4000;	/* use LFB */
  
- 	/*
- 	 * If we don't get all necessary data from the EDID block,
--	 * mark it as incompatible with the GTF.
-+	 * mark it as incompatible with the GTF and set nocrtc so
-+	 * that we always use the default BIOS refresh rate.
- 	 */
--	if (uvesafb_vbe_getedid(task, info))
-+	if (uvesafb_vbe_getedid(task, info)) {
- 		info->monspecs.gtf = 0;
-+		par->nocrtc = 1;
-+	}
+@@ -1260,10 +1261,25 @@ static int uvesafb_set_par(struct fb_info *info)
  
- 	/* Kernel command line overrides. */
- 	if (maxclk)
-@@ -711,6 +714,7 @@ static void __devinit uvesafb_vbe_getmonspecs(struct uvesafb_ktask *task,
- 		info->monspecs.vfmin = 60;
- 		info->monspecs.hfmin = 29000;
- 		info->monspecs.gtf = 1;
-+		par->nocrtc = 0;
+ 	err = uvesafb_exec(task);
+ 	if (err || (task->t.regs.eax & 0xffff) != 0x004f) {
+-		printk(KERN_ERR "uvesafb: mode switch failed (eax=0x%x, "
+-				"err=%d)\n", task->t.regs.eax, err);
+-		err = -EINVAL;
+-		goto out;
++		/*
++		 * The mode switch might have failed because we tried to
++		 * use our own timings.  Try again with the default timings.
++		 */
++		if (crtc != NULL) {
++			printk(KERN_WARNING "uvesafb: mode switch failed "
++				"(eax=0x%x, err=%d). Trying again with "
++				"default timings.\n", task->t.regs.eax, err);
++			uvesafb_reset(task);
++			kfree(crtc);
++			crtc = NULL;
++			info->var.pixclock = 0;
++			goto setmode;
++		} else {
++			printk(KERN_ERR "uvesafb: mode switch failed (eax="
++				"0x%x, err=%d)\n", task->t.regs.eax, err);
++			err = -EINVAL;
++			goto out;
++		}
  	}
- 
- 	if (info->monspecs.gtf)
-@@ -720,7 +724,8 @@ static void __devinit uvesafb_vbe_getmonspecs(struct uvesafb_ktask *task,
- 			(int)(info->monspecs.hfmax / 1000),
- 			(int)(info->monspecs.dclkmax / 1000000));
- 	else
--		printk(KERN_INFO "uvesafb: no monitor limits have been set\n");
-+		printk(KERN_INFO "uvesafb: no monitor limits have been set, "
-+				 "default refresh rate will be used\n");
- 
- 	/* Add VBE modes to the modelist. */
- 	for (i = 0; i < par->vbe_modes_cnt; i++) {
-
+ 	par->mode_idx = i;
 
