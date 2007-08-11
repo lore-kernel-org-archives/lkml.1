@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758987AbXHKPtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761299AbXHKPtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758987AbXHKPtF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 11:49:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbXHKPsx
+	id S1761299AbXHKPtl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 11:49:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbXHKPtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 11:48:53 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43174 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752747AbXHKPsx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 11:48:53 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46BDDA59.5070302@s5r6.in-berlin.de>
-Date: Sat, 11 Aug 2007 17:48:41 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Sat, 11 Aug 2007 11:49:32 -0400
+Received: from mail.gmx.net ([213.165.64.20]:40676 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755410AbXHKPtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 11:49:31 -0400
+X-Authenticated: #441233
+X-Provags-ID: V01U2FsdGVkX18jAL1JB4ojzKMFpnT6tDx2mr64dv0/uQ0qmQDzw6
+	OUpuhztkiRRVme
+Date: Sat, 11 Aug 2007 17:49:25 +0200
+From: Michael Mauch <michael.mauch@gmx.de>
+To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: Serial ports rearranged in 2.6.22?
+Message-ID: <20070811154925.GA9618@elmicha>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	linux-serial@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>
+References: <20070810213925.GB10855@elmicha> <86802c440708102154r59e1acbj90fa0d5b73197fb9@mail.gmail.com>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: "Mark M. Hoffman" <mhoffman@lightlink.com>, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1 regression: hwmon/w83627ehf: wrong fan speed
-References: <46B5B290.4040907@s5r6.in-berlin.de>	<20070805162141.GI6221@jupiter.solarsys.private>	<46B6053E.2050708@s5r6.in-berlin.de>	<20070810230831.59cbc50f@hyperion.delvare>	<46BCE6D0.7060300@s5r6.in-berlin.de> <20070811135705.0d0688d7@hyperion.delvare> <46BDD8B3.8070708@s5r6.in-berlin.de>
-In-Reply-To: <46BDD8B3.8070708@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440708102154r59e1acbj90fa0d5b73197fb9@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Jean Delvare wrote:
->> So my theory is that something else (BIOS, ACPI?)
+Yinghai Lu wrote:
 
-(ksensors?)
+> On 8/10/07, Michael Mauch <michael.mauch@gmx.de> wrote:
+> > Hi,
+> >
+> > until 2.6.21, I had the normal assignments for ttyS0 and ttyS1:
+> >
+> > 00:08: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+> > 00:09: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+> >
+> > With 2.6.22 I get the names <-> ports/irqs the other way around:
+> >
+> > 00:08: ttyS0 at I/O 0x2f8 (irq = 3) is a 16550A
+> > 00:09: ttyS1 at I/O 0x3f8 (irq = 4) is a 16550A
+> >
+> > Is this supposed to be that way? Should we reassign these names with
+> > udev? udev-114 doesn't seem to have built-in rules to assign the
+> > traditional names.
+> >
+> > Or could it be related to some brokeness in my BIOS (ACPI/PNP)?
+> >
+> > I'm using the 8250_pnp module (and it's the same with builtin serial
+> > modules). I made sure that I did not accidentally change the BIOS
+> > settings for the serial ports.
+> >
+> > I'm using Gentoo, but on the lirc list was a Fedora user with the same
+> > symptoms.
+> 
+> http://lkml.org/lkml/2007/7/25/455
 
->> is changing the bank,
->> probably to read temperature values which are in banks 1 and 2, causing
->> the w83627ehf to get a wrong value for the VBAT register. If I am
->> right, then the attached patch should help. Please give it a try and
->> report.
+Thanks - I applied that patch and the names are back to normal again:
 
-This patch fixes the issue.  (I didn't reboot, only reloaded the drivers
-after patching.)
+00:06: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+00:07: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
 
-Thanks for your help and advice.
--- 
-Stefan Richter
--=====-=-=== =--- -=-==
-http://arcgraph.de/sr/
+Regards...
+		Michael
