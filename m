@@ -1,57 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761251AbXHKTju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761421AbXHKT4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761251AbXHKTju (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 15:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXHKTjl
+	id S1761421AbXHKT4x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 15:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbXHKT4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 15:39:41 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:36562 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751145AbXHKTjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 15:39:40 -0400
-Date: Sat, 11 Aug 2007 12:39:37 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@kernel.org>,
-       Josh Triplett <josh@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc2-mm1: rcutorture xtime usage
-Message-ID: <20070811193937.GB13410@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070809015106.cd0bfc53.akpm@linux-foundation.org> <20070810013146.GD18938@stusta.de> <20070810020040.GK8424@linux.vnet.ibm.com> <20070809190623.f60dcf70.akpm@linux-foundation.org> <20070810151208.GC8511@linux.vnet.ibm.com> <20070810101212.d59ce24a.akpm@linux-foundation.org> <20070810203055.GE8511@linux.vnet.ibm.com> <20070811002949.GA7918@linux.vnet.ibm.com> <20070811180909.GC24717@elte.hu>
+	Sat, 11 Aug 2007 15:56:45 -0400
+Received: from web36607.mail.mud.yahoo.com ([209.191.85.24]:26616 "HELO
+	web36607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752353AbXHKT4o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 15:56:44 -0400
+X-YMail-OSG: ED_bE_sVM1locp5JXL41O19OyCceJqgpxEQTfbEA48qWug2ahhd2zrPb1ripboHxq3Iq6k67tw--
+X-RocketYMMF: rancidfat
+Date: Sat, 11 Aug 2007 12:56:42 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
+To: Arjan van de Ven <arjan@infradead.org>, casey@schaufler-ca.com
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, torvalds@osdl.org
+In-Reply-To: <1186859573.2854.14.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070811180909.GC24717@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <939644.96168.qm@web36607.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 11, 2007 at 08:09:09PM +0200, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > Add an EXPORT_SYMBOL_GPL() for cpu_clock() and make rcutorture.c use it.
-> > Compiles, but not yet tested.
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
-> > --- linux-2.6.23-rc2/kernel/sched.c	2007-08-03 19:49:55.000000000 -0700
-> > +++ linux-2.6.23-rc2-rcutorturesched/kernel/sched.c	2007-08-10 17:22:57.000000000 -0700
-> > @@ -394,6 +394,8 @@ unsigned long long cpu_clock(int cpu)
-> >  	return now;
-> >  }
-> >  
-> > +EXPORT_SYMBOL_GPL(cpu_clock);
-> 
-> sure enough,
-> 
-> Acked-by: Ingo Molnar <mingo@elte.hu>
 
-Thank you!
+--- Arjan van de Ven <arjan@infradead.org> wrote:
 
-Just for the record, given that the xtime API that it replaces
-was EXPORT_SYMBOL(), I would have not objection to this also being
-EXPORT_SYMBOL().  That said, I know of no specific reason for it being
-other than EXPORT_SYMBOL_GPL().
+> > +extern struct smk_list_entry *smack_list;
+> 
+> any reason to invent your own list rather than just using list.h?
 
-						Thanx, Paul
+The list.h mechanisms are fine, but heavier than I require.
+I'm willing to give in on it, but I don't see an advantage.
+
+> > +
+> > +#include <linux/kernel.h>
+> > +#include <linux/vmalloc.h>
+> > +#include <linux/security.h>
+> > +#include <linux/mutex.h>
+> > +#include <net/netlabel.h>
+> > +#include "../../net/netlabel/netlabel_domainhash.h"
+> 
+> can't you move this header to include/ instead?
+
+Paul Moore, the developer of netlabel, promised to work out
+the right solution for this with me at a future date. He
+doesn't want to move the header, and I respect that.
+
+> > +
+> > +static struct file_operations smk_load_ops = {
+> > +	.read		= smk_read_load,
+> > +	.write		= smk_write_load,
+> > +};
+> 
+> make that a const please
+
+Will do.
+
+> > +
+> > +	doip = kmalloc(sizeof(struct cipso_v4_doi), GFP_KERNEL);
+> > +	if (doip == NULL)
+> > +		panic("smack:  Failed to initialize cipso DOI.\n");
+> > +	doip->map.std = NULL;
+> > +
+> > +	ndmp = kmalloc(sizeof(struct netlbl_dom_map), GFP_KERNEL);
+> > +	if (ndmp == NULL)
+> > +		panic("smack:  Failed to initialize cipso ndmp.\n");
+> 
+> 
+> is panic() really the right thing here? It's usually considered quite
+> rude ;)
+
+It's really early in start-up and if you're out of memory at that
+point you are not going very far into the future.
+
+> > +static struct file_operations smk_cipso_ops = {
+> > +	.read		= smk_read_cipso,
+> > +	.write		= smk_write_cipso,
+> > +};
+> 
+> another candidate for const
+
+Will do that, too.
+
+> > +static void *smackfs_follow_link(struct dentry *dentry, struct nameidata
+> *nd)
+> > +{
+> 
+> 
+> this one deserves a comment; are you implementing magic symlinks here?
+
+Yup.
+
+Casey Schaufler
+casey@schaufler-ca.com
