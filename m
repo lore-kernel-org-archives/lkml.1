@@ -1,62 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933437AbXHKDmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765052AbXHKDrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933437AbXHKDmt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 23:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761380AbXHKDmj
+	id S1765052AbXHKDrk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 23:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbXHKDrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 23:42:39 -0400
-Received: from ozlabs.org ([203.10.76.45]:46270 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752174AbXHKDmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 23:42:36 -0400
-Subject: Re: [PATCH 0/7] Modify lguest32 to make room for lguest64
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: lguest <lguest@ozlabs.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jes Sorensen <jes@sgi.com>, Carsten Otte <cotte@de.ibm.com>
-In-Reply-To: <20070809003211.373543702@goodmis.org>
-References: <20070809003211.373543702@goodmis.org>
-Content-Type: text/plain
-Date: Sat, 11 Aug 2007 13:42:04 +1000
-Message-Id: <1186803724.30899.62.camel@localhost.localdomain>
+	Fri, 10 Aug 2007 23:47:32 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50111 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751770AbXHKDrb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 23:47:31 -0400
+Date: Sat, 11 Aug 2007 04:47:21 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: xemul@openvz.org
+Cc: akpm@osdl.org, devel@openvz.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, oleg@tv-sign.ru, sukadev@us.ibm.com
+Subject: Re: [PATCH 3/20] Introduce MS_KERNMOUNT flag
+Message-ID: <20070811034721.GB22216@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>, xemul@openvz.org,
+	akpm@osdl.org, devel@openvz.org, linux-kernel@vger.kernel.org,
+	containers@lists.osdl.org, oleg@tv-sign.ru, sukadev@us.ibm.com
+References: <46BC506B.mailGIV1AXDXM@openvz.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46BC506B.mailGIV1AXDXM@openvz.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-08 at 20:32 -0400, Steven Rostedt wrote:
-> Hi all,
+On Fri, Aug 10, 2007 at 03:47:55PM +0400, xemul@openvz.org wrote:
+> This flag tells the .get_sb callback that this is a kern_mount() call
+> so that it can trust *data pointer to be valid in-kernel one. If this
+> flag is passed from the user process, it is cleared since the *data
+> pointer is not a valid kernel object.
 > 
-> I've been working on lguest64 and in order to do this, I had to move
-> a lot of the i386 specific out of the way.  Well, the lguest64 port
-> is still not ready to display, but before Rusty makes too many changes
-> I would like this in upstream so I don't have to keep repeating my
-> changes :-)
+> Running a few steps forward - this will be needed for proc to create the
+> superblock and store a valid pid namespace on it during the namespace
+> creation. The reason, why the namespace cannot live without proc mount
+> is described in the appropriate patch.
+
+I don't like this at all.  We should never pass kernel and userspace
+addresses through the same pointer.  Maybe add an additional argument
+to the get_sb prototype instead.  But this whole idea of mounting /proc
+from kernelspace sounds like a really bad idea to me.  /proc should
+never be mounted from the kernel but always normally from userspace.
+
 > 
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> Cc: Oleg Nesterov <oleg@tv-sign.ru>
 > 
-> So this patch series moves lguest32 out of the way for other archs.
-
-Yeah, after some more thought I've not applied most of this.  We really
-don't want to move everything then move it back; I prefer Jes' more
-cautious approach of moving a little bit at a time.
-
-We really have three parts: (1) bits that are generic, (2) bits that
-should be generic but my implementation is naive, (3) bits that really
-are i386-specific.
-
-Patches which move 2 to 1 are gratefully accepted: I realize a mass move
-is easier and this requires thought, but that's what we need.
-
-Since I can't build a module over two directories, that seems to destroy
-the idea of an i386/ subdir.  Instead I've done a patch which renames
-the *clearly* i386-specific things to i386_<name>, which at least works.
-I've pushed it into the repository http://lguest.ozlabs.org/patches/
-
-Cheers,
-Rusty.
-
+> ---
+> 
+>  fs/namespace.c     |    3 ++-
+>  fs/super.c         |    6 +++---
+>  include/linux/fs.h |    4 +++-
+>  3 files changed, 8 insertions(+), 5 deletions(-)
+> 
+> diff -upr linux-2.6.23-rc1-mm1.orig/fs/namespace.c linux-2.6.23-rc1-mm1-7/fs/namespace.c
+> --- linux-2.6.23-rc1-mm1.orig/fs/namespace.c	2007-07-26 16:34:45.000000000 +0400
+> +++ linux-2.6.23-rc1-mm1-7/fs/namespace.c	2007-07-26 16:36:36.000000000 +0400
+> @@ -1579,7 +1579,8 @@ long do_mount(char *dev_name, char *dir_
+>  		mnt_flags |= MNT_NOMNT;
+>  
+>  	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
+> -		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME | MS_NOMNT);
+> +		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME |
+> +		   MS_NOMNT | MS_KERNMOUNT);
+>  
+>  	/* ... and get the mountpoint */
+>  	retval = path_lookup(dir_name, LOOKUP_FOLLOW, &nd);
+> diff -upr linux-2.6.23-rc1-mm1.orig/fs/super.c linux-2.6.23-rc1-mm1-7/fs/super.c
+> --- linux-2.6.23-rc1-mm1.orig/fs/super.c	2007-07-26 16:34:45.000000000 +0400
+> +++ linux-2.6.23-rc1-mm1-7/fs/super.c	2007-07-26 16:36:36.000000000 +0400
+> @@ -944,9 +944,9 @@ do_kern_mount(const char *fstype, int fl
+>  	return mnt;
+>  }
+>  
+> -struct vfsmount *kern_mount(struct file_system_type *type)
+> +struct vfsmount *kern_mount_data(struct file_system_type *type, void *data)
+>  {
+> -	return vfs_kern_mount(type, 0, type->name, NULL);
+> +	return vfs_kern_mount(type, MS_KERNMOUNT, type->name, data);
+>  }
+>  
+> -EXPORT_SYMBOL(kern_mount);
+> +EXPORT_SYMBOL_GPL(kern_mount_data);
+> diff -upr linux-2.6.23-rc1-mm1.orig/include/linux/fs.h linux-2.6.23-rc1-mm1-7/include/linux/fs.h
+> --- linux-2.6.23-rc1-mm1.orig/include/linux/fs.h	2007-07-26 16:34:45.000000000 +0400
+> +++ linux-2.6.23-rc1-mm1-7/include/linux/fs.h	2007-07-26 16:36:36.000000000 +0400
+> @@ -129,6 +129,7 @@ extern int dir_notify_enable;
+>  #define MS_RELATIME	(1<<21)	/* Update atime relative to mtime/ctime. */
+>  #define MS_SETUSER	(1<<23) /* set mnt_uid to current user */
+>  #define MS_NOMNT	(1<<24) /* don't allow unprivileged submounts */
+> +#define MS_KERNMOUNT	(1<<25) /* this is a kern_mount call */
+>  #define MS_ACTIVE	(1<<30)
+>  #define MS_NOUSER	(1<<31)
+>  
+> @@ -1459,7 +1460,8 @@ void unnamed_dev_init(void);
+>  
+>  extern int register_filesystem(struct file_system_type *);
+>  extern int unregister_filesystem(struct file_system_type *);
+> -extern struct vfsmount *kern_mount(struct file_system_type *);
+> +extern struct vfsmount *kern_mount_data(struct file_system_type *, void *data);
+> +#define kern_mount(type) kern_mount_data(type, NULL)
+>  extern int may_umount_tree(struct vfsmount *);
+>  extern int may_umount(struct vfsmount *);
+>  extern void umount_tree(struct vfsmount *, int, struct list_head *);
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+---end quoted text---
