@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757158AbXHKI1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbXHKIfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757158AbXHKI1P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 04:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbXHKI1A
+	id S1757338AbXHKIfx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 04:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbXHKIfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 04:27:00 -0400
-Received: from naig.caltech.edu ([131.215.239.125]:56841 "EHLO
-	naig.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753161AbXHKI07 (ORCPT
+	Sat, 11 Aug 2007 04:35:43 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:51517 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753672AbXHKIfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 04:26:59 -0400
-Message-ID: <000201c7dbf1$618d25f0$97e9a4cf@xpuser14fplw76>
-From: "Jumil godoy" <godoyehny@smap.ne.jp>
-To: mlist-linux-kernel@nntp-server.caltech.edu
-Subject: The signature files for this product are.
-Date: Sat, 11 Aug 2007 04:26:57 -0400
-Message-ID: <000201c7dbf1$618d25f0$97e9a4cf@xpuser14fplw76>
+	Sat, 11 Aug 2007 04:35:41 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Noatime vs relatime
+To: Rene Herman <rene.herman@gmail.com>,
+       Matti Aarnio <matti.aarnio@zmailer.org>, Vlad <vladc6@yahoo.com>,
+       linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Sat, 11 Aug 2007 10:33:17 +0200
+References: <8QDOX-78C-15@gated-at.bofh.it> <8QErs-8dz-1@gated-at.bofh.it> <8QLCI-2zy-15@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook, Build 10.0.6626
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2962
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1IJmPN-0000bQ-4C@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX19QCWesJ+2f3//HMuWueBKsBgKmrzA9UKQPkwW
+ 7OrlFNDquHckkJ/ZXBmlzoDgkxaobajp3EbZSipX6w29OkgSCg
+ hd/MfiBJ0COzl0Yt+65vA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H'u+g,e N+e'w*s To Im pact C+Y,T.V 
+Rene Herman <rene.herman@gmail.com> wrote:
 
+> I must say I've been wondering about relatime a bit as well. Are there
+> actually users who do really want atime, but not badly enough to want real
+> atime?
 
+Anyone using /var/spool/mail.
+-- 
+Programming is an art form that fights back. 
 
-C hina You-TV C_o-r,p-. 
-Symbol-: C Y+T+V 
-
-We h-a+v_e alread-y s.e,e_n CYTV'-s mar ket impa+ct b-efore clim b*ing to o,v.e'r $2.0,0 w+i_t.h n,e-w+s . 
-
-Pres*s Releas,e: 
-Chi.na YouTV'*s CnBo+o W.e*b S'i t.e R,anks N.o*.+1 on Micro'sof.t L-i-v'e Sea+rch E+ngine 
-CnBo_o Traff.ic Incre.as_es 4 9+% O.v*e_r T-w+o Mo*nths 
-
-
-
-R_e+a,d t h+e new's, th,ink ab_out t.h,e imp.act, and
-
-j u,m p on t_h i+s firs_t th-ing Tomo'rr'ow mo,rning+!  $,0.42 is a g_i-f,t at t+h.i+s p.r-ice..... 
-
-
-Do y-o,u*r ho'me,work a+n d watc,h t_h,i.s tr*ade Mond'ay morni,ng. 
-
-
-
+Friﬂ, Spammer: unhZ6GcWf@CQ.7eggert.dyndns.org
+ BpD@ejtlDUeA.7eggert.dyndns.org T@e.7eggert.dyndns.org
