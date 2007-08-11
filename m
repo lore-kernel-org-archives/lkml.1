@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbXHKKvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760569AbXHKKxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbXHKKvm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 06:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbXHKKvc
+	id S1760569AbXHKKxh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 06:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbXHKKxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 06:51:32 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:13057 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753886AbXHKKvb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 06:51:31 -0400
-Subject: Re: 2.6.23-rc2-mm2 build error on MIPS and ARM
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070811095658.GA11651@uranus.ravnborg.org>
-References: <20070811025802.GA15885@Krystal>
-	 <1186825800.32314.2.camel@localhost>
-	 <20070811095658.GA11651@uranus.ravnborg.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Sat, 11 Aug 2007 12:54:57 +0200
-Message-Id: <1186829697.3930.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+	Sat, 11 Aug 2007 06:53:30 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:36933 "EHLO smtp2.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754101AbXHKKx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 06:53:29 -0400
+Date: Sat, 11 Aug 2007 13:53:25 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
+In-Reply-To: <200708102206.58438.rjw@sisk.pl>
+Message-ID: <Pine.SOC.4.64.0708111349520.725@math.ut.ee>
+References: <46B9F664.9060600@googlemail.com> <200708102124.01218.rjw@sisk.pl>
+ <Pine.SOC.4.64.0708102220290.14225@math.ut.ee> <200708102206.58438.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-08-11 at 11:56 +0200, Sam Ravnborg wrote:
-> > That attached patch should fix it for arm and mips. I'll try a few more
-> > architectures until I'm fed up with compiling cross-compilers..
-> http://userweb.kernel.org/~akpm/cross-compilers/
+> > > 3. Can you please check if this patch changes anything:
+> > > http://marc.info/?l=linux-mm-commits&m=118669680811669&w=2
+> > 
+> > Tried it on current git, kernel/power/Kconfig gave 2 rejects.
+> > Tried on 2.6.23-rc2, still 2 rejects from the same file, .rej below:
+> 
+> Sorry, but:
+> 
+> rafael@albercik:~/src/linux-2.6> git-pull git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+> Already up-to-date.
+> rafael@albercik:~/src/linux-2.6> cat ~/pm-fix-dependencies-of-config_suspend-and-config_hibernation-updated-3x.patch | patch -p1
+> patching file arch/x86_64/defconfig
+> patching file include/linux/cpu.h
+> patching file kernel/cpu.c
+> patching file kernel/power/Kconfig
+> 
+> How come?
 
-Thanks for the hint but I prefer to compile them on my own (naming
-scheme, installation target, 4.1.2, ..). The first one is the hardest,
-for the following ones it is just a matter how fast you machine is.
-I'll do one cross-compiler every 15 minutes right now (without glibc).
+Hmm, must have been mangled on the web (downloaded via wget so should be 
+byte-by-byte exact). I now downloaded it from akpm-s broken-out tarball 
+and this one applied fine.
+
+The patch changes the warning to a different warning, it's now
+kernel/power/Kconfig:79:warning: 'select' used by config symbol 'PM_SLEEP_SMP' refers to undefined symbol 'HOTPLUG_CPU'
+
+The warning also appears when running just "make ARCH=ppc" after
+"make ARCH=ppc oldconfig".
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+Meelis Roos (mroos@linux.ee)
