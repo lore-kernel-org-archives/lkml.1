@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765371AbXHKCk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbXHKC6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765371AbXHKCk3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 22:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759913AbXHKCkU
+	id S932132AbXHKC6V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 22:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761054AbXHKC6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 22:40:20 -0400
-Received: from main.gmane.org ([80.91.229.2]:43008 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759837AbXHKCkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 22:40:19 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Russ Dill <Russ.Dill@gmail.com>
-Subject: Process stuck in =?utf-8?b?bWRfd2FrZXVwX3RocmVhZA==?=
-Date: Sat, 11 Aug 2007 02:34:34 +0000 (UTC)
-Message-ID: <loom.20070811T042748-157@post.gmane.org>
+	Fri, 10 Aug 2007 22:58:08 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55083 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760458AbXHKC6F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 22:58:05 -0400
+Date: Sat, 11 Aug 2007 03:57:39 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
+       zippel@linux-m68k.org, dhowells@redhat.com,
+       linux-cifs-client@lists.samba.org, codalist@TELEMANN.coda.cs.cmu.edu,
+       joel.becker@oracle.com, linux-ext4@vger.kernel.org,
+       fuse-devel@lists.sourceforge.net, cluster-devel@redhat.com,
+       user-mode-linux-user@lists.sourceforge.net,
+       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com, jffs-dev@axis.com,
+       jfs-discussion@lists.sourceforge.net, ocfs2-devel@oss.oracle.com,
+       reiserfs-devel@vger.kernel.org, bfennema@falcon.csc.calpoly.edu,
+       xfs@oss.sgi.com
+Subject: Re: [PATCH 00/25] move handling of setuid/gid bits from VFS into individual setattr functions (RESEND)
+Message-ID: <20070811025739.GA21244@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jeff Layton <jlayton@redhat.com>,
+	Trond Myklebust <trond.myklebust@fys.uio.no>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	v9fs-developer@lists.sourceforge.net, zippel@linux-m68k.org,
+	dhowells@redhat.com, linux-cifs-client@lists.samba.org,
+	codalist@TELEMANN.coda.cs.cmu.edu, joel.becker@oracle.com,
+	linux-ext4@vger.kernel.org, fuse-devel@lists.sourceforge.net,
+	cluster-devel@redhat.com,
+	user-mode-linux-user@lists.sourceforge.net,
+	mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com,
+	jffs-dev@axis.com, jfs-discussion@lists.sourceforge.net,
+	ocfs2-devel@oss.oracle.com, reiserfs-devel@vger.kernel.org,
+	bfennema@falcon.csc.calpoly.edu, xfs@oss.sgi.com
+References: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com> <20070807171501.e31c4a97.akpm@linux-foundation.org> <1186533934.6625.91.camel@heimdal.trondhjem.org> <20070810164752.23117e0e.jlayton@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 70.190.164.204 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.5) Gecko/20070712 (Debian-1.8.1.5-1) Galeon/2.0.2 (Debian package 2.0.2-4))
+Content-Disposition: inline
+In-Reply-To: <20070810164752.23117e0e.jlayton@redhat.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2.6.22 from debian (stock), I have a process (dpkg) stuck with the following
-calltrace:
+On Fri, Aug 10, 2007 at 04:47:52PM -0400, Jeff Layton wrote:
+> attr->ia_valid after the setattr operation returns. If either ATTR_KILL_*
+> bit is set then BUG(). The helper function already clears those bits
+> so anything using it should automatically be ok. We'd have to fix
+> up NFS and a few others that don't implement suid/sgid.
+> 
+> This is not as certain as changing the name of the inode operation. It
+> would only pop when someone is attempting to change a setuid/setgid
+> file on these filesystems. Still, it should conceivably catch most if
+> not all offenders. Would that be sufficient to take care of everyone's
+> concerns?
 
-SysRq : Show Blocked State
-
-                         free                        sibling
-  task             PC    stack   pid father child younger older
-dpkg          D 00000003     0 26040  20765 (NOTLB)
-       e57d5e30 00200082 00000000 00000003 dfc48ba8 00000000 dfc48ba8 00000000 
-       00000007 e0af45c0 e8ce17aa 0002827f 00051ec2 e0af46cc c1809980 00000000 
-       e8ce1324 0002827f 00200082 f881cd4c 00200286 f8ba2c85 c1809980 e57d5e60 
-Call Trace:
- [<f881cd4c>] md_wakeup_thread+0x26/0x28 [md_mod]
- [<f8ba2c85>] raid5_unplug_device+0x4e/0x5a [raid456]
- [<c02a786e>] io_schedule+0x1d/0x27
- [<c014f3c5>] sync_page+0x0/0x3b
- [<c014f3fd>] sync_page+0x38/0x3b
- [<c02a7a6f>] __wait_on_bit_lock+0x2a/0x52
- [<c014f3b7>] __lock_page+0x58/0x5e
- [<c01333aa>] wake_bit_function+0x0/0x3c
- [<c0155daa>] truncate_inode_pages_range+0x201/0x256
- [<c0155e16>] truncate_inode_pages+0x17/0x1a
- [<f8c867eb>] reiserfs_delete_inode+0x36/0xdd [reiserfs]
- [<f8c867b5>] reiserfs_delete_inode+0x0/0xdd [reiserfs]
- [<c017acc5>] generic_delete_inode+0xa0/0x105
- [<c017a4ad>] iput+0x60/0x62
- [<c0172f41>] do_unlinkat+0xb6/0x126
- [<c0103d7e>] syscall_call+0x7/0xb
- =======================
-
-My system is still up and running.
-
-
+I like the idea of checking ia_valid after return a lot.  But instead of
+going BUG() it should just do the default action, that we can avoid
+touching all the filesystem and only need to change those that need
+special care.  I also have plans to add some new AT_ flags for implementing
+some filesystem ioctl in generic code that would benefit greatly from
+the ia_valid checkin after return to return ENOTTY fr filesystems not
+implementing those ioctls.
