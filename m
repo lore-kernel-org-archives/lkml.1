@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764195AbXHKBGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932896AbXHKBG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764195AbXHKBGi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 21:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758144AbXHKBG3
+	id S932896AbXHKBG7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 21:06:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbXHKBGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 21:06:29 -0400
-Received: from naig.caltech.edu ([131.215.239.125]:54181 "EHLO
-	naig.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758221AbXHKBG2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 21:06:28 -0400
-Date: Fri, 10 Aug 2007 20:06:16 -0500
-From: "Liming Fyhr" <Fyhrtcyma@futureworks-now.com>
-Reply-To: "Liming Fyhr" <Fyhrtcyma@futureworks-now.com>
-Message-ID: <516340951709.619222701579@futureworks-now.com>
-To: <mlist-linux-kernel@nntp-server.caltech.edu>
-Subject: This question mark tells the assembler that the variable should be left uninitialized when DOS loads the program into memory.
+	Fri, 10 Aug 2007 21:06:46 -0400
+Received: from ns2.suse.de ([195.135.220.15]:32923 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762891AbXHKBGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 21:06:45 -0400
+From: Andi Kleen <ak@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones pointer
+Date: Sat, 11 Aug 2007 03:04:54 +0200
+User-Agent: KMail/1.9.1
+Cc: Mel Gorman <mel@skynet.ie>, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20070809210616.14702.73376.sendpatchset@skynet.skynet.ie> <200708102013.49170.ak@suse.de> <Pine.LNX.4.64.0708101201240.17549@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0708101201240.17549@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708110304.55433.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(H)(u)(g)[e] (N){e}(w)[s] To Im,pact {C}[Y]<T>{V} 
+On Friday 10 August 2007 21:02, Christoph Lameter wrote:
+> On Fri, 10 Aug 2007, Andi Kleen wrote:
+> > > x86_64 does not support ZONE_HIGHMEM.
+> >
+> > I also plan to eliminate ZONE_DMA soon (and replace all its users
+> > with a new allocator that sits outside the normal fallback lists)
+>
+> Hallelujah. You are my hero! x86_64 will switch off CONFIG_ZONE_DMA?
 
+Yes. i386 too actually.
 
+The DMA zone will be still there, but only reachable with special functions.
 
-Chin*a You+TV <C>[o]{r}(p)<.> 
+This is fine because the default zone protection heuristics keep DMA 
+near always free from !GFP_DMA allocations anyways -- so it doesn't make much 
+difference if it's totally unreachable. swiotlb will also use the same pool.
 
-Sym^bol: <C>(Y)(T)<V> 
+Also all callers are going to pass masks around so it's always clear
+what address range they really need. Actually a lot of them
+pass still 16MB simply because it is hard to find out what masks
+old undocumented hardware really needs. But this could change.
 
+This also means the DMA support in sl[a-z]b is not needed anymore.
 
+I went through near all GFP_DMA users and found they're usually
+happy enough with pages. If someone comes up who really needs
+lots of subobjects the right way for them would be likely extending
+the pci pool allocator for this case. But I haven't found a need for this yet.
 
-We (h)[a]{v}{e} alre+ady {s}(e)<e>(n) CYTV'`s marke*t impa,ct be,fore cli*mb-ing to <o>{v}<e><r> $2.#00 [w][i](t){h} [n]{e}(w)[s](.) 
-Pres-s Rel,ease: 
-C*hina Y_ouTV's CnBo_o {W}(e)<b> <S>{i}<t><e> Ran_ks <N><o>{.}[1] on Mic+`rosoft (L)[i]<v>[e] Sea_rch Engin.e 
-
-CnB_oo Tra_ffic Incre_ase*s (4)(9)<%> (O)[v]<e>{r} <T><w>{o} Mon,ths 
-
-
-
-
-{R}(e)(a)(d) [t]{h}[e] n`ews, thin-k a*bout (t)[h]<e> i-mpact, and
-
-<j>(u){m}[p] on <t>(h){i}{s} fir+st thin.g To-^morrow mo-rni#ng!  $0.4*2 is a {g}<i>{f}[t] at [t]<h>{i}<s> pr-ice.`.... 
-
-
-Do {y}(o)<u>(r) homewo^r,k [a]{n}<d> w.atch {t}(h)<i><s> tr-ade Monda_y mo+rning. 
-
-
-
+-Andi
