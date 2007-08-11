@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760386AbXHKRyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761013AbXHKR5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760386AbXHKRyO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 13:54:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbXHKRyA
+	id S1761013AbXHKR5U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 13:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbXHKR5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 13:54:00 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:53172 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbXHKRx7 (ORCPT
+	Sat, 11 Aug 2007 13:57:13 -0400
+Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:41060 "EHLO
+	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754191AbXHKR5M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 13:53:59 -0400
-Date: Sat, 11 Aug 2007 13:53:56 -0400
-Message-Id: <200708111753.l7BHruNV009717@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: viro@zeniv.linux.org.uk
-Subject: [PATCH] 2.6.23-rc2 error compiling fs/drop_caches.c (struct super_block errors)
-X-MailKey: Erez_Zadok
+	Sat, 11 Aug 2007 13:57:12 -0400
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: sb-400 audigy prob
+Date: Sat, 11 Aug 2007 18:57:01 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200708111258.43546.gene.heskett@gmail.com>
+In-Reply-To: <200708111258.43546.gene.heskett@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708111857.01355.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm getting a lot of warnings about struct super_block in 2.6.23-rc2.  Then,
-a compile error when compiling fs/drop_caches.o:
+On Saturday 11 August 2007 17:58:43 Gene Heskett wrote:
+> Greetings;
+>
+> Running 23-rc2 since it came out, I've just discovered I have only the
+> system beep for sound. From lspci:
+> 01:08.0 Multimedia audio controller: Creative Labs SB0400 Audigy2 Value
+>         Subsystem: Creative Labs Unknown device 1001
+>         Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B-
+>         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+>         Latency: 32 (500ns min, 5000ns max)
+>         Interrupt: pin A routed to IRQ 12
+>         Region 0: I/O ports at c000 [size=64]
+>         Capabilities: [dc] Power Management version 2
+>                 Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA
+> PME(D0-,D1-,D2-,D3hot-,D3cold-)
+>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>
+> But I have a line in my rc.local that reloads the sound fonts:
+> [root@coyote rulesdujour]# sfxload /usr/music/SoundFonts/CT4MGM.SF2
+> No AWE synth device is found
 
-  CC      fs/drop_caches.o
-In file included from fs/drop_caches.c:7:
-include/linux/mm.h:1210: warning: 'struct super_block' declared inside parameter list
-include/linux/mm.h:1210: warning: its scope is only this definition or declaration, which is probably not what you want
-fs/drop_caches.c:17: error: conflicting types for 'drop_pagecache_sb'
-include/linux/mm.h:1210: error: previous declaration of 'drop_pagecache_sb' was here
-fs/drop_caches.c:28: error: conflicting types for 'drop_pagecache_sb'
-include/linux/mm.h:1210: error: previous declaration of 'drop_pagecache_sb' was here
-make[1]: *** [fs/drop_caches.o] Error 1
-make: *** [fs] Error 2
+I'm not 100% sure, but (at least) Debian has two programs "sfxload" 
+and "asfxload", which work with OSS and ALSA respectively. I've found that 
+both can work, but the former will only work with OSS emulation loaded. If 
+you have an "asfxload", I would try it instead.
 
-I'm using Linus's tree, which is 2.6.23-rc2 plus all patches up to this
-commit:
+> This occurred once before and a reboot fixed it, so I'm going to try it
+> again. BRB
+>
+> About 4 reboots later, it finally works again, after it had hung in udev,
+> and apparently did an auto reboot while I was looking for my flashlight.  I
+> had selected in that case to boot to 2.6.22-rt9 since 2.6.23-rc1 didn't
+> work either and udev had hung after spitting out that useless screenfull of
+> missing attributes messages like it always does, (when do we get rid of
+> that?) and it had been hung in udev for about 3 minutes before I got up and
+> left to find my flashlight.  On arrival with light in hand, I found the
+> same screenfull of udev messages and assumed it was still hung, but as I
+> was crawling under the desk I heard the speakers thump like they do when
+> udev finds the device, and the boot continued.  I didn't realize it had
+> spontainiously rebooted till I saw the login message said 2.6.23-rc2, the
+> grub default.
 
-  commit ac07860264bd2b18834d3fa3be47032115524cea
-  Author: Jesper Juhl <jesper.juhl@gmail.com>
-  Date:   Wed Aug 8 16:31:30 2007 -0700
+Not that it explains any of this, of course. I hope you can reproduce it.
 
-I didn't check if this is fixed already in the latest -mm.  The following
-small fix seems to get rid of all warnings and compile errors I've seen:
-
-
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 324c151..ed90191 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -20,6 +20,7 @@ struct anon_vma;
- struct file_ra_state;
- struct user_struct;
- struct writeback_control;
-+struct super_block;
- 
- #ifndef CONFIG_DISCONTIGMEM          /* Don't use mapnrs, do it properly */
- extern unsigned long max_mapnr;
-
-
+-- 
 Cheers,
-Erez.
+Alistair.
+
+137/1 Warrender Park Road, Edinburgh, UK.
+
