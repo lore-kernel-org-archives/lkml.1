@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbXHKGfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760073AbXHKGfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758152AbXHKGfH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 02:35:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480AbXHKGav
+	id S1760073AbXHKGfq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 02:35:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbXHKGar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 02:30:51 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:6163 "EHLO
+	Sat, 11 Aug 2007 02:30:47 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:4346 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754265AbXHKGal (ORCPT
+	with ESMTP id S1752391AbXHKGaf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 02:30:41 -0400
+	Sat, 11 Aug 2007 02:30:35 -0400
 From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 13/13] cxgb3 - test MSI capabilities
+Subject: [PATCH 12/13] cxgb3 - log and clear PEX errors
 To: jeff@garzik.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Date: Fri, 10 Aug 2007 23:30:36 -0700
-Message-ID: <20070811063036.8239.27320.stgit@speedy5>
+Date: Fri, 10 Aug 2007 23:30:31 -0700
+Message-ID: <20070811063031.8221.70512.stgit@speedy5>
 User-Agent: StGIT/0.12
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,88 +26,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Check that the HW in really in MSI/MSI-X mode
-when it was succesfully enabled.
+Clear pciE PEX errors late at module load time.
+Log details when PEX errors occur.
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/cxgb3_main.c |   42 ++++++++++++++++++++++++++++++++++++++++
- drivers/net/cxgb3/regs.h       |    4 ++++
- 2 files changed, 46 insertions(+), 0 deletions(-)
+ drivers/net/cxgb3/t3_hw.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index eaebd7f..1449692 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -2318,6 +2318,46 @@ void t3_fatal_err(struct adapter *adapter)
+diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
+index 3d47627..538b254 100644
+--- a/drivers/net/cxgb3/t3_hw.c
++++ b/drivers/net/cxgb3/t3_hw.c
+@@ -1355,6 +1355,10 @@ static void pcie_intr_handler(struct adapter *adapter)
+ 		{0}
+ 	};
  
++	if (t3_read_reg(adapter, A_PCIE_INT_CAUSE) & F_PEXERR)
++		CH_ALERT(adapter, "PEX error code 0x%x\n",
++			 t3_read_reg(adapter, A_PCIE_PEX_ERR));
++
+ 	if (t3_handle_intr_status(adapter, A_PCIE_INT_CAUSE, PCIE_INTR_MASK,
+ 				  pcie_intr_info, adapter->irq_stats))
+ 		t3_fatal_err(adapter);
+@@ -1806,6 +1810,8 @@ void t3_intr_clear(struct adapter *adapter)
+ 	for (i = 0; i < ARRAY_SIZE(cause_reg_addr); ++i)
+ 		t3_write_reg(adapter, cause_reg_addr[i], 0xffffffff);
+ 
++	if (is_pcie(adapter))
++		t3_write_reg(adapter, A_PCIE_PEX_ERR, 0xffffffff);
+ 	t3_write_reg(adapter, A_PL_INT_CAUSE0, 0xffffffff);
+ 	t3_read_reg(adapter, A_PL_INT_CAUSE0);	/* flush */
  }
- 
-+/*
-+ * Interrupt handler used to check if MSI/MSI-X works on this platform.
-+ */
-+static irqreturn_t check_intr_handler(int irq, void *cookie)
-+{
-+	struct adapter *adap = cookie;
-+
-+	t3_set_reg_field(adap, A_PL_INT_ENABLE0, F_MI1, 0);
-+	return IRQ_HANDLED;
-+}
-+
-+static void __devinit check_msi(struct adapter *adap)
-+{
-+	int vec, mi1;
-+
-+	if (!(t3_read_reg(adap, A_PL_INT_CAUSE0) & F_MI1))
-+		return;
-+
-+	vec = (adap->flags & USING_MSI) ? adap->pdev->irq :
-+					  adap->msix_info[0].vec;
-+
-+	if (request_irq(vec, check_intr_handler, 0, adap->name, adap))
-+		return;
-+
-+	t3_set_reg_field(adap, A_PL_INT_ENABLE0, 0, F_MI1);
-+	msleep(10);
-+	mi1 = t3_read_reg(adap, A_PL_INT_ENABLE0) & F_MI1;
-+	if (mi1)
-+		t3_set_reg_field(adap, A_PL_INT_ENABLE0, F_MI1, 0);
-+	free_irq(vec, adap);
-+
-+	if (mi1) {
-+		cxgb_disable_msi(adap);
-+		dev_info(&adap->pdev->dev,
-+			 "the kernel believes that MSI is available on this "
-+			 "platform\nbut the driver's MSI test has failed.  "
-+			 "Proceeding with INTx interrupts.\n");
-+	}
-+}
-+
- static int __devinit cxgb_enable_msix(struct adapter *adap)
- {
- 	struct msix_entry entries[SGE_QSETS + 1];
-@@ -2554,6 +2594,8 @@ static int __devinit init_one(struct pci_dev *pdev,
- 		adapter->flags |= USING_MSIX;
- 	else if (msi > 0 && pci_enable_msi(pdev) == 0)
- 		adapter->flags |= USING_MSI;
-+	if (adapter->flags & (USING_MSIX | USING_MSI))
-+		check_msi(adapter);
- 
- 	err = sysfs_create_group(&adapter->port[0]->dev.kobj,
- 				 &cxgb3_attr_group);
-diff --git a/drivers/net/cxgb3/regs.h b/drivers/net/cxgb3/regs.h
-index 5e1bc0d..f97f8ab 100644
---- a/drivers/net/cxgb3/regs.h
-+++ b/drivers/net/cxgb3/regs.h
-@@ -1639,6 +1639,10 @@
- #define V_MC5A(x) ((x) << S_MC5A)
- #define F_MC5A    V_MC5A(1U)
- 
-+#define S_MI1    13
-+#define V_MI1(x) ((x) << S_MI1)
-+#define F_MI1    V_MI1(1U)
-+
- #define S_CPL_SWITCH    12
- #define V_CPL_SWITCH(x) ((x) << S_CPL_SWITCH)
- #define F_CPL_SWITCH    V_CPL_SWITCH(1U)
