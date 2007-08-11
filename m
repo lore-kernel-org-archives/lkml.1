@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbXHKORg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758652AbXHKOTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757967AbXHKORg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 10:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbXHKOR1
+	id S1758652AbXHKOTj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 10:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbXHKOTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 10:17:27 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:62639 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752748AbXHKOR1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 10:17:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=XwtLwNACQ9bUKBkeTxHR3RFuNIlcyA+DQOTls+MmBRVX64liO0ByeG5d7yttiAnSyqKzc+PQogWWrGf7leT8s4Aenn3HjC3rMNZRDZIxk9X4kJz7nBp6f7tYTmisXnVu85wxHrC3NYzGFFJ76uWa6OA7XpHOTcoxMMLCL2DUdO0=
-Date: Sat, 11 Aug 2007 18:17:14 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
-Message-ID: <20070811141714.GA7232@cvg>
-References: <20070811132131.GA13775@mail.ustc.edu.cn>
+	Sat, 11 Aug 2007 10:19:32 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:32905 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752748AbXHKOTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 10:19:31 -0400
+Date: Sat, 11 Aug 2007 10:19:25 -0400
+To: Willy Tarreau <w@1wt.eu>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Documentation files in html format?
+Message-ID: <20070811141925.GA21866@fieldses.org>
+References: <20070809113122.3aa508e4@oldman.hamilton.local> <20070810201704.GI6002@1wt.eu> <20070810204025.GC29549@fieldses.org> <20070810205117.GJ6002@1wt.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070811132131.GA13775@mail.ustc.edu.cn>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20070810205117.GJ6002@1wt.eu>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Fengguang Wu - Sat, Aug 11, 2007 at 09:21:31PM +0800]
-| Andrew,
-| 
-| I'm not sure if this patch is the right fix for the bug.  But it do
-| stops the oops message. The bug also happens in 2.6.23-rc1-mm2/2.6.23-rc2-mm2.
-| I'm running debian/sid. The .config is attached.
-| 
-|
+On Fri, Aug 10, 2007 at 10:51:17PM +0200, Willy Tarreau wrote:
+> The problem I have with asciidoc is that it's a nightmare to get it
+> to work. It's what GIT uses, and after spending a whole day trying
+> to *build* that thing, I finally resigned and asked Junio if he could
+> publish the pre-formatted manpages himself, which he agreed to.
 
-[...snip...]
+I wasn't actually suggesting we use the asciidoc tools--that's a
+separate question.  We could ignore them, or wait till they solve
+whatever problems they may have.
 
-Even if you're right you have to make the same patch for
-mm/nommu.c but I've an anticipation the problem is growing
-up from another point (and I'm really hoping that I'm wrong ;)
+I was just suggesting that if we took your suggestion of standardizing
+on plain text plus some conventions for formatting lists and headers and
+such, one easy way to do that might just be to adopt the asciidoc format
+(or some subset thereof).  Is there any part of the asciidoc *syntax*
+that you object to?
 
-		Cyrill
-
+--b.
