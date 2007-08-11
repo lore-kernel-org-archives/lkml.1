@@ -1,106 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764536AbXHKWQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764539AbXHKWU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764536AbXHKWQl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 18:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762365AbXHKWQc
+	id S1764539AbXHKWU0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 18:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759579AbXHKWUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 18:16:32 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58003 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758990AbXHKWQb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 18:16:31 -0400
-X-Sasl-enc: 3MgRYHE72P1yne+BNf8Bix0WbE2we3rf+WYiStGSkMLN 1186870589
-Date: Sat, 11 Aug 2007 19:16:25 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Cc: lenb@kernel.org, Hugh Dickins <hugh@veritas.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Richard Hughes <hughsient@gmail.com>
-Subject: Re: [PATCH 3/3] ACPI: thinkpad-acpi: change thinkpad-acpi input
-	default and kconfig help
-Message-ID: <20070811221625.GB27761@khazad-dum.debian.net>
-References: <11868017142597-git-send-email-hmh@hmh.eng.br> <11868017143582-git-send-email-hmh@hmh.eng.br> <20070811180602.GA17843@mellanox.co.il>
+	Sat, 11 Aug 2007 18:20:17 -0400
+Received: from mx1.suse.de ([195.135.220.2]:47105 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759108AbXHKWUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 18:20:15 -0400
+To: casey@schaufler-ca.com
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, torvalds@osdl.org
+Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
+References: <46BDF88B.2060301@schaufler-ca.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 12 Aug 2007 01:14:27 +0200
+In-Reply-To: <46BDF88B.2060301@schaufler-ca.com>
+Message-ID: <p73zm0xslyk.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070811180602.GA17843@mellanox.co.il>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Aug 2007, Michael S. Tsirkin wrote:
-> > Quoting Henrique de Moraes Holschuh <hmh@hmh.eng.br>:
-> > Subject: [PATCH 3/3] ACPI: thinkpad-acpi: change thinkpad-acpi input default and kconfig help
-> > 
-> > The current kconfig help text was misleading users.  Also, the default for
-> > an input-layer-optimized support caused way too many problems without
-> > up-to-date userspace in place.
-> > 
-> > So, rework the help text, and change the default to N.  Note that
-> > distributions are supposed to enable this option as soon as they update HAL
-> > to a version that handles the thinkpad-acpi new input layer interface.
-> 
-> I don't really know the details here, so I could be completely wrong.
+Casey Schaufler <casey@schaufler-ca.com> writes:
 
-You can get up to speed through the archives of the ibm-acpi-devel
-mailinglist at sourceforge.net (or gmane.org).
+> Smack is the Simplified Mandatory Access Control Kernel.
 
-> However, generally, forcing HAL and kernel to be in sync really
-> looks to me like a non-ideal way to handle interface change.
+I like the simplified part.
 
-True.  But so far I didn't find any better way.  Sending hot key events over
-the input layer and as an ACPI event at the same time is bound to cause
-problems that are not that easy to work around, while configuring the driver
-to send one of the two will always work, and autodetecting which channel to
-use to deliver events is basically impossible (HAL, for example, always
-opens the ACPI event sink, AND all input devices that issue EV_KEY).
+> +static int smk_get_access(smack_t sub, smack_t obj)
+> +{
+> +	struct smk_list_entry *sp = smack_list;
+> +
+> +	for (; sp != NULL; sp = sp->smk_next)
+> +		if (sp->smk_rule.smk_subject == sub &&
+> +		    sp->smk_rule.smk_object == obj)
+> +			return sp->smk_rule.smk_access;
 
-I *can* make the compile-time option a module parameter, though.  That
-wouldn't be much of a problem, and the compile-time option would select the
-default for that parameter, but it would be easier to override it at run
-time (you can already do it, but it requires reprogramming various driver
-parameters using sysfs and the input device IOCTLs).
+Do I miss something, or is there really no locking for the reader side
+of the list? That looks dangerous. Of course a global lock for readers 
+would be likely a scaling disaster. You could use RCU.
 
-Would a module parameter address enough of your concerns?  Kconfig would
-only set the default for that parameter, then...
+Or if you assume rules are changed only very infrequently it might
+be more cache friendly to compile all the rules into a linear buffer
+and then just replace the whole buffer atomically with a RCU
+grace period on cahnges.
 
-> For example, this would mean that one can't use the same kernel
-> for multiple distributions, and for a person like me
-> that needs to switch distros all the time, it seems like a pain.
+It doesn't look like it would scale to larger numbers of rules though.
+Is that intended? Would caching of decisions fit into the design?
 
-Setup the driver at boot time, then.  You can change its behaviour through
-sysfs and some utility that can reprogram an input layer device keymap.  Or,
-if I add a module parameter that duplicates the compile-time parameter, you
-just need to use the module parameter.
+Also in general code style would need some improvements;
+e.g. no externs in .c; no ../.. include hacks etc.
+You also seem weak on the Documentation front.
+Other than that it looks reasonably clean (haven't read all of it)
 
-> Could not the kernel expose both new and old interfaces
-> somehow, so that HAL can be updated without recompiling the kernel?
-
-It exposes all interfaces, all the time.  But you have to configure their
-behaviour, and since you can't have both active at the same time, you need
-to cause the driver to use the one your userland expects.
-
-Also, there is a matter of the default of the hot key functionality (enabled
-or disabled, and its masks) which used not to matter much as the driver was
-basically useless without a lot configuration from userspace, but that is
-not true anymore when dealing with input devices.
-
-> For example, there could be a sysfs interface which let the HAL set
-> the desired interface version.
-
-HAL already can do that if it wants.  However, driver autodetection
-information is lost when the input device is not enabled by default (you
-lose the autodetected keymap).
-
-This could be fixed by selecting whether to send events over ACPI or the
-input device in a different way (but I found no better compromise than the
-one I used.  Suggestions?).
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+-Andi
