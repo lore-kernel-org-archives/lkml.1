@@ -1,54 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbXHKFma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbXHKFnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242AbXHKFma (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 01:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbXHKFmW
+	id S1756126AbXHKFnt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 01:43:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbXHKFnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 01:42:22 -0400
-Received: from 1wt.eu ([62.212.114.60]:1310 "EHLO 1wt.eu"
+	Sat, 11 Aug 2007 01:43:39 -0400
+Received: from 1wt.eu ([62.212.114.60]:1316 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278AbXHKFmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 01:42:21 -0400
-Date: Sat, 11 Aug 2007 07:33:47 +0200
+	id S1750890AbXHKFni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 01:43:38 -0400
+Date: Sat, 11 Aug 2007 07:28:40 +0200
 From: Willy Tarreau <w@1wt.eu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Documentation files in html format?
-Message-ID: <20070811053347.GC24082@1wt.eu>
-References: <20070809113122.3aa508e4@oldman.hamilton.local> <20070810201704.GI6002@1wt.eu> <20070810204025.GC29549@fieldses.org> <20070810205117.GJ6002@1wt.eu> <20070810230830.GA5922@uranus.ravnborg.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Michael Chang <thenewme91@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+Message-ID: <20070811052840.GB24082@1wt.eu>
+References: <20070801190556.GA1199@elte.hu> <Pine.LNX.4.64.0708100037460.1817@scrub.home> <20070810054948.GA5908@elte.hu> <Pine.LNX.4.64.0708101459530.1817@scrub.home> <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com> <Pine.LNX.4.64.0708101919270.1817@scrub.home> <20070810194705.GH6002@1wt.eu> <Pine.LNX.4.64.0708102235320.1817@scrub.home> <20070810213630.GA13910@elte.hu> <Pine.LNX.4.64.0708110001420.1817@scrub.home>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070810230830.GA5922@uranus.ravnborg.org>
+In-Reply-To: <Pine.LNX.4.64.0708110001420.1817@scrub.home>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 11, 2007 at 01:08:30AM +0200, Sam Ravnborg wrote:
-> > 
-> > The problem I have with asciidoc is that it's a nightmare to get it
-> > to work. It's what GIT uses, and after spending a whole day trying
-> > to *build* that thing, I finally resigned and asked Junio if he could
-> > publish the pre-formatted manpages himself, which he agreed to.
+On Sat, Aug 11, 2007 at 12:50:08AM +0200, Roman Zippel wrote:
+> Hi,
 > 
-> Bit uses in addition to asciidoc also docbook and a bit more.
-> As asciidoc is some phython scripts it should be trivial to
-> install with no build required.
+> On Fri, 10 Aug 2007, Ingo Molnar wrote:
+> 
+> > achieve that. It probably wont make a real difference, but it's really 
+> > easy for you to send and it's still very useful when one tries to 
+> > eliminate possibilities and when one wants to concentrate on the 
+> > remaining possibilities alone.
+> 
+> The thing I'm afraid about CFS is its possible unpredictability, which 
+> would make it hard to reproduce problems and we may end up with users with 
+> unexplainable weird problems. That's the main reason I'm trying so hard to 
+> push for a design discussion.
 
-I remember it relied on some tools to process xml, but I don't know
-exactly what. It were those tools which I could not build.
+You may be interested by looking at the very early CFS versions. The design
+was much more naive and understandable. After that, a lot of tricks have
+been added to take into account a lot of uses and corner cases, which may
+not help in understanding it globally.
 
-> Maybe it was the docbook stuff you had trouble with?
+> Just to give an idea here are two more examples of irregular behaviour, 
+> which are hopefully easier to reproduce.
+> 
+> 1. Two simple busy loops, one of them is reniced to 15, according to my 
+> calculations the reniced task should get about 3.4% (1/(1.25^15+1)), but I 
+> get this:
+> 
+>   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+>  4433 roman     20   0  1532  300  244 R 99.2  0.2   5:05.51 l
+>  4434 roman     35  15  1532   72   16 R  0.7  0.1   0:10.62 l
 
-possible, I don't remember that much, it was a painful day one year ago.
+Could this be caused by typos in some tables like you have found in wmult ?
 
-> My Kbuild example were made without using other tools than asciidoc but
-> if pdf is desired some additional tools are needed.
+> OTOH upto nice level 12 I get what I expect.
+> 
+> 2. If I start 20 busy loops, initially I see in top that every task gets 
+> 5% and time increments equally (as it should):
+(...)
 
-It was just needed to build the man pages, so I would have expected it
-to be pretty straight-forward too.
+> But if I renice all of them to -15, the time every task gets is rather 
+> random:
+> 
+>   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+>  4492 roman      5 -15  1532   68   16 R  1.0  0.1   0:07.95 l
+>  4491 roman      5 -15  1532   68   16 R  4.3  0.1   0:07.62 l
+>  4490 roman      5 -15  1532   68   16 R  3.3  0.1   0:07.50 l
+>  4489 roman      5 -15  1532   68   16 R  7.6  0.1   0:07.80 l
+>  4488 roman      5 -15  1532   68   16 R  9.6  0.1   0:08.31 l
+>  4487 roman      5 -15  1532   68   16 R  3.3  0.1   0:07.59 l
+>  4486 roman      5 -15  1532   68   16 R  6.6  0.1   0:07.08 l
+>  4485 roman      5 -15  1532   68   16 R 10.0  0.1   0:07.31 l
+>  4484 roman      5 -15  1532   68   16 R  8.0  0.1   0:07.30 l
+>  4483 roman      5 -15  1532   68   16 R  7.0  0.1   0:07.34 l
+>  4482 roman      5 -15  1532   68   16 R  1.0  0.1   0:05.84 l
+>  4481 roman      5 -15  1532   68   16 R  1.0  0.1   0:07.16 l
+>  4480 roman      5 -15  1532   68   16 R  3.3  0.1   0:07.00 l
+>  4479 roman      5 -15  1532   68   16 R  1.0  0.1   0:06.66 l
+>  4478 roman      5 -15  1532   68   16 R  8.6  0.1   0:06.96 l
+>  4477 roman      5 -15  1532   68   16 R  8.6  0.1   0:07.63 l
+>  4476 roman      5 -15  1532   68   16 R  9.6  0.1   0:07.38 l
+>  4475 roman      5 -15  1532   68   16 R  1.3  0.1   0:07.09 l
+>  4474 roman      5 -15  1532   68   16 R  2.3  0.1   0:07.97 l
+>  4473 roman      5 -15  1532  296  244 R  1.0  0.2   0:07.73 l
+
+Do you see this only at -15, or starting with -15 and below ?
 
 Willy
 
