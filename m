@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763189AbXHKVPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763454AbXHKV1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763189AbXHKVPw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 17:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbXHKVPo
+	id S1763454AbXHKV1y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 17:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbXHKV1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 17:15:44 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:2780 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752025AbXHKVPn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 17:15:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pFIfS0cNmRbFx5LzXHGtDLJj7Ku4DKOzqRq2cugV8a5pBaJ8/SGIjxou7UtC1yhWdoz7TZhqf4dqPg/ghlHV6Ivp3hGfxB54t2f53KtJs/ZIStHa+uoGOnkdRU2sfc+D0opJV5Bxm06vLz0DypnLJ5m7H86owFAJuw1Y5wCUKcA=
-Message-ID: <d9b9d95f0708111415p5f39aa96q72f1d85a7b88a48b@mail.gmail.com>
-Date: Sat, 11 Aug 2007 22:15:41 +0100
-From: "Renato Golin" <rengolin@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: joydev.c and saitek cyborg evo force
-Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0708112302250.11054@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 11 Aug 2007 17:27:45 -0400
+Received: from xenotime.net ([66.160.160.81]:50855 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756661AbXHKV1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 17:27:44 -0400
+Date: Sat, 11 Aug 2007 14:33:34 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Rob Landley <rob@landley.net>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, paulus@samba.org
+Subject: Re: [PATCH] Minor fix to Documentation/powerpc/00-INDEX
+Message-Id: <20070811143334.60f90af4.rdunlap@xenotime.net>
+In-Reply-To: <200708092342.35238.rob@landley.net>
+References: <200708092342.35238.rob@landley.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
-	 <d9b9d95f0706120631l20e6f91duaa110e72a0e955a6@mail.gmail.com>
-	 <Pine.LNX.4.64.0706121715480.10204@jikos.suse.cz>
-	 <d9b9d95f0706141524p3686a41cn882d8f086e4f62cc@mail.gmail.com>
-	 <Pine.LNX.4.64.0706201156410.23812@jikos.suse.cz>
-	 <d9b9d95f0707201710g14d8a905s222c1209358f0196@mail.gmail.com>
-	 <Pine.LNX.4.64.0708101643360.11054@jikos.suse.cz>
-	 <Pine.LNX.4.64.0708101753410.11054@jikos.suse.cz>
-	 <d9b9d95f0708111038p48f18660me02d3e75280b37e@mail.gmail.com>
-	 <Pine.LNX.4.64.0708112302250.11054@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/08/07, Jiri Kosina <jkosina@suse.cz> wrote:
-> Force feedback functionality shouldn't be influenced in any means by this
-> patch - FF implementation doesn't care about the values of the
-> input_dev->abs{max,min,fuzz,flat}.
+On Thu, 9 Aug 2007 23:42:35 -0500 Rob Landley wrote:
 
-So it means the patch should work for all other joysticks as well?
-That's good news... ;)
+> Signed-off-by: Rob Landley <rob@landley.net>
+> 
+> I have a python script to convert 00-INDEX files into index.html files, and a
+> second script to show 404 errors in the result as well as files/directories
+> nothing links to.   (It's not very useful yet, but in case you're wondering
+> http://kernel.org/doc/docdiridx.py and http://kernel.org/doc/doclinkcheck.py
+> .)
+> 
+> Anyway, my simple index.html generator breaks on the Documentation/powerpc
+> directory because one of the description lines is two lines long.  This
+> patch joins those two lines together into one line.  This is the only
+> instance (so far) of this problem.
+
+If Paul wants to merge this, then OK, but I'm not aware of any rule
+that the file descriptions inside INDEX files must be only one line
+long... is that documented somewhere?  (if so, where?)
+
+Maybe the script should allow for this?
+
+> ---
+> 
+> In case you're wondering, here are the current the 404 errors in the
+> various 00-INDEX files.  Fixing all this is on my todo list:
+> 
+> Documentation/ecryptfs.txt
+> Documentation/time_interpolators.txt
+> Documentation/arm/SA1100
+> Documentation/arm/XScale
+> Documentation/arm/empeg
+> Documentation/arm/nwfpe
+> Documentation/isdn/README.eicon
+> Documentation/fb/clgenfb.txt
+> Documentation/networking/ethertap.txt
+> Documentation/filesystems/reiser4.txt
+> Documentation/scsi/AM53C974.txt
+> Documentation/scsi/ChangeLog
+> 
+> The "files and directories not linked to" list is 679 lines long.
+> 
+> diff -r /dev/null Documentation/powerpc/00-INDEX
+> --- a/Documentation/powerpc/00-INDEX	Thu Aug 09 08:40:21 2007 -0700
+> +++ b/Documentation/powerpc/00-INDEX	Thu Aug 09 20:49:03 2007 -0500
+> @@ -6,8 +6,7 @@ 00-INDEX
+>  00-INDEX
+>  	- this file
+>  cpu_features.txt
+> -	- info on how we support a variety of CPUs with minimal compile-time
+> -	options.
+> +	- info on how we support a variety of CPUs with minimal compile-time options.
+>  eeh-pci-error-recovery.txt
+>  	- info on PCI Bus EEH Error Recovery
+>  hvcs.txt
 
 
-> But it is questionable whether your joystick is fully compliant with PID
-> protocol or it implements some sort of vendor-specific one.
-
-I wouldn't be surprised if it's vendor-specific, as their original
-driver doesn't work quite well, I had to download a patched driver
-from their website. Also, they seem to work it around (as I did) with
-the auto-calibration.
-
-Thanks for the help!
-
-cheers,
---renato
-
-Reclaim your digital rights, eliminate DRM, learn more at
-http://www.defectivebydesign.org/what_is_drm
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
