@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762487AbXHKAvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764762AbXHKAzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762487AbXHKAvm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 20:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757318AbXHKAva
+	id S1764762AbXHKAzb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 20:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbXHKAzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 20:51:30 -0400
-Received: from gate.crashing.org ([63.228.1.57]:60345 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756584AbXHKAv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 20:51:29 -0400
-In-Reply-To: <20070811004322.GA13178@gondor.apana.org.au>
-References: <E1IJPkg-0000x0-00@gondolin.me.apana.org.au> <442f95ba19f8622ce04cf0334f34be11@kernel.crashing.org> <20070811000029.GA12779@gondor.apana.org.au> <ef7e94b08a6515d33039d187e04db5db@kernel.crashing.org> <20070811004322.GA13178@gondor.apana.org.au>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <12943ce306ab975fd589bbf5e8b14167@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: paulmck@linux.vnet.ibm.com, heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, csnook@redhat.com, rpjday@mindspring.com,
-       netdev@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       schwidefsky@de.ibm.com, davem@davemloft.net, wensong@linux-vs.org,
-       wjiang@resilience.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
-Date: Sat, 11 Aug 2007 02:50:25 +0200
-To: Herbert Xu <herbert@gondor.apana.org.au>
-X-Mailer: Apple Mail (2.623)
+	Fri, 10 Aug 2007 20:55:12 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:1518 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756714AbXHKAzK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 20:55:10 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: csnook@redhat.com (Chris Snook)
+Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com
+Organization: Core
+In-Reply-To: <46BCC26B.6080600@redhat.com>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1IJfFe-0003Sq-00@gondolin.me.apana.org.au>
+Date: Sat, 11 Aug 2007 08:54:46 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>> That means GCC cannot compile Linux; it already optimises
->>>> some accesses to scalars to smaller accesses when it knows
->>>> it is allowed to.  Not often though, since it hardly ever
->>>> helps in the cost model it employs.
->>>
->>> Please give an example code snippet + gcc version + arch
->>> to back this up.
->>
->> 	unsigned char f(unsigned long *p)
->> 	{
->> 	        return *p & 1;
->> 	}
->
-> This doesn't really matter since we only care about the LSB.
+Chris Snook <csnook@redhat.com> wrote:
+> 
+> cpu_relax() contains a barrier, so it should do the right thing.  For 
+> non-smp architectures, I'm concerned about interacting with interrupt 
+> handlers.  Some drivers do use atomic_* operations.
 
-It is exactly what I claimed, and what you asked proof of.
+What problems with interrupt handlers? Access to int/long must
+be atomic or we're in big trouble anyway.
 
-> Do you have an example where gcc reads it non-atmoically and
-> we care about all parts?
-
-Like I explained in the original mail; no, I suspect such
-a testcase will be really hard to construct, esp. as a small
-testcase.  I have no reason to believe it is impossible to
-do so though -- maybe someone else can write trickier code
-than I can, in which case, please do so.
-
-
-Segher
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
