@@ -1,244 +1,557 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbXHKL5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbXHKMjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759451AbXHKL5G (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 07:57:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755905AbXHKL4z
+	id S1755594AbXHKMjr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 08:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbXHKMjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 07:56:55 -0400
-Received: from smtp-106-saturday.noc.nerim.net ([62.4.17.106]:4606 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752518AbXHKL4y (ORCPT
+	Sat, 11 Aug 2007 08:39:37 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48990 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330AbXHKMjf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 07:56:54 -0400
-Date: Sat, 11 Aug 2007 13:57:05 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1 regression: hwmon/w83627ehf: wrong fan speed
-Message-ID: <20070811135705.0d0688d7@hyperion.delvare>
-In-Reply-To: <46BCE6D0.7060300@s5r6.in-berlin.de>
-References: <46B5B290.4040907@s5r6.in-berlin.de>
-	<20070805162141.GI6221@jupiter.solarsys.private>
-	<46B6053E.2050708@s5r6.in-berlin.de>
-	<20070810230831.59cbc50f@hyperion.delvare>
-	<46BCE6D0.7060300@s5r6.in-berlin.de>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Sat, 11 Aug 2007 08:39:35 -0400
+Date: Sat, 11 Aug 2007 15:39:30 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: v2.6.23-rc2 locks up during boot (without acpi=off)
+Message-ID: <Pine.LNX.4.64.0708012131480.1479@kivilampi-30.cs.helsinki.fi>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_EZHtUH6tfh_g3tanik=BfJQ"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---MP_EZHtUH6tfh_g3tanik=BfJQ
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+I noticed that v2.6.23-rc1 locks up during boot, same thing happens now 
+with the latest linus' tree (+net-2.6.24 and tcp-2.6 tree stuff on top 
+of it; in -rc1 test they weren't though). The exact location of hang
+varies a bit though. No OOPS, does not respond to sysrq or anything else 
+besides reset. Last known bootable one is something like 2.6.22-rc4 
+(I usually run 2.6.21.5 on this machine, haven't tried any 2.6.22 on
+this after those rcs). Problem seems to start after this line:
 
-Hi Stefan,
+Time: acpi_pm clocksource has been installed.
 
-On Sat, 11 Aug 2007 00:29:36 +0200, Stefan Richter wrote:
-> Jean Delvare wrote:
-> > I just tried 2.6.23-rc2 on a system where I use the w83627ehf hardware
-> > monitoring driver, and was not able to reproduce the problem you
-> > described. Fan speeds are reported properly for me. Which I kind of
-> > expected, as I tested all my w83627ehf patches on this system before
-> > submitting them.
->=20
-> Thanks that you are still after it.  I was busy with other stuff the
-> whole week, hence no git bisect result from me yet.
->=20
-> > Please try using sensors instead of ksensors, and confirm that the
-> > behavior is the same. I'd like to rule out a problem in ksensors
-> > itself. sensors will also report the fan divs, this is a useful
-> > information given the problem you have.
->=20
-> # sensors
-> w83627ehf-isa-0290
-> Adapter: ISA adapter
-> VCore:     +0.95 V  (min =3D  +0.00 V, max =3D  +1.74 V)
-> in1:      +12.30 V  (min =3D  +1.64 V, max =3D  +3.22 V) ALARM
-> AVCC:      +3.28 V  (min =3D  +1.89 V, max =3D  +1.94 V) ALARM
-> 3VCC:      +3.26 V  (min =3D  +0.18 V, max =3D  +0.72 V) ALARM
-> in4:       +1.58 V  (min =3D  +0.57 V, max =3D  +0.90 V) ALARM
-> in5:       +1.70 V  (min =3D  +0.41 V, max =3D  +1.19 V) ALARM
-> in6:       +3.43 V  (min =3D  +0.31 V, max =3D  +3.05 V) ALARM
-> VSB:       +3.25 V  (min =3D  +0.37 V, max =3D  +3.01 V) ALARM
-> VBAT:      +3.18 V  (min =3D  +3.94 V, max =3D  +0.74 V) ALARM
-> in9:       +1.88 V  (min =3D  +0.79 V, max =3D  +1.40 V) ALARM
-> Case Fan:    0 RPM  (min =3D  753 RPM, div =3D 128) ALARM
-> CPU Fan:    88 RPM  (min =3D  659 RPM, div =3D 64) ALARM
-> Aux Fan:     0 RPM  (min =3D 10546 RPM, div =3D 128) ALARM
-> fan5:        0 RPM  (min =3D  753 RPM, div =3D 128) ALARM
-> Sys Temp:    +44 C  (high =3D    -5 C, hyst =3D   -34 C)   ALARM
-> CPU Temp:  +38.0 C  (high =3D +80.0 C, hyst =3D +75.0 C)
-> AUX Temp:  +43.5 C  (high =3D +80.0 C, hyst =3D +75.0 C)
->=20
-> coretemp-isa-0000
-> Adapter: ISA adapter
->=20
-> coretemp-isa-0001
-> Adapter: ISA adapter
+...the power led starts blinking (not periodic cycle but more or less 
+varying on-off cycle, never seen that led blink before at all, didn't know 
+that one can make it blink :-)) and the machine gets consideably slower 
+too. Never have it been able to complete booting all they way up to login 
+prompt before lock up.
 
-Note: a more recent version of lm-sensors would give you additional
-temperature values here.
+Tried with acpi=off, boots just fine (dmesg comes from it). I can take 
 
->=20
-> (The aux fan and fan5 are not connected.)
->=20
-> > Your original post suggests that the fan speed is supposed to change
-> > depending on the system load? Or temperature? Please describe the
-> > mechanism used to achieve this. Could it be that this mechanism isn't
-> > working properly, and the reported (low) speeds are actually true?
->=20
-> The motherboard controls the CPU fan and I believe also the case fan,
-> probably based on temperatures.  (The manual is buried somewhere and
-> MSI's download site is down right in this moment.)
+-- 
+ i.
 
-I would like to know what it is doing exactly, and how. Can this
-feature be disabled? If the BIOS accesses the W83627EHG chip in our
-back, this can cause lots of trouble, such as what you are seeing.
 
-> The low speeds or the dividers incorrect.  I'll reboot in a minute into
-> 2.6.22(-rc5)  and post the "sensors" output.
->=20
-> > What fan inputs are used by your CPU and system fans? "sensors
-> > -c /dev/null" will tell.
->=20
-> ...
-> fan1:      484 RPM  (min =3D 12053 RPM, div =3D 16) ALARM
-> fan2:       89 RPM  (min =3D  659 RPM, div =3D 64) ALARM
-> fan3:        0 RPM  (min =3D 10546 RPM, div =3D 128) ALARM
-> fan5:        0 RPM  (min =3D 1506 RPM, div =3D 128) ALARM
-> ...
+$ cat /proc/cpuinfo 
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 6
+model           : 4
+model name      : AMD Athlon(tm) Processor
+stepping        : 2
+cpu MHz         : 996.672
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
+cmov pat pse36 mmx fxsr syscall mmxext 3dnowext 3dnow
+bogomips        : 1996.30
+clflush size    : 32
 
-Note: 89 RPM with div=3D64 corresponds to the same register value as 1424
-RPM with div=3D4 (as shown in your next post). As if the chip and the
-driver didn't agree on what the actual divider is.
+# lspci -vvv
+00:00.0 Host bridge: VIA Technologies, Inc. VT8363/8365 [KT133/KM133] (rev 02)
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ >SERR- <PERR-
+	Latency: 0
+	Region 0: Memory at d0000000 (32-bit, prefetchable) [size=64M]
+	Capabilities: [a0] AGP version 2.0
+		Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit- FW- AGP3- Rate=x1,x2
+		Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP- GART64- 64bit- FW- Rate=<none>
+	Capabilities: [c0] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-> Hmm, interesting.  When I now re-run sensors I get
-> ...
-> Case Fan:  484 RPM  (min =3D 12053 RPM, div =3D 16) ALARM
-> CPU Fan:    89 RPM  (min =3D  659 RPM, div =3D 64) ALARM
-> Aux Fan:     0 RPM  (min =3D 10546 RPM, div =3D 128) ALARM
-> fan5:        0 RPM  (min =3D 1506 RPM, div =3D 128) ALARM
-> ...
->=20
-> (I'm still in 2.6.23-rc2.  Ksensors picked the 484 RPM of the case fan
-> up too, and that's most certainly the correct speed.  Just the CPU fan's
-> speed is still wrong; or rather its divider should be 16 rather than 64.)
+00:01.0 PCI bridge: VIA Technologies, Inc. VT8363/8365 [KT133/KM133 AGP] (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ >SERR- <PERR-
+	Latency: 0
+	Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+	I/O behind bridge: 0000f000-00000fff
+	Memory behind bridge: fff00000-000fffff
+	Prefetchable memory behind bridge: fff00000-000fffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
+	Capabilities: [80] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-Divider should be 4,not 16, methinks.
+00:07.0 ISA bridge: VIA Technologies, Inc. VT82C686 [Apollo Super South] (rev 22)
+	Subsystem: VIA Technologies, Inc. VT82C686/A PCI to ISA Bridge
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0
 
-You can dump the chip registers using the following command:
-isadump 0x295 0x296
-=46rom now on, whenever you paste the output of "sensors", please dump
-the contents of the chip too and include the output.
+00:07.1 IDE interface: VIA Technologies, Inc. VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 10) (prog-if 8a [Master SecP PriP])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 32
+	Region 0: [virtual] Memory at 000001f0 (32-bit, non-prefetchable) [size=8]
+	Region 1: [virtual] Memory at 000003f0 (type 3, non-prefetchable) [size=1]
+	Region 2: [virtual] Memory at 00000170 (32-bit, non-prefetchable) [size=8]
+	Region 3: [virtual] Memory at 00000370 (type 3, non-prefetchable) [size=1]
+	Region 4: I/O ports at c000 [size=16]
+	Capabilities: [c0] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-> > Other than that, I can only ask for the same things Mark already
-> > suggested: compile with HWMON debugging and provide the logs (this will
-> > show what fan div the driver is trying to select), and try bisecting
-> > using git to find out which patch exactly caused the problem.
->=20
-> How comes the divider of one of the fans changed from one minute to the
-> other?
+00:07.2 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 10) (prog-if 00 [UHCI])
+	Subsystem: VIA Technologies, Inc. (Wrong ID) USB Controller
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 32, Cache Line Size: 32 bytes
+	Interrupt: pin D routed to IRQ 11
+	Region 4: I/O ports at c400 [size=32]
+	Capabilities: [80] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-No idea. The new driver can only increase, not decrease, the clock
-divider when you poll for a speed value. So the change above (from 128
-to 16) is not supposed to happen. However... I also can't explain why
-the original reading is 0 (with div=3D128). A reading of 0 only happens
-if the divider is too low (i.e. less than 16.) If the driver increased
-the divider to 16, it means that it was previously 8, not 128.
+00:07.3 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 10) (prog-if 00 [UHCI])
+	Subsystem: VIA Technologies, Inc. (Wrong ID) USB Controller
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 32, Cache Line Size: 32 bytes
+	Interrupt: pin D routed to IRQ 11
+	Region 4: I/O ports at c800 [size=32]
+	Capabilities: [80] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-Now, given how dividers are encoded:
-128 -> 111b
- 64 -> 110b
-  8 -> 011b
-  4 -> 010b
+00:07.4 Host bridge: VIA Technologies, Inc. VT82C686 [Apollo Super ACPI] (rev 30)
+	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Interrupt: pin ? routed to IRQ 11
+	Capabilities: [68] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-See the pattern? The case fan's clock divider reads 128 when it is 8,
-the CPU fan's clock divider reads 64 when it is 4. In both cases, it is
-the most significant bit that is wrong. And it happens that this bit is
-in a separate register (VBAT, 0x5d), which happens to be in the banked
-register range of the W83627EHG (0x50-0x5f).
+00:07.5 Multimedia audio controller: VIA Technologies, Inc. VT82C686 AC97 Audio Controller (rev 20)
+	Subsystem: Analog Devices Unknown device 5348
+	Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Interrupt: pin C routed to IRQ 15
+	Region 0: I/O ports at cc00 [size=256]
+	Region 1: I/O ports at d000 [size=4]
+	Region 2: I/O ports at d400 [size=4]
+	Capabilities: [c0] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-So my theory is that something else (BIOS, ACPI?) is changing the bank,
-probably to read temperature values which are in banks 1 and 2, causing
-the w83627ehf to get a wrong value for the VBAT register. If I am
-right, then the attached patch should help. Please give it a try and
-report.
+00:09.0 SCSI storage controller: LSI Logic / Symbios Logic 53c875 (rev 26)
+	Subsystem: LSI Logic / Symbios Logic LSI53C876/E PCI to Dual Channel SCSI Controller
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 72 (4250ns min, 16000ns max), Cache Line Size: 64 bytes
+	Interrupt: pin A routed to IRQ 11
+	Region 0: I/O ports at d800 [size=256]
+	Region 1: Memory at d9002000 (32-bit, non-prefetchable) [size=256]
+	Region 2: Memory at d9001000 (32-bit, non-prefetchable) [size=4K]
+	[virtual] Expansion ROM at 10000000 [disabled] [size=128K]
+	Capabilities: [40] Power Management version 1
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-Mark: the previous version of the driver was initializing the fan mins.
-This wasn't needed, however the bank was reset to 0 as a side effect
-when initializing fan5_min. When removing the unneeded code, I caused
-the initial bank value to become undefined. This explains in part the
-odd behavior reported by Stefan. The fix is to either set the bank to 0
-explicitly on driver load, or to stop assuming that bank is 0 by
-default. My patch does the latter, as it might also help in case
-something is later doing concurrent accesses to the chip.
+00:0a.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8139/8139C/8139C+ (rev 10)
+	Subsystem: Kingmax Technology Inc Unknown device 0203
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 32 (8000ns min, 16000ns max)
+	Interrupt: pin A routed to IRQ 10
+	Region 0: I/O ports at dc00 [size=256]
+	Region 1: Memory at d9000000 (32-bit, non-prefetchable) [size=256]
+	[virtual] Expansion ROM at 10020000 [disabled] [size=128K]
+	Capabilities: [50] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0-,D1+,D2+,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-> FWIW, the ``chip "w83627ehf-*"=B4=B4 section in Gentoo's /etc/sensors.conf
-> provides only labels for fan{1,2,3}. It is titled
-> # Winbond W83627EHF configuration originally contributed by Leon Moonen
-> # This is for an Asus P5P800, voltages for A8V-E SE.
+00:0e.0 VGA compatible controller: 3Dfx Interactive, Inc. Voodoo 3 (rev 01) (prog-if 00 [VGA])
+	Subsystem: 3Dfx Interactive, Inc. Voodoo3 2000 PCI
+	Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR+
+	Interrupt: pin A routed to IRQ 255
+	Region 0: Memory at d4000000 (32-bit, non-prefetchable) [size=32M]
+	Region 1: Memory at d6000000 (32-bit, prefetchable) [size=32M]
+	Region 2: I/O ports at e000 [size=256]
+	[virtual] Expansion ROM at 10040000 [disabled] [size=64K]
+	Capabilities: [60] Power Management version 1
+		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-This is from the standard default sensors configuration file. It is
-expected that you tweak the labels, limits etc. to match your own
-motherboard.
-
-> Should I hardwire correct dividers or pulse per rev in sensors.conf or
-> is the driver supposed to work the correct dividers out --- like it did
-> before 2.6.23-rc?
-
-The driver is supposed to pick the best divider if you set the min fan
-speed limits properly (which it seems you didn't.) If you don't set the
-min limits, all the driver will do is increase the divider as long as
-it gets a 0 reading, so the dividers will be good, but not necessarily
-optimum.
-
-Thanks,
---=20
-Jean Delvare
-
---MP_EZHtUH6tfh_g3tanik=BfJQ
-Content-Type: text/x-patch; name=hwmon-w83627ehf-dont-assume-bank-0.patch
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename=hwmon-w83627ehf-dont-assume-bank-0.patch
-
-Don't assume that the default bank is 0. For one thing, we don't even
-set it to 0 when the driver is loaded, so the initial state might be
-different. For another, something (say, the BIOS) might access the chip
-and leave with the bank set to something different, so assuming that
-the bank value is 0 is not safe.
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
----
- drivers/hwmon/w83627ehf.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
---- linux-2.6.23-rc2.orig/drivers/hwmon/w83627ehf.c	2007-07-23 16:44:35.000000000 +0200
-+++ linux-2.6.23-rc2/drivers/hwmon/w83627ehf.c	2007-08-11 12:55:58.000000000 +0200
-@@ -309,18 +309,16 @@ static inline int is_word_sized(u16 reg)
- 	      || (reg & 0x00ff) == 0x55));
- }
- 
--/* We assume that the default bank is 0, thus the following two functions do
--   nothing for registers which live in bank 0. For others, they respectively
--   set the bank register to the correct value (before the register is
--   accessed), and back to 0 (afterwards). */
-+/* Registers 0x50-0x5f are banked */
- static inline void w83627ehf_set_bank(struct w83627ehf_data *data, u16 reg)
- {
--	if (reg & 0xff00) {
-+	if ((reg & 0x00f0) == 0x50) {
- 		outb_p(W83627EHF_REG_BANK, data->addr + ADDR_REG_OFFSET);
- 		outb_p(reg >> 8, data->addr + DATA_REG_OFFSET);
- 	}
- }
- 
-+/* Not strictly necessary, but play it safe for now */
- static inline void w83627ehf_reset_bank(struct w83627ehf_data *data, u16 reg)
- {
- 	if (reg & 0xff00) {
-
---MP_EZHtUH6tfh_g3tanik=BfJQ--
+$ dmesg
+Linux version 2.6.23-rc2-ga3c05142 (ijjarvin@kivilampi-30) (gcc version 4.1.1 20060525 (Red Hat 4.1.1-1)) #256 PREEMPT Sat Aug 11 11:52:27 EEST 2007
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+ BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 000000000fff0000 (usable)
+ BIOS-e820: 000000000fff0000 - 000000000fff3000 (ACPI NVS)
+ BIOS-e820: 000000000fff3000 - 0000000010000000 (ACPI data)
+ BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
+ limit_regions start: 0000000000000000 - 000000000009fc00 (usable)
+ limit_regions start: 000000000009fc00 - 00000000000a0000 (reserved)
+ limit_regions start: 00000000000f0000 - 0000000000100000 (reserved)
+ limit_regions start: 0000000000100000 - 000000000fff0000 (usable)
+ limit_regions start: 000000000fff0000 - 000000000fff3000 (ACPI NVS)
+ limit_regions start: 000000000fff3000 - 0000000010000000 (ACPI data)
+ limit_regions start: 00000000ffff0000 - 0000000100000000 (reserved)
+ limit_regions endfor: 0000000000000000 - 000000000009fc00 (usable)
+ limit_regions endfor: 000000000009fc00 - 00000000000a0000 (reserved)
+ limit_regions endfor: 00000000000f0000 - 0000000000100000 (reserved)
+ limit_regions endfor: 0000000000100000 - 0000000008000000 (usable)
+user-defined physical RAM map:
+ user: 0000000000000000 - 000000000009fc00 (usable)
+ user: 000000000009fc00 - 00000000000a0000 (reserved)
+ user: 00000000000f0000 - 0000000000100000 (reserved)
+ user: 0000000000100000 - 0000000008000000 (usable)
+128MB LOWMEM available.
+Entering add_active_range(0, 0, 32768) 0 entries of 256 used
+Zone PFN ranges:
+  DMA             0 ->     4096
+  Normal       4096 ->    32768
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0:        0 ->    32768
+On node 0 totalpages: 32768
+  DMA zone: 32 pages used for memmap
+  DMA zone: 0 pages reserved
+  DMA zone: 4064 pages, LIFO batch:0
+  Normal zone: 224 pages used for memmap
+  Normal zone: 28448 pages, LIFO batch:7
+  Movable zone: 0 pages used for memmap
+DMI 2.3 present.
+Allocating PCI resources starting at 10000000 (gap: 08000000:f8000000)
+Built 1 zonelists in Zone order.  Total pages: 32512
+Kernel command line: BOOT_IMAGE=LinuxTEST ro root=80a mem=128M acpi=off
+Local APIC disabled by BIOS -- you can enable it with "lapic"
+mapped APIC to ffffb000 (01102000)
+Enabling fast FPU save and restore... done.
+Initializing CPU#0
+PID hash table entries: 512 (order: 9, 2048 bytes)
+Detected 996.672 MHz processor.
+Console: colour VGA+ 80x25
+console [tty0] enabled
+Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
+... MAX_LOCKDEP_SUBCLASSES:    8
+... MAX_LOCK_DEPTH:          30
+... MAX_LOCKDEP_KEYS:        2048
+... CLASSHASH_SIZE:           1024
+... MAX_LOCKDEP_ENTRIES:     8192
+... MAX_LOCKDEP_CHAINS:      16384
+... CHAINHASH_SIZE:          8192
+ memory used by lock dependency info: 992 kB
+ per task-struct memory footprint: 1200 bytes
+------------------------
+| Locking API testsuite:
+----------------------------------------------------------------------------
+                                 | spin |wlock |rlock |mutex | wsem | rsem |
+  --------------------------------------------------------------------------
+                     A-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+                 A-B-B-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+             A-B-B-C-C-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+             A-B-C-A-B-C deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+         A-B-B-C-C-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+         A-B-C-D-B-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+         A-B-C-D-B-C-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+                    double unlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+                  initialize held:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+                 bad unlock order:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+  --------------------------------------------------------------------------
+              recursive read-lock:             |  ok  |             |  ok  |
+           recursive read-lock #2:             |  ok  |             |  ok  |
+            mixed read-write-lock:             |  ok  |             |  ok  |
+            mixed write-read-lock:             |  ok  |             |  ok  |
+  --------------------------------------------------------------------------
+     hard-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
+     soft-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
+     hard-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
+     soft-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
+       sirq-safe-A => hirqs-on/12:  ok  |  ok  |  ok  |
+       sirq-safe-A => hirqs-on/21:  ok  |  ok  |  ok  |
+         hard-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
+         soft-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
+         hard-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
+         soft-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
+      hard-irq lock-inversion/123:  ok  |  ok  |  ok  |
+      soft-irq lock-inversion/123:  ok  |  ok  |  ok  |
+      hard-irq lock-inversion/132:  ok  |  ok  |  ok  |
+      soft-irq lock-inversion/132:  ok  |  ok  |  ok  |
+      hard-irq lock-inversion/213:  ok  |  ok  |  ok  |
+      soft-irq lock-inversion/213:  ok  |  ok  |  ok  |
+      hard-irq lock-inversion/231:  ok  |  ok  |  ok  |
+      soft-irq lock-inversion/231:  ok  |  ok  |  ok  |
+      hard-irq lock-inversion/312:  ok  |  ok  |  ok  |
+      soft-irq lock-inversion/312:  ok  |  ok  |  ok  |
+      hard-irq lock-inversion/321:  ok  |  ok  |  ok  |
+      soft-irq lock-inversion/321:  ok  |  ok  |  ok  |
+      hard-irq read-recursion/123:  ok  |
+      soft-irq read-recursion/123:  ok  |
+      hard-irq read-recursion/132:  ok  |
+      soft-irq read-recursion/132:  ok  |
+      hard-irq read-recursion/213:  ok  |
+      soft-irq read-recursion/213:  ok  |
+      hard-irq read-recursion/231:  ok  |
+      soft-irq read-recursion/231:  ok  |
+      hard-irq read-recursion/312:  ok  |
+      soft-irq read-recursion/312:  ok  |
+      hard-irq read-recursion/321:  ok  |
+      soft-irq read-recursion/321:  ok  |
+-------------------------------------------------------
+Good, all 218 testcases passed! |
+---------------------------------
+Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Memory: 123952k/131072k available (2054k kernel code, 6656k reserved, 974k data, 176k init, 0k highmem)
+virtual kernel memory layout:
+    fixmap  : 0xfffb5000 - 0xfffff000   ( 296 kB)
+    vmalloc : 0xc8800000 - 0xfffb3000   ( 887 MB)
+    lowmem  : 0xc0000000 - 0xc8000000   ( 128 MB)
+      .init : 0xc03f8000 - 0xc0424000   ( 176 kB)
+      .data : 0xc0301b68 - 0xc03f54a4   ( 974 kB)
+      .text : 0xc0100000 - 0xc0301b68   (2054 kB)
+Checking if this processor honours the WP bit even in supervisor mode... Ok.
+Calibrating delay using timer specific routine.. 1996.61 BogoMIPS (lpj=3993234)
+Mount-cache hash table entries: 512
+CPU: After generic identify, caps: 0183f9ff c1c7f9ff 00000000 00000000 00000000 00000000 00000000 00000000
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 256K (64 bytes/line)
+CPU: After all inits, caps: 0183f9ff c1c7f9ff 00000000 00000420 00000000 00000000 00000000 00000000
+Intel machine check architecture supported.
+Intel machine check reporting enabled on CPU#0.
+Compat vDSO mapped to ffffe000.
+CPU: AMD Athlon(tm) Processor stepping 02
+Checking 'hlt' instruction... OK.
+NET: Registered protocol family 16
+PCI: PCI BIOS revision 2.10 entry at 0xfb220, last bus=1
+PCI: Using configuration type 1
+Setting up standard PCI resources
+ACPI: Interpreter disabled.
+Linux Plug and Play Support v0.97 (c) Adam Belay
+pnp: PnP ACPI: disabled
+PnPBIOS: Scanning system for PnP BIOS support...
+PnPBIOS: Found PnP BIOS installation structure at 0xc00fbce0
+PnPBIOS: PnP BIOS version 1.0, entry 0xf0000:0xbd10, dseg 0xf0000
+PnPBIOS: 15 nodes reported by PnP BIOS; 15 recorded by driver
+SCSI subsystem initialized
+PCI: Probing PCI hardware
+PCI: Probing PCI hardware (bus 00)
+PCI quirk: region 4000-40ff claimed by vt82c586 ACPI
+PCI quirk: region 6000-607f claimed by vt82c686 HW-mon
+PCI quirk: region 5000-500f claimed by vt82c686 SMB
+PCI: Using IRQ router VIA [1106/0686] at 0000:00:07.0
+PCI: setting IRQ 10 as level-triggered
+PCI: Found IRQ 10 for device 0000:00:0e.0
+PCI: Sharing IRQ 10 with 0000:00:0a.0
+ACPI Exception (utmutex-0263): AE_BAD_PARAMETER, Thread C114F550 could not acquire Mutex [3] [20070126]
+pnp: 00:07: iomem range 0x0-0x9ffff could not be reserved
+pnp: 00:07: iomem range 0xfffe0000-0xffffffff has been reserved
+pnp: 00:07: iomem range 0xfee00000-0xfee0ffff has been reserved
+pnp: 00:07: iomem range 0x100000-0xfffffff could not be reserved
+pnp: 00:08: iomem range 0xf0000-0xf3fff could not be reserved
+pnp: 00:08: iomem range 0xf4000-0xf7fff could not be reserved
+pnp: 00:08: iomem range 0xf8000-0xfffff could not be reserved
+pnp: 00:08: iomem range 0xcb800-0xcbfff has been reserved
+PCI: Bridge: 0000:00:01.0
+  IO window: disabled.
+  MEM window: disabled.
+  PREFETCH window: disabled.
+PCI: Setting latency timer of device 0000:00:01.0 to 64
+NET: Registered protocol family 2
+Time: tsc clocksource has been installed.
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+TCP established hash table entries: 4096 (order: 5, 131072 bytes)
+TCP bind hash table entries: 4096 (order: 5, 131072 bytes)
+TCP: Hash tables configured (established 4096 bind 4096)
+TCP reno registered
+VFS: Disk quotas dquot_6.5.1
+Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
+fuse init (API version 7.8)
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered
+io scheduler cfq registered (default)
+PCI: VIA PCI bridge detected. Disabling DAC.
+PCI: Disabling Via external APIC routing
+Boot video device is 0000:00:0e.0
+isapnp: Scanning for PnP cards...
+isapnp: No Plug & Play device found
+Real Time Clock Driver v1.12ac
+8139too Fast Ethernet driver 0.9.28
+PCI: Found IRQ 10 for device 0000:00:0a.0
+PCI: Sharing IRQ 10 with 0000:00:0e.0
+eth0: RealTek RTL8139 at 0xc8800000, 00:a0:0c:c7:ef:6c, IRQ 10
+eth0:  Identified 8139 chip type 'RTL-8139C'
+PCI: setting IRQ 11 as level-triggered
+PCI: Found IRQ 11 for device 0000:00:09.0
+sym0: <875> rev 0x26 at pci 0000:00:09.0 irq 11
+sym0: Symbios NVRAM, ID 7, Fast-20, SE, parity checking
+sym0: open drain IRQ line driver, using on-chip SRAM
+sym0: using LOAD/STORE-based firmware.
+sym0: SCSI BUS has been reset.
+scsi0 : sym-2.2.3
+ target0:0:0: Scan at boot disabled in NVRAM
+ target0:0:1: Scan at boot disabled in NVRAM
+ target0:0:2: Multiple LUNs disabled in NVRAM
+scsi 0:0:2:0: Direct-Access     IBM      DNES-309170W     SA30 PQ: 0 ANSI: 3
+ target0:0:2: tagged command queuing enabled, command queue depth 16.
+ target0:0:2: Beginning Domain Validation
+ target0:0:2: asynchronous
+ target0:0:2: wide asynchronous
+ target0:0:2: FAST-10 WIDE SCSI 20.0 MB/s ST (100 ns, offset 16)
+ target0:0:2: Domain Validation skipping write tests
+ target0:0:2: Ending Domain Validation
+scsi 0:0:2:0: phase change 2-3 12@011e7f5c resid=11.
+ target0:0:3: Scan at boot disabled in NVRAM
+ target0:0:4: Scan at boot disabled in NVRAM
+ target0:0:5: Scan at boot disabled in NVRAM
+ target0:0:6: Scan at boot disabled in NVRAM
+ target0:0:8: Scan at boot disabled in NVRAM
+ target0:0:9: Scan at boot disabled in NVRAM
+ target0:0:10: Scan at boot disabled in NVRAM
+ target0:0:11: Scan at boot disabled in NVRAM
+ target0:0:12: Scan at boot disabled in NVRAM
+ target0:0:13: Scan at boot disabled in NVRAM
+ target0:0:14: Scan at boot disabled in NVRAM
+ target0:0:15: Scan at boot disabled in NVRAM
+sd 0:0:2:0: [sda] 17916240 512-byte hardware sectors (9173 MB)
+sd 0:0:2:0: [sda] Write Protect is off
+sd 0:0:2:0: [sda] Mode Sense: c3 00 00 08
+sd 0:0:2:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 0:0:2:0: [sda] 17916240 512-byte hardware sectors (9173 MB)
+sd 0:0:2:0: [sda] Write Protect is off
+sd 0:0:2:0: [sda] Mode Sense: c3 00 00 08
+sd 0:0:2:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sda: sda1 sda3 < sda5 sda6 sda7 sda8 sda9 sda10 sda11 >
+sd 0:0:2:0: [sda] Attached SCSI disk
+PNP: PS/2 Controller [PNP0303,PNP0f13] at 0x60,0x64 irq 1,12
+serio: i8042 KBD port at 0x60,0x64 irq 1
+serio: i8042 AUX port at 0x60,0x64 irq 12
+mice: PS/2 mouse device common for all mice
+input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input0
+TCP cubic registered
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+Using IPI Shortcut mode
+input: PS/2 Logitech Mouse as /devices/platform/i8042/serio1/input/input1
+VFS: Mounted root (ext2 filesystem) readonly.
+Freeing unused kernel memory: 176k freed
+input: PC Speaker as /devices/platform/pcspkr/input/input2
+parport_pc: VIA 686A/8231 detected
+parport_pc: probing current configuration
+parport_pc: Current parallel port base: 0x378
+parport0: PC-style at 0x378 (0x778), irq 7, using FIFO [PCSPP,TRISTATE,COMPAT,ECP]
+parport_pc: VIA parallel port: io=0x378, irq=7
+Serial: 8250/16550 driver $Revision: 1.90 $ 2 ports, IRQ sharing disabled
+serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+Linux agpgart interface v0.102
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+Floppy drive(s): fd0 is 1.44M
+FDC 0 is a post-1991 82077
+agpgart: Detected VIA Twister-K/KT133x/KM133 chipset
+agpgart: AGP aperture is 64M @ 0xd0000000
+Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+00:0d: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+00:0e: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+USB Universal Host Controller Interface driver v3.0
+PCI: Found IRQ 11 for device 0000:00:07.2
+PCI: Sharing IRQ 11 with 0000:00:07.3
+uhci_hcd 0000:00:07.2: UHCI Host Controller
+uhci_hcd 0000:00:07.2: new USB bus registered, assigned bus number 1
+uhci_hcd 0000:00:07.2: irq 11, io base 0x0000c400
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 2 ports detected
+PCI: Found IRQ 11 for device 0000:00:07.3
+PCI: Sharing IRQ 11 with 0000:00:07.2
+uhci_hcd 0000:00:07.3: UHCI Host Controller
+uhci_hcd 0000:00:07.3: new USB bus registered, assigned bus number 2
+uhci_hcd 0000:00:07.3: irq 11, io base 0x0000c800
+usb usb2: configuration #1 chosen from 1 choice
+hub 2-0:1.0: USB hub found
+hub 2-0:1.0: 2 ports detected
+VP_IDE: IDE controller at PCI slot 0000:00:07.1
+VP_IDE: chipset revision 16
+VP_IDE: not 100% native mode: will probe irqs later
+VP_IDE: VIA vt82c686a (rev 22) IDE UDMA66 controller on pci0000:00:07.1
+    ide0: BM-DMA at 0xc000-0xc007, BIOS settings: hda:pio, hdb:pio
+    ide1: BM-DMA at 0xc008-0xc00f, BIOS settings: hdc:pio, hdd:pio
+Probing IDE interface ide0...
+Probing IDE interface ide1...
+PCI: setting IRQ 9 as level-triggered
+PCI: Found IRQ 9 for device 0000:00:07.5
+PCI: Setting latency timer of device 0000:00:07.5 to 64
+Adding 132072k swap on /dev/sda9.  Priority:-1 extents:1 across:132072k
+NET: Registered protocol family 10
+lo: Disabled Privacy Extensions
+lp0: using parport0 (interrupt-driven).
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on sda8, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on sda7, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on sda11, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on sda5, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+ target0:0:4: Multiple LUNs disabled in NVRAM
+scsi 0:0:4:0: CD-ROM            PLEXTOR  CD-R   PX-W4220T 1.01 PQ: 0 ANSI: 2
+ target0:0:4: Beginning Domain Validation
+ target0:0:4: asynchronous
+ target0:0:4: FAST-10 SCSI 10.0 MB/s ST (100 ns, offset 8)
+ target0:0:4: Domain Validation skipping write tests
+ target0:0:4: Ending Domain Validation
+sr0: scsi3-mmc drive: 20x/20x writer cd/rw xa/form2 cdda tray
+Uniform CD-ROM driver Revision: 3.20
+sr 0:0:4:0: Attached scsi CD-ROM sr0
+sd 0:0:2:0: Attached scsi generic sg0 type 0
+sr 0:0:4:0: Attached scsi generic sg1 type 5
+eth0: link up, 100Mbps, full-duplex, lpa 0x41E1
+usbcore: registered new interface driver usblp
+eth0: no IPv6 routers present
