@@ -1,59 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932896AbXHKBG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761670AbXHKCVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932896AbXHKBG7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 21:06:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbXHKBGq
+	id S1761670AbXHKCVp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 22:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755281AbXHKCV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 21:06:46 -0400
-Received: from ns2.suse.de ([195.135.220.15]:32923 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762891AbXHKBGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 21:06:45 -0400
-From: Andi Kleen <ak@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones pointer
-Date: Sat, 11 Aug 2007 03:04:54 +0200
-User-Agent: KMail/1.9.1
-Cc: Mel Gorman <mel@skynet.ie>, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <20070809210616.14702.73376.sendpatchset@skynet.skynet.ie> <200708102013.49170.ak@suse.de> <Pine.LNX.4.64.0708101201240.17549@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0708101201240.17549@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708110304.55433.ak@suse.de>
+	Fri, 10 Aug 2007 22:21:27 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:27262 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbXHKCVZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 22:21:25 -0400
+Date: Fri, 10 Aug 2007 20:21:19 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+In-reply-to: <fa.IDurvYCLZ5ArGLsuNcLC3l1CSqQ@ifi.uio.no>
+To: trenn@suse.de
+Cc: Pavel Machek <pavel@ucw.cz>, Tejun Heo <htejun@gmail.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Michael Sedkowski <sedmich@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-acpi <linux-acpi@vger.kernel.org>,
+       firmwarekit-discuss <firmwarekit-discuss@bughost.org>
+Message-id: <46BD1D1F.70707@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.SuAjism+m0z0haqCRVjkc2S978o@ifi.uio.no>
+ <fa.3VfWxxgY+5IvJGIam0al/rUn/Q4@ifi.uio.no>
+ <fa.WVQYJNYB2uuhgQFoGpK6eCfWazo@ifi.uio.no>
+ <fa.5IFtia9VWM6ePZjGzb+WVMoHQCY@ifi.uio.no>
+ <fa.M8tTjYMrntIRJ5aXHPFPjCNEk6k@ifi.uio.no>
+ <fa.IDurvYCLZ5ArGLsuNcLC3l1CSqQ@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 10 August 2007 21:02, Christoph Lameter wrote:
-> On Fri, 10 Aug 2007, Andi Kleen wrote:
-> > > x86_64 does not support ZONE_HIGHMEM.
-> >
-> > I also plan to eliminate ZONE_DMA soon (and replace all its users
-> > with a new allocator that sits outside the normal fallback lists)
->
-> Hallelujah. You are my hero! x86_64 will switch off CONFIG_ZONE_DMA?
+Thomas Renninger wrote:
+> On Thu, 2007-08-09 at 15:16 +0000, Pavel Machek wrote:
+>> Hi!
+>>
+>>>> firmwarekit-discuss <firmwarekit-discuss@bughost.org> (added to CC list)
+>>>> see: http://linuxfirmwarekit.org/
+>>>>
+>>>> But if I understand this problem right, this won't be easy.
+>>>> The ACPI tables are just parsed with system ("iasl ...") and syntactical
+>>>> errors/warnings are printed out.
+>>>> I also thought about a test, interpreting the DSDT and read out values
+>>>> of cpufreq tables and sanity check them. AFAIK the linuxfirmwarekit is
+>>>> not designed for that atm. You need to compile in most parts of the
+>>>> acpica code and parse and interpret DSDT/SSDT code yourself in the
+>>>> firmwarekit core or inside a plugin, then do a walk_namespace call or
+>>>> whatever to find the functions/parts you like to examine. This is a lot
+>>>> work and needs a proper design (providing an interface to plugins to let
+>>>> them easily check specific AML/ASL code).
+>>> Furthermore, we don't really know what we're looking for.  How can you
+>>> tell a given write to an ioport is issuing STANDBYNOW to an ATA disk or
+>>> trying to power the machine off?  Adding to the fun, many modern ATA
+>>> controller have more than one way to issue a command.  Maybe we can
+>>> match accesses inside regions specified by PCI BARs....  :-(
+>> Hmmm... perhaps we should do it the other way. ACPI is allowed to
+>> touch the embedded controller, what else? Maybe we should warn as soon
+>> as API touches non-EC I/O port?
+> 
+> This is not working...
+> ACPI can and does access all kind of other I/O ports and other
+> resources.
+> Hmm, are the disk accesses done by ACPI via OperationRegion/Field
+> declared variables?
+> I try to get a check for those clashing with native drivers (hopefully
+> this approach is successful for 2.6.24, can't say for sure yet), I
+> wonder whether this one would give a warning like "Libata driver is
+> using the same SystemIO/SystemMem resources than ACPI OperationRegion
+> declaration XY".
+> This would not solve the problem, but at least show the need of such a
+> test. Such ACPI vs native driver interference problems are very hard
+> nuts (in identifying and solving).
+> 
+> Can someone post an ASL code snippet how ACPI actually access the disk
+> and in which parts/functions, pls.
 
-Yes. i386 too actually.
+Again, it's not believed that this is being done via AML, but via a BIOS 
+SMM trap on the ACPI sleep state hardware IO port. We have no real 
+ability to find out what the BIOS is doing or prevent it in this case.
 
-The DMA zone will be still there, but only reachable with special functions.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-This is fine because the default zone protection heuristics keep DMA 
-near always free from !GFP_DMA allocations anyways -- so it doesn't make much 
-difference if it's totally unreachable. swiotlb will also use the same pool.
-
-Also all callers are going to pass masks around so it's always clear
-what address range they really need. Actually a lot of them
-pass still 16MB simply because it is hard to find out what masks
-old undocumented hardware really needs. But this could change.
-
-This also means the DMA support in sl[a-z]b is not needed anymore.
-
-I went through near all GFP_DMA users and found they're usually
-happy enough with pages. If someone comes up who really needs
-lots of subobjects the right way for them would be likely extending
-the pci pool allocator for this case. But I haven't found a need for this yet.
-
--Andi
