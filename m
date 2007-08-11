@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761845AbXHKSGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbXHKSJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761845AbXHKSGR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 14:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbXHKSGK
+	id S1762011AbXHKSJo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 14:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbXHKSJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 14:06:10 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:16707 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754059AbXHKSGI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 14:06:08 -0400
-Date: Sat, 11 Aug 2007 21:06:02 +0300
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: lenb@kernel.org, "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       Hugh Dickins <hugh@veritas.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] ACPI: thinkpad-acpi: change thinkpad-acpi input
-	default and kconfig help
-Message-ID: <20070811180602.GA17843@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <11868017142597-git-send-email-hmh@hmh.eng.br>
-	<11868017143582-git-send-email-hmh@hmh.eng.br>
+	Sat, 11 Aug 2007 14:09:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53504 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755006AbXHKSJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 14:09:36 -0400
+Date: Sat, 11 Aug 2007 20:09:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@kernel.org>,
+       Josh Triplett <josh@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc2-mm1: rcutorture xtime usage
+Message-ID: <20070811180909.GC24717@elte.hu>
+References: <20070809015106.cd0bfc53.akpm@linux-foundation.org> <20070810013146.GD18938@stusta.de> <20070810020040.GK8424@linux.vnet.ibm.com> <20070809190623.f60dcf70.akpm@linux-foundation.org> <20070810151208.GC8511@linux.vnet.ibm.com> <20070810101212.d59ce24a.akpm@linux-foundation.org> <20070810203055.GE8511@linux.vnet.ibm.com> <20070811002949.GA7918@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <11868017143582-git-send-email-hmh@hmh.eng.br>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070811002949.GA7918@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Henrique de Moraes Holschuh <hmh@hmh.eng.br>:
-> Subject: [PATCH 3/3] ACPI: thinkpad-acpi: change thinkpad-acpi input default and kconfig help
+
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+
+> Add an EXPORT_SYMBOL_GPL() for cpu_clock() and make rcutorture.c use it.
+> Compiles, but not yet tested.
 > 
-> The current kconfig help text was misleading users.  Also, the default for
-> an input-layer-optimized support caused way too many problems without
-> up-to-date userspace in place.
-> 
-> So, rework the help text, and change the default to N.  Note that
-> distributions are supposed to enable this option as soon as they update HAL
-> to a version that handles the thinkpad-acpi new input layer interface.
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-I don't really know the details here, so I could be completely wrong.
+> --- linux-2.6.23-rc2/kernel/sched.c	2007-08-03 19:49:55.000000000 -0700
+> +++ linux-2.6.23-rc2-rcutorturesched/kernel/sched.c	2007-08-10 17:22:57.000000000 -0700
+> @@ -394,6 +394,8 @@ unsigned long long cpu_clock(int cpu)
+>  	return now;
+>  }
+>  
+> +EXPORT_SYMBOL_GPL(cpu_clock);
 
-However, generally, forcing HAL and kernel to be in sync really
-looks to me like a non-ideal way to handle interface change.
-For example, this would mean that one can't use the same kernel
-for multiple distributions, and for a person like me
-that needs to switch distros all the time, it seems like a pain.
+sure enough,
 
-Could not the kernel expose both new and old interfaces
-somehow, so that HAL can be updated without recompiling the kernel?
-For example, there could be a sysfs interface which let the HAL set
-the desired interface version.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-Couldn't that work?
-This seems easy to code up.
-Want a patch like that?
-
--- 
-MST
+	Ingo
