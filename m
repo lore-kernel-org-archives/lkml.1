@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbXHKE7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbXHKFWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754276AbXHKE7O (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 00:59:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbXHKE67
+	id S1754242AbXHKFWY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 01:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXHKFWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 00:58:59 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:35885 "EHLO
+	Sat, 11 Aug 2007 01:22:15 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:44969 "EHLO
 	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750910AbXHKE66 (ORCPT
+	with ESMTP id S1751021AbXHKFWO (ORCPT
 	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 00:58:58 -0400
+	Sat, 11 Aug 2007 01:22:14 -0400
 X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: jeff@garzik.org, htejun@gmail.com, akpm@linux-foundation.org,
-       arjan@linux.intel.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [patch 3/4] Enable link power management for ata drivers
-In-Reply-To: Your message of "Thu, 09 Aug 2007 14:24:16 PDT."
-             <20070809142416.a110ba25.kristen.c.accardi@intel.com>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: david@lang.hm, Diego Calleja <diegocg@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       J??rn Engel <joern@logfs.org>, Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+In-Reply-To: Your message of "Fri, 10 Aug 2007 00:04:45 EDT."
+             <46BBE3DD.2090209@tmr.com>
 From: Valdis.Kletnieks@vt.edu
-References: <20070809211800.022150464@intel.com>
-            <20070809142416.a110ba25.kristen.c.accardi@intel.com>
+References: <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804224834.5187f9b7@the-village.bc.nu> <20070805071320.GC515@elte.hu> <20070805152231.aba9428a.diegocg@gmail.com> <Pine.LNX.4.64.0708051158260.6905@asgard.lang.hm>
+            <46BBE3DD.2090209@tmr.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1186808329_3018P";
+Content-Type: multipart/signed; boundary="==_Exmh_1186809557_3018P";
 	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Date: Sat, 11 Aug 2007 00:58:49 -0400
-Message-ID: <9122.1186808329@turing-police.cc.vt.edu>
+Date: Sat, 11 Aug 2007 01:19:17 -0400
+Message-ID: <10215.1186809557@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1186808329_3018P
-Content-Type: text/plain; charset=us-ascii
+--==_Exmh_1186809557_3018P
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 09 Aug 2007 14:24:16 PDT, Kristen Carlson Accardi said:
-> +++ 2.6-git/drivers/ata/libata-scsi.c
-> @@ -2904,6 +2976,52 @@ void ata_scsi_simulate(struct ata_device
+On Fri, 10 Aug 2007 00:04:45 EDT, Bill Davidsen said:
 
-> +		if ((dev->horkage & ATA_HORKAGE_IPM) ||
-> +			!(dev->flags & ATA_DFLAG_IPM)) {
-> +			ata_dev_printk(dev, KERN_ERR,
-> +				"Unable to set Link PM policy\n");
-> +			ap->pm_policy = MAX_PERFORMANCE;
-> +		}
+> > I never imagined that itwas the 20%+ hit that is being described, and=
+=20
+> > with so little impact, or I would have switched to it across the boar=
+d=20
+> > years ago.
+> >=20
+> To get that magnitude you need slow disk with very fast CPU. It helps=20
+> most of systems where the disk hardware is marginal or worse for the i/=
+o=20
+> load. Don't take that as typical.
 
-KERN_INFO please, or KERN_WARNING at the highest, at least until such time
-as enough drivers support enough hardware that it really *does* qualify for
-"this should not fail" status.
+I suspect that almost every single laptop with a Core2 Duo in it falls in=
+to
+that classification, and it's getting worse every year, as we see more
+disparity between CPU speeds (increasing) and disk seek times (basically =
+nailed
+to the floor for the last decade).
 
-(OK, so I'm just cranky because I'm tired of seeing a KERN_ERR thrown at every
-reboot, just because the ata_piix driver doesn't know how to set this stuff up
-for the DVD?RW drive in my laptop.  But when this goes upstream, lots of
-*other* people are going to get hit by the exact same thing and think there's
-something actually *wrong* with their hardware.)
 
---==_Exmh_1186808329_3018P
+--==_Exmh_1186809557_3018P
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.7 (GNU/Linux)
 Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFGvUIJcC3lWbTT17ARAhSfAJ9hzXj+RJxaN7P1v+QjUmlGwFy+VQCgibOk
-b0thawrrkeq4YY2ZoP9HOU0=
-=krIW
+iD8DBQFGvUbVcC3lWbTT17ARAuPXAJ9SqM6bwtjumsVtyAuumj927ov+KgCeO7v9
+zXyrLmOV51EQiA3Js4pUJ1k=
+=wgKI
 -----END PGP SIGNATURE-----
 
---==_Exmh_1186808329_3018P--
+--==_Exmh_1186809557_3018P--
