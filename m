@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbXHKGat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757038AbXHKGbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756391AbXHKGat (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 02:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbXHKG3w
+	id S1757038AbXHKGbY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 02:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbXHKG3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 02:29:52 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:3058 "EHLO
+	Sat, 11 Aug 2007 02:29:50 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:4811 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754235AbXHKG3r (ORCPT
+	with ESMTP id S1752792AbXHKG3n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 02:29:47 -0400
+	Sat, 11 Aug 2007 02:29:43 -0400
 From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 3/13] cxgb3 - SGE doorbell overflow warning
+Subject: [PATCH 2/13] cxgb3 - Update rx coalescing length
 To: jeff@garzik.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Date: Fri, 10 Aug 2007 23:29:44 -0700
-Message-ID: <20070811062944.8058.38057.stgit@speedy5>
+Date: Fri, 10 Aug 2007 23:29:39 -0700
+Message-ID: <20070811062939.8040.31490.stgit@speedy5>
 User-Agent: StGIT/0.12
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,46 +26,24 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Log doorbell Fifo overflow
+Set max Rx coalescing length to 12288
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/regs.h |    8 ++++++++
- drivers/net/cxgb3/sge.c  |    4 ++++
- 2 files changed, 12 insertions(+), 0 deletions(-)
+ drivers/net/cxgb3/common.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/cxgb3/regs.h b/drivers/net/cxgb3/regs.h
-index aa80313..2824278 100644
---- a/drivers/net/cxgb3/regs.h
-+++ b/drivers/net/cxgb3/regs.h
-@@ -172,6 +172,14 @@
+diff --git a/drivers/net/cxgb3/common.h b/drivers/net/cxgb3/common.h
+index c46c249..55922ed 100644
+--- a/drivers/net/cxgb3/common.h
++++ b/drivers/net/cxgb3/common.h
+@@ -104,7 +104,7 @@ enum {
+ 	PROTO_SRAM_LINES = 128, /* size of TP sram */
+ };
  
- #define A_SG_INT_CAUSE 0x5c
+-#define MAX_RX_COALESCING_LEN 16224U
++#define MAX_RX_COALESCING_LEN 12288U
  
-+#define S_HIPIODRBDROPERR    11
-+#define V_HIPIODRBDROPERR(x) ((x) << S_HIPIODRBDROPERR)
-+#define F_HIPIODRBDROPERR    V_HIPIODRBDROPERR(1U)
-+
-+#define S_LOPIODRBDROPERR    10
-+#define V_LOPIODRBDROPERR(x) ((x) << S_LOPIODRBDROPERR)
-+#define F_LOPIODRBDROPERR    V_LOPIODRBDROPERR(1U)
-+
- #define S_RSPQDISABLED    3
- #define V_RSPQDISABLED(x) ((x) << S_RSPQDISABLED)
- #define F_RSPQDISABLED    V_RSPQDISABLED(1U)
-diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-index a2cfd68..9213cda 100644
---- a/drivers/net/cxgb3/sge.c
-+++ b/drivers/net/cxgb3/sge.c
-@@ -2476,6 +2476,10 @@ void t3_sge_err_intr_handler(struct adapter *adapter)
- 			 "(0x%x)\n", (v >> S_RSPQ0DISABLED) & 0xff);
- 	}
- 
-+	if (status & (F_HIPIODRBDROPERR | F_LOPIODRBDROPERR))
-+		CH_ALERT(adapter, "SGE dropped %s priority doorbell\n",
-+			 status & F_HIPIODRBDROPERR ? "high" : "lo");
-+
- 	t3_write_reg(adapter, A_SG_INT_CAUSE, status);
- 	if (status & (F_RSPQCREDITOVERFOW | F_RSPQDISABLED))
- 		t3_fatal_err(adapter);
+ enum {
+ 	PAUSE_RX = 1 << 0,
