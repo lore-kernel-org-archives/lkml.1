@@ -1,118 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765052AbXHKDrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932345AbXHKDtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765052AbXHKDrk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 23:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbXHKDrc
+	id S932345AbXHKDtq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 23:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbXHKDti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 23:47:32 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50111 "EHLO
+	Fri, 10 Aug 2007 23:49:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50123 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751770AbXHKDrb (ORCPT
+	with ESMTP id S1751156AbXHKDth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 23:47:31 -0400
-Date: Sat, 11 Aug 2007 04:47:21 +0100
+	Fri, 10 Aug 2007 23:49:37 -0400
+Date: Sat, 11 Aug 2007 04:49:35 +0100
 From: Christoph Hellwig <hch@infradead.org>
-To: xemul@openvz.org
-Cc: akpm@osdl.org, devel@openvz.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, oleg@tv-sign.ru, sukadev@us.ibm.com
-Subject: Re: [PATCH 3/20] Introduce MS_KERNMOUNT flag
-Message-ID: <20070811034721.GB22216@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>, xemul@openvz.org,
-	akpm@osdl.org, devel@openvz.org, linux-kernel@vger.kernel.org,
-	containers@lists.osdl.org, oleg@tv-sign.ru, sukadev@us.ibm.com
-References: <46BC506B.mailGIV1AXDXM@openvz.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@SteelEye.com>
+Subject: Re: [SCSI] aic94xx: new driver
+Message-ID: <20070811034935.GC22216@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	James Bottomley <James.Bottomley@SteelEye.com>
+References: <200609240400.k8O403OJ024220@hera.kernel.org> <1186758562.7615.6.camel@shinybook.infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46BC506B.mailGIV1AXDXM@openvz.org>
+In-Reply-To: <1186758562.7615.6.camel@shinybook.infradead.org>
 User-Agent: Mutt/1.4.2.3i
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 03:47:55PM +0400, xemul@openvz.org wrote:
-> This flag tells the .get_sb callback that this is a kern_mount() call
-> so that it can trust *data pointer to be valid in-kernel one. If this
-> flag is passed from the user process, it is cleared since the *data
-> pointer is not a valid kernel object.
-> 
-> Running a few steps forward - this will be needed for proc to create the
-> superblock and store a valid pid namespace on it during the namespace
-> creation. The reason, why the namespace cannot live without proc mount
-> is described in the appropriate patch.
+On Fri, Aug 10, 2007 at 11:09:22PM +0800, David Woodhouse wrote:
+> The files in /usr/include/scsi are actually shipped by glibc, and most
+> distributions use glibc's version instead of the one from the kernel --
+> so this additional userspace interface is automatically incompatible
+> with most people's installations.
 
-I don't like this at all.  We should never pass kernel and userspace
-addresses through the same pointer.  Maybe add an additional argument
-to the get_sb prototype instead.  But this whole idea of mounting /proc
-from kernelspace sounds like a really bad idea to me.  /proc should
-never be mounted from the kernel but always normally from userspace.
+Stop here right now.  You just noticed the real bug, and that's exporting
+scsi.h at all.  I think Olaf sent a patch to fix this already.
 
-> 
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> Cc: Oleg Nesterov <oleg@tv-sign.ru>
-> 
-> ---
-> 
->  fs/namespace.c     |    3 ++-
->  fs/super.c         |    6 +++---
->  include/linux/fs.h |    4 +++-
->  3 files changed, 8 insertions(+), 5 deletions(-)
-> 
-> diff -upr linux-2.6.23-rc1-mm1.orig/fs/namespace.c linux-2.6.23-rc1-mm1-7/fs/namespace.c
-> --- linux-2.6.23-rc1-mm1.orig/fs/namespace.c	2007-07-26 16:34:45.000000000 +0400
-> +++ linux-2.6.23-rc1-mm1-7/fs/namespace.c	2007-07-26 16:36:36.000000000 +0400
-> @@ -1579,7 +1579,8 @@ long do_mount(char *dev_name, char *dir_
->  		mnt_flags |= MNT_NOMNT;
->  
->  	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
-> -		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME | MS_NOMNT);
-> +		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME |
-> +		   MS_NOMNT | MS_KERNMOUNT);
->  
->  	/* ... and get the mountpoint */
->  	retval = path_lookup(dir_name, LOOKUP_FOLLOW, &nd);
-> diff -upr linux-2.6.23-rc1-mm1.orig/fs/super.c linux-2.6.23-rc1-mm1-7/fs/super.c
-> --- linux-2.6.23-rc1-mm1.orig/fs/super.c	2007-07-26 16:34:45.000000000 +0400
-> +++ linux-2.6.23-rc1-mm1-7/fs/super.c	2007-07-26 16:36:36.000000000 +0400
-> @@ -944,9 +944,9 @@ do_kern_mount(const char *fstype, int fl
->  	return mnt;
->  }
->  
-> -struct vfsmount *kern_mount(struct file_system_type *type)
-> +struct vfsmount *kern_mount_data(struct file_system_type *type, void *data)
->  {
-> -	return vfs_kern_mount(type, 0, type->name, NULL);
-> +	return vfs_kern_mount(type, MS_KERNMOUNT, type->name, data);
->  }
->  
-> -EXPORT_SYMBOL(kern_mount);
-> +EXPORT_SYMBOL_GPL(kern_mount_data);
-> diff -upr linux-2.6.23-rc1-mm1.orig/include/linux/fs.h linux-2.6.23-rc1-mm1-7/include/linux/fs.h
-> --- linux-2.6.23-rc1-mm1.orig/include/linux/fs.h	2007-07-26 16:34:45.000000000 +0400
-> +++ linux-2.6.23-rc1-mm1-7/include/linux/fs.h	2007-07-26 16:36:36.000000000 +0400
-> @@ -129,6 +129,7 @@ extern int dir_notify_enable;
->  #define MS_RELATIME	(1<<21)	/* Update atime relative to mtime/ctime. */
->  #define MS_SETUSER	(1<<23) /* set mnt_uid to current user */
->  #define MS_NOMNT	(1<<24) /* don't allow unprivileged submounts */
-> +#define MS_KERNMOUNT	(1<<25) /* this is a kern_mount call */
->  #define MS_ACTIVE	(1<<30)
->  #define MS_NOUSER	(1<<31)
->  
-> @@ -1459,7 +1460,8 @@ void unnamed_dev_init(void);
->  
->  extern int register_filesystem(struct file_system_type *);
->  extern int unregister_filesystem(struct file_system_type *);
-> -extern struct vfsmount *kern_mount(struct file_system_type *);
-> +extern struct vfsmount *kern_mount_data(struct file_system_type *, void *data);
-> +#define kern_mount(type) kern_mount_data(type, NULL)
->  extern int may_umount_tree(struct vfsmount *);
->  extern int may_umount(struct vfsmount *);
->  extern void umount_tree(struct vfsmount *, int, struct list_head *);
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
----end quoted text---
