@@ -1,52 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758034AbXHKAgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764075AbXHKAj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758034AbXHKAgl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Aug 2007 20:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757627AbXHKAgM
+	id S1764075AbXHKAj6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Aug 2007 20:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757759AbXHKAjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Aug 2007 20:36:12 -0400
-Received: from ozlabs.org ([203.10.76.45]:37305 "EHLO ozlabs.org"
+	Fri, 10 Aug 2007 20:39:46 -0400
+Received: from gate.crashing.org ([63.228.1.57]:46204 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757452AbXHKAgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Aug 2007 20:36:09 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1757515AbXHKAjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Aug 2007 20:39:45 -0400
+In-Reply-To: <20070811000029.GA12779@gondor.apana.org.au>
+References: <E1IJPkg-0000x0-00@gondolin.me.apana.org.au> <442f95ba19f8622ce04cf0334f34be11@kernel.crashing.org> <20070811000029.GA12779@gondor.apana.org.au>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ef7e94b08a6515d33039d187e04db5db@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
-Message-ID: <18109.1084.917429.585224@cargo.ozlabs.ibm.com>
-Date: Sat, 11 Aug 2007 10:35:08 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Chris Snook <csnook@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Luck, Tony" <tony.luck@intel.com>, Andreas Schwab <schwab@suse.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com
-Subject: Re: [PATCH 9/24] make atomic_read() behave consistently on ia64
-In-Reply-To: <46BCF19E.5000702@redhat.com>
-References: <20070809135107.GA15985@shell.boston.redhat.com>
-	<617E1C2C70743745A92448908E030B2A02213B3C@scsmsx411.amr.corp.intel.com>
-	<46BCC1AF.5050204@redhat.com>
-	<617E1C2C70743745A92448908E030B2A0224C777@scsmsx411.amr.corp.intel.com>
-	<jewsw3oyl8.fsf@sykes.suse.de>
-	<617E1C2C70743745A92448908E030B2A0224C88B@scsmsx411.amr.corp.intel.com>
-	<46BCE9F8.4060009@redhat.com>
-	<617E1C2C70743745A92448908E030B2A0224C8D7@scsmsx411.amr.corp.intel.com>
-	<alpine.LFD.0.999.0708101607130.30176@woody.linux-foundation.org>
-	<46BCF19E.5000702@redhat.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Cc: paulmck@linux.vnet.ibm.com, heiko.carstens@de.ibm.com, horms@verge.net.au,
+       linux-kernel@vger.kernel.org, csnook@redhat.com, rpjday@mindspring.com,
+       netdev@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
+       schwidefsky@de.ibm.com, davem@davemloft.net, wensong@linux-vs.org,
+       wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+Date: Sat, 11 Aug 2007 02:38:40 +0200
+To: Herbert Xu <herbert@gondor.apana.org.au>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook writes:
+>> That means GCC cannot compile Linux; it already optimises
+>> some accesses to scalars to smaller accesses when it knows
+>> it is allowed to.  Not often though, since it hardly ever
+>> helps in the cost model it employs.
+>
+> Please give an example code snippet + gcc version + arch
+> to back this up.
 
-> I'll do this for the whole patchset.  Stay tuned for the resubmit.
+	unsigned char f(unsigned long *p)
+	{
+	        return *p & 1;
+	}
 
-Could you incorporate Segher's patch to turn atomic_{read,set} into
-asm on powerpc?  Segher claims that using asm is really the only
-reliable way to ensure that gcc does what we want, and he seems to
-have a point.
+with both
 
-Paul.
+	powerpc64-linux-gcc (GCC) 4.3.0 20070731 (experimental)
+
+and
+
+	powerpc64-linux-gcc-4.2.0 (GCC) 4.2.0
+
+(sorry, I don't have anything newer or older right now; if you
+really care, I can test with those too)
+
+generate (in 64-bit mode):
+
+	.L.f:
+		lbz 3,7(3)
+		rldicl 3,3,0,63
+		blr
+
+and in 32-bit mode:
+
+	f:
+		stwu 1,-16(1)
+		nop
+		nop
+		lbz 3,3(3)
+		addi 1,1,16
+		rlwinm 3,3,0,31,31
+		blr
+
+(the nops are because I use --with-cpu=970).
+
+
+But perhaps you do not care for PowerPC, in which case:
+
+	i686-linux-gcc (GCC) 4.2.0 20060410 (experimental)
+
+(sorry for the old version, I don't build x86 compilers
+all that often; also I don't have a 64-bit version right
+now):
+
+	f:
+		pushl   %ebp
+		movl    %esp, %ebp
+		movl    8(%ebp), %eax
+		popl    %ebp
+		movzbl  (%eax), %eax
+		andl    $1, %eax
+		ret
+
+
+If you want testing with any other versions, and/or for
+any other target architecture, I can do that; it takes a
+few minutes to build a compiler.
+
+It is quite hard to build a testcase that reads more than
+one part of the "long", since for small testcases the
+compiler will almost always be smart enough to do one
+bigger read instead; but it certainly isn't inconceivable,
+and anyway the compiler would be fully in its right to do
+reads non-atomically if not instructed otherwise.
+
+
+Segher
+
