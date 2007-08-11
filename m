@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762070AbXHKOoH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760128AbXHKPIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762070AbXHKOoH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 10:44:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758562AbXHKOnw
+	id S1760128AbXHKPIh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 11:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbXHKPI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 10:43:52 -0400
-Received: from ipn26-148.piekary.net ([83.238.26.148]:49237 "EHLO spock.one.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758225AbXHKOnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 10:43:51 -0400
-Date: Sat, 11 Aug 2007 16:43:27 +0200
-From: Michal Januszewski <spock@gentoo.org>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 7/7] uvesafb: try to set mode with default timings if
-	setting it with our own timings failed
-Message-ID: <20070811144327.GH13632@spock.one.pl>
-Reply-To: spock@gentoo.org
+	Sat, 11 Aug 2007 11:08:27 -0400
+Received: from sumo.dreamhost.com ([66.33.216.29]:34281 "EHLO
+	sumo.dreamhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754881AbXHKPI0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 11:08:26 -0400
+Date: Sat, 11 Aug 2007 16:04:54 +0100
+From: Jurij Smakov <jurij@wooyd.org>
+To: James Smart <James.Smart@Emulex.Com>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>,
+       Josef Bacik <jwhiter@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [RFC][PATCH] fix for async scsi scan sysfs problem (resend)
+Message-ID: <20070811150454.GA5808@droopy.oc.cox.net>
+References: <20070419132459.GB1481@korben.rdu.redhat.com> <1176991356.31764.3.camel@mulgrave.il.steeleye.com> <20070419150655.GC1481@korben.rdu.redhat.com> <20070421002345.673d9988.akpm@linux-foundation.org> <20070421135956.GA22873@korben.rdu.redhat.com> <20070423181318.GD22873@korben.rdu.redhat.com> <1177352786.6284.51.camel@mulgrave.il.steeleye.com> <463A3F79.80809@emulex.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <463A3F79.80809@emulex.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sometimes the BIOS might not perform the mode switch correctly because of
-the timings that we requested.  In case this happens, try to set the video
-mode with the default timings instead.
+[Please keep me on CC, as I'm not on LKML.]
 
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
----
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index 2e5f1b5..853323e 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -1218,6 +1218,7 @@ static int uvesafb_set_par(struct fb_info *info)
- 	task = uvesafb_prep();
- 	if (!task)
- 		return -ENOMEM;
-+setmode:
- 	task->t.regs.eax = 0x4f02;
- 	task->t.regs.ebx = mode->mode_id | 0x4000;	/* use LFB */
- 
-@@ -1260,10 +1261,25 @@ static int uvesafb_set_par(struct fb_info *info)
- 
- 	err = uvesafb_exec(task);
- 	if (err || (task->t.regs.eax & 0xffff) != 0x004f) {
--		printk(KERN_ERR "uvesafb: mode switch failed (eax=0x%x, "
--				"err=%d)\n", task->t.regs.eax, err);
--		err = -EINVAL;
--		goto out;
-+		/*
-+		 * The mode switch might have failed because we tried to
-+		 * use our own timings.  Try again with the default timings.
-+		 */
-+		if (crtc != NULL) {
-+			printk(KERN_WARNING "uvesafb: mode switch failed "
-+				"(eax=0x%x, err=%d). Trying again with "
-+				"default timings.\n", task->t.regs.eax, err);
-+			uvesafb_reset(task);
-+			kfree(crtc);
-+			crtc = NULL;
-+			info->var.pixclock = 0;
-+			goto setmode;
-+		} else {
-+			printk(KERN_ERR "uvesafb: mode switch failed (eax="
-+				"0x%x, err=%d)\n", task->t.regs.eax, err);
-+			err = -EINVAL;
-+			goto out;
-+		}
- 	}
- 	par->mode_idx = i;
+On Thu, May 03, 2007 at 04:00:57PM -0400, James Smart wrote:
+> I doubt it's in the fc transport - it's doing what it always did, which has
+> nothing to do with coherency of the sdev's.
+>
+> We're seeing like problems, and it looks like it's related to the 
+> scan_mutex
+> being held when some of the entry points are being called via the recent
+> async scan code (which also still has a bunch of issues around rmmod).
+> We should be sending some patches shortly.
 
+Hi James,
+
+I've recently got a Sun Blade 1000 box with a QLA2200 controller, and 
+I'm bumping into exact same problem with 2.6.22:
+
+scsi 0:0:0:0: Attached scsi generic sg1 type -1
+scsi 0:0:0:0: Direct-Access     HITACHI  DKR1C-J072FC     D7V5 PQ: 0 
+ANSI: 3
+kobject_add failed for 0:0:0:0 with -EEXIST, don't try to register 
+things with the same name in the same directory.
+Call Trace:
+ [000000001000ac78] scsi_sysfs_add_sdev+0x2c/0x228 [scsi_mod]
+ [0000000010008a68] scsi_probe_and_add_lun+0x97c/0xab8 [scsi_mod]
+ [00000000100090d8] __scsi_scan_target+0x90/0x660 [scsi_mod]
+ [0000000010009ce8] scsi_scan_target+0x94/0xa4 [scsi_mod]
+ [00000000100668bc] fc_scsi_scan_rport+0x68/0x8c [scsi_transport_fc]
+ [000000000046de88] run_workqueue+0xac/0x138
+ [000000000046e414] worker_thread+0xc4/0xd4
+ [0000000000471f24] kthread+0x4c/0x78
+ [00000000004277f8] kernel_thread+0x38/0x48
+ [0000000000471d84] kthreadd+0xbc/0x160
+error 1
+
+After that the device fails to initialize. On rare occasions the 
+error does not trigger, and then machine boots fine. The complete boot
+log can be found at http://www.wooyd.org/misc/dmesg-blade1000-2.6.22.log
+ 
+I'm willing to test any patches you might have, as well as provide any 
+additional debugging information.
+
+Best regards,
+-- 
+Jurij Smakov                                           jurij@wooyd.org
+Key: http://www.wooyd.org/pgpkey/                      KeyID: C99E03CC
