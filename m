@@ -1,56 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764223AbXHKWF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764536AbXHKWQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764223AbXHKWF2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 18:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761524AbXHKWFQ
+	id S1764536AbXHKWQl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 18:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762365AbXHKWQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 18:05:16 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:64399 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761275AbXHKWFO (ORCPT
+	Sat, 11 Aug 2007 18:16:32 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58003 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758990AbXHKWQb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 18:05:14 -0400
-Date: Sat, 11 Aug 2007 23:04:17 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: [PATCH] Re: 2.6.23-rc2-mm2: sata disk going slow
-In-Reply-To: <20070809224254.11f42716.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0708112256150.18054@blonde.wat.veritas.com>
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
+	Sat, 11 Aug 2007 18:16:31 -0400
+X-Sasl-enc: 3MgRYHE72P1yne+BNf8Bix0WbE2we3rf+WYiStGSkMLN 1186870589
+Date: Sat, 11 Aug 2007 19:16:25 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: lenb@kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Richard Hughes <hughsient@gmail.com>
+Subject: Re: [PATCH 3/3] ACPI: thinkpad-acpi: change thinkpad-acpi input
+	default and kconfig help
+Message-ID: <20070811221625.GB27761@khazad-dum.debian.net>
+References: <11868017142597-git-send-email-hmh@hmh.eng.br> <11868017143582-git-send-email-hmh@hmh.eng.br> <20070811180602.GA17843@mellanox.co.il>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070811180602.GA17843@mellanox.co.il>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Why is the G5 so slow with 2.6.23-rc2-mm2?  hdparm -t shows 1.8MB/sec
-instead of 58MB/sec.  alpm-increase-number-of-allowable-device-flags.patch
-(raising ATA_DFLAG_CFG_MASK) turns out to be the guilty party: though the
-problem doesn't appear until the next patch, which adds ATA_DFLAG_IPM as
-the same bit as ATA_DFLAG_PIO.  Here's a hotfix against top of -rc2-mm2.
+On Sat, 11 Aug 2007, Michael S. Tsirkin wrote:
+> > Quoting Henrique de Moraes Holschuh <hmh@hmh.eng.br>:
+> > Subject: [PATCH 3/3] ACPI: thinkpad-acpi: change thinkpad-acpi input default and kconfig help
+> > 
+> > The current kconfig help text was misleading users.  Also, the default for
+> > an input-layer-optimized support caused way too many problems without
+> > up-to-date userspace in place.
+> > 
+> > So, rework the help text, and change the default to N.  Note that
+> > distributions are supposed to enable this option as soon as they update HAL
+> > to a version that handles the thinkpad-acpi new input layer interface.
+> 
+> I don't really know the details here, so I could be completely wrong.
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
+You can get up to speed through the archives of the ibm-acpi-devel
+mailinglist at sourceforge.net (or gmane.org).
 
- include/linux/libata.h |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+> However, generally, forcing HAL and kernel to be in sync really
+> looks to me like a non-ideal way to handle interface change.
 
---- 2.6.23-rc2-mm2/include/linux/libata.h	2007-08-10 12:14:36.000000000 +0100
-+++ linux/include/linux/libata.h	2007-08-11 20:21:59.000000000 +0100
-@@ -143,9 +143,9 @@ enum {
- 	ATA_DFLAG_IPM		= (1 << 8), /* device supports IPM */
- 	ATA_DFLAG_CFG_MASK	= (1 << 12) - 1,
- 
--	ATA_DFLAG_PIO		= (1 << 8), /* device limited to PIO mode */
--	ATA_DFLAG_NCQ_OFF	= (1 << 9), /* device limited to non-NCQ mode */
--	ATA_DFLAG_SPUNDOWN	= (1 << 10), /* XXX: for spindown_compat */
-+	ATA_DFLAG_PIO		= (1 << 12), /* device limited to PIO mode */
-+	ATA_DFLAG_NCQ_OFF	= (1 << 13), /* device limited to non-NCQ mode */
-+	ATA_DFLAG_SPUNDOWN	= (1 << 14), /* XXX: for spindown_compat */
- 	ATA_DFLAG_INIT_MASK	= (1 << 16) - 1,
- 
- 	ATA_DFLAG_DETACH	= (1 << 16),
+True.  But so far I didn't find any better way.  Sending hot key events over
+the input layer and as an ACPI event at the same time is bound to cause
+problems that are not that easy to work around, while configuring the driver
+to send one of the two will always work, and autodetecting which channel to
+use to deliver events is basically impossible (HAL, for example, always
+opens the ACPI event sink, AND all input devices that issue EV_KEY).
+
+I *can* make the compile-time option a module parameter, though.  That
+wouldn't be much of a problem, and the compile-time option would select the
+default for that parameter, but it would be easier to override it at run
+time (you can already do it, but it requires reprogramming various driver
+parameters using sysfs and the input device IOCTLs).
+
+Would a module parameter address enough of your concerns?  Kconfig would
+only set the default for that parameter, then...
+
+> For example, this would mean that one can't use the same kernel
+> for multiple distributions, and for a person like me
+> that needs to switch distros all the time, it seems like a pain.
+
+Setup the driver at boot time, then.  You can change its behaviour through
+sysfs and some utility that can reprogram an input layer device keymap.  Or,
+if I add a module parameter that duplicates the compile-time parameter, you
+just need to use the module parameter.
+
+> Could not the kernel expose both new and old interfaces
+> somehow, so that HAL can be updated without recompiling the kernel?
+
+It exposes all interfaces, all the time.  But you have to configure their
+behaviour, and since you can't have both active at the same time, you need
+to cause the driver to use the one your userland expects.
+
+Also, there is a matter of the default of the hot key functionality (enabled
+or disabled, and its masks) which used not to matter much as the driver was
+basically useless without a lot configuration from userspace, but that is
+not true anymore when dealing with input devices.
+
+> For example, there could be a sysfs interface which let the HAL set
+> the desired interface version.
+
+HAL already can do that if it wants.  However, driver autodetection
+information is lost when the input device is not enabled by default (you
+lose the autodetected keymap).
+
+This could be fixed by selecting whether to send events over ACPI or the
+input device in a different way (but I found no better compromise than the
+one I used.  Suggestions?).
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
