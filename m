@@ -1,406 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761824AbXHKU0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbXHKU1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761824AbXHKU0n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 16:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbXHKU0d
+	id S1755831AbXHKU1U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 16:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762390AbXHKU1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 16:26:33 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:49206 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751792AbXHKU0b (ORCPT
+	Sat, 11 Aug 2007 16:27:04 -0400
+Received: from smtp104.sbc.mail.re2.yahoo.com ([68.142.229.101]:20501 "HELO
+	smtp104.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760847AbXHKU1B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 16:26:31 -0400
-Date: Sat, 11 Aug 2007 22:26:29 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Casey Schaufler <casey@schaufler-ca.com>
-cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, torvalds@osdl.org
-Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
-In-Reply-To: <46BDF88B.2060301@schaufler-ca.com>
-Message-ID: <Pine.LNX.4.64.0708112139340.9166@fbirervta.pbzchgretzou.qr>
-References: <46BDF88B.2060301@schaufler-ca.com>
+	Sat, 11 Aug 2007 16:27:01 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=cw7YmddnVIWHpo3aHCt6Ls9lXAJpzc7YcWzQRVmYpShrO8hOLzUDuv6qo7bQGgF2XOQ/0emPJ+D1ASv2IO5UB9hP6lFuDtzP4CNJRVKQQ2ddQq3HOFZsssAnTuDGGmcy7H2e/LpxjZiAbWNCZMFtYwIpkENMok/A628vHo7Fj/0=  ;
+X-YMail-OSG: pcFvBccVM1mmAyTicSGdiwJjetG_BF5j8Ssf0qKDVGzzgkq0dB60PzclXnUD7hvEvZNwSNDYrw--
+From: David Brownell <david-b@pacbell.net>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] Add missing newlines to some uses of dev_<level> messages
+Date: Sat, 11 Aug 2007 12:31:34 -0700
+User-Agent: KMail/1.9.6
+Cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
+       Greg KH <gregkh@suse.de>, Jeff Garzik <jeff@garzik.org>,
+       Tony Luck <tony.luck@intel.com>, Jiri Slaby <jirislaby@gmail.com>,
+       Roland Dreier <rolandd@cisco.com>, James Smart <james.smart@emulex.com>,
+       Hansjoerg Lipp <hjlipp@web.de>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>
+References: <1186535381.11897.29.camel@localhost> <20070811092342.53106dfb@hyperion.delvare>
+In-Reply-To: <20070811092342.53106dfb@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708111231.35442.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 11 August 2007, Jean Delvare wrote:
+> Note that there are 3 more messages to fix in
+> drivers/i2c/chips/menelaus.c (3 calls to pr_err.)
 
-On Aug 11 2007 10:57, Casey Schaufler wrote:
->
->    "*" - pronounced "star"
-wall
->    "_" - pronounced "floor"
-floor
->    "^" - pronounced "hat"
-roof
->    "?" - pronounced "huh"
-it's dark in here :)
+I'd hope those will get fixed by final versions of the
+patches I've seen floating around definining a standard
+pr_err() ... not fixing them here allows the two patches
+to not conflict.  :)
 
->+config SECURITY_SMACK
->+	bool "Simplified Mandatory Access Control Kernel Support"
->+	depends on NETLABEL && SECURITY_NETWORK
+- Dave
 
-Is this a hard dependency, or can this work without network sec labels?
-
->+	default n
->+	help
->+	  This selects the Simplified Mandatory Access Control Kernel.
->+	  SMACK is useful for sensitivity, integrity, and a variety
->+          of other madatory security schemes.
->+	  If you are unsure how to answer this question, answer N.
-
-I smell broken tabs.
-
->+++ linux-2.6.22/security/smack/Makefile	2007-07-10 01:08:05.000000000 -0700
->@@ -0,0 +1,8 @@
->+#
->+# Makefile for the SMACK LSM
->+#
->+
->+obj-$(CONFIG_SECURITY_SMACK) := smack.o
->+
->+smack-y := smack_lsm.o smack_access.o smackfs.o
-
-smack-objs :=
-
->+++ linux-2.6.22/security/smack/smack_access.c	2007-07-24 15:36:18.000000000 -0700
->@@ -0,0 +1,113 @@
->+extern struct smk_list_entry *smack_list;
->+
->+static int smk_get_access(smack_t sub, smack_t obj)
->+{
->+	struct smk_list_entry *sp = smack_list;
-
-proposes const struct. should be used elsewhere too.
-
->+	if (sub == SMK_STAR)
-
-I just remember MechWarrior2 (game from Activison), where SMK stood for their
-movie format... it's also a nice abbreviation for Seamonkey (browser suite).
-
->+	if (sub == SMK_HAT && ((request & MAY_ANYREAD) == request))
->+		return 0;
->+
->+	if (obj == SMK_FLOOR && ((request & MAY_ANYREAD) == request))
->+		return 0;
-
-Redundant parentheses, be gone.
-
-Never was it easier to say what ^ is called in your language :)
-
-	if (sub == '^' && ...)
-		return 0;
-	if (obj == '_' && ...)
-
-
->+/*
->+ * The value that this adds is that everything after any
->+ * character that's not allowed in a smack will be null
->+ */
->+smack_t smk_from_string(char *str)
->+{
->+	smack_t smack = 0LL;
-
-"smack_t smack = 0;" is enough here.
-
->+	char *cp;
->+	int i;
->+
->+	for (cp = (char *)&smack, i = 0; i < sizeof(smack_t); str++,cp++,i++) {
-
-Whatever it tries to do, this is not endian-safe. Except if @str
-actually points to another smack_t. Yuck.
-
->+		if (*str <= ' ' || *str > '~')
->+			return smack;
->+		*cp = *str;
->+	}
->+	/*
->+	 * Too long.
->+	 */
->+	return SMK_INVALID;
->+}
->diff -uprN -X linux-2.6.22-base/Documentation/dontdiff linux-2.6.22-base/security/smack/smackfs.c linux-2.6.22/security/smack/smackfs.c
->--- linux-2.6.22-base/security/smack/smackfs.c	1969-12-31 16:00:00.000000000 -0800
->+++ linux-2.6.22/security/smack/smackfs.c	2007-07-24 21:51:30.000000000 -0700
-
-Can't securityfs and/or sysfs be used?
-
->+enum smk_inos {
->+	SMK_ROOT_INO =	2,
->+	SMK_LOAD =	3,	/* load policy */
->+	SMK_LINKS = 	4,	/* symlinks */
->+	SMK_CIPSO = 	5,	/* load label -> CIPSO mapping */
->+	SMK_DOI = 	6,	/* CIPSO DOI */
->+	SMK_DIRECT = 	7,	/* CIPSO level indicating direct label */
->+	SMK_AMBIENT = 	8,	/* internet ambient label */
->+	SMK_NLTYPE = 	9,	/* label scheme to use by default */
->+	SMK_TMP =	100,	/* MUST BE LAST! /smack/tmp */
->+};
-
-Generally, =s are aligned too.
-
->+static struct smk_cipso_entry smack_cipso_floor = {
->+        .smk_next = NULL,
->+        .smk_smack = SMK_FLOOR,
->+        .smk_level = 0,
->+        .smk_catset = 0LL,
->+};
-
-const me.
-
->+/*
->+ * 'ssssssss oooooooo mmmm\n\0' 
->+ */
-
-I wonder why it's limited to 8 characters? Ah right.. sizeof(smack_t).
-uhm.. are you trying to tell me that smack_t [typedef'ed to u64]
-are actually meant as a char[8]? (/me scrathces head)
-
->+	for (cp = result; slp != NULL; slp = slp->smk_next) {
->+		srp = &slp->smk_rule;
->+		sprintf(cp, "%-8s %-8s",
->+			(char *)&srp->smk_subject, (char *)&srp->smk_object);
-
-I like (const char *).
-
->+			printk("%s:%d bad scan\n",
->+				__FUNCTION__, __LINE__);
-
-__FUNCTION__ is a GNU extension, C99 uses __func__.
-Not sure what they've got for __LINE__.
-
->+		if (strchr(modestr, 'r') || strchr(modestr, 'R'))
->+			rule.smk_access |= MAY_READ;
->+		if (strchr(modestr, 'w') || strchr(modestr, 'W'))
->+			rule.smk_access |= MAY_WRITE;
->+		if (strchr(modestr, 'x') || strchr(modestr, 'X'))
->+			rule.smk_access |= MAY_EXEC;
->+		if (strchr(modestr, 'a') || strchr(modestr, 'A'))
->+			rule.smk_access |= MAY_APPEND;
-
-There's strpbrk() available for you.
-
->+static char *smk_digit(char *cp)
->+{
->+	for (; *cp != '\0'; cp++)
->+		if (*cp >= '0' && *cp <= '9')
->+			return cp;
->+
->+	return NULL;
->+}
-
-strpbrk again.
-
->+static int smk_cipso_doied;
->+static int smk_cipso_written;
-
-Votes for unsigned int if it {can never be, is not intended to be} negative.
-
->+	for (slp = smack_cipso; slp != NULL; slp = slp->smk_next) {
->+		sprintf(cp, "%-8s %3d", (char *)&slp->smk_smack,slp->smk_level);
->+		cp += strlen(cp);
-
-sprintf returns the number of bytes it has written, so
-	cp += sprintf(cp, ...)
-might be used. [Can sprintf even return -1 here?]
-
->+	*(data + count) = '\0';
-
-data[count] = '\0';
-
->+	char temp[80];
->+	ssize_t rc;
->+
->+	if (*ppos != 0)
->+		return 0;
->+
->+	sprintf(temp, "%d", smk_cipso_doi_value);
->+	rc = simple_read_from_buffer(buf, count, ppos, temp, strlen(temp));
-
-80 is plenty for a 11 char string.
-
-Look, they've got funny ideas! :)
-net/ipv4/netfilter/nf_nat_irc.c:char buffer[sizeof("4294967296 65635")];
-
->+static struct option_names netlbl_choices[] = {
->+	{ NETLBL_NLTYPE_RIPSO,
->+		NETLBL_NLTYPE_RIPSO_NAME,	"ripso" },
->+	{ NETLBL_NLTYPE_CIPSOV4,
->+		NETLBL_NLTYPE_CIPSOV4_NAME,	"cipsov4" },
->+	{ NETLBL_NLTYPE_CIPSOV4,
->+		NETLBL_NLTYPE_CIPSOV4_NAME,	"cipso" },
->+	{ NETLBL_NLTYPE_CIPSOV6,
->+		NETLBL_NLTYPE_CIPSOV6_NAME,	"cipsov6" },
->+	{ NETLBL_NLTYPE_UNLABELED,
->+		NETLBL_NLTYPE_UNLABELED_NAME,	"unlabeled" },
->+};
->+#define NCHOICES (sizeof(netlbl_choices) / sizeof(struct option_names))
-
-ARRAY_SIZE()..
-
->+	for (i = 0; i < NCHOICES; i++)
->+		if (smack_net_nltype == netlbl_choices[i].o_number) {
->+			sprintf(bound, "%s", netlbl_choices[i].o_name);
-
-looks dangerous; to overflow.
-
->+	for (i = 0; i < NCHOICES; i++)
->+		if ((strcmp(bound, netlbl_choices[i].o_name) == 0) ||
->+		    (strcmp(bound, netlbl_choices[i].o_alias) == 0)) {
-
-redundant ()
-
->+#define SMK_TMPPATH_SIZE        32
->+#define SMK_TMPPATH_ROOT        "/moldy/"
-
-What is going to be mold?
-
->+	if (slp == NULL) {
->+		printk("%s:%d failed\n", __FUNCTION__, __LINE__);
-
-KERN_<level> is missing. (Check other places too)
-
->+#define SMK_MAXLEN	(sizeof(smack_t) - 1)	/* NULL terminated */
-
->+
->+/*
->+ * I hope these are the hokeyist lines of code in the module. Casey.
->+ */
->+#define DEVPTS_SUPER_MAGIC	0x1cd1
->+#define SOCKFS_MAGIC		0x534F434B
->+#define PIPEFS_MAGIC		0x50495045
->+#define TMPFS_MAGIC		0x01021994
-
-Try moving them to linux/magic.h.
-
->+extern int smack_net_nltype;
->+extern int smack_cipso_direct;
->+extern struct smk_cipso_entry *smack_cipso;
-
-for consistency reasons, add extern to the other vars too...
-
->+struct inode_smack *new_inode_smack(smack_t smack)
->+{
->+	struct inode_smack *isp;
->+
->+        isp = kzalloc(sizeof(struct inode_smack), GFP_KERNEL);
->+        if (isp == NULL)
->+                return NULL;
->+
->+	isp->smk_inode = smack;
->+	isp->smk_flags = 0;
->+	mutex_init(&isp->smk_lock);
->+
->+	return isp;
->+}
-
-Tabs or so.
-
->+static int smack_task_movememory(struct task_struct *p)
->+{
->+	int rc;
->+
->+	rc = smk_curacc(smk_of_task(p), MAY_WRITE);
->+	return rc;
->+}
-
-Uh...
-
-{
-	return smk_curacc(smk_of_task(p), MAY_WRITE);
-}
-
-(also others)
-
->+
->+static int smack_task_kill(struct task_struct *p, struct siginfo *info,
->+			   int sig, u32 secid)
->+{
->+	smack_t *tsp = smk_of_task(p);
->+	int rc;
->+
->+	/*
->+	 * Sending a signal requires that the sender
->+	 * can write the receiver.
->+	 */
->+	rc = smk_curacc(tsp, MAY_WRITE);
->+
->+	return rc;
->+}
->+
->+static int smack_sb_statfs(struct dentry *dentry)
->+{
->+	struct superblock_smack *sbp;
->+
->+	if (dentry == NULL || dentry->d_sb == NULL ||
->+	    dentry->d_sb->s_security == NULL)
->+		return 0;
->+
->+	sbp = dentry->d_sb->s_security;
->+
->+	return smk_curacc(&sbp->smk_floor, MAY_READ);
->+}
-
->+/*
->+ * Inode hooks
->+ */
->+static int smack_inode_alloc_security(struct inode *inode)
->+{
->+	smack_t *csp = smk_of_task(current);
->+
->+        inode->i_security = new_inode_smack(*csp);
->+        if (inode->i_security == NULL)
->+                return -ENOMEM;
->+	return 0;
->+}
-
-Tabz.
-
->+static int smack_inode_init_security(struct inode *inode, struct inode *dir,
->+                               char **name, void **value, size_t *len)
->+{
->+	smack_t *isp = smk_of_inode(inode);
->+
->+	if (name && (*name = kstrdup(XATTR_SMACK_SUFFIX, GFP_KERNEL)) == NULL)
->+		return -ENOMEM;
->+
->+	if (value && (*value = kstrdup((char *)isp, GFP_KERNEL)) == NULL)
->+		return -ENOMEM;
-
-Try not to do big assignments in if.
-
->+static const char *smack_inode_xattr_getsuffix(void)
->+{
->+	return XATTR_SMACK_SUFFIX;
->+}
-
-inline it, or opencode.
-
->+static int smack_inode_setsecurity(struct inode *inode, const char *name,
->+				   const void *value, size_t size, int flags)
->+{
->+	smack_t smack;
->+	smack_t *isp = smk_of_inode(inode);
->+	struct socket_smack *ssp;
->+	struct socket *sock;
->+	struct super_block *sbp;
->+	struct inode *ip = (struct inode *)inode;
-
-This cast is really pointless.
-
->+static int smack_inode_listsecurity(struct inode *inode, char *buffer,
->+				    size_t buffer_size)
-
-Whitespace broken.
-
-
-[attention span ran out]
-
-Nice.
-
-
-
-
-	Jan
--- 
