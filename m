@@ -1,74 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937422AbXHLSyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937586AbXHLSz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937422AbXHLSyT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 14:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933701AbXHLSyB
+	id S937586AbXHLSz3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 14:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934087AbXHLSzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 14:54:01 -0400
-Received: from dimail1.hmi.de ([134.30.95.50]:55300 "EHLO dimail1.hmi.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933600AbXHLSyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 14:54:00 -0400
-X-Greylist: delayed 966 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Aug 2007 14:54:00 EDT
-Message-ID: <46BF5357.6080205@lns.pnpi.spb.ru>
-Date: Sun, 12 Aug 2007 22:37:11 +0400
-From: Vadim Dyadkin <dyadkin@lns.pnpi.spb.ru>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
-MIME-Version: 1.0
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: troubles with r8169
-Content-Type: text/plain; charset=UTF-8
+	Sun, 12 Aug 2007 14:55:09 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:34316 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933701AbXHLSzH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 14:55:07 -0400
+Date: Sun, 12 Aug 2007 14:55:01 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/8] Immediate Values
+Message-ID: <20070812185501.GA4480@Krystal>
+References: <20070812150702.769065566@polymtl.ca> <1186943243.2854.17.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0a4 (dimail1.hmi.de [134.30.95.94]); Sun, 12 Aug 2007 20:37:49 +0200 (CEST)
+Content-Disposition: inline
+In-Reply-To: <1186943243.2854.17.camel@laptopd505.fenrus.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:46:28 up 13 days, 19:05,  2 users,  load average: 3.36, 2.45, 2.14
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+* Arjan van de Ven (arjan@infradead.org) wrote:
+> 
+> On Sun, 2007-08-12 at 11:07 -0400, Mathieu Desnoyers wrote:
+> > Hi Andrew,
+> > 
+> > Here is the latest version of immediate values. It applies on 2.6.23-rc2-mm2 in
+> > this order:
+> 
+> 
+> I have a concern; you seem to be patching potentially "live" code....
+> 
+> there are basically two options
+> 1) you run the risk of triple faulting (patching an instruction while
+> some other core/cpu may be decoding it may cause a triple fault)
+> 2) you do an IPI to all other cpus and prevent them from executing any
+> code except a small loop during the patching... this is expensive.
+> 
+> To be honest, neither sound very attractive to me ;(
+> 
 
-I need help from developers, may be, because I have some troubles with
-r8169 card.
-I use laptop ASUS a6tc. The network card in this laptop is r8169. Video
-is GeForce Go 7300. When I load linux (I use linux almost always), the
-network and video cards take the same IRQ every time.
-************************
-# cat /proc/interrupts
-           CPU0       CPU1
-  0:    3530622     177152    XT-PIC-XT        timer
-  1:       1910          9   IO-APIC-edge      i8042
-  8:          1          1   IO-APIC-edge      rtc
-  9:      41627        115   IO-APIC-fasteoi   acpi
- 12:        122         10   IO-APIC-edge      i8042
- 14:         38         12   IO-APIC-edge      ide0
- 15:      53721          8   IO-APIC-edge      ide1
- 16:          0          0   IO-APIC-fasteoi   yenta
- 17:      34909          1   IO-APIC-fasteoi   ohci_hcd:usb1
- 18:         13          1   IO-APIC-fasteoi   ehci_hcd:usb2
- 19:     332826          1   IO-APIC-fasteoi   nvidia, eth0
- 20:          0          0   IO-APIC-fasteoi   sdhci:slot0
- 21:      26981          1   IO-APIC-fasteoi   HDA Intel
-NMI:          0          0
-LOC:     177152    3530365
-ERR:          1
-MIS:          0
-**************************
-You can see, now it's 19, sometimes it's 17 or 21, but every time it is
-the same.
-Often, the computer hangs, only the reboot can help. In /var/log/messages:
-************************
-Jul 14 19:15:29 satah NETDEV WATCHDOG: eth0: transmit timed out
-Jul 14 19:15:32 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda2c
-Jul 14 19:15:40 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda2d
-Jul 14 19:15:48 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda2e
-Jul 14 19:15:56 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda2f
-Jul 14 19:16:04 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda30
-Jul 14 19:16:12 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda31
-Jul 14 19:16:17 satah NETDEV WATCHDOG: eth0: transmit timed out
-Jul 14 19:16:20 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda32
-Jul 14 19:16:35 satah NETDEV WATCHDOG: eth0: transmit timed out
-Jul 14 19:16:53 satah NETDEV WATCHDOG: eth0: transmit timed out
-****************************
-There's no such problem in windows. Could you help me with it?
+Yup, the concern is appropriate. That's why I dealt with it in the
+"Immediate Values - i386 Optimization" patch. (I guess your concern
+is specific to i386, x86_64 and ia64).
 
-Thank you in advance,
-Vadim
+I have currently only implemented the i386 optimization, but x86_64 and
+ia64 should be similar.
 
+The triple fault in question is discussed in Intel's errata under the
+title "Centrino Duo Processor Technology Specification Update, AH33.
+Unsynchronized Cross-Modifying Code Operations Can Cause Unexpected
+Instruction Execution Results." (if you refer to something else, please
+tell me).
+
+I discuss thoroughly the algorithm I use in the patch comments, which is
+none of the two options you point out.
+
+Quoting the patch:
+
+"Overall design
+
+The algorithm proposed by Intel applies not so well in kernel context: it
+would imply disabling interrupts and looping on every CPUs while modifying
+the code and would not support instrumentation of code called from interrupt
+sources that cannot be disabled.
+
+Therefore, we use a different algorithm to respect Intel's erratum (see the
+quoted discussion above). We make sure that no CPU sees an out-of-date copy
+of a pre-fetched instruction by 1 - using a breakpoint, which skips the
+instruction that is going to be modified, 2 - issuing an IPI to every CPU to
+execute a sync_core(), to make sure that even when the breakpoint is removed,
+no cpu could possibly still have the out-of-date copy of the instruction,
+modify the now unused 2nd byte of the instruction, and then put back the
+original 1st byte of the instruction.
+
+It has exactly the same intent as the algorithm proposed by Intel, but
+it has less side-effects, scales better and supports NMI, SMI and MCE."
+
+Moreover, just to be cautious, I arrange the alignment of instructions
+to modify so their updates will be atomic. Therefore, a 5 bytes movl
+will always be aligned on 4 bytes boundaries - 1, so the immediate value
+that follows the 1 byte opcode will be itself aligned on 4 bytes
+boundaries.
+
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
