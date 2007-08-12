@@ -1,78 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935737AbXHLQoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936081AbXHLQpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935737AbXHLQoS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 12:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760856AbXHLQn7
+	id S936081AbXHLQpv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 12:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932202AbXHLQpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 12:43:59 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46538
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755431AbXHLQn5 (ORCPT
+	Sun, 12 Aug 2007 12:45:41 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52063 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755327AbXHLQpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 12:43:57 -0400
-Date: Sun, 12 Aug 2007 09:39:54 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: [RFD] Layering: Use-Case Composers (was: DRBD - what is it,
- anyways? [compare with e.g. NBD + MD raid])
-In-Reply-To: <Pine.LNX.4.64.0708121325170.28963@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0708120933210.19502@asgard.lang.hm>
-References: <200708121335.17267.a1426z@gawab.com>
- <Pine.LNX.4.64.0708121325170.28963@fbirervta.pbzchgretzou.qr>
+	Sun, 12 Aug 2007 12:45:40 -0400
+Date: Sun, 12 Aug 2007 18:45:38 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Finding out socket/pipe connectivity status
+In-Reply-To: <20070812170018.6f56a0dd@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0708121808470.28963@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0708121059160.28963@fbirervta.pbzchgretzou.qr>
+ <20070812170018.6f56a0dd@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Aug 2007, Jan Engelhardt wrote:
 
-> On Aug 12 2007 13:35, Al Boldi wrote:
->> Lars Ellenberg wrote:
->>> meanwhile, please, anyone interessted,
->>> the drbd paper for LinuxConf Eu 2007 is finalized.
->>> http://www.drbd.org/fileadmin/drbd/publications/
->>> drbd8.linux-conf.eu.2007.pdf
->>>
->>> but it does give a good overview about what DRBD actually is,
->>> what exact problems it tries to solve,
->>> and what developments to expect in the near future.
->>>
->>> so you can make up your mind about
->>>  "Do we need it?", and
->>>  "Why DRBD? Why not NBD + MD-RAID?"
+On Aug 12 2007 17:00, Alan Cox wrote:
+>> when a pipe/socket is broken, the process trying to read/write to it 
+>> gets SIGPIPE. Is there a way to detect whether the next read/write will 
+>> trigger a SIGPIPE? select() does not seem helpful here.
+
+>Processes that are network aware normally set SIGPIPE to SIG_IGN.
+>The default behaviour comes from a desire that non aware programs
+>shouldn't get stuck spinning on a network error but go away.
 >
-> I may have made a mistake when asking for how it compares to NBD+MD.
-> Let me retry: what's the functional difference between
-> GFS2 on a DRBD .vs. GFS2 on a DAS SAN?
+>If you ignore the signal you'll get a event from select, and then an
+>error code.
+>
+Yes, SIGPIPE is ignored, because it just occurs at the same time I
+can check read() for -1 [=too late].
 
-GFS is a distributed filesystem, DRDB is a replicated block device. you 
-wouldn't do GFS on top of DRDB, you would do ext2/3, XFS, etc
+>
+>select considers the broken pipe an error that needs reporting
+>so it goes ready.
 
-DRDB is much closer to the NBD+MD option.
+I am in a quite awkward situation. It is about a fuse mount program
+operating in xinetd mode (reading/writing to stdin/stdout). When any
+of my code is called, I am already involved in a filesystem operation
+(e.g. the user called `df`), so there is no point in trying to
+handle a broken pipe here. For reference, my_getattr() is,
+simplified:
 
-now, I am not an expert on either option, but three are a couple things 
-that I would question about the DRDB+MD option
+	write(stdout, request);
+	/* reference point [A] */
+	read(stdin, response);
 
-1. when the remote machine is down, how does MD deal with it for reads and 
-writes?
+So my idea had been to launch another thread that monitors stdin for
+'breakage' and unmount the fs before a user can start an operation on
+myfs. So I've been trying to complete the idea to code. You say a
+broken socket raises the read flag, so:
 
-2. MD over local drive will alternate reads between mirrors (or so I've 
-been told), doing so over the network is wrong.
+	while(1) {
+		select(STDIN_FILENO+1, &read_set, NULL, NULL, NULL);
+		/* check if broken */
+	}
 
-3. when writing, will MD wait for the network I/O to get the data saved on 
-the backup before returning from the syscall? or can it sync the data out 
-lazily
+but the read flag may also raised during [A] above. So I'd have to
+use locking ...
 
->> Now, shared remote block access should theoretically be handled, as does
->> DRBD, by a block layer driver, but realistically it may be more appropriate
->> to let it be handled by the combining end user, like OCFS or GFS.
+	pthread_mutex_lock(&lk);
+	write(stdout, request);
+	read(stdin, response);
+	pthread_mutex_unlock(&lk);
 
-there are times when you want to replicate at the block layer, and there 
-are times when you want to have a filesystem do the work. don't force a 
-filesystem on use-cases where a block device is the right answer.
+and
 
-David Lang
+	while(1) {
+		pthread_mutex_lock(&lk);
+		select(STDIN_FILENO+1, &read_set, NULL, NULL,
+			&(struct timeval){0, 0});
+		/* check if broken */
+		pthread_mutex_unlock(&lk);
+	}
+
+this has the disadvantage that I have to use {0,0} so as to unlock
+&lk ASAP, otherwise I'd be blocking the write(). Additionally, this
+makes it busy-loop, which is not so good. Adding a sleep(60) is a
+workaround, but I'd prefer some infinite timeout that cancels on
+condition, like e.g. select with a NULL timeout.
+
+Maybe there is a thought bug somewhere and it can be done better.
+Your advice is highly appreciated,
+thanks,
+	Jan
+-- 
