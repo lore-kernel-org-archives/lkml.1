@@ -1,261 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761455AbXHLGUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbXHLGpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761455AbXHLGUl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 02:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbXHLGUc
+	id S1760878AbXHLGpi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 02:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbXHLGp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 02:20:32 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4527 "EHLO Perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbXHLGUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 02:20:31 -0400
-Subject: [PATCH] [1/2] - FInd the maintainer(s) for a patch -
-	scripts/get_maintainer.pl
-From: Joe Perches <joe@perches.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sat, 11 Aug 2007 23:20:20 -0700
-Message-Id: <1186899620.7665.22.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Aug 2007 02:45:28 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:37490 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752522AbXHLGp1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 02:45:27 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sun, 12 Aug 2007 02:39:28 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Randy Dunlap <rdunlap@xenotime.net>
+cc: vincent.legoll@gmail.com, zippel@linux-m68k.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] - Add "def_bool" Kconfig format documentation
+In-Reply-To: <20070811220928.b079d2e5.rdunlap@xenotime.net>
+Message-ID: <Pine.LNX.4.64.0708120238440.8506@localhost.localdomain>
+References: <1186439380.21014.9.camel@quad> <20070811220928.b079d2e5.rdunlap@xenotime.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I grew weary of looking up the appropriate
-maintainer email address(es) to CC: for a patch.
+On Sat, 11 Aug 2007, Randy Dunlap wrote:
 
-I added flags to the MAINTAINERS file
+> On Tue, 07 Aug 2007 00:29:40 +0200 Vincent Legoll wrote:
+>
+> > Hello,
+> >
+> > here is a small documentation patch for the KConfig file format
+> > "def_bool" type definition that was missing.
+>
+> There are also def_boolean and def_tristate.
 
-F:	file pattern
+while the parser recognizes "def_boolean", it's not used anywhere in
+the tree.  perhaps it can simply be dropped in favour of def_bool.
 
-for each maintained block and a script to parse
-the modified blocks for maintainer and list
-email addresses.
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-perl scripts/get_maintainer.pl <patch>
-
-gives the appropriate maintainer(s).
-
-Please apply.
-
-cheers,  Joe
-
---- /dev/null	2007-08-10 07:32:20.684406250 -0700
-+++ scripts/get_maintainer.pl	2007-08-11 22:33:30.000000000 -0700
-@@ -0,0 +1,212 @@
-+#!/usr/bin/perl -w
-+# (c) 2007, Joe Perches <joe@perches.com>
-+#           created from checkpatch.pl
-+# Licensed under the terms of the GNU GPL License version 2
-+
-+use strict;
-+
-+my $P = $0;
-+$P =~ s@.*/@@g;
-+
-+my $V = '0.01';
-+
-+use Getopt::Long qw(:config no_auto_abbrev);
-+
-+my $tree = "./";
-+my $email_maintainer = 1;
-+my $email_list = 1;
-+my $email_subscriber_list = 0;
-+
-+my %saw;
-+
-+GetOptions(
-+	   'tree=s' => \$tree,
-+	   'm!' => \$email_maintainer,
-+	   'l!' => \$email_list,
-+	   's!' => \$email_subscriber_list,
-+	   ) or exit;
-+
-+my $exit = 0;
-+
-+if ($#ARGV < 0 ||
-+    ($email_maintainer == 0 && $email_list == 0 && $email_subscriber_list == 0)) {
-+    print "usage: $P [options] patchfile\n";
-+    print "version: $V\n";
-+    print "  --tree [path] => linux kernel source path\n";
-+    print "  --m => include maintainer(s) if any\n";
-+    print "  --l => include list(s) if any\n";
-+    print "  --s => include subscriber only list(s) if any\n";
-+    print "Default: [--m --l]\n";
-+    print "Be sure to select something...\n";
-+    exit(1);
-+}
-+
-+if ($tree && !top_of_kernel_tree($tree)) {
-+    if (${tree} ne "") {
-+	print "'${tree}' ";
-+    } else {
-+	print "The current directory ";
-+    }
-+    print "doesn't appear to be a linux kernel source tree\n";
-+    exit(2);
-+}
-+
-+## Read MAINTAINERS for type/value pairs
-+
-+my @typevalue = ();
-+open(MAINT, "<${tree}MAINTAINERS") || die "$P: Can't open ${tree}MAINTAINERS\n";
-+while (<MAINT>) {
-+    if (m/^(\C):\s*(.*)/) {
-+	my $type = $1;
-+	my $value = $2;
-+	if ($type eq "F") {              ##Filename pattern matching
-+	    $value =~ s@\.@\\\.@g;       ##Convert . to \.
-+	    $value =~ s/\*/\.\*/g;       ##Convert * to .*
-+	}
-+	push(@typevalue, "$type:$value");
-+    } elsif (!/^(\s)*$/) {
-+	push(@typevalue, $_);
-+    }
-+}
-+close(MAINT);
-+
-+## Find the patched filenames
-+
-+my @patchedfiles = ();
-+open(PATCH, "<$ARGV[0]") or die "Can't open $ARGV[0]\n";
-+while (<PATCH>) {
-+    if (m/^\+\+\+\s+(\S+)/) {
-+	my $file = $1;
-+	$file =~ s@^[^/]*/@@;
-+	$file =~ s@\n@@;
-+	push(@patchedfiles, $file);
-+    }
-+}
-+close(PATCH);
-+
-+# Sort and uniq patchedfiles
-+
-+undef %saw;
-+@patchedfiles = sort @patchedfiles;
-+@patchedfiles = grep(!$saw{$_}++, @patchedfiles);
-+
-+# Find responsible parties
-+
-+my @email_to = ();
-+foreach (@patchedfiles) {
-+    my $patchedfile = $_;
-+    my $tvi = 0;
-+
-+    foreach (@typevalue) {
-+	if (m/^(\C):(.*)/) {
-+	    my $type = $1;
-+	    my $value = $2;
-+	    if ($type eq 'F') {
-+		if (file_match_pattern($patchedfile, $value)) {
-+		    my $ptvi = $tvi - 1;
-+		    while ($ptvi >= 0) {
-+			my $tv = $typevalue[$ptvi];
-+			if ($tv =~ m/^(\C):(.*)/) {
-+			    my $ptype = $1;
-+			    my $pvalue = $2;
-+			    if ($ptype eq "L") {
-+				my $subscr = $pvalue;
-+				if ($subscr =~ m/\s*\(subscribers-only\)/) {
-+				    if ($email_subscriber_list > 0) {
-+					$subscr =~ s/\s*\(subscribers-only\)//g;
-+					push(@email_to, $subscr);
-+				    }
-+				} else {
-+				    if ($email_list > 0) {
-+					push(@email_to, $pvalue);
-+				    }
-+				}
-+			    } elsif ($ptype eq "M") {
-+				if ($email_maintainer > 0) {
-+				    if ($ptvi >= 0) {
-+					my $tv = $typevalue[$ptvi - 1];
-+					if ($tv =~ m/^(\C):(.*)/) {
-+					    if ($1 eq "P") {
-+						push(@email_to, "$2 <$pvalue>");
-+					    } else {
-+						push(@email_to, $pvalue);
-+					    }
-+					}
-+				    } else {
-+					push(@email_to, $pvalue);
-+				    }
-+				}
-+			    }
-+			    $ptvi--;
-+			} else {
-+			    $ptvi = -1;
-+			}
-+		    }
-+		}
-+	    }
-+	}
-+	$tvi++;
-+    }
-+}
-+
-+## sort and uniq email_to
-+
-+@email_to = sort @email_to;
-+undef %saw;
-+@email_to = grep(!$saw{$_}++, @email_to);
-+
-+## add lk if noone else...
-+
-+my $address_cnt = @email_to;
-+if ($address_cnt == 0 && $email_list > 0) {
-+    push(@email_to, "linux-kernel\@vger.kernel.org");
-+}
-+print(join(", ", @email_to));
-+print("\n");
-+
-+exit($exit);
-+
-+sub file_match_pattern {
-+    my ($file, $pattern) = @_;
-+    if (substr($pattern, -1) eq "/") {
-+	if ($file =~ m@^$pattern@) {
-+	    return 1;
-+	}
-+    } else {
-+	if ($file =~ m@^$pattern@) {
-+	    my $s1 = ($file =~ tr@/@@);
-+	    my $s2 = ($pattern =~ tr@/@@);
-+	    if ($s1 == $s2) {
-+		return 1;
-+	    }
-+	}
-+    }
-+    return 0;
-+}
-+
-+sub top_of_kernel_tree {
-+	my ($tree) = @_;
-+
-+	if ($tree ne "" && substr($tree,length($tree)-1,1) ne "/") {
-+	    $tree = $tree . "/";
-+	}
-+	if (   (-f "${tree}COPYING")
-+	    && (-f "${tree}CREDITS")
-+	    && (-f "${tree}Kbuild")
-+	    && (-f "${tree}MAINTAINERS")
-+	    && (-f "${tree}Makefile")
-+	    && (-f "${tree}README")
-+	    && (-d "${tree}Documentation")
-+	    && (-d "${tree}arch")
-+	    && (-d "${tree}include")
-+	    && (-d "${tree}drivers")
-+	    && (-d "${tree}fs")
-+	    && (-d "${tree}init")
-+	    && (-d "${tree}ipc")
-+	    && (-d "${tree}kernel")
-+	    && (-d "${tree}lib")
-+	    && (-d "${tree}scripts")) {
-+		return 1;
-+	}
-+	return 0;
-+}
-
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
