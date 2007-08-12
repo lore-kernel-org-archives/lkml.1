@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935002AbXHLNrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765273AbXHLOJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935002AbXHLNrw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 09:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759068AbXHLNrn
+	id S1765273AbXHLOJe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 10:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXHLOJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 09:47:43 -0400
-Received: from aa013msr.fastwebnet.it ([85.18.95.73]:54495 "EHLO
-	aa013msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751439AbXHLNrn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 09:47:43 -0400
-Date: Sun, 12 Aug 2007 15:46:23 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Petr Vandrovec <petr@vandrovec.name>, discuss@x86-64.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: Please remove ab144f5ec64c42218a555ec1dbde6b60cf2982d6 was Re:
- [discuss] [PATCH] Fix triplefault on x86-64 bootup
-Message-ID: <20070812154623.6000ae68@localhost>
-In-Reply-To: <p731we8kgbd.fsf@bingen.suse.de>
-References: <20070812081252.GA23309@vana.vc.cvut.cz>
-	<200708121209.40995.ak@suse.de>
-	<46BEE427.3020904@vandrovec.name>
-	<p731we8kgbd.fsf@bingen.suse.de>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Aug 2007 10:09:25 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:43389 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752583AbXHLOJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 10:09:24 -0400
+Message-ID: <386927758.14086@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sun, 12 Aug 2007 22:09:17 +0800
+From: WU Fengguang <wfg@mail.ustc.edu.cn>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Paul Moore <paul.moore@hp.com>, Stephen Smalley <sds@epoch.ncsc.mil>,
+       Chris Vance <cvance@nai.com>, Wayne Salamon <wsalamon@nai.com>,
+       James Morris <jmorris@redhat.com>, dgoeddel@trustedcs.com
+Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
+Message-ID: <20070812140917.GA13683@mail.ustc.edu.cn>
+Mail-Followup-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Paul Moore <paul.moore@hp.com>,
+	Stephen Smalley <sds@epoch.ncsc.mil>, Chris Vance <cvance@nai.com>,
+	Wayne Salamon <wsalamon@nai.com>, James Morris <jmorris@redhat.com>,
+	dgoeddel@trustedcs.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070812141905.4ee423b9@the-village.bc.nu>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12 Aug 2007 15:55:50 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
-
-> > > Ok Linus already applied your patch. Even though it's a really bad
-> > > fragile hack, not better than the old bug.
-> > > Petr are you double sure you really tested with
-> > > ab144f5ec64c42218a555ec1dbde6b60cf2982d6
-> > > already applied? I bet not -- it is the symptom exactly fixed by this patch  
+On Sun, Aug 12, 2007 at 02:19:05PM +0100, Alan Cox wrote:
+> > > Great! So the problem might have existed for some time, but we never
+> > > saw it due to default over commit values? Were you using these values
+> > > for over commit even before?
 > > 
-> > I'm quite sure that this patch is in my tree, as I have that "u8
-> > *instr = a->instr;" in apply_alternatives, and it seems that this one
-> > was added by checkin you mention...  My tree was synced up to:  
+> > No I changed it several weeks ago to stop my desktop from freezing.
+> > So yes, the bug may have been there for a while.
 > 
-> Can you double check? I have a hard time believing it.
+> The bug is the new exec with lots of arguments code. It tries to insert a
+> vm struct without having a valid current->mm. That isn't permitted and
+> never had been (which is also why it broke the sparc mmu code etc).
+> 
+> You'll need to change the kernel security interface a little to make this
+> fly - I think the following should do it.
+> 
+> 	- make __vm_enough_memory take a struct mm pointer and use it
+> 	- make security_ops pass the extra current->mm
+> 	- add a vm_enough_memory_mm security op
+> 	- use security_vm_enough_memory_mm(mm, ...) in __insert_vm_struct
+> 
+> I'll knock up a quick patch and see what is needed (someone else can do
+> the selinux changes)
 
-I've seen the reboot too, with "rc2-g3864e8cc" that is newer than
-ab144f5ec64c4:
+Thank you!
 
-	$ git-log ab144f5ec64c4..| grep 3864e8cc
-	commit 3864e8ccbba1dcdea87398ab80fdc8ae0fab7c45
+Count me for one - but CC SELinux maintainers first :)
 
--- 
-	Paolo Ornati
-	Linux 2.6.23-rc2-gac078602 on x86_64
