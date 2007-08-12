@@ -1,44 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934125AbXHLKwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933026AbXHLLJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934125AbXHLKwZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 06:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759990AbXHLKwS
+	id S933026AbXHLLJb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 07:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756296AbXHLLJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 06:52:18 -0400
-Received: from ns2.suse.de ([195.135.220.15]:52009 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759353AbXHLKwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 06:52:18 -0400
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
+	Sun, 12 Aug 2007 07:09:22 -0400
+Received: from aa014msr.fastwebnet.it ([85.18.95.74]:42466 "EHLO
+	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755614AbXHLLJV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 07:09:21 -0400
+Date: Sun, 12 Aug 2007 13:09:04 +0200
+From: Paolo Ornati <ornati@fastwebnet.it>
+To: "Dan Merillat" <dan.merillat@gmail.com>
 Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: Are we properly prepared to handle 3 Socket setups?
-References: <9a8748490708111808o11d354fr9efa719bc38046c5@mail.gmail.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 12 Aug 2007 13:46:30 +0200
-In-Reply-To: <9a8748490708111808o11d354fr9efa719bc38046c5@mail.gmail.com>
-Message-ID: <p73absxj7qh.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: reset during bootup - solved
+Message-ID: <20070812130904.7ecc9412@localhost>
+In-Reply-To: <a56dfcf00708120244x3ae8f4w9183354cf5f33f93@mail.gmail.com>
+References: <a56dfcf00708120244x3ae8f4w9183354cf5f33f93@mail.gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jesper Juhl" <jesper.juhl@gmail.com> writes:
+On Sun, 12 Aug 2007 05:44:36 -0400
+"Dan Merillat" <dan.merillat@gmail.com> wrote:
 
-> I just saw a news article (http://www.theinquirer.net/?article=41610)
-> about a 3 Socket Opteron motherboard and couldn't help but wonder if
-> we are prepared to deal with such a beast, so I thought I'd inform
-> everyone :-)
+> However, a git-pull at 2am (b8d3f244) fixed it.  Not sure where in
+> there it started working again, I can bisect backwards to find out if
+> need be.
 
-It should work. Non power of two cores per socket used to be problematic
-though, but that has been also fixed.
+I think it is was fixed by this one:
 
-> nr_of_cpus being an even number... In any case it would be an
-> interresting box to test on, so for those of you employed by big
-> business with the cash to purchase a test box, it would at least be an
-> interresting one to add to the mix :)
+----
 
-You can already test it by either using qemu/xen/etc. or by 
-off lining one of your cores if you have more than 2.
+    Do not replace whole memcpy in apply alternatives
+    
+    apply_alternatives uses memcpy() to apply alternatives.  Which has the
+    unfortunate effect that while applying memcpy alternative to memcpy
+    itself it tries to overwrite itself with nops - which causes #UD fault
+    as it overwrites half of an instruction in copy loop, and from this
+    point on only possible outcome is triplefault and reboot.
 
--Andi
+b8d3f2448b8f4ba24f301e23585547ba1acc1f04
+ arch/x86_64/lib/memcpy.S |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86_64/lib/memcpy.S b/arch/x86_64/lib/memcpy.S
+index 0ea0ddc..c22981f 100644
+--- a/arch/x86_64/lib/memcpy.S
++++ b/arch/x86_64/lib/memcpy.S
+@@ -124,6 +124,8 @@ ENDPROC(__memcpy)
+ 	.quad memcpy
+ 	.quad 1b
+ 	.byte X86_FEATURE_REP_GOOD
+-	.byte .Lfinal - memcpy
++	/* Replace only beginning, memcpy is used to apply alternatives, so it
++	 * is silly to overwrite itself with nops - reboot is only outcome... */
++	.byte 2b - 1b
+ 	.byte 2b - 1b
+ 	.previous
+
+-- 
+	Paolo Ornati
+	Linux 2.6.23-rc2-gac078602 on x86_64
