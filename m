@@ -1,57 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938830AbXHLU62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938781AbXHLU7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938830AbXHLU62 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 16:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761202AbXHLU6J
+	id S938781AbXHLU7v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 16:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761202AbXHLU7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 16:58:09 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:54230 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935489AbXHLU6H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 16:58:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=JGwb2I1LPqnPQl9voWFigoMLgKQMLVQGNyXGFlmBTSPAbR2hayDdYTckmH2GfqDUaA/SeQqYdA9CRasbe4ZlpQbU6SIk+ATY+jQtvHMTAT77KnA4lkf/XdsHMtNyiREKw9wwi+nly6lgX/cHw2tMBsUitYF2i8ZG1hKlQwSuids=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/5] 4KSTACKS, make 'default y', -mm patch only.
-Date: Sun, 12 Aug 2007 22:55:40 +0200
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
-References: <200708122250.58773.jesper.juhl@gmail.com>
-In-Reply-To: <200708122250.58773.jesper.juhl@gmail.com>
+	Sun, 12 Aug 2007 16:59:40 -0400
+Received: from dimail1.hmi.de ([134.30.95.50]:40004 "EHLO dimail1.hmi.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758887AbXHLU7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 16:59:38 -0400
+Message-ID: <46BF748B.9090504@lns.pnpi.spb.ru>
+Date: Mon, 13 Aug 2007 00:58:51 +0400
+From: Vadim Dyadkin <dyadkin@lns.pnpi.spb.ru>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708122255.40547.jesper.juhl@gmail.com>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+CC: Robert Hancock <hancockr@shaw.ca>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: troubles with r8169
+References: <fa.BZqd/vLw75Xm+ORj+HLjUzU1hSw@ifi.uio.no> <46BF61AB.5060400@shaw.ca> <46BF6853.4020800@lns.pnpi.spb.ru> <200708122138.58405.alistair@devzero.co.uk>
+In-Reply-To: <200708122138.58405.alistair@devzero.co.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0a4 (dimail1.hmi.de [134.30.95.94]); Sun, 12 Aug 2007 22:59:34 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alistair John Strachan пишет:
+>> Thank for your answer. This problem never shows up if I use only nvidia
+>> driver (the work without network), or if I use only r8169 (without
+>> x.org). If I use both of them I have the hang. Usually the hang appears
+>> if OpenGL is used or network rate is maximal. I tested this regimes many
+>> times before.
+>
+> If you haven't already, I'd drop linux-bugs@nvidia.com an email to see if they 
+> have any insight. 
 
-To get more testing of 4K Stacks, make the feature 'default y'.
+I haven't done it yet. I'm going to do it.
 
-note: this patch is *NOT* intended for mainline atm, only for -mm.
+> Not that this can't be a kernel bug, just that it's a bit 
+> difficult for kernel developers to debug when you're using a driver for which 
+> we don't have the sources.
+>
+> As for changing the IRQ assignments, I don't have any immediate suggestions. I 
+> notice that this laptop has a dual core processor, so I'm guessing disabling 
+> APIC isn't an option. Have you tried that anyway, just to see if the IRQ 
+> assignment differs?
 
+If I've correctly understood your suggestion I should load kernel with
+'noapic' option. In that case the situation even worse:
+******************************
+           CPU0       CPU1
+  0:     106543      11922    XT-PIC-XT        timer
+  1:         53          8    XT-PIC-XT        i8042
+  2:          0          0    XT-PIC-XT        cascade
+  5:          0          0    XT-PIC-XT        sdhci:slot0
+  7:      14250     126092    XT-PIC-XT        ehci_hcd:usb2
+  8:          2          0    XT-PIC-XT        rtc
+  9:       1168        190    XT-PIC-XT        acpi
+ 10:        338        181    XT-PIC-XT        HDA Intel
+ 11:       7167       1052    XT-PIC-XT        ohci_hcd:usb1, yenta,
+eth0, nvidia
+ 12:        123          9    XT-PIC-XT        i8042
+ 14:         19         32    XT-PIC-XT        ide0
+ 15:      10936       1112    XT-PIC-XT        ide1
+NMI:          0          0
+LOC:      11921     106401
+ERR:      41370
+MIS:          0
+*******************************
+Now, pcmcia and usb 1.1 share the same IRQ.
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+Plus, dmesg says:
+*********************************
+irq 7: nobody cared (try booting with the "irqpoll" option)
+ [<c013f9c4>] __report_bad_irq+0x24/0x80
+ [<c013fc46>] note_interrupt+0x226/0x260
+ [<f885d0bb>] usb_hcd_irq+0x2b/0x60 [usbcore]
+ [<c013eed5>] handle_IRQ_event+0x25/0x50
+ [<c01407f3>] handle_level_irq+0x93/0x100
+ [<c010529b>] do_IRQ+0x3b/0x70
+ [<c010293e>] sys_sigreturn+0xce/0xe0
+ [<c010341b>] common_interrupt+0x23/0x28
+ =======================
+handlers:
+[<f885d090>] (usb_hcd_irq+0x0/0x60 [usbcore])
+Disabling IRQ #7
+******************************
 
-diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
-index d4988cd..15b1a25 100644
---- a/arch/i386/Kconfig
-+++ b/arch/i386/Kconfig
-@@ -924,6 +924,7 @@ config COMPAT_VDSO
- 
- config 4KSTACKS
- 	bool "Use 4Kb for kernel stacks instead of 8Kb"
-+	default y
- 	help
- 	  If you say Y here the kernel will use a 4Kb stacksize for the
- 	  kernel stack attached to each process/thread. This facilitates
-
+Vadim
 
