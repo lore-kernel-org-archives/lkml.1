@@ -1,114 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935604AbXHLRQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936730AbXHLRQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935604AbXHLRQM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 13:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbXHLRPy
+	id S936730AbXHLRQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 13:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762987AbXHLRQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 13:15:54 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52877 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757985AbXHLRPx (ORCPT
+	Sun, 12 Aug 2007 13:16:50 -0400
+Received: from web36607.mail.mud.yahoo.com ([209.191.85.24]:43197 "HELO
+	web36607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757996AbXHLRQt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 13:15:53 -0400
-Date: Sun, 12 Aug 2007 20:15:51 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <len.brown@intel.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: v2.6.23-rc2 locks up during boot (without acpi=off)
-In-Reply-To: <20070812092708.23d0c21c.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0708122003590.25605@kivilampi-30.cs.helsinki.fi>
-References: <Pine.LNX.4.64.0708012131480.1479@kivilampi-30.cs.helsinki.fi>
- <20070812012826.cfc9f5bb.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0708121154150.31747@kivilampi-30.cs.helsinki.fi>
- <20070812092708.23d0c21c.akpm@linux-foundation.org>
+	Sun, 12 Aug 2007 13:16:49 -0400
+X-YMail-OSG: uId3ob0VM1kKXY32G4aTSJn3icr1ixu7nEx_A.7sbLia.jIUd.C6ak1rX4esVhXY.mXRgS7y.g--
+X-RocketYMMF: rancidfat
+Date: Sun, 12 Aug 2007 10:16:48 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel 
+To: Keith Owens <kaos@ocs.com.au>, casey@schaufler-ca.com
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, torvalds@osdl.org
+In-Reply-To: <3351.1186890318@ocs10w.ocs.com.au>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696243703-1503229860-1186938951=:25605"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <318317.50626.qm@web36607.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----696243703-1503229860-1186938951=:25605
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+--- Keith Owens <kaos@ocs.com.au> wrote:
 
-On Sun, 12 Aug 2007, Andrew Morton wrote:
-
-> On Sun, 12 Aug 2007 14:20:46 +0300 (EEST) "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi> wrote:
-> > On Sun, 12 Aug 2007, Andrew Morton wrote:
-> > > On Sat, 11 Aug 2007 15:39:30 +0300 (EEST) "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi> wrote:
-> > > 
-> > > > I noticed that v2.6.23-rc1 locks up during boot, same thing happens now 
-> > > > with the latest linus' tree (+net-2.6.24 and tcp-2.6 tree stuff on top 
-> > > > of it; in -rc1 test they weren't though). The exact location of hang
-> > > > varies a bit though. No OOPS, does not respond to sysrq or anything else 
-> > > > besides reset. Last known bootable one is something like 2.6.22-rc4 
-> > > > (I usually run 2.6.21.5 on this machine, haven't tried any 2.6.22 on
-> > > > this after those rcs). Problem seems to start after this line:
-> > > > 
-> > > > Time: acpi_pm clocksource has been installed.
-> > > > 
-> > > > ...the power led starts blinking (not periodic cycle but more or less 
-> > > > varying on-off cycle, never seen that led blink before at all, didn't know 
-> > > > that one can make it blink :-)) and the machine gets consideably slower 
-> > > > too. Never have it been able to complete booting all they way up to login 
-> > > > prompt before lock up.
-> > > > 
-> > > > Tried with acpi=off, boots just fine.
-> > >
-> > > It'd be great if you could run a git bisection search please.
-> > 
-> > [...snip...]
-> > 
-> > ...didn't bother to go any further as the other one just deals with printk 
-> > string... So this is the main suspect:
-> > 
-> > commit 18eab8550397f1f3d4b8b2c5257c88dae25d58ed
-> > Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> > Date:   Fri Jun 15 19:37:00 2007 -0400
-> > 
-> >     ACPI: Enable C3 even when PM2_control is zero
-> >     
-> >     On systems that do not have pm2_control_block, we cannot really use
-> >     ARB_DISABLE before C3. We used to disable C3 totally on such systems.
-> >     
-> >     To be compatible with Windows, we need to enable C3 on such systems now.
-> >     We just skip ARB_DISABLE step before entering the C3-state and assume
-> >     hardware is handling things correctly. Also, ACPI spec is not clear
-> >     about pm2_control is _needed_ for C3 or not.
-> >     
-> >     We have atleast one system that need this to enable C3.
-> >     
-> >     Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> >     Signed-off-by: Len Brown <len.brown@intel.com>
-> > 
+> Casey Schaufler (on Sat, 11 Aug 2007 10:57:31 -0700) wrote:
+> >Smack is the Simplified Mandatory Access Control Kernel.
+> >
+> > [snip]
+> >
+> >Smack defines and uses these labels:
+> >
+> >    "*" - pronounced "star"
+> >    "_" - pronounced "floor"
+> >    "^" - pronounced "hat"
+> >    "?" - pronounced "huh"
+> >
+> >The access rules enforced by Smack are, in order:
+> >
+> >1. Any access requested by a task labeled "*" is denied.
+> >2. A read or execute access requested by a task labeled "^"
+> >   is permitted.
+> >3. A read or execute access requested on an object labeled "_"
+> >   is permitted.
+> >4. Any access requested on an object labeled "*" is permitted.
+> >5. Any access requested by a task on an object with the same
+> >   label is permitted.
+> >6. Any access requested that is explicitly defined in the loaded
+> >   rule set is permitted.
+> >7. Any other access is denied.
 > 
-> OK, that's great, thanks.  So just to double-check, could you please
-> confirm that the below reversion fixes this post-2.6.22 regression?
+> Some security systems that have the concept of "no default access"
+> (task labeled "*") also allow access by those tasks but only if there
+> is an explicit rule giving access to the task.  IOW, rule 6 is applied
+> before rule 1.  In my experience this simplifies special cases where a
+> task should only have access to a very small set of resources.  I'm
+> curious why smack goes the other way?
 
-Hmm, it was really worth of it, I did:
-$ git-fetch linus
-$ git-reset --hard linus
-[...make & install & boot...]
+A task labeled star would create files labeled star, which would be
+readable and writable by everyone (rule 4). This would be bad.
 
-...and voila, the problem went away, so something else seems to have
-fixed it between: ac07860264bd and 963c6527e0a0e. As you can notice,
-I didn't even have to revert it (I was just double checking current
-mainline first).
+Over the past three decade I've seen a lot of secure installations
+but I have never seen one where they really wanted to deny any
+real application access to "/". That's a major reason for chrooted
+environments.
 
-Is there a need to get a more detailed view about the cause or something, 
-or are details of this issue clear enough to everyone? I can do some more 
-research if necessary, though expect a bit longer latencies during the 
-next week...
+Remember also that a process labeled Coffee would have read access
+to floor files, all access to star files (e.g. /dev/null), read and
+write access to Coffee objects, and no others unless specified. If
+you are serious about reducing the programs a Coffee process can run
+you can do so by moving them off the floor, that is, giving them
+a different label, say "Tea". There is a cost to doing this, which
+is that you now have to give other labels explicit access to Tea
+objects. This is how you would implement a Biba integrity policy.
 
-In case none, thanks everyone, this issue seems solved. :-)
+So, can you give me an example where you don't want access to any
+file system objects (no read or execute access on floor) and are still
+doing something useful? Remember that you can't exec a program if
+you can't access it.
 
--- 
- i.
----696243703-1503229860-1186938951=:25605--
+I think that access to the file system namespace is universally
+required. I'm open to education.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
