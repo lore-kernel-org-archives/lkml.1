@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936032AbXHLSZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936620AbXHLSax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936032AbXHLSZr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 14:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763162AbXHLSZi
+	id S936620AbXHLSax (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 14:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932409AbXHLSao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 14:25:38 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:46471 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765282AbXHLSZh (ORCPT
+	Sun, 12 Aug 2007 14:30:44 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56666 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763162AbXHLSao (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 14:25:37 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46BF508A.409@s5r6.in-berlin.de>
-Date: Sun, 12 Aug 2007 20:25:14 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <w@1wt.eu>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Documentation files in html format?
-References: <20070809113122.3aa508e4@oldman.hamilton.local> <20070810201704.GI6002@1wt.eu> <20070810204025.GC29549@fieldses.org> <20070810205117.GJ6002@1wt.eu> <20070811141925.GA21866@fieldses.org> <20070811141718.GK6002@1wt.eu> <20070811201210.f5ba7d4d.rdunlap@xenotime.net> <46BF06E1.9000302@s5r6.in-berlin.de> <20070812154328.GB13141@uranus.ravnborg.org>
-In-Reply-To: <20070812154328.GB13141@uranus.ravnborg.org>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 12 Aug 2007 14:30:44 -0400
+Subject: Re: [patch 0/8] Immediate Values
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070812150702.769065566@polymtl.ca>
+References: <20070812150702.769065566@polymtl.ca>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 12 Aug 2007 11:27:23 -0700
+Message-Id: <1186943243.2854.17.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1 (2.11.6.1-1.fc8) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Sun, Aug 12, 2007 at 03:10:57PM +0200, Stefan Richter wrote:
->> One note on asciidoc:  I experienced the same as Willy when I wanted to
->> build git with manpages on a distribution without prebuilt asciidoc.
+
+On Sun, 2007-08-12 at 11:07 -0400, Mathieu Desnoyers wrote:
+> Hi Andrew,
 > 
-> I assume you had troubles with the docbook utilities and not asciidoc itself.
-> asciidoc is used to generate the format used by docbook utilities to
-> generate man-pages.
+> Here is the latest version of immediate values. It applies on 2.6.23-rc2-mm2 in
+> this order:
 
-Probably.  I repressed the memory of that traumatizing experience.
 
-> The html example I posted previously were made solely by asciidoc and no
-> additional docbook stuff.
+I have a concern; you seem to be patching potentially "live" code....
 
-Good.  The vanilla asciidoc-8.2.2.tar.gz looks like it can be installed
-without any prerequisites besides Python >=2.3.  (The distro which I am
-currently using has prepackaged versions of asciidoc.)
--- 
-Stefan Richter
--=====-=-=== =--- -==--
-http://arcgraph.de/sr/
+there are basically two options
+1) you run the risk of triple faulting (patching an instruction while
+some other core/cpu may be decoding it may cause a triple fault)
+2) you do an IPI to all other cpus and prevent them from executing any
+code except a small loop during the patching... this is expensive.
+
+To be honest, neither sound very attractive to me ;(
+
+
