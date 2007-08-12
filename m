@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933810AbXHLJZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933371AbXHLJ0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933810AbXHLJZp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 05:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbXHLJZf
+	id S933371AbXHLJ0B (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 05:26:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933814AbXHLJZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 05:25:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43914 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759594AbXHLJZe (ORCPT
+	Sun, 12 Aug 2007 05:25:46 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:42943 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933760AbXHLJZp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 05:25:34 -0400
-Date: Sun, 12 Aug 2007 02:25:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-cc: dean@arctic.org, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [1/12] x86: Work around mmio config space quirk on AMD
- Fam10h
-In-Reply-To: <20070809124128.886BE14F3B@wotan.suse.de>
-Message-ID: <alpine.LFD.0.999.0708120216470.30176@woody.linux-foundation.org>
-References: <20070809241.425881000@suse.de>
- <20070809124128.886BE14F3B@wotan.suse.de>
+	Sun, 12 Aug 2007 05:25:45 -0400
+Message-ID: <46BED20C.308@linux.vnet.ibm.com>
+Date: Sun, 12 Aug 2007 14:55:32 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
+References: <386838491.27058@ustc.edu.cn> <661de9470708110730r1267bdfdp1e76546e11b64f78@mail.gmail.com> <20070811100015.2417788e.akpm@linux-foundation.org> <46BDF965.3050402@linux.vnet.ibm.com> <20070812054831.GB8992@mail.ustc.edu.cn> <386909088.16432@ustc.edu.cn>
+In-Reply-To: <386909088.16432@ustc.edu.cn>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 9 Aug 2007, Andi Kleen wrote:
->
-> Some broken devices have been discovered to require %al/%ax/%eax registers 
-> for MMIO config space accesses.  Modify mmconfig.c to use these registers 
-> explicitly (rather than modify the global readb/writeb/etc inlines).
+WU Fengguang wrote:
+> On Sun, Aug 12, 2007 at 01:48:31PM +0800, WU Fengguang wrote:
+>> On Sat, Aug 11, 2007 at 11:31:09PM +0530, Balbir Singh wrote:
+>>> Andrew Morton wrote:
+>>>> On Sat, 11 Aug 2007 20:00:12 +0530 "Balbir Singh" <balbir@linux.vnet.ibm.com> wrote:
+>>>>> Shouldn't we just not stop vm accounting for kernel threads?
+>>>>>
+>>>> Could be.  It'd help heaps if we knew which patch in -mm caused
+>>>> this, but from a quick peek it seems to me that mainline should be
+>>>> vulnerable as well.
+>>> Thats a valid point. It would be interesting to see what the overcommit
+>>> setting was, when the panic occurred.
+>> FYI, I do have nondefault overcommit settings:
+>>
+>> vm.overcommit_memory = 2
+>> vm.lowmem_reserve_ratio = 1 1
 > 
-> AK: also changed i386 to always use eax
-> AK: moved change to extended space probing to different patch
-> AK: reworked with inlines according to Linus' requirements.
-> AK: improve comments.
+> Yes, the bug disappears when changing to default overcommit_memory!
 > 
-> Signed-off-by: dean gaudet <dean@arctic.org>
-> Signed-off-by: Andi Kleen <ak@suse.de>
 
-Damn you, Andi.
+Great! So the problem might have existed for some time, but we never
+saw it due to default over commit values? Were you using these values
+for over commit even before?
 
-You had obviously never actually tested this on x86.
-
-> --- linux.orig/arch/i386/pci/mmconfig.c
-> +++ linux/arch/i386/pci/mmconfig.c
-> -		writeb(value, mmcfg_virt_addr + reg);
-> +		mmio_config_writeb(mmcfg_virt_addr, value);
-
-Notice something missing here? The new code cannot work on any machine 
-that actually uses mmio cfg.
-
-		Linus
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
