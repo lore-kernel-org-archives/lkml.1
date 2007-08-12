@@ -1,44 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938929AbXHLVCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939050AbXHLVCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938929AbXHLVCL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 17:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761193AbXHLVB5
+	id S939050AbXHLVCb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 17:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938670AbXHLVCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 17:01:57 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58161 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752451AbXHLVB4 (ORCPT
+	Sun, 12 Aug 2007 17:02:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46621 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938935AbXHLVCL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 17:01:56 -0400
-Message-ID: <46BF7451.2020306@zytor.com>
-Date: Sun, 12 Aug 2007 13:57:53 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Al Viro <viro@ftp.linux.org.uk>, Mark Cannon <random.bits@rogers.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Use of directories to hold root?
-References: <200708101724.26724.random.bits@rogers.com> <46BCFE01.2040703@zytor.com> <Pine.LNX.4.64.0708111753510.3101@fbirervta.pbzchgretzou.qr> <200708121539.48332.random.bits@rogers.com> <Pine.LNX.4.64.0708122147440.28963@fbirervta.pbzchgretzou.qr> <20070812202320.GE21089@ftp.linux.org.uk> <Pine.LNX.4.64.0708122253360.28963@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0708122253360.28963@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 12 Aug 2007 17:02:11 -0400
+Subject: Re: [patch 0/8] Immediate Values
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070812185501.GA4480@Krystal>
+References: <20070812150702.769065566@polymtl.ca>
+	 <1186943243.2854.17.camel@laptopd505.fenrus.org>
+	 <20070812185501.GA4480@Krystal>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 12 Aug 2007 13:58:44 -0700
+Message-Id: <1186952324.2854.21.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1 (2.11.6.1-1.fc8) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Aug 12 2007 21:23, Al Viro wrote:
->>> pivot_root is atomic afaict, for `mount --move` (which I think Al meant 
->>> which MS_MOVE - or some C program using mount(2) of your own), you'd 
->>> need multiple calls to mount.
->> Move itself is done by a single syscall anyway...
->>
-> Yes, but you need needed 2 mounts, 1 chdir and one chroot. Plus, you 
-> have not freed the data in the rootfs. (Well, neither does 
-> pivot_root, but run-init from klibc will.)
+> > 
+> > I have a concern; you seem to be patching potentially "live" code....
+> > 
+> > there are basically two options
+> > 1) you run the risk of triple faulting (patching an instruction while
+> > some other core/cpu may be decoding it may cause a triple fault)
+> > 2) you do an IPI to all other cpus and prevent them from executing any
+> > code except a small loop during the patching... this is expensive.
+> > 
+> > To be honest, neither sound very attractive to me ;(
+> > 
+> 
+> Yup, the concern is appropriate. That's why I dealt with it in the
+> "Immediate Values - i386 Optimization" patch. (I guess your concern
+> is specific to i386, x86_64 and ia64).
 
-Yes, which is why it is highly inappropriate for this particular case,
-since they have multiple roots that they presumably don't want deleted!
+it's specific to all smp architectures I suppose
+> 
+> I have currently only implemented the i386 optimization, but x86_64 and
+> ia64 should be similar.
+> 
+> The triple fault in question is discussed in Intel's errata under the
+> title "Centrino Duo Processor Technology Specification Update, AH33.
+> Unsynchronized Cross-Modifying Code Operations Can Cause Unexpected
+> Instruction Execution Results." (if you refer to something else, please
+> tell me).
 
-	-hpa
+Core2DUO is only one generation of Intel processors; however I know that
+several other (if not all of them) have issues with this kind of thing
+in ring 0; all subtly different ;(
+
+All other alternatives are ok right now (they all run in UP mode),
+but... I'm just very nervous about the amount of CPU errata in this kind
+of scenario. And I'm not just talking Intel, I wouldn't be surprised if
+the other x86 CPU vendors also have issues with this; I don't know how
+well they specify their errata though..
+
+
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
