@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933703AbXHLKVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934134AbXHLKVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933703AbXHLKVS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 06:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755298AbXHLKVK
+	id S934134AbXHLKVj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 06:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933361AbXHLKV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 06:21:10 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50152 "EHLO mx2.suse.de"
+	Sun, 12 Aug 2007 06:21:27 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:37422 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753336AbXHLKVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 06:21:07 -0400
-From: Andi Kleen <ak@suse.de>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: [2.6.20.16 review 08/28] x86_64: allocate sparsemem memmap above 4G
-Date: Sun, 12 Aug 2007 12:18:11 +0200
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Zou Nan hai <nanhai.zou@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, Greg Kroah-Hartman <gregkh@suse.de>
-References: <20070811184752.%N@1wt.eu> <20070811184837.%N@1wt.eu>
-In-Reply-To: <20070811184837.%N@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1755298AbXHLKVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 06:21:25 -0400
+Date: Sun, 12 Aug 2007 14:23:57 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH] run_rebalance_domains: s/SCHED_IDLE/CPU_IDLE/
+Message-ID: <20070812102357.GA525@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708121218.12411.ak@suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 11 August 2007 21:48, Willy Tarreau wrote:
-> On systems with huge amount of physical memory, VFS cache and memory memmap
-> may eat all available system memory under 4G, then the system may fail to
-> allocate swiotlb bounce buffer.
->
-> There was a fix for this issue in arch/x86_64/mm/numa.c, but that fix dose
-> not cover sparsemem model.
+rebalance_domains(SCHED_IDLE) looks strange (typo?), change it to CPU_IDLE.
 
-Have you checked if sparsemem even worked in 2.6.20? Irc it was quite
-unstable a couple of releases ago. There were times where it rarely
-booted on x86-64 because so few people test it. 
-If not the patch is not needed, although relatively harmless too.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
--Andi
+--- t/kernel/sched.c~	2007-08-09 19:59:27.000000000 +0400
++++ t/kernel/sched.c	2007-08-12 14:15:37.000000000 +0400
+@@ -3090,7 +3090,7 @@ static void run_rebalance_domains(struct
+ 			if (need_resched())
+ 				break;
+ 
+-			rebalance_domains(balance_cpu, SCHED_IDLE);
++			rebalance_domains(balance_cpu, CPU_IDLE);
+ 
+ 			rq = cpu_rq(balance_cpu);
+ 			if (time_after(this_rq->next_balance, rq->next_balance))
+
