@@ -1,60 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763598AbXHLDpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbXHLESB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763598AbXHLDpb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 23:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756321AbXHLDpX
+	id S1752691AbXHLESB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 00:18:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750701AbXHLERw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 23:45:23 -0400
-Received: from mail.ocs.com.au ([203.34.248.175]:22335 "EHLO mail.ocs.com.au"
+	Sun, 12 Aug 2007 00:17:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46724 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772AbXHLDpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 23:45:22 -0400
-X-Greylist: delayed 372 seconds by postgrey-1.27 at vger.kernel.org; Sat, 11 Aug 2007 23:45:22 EDT
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
-From: Keith Owens <kaos@ocs.com.au>
-To: casey@schaufler-ca.com
-cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, torvalds@osdl.org
-Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel 
-In-reply-to: Your message of "Sat, 11 Aug 2007 10:57:31 MST."
-             <46BDF88B.2060301@schaufler-ca.com> 
-Mime-Version: 1.0
+	id S1750744AbXHLERv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 00:17:51 -0400
+Date: Sun, 12 Aug 2007 06:17:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+Message-ID: <20070812041736.GA18291@elte.hu>
+References: <200708111344.42934.a1426z@gawab.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Sun, 12 Aug 2007 13:45:18 +1000
-Message-ID: <3351.1186890318@ocs10w.ocs.com.au>
+Content-Disposition: inline
+In-Reply-To: <200708111344.42934.a1426z@gawab.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler (on Sat, 11 Aug 2007 10:57:31 -0700) wrote:
->Smack is the Simplified Mandatory Access Control Kernel.
->
-> [snip]
->
->Smack defines and uses these labels:
->
->    "*" - pronounced "star"
->    "_" - pronounced "floor"
->    "^" - pronounced "hat"
->    "?" - pronounced "huh"
->
->The access rules enforced by Smack are, in order:
->
->1. Any access requested by a task labeled "*" is denied.
->2. A read or execute access requested by a task labeled "^"
->   is permitted.
->3. A read or execute access requested on an object labeled "_"
->   is permitted.
->4. Any access requested on an object labeled "*" is permitted.
->5. Any access requested by a task on an object with the same
->   label is permitted.
->6. Any access requested that is explicitly defined in the loaded
->   rule set is permitted.
->7. Any other access is denied.
 
-Some security systems that have the concept of "no default access"
-(task labeled "*") also allow access by those tasks but only if there
-is an explicit rule giving access to the task.  IOW, rule 6 is applied
-before rule 1.  In my experience this simplifies special cases where a
-task should only have access to a very small set of resources.  I'm
-curious why smack goes the other way?
+* Al Boldi <a1426z@gawab.com> wrote:
 
+> That's because granularity increases when decreasing nice, and results 
+> in larger timeslices, which affects smoothness negatively.  chew.c 
+> easily shows this problem with 2 background cpu-hogs at the same 
+> nice-level.
+> 
+> pid 908, prio   0, out for    8 ms, ran for    4 ms, load  37%
+> pid 908, prio   0, out for    8 ms, ran for    4 ms, load  37%
+> pid 908, prio   0, out for    8 ms, ran for    2 ms, load  26%
+> pid 908, prio   0, out for    8 ms, ran for    4 ms, load  38%
+> pid 908, prio   0, out for    2 ms, ran for    1 ms, load  47%
+> 
+> pid 908, prio  -5, out for   23 ms, ran for    3 ms, load  14%
+> pid 908, prio  -5, out for   17 ms, ran for    9 ms, load  35%
+
+yeah. Incidentally, i refined this last week and those nice-level 
+granularity changes went into the upstream scheduler code a few days 
+ago:
+
+  commit 7cff8cf61cac15fa29a1ca802826d2bcbca66152
+  Author: Ingo Molnar <mingo@elte.hu>
+  Date:   Thu Aug 9 11:16:52 2007 +0200
+
+      sched: refine negative nice level granularity
+
+      refine the granularity of negative nice level tasks: let them
+      reschedule more often to offset the effect of them consuming
+      their wait_runtime proportionately slower. (This makes nice-0
+      task scheduling smoother in the presence of negatively
+      reniced tasks.)
+
+      Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+so could you please re-check chew jitter behavior with the latest 
+kernel? (i've attached the standalone patch below, it will apply cleanly 
+to rc2 too.)
+
+when testing this, you might also want to try chew-max:
+
+   http://redhat.com/~mingo/cfs-scheduler/tools/chew-max.c
+
+i added a few trivial enhancements to chew.c: it tracks the maximum 
+latency, latency fluctuations (noise of scheduling) and allows it to be 
+run for a fixed amount of time.
+
+NOTE: if you run chew from any indirect terminal (xterm, ssh, etc.) it's 
+best to capture/report chew numbers like this:
+
+  ./chew-max 60 > chew.log
+
+otherwise the indirect scheduling activities of the chew printout will 
+disturb the numbers.
+
+> It looks like the larger the granularity, the more unpredictable it 
+> gets, which probably means that this unpredictability exists even at 
+> smaller granularity but is only exposed with larger ones.
+
+this should only affect non-default nice levels. Note that 99.9%+ of all 
+userspace Linux CPU time is spent on default nice level 0, and that is 
+what controls the design. So the approach was always to first get nice-0 
+right, and then to adjust the non-default nice level behavior too, 
+carefully, without hurting nice-0 - to refine all the workloads where 
+people (have to) use positive or negative nice levels. In any case, 
+please keep re-testing this so that we can adjust it.
+
+	Ingo
+
+--------------------->
+commit 7cff8cf61cac15fa29a1ca802826d2bcbca66152
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Thu Aug 9 11:16:52 2007 +0200
+
+    sched: refine negative nice level granularity
+    
+    refine the granularity of negative nice level tasks: let them
+    reschedule more often to offset the effect of them consuming
+    their wait_runtime proportionately slower. (This makes nice-0
+    task scheduling smoother in the presence of negatively
+    reniced tasks.)
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 7a632c5..e91db32 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -222,21 +222,25 @@ niced_granularity(struct sched_entity *curr, unsigned long granularity)
+ {
+ 	u64 tmp;
+ 
++	if (likely(curr->load.weight == NICE_0_LOAD))
++		return granularity;
+ 	/*
+-	 * Negative nice levels get the same granularity as nice-0:
++	 * Positive nice levels get the same granularity as nice-0:
+ 	 */
+-	if (likely(curr->load.weight >= NICE_0_LOAD))
+-		return granularity;
++	if (likely(curr->load.weight < NICE_0_LOAD)) {
++		tmp = curr->load.weight * (u64)granularity;
++		return (long) (tmp >> NICE_0_SHIFT);
++	}
+ 	/*
+-	 * Positive nice level tasks get linearly finer
++	 * Negative nice level tasks get linearly finer
+ 	 * granularity:
+ 	 */
+-	tmp = curr->load.weight * (u64)granularity;
++	tmp = curr->load.inv_weight * (u64)granularity;
+ 
+ 	/*
+ 	 * It will always fit into 'long':
+ 	 */
+-	return (long) (tmp >> NICE_0_SHIFT);
++	return (long) (tmp >> WMULT_SHIFT);
+ }
+ 
+ static inline void
