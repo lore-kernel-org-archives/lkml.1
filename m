@@ -1,51 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933047AbXHLU4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938376AbXHLU51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933047AbXHLU4y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 16:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933889AbXHLU4S
+	id S938376AbXHLU51 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 16:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938504AbXHLU4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 16:56:18 -0400
-Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:33080 "EHLO
-	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933270AbXHLU4Q (ORCPT
+	Sun, 12 Aug 2007 16:56:34 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:52239 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935228AbXHLU4c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 16:56:16 -0400
-Date: Sun, 12 Aug 2007 22:56:14 +0200
-From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
-To: linux-kernel@vger.kernel.org
-Subject: Re: splice question
-Message-ID: <20070812205614.GA29485@hardeman.nu>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20070812162820.GA26892@hardeman.nu> <alpine.LFD.0.999.0708121238390.30176@woody.linux-foundation.org>
+	Sun, 12 Aug 2007 16:56:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=c1qz6y17H2MO7R7QKIDYx8uHygHeWGvfaICofz3yvLktcl4GzWeOyRIoMeOD6KFxTa0tDJ1Gok8vOIIk6v2f75G6ti35RLB9Vfpn6mhXgHW3w0MoiF/z31K3VQMhTsPxyaBba6DhH+MZgoc4X7IxEwC4rKkQRJcgO2+N/4OvCNU=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 3/5] 4KSTACKS, move out of Kernel hacking menu (i386)
+Date: Sun, 12 Aug 2007 22:54:07 +0200
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>
+References: <200708122250.58773.jesper.juhl@gmail.com>
+In-Reply-To: <200708122250.58773.jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.0.999.0708121238390.30176@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200708122254.07502.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 12, 2007 at 12:41:54PM -0700, Linus Torvalds wrote:
->On Sun, 12 Aug 2007, David H?rdeman wrote:
->> Otherwise I guess I'd have to add a second pipe, then (in a loop)
->> tee() from the first to the second pipe and then splice from the second pipe
->> to a socket. Doesn't sound very elegant and would need quite a lot of extra
->> syscalls.
->
->You really should think of this as a memcpy(), and you'll be in the right 
->mindframe. The system calls themselves are cheap.
 
-Ok, I've implemented it using two pipes, and it works. But it does seem 
-a bit wasteful...in case one client is not keeping up, the data will 
-have to be tee():ed first from pipe1 to pipe2, only to then find out 
-that the splice() from pipe2 to socket only does a partial transfer 
-after which the data in pipe2 has to be thrown away and then the loop 
-starts over with the next client.
+Since 4KSTACKS is nolonger a debug only feature, move it out of 
+the Kernel Hacking menu (i386).
 
-A tee() from pipe1 to the socket could (I imagine) realize immediately 
-that the socket does not have enough buffer space and return EWOULDBLOCK 
-and avoid at least one copy?
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
--- 
-David Härdeman
+diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
+index f952493..d4988cd 100644
+--- a/arch/i386/Kconfig
++++ b/arch/i386/Kconfig
+@@ -922,6 +922,15 @@ config COMPAT_VDSO
+ 
+ 	  If unsure, say Y.
+ 
++config 4KSTACKS
++	bool "Use 4Kb for kernel stacks instead of 8Kb"
++	help
++	  If you say Y here the kernel will use a 4Kb stacksize for the
++	  kernel stack attached to each process/thread. This facilitates
++	  running more threads on a system and also reduces the pressure
++	  on the VM subsystem for higher order allocations. This option
++	  will also use IRQ stacks to compensate for the reduced stackspace.
++
+ endmenu
+ 
+ config ARCH_ENABLE_MEMORY_HOTPLUG
+diff --git a/arch/i386/Kconfig.debug b/arch/i386/Kconfig.debug
+index 7131a16..90cc3a0 100644
+--- a/arch/i386/Kconfig.debug
++++ b/arch/i386/Kconfig.debug
+@@ -56,15 +56,6 @@ config DEBUG_RODATA
+ 	  portion of the kernel code won't be covered by a 2MB TLB anymore.
+ 	  If in doubt, say "N".
+ 
+-config 4KSTACKS
+-	bool "Use 4Kb for kernel stacks instead of 8Kb"
+-	help
+-	  If you say Y here the kernel will use a 4Kb stacksize for the
+-	  kernel stack attached to each process/thread. This facilitates
+-	  running more threads on a system and also reduces the pressure
+-	  on the VM subsystem for higher order allocations. This option
+-	  will also use IRQ stacks to compensate for the reduced stackspace.
+-
+ config X86_FIND_SMP_CONFIG
+ 	bool
+ 	depends on X86_LOCAL_APIC || X86_VOYAGER
+
+
