@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932892AbXHLUs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964834AbXHLUs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932892AbXHLUs0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 16:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbXHLUsP
+	id S964834AbXHLUs5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 16:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934146AbXHLUsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 16:48:15 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52458 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752021AbXHLUsO (ORCPT
+	Sun, 12 Aug 2007 16:48:42 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:48372
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754623AbXHLUsk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 16:48:14 -0400
-Date: Sun, 12 Aug 2007 23:48:12 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <len.brown@intel.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: v2.6.23-rc2 locks up during boot (without acpi=off)
-In-Reply-To: <20070812102754.a785e78a.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0708122342330.25832@kivilampi-30.cs.helsinki.fi>
-References: <Pine.LNX.4.64.0708012131480.1479@kivilampi-30.cs.helsinki.fi>
- <20070812012826.cfc9f5bb.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0708121154150.31747@kivilampi-30.cs.helsinki.fi>
- <20070812092708.23d0c21c.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0708122003590.25605@kivilampi-30.cs.helsinki.fi>
- <20070812102754.a785e78a.akpm@linux-foundation.org>
+	Sun, 12 Aug 2007 16:48:40 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: [PATCH 0/5] Add some missing Documentation/*/00-INDEX files
+Date: Sun, 12 Aug 2007 15:48:35 -0500
+User-Agent: KMail/1.9.6
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>, linux-doc@vger.kernel.org,
+       "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <200708120045.03032.jesper.juhl@gmail.com> <46BF01A5.9060003@s5r6.in-berlin.de> <9a8748490708121010q7fe3bfbx8d4d8b997ed5fc72@mail.gmail.com>
+In-Reply-To: <9a8748490708121010q7fe3bfbx8d4d8b997ed5fc72@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696243703-1716754897-1186951605=:25832"
-Content-ID: <Pine.LNX.4.64.0708122347150.25832@kivilampi-30.cs.helsinki.fi>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708121548.35810.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sunday 12 August 2007 12:10:56 pm Jesper Juhl wrote:
+> > Isn't it with 00-INDEX just like with the "Last Updated:" footers in
+> > documentation texts?
+>
+> That is certainly a risk, yes. But it shouldn't be hard to write a
+> small script to check if the 00-INDEX files are up-to-date, that will
+> make it pretty simple to update them once in a while if people forget.
 
----696243703-1716754897-1186951605=:25832
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0708122347151.25832@kivilampi-30.cs.helsinki.fi>
+Already done:
+http://marc.info/?l=linux-doc&m=118671778606001&w=2
 
-On Sun, 12 Aug 2007, Andrew Morton wrote:
+It checks the index.html files so you have to run 
+http://kernel.org/doc/make/docdiridx.py and then run 
+http://kernel.org/doc/make/doclinkcheck.py afterwards.  It shows you the 
+files 00-index links to which aren't there (the 404 errors), and then the 
+files that nothing links to.
 
-> On Sun, 12 Aug 2007 20:15:51 +0300 (EEST) "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi> wrote:
-> 
-> > Hmm, it was really worth of it, I did:
-> > $ git-fetch linus
-> > $ git-reset --hard linus
-> > [...make & install & boot...]
-> > 
-> > ...and voila, the problem went away, so something else seems to have
-> > fixed it between: ac07860264bd and 963c6527e0a0e. As you can notice,
-> > I didn't even have to revert it (I was just double checking current
-> > mainline first).
-> > 
-> > Is there a need to get a more detailed view about the cause or something, 
-> > or are details of this issue clear enough to everyone? I can do some more 
-> > research if necessary, though expect a bit longer latencies during the 
-> > next week...
-> > 
-> > In case none, thanks everyone, this issue seems solved. :-)
-> 
-> We just had an acpi commit.  Something like ed3110efb538d7acbf635095c1382118f7414f75
-> might have fixed this.
+I notice that I'm not filtering out the generated index.html files, but oh 
+well.  I'll fix that... :)
 
-...Yeah, it's very likely the same issue as bisect in that case seemed to 
-end up to the very same commit I found, and it was answered with that 
-fix...
-
+Rob
 -- 
- i.
----696243703-1716754897-1186951605=:25832--
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
