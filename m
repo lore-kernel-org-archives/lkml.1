@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933562AbXHLJp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933793AbXHLJq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933562AbXHLJp5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 05:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761225AbXHLJnu
+	id S933793AbXHLJq0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 05:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761931AbXHLJnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 05:43:50 -0400
-Received: from astra.telenet-ops.be ([195.130.132.58]:55967 "EHLO
+	Sun, 12 Aug 2007 05:43:52 -0400
+Received: from astra.telenet-ops.be ([195.130.132.58]:55973 "EHLO
 	astra.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758200AbXHLJnp (ORCPT
+	with ESMTP id S1758551AbXHLJnq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 05:43:45 -0400
-Message-Id: <20070812094118.421833149@mail.of.borg>
+	Sun, 12 Aug 2007 05:43:46 -0400
+Message-Id: <20070812094119.026287596@mail.of.borg>
 References: <20070812094050.522858761@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 12 Aug 2007 11:40:55 +0200
+Date: Sun, 12 Aug 2007 11:40:57 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 05/10] m68k: Use _AC() instead of #ifdef __ASSEMBLY__
-Content-Disposition: inline; filename=m68k-use-_AC.diff
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: [patch 07/10] m68k: Dont include RODATA into text segment
+Content-Disposition: inline; filename=m68k-do-not-include-RODATA-in-text-segment.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-m68k: Use _AC() instead of #ifdef __ASSEMBLY__ hackery when needed, remove
-hackery when unused.
+From: Roman Zippel <zippel@linux-m68k.org>
 
+Don't include RODATA into text segment as it includes the kallsyms data
+and can cause spurious link failures (layout differences can change the
+number of symbols in kallsyms, i.e. when a symbol is equal to _etext it's
+not included).
+
+Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- include/asm-m68k/page.h      |    8 +++-----
- include/asm-m68k/processor.h |    4 ----
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ arch/m68k/kernel/vmlinux-std.lds |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/include/asm-m68k/page.h
-+++ b/include/asm-m68k/page.h
-@@ -4,17 +4,15 @@
+--- a/arch/m68k/kernel/vmlinux-std.lds
++++ b/arch/m68k/kernel/vmlinux-std.lds
+@@ -19,6 +19,8 @@ SECTIONS
+ 	*(.gnu.warning)
+ 	} :text = 0x4e75
  
- #ifdef __KERNEL__
- 
-+#include <linux/const.h>
++  _etext = .;			/* End of text section */
 +
- /* PAGE_SHIFT determines the page size */
- #ifndef CONFIG_SUN3
- #define PAGE_SHIFT	(12)
- #else
- #define PAGE_SHIFT	(13)
- #endif
--#ifdef __ASSEMBLY__
--#define PAGE_SIZE	(1 << PAGE_SHIFT)
--#else
--#define PAGE_SIZE	(1UL << PAGE_SHIFT)
--#endif
-+#define PAGE_SIZE	(_AC(1, UL) << PAGE_SHIFT)
- #define PAGE_MASK	(~(PAGE_SIZE-1))
+   . = ALIGN(16);		/* Exception table */
+   __start___ex_table = .;
+   __ex_table : { *(__ex_table) }
+@@ -26,8 +28,6 @@ SECTIONS
  
- #include <asm/setup.h>
---- a/include/asm-m68k/processor.h
-+++ b/include/asm-m68k/processor.h
-@@ -38,12 +38,8 @@ static inline void wrusp(unsigned long u
- #ifndef CONFIG_SUN3
- #define TASK_SIZE	(0xF0000000UL)
- #else
--#ifdef __ASSEMBLY__
--#define TASK_SIZE	(0x0E000000)
--#else
- #define TASK_SIZE	(0x0E000000UL)
- #endif
--#endif
+   RODATA
  
- /* This decides where the kernel will search for a free chunk of vm
-  * space during mmap's.
+-  _etext = .;			/* End of text section */
+-
+   .data : {			/* Data */
+ 	DATA_DATA
+ 	CONSTRUCTORS
 
 -- 
 Gr{oetje,eeting}s,
