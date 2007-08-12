@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937617AbXHLTjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937390AbXHLTkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937617AbXHLTjy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 15:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935984AbXHLTjn
+	id S937390AbXHLTkh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 15:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937825AbXHLTkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 15:39:43 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:8724 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935565AbXHLTjm (ORCPT
+	Sun, 12 Aug 2007 15:40:15 -0400
+Received: from smtp101.rog.mail.re2.yahoo.com ([206.190.36.79]:40148 "HELO
+	smtp101.rog.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S936374AbXHLTjq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 15:39:42 -0400
-Date: Sun, 12 Aug 2007 13:38:19 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: troubles with r8169
-In-reply-to: <fa.BZqd/vLw75Xm+ORj+HLjUzU1hSw@ifi.uio.no>
-To: Vadim Dyadkin <dyadkin@lns.pnpi.spb.ru>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-id: <46BF61AB.5060400@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.BZqd/vLw75Xm+ORj+HLjUzU1hSw@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sun, 12 Aug 2007 15:39:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=rogers.com;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=EJSXgaFZFDsWkGXR90XEwzviGMkAucUNfNaRzXFLrkEBNJ+HKAzD1/LrUCJ6d308sQk+BiUtS3tYzEmE0KAfrWfLusMAp3H+5U5EJdCaO7W4+o0Nytw+L3qKVa0DNA/RjXzTZPybo3t+P7KRcHzYRY+7YEjL1FYIezMwGs9y+BI=  ;
+X-YMail-OSG: wxzj.OgVM1kK0NYJfb9_dDvODPhleilOFDTKndfbNEMs_Mhhn1K0goIQYgpML9xdPQ--
+From: Mark Cannon <random.bits@rogers.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: Use of directories to hold root?
+Date: Sun, 12 Aug 2007 15:39:48 -0400
+User-Agent: KMail/1.9.6
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+References: <200708101724.26724.random.bits@rogers.com> <46BCFE01.2040703@zytor.com> <Pine.LNX.4.64.0708111753510.3101@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0708111753510.3101@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708121539.48332.random.bits@rogers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vadim Dyadkin wrote:
-> Hi!
+On Saturday 11 August 2007, Jan Engelhardt wrote:
 > 
-> I need help from developers, may be, because I have some troubles with
-> r8169 card.
-> I use laptop ASUS a6tc. The network card in this laptop is r8169. Video
-> is GeForce Go 7300. When I load linux (I use linux almost always), the
-> network and video cards take the same IRQ every time.
-> ************************
-> # cat /proc/interrupts
->            CPU0       CPU1
->   0:    3530622     177152    XT-PIC-XT        timer
->   1:       1910          9   IO-APIC-edge      i8042
->   8:          1          1   IO-APIC-edge      rtc
->   9:      41627        115   IO-APIC-fasteoi   acpi
->  12:        122         10   IO-APIC-edge      i8042
->  14:         38         12   IO-APIC-edge      ide0
->  15:      53721          8   IO-APIC-edge      ide1
->  16:          0          0   IO-APIC-fasteoi   yenta
->  17:      34909          1   IO-APIC-fasteoi   ohci_hcd:usb1
->  18:         13          1   IO-APIC-fasteoi   ehci_hcd:usb2
->  19:     332826          1   IO-APIC-fasteoi   nvidia, eth0
->  20:          0          0   IO-APIC-fasteoi   sdhci:slot0
->  21:      26981          1   IO-APIC-fasteoi   HDA Intel
-> NMI:          0          0
-> LOC:     177152    3530365
-> ERR:          1
-> MIS:          0
-> **************************
-> You can see, now it's 19, sometimes it's 17 or 21, but every time it is
-> the same.
-> Often, the computer hangs, only the reboot can help. In /var/log/messages:
-> ************************
-> Jul 14 19:15:29 satah NETDEV WATCHDOG: eth0: transmit timed out
-> Jul 14 19:15:32 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda2c
-> Jul 14 19:15:40 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda2d
-> Jul 14 19:15:48 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda2e
-> Jul 14 19:15:56 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda2f
-> Jul 14 19:16:04 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda30
-> Jul 14 19:16:12 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda31
-> Jul 14 19:16:17 satah NETDEV WATCHDOG: eth0: transmit timed out
-> Jul 14 19:16:20 satah NVRM: Xid (0002:00): 16, Head 00000000 Count 00cfda32
-> Jul 14 19:16:35 satah NETDEV WATCHDOG: eth0: transmit timed out
-> Jul 14 19:16:53 satah NETDEV WATCHDOG: eth0: transmit timed out
-> ****************************
-> There's no such problem in windows. Could you help me with it?
+> On Aug 10 2007 17:08, H. Peter Anvin wrote:
+> >Jan Engelhardt wrote:
+> >> On Aug 10 2007 17:24, Mark Cannon wrote:
+> >>> You pass the kernel the root option to specify the root partition.
+> >>> Is there a way to identify a directory in that partition that holds the
+> >>> root or something equivalent to this?
+> >> 
+> >> No, but you can use pivot_root.
+> >
+> >Or better yet, use an initramfs with MS_MOVE; same as you would with the
+> >"normal" use of initramfs.
+> 
+> mount --move /foo /
+> => error
+> 
+> What did I miss?
+> 
+> 
+> 
+> 	Jan
+Thank you for the prompt replies. I have looked int pivot_root and
+with my limited knowledge it looks like I could do this in the linuxrc 
+during start up. I believe the new kernel 2.6.21 is independent of the
+root tree, so right after it mounts the old root /dev/sda3, it then can
+pivot-root to /ker2621. 
+This can quickly be tested in the lab. I already use chroot for tests. Was
+unaware of pivot_root.
 
-This could well be a problem with the nvidia driver as it shares the 
-same IRQ. The first step would be to see if the problem still shows up 
-without the nvidia binary module loaded.
+I am not sure I understand initramfs with MS_MOVE concept. I will look into
+it. Any pointers for documentation? 
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Again, thank you for the help.
+
+Mark Cannon
+
 
