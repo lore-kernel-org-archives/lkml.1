@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935308AbXHLSSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936032AbXHLSZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935308AbXHLSSG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 14:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760132AbXHLSRy
+	id S936032AbXHLSZr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 14:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763162AbXHLSZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 14:17:54 -0400
-Received: from smtp-100-sunday.noc.nerim.net ([62.4.17.100]:2592 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757354AbXHLSRx (ORCPT
+	Sun, 12 Aug 2007 14:25:38 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:46471 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765282AbXHLSZh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 14:17:53 -0400
-Date: Sun, 12 Aug 2007 20:18:12 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Mark M. Hoffman" <mhoffman@lightlink.com>
-Cc: Joerg Sommrey <jo@sommrey.de>, LKML <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH] bad temperature values from w83781d in 2.6.22
-Message-ID: <20070812201812.34694d75@hyperion.delvare>
-In-Reply-To: <20070809122619.GF3584@jupiter.solarsys.private>
-References: <20070805183219.0d54802b.akpm@linux-foundation.org>
-	<20070808010316.GB3584@jupiter.solarsys.private>
-	<20070808151716.GA6053@sommrey.de>
-	<20070809035642.GE3584@jupiter.solarsys.private>
-	<20070809070915.GA24252@sommrey.de>
-	<20070809122619.GF3584@jupiter.solarsys.private>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 12 Aug 2007 14:25:37 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46BF508A.409@s5r6.in-berlin.de>
+Date: Sun, 12 Aug 2007 20:25:14 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <w@1wt.eu>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Documentation files in html format?
+References: <20070809113122.3aa508e4@oldman.hamilton.local> <20070810201704.GI6002@1wt.eu> <20070810204025.GC29549@fieldses.org> <20070810205117.GJ6002@1wt.eu> <20070811141925.GA21866@fieldses.org> <20070811141718.GK6002@1wt.eu> <20070811201210.f5ba7d4d.rdunlap@xenotime.net> <46BF06E1.9000302@s5r6.in-berlin.de> <20070812154328.GB13141@uranus.ravnborg.org>
+In-Reply-To: <20070812154328.GB13141@uranus.ravnborg.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007 08:26:19 -0400, Mark M. Hoffman wrote:
-> Author: Mark M. Hoffman <mhoffman@lightlink.com>
-> Date:   Thu Aug 9 08:12:46 2007 -0400
+Sam Ravnborg wrote:
+> On Sun, Aug 12, 2007 at 03:10:57PM +0200, Stefan Richter wrote:
+>> One note on asciidoc:  I experienced the same as Willy when I wanted to
+>> build git with manpages on a distribution without prebuilt asciidoc.
 > 
->     hwmon: fix w83781d temp sensor type setting
->     
->     Commit 348753379a7704087603dad403603e825422fd9a introduced a regression that
->     caused temp2 and temp3 sensor type settings to be written to temp1 instead.
->     The result is that temp sensor readings could be way off.
->     
->     Signed-off-by: Mark M. Hoffman <mhoffman@lightlink.com>
+> I assume you had troubles with the docbook utilities and not asciidoc itself.
+> asciidoc is used to generate the format used by docbook utilities to
+> generate man-pages.
 
-Good catch, sorry for messing up. My test chip is a W83781D, it doesn't
-have thermal sensor type selection, so I couldn't test that.
+Probably.  I repressed the memory of that traumatizing experience.
 
-Acked-by: Jean Delvare <khali@linux-fr.org>
+> The html example I posted previously were made solely by asciidoc and no
+> additional docbook stuff.
 
-> diff --git a/drivers/hwmon/w83781d.c b/drivers/hwmon/w83781d.c
-> index f85b48f..c95909c 100644
-> --- a/drivers/hwmon/w83781d.c
-> +++ b/drivers/hwmon/w83781d.c
-> @@ -740,9 +740,9 @@ store_sensor(struct device *dev, struct device_attribute *da,
->  static SENSOR_DEVICE_ATTR(temp1_type, S_IRUGO | S_IWUSR,
->  	show_sensor, store_sensor, 0);
->  static SENSOR_DEVICE_ATTR(temp2_type, S_IRUGO | S_IWUSR,
-> -	show_sensor, store_sensor, 0);
-> +	show_sensor, store_sensor, 1);
->  static SENSOR_DEVICE_ATTR(temp3_type, S_IRUGO | S_IWUSR,
-> -	show_sensor, store_sensor, 0);
-> +	show_sensor, store_sensor, 2);
->  
->  /* I2C devices get this name attribute automatically, but for ISA devices
->     we must create it by ourselves. */
-
-
+Good.  The vanilla asciidoc-8.2.2.tar.gz looks like it can be installed
+without any prerequisites besides Python >=2.3.  (The distro which I am
+currently using has prepackaged versions of asciidoc.)
 -- 
-Jean Delvare
+Stefan Richter
+-=====-=-=== =--- -==--
+http://arcgraph.de/sr/
