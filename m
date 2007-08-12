@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757866AbXHLINL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765482AbXHLIXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757866AbXHLINL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 04:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761256AbXHLIM4
+	id S1765482AbXHLIXg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 04:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756248AbXHLIXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 04:12:56 -0400
-Received: from vana.vc.cvut.cz ([147.32.240.58]:50887 "EHLO vana.vc.cvut.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756277AbXHLIMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 04:12:54 -0400
-Date: Sun, 12 Aug 2007 10:12:52 +0200
-From: Petr Vandrovec <petr@vandrovec.name>
-To: ak@suse.de
-Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: [PATCH] Fix triplefault on x86-64 bootup
-Message-ID: <20070812081252.GA23309@vana.vc.cvut.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 12 Aug 2007 04:23:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40703 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755327AbXHLIXR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 04:23:17 -0400
+Date: Sun, 12 Aug 2007 01:23:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russ Dill <Russ.Dill@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
+Subject: Re: Process stuck in md_wakeup_thread
+Message-Id: <20070812012305.1c717196.akpm@linux-foundation.org>
+In-Reply-To: <loom.20070811T042748-157@post.gmane.org>
+References: <loom.20070811T042748-157@post.gmane.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-  after I upgraded kernel on my box to current git, only thing it did 
-was rebooting in a loop.  After some digging I found that it is silly 
-to apply alternative to memcpy by using that every same memcpy... 
-Sorry if it is known bug, I do not see it reported in my LKML mailbox...
-							Petr
+On Sat, 11 Aug 2007 02:34:34 +0000 (UTC) Russ Dill <Russ.Dill@gmail.com> wrote:
 
-From: Petr Vandrovec <petr@vandrovec.name>
+> On 2.6.22 from debian (stock), I have a process (dpkg) stuck with the following
+> calltrace:
+> 
+> SysRq : Show Blocked State
+> 
+>                          free                        sibling
+>   task             PC    stack   pid father child younger older
+> dpkg          D 00000003     0 26040  20765 (NOTLB)
+>        e57d5e30 00200082 00000000 00000003 dfc48ba8 00000000 dfc48ba8 00000000 
+>        00000007 e0af45c0 e8ce17aa 0002827f 00051ec2 e0af46cc c1809980 00000000 
+>        e8ce1324 0002827f 00200082 f881cd4c 00200286 f8ba2c85 c1809980 e57d5e60 
+> Call Trace:
+>  [<f881cd4c>] md_wakeup_thread+0x26/0x28 [md_mod]
+>  [<f8ba2c85>] raid5_unplug_device+0x4e/0x5a [raid456]
 
-Do not replace whole memcpy in apply alternatives
+The above is stack gunk.
 
-apply_alternatives uses memcpy() to apply alternatives.  Which has
-unfortunate effect that while applying memcpy alternative memcpy itself
-it tries to overwrite itself with nops - which causes #UD fault as it 
-overwrites half of instruction in copy loop, and from this point on only
-possible outcome is triplefault and reboot.  So let's overwrite only
-first two instructions of memcpy - as long as main memcpy loop is
-not in first two bytes it will work fine.
+>  [<c02a786e>] io_schedule+0x1d/0x27
+>  [<c014f3c5>] sync_page+0x0/0x3b
+>  [<c014f3fd>] sync_page+0x38/0x3b
+>  [<c02a7a6f>] __wait_on_bit_lock+0x2a/0x52
+>  [<c014f3b7>] __lock_page+0x58/0x5e
+>  [<c01333aa>] wake_bit_function+0x0/0x3c
+>  [<c0155daa>] truncate_inode_pages_range+0x201/0x256
+>  [<c0155e16>] truncate_inode_pages+0x17/0x1a
+>  [<f8c867eb>] reiserfs_delete_inode+0x36/0xdd [reiserfs]
+>  [<f8c867b5>] reiserfs_delete_inode+0x0/0xdd [reiserfs]
+>  [<c017acc5>] generic_delete_inode+0xa0/0x105
+>  [<c017a4ad>] iput+0x60/0x62
+>  [<c0172f41>] do_unlinkat+0xb6/0x126
+>  [<c0103d7e>] syscall_call+0x7/0xb
+>  =======================
+> 
+> My system is still up and running.
+> 
 
-Signed-off-by: Petr Vandrovec <petr@vandrovec.name>
-
----
-commit 7c6f7d582f301e16899a43fd6c775ed103e8a8d2
-tree 112d7320e8a21120e4e43f1ac91918ca0352ff56
-parent f81e9b8cc6301f6328eafaa553ef35441874b1a4
-author Petr Vandrovec <petr@vandrovec.name> Sun, 12 Aug 2007 01:05:11 -0700
-committer Petr Vandrovec <petr@vandrovec.name> Sun, 12 Aug 2007 01:05:11 -0700
-
- arch/x86_64/lib/memcpy.S |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86_64/lib/memcpy.S b/arch/x86_64/lib/memcpy.S
-index 0ea0ddc..c22981f 100644
---- a/arch/x86_64/lib/memcpy.S
-+++ b/arch/x86_64/lib/memcpy.S
-@@ -124,6 +124,8 @@ ENDPROC(__memcpy)
- 	.quad memcpy
- 	.quad 1b
- 	.byte X86_FEATURE_REP_GOOD
--	.byte .Lfinal - memcpy
-+	/* Replace only beginning, memcpy is used to apply alternatives, so it
-+	 * is silly to overwrite itself with nops - reboot is only outcome... */
-+	.byte 2b - 1b
- 	.byte 2b - 1b
- 	.previous
+It's stuck waiting for a page to come unlocked.  The most likely
+explanation is that an IO got lost.
