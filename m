@@ -1,54 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934563AbXHLL2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933858AbXHLLt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934563AbXHLL2x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 07:28:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758289AbXHLL2k
+	id S933858AbXHLLt0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 07:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758126AbXHLLtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 07:28:40 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:41605 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757422AbXHLL2j (ORCPT
+	Sun, 12 Aug 2007 07:49:17 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50372 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757288AbXHLLtQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 07:28:39 -0400
-Date: Sun, 12 Aug 2007 13:28:38 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Al Boldi <a1426z@gawab.com>
-cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: [RFD] Layering: Use-Case Composers (was: DRBD - what is it,
- anyways? [compare with e.g. NBD + MD raid])
-In-Reply-To: <200708121335.17267.a1426z@gawab.com>
-Message-ID: <Pine.LNX.4.64.0708121325170.28963@fbirervta.pbzchgretzou.qr>
-References: <200708121335.17267.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 12 Aug 2007 07:49:16 -0400
+Date: Sun, 12 Aug 2007 13:49:13 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@osdl.org, torvalds@osdl.org
+Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
+Message-ID: <20070812114913.GA20669@one.firstfloor.org>
+References: <p73zm0xslyk.fsf@bingen.suse.de> <515984.88226.qm@web36611.mail.mud.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <515984.88226.qm@web36611.mail.mud.yahoo.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Entries are never deleted, although they can be modified.
 
-On Aug 12 2007 13:35, Al Boldi wrote:
->Lars Ellenberg wrote:
->> meanwhile, please, anyone interessted,
->> the drbd paper for LinuxConf Eu 2007 is finalized.
->> http://www.drbd.org/fileadmin/drbd/publications/
->> drbd8.linux-conf.eu.2007.pdf
->>
->> but it does give a good overview about what DRBD actually is,
->> what exact problems it tries to solve,
->> and what developments to expect in the near future.
->>
->> so you can make up your mind about
->>  "Do we need it?", and
->>  "Why DRBD? Why not NBD + MD-RAID?"
+The modification case still seems racy then.
 
-I may have made a mistake when asking for how it compares to NBD+MD.
-Let me retry: what's the functional difference between
-GFS2 on a DRBD .vs. GFS2 on a DAS SAN?
+-Andi
 
->Now, shared remote block access should theoretically be handled, as does 
->DRBD, by a block layer driver, but realistically it may be more appropriate 
->to let it be handled by the combining end user, like OCFS or GFS.
-
-
-	Jan
--- 
