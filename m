@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937836AbXHLTGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937589AbXHLTOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937836AbXHLTGc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 15:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937494AbXHLTF6
+	id S937589AbXHLTOl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 15:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933285AbXHLTO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 15:05:58 -0400
-Received: from www.osadl.org ([213.239.205.134]:33511 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S937371AbXHLTF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 15:05:57 -0400
-Subject: Re: [PATCH 2/4] posix-timers: fix creation race
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-In-Reply-To: <20070812170522.GA4299@tv-sign.ru>
-References: <20070812170522.GA4299@tv-sign.ru>
-Content-Type: text/plain
-Date: Sun, 12 Aug 2007 21:05:55 +0200
-Message-Id: <1186945555.12828.89.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Sun, 12 Aug 2007 15:14:28 -0400
+Received: from gate.crashing.org ([63.228.1.57]:35515 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933141AbXHLTO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 15:14:27 -0400
+In-Reply-To: <alpine.LFD.0.999.0708121107490.30176@woody.linux-foundation.org>
+References: <20070808230733.GA17270@shell.boston.redhat.com> <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org> <46BAC2BE.1090106@redhat.com> <46BB508B.7050601@redhat.com> <alpine.LFD.0.999.0708091055080.25146@woody.linux-foundation.org> <1186683646.9669.20.camel@localhost> <a599bc5062d557db46496f0d7c7886b0@kernel.crashing.org> <alpine.LFD.0.999.0708112305170.30176@woody.linux-foundation.org> <1186912098.3852.11.camel@localhost> <74868f39491f8691afc5540f72679129@kernel.crashing.org> <alpine.LFD.0.999.0708121107490.30176@woody.linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <bd062b9b86e3e26ff7282bfb3b6106e4@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: wjiang@resilience.com, wensong@linux-vs.org, heiko.carstens@de.ibm.com,
+       linux-kernel@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
+       netdev@vger.kernel.org, horms@verge.net.au, akpm@linux-foundation.org,
+       schwidefsky@de.ibm.com, Chuck Ebbert <cebbert@redhat.com>,
+       davem@davemloft.net, zlynx@acm.org, Chris Snook <csnook@redhat.com>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] make atomic_t volatile on all architectures
+Date: Sun, 12 Aug 2007 21:13:20 +0200
+To: Linus Torvalds <torvalds@linux-foundation.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-08-12 at 21:05 +0400, Oleg Nesterov wrote:
-> sys_timer_create() sets ->it_process and unlocks ->siglock, then checks
-> tmr->it_sigev_notify to define if get_task_struct() is needed.
-> 
-> We already passed ->it_id to the caller, another thread can delete this
-> timer and free its memory in between.
-> 
-> As a minimal fix, move this code under ->siglock, sys_timer_delete() takes
-> it too before calling release_posix_timer(). A proper serialization would
-> be to take ->it_lock, we add a partly initialized timer on posix_timers_id,
-> not good.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+>> Yeah.  Compiler errors are more annoying though I dare say ;-)
+>
+> Actually, compile-time errors are fine,
 
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Yes, they don't cause data corruption or anything like that,
+but I still don't think the 390 people want to ship a kernel
+that doesn't build -- and it seems they still need to support
+GCC versions before 4.0.  Up until the day they can finally
+drop 3.x, they'll have to...
 
-> --- t/kernel/posix-timers.c~2_CREATE	2007-08-12 17:59:17.000000000 +0400
-> +++ t/kernel/posix-timers.c	2007-08-12 18:11:33.000000000 +0400
-> @@ -547,13 +547,12 @@ sys_timer_create(const clockid_t which_c
->  				new_timer->it_process = process;
->  				list_add(&new_timer->list,
->  					 &process->signal->posix_timers);
-> -				spin_unlock_irqrestore(&process->sighand->siglock, flags);
->  				if (new_timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
->  					get_task_struct(process);
->  			} else {
-> -				spin_unlock_irqrestore(&process->sighand->siglock, flags);
->  				process = NULL;
->  			}
-> +			spin_unlock_irqrestore(&process->sighand->siglock, flags);
->  		}
->  		read_unlock(&tasklist_lock);
->  		if (!process) {
-> 
+> and easy to work around.
+
+...use the simple workaround, annoying as it may be, at least
+it works.  That's all I'm saying.
+
+> *Much*
+> more annoying is when gcc actively generates subtly bad code.
+
+Quite so.
+
+> We've had
+> use-after-free issues due to incorrect gcc liveness calculations etc, 
+> and
+> inline asm has beeen one of the more common causes - exactly because 
+> the
+> kernel is one of the few users (along with glibc) that uses it at all.
+
+The good news is that things are getting better since more and
+more of the RTL transformations are ripped out.
+
+> Now *those* are hard to find - the code works most of the time, but the
+> compiler has inserted a really subtle race condition into the code
+> (deallocated a local stack entry before last use). We had that with our
+> semaphore code at some point.
+
+Yeah, magnifying glass + lots of time kind of bug.  Lovely :-/
+
+
+Segher
 
