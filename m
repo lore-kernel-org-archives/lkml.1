@@ -1,186 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933054AbXHLKZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933932AbXHLK2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933054AbXHLKZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 06:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbXHLKZS
+	id S933932AbXHLK2y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 06:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758489AbXHLK2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 06:25:18 -0400
-Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:46751 "EHLO
-	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754149AbXHLKZQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 06:25:16 -0400
-Date: Sun, 12 Aug 2007 12:24:59 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+	Sun, 12 Aug 2007 06:28:43 -0400
+Received: from gate.crashing.org ([63.228.1.57]:45514 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754570AbXHLK2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 06:28:41 -0400
+In-Reply-To: <alpine.LFD.0.999.0708112305170.30176@woody.linux-foundation.org>
+References: <20070808230733.GA17270@shell.boston.redhat.com> <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org> <46BAC2BE.1090106@redhat.com> <46BB508B.7050601@redhat.com> <alpine.LFD.0.999.0708091055080.25146@woody.linux-foundation.org> <1186683646.9669.20.camel@localhost> <a599bc5062d557db46496f0d7c7886b0@kernel.crashing.org> <alpine.LFD.0.999.0708112305170.30176@woody.linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <cbbe196cd30095e13e96762a6ddfd9a0@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: wjiang@resilience.com, wensong@linux-vs.org, heiko.carstens@de.ibm.com,
+       linux-kernel@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
+       netdev@vger.kernel.org, horms@verge.net.au, akpm@linux-foundation.org,
+       schwidefsky@de.ibm.com, Chuck Ebbert <cebbert@redhat.com>,
+       davem@davemloft.net, zlynx@acm.org, Chris Snook <csnook@redhat.com>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] make atomic_t volatile on all architectures
+Date: Sun, 12 Aug 2007 12:27:09 +0200
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Dike <jdike@addtoit.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>, jdike@karaya.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: [PATCH] Introduce CONFIG_CHECK_SIGNATURE (was: Re: uninline
- check_signature())
-In-Reply-To: <alpine.LFD.0.999.0707171338290.27353@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0708121153160.16526@anakin>
-References: <200707161802.l6GI2tNp007390@hera.kernel.org>
- <20070716221257.GA12230@osiris.ibm.com> <20070716152923.ce4a5c5a.akpm@linux-foundation.org>
- <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org>
- <20070716230307.GB12230@osiris.ibm.com> <Pine.LNX.4.64.0707171519300.10600@anakin>
- <20070717163328.GG7965@c2.user-mode-linux.org> <Pine.LNX.4.64.0707171842590.10600@anakin>
- <alpine.LFD.0.999.0707171102040.19166@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707172225260.23024@anakin>
- <alpine.LFD.0.999.0707171338290.27353@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Linus,
+>> Note that last line.
+>
+> Segher, how about you just accept that Linux uses gcc as per reality, 
+> and
+> that sometimes the reality is different from your expectations?
+>
+> "+m" works.
 
-On Tue, 17 Jul 2007, Linus Torvalds wrote:
-> On Tue, 17 Jul 2007, Geert Uytterhoeven wrote:
-> > OR I'll have to disable HAS_IOMEM on m68k, and invent a new Kconfig
-> > symbol for lots of other stuff that currently depends on HAS_IOMEM...
-> 
-> Well, as far as I'm concerned, you could also make all drivers that 
-> actually need "check_signature()" do a Kconfig level
-> 
-> 	select CHECK_SIGNATURE
-> 
-> along with a
-> 
-> 	config CHECK_SIGNATURE
-> 		bool
-> 		default n
-> 
-> in lib/Kconfig, and thus make it totally independent of any hw/bus 
-> features at all, and simply depend on whether it is needed or not. I'd be 
-> ok with that, and it's certainly "correct" too.
-> 
-> Hmm?
+It works _most of the time_.  Ask Martin.  Oh you don't even have to,
+he told you two mails ago.  My last mail simply pointed out that this
+isn't a GCC bug, but merely documented behaviour.  Well okay, it was
+documented only after people found problems with it; it is an edge
+case and pretty hard to trigger (impossible to trigger on RISC
+architectures, and not very likely on x86 either, for different
+reasons).
 
-So here it is...
+Since "realistic" people keep using "+m" anyhow, current GCC has added
+a workaround that splits "+m" into an "=m" and an "m" constraint.  It
+likely will be accepted as a permanent feature.  However, that 
+workaround
+doesn't yet exist on some of the compilers Linux still allows building
+with (but the problem does).
 
----
-Subject: Introduce CONFIG_CHECK_SIGNATURE
+> We use it. It's better than the alternatives.
 
-Introduce CONFIG_CHECK_SIGNATURE to control inclusion of check_signature()
-and avoid problems on platforms that don't have readb().
+How is this better than simply writing the slightly more verbose
+asm("..." : "=m"(XX) : "m"(XX)) ?  It's a few more characters.
+asm() is hard to write (correctly) anyway.  I don't see the problem.
 
-Let the few legacy (ISA || PCI || X86) drivers that need check_signature()
-select CONFIG_CHECK_SIGNATURE.
+> Pointing to stale documentation doesn't change anything.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/block/Kconfig      |    1 +
- drivers/input/misc/Kconfig |    1 +
- drivers/scsi/Kconfig       |    6 ++++++
- lib/Kconfig                |    3 +++
- lib/Makefile               |    3 ++-
- 5 files changed, 13 insertions(+), 1 deletion(-)
+It's not "stale" documentation, it's freshly built from GCC mainline.
+It's also not "stale" in the sense that it isn't updated; in fact,
+the email I pointed to is from a thread where a change in this exact
+paragraph in the documentation was suggested (a couple of weeks ago).
 
---- a/drivers/block/Kconfig
-+++ b/drivers/block/Kconfig
-@@ -62,6 +62,7 @@ config AMIGA_Z2RAM
- config BLK_DEV_XD
- 	tristate "XT hard disk support"
- 	depends on ISA && ISA_DMA_API
-+	select CHECK_SIGNATURE
- 	help
- 	  Very old 8 bit hard disk controllers used in the IBM XT computer
- 	  will be supported if you say Y here.
---- a/drivers/input/misc/Kconfig
-+++ b/drivers/input/misc/Kconfig
-@@ -68,6 +68,7 @@ config INPUT_WISTRON_BTNS
- 	select INPUT_POLLDEV
- 	select NEW_LEDS
- 	select LEDS_CLASS
-+	select CHECK_SIGNATURE
- 	help
- 	  Say Y here for support of Winstron laptop button interface, used on
- 	  laptops of various brands, including Acer and Fujitsu-Siemens. If
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -367,6 +367,7 @@ config SCSI_3W_9XXX
- config SCSI_7000FASST
- 	tristate "7000FASST SCSI support"
- 	depends on ISA && SCSI && ISA_DMA_API
-+	select CHECK_SIGNATURE
- 	help
- 	  This driver supports the Western Digital 7000 SCSI host adapter
- 	  family.  Some information is in the source:
-@@ -388,6 +389,7 @@ config SCSI_AHA152X
- 	tristate "Adaptec AHA152X/2825 support"
- 	depends on ISA && SCSI && !64BIT
- 	select SCSI_SPI_ATTRS
-+	select CHECK_SIGNATURE
- 	---help---
- 	  This is a driver for the AHA-1510, AHA-1520, AHA-1522, and AHA-2825
- 	  SCSI host adapters. It also works for the AVA-1505, but the IRQ etc.
-@@ -583,6 +585,7 @@ config SCSI_DTC3280
- 	tristate "DTC3180/3280 SCSI support"
- 	depends on ISA && SCSI
- 	select SCSI_SPI_ATTRS
-+	select CHECK_SIGNATURE
- 	help
- 	  This is support for DTC 3180/3280 SCSI Host Adapters.  Please read
- 	  the SCSI-HOWTO, available from
-@@ -657,6 +660,7 @@ config SCSI_EATA_PIO
- config SCSI_FUTURE_DOMAIN
- 	tristate "Future Domain 16xx SCSI/AHA-2920A support"
- 	depends on (ISA || PCI) && SCSI
-+	select CHECK_SIGNATURE
- 	---help---
- 	  This is support for Future Domain's 16-bit SCSI host adapters
- 	  (TMC-1660/1680, TMC-1650/1670, TMC-3260, TMC-1610M/MER/MEX) and
-@@ -1324,6 +1328,7 @@ config SCSI_LPFC
- config SCSI_SEAGATE
- 	tristate "Seagate ST-02 and Future Domain TMC-8xx SCSI support"
- 	depends on X86 && ISA && SCSI
-+	select CHECK_SIGNATURE
- 	---help---
- 	  These are 8-bit SCSI controllers; the ST-01 is also supported by
- 	  this driver.  It is explained in section 3.9 of the SCSI-HOWTO,
-@@ -1397,6 +1402,7 @@ config SCSI_T128
- 	tristate "Trantor T128/T128F/T228 SCSI support"
- 	depends on ISA && SCSI
- 	select SCSI_SPI_ATTRS
-+	select CHECK_SIGNATURE
- 	---help---
- 	  This is support for a SCSI host adapter. It is explained in section
- 	  3.11 of the SCSI-HOWTO, available from
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -138,4 +138,7 @@ config HAS_DMA
- 	depends on !NO_DMA
- 	default y
- 
-+config CHECK_SIGNATURE
-+	bool
-+
- endmenu
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -21,7 +21,8 @@ CFLAGS_kobject_uevent.o += -DDEBUG
- endif
- 
- obj-$(CONFIG_GENERIC_IOMAP) += iomap.o
--obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o check_signature.o
-+obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o
-+obj-$(CONFIG_CHECK_SIGNATURE) += check_signature.o
- obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
- obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock_debug.o
- lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
+> The same is true of accesses through a volatile pointer. The kernel has
+> done that for a *loong* time (all MMIO IO is done that way),
 
-Gr{oetje,eeting}s,
+(All MMIO on certain architectures).  This however is a completely
+different case; there _is_ no underlying C object declared anywhere,
+so no way can GCC prove that that object isn't volatile, so it _has_
+to assume it is.
 
-						Geert
+Also, in case of e.g. readb(), if the compiler can prove the resulting
+value isn't used it doesn't have to perform the access at all -- the
+documentation (again, not "stale" documentation) points this out quite
+literally.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> and it's
+> totally pointless to say that "volatile" isn't guaranteed to do what it
+> does.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I actually asked a couple of other GCC developers last night, and
+they all agreed with me.  If you look at historic GCC problem reports
+(I pointed at a few earlier in these threads) you would see that the
+situation is far from clear.
+
+> It works, and quite frankly, if it didn't work, it would be a gcc
+> BUG.
+
+How can it be a bug, if the semantics you think are guaranteed are
+guaranteed in your (and others') minds only?
+
+Of course, GCC likes to cater to its users, and tries to make things
+work the way the programmer probably intended.  However it a) cannot
+*actually* read your mind, it just looks that way; b) it _also_ has
+to implement the _correct_ semantics of volatile; c) since this isn't
+part of any C version (no, not GNU99 or similar either), sometimes
+GCC developers do not think about what some people expect the compiler
+should do with such code, but just implement the requirements they
+*know* exist.  And that's when "BUGs" happen.
+
+If you want GCC to do what you want it to do instead of what it does,
+why not file an enhancement request?  <http://gcc.gnu.org/bugzilla>.
+
+To save you the trouble, I just did: <gcc.gnu.org/PR33053>.  Let's
+see what comes from it.
+
+> And again, this is not a "C standard" issue. It's a "sane 
+> implementation"
+> issue.
+
+Maybe what you consider sane isn't as clear-cut as you think?  I'm
+not alone with this opinion, as the mailing lists archives readily
+show.
+
+> Linux expects the compiler to be sane.
+
+And the compiler expects the code it is asked to translate to
+be reasonably sane.  Nothing new here.  The compiler is more
+forgiving than the Linux code, IMHO; that's why I suggested
+using the obviously correct asm implementation of the atomic
+get/set, rather than using the not-so-obviously-correct and
+error-prone volatile thing.  The semantics of the asm() are
+exactly the semantics you expect from an atomic get/set, while
+that of the volatile implementation are *not*; and on top of
+that it is very well-tested well-understood technology.
+
+> If it isn't, that's not our problem.
+
+What, if the compiler doesn't work as you expect, like a silent
+miscompilation, or even only the compiler ICEs, that is not a
+problem for users and/or developers of Linux?  Interesting
+opinion.  I'd rather stay clear of known pitfalls.
+
+> gcc *is* sane,
+
+Yes, it is.
+
+> and I don't see why you constantly act as if it wasn't.
+
+I guess I didn't express myself clearly enough then.  Hopefully
+some other people _did_ understand what I meant.  In very harsh
+words: "not all (proposed) kernel code is sane".
+
+
+Segher
+
