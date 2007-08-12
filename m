@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938176AbXHLTnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938225AbXHLTou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938176AbXHLTnr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 15:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936403AbXHLTni
+	id S938225AbXHLTou (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 15:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937569AbXHLTol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 15:43:38 -0400
-Received: from [212.12.190.34] ([212.12.190.34]:33151 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934581AbXHLTnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 15:43:37 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: CFS review
-Date: Sun, 12 Aug 2007 22:43:05 +0300
-User-Agent: KMail/1.5
-Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200708111344.42934.a1426z@gawab.com> <200708121827.36656.a1426z@gawab.com> <20070812155242.GA1977@elte.hu>
-In-Reply-To: <20070812155242.GA1977@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Aug 2007 15:44:41 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:59339 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937364AbXHLTok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 15:44:40 -0400
+Date: Sun, 12 Aug 2007 23:44:55 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH 2/4] posix-timers: fix creation race
+Message-ID: <20070812194455.GA113@tv-sign.ru>
+References: <20070812170522.GA4299@tv-sign.ru> <1186945555.12828.89.camel@chaos>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708122243.05191.a1426z@gawab.com>
+In-Reply-To: <1186945555.12828.89.camel@chaos>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Al Boldi <a1426z@gawab.com> wrote:
-> > The thing is, this unpredictability seems to exist even at nice level
-> > 0, but the smaller granularity covers it all up.  It occasionally
-> > exhibits itself as hick-ups during transient heavy workload flux.  But
-> > it's not easily reproducible.
+On 08/12, Thomas Gleixner wrote:
 >
-> In general, "hickups" can be due to many, many reasons. If a task got
-> indeed delayed by scheduling jitter that is provable, even if the
-> behavior is hard to reproduce, by enabling CONFIG_SCHED_DEBUG=y and
-> CONFIG_SCHEDSTATS=y in your kernel. First clear all the stats:
->
->   for N in /proc/*/task/*/sched; do echo 0 > $N; done
->
-> then wait for the 'hickup' to happen, and once it happens capture the
-> system state (after the hickup) via this script:
->
->   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
->
-> and tell me which specific task exhibited that 'hickup' and send me the
-> debug output.
+> On Sun, 2007-08-12 at 21:05 +0400, Oleg Nesterov wrote:
+> > sys_timer_create() sets ->it_process and unlocks ->siglock, then checks
+> > tmr->it_sigev_notify to define if get_task_struct() is needed.
+> > 
+> > We already passed ->it_id to the caller, another thread can delete this
+> > timer and free its memory in between.
+> > 
+> > As a minimal fix, move this code under ->siglock, sys_timer_delete() takes
+> > it too before calling release_posix_timer(). A proper serialization would
+> > be to take ->it_lock, we add a partly initialized timer on posix_timers_id,
+> > not good.
+> > 
+> > Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> 
+> Acked-by: Thomas Gleixner <tglx@linutronix.de>
 
-Ok.
+Oooh, thanks, but...
 
-> Also, could you try the patch below as well? Thanks,
+> > --- t/kernel/posix-timers.c~2_CREATE	2007-08-12 17:59:17.000000000 +0400
+> > +++ t/kernel/posix-timers.c	2007-08-12 18:11:33.000000000 +0400
+> > @@ -547,13 +547,12 @@ sys_timer_create(const clockid_t which_c
+> >  				new_timer->it_process = process;
+> >  				list_add(&new_timer->list,
+> >  					 &process->signal->posix_timers);
+> > -				spin_unlock_irqrestore(&process->sighand->siglock, flags);
+> >  				if (new_timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
+> >  					get_task_struct(process);
+> >  			} else {
+> > -				spin_unlock_irqrestore(&process->sighand->siglock, flags);
+> >  				process = NULL;
+> >  			}
+> > +			spin_unlock_irqrestore(&process->sighand->siglock, flags);
 
-Looks ok, but I'm not sure which workload this is supposed to improve.
+i'll resend this patch tomorrow. We can't do spin_unlock_irqrestore(&process->...)
+if we set process = NULL above.
 
-There is one workload that still isn't performing well; it's a web-server 
-workload that spawns 1K+ client procs.  It can be emulated by using this:
+This all needs a cleanup anyway. The PF_EXITING check and related comment are
+bogus.
 
-  for i in `seq 1 to 3333`; do ping 10.1 -A > /dev/null & done
+Other patches do not depend on this one.
 
-The problem is that consecutive runs don't give consistent results and 
-sometimes stalls.  You may want to try that.
-
-
-Thanks!
-
---
-Al
+Oleg.
 
