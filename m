@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933830AbXHLVdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935757AbXHLVgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933830AbXHLVdT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 17:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758605AbXHLVdG
+	id S935757AbXHLVgS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 17:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761470AbXHLVgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 17:33:06 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:46750 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755069AbXHLVdE (ORCPT
+	Sun, 12 Aug 2007 17:36:09 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36898 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759786AbXHLVgH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 17:33:04 -0400
-Date: Sun, 12 Aug 2007 23:33:03 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Finding out socket/pipe connectivity status
-In-Reply-To: <20070812194210.210db3a3@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0708122328070.28963@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0708121059160.28963@fbirervta.pbzchgretzou.qr>
- <20070812170018.6f56a0dd@the-village.bc.nu>
- <Pine.LNX.4.64.0708121808470.28963@fbirervta.pbzchgretzou.qr>
- <20070812194210.210db3a3@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 12 Aug 2007 17:36:07 -0400
+Date: Sun, 12 Aug 2007 23:36:05 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@osdl.org, torvalds@osdl.org
+Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
+Message-ID: <20070812213605.GA25883@one.firstfloor.org>
+References: <20070812114913.GA20669@one.firstfloor.org> <918222.44901.qm@web36614.mail.mud.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <918222.44901.qm@web36614.mail.mud.yahoo.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Aug 12, 2007 at 10:48:05AM -0700, Casey Schaufler wrote:
+> 
+> --- Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > > Entries are never deleted, although they can be modified.
+> > 
+> > The modification case still seems racy then.
+> 
+> Fair enough. I'll look into real list management.
 
-On Aug 12 2007 19:42, Alan Cox wrote:
->> 	write(stdout, request);
->> 	/* reference point [A] */
->> 	read(stdin, response);
->> 
->> So my idea had been to launch another thread that monitors stdin for
->> 'breakage' and unmount the fs before a user can start an operation on
->> myfs. So I've been trying to complete the idea to code. You say a
->> broken socket raises the read flag, so:
->
->Your connection can break at any point even mid-write so you must handle
->it. You have no real choice.
+You don't necessarily need more list management if you don't 
+plan to remove entries, but just replace them.
 
-Yes, of course. I was just saying that when the filesystem is in an operation,
+e.g. what could work to atomically replace is: 
 
-	`df` -> sys_statvfs() -> [fuse magic] -> my_fuse_fs_statfs()
+- Make the buffer a pointer to an allocated buffer that also
+contains a struct rcu_head.
+- Reader: Does rcu_read_lock() around list walk (that just disables
+preemption on preemptible kernels and is otherwise a nop).
+Also uses rcu_reference for reading the pointer. 
+- Writer: Continues using the mutex to protect against other writers.
+When changing an entry allocate a new buffer + rcu_head. Initialize
+buffer. Replace pointer.  Free old buffer using call_rcu() 
 
-I cannot cancel that operation in a way such that df (or /proc/mounts if you
-like) does not show the mount anymore when the peer is dead. I have to return
-something. I am fine with that.
+The RCU would just make sure the buffer is not freed while other
+CPUs are still accessing it. It also means they can use stale
+rules for a time, but it is a strictly bounded time
+(bounded to max time walking the list plus max time any interrupt
+handlers inbetween run [admittedly that can be very long in theory, 
+but it's all logically only a single rule check])
 
->You can try and spot it earlier by using select/poll and checking for
->error. In which case I'd use poll() as it is a bit more clear about what
->event you get
->
->Then poll stdin and stdout. The kernel will give you back 
->
->POLLERR - an error condition
->POLLHUP - a hangup
->
->if at the point you poll an error has already occurred. You can do this
->with select and the socket error and related stuff buts its uglier
+-Andi
 
-poll() alone seems to do just what I want, thank you very much.
-
-When the socket breaks, poll raises POLLIN, POLLHUP and POLLRDHUP, but not
-POLLERR. What exactly is the difference between HUP and RDHUP? The manpage is
-not too verbose on that. (A guess would be that RDHUP is only for sockets,
-not pipes.)
-
-
-thanks,
-	Jan
--- 
