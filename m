@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938459AbXHLT7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938392AbXHLUBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938459AbXHLT7Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 15:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933285AbXHLT7L
+	id S938392AbXHLUBS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 16:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765472AbXHLUBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 15:59:11 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:41215 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936897AbXHLT7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 15:59:10 -0400
-Date: Sun, 12 Aug 2007 23:59:04 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH 2/4] posix-timers: fix creation race
-Message-ID: <20070812195904.GB113@tv-sign.ru>
-References: <20070812170522.GA4299@tv-sign.ru> <1186945555.12828.89.camel@chaos> <20070812194455.GA113@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 12 Aug 2007 16:01:06 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:51961
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932414AbXHLUBF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 16:01:05 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: [PATCH] Minor fix to Documentation/powerpc/00-INDEX
+Date: Sun, 12 Aug 2007 15:01:01 -0500
+User-Agent: KMail/1.9.6
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, paulus@samba.org
+References: <200708092342.35238.rob@landley.net> <20070811143334.60f90af4.rdunlap@xenotime.net>
+In-Reply-To: <20070811143334.60f90af4.rdunlap@xenotime.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070812194455.GA113@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+Message-Id: <200708121501.01358.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/12, Oleg Nesterov wrote:
+On Saturday 11 August 2007 4:33:34 pm Randy Dunlap wrote:
+> On Thu, 9 Aug 2007 23:42:35 -0500 Rob Landley wrote:
+> > Signed-off-by: Rob Landley <rob@landley.net>
+> >
+> > I have a python script to convert 00-INDEX files into index.html files,
+> > and a second script to show 404 errors in the result as well as
+> > files/directories nothing links to.   (It's not very useful yet, but in
+> > case you're wondering http://kernel.org/doc/docdiridx.py and
+> > http://kernel.org/doc/doclinkcheck.py .)
+> >
+> > Anyway, my simple index.html generator breaks on the
+> > Documentation/powerpc directory because one of the description lines is
+> > two lines long.  This patch joins those two lines together into one line.
+> >  This is the only instance (so far) of this problem.
 >
-> > > -				spin_unlock_irqrestore(&process->sighand->siglock, flags);
-> > >  				process = NULL;
-> > >  			}
-> > > +			spin_unlock_irqrestore(&process->sighand->siglock, flags);
-> 
-> i'll resend this patch tomorrow. We can't do spin_unlock_irqrestore(&process->...)
-> if we set process = NULL above.
+> If Paul wants to merge this, then OK, but I'm not aware of any rule
+> that the file descriptions inside INDEX files must be only one line
+> long... is that documented somewhere?  (if so, where?)
 
-Another attempt, no cleanups, just a minimal fix for now.
+Documentation/00-INDEX line 5:
 
+> Please try and keep the descriptions small enough to fit on one line.
 
-[PATCH 2/4] posix-timers: fix creation race
+There was only one instance of it not being the case.  I can use indentation 
+level instead (which is what Kconfig uses to identify help text, so I'm not 
+leaking pythonisms into the kernel that aren't already there), but the one 
+line thing seemed to be an existing standard.
 
-sys_timer_create() sets ->it_process and unlocks ->siglock, then checks
-tmr->it_sigev_notify to define if get_task_struct() is needed.
+I'm also relying on the first file in the list being documentation for 
+00-INDEX itself.  (If it breaks, I'll either try to derive a new heuristic 
+and change the script, or submit a patch to change the index.  That one would 
+be a more difficult heuristic to replace, though.)
 
-We already passed ->it_id to the caller, another thread can delete this
-timer and free its memory in between.
+> Maybe the script should allow for this?
 
-As a minimal fix, move this code under ->siglock, sys_timer_delete() takes
-it too before calling release_posix_timer(). A proper serialization would
-be to take ->it_lock, we add a partly initialized timer on posix_timers_id,
-not good.
+*shrug*  I can go either way on that, but people get all funny about 
+whitespace being significant and the one line thing wasn't my idea. :)
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- t/kernel/posix-timers.c~	2007-08-12 23:50:46.000000000 +0400
-+++ t/kernel/posix-timers.c	2007-08-12 23:52:07.000000000 +0400
-@@ -547,9 +547,9 @@ sys_timer_create(const clockid_t which_c
- 				new_timer->it_process = process;
- 				list_add(&new_timer->list,
- 					 &process->signal->posix_timers);
--				spin_unlock_irqrestore(&process->sighand->siglock, flags);
- 				if (new_timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
- 					get_task_struct(process);
-+				spin_unlock_irqrestore(&process->sighand->siglock, flags);
- 			} else {
- 				spin_unlock_irqrestore(&process->sighand->siglock, flags);
- 				process = NULL;
-
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
