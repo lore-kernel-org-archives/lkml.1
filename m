@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935085AbXHLNMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935315AbXHLNMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935085AbXHLNMU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 09:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760497AbXHLNML
+	id S935315AbXHLNMn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 09:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934643AbXHLNMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 09:12:11 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60673 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756490AbXHLNMJ (ORCPT
+	Sun, 12 Aug 2007 09:12:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:16087 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760497AbXHLNMc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 09:12:09 -0400
-Date: Sun, 12 Aug 2007 14:19:05 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: WU Fengguang <wfg@mail.ustc.edu.cn>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
-Message-ID: <20070812141905.4ee423b9@the-village.bc.nu>
-In-Reply-To: <386921666.18788@ustc.edu.cn>
-References: <46BEF5C0.3080902@linux.vnet.ibm.com>
-	<20070812120902.GA9972@mail.ustc.edu.cn>
-	<386921666.18788@ustc.edu.cn>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Aug 2007 09:12:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=lrdCeY+yIIIOEB9KvfU78x3YDCLzEOwpdwr33fKVj2R4nU4QSomHx3WzBC8O10PFVHYZRqZDRDNYeIx41OUQptGy/WBpybTp44N9+3UXMNNUGTVVSGffuRtdNRVSLiisDD++NdO13rPTPP84LvYG7Iv70aCsliNKjRcTx5emML8=
+Date: Sun, 12 Aug 2007 17:12:27 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Petr Vandrovec <petr@vandrovec.name>, discuss@x86-64.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] Fix triplefault on x86-64 bootup
+Message-ID: <20070812131227.GB5871@martell.zuzino.mipt.ru>
+References: <20070812081252.GA23309@vana.vc.cvut.cz> <20070812104606.GA5871@martell.zuzino.mipt.ru> <p73643kkgei.fsf@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p73643kkgei.fsf@bingen.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Great! So the problem might have existed for some time, but we never
-> > saw it due to default over commit values? Were you using these values
-> > for over commit even before?
+On Sun, Aug 12, 2007 at 03:53:57PM +0200, Andi Kleen wrote:
+> Alexey Dobriyan <adobriyan@gmail.com> writes:
 > 
-> No I changed it several weeks ago to stop my desktop from freezing.
-> So yes, the bug may have been there for a while.
+> > On Sun, Aug 12, 2007 at 10:12:52AM +0200, Petr Vandrovec wrote:
+> > > --- a/arch/x86_64/lib/memcpy.S
+> > > +++ b/arch/x86_64/lib/memcpy.S
+> > > @@ -124,6 +124,8 @@ ENDPROC(__memcpy)
+> > >  	.quad memcpy
+> > >  	.quad 1b
+> > >  	.byte X86_FEATURE_REP_GOOD
+> > > -	.byte .Lfinal - memcpy
+> > > +	/* Replace only beginning, memcpy is used to apply alternatives, so it
+> > > +	 * is silly to overwrite itself with nops - reboot is only outcome... */
+> > > +	.byte 2b - 1b
+> > >  	.byte 2b - 1b
+> > >  	.previous
+> > 
+> > Thanks, this fixes E6400 reboots on bootup here.
+> 
+> Please test with only ab144f5ec64c42218a555ec1dbde6b60cf2982d6
+> applied (or rather a few patches back in the git history) 
+> I bet that fixes it already.
 
-The bug is the new exec with lots of arguments code. It tries to insert a
-vm struct without having a valid current->mm. That isn't permitted and
-never had been (which is also why it broke the sparc mmu code etc).
+Sorry?
+/me pulls
+/me recompiles
+/me sees reboot on boot
+/me goes in short unprejudiced bisect session
+bisections points to "i386: Make patching more robust, fix paravirt issue"
+/me sees Petr's patch
+above patch fixes problem
 
-You'll need to change the kernel security interface a little to make this
-fly - I think the following should do it.
-
-	- make __vm_enough_memory take a struct mm pointer and use it
-	- make security_ops pass the extra current->mm
-	- add a vm_enough_memory_mm security op
-	- use security_vm_enough_memory_mm(mm, ...) in __insert_vm_struct
-
-I'll knock up a quick patch and see what is needed (someone else can do
-the selinux changes)
