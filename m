@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934342AbXHLJsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934154AbXHLJtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934342AbXHLJsv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 05:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765250AbXHLJoK
+	id S934154AbXHLJtV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 05:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759654AbXHLJok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 05:44:10 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:1312 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764990AbXHLJoA (ORCPT
+	Sun, 12 Aug 2007 05:44:40 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:52970 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760935AbXHLJoi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 05:44:00 -0400
-Subject: Re: [PATCH] make atomic_t volatile on all architectures
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: wjiang@resilience.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       wensong@linux-vs.org, heiko.carstens@de.ibm.com,
-       linux-kernel@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
-       netdev@vger.kernel.org, horms@verge.net.au, akpm@linux-foundation.org,
-       Chuck Ebbert <cebbert@redhat.com>, davem@davemloft.net, zlynx@acm.org,
-       Chris Snook <csnook@redhat.com>
-In-Reply-To: <a599bc5062d557db46496f0d7c7886b0@kernel.crashing.org>
-References: <20070808230733.GA17270@shell.boston.redhat.com>
-	 <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org>
-	 <46BAC2BE.1090106@redhat.com> <46BB508B.7050601@redhat.com>
-	 <alpine.LFD.0.999.0708091055080.25146@woody.linux-foundation.org>
-	 <1186683646.9669.20.camel@localhost>
-	 <a599bc5062d557db46496f0d7c7886b0@kernel.crashing.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Sun, 12 Aug 2007 11:47:33 +0200
-Message-Id: <1186912053.3852.9.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Sun, 12 Aug 2007 05:44:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=aS12i5OPm7jr9EijT2JoBeq/nKxa3CzEb5NRfuOxzbGchRFwfJnXJL75wSQLEwaxeb0MYpHNbPoktQ4epMoZ9sfY5opGDsQDlDBeXnFbc4jdKPevg985ycGEVUdzY2q/jI1o8Sd6GLc49QMsBfCUbe4YRYu5XCKhv2m329nS3AI=
+Message-ID: <a56dfcf00708120244x3ae8f4w9183354cf5f33f93@mail.gmail.com>
+Date: Sun, 12 Aug 2007 05:44:36 -0400
+From: "Dan Merillat" <dan.merillat@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: reset during bootup - solved
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-08-12 at 07:53 +0200, Segher Boessenkool wrote:
-> > Yes, though I would use "=m" on the output list and "m" on the input
-> > list. The reason is that I've seen gcc fall on its face with an ICE on
-> > s390 due to "+m". The explanation I've got from our compiler people was
-> > quite esoteric, as far as I remember gcc splits "+m" to an input 
-> > operand
-> > and an output operand. Now it can happen that the compiler chooses two
-> > different registers to access the same memory location. "+m" requires
-> > that the two memory references are identical which causes the ICE if
-> > they are not.
-> 
-> The problem is very nicely described here, last paragraph:
-> <http://gcc.gnu.org/ml/gcc-patches/2007-07/msg01816.html>
-> 
-> It's not a problem anymore in (very) recent GCC, although
-> that of course won't help you in the kernel (yet).
+On 8/11/07, Dan Merillat <dan.merillat@gmail.com> wrote:
+> This one is going to be fun, since it's a hard reset back to bios, no
+> OOPS or anything shown.  It may be about the time RadeonFB kicks in,
+> but it's impossible to tell.  I'd guess 15-20 lines into dmesg.
+>
+> I'm in the process of bisecting, currently 94c18227..d23cf676.
+>
+> Any guesses of a specific patch to check?
 
-So you are saying that gcc 3.x still has this problem ?
+Except it's not d23cf676, that was the version I was running while
+building HEAD, whoops.
+I'm used to monotonic version numbers, not SHA hashes.  I'll keep
+better track next time.
 
-> > I do not know if the current compilers still do this. Has
-> > anyone else seen this happen ?
-> 
-> In recent GCC, it's actually documented:
-> 
-> 	 The ordinary output operands must be write-only; GCC will assume that
-> 	the values in these operands before the instruction are dead and need
-> 	not be generated.  Extended asm supports input-output or read-write
-> 	operands.  Use the constraint character `+' to indicate such an operand
-> 	and list it with the output operands.  You should only use read-write
-> 	operands when the constraints for the operand (or the operand in which
-> 	only some of the bits are to be changed) allow a register.
-> 
-> Note that last line.
+For completeness, the commit that caused boot to fail was:
 
-I see, thanks for the info. 
+commit ab144f5ec64c42218a555ec1dbde6b60cf2982d6
+Author: Andi Kleen <ak@suse.de>
+Date:   Fri Aug 10 22:31:03 2007 +0200
 
--- 
-blue skies,
-  Martin.
+    i386: Make patching more robust, fix paravirt issue
 
-"Reality continues to ruin my life." - Calvin.
+Except I'm using x86_64?  So not sure why that one rev kills me.
+ACPI? It dies right after the CPU is identified:
+CPU: AMD Athlon(tm) 64 Processor 3000+ stepping 00
+ACPI: Core revision 20070126
 
+I don't think that second line is printed on the crash.
 
+However, a git-pull at 2am (b8d3f244) fixed it.  Not sure where in
+there it started working again, I can bisect backwards to find out if
+need be.
