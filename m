@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933389AbXHLKRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933703AbXHLKVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933389AbXHLKRi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 06:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbXHLKRa
+	id S933703AbXHLKVS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 06:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755298AbXHLKVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 06:17:30 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:22266 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752735AbXHLKR3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 06:17:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=N6WAF2MMVXJ3Ankbmc9lVomUBOaIc36xTupi+A593j4seqRWDFW1YGt/ynVLtLJZYzgoSCPSGUqzmA/bBUyT52Jb03fbAihx/GV5J81A+q36dUHqpm1Ka9g0ZsrXSatHAhuF7mBp6gsho+danbPDzRT/nfy3K86X3bhSt5nI6B0=
-Message-ID: <46BEDDB2.4080704@googlemail.com>
-Date: Sun, 12 Aug 2007 12:15:14 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+	Sun, 12 Aug 2007 06:21:10 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50152 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753336AbXHLKVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 06:21:07 -0400
+From: Andi Kleen <ak@suse.de>
+To: Willy Tarreau <w@1wt.eu>
+Subject: Re: [2.6.20.16 review 08/28] x86_64: allocate sparsemem memmap above 4G
+Date: Sun, 12 Aug 2007 12:18:11 +0200
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Zou Nan hai <nanhai.zou@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, Greg Kroah-Hartman <gregkh@suse.de>
+References: <20070811184752.%N@1wt.eu> <20070811184837.%N@1wt.eu>
+In-Reply-To: <20070811184837.%N@1wt.eu>
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-CC: linux-usb-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [linux-usb-devel] 2.6.23-rc2-mm2
-References: <20070809224254.11f42716.akpm@linux-foundation.org> <46BC3CB1.2090503@googlemail.com> <46BC5D18.9060906@googlemail.com> <200708111358.30667.david-b@pacbell.net>
-In-Reply-To: <200708111358.30667.david-b@pacbell.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708121218.12411.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell wrote:
-> On Friday 10 August 2007, Gabriel C wrote:
->> Getting that with gcc 4.2.1 :
->>
->> drivers/usb/host/ohci-dbg.c: In function 'show_registers':
->> drivers/usb/host/ohci-dbg.c:620: warning: the address of 'next' will always evaluate as 'true'
->> drivers/usb/host/ohci-dbg.c:639: warning: the address of 'next' will always evaluate as 'true'
-> 
-> Seems like a pretty annoying warning to have added ... the relevant
-> test *expects* to have two constant branches, where the compiler
-> optimizes one out of existence.
-> 
-> Does this patch get rid of it?
-> 
+On Saturday 11 August 2007 21:48, Willy Tarreau wrote:
+> On systems with huge amount of physical memory, VFS cache and memory memmap
+> may eat all available system memory under 4G, then the system may fail to
+> allocate swiotlb bounce buffer.
+>
+> There was a fix for this issue in arch/x86_64/mm/numa.c, but that fix dose
+> not cover sparsemem model.
 
-Yes it does.
+Have you checked if sparsemem even worked in 2.6.20? Irc it was quite
+unstable a couple of releases ago. There were times where it rarely
+booted on x86-64 because so few people test it. 
+If not the patch is not needed, although relatively harmless too.
 
-
-> ---
->  drivers/usb/host/ohci-dbg.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- g26.orig/drivers/usb/host/ohci-dbg.c	2007-08-11 13:51:42.000000000 -0700
-> +++ g26/drivers/usb/host/ohci-dbg.c	2007-08-11 13:52:07.000000000 -0700
-> @@ -74,7 +74,7 @@ urb_print (struct urb * urb, char * str,
->  
->  #define ohci_dbg_sw(ohci, next, size, format, arg...) \
->  	do { \
-> -	if (next) { \
-> +	if (next != NULL) { \
->  		unsigned s_len; \
->  		s_len = scnprintf (*next, *size, format, ## arg ); \
->  		*size -= s_len; *next += s_len; \
-> 
+-Andi
