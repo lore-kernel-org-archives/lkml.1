@@ -1,81 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbXHLKgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934360AbXHLKhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933565AbXHLKgS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 06:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933199AbXHLKf7
+	id S934360AbXHLKhL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 06:37:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755614AbXHLKg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 06:35:59 -0400
-Received: from gate.crashing.org ([63.228.1.57]:56490 "EHLO gate.crashing.org"
+	Sun, 12 Aug 2007 06:36:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58671 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932751AbXHLKf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 06:35:57 -0400
-In-Reply-To: <1186912053.3852.9.camel@localhost>
-References: <20070808230733.GA17270@shell.boston.redhat.com> <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org> <46BAC2BE.1090106@redhat.com> <46BB508B.7050601@redhat.com> <alpine.LFD.0.999.0708091055080.25146@woody.linux-foundation.org> <1186683646.9669.20.camel@localhost> <a599bc5062d557db46496f0d7c7886b0@kernel.crashing.org> <1186912053.3852.9.camel@localhost>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <914eee40a2967ca153c28da4705722c4@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: wjiang@resilience.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       wensong@linux-vs.org, heiko.carstens@de.ibm.com,
-       linux-kernel@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
-       netdev@vger.kernel.org, horms@verge.net.au, akpm@linux-foundation.org,
-       Chuck Ebbert <cebbert@redhat.com>, davem@davemloft.net, zlynx@acm.org,
-       Chris Snook <csnook@redhat.com>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] make atomic_t volatile on all architectures
-Date: Sun, 12 Aug 2007 12:35:27 +0200
-To: schwidefsky@de.ibm.com
-X-Mailer: Apple Mail (2.623)
+	id S1754944AbXHLKgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 06:36:55 -0400
+Date: Sun, 12 Aug 2007 12:36:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] run_rebalance_domains: s/SCHED_IDLE/CPU_IDLE/
+Message-ID: <20070812103647.GB15297@elte.hu>
+References: <20070812102357.GA525@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070812102357.GA525@tv-sign.ru>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.6
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.6 required=5.9 tests=BAYES_00,UPPERCASE_25_50 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.4 UPPERCASE_25_50        message body is 25-50% uppercase
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Yes, though I would use "=m" on the output list and "m" on the input
->>> list. The reason is that I've seen gcc fall on its face with an ICE 
->>> on
->>> s390 due to "+m". The explanation I've got from our compiler people 
->>> was
->>> quite esoteric, as far as I remember gcc splits "+m" to an input
->>> operand
->>> and an output operand. Now it can happen that the compiler chooses 
->>> two
->>> different registers to access the same memory location. "+m" requires
->>> that the two memory references are identical which causes the ICE if
->>> they are not.
->>
->> The problem is very nicely described here, last paragraph:
->> <http://gcc.gnu.org/ml/gcc-patches/2007-07/msg01816.html>
->>
->> It's not a problem anymore in (very) recent GCC, although
->> that of course won't help you in the kernel (yet).
->
-> So you are saying that gcc 3.x still has this problem ?
 
-Yes.  A warning ("read-write constraint does not allow a register")
-was added for GCC-3.4, but the fix/workaround is more recent
-(4.2 I believe, perhaps it was backported to the 4.1 branch).
+* Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
->>> I do not know if the current compilers still do this. Has
->>> anyone else seen this happen ?
->>
->> In recent GCC, it's actually documented:
->>
->> 	 The ordinary output operands must be write-only; GCC will assume 
->> that
->> 	the values in these operands before the instruction are dead and need
->> 	not be generated.  Extended asm supports input-output or read-write
->> 	operands.  Use the constraint character `+' to indicate such an 
->> operand
->> 	and list it with the output operands.  You should only use read-write
->> 	operands when the constraints for the operand (or the operand in 
->> which
->> 	only some of the bits are to be changed) allow a register.
->>
->> Note that last line.
->
-> I see, thanks for the info.
+> rebalance_domains(SCHED_IDLE) looks strange (typo?), change it to 
+> CPU_IDLE.
 
-My pleasure.
+indeed! Sharp eyes :) I've applied your patch.
 
-
-Segher
-
+	Ingo
