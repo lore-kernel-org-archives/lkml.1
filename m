@@ -1,92 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938781AbXHLU7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938878AbXHLVAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938781AbXHLU7v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 16:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761202AbXHLU7k
+	id S938878AbXHLVAt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 17:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937674AbXHLVAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 16:59:40 -0400
-Received: from dimail1.hmi.de ([134.30.95.50]:40004 "EHLO dimail1.hmi.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758887AbXHLU7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 16:59:38 -0400
-Message-ID: <46BF748B.9090504@lns.pnpi.spb.ru>
-Date: Mon, 13 Aug 2007 00:58:51 +0400
-From: Vadim Dyadkin <dyadkin@lns.pnpi.spb.ru>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
+	Sun, 12 Aug 2007 17:00:39 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:40109
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S936926AbXHLVAi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 17:00:38 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: [PATCH 0/5] Add some missing Documentation/*/00-INDEX files
+Date: Sun, 12 Aug 2007 16:00:34 -0500
+User-Agent: KMail/1.9.6
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>, linux-doc@vger.kernel.org,
+       "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <200708120045.03032.jesper.juhl@gmail.com> <200708121503.30631.rob@landley.net> <9a8748490708121311m643e85b1p88ba679f7272c411@mail.gmail.com>
+In-Reply-To: <9a8748490708121311m643e85b1p88ba679f7272c411@mail.gmail.com>
 MIME-Version: 1.0
-To: Alistair John Strachan <alistair@devzero.co.uk>
-CC: Robert Hancock <hancockr@shaw.ca>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: troubles with r8169
-References: <fa.BZqd/vLw75Xm+ORj+HLjUzU1hSw@ifi.uio.no> <46BF61AB.5060400@shaw.ca> <46BF6853.4020800@lns.pnpi.spb.ru> <200708122138.58405.alistair@devzero.co.uk>
-In-Reply-To: <200708122138.58405.alistair@devzero.co.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0a4 (dimail1.hmi.de [134.30.95.94]); Sun, 12 Aug 2007 22:59:34 +0200 (CEST)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708121600.34424.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alistair John Strachan пишет:
->> Thank for your answer. This problem never shows up if I use only nvidia
->> driver (the work without network), or if I use only r8169 (without
->> x.org). If I use both of them I have the hang. Usually the hang appears
->> if OpenGL is used or network rate is maximal. I tested this regimes many
->> times before.
+On Sunday 12 August 2007 3:11:06 pm Jesper Juhl wrote:
+> On 12/08/07, Rob Landley <rob@landley.net> wrote:
+> > On Sunday 12 August 2007 7:48:37 am Stefan Richter wrote:
+> > > Isn't it with 00-INDEX just like with the "Last Updated:" footers in
+> > > documentation texts?
+> > >
+> > > They are metadata which will be almost always out of date.
+> >
+> > If nothing is using them, they'll bit-rot, yes.  Way of the world.  But
+> > I've found a use for them.  Therefore, I'm interested in getting them up
+> > to date and then keeping them there.
 >
-> If you haven't already, I'd drop linux-bugs@nvidia.com an email to see if they 
-> have any insight. 
+> So, do you want me to create more of these?
 
-I haven't done it yet. I'm going to do it.
+Yes please.
 
-> Not that this can't be a kernel bug, just that it's a bit 
-> difficult for kernel developers to debug when you're using a driver for which 
-> we don't have the sources.
+> If you want them, could you perhaps start by ACK'ing the first 5
+> patches to help me get them merged?
+
+Just did. :)
+
+> Once I see the first 5 merged I'll start creating more, but I don't
+> want to waste time doing so before that.
+
+Sorry it took so long, but my net access is still a touch intermittent just 
+now.  I recently moved back to Austin and we haven't unpacked the wireless 
+router yet.  (So although there's internet at home my wife is usually the one 
+using it.  I'm out at a wireless laundromat at the moment.  Yes, Austin has 
+such things.)
+
+> >I already wrote an automatic checker to tell me
+> > how they differ from reality, which is half the battle.
 >
-> As for changing the IRQ assignments, I don't have any immediate suggestions. I 
-> notice that this laptop has a dual core processor, so I'm guessing disabling 
-> APIC isn't an option. Have you tried that anyway, just to see if the IRQ 
-> assignment differs?
+> I started writing such a script myself yesterday, but it's not done
+> yet. If you already have one that works could I have a copy please?
+> That would make my life easier if I'm to help you with this.
 
-If I've correctly understood your suggestion I should load kernel with
-'noapic' option. In that case the situation even worse:
-******************************
-           CPU0       CPU1
-  0:     106543      11922    XT-PIC-XT        timer
-  1:         53          8    XT-PIC-XT        i8042
-  2:          0          0    XT-PIC-XT        cascade
-  5:          0          0    XT-PIC-XT        sdhci:slot0
-  7:      14250     126092    XT-PIC-XT        ehci_hcd:usb2
-  8:          2          0    XT-PIC-XT        rtc
-  9:       1168        190    XT-PIC-XT        acpi
- 10:        338        181    XT-PIC-XT        HDA Intel
- 11:       7167       1052    XT-PIC-XT        ohci_hcd:usb1, yenta,
-eth0, nvidia
- 12:        123          9    XT-PIC-XT        i8042
- 14:         19         32    XT-PIC-XT        ide0
- 15:      10936       1112    XT-PIC-XT        ide1
-NMI:          0          0
-LOC:      11921     106401
-ERR:      41370
-MIS:          0
-*******************************
-Now, pcmcia and usb 1.1 share the same IRQ.
+I posted a link to it in the message at the start of this thread:
+http://lkml.org/lkml/2007/8/9/584
 
-Plus, dmesg says:
-*********************************
-irq 7: nobody cared (try booting with the "irqpoll" option)
- [<c013f9c4>] __report_bad_irq+0x24/0x80
- [<c013fc46>] note_interrupt+0x226/0x260
- [<f885d0bb>] usb_hcd_irq+0x2b/0x60 [usbcore]
- [<c013eed5>] handle_IRQ_event+0x25/0x50
- [<c01407f3>] handle_level_irq+0x93/0x100
- [<c010529b>] do_IRQ+0x3b/0x70
- [<c010293e>] sys_sigreturn+0xce/0xe0
- [<c010341b>] common_interrupt+0x23/0x28
- =======================
-handlers:
-[<f885d090>] (usb_hcd_irq+0x0/0x60 [usbcore])
-Disabling IRQ #7
-******************************
+Here's the release announcement for it:
+http://marc.info/?l=linux-doc&m=118671778606001&w=2
 
-Vadim
+Here's the source control for it:
+http://landley.net/hg/kdocs/file/tip/make/
 
+You need to run the index.html generator first, because the link checker works 
+on the html and not on 00-INDEX itself.  Both scripts expect Documentation to 
+be a subdirectory of the current directory, and do the whole directory.
+
+And I need to update it so it filters out index.html, but my laundry's 
+done. :)
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
