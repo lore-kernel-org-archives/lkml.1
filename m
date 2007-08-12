@@ -1,68 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933026AbXHLLJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933405AbXHLLQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933026AbXHLLJb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 07:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756296AbXHLLJW
+	id S933405AbXHLLQp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 07:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbXHLLQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 07:09:22 -0400
-Received: from aa014msr.fastwebnet.it ([85.18.95.74]:42466 "EHLO
-	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755614AbXHLLJV (ORCPT
+	Sun, 12 Aug 2007 07:16:35 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:37894 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754358AbXHLLQd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 07:09:21 -0400
-Date: Sun, 12 Aug 2007 13:09:04 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: "Dan Merillat" <dan.merillat@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: reset during bootup - solved
-Message-ID: <20070812130904.7ecc9412@localhost>
-In-Reply-To: <a56dfcf00708120244x3ae8f4w9183354cf5f33f93@mail.gmail.com>
-References: <a56dfcf00708120244x3ae8f4w9183354cf5f33f93@mail.gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Aug 2007 07:16:33 -0400
+Date: Sun, 12 Aug 2007 13:16:32 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Casey Schaufler <casey@schaufler-ca.com>
+cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, torvalds@osdl.org
+Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
+In-Reply-To: <228687.90899.qm@web36605.mail.mud.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0708121309530.28963@fbirervta.pbzchgretzou.qr>
+References: <228687.90899.qm@web36605.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Aug 2007 05:44:36 -0400
-"Dan Merillat" <dan.merillat@gmail.com> wrote:
 
-> However, a git-pull at 2am (b8d3f244) fixed it.  Not sure where in
-> there it started working again, I can bisect backwards to find out if
-> need be.
+On Aug 11 2007 16:22, Casey Schaufler wrote:
+>> >@@ -0,0 +1,8 @@
+>> >+#
+>> >+# Makefile for the SMACK LSM
+>> >+#
+>> >+
+>> >+obj-$(CONFIG_SECURITY_SMACK) := smack.o
+>> >+
+>> >+smack-y := smack_lsm.o smack_access.o smackfs.o
+>> 
+>> smack-objs :=
+>
+>Added.
 
-I think it is was fixed by this one:
+I should have added "replace it".
 
-----
+>> >+/*
+>> >+ * 'ssssssss oooooooo mmmm\n\0' 
+>> >+ */
+>> 
+>> I wonder why it's limited to 8 characters? Ah right.. sizeof(smack_t).
+>> uhm.. are you trying to tell me that smack_t [typedef'ed to u64]
+>> are actually meant as a char[8]? (/me scrathces head)
+>
+>Yes. "s == o" vs "strcmp(s,o) == 0".
 
-    Do not replace whole memcpy in apply alternatives
-    
-    apply_alternatives uses memcpy() to apply alternatives.  Which has the
-    unfortunate effect that while applying memcpy alternative to memcpy
-    itself it tries to overwrite itself with nops - which causes #UD fault
-    as it overwrites half of an instruction in copy loop, and from this
-    point on only possible outcome is triplefault and reboot.
+Evil optimization ;-)
+[ s == o is memcmp(s, o, sizeof(that)) == 0]
 
-b8d3f2448b8f4ba24f301e23585547ba1acc1f04
- arch/x86_64/lib/memcpy.S |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+>> >+	char temp[80];
+>> >+	ssize_t rc;
+>> >+
+>> >+	if (*ppos != 0)
+>> >+		return 0;
+>> >+
+>> >+	sprintf(temp, "%d", smk_cipso_doi_value);
+>> >+	rc = simple_read_from_buffer(buf, count, ppos, temp, strlen(temp));
+>> 
+>> 80 is plenty for a 11 char string.
+>> 
+>> Look, they've got funny ideas! :)
+>> net/ipv4/netfilter/nf_nat_irc.c:char buffer[sizeof("4294967296 65635")];
 
-diff --git a/arch/x86_64/lib/memcpy.S b/arch/x86_64/lib/memcpy.S
-index 0ea0ddc..c22981f 100644
---- a/arch/x86_64/lib/memcpy.S
-+++ b/arch/x86_64/lib/memcpy.S
-@@ -124,6 +124,8 @@ ENDPROC(__memcpy)
- 	.quad memcpy
- 	.quad 1b
- 	.byte X86_FEATURE_REP_GOOD
--	.byte .Lfinal - memcpy
-+	/* Replace only beginning, memcpy is used to apply alternatives, so it
-+	 * is silly to overwrite itself with nops - reboot is only outcome... */
-+	.byte 2b - 1b
- 	.byte 2b - 1b
- 	.previous
+Proposal would have been: char temp[sizeof("4294967296")];
 
+>> >+extern int smack_net_nltype;
+>> >+extern int smack_cipso_direct;
+>> >+extern struct smk_cipso_entry *smack_cipso;
+>> 
+>> for consistency reasons, add extern to the other vars too...
+>
+>the others?
+
+There were some [or some function prototypes] above this point.
+
+>> >+static int smack_task_movememory(struct task_struct *p)
+>> >+{
+>> >+	int rc;
+>> >+
+>> >+	rc = smk_curacc(smk_of_task(p), MAY_WRITE);
+>> >+	return rc;
+>> >+}
+>> 
+>> Uh...
+>> 
+>> {
+>> 	return smk_curacc(smk_of_task(p), MAY_WRITE);
+>> }
+>> 
+>> (also others)
+>
+>That was a little excessive, wasn't it?
+
+How do you mean? I was just suggesting to collapse the three [four] lines into
+one, getting rid of the tempotemporaries in a lot of these functions,
+for example,
+
+>> >+static int smack_task_kill(struct task_struct *p, struct siginfo *info,
+>> >+			   int sig, u32 secid)
+>> >+{
+>> >+	smack_t *tsp = smk_of_task(p);
+>> >+	int rc;
+>> >+
+>> >+	/*
+>> >+	 * Sending a signal requires that the sender
+>> >+	 * can write the receiver.
+>> >+	 */
+>> >+	rc = smk_curacc(tsp, MAY_WRITE);
+>> >+
+>> >+	return rc;
+>> >+}
+
+static int smack_task_kill(struct stask_struct *p, struct siginfo *info,
+    int sig, u32 secid)
+{
+	/* Comment */
+	return smk_curacc(smk_of_task(p), MAY_WRITE);
+}
+
+
+
+	Jan
 -- 
-	Paolo Ornati
-	Linux 2.6.23-rc2-gac078602 on x86_64
