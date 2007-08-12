@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933931AbXHLQei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935653AbXHLQgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933931AbXHLQei (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 12:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbXHLQeb
+	id S935653AbXHLQgt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 12:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbXHLQgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 12:34:31 -0400
-Received: from smtpserver.stunet.se ([85.194.0.110]:41321 "EHLO mail.visit.se"
+	Sun, 12 Aug 2007 12:36:38 -0400
+Received: from gate.crashing.org ([63.228.1.57]:50408 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751439AbXHLQea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 12:34:30 -0400
-In-Reply-To: <20070812161337.3828381c@the-village.bc.nu>
-References: <70E19A0A-2728-4ADA-B984-A36182C1F575@nocrew.org> <20070812161337.3828381c@the-village.bc.nu>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A94120FD-315A-45B7-A8F4-8DC8DC21279E@nocrew.org>
-Cc: linux-kernel@vger.kernel.org
+	id S1753884AbXHLQgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 12:36:37 -0400
+In-Reply-To: <1186912098.3852.11.camel@localhost>
+References: <20070808230733.GA17270@shell.boston.redhat.com> <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org> <46BAC2BE.1090106@redhat.com> <46BB508B.7050601@redhat.com> <alpine.LFD.0.999.0708091055080.25146@woody.linux-foundation.org> <1186683646.9669.20.camel@localhost> <a599bc5062d557db46496f0d7c7886b0@kernel.crashing.org> <alpine.LFD.0.999.0708112305170.30176@woody.linux-foundation.org> <1186912098.3852.11.camel@localhost>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <74868f39491f8691afc5540f72679129@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
-From: Fredrik Noring <noring@nocrew.org>
-Subject: Re: Improving read/write/close system call reliability when used with pthreads
-Date: Sun, 12 Aug 2007 18:33:31 +0200
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-X-Mailer: Apple Mail (2.752.3)
+Cc: wjiang@resilience.com, Linus Torvalds <torvalds@linux-foundation.org>,
+       wensong@linux-vs.org, heiko.carstens@de.ibm.com,
+       linux-kernel@vger.kernel.org, ak@suse.de, cfriesen@nortel.com,
+       netdev@vger.kernel.org, horms@verge.net.au, akpm@linux-foundation.org,
+       Chuck Ebbert <cebbert@redhat.com>, davem@davemloft.net, zlynx@acm.org,
+       Chris Snook <csnook@redhat.com>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] make atomic_t volatile on all architectures
+Date: Sun, 12 Aug 2007 18:30:32 +0200
+To: schwidefsky@de.ibm.com
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan,
+>> "+m" works. We use it. It's better than the alternatives. Pointing to
+>> stale documentation doesn't change anything.
+>
+> Well, perhaps on i386. I've seen some older versions of the s390 gcc 
+> die
+> with an ICE because I have used "+m" in some kernel inline assembly. 
+> I'm
+> happy to hear that this issue is fixed in recent gcc. Now I'll have to
+> find out if this is already true with gcc 3.x.
 
-Alan Cox wrote:
-> The reader still has the fd open so the fd is not yet closed. This  
-> seems
-> completely sane to me. Closing the *writer* fd would create an EOF  
-> which
-> is the proper response.
+It was fixed (that is, "+m" is translated into a separate read
+and write by GCC itself) in GCC-4.0.0, I just learnt.
 
-The fd is removed from the file descriptor table, but sure the file  
-(as in the kernel struct file * pointer) is still valid. The problem  
-is that the fd used when entering the system call, as an alias for  
-the file pointer, is no longer valid. As a consequence, -ERESTARTSYS  
-no longer works reliably.
+> The duplication "=m" and "m" with the same constraint is rather 
+> annoying.
 
-Second problem is that a process may not always have access to the  
-writer fd and therefore may not be able to close it. So when closing  
-the reader fd the process has to rely on the following:
+Yeah.  Compiler errors are more annoying though I dare say ;-)
 
-- Having a signal such as SIGALRM wake up the reader (in case the  
-writer misbehaves indefinitely). This results in -EBADF returned,  
-provided:
 
-- Hope that the fd has not been reused meanwhile (in which case the  
-reader likely will begin reading the wrong file when it wakes up).
-
-Applications can take either of two approaches:
-
-1) Never close reader fd, but wouldn't it be practical to be able to  
-make things like a threaded watchdog?
-
-2) Do close reader fd, but what results can then applications  
-reliably expect? What would be the sane intention of applications  
-closing reader fd? Do programmers expect all of the current results?
-
-POSIX appears to leave it "implementation-defined" provided I  
-interpret this correctly, of course. So wouldn't it be great to make  
-one of the current results a reliable feature?
-
-(A "reader" could be a "writer" above for similar cases.)
-
-All the best,
-Fredrik
+Segher
 
