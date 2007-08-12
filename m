@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935315AbXHLNMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935136AbXHLNSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935315AbXHLNMn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 09:12:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934643AbXHLNMd
+	id S935136AbXHLNSA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 09:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762052AbXHLNRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 09:12:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:16087 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760497AbXHLNMc (ORCPT
+	Sun, 12 Aug 2007 09:17:51 -0400
+Received: from ananke.telenet-ops.be ([195.130.137.78]:35382 "EHLO
+	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759571AbXHLNRt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 09:12:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=lrdCeY+yIIIOEB9KvfU78x3YDCLzEOwpdwr33fKVj2R4nU4QSomHx3WzBC8O10PFVHYZRqZDRDNYeIx41OUQptGy/WBpybTp44N9+3UXMNNUGTVVSGffuRtdNRVSLiisDD++NdO13rPTPP84LvYG7Iv70aCsliNKjRcTx5emML8=
-Date: Sun, 12 Aug 2007 17:12:27 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Petr Vandrovec <petr@vandrovec.name>, discuss@x86-64.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] Fix triplefault on x86-64 bootup
-Message-ID: <20070812131227.GB5871@martell.zuzino.mipt.ru>
-References: <20070812081252.GA23309@vana.vc.cvut.cz> <20070812104606.GA5871@martell.zuzino.mipt.ru> <p73643kkgei.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73643kkgei.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 12 Aug 2007 09:17:49 -0400
+X-Greylist: delayed 98051 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Aug 2007 09:17:49 EDT
+Subject: Re: pata_ali exceptions (timeout)
+From: Frederik Himpe <fhimpe@telenet.be>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+In-Reply-To: <200708121407.03403.arvidjaar@mail.ru>
+References: <200708111203.34965.fhimpe@telenet.be>
+	 <200708121407.03403.arvidjaar@mail.ru>
+Content-Type: multipart/mixed; boundary="=-qYGv+XGE4tot3V9pGT9l"
+Date: Sun, 12 Aug 2007 15:17:47 +0200
+Message-Id: <1186924667.3832.9.camel@Anastacia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1-1mdv2008.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 12, 2007 at 03:53:57PM +0200, Andi Kleen wrote:
-> Alexey Dobriyan <adobriyan@gmail.com> writes:
-> 
-> > On Sun, Aug 12, 2007 at 10:12:52AM +0200, Petr Vandrovec wrote:
-> > > --- a/arch/x86_64/lib/memcpy.S
-> > > +++ b/arch/x86_64/lib/memcpy.S
-> > > @@ -124,6 +124,8 @@ ENDPROC(__memcpy)
-> > >  	.quad memcpy
-> > >  	.quad 1b
-> > >  	.byte X86_FEATURE_REP_GOOD
-> > > -	.byte .Lfinal - memcpy
-> > > +	/* Replace only beginning, memcpy is used to apply alternatives, so it
-> > > +	 * is silly to overwrite itself with nops - reboot is only outcome... */
-> > > +	.byte 2b - 1b
-> > >  	.byte 2b - 1b
-> > >  	.previous
-> > 
-> > Thanks, this fixes E6400 reboots on bootup here.
-> 
-> Please test with only ab144f5ec64c42218a555ec1dbde6b60cf2982d6
-> applied (or rather a few patches back in the git history) 
-> I bet that fixes it already.
 
-Sorry?
-/me pulls
-/me recompiles
-/me sees reboot on boot
-/me goes in short unprejudiced bisect session
-bisections points to "i386: Make patching more robust, fix paravirt issue"
-/me sees Petr's patch
-above patch fixes problem
+--=-qYGv+XGE4tot3V9pGT9l
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+
+On Sun, 2007-08-12 at 14:07 +0400, Andrey Borzenkov wrote:
+> On Saturday 11 August 2007, you wrote:
+> > I attach the output of dmesg and lspci -vvxx
+> >
+> 
+> could you please use lspci -nn... it displays numerical IDs in addition to 
+> textual translation, making it easier to check.
+
+I have attached the output of lspci -nn.
+
+-- 
+Frederik Himpe
+
+--=-qYGv+XGE4tot3V9pGT9l
+Content-Disposition: attachment; filename=lspci-nn
+Content-Type: text/plain; name=lspci-nn; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+00:00.0 Host bridge [0600]: ATI Technologies Inc RS200/RS200M AGP Bridge [IGP 340M] [1002:cab2] (rev 02)
+00:01.0 PCI bridge [0604]: ATI Technologies Inc PCI Bridge [IGP 340M] [1002:7010]
+00:06.0 Multimedia audio controller [0401]: ALi Corporation M5451 PCI AC-Link Controller Audio Device [10b9:5451] (rev 02)
+00:07.0 ISA bridge [0601]: ALi Corporation M1533/M1535 PCI to ISA Bridge [Aladdin IV/V/V+] [10b9:1533]
+00:0a.0 CardBus bridge [0607]: Texas Instruments PCI4410 PC card Cardbus Controller [104c:ac41] (rev 02)
+00:0a.1 FireWire (IEEE 1394) [0c00]: Texas Instruments PCI4410 FireWire Controller [104c:8017] (rev 02)
+00:0b.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd. RTL-8139/8139C/8139C+ [10ec:8139] (rev 20)
+00:0c.0 Communication controller [0780]: Conexant HSF 56k HSFi Modem [14f1:2f00] (rev 01)
+00:10.0 IDE interface [0101]: ALi Corporation M5229 IDE [10b9:5229] (rev c4)
+00:11.0 Bridge [0680]: ALi Corporation M7101 Power Management Controller [PMU] [10b9:7101]
+00:13.0 USB Controller [0c03]: NEC Corporation USB [1033:0035] (rev 41)
+00:13.1 USB Controller [0c03]: NEC Corporation USB [1033:0035] (rev 41)
+00:13.2 USB Controller [0c03]: NEC Corporation USB 2.0 [1033:00e0] (rev 02)
+01:05.0 VGA compatible controller [0300]: ATI Technologies Inc Radeon IGP 330M/340M/350M [1002:4337]
+02:00.0 Network controller [0280]: Broadcom Corporation BCM4306 802.11b/g Wireless LAN Controller [14e4:4320] (rev 03)
+
+--=-qYGv+XGE4tot3V9pGT9l--
 
