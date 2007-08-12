@@ -1,81 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937488AbXHLP2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936611AbXHLPaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937488AbXHLP2f (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 11:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935278AbXHLP2T
+	id S936611AbXHLPaR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 11:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759855AbXHLPaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 11:28:19 -0400
-Received: from [212.12.190.217] ([212.12.190.217]:33099 "EHLO raad.intranet"
+	Sun, 12 Aug 2007 11:30:01 -0400
+Received: from [212.12.190.217] ([212.12.190.217]:33110 "EHLO raad.intranet"
 	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934600AbXHLP2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 11:28:17 -0400
+	id S1758380AbXHLPaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 11:30:00 -0400
 From: Al Boldi <a1426z@gawab.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [RFD] Layering: Use-Case Composers (was: DRBD - what is it, anyways? [compare with e.g. NBD + MD raid])
-Date: Sun, 12 Aug 2007 18:28:03 +0300
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: CFS review
+Date: Sun, 12 Aug 2007 18:27:36 +0300
 User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-raid@vger.kernel.org
-References: <200708121335.17267.a1426z@gawab.com> <20070812115126.GA14770@2ka.mipt.ru>
-In-Reply-To: <20070812115126.GA14770@2ka.mipt.ru>
+Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200708111344.42934.a1426z@gawab.com> <20070812041736.GA18291@elte.hu>
+In-Reply-To: <20070812041736.GA18291@elte.hu>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708121828.03184.a1426z@gawab.com>
+Content-Disposition: inline
+Message-Id: <200708121827.36656.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> Al Boldi (a1426z@gawab.com) wrote:
-> > Look at ZFS; it illegally violates layering by combining md/dm/lvm with
-> > the fs, but it does this based on a realistic understanding of the
-> > problems involved, which enables it to improve performance, flexibility,
-> > and functionality specific to its use case.
+Ingo Molnar wrote:
+> * Al Boldi <a1426z@gawab.com> wrote:
+> > That's because granularity increases when decreasing nice, and results
+> > in larger timeslices, which affects smoothness negatively.  chew.c
+> > easily shows this problem with 2 background cpu-hogs at the same
+> > nice-level.
 > >
-> > This implies that there are two distinct forces at work here:
+> > pid 908, prio   0, out for    8 ms, ran for    4 ms, load  37%
+> > pid 908, prio   0, out for    8 ms, ran for    4 ms, load  37%
+> > pid 908, prio   0, out for    8 ms, ran for    2 ms, load  26%
+> > pid 908, prio   0, out for    8 ms, ran for    4 ms, load  38%
+> > pid 908, prio   0, out for    2 ms, ran for    1 ms, load  47%
 > >
-> >   1. Layer components
-> >   2. Use-Case composers
-> >
-> > Layer components should technically not implement any use case (other
-> > than providing a plumbing framework), as that would incur unnecessary
-> > dependencies, which could reduce its generality and thus reusability.
-> >
-> > Use-Case composers can now leverage layer components from across the
-> > layering hierarchy, to yield a specific use case implementation.
-> >
-> > DRBD is such a Use-Case composer, as is mdm / dm / lvm and any fs in
-> > general, whereas aoe / nbd / loop and the VFS / FUSE are examples of
-> > layer components.
-> >
-> > It follows that Use-case composers, like DRBD, need common functionality
-> > that should be factored out into layer components, and then recompose to
-> > implement a specific use case.
+> > pid 908, prio  -5, out for   23 ms, ran for    3 ms, load  14%
+> > pid 908, prio  -5, out for   17 ms, ran for    9 ms, load  35%
 >
-> Out of curiosity, did you try ndb+dm+raid1 compared to drbd and/or zfs
-> on top of distributed storage (which is a urprise to me, that holy zfs
-> suppors that)?
+> yeah. Incidentally, i refined this last week and those nice-level
+> granularity changes went into the upstream scheduler code a few days
+> ago:
+>
+>   commit 7cff8cf61cac15fa29a1ca802826d2bcbca66152
+>   Author: Ingo Molnar <mingo@elte.hu>
+>   Date:   Thu Aug 9 11:16:52 2007 +0200
+>
+>       sched: refine negative nice level granularity
+>
+>       refine the granularity of negative nice level tasks: let them
+>       reschedule more often to offset the effect of them consuming
+>       their wait_runtime proportionately slower. (This makes nice-0
+>       task scheduling smoother in the presence of negatively
+>       reniced tasks.)
+>
+>       Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>
+> so could you please re-check chew jitter behavior with the latest
+> kernel? (i've attached the standalone patch below, it will apply cleanly
+> to rc2 too.)
 
-Actually, I may not have been very clear in my Use-Case composer description 
-to mean internal in-kernel Use-Case composer as opposed to external Userland 
-Use-Case composer.
+That fixes it, but by reducing granularity ctx is up 4-fold.
 
-So, nbd+dm+raid1 would be an external Userland Use-Case composition, which 
-obviously could have some drastic performance issues.
+Mind you, it does have an enormous effect on responsiveness, as negative nice 
+with small granularity can't hijack the system any more.
 
-DRBD and ZFS are examples of internal in-kernel Use-Case composers, which 
-obviously could show some drastic performance improvements.  
+> when testing this, you might also want to try chew-max:
+>
+>    http://redhat.com/~mingo/cfs-scheduler/tools/chew-max.c
+>
+> i added a few trivial enhancements to chew.c: it tracks the maximum
+> latency, latency fluctuations (noise of scheduling) and allows it to be
+> run for a fixed amount of time.
 
-Although you could allow in-kernel Use-Case composers to be run on top of 
-Userland Use-Case composers, that wouldn't be the preferred mode of 
-operation.  Instead, you would for example recompose ZFS to incorporate an 
-in-kernel distributed storage layer component, like nbd.
+Looks great.  Thanks!
 
-All this boils down to refactoring Use-Case composers to produce layer 
-components with both in-kernel and userland interfaces.  Once we have that, 
-it becomes a matter of plug-and-play to produce something awesome like ZFS.
+> NOTE: if you run chew from any indirect terminal (xterm, ssh, etc.) it's
+> best to capture/report chew numbers like this:
+>
+>   ./chew-max 60 > chew.log
+>
+> otherwise the indirect scheduling activities of the chew printout will
+> disturb the numbers.
+
+Correct; that's why I always boot into /bin/sh to get a clean run.  But 
+redirecting output to a file is also a good idea, provided that this file 
+lives on something like tmpfs, otherwise you'll get flush out jitter.
+
+> > It looks like the larger the granularity, the more unpredictable it
+> > gets, which probably means that this unpredictability exists even at
+> > smaller granularity but is only exposed with larger ones.
+>
+> this should only affect non-default nice levels. Note that 99.9%+ of all
+> userspace Linux CPU time is spent on default nice level 0, and that is
+> what controls the design. So the approach was always to first get nice-0
+> right, and then to adjust the non-default nice level behavior too,
+> carefully, without hurting nice-0 - to refine all the workloads where
+> people (have to) use positive or negative nice levels. In any case,
+> please keep re-testing this so that we can adjust it.
+
+The thing is, this unpredictability seems to exist even at nice level 0, but 
+the smaller granularity covers it all up.  It occasionally exhibits itself 
+as hick-ups during transient heavy workload flux.  But it's not easily 
+reproducible.
 
 
 Thanks!
