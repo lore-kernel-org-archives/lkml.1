@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935814AbXHLPFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761777AbXHLPFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935814AbXHLPFX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 11:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758319AbXHLO7L
+	id S1761777AbXHLPFv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 11:05:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933299AbXHLO70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 10:59:11 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:46567 "EHLO smtp.polymtl.ca"
+	Sun, 12 Aug 2007 10:59:26 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:46588 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764778AbXHLO7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 10:59:05 -0400
-Message-Id: <20070812145835.492285868@polymtl.ca>
+	id S932981AbXHLO7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 10:59:25 -0400
+Message-Id: <20070812145840.244331928@polymtl.ca>
 References: <20070812145434.520271946@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Sun, 12 Aug 2007 10:54:37 -0400
+Date: Sun, 12 Aug 2007 10:54:48 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Christoph Lameter <clameter@sgi.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, rmk@arm.linux.org.uk
-Subject: [patch 03/23] Add cmpxchg_local to arm
-Content-Disposition: inline; filename=add-cmpxchg-local-to-arm.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sun, 12 Aug 2007 14:58:36 +0000
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, gerg@uclinux.org
+Subject: [patch 14/23] Add cmpxchg_local to m68knommu
+Content-Disposition: inline; filename=add-cmpxchg-local-to-m68knommu.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sun, 12 Aug 2007 14:58:40 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -28,67 +28,53 @@ cmpxchg as fallback if SMP is not set.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: clameter@sgi.com
-CC: rmk@arm.linux.org.uk
+CC: gerg@uclinux.org
 ---
- include/asm-arm/system.h |   43 +++++++++++--------------------------------
- 1 file changed, 11 insertions(+), 32 deletions(-)
+ include/asm-m68knommu/system.h |   28 +++++++++++-----------------
+ 1 file changed, 11 insertions(+), 17 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-arm/system.h
+Index: linux-2.6-lttng/include/asm-m68knommu/system.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-arm/system.h	2007-08-07 11:03:37.000000000 -0400
-+++ linux-2.6-lttng/include/asm-arm/system.h	2007-08-07 11:19:40.000000000 -0400
-@@ -350,40 +350,19 @@ static inline unsigned long __xchg(unsig
- extern void disable_hlt(void);
- extern void enable_hlt(void);
+--- linux-2.6-lttng.orig/include/asm-m68knommu/system.h	2007-07-20 18:36:08.000000000 -0400
++++ linux-2.6-lttng/include/asm-m68knommu/system.h	2007-07-20 19:37:02.000000000 -0400
+@@ -187,26 +187,20 @@ static inline unsigned long __xchg(unsig
+ }
+ #endif
  
--#ifndef CONFIG_SMP
 +#include <asm-generic/cmpxchg-local.h>
 +
  /*
-- * Atomic compare and exchange.
+- * Atomic compare and exchange.  Compare OLD with MEM, if identical,
+- * store NEW in MEM.  Return the initial value in MEM.  Success is
+- * indicated by comparing RETURN with OLD.
 + * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
-+ * then available.
++ * them available.
   */
 -#define __HAVE_ARCH_CMPXCHG	1
 -
--extern unsigned long wrong_size_cmpxchg(volatile void *ptr);
--
--static inline unsigned long __cmpxchg(volatile void *ptr,
--				    unsigned long old,
--				    unsigned long new, int size)
+-static __inline__ unsigned long
+-cmpxchg(volatile int *p, int old, int new)
 -{
--	unsigned long flags, prev;
--	volatile unsigned long *p = ptr;
+-	unsigned long flags;
+-	int prev;
 -
--	if (size == 4) {
--		local_irq_save(flags);
--		prev = *p;
--		if (prev == old)
--			*p = new;
--		local_irq_restore(flags);
--		return prev;
--	} else
--		return wrong_size_cmpxchg(ptr);
+-	local_irq_save(flags);
+-	if ((prev = *p) == old)
+-		*p = new;
+-	local_irq_restore(flags);
+-	return(prev);
 -}
--
--#define cmpxchg(ptr, o, n)					  	\
--({									\
--     __typeof__(*(ptr)) _o_ = (o);					\
--     __typeof__(*(ptr)) _n_ = (n);					\
--     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		\
--		(unsigned long)_n_, sizeof(*(ptr)));	\
--})
--
 +#define cmpxchg_local(ptr,o,n)					  	    \
 +     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
 +			   	 (unsigned long)(n), sizeof(*(ptr)))
 +#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
-+
+ 
 +#ifndef CONFIG_SMP
 +#include <asm-generic/cmpxchg.h>
- #endif
++#endif
  
- #endif /* __ASSEMBLY__ */
+ #ifdef CONFIG_M68332
+ #define HARD_RESET_NOW() ({		\
 
 -- 
 Mathieu Desnoyers
