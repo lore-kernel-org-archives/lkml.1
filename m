@@ -1,93 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936730AbXHLRQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936850AbXHLRSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936730AbXHLRQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 13:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762987AbXHLRQu
+	id S936850AbXHLRSU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 13:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762987AbXHLRSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 13:16:50 -0400
-Received: from web36607.mail.mud.yahoo.com ([209.191.85.24]:43197 "HELO
-	web36607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757996AbXHLRQt (ORCPT
+	Sun, 12 Aug 2007 13:18:08 -0400
+Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:57145 "EHLO
+	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760563AbXHLRSH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 13:16:49 -0400
-X-YMail-OSG: uId3ob0VM1kKXY32G4aTSJn3icr1ixu7nEx_A.7sbLia.jIUd.C6ak1rX4esVhXY.mXRgS7y.g--
-X-RocketYMMF: rancidfat
-Date: Sun, 12 Aug 2007 10:16:48 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel 
-To: Keith Owens <kaos@ocs.com.au>, casey@schaufler-ca.com
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, torvalds@osdl.org
-In-Reply-To: <3351.1186890318@ocs10w.ocs.com.au>
+	Sun, 12 Aug 2007 13:18:07 -0400
+X-Greylist: delayed 2985 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Aug 2007 13:18:07 EDT
+Date: Sun, 12 Aug 2007 18:28:20 +0200
+From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
+To: linux-kernel@vger.kernel.org
+Subject: splice question
+Message-ID: <20070812162820.GA26892@hardeman.nu>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <318317.50626.qm@web36607.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'm currently toying with splice. The test program I have sends a MPEG2 
+transport stream from a dvb card and sends it to N clients via http.
 
---- Keith Owens <kaos@ocs.com.au> wrote:
+Since the dvb frontend driver doesn't support splice 
+(linux/drivers/media/dvb/dvb-core/dmxdev.c I guess, anyone interested in 
+adding splice support to it?) I had to do a normal read() to a 
+user-space buffer and then write that to a pipe.
 
-> Casey Schaufler (on Sat, 11 Aug 2007 10:57:31 -0700) wrote:
-> >Smack is the Simplified Mandatory Access Control Kernel.
-> >
-> > [snip]
-> >
-> >Smack defines and uses these labels:
-> >
-> >    "*" - pronounced "star"
-> >    "_" - pronounced "floor"
-> >    "^" - pronounced "hat"
-> >    "?" - pronounced "huh"
-> >
-> >The access rules enforced by Smack are, in order:
-> >
-> >1. Any access requested by a task labeled "*" is denied.
-> >2. A read or execute access requested by a task labeled "^"
-> >   is permitted.
-> >3. A read or execute access requested on an object labeled "_"
-> >   is permitted.
-> >4. Any access requested on an object labeled "*" is permitted.
-> >5. Any access requested by a task on an object with the same
-> >   label is permitted.
-> >6. Any access requested that is explicitly defined in the loaded
-> >   rule set is permitted.
-> >7. Any other access is denied.
-> 
-> Some security systems that have the concept of "no default access"
-> (task labeled "*") also allow access by those tasks but only if there
-> is an explicit rule giving access to the task.  IOW, rule 6 is applied
-> before rule 1.  In my experience this simplifies special cases where a
-> task should only have access to a very small set of resources.  I'm
-> curious why smack goes the other way?
+Once the data is in the pipe, my idea was to tee() from the pipe to each 
+client socket using nonblocking ops, and then consume the data by 
+splicing it to /dev/null.
 
-A task labeled star would create files labeled star, which would be
-readable and writable by everyone (rule 4). This would be bad.
+The problem is that tee() doesn't support sockets. Is this a limitation 
+that would be easy to fix?
 
-Over the past three decade I've seen a lot of secure installations
-but I have never seen one where they really wanted to deny any
-real application access to "/". That's a major reason for chrooted
-environments.
+Otherwise I guess I'd have to add a second pipe, then (in a loop)
+tee() from the first to the second pipe and then splice from the 
+second pipe to a socket. Doesn't sound very elegant and would need quite 
+a lot of extra syscalls.
 
-Remember also that a process labeled Coffee would have read access
-to floor files, all access to star files (e.g. /dev/null), read and
-write access to Coffee objects, and no others unless specified. If
-you are serious about reducing the programs a Coffee process can run
-you can do so by moving them off the floor, that is, giving them
-a different label, say "Tea". There is a cost to doing this, which
-is that you now have to give other labels explicit access to Tea
-objects. This is how you would implement a Biba integrity policy.
-
-So, can you give me an example where you don't want access to any
-file system objects (no read or execute access on floor) and are still
-doing something useful? Remember that you can't exec a program if
-you can't access it.
-
-I think that access to the file system namespace is universally
-required. I'm open to education.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+-- 
+David Härdeman
