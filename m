@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbXHLGpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbXHLG6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760878AbXHLGpi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 02:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbXHLGp2
+	id S1758856AbXHLG6U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 02:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbXHLG6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 02:45:28 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:37490 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752522AbXHLGp1 (ORCPT
+	Sun, 12 Aug 2007 02:58:09 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:49700 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbXHLG6I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 02:45:27 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sun, 12 Aug 2007 02:39:28 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Randy Dunlap <rdunlap@xenotime.net>
-cc: vincent.legoll@gmail.com, zippel@linux-m68k.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] - Add "def_bool" Kconfig format documentation
-In-Reply-To: <20070811220928.b079d2e5.rdunlap@xenotime.net>
-Message-ID: <Pine.LNX.4.64.0708120238440.8506@localhost.localdomain>
-References: <1186439380.21014.9.camel@quad> <20070811220928.b079d2e5.rdunlap@xenotime.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sun, 12 Aug 2007 02:58:08 -0400
+Date: Sun, 12 Aug 2007 07:58:06 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Re: cciss: warning: right shift count >= width of type
+Message-ID: <20070812065806.GC21089@ftp.linux.org.uk>
+References: <200708120228.26234.jesper.juhl@gmail.com> <46BE60B5.7010708@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46BE60B5.7010708@gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Aug 2007, Randy Dunlap wrote:
+On Sun, Aug 12, 2007 at 03:21:57AM +0200, Rene Herman wrote:
+> @@ -2609,13 +2609,13 @@ static void do_cciss_request(request_queue_t *q)
+>  		} else {
+>  			c->Request.CDBLen = 16;
+>  			c->Request.CDB[1]= 0;
+> -			c->Request.CDB[2]= (start_blk >> 56) & 0xff;	//MSB
+> -			c->Request.CDB[3]= (start_blk >> 48) & 0xff;
+> -			c->Request.CDB[4]= (start_blk >> 40) & 0xff;
+> -			c->Request.CDB[5]= (start_blk >> 32) & 0xff;
+> -			c->Request.CDB[6]= (start_blk >> 24) & 0xff;
+> -			c->Request.CDB[7]= (start_blk >> 16) & 0xff;
+> -			c->Request.CDB[8]= (start_blk >>  8) & 0xff;
+> +			c->Request.CDB[2]= ((u64)start_blk >> 56) & 0xff;	//MSB
+> +			c->Request.CDB[3]= ((u64)start_blk >> 48) & 0xff;
+> +			c->Request.CDB[4]= ((u64)start_blk >> 40) & 0xff;
+> +			c->Request.CDB[5]= ((u64)start_blk >> 32) & 0xff;
+> +			c->Request.CDB[6]= ((u64)start_blk >> 24) & 0xff;
+> +			c->Request.CDB[7]= ((u64)start_blk >> 16) & 0xff;
+> +			c->Request.CDB[8]= ((u64)start_blk >>  8) & 0xff;
 
-> On Tue, 07 Aug 2007 00:29:40 +0200 Vincent Legoll wrote:
->
-> > Hello,
-> >
-> > here is a small documentation patch for the KConfig file format
-> > "def_bool" type definition that was missing.
->
-> There are also def_boolean and def_tristate.
+	put_unaligned(cpu_to_be64(start_blk), &c->Request.CDB[2]);
 
-while the parser recognizes "def_boolean", it's not used anywhere in
-the tree.  perhaps it can simply be dropped in favour of def_bool.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+which is what's happening here anyway.
