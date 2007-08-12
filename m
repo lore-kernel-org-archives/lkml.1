@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938673AbXHLWuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938614AbXHLXES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938673AbXHLWuE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 18:50:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933817AbXHLWtw
+	id S938614AbXHLXES (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 19:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933778AbXHLXEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 18:49:52 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:45809 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933735AbXHLWtv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 18:49:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mq91Pm/1jG/htcpVi5lf8zBJ52UEbjkMLtMCaiobOsRR6SGfcZCNkOQ4ndSezv2cZycHwdv+ISs3QQ+B0ndqs2qVLRzw69ZOVUrz+1GR9EcL2HZTMbtibZqrv0/J7PXOiIgPy3fKBrvBuIFh/WjDEq1XJpdZVw1PvK+0CqQcYNA=
-Message-ID: <9a8748490708121549m6070243k634930a2c24b7ea2@mail.gmail.com>
-Date: Mon, 13 Aug 2007 00:49:50 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Paul Mundt" <lethal@linux-sh.org>, "Jesper Juhl" <jesper.juhl@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/5] 4KSTACKS, remove DEBUG_KERNEL dependency for sh
-In-Reply-To: <20070812224411.GA23556@linux-sh.org>
+	Sun, 12 Aug 2007 19:04:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58388 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763328AbXHLXEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 19:04:00 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200708122250.58773.jesper.juhl@gmail.com>
-	 <200708122253.24034.jesper.juhl@gmail.com>
-	 <20070812224411.GA23556@linux-sh.org>
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk-manpages@gmx.net>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH 3/4] signalfd: fix interaction with posix-timers
+In-Reply-To: Oleg Nesterov's message of  Sunday, 12 August 2007 21:05:30 +0400 <20070812170530.GA4302@tv-sign.ru>
+X-Zippy-Says: Will it improve my CASH FLOW?
+Message-Id: <20070812230350.A6F874D057D@magilla.localdomain>
+Date: Sun, 12 Aug 2007 16:03:50 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13/08/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Sun, Aug 12, 2007 at 10:53:23PM +0200, Jesper Juhl wrote:
-> >
-> > 4K Stacks is no longer a debug feature, so remove the DEBUG_KERNEL
-> > dependancy for 4KSTACKS for sh.
-> >
->
-> While it may no longer be a debugging feature on i386, it certainly is on
-> sh. It should stay under DEBUG_KERNEL for now.
->
-Ok. That was the kind of clear response I was looking for - thank you Paul.
+This only affects signalfd and so the core change seems ok vs status quo.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+I think it would be better overall not to have anyone like signalfd calling
+dequeue_signal in its current form at all.  (The function is too much an
+internal piece of the core signals code.  The SIGNAL_STOP_DEQUEUED code
+applying for signalfd calls is probably another problem, for example.)
+
+
+Thanks,
+Roland
