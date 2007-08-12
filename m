@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937797AbXHLPpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936275AbXHLPq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937797AbXHLPpy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 11:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934752AbXHLPoh
+	id S936275AbXHLPq0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 11:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935278AbXHLPoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 12 Aug 2007 11:44:37 -0400
-Received: from www.osadl.org ([213.239.205.134]:50300 "EHLO mail.tglx.de"
+Received: from www.osadl.org ([213.239.205.134]:50309 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764960AbXHLPof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 11:44:35 -0400
-Message-Id: <20070812152303.177006193@inhelltoy.tec.linutronix.de>
+	id S934221AbXHLPog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 11:44:36 -0400
+Message-Id: <20070812152303.130044485@inhelltoy.tec.linutronix.de>
 References: <20070812152213.551812576@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sun, 12 Aug 2007 15:46:36 -0000
+Date: Sun, 12 Aug 2007 15:46:35 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -22,69 +22,41 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
        "marcin.slusarz" <marcin.slusarz@gmail.com>,
        Jarek Poplawski <jarkao2@o2.pl>
-Subject: [patch 3/3] genirq: mark io_apic level interrupts to avoid resend
+Subject: [patch 2/3] genirq: suppress resend of level interrupts
 Content-Disposition: inline;
-	filename=i386-x86-64-mark-fasteio-interrupts-level-triggered.patch
+	filename=genirq-do-suppress-resend-of-level-type-interrupts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Level type interrupts do not need to be resent. It was also found that
-some chipsets get confused in case of the resend. 
+Level type interrupts are resent by the interrupt hardware when
+they are still active at irq_enable().
 
-Mark the ioapic level type interrupts as such to avoid the resend
-functionality in the generic irq code.
+Suppress the resend mechanism for interrupts marked as level.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 ---
- arch/i386/kernel/io_apic.c   |    7 +++++--
- arch/x86_64/kernel/io_apic.c |    7 +++++--
- 2 files changed, 10 insertions(+), 4 deletions(-)
+ kernel/irq/resend.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/arch/i386/kernel/io_apic.c
+Index: linux-2.6/kernel/irq/resend.c
 ===================================================================
---- linux-2.6.orig/arch/i386/kernel/io_apic.c	2007-08-11 11:09:11.000000000 +0200
-+++ linux-2.6/arch/i386/kernel/io_apic.c	2007-08-11 11:09:12.000000000 +0200
-@@ -1256,12 +1256,15 @@ static struct irq_chip ioapic_chip;
- static void ioapic_register_intr(int irq, int vector, unsigned long trigger)
- {
- 	if ((trigger == IOAPIC_AUTO && IO_APIC_irq_trigger(irq)) ||
--			trigger == IOAPIC_LEVEL)
-+	    trigger == IOAPIC_LEVEL) {
-+		irq_desc[irq].status |= IRQ_LEVEL;
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					 handle_fasteoi_irq, "fasteoi");
--	else
-+	} else {
-+		irq_desc[irq].status &= ~IRQ_LEVEL;
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					 handle_edge_irq, "edge");
-+	}
- 	set_intr_gate(vector, interrupt[irq]);
- }
+--- linux-2.6.orig/kernel/irq/resend.c	2007-08-12 17:18:04.000000000 +0200
++++ linux-2.6/kernel/irq/resend.c	2007-08-12 17:18:04.000000000 +0200
+@@ -62,7 +62,12 @@ void check_irq_resend(struct irq_desc *d
+ 	 */
+ 	desc->chip->enable(irq);
  
-Index: linux-2.6/arch/x86_64/kernel/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86_64/kernel/io_apic.c	2007-08-11 11:09:11.000000000 +0200
-+++ linux-2.6/arch/x86_64/kernel/io_apic.c	2007-08-11 11:09:12.000000000 +0200
-@@ -800,12 +800,15 @@ static struct irq_chip ioapic_chip;
+-	if ((status & (IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
++	/*
++	 * We do not resend level type interrupts. Level type
++	 * interrupts are resent by hardware when they are still
++	 * active.
++	 */
++	if ((status & (IRQ_LEVEL | IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
+ 		desc->status = (status & ~IRQ_PENDING) | IRQ_REPLAY;
  
- static void ioapic_register_intr(int irq, unsigned long trigger)
- {
--	if (trigger)
-+	if (trigger) {
-+		irq_desc[irq].status |= IRQ_LEVEL;
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					      handle_fasteoi_irq, "fasteoi");
--	else
-+	} else {
-+		irq_desc[irq].status &= ~IRQ_LEVEL;
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					      handle_edge_irq, "edge");
-+	}
- }
- 
- static void setup_IO_APIC_irq(int apic, int pin, unsigned int irq,
+ 		if (!desc->chip || !desc->chip->retrigger ||
 
 -- 
 
