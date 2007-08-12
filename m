@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932583AbXHLIvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932624AbXHLI6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932583AbXHLIvU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 04:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756561AbXHLIvM
+	id S932624AbXHLI6Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 04:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758497AbXHLI6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 04:51:12 -0400
-Received: from 1wt.eu ([62.212.114.60]:1651 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755327AbXHLIvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 04:51:11 -0400
-Date: Sun, 12 Aug 2007 10:41:12 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Are we properly prepared to handle 3 Socket setups?
-Message-ID: <20070812084112.GL6002@1wt.eu>
-References: <9a8748490708111808o11d354fr9efa719bc38046c5@mail.gmail.com> <46BE621E.9090509@gmail.com>
-Mime-Version: 1.0
+	Sun, 12 Aug 2007 04:58:14 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:51542 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752943AbXHLI6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 04:58:13 -0400
+Message-ID: <386909088.16432@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sun, 12 Aug 2007 16:58:08 +0800
+From: WU Fengguang <wfg@mail.ustc.edu.cn>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
+Message-ID: <20070812085808.GA7239@mail.ustc.edu.cn>
+Mail-Followup-To: Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <386838491.27058@ustc.edu.cn> <661de9470708110730r1267bdfdp1e76546e11b64f78@mail.gmail.com> <20070811100015.2417788e.akpm@linux-foundation.org> <46BDF965.3050402@linux.vnet.ibm.com> <20070812054831.GB8992@mail.ustc.edu.cn>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46BE621E.9090509@gmail.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070812054831.GB8992@mail.ustc.edu.cn>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 12, 2007 at 03:27:58AM +0200, Rene Herman wrote:
-> On 08/12/2007 03:08 AM, Jesper Juhl wrote:
+On Sun, Aug 12, 2007 at 01:48:31PM +0800, WU Fengguang wrote:
+> On Sat, Aug 11, 2007 at 11:31:09PM +0530, Balbir Singh wrote:
+> > Andrew Morton wrote:
+> > > On Sat, 11 Aug 2007 20:00:12 +0530 "Balbir Singh" <balbir@linux.vnet.ibm.com> wrote:
+> > >>>
+> > >> Shouldn't we just not stop vm accounting for kernel threads?
+> > >>
+> > > 
+> > > Could be.  It'd help heaps if we knew which patch in -mm caused
+> > > this, but from a quick peek it seems to me that mainline should be
+> > > vulnerable as well.
+> > 
+> > Thats a valid point. It would be interesting to see what the overcommit
+> > setting was, when the panic occurred.
 > 
-> >This may be a little off topic, but I think it's interresting enough
-> >to warrent a single mail.
-> >
-> >I just saw a news article (http://www.theinquirer.net/?article=41610)
-> >about a 3 Socket Opteron motherboard and couldn't help but wonder if
-> >we are prepared to deal with such a beast, so I thought I'd inform
-> >everyone :-)
-> >
-> >I'm guessing equipping such a board with 3 single core CPU's could
-> >show up some interresting corner cases in schedular code and
-> >elsewhere, I'll bet we have some assumptions somewhere about
-> >nr_of_cpus being an even number...
+> FYI, I do have nondefault overcommit settings:
 > 
-> I would hope the N=1 case will have flushed out enough of those... :-|
+> vm.overcommit_memory = 2
+> vm.lowmem_reserve_ratio = 1 1
 
-Well, 1 could be seen as even number in base 2, it's 2^0 and has only
-one bit set.
-
-Willy
+Yes, the bug disappears when changing to default overcommit_memory!
 
