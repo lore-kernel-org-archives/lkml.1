@@ -1,39 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938524AbXHLUHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937871AbXHLULV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938524AbXHLUHd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 16:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761442AbXHLUHX
+	id S937871AbXHLULV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 16:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761988AbXHLULK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 16:07:23 -0400
-Received: from dimail1.hmi.de ([134.30.95.50]:49739 "EHLO dimail1.hmi.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758213AbXHLUHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 16:07:22 -0400
-Message-ID: <46BF6853.4020800@lns.pnpi.spb.ru>
-Date: Mon, 13 Aug 2007 00:06:43 +0400
-From: Vadim Dyadkin <dyadkin@lns.pnpi.spb.ru>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
+	Sun, 12 Aug 2007 16:11:10 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:31945 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761694AbXHLULI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 16:11:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JRCd/GECJEznX8t+kXpDDqI0S/hEkgEKv7c83a52prxGvVCrTIdVj8cme6w9LBjwBf84a6r7JaS9GRo3CHXnE2On275BJvVJuxQ2MGRXgaXPLoXE5UxOm9CjENyUVL4V8Xxku3MLYz6AaSbpj0LaEbw+7J3etGQcv1GX8ig7pBA=
+Message-ID: <9a8748490708121311m643e85b1p88ba679f7272c411@mail.gmail.com>
+Date: Sun, 12 Aug 2007 22:11:06 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Rob Landley" <rob@landley.net>
+Subject: Re: [PATCH 0/5] Add some missing Documentation/*/00-INDEX files
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>, linux-doc@vger.kernel.org,
+       "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200708121503.30631.rob@landley.net>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: troubles with r8169
-References: <fa.BZqd/vLw75Xm+ORj+HLjUzU1hSw@ifi.uio.no> <46BF61AB.5060400@shaw.ca>
-In-Reply-To: <46BF61AB.5060400@shaw.ca>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0a4 (dimail1.hmi.de [134.30.95.94]); Sun, 12 Aug 2007 22:07:18 +0200 (CEST)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200708120045.03032.jesper.juhl@gmail.com>
+	 <46BF01A5.9060003@s5r6.in-berlin.de>
+	 <200708121503.30631.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock пишет:
-> This could well be a problem with the nvidia driver as it shares the
-> same IRQ. The first step would be to see if the problem still shows up
-> without the nvidia binary module loaded.
+On 12/08/07, Rob Landley <rob@landley.net> wrote:
+> On Sunday 12 August 2007 7:48:37 am Stefan Richter wrote:
+> > Isn't it with 00-INDEX just like with the "Last Updated:" footers in
+> > documentation texts?
+> >
+> > They are metadata which will be almost always out of date.
+>
+> If nothing is using them, they'll bit-rot, yes.  Way of the world.  But I've
+> found a use for them.  Therefore, I'm interested in getting them up to date
+> and then keeping them there.
 
-Thank for your answer. This problem never shows up if I use only nvidia
-driver (the work without network), or if I use only r8169 (without
-x.org). If I use both of them I have the hang. Usually the hang appears
-if OpenGL is used or network rate is maximal. I tested this regimes many
-times before.
+So, do you want me to create more of these?
+If you want them, could you perhaps start by ACK'ing the first 5
+patches to help me get them merged?
+Once I see the first 5 merged I'll start creating more, but I don't
+want to waste time doing so before that.
 
-Vadim
+>I already wrote an automatic checker to tell me
+> how they differ from reality, which is half the battle.
+
+I started writing such a script myself yesterday, but it's not done
+yet. If you already have one that works could I have a copy please?
+That would make my life easier if I'm to help you with this.
+
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
