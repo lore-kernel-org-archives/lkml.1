@@ -1,93 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934105AbXHLJrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934002AbXHLJr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934105AbXHLJrj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 05:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764919AbXHLJoA
+	id S934002AbXHLJr7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 05:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765494AbXHLJoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 05:44:00 -0400
-Received: from europa.telenet-ops.be ([195.130.137.75]:40348 "EHLO
-	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758905AbXHLJnq (ORCPT
+	Sun, 12 Aug 2007 05:44:03 -0400
+Received: from asia.telenet-ops.be ([195.130.137.74]:56252 "EHLO
+	asia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754405AbXHLJnr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 05:43:46 -0400
-Message-Id: <20070812094118.726875719@mail.of.borg>
+	Sun, 12 Aug 2007 05:43:47 -0400
+Message-Id: <20070812094119.910815432@mail.of.borg>
 References: <20070812094050.522858761@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 12 Aug 2007 11:40:56 +0200
+Date: Sun, 12 Aug 2007 11:41:00 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@redhat.com>
-Subject: [patch 06/10] m68k: Enable arbitary speed tty support
-Content-Disposition: inline; filename=m68k-arbitary-speed-tty-support.diff
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org
+Subject: [patch 10/10] m68k/mac: Make mac_hid_mouse_emulate_buttons() declaration visible
+Content-Disposition: inline; filename=mac-mac_hid_mouse_emulate_buttons-prototype.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Add the needed constants and defines to activate the existing code. 
+m68k/mac: Make mac_hid_mouse_emulate_buttons() declaration visible
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+drivers/char/keyboard.c: In function 'kbd_keycode':
+drivers/char/keyboard.c:1142: error: implicit declaration of function 'mac_hid_mouse_emulate_buttons'
+
+The forward declaration of mac_hid_mouse_emulate_buttons() is not visible on
+m68k because it's hidden in the middle of a big #ifdef block.
+
+Move it to <linux/kbd_kern.h>, correct the type of the second parameter, and
+include <linux/kbd_kern.h> where needed.
+
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- include/asm-m68k/ioctls.h   |    4 ++++
- include/asm-m68k/termbits.h |    5 ++++-
- include/asm-m68k/termios.h  |    6 ++++--
- 3 files changed, 12 insertions(+), 3 deletions(-)
+ drivers/char/keyboard.c     |    4 ----
+ drivers/macintosh/mac_hid.c |    1 +
+ include/linux/kbd_kern.h    |    3 +++
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
---- a/include/asm-m68k/ioctls.h
-+++ b/include/asm-m68k/ioctls.h
-@@ -46,6 +46,10 @@
- #define TIOCSBRK	0x5427  /* BSD compatibility */
- #define TIOCCBRK	0x5428  /* BSD compatibility */
- #define TIOCGSID	0x5429  /* Return the session ID of FD */
-+#define TCGETS2		_IOR('T',0x2A, struct termios2)
-+#define TCSETS2		_IOW('T',0x2B, struct termios2)
-+#define TCSETSW2	_IOW('T',0x2C, struct termios2)
-+#define TCSETSF2	_IOW('T',0x2D, struct termios2)
- #define TIOCGPTN	_IOR('T',0x30, unsigned int) /* Get Pty Number (of pty-mux device) */
- #define TIOCSPTLCK	_IOW('T',0x31, int)  /* Lock/unlock Pty */
+--- a/drivers/char/keyboard.c
++++ b/drivers/char/keyboard.c
+@@ -1022,10 +1022,6 @@ static const unsigned short x86_keycodes
+ 	308,310,313,314,315,317,318,319,320,357,322,323,324,325,276,330,
+ 	332,340,365,342,343,344,345,346,356,270,341,368,369,370,371,372 };
  
---- a/include/asm-m68k/termbits.h
-+++ b/include/asm-m68k/termbits.h
-@@ -141,6 +141,7 @@ struct ktermios {
- #define HUPCL	0002000
- #define CLOCAL	0004000
- #define CBAUDEX 0010000
-+#define    BOTHER 0010000
- #define    B57600 0010001
- #define   B115200 0010002
- #define   B230400 0010003
-@@ -156,10 +157,12 @@ struct ktermios {
- #define  B3000000 0010015
- #define  B3500000 0010016
- #define  B4000000 0010017
--#define CIBAUD	  002003600000	/* input baud rate (not used) */
-+#define CIBAUD	  002003600000		/* input baud rate */
- #define CMSPAR	  010000000000		/* mark or space (stick) parity */
- #define CRTSCTS	  020000000000		/* flow control */
+-#ifdef CONFIG_MAC_EMUMOUSEBTN
+-extern int mac_hid_mouse_emulate_buttons(int, int, int);
+-#endif /* CONFIG_MAC_EMUMOUSEBTN */
+-
+ #ifdef CONFIG_SPARC
+ static int sparc_l1_a_state = 0;
+ extern void sun_do_break(void);
+--- a/drivers/macintosh/mac_hid.c
++++ b/drivers/macintosh/mac_hid.c
+@@ -13,6 +13,7 @@
+ #include <linux/sysctl.h>
+ #include <linux/input.h>
+ #include <linux/module.h>
++#include <linux/kbd_kern.h>
  
-+#define IBSHIFT	16			/* Shift from CBAUD to CIBAUD */
+ 
+ static struct input_dev *emumousebtn;
+--- a/include/linux/kbd_kern.h
++++ b/include/linux/kbd_kern.h
+@@ -161,4 +161,7 @@ static inline void con_schedule_flip(str
+ 	schedule_delayed_work(&t->buf.work, 0);
+ }
+ 
++/* mac_hid.c */
++extern int mac_hid_mouse_emulate_buttons(int, unsigned int, int);
 +
- /* c_lflag bits */
- #define ISIG	0000001
- #define ICANON	0000002
---- a/include/asm-m68k/termios.h
-+++ b/include/asm-m68k/termios.h
-@@ -82,8 +82,10 @@ struct termio {
- 	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
- })
- 
--#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
--#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
-+#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios2))
-+#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios2))
-+#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
-+#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
- 
- #endif	/* __KERNEL__ */
- 
+ #endif
 
 -- 
 Gr{oetje,eeting}s,
