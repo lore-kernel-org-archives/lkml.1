@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933449AbXHLJYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933810AbXHLJZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933449AbXHLJYb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 05:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759594AbXHLJVh
+	id S933810AbXHLJZp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 05:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbXHLJZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 05:21:37 -0400
-Received: from smtp-100-sunday.noc.nerim.net ([62.4.17.100]:4856 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933084AbXHLJVf (ORCPT
+	Sun, 12 Aug 2007 05:25:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43914 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759594AbXHLJZe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 05:21:35 -0400
-Date: Sun, 12 Aug 2007 11:21:53 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1 regression: hwmon/w83627ehf: wrong fan speed
-Message-ID: <20070812112153.59454e84@hyperion.delvare>
-In-Reply-To: <46BDDA59.5070302@s5r6.in-berlin.de>
-References: <46B5B290.4040907@s5r6.in-berlin.de>
-	<20070805162141.GI6221@jupiter.solarsys.private>
-	<46B6053E.2050708@s5r6.in-berlin.de>
-	<20070810230831.59cbc50f@hyperion.delvare>
-	<46BCE6D0.7060300@s5r6.in-berlin.de>
-	<20070811135705.0d0688d7@hyperion.delvare>
-	<46BDD8B3.8070708@s5r6.in-berlin.de>
-	<46BDDA59.5070302@s5r6.in-berlin.de>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Aug 2007 05:25:34 -0400
+Date: Sun, 12 Aug 2007 02:25:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+cc: dean@arctic.org, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/12] x86: Work around mmio config space quirk on AMD
+ Fam10h
+In-Reply-To: <20070809124128.886BE14F3B@wotan.suse.de>
+Message-ID: <alpine.LFD.0.999.0708120216470.30176@woody.linux-foundation.org>
+References: <20070809241.425881000@suse.de>
+ <20070809124128.886BE14F3B@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Aug 2007 17:48:41 +0200, Stefan Richter wrote:
-> Jean Delvare wrote:
->> So my theory is that something else (BIOS, ACPI?)
-> 
-> (ksensors?)
 
-ACPI if my guess is correct.
 
->> is changing the bank,
->> probably to read temperature values which are in banks 1 and 2, causing
->> the w83627ehf to get a wrong value for the VBAT register. If I am
->> right, then the attached patch should help. Please give it a try and
->> report.
+On Thu, 9 Aug 2007, Andi Kleen wrote:
 >
-> This patch fixes the issue.  (I didn't reboot, only reloaded the drivers
-> after patching.)
+> Some broken devices have been discovered to require %al/%ax/%eax registers 
+> for MMIO config space accesses.  Modify mmconfig.c to use these registers 
+> explicitly (rather than modify the global readb/writeb/etc inlines).
 > 
-> Thanks for your help and advice.
+> AK: also changed i386 to always use eax
+> AK: moved change to extended space probing to different patch
+> AK: reworked with inlines according to Linus' requirements.
+> AK: improve comments.
+> 
+> Signed-off-by: dean gaudet <dean@arctic.org>
+> Signed-off-by: Andi Kleen <ak@suse.de>
 
-Great, thanks for testing and reporting. Mark, please add my patch to
-your hwmon-testing queue, and send it to Linus in the next batch of
-fixes.
+Damn you, Andi.
 
-If no problem is reported, we can get rid of w83627ehf_reset_bank() in
-a later kernel version.
+You had obviously never actually tested this on x86.
 
--- 
-Jean Delvare
+> --- linux.orig/arch/i386/pci/mmconfig.c
+> +++ linux/arch/i386/pci/mmconfig.c
+> -		writeb(value, mmcfg_virt_addr + reg);
+> +		mmio_config_writeb(mmcfg_virt_addr, value);
+
+Notice something missing here? The new code cannot work on any machine 
+that actually uses mmio cfg.
+
+		Linus
