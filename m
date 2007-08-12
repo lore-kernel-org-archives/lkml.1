@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935008AbXHLWDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935517AbXHLWIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935008AbXHLWDZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 18:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760038AbXHLWDP
+	id S935517AbXHLWIy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 18:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761607AbXHLWIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 18:03:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59453 "EHLO ogre.sisk.pl"
+	Sun, 12 Aug 2007 18:08:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59469 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759763AbXHLWDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 18:03:14 -0400
+	id S1760038AbXHLWIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 18:08:45 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Dr. David Alan Gilbert" <linux@treblig.org>
-Subject: Re: encrypted hibernation (was Re: Hibernation considerations)
-Date: Mon, 13 Aug 2007 00:12:26 +0200
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: When to use a freezeable workqueue?
+Date: Mon, 13 Aug 2007 00:18:38 +0200
 User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Vojtech Pavlik <vojtech@suse.cz>,
-       seife@suse.de, LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       pm list <linux-pm@lists.linux-foundation.org>, david@lang.hm,
-       Al Boldi <a1426z@gawab.com>
-References: <200707151433.34625.rjw@sisk.pl> <20070805195628.GA1947@elf.ucw.cz> <20070811234356.GA19183@gallifrey>
-In-Reply-To: <20070811234356.GA19183@gallifrey>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <46BEC0AD.7080202@s5r6.in-berlin.de>
+In-Reply-To: <46BEC0AD.7080202@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708130012.27412.rjw@sisk.pl>
+Message-Id: <200708130018.38652.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 12 August 2007 01:43, Dr. David Alan Gilbert wrote:
-> * Pavel Machek (pavel@ucw.cz) wrote:
-> > Hi!
-> > 
-> > > > > Two things which I think would be nice to consider are:
-> > > > >    1) Encryption - I'd actually prefer if my luks device did not
-> > > > >        remember the key accross a hibernation;
+On Sunday, 12 August 2007 10:11, Stefan Richter wrote:
+> In which situations is create_freezeable_workqueue() to be preferred
+> over create_singlethread_workqueue()?
+> 
+> Is a freezable worqueue preferable whenever the worker thread /can/ be
+> frozen, or is it only to be used if the thread /must/ be frozen during
+> suspend?
 
-Why exactly (assuming that the hibernation image is encrypted)?
+The latter, IMO.
+
+Generally, if you want it to be frozen.
 
 Greetings,
 Rafael
