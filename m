@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934171AbXHLLYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934563AbXHLL2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934171AbXHLLYt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 07:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759894AbXHLLYk
+	id S934563AbXHLL2x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 07:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758289AbXHLL2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 07:24:40 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:52659 "EHLO
+	Sun, 12 Aug 2007 07:28:40 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:41605 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755614AbXHLLYi (ORCPT
+	with ESMTP id S1757422AbXHLL2j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 07:24:38 -0400
-Date: Sun, 12 Aug 2007 13:24:37 +0200 (CEST)
+	Sun, 12 Aug 2007 07:28:39 -0400
+Date: Sun, 12 Aug 2007 13:28:38 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
 To: Al Boldi <a1426z@gawab.com>
-cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] FUSE: mnotify (was: [RFC] VFS: mnotify)
-In-Reply-To: <200708120632.20777.a1426z@gawab.com>
-Message-ID: <Pine.LNX.4.64.0708121322140.28963@fbirervta.pbzchgretzou.qr>
-References: <200708120632.20777.a1426z@gawab.com>
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: [RFD] Layering: Use-Case Composers (was: DRBD - what is it,
+ anyways? [compare with e.g. NBD + MD raid])
+In-Reply-To: <200708121335.17267.a1426z@gawab.com>
+Message-ID: <Pine.LNX.4.64.0708121325170.28963@fbirervta.pbzchgretzou.qr>
+References: <200708121335.17267.a1426z@gawab.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Aug 12 2007 06:32, Al Boldi wrote:
->Al Boldi wrote:
->> Jakob Oestergaard wrote:
->> > Why on earth would you cripple the kernel defaults for ext3 (which is a
->> > fine FS for boot/root filesystems), when the *fundamental* problem you
->> > really want to solve lie much deeper in the implementation of the
->> > filesystem?  Noatime doesn't solve the problem, it just makes it "less
->> > horrible".
+On Aug 12 2007 13:35, Al Boldi wrote:
+>Lars Ellenberg wrote:
+>> meanwhile, please, anyone interessted,
+>> the drbd paper for LinuxConf Eu 2007 is finalized.
+>> http://www.drbd.org/fileadmin/drbd/publications/
+>> drbd8.linux-conf.eu.2007.pdf
 >>
->> inotify could easily solve the atime problem, but it's got the drawback of
->> forcing the user to register each and every file/dir of interest, which
->> isn't really reasonable on TB-filesystems.
+>> but it does give a good overview about what DRBD actually is,
+>> what exact problems it tries to solve,
+>> and what developments to expect in the near future.
+>>
+>> so you can make up your mind about
+>>  "Do we need it?", and
+>>  "Why DRBD? Why not NBD + MD-RAID?"
 
-What inotify needs is some kind of SUBDIR flag on a watch so that one does not
-run out of fds, then the TB issue becomes a bit lighter I think.
+I may have made a mistake when asking for how it compares to NBD+MD.
+Let me retry: what's the functional difference between
+GFS2 on a DRBD .vs. GFS2 on a DAS SAN?
 
->> It could be feasible to introduce mnotify, which would notify the user of
->> meta changes, like atime, across the filesystem.  Something like mnotify
->> could also be helpful in CoW situations, provided it supported an in-sync
->> interface.
->
->Here is an idea:  Could FUSE be used to produce mnotify behaviour?
-
-It may, and in some cases, not. For example, I only had a single filesystem,
-and would like atime notificatios for it, then how would I do that? What comes
-to mind is to use a fuse fs that mirrors, but also notifies, ergo:
-	mount -t fuse.lomount / /mnt
-Well, wonderful, now I still need to pivot_root to /mnt, so that all accesses
-actually end up in fuse-land. And this gets ugly on shutdown, when things have
-to be unmounted.
+>Now, shared remote block access should theoretically be handled, as does 
+>DRBD, by a block layer driver, but realistically it may be more appropriate 
+>to let it be handled by the combining end user, like OCFS or GFS.
 
 
 	Jan
