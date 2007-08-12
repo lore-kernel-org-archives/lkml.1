@@ -1,86 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757488AbXHLFRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbXHLF3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757488AbXHLFRz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 01:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbXHLFRq
+	id S1754243AbXHLF3c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 01:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbXHLF3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 01:17:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39061 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751030AbXHLFRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 01:17:45 -0400
-Date: Sun, 12 Aug 2007 07:17:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Roman Zippel <zippel@linux-m68k.org>, Michael Chang <thenewme91@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-Message-ID: <20070812051734.GB18291@elte.hu>
-References: <Pine.LNX.4.64.0708100037460.1817@scrub.home> <20070810054948.GA5908@elte.hu> <Pine.LNX.4.64.0708101459530.1817@scrub.home> <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com> <Pine.LNX.4.64.0708101919270.1817@scrub.home> <20070810194705.GH6002@1wt.eu> <Pine.LNX.4.64.0708102235320.1817@scrub.home> <20070810213630.GA13910@elte.hu> <Pine.LNX.4.64.0708110001420.1817@scrub.home> <20070811052840.GB24082@1wt.eu>
+	Sun, 12 Aug 2007 01:29:23 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:38061 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751059AbXHLF3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 01:29:22 -0400
+Message-ID: <386896556.06040@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sun, 12 Aug 2007 13:29:15 +0800
+From: Fengguang Wu <fengguang.wu@gmail.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
+Message-ID: <20070812052915.GA6769@mail.ustc.edu.cn>
+Mail-Followup-To: Cyrill Gorcunov <gorcunov@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <20070811132131.GA13775@mail.ustc.edu.cn> <20070811141714.GA7232@cvg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070811052840.GB24082@1wt.eu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070811141714.GA7232@cvg>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Willy Tarreau <w@1wt.eu> wrote:
-
-> > 1. Two simple busy loops, one of them is reniced to 15, according to 
-> > my calculations the reniced task should get about 3.4% 
-> > (1/(1.25^15+1)), but I get this:
-> > 
-> >   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-> >  4433 roman     20   0  1532  300  244 R 99.2  0.2   5:05.51 l
-> >  4434 roman     35  15  1532   72   16 R  0.7  0.1   0:10.62 l
+On Sat, Aug 11, 2007 at 06:17:14PM +0400, Cyrill Gorcunov wrote:
+> [Fengguang Wu - Sat, Aug 11, 2007 at 09:21:31PM +0800]
+> | Andrew,
+> | 
+> | I'm not sure if this patch is the right fix for the bug.  But it do
+> | stops the oops message. The bug also happens in 2.6.23-rc1-mm2/2.6.23-rc2-mm2.
+> | I'm running debian/sid. The .config is attached.
+> | 
+> |
 > 
-> Could this be caused by typos in some tables like you have found in 
-> wmult ?
-
-note that the typo was not in the weight table but in the inverse weight 
-table which didnt really affect CPU utilization (that's why we didnt 
-notice the typo sooner). Regarding the above problem with nice +15 being 
-beefier than intended i'd suggest to re-test with a doubled 
-/proc/sys/kernel/sched_runtime_limit value, or with:
-
-  echo 30 > /proc/sys/kernel/sched_features
-
-(which turns off sleeper fairness)
-
-> >  4477 roman      5 -15  1532   68   16 R  8.6  0.1   0:07.63 l
-> >  4476 roman      5 -15  1532   68   16 R  9.6  0.1   0:07.38 l
-> >  4475 roman      5 -15  1532   68   16 R  1.3  0.1   0:07.09 l
-> >  4474 roman      5 -15  1532   68   16 R  2.3  0.1   0:07.97 l
-> >  4473 roman      5 -15  1532  296  244 R  1.0  0.2   0:07.73 l
+> [...snip...]
 > 
-> Do you see this only at -15, or starting with -15 and below ?
+> Even if you're right you have to make the same patch for
+> mm/nommu.c but I've an anticipation the problem is growing
+> up from another point (and I'm really hoping that I'm wrong ;)
 
-i think this was scheduling jitter caused by the larger granularity of 
-negatively reniced tasks. This got improved recently, with latest -git i 
-get:
+Thank you, the patch is updated to:
+===
 
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
- 3108 root       5 -15  1576  248  196 R  5.0  0.0   0:07.26 loop_silent
- 3109 root       5 -15  1576  248  196 R  5.0  0.0   0:07.26 loop_silent
- 3110 root       5 -15  1576  248  196 R  5.0  0.0   0:07.26 loop_silent
- 3111 root       5 -15  1576  244  196 R  5.0  0.0   0:07.26 loop_silent
- 3112 root       5 -15  1576  248  196 R  5.0  0.0   0:07.26 loop_silent
- 3113 root       5 -15  1576  248  196 R  5.0  0.0   0:07.26 loop_silent
+Fix possible NULL pointer deference on __vm_enough_memory().
 
-that's picture-perfect CPU time distribution. But, and that's fair to 
-say, i never ran such an artificial workload of 20x nice -15 infinite 
-loops (!) before, and boy does interactivity suck (as expected) ;)
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ mm/mmap.c  |    3 ++-
+ mm/nommu.c |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-	Ingo
+--- linux-2.6.23-rc2-mm2.orig/mm/mmap.c
++++ linux-2.6.23-rc2-mm2/mm/mmap.c
+@@ -166,7 +166,8 @@ int __vm_enough_memory(long pages, int c
+ 
+ 	/* Don't let a single process grow too big:
+ 	   leave 3% of the size of this process for other processes */
+-	allowed -= current->mm->total_vm / 32;
++	if (current->mm)
++		allowed -= current->mm->total_vm / 32;
+ 
+ 	/*
+ 	 * cast `allowed' as a signed long because vm_committed_space
+--- linux-2.6.23-rc2-mm2.orig/mm/nommu.c
++++ linux-2.6.23-rc2-mm2/mm/nommu.c
+@@ -1342,7 +1342,8 @@ int __vm_enough_memory(long pages, int c
+ 
+ 	/* Don't let a single process grow too big:
+ 	   leave 3% of the size of this process for other processes */
+-	allowed -= current->mm->total_vm / 32;
++	if (current->mm)
++		allowed -= current->mm->total_vm / 32;
+ 
+ 	/*
+ 	 * cast `allowed' as a signed long because vm_committed_space
+
