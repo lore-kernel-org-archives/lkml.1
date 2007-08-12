@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934578AbXHLNJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935030AbXHLNLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934578AbXHLNJX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 09:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934975AbXHLNI6
+	id S935030AbXHLNLe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 09:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932630AbXHLNL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 09:08:58 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60874 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934964AbXHLNI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 09:08:57 -0400
-To: "Dan Merillat" <dan.merillat@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       rusty@rustcorp.com.au, Petr Vandrovec <petr@vandrovec.name>
-Subject: Re: reset during bootup - solved
-References: <a56dfcf00708120244x3ae8f4w9183354cf5f33f93@mail.gmail.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 12 Aug 2007 16:03:08 +0200
-In-Reply-To: <a56dfcf00708120244x3ae8f4w9183354cf5f33f93@mail.gmail.com>
-Message-ID: <p73wsw0j1er.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Sun, 12 Aug 2007 09:11:26 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:40271 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761310AbXHLNLZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 09:11:25 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46BF06E1.9000302@s5r6.in-berlin.de>
+Date: Sun, 12 Aug 2007 15:10:57 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Randy Dunlap <rdunlap@xenotime.net>
+CC: Willy Tarreau <w@1wt.eu>, "J. Bruce Fields" <bfields@fieldses.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Documentation files in html format?
+References: <20070809113122.3aa508e4@oldman.hamilton.local>	<20070810201704.GI6002@1wt.eu>	<20070810204025.GC29549@fieldses.org>	<20070810205117.GJ6002@1wt.eu>	<20070811141925.GA21866@fieldses.org>	<20070811141718.GK6002@1wt.eu> <20070811201210.f5ba7d4d.rdunlap@xenotime.net>
+In-Reply-To: <20070811201210.f5ba7d4d.rdunlap@xenotime.net>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Dan Merillat" <dan.merillat@gmail.com> writes:
+Randy Dunlap wrote:
+> On Sat, 11 Aug 2007 16:17:19 +0200 Willy Tarreau wrote:
+>> On Sat, Aug 11, 2007 at 10:19:25AM -0400, J. Bruce Fields wrote:
+>>> I was just suggesting that if we took your suggestion of standardizing
+>>> on plain text plus some conventions for formatting lists and headers and
+>>> such, one easy way to do that might just be to adopt the asciidoc format
+>>> (or some subset thereof).  Is there any part of the asciidoc *syntax*
+>>> that you object to?
+>> Not particularly. It's just slightly less readable as plain text but
+>> OTOH produces nice documents when you have a working toolchain. But
+>> that's a language which needs to be learned, as every such language.
+>> Plain text on the contrary, requires no learning. The conventions are
+>> more like suggestions to newcomers. Everyone is free to proceed as he
+>> wants, judging by the result while writing the text.
 
-> On 8/11/07, Dan Merillat <dan.merillat@gmail.com> wrote:
-> > This one is going to be fun, since it's a hard reset back to bios, no
-> > OOPS or anything shown.  It may be about the time RadeonFB kicks in,
-> > but it's impossible to tell.  I'd guess 15-20 lines into dmesg.
-> >
-> > I'm in the process of bisecting, currently 94c18227..d23cf676.
-> >
-> > Any guesses of a specific patch to check?
-> 
-> Except it's not d23cf676, that was the version I was running while
-> building HEAD, whoops.
-> I'm used to monotonic version numbers, not SHA hashes.  I'll keep
-> better track next time.
-> 
-> For completeness, the commit that caused boot to fail was:
-> 
-> commit ab144f5ec64c42218a555ec1dbde6b60cf2982d6
-> Author: Andi Kleen <ak@suse.de>
+> but if we use something richer than plain text, I think that we
+> shouldn't need to invent yet another markup language.
+> Just use HTML or asciidoc or MarkDown etc...
 
-BTW the patch was actually from Rusty, not me, just the From 
-line got lost somewhere. I did a few changes though because
-the initial version didn't work on x86-64 at all. Submitted
-one worked for me.
+*If* we switch to a markup language instead of plaintext (or instead of
+plaintext with style recommendations), then submitters should at least
+be able to do basic syntax checks without having a toolchain installed.
 
-> Date:   Fri Aug 10 22:31:03 2007 +0200
-> 
->     i386: Make patching more robust, fix paravirt issue
-> 
-> Except I'm using x86_64?  So not sure why that one rev kills me.
+E.g. provide a scripts/checkdocumentation.p[ly] similar in function to
+scripts/checkpatch.pl.  (OK, that one requires a perl interpreter
+installed, but that's a fair requirement.)
 
-The code is used on x86-64 too, but the script that generates
-the prefixes doesn't know this (perhaps I should drop them) 
-
-> ACPI? It dies right after the CPU is identified:
-> CPU: AMD Athlon(tm) 64 Processor 3000+ stepping 00
-> ACPI: Core revision 20070126
-
-Ok that settles it.
-
-However I must say I'm still dubious of Petr's patch. If there
-is something wrong with alternative() then it must be fixed
-in alternative() not the call sites. Otherwise it could hit
-other patch sites too. There are other copies who
-use a similar patching pattern.
-
-Can people who see a failure please send me .config and 
-arch/x86_64/lib/memcpy.o privately ? 
-
--Andi
+One note on asciidoc:  I experienced the same as Willy when I wanted to
+build git with manpages on a distribution without prebuilt asciidoc.
+And when I finally managed to build a minimum asciidoc setup, I was
+bitten by a syntax change in the asciidoc language, requiring a small
+change to git's documentation source to be compatible with both asciidoc
+7.x and asciidoc 8.x IIRC.
+-- 
+Stefan Richter
+-=====-=-=== =--- -==--
+http://arcgraph.de/sr/
