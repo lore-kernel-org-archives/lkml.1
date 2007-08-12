@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937093AbXHLPPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936934AbXHLPPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937093AbXHLPPB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 11:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936295AbXHLPJL
+	id S936934AbXHLPPv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 11:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936446AbXHLPK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 11:09:11 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:47636 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936280AbXHLPJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 11:09:07 -0400
-Message-Id: <20070812150814.802764862@polymtl.ca>
-References: <20070812150702.769065566@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Sun, 12 Aug 2007 11:07:05 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Adrian Bunk <bunk@stusta.de>, Andi Kleen <andi@firstfloor.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: [patch 3/8] Immediate Values - Kconfig menu in EMBEDDED
-Content-Disposition: inline; filename=immediate-values-kconfig-embedded.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sun, 12 Aug 2007 15:08:15 +0000
+	Sun, 12 Aug 2007 11:10:26 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:41865 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936434AbXHLPKW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 11:10:22 -0400
+Subject: Re: [ANNOUNCE] SDIO soon in mainline
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, Nicolas Pitre <nico@cam.org>
+In-Reply-To: <20070722185244.587d5bdc@poseidon.drzeus.cx>
+References: <20070722185244.587d5bdc@poseidon.drzeus.cx>
+Content-Type: text/plain
+Date: Sun, 12 Aug 2007 17:12:31 +0200
+Message-Id: <1186931551.6698.88.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Immediate values provide a way to use dynamic code patching to update variables
-sitting within the instruction stream. It saves caches lines normally used by
-static read mostly variables. Enable it by default, but let users disable it
-through the EMBEDDED menu with the "Disable immediate values" submenu entry.
+Hi,
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Adrian Bunk <bunk@stusta.de>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Christoph Hellwig <hch@infradead.org>
----
- init/Kconfig |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+> I am happy to announce that SDIO support will soon be a standard
+> feature in Linux. No more proprietary stacks with all the troubles
+> (legal and technical) that go with them.
+> 
+> The new code is written from scratch by yours truly and Nicolas Pitre.
+> There were several stacks out there that were recently made available
+> under the GPL, but none of them were in any shape to be merged into the
+> kernel.
+> 
+> Current status is that basic functionality is in place. There is a
+> driver model (with device matching and module auto-loading) and
+> functions for easy register access. It is also possible to receive
+> interrupts from the card.
+> 
+> There is only one driver in the tree right now (for the standard GPS
+> interface), but it should be complete enough for everyone to see how
+> the API works.
 
-Index: linux-2.6-lttng/init/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/init/Kconfig	2007-08-07 16:36:20.000000000 -0400
-+++ linux-2.6-lttng/init/Kconfig	2007-08-07 16:44:26.000000000 -0400
-@@ -411,6 +411,17 @@ config CC_OPTIMIZE_FOR_SIZE
- config SYSCTL
- 	bool
- 
-+config IMMEDIATE
-+	default y if !DISABLE_IMMEDIATE
-+	depends on X86_32 || PPC || PPC64
-+	bool
-+	help
-+	  Immediate values are used as read mostly variables that are rarely
-+	  updated. They use code patching to modify the values inscribed in the
-+	  instruction stream. It provides a way to save precious cache lines
-+	  that would otherwise have to be used by these variables. Can be
-+	  disabled through the EMBEDDED menu.
-+
- menuconfig EMBEDDED
- 	bool "Configure standard kernel features (for small systems)"
- 	help
-@@ -649,6 +660,16 @@ config PROC_KPAGEMAP
-           information on page-level memory usage. Disabling this interface
-           will reduce the size of the kernel by around 600 bytes.
- 
-+config DISABLE_IMMEDIATE
-+	default y if EMBEDDED
-+	bool "Disable immediate values" if EMBEDDED
-+	depends on X86_32 || PPC || PPC64
-+	help
-+	  Disable code patching based immediate values for embedded systems. It
-+	  consumes slightly more memory and requires to modify the instruction
-+	  stream each time a variable is updated. Should really be disabled for
-+	  embedded systems with read-only text.
-+
- endmenu		# General setup
- 
- config RT_MUTEXES
+and as of a few days ago we have a second driver that can handle
+Bluetooth Type-A and Type-B SDIO cards. It has been tested with a card
+from Socket which is actually manufactured by Toshiba.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+hci0:   Type: SDIO
+        BD Address: 00:02:C7:xx:xx:xx ACL MTU: 676:4 SCO MTU: 120:3
+        HCI Ver: 1.1 (0x1) HCI Rev: 0x0 LMP Ver: 1.1 (0x1) LMP Subver: 0x14b
+        Manufacturer: Toshiba Corp. (4)
+        Features: 0xff 0xf9 0x21 0x00 0x00 0x00 0x00 0x00
+                <3-slot packets> <5-slot packets> <encryption> <slot offset> 
+                <timing accuracy> <role switch> <hold mode> <sniff mode> 
+                <park state> <SCO link> <HV2 packets> <HV3 packets> 
+                <u-law log> <A-law log> <CVSD> 
+
+The code for the btsdio.ko driver can be found here:
+
+http://git.infradead.org/?p=users/holtmann/btsdio.git;a=summary
+
+There are other Bluetooth SDIO cards that don't follow the Type-A or
+Type-B standard. These use the UART standard, but unfortunately the
+specification for the SDIO UART cards is not public.
+
+Regards
+
+Marcel
+
+
