@@ -1,151 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938163AbXHLT6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938459AbXHLT7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938163AbXHLT6s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 15:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936058AbXHLT6j
+	id S938459AbXHLT7Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 15:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933285AbXHLT7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 15:58:39 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:46662 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934581AbXHLT6h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 15:58:37 -0400
-Message-ID: <46BF6596.8040803@gmail.com>
-Date: Sun, 12 Aug 2007 21:55:02 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Jesper Juhl <jesper.juhl@gmail.com>, linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Re: cciss: warning: right shift count >= width of type
-References: <200708120228.26234.jesper.juhl@gmail.com> <46BE60B5.7010708@gmail.com> <20070812065806.GC21089@ftp.linux.org.uk>
-In-Reply-To: <20070812065806.GC21089@ftp.linux.org.uk>
-Content-Type: multipart/mixed;
- boundary="------------010508030805030203090308"
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Sun, 12 Aug 2007 15:59:11 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:41215 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936897AbXHLT7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 15:59:10 -0400
+Date: Sun, 12 Aug 2007 23:59:04 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH 2/4] posix-timers: fix creation race
+Message-ID: <20070812195904.GB113@tv-sign.ru>
+References: <20070812170522.GA4299@tv-sign.ru> <1186945555.12828.89.camel@chaos> <20070812194455.GA113@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070812194455.GA113@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010508030805030203090308
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-
-On 08/12/2007 08:58 AM, Al Viro wrote:
-
-> On Sun, Aug 12, 2007 at 03:21:57AM +0200, Rene Herman wrote:
-
->> +			c->Request.CDB[2]= ((u64)start_blk >> 56) & 0xff;	//MSB
->> +			c->Request.CDB[3]= ((u64)start_blk >> 48) & 0xff;
->> +			c->Request.CDB[4]= ((u64)start_blk >> 40) & 0xff;
->> +			c->Request.CDB[5]= ((u64)start_blk >> 32) & 0xff;
->> +			c->Request.CDB[6]= ((u64)start_blk >> 24) & 0xff;
->> +			c->Request.CDB[7]= ((u64)start_blk >> 16) & 0xff;
->> +			c->Request.CDB[8]= ((u64)start_blk >>  8) & 0xff;
+On 08/12, Oleg Nesterov wrote:
+>
+> > > -				spin_unlock_irqrestore(&process->sighand->siglock, flags);
+> > >  				process = NULL;
+> > >  			}
+> > > +			spin_unlock_irqrestore(&process->sighand->siglock, flags);
 > 
-> 	put_unaligned(cpu_to_be64(start_blk), &c->Request.CDB[2]);
-> 
-> which is what's happening here anyway.
+> i'll resend this patch tomorrow. We can't do spin_unlock_irqrestore(&process->...)
+> if we set process = NULL above.
 
-Well, yes. There are a few more of these in the driver and this wants a 
-maintainer (whom I can't reach @hp.com) comment.
+Another attempt, no cleanups, just a minimal fix for now.
 
-Is that 16-bit one for CCISS_READ_10 really right? Either:
 
-put_unaligned(cpu_to_be32(creq->nr_sectors), &c->Request.CDB[6]);
+[PATCH 2/4] posix-timers: fix creation race
 
-or possibly:
+sys_timer_create() sets ->it_process and unlocks ->siglock, then checks
+tmr->it_sigev_notify to define if get_task_struct() is needed.
 
-put_unaligned(cpu_to_be16(creq->nr_sectors), &c->Request.CDB[8]);
+We already passed ->it_id to the caller, another thread can delete this
+timer and free its memory in between.
 
-would look less surprising than the current 16-bit in 24-bit thing and the 
-"sect >> 24" comment there seems to imply the first?
+As a minimal fix, move this code under ->siglock, sys_timer_delete() takes
+it too before calling release_posix_timer(). A proper serialization would
+be to take ->it_lock, we add a partly initialized timer on posix_timers_id,
+not good.
 
-(the implcit downcasting in that case is fine, right?)
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Rene.
+--- t/kernel/posix-timers.c~	2007-08-12 23:50:46.000000000 +0400
++++ t/kernel/posix-timers.c	2007-08-12 23:52:07.000000000 +0400
+@@ -547,9 +547,9 @@ sys_timer_create(const clockid_t which_c
+ 				new_timer->it_process = process;
+ 				list_add(&new_timer->list,
+ 					 &process->signal->posix_timers);
+-				spin_unlock_irqrestore(&process->sighand->siglock, flags);
+ 				if (new_timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
+ 					get_task_struct(process);
++				spin_unlock_irqrestore(&process->sighand->siglock, flags);
+ 			} else {
+ 				spin_unlock_irqrestore(&process->sighand->siglock, flags);
+ 				process = NULL;
 
---------------010508030805030203090308
-Content-Type: text/plain;
- name="cciss.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="cciss.diff"
-
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 5acc6c4..9fb6b3c 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -40,6 +40,7 @@
- #include <linux/blktrace_api.h>
- #include <asm/uaccess.h>
- #include <asm/io.h>
-+#include <asm/unaligned.h>
- 
- #include <linux/dma-mapping.h>
- #include <linux/blkdev.h>
-@@ -1711,10 +1712,7 @@ static int fill_cmd(CommandList_struct *c, __u8 cmd, int ctlr, void *buff, size_
- 			c->Request.Type.Direction = XFER_READ;
- 			c->Request.Timeout = 0;
- 			c->Request.CDB[0] = cmd;
--			c->Request.CDB[6] = (size >> 24) & 0xFF;	//MSB
--			c->Request.CDB[7] = (size >> 16) & 0xFF;
--			c->Request.CDB[8] = (size >> 8) & 0xFF;
--			c->Request.CDB[9] = size & 0xFF;
-+			put_unaligned(cpu_to_be32(size), &c->Request.CDB[6]);
- 			break;
- 
- 		case CCISS_READ_CAPACITY:
-@@ -1735,12 +1733,7 @@ static int fill_cmd(CommandList_struct *c, __u8 cmd, int ctlr, void *buff, size_
- 			c->Request.Timeout = 0;
- 			c->Request.CDB[0] = cmd;
- 			c->Request.CDB[1] = 0x10;
--			c->Request.CDB[10] = (size >> 24) & 0xFF;
--			c->Request.CDB[11] = (size >> 16) & 0xFF;
--			c->Request.CDB[12] = (size >> 8) & 0xFF;
--			c->Request.CDB[13] = size & 0xFF;
--			c->Request.Timeout = 0;
--			c->Request.CDB[0] = cmd;
-+			put_unaligned(cpu_to_be32(size), &c->Request.CDB[10]);
- 			break;
- 		case CCISS_CACHE_FLUSH:
- 			c->Request.CDBLen = 12;
-@@ -2598,29 +2591,15 @@ static void do_cciss_request(request_queue_t *q)
- 	if (likely(blk_fs_request(creq))) {
- 		if(h->cciss_read == CCISS_READ_10) {
- 			c->Request.CDB[1] = 0;
--			c->Request.CDB[2] = (start_blk >> 24) & 0xff;	//MSB
--			c->Request.CDB[3] = (start_blk >> 16) & 0xff;
--			c->Request.CDB[4] = (start_blk >> 8) & 0xff;
--			c->Request.CDB[5] = start_blk & 0xff;
--			c->Request.CDB[6] = 0;	// (sect >> 24) & 0xff; MSB
--			c->Request.CDB[7] = (creq->nr_sectors >> 8) & 0xff;
--			c->Request.CDB[8] = creq->nr_sectors & 0xff;
-+			put_unaligned(cpu_to_be32(start_blk), &c->Request.CDB[2]);
-+			c->Request.CDB[6] = 0;
-+			put_unaligned(cpu_to_be16(creq->nr_sectors), &c->Request.CDB[7]);
- 			c->Request.CDB[9] = c->Request.CDB[11] = c->Request.CDB[12] = 0;
- 		} else {
- 			c->Request.CDBLen = 16;
- 			c->Request.CDB[1]= 0;
--			c->Request.CDB[2]= (start_blk >> 56) & 0xff;	//MSB
--			c->Request.CDB[3]= (start_blk >> 48) & 0xff;
--			c->Request.CDB[4]= (start_blk >> 40) & 0xff;
--			c->Request.CDB[5]= (start_blk >> 32) & 0xff;
--			c->Request.CDB[6]= (start_blk >> 24) & 0xff;
--			c->Request.CDB[7]= (start_blk >> 16) & 0xff;
--			c->Request.CDB[8]= (start_blk >>  8) & 0xff;
--			c->Request.CDB[9]= start_blk & 0xff;
--			c->Request.CDB[10]= (creq->nr_sectors >>  24) & 0xff;
--			c->Request.CDB[11]= (creq->nr_sectors >>  16) & 0xff;
--			c->Request.CDB[12]= (creq->nr_sectors >>  8) & 0xff;
--			c->Request.CDB[13]= creq->nr_sectors & 0xff;
-+			put_unaligned(cpu_to_be64(start_blk), &c->Request.CDB[2]);
-+			put_unaligned(cpu_to_be32(creq->nr_sectors), &c->Request.CDB[10]);
- 			c->Request.CDB[14] = c->Request.CDB[15] = 0;
- 		}
- 	} else if (blk_pc_request(creq)) {
-
---------------010508030805030203090308--
