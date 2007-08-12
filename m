@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932962AbXHLKMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933389AbXHLKRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932962AbXHLKMT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 06:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760918AbXHLKLi
+	id S933389AbXHLKRi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 06:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbXHLKRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 06:11:38 -0400
-Received: from ns2.suse.de ([195.135.220.15]:49475 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758229AbXHLKLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 06:11:36 -0400
-From: Andi Kleen <ak@suse.de>
-To: discuss@x86-64.org
-Subject: Please remove ab144f5ec64c42218a555ec1dbde6b60cf2982d6 was Re: [discuss] [PATCH] Fix triplefault on x86-64 bootup
-Date: Sun, 12 Aug 2007 12:09:40 +0200
-User-Agent: KMail/1.9.1
-Cc: Petr Vandrovec <petr@vandrovec.name>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <20070812081252.GA23309@vana.vc.cvut.cz>
-In-Reply-To: <20070812081252.GA23309@vana.vc.cvut.cz>
+	Sun, 12 Aug 2007 06:17:30 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:22266 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752735AbXHLKR3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 06:17:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=N6WAF2MMVXJ3Ankbmc9lVomUBOaIc36xTupi+A593j4seqRWDFW1YGt/ynVLtLJZYzgoSCPSGUqzmA/bBUyT52Jb03fbAihx/GV5J81A+q36dUHqpm1Ka9g0ZsrXSatHAhuF7mBp6gsho+danbPDzRT/nfy3K86X3bhSt5nI6B0=
+Message-ID: <46BEDDB2.4080704@googlemail.com>
+Date: Sun, 12 Aug 2007 12:15:14 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: David Brownell <david-b@pacbell.net>
+CC: linux-usb-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [linux-usb-devel] 2.6.23-rc2-mm2
+References: <20070809224254.11f42716.akpm@linux-foundation.org> <46BC3CB1.2090503@googlemail.com> <46BC5D18.9060906@googlemail.com> <200708111358.30667.david-b@pacbell.net>
+In-Reply-To: <200708111358.30667.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708121209.40995.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 August 2007 10:12, Petr Vandrovec wrote:
-> Hello,
->   after I upgraded kernel on my box to current git, only thing it did
-> was rebooting in a loop.  After some digging I found that it is silly
-> to apply alternative to memcpy by using that every same memcpy...
-> Sorry if it is known bug, I do not see it reported in my LKML mailbox...
+David Brownell wrote:
+> On Friday 10 August 2007, Gabriel C wrote:
+>> Getting that with gcc 4.2.1 :
+>>
+>> drivers/usb/host/ohci-dbg.c: In function 'show_registers':
+>> drivers/usb/host/ohci-dbg.c:620: warning: the address of 'next' will always evaluate as 'true'
+>> drivers/usb/host/ohci-dbg.c:639: warning: the address of 'next' will always evaluate as 'true'
+> 
+> Seems like a pretty annoying warning to have added ... the relevant
+> test *expects* to have two constant branches, where the compiler
+> optimizes one out of existence.
+> 
+> Does this patch get rid of it?
+> 
 
-Ok Linus already applied your patch. Even though it's a really 
-bad fragile hack, not better than the old bug.
+Yes it does.
 
-Petr are you double sure you really tested with
-ab144f5ec64c42218a555ec1dbde6b60cf2982d6
-already applied? I bet not -- it is the symptom exactly fixed by this patch
-(although 
 
-Linus, I would prefer if you reverted 
-b8d3f2448b8f4ba24f301e23585547ba1acc1f04
-again -- it should really not be needed with 
-ab144f5ec64c42218a555ec1dbde6b60cf2982d6
-
-And I really dislike Petr's patch because while it might work
-today (I'm not 100% sure it actually works to only replace
-2 bytes) if we change memcpy ever it'll likely cause strange 
-problems again.
-
--Andi
+> ---
+>  drivers/usb/host/ohci-dbg.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- g26.orig/drivers/usb/host/ohci-dbg.c	2007-08-11 13:51:42.000000000 -0700
+> +++ g26/drivers/usb/host/ohci-dbg.c	2007-08-11 13:52:07.000000000 -0700
+> @@ -74,7 +74,7 @@ urb_print (struct urb * urb, char * str,
+>  
+>  #define ohci_dbg_sw(ohci, next, size, format, arg...) \
+>  	do { \
+> -	if (next) { \
+> +	if (next != NULL) { \
+>  		unsigned s_len; \
+>  		s_len = scnprintf (*next, *size, format, ## arg ); \
+>  		*size -= s_len; *next += s_len; \
+> 
