@@ -1,89 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938878AbXHLVAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938929AbXHLVCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938878AbXHLVAt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 17:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937674AbXHLVAj
+	id S938929AbXHLVCL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 17:02:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761193AbXHLVB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 17:00:39 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:40109
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S936926AbXHLVAi (ORCPT
+	Sun, 12 Aug 2007 17:01:57 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58161 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752451AbXHLVB4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 17:00:38 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Subject: Re: [PATCH 0/5] Add some missing Documentation/*/00-INDEX files
-Date: Sun, 12 Aug 2007 16:00:34 -0500
-User-Agent: KMail/1.9.6
-Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>, linux-doc@vger.kernel.org,
-       "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <200708120045.03032.jesper.juhl@gmail.com> <200708121503.30631.rob@landley.net> <9a8748490708121311m643e85b1p88ba679f7272c411@mail.gmail.com>
-In-Reply-To: <9a8748490708121311m643e85b1p88ba679f7272c411@mail.gmail.com>
+	Sun, 12 Aug 2007 17:01:56 -0400
+Message-ID: <46BF7451.2020306@zytor.com>
+Date: Sun, 12 Aug 2007 13:57:53 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Al Viro <viro@ftp.linux.org.uk>, Mark Cannon <random.bits@rogers.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Use of directories to hold root?
+References: <200708101724.26724.random.bits@rogers.com> <46BCFE01.2040703@zytor.com> <Pine.LNX.4.64.0708111753510.3101@fbirervta.pbzchgretzou.qr> <200708121539.48332.random.bits@rogers.com> <Pine.LNX.4.64.0708122147440.28963@fbirervta.pbzchgretzou.qr> <20070812202320.GE21089@ftp.linux.org.uk> <Pine.LNX.4.64.0708122253360.28963@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0708122253360.28963@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708121600.34424.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 August 2007 3:11:06 pm Jesper Juhl wrote:
-> On 12/08/07, Rob Landley <rob@landley.net> wrote:
-> > On Sunday 12 August 2007 7:48:37 am Stefan Richter wrote:
-> > > Isn't it with 00-INDEX just like with the "Last Updated:" footers in
-> > > documentation texts?
-> > >
-> > > They are metadata which will be almost always out of date.
-> >
-> > If nothing is using them, they'll bit-rot, yes.  Way of the world.  But
-> > I've found a use for them.  Therefore, I'm interested in getting them up
-> > to date and then keeping them there.
->
-> So, do you want me to create more of these?
+Jan Engelhardt wrote:
+> On Aug 12 2007 21:23, Al Viro wrote:
+>>> pivot_root is atomic afaict, for `mount --move` (which I think Al meant 
+>>> which MS_MOVE - or some C program using mount(2) of your own), you'd 
+>>> need multiple calls to mount.
+>> Move itself is done by a single syscall anyway...
+>>
+> Yes, but you need needed 2 mounts, 1 chdir and one chroot. Plus, you 
+> have not freed the data in the rootfs. (Well, neither does 
+> pivot_root, but run-init from klibc will.)
 
-Yes please.
+Yes, which is why it is highly inappropriate for this particular case,
+since they have multiple roots that they presumably don't want deleted!
 
-> If you want them, could you perhaps start by ACK'ing the first 5
-> patches to help me get them merged?
-
-Just did. :)
-
-> Once I see the first 5 merged I'll start creating more, but I don't
-> want to waste time doing so before that.
-
-Sorry it took so long, but my net access is still a touch intermittent just 
-now.  I recently moved back to Austin and we haven't unpacked the wireless 
-router yet.  (So although there's internet at home my wife is usually the one 
-using it.  I'm out at a wireless laundromat at the moment.  Yes, Austin has 
-such things.)
-
-> >I already wrote an automatic checker to tell me
-> > how they differ from reality, which is half the battle.
->
-> I started writing such a script myself yesterday, but it's not done
-> yet. If you already have one that works could I have a copy please?
-> That would make my life easier if I'm to help you with this.
-
-I posted a link to it in the message at the start of this thread:
-http://lkml.org/lkml/2007/8/9/584
-
-Here's the release announcement for it:
-http://marc.info/?l=linux-doc&m=118671778606001&w=2
-
-Here's the source control for it:
-http://landley.net/hg/kdocs/file/tip/make/
-
-You need to run the index.html generator first, because the link checker works 
-on the html and not on 00-INDEX itself.  Both scripts expect Documentation to 
-be a subdirectory of the current directory, and do the whole directory.
-
-And I need to update it so it filters out index.html, but my laundry's 
-done. :)
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+	-hpa
