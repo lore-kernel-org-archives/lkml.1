@@ -1,85 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763405AbXHLBgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764222AbXHLBmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763405AbXHLBgT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 21:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756249AbXHLBgG
+	id S1764222AbXHLBmY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 21:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756456AbXHLBmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 21:36:06 -0400
-Received: from web36611.mail.mud.yahoo.com ([209.191.85.28]:44850 "HELO
-	web36611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756232AbXHLBgE (ORCPT
+	Sat, 11 Aug 2007 21:42:10 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:48716 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756249AbXHLBmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 21:36:04 -0400
-X-YMail-OSG: 3DpCrfgVM1lE5_ka5SPqzFu9PH9.bRF36gS3bZG8yjDLi5b4kYZGEbZedKSAGC31fFh3OtsrFQ--
-X-RocketYMMF: rancidfat
-Date: Sat, 11 Aug 2007 18:36:02 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
-To: Andi Kleen <andi@firstfloor.org>, casey@schaufler-ca.com
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, torvalds@osdl.org
-In-Reply-To: <p73zm0xslyk.fsf@bingen.suse.de>
+	Sat, 11 Aug 2007 21:42:08 -0400
+Message-ID: <46BE621E.9090509@gmail.com>
+Date: Sun, 12 Aug 2007 03:27:58 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <515984.88226.qm@web36611.mail.mud.yahoo.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Are we properly prepared to handle 3 Socket setups?
+References: <9a8748490708111808o11d354fr9efa719bc38046c5@mail.gmail.com>
+In-Reply-To: <9a8748490708111808o11d354fr9efa719bc38046c5@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/12/2007 03:08 AM, Jesper Juhl wrote:
 
---- Andi Kleen <andi@firstfloor.org> wrote:
-
-> Casey Schaufler <casey@schaufler-ca.com> writes:
+> This may be a little off topic, but I think it's interresting enough
+> to warrent a single mail.
 > 
-> > Smack is the Simplified Mandatory Access Control Kernel.
+> I just saw a news article (http://www.theinquirer.net/?article=41610)
+> about a 3 Socket Opteron motherboard and couldn't help but wonder if
+> we are prepared to deal with such a beast, so I thought I'd inform
+> everyone :-)
 > 
-> I like the simplified part.
-> 
-> > +static int smk_get_access(smack_t sub, smack_t obj)
-> > +{
-> > +	struct smk_list_entry *sp = smack_list;
-> > +
-> > +	for (; sp != NULL; sp = sp->smk_next)
-> > +		if (sp->smk_rule.smk_subject == sub &&
-> > +		    sp->smk_rule.smk_object == obj)
-> > +			return sp->smk_rule.smk_access;
-> 
-> Do I miss something, or is there really no locking for the reader side
-> of the list? That looks dangerous. Of course a global lock for readers 
-> would be likely a scaling disaster. You could use RCU.
+> I'm guessing equipping such a board with 3 single core CPU's could
+> show up some interresting corner cases in schedular code and
+> elsewhere, I'll bet we have some assumptions somewhere about
+> nr_of_cpus being an even number...
 
-Entries are never deleted, although they can be modified.
+I would hope the N=1 case will have flushed out enough of those... :-|
 
-> Or if you assume rules are changed only very infrequently it might
-> be more cache friendly to compile all the rules into a linear buffer
-> and then just replace the whole buffer atomically with a RCU
-> grace period on cahnges.
-
-Individual entries can be modified without changing the whole
-thing, but they shouldn't change often.
-
-> It doesn't look like it would scale to larger numbers of rules though.
-> Is that intended? Would caching of decisions fit into the design?
-
-I put some thought into clever schemes for supporting large rule sets
-well but decided to go ahead with the simplest possible mechanism
-because I expect that in real deployments the number of rules will
-be small. In fact, experiance says that virtually all access choices
-will be covered either by the subject==object case or the subject can
-read floor case. Cacheing, hashing, and 2D structures are all
-possibilties that I would be happy to entertain as enhancements.
-
-> Also in general code style would need some improvements;
-> e.g. no externs in .c; no ../.. include hacks etc.
-> You also seem weak on the Documentation front.
-
-Yes, it is pretty sparse.
-
-> Other than that it looks reasonably clean (haven't read all of it)
-
-Thank you for your comments. I think the next version will be improved.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+Rene.
