@@ -1,151 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936338AbXHLPiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937032AbXHLPir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936338AbXHLPiU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 11:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935651AbXHLPhc
+	id S937032AbXHLPir (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 11:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935998AbXHLPhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 11:37:32 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:50227 "EHLO smtp.polymtl.ca"
+	Sun, 12 Aug 2007 11:37:34 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:50242 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935536AbXHLPhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 11:37:16 -0400
-Message-Id: <20070812150639.907604276@polymtl.ca>
-References: <20070812150402.148764478@polymtl.ca>
+	id S935735AbXHLPhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 11:37:21 -0400
+Message-Id: <20070812145836.299998668@polymtl.ca>
+References: <20070812145434.520271946@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Sun, 12 Aug 2007 11:04:07 -0400
+Date: Sun, 12 Aug 2007 10:54:39 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: [patch 5/9] Text Edit Lock - i386
-Content-Disposition: inline; filename=text-edit-lock-i386.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sun, 12 Aug 2007 15:37:00 +0000
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       michael.frysinger@analog.com
+Subject: [patch 05/23] Add cmpxchg_local to blackfin, replace __cmpxchg by generic cmpxchg
+Content-Disposition: inline; filename=add-cmpxchg-local-to-blackfin.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sun, 12 Aug 2007 15:37:07 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Interface to use for code patching : makes sure the page is writable
-between calls to kernel_text_mark_rw() and kernel_text_unmark().
+Use the new generic cmpxchg_local (disables interrupt). Also use the generic
+cmpxchg as fallback if SMP is not set since nobody seems to know why __cmpxchg
+has been implemented in assembly in the first place thather than in plain C.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>
+CC: clameter@sgi.com
+CC: michael.frysinger@analog.com
 ---
- arch/i386/mm/init.c           |   65 ++++++++++++++++++++++++++++++++++--------
- include/asm-i386/cacheflush.h |    7 ++++
- 2 files changed, 60 insertions(+), 12 deletions(-)
+ include/asm-blackfin/system.h |   59 ++++++++----------------------------------
+ 1 file changed, 12 insertions(+), 47 deletions(-)
 
-Index: linux-2.6-lttng/arch/i386/mm/init.c
+Index: linux-2.6-lttng/include/asm-blackfin/system.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/i386/mm/init.c	2007-08-10 16:44:23.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/mm/init.c	2007-08-10 16:47:14.000000000 -0400
-@@ -31,6 +31,7 @@
- #include <linux/memory_hotplug.h>
- #include <linux/initrd.h>
- #include <linux/cpumask.h>
-+#include <linux/kprobes.h>
- 
- #include <asm/processor.h>
- #include <asm/system.h>
-@@ -794,23 +795,15 @@ static int noinline do_test_wp_bit(void)
+--- linux-2.6-lttng.orig/include/asm-blackfin/system.h	2007-08-07 14:31:52.000000000 -0400
++++ linux-2.6-lttng/include/asm-blackfin/system.h	2007-08-07 14:47:31.000000000 -0400
+@@ -176,55 +176,20 @@ static inline unsigned long __xchg(unsig
+ 	return tmp;
  }
  
- #ifdef CONFIG_DEBUG_RODATA
++#include <asm-generic/cmpxchg-local.h>
++
+ /*
+- * Atomic compare and exchange.  Compare OLD with MEM, if identical,
+- * store NEW in MEM.  Return the initial value in MEM.  Success is
+- * indicated by comparing RETURN with OLD.
++ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
++ * them available.
+  */
+-static inline unsigned long __cmpxchg(volatile void *ptr, unsigned long old,
+-				      unsigned long new, int size)
+-{
+-	unsigned long tmp = 0;
+-	unsigned long flags = 0;
 -
- void mark_rodata_ro(void)
- {
- 	unsigned long start = PFN_ALIGN(_text);
- 	unsigned long size = PFN_ALIGN(_etext) - start;
- 
--#ifndef CONFIG_KPROBES
--#ifdef CONFIG_HOTPLUG_CPU
--	/* It must still be possible to apply SMP alternatives. */
--	if (num_possible_cpus() <= 1)
--#endif
--	{
--		change_page_attr(virt_to_page(start),
--		                 size >> PAGE_SHIFT, PAGE_KERNEL_RX);
--		printk("Write protecting the kernel text: %luk\n", size >> 10);
+-	local_irq_save(flags);
+-
+-	switch (size) {
+-	case 1:
+-		__asm__ __volatile__
+-			("%0 = b%3 (z);\n\t"
+-			 "CC = %1 == %0;\n\t"
+-			 "IF !CC JUMP 1f;\n\t"
+-			 "b%3 = %2;\n\t"
+-			 "1:\n\t"
+-			 : "=&d" (tmp) : "d" (old), "d" (new), "m" (*__xg(ptr)) : "memory");
+-		break;
+-	case 2:
+-		__asm__ __volatile__
+-			("%0 = w%3 (z);\n\t"
+-			 "CC = %1 == %0;\n\t"
+-			 "IF !CC JUMP 1f;\n\t"
+-			 "w%3 = %2;\n\t"
+-			 "1:\n\t"
+-			 : "=&d" (tmp) : "d" (old), "d" (new), "m" (*__xg(ptr)) : "memory");
+-		break;
+-	case 4:
+-		__asm__ __volatile__
+-			("%0 = %3;\n\t"
+-			 "CC = %1 == %0;\n\t"
+-			 "IF !CC JUMP 1f;\n\t"
+-			 "%3 = %2;\n\t"
+-			 "1:\n\t"
+-			 : "=&d" (tmp) : "d" (old), "d" (new), "m" (*__xg(ptr)) : "memory");
+-		break;
 -	}
--#endif
-+	change_page_attr(virt_to_page(start),
-+	                 size >> PAGE_SHIFT, PAGE_KERNEL_RX);
-+	printk("Write protecting the kernel text: %luk\n", size >> 10);
+-	local_irq_restore(flags);
+-	return tmp;
+-}
+-
+-#define cmpxchg(ptr,o,n)\
+-        ((__typeof__(*(ptr)))__cmpxchg((ptr),(unsigned long)(o),\
+-                                        (unsigned long)(n),sizeof(*(ptr))))
++#define cmpxchg_local(ptr,o,n)					  	    \
++     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
++			   	 (unsigned long)(n), sizeof(*(ptr)))
++#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
 +
- 	start += size;
- 	size = (unsigned long)__end_rodata - start;
- 	change_page_attr(virt_to_page(start),
-@@ -826,6 +819,54 @@ void mark_rodata_ro(void)
- 	 */
- 	global_flush_tlb();
- }
-+
-+/**
-+ * kernel_text_mark_rw   -  Change kernel core text flags to RW
-+ * @address:                location of the code
-+ * @len:                    size of code to mark
-+ *
-+ * Change kernel text flags to RW. Useful for code patching.
-+ */
-+
-+void __kprobes kernel_text_mark_rw(unsigned long address, size_t len)
-+{
-+	if (address >= PFN_ALIGN(_text)
-+			&& (address + len) <= PFN_ALIGN(_etext)) {
-+		unsigned long nr_pages;
-+		nr_pages = ((address + len) >> PAGE_SHIFT)
-+				- (address >> PAGE_SHIFT) + 1;
-+		change_page_attr(virt_to_page(address), nr_pages,
-+				PAGE_KERNEL_EXEC);
-+		mb();
-+		global_flush_tlb();
-+		mb();
-+	}
-+}
-+EXPORT_SYMBOL_GPL(kernel_text_mark_rw);
-+
-+/**
-+ * kernel_text_unmark    -   Unmap a kernel text rw mapping.
-+ * @address:                 location of the mapping
-+ * @len:                    size of code to mark
-+ *
-+ * Remove RW flag from kernel text.
-+ */
-+
-+void __kprobes kernel_text_unmark(unsigned long address, size_t len)
-+{
-+	if (address >= PFN_ALIGN(_text)
-+			&& (address + len) <= PFN_ALIGN(_etext)) {
-+		unsigned long nr_pages;
-+		nr_pages = ((address + len) >> PAGE_SHIFT)
-+				- (address >> PAGE_SHIFT) + 1;
-+		change_page_attr(virt_to_page(address), nr_pages,
-+				PAGE_KERNEL_RX);
-+		mb();
-+		global_flush_tlb();
-+		mb();
-+	}
-+}
-+EXPORT_SYMBOL_GPL(kernel_text_unmark);
- #endif
++#ifndef CONFIG_SMP
++#include <asm-generic/cmpxchg.h>
++#endif
  
- void free_init_pages(char *what, unsigned long begin, unsigned long end)
-Index: linux-2.6-lttng/include/asm-i386/cacheflush.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-i386/cacheflush.h	2007-08-10 16:44:23.000000000 -0400
-+++ linux-2.6-lttng/include/asm-i386/cacheflush.h	2007-08-10 16:44:46.000000000 -0400
-@@ -34,6 +34,13 @@ void kernel_map_pages(struct page *page,
+ #define prepare_to_switch()     do { } while(0)
  
- #ifdef CONFIG_DEBUG_RODATA
- void mark_rodata_ro(void);
-+
-+/* mark kernel text pages writable */
-+extern void kernel_text_mark_rw(unsigned long address, size_t len);
-+extern void kernel_text_unmark(unsigned long address, size_t len);
-+#else
-+void kernel_text_mark_rw(unsigned long address, size_t len) { }
-+void kernel_text_unmark(unsigned long address, size_t len) { }
- #endif
- 
- #endif /* _I386_CACHEFLUSH_H */
 
 -- 
 Mathieu Desnoyers
