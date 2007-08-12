@@ -1,105 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765106AbXHLB6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763523AbXHLDGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765106AbXHLB6T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 21:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758018AbXHLB6B
+	id S1763523AbXHLDGI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 23:06:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbXHLDF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 21:58:01 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:42255 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757065AbXHLB6A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 21:58:00 -0400
-Message-ID: <46BE6854.90502@gmail.com>
-Date: Sun, 12 Aug 2007 03:54:28 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Miller <mike.miller@hp.com>, iss_storagedev@hp.com
-Subject: Re: [PATCH] Re: cciss: warning: right shift count >= width of type
-References: <200708120228.26234.jesper.juhl@gmail.com> <9a8748490708111756o63ddaeedja091fb2f0b4dbc40@mail.gmail.com> <46BE617D.6010505@gmail.com>
-In-Reply-To: <46BE617D.6010505@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Sat, 11 Aug 2007 23:05:57 -0400
+Received: from xenotime.net ([66.160.160.81]:60012 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750866AbXHLDF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 23:05:56 -0400
+Date: Sat, 11 Aug 2007 20:11:51 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       =?ISO-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Documentation files in html format?
+Message-Id: <20070811201151.c25261cf.rdunlap@xenotime.net>
+In-Reply-To: <20070810201235.GA4133@uranus.ravnborg.org>
+References: <20070809113122.3aa508e4@oldman.hamilton.local>
+	<200708091508.20626.hjk@linutronix.de>
+	<p73hcn8g25m.fsf@bingen.suse.de>
+	<20070810074047.GC31307@uranus.ravnborg.org>
+	<46BC6DA9.1050903@s5r6.in-berlin.de>
+	<20070810201235.GA4133@uranus.ravnborg.org>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/12/2007 03:25 AM, Rene Herman wrote:
+On Fri, 10 Aug 2007 22:12:35 +0200 Sam Ravnborg wrote:
 
-> On 08/12/2007 02:56 AM, Jesper Juhl wrote:
+> > 
+> > What primary requirements does in-tree Linux kernel documentation have
+> > to fulfill in general?
 > 
->> (whoops, forgot to add maintainer to Cc - now added)
+> Skipping the obvious ones such as correct, up-to-date etc.
+> o Readable as-is
+> o Grepable
+> o buildable as structured documents or almost like a single book
+> o Easy to replicate structure
+> o Maintainable in any decent text-editor (emacs, vim, whatever)
 > 
-> Ehm... too late...
-
-Useless followup though -- hp.com rejects me as it feels the SPF neutral 
-results gmail sends due to me not using the gmail SMTP server and/or web 
-interface is something it wants to listen to.
-
-I see you are @gmail as well, which depending on how you use it might mean 
-your are also not able to reach @hp. If anyone can get HP to fix their mail 
-setup, that'd be useful.
-
-Rene.
-
-
+> > I've got a hunch that the most suitable format for Linux kernel
+> > documentation, after careful consideration of what we want from it and
+> > how we author and maintain it, will turn out to be...
+> > 
+> > ...plaintext.
+> Asciidoc is quite close to plaintext and it looks to me that the
+> formatting possibilities are quite good.
 > 
->> On 12/08/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
->>> Hi,
->>>
->>> I've been building some randconfig kernels lately and I've noticed
->>> this in a few builds :
->>>
->>> drivers/block/cciss.c:2614: warning: right shift count >= width of type
->>> drivers/block/cciss.c:2615: warning: right shift count >= width of type
->>> drivers/block/cciss.c:2616: warning: right shift count >= width of type
->>>
->>> The code in question is this :
->>>
->>> static void do_cciss_request(struct request_queue *q)
->>> {
->>> ...
->>>         sector_t start_blk;
->>> ...
->>>                         c->Request.CDB[2]= (start_blk >> 56) & 
->>> 0xff;    //MSB
->>>                         c->Request.CDB[3]= (start_blk >> 48) & 0xff;
->>>                         c->Request.CDB[4]= (start_blk >> 40) & 0xff;
->>> ...
->>> }
->>>
->>>
->>> The problem stems from these lines in include/linux/types.h :
->>> ...
->>> #ifdef CONFIG_LBD
->>> typedef u64 sector_t;
->>> #else
->>> typedef unsigned long sector_t;
->>> #endif
->>> ...
->>>
->>> So on a 32bit arch without CONFIG_LBD, sector_t is going to be 32 
->>> bits wide.
->>> Thus it seems gcc is absolutely right in complaining about those
->>> 56, 48 & 40 bit shifts, since they are indeed wider than the type
->>> in the "!CONFIG_LBD on a 32bit arch" case.
->>>
->>>
->>> I must admit that I have no idear what the proper way to deal with
->>> that is, so I'll just report it so hopefully someone else can fix it.
->>>
->>> By the way; I'm building current Linus git tree, head at commit
->>> ac07860264bd2b18834d3fa3be47032115524cea
-> 
-> Well, given that it's explicitly treating start_blk as a 64-bit value, 
-> the proper fix is probably to cast start_blk to an actual (guaranteed) 
-> 64-bit value. Untested, uncompiled, and someone else may disagree:
-> 
-> Rene.
-> 
+> I spend an hour experimenting a little with
+> Documentation/kbuild/makefiles.txt.
 
+[resend, sorry about duplicates]
+
+Hi Sam,
+
+Sorry for the late question (I've been away :).
+
+Was your makefiles.txt conversion done totally by hand?
+Could it be automated?
+
+or maybe there is not enough volume to even worry about that.
+
+Yes, evaluating asciidoc has been on my radar (todo list) for
+some time now.
+
+
+> Diff below shows quite a lot of changes but for the most
+> this is removal of the indent tab.
+> Most likely I could have tweaked asciidoc to accept this
+> but wanted to use default config.
+> 
+> The resulting html page can be seen here:
+> http://www.ravnborg.org/kbuild/makefiles.html
+> 
+> Produced using:
+> asciidoc -a toc -a numbered makefiles.txt
+> 
+> I would say that the asciidoc formatted plaintext text
+> are readable despite the simple markup.
+> And someone coming later will have no problems to follow
+> the original markup.
+> 
+> Btw. is is not a full conversion, I stopped after a few chapters.
+> asciidoc should be able to produce the index automatically
+> but I had no luck but then I did not try hard either.
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
