@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932827AbXHLUjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932892AbXHLUs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932827AbXHLUjV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 16:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbXHLUjL
+	id S932892AbXHLUs0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 16:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbXHLUsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 16:39:11 -0400
-Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:46862 "EHLO
-	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754590AbXHLUjK convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 16:39:10 -0400
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Vadim Dyadkin <dyadkin@lns.pnpi.spb.ru>
-Subject: Re: troubles with r8169
-Date: Sun, 12 Aug 2007 21:38:58 +0100
-User-Agent: KMail/1.9.7
-Cc: Robert Hancock <hancockr@shaw.ca>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <fa.BZqd/vLw75Xm+ORj+HLjUzU1hSw@ifi.uio.no> <46BF61AB.5060400@shaw.ca> <46BF6853.4020800@lns.pnpi.spb.ru>
-In-Reply-To: <46BF6853.4020800@lns.pnpi.spb.ru>
+	Sun, 12 Aug 2007 16:48:15 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:52458 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752021AbXHLUsO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 16:48:14 -0400
+Date: Sun, 12 Aug 2007 23:48:12 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
+       john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Len Brown <len.brown@intel.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: v2.6.23-rc2 locks up during boot (without acpi=off)
+In-Reply-To: <20070812102754.a785e78a.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708122342330.25832@kivilampi-30.cs.helsinki.fi>
+References: <Pine.LNX.4.64.0708012131480.1479@kivilampi-30.cs.helsinki.fi>
+ <20070812012826.cfc9f5bb.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0708121154150.31747@kivilampi-30.cs.helsinki.fi>
+ <20070812092708.23d0c21c.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0708122003590.25605@kivilampi-30.cs.helsinki.fi>
+ <20070812102754.a785e78a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200708122138.58405.alistair@devzero.co.uk>
+Content-Type: MULTIPART/MIXED; boundary="-696243703-1716754897-1186951605=:25832"
+Content-ID: <Pine.LNX.4.64.0708122347150.25832@kivilampi-30.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 August 2007 21:06:43 Vadim Dyadkin wrote:
-> Robert Hancock пишет:
-> > This could well be a problem with the nvidia driver as it shares the
-> > same IRQ. The first step would be to see if the problem still shows up
-> > without the nvidia binary module loaded.
->
-> Thank for your answer. This problem never shows up if I use only nvidia
-> driver (the work without network), or if I use only r8169 (without
-> x.org). If I use both of them I have the hang. Usually the hang appears
-> if OpenGL is used or network rate is maximal. I tested this regimes many
-> times before.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-If you haven't already, I'd drop linux-bugs@nvidia.com an email to see if they 
-have any insight. Not that this can't be a kernel bug, just that it's a bit 
-difficult for kernel developers to debug when you're using a driver for which 
-we don't have the sources.
+---696243703-1716754897-1186951605=:25832
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0708122347151.25832@kivilampi-30.cs.helsinki.fi>
 
-As for changing the IRQ assignments, I don't have any immediate suggestions. I 
-notice that this laptop has a dual core processor, so I'm guessing disabling 
-APIC isn't an option. Have you tried that anyway, just to see if the IRQ 
-assignment differs?
+On Sun, 12 Aug 2007, Andrew Morton wrote:
+
+> On Sun, 12 Aug 2007 20:15:51 +0300 (EEST) "Ilpo J�rvinen" <ilpo.jarvinen@helsinki.fi> wrote:
+> 
+> > Hmm, it was really worth of it, I did:
+> > $ git-fetch linus
+> > $ git-reset --hard linus
+> > [...make & install & boot...]
+> > 
+> > ...and voila, the problem went away, so something else seems to have
+> > fixed it between: ac07860264bd and 963c6527e0a0e. As you can notice,
+> > I didn't even have to revert it (I was just double checking current
+> > mainline first).
+> > 
+> > Is there a need to get a more detailed view about the cause or something, 
+> > or are details of this issue clear enough to everyone? I can do some more 
+> > research if necessary, though expect a bit longer latencies during the 
+> > next week...
+> > 
+> > In case none, thanks everyone, this issue seems solved. :-)
+> 
+> We just had an acpi commit.  Something like ed3110efb538d7acbf635095c1382118f7414f75
+> might have fixed this.
+
+...Yeah, it's very likely the same issue as bisect in that case seemed to 
+end up to the very same commit I found, and it was answered with that 
+fix...
 
 -- 
-Cheers,
-Alistair.
-
-137/1 Warrender Park Road, Edinburgh, UK.
-
+ i.
+---696243703-1716754897-1186951605=:25832--
