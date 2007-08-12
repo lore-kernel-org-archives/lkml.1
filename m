@@ -1,203 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764869AbXHLPBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935131AbXHLPBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764869AbXHLPBf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 11:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763065AbXHLO6y
+	id S935131AbXHLPBy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 11:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763275AbXHLO6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 10:58:54 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:46535 "EHLO smtp.polymtl.ca"
+	Sun, 12 Aug 2007 10:58:55 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:46536 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761904AbXHLO6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 10:58:51 -0400
-Message-Id: <20070812145834.542290892@polymtl.ca>
+	id S1762520AbXHLO6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 10:58:52 -0400
+Message-Id: <20070812145838.575723744@polymtl.ca>
 References: <20070812145434.520271946@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Sun, 12 Aug 2007 10:54:35 -0400
+Date: Sun, 12 Aug 2007 10:54:44 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Christoph Lameter <clameter@sgi.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, mingo@redhat.com
-Subject: [patch 01/23] Fall back on interrupt disable in cmpxchg8b on 80386 and 80486
-Content-Disposition: inline; filename=i386-cmpxchg64-80386-80486-fallback.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sun, 12 Aug 2007 14:58:35 +0000
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, takata@linux-m32r.org,
+       linux-m32r@ml.linux-m32r.org
+Subject: [patch 10/23] New cmpxchg_local (optimized for UP case) for m32r
+Content-Disposition: inline; filename=add-cmpxchg-local-to-m32r.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sun, 12 Aug 2007 14:58:39 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Actually, on 386, cmpxchg and cmpxchg_local fall back on
-cmpxchg_386_u8/16/32: it disables interruptions around non atomic
-updates to mimic the cmpxchg behavior.
+Add __xchg_local, xchg_local (define), __cmpxchg_local_u32, __cmpxchg_local,
+cmpxchg_local(macro).
 
-The comment:
-/* Poor man's cmpxchg for 386. Unsuitable for SMP */
-
-already present in cmpxchg_386_u32 tells much about how this cmpxchg
-implementation should not be used in a SMP context. However, the cmpxchg_local
-can perfectly use this fallback, since it only needs to be atomic wrt the local
-cpu.
-
-This patch adds a cmpxchg_486_u64 and uses it as a fallback for cmpxchg64
-and cmpxchg64_local on 80386 and 80486.
+cmpxchg_local and cmpxchg64_local will use the architecture specific
+__cmpxchg_local_u32 for 32 bits arguments, and use the generic
+__cmpxchg_local_generic for 8, 16 and 64 bits arguments.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: clameter@sgi.com
-CC: mingo@redhat.com
+CC: takata@linux-m32r.org
+CC: linux-m32r@ml.linux-m32r.org
 ---
- arch/i386/kernel/cpu/intel.c |   17 +++++++
- include/asm-i386/cmpxchg.h   |  100 +++++++++++++++++++++++++++++--------------
- 2 files changed, 85 insertions(+), 32 deletions(-)
+ include/asm-m32r/system.h |  103 +++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 97 insertions(+), 6 deletions(-)
 
-Index: linux-2.6-lttng/arch/i386/kernel/cpu/intel.c
+Index: linux-2.6-lttng/include/asm-m32r/system.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/i386/kernel/cpu/intel.c	2007-08-07 11:00:43.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/kernel/cpu/intel.c	2007-08-07 11:11:07.000000000 -0400
-@@ -329,5 +329,22 @@ unsigned long cmpxchg_386_u32(volatile v
- EXPORT_SYMBOL(cmpxchg_386_u32);
- #endif
+--- linux-2.6-lttng.orig/include/asm-m32r/system.h	2007-08-07 14:31:52.000000000 -0400
++++ linux-2.6-lttng/include/asm-m32r/system.h	2007-08-07 14:55:02.000000000 -0400
+@@ -123,6 +123,9 @@ static inline void local_irq_disable(voi
  
-+#ifndef CONFIG_X86_CMPXCHG64
-+unsigned long long cmpxchg_486_u64(volatile void *ptr, u64 old, u64 new)
-+{
-+	u64 prev;
-+	unsigned long flags;
-+
-+	/* Poor man's cmpxchg8b for 386 and 486. Unsuitable for SMP */
-+	local_irq_save(flags);
-+	prev = *(u64 *)ptr;
-+	if (prev == old)
-+		*(u64 *)ptr = new;
-+	local_irq_restore(flags);
-+	return prev;
-+}
-+EXPORT_SYMBOL(cmpxchg_486_u64);
-+#endif
-+
- // arch_initcall(intel_cpu_init);
+ #define xchg(ptr,x) \
+ 	((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
++#define xchg_local(ptr,x) \
++	((__typeof__(*(ptr)))__xchg_local((unsigned long)(x),(ptr), \
++			sizeof(*(ptr))))
  
-Index: linux-2.6-lttng/include/asm-i386/cmpxchg.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-i386/cmpxchg.h	2007-08-07 11:01:17.000000000 -0400
-+++ linux-2.6-lttng/include/asm-i386/cmpxchg.h	2007-08-07 11:16:42.000000000 -0400
-@@ -116,6 +116,15 @@ static inline unsigned long __xchg(unsig
- 					(unsigned long)(n),sizeof(*(ptr))))
- #endif
- 
-+#ifdef CONFIG_X86_CMPXCHG64
-+#define cmpxchg64(ptr,o,n)\
-+	((__typeof__(*(ptr)))__cmpxchg64((ptr),(unsigned long long)(o),\
-+					(unsigned long long)(n)))
-+#define cmpxchg64_local(ptr,o,n)\
-+	((__typeof__(*(ptr)))__cmpxchg64_local((ptr),(unsigned long long)(o),\
-+					(unsigned long long)(n)))
-+#endif
-+
- static inline unsigned long __cmpxchg(volatile void *ptr, unsigned long old,
- 				      unsigned long new, int size)
- {
-@@ -203,6 +212,34 @@ static inline unsigned long __cmpxchg_lo
- 	return old;
+ #ifdef CONFIG_SMP
+ extern void  __xchg_called_with_bad_pointer(void);
+@@ -196,6 +199,42 @@ __xchg(unsigned long x, volatile void * 
+ 	return (tmp);
  }
  
-+static inline unsigned long long __cmpxchg64(volatile void *ptr,
-+			unsigned long long old, unsigned long long new)
++static __always_inline unsigned long
++__xchg_local(unsigned long x, volatile void * ptr, int size)
 +{
-+	unsigned long long prev;
-+	__asm__ __volatile__(LOCK_PREFIX "cmpxchg8b %3"
-+			     : "=A"(prev)
-+			     : "b"((unsigned long)new),
-+			       "c"((unsigned long)(new >> 32)),
-+			       "m"(*__xg(ptr)),
-+			       "0"(old)
-+			     : "memory");
-+	return prev;
++	unsigned long flags;
++	unsigned long tmp = 0;
++
++	local_irq_save(flags);
++
++	switch (size) {
++	case 1:
++		__asm__ __volatile__ (
++			"ldb	%0, @%2 \n\t"
++			"stb	%1, @%2 \n\t"
++			: "=&r" (tmp) : "r" (x), "r" (ptr) : "memory");
++		break;
++	case 2:
++		__asm__ __volatile__ (
++			"ldh	%0, @%2 \n\t"
++			"sth	%1, @%2 \n\t"
++			: "=&r" (tmp) : "r" (x), "r" (ptr) : "memory");
++		break;
++	case 4:
++		__asm__ __volatile__ (
++			"ld	%0, @%2 \n\t"
++			"st	%1, @%2 \n\t"
++			: "=&r" (tmp) : "r" (x), "r" (ptr) : "memory");
++		break;
++	default:
++		__xchg_called_with_bad_pointer();
++	}
++
++	local_irq_restore(flags);
++
++	return (tmp);
 +}
 +
-+static inline unsigned long long __cmpxchg64_local(volatile void *ptr,
-+			unsigned long long old, unsigned long long new)
-+{
-+	unsigned long long prev;
-+	__asm__ __volatile__("cmpxchg8b %3"
-+			     : "=A"(prev)
-+			     : "b"((unsigned long)new),
-+			       "c"((unsigned long)(new >> 32)),
-+			       "m"(*__xg(ptr)),
-+			       "0"(old)
-+			     : "memory");
-+	return prev;
-+}
-+
- #ifndef CONFIG_X86_CMPXCHG
- /*
-  * Building a kernel capable running on 80386. It may be necessary to
-@@ -252,38 +289,37 @@ static inline unsigned long cmpxchg_386(
- })
- #endif
+ #define __HAVE_ARCH_CMPXCHG	1
  
--static inline unsigned long long __cmpxchg64(volatile void *ptr, unsigned long long old,
--				      unsigned long long new)
--{
--	unsigned long long prev;
--	__asm__ __volatile__(LOCK_PREFIX "cmpxchg8b %3"
--			     : "=A"(prev)
--			     : "b"((unsigned long)new),
--			       "c"((unsigned long)(new >> 32)),
--			       "m"(*__xg(ptr)),
--			       "0"(old)
--			     : "memory");
--	return prev;
--}
-+#ifndef CONFIG_X86_CMPXCHG64
+ static inline unsigned long
+@@ -228,6 +267,37 @@ __cmpxchg_u32(volatile unsigned int *p, 
+ 	return retval;
+ }
+ 
++static inline unsigned long
++__cmpxchg_local_u32(volatile unsigned int *p, unsigned int old,
++			unsigned int new)
++{
++	unsigned long flags;
++	unsigned int retval;
++
++	local_irq_save(flags);
++	__asm__ __volatile__ (
++			DCACHE_CLEAR("%0", "r4", "%1")
++			"ld %0, @%1;		\n"
++		"	bne	%0, %2, 1f;	\n"
++			"st %3, @%1;		\n"
++		"	bra	2f;		\n"
++                "       .fillinsn		\n"
++		"1:"
++			"st %0, @%1;		\n"
++                "       .fillinsn		\n"
++		"2:"
++			: "=&r" (retval)
++			: "r" (p), "r" (old), "r" (new)
++			: "cbit", "memory"
++#ifdef CONFIG_CHIP_M32700_TS1
++			, "r4"
++#endif  /* CONFIG_CHIP_M32700_TS1 */
++		);
++	local_irq_restore(flags);
++
++	return retval;
++}
++
+ /* This function doesn't exist, so you'll get a linker error
+    if something tries to do an invalid cmpxchg().  */
+ extern void __cmpxchg_called_with_bad_pointer(void);
+@@ -248,12 +318,33 @@ __cmpxchg(volatile void *ptr, unsigned l
+ }
+ 
+ #define cmpxchg(ptr,o,n)						 \
+-  ({									 \
+-     __typeof__(*(ptr)) _o_ = (o);					 \
+-     __typeof__(*(ptr)) _n_ = (n);					 \
+-     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
+-				    (unsigned long)_n_, sizeof(*(ptr))); \
+-  })
++     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)(o),		 \
++				    (unsigned long)(n), sizeof(*(ptr)))
++
++#include <asm-generic/cmpxchg-local.h>
++
++static inline unsigned long __cmpxchg_local(volatile void *ptr,
++				      unsigned long old,
++				      unsigned long new, int size)
++{
++	switch (size) {
++	case 4:
++		return __cmpxchg_local_u32(ptr, old, new);
++	default:
++		return __cmpxchg_local_generic(ptr, old, new, size);
++	}
++
++	return old;
++}
++
 +/*
-+ * Building a kernel capable running on 80386 and 80486. It may be necessary
-+ * to simulate the cmpxchg8b on the 80386 and 80486 CPU.
++ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
++ * them available.
 + */
-+
-+extern unsigned long long cmpxchg_486_u64(volatile void *, u64, u64);
-+
-+#define cmpxchg64(ptr,o,n)						\
-+({									\
-+	__typeof__(*(ptr)) __ret;					\
-+	if (likely(boot_cpu_data.x86 > 4))				\
-+		__ret = __cmpxchg64((ptr), (unsigned long long)(o),	\
-+				(unsigned long long)(n));		\
-+	else								\
-+		__ret = cmpxchg_486_u64((ptr), (unsigned long long)(o),	\
-+				(unsigned long long)(n));		\
-+	__ret;								\
-+})
-+#define cmpxchg64_local(ptr,o,n)					\
-+({									\
-+	__typeof__(*(ptr)) __ret;					\
-+	if (likely(boot_cpu_data.x86 > 4))				\
-+		__ret = __cmpxchg64_local((ptr), (unsigned long long)(o), \
-+				(unsigned long long)(n));		\
-+	else								\
-+		__ret = cmpxchg_486_u64((ptr), (unsigned long long)(o),	\
-+				(unsigned long long)(n));		\
-+	__ret;								\
-+})
++#define cmpxchg_local(ptr,o,n)					  	    \
++     (__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	    \
++			   	 (unsigned long)(n), sizeof(*(ptr)))
++#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
  
--static inline unsigned long long __cmpxchg64_local(volatile void *ptr,
--			unsigned long long old, unsigned long long new)
--{
--	unsigned long long prev;
--	__asm__ __volatile__("cmpxchg8b %3"
--			     : "=A"(prev)
--			     : "b"((unsigned long)new),
--			       "c"((unsigned long)(new >> 32)),
--			       "m"(*__xg(ptr)),
--			       "0"(old)
--			     : "memory");
--	return prev;
--}
-+#endif
+ #endif  /* __KERNEL__ */
  
--#define cmpxchg64(ptr,o,n)\
--	((__typeof__(*(ptr)))__cmpxchg64((ptr),(unsigned long long)(o),\
--					(unsigned long long)(n)))
--#define cmpxchg64_local(ptr,o,n)\
--	((__typeof__(*(ptr)))__cmpxchg64_local((ptr),(unsigned long long)(o),\
--					(unsigned long long)(n)))
- #endif
 
 -- 
 Mathieu Desnoyers
