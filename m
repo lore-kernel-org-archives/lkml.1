@@ -1,97 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936081AbXHLQpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932266AbXHLQv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936081AbXHLQpv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 12:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932202AbXHLQpl
+	id S932266AbXHLQv0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 12:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbXHLQvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 12:45:41 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:52063 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755327AbXHLQpk (ORCPT
+	Sun, 12 Aug 2007 12:51:18 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:9441 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbXHLQvR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 12:45:40 -0400
-Date: Sun, 12 Aug 2007 18:45:38 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Finding out socket/pipe connectivity status
-In-Reply-To: <20070812170018.6f56a0dd@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0708121808470.28963@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0708121059160.28963@fbirervta.pbzchgretzou.qr>
- <20070812170018.6f56a0dd@the-village.bc.nu>
+	Sun, 12 Aug 2007 12:51:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=db41yjUrGIwOpWO5Ze6p08h+zGAm526iUCDS6OuA9rYWUxxQN/AQRE6pjfyLnIPT1CtuLe24141645g6ji8uq4h+Q45Y5mK4hZngFJwUPqJrgWUsYF96AfXCxfnoPKu+6+bt8UnmxZWLwTTVL4AE9osIFQyqT/xF0kKY3cFnsc8=
+Message-ID: <6cf66ee10708120951l62d70bcbob568010efcfeecb7@mail.gmail.com>
+Date: Sun, 12 Aug 2007 06:51:15 -1000
+From: "charles gagalac" <charles.gagalac@gmail.com>
+To: dean@arctic.org
+Subject: Re: [BUG] Kernel panic - not syncing: VFS
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <6cf66ee10708112034j65689eacm6a72c6d019e9f62f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6cf66ee10708112034j65689eacm6a72c6d019e9f62f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Aug 12 2007 17:00, Alan Cox wrote:
->> when a pipe/socket is broken, the process trying to read/write to it 
->> gets SIGPIPE. Is there a way to detect whether the next read/write will 
->> trigger a SIGPIPE? select() does not seem helpful here.
-
->Processes that are network aware normally set SIGPIPE to SIG_IGN.
->The default behaviour comes from a desire that non aware programs
->shouldn't get stuck spinning on a network error but go away.
+On 8/11/07, charles gagalac wrote:
+> i'm getting the following kernel panic when booting:
 >
->If you ignore the signal you'll get a event from select, and then an
->error code.
+> Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0)
 >
-Yes, SIGPIPE is ignored, because it just occurs at the same time I
-can check read() for -1 [=too late].
-
+> a bisect generated the commit below:
 >
->select considers the broken pipe an error that needs reporting
->so it goes ready.
+> 3320ad994afb2c44ad34b3b34c3c5cf0da297331 is first bad commit
+> commit 3320ad994afb2c44ad34b3b34c3c5cf0da297331
+> Author: dean gaudet
+> Date:   Fri Aug 10 22:30:59 2007 +0200
+>
+>     x86: Work around mmio config space quirk on AMD Fam10h
+>
 
-I am in a quite awkward situation. It is about a fuse mount program
-operating in xinetd mode (reading/writing to stdin/stdout). When any
-of my code is called, I am already involved in a filesystem operation
-(e.g. the user called `df`), so there is no point in trying to
-handle a broken pipe here. For reference, my_getattr() is,
-simplified:
-
-	write(stdout, request);
-	/* reference point [A] */
-	read(stdin, response);
-
-So my idea had been to launch another thread that monitors stdin for
-'breakage' and unmount the fs before a user can start an operation on
-myfs. So I've been trying to complete the idea to code. You say a
-broken socket raises the read flag, so:
-
-	while(1) {
-		select(STDIN_FILENO+1, &read_set, NULL, NULL, NULL);
-		/* check if broken */
-	}
-
-but the read flag may also raised during [A] above. So I'd have to
-use locking ...
-
-	pthread_mutex_lock(&lk);
-	write(stdout, request);
-	read(stdin, response);
-	pthread_mutex_unlock(&lk);
-
-and
-
-	while(1) {
-		pthread_mutex_lock(&lk);
-		select(STDIN_FILENO+1, &read_set, NULL, NULL,
-			&(struct timeval){0, 0});
-		/* check if broken */
-		pthread_mutex_unlock(&lk);
-	}
-
-this has the disadvantage that I have to use {0,0} so as to unlock
-&lk ASAP, otherwise I'd be blocking the write(). Additionally, this
-makes it busy-loop, which is not so good. Adding a sleep(60) is a
-workaround, but I'd prefer some infinite timeout that cancels on
-condition, like e.g. select with a NULL timeout.
-
-Maybe there is a thought bug somewhere and it can be done better.
-Your advice is highly appreciated,
-thanks,
-	Jan
--- 
+fixed with commit c1502e28346fd3b9955ce654c96212c4748d900d, i believe.  thanks.
