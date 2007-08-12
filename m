@@ -1,101 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764723AbXHLHPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763459AbXHLH0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764723AbXHLHPz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 03:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758588AbXHLHPd
+	id S1763459AbXHLH0I (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 03:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbXHLHZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 03:15:33 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:46028 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756705AbXHLHPa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 03:15:30 -0400
-Date: Sat, 11 Aug 2007 15:55:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       =?ISO-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Documentation files in html format?
-Message-Id: <20070811155525.3ff6a8f3.randy.dunlap@oracle.com>
-In-Reply-To: <20070810201235.GA4133@uranus.ravnborg.org>
-References: <20070809113122.3aa508e4@oldman.hamilton.local>
-	<200708091508.20626.hjk@linutronix.de>
-	<p73hcn8g25m.fsf@bingen.suse.de>
-	<20070810074047.GC31307@uranus.ravnborg.org>
-	<46BC6DA9.1050903@s5r6.in-berlin.de>
-	<20070810201235.GA4133@uranus.ravnborg.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Sun, 12 Aug 2007 03:25:57 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:40627 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755238AbXHLHZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 03:25:56 -0400
+Date: Sun, 12 Aug 2007 16:24:55 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Rene Herman <rene.herman@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Are we properly prepared to handle 3 Socket setups?
+Message-ID: <20070812072455.GB22250@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jesper Juhl <jesper.juhl@gmail.com>,
+	Rene Herman <rene.herman@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <9a8748490708111808o11d354fr9efa719bc38046c5@mail.gmail.com> <46BE621E.9090509@gmail.com> <9a8748490708111852y569a3e18i1c3d192e60eceafe@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9a8748490708111852y569a3e18i1c3d192e60eceafe@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007 22:12:35 +0200 Sam Ravnborg wrote:
-
-> > 
-> > What primary requirements does in-tree Linux kernel documentation have
-> > to fulfill in general?
+On Sun, Aug 12, 2007 at 03:52:48AM +0200, Jesper Juhl wrote:
+> On 12/08/07, Rene Herman <rene.herman@gmail.com> wrote:
+> > On 08/12/2007 03:08 AM, Jesper Juhl wrote:
+> >
+> > > This may be a little off topic, but I think it's interresting enough
+> > > to warrent a single mail.
+> > >
+> > > I just saw a news article (http://www.theinquirer.net/?article=41610)
+> > > about a 3 Socket Opteron motherboard and couldn't help but wonder if
+> > > we are prepared to deal with such a beast, so I thought I'd inform
+> > > everyone :-)
+> > >
+> > > I'm guessing equipping such a board with 3 single core CPU's could
+> > > show up some interresting corner cases in schedular code and
+> > > elsewhere, I'll bet we have some assumptions somewhere about
+> > > nr_of_cpus being an even number...
+> >
+> > I would hope the N=1 case will have flushed out enough of those... :-|
+> >
+> Hehe, true, but I was thinking more of nr_of_cpus is an odd number > 1. :-)
+> Just thinking of having to divide things by 3 makes me worry ;-)  ...
 > 
-> Skipping the obvious ones such as correct, up-to-date etc.
-> o Readable as-is
-> o Grepable
-> o buildable as structured documents or almost like a single book
-> o Easy to replicate structure
-> o Maintainable in any decent text-editor (emacs, vim, whatever)
-> 
-> > I've got a hunch that the most suitable format for Linux kernel
-> > documentation, after careful consideration of what we want from it and
-> > how we author and maintain it, will turn out to be...
-> > 
-> > ...plaintext.
-> Asciidoc is quite close to plaintext and it looks to me that the
-> formatting possibilities are quite good.
-> 
-> I spend an hour experimenting a little with
-> Documentation/kbuild/makefiles.txt.
-
-Hi Sam,
-
-Sorry for the late question (I've been away :).
-
-Was your makefiles.txt conversion done totally by hand?
-Could it be automated?
-
-or maybe there is not enough volume to even worry about that.
-
-Yes, evaluating asciidoc has been on my radar (todo list) for
-some time now.
-
-
-> Diff below shows quite a lot of changes but for the most
-> this is removal of the indent tab.
-> Most likely I could have tweaked asciidoc to accept this
-> but wanted to use default config.
-> 
-> The resulting html page can be seen here:
-> http://www.ravnborg.org/kbuild/makefiles.html
-> 
-> Produced using:
-> asciidoc -a toc -a numbered makefiles.txt
-> 
-> I would say that the asciidoc formatted plaintext text
-> are readable despite the simple markup.
-> And someone coming later will have no problems to follow
-> the original markup.
-> 
-> Btw. is is not a full conversion, I stopped after a few chapters.
-> asciidoc should be able to produce the index automatically
-> but I had no luck but then I did not try hard either.
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+These sorts of cases happen frequently enough today as it is in an
+operational capacity, CPU hotplug will have the sytem in such states
+already on systems with an even number. This is generally why things like
+the online map and corresponding cpumasks are what counts, while the
+total number of possible CPUs can be a drastically different number.
