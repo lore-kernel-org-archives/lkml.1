@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765482AbXHLIXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932157AbXHLI3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765482AbXHLIXg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 04:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756248AbXHLIXU
+	id S932157AbXHLI3a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 04:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757450AbXHLI3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 04:23:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40703 "EHLO
+	Sun, 12 Aug 2007 04:29:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55929 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755327AbXHLIXR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 04:23:17 -0400
-Date: Sun, 12 Aug 2007 01:23:05 -0700
+	by vger.kernel.org with ESMTP id S1756850AbXHLI3R convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 04:29:17 -0400
+Date: Sun, 12 Aug 2007 01:28:26 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Russ Dill <Russ.Dill@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: Re: Process stuck in md_wakeup_thread
-Message-Id: <20070812012305.1c717196.akpm@linux-foundation.org>
-In-Reply-To: <loom.20070811T042748-157@post.gmane.org>
-References: <loom.20070811T042748-157@post.gmane.org>
+To: =?ISO-8859-1?B?IklscG8gSuRydmluZW4i?= <ilpo.jarvinen@helsinki.fi>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
+       john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: v2.6.23-rc2 locks up during boot (without acpi=off)
+Message-Id: <20070812012826.cfc9f5bb.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0708012131480.1479@kivilampi-30.cs.helsinki.fi>
+References: <Pine.LNX.4.64.0708012131480.1479@kivilampi-30.cs.helsinki.fi>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Aug 2007 02:34:34 +0000 (UTC) Russ Dill <Russ.Dill@gmail.com> wrote:
+On Sat, 11 Aug 2007 15:39:30 +0300 (EEST) "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi> wrote:
 
-> On 2.6.22 from debian (stock), I have a process (dpkg) stuck with the following
-> calltrace:
+> I noticed that v2.6.23-rc1 locks up during boot, same thing happens now 
+> with the latest linus' tree (+net-2.6.24 and tcp-2.6 tree stuff on top 
+> of it; in -rc1 test they weren't though). The exact location of hang
+> varies a bit though. No OOPS, does not respond to sysrq or anything else 
+> besides reset. Last known bootable one is something like 2.6.22-rc4 
+> (I usually run 2.6.21.5 on this machine, haven't tried any 2.6.22 on
+> this after those rcs). Problem seems to start after this line:
 > 
-> SysRq : Show Blocked State
+> Time: acpi_pm clocksource has been installed.
 > 
->                          free                        sibling
->   task             PC    stack   pid father child younger older
-> dpkg          D 00000003     0 26040  20765 (NOTLB)
->        e57d5e30 00200082 00000000 00000003 dfc48ba8 00000000 dfc48ba8 00000000 
->        00000007 e0af45c0 e8ce17aa 0002827f 00051ec2 e0af46cc c1809980 00000000 
->        e8ce1324 0002827f 00200082 f881cd4c 00200286 f8ba2c85 c1809980 e57d5e60 
-> Call Trace:
->  [<f881cd4c>] md_wakeup_thread+0x26/0x28 [md_mod]
->  [<f8ba2c85>] raid5_unplug_device+0x4e/0x5a [raid456]
+> ...the power led starts blinking (not periodic cycle but more or less 
+> varying on-off cycle, never seen that led blink before at all, didn't know 
+> that one can make it blink :-)) and the machine gets consideably slower 
+> too. Never have it been able to complete booting all they way up to login 
+> prompt before lock up.
+> 
+> Tried with acpi=off, boots just fine (dmesg comes from it). I can take 
 
-The above is stack gunk.
+A hang a short-but-variable period after a clocksource was installed: probably
+means that the kernel wedged on the first clock interrupt.
 
->  [<c02a786e>] io_schedule+0x1d/0x27
->  [<c014f3c5>] sync_page+0x0/0x3b
->  [<c014f3fd>] sync_page+0x38/0x3b
->  [<c02a7a6f>] __wait_on_bit_lock+0x2a/0x52
->  [<c014f3b7>] __lock_page+0x58/0x5e
->  [<c01333aa>] wake_bit_function+0x0/0x3c
->  [<c0155daa>] truncate_inode_pages_range+0x201/0x256
->  [<c0155e16>] truncate_inode_pages+0x17/0x1a
->  [<f8c867eb>] reiserfs_delete_inode+0x36/0xdd [reiserfs]
->  [<f8c867b5>] reiserfs_delete_inode+0x0/0xdd [reiserfs]
->  [<c017acc5>] generic_delete_inode+0xa0/0x105
->  [<c017a4ad>] iput+0x60/0x62
->  [<c0172f41>] do_unlinkat+0xb6/0x126
->  [<c0103d7e>] syscall_call+0x7/0xb
->  =======================
-> 
-> My system is still up and running.
-> 
+I'd expect 2.6.22 to work OK.  It's a little unexpected that the bug was added
+after 2.6.22: a number of these reports have narrowed down to the patchset which
+added dynticks and clockevents, but that was already in 2.6.22.
 
-It's stuck waiting for a page to come unlocked.  The most likely
-explanation is that an IO got lost.
+It'd be great if you could run a git bisection search please.
