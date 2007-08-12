@@ -1,84 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934929AbXHLNIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934578AbXHLNJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934929AbXHLNIy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 09:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932795AbXHLNIo
+	id S934578AbXHLNJX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 09:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934975AbXHLNI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 09:08:44 -0400
-Received: from rwcrmhc14.comcast.net ([216.148.227.154]:58695 "EHLO
-	rwcrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932950AbXHLNIn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 09:08:43 -0400
-Subject: Kernel 2.5.23-rc2-git4 Boot Failure
-From: Chris Holvenstot <cholvenstot@comcast.net>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 12 Aug 2007 08:10:45 -0500
-Message-Id: <1186924245.6478.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Aug 2007 09:08:58 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60874 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934964AbXHLNI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 09:08:57 -0400
+To: "Dan Merillat" <dan.merillat@gmail.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       rusty@rustcorp.com.au, Petr Vandrovec <petr@vandrovec.name>
+Subject: Re: reset during bootup - solved
+References: <a56dfcf00708120244x3ae8f4w9183354cf5f33f93@mail.gmail.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 12 Aug 2007 16:03:08 +0200
+In-Reply-To: <a56dfcf00708120244x3ae8f4w9183354cf5f33f93@mail.gmail.com>
+Message-ID: <p73wsw0j1er.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Last night I built the 2.6.23-rc2-git4 kernel but could not get it to
-boot.  I rebuilt it this morning from scratch on the chance that I made
-a finger-check the first time through and screwed the pooch.
+"Dan Merillat" <dan.merillat@gmail.com> writes:
 
-After the second attempt to build this i still could not boot the
-system.  I received the following messages (hand copied - not sure how
-to capture messages during the early phases of a boot)
+> On 8/11/07, Dan Merillat <dan.merillat@gmail.com> wrote:
+> > This one is going to be fun, since it's a hard reset back to bios, no
+> > OOPS or anything shown.  It may be about the time RadeonFB kicks in,
+> > but it's impossible to tell.  I'd guess 15-20 lines into dmesg.
+> >
+> > I'm in the process of bisecting, currently 94c18227..d23cf676.
+> >
+> > Any guesses of a specific patch to check?
+> 
+> Except it's not d23cf676, that was the version I was running while
+> building HEAD, whoops.
+> I'm used to monotonic version numbers, not SHA hashes.  I'll keep
+> better track next time.
+> 
+> For completeness, the commit that caused boot to fail was:
+> 
+> commit ab144f5ec64c42218a555ec1dbde6b60cf2982d6
+> Author: Andi Kleen <ak@suse.de>
 
-PCI: cannot allocate resource region 0 of device 000:00:04.0
-PCI: cannot allocate resource region 4 of device 000:00:06.0
-Loading, please wait
-ehci_hcd 0000:00:02.1 init 0000:00:02.1 fail, -16
-ohci_hcd 0000:00:02.0 init 0000:00:02.0 fail, -16
+BTW the patch was actually from Rusty, not me, just the From 
+line got lost somewhere. I did a few changes though because
+the initial version didn't work on x86-64 at all. Submitted
+one worked for me.
 
-The system cranks for a while and then I see the messages:
+> Date:   Fri Aug 10 22:31:03 2007 +0200
+> 
+>     i386: Make patching more robust, fix paravirt issue
+> 
+> Except I'm using x86_64?  So not sure why that one rev kills me.
 
-hdb: <4>hdb: dma_timer_expiry: DMA status = oFF
+The code is used on x86-64 too, but the script that generates
+the prefixes doesn't know this (perhaps I should drop them) 
 
-and thereafter 
+> ACPI? It dies right after the CPU is identified:
+> CPU: AMD Athlon(tm) 64 Processor 3000+ stepping 00
+> ACPI: Core revision 20070126
 
-hdb: dma_timer_expiry: DMA status = oFF
+Ok that settles it.
 
-is issued every 10 seconds.
+However I must say I'm still dubious of Petr's patch. If there
+is something wrong with alternative() then it must be fixed
+in alternative() not the call sites. Otherwise it could hit
+other patch sites too. There are other copies who
+use a similar patching pattern.
 
-The hdb drive is where the system (root partition) is located
+Can people who see a failure please send me .config and 
+arch/x86_64/lib/memcpy.o privately ? 
 
-My basic configuration looks like:
-
-* AMD_64 X2 4600+ (older 939 pin unit)
-* MSI K8n NEO 4 motherboard 
-* 2 gig memory across 4 512 modules
-* hda: IDE-DVD ROM 16x, ATAPI CD/DVD-ROM drive
-* hdb: WDC WD2500JB-55REA0, ATA DISK drive
-* hdc: WDC WD2000BB-22GUC0, ATA DISK drive
-* hdd: Maxtor 6Y120P0, ATA DISK drive
-* ata1: SATA max UDMA/133 cmd 0xf884a480 ctl 0xf884a4a0 bmdma 0x0001cc00
-irq 19
-* ata2: SATA max UDMA/133 cmd 0xf884a580 ctl 0xf884a5a0 bmdma 0x0001cc08
-irq 19
-* Nvidia GeForce 7600 GS Video Card
-* Nvidia CK804 chip set
-
-All hard drives formatted EXT3
-Using generic "nv" video driver (NOT Nvidia's driver)
-
-System boots and runs good on 2.6.23-rc1 through 2.6.23-rc2-git3
-
-The base system I am using is Ubuntu's 7.04 with minor modifications
-
-I hope that this provides enough information to start with.  If I have
-left anything important out please let me know what you would llike to
-see (and maybe where to get it)
-
-
-
-
-
-
-
-
+-Andi
