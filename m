@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932950AbXHLORd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763492AbXHLO64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932950AbXHLORd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 10:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758964AbXHLORY
+	id S1763492AbXHLO64 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 10:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756762AbXHLO6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 10:17:24 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53321 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758876AbXHLORY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 10:17:24 -0400
-Date: Sun, 12 Aug 2007 07:17:21 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Fredrik Noring <noring@nocrew.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Improving read/write/close system call reliability when used
- with pthreads
-Message-Id: <20070812071721.f35d7373.pj@sgi.com>
-In-Reply-To: <70E19A0A-2728-4ADA-B984-A36182C1F575@nocrew.org>
-References: <70E19A0A-2728-4ADA-B984-A36182C1F575@nocrew.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Aug 2007 10:58:44 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:46477 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754886AbXHLO6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 10:58:43 -0400
+Message-Id: <20070812145434.520271946@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Sun, 12 Aug 2007 10:54:34 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Christoph Lameter <clameter@sgi.com>
+Subject: [patch 00/23] Atomic operations updates: add cmpxchg_local
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sun, 12 Aug 2007 14:58:35 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fredrik wrote:
-> required-fds.patch (not sure Apple Mail can handle this properly  
-> though...):
+Hi Andrew,
 
-You suspected correctly - Apple Mail line wrapped it at 72 columns
-(added newlines in any line going past column 72.)  This makes it
-impossible to apply the patch without alot of hand editing.
+I have been asked for a cmpxchg_local implementation by Christoph Lameter so he
+can use it to accelerate the slub allocator.
 
-As you probably also suspect (correctly, again), given the volume of
-patches we handle on lkml, the burden is on the submitter to get the
-patch format correct, so it applies cleanly.
+On some architectures, where cmpxchg is nothing more that a simple save/restore
+interrupts surrounding the cmpxchg non atomic ops, I remove the code and make
+them use the new "generic" version.
 
-You will have to experiment some, sending the patch to yourself and
-being sure that it applies cleanly.  I'm not an Apple Mail expert, so
-can't help; sorry.  Perhaps some other email program ...?
+cmpxchg_local and cmpxchg64_local are made available on all architectures in
+these patches. They use the best primitive known, either an atomic operation or
+save/restore interrupts.
 
-
-For example, this line wrapped:
-
-fs/open.c                 |   63 +++++++++++++++++++++++++++++++++++++ 
-+++++++++
-
-and more critically, in the patch, many lines, such as:
-
-+/* file descriptors required to complete current I/O operation  
-successfully */
-+	struct list_head required_fds;
-
-
+Mathieu
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
