@@ -1,74 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939050AbXHLVCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965088AbXHLVLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939050AbXHLVCb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 17:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938670AbXHLVCO
+	id S965088AbXHLVLW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 17:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759448AbXHLVLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 17:02:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:46621 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938935AbXHLVCL (ORCPT
+	Sun, 12 Aug 2007 17:11:09 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:52520
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756462AbXHLVLH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 17:02:11 -0400
-Subject: Re: [patch 0/8] Immediate Values
-From: Arjan van de Ven <arjan@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070812185501.GA4480@Krystal>
-References: <20070812150702.769065566@polymtl.ca>
-	 <1186943243.2854.17.camel@laptopd505.fenrus.org>
-	 <20070812185501.GA4480@Krystal>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Sun, 12 Aug 2007 13:58:44 -0700
-Message-Id: <1186952324.2854.21.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 (2.11.6.1-1.fc8) 
+	Sun, 12 Aug 2007 17:11:07 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 0/5] Add some missing Documentation/*/00-INDEX files
+Date: Sun, 12 Aug 2007 16:11:02 -0500
+User-Agent: KMail/1.9.6
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-doc@vger.kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200708120045.03032.jesper.juhl@gmail.com> <200708121454.15856.rob@landley.net> <46BF6AE2.9070105@s5r6.in-berlin.de>
+In-Reply-To: <46BF6AE2.9070105@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200708121611.02971.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > I have a concern; you seem to be patching potentially "live" code....
-> > 
-> > there are basically two options
-> > 1) you run the risk of triple faulting (patching an instruction while
-> > some other core/cpu may be decoding it may cause a triple fault)
-> > 2) you do an IPI to all other cpus and prevent them from executing any
-> > code except a small loop during the patching... this is expensive.
-> > 
-> > To be honest, neither sound very attractive to me ;(
-> > 
-> 
-> Yup, the concern is appropriate. That's why I dealt with it in the
-> "Immediate Values - i386 Optimization" patch. (I guess your concern
-> is specific to i386, x86_64 and ia64).
+On Sunday 12 August 2007 3:17:38 pm Stefan Richter wrote:
+> > This heuristic seems to need about as much cleanup as just fixing
+> > 00-INDEX.txt in all the directories.
+>
+> I didn't think of heuristics but rather of a style guideline.  Maybe
+> prepend this metadata line with "Subject: " or so to distinguish it from
+> data.
 
-it's specific to all smp architectures I suppose
-> 
-> I have currently only implemented the i386 optimization, but x86_64 and
-> ia64 should be similar.
-> 
-> The triple fault in question is discussed in Intel's errata under the
-> title "Centrino Duo Processor Technology Specification Update, AH33.
-> Unsynchronized Cross-Modifying Code Operations Can Cause Unexpected
-> Instruction Execution Results." (if you refer to something else, please
-> tell me).
+That's just extra markup for me to filter out.  Either the first line nonblank 
+has a special meaning or it doesn't.  Currently, it doesn't.
 
-Core2DUO is only one generation of Intel processors; however I know that
-several other (if not all of them) have issues with this kind of thing
-in ring 0; all subtly different ;(
+> What's the difference to 00-INDEX?  It's inline.  Hence,
+>   - as soon as a majority of files have that header, authors of new
+>     files will start to provide that header automatically.  Or am I too
+>     optimistic?
 
-All other alternatives are ok right now (they all run in UP mode),
-but... I'm just very nervous about the amount of CPU errata in this kind
-of scenario. And I'm not just talking Intel, I wouldn't be surprised if
-the other x86 CPU vendors also have issues with this; I don't know how
-well they specify their errata though..
+You're too optimistic, but if it's something we can check automatically we can 
+find and fix instances that don't.  (Although in this case "automatic" means 
+we generate the index, put it on the web, and either we notice mistakes or 
+people point them out to us.)
 
+>   - it's a little bit faster to create these headers than to add them
+>     to 00-INDEX:  Just move the existing title to the top.
 
+You are aware that some of the files in Documentation aren't text, right?  
+There's example code in C, there's docbook, there's a gif and an xpm...
+
+What variant of "fast" do you mean?  Processing the entire directory takes a 
+fraction of a second on my laptop.
+
+I'm not really invested in 00-INDEX, but I point out that it currently exists 
+and I've indicated a willingness to do work to update it.  If you want to do 
+your own work to update something else, be my guest.  I'll be over here.
+
+> There could also be "From: " and/or "Cc: " headers for authorship and
+> maintainership metadata.
+
+You're adding complexity again.  Why are you adding complexity?
+
+> (Of course maintainership metadata could also 
+> go into extra files like 00-INDEX or MAINTAINERS.
+
+00-INDEX is a bad place for it, and MAINTAINERS hasn't go the granularity.
+
+> Authorship metadata 
+> of more recent documentation files is actually available in the source
+> control system.)
+
+I was wondering if this would be noticed...
+
+Rob
 -- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
