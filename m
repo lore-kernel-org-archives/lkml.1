@@ -1,58 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763088AbXHLGLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761455AbXHLGUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763088AbXHLGLA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 02:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbXHLGKt
+	id S1761455AbXHLGUl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 02:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbXHLGUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 02:10:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52542 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752522AbXHLGKr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 02:10:47 -0400
-Date: Sat, 11 Aug 2007 23:09:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-cc: schwidefsky@de.ibm.com, wjiang@resilience.com, wensong@linux-vs.org,
-       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, ak@suse.de,
-       cfriesen@nortel.com, netdev@vger.kernel.org, horms@verge.net.au,
-       akpm@linux-foundation.org, Chuck Ebbert <cebbert@redhat.com>,
-       davem@davemloft.net, zlynx@acm.org, Chris Snook <csnook@redhat.com>
-Subject: Re: [PATCH] make atomic_t volatile on all architectures
-In-Reply-To: <a599bc5062d557db46496f0d7c7886b0@kernel.crashing.org>
-Message-ID: <alpine.LFD.0.999.0708112305170.30176@woody.linux-foundation.org>
-References: <20070808230733.GA17270@shell.boston.redhat.com>
- <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org>
- <46BAC2BE.1090106@redhat.com> <46BB508B.7050601@redhat.com>
- <alpine.LFD.0.999.0708091055080.25146@woody.linux-foundation.org>
- <1186683646.9669.20.camel@localhost>
- <a599bc5062d557db46496f0d7c7886b0@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sun, 12 Aug 2007 02:20:32 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4527 "EHLO Perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752035AbXHLGUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 02:20:31 -0400
+Subject: [PATCH] [1/2] - FInd the maintainer(s) for a patch -
+	scripts/get_maintainer.pl
+From: Joe Perches <joe@perches.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Sat, 11 Aug 2007 23:20:20 -0700
+Message-Id: <1186899620.7665.22.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I grew weary of looking up the appropriate
+maintainer email address(es) to CC: for a patch.
+
+I added flags to the MAINTAINERS file
+
+F:	file pattern
+
+for each maintained block and a script to parse
+the modified blocks for maintainer and list
+email addresses.
+
+perl scripts/get_maintainer.pl <patch>
+
+gives the appropriate maintainer(s).
+
+Please apply.
+
+cheers,  Joe
+
+--- /dev/null	2007-08-10 07:32:20.684406250 -0700
++++ scripts/get_maintainer.pl	2007-08-11 22:33:30.000000000 -0700
+@@ -0,0 +1,212 @@
++#!/usr/bin/perl -w
++# (c) 2007, Joe Perches <joe@perches.com>
++#           created from checkpatch.pl
++# Licensed under the terms of the GNU GPL License version 2
++
++use strict;
++
++my $P = $0;
++$P =~ s@.*/@@g;
++
++my $V = '0.01';
++
++use Getopt::Long qw(:config no_auto_abbrev);
++
++my $tree = "./";
++my $email_maintainer = 1;
++my $email_list = 1;
++my $email_subscriber_list = 0;
++
++my %saw;
++
++GetOptions(
++	   'tree=s' => \$tree,
++	   'm!' => \$email_maintainer,
++	   'l!' => \$email_list,
++	   's!' => \$email_subscriber_list,
++	   ) or exit;
++
++my $exit = 0;
++
++if ($#ARGV < 0 ||
++    ($email_maintainer == 0 && $email_list == 0 && $email_subscriber_list == 0)) {
++    print "usage: $P [options] patchfile\n";
++    print "version: $V\n";
++    print "  --tree [path] => linux kernel source path\n";
++    print "  --m => include maintainer(s) if any\n";
++    print "  --l => include list(s) if any\n";
++    print "  --s => include subscriber only list(s) if any\n";
++    print "Default: [--m --l]\n";
++    print "Be sure to select something...\n";
++    exit(1);
++}
++
++if ($tree && !top_of_kernel_tree($tree)) {
++    if (${tree} ne "") {
++	print "'${tree}' ";
++    } else {
++	print "The current directory ";
++    }
++    print "doesn't appear to be a linux kernel source tree\n";
++    exit(2);
++}
++
++## Read MAINTAINERS for type/value pairs
++
++my @typevalue = ();
++open(MAINT, "<${tree}MAINTAINERS") || die "$P: Can't open ${tree}MAINTAINERS\n";
++while (<MAINT>) {
++    if (m/^(\C):\s*(.*)/) {
++	my $type = $1;
++	my $value = $2;
++	if ($type eq "F") {              ##Filename pattern matching
++	    $value =~ s@\.@\\\.@g;       ##Convert . to \.
++	    $value =~ s/\*/\.\*/g;       ##Convert * to .*
++	}
++	push(@typevalue, "$type:$value");
++    } elsif (!/^(\s)*$/) {
++	push(@typevalue, $_);
++    }
++}
++close(MAINT);
++
++## Find the patched filenames
++
++my @patchedfiles = ();
++open(PATCH, "<$ARGV[0]") or die "Can't open $ARGV[0]\n";
++while (<PATCH>) {
++    if (m/^\+\+\+\s+(\S+)/) {
++	my $file = $1;
++	$file =~ s@^[^/]*/@@;
++	$file =~ s@\n@@;
++	push(@patchedfiles, $file);
++    }
++}
++close(PATCH);
++
++# Sort and uniq patchedfiles
++
++undef %saw;
++@patchedfiles = sort @patchedfiles;
++@patchedfiles = grep(!$saw{$_}++, @patchedfiles);
++
++# Find responsible parties
++
++my @email_to = ();
++foreach (@patchedfiles) {
++    my $patchedfile = $_;
++    my $tvi = 0;
++
++    foreach (@typevalue) {
++	if (m/^(\C):(.*)/) {
++	    my $type = $1;
++	    my $value = $2;
++	    if ($type eq 'F') {
++		if (file_match_pattern($patchedfile, $value)) {
++		    my $ptvi = $tvi - 1;
++		    while ($ptvi >= 0) {
++			my $tv = $typevalue[$ptvi];
++			if ($tv =~ m/^(\C):(.*)/) {
++			    my $ptype = $1;
++			    my $pvalue = $2;
++			    if ($ptype eq "L") {
++				my $subscr = $pvalue;
++				if ($subscr =~ m/\s*\(subscribers-only\)/) {
++				    if ($email_subscriber_list > 0) {
++					$subscr =~ s/\s*\(subscribers-only\)//g;
++					push(@email_to, $subscr);
++				    }
++				} else {
++				    if ($email_list > 0) {
++					push(@email_to, $pvalue);
++				    }
++				}
++			    } elsif ($ptype eq "M") {
++				if ($email_maintainer > 0) {
++				    if ($ptvi >= 0) {
++					my $tv = $typevalue[$ptvi - 1];
++					if ($tv =~ m/^(\C):(.*)/) {
++					    if ($1 eq "P") {
++						push(@email_to, "$2 <$pvalue>");
++					    } else {
++						push(@email_to, $pvalue);
++					    }
++					}
++				    } else {
++					push(@email_to, $pvalue);
++				    }
++				}
++			    }
++			    $ptvi--;
++			} else {
++			    $ptvi = -1;
++			}
++		    }
++		}
++	    }
++	}
++	$tvi++;
++    }
++}
++
++## sort and uniq email_to
++
++@email_to = sort @email_to;
++undef %saw;
++@email_to = grep(!$saw{$_}++, @email_to);
++
++## add lk if noone else...
++
++my $address_cnt = @email_to;
++if ($address_cnt == 0 && $email_list > 0) {
++    push(@email_to, "linux-kernel\@vger.kernel.org");
++}
++print(join(", ", @email_to));
++print("\n");
++
++exit($exit);
++
++sub file_match_pattern {
++    my ($file, $pattern) = @_;
++    if (substr($pattern, -1) eq "/") {
++	if ($file =~ m@^$pattern@) {
++	    return 1;
++	}
++    } else {
++	if ($file =~ m@^$pattern@) {
++	    my $s1 = ($file =~ tr@/@@);
++	    my $s2 = ($pattern =~ tr@/@@);
++	    if ($s1 == $s2) {
++		return 1;
++	    }
++	}
++    }
++    return 0;
++}
++
++sub top_of_kernel_tree {
++	my ($tree) = @_;
++
++	if ($tree ne "" && substr($tree,length($tree)-1,1) ne "/") {
++	    $tree = $tree . "/";
++	}
++	if (   (-f "${tree}COPYING")
++	    && (-f "${tree}CREDITS")
++	    && (-f "${tree}Kbuild")
++	    && (-f "${tree}MAINTAINERS")
++	    && (-f "${tree}Makefile")
++	    && (-f "${tree}README")
++	    && (-d "${tree}Documentation")
++	    && (-d "${tree}arch")
++	    && (-d "${tree}include")
++	    && (-d "${tree}drivers")
++	    && (-d "${tree}fs")
++	    && (-d "${tree}init")
++	    && (-d "${tree}ipc")
++	    && (-d "${tree}kernel")
++	    && (-d "${tree}lib")
++	    && (-d "${tree}scripts")) {
++		return 1;
++	}
++	return 0;
++}
 
 
-On Sun, 12 Aug 2007, Segher Boessenkool wrote:
->
-> Note that last line.
-
-Segher, how about you just accept that Linux uses gcc as per reality, and 
-that sometimes the reality is different from your expectations?
-
-"+m" works. We use it. It's better than the alternatives. Pointing to 
-stale documentation doesn't change anything.
-
-The same is true of accesses through a volatile pointer. The kernel has 
-done that for a *loong* time (all MMIO IO is done that way), and it's 
-totally pointless to say that "volatile" isn't guaranteed to do what it 
-does. It works, and quite frankly, if it didn't work, it would be a gcc 
-BUG.
-
-And again, this is not a "C standard" issue. It's a "sane implementation" 
-issue. Linux expects the compiler to be sane. If it isn't, that's not our 
-problem. gcc *is* sane, and I don't see why you constantly act as if it 
-wasn't.
-
-		Linus
