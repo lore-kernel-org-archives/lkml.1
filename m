@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934888AbXHLNBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934929AbXHLNIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934888AbXHLNBq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 09:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765418AbXHLNBi
+	id S934929AbXHLNIy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 09:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932795AbXHLNIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 09:01:38 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60515 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763035AbXHLNBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 09:01:38 -0400
-To: Petr Vandrovec <petr@vandrovec.name>
-Cc: discuss@x86-64.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Please remove ab144f5ec64c42218a555ec1dbde6b60cf2982d6 was Re: [discuss] [PATCH] Fix triplefault on x86-64 bootup
-References: <20070812081252.GA23309@vana.vc.cvut.cz>
-	<200708121209.40995.ak@suse.de> <46BEE427.3020904@vandrovec.name>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 12 Aug 2007 15:55:50 +0200
-In-Reply-To: <46BEE427.3020904@vandrovec.name>
-Message-ID: <p731we8kgbd.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 12 Aug 2007 09:08:44 -0400
+Received: from rwcrmhc14.comcast.net ([216.148.227.154]:58695 "EHLO
+	rwcrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932950AbXHLNIn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 09:08:43 -0400
+Subject: Kernel 2.5.23-rc2-git4 Boot Failure
+From: Chris Holvenstot <cholvenstot@comcast.net>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 12 Aug 2007 08:10:45 -0500
+Message-Id: <1186924245.6478.19.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Petr Vandrovec <petr@vandrovec.name> writes:
+Last night I built the 2.6.23-rc2-git4 kernel but could not get it to
+boot.  I rebuilt it this morning from scratch on the chance that I made
+a finger-check the first time through and screwed the pooch.
 
-> Andi Kleen wrote:
-> > On Sunday 12 August 2007 10:12, Petr Vandrovec wrote:
-> >> Hello,
-> >>   after I upgraded kernel on my box to current git, only thing it did
-> >> was rebooting in a loop.  After some digging I found that it is silly
-> >> to apply alternative to memcpy by using that every same memcpy...
-> >> Sorry if it is known bug, I do not see it reported in my LKML mailbox...
-> > Ok Linus already applied your patch. Even though it's a really bad
-> > fragile hack, not better than the old bug.
-> > Petr are you double sure you really tested with
-> > ab144f5ec64c42218a555ec1dbde6b60cf2982d6
-> > already applied? I bet not -- it is the symptom exactly fixed by this patch
-> 
-> I'm quite sure that this patch is in my tree, as I have that "u8
-> *instr = a->instr;" in apply_alternatives, and it seems that this one
-> was added by checkin you mention...  My tree was synced up to:
+After the second attempt to build this i still could not boot the
+system.  I received the following messages (hand copied - not sure how
+to capture messages during the early phases of a boot)
 
-Can you double check? I have a hard time believing it.
+PCI: cannot allocate resource region 0 of device 000:00:04.0
+PCI: cannot allocate resource region 4 of device 000:00:06.0
+Loading, please wait
+ehci_hcd 0000:00:02.1 init 0000:00:02.1 fail, -16
+ohci_hcd 0000:00:02.0 init 0000:00:02.0 fail, -16
 
-> It does not actually change two bytes - it changes two bytes now
-> because alternative is two bytes long - it makes no sense to replace
-> whole function with NOPs - it is necessary when you fall through that
+The system cranks for a while and then I see the messages:
 
-It saves the jump. Admittedly not a big advantage.
+hdb: <4>hdb: dma_timer_expiry: DMA status = oFF
 
--Andi
+and thereafter 
+
+hdb: dma_timer_expiry: DMA status = oFF
+
+is issued every 10 seconds.
+
+The hdb drive is where the system (root partition) is located
+
+My basic configuration looks like:
+
+* AMD_64 X2 4600+ (older 939 pin unit)
+* MSI K8n NEO 4 motherboard 
+* 2 gig memory across 4 512 modules
+* hda: IDE-DVD ROM 16x, ATAPI CD/DVD-ROM drive
+* hdb: WDC WD2500JB-55REA0, ATA DISK drive
+* hdc: WDC WD2000BB-22GUC0, ATA DISK drive
+* hdd: Maxtor 6Y120P0, ATA DISK drive
+* ata1: SATA max UDMA/133 cmd 0xf884a480 ctl 0xf884a4a0 bmdma 0x0001cc00
+irq 19
+* ata2: SATA max UDMA/133 cmd 0xf884a580 ctl 0xf884a5a0 bmdma 0x0001cc08
+irq 19
+* Nvidia GeForce 7600 GS Video Card
+* Nvidia CK804 chip set
+
+All hard drives formatted EXT3
+Using generic "nv" video driver (NOT Nvidia's driver)
+
+System boots and runs good on 2.6.23-rc1 through 2.6.23-rc2-git3
+
+The base system I am using is Ubuntu's 7.04 with minor modifications
+
+I hope that this provides enough information to start with.  If I have
+left anything important out please let me know what you would llike to
+see (and maybe where to get it)
+
+
+
+
+
+
+
+
