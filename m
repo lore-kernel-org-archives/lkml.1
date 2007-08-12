@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965110AbXHLUDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938050AbXHLUEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965110AbXHLUDm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 16:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757012AbXHLUDe
+	id S938050AbXHLUEh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 16:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759001AbXHLUEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 16:03:34 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:51968
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754590AbXHLUDe (ORCPT
+	Sun, 12 Aug 2007 16:04:30 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:59107 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757012AbXHLUE3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 16:03:34 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH 0/5] Add some missing Documentation/*/00-INDEX files
-Date: Sun, 12 Aug 2007 15:03:30 -0500
-User-Agent: KMail/1.9.6
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-doc@vger.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200708120045.03032.jesper.juhl@gmail.com> <46BF01A5.9060003@s5r6.in-berlin.de>
-In-Reply-To: <46BF01A5.9060003@s5r6.in-berlin.de>
+	Sun, 12 Aug 2007 16:04:29 -0400
+Message-ID: <46BF66F4.9030106@gmail.com>
+Date: Sun, 12 Aug 2007 22:00:52 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>
+Subject: Re: Are we properly prepared to handle 3 Socket setups?
+References: <9a8748490708111808o11d354fr9efa719bc38046c5@mail.gmail.com>	<46BE621E.9090509@gmail.com>	<9a8748490708111852y569a3e18i1c3d192e60eceafe@mail.gmail.com>	<46BE7BB6.2010607@gmail.com> <20070812013519.a5d5d59b.akpm@linux-foundation.org>
+In-Reply-To: <20070812013519.a5d5d59b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708121503.30631.rob@landley.net>
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 August 2007 7:48:37 am Stefan Richter wrote:
-> Isn't it with 00-INDEX just like with the "Last Updated:" footers in
-> documentation texts?
->
-> They are metadata which will be almost always out of date.
+On 08/12/2007 10:35 AM, Andrew Morton wrote:
 
-If nothing is using them, they'll bit-rot, yes.  Way of the world.  But I've 
-found a use for them.  Therefore, I'm interested in getting them up to date 
-and then keeping them there.  I already wrote an automatic checker to tell me 
-how they differ from reality, which is half the battle.  (It won't help if 
-the file contents change so much the description needs to be updated, but 
-that's not a common event.)
+> On Sun, 12 Aug 2007 05:17:10 +0200 Rene Herman <rene.herman@gmail.com> wrote:
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+>> The line just below where it does that _does_ seem to have a problem:
+>>
+>>          /*
+>>           * Maximum threshold is 125
+>>           */
+>>          threshold = min(125, threshold);
+>>
+>> as either the comment or the code is wrong and it seems it's the code. Added 
+>> Andrew Morton to the CC for that.
+> 
+> Yes, that's inconsistent.  And looking at Christoph's df9ecaba it's unclear
+> whether the comment is wrong or the code is wrong.  The code is wrong, I
+> expect.
+
+Extremely friendly of you to pretend I wasn't being thick at all but don't 
+worry, I can take it. Anyways, since Christoph wasn't in CC on that one:
+
+On 08/12/2007 05:29 AM, Roland Dreier wrote:
+
+> What's the problem? That line sets threshold to the smaller of the 
+> current value or 125, which is exactly what one would want to do if the
+> maximum value is 125. Just do a couple of examples: eg if threshold is
+> 100 going into that line, then the value is left alone; if threshold is
+> 150 then it gets set to 125; and that seems exactly correct.
+
+Rene.
+
