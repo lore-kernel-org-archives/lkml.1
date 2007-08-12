@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764828AbXHLDYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765459AbXHLD0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764828AbXHLDYY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Aug 2007 23:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbXHLDYR
+	id S1765459AbXHLD0Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Aug 2007 23:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbXHLD0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Aug 2007 23:24:17 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:58555 "EHLO smtp.ocgnet.org"
+	Sat, 11 Aug 2007 23:26:00 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:47826 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772AbXHLDYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Aug 2007 23:24:16 -0400
-Date: Sun, 12 Aug 2007 12:23:14 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.23-rc3
-Message-ID: <20070812032314.GA13496@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	id S1754316AbXHLD0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Aug 2007 23:26:00 -0400
+Date: Sun, 12 Aug 2007 05:27:17 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Documentation files in html format?
+Message-ID: <20070812032717.GA13141@uranus.ravnborg.org>
+References: <20070809113122.3aa508e4@oldman.hamilton.local> <200708091508.20626.hjk@linutronix.de> <p73hcn8g25m.fsf@bingen.suse.de> <20070810074047.GC31307@uranus.ravnborg.org> <46BC6DA9.1050903@s5r6.in-berlin.de> <20070810201235.GA4133@uranus.ravnborg.org> <20070811201151.c25261cf.rdunlap@xenotime.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070811201151.c25261cf.rdunlap@xenotime.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+> Hi Sam,
+> 
+> Sorry for the late question (I've been away :).
+> 
+> Was your makefiles.txt conversion done totally by hand?
+Yes. A few search&replace, the rest manual.
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.23.git
+> Could it be automated?
+For text with a unifom structure like makefiles.txt - yes.
 
-Which contains:
-
-Paul Mundt (3):
-      sh: Fix PTRACE_PEEKTEXT/PEEKDATA fallout from generic_ptrace_peekdata().
-      sh: panic on machvec section misalignment.
-      sh: Add missing dma_sync_single_range_for_*().
-
- arch/sh/kernel/machvec.c     |    7 +++++++
- arch/sh/kernel/ptrace.c      |    1 +
- include/asm-sh/dma-mapping.h |   19 +++++++++++++++++++
- 3 files changed, 27 insertions(+)
+	Sam
