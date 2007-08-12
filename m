@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935304AbXHLQcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933931AbXHLQei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935304AbXHLQcl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 12:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762634AbXHLQce
+	id S933931AbXHLQei (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 12:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbXHLQeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 12:32:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35011 "EHLO mx2.mail.elte.hu"
+	Sun, 12 Aug 2007 12:34:31 -0400
+Received: from smtpserver.stunet.se ([85.194.0.110]:41321 "EHLO mail.visit.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761929AbXHLQcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 12:32:33 -0400
-Date: Sun, 12 Aug 2007 18:32:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [git pull request] scheduler updates
-Message-ID: <20070812163225.GA11996@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751439AbXHLQea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 12:34:30 -0400
+In-Reply-To: <20070812161337.3828381c@the-village.bc.nu>
+References: <70E19A0A-2728-4ADA-B984-A36182C1F575@nocrew.org> <20070812161337.3828381c@the-village.bc.nu>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A94120FD-315A-45B7-A8F4-8DC8DC21279E@nocrew.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Fredrik Noring <noring@nocrew.org>
+Subject: Re: Improving read/write/close system call reliability when used with pthreads
+Date: Sun, 12 Aug 2007 18:33:31 +0200
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull the latest scheduler git tree from:
+Alan,
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+Alan Cox wrote:
+> The reader still has the fd open so the fd is not yet closed. This  
+> seems
+> completely sane to me. Closing the *writer* fd would create an EOF  
+> which
+> is the proper response.
 
-three bugfixes:
+The fd is removed from the file descriptor table, but sure the file  
+(as in the kernel struct file * pointer) is still valid. The problem  
+is that the fd used when entering the system call, as an alias for  
+the file pointer, is no longer valid. As a consequence, -ERESTARTSYS  
+no longer works reliably.
 
-- a nice fix from eagle-eye Oleg for a subtle typo in the balancing
-  code, the effect of this bug was more agressive idle balancing. This
-  bug was introduced by one of the original CFS commits.
+Second problem is that a process may not always have access to the  
+writer fd and therefore may not be able to close it. So when closing  
+the reader fd the process has to rely on the following:
 
-- a round of global->static fixes from Adrian Bunk - this change,
-  besides the cleanup effect, chops 100 bytes off sched.o.
+- Having a signal such as SIGALRM wake up the reader (in case the  
+writer misbehaves indefinitely). This results in -EBADF returned,  
+provided:
 
-- Peter Zijlstra noticed a sleeper-bonus bug. I kept this patch under
-  observation and testing this past week and saw no ill effects so far. 
-  It could fix two suspected regressions. (It could improve Kasper
-  Sandberg's workload and it could improve the sleeper/runner
-  problem/bug Roman Zippel was seeing.)
+- Hope that the fd has not been reused meanwhile (in which case the  
+reader likely will begin reading the wrong file when it wakes up).
 
-test-built and test-booted on x86-32 and x86-64, and did a dozen of 
-randconfig builds for good measure (which uncovered two new build errors 
-in latest -git).
+Applications can take either of two approaches:
 
-Thanks,
+1) Never close reader fd, but wouldn't it be practical to be able to  
+make things like a threaded watchdog?
 
-	Ingo
+2) Do close reader fd, but what results can then applications  
+reliably expect? What would be the sane intention of applications  
+closing reader fd? Do programmers expect all of the current results?
 
---------------->
-Adrian Bunk (1):
-      sched: make global code static
+POSIX appears to leave it "implementation-defined" provided I  
+interpret this correctly, of course. So wouldn't it be great to make  
+one of the current results a reliable feature?
 
-Ingo Molnar (1):
-      sched: fix sleeper bonus
+(A "reader" could be a "writer" above for similar cases.)
 
-Oleg Nesterov (1):
-      sched: run_rebalance_domains: s/SCHED_IDLE/CPU_IDLE/
+All the best,
+Fredrik
 
- include/linux/cpu.h |    2 --
- kernel/sched.c      |   48 ++++++++++++++++++++++++------------------------
- kernel/sched_fair.c |   12 ++++++------
- 3 files changed, 30 insertions(+), 32 deletions(-)
