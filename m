@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937595AbXHLS7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937663AbXHLTF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937595AbXHLS7m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 14:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934336AbXHLS7f
+	id S937663AbXHLTF7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 15:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935521AbXHLTFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 14:59:35 -0400
-Received: from mail.ocs.com.au ([203.34.248.175]:23482 "EHLO mail.ocs.com.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934581AbXHLS7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 14:59:34 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
-From: Keith Owens <kaos@ocs.com.au>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>, tony.luck@intel.com
-Subject: Re: [patch 09/23] Add cmpxchg_local, cmpxchg64 and cmpxchg64_local to ia64 
-In-reply-to: Your message of "Sun, 12 Aug 2007 10:54:43 -0400."
-             <20070812145838.211752593@polymtl.ca> 
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Mon, 13 Aug 2007 04:59:29 +1000
-Message-ID: <16002.1186945169@ocs10w.ocs.com.au>
+	Sun, 12 Aug 2007 15:05:49 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:41005 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935275AbXHLTFs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 15:05:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=P4fCOu3mFPRotmS3CHeqNEjC22V8WMtD8E9GJsW5KYs06qmvM8R4Dr5LB0vSvE3h11rDsS21xVYdkEomCxjMbQF4KrLyHU9AwfhaAREKGeKX5QolMs3E2DsR3Mh4XX3yVzAFI+L+oId6z6ktOwRl/uw8qmKUj4UAVfMFevIr1zo=
+Message-ID: <66dc75180708121205q5e90958u4f3eed9b788faf07@mail.gmail.com>
+Date: Sun, 12 Aug 2007 15:05:46 -0400
+From: chibiryuu <ephemient@gmail.com>
+To: "Folkert van Heusden" <folkert@vanheusden.com>
+Subject: Re: Software based ECC ?
+Cc: Valdis.Kletnieks@vt.edu, roland <devzero@web.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070812165131.GG7973@vanheusden.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <000a01c7db93$c75b66c0$eeeea8c0@aldipc>
+	 <12507.1186812675@turing-police.cc.vt.edu>
+	 <20070812165131.GG7973@vanheusden.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers (on Sun, 12 Aug 2007 10:54:43 -0400) wrote:
->Add the primitives cmpxchg_local, cmpxchg64 and cmpxchg64_local to ia64. They
->use cmpxchg_acq as underlying macro, just like the already existing ia64
->cmpxchg().
+On 8/12/07, Folkert van Heusden <folkert@vanheusden.com> wrote:
+> > > http://pdos.csail.mit.edu/papers/softecc:ddopson-meng/softecc_ddopson-meng.pdf
+> > > "SoftECC : A System for Software Memory Integrity Checking"
+> >
+> > Personally, I'd recommend just shelling out the bucks for hardware ECC if
+> > the reliability matters.
 >
->Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->CC: clameter@sgi.com
->CC: tony.luck@intel.com
->---
-> include/asm-ia64/intrinsics.h |    4 ++++
-> 1 file changed, 4 insertions(+)
+> a question and an idea: Q: is ecc guaranteed to detect all bitflips?
 >
->Index: linux-2.6-lttng/include/asm-ia64/intrinsics.h
->===================================================================
->--- linux-2.6-lttng.orig/include/asm-ia64/intrinsics.h	2007-07-20 18:36:09.000000000 -0400
->+++ linux-2.6-lttng/include/asm-ia64/intrinsics.h	2007-07-20 19:29:17.000000000 -0400
->@@ -158,6 +158,10 @@ extern long ia64_cmpxchg_called_with_bad
-> 
-> /* for compatibility with other platforms: */
-> #define cmpxchg(ptr,o,n)	cmpxchg_acq(ptr,o,n)
->+#define cmpxchg_local(ptr,o,n)	cmpxchg_acq(ptr,o,n)
->+
->+#define cmpxchg64(ptr,o,n)		cmpxchg_acq(ptr,o,n)
->+#define cmpxchg64_local(ptr,o,n)	cmpxchg_acq(ptr,o,n)
+> Idea: what about a multicore system (3 or more) that runs the same
+> processes on 2 cores and a third core verifying that they both do the
+> same? As I think it is not only ram that can become faulty.
 
-As a matter of coding style, I prefer
-
-#define cmpxchg_local	cmpxchg
-#define cmpxchg64_local	cmpxchg64
-
-Which makes it absolutely clear that they are the same code.  With your
-patch, humans have to do a string compare of two defines to see if they
-are the same.
-
+Such hardware does exist -- for example, Stratus sells systems that
+run the same OS on two separate boards in lockstep, with a voter to
+determine what action to take if they ever diverge.
