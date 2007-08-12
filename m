@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935202AbXHLNVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934946AbXHLNgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935202AbXHLNVp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 09:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbXHLNVh
+	id S934946AbXHLNgJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 09:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763843AbXHLNf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 09:21:37 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:55749 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751439AbXHLNVg (ORCPT
+	Sun, 12 Aug 2007 09:35:57 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:58775 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762689AbXHLNf4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 09:21:36 -0400
-Date: Sun, 12 Aug 2007 15:21:35 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Bernhard Kuemel <bernhard@bksys.at>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>, sam@ravnborg.org
-Subject: Re: menuconfig should wrap long lines
-In-Reply-To: <46BEFC6A.2010705@bksys.at>
-Message-ID: <Pine.LNX.4.64.0708121519450.28963@fbirervta.pbzchgretzou.qr>
-References: <46BC804D.6050804@bksys.at> <46BC8714.3010901@bksys.at>
- <Pine.LNX.4.64.0708121248140.28963@fbirervta.pbzchgretzou.qr>
- <46BEFC6A.2010705@bksys.at>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-699020219-340941167-1186924895=:28963"
+	Sun, 12 Aug 2007 09:35:56 -0400
+Date: Sun, 12 Aug 2007 09:35:52 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc2-mm2 build error on MIPS and ARM
+Message-ID: <20070812133552.GA21643@Krystal>
+References: <20070811025802.GA15885@Krystal> <1186825800.32314.2.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1186825800.32314.2.camel@localhost>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:35:02 up 13 days, 13:53,  2 users,  load average: 1.93, 1.52, 1.36
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+* Martin Schwidefsky (schwidefsky@de.ibm.com) wrote:
+> On Fri, 2007-08-10 at 22:58 -0400, Mathieu Desnoyers wrote:
+> > I got the following errors when building 2.6.23-rc2-mm2 on both mips and
+> > arm. Both errors are very much alike.
+> 
+> That attached patch should fix it for arm and mips. I'll try a few more
+> architectures until I'm fed up with compiling cross-compilers..
+> 
 
----699020219-340941167-1186924895=:28963
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+It fixes the problem for me, thanks!
 
+Tested-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-On Aug 12 2007 14:26, Bernhard Kuemel wrote:
->Jan Engelhardt wrote:
->>>>[menuconfig]
->>>
->>> Ohh, you can scroll right/left.
->> 
->> But still, that takes its time... and the you have to scroll back again :-/
->
->Yes, but in most cases no scrolling is neccessary, so occasional
->scrolling is not that bad.
-
-It is, on long lines, if you are trying to figure out the selects line.
-
->However, I found some long prompts are
->clipped, too, and there you can not scroll because <left>/<right>
->switches between <Select>, <Exit> and <Help>. The complete prompt
->can be found in the help screen with scrolling. E.g.:
->
->  │ │    <M>   DiskOnChip 2000, Millennium and Millennium Plus (NAND
->reimp│ │
->
->  │ Prompt: DiskOnChip 2000, Millennium and Millennium Plus (NAND
->reimplementation) (EXPERIMENTAL) │
->
->Again, most prompts are sufficiently readable on an 80 character
->terminal.
+Mathieu
 
 
-	Jan
+> -- 
+> blue skies,
+>   Martin.
+> 
+> "Reality continues to ruin my life." - Calvin.
+> ---
+> Subject: [PATCH] move mm_struct and vm_area_struct, compile fix.
+> 
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 
+> Include <asm/page.h> in <linux/mm_types.h> to make mips and arm
+> compile again after mm_struct and vm_area_struct have been moved.
+> 
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+> 
+>  include/linux/mm_types.h |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff -urpN linux-2.6/include/linux/mm_types.h
+> linux-2.6-patched/include/linux/mm_types.h
+> --- linux-2.6/include/linux/mm_types.h	2007-08-11 11:30:10.000000000
+> +0200
+> +++ linux-2.6-patched/include/linux/mm_types.h	2007-08-11
+> 11:32:42.000000000 +0200
+> @@ -11,6 +11,7 @@
+>  #include <linux/rwsem.h>
+>  #include <linux/completion.h>
+>  #include <asm/mmu.h>
+> +#include <asm/page.h>
+>  
+>  struct address_space;
+>  
+> 
+> 
+
 -- 
----699020219-340941167-1186924895=:28963--
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
