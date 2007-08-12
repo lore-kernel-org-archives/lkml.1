@@ -1,114 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936903AbXHLRUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937045AbXHLRVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936903AbXHLRUc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 13:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760131AbXHLRUZ
+	id S937045AbXHLRVi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 13:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765655AbXHLRVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 13:20:25 -0400
-Received: from main.gmane.org ([80.91.229.2]:47480 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760129AbXHLRUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 13:20:24 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jan Blunck <jblunck@suse.de>
-Subject: Re: [patch 01/11] dm-snap: Replace special round_down()
-Date: Sun, 12 Aug 2007 17:20:01 +0000 (UTC)
-Message-ID: <f9nfg1$bnd$1@sea.gmane.org>
-References: <20070810200204.455820246@suse.de>
-	<25205.2138712772$1186776751@news.gmane.org>
+	Sun, 12 Aug 2007 13:21:30 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:50604 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759449AbXHLRV2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 13:21:28 -0400
+X-Greylist: delayed 1754 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Aug 2007 13:21:28 EDT
+Date: Sun, 12 Aug 2007 18:52:02 +0200
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+Message-ID: <20070812165202.GI5363@gamma.logic.tuwien.ac.at>
+References: <878xb35sje.fsf@goat.bogus.local> <20070612153102.GD5986@ucw.cz> <20070613173925.GA20628@gamma.logic.tuwien.ac.at> <200706132342.55336.rjw@sisk.pl> <878xb35sje.fsf@goat.bogus.local> <20070612153102.GD5986@ucw.cz> <20070614181329.GA31277@gamma.logic.tuwien.ac.at> <20070722091010.GH3701@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: dsl01.83.171.175.71.ip-pool.nefkom.net
-User-Agent: pan 0.119 (Karma Hunters)
-Cc: dm-devel@redhat.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070722091010.GH3701@elf.ucw.cz>
+User-Agent: Mutt/1.3.28i
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007 22:02:05 +0200, Jan Blunck wrote:
+Hi Pavel, hi all,
 
-> This patch removes the special round_down() to next power of 2 implementation
-> used only at one place in the snapshot target. It is replaced by an equivalent
-> 1 << fls() which might use an architecture specific implementation.
+On Son, 22 Jul 2007, Pavel Machek wrote:
+> > Ok, no beeping at all. Nothing after resume, only fan. And I did not
+> > forget to activate the BEEP line.
+> > 
+> > So where can I go from here? DSDT hacking? Anything else?
 > 
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
-> ---
->  drivers/md/dm-snap.c |   12 +-----------
->  1 file changed, 1 insertion(+), 11 deletions(-)
-> 
-> --- a/drivers/md/dm-snap.c
-> +++ b/drivers/md/dm-snap.c
-> @@ -333,16 +333,6 @@ static int calc_max_buckets(void)
->  }
->  
->  /*
-> - * Rounds a number down to a power of 2.
-> - */
-> -static uint32_t round_down(uint32_t n)
-> -{
-> -	while (n & (n - 1))
-> -		n &= (n - 1);
-> -	return n;
-> -}
-> -
-> -/*
->   * Allocate room for a suitable hash table.
->   */
->  static int init_hash_tables(struct dm_snapshot *s)
-> @@ -361,7 +351,7 @@ static int init_hash_tables(struct dm_sn
->  	hash_size = min(hash_size, max_buckets);
->  
->  	/* Round it down to a power of 2 */
-> -	hash_size = round_down(hash_size);
-> +	hash_size = 1 << fls(hash_size);
->  	if (init_exception_table(&s->complete, hash_size))
->  		return -ENOMEM;
->  
->
+> Hmm, it was 'hardware debugger' time when I hit similar problem few
+> years ago :-(.
 
-Err, this is sooo stupid. First, 1 << fls(n) isn't round down but
-roundup_pow_of_2(). Second, hash_size is of type sector_t which could be
-u64 with CONFIG_LBD.
+Something else helped, don't ask me what, but with
 
--- 
-Subject: dm-snap: Replace special round_down()
+	2.6.32-rc2
 
-This patch removes the special round_down() to next power of 2 implementation
-used only at one place in the snapshot target. It is replaced by an equivalent
-1 << fls() which might use an architecture specific implementation.
+and
 
-Signed-off-by: Jan Blunck <jblunck@suse.de>
----
- drivers/md/dm-snap.c |   12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
+	s2ram -f -p
 
---- a/drivers/md/dm-snap.c
-+++ b/drivers/md/dm-snap.c
-@@ -333,16 +333,6 @@ static int calc_max_buckets(void)
- }
- 
- /*
-- * Rounds a number down to a power of 2.
-- */
--static uint32_t round_down(uint32_t n)
--{
--	while (n & (n - 1))
--		n &= (n - 1);
--	return n;
--}
--
--/*
-  * Allocate room for a suitable hash table.
-  */
- static int init_hash_tables(struct dm_snapshot *s)
-@@ -361,7 +351,7 @@ static int init_hash_tables(struct dm_sn
- 	hash_size = min(hash_size, max_buckets);
- 
- 	/* Round it down to a power of 2 */
--	hash_size = round_down(hash_size);
-+	hash_size = 1 << (fls_long(hash_size) - 1);
- 	if (init_exception_table(&s->complete, hash_size))
- 		return -ENOMEM;
+it does work. Even with X and 3D running. Nice.
 
+Anything I should do now?
+
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+RAMSGATE (n.)
+All institutional buildings must, by law, contain at least twenty
+ramsgates. These are doors which open the opposite way to the one you
+expect.
+			--- Douglas Adams, The Meaning of Liff
