@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbXHMW2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762121AbXHMW3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758061AbXHMW2p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 18:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760860AbXHMW2H
+	id S1762121AbXHMW3d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 18:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760696AbXHMW2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 18:28:07 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48181 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760663AbXHMW2D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 18:28:03 -0400
-Date: Mon, 13 Aug 2007 15:28:01 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Martin Bligh <mbligh@mbligh.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality,
- performance and maintenance
-In-Reply-To: <20070813221847.GA20314@Krystal>
-Message-ID: <Pine.LNX.4.64.0708131523020.28626@schroedinger.engr.sgi.com>
-References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de>
- <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com>
- <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com>
- <4692A1D0.50308@mbligh.org> <20070709214426.GC1026@Krystal>
- <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com>
- <20070709225817.GA5111@Krystal> <Pine.LNX.4.64.0707091715450.2062@schroedinger.engr.sgi.com>
- <20070813221847.GA20314@Krystal>
+	Mon, 13 Aug 2007 18:28:08 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43567 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1760532AbXHMW2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 18:28:04 -0400
+X-Authenticated: #441233
+X-Provags-ID: V01U2FsdGVkX1/UsYwjRPDUtfA9+pG5AqsrSGpi5LA7nbAzeQhTMX
+	n1BcrjRG0ZGlU1
+Date: Tue, 14 Aug 2007 00:28:00 +0200
+From: Michael Mauch <michael.mauch@gmx.de>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: Serial ports rearranged in 2.6.22?
+Message-ID: <20070813222800.GB25159@elmicha>
+Mail-Followup-To: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+	linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+	Yinghai Lu <yhlu.kernel@gmail.com>
+References: <20070810213925.GB10855@elmicha> <86802c440708102154r59e1acbj90fa0d5b73197fb9@mail.gmail.com> <20070811154925.GA9618@elmicha> <200708131534.15235.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708131534.15235.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007, Mathieu Desnoyers wrote:
+Bjorn Helgaas wrote:
 
-> > @@ -1554,23 +1564,20 @@ static void __always_inline *slab_alloc(
-> >  		gfp_t gfpflags, int node, void *addr)
-> >  {
-> >  	void **object;
-> > -	unsigned long flags;
-> >  	struct kmem_cache_cpu *c;
-> >  
+> On Saturday 11 August 2007 09:49:25 am Michael Mauch wrote:
+> > Yinghai Lu wrote:
+> > 
+> > > On 8/10/07, Michael Mauch <michael.mauch@gmx.de> wrote:
+> > > >
+> > > > With 2.6.22 I get the names <-> ports/irqs the other way around:
+> > > >
+> > > > 00:08: ttyS0 at I/O 0x2f8 (irq = 3) is a 16550A
+> > > > 00:09: ttyS1 at I/O 0x3f8 (irq = 4) is a 16550A
+> > > > ...
+> > > http://lkml.org/lkml/2007/7/25/455
+> > 
+> > Thanks - I applied that patch and the names are back to normal again:
+> > 
+> > 00:06: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+> > 00:07: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
 > 
-> What if we prefetch c->freelist here ? I see in this diff that the other
-> code just reads it sooner as a condition for the if().
-
-Not sure as to what this may bring. If you read it earlier then you may 
-get the wrong value and then may have to refetch the cacheline.
-
-We cannot fetch c->freelist without determining c. I can remove the 
-check for c->page == page so that the fetch of c->freelist comes 
-immeidately after detemination of c. But that does not change performance.
-
-> > -		c->freelist = object;
-> > -	} else
-> > -		__slab_free(s, page, x, addr, c->offset);
-> > +redo:
-> > +	freelist = c->freelist;
+> Just FYI, the patch Yinghai mentioned above was experimental, and
+> we decided it was the wrong solution.
 > 
-> I suspect this smp_rmb() may be the cause of a major slowdown.
-> Therefore, I think we should try taking a copy of c->page and simply
-> check if it has changed right after the cmpxchg_local:
+> For 2.6.22, the easiest workaround is to boot with the 
+> "legacy_serial.force" option.
 
-Thought so too and I removed that smp_rmb and tested this modification 
-on UP again without any performance gains. I think the cacheline fetches 
-dominates the execution thread here and cmpxchg does not bring us 
-anything.
+Ah, ok, and load the legacy_serial module. Going from built-in serial to
+modules I was already challenged to find serial_core, 8250, 8250_pnp
+and/or 8250_pci (the help in "make menuconfig" does not seem to show the
+help that is written in the Kconfig file for 8250_pnp and 8250_pci).
+
+> For 2.6.23, we reverted my patch that caused the names to be swapped:
+>   http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=57d4810ea0d9ca58a7bcc1336607f0cede0a2abf
+
+Thanks for the information - I wondered how you decided. 
+
+What about 2.6.22.x? Or should the distro kernels use that revert patch
+for their stable 2.6.22 kernels?
+
+Regards...
+		Michael
+
