@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938409AbXHMSk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S974396AbXHMSlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938409AbXHMSk3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1033041AbXHMSWd
+	id S974396AbXHMSlJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1033047AbXHMSWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:22:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40145 "EHLO mx1.redhat.com"
+	Mon, 13 Aug 2007 14:22:45 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3455 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030800AbXHMSWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:22:30 -0400
-Message-ID: <46C0A13B.1000308@redhat.com>
-Date: Mon, 13 Aug 2007 14:21:47 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jcliburn@gmail.com, atl1-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] [74/2many] MAINTAINERS - ATL1 ETHERNET DRIVER
-References: <46bff8ef./PAU8OU4FL0OGX8r%joe@perches.com>	 <46BFFCA0.3090600@redhat.com>  <46BFFF02.9090704@redhat.com> <1187028627.10249.212.camel@localhost>
-In-Reply-To: <1187028627.10249.212.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1759417AbXHMSWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 14:22:43 -0400
+Subject: Re: [v4l-dvb-maintainer] [PATCH] [165/2many] MAINTAINERS - DVB
+	SUBSYSTEM AND DRIVERS
+From: Joe Perches <joe@perches.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: v4l-dvb-maintainer@linuxtv.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <1187028726.664.7.camel@gaivota>
+References: <46bff9a0.e/9yM2yHeGs6e+wx%joe@perches.com>
+	 <1187005362.7067.15.camel@gaivota>  <1187026197.10249.150.camel@localhost>
+	 <1187028726.664.7.camel@gaivota>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 11:21:23 -0700
+Message-Id: <1187029283.10249.225.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Mon, 2007-08-13 at 02:49 -0400, Chris Snook wrote:
->> Actually, now that I've seen the format in the intro patch,
->> it would be simpler just to use this:
->> F:	drivers/net/atl1/
-> 
-> ATL1 ETHERNET DRIVER
-> P:	Jay Cliburn
-> M:	jcliburn@gmail.com
-> P:	Chris Snook
-> M:	csnook@redhat.com
-> L:	atl1-devel@lists.sourceforge.net
-> W:	http://sourceforge.net/projects/atl1
-> W:	http://atl1.sourceforge.net
-> S:	Maintained
-> F:	drivers/net/atl1/
-> 
-> 
+On Mon, 2007-08-13 at 15:12 -0300, Mauro Carvalho Chehab wrote:
+> Probably, you should also add:
+> F: Documentation/dvb/
 
-Acked-by: Chris Snook <csnook@redhat.com>
+DVB SUBSYSTEM AND DRIVERS
+P:	LinuxTV.org Project
+M:	v4l-dvb-maintainer@linuxtv.org
+L:	linux-dvb@linuxtv.org (subscribers-only)
+W:	http://linuxtv.org/
+T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
+S:	Maintained
+F:	Documentation/dvb/
+F:	drivers/media/dvb/
+F:	drivers/media/common/saa7146*.c
+F:	include/linux/dvb/
 
-And for the love of god, please don't ever send 560 messages to the list at 
-once.  I'm still slowly getting messages you sent 12 hours ago.
+
+
