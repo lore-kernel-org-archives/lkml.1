@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965898AbXHMUdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S944740AbXHMUhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965898AbXHMUdw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757052AbXHMUdg
+	id S944740AbXHMUhu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbXHMUhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:33:36 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:44963 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756618AbXHMUdf (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:33:35 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Chris Wright <chrisw@sous-sol.org>,
-       joe@perches.com, xen-devel@lists.xensource.com,
-       virtualization@lists.osdl.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, jeremy@xensource.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] [545/2many] MAINTAINERS - XEN HYPERVISOR INTERFACE
-In-Reply-To: Your message of "Mon, 13 Aug 2007 22:13:24 +0200."
-             <20070813201324.GG18945@stusta.de>
-From: Valdis.Kletnieks@vt.edu
-References: <46bffcb5.o/KKCq3EZH4S47k3%joe@perches.com> <20070813185536.GH3672@sequoia.sous-sol.org> <20070813121005.af159d1d.randy.dunlap@oracle.com> <22502.1187032979@turing-police.cc.vt.edu>
-            <20070813201324.GG18945@stusta.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1187037139_3175P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 13 Aug 2007 16:37:39 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:8213 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753266AbXHMUhi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 16:37:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=S3nTh4n4qin4+CXbf7VTE01ufNW4ACPciT5h6gqgnlCxseGAkmj7iShuF7CHzLSOxo8o3vDx0Pmw7qjoVp2KbyM8okntGVuknD0PXM28haBWenhu+bWgohl8b3WRUHyyQRTe0TIlz9UEw7Mgj3NYPJwdXiUojMAaKVLYrUrl8Zg=
+Message-ID: <524f69650708131337i5f9f9761gea2600c1c1be3be7@mail.gmail.com>
+Date: Mon, 13 Aug 2007 15:37:36 -0500
+From: "Steve French" <smfrench@gmail.com>
+To: "Andrew Bartlett" <abartlet@samba.org>
+Subject: Re: [PATCH] [123/2many] MAINTAINERS - COMMON INTERNET FILE SYSTEM (CIFS)
+Cc: joe@perches.com, torvalds@linux-foundation.org, sfrench@samba.org,
+       samba-technical@lists.samba.org, linux-kernel@vger.kernel.org,
+       linux-cifs-client@lists.samba.org, akpm@linux-foundation.org
+In-Reply-To: <1187002400.22086.6.camel@dragonlady>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 13 Aug 2007 16:32:19 -0400
-Message-ID: <27429.1187037139@turing-police.cc.vt.edu>
+Content-Disposition: inline
+References: <46bff94b.cqAV08ZZtCVJZMCU%joe@perches.com>
+	 <1187002400.22086.6.camel@dragonlady>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1187037139_3175P
-Content-Type: text/plain; charset=us-ascii
+On 8/13/07, Andrew Bartlett <abartlet@samba.org> wrote:
+> On Sun, 2007-08-12 at 23:25 -0700, joe@perches.com wrote:
+> > Add file pattern to MAINTAINER entry
+> >
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> >
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index 1c014f1..5144e4e 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -1201,6 +1201,7 @@ L:      samba-technical@lists.samba.org
+> >  W:   http://us1.samba.org/samba/Linux_CIFS_client.html
+> >  T:   git kernel.org:/pub/scm/linux/kernel/git/sfrench/cifs-2.6.git
+> >  S:   Supported
+> > +F:   fs/cifs/
+>
+> No comment on the F:, but the L: entry here is interesting.  Is
+> samba-technical really the right list for cifs-vfs patches?  Aside from
+> being CC'ed on such patches, I've never seen discussion of them on the
+> Samba mailing lists.
+>
+> Steve: Shouldn't that be linux-cifs-client?
 
-On Mon, 13 Aug 2007 22:13:24 +0200, Adrian Bunk said:
-> On Mon, Aug 13, 2007 at 03:22:59PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> > On Mon, 13 Aug 2007 12:10:05 PDT, Randy Dunlap said:
-> > 
-> > > Agreed.  But not everyone wants to or should have to use git,
-> > > so what are the alternatives?
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=tree
-> > 
-> > and start chasing down 'History' pointers?
-> >...
-> 
-> And that brings you what?
+linux-cifs-client is mentioned on the L: entry immediately before the
+samba-technical one so no change seems to be needed for that.
 
-You got a better alternative to 'git history' or 'git blame' to find who
-to cc: regarding a bug, feel free to propose it. ;)
+I updated the W: line to point to the preferred URL
+(http://linux-cifs.samba.org)
 
---==_Exmh_1187037139_3175P
-Content-Type: application/pgp-signature
+Adding an F: entry in the future is fine by me
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+-- 
+Thanks,
 
-iD8DBQFGwL/TcC3lWbTT17ARAqK9AJ0eZgcGEqPd0gZ+S3f2Tmka8oeiWACgkDhn
-QEWyBW83QVd1lsuny2rOjyg=
-=UWWX
------END PGP SIGNATURE-----
-
---==_Exmh_1187037139_3175P--
+Steve
