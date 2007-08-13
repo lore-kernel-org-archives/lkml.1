@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S944392AbXHMM04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbXHMM1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S944392AbXHMM04 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968057AbXHMGun
+	id S1757184AbXHMM1t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968140AbXHMGux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:50:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33608 "EHLO mx1.redhat.com"
+	Mon, 13 Aug 2007 02:50:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33663 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967818AbXHMGuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:50:37 -0400
-Message-ID: <46BFFDBD.6080804@redhat.com>
-Date: Mon, 13 Aug 2007 02:44:13 -0400
+	id S967968AbXHMGuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:50:50 -0400
+Message-ID: <46BFFF02.9090704@redhat.com>
+Date: Mon, 13 Aug 2007 02:49:38 -0400
 From: Chris Snook <csnook@redhat.com>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
-       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
-Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
-References: <46BCC26B.6080600@redhat.com> <46BB46B2.60808@redhat.com> <20070809134150.GA14890@shell.boston.redhat.com> <2708.1186737826@redhat.com> <7680.1186822071@redhat.com>
-In-Reply-To: <7680.1186822071@redhat.com>
+To: joe@perches.com
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jcliburn@gmail.com, atl1-devel@lists.sourceforge.net,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] [74/2many] MAINTAINERS - ATL1 ETHERNET DRIVER
+References: <46bff8ef./PAU8OU4FL0OGX8r%joe@perches.com> <46BFFCA0.3090600@redhat.com>
+In-Reply-To: <46BFFCA0.3090600@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> Chris Snook <csnook@redhat.com> wrote:
+Chris Snook wrote:
+> joe@perches.com wrote:
+>> Add file pattern to MAINTAINER entry
+>>
+>> Signed-off-by: Joe Perches <joe@perches.com>
+>>
+>> diff --git a/MAINTAINERS b/MAINTAINERS
+>> index b8bb108..d9d1bcc 100644
+>> --- a/MAINTAINERS
+>> +++ b/MAINTAINERS
+>> @@ -752,6 +752,7 @@ L:    atl1-devel@lists.sourceforge.net
+>>  W:    http://sourceforge.net/projects/atl1
+>>  W:    http://atl1.sourceforge.net
+>>  S:    Maintained
+>> +F:    drivers/net/atl1*
+>>  
+>>  ATM
+>>  P:    Chas Williams
 > 
->> cpu_relax() contains a barrier, so it should do the right thing.  For non-smp
->> architectures, I'm concerned about interacting with interrupt handlers.  Some
->> drivers do use atomic_* operations.
+> atl1 has its own directory, so this one should read
 > 
-> I'm not sure that actually answers my question.  Why not smp_rmb()?
+> F:    drivers/net/atl1/*
 > 
-> David
+>     -- Chris
+> 
 
-I would assume because we want to waste time efficiently even on non-smp 
-architectures, rather than frying the CPU or draining the battery.  Certain 
-looping execution patterns can cause the CPU to operate above thermal design 
-power.  I have fans on my workstation that only ever come on when running 
-LINPACK, and that's generally memory bandwidth-bound.  Just imagine what happens 
-when you're executing the same few non-serializing instructions in a tight loop 
-without ever stalling on memory fetches, or being scheduled out.
+Actually, now that I've seen the format in the intro patch, it would be simpler 
+just to use this:
 
-If there's another reason, I'd like to hear it too, because I'm just guessing here.
+F:	drivers/net/atl1/
 
 	-- Chris
