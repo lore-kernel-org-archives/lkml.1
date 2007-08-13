@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032625AbXHMSpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932656AbXHMSqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032625AbXHMSpb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031826AbXHMS07
+	id S932656AbXHMSqe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974070AbXHMScd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:26:59 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3471 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S948190AbXHMS05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:26:57 -0400
-Subject: Re: [PATCH] [188/2many] MAINTAINERS - EXT4 FILE SYSTEM
-From: Joe Perches <joe@perches.com>
-To: cmm@us.ibm.com, Dave Kleikamp <shaggy@austin.ibm.com>
-Cc: Eric Sandeen <sandeen@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       torvalds@linux-foundation.org, sct@redhat.com,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <1187025579.3876.4.camel@localhost.localdomain>
-References: <46bff9cc.cxIrFM29roaPmcfV%joe@perches.com>
-	 <20070813090128.GJ6689@schatzie.adilger.int>
-	 <20070813151917.GA28130@thunk.org> <1187021641.10249.90.camel@localhost>
-	 <46C08941.20609@redhat.com>  <1187024133.10249.113.camel@localhost>
-	 <1187025579.3876.4.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 11:16:53 -0700
-Message-Id: <1187029013.10249.222.camel@localhost>
+	Mon, 13 Aug 2007 14:32:33 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38575 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965007AbXHMScb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 14:32:31 -0400
+Subject: Re: [v4l-dvb-maintainer] [PATCH] [165/2many] MAINTAINERS - DVB
+	SUBSYSTEM AND DRIVERS
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Joe Perches <joe@perches.com>
+Cc: v4l-dvb-maintainer@linuxtv.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <1187029283.10249.225.camel@localhost>
+References: <46bff9a0.e/9yM2yHeGs6e+wx%joe@perches.com>
+	 <1187005362.7067.15.camel@gaivota>  <1187026197.10249.150.camel@localhost>
+	 <1187028726.664.7.camel@gaivota>  <1187029283.10249.225.camel@localhost>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 13 Aug 2007 15:22:54 -0300
+Message-Id: <1187029374.664.14.camel@gaivota>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.11.6.1-1mdv2008.0 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 10:19 -0700, Mingming Cao wrote:
-> Probably should add Shaggy (Dave Kleikamp <shaggy@austin.ibm.com>) here
-> too. He helped push ext4 fs into mainline and actively performing ext4
-> patch queue maintainence. 
 
-EXT4 FILE SYSTEM
-P:	Ted Ts'o
-M:	tytso@mit.edu
-P:	Mingming Cao
-M:	cmm@us.ibm.com
-P:	Andreas Dilger
-M:	adilger@clusterfs.com
-P:	Dave Kleikamp
-M:	shaggy@austin.ibm.com
-P:	Eric Sandeen
-M:	sandeen@redhat.com
-L:	linux-ext4@vger.kernel.org
-S:	Maintained
-F:	fs/ext4/
-F:	include/linux/ext4*
+Em Seg, 2007-08-13 às 11:21 -0700, Joe Perches escreveu:
+> On Mon, 2007-08-13 at 15:12 -0300, Mauro Carvalho Chehab wrote:
+> > Probably, you should also add:
+> > F: Documentation/dvb/
+> 
+> DVB SUBSYSTEM AND DRIVERS
+> P:	LinuxTV.org Project
+> M:	v4l-dvb-maintainer@linuxtv.org
+> L:	linux-dvb@linuxtv.org (subscribers-only)
+> W:	http://linuxtv.org/
+> T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
+> S:	Maintained
+> F:	Documentation/dvb/
+> F:	drivers/media/dvb/
+> F:	drivers/media/common/saa7146*.c
+> F:	include/linux/dvb/
 
+Acked-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+
+-- 
+Cheers,
+Mauro
 
