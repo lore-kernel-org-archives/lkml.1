@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972353AbXHMRQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032397AbXHMRRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972353AbXHMRQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S948252AbXHMRAz
+	id S1032397AbXHMRRW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968474AbXHMRFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:00:55 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:56906 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030788AbXHMRAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:00:52 -0400
-Date: Mon, 13 Aug 2007 18:58:21 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Karl Meyer <adhocrocker@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
-Message-ID: <20070813165821.GA19356@electric-eye.fr.zoreil.com>
-References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com>
+	Mon, 13 Aug 2007 13:05:09 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3187 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S973588AbXHMRFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 13:05:06 -0400
+Subject: Re: [PATCH] [70/2many] MAINTAINERS - ARPD SUPPORT
+From: Joe Perches <joe@perches.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20070813173522.685dab9e@the-village.bc.nu>
+References: <46bff8e8.HhTQ7TBPy1zkcNfh%joe@perches.com>
+	 <20070813114942.04a5483c@the-village.bc.nu>
+	 <1187019966.10249.75.camel@localhost>
+	 <20070813173522.685dab9e@the-village.bc.nu>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 10:04:19 -0700
+Message-Id: <1187024659.10249.125.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(netdev Cced)
+On Mon, 2007-08-13 at 17:35 +0100, Alan Cox wrote:
+> I wouldn't add a pattern for this.
 
-Karl Meyer <adhocrocker@gmail.com> :
-[...]
-> I am having trouble with the 2.6.23 kernel. With all versions since
-> 2.6.23-rc1 I have trouble with my network connection. When using the
-> network over a certain level (just browsing the web seems not to be
-> enough) e.g. when installing packages over the nvsv4 share, all
-> network stuff freezes for some time and syslog tells me:
-> Aug 13 13:16:09 frege NETDEV WATCHDOG: eth0: transmit timed out
-> Aug 13 13:16:39 frege NETDEV WATCHDOG: eth0: transmit timed out
-> Aug 13 13:17:09 frege NETDEV WATCHDOG: eth0: transmit timed out
-> Aug 13 13:17:57 frege NETDEV WATCHDOG: eth0: transmit timed out
+Back to:ARPD SUPPORT
+P:	Jonathan Layes
+L:	netdev@vger.kernel.org
+S:	Maintained
 
-Can you:
-- send a complete dmesg + /proc/interrupts + .config
-- use git bisect to find a suspect changeset
-  I do not expect any change of behavior between 2.6.22 and
-  25805dcf9d83098cf5492117ad2669cd14cc9b24 if it can help you narrow
-  things down (assuming it is a r8169 regression).
+> Actually I think the entire thing is a
+> bad idea but thats another matter.
 
--- 
-Ueimor
+Of course it's not an end-all solution,
+but what might work better?
+
+
+
