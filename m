@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S974672AbXHMTFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S974708AbXHMTGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S974672AbXHMTFL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 15:05:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936468AbXHMTEw
+	id S974708AbXHMTGK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 15:06:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763338AbXHMTFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 15:04:52 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43982 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763338AbXHMTEu (ORCPT
+	Mon, 13 Aug 2007 15:05:43 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:14965 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765727AbXHMTFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 15:04:50 -0400
-Subject: Re: [v4l-dvb-maintainer] [PATCH] [534/2many] MAINTAINERS - VIDEO
-	FOR LINUX
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Joe Perches <joe@perches.com>
-Cc: video4linux-list@redhat.com, v4l-dvb-maintainer@linuxtv.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <1187030038.10249.237.camel@localhost>
-References: <46bffca0.bx1Cr4B33dN1FJPN%joe@perches.com>
-	 <1187028910.664.11.camel@gaivota>  <1187030038.10249.237.camel@localhost>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 13 Aug 2007 15:58:09 -0300
-Message-Id: <1187031489.664.19.camel@gaivota>
+	Mon, 13 Aug 2007 15:05:41 -0400
+Date: Mon, 13 Aug 2007 12:08:16 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Martin Mares <mj@ucw.cz>
+Cc: Joe Perches <joe@perches.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] [467/2many] MAINTAINERS - SVGA HANDLING
+Message-Id: <20070813120816.0955fe5e.randy.dunlap@oracle.com>
+In-Reply-To: <mj+md-20070813.183311.30826.nikam@ucw.cz>
+References: <46bffc09.olZ/JU6zLi5nghOY%joe@perches.com>
+	<mj+md-20070813.084046.10732.nikam@ucw.cz>
+	<1187028193.10249.197.camel@localhost>
+	<mj+md-20070813.183311.30826.nikam@ucw.cz>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1-1mdv2008.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 13 Aug 2007 20:34:22 +0200 Martin Mares wrote:
 
-Em Seg, 2007-08-13 às 11:33 -0700, Joe Perches escreveu:
-> On Mon, 2007-08-13 at 15:15 -0300, Mauro Carvalho Chehab wrote:
-> > There are more include files to be added, for the older V4L APIs:
-> > F: include/linux/video_decoder.h
-> > F: include/linux/videodev.h
+> > SVGA HANDLING
+> > P:	Martin Mares
+> > M:	mj@ucw.cz
+> > L:	linux-video@atrey.karlin.mff.cuni.cz
+> > S:	Maintained
+> > F:	Documentation/svga.txt
+> > F:	arch/i386/boot/video.S
 > 
-> VIDEO FOR LINUX
-> P:	Mauro Carvalho Chehab
-> M:	mchehab@infradead.org
-> M:	v4l-dvb-maintainer@linuxtv.org
-> L:	video4linux-list@redhat.com
-> W:	http://linuxtv.org
-> T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
-> S:	Maintained
-> F:	Documentation/video4linux/
-> F:	drivers/media/
-> F:	include/linux/video_decoder.h
-> F	include/linux/videodev.h
-> F:	include/linux/videodev2.h
-> F:	include/media/
+> Please also kill linux-video and replace it by linux-kernel. Not
+> a single on-topic mail has arrived to linux-video in a couple of years
+> and it seems that the list didn't survive update of the list server
+> a week or so ago.
 
-Acked-by: Mauro Carvalho Chehab <mchehab@infradead.org>
-> 
-> 
--- 
-Cheers,
-Mauro
+Can you do anything about the spam on linux-pci ???
 
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
