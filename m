@@ -1,106 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937491AbXHMDZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939014AbXHMD1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937491AbXHMDZp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 23:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934337AbXHMDZb
+	id S939014AbXHMD1H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 23:27:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935552AbXHMD0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 23:25:31 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:38398
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759811AbXHMDZ3 (ORCPT
+	Sun, 12 Aug 2007 23:26:53 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48130 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934337AbXHMD0w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 23:25:29 -0400
-Date: Sun, 12 Aug 2007 20:21:17 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Paul Clements <paul.clements@steeleye.com>
-cc: Jan Engelhardt <jengelh@computergmbh.de>, Al Boldi <a1426z@gawab.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: [RFD] Layering: Use-Case Composers (was: DRBD - what is it,
- anyways? [compare with e.g. NBD + MD raid])
-In-Reply-To: <46BFB6BB.80406@steeleye.com>
-Message-ID: <Pine.LNX.4.64.0708122016100.22470@asgard.lang.hm>
-References: <200708121335.17267.a1426z@gawab.com>
- <Pine.LNX.4.64.0708121325170.28963@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.64.0708120933210.19502@asgard.lang.hm>
- <Pine.LNX.4.64.0708121901290.28963@fbirervta.pbzchgretzou.qr>
- <20070812174549.GA2915@teal.hq.k1024.org> <46BFB6BB.80406@steeleye.com>
+	Sun, 12 Aug 2007 23:26:52 -0400
+Date: Sun, 12 Aug 2007 20:26:33 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+cc: Andi Kleen <ak@suse.de>, dean@arctic.org, patches@x86-64.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [1/12] x86: Work around mmio config space quirk on AMD
+ Fam10h
+In-Reply-To: <20070813030632.GA1445@redhat.com>
+Message-ID: <alpine.LFD.0.999.0708122021300.30176@woody.linux-foundation.org>
+References: <20070809241.425881000@suse.de> <20070809124128.886BE14F3B@wotan.suse.de>
+ <alpine.LFD.0.999.0708120216470.30176@woody.linux-foundation.org>
+ <200708121203.23741.ak@suse.de> <alpine.LFD.0.999.0708121205210.30176@woody.linux-foundation.org>
+ <20070813030632.GA1445@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-per the message below MD (or DM) would need to be modified to work 
-reasonably well with one of the disk components being over an unreliable 
-link (like a network link)
 
-are the MD/DM maintainers interested in extending their code in this 
-direction? or would they prefer to keep it simpler by being able to 
-continue to assume that the raid components are connected over a highly 
-reliable connection?
 
-if they are interested in adding (and maintaining) this functionality then 
-there is a real possibility that NBD+MD/DM could eliminate the need for 
-DRDB. however if they are not interested in adding all the code to deal 
-with the network type issues, then the argument that DRDB should not be 
-merged becouse you can do the same thing with MD/DM + NBD is invalid and 
-can be dropped/ignored
+On Sun, 12 Aug 2007, Dave Jones wrote:
+> 
+> This does make me wonder, why these weren't caught in -mm ?
 
-David Lang
+I'm worried that -mm isn't getting a lot of exposure these days. People do 
+run it, but I wonder how many..
 
-On Sun, 12 Aug 2007, Paul Clements wrote:
+That said, a lot of machines won't ever use MMCFG (especially the old ones 
+- and most of the new ones would run x86-64), so that probably explains at 
+least that one.
 
-> Iustin Pop wrote:
->>  On Sun, Aug 12, 2007 at 07:03:44PM +0200, Jan Engelhardt wrote:
->> >  On Aug 12 2007 09:39, david@lang.hm wrote:
->> > >  now, I am not an expert on either option, but three are a couple 
->> > >  things that I
->> > >  would question about the DRDB+MD option
->> > > 
->> > >  1. when the remote machine is down, how does MD deal with it for reads 
->> > >  and
->> > >  writes?
->> >  I suppose it kicks the drive and you'd have to re-add it by hand unless 
->> >  done by
->> >  a cronjob.
->
-> Yes, and with a bitmap configured on the raid1, you just resync the blocks 
-> that have been written while the connection was down.
->
->
->> >From my tests, since NBD doesn't have a timeout option, MD hangs in the
->>  write to that mirror indefinitely, somewhat like when dealing with a
->>  broken IDE driver/chipset/disk.
->
-> Well, if people would like to see a timeout option, I actually coded up a 
-> patch a couple of years ago to do just that, but I never got it into mainline 
-> because you can do almost as well by doing a check at user-level (I basically 
-> ping the nbd connection periodically and if it fails, I kill -9 the 
-> nbd-client).
->
->
->> > >  2. MD over local drive will alternate reads between mirrors (or so 
->> > >  I've been
->> > >  told), doing so over the network is wrong.
->> >  Certainly. In which case you set "write_mostly" (or even write_only, not 
->> >  sure
->> >  of its name) on the raid component that is nbd.
->> > 
->> > >  3. when writing, will MD wait for the network I/O to get the data 
->> > >  saved on the
->> > >  backup before returning from the syscall? or can it sync the data out 
->> > >  lazily
->> >  Can't answer this one - ask Neil :)
->>
->>  MD has the write-mostly/write-behind options - which help in this case
->>  but only up to a certain amount.
->
-> You can configure write_behind (aka, asynchronous writes) to buffer as much 
-> data as you have RAM to hold. At a certain point, presumably, you'd want to 
-> just break the mirror and take the hit of doing a resync once your network 
-> leg falls too far behind.
->
-> --
-> Paul
->
+But the x86-64 alternates code would hit anybody who had the "use rep movs 
+for best performance" code, and I'm surprised that one wasn't caught 
+earlier. X86_FEATURE_REP_GOOD is not uncommon (Core 2 has it). So I assume 
+that one wasn't really in -mm at all.
+
+		Linus
