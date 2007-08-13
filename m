@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935122AbXHMPb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S946479AbXHMPcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935122AbXHMPb0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S973136AbXHMNaS
+	id S946479AbXHMPcK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:32:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S973127AbXHMNaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 09:30:18 -0400
-Received: from loopy.telegraphics.com.au ([202.45.126.152]:48129 "EHLO
-	loopy.telegraphics.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S973127AbXHMNaP (ORCPT
+	Mon, 13 Aug 2007 09:30:20 -0400
+Received: from host03.cc-host.de ([193.138.108.23]:58621 "EHLO
+	host03.cc-host.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S973128AbXHMNaQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 09:30:15 -0400
-X-Greylist: delayed 1241 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Aug 2007 09:30:14 EDT
-Date: Mon, 13 Aug 2007 23:09:30 +1000 (EST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
-       debian-68k@lists.debian.org
-Subject: Re: [patch 10/10] m68k/mac: Make mac_hid_mouse_emulate_buttons()
- declaration visible
-In-Reply-To: <Pine.LNX.4.58.0708131432560.32732@om.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.4.64.0708132253530.21364@loopy.telegraphics.com.au>
-References: <20070812094050.522858761@mail.of.borg> <20070812094119.910815432@mail.of.borg>
- <Pine.LNX.4.58.0708131432560.32732@om.biophys.uni-duesseldorf.de>
+	Mon, 13 Aug 2007 09:30:16 -0400
+X-Greylist: delayed 2254 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Aug 2007 09:30:15 EDT
+Date: Mon, 13 Aug 2007 14:51:45 +0200
+From: Anders Larsen <al@alarsen.net>
+Subject: Re: [PATCH] [397/2many] MAINTAINERS - QNX4 FILESYSTEM
+To: joe@perches.com
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <46bffb7b.C++26gfic9//+SQA%joe@perches.com>
+In-Reply-To: <46bffb7b.C++26gfic9//+SQA%joe@perches.com> (from
+	joe@perches.com on Mon Aug 13 08:34:35 2007)
+X-Mailer: Balsa 2.3.14
+Message-Id: <1187009505l.26974l.0l@ecxwww1.reanet.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+X-AEV-Kundenmail-Information: AEV Virus and Spam Secure Mail System
+X-AEV-Kundenmail-SpamCheck: 
+X-MailScanner-From: al@alarsen.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 13 Aug 2007, Michael Schmitz wrote:
-
-> > From: Geert Uytterhoeven <geert@linux-m68k.org>
-> >
-> > m68k/mac: Make mac_hid_mouse_emulate_buttons() declaration visible
+On 2007-08-13 08:34:35, joe@perches.com wrote:
+> Add file pattern to MAINTAINER entry
 > 
-> With buttons emulation being available via uinput event devices, do we 
-> still need the kernel mouse button emulation? At least on powerpc, it 
-> was declared deprecated long ago ...
->
-> Anyone using mouseemu on m68k Mac?
-
-Yes, and on powermac too. It provides the paste key for gpm and I'm quite 
-fond of it. But if there's a better alternative, I'll happily try it 
-instead.
-
--f
-
+> Signed-off-by: Joe Perches <joe@perches.com>
 > 
-> 	Michael
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-m68k" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 6a99fe5..ed3be09 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3799,6 +3799,8 @@ M:	al@alarsen.net
+>  L:	linux-kernel@vger.kernel.org
+>  W:	http://www.alarsen.net/linux/qnx4fs/
+>  S:	Maintained
+> +F:	fs/qnx4
+> +F:	include/linux/qnx4_fs.h
+
+include/linux/qnxtypes.h too
+
+Cheers
+ Anders
