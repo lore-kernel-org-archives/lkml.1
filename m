@@ -1,105 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972353AbXHMQeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934502AbXHMQfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972353AbXHMQeW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940921AbXHMPjz
+	id S934502AbXHMQfW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966572AbXHMPk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 11:39:55 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:58439 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S942881AbXHMPju (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 11:39:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Az/dhEZba8bmw1vgp22NlZAUp/juU+hJJyorJNdK+Bqu65E9X0fKGgyur988fgCeyJUoqqaGLDDp0Er36ozE73vRyMD6xch26s4vbpsHpIb9+djsPWVYvw41laL1cTjFVZ4M0jcgRC+XTMPdrV6AZsf+f/syyyIth+jOmsW1cP0=
-Message-ID: <6bffcb0e0708130839v27b4269dqfde702c410b33fd0@mail.gmail.com>
-Date: Mon, 13 Aug 2007 17:39:47 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Udo van den Heuvel" <udovdh@xs4all.nl>
-Subject: Re: possible BUG while using CUPS
-Cc: linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
-In-Reply-To: <46BD762F.4060801@xs4all.nl>
+	Mon, 13 Aug 2007 11:40:56 -0400
+Received: from mga02.intel.com ([134.134.136.20]:14778 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967191AbXHMPku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 11:40:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,255,1183359600"; 
+   d="scan'208";a="278201554"
+Message-ID: <46C07B5D.1080909@intel.com>
+Date: Mon, 13 Aug 2007 08:40:13 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jean Delvare <khali@linux-fr.org>
+CC: joe@perches.com, torvalds@linux-foundation.org, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] [29/2many] MAINTAINERS - ADM1025 HARDWARE MONITOR DRIVER
+References: <46bff89a.xYL7oyBOdTr8eyH/%joe@perches.com> <20070813113531.0632f551@hyperion.delvare>
+In-Reply-To: <20070813113531.0632f551@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46BD762F.4060801@xs4all.nl>
+X-OriginalArrivalTime: 13 Aug 2007 15:40:48.0769 (UTC) FILETIME=[524E9710:01C7DDC0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Udo,
+Jean Delvare wrote:
+> Hi Joe,
+> 
+> What a storm :( This should have been one single patch IMHO, or grouped
+> by maintainer or subsystem or something.
+> 
+> On Sun, 12 Aug 2007 23:22:18 -0700, joe@perches.com wrote:
+>> Add file pattern to MAINTAINER entry
+> 
+> Can you please point me to where this new pattern was discussed?
 
-On 11/08/07, Udo van den Heuvel <udovdh@xs4all.nl> wrote:
-> Using Cups 1.2.12 on Linux 2.6.22.1.
-> Managing a printer from a Win2K workstation via the http interface.
-> I am at: http://box:631/printers
-> I click Set as default.
-> I see:
-> 426 Upgrade Required
->
-> You must access this page using the URL
-> https://box:631/admin/?op=set-as-default&printer_name=HP_DESKJET_3820_USB_1.
->
-> I clikc that link and hear the ping-ping of the BUG:
+I came up with the idea at OLS talking to Dan Aloni, who posted the same problem 
+but with a different solution (he suggested separate files in each directory).
 
-This is very interesting. Can you reproduce this bug?
+See: http://lkml.org/lkml/2007/6/29/300
 
->
-> BUG: unable to handle kernel paging request at virtual address 730ca542
->  printing eip:
-> 730ca542
-> *pde = 00000000
-> Oops: 0000 [#1]
-> PREEMPT
-> Modules linked in: pwc nls_utf8 cifs sch_tbf ipt_recent xt_string
-> xt_MARK xt_length xt_tcpmss xt_mac xt_mark w83627hf hwmon_vid eeprom sit
-> tunnel4 nf_nat_h323 nf_conntrack_h323 nf_nat_ftp nf_conntrack_ftp
-> ipt_tos ipt_REDIRECT nf_nat_irc nf_conntrack_irc ipt_owner ipt_ttl ipv6
-> ipt_MASQUERADE iptable_nat nf_nat xt_NOTRACK iptable_raw ipt_TOS
-> iptable_mangle ipt_LOG xt_TCPMSS xt_limit xt_state ipt_TARPIT ipt_REJECT
-> iptable_filter binfmt_misc lp nvram loop snd_via82xx snd_ac97_codec
-> ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq
-> snd_pcm_oss snd_mixer_oss snd_pcm compat_ioctl32 videodev snd_timer
-> snd_page_alloc snd_mpu401_uart snd_rawmidi v4l2_common snd_seq_device
-> v4l1_compat parport_pc parport snd usblp i2c_viapro uhci_hcd
-> CPU:    0
-> EIP:    0060:[<730ca542>]    Not tainted VLI
-> EFLAGS: 00010292   (2.6.22.1 #2)
-> EIP is at 0x730ca542
-> eax: 00000000   ebx: a69845a0   ecx: 00000000   edx: 00000000
-> esi: 1057e3db   edi: 67c88dd0   ebp: 898c1ad5   esp: d9f97f18
-> ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-> Process cupsd (pid: 2220, ti=d9f96000 task=db549420 task.ti=d9f96000)
-> Stack: b717a69a 240c98ab c2e35cdc 2f6eea16 64cf0972 c0a5a2b1 ba2d3d30
-> f026206d
->        3301069b 39222156 d15922e5 eb1da2a4 656caba4 023f7970 33d43992
-> cc0c5c41
->        63ed81fc 5c760bf7 fe3db5c3 7cdbd9fc ba114508 0ff827b8 b51f3690
-> 9e64614f
-> Call Trace:
->  [<c0103aa5>] show_trace_log_lvl+0x1a/0x2f
->  [<c0103b57>] show_stack_log_lvl+0x9d/0xa5
->  [<c0103d2c>] show_registers+0x1cd/0x2e3
->  [<c0103f40>] die+0xfe/0x200
->  [<c010f899>] do_page_fault+0x432/0x505
->  [<c02ff72a>] error_code+0x6a/0x70
->  =======================
-> Code:  Bad EIP value.
-> EIP: [<730ca542>] 0x730ca542 SS:ESP 0068:d9f97f18
->
->
-> This is on a VIA Epia EK8000. ksymoops did not really help me, this is
-> all output I got.
->
-> Ideas?
+Joe did a great job on the perl script though ;)
 
-BTW. Please try 2.6.22.2.
+Cheers,
 
-Regards,
-Michal
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+Auke
