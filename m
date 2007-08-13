@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972110AbXHMMk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S972222AbXHMMll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972110AbXHMMk2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S941012AbXHMHPj
+	id S972222AbXHMMll (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S941334AbXHMHSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 03:15:39 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:15453 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S941026AbXHMHPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 03:15:36 -0400
-Message-ID: <46C00446.7030703@openvz.org>
-Date: Mon, 13 Aug 2007 11:12:06 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: akpm@osdl.org, devel@openvz.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, oleg@tv-sign.ru, sukadev@us.ibm.com
-Subject: Re: [PATCH 3/20] Introduce MS_KERNMOUNT flag
-References: <46BC506B.mailGIV1AXDXM@openvz.org> <20070811034721.GB22216@infradead.org>
-In-Reply-To: <20070811034721.GB22216@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Aug 2007 03:18:13 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42028 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S941127AbXHMHSK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 03:18:10 -0400
+Date: Mon, 13 Aug 2007 08:18:06 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Joe Perches <joe@perches.com>
+Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       pcnet32@verizon.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] [374/2many] MAINTAINERS - PCNET32 NETWORK DRIVER
+Message-ID: <20070813071806.GG21089@ftp.linux.org.uk>
+References: <46bffb4c.nrqicrPs7IJXlgQ0%joe@perches.com> <20070812.233630.00455011.davem@davemloft.net> <1186987609.10249.22.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1186987609.10249.22.camel@localhost>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Fri, Aug 10, 2007 at 03:47:55PM +0400, xemul@openvz.org wrote:
->> This flag tells the .get_sb callback that this is a kern_mount() call
->> so that it can trust *data pointer to be valid in-kernel one. If this
->> flag is passed from the user process, it is cleared since the *data
->> pointer is not a valid kernel object.
->>
->> Running a few steps forward - this will be needed for proc to create the
->> superblock and store a valid pid namespace on it during the namespace
->> creation. The reason, why the namespace cannot live without proc mount
->> is described in the appropriate patch.
+On Sun, Aug 12, 2007 at 11:46:49PM -0700, Joe Perches wrote:
+> On Sun, 2007-08-12 at 23:36 -0700, David Miller wrote:
+> > Ok, 374 patches is just rediculious.
+> > 
+> > So many patches eats up an enormous amount of mailing list resources,
+> > and for these patches in particular there are few reasons to split
+> > them up at all.  The fact that the split up landed you at 300+ patches
+> > is a very good indication of that.
 > 
-> I don't like this at all.  We should never pass kernel and userspace
-> addresses through the same pointer.  Maybe add an additional argument
-> to the get_sb prototype instead.  But this whole idea of mounting /proc
-> from kernelspace sounds like a really bad idea to me.  /proc should
-> never be mounted from the kernel but always normally from userspace.
+> More than ridiculous.  Completely agree.
+> 
+> I tried to send 1 patch over the last couple of days.
+> Unfortunately, it's > 100KB and disappears into the void.
 
-Why then is it mounted in proc_root_init()?
-
-Thanks,
-Pavel
+So put it on anonftp/webpage/git tree and post the URI, damnit.
+Of all ridiculous reasons for a mailbomb...
