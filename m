@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938496AbXHMXhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936806AbXHMXl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938496AbXHMXhi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 19:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757333AbXHMXhW
+	id S936806AbXHMXl2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 19:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757333AbXHMXlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 19:37:22 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54403 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757861AbXHMXhU (ORCPT
+	Mon, 13 Aug 2007 19:41:15 -0400
+Received: from mga09.intel.com ([134.134.136.24]:60714 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756449AbXHMXlO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 19:37:20 -0400
-Date: Tue, 14 Aug 2007 00:44:54 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <ak@suse.de>
-Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       Mel Gorman <mel@skynet.ie>, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 3/4] Embed zone_id information within the
- zonelist->zones pointer
-Message-ID: <20070814004454.7adee7ef@the-village.bc.nu>
-In-Reply-To: <20070814001441.GN3406@bingen.suse.de>
-References: <20070813225020.GE3406@bingen.suse.de>
-	<Pine.LNX.4.64.0708131457190.28445@schroedinger.engr.sgi.com>
-	<20070813225841.GG3406@bingen.suse.de>
-	<Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com>
-	<20070813230801.GH3406@bingen.suse.de>
-	<Pine.LNX.4.64.0708131536340.29946@schroedinger.engr.sgi.com>
-	<20070813234322.GJ3406@bingen.suse.de>
-	<Pine.LNX.4.64.0708131553050.30626@schroedinger.engr.sgi.com>
-	<20070814000041.GL3406@bingen.suse.de>
-	<20070814002223.2d8d42c5@the-village.bc.nu>
-	<20070814001441.GN3406@bingen.suse.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
+	Mon, 13 Aug 2007 19:41:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,257,1183359600"; 
+   d="scan'208";a="117125576"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH] [429/2many] MAINTAINERS - SGI SN-IA64 (Altix) SERIAL CONSOLE DRIVER
+Date: Mon, 13 Aug 2007 16:41:11 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A0229F782@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <46bffbb8.4fakUMLGtqE0GdFV%joe@perches.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] [429/2many] MAINTAINERS - SGI SN-IA64 (Altix) SERIAL CONSOLE DRIVER
+Thread-Index: Acfd+knAURocl4VlSMmxaj/P2O0rlAACOu9w
+References: <46bffbb8.4fakUMLGtqE0GdFV%joe@perches.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: <joe@perches.com>, <torvalds@linux-foundation.org>, <pfg@sgi.com>,
+       <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>,
+       <akpm@linux-foundation.org>
+Cc: <pfg@sgi.com>
+X-OriginalArrivalTime: 13 Aug 2007 23:41:12.0617 (UTC) FILETIME=[6EA8C190:01C7DE03]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So the only systems really affected are lance systems with >16MB.
-> I don't think we can stop Linux evolution for those sorry. They'll
-> just have to live with it.
 
-I think thats fair enough too.
+@@ -4084,6 +4084,7 @@ P:	Pat Gefre
+ M:	pfg@sgi.com
+ L:	linux-ia64@vger.kernel.org
+ S:	Supported
++F:	Documentation/ia64/serial.txt
+ 
+ SGI VISUAL WORKSTATION 320 AND 540
+ P:	Andrey Panin
+
+
+Huh?  Perhaps this should be:
+
++F:	drivers/serial/sn_console.c
+
+-Tony
