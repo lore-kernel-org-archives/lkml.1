@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966475AbXHMIDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940895AbXHMIEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966475AbXHMIDk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 04:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966542AbXHMG1s
+	id S940895AbXHMIEq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 04:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966465AbXHMG1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:27:48 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4388 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:27:53 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4390 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966359AbXHMG1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:27:46 -0400
-Date: Sun, 12 Aug 2007 23:27:32 -0700
+	id S966553AbXHMG1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:27:52 -0400
+Date: Sun, 12 Aug 2007 23:27:36 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, adaplas@gmail.com
-Subject: [PATCH] [192/2many] MAINTAINERS - FRAMEBUFFER LAYER
-Message-ID: <46bff9d4.hTB27P/Vd9PZG86o%joe@perches.com>
+To: vbordug@ru.mvista.com, torvalds@linux-foundation.org,
+       pantelis.antoniou@gmail.com, netdev@vger.kernel.org,
+       linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH] [193/2many] MAINTAINERS - FREESCALE SOC FS_ENET DRIVER
+Message-ID: <46bff9d8.wK4SjlojmM1YMQd3%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,16 +29,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 0d92f67..e06f478 100644
+index e06f478..2ef0ec4 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1847,6 +1847,9 @@ M:	adaplas@gmail.com
- L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
- W:	http://linux-fbdev.sourceforge.net/
+@@ -1859,6 +1859,8 @@ M:	vbordug@ru.mvista.com
+ L:	linuxppc-embedded@ozlabs.org
+ L:	netdev@vger.kernel.org
  S:	Maintained
-+F:	Documentation/fb/
-+F:	drivers/video/fb*
-+F:	include/linux/fb.h
++F:	drivers/net/fs_enet/
++F:	include/linus/fs_enet_pd.h
  
- FREESCALE SOC FS_ENET DRIVER
- P:	Pantelis Antoniou
+ FREESCALE HIGHSPEED USB DEVICE DRIVER
+ P:	Li Yang
