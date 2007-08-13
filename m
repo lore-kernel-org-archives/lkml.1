@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S947076AbXHMOlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940036AbXHMOmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S947076AbXHMOlN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970668AbXHMLm5
+	id S940036AbXHMOmE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S944603AbXHMLnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 07:42:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43545 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S970569AbXHMLmz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 07:42:55 -0400
-Subject: Re: [v4l-dvb-maintainer] [PATCH] [165/2many] MAINTAINERS - DVB
-	SUBSYSTEM AND DRIVERS
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: joe@perches.com
-Cc: v4l-dvb-maintainer@linuxtv.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <46bff9a0.e/9yM2yHeGs6e+wx%joe@perches.com>
-References: <46bff9a0.e/9yM2yHeGs6e+wx%joe@perches.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 13 Aug 2007 08:42:42 -0300
-Message-Id: <1187005362.7067.15.camel@gaivota>
+	Mon, 13 Aug 2007 07:43:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55566 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S944577AbXHMLno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 07:43:44 -0400
+Date: Mon, 13 Aug 2007 07:43:32 -0400
+From: Chris Snook <csnook@redhat.com>
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: [PATCH 21/23] make atomic_read() and atomic_set() behavior consistent on v850
+Message-ID: <20070813114332.GU24018@shell.boston.redhat.com>
+References: <46C03885.7000109@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1-1mdv2008.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C03885.7000109@redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Chris Snook <csnook@redhat.com>
 
-Em Dom, 2007-08-12 às 23:26 -0700, joe@perches.com escreveu:
->  DVB SUBSYSTEM AND DRIVERS
+Use volatile consistently in atomic.h on v850.
 
-> +F:	drivers/media/video/*/*dvb.c
-> +F:	drivers/media/video/*dvb.c
+Signed-off-by: Chris Snook <csnook@redhat.com>
 
-Those refers to the files:
-	drivers/media/video/video-buf-dvb.c
-	drivers/media/video/cx88/cx88-dvb.c
-	drivers/media/video/saa7134/saa7134-dvb.c
-
-You should remove those patterns. Those are maintainted together with
-VIDEO4LINUX, since they are part of cx88 and saa7134 drivers.
-
-You should also add this entry to DVB:
-
-+F: linux/drivers/media/common/saa7146*.c
+--- linux-2.6.23-rc3-orig/include/asm-v850/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc3/include/asm-v850/atomic.h	2007-08-13 06:19:32.000000000 -0400
+@@ -27,8 +27,15 @@ typedef struct { int counter; } atomic_t
  
-Cheers,
-Mauro
-
+ #ifdef __KERNEL__
+ 
+-#define atomic_read(v)		((v)->counter)
+-#define atomic_set(v,i)		(((v)->counter) = (i))
++static inline int atomic_read(atomic_t *v)
++{
++        return *(volatile int *)&v->counter;
++}
++
++static inline void atomic_set(atomic_t *v, int i)
++{
++        *(volatile int *)&v->counter = i;
++}
+ 
+ static inline int atomic_add_return (int i, volatile atomic_t *v)
+ {
