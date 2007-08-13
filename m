@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbXHMPyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S943381AbXHMPzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753267AbXHMPyN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S946606AbXHMOP1
+	id S943381AbXHMPzA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S946608AbXHMOP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 10:15:27 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:48987 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S939465AbXHMOPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 10:15:25 -0400
-Date: Mon, 13 Aug 2007 16:16:08 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Stable Team <stable@kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>
-Subject: Re: [patch 3/3] genirq: mark io_apic level interrupts to avoid resend
-Message-ID: <20070813141607.GC4026@ff.dom.local>
-References: <20070812152213.551812576@inhelltoy.tec.linutronix.de> <20070812152303.177006193@inhelltoy.tec.linutronix.de> <20070813112821.GA2863@ff.dom.local> <1187006835.12828.112.camel@chaos> <20070813135311.GB4026@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070813135311.GB4026@ff.dom.local>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 13 Aug 2007 10:15:29 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45647 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S946593AbXHMOP0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 10:15:26 -0400
+Date: Mon, 13 Aug 2007 16:15:25 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: sk malik <srikrishanmalik@yahoo.co.in>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: why use memcpy when memmove is there?
+In-Reply-To: <977159.24669.qm@web7606.mail.in.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0708131611400.29571@fbirervta.pbzchgretzou.qr>
+References: <977159.24669.qm@web7606.mail.in.yahoo.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 03:53:11PM +0200, Jarek Poplawski wrote:
-...
-> I've thought e.g. about "fasteoi" for this "Virtual Wire" timer for
-> i386: I hope it's OK, but since is it any problem to add some comment
-> here, why it's OK with resending here (with POWERPC it's easier to
-> think it's something special, but here we have to similar things in
-> the same file)?
-...
-Sorry for these misspellings etc. (a bit in hurry...) Should be:
 
-I've thought e.g. about "fasteoi" for this "Virtual Wire" timer for
-i386: I hope it's OK, but is this any problem to add some comment
-here: why it's OK with resending here (with POWERPC it's easier to
-think it's something special, but here we have to similar things in
-the same file)?
+On Aug 13 2007 11:55, sk malik wrote:
+>Subject: why use memcpy when memmove is there?
 
-Jarek P.
+>memcpy copies a part of memory to some other location
+>but It will not work for all cases of overlapping
+>blocks.(if the start of destination block falls
+>between the source block)
+>
+>while memove copes with overlapping areas.
+>
+>then why is memcpy present in the sources can't we
+>simply do
+>
+>"#define memcpy memmove" in include/linux/string.h
+>
+>or am I missing something?
+
+memmove must copy with overlapping memory segments, while memcpy does not, and
+can therefore use a different optimization strategy. But that would have been
+apparent if you had looked at the code.
+
+
+	Jan
+-- 
