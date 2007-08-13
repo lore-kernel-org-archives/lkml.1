@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S946198AbXHMTKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S974765AbXHMTLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S946198AbXHMTKs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 15:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762180AbXHMTJI
+	id S974765AbXHMTLZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 15:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965399AbXHMTKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 15:09:08 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37275 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760098AbXHMTJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 15:09:05 -0400
-Subject: Re: [patch 3/3] genirq: mark io_apic level interrupts to avoid
-	resend
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jarek Poplawski <jarkao2@o2.pl>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Stable Team <stable@kernel.org>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       "marcin.slusarz" <marcin.slusarz@gmail.com>
-In-Reply-To: <1187006835.12828.112.camel@chaos>
-References: <20070812152213.551812576@inhelltoy.tec.linutronix.de>
-	 <20070812152303.177006193@inhelltoy.tec.linutronix.de>
-	 <20070813112821.GA2863@ff.dom.local>  <1187006835.12828.112.camel@chaos>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 13:42:12 -0500
-Message-Id: <1187030532.5330.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 13 Aug 2007 15:10:51 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:38776 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938030AbXHMTKs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 15:10:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iVcPl3c+ynNSLHSDntU8CXEjJomQkmBm9KAedN8r/L9ZDur29r1wL5okk0me8Psz+NA47tVVwusizVWrUYmmCohxwMjp1Q/CA2egIwddvCwWLQW3PihHVLAyEqEm8JrYxq37URqSeSncpFacGNXmjaKbiCB1AyzPP2ax9xcfzvI=
+Message-ID: <8bd0f97a0708131210i13d2eeefp8055d444a9d2ce7a@mail.gmail.com>
+Date: Mon, 13 Aug 2007 15:10:47 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Joe Perches" <joe@perches.com>
+Subject: Re: Bad addresses in MAINTAINERS
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1187032024.10249.266.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1187032024.10249.266.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 8/13/07, Joe Perches <joe@perches.com> wrote:
+> But if anyone has a new email address and still wants
+> to be in the maintainers file, please send.
+>
+> BLACKFIN ARCHITECTURE
+> P:      Aubrey Li
+> M:      aubrey.li@analog.com
+> P:      Jerry Zeng
+> M:      jerry.zeng@analog.com
 
-> handle_fasteoi_irq is special. It is used by ioapic and weird Powerpc
-> hardware. We marked the ioapic level interrupts IRQ_LEVEL, so we wont
-> get a resend on them (see kernel/irq/resend.c)
-
-s/weird/sane :-)
-
-More specifically, it's used by "intelligent" PICs that automatically do
-the masking of the source (or internally handle priority levels) and
-only need an "eoi" when the OS is finished processing the latest
-interrupt. (On those PICs, the ack is generally an implicit part of
-fetching the next pending interrupt, and the eoi consist of bringing the
-current processor priority back to what it was before the interrupt
-occured).
-
-I also suspect that any hypervisor using a different method than this
-one for paravirt irqs is broken :-)
-
-Ben.
-
-
+we know these guys needed to be removed as they've recently left ADI,
+we just havent pushed to mainline
+-mike
