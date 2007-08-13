@@ -1,70 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937259AbXHMAX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936801AbXHMA0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937259AbXHMAX5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 20:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759821AbXHMAXr
+	id S936801AbXHMA0x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 20:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762760AbXHMA0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 20:23:47 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:49595 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1753684AbXHMAXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 20:23:46 -0400
-Message-ID: <386964623.18422@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Mon, 13 Aug 2007 08:23:42 +0800
-From: WU Fengguang <wfg@mail.ustc.edu.cn>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Paul Moore <paul.moore@hp.com>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Chris Vance <cvance@nai.com>, Wayne Salamon <wsalamon@nai.com>,
-       James Morris <jmorris@redhat.com>, dgoeddel@trustedcs.com
-Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
-Message-ID: <20070813002342.GA6908@mail.ustc.edu.cn>
-Mail-Followup-To: Cyrill Gorcunov <gorcunov@gmail.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Paul Moore <paul.moore@hp.com>,
-	Stephen Smalley <sds@epoch.ncsc.mil>, Chris Vance <cvance@nai.com>,
-	Wayne Salamon <wsalamon@nai.com>, James Morris <jmorris@redhat.com>,
-	dgoeddel@trustedcs.com
-References: <20070812141905.4ee423b9@the-village.bc.nu> <386927758.14086@ustc.edu.cn> <20070812161744.200d4252@the-village.bc.nu> <20070812162143.GA7202@cvg>
+	Sun, 12 Aug 2007 20:26:44 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:43633 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759821AbXHMA0n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 20:26:43 -0400
+Date: Sun, 12 Aug 2007 18:26:41 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jurij Smakov <jurij@wooyd.org>
+Cc: James Smart <James.Smart@Emulex.Com>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Josef Bacik <jwhiter@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] fix for async scsi scan sysfs problem (resend)
+Message-ID: <20070813002641.GA16277@parisc-linux.org>
+References: <20070419132459.GB1481@korben.rdu.redhat.com> <1176991356.31764.3.camel@mulgrave.il.steeleye.com> <20070419150655.GC1481@korben.rdu.redhat.com> <20070421002345.673d9988.akpm@linux-foundation.org> <20070421135956.GA22873@korben.rdu.redhat.com> <20070423181318.GD22873@korben.rdu.redhat.com> <1177352786.6284.51.camel@mulgrave.il.steeleye.com> <463A3F79.80809@emulex.com> <20070811150454.GA5808@droopy.oc.cox.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070812162143.GA7202@cvg>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20070811150454.GA5808@droopy.oc.cox.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 12, 2007 at 08:21:43PM +0400, Cyrill Gorcunov wrote:
-> [Alan Cox - Sun, Aug 12, 2007 at 04:17:44PM +0100]
-> | Try this (it compiles but isnt tested). Its a weekend here, the sun is
-> | shining, the beach is a short walk, and I have more interesting things to
-> | do right now 8)
-> | 
-> | 
-[...]
-> | -int __vm_enough_memory(long pages, int cap_sys_admin)
-> | +int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
-> |  {
-> |  	unsigned long free, allowed;
-> |  
-> | @@ -166,7 +166,7 @@
-> |  
-> |  	/* Don't let a single process grow too big:
-> |  	   leave 3% of the size of this process for other processes */
-> | -	allowed -= current->mm->total_vm / 32;
-> | +	allowed -= mm->total_vm / 32;
-> 
-> So mm->total_vm is 0 for __bprm_mm_init case. Is that ok? Or I miss
-> something?
+On Sat, Aug 11, 2007 at 04:04:54PM +0100, Jurij Smakov wrote:
+> [Please keep me on CC, as I'm not on LKML.]
+> I've recently got a Sun Blade 1000 box with a QLA2200 controller, and 
+> I'm bumping into exact same problem with 2.6.22:
 
-Yeah, Alan adds mm to the interfaces and leaves us the question of
-"what mm to pass in when current->mm == NULL?" ;)
+Please try
+http://marc.info/?l=linux-scsi&m=118289275414202
+which fixes a number of problems with the async scanning code.
 
+-- 
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
