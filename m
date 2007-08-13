@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S973530AbXHMRis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032591AbXHMRju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S973530AbXHMRis (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934230AbXHMRgG
+	id S1032591AbXHMRju (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938680AbXHMRhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:36:06 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3265 "EHLO perches.com"
+	Mon, 13 Aug 2007 13:37:36 -0400
+Received: from mga02.intel.com ([134.134.136.20]:2834 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S973542AbXHMRgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:36:01 -0400
-Subject: Re: [PATCH] [292/2many] MAINTAINERS - LINUX FOR POWERPC EMBEDDED
-	PPC4XX
-From: Joe Perches <joe@perches.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: torvalds@linux-foundation.org, mporter@kernel.crashing.org,
-       linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20070813061854.644e6e5e@zod.rchland.ibm.com>
-References: <46bffaaf.2ObqORfh5YL/9ILj%joe@perches.com>
-	 <20070813061854.644e6e5e@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 10:35:01 -0700
-Message-Id: <1187026501.10249.158.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	id S1031548AbXHMRha convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 13:37:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,255,1183359600"; 
+   d="scan'208";a="278252297"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: kvm warning
+Date: Mon, 13 Aug 2007 10:37:22 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A0224CFEF@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <a781481a0708131031k7e2bcc18t3fd0e7709e14d4a2@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: kvm warning
+Thread-Index: Acfdz9oNLzzV+7euRBWIgTxPaSwI7AAAJSbA
+References: <20070808151446.9a4eebda.akpm@linux-foundation.org> <20070808221956.GA16238@elte.hu> <46BA4827.3080907@qumranet.com> <20070808155901.bcb249d9.akpm@linux-foundation.org> <46BA4D12.8090301@qumranet.com> <a781481a0708131031k7e2bcc18t3fd0e7709e14d4a2@mail.gmail.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>, "Avi Kivity" <avi@qumranet.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       <kvm-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 13 Aug 2007 17:37:23.0934 (UTC) FILETIME=[9BC00FE0:01C7DDD0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 06:18 -0500, Josh Boyer wrote:
-> You're missing arch/ppc/platforms/4xx/, among other things.
-> Also, we're in the middle of merging 4xx to arch/powerpc.
+> Solution (1) above sounds preferable, unless there are mysterious reasons
+> why ia64 wants to avoid Kconfig.preempt (adding Tony Luck to Cc:).
 
-We can leave the whole block unmodified until you're ready.
+Send me a patch and unless it causes more problems than it solves, I'll
+put it in.
 
-LINUX FOR POWERPC EMBEDDED PPC4XX
-P:	Matt Porter
-M:	mporter@kernel.crashing.org
-W:	http://www.penguinppc.org/
-L:	linuxppc-embedded@ozlabs.org
-S:	Maintained
-
-
-
+-Tony
