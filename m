@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964908AbXHMWMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939841AbXHMWOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964908AbXHMWMy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 18:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbXHMWMl
+	id S939841AbXHMWOV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 18:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbXHMWNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 18:12:41 -0400
-Received: from er-systems.de ([85.25.136.202]:46501 "EHLO er-systems.de"
+	Mon, 13 Aug 2007 18:13:54 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43863 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752137AbXHMWMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 18:12:39 -0400
-Date: Tue, 14 Aug 2007 00:12:34 +0200 (CEST)
-From: Thomas Voegtle <tv@lio96.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: 2.6.23-rc2 swsusp, suddenly increased uptime
-In-Reply-To: <200708132349.52763.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.63.0708140009110.32395@er-systems.de>
-References: <Pine.LNX.4.63.0708122137130.25343@er-systems.de>
- <200708132306.27587.rjw@sisk.pl> <Pine.LNX.4.63.0708132325580.29791@er-systems.de>
- <200708132349.52763.rjw@sisk.pl>
+	id S1755215AbXHMWNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 18:13:53 -0400
+Date: Tue, 14 Aug 2007 01:08:01 +0200
+From: Andi Kleen <ak@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <ak@suse.de>, Mel Gorman <mel@skynet.ie>,
+       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones pointer
+Message-ID: <20070813230801.GH3406@bingen.suse.de>
+References: <20070809210616.14702.73376.sendpatchset@skynet.skynet.ie> <200708102013.49170.ak@suse.de> <Pine.LNX.4.64.0708101201240.17549@schroedinger.engr.sgi.com> <200708110304.55433.ak@suse.de> <Pine.LNX.4.64.0708131423050.28026@schroedinger.engr.sgi.com> <20070813225020.GE3406@bingen.suse.de> <Pine.LNX.4.64.0708131457190.28445@schroedinger.engr.sgi.com> <20070813225841.GG3406@bingen.suse.de> <Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="425052808-121490045-1187043154=:32395"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---425052808-121490045-1187043154=:32395
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
-
-On Mon, 13 Aug 2007, Rafael J. Wysocki wrote:
-
-> On Monday, 13 August 2007 23:31, Thomas Voegtle wrote:
-> > On Mon, 13 Aug 2007, Rafael J. Wysocki wrote:
+On Mon, Aug 13, 2007 at 03:09:55PM -0700, Christoph Lameter wrote:
+> > > > There are still other architectures that use it. Biggest offender
+> > > > is s390. I'll leave them to their respective maintainers.
+> > > 
+> > > IA64 also uses ZONE_DMA to support 32bit controllers. 
 > > 
-> > > On Sunday, 12 August 2007 21:39, Thomas Voegtle wrote:
-> > > > 
-> > > > Hi,
-> > > > 
-> > > > today I saw this (output from my suspend script):
-> > > > 
-> > > > -> woke up at Sun Aug 12 11:39:17 CEST 2007
-> > > > -> uptime is
-> > > >  11:39am  up 8 days  0:41,  10 users,  load average: 26.12, 6.35, 2.17
-> > > > 
-> > > > 
-> > > > Then I did a software suspend. After waking up, I saw this:
-> > > > 
-> > > > 
-> > > > -> woke up at Sun Aug 12 14:41:56 CEST 2007
-> > > > -> uptime is
-> > > >   2:41pm  up 44 days  9:11,  12 users,  load average: 35.17, 9.17, 3.33
-> > 
-> > I just want to add, I built 2.6.23-rc2 on Aug 4th and this happened on Aug 
-> > 12 and I suspend once a day. And the only thing which was odd was the 
-> > uptime, nothing else.
-> > 
-> > I rebooted with 2.6.23-rc3 today, so the odd uptime is gone.
-> > Should I try 8 suspend cycles or something to reproduce it again?
+> > ZONE_DMA32 I thought?  That one is not changed.
 > 
-> Well, if you can, please try to do something like this.
+> x86_64 is the only platforms that uses ZONE_DMA32. Ia64 and other 64 bit 
+> platforms use ZONE_DMA for <4GB allocs.
 
-I tried 20 suspend cycles, but this time with 
- echo reboot > /sys/power/disk
+Yes, but ZONE_DMA32 == ZONE_DMA.
 
-Nothing special happend.
+Also when the slab users of GFP_DMA are all gone ia64 won't need
+the slab support anymore. So either you change your ifdef in slub or 
+switch to ZONE_DMA32 for IA64.
 
-I could try with "echo shutdown" if this makes sense, tomorrow.
-Just let me know.
+The trouble is that this cannot be done globally, at least not
+until s390 and a few other architures using GFP_DMA with slab
+are all converted.
 
-      Thomas
+> I think s/ZONE_DMA32/ZONE_DMA would restore the one DMA zone thing which 
+> is good. We could drop all ZONE_DMA32 stuff that is only needed by a 
+> single arch.
 
--- 
- Thomas Vögtle    email: thomas@voegtle-clan.de
- ----- http://www.voegtle-clan.de/thomas ------
---425052808-121490045-1187043154=:32395--
+But it's not quite the same: GFP_DMA32 has no explicit slab support.
+
+-Andi
+
