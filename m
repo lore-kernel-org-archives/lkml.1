@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971865AbXHMJks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971904AbXHMJlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971865AbXHMJks (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 05:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965791AbXHMGdL
+	id S971904AbXHMJlc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 05:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967083AbXHMGdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:33:11 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1266 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:33:13 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1296 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967070AbXHMGc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:32:59 -0400
-Date: Sun, 12 Aug 2007 23:32:44 -0700
+	id S967084AbXHMGdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:33:08 -0400
+Date: Sun, 12 Aug 2007 23:32:54 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linville@tuxdriver.com,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH] [341/2many] MAINTAINERS - NETWORKING [WIRELESS]
-Message-ID: <46bffb0c.3YkIm4YVqMV/xU9v%joe@perches.com>
+To: yokota@netlab.is.tsukuba.ac.jp, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] [346/2many] MAINTAINERS - NINJA SCSI-3 / NINJA SCSI-32Bi
+ (16bit/CardBus) PCMCIA SCSI HOST ADAPTER DRIVER
+Message-ID: <46bffb16./dGyVRU9bsz/VQd+%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,15 +28,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 91cdf28..fd59b3d 100644
+index 35afb38..6f7fc81 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -3280,6 +3280,8 @@ M:	linville@tuxdriver.com
- L:	linux-wireless@vger.kernel.org
- T:	git kernel.org:/pub/scm/linux/kernel/git/linville/wireless-2.6.git
+@@ -3329,6 +3329,8 @@ P:	YOKOTA Hiroshi
+ M:	yokota@netlab.is.tsukuba.ac.jp
+ W:	http://www.netlab.is.tsukuba.ac.jp/~yokota/izumi/ninja/
  S:	Maintained
-+F:	net/ieee80211/
-+F:	include/net/ieee80211*
++F:	Documentation/scsi/NinjaSCSI.txt
++F:	drivers/scsi/nsp32*
  
- NETXEN (1/10) GbE SUPPORT
- P:	Amit S. Kale
+ NINJA SCSI-32Bi/UDE PCI/CARDBUS SCSI HOST ADAPTER DRIVER
+ P:	GOTO Masanori
