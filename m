@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031618AbXHMNjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S942268AbXHMNkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031618AbXHMNjn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968996AbXHMJ5B
+	id S942268AbXHMNkh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933721AbXHMJ66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 05:57:01 -0400
-Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:42604 "EHLO
-	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759398AbXHMJ47 (ORCPT
+	Mon, 13 Aug 2007 05:58:58 -0400
+Received: from smtp-101-monday.nerim.net ([62.4.16.101]:63739 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932325AbXHMJ64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 05:56:59 -0400
-Subject: [KJ] replacing kmalloc with kzalloc in
-	drivers/mtd/devices/docprobe.c
-From: Surya Prabhakar N <surya.prabhakar@wipro.com>
-Reply-To: surya.prabhakar@wipro.com
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       kernel-janitors <kernel-janitors@lists.osdl.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Linux Coe, Wipro Technologies
-Date: Mon, 13 Aug 2007 15:26:32 +0530
-Message-Id: <1186998992.29518.15.camel@bluegenie>
+	Mon, 13 Aug 2007 05:58:56 -0400
+Date: Mon, 13 Aug 2007 11:59:21 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: joe@perches.com
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       i2c@lm-sensors.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] [231/2many] MAINTAINERS - I2C SUBSYSTEM
+Message-ID: <20070813115921.1fac3ccd@hyperion.delvare>
+In-Reply-To: <46bffa2e.Gcwew3sHyZdFHycV%joe@perches.com>
+References: <46bffa2e.Gcwew3sHyZdFHycV%joe@perches.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-X-OriginalArrivalTime: 13 Aug 2007 09:57:10.0622 (UTC) FILETIME=[50EF07E0:01C7DD90]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-   Replacing kmalloc with kzalloc and cleaning up memset in
-drivers/mtd/devices/docprobe.c.
+On Sun, 12 Aug 2007 23:29:02 -0700, joe@perches.com wrote:
+> Add file pattern to MAINTAINER entry
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 491a5a6..2c78350 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2199,6 +2199,9 @@ M:	khali@linux-fr.org
+>  L:	i2c@lm-sensors.org
+>  T:	quilt http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/
+>  S:	Maintained
+> +F:	Documentation/i2c/
+> +F:	drivers/i2c/
+> +F:	include/linux/i2c*
+
+As far as the i2c subsystem itself is concerned, the relevant header
+files are only:
+
+F: include/linux/i2c.h
+F: include/linux/i2c-dev.h
+F: include/linux/i2c-id.h
+
+All the other i2c*.h files are driver-specific.
+
+>  
+>  I2C-TINY-USB DRIVER
+>  P:	Till Harbaum
 
 
-Signed-off-by: Surya Prabhakar <surya.prabhakar@wipro.com>
----
-
-diff --git a/drivers/mtd/devices/docprobe.c b/drivers/mtd/devices/docprobe.c
-index 54aa759..53be397 100644
---- a/drivers/mtd/devices/docprobe.c
-+++ b/drivers/mtd/devices/docprobe.c
-@@ -254,7 +254,7 @@ static void __init DoC_Probe(unsigned long physadr)
- 			return;
- 		}
- 		docfound = 1;
--		mtd = kmalloc(sizeof(struct DiskOnChip) + sizeof(struct mtd_info), GFP_KERNEL);
-+		mtd = kzalloc(sizeof(struct DiskOnChip) + sizeof(struct mtd_info), GFP_KERNEL);
- 
- 		if (!mtd) {
- 			printk(KERN_WARNING "Cannot allocate memory for data structures. Dropping.\n");
-@@ -264,9 +264,6 @@ static void __init DoC_Probe(unsigned long physadr)
- 
- 		this = (struct DiskOnChip *)(&mtd[1]);
- 
--		memset((char *)mtd,0, sizeof(struct mtd_info));
--		memset((char *)this, 0, sizeof(struct DiskOnChip));
--
- 		mtd->priv = this;
- 		this->virtadr = docptr;
- 		this->physadr = physadr;
-
---
-thanks
-surya.
+-- 
+Jean Delvare
