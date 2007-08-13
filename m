@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032305AbXHMRMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751255AbXHMRNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032305AbXHMRMt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S947996AbXHMQzk
+	id S1751255AbXHMRNc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S943144AbXHMQ4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 12:55:40 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:14137 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939499AbXHMQzd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 12:55:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pJrgrIM1kAuL2Nue9cxpvASFuulVcqPeltD0qG5s8o/6NMNHe12lRR70UoKXK3Ow1NlpcU2M3bi+fdbabijo1brY+gPqQU+WYAeR8EgnkebKWkB8en2/DCTaDnfYqGsTFIK8cCqWE1lohMWPTbYAWXAj8wnLDtt2K5UOigw4jlQ=
-Message-ID: <191fb4ca0708130955l5ee0d263o4e01c4caa96bf811@mail.gmail.com>
-Date: Mon, 13 Aug 2007 09:55:30 -0700
-From: "Juerg Haefliger" <juergh@gmail.com>
-To: "joe@perches.com" <joe@perches.com>
-Subject: Re: [PATCH] [159/2many] MAINTAINERS - DME1737 HARDWARE MONITOR DRIVER
-Cc: torvalds@linux-foundation.org, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <46bff993.7OEwF3qQrioxyBDU%joe@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 13 Aug 2007 12:56:31 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3163 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S948414AbXHMQ42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 12:56:28 -0400
+Subject: Re: [PATCH] [188/2many] MAINTAINERS - EXT4 FILE SYSTEM
+From: Joe Perches <joe@perches.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Theodore Tso <tytso@mit.edu>, torvalds@linux-foundation.org,
+       sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, akpm@linux-foundation.org,
+       Eric Sandeen <esandeen@redhat.com>, Mingming Cao <cmm@us.ibm.com>
+In-Reply-To: <46C08941.20609@redhat.com>
+References: <46bff9cc.cxIrFM29roaPmcfV%joe@perches.com>
+	 <20070813090128.GJ6689@schatzie.adilger.int>
+	 <20070813151917.GA28130@thunk.org> <1187021641.10249.90.camel@localhost>
+	 <46C08941.20609@redhat.com>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 09:55:33 -0700
+Message-Id: <1187024133.10249.113.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46bff993.7OEwF3qQrioxyBDU%joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/12/07, joe@perches.com <joe@perches.com> wrote:
-> Add file pattern to MAINTAINER entry
->
-> Signed-off-by: Joe Perches <joe@perches.com>
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 70e5070..2fafb83 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -1553,6 +1553,7 @@ P:        Juerg Haefliger
->  M:     juergh@gmail.com
->  L:     lm-sensors@lm-sensors.org
->  S:     Maintained
+On Mon, 2007-08-13 at 11:39 -0500, Eric Sandeen wrote:
+> (And to be fair about it in terms of actual work done so far, please
+> put
+> the other names ahead of mine!)  :)
 
-+F:     Documentation/hwmon/dme1737
+EXT4 FILE SYSTEM
+P:	Ted Ts'o
+M:	tytso@mit.edu
+P:	Mingming Cao
+M:	cmm@us.ibm.com
+P:	Andreas Dilger
+M:	adilger@clusterfs.com
+P:	Eric Sandeen
+M:	sandeen@redhat.com
+L:	linux-ext4@vger.kernel.org
+S:	Maintained
+F:	fs/ext4/
+F:	include/linux/ext4*
 
-> +F:     drivers/hwmon/dme1737.c
->
->  DOCBOOK FOR DOCUMENTATION
->  P:     Randy Dunlap
->
+
+
