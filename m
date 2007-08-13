@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966542AbXHMIPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966683AbXHMIP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966542AbXHMIPK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 04:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966683AbXHMG2g
+	id S966683AbXHMIP5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 04:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966530AbXHMG2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:28:36 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4502 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:28:37 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4503 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966677AbXHMG2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S966678AbXHMG2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 02:28:35 -0400
-Date: Sun, 12 Aug 2007 23:28:14 -0700
+Date: Sun, 12 Aug 2007 23:28:23 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, khc@pm.waw.pl,
+To: torvalds@linux-foundation.org, mb@bu3sch.de, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
-Subject: [PATCH] [207/2many] MAINTAINERS - GENERIC HDLC DRIVER, N2, C101,
- PCI200SYN and WANXL DRIVERS
-Message-ID: <46bff9fe.9xNl+safkaL7/d/Z%joe@perches.com>
+Subject: [PATCH] [211/2many] MAINTAINERS - HARDWARE RANDOM NUMBER
+ GENERATOR CORE
+Message-ID: <46bffa07.y26Ko+o8Rq3I5PgF%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,21 +28,16 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index bdfbda0..d8063ee 100644
+index f422277..14cef9a 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1975,6 +1975,14 @@ P:	Krzysztof Halasa
- M:	khc@pm.waw.pl
- W:	http://www.kernel.org/pub/linux/utils/net/hdlc/
+@@ -2021,6 +2021,9 @@ HARDWARE RANDOM NUMBER GENERATOR CORE
+ P:	Michael Buesch
+ M:	mb@bu3sch.de
  S:	Maintained
-+F:	Documentation/networking/generic-hdlc.txt
-+F:	drivers/net/wan/c101.c
-+F:	drivers/net/wan/hd6457x.c
-+F:	drivers/net/wan/hdlc*
-+F:	drivers/net/wan/n2.c
-+F:	drivers/net/wan/pc300too.c
-+F:	drivers/net/wan/pci200syn.c
-+F:	drivers/net/wan/wanxl*
++F:	Documentation/hw_random.txt
++F:	drivers/char/hw_random/
++F:	include/linux/hw_random.h
  
- GFS2 FILE SYSTEM
- P:	Steven Whitehouse
+ HARD DRIVE ACTIVE PROTECTION SYSTEM (HDAPS) DRIVER
+ P:	Robert Love
