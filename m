@@ -1,271 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S974237AbXHMR4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S973887AbXHMR5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S974237AbXHMR4F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974064AbXHMRpj
+	id S973887AbXHMR5Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031241AbXHMRpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:45:39 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:48151 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S973881AbXHMRpY (ORCPT
+	Mon, 13 Aug 2007 13:45:43 -0400
+Received: from iasrv1.idleaire.net ([63.78.244.180]:33909 "EHLO
+	iasrv1.idleaire.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S973813AbXHMRpY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 13:45:24 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       Eric W Biederman <ebiederm@xmission.com>
-Date: Mon, 13 Aug 2007 23:15:15 +0530
-Message-Id: <20070813174515.15210.67612.sendpatchset@balbir-laptop>
-In-Reply-To: <20070813174454.15210.40573.sendpatchset@balbir-laptop>
-References: <20070813174454.15210.40573.sendpatchset@balbir-laptop>
-Subject: [-mm PATCH 8/9] Memory controller add switch to control what type of pages to limit (v5)
+X-Greylist: delayed 2109 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Aug 2007 13:45:24 EDT
+Subject: Re: [PATCH] [5/2many] MAINTAINERS - 3CR990 NETWORK DRIVER
+From: Dave Dillow <dave@thedillows.org>
+To: joe@perches.com
+Cc: torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <46bff86d.3nPB+/nZUm72NBI6%joe@perches.com>
+References: <46bff86d.3nPB+/nZUm72NBI6%joe@perches.com>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 13:09:17 -0400
+Message-Id: <1187024957.10819.2.camel@dillow.idleaire.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2007-08-12 at 23:21 -0700, joe@perches.com wrote:
+> Add file pattern to MAINTAINER entry
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+Acked-by: Dave Dillow <dave@thedillows.org>
 
-Choose if we want cached pages to be accounted or not. By default both
-are accounted for. A new set of tunables are added.
-
-echo -n 1 > mem_control_type
-
-switches the accounting to account for only mapped pages
-
-echo -n 3 > mem_control_type
-
-switches the behaviour back
-
-Signed-off-by: <balbir@linux.vnet.ibm.com>
----
-
- include/linux/memcontrol.h |    9 ++++
- mm/filemap.c               |    2 
- mm/memcontrol.c            |   92 +++++++++++++++++++++++++++++++++++++++++++++
- mm/swap_state.c            |    2 
- 4 files changed, 103 insertions(+), 2 deletions(-)
-
-diff -puN include/linux/memcontrol.h~mem-control-choose-rss-vs-rss-and-pagecache include/linux/memcontrol.h
---- linux-2.6.23-rc1-mm1/include/linux/memcontrol.h~mem-control-choose-rss-vs-rss-and-pagecache	2007-08-13 23:06:12.000000000 +0530
-+++ linux-2.6.23-rc1-mm1-balbir/include/linux/memcontrol.h	2007-08-13 23:06:12.000000000 +0530
-@@ -20,6 +20,8 @@
- #ifndef _LINUX_MEMCONTROL_H
- #define _LINUX_MEMCONTROL_H
- 
-+#include <linux/mm.h>
-+
- struct mem_container;
- struct page_container;
- 
-@@ -40,6 +42,7 @@ extern unsigned long mem_container_isola
- 					struct mem_container *mem_cont,
- 					int active);
- extern void mem_container_out_of_memory(struct mem_container *mem);
-+extern int mem_container_cache_charge(struct page *page, struct mm_struct *mm);
- 
- static inline void mem_container_uncharge_page(struct page *page)
- {
-@@ -84,6 +87,12 @@ static inline void mem_container_move_li
- {
- }
- 
-+static inline int mem_container_cache_charge(struct page *page,
-+						struct mm_struct *mm)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_CONTAINER_MEM_CONT */
- 
- #endif /* _LINUX_MEMCONTROL_H */
-diff -puN mm/filemap.c~mem-control-choose-rss-vs-rss-and-pagecache mm/filemap.c
---- linux-2.6.23-rc1-mm1/mm/filemap.c~mem-control-choose-rss-vs-rss-and-pagecache	2007-08-13 23:06:12.000000000 +0530
-+++ linux-2.6.23-rc1-mm1-balbir/mm/filemap.c	2007-08-13 23:06:12.000000000 +0530
-@@ -445,7 +445,7 @@ int add_to_page_cache(struct page *page,
- 
- 	if (error == 0) {
- 
--		error = mem_container_charge(page, current->mm);
-+		error = mem_container_cache_charge(page, current->mm);
- 		if (error)
- 			goto out;
- 
-diff -puN mm/memcontrol.c~mem-control-choose-rss-vs-rss-and-pagecache mm/memcontrol.c
---- linux-2.6.23-rc1-mm1/mm/memcontrol.c~mem-control-choose-rss-vs-rss-and-pagecache	2007-08-13 23:06:12.000000000 +0530
-+++ linux-2.6.23-rc1-mm1-balbir/mm/memcontrol.c	2007-08-13 23:06:12.000000000 +0530
-@@ -27,6 +27,8 @@
- #include <linux/swap.h>
- #include <linux/spinlock.h>
- 
-+#include <asm/uaccess.h>
-+
- struct container_subsys mem_container_subsys;
- static const int MEM_CONTAINER_RECLAIM_RETRIES = 5;
- 
-@@ -58,6 +60,7 @@ struct mem_container {
- 	 * spin_lock to protect the per container LRU
- 	 */
- 	spinlock_t lru_lock;
-+	unsigned long control_type;	/* control RSS or RSS+Pagecache */
- };
- 
- /*
-@@ -80,6 +83,15 @@ struct page_container {
- 					/* mapped and cached states     */
- };
- 
-+enum {
-+	MEM_CONTAINER_TYPE_UNSPEC = 0,
-+	MEM_CONTAINER_TYPE_MAPPED,
-+	MEM_CONTAINER_TYPE_CACHED,
-+	MEM_CONTAINER_TYPE_ALL,
-+	MEM_CONTAINER_TYPE_MAX,
-+} mem_control_type;
-+
-+static struct mem_container init_mem_container;
- 
- static inline
- struct mem_container *mem_container_from_cont(struct container *cont)
-@@ -359,6 +371,22 @@ err:
- }
- 
- /*
-+ * See if the cached pages should be charged at all?
-+ */
-+int mem_container_cache_charge(struct page *page, struct mm_struct *mm)
-+{
-+	struct mem_container *mem;
-+	if (!mm)
-+		mm = &init_mm;
-+
-+	mem = rcu_dereference(mm->mem_container);
-+	if (mem->control_type == MEM_CONTAINER_TYPE_ALL)
-+		return mem_container_charge(page, mm);
-+	else
-+		return 0;
-+}
-+
-+/*
-  * Uncharging is always a welcome operation, we never complain, simply
-  * uncharge.
-  */
-@@ -368,6 +396,10 @@ void mem_container_uncharge(struct page_
- 	struct page *page;
- 	unsigned long flags;
- 
-+	/*
-+	 * This can handle cases when a page is not charged at all and we
-+	 * are switching between handling the control_type.
-+	 */
- 	if (!pc)
- 		return;
- 
-@@ -403,6 +435,60 @@ static ssize_t mem_container_write(struc
- 				cft->private, userbuf, nbytes, ppos);
- }
- 
-+static ssize_t mem_control_type_write(struct container *cont,
-+			struct cftype *cft, struct file *file,
-+			const char __user *userbuf,
-+			size_t nbytes, loff_t *pos)
-+{
-+	int ret;
-+	char *buf, *end;
-+	unsigned long tmp;
-+	struct mem_container *mem;
-+
-+	mem = mem_container_from_cont(cont);
-+	buf = kmalloc(nbytes + 1, GFP_KERNEL);
-+	ret = -ENOMEM;
-+	if (buf == NULL)
-+		goto out;
-+
-+	buf[nbytes] = 0;
-+	ret = -EFAULT;
-+	if (copy_from_user(buf, userbuf, nbytes))
-+		goto out_free;
-+
-+	ret = -EINVAL;
-+	tmp = simple_strtoul(buf, &end, 10);
-+	if (*end != '\0')
-+		goto out_free;
-+
-+	if (tmp <= MEM_CONTAINER_TYPE_UNSPEC || tmp >= MEM_CONTAINER_TYPE_MAX)
-+		goto out_free;
-+
-+	mem->control_type = tmp;
-+	ret = nbytes;
-+out_free:
-+	kfree(buf);
-+out:
-+	return ret;
-+}
-+
-+static ssize_t mem_control_type_read(struct container *cont,
-+				struct cftype *cft,
-+				struct file *file, char __user *userbuf,
-+				size_t nbytes, loff_t *ppos)
-+{
-+	unsigned long val;
-+	char buf[64], *s;
-+	struct mem_container *mem;
-+
-+	mem = mem_container_from_cont(cont);
-+	s = buf;
-+	val = mem->control_type;
-+	s += sprintf(s, "%lu\n", val);
-+	return simple_read_from_buffer((void __user *)userbuf, nbytes,
-+			ppos, buf, s - buf);
-+}
-+
- static struct cftype mem_container_files[] = {
- 	{
- 		.name = "usage",
-@@ -420,6 +506,11 @@ static struct cftype mem_container_files
- 		.private = RES_FAILCNT,
- 		.read = mem_container_read,
- 	},
-+	{
-+		.name = "control_type",
-+		.write = mem_control_type_write,
-+		.read = mem_control_type_read,
-+	},
- };
- 
- static struct mem_container init_mem_container;
-@@ -442,6 +533,7 @@ mem_container_create(struct container_su
- 	INIT_LIST_HEAD(&mem->active_list);
- 	INIT_LIST_HEAD(&mem->inactive_list);
- 	spin_lock_init(&mem->lru_lock);
-+	mem->control_type = MEM_CONTAINER_TYPE_ALL;
- 	return &mem->css;
- }
- 
-diff -puN mm/swap_state.c~mem-control-choose-rss-vs-rss-and-pagecache mm/swap_state.c
---- linux-2.6.23-rc1-mm1/mm/swap_state.c~mem-control-choose-rss-vs-rss-and-pagecache	2007-08-13 23:06:12.000000000 +0530
-+++ linux-2.6.23-rc1-mm1-balbir/mm/swap_state.c	2007-08-13 23:06:12.000000000 +0530
-@@ -81,7 +81,7 @@ static int __add_to_swap_cache(struct pa
- 	error = radix_tree_preload(gfp_mask);
- 	if (!error) {
- 
--		error = mem_container_charge(page, current->mm);
-+		error = mem_container_cache_charge(page, current->mm);
- 		if (error)
- 			goto out;
- 
-_
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
