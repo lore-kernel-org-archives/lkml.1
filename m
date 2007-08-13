@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965898AbXHMU1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032128AbXHMU30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965898AbXHMU1p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:27:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756771AbXHMU1a
+	id S1032128AbXHMU30 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756771AbXHMU3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:27:30 -0400
-Received: from qb-out-0506.google.com ([72.14.204.234]:65388 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753800AbXHMU13 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:27:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ldx9Wfbl2FsjkYJvT0e26VTwuo7Tauk5XKJ5+X6vi6tRcbI71a7CwcDA/Q8k6KXRLVpPSSIJj5mdqR4+HB6WdWo9aOGKue8OPEgSo6VBuxjlptxOKArPi0sviaBA883Cs7Q/eoGP63RdX6wdeLk4XBr9RsgGTpR8DGWVtkgM7Cg=
-Subject: Re: Bad addresses in MAINTAINERS
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Dave Airlie <airlied@linux.ie>,
-       Paul Mundt <lethal@linux-sh.org>
-In-Reply-To: <1187032024.10249.266.camel@localhost>
-References: <1187032024.10249.266.camel@localhost>
-Content-Type: text/plain
-Date: Tue, 14 Aug 2007 04:27:23 +0800
-Message-Id: <1187036843.5058.10.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Mon, 13 Aug 2007 16:29:04 -0400
+Received: from mga03.intel.com ([143.182.124.21]:37727 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753785AbXHMU3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 16:29:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,256,1183359600"; 
+   d="scan'208";a="262596587"
+Message-ID: <46C0BEE9.1010207@intel.com>
+Date: Mon, 13 Aug 2007 13:28:25 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
+MIME-Version: 1.0
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+CC: Joe Perches <joe@perches.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -	scripts/get_maintainer.pl
+References: <1186984174.10249.7.camel@localhost> <46C07C16.6060406@intel.com> <46C0B3BF.20500@student.ltu.se>
+In-Reply-To: <46C0B3BF.20500@student.ltu.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Aug 2007 20:28:57.0759 (UTC) FILETIME=[93591AF0:01C7DDE8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 12:07 -0700, Joe Perches wrote:
-
+Richard Knutsson wrote:
+> Kok, Auke wrote:
+>> Joe Perches wrote:
+>>> I grew weary of looking up the appropriate
+>>> maintainer email address(es) to CC: for a patch.
+>>>
+>>> I added flags to the MAINTAINERS file
+>>>
+>>> F:    file pattern
+>>>
+>>> for each maintained block and a script to parse
+>>> the modified blocks for maintainer and list
+>>> email addresses.
+>>>
+>>> perl scripts/get_maintainer.pl <patch>
+>>>
+>>> gives the appropriate maintainer(s).
+>>>
+>>> Modifications since last post:
+>>>
+>>> Added options to control email address style and multiple address 
+>>> separator
+>>>
+>>> Please apply.
+>> Well, I came up with this implementation, so I definately support it 
+>> and the way Joe implemented it:
+>>
+> Really? Please check out this thread with at least two ideas of possible 
+> implementations, with Stefan Richter as the spokesman of the current 
+> implementation: http://marc.info/?l=linux-kernel&m=116870578531280&w=3
+> ...and I am not saying there hasn't been someone suggesting it even earlier.
 > 
-> INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)
-> P:	Sylvain Meyer
-> M:	sylvain.meyer@worldonline.fr
+> The expression; nothing is new under the sun comes to mind ;)
 > 
+> Anyway, glad to see someone actually implementing it. Thanks!
 
-Maybe Dave?
+bad wording my side, I never implemented anything, but I did post the "F:" flag 
+idea specific to allocating files to developers on lkml: 
+http://lkml.org/lkml/2007/6/29/300
 
-> IMS TWINTURBO FRAMEBUFFER DRIVER
-> P:	Paul Mundt
-> M:	lethal@chaoticdreams.org
+Cheers,
 
-That's not Paul's current email.
-
-Tony
-
-
+Auke
