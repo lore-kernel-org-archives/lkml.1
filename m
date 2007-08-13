@@ -1,40 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972503AbXHMNJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031162AbXHMNJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972503AbXHMNJM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:09:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757770AbXHMI3i
+	id S1031162AbXHMNJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969652AbXHMIbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 04:29:38 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2725 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S969488AbXHMI3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 04:29:36 -0400
-Date: Sun, 12 Aug 2007 23:33:35 -0700
-From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jim.cromie@gmail.com, akpm@linux-foundation.org
-Subject: [PATCH] [367/2many] MAINTAINERS - PC8736x GPIO DRIVER
-Message-ID: <46bffb3f.ITW25GI/Hpmx+7nk%joe@perches.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 13 Aug 2007 04:31:52 -0400
+Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:33008 "EHLO
+	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S969646AbXHMIbt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 04:31:49 -0400
+Subject: [KJ] replacing kmalloc with kzalloc in io_apic.c
+From: Surya Prabhakar N <surya.prabhakar@wipro.com>
+Reply-To: surya.prabhakar@wipro.com
+To: mingo@redhat.com
+Cc: yaku@css1.kbnes.nec.co.jp, kisimoto@css1.kbnes.nec.co.jp, zab@redhat.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Linux Coe, Wipro Technologies
+Date: Mon, 13 Aug 2007 14:01:21 +0530
+Message-Id: <1186993881.3175.15.camel@bluegenie>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-OriginalArrivalTime: 13 Aug 2007 08:32:07.0351 (UTC) FILETIME=[6F25AC70:01C7DD84]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add file pattern to MAINTAINER entry
+Hi,
+   Replacing kmalloc with kzalloc and cleaning up memset in 
+arch/i386/kernel/io_apic.c
 
-Signed-off-by: Joe Perches <joe@perches.com>
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 2eb1a7c..c3bd8f8 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3535,6 +3535,7 @@ PC8736x GPIO DRIVER
- P:	Jim Cromie
- M:	jim.cromie@gmail.com
- S:	Maintained
-+F:	drivers/char/pc8736x_gpio.c
+Signed-off-by: Surya Prabhakar <surya.prabhakar@wipro.com>
+--- 
+
+diff --git a/arch/i386/kernel/io_apic.c b/arch/i386/kernel/io_apic.c
+index 4b8a8da..1329615 100644
+--- a/arch/i386/kernel/io_apic.c
++++ b/arch/i386/kernel/io_apic.c
+@@ -690,14 +690,12 @@ static int __init balanced_irq_init(void)
+ 		physical_balance = 1;
  
- PCI ERROR RECOVERY
- P:	Linas Vepstas
+ 	for_each_online_cpu(i) {
+-		irq_cpu_data[i].irq_delta = kmalloc(sizeof(unsigned long) * NR_IRQS, GFP_KERNEL);
+-		irq_cpu_data[i].last_irq = kmalloc(sizeof(unsigned long) * NR_IRQS, GFP_KERNEL);
++		irq_cpu_data[i].irq_delta = kzalloc(sizeof(unsigned long) * NR_IRQS, GFP_KERNEL);
++		irq_cpu_data[i].last_irq = kzalloc(sizeof(unsigned long) * NR_IRQS, GFP_KERNEL);
+ 		if (irq_cpu_data[i].irq_delta == NULL || irq_cpu_data[i].last_irq == NULL) {
+ 			printk(KERN_ERR "balanced_irq_init: out of memory");
+ 			goto failed;
+ 		}
+-		memset(irq_cpu_data[i].irq_delta,0,sizeof(unsigned long) * NR_IRQS);
+-		memset(irq_cpu_data[i].last_irq,0,sizeof(unsigned long) * NR_IRQS);
+ 	}
+ 	
+ 	printk(KERN_INFO "Starting balanced_irq\n");
+
+
+
+thanks
+surya.
