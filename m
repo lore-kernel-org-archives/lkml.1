@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939599AbXHMKnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934423AbXHMKo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939599AbXHMKnh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 06:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967326AbXHMGgS
+	id S934423AbXHMKo0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 06:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967207AbXHMGgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:36:18 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1842 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:36:22 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1839 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967316AbXHMGgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:36:10 -0400
-Date: Sun, 12 Aug 2007 23:35:57 -0700
+	id S967312AbXHMGgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:36:09 -0400
+Date: Sun, 12 Aug 2007 23:35:55 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, mhoffman@lightlink.com,
-       lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
+To: torvalds@linux-foundation.org, nico@cam.org, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
-Subject: [PATCH] [440/2many] MAINTAINERS - SMSC47B397 HARDWARE MONITOR
- DRIVER
-Message-ID: <46bffbcd.ByWqlMNDQcr1aAxq%joe@perches.com>
+Subject: [PATCH] [439/2many] MAINTAINERS - SMC91x ETHERNET DRIVER
+Message-ID: <46bffbcb.aO+0jolqL6AKxWob%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,15 +27,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 140eb07..2bda79d 100644
+index a3c6123..140eb07 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4182,6 +4182,8 @@ P:	Mark M. Hoffman
- M:	mhoffman@lightlink.com
- L:	lm-sensors@lm-sensors.org
+@@ -4175,6 +4175,7 @@ SMC91x ETHERNET DRIVER
+ P:	Nicolas Pitre
+ M:	nico@cam.org
  S:	Maintained
-+F:	Documentation/hwmon/smsc47b397
-+F:	drivers/hwmon/smsc47b397.c
++F:	drivers/net/smc91x.*
  
- SOFTMAC LAYER (IEEE 802.11)
- P:	Johannes Berg
+ SMSC47B397 HARDWARE MONITOR DRIVER
+ P:	Mark M. Hoffman
