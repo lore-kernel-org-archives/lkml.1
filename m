@@ -1,226 +1,421 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S974377AbXHMSBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940553AbXHMSCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S974377AbXHMSBN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:01:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S941422AbXHMRq2
+	id S940553AbXHMSCY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S973618AbXHMRrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:46:28 -0400
-Received: from ausmtp06.au.ibm.com ([202.81.18.155]:46908 "EHLO
-	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S940332AbXHMRqZ (ORCPT
+	Mon, 13 Aug 2007 13:47:01 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:55091 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S940527AbXHMRq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:46:25 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Containers <containers@lists.osdl.org>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric W Biederman <ebiederm@xmission.com>
-Date: Mon, 13 Aug 2007 23:16:14 +0530
-Message-Id: <20070813174614.15896.61951.sendpatchset@balbir-laptop>
-Subject: [-mm PATCH 9/9] Memory controller make page_referenced() container aware (v5)
+	Mon, 13 Aug 2007 13:46:58 -0400
+Subject: Re: [patch] encapsulate uevent()/add_uevent_var() buffer handling
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Greg KH <gregkh@suse.de>
+In-Reply-To: <20070813193003.6542e4e7@gondolin.boeblingen.de.ibm.com>
+References: <20070813143711.GA24536@s15225674.onlinehome-server.info>
+	 <20070813193003.6542e4e7@gondolin.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 19:50:21 +0200
+Message-Id: <1187027421.3523.14.camel@lov.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX198dgU1xZdcU+RNF8Cin+mA9b430zGl0umHZjT
+ aWiaCNAi7QLkis1hieLkd6v8kIT9Eu5T7eKvk7/jer0f5fdR0l
+ quxBQBOi3AtehIkEi0mPoimQdi75D6G
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-08-13 at 19:30 +0200, Cornelia Huck wrote:
+> On Mon, 13 Aug 2007 16:37:11 +0200,
+> Kay Sievers <kay.sievers@vrfy.org> wrote:
 
-Make page_referenced() container aware. Without this patch, page_referenced()
-can cause a page to be skipped while reclaiming pages. This patch
-ensures that other containers do not hold pages in a particular container
-hostage. It is required to ensure that shared pages are freed from a container
-when they are not actively referenced from the container that brought
-them in
+> > this changes the uevent buffer stuff to use a struct instead
+> > of tons of parameters. It does no longer require the caller to
+> > do the proper buffer termination and size accounting, which is
+> > currently wrong in a lot of places.
+> 
+> I was working on a patch which tried to fix the same things but added
+> more parameters to uevent. Using a struct is really better.
 
+Yeah, I tried that too. :)
 
-Signed-off-by: <balbir@linux.vnet.ibm.com>
----
+> > This tells everything:
+> >   47 files changed, 265 insertions(+), 605 deletions(-)
+> 
+> Cool.
+> 
+> > 
+> > Thanks,
+> > Kay
+> > 
+> > From: Kay Sievers <kay.sievers@vrfy.org>
+> > Subject: Driver core: encapsulate uevent()/add_uevent_var() buffer handling
+> > 
+> > Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> > ---
+> >  arch/ia64/sn/kernel/tiocx.c                 |    3 
+> >  arch/powerpc/kernel/of_device.c             |   37 ++------
+> >  arch/powerpc/kernel/vio.c                   |   14 ---
+> >  arch/powerpc/platforms/ps3/system-bus.c     |    9 -
+> >  block/genhd.c                               |   35 +------
+> >  drivers/acpi/scan.c                         |   16 +--
+> >  drivers/amba/bus.c                          |    8 -
+> >  drivers/base/class.c                        |   42 ++-------
+> >  drivers/base/core.c                         |   83 +++++-------------
+> >  drivers/base/firmware_class.c               |   10 --
+> >  drivers/base/memory.c                       |    3 
+> >  drivers/base/platform.c                     |    6 -
+> >  drivers/eisa/eisa-bus.c                     |    9 -
+> >  drivers/firewire/fw-device.c                |    9 -
+> >  drivers/firmware/dmi-id.c                   |   16 +--
+> >  drivers/i2c/i2c-core.c                      |    8 -
+> >  drivers/ide/ide.c                           |   17 +--
+> >  drivers/ieee1394/nodemgr.c                  |   17 ---
+> >  drivers/infiniband/core/sysfs.c             |    9 -
+> >  drivers/input/input.c                       |   62 ++++---------
+> >  drivers/input/serio/serio.c                 |   11 --
+> >  drivers/media/video/pvrusb2/pvrusb2-sysfs.c |    4 
+> >  drivers/misc/tifm_core.c                    |    9 -
+> >  drivers/mmc/core/bus.c                      |   11 --
+> >  drivers/pci/hotplug.c                       |   28 +-----
+> >  drivers/pci/pci-driver.c                    |    3 
+> >  drivers/pci/pci.h                           |    3 
+> >  drivers/pcmcia/cs.c                         |   10 --
+> >  drivers/pcmcia/ds.c                         |   26 +----
+> >  drivers/power/power_supply.h                |    3 
+> >  drivers/power/power_supply_sysfs.c          |   16 +--
+> >  drivers/s390/cio/ccwgroup.c                 |    3 
+> >  drivers/s390/cio/device.c                   |   18 +--
+> >  drivers/s390/crypto/ap_bus.c                |   14 ---
+> >  drivers/scsi/scsi_sysfs.c                   |    9 -
+> >  drivers/spi/spi.c                           |    7 -
+> >  drivers/usb/core/driver.c                   |   29 +-----
+> >  drivers/usb/core/message.c                  |   17 ---
+> >  drivers/w1/w1.c                             |   18 +--
+> >  include/asm-powerpc/of_device.h             |    2 
+> >  include/linux/device.h                      |   15 +--
+> >  include/linux/kobject.h                     |   23 +++--
+> >  lib/kobject_uevent.c                        |  127 +++++++++-------------------
+> >  net/atm/atm_sysfs.c                         |    7 -
+> >  net/core/net-sysfs.c                        |   14 ---
+> >  net/wireless/sysfs.c                        |    3 
+> >  sound/aoa/soundbus/core.c                   |   27 +----
+> >  47 files changed, 265 insertions(+), 605 deletions(-)
+> > 
+> 
+> This is against current git? -mm has at least
+> drivers/mmc/core/sdio_bus.c in addition to convert, but that is
+> straightforward.
 
- include/linux/memcontrol.h |    6 ++++++
- include/linux/rmap.h       |    5 +++--
- mm/memcontrol.c            |    5 +++++
- mm/rmap.c                  |   30 ++++++++++++++++++++++++------
- mm/vmscan.c                |    4 ++--
- 5 files changed, 40 insertions(+), 10 deletions(-)
+It is todays Linus' tree. It should be easy to add, if we go for that,
+yes.
 
-diff -puN include/linux/rmap.h~mem-control-per-container-page-referenced include/linux/rmap.h
---- linux-2.6.23-rc1-mm1/include/linux/rmap.h~mem-control-per-container-page-referenced	2007-08-13 23:06:13.000000000 +0530
-+++ linux-2.6.23-rc1-mm1-balbir/include/linux/rmap.h	2007-08-13 23:06:13.000000000 +0530
-@@ -8,6 +8,7 @@
- #include <linux/slab.h>
- #include <linux/mm.h>
- #include <linux/spinlock.h>
-+#include <linux/memcontrol.h>
- 
- /*
-  * The anon_vma heads a list of private "related" vmas, to scan if
-@@ -86,7 +87,7 @@ static inline void page_dup_rmap(struct 
- /*
-  * Called from mm/vmscan.c to handle paging out
-  */
--int page_referenced(struct page *, int is_locked);
-+int page_referenced(struct page *, int is_locked, struct mem_container *cnt);
- int try_to_unmap(struct page *, int ignore_refs);
- 
- /*
-@@ -114,7 +115,7 @@ int page_mkclean(struct page *);
- #define anon_vma_prepare(vma)	(0)
- #define anon_vma_link(vma)	do {} while (0)
- 
--#define page_referenced(page,l) TestClearPageReferenced(page)
-+#define page_referenced(page,l,cnt) TestClearPageReferenced(page)
- #define try_to_unmap(page, refs) SWAP_FAIL
- 
- static inline int page_mkclean(struct page *page)
-diff -puN mm/rmap.c~mem-control-per-container-page-referenced mm/rmap.c
---- linux-2.6.23-rc1-mm1/mm/rmap.c~mem-control-per-container-page-referenced	2007-08-13 23:06:13.000000000 +0530
-+++ linux-2.6.23-rc1-mm1-balbir/mm/rmap.c	2007-08-13 23:06:13.000000000 +0530
-@@ -299,7 +299,8 @@ out:
- 	return referenced;
- }
- 
--static int page_referenced_anon(struct page *page)
-+static int page_referenced_anon(struct page *page,
-+				struct mem_container *mem_cont)
- {
- 	unsigned int mapcount;
- 	struct anon_vma *anon_vma;
-@@ -312,6 +313,13 @@ static int page_referenced_anon(struct p
- 
- 	mapcount = page_mapcount(page);
- 	list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
-+		/*
-+		 * If we are reclaiming on behalf of a container, skip
-+		 * counting on behalf of references from different
-+		 * containers
-+		 */
-+		if (mem_cont && (mm_container(vma->vm_mm) != mem_cont))
-+			continue;
- 		referenced += page_referenced_one(page, vma, &mapcount);
- 		if (!mapcount)
- 			break;
-@@ -332,7 +340,8 @@ static int page_referenced_anon(struct p
-  *
-  * This function is only called from page_referenced for object-based pages.
-  */
--static int page_referenced_file(struct page *page)
-+static int page_referenced_file(struct page *page,
-+				struct mem_container *mem_cont)
- {
- 	unsigned int mapcount;
- 	struct address_space *mapping = page->mapping;
-@@ -365,6 +374,13 @@ static int page_referenced_file(struct p
- 	mapcount = page_mapcount(page);
- 
- 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
-+		/*
-+		 * If we are reclaiming on behalf of a container, skip
-+		 * counting on behalf of references from different
-+		 * containers
-+		 */
-+		if (mem_cont && (mm_container(vma->vm_mm) != mem_cont))
-+			continue;
- 		if ((vma->vm_flags & (VM_LOCKED|VM_MAYSHARE))
- 				  == (VM_LOCKED|VM_MAYSHARE)) {
- 			referenced++;
-@@ -387,7 +403,8 @@ static int page_referenced_file(struct p
-  * Quick test_and_clear_referenced for all mappings to a page,
-  * returns the number of ptes which referenced the page.
-  */
--int page_referenced(struct page *page, int is_locked)
-+int page_referenced(struct page *page, int is_locked,
-+			struct mem_container *mem_cont)
- {
- 	int referenced = 0;
- 
-@@ -399,14 +416,15 @@ int page_referenced(struct page *page, i
- 
- 	if (page_mapped(page) && page->mapping) {
- 		if (PageAnon(page))
--			referenced += page_referenced_anon(page);
-+			referenced += page_referenced_anon(page, mem_cont);
- 		else if (is_locked)
--			referenced += page_referenced_file(page);
-+			referenced += page_referenced_file(page, mem_cont);
- 		else if (TestSetPageLocked(page))
- 			referenced++;
- 		else {
- 			if (page->mapping)
--				referenced += page_referenced_file(page);
-+				referenced +=
-+					page_referenced_file(page, mem_cont);
- 			unlock_page(page);
- 		}
- 	}
-diff -puN mm/vmscan.c~mem-control-per-container-page-referenced mm/vmscan.c
---- linux-2.6.23-rc1-mm1/mm/vmscan.c~mem-control-per-container-page-referenced	2007-08-13 23:06:13.000000000 +0530
-+++ linux-2.6.23-rc1-mm1-balbir/mm/vmscan.c	2007-08-13 23:06:13.000000000 +0530
-@@ -479,7 +479,7 @@ static unsigned long shrink_page_list(st
- 		if (PageWriteback(page))
- 			goto keep_locked;
- 
--		referenced = page_referenced(page, 1);
-+		referenced = page_referenced(page, 1, sc->mem_container);
- 		/* In active use or really unfreeable?  Activate it. */
- 		if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
- 					referenced && page_mapping_inuse(page))
-@@ -971,7 +971,7 @@ force_reclaim_mapped:
- 		if (page_mapped(page)) {
- 			if (!reclaim_mapped ||
- 			    (total_swap_pages == 0 && PageAnon(page)) ||
--			    page_referenced(page, 0)) {
-+			    page_referenced(page, 0, sc->mem_container)) {
- 				list_add(&page->lru, &l_active);
- 				continue;
- 			}
-diff -puN include/linux/memcontrol.h~mem-control-per-container-page-referenced include/linux/memcontrol.h
---- linux-2.6.23-rc1-mm1/include/linux/memcontrol.h~mem-control-per-container-page-referenced	2007-08-13 23:06:13.000000000 +0530
-+++ linux-2.6.23-rc1-mm1-balbir/include/linux/memcontrol.h	2007-08-13 23:06:13.000000000 +0530
-@@ -43,6 +43,7 @@ extern unsigned long mem_container_isola
- 					int active);
- extern void mem_container_out_of_memory(struct mem_container *mem);
- extern int mem_container_cache_charge(struct page *page, struct mm_struct *mm);
-+extern struct mem_container *mm_container(struct mm_struct *mm);
- 
- static inline void mem_container_uncharge_page(struct page *page)
- {
-@@ -93,6 +94,11 @@ static inline int mem_container_cache_ch
- 	return 0;
- }
- 
-+static inline struct mem_container *mm_container(struct mm_struct *mm)
-+{
-+	return NULL;
-+}
-+
- #endif /* CONFIG_CONTAINER_MEM_CONT */
- 
- #endif /* _LINUX_MEMCONTROL_H */
-diff -puN mm/memcontrol.c~mem-control-per-container-page-referenced mm/memcontrol.c
---- linux-2.6.23-rc1-mm1/mm/memcontrol.c~mem-control-per-container-page-referenced	2007-08-13 23:06:13.000000000 +0530
-+++ linux-2.6.23-rc1-mm1-balbir/mm/memcontrol.c	2007-08-13 23:06:13.000000000 +0530
-@@ -108,6 +108,11 @@ struct mem_container *mem_container_from
- 				struct mem_container, css);
- }
- 
-+inline struct mem_container *mm_container(struct mm_struct *mm)
-+{
-+	return rcu_dereference(mm->mem_container);
-+}
-+
- void mm_init_container(struct mm_struct *mm, struct task_struct *p)
- {
- 	struct mem_container *mem;
-_
+> > diff --git a/arch/ia64/sn/kernel/tiocx.c b/arch/ia64/sn/kernel/tiocx.c
+> > index 5a289e4..a88eba3 100644
+> > --- a/arch/ia64/sn/kernel/tiocx.c
+> > +++ b/arch/ia64/sn/kernel/tiocx.c
+> > @@ -66,8 +66,7 @@ static int tiocx_match(struct device *dev, struct device_driver *drv)
+> > 
+> >  }
+> > 
+> > -static int tiocx_uevent(struct device *dev, char **envp, int num_envp,
+> > -			 char *buffer, int buffer_size)
+> > +static int tiocx_uevent(struct device *dev, struct kobj_uevent_env *env)
+> >  {
+> >  	return -ENODEV;
+> >  }
+> 
+> I'm not sure whether this bus wants to use uevent_suppress instead, but
+> that would be a different patch.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Yeah, true, a filter would be better.
+
+> > diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+> > index 268e301..455e280 100644
+> > --- a/drivers/amba/bus.c
+> > +++ b/drivers/amba/bus.c
+> > @@ -44,14 +44,12 @@ static int amba_match(struct device *dev, struct device_driver *drv)
+> >  }
+> > 
+> >  #ifdef CONFIG_HOTPLUG
+> > -static int amba_uevent(struct device *dev, char **envp, int nr_env, char *buf, int bufsz)
+> > +static int amba_uevent(struct device *dev, struct kobj_uevent_env *env)
+> >  {
+> >  	struct amba_device *pcdev = to_amba_device(dev);
+> > -	int retval = 0, i = 0, len = 0;
+> > +	int retval = 0;
+> > 
+> > -	retval = add_uevent_var(envp, nr_env, &i,
+> > -				buf, bufsz, &len,
+> > -				"AMBA_ID=%08x", pcdev->periphid);
+> > +	retval = add_uevent_var(env, "AMBA_ID=%08x", pcdev->periphid);
+> >  	envp[i] = NULL;
+> 
+> Forgotten NULL-setting.
+
+True, seems that was not compiled for my platform. :)
+
+> >  	return retval;
+> >  }
+> 
+> 
+> > diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
+> > index df02814..06ffeda 100644
+> > --- a/lib/kobject_uevent.c
+> > +++ b/lib/kobject_uevent.c
+> > @@ -22,8 +22,6 @@
+> >  #include <linux/kobject.h>
+> >  #include <net/sock.h>
+> > 
+> > -#define BUFFER_SIZE	2048	/* buffer for the variables */
+> > -#define NUM_ENVP	32	/* number of env pointers */
+> > 
+> >  /* the strings here must match the enum in include/linux/kobject.h */
+> >  const char *kobject_actions[] = {
+> > @@ -54,31 +52,21 @@ static struct sock *uevent_sock;
+> >   * corresponding error when it fails.
+> >   */
+> >  int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+> > -			char *envp_ext[])
+> > +		       char *envp_ext[])
+> >  {
+> > -	char **envp;
+> > -	char *buffer;
+> > -	char *scratch;
+> > -	const char *action_string;
+> > +	struct kobj_uevent_env *env;
+> > +	const char *action_string = kobject_actions[action];
+> >  	const char *devpath = NULL;
+> >  	const char *subsystem;
+> >  	struct kobject *top_kobj;
+> >  	struct kset *kset;
+> >  	struct kset_uevent_ops *uevent_ops;
+> >  	u64 seq;
+> > -	char *seq_buff;
+> >  	int i = 0;
+> >  	int retval = 0;
+> > -	int j;
+> > 
+> >  	pr_debug("%s\n", __FUNCTION__);
+> > 
+> > -	action_string = kobject_actions[action];
+> > -	if (!action_string) {
+> > -		pr_debug("kobject attempted to send uevent without action_string!\n");
+> > -		return -EINVAL;
+> > -	}
+> > -
+> 
+> Hm, unrelated change?
+
+No, the whole uevent logic changed and is much simpler now, only one
+alloc, no SEQNUM reserving tricks are needed anymore, because you can
+add variables at any time. This action string just can't be NULL, it's a
+fixed array, indexed by the enum.
+
+> >  	/* search the kset we belong to */
+> >  	top_kobj = kobj;
+> >  	while (!top_kobj->kset && top_kobj->parent) {
+> > @@ -92,7 +80,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+> >  	kset = top_kobj->kset;
+> >  	uevent_ops = kset->uevent_ops;
+> > 
+> > -	/*  skip the event, if the filter returns zero. */
+> > +	/* skip the event, if the filter returns zero. */
+> >  	if (uevent_ops && uevent_ops->filter)
+> >  		if (!uevent_ops->filter(kset, kobj)) {
+> >  			pr_debug("kobject filter function caused the event to drop!\n");
+> > @@ -109,18 +97,11 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+> >  		return 0;
+> >  	}
+> > 
+> > -	/* environment index */
+> > -	envp = kzalloc(NUM_ENVP * sizeof (char *), GFP_KERNEL);
+> > -	if (!envp)
+> > +	/* environment buffer */
+> > +	env = kzalloc(sizeof(struct kobj_uevent_env), GFP_KERNEL);
+> > +	if (!env)
+> >  		return -ENOMEM;
+> > 
+> > -	/* environment values */
+> > -	buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
+> > -	if (!buffer) {
+> > -		retval = -ENOMEM;
+> > -		goto exit;
+> > -	}
+> > -
+> >  	/* complete object path */
+> >  	devpath = kobject_get_path(kobj, GFP_KERNEL);
+> >  	if (!devpath) {
+> > @@ -128,29 +109,19 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+> >  		goto exit;
+> >  	}
+> > 
+> > -	/* event environemnt for helper process only */
+> > -	envp[i++] = "HOME=/";
+> > -	envp[i++] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
+> > -
+> >  	/* default keys */
+> > -	scratch = buffer;
+> > -	envp [i++] = scratch;
+> > -	scratch += sprintf(scratch, "ACTION=%s", action_string) + 1;
+> > -	envp [i++] = scratch;
+> > -	scratch += sprintf (scratch, "DEVPATH=%s", devpath) + 1;
+> > -	envp [i++] = scratch;
+> > -	scratch += sprintf(scratch, "SUBSYSTEM=%s", subsystem) + 1;
+> > -	for (j = 0; envp_ext && envp_ext[j]; j++)
+> > -		envp[i++] = envp_ext[j];
+> > -	/* just reserve the space, overwrite it after kset call has returned */
+> > -	envp[i++] = seq_buff = scratch;
+> > -	scratch += strlen("SEQNUM=18446744073709551616") + 1;
+> > +	add_uevent_var(env, "ACTION=%s", action_string);
+> > +	add_uevent_var(env, "DEVPATH=%s", devpath);
+> > +	add_uevent_var(env, "SUBSYSTEM=%s", subsystem);
+> > +
+> > +	/* keys passed in from the caller */
+> > +	if (envp_ext)
+> > +		for (i = 0; envp_ext[i]; i++)
+> > +			add_uevent_var(env, envp_ext[i]);
+> > 
+> >  	/* let the kset specific function add its stuff */
+> >  	if (uevent_ops && uevent_ops->uevent) {
+> > -		retval = uevent_ops->uevent(kset, kobj,
+> > -				  &envp[i], NUM_ENVP - i, scratch,
+> > -				  BUFFER_SIZE - (scratch - buffer));
+> > +		retval = uevent_ops->uevent(kset, kobj, env);
+> >  		if (retval) {
+> >  			pr_debug ("%s - uevent() returned %d\n",
+> >  				  __FUNCTION__, retval);
+> > @@ -158,11 +129,11 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+> >  		}
+> >  	}
+> > 
+> > -	/* we will send an event, request a new sequence number */
+> > +	/* we will send an event, so request a new sequence number */
+> >  	spin_lock(&sequence_lock);
+> >  	seq = ++uevent_seqnum;
+> >  	spin_unlock(&sequence_lock);
+> > -	sprintf(seq_buff, "SEQNUM=%llu", (unsigned long long)seq);
+> > +	add_uevent_var(env, "SEQNUM=%llu", (unsigned long long)seq);
+> > 
+> >  #if defined(CONFIG_NET)
+> >  	/* send netlink message */
+> > @@ -172,17 +143,19 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+> > 
+> >  		/* allocate message with the maximum possible size */
+> >  		len = strlen(action_string) + strlen(devpath) + 2;
+> > -		skb = alloc_skb(len + BUFFER_SIZE, GFP_KERNEL);
+> > +		skb = alloc_skb(len + env->buflen, GFP_KERNEL);
+> >  		if (skb) {
+> > +			char *scratch;
+> > +
+> >  			/* add header */
+> >  			scratch = skb_put(skb, len);
+> >  			sprintf(scratch, "%s@%s", action_string, devpath);
+> > 
+> >  			/* copy keys to our continuous event payload buffer */
+> > -			for (i = 2; envp[i]; i++) {
+> > -				len = strlen(envp[i]) + 1;
+> > +			for (i = 0; i < env->envp_idx; i++) {
+> > +				len = strlen(env->envp[i]) + 1;
+> >  				scratch = skb_put(skb, len);
+> > -				strcpy(scratch, envp[i]);
+> > +				strcpy(scratch, env->envp[i]);
+> >  			}
+> > 
+> >  			NETLINK_CB(skb).dst_group = 1;
+> > @@ -198,13 +171,15 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+> >  		argv [0] = uevent_helper;
+> >  		argv [1] = (char *)subsystem;
+> >  		argv [2] = NULL;
+> > -		call_usermodehelper (argv[0], argv, envp, UMH_WAIT_EXEC);
+> > +		add_uevent_var(env, "HOME=/");
+> > +		add_uevent_var(env, "PATH=/sbin:/bin:/usr/sbin:/usr/bin");
+> > +
+> > +		call_usermodehelper (argv[0], argv, env->envp, UMH_WAIT_EXEC);
+> >  	}
+> > 
+> >  exit:
+> >  	kfree(devpath);
+> > -	kfree(buffer);
+> > -	kfree(envp);
+> > +	kfree(env);
+> >  	return retval;
+> >  }
+> > 
+> > @@ -227,52 +202,32 @@ int kobject_uevent(struct kobject *kobj, enum kobject_action action)
+> >  EXPORT_SYMBOL_GPL(kobject_uevent);
+> > 
+> >  /**
+> > - * add_uevent_var - helper for creating event variables
+> > - * @envp: Pointer to table of environment variables, as passed into
+> > - * uevent() method.
+> > - * @num_envp: Number of environment variable slots available, as
+> > - * passed into uevent() method.
+> > - * @cur_index: Pointer to current index into @envp.  It should be
+> > - * initialized to 0 before the first call to add_uevent_var(),
+> > - * and will be incremented on success.
+> > - * @buffer: Pointer to buffer for environment variables, as passed
+> > - * into uevent() method.
+> > - * @buffer_size: Length of @buffer, as passed into uevent() method.
+> > - * @cur_len: Pointer to current length of space used in @buffer.
+> > - * Should be initialized to 0 before the first call to
+> > - * add_uevent_var(), and will be incremented on success.
+> > - * @format: Format for creating environment variable (of the form
+> > - * "XXX=%x") for snprintf().
+> > + * add_uevent_var - add key value string to the environment buffer
+> > + * @env: environment buffer structure
+> > + * @format: printf format for the key=value pair
+> >   *
+> >   * Returns 0 if environment variable was added successfully or -ENOMEM
+> >   * if no space was available.
+> >   */
+> > -int add_uevent_var(char **envp, int num_envp, int *cur_index,
+> > -		   char *buffer, int buffer_size, int *cur_len,
+> > -		   const char *format, ...)
+> > +int add_uevent_var(struct kobj_uevent_env *env, const char *format, ...)
+> >  {
+> >  	va_list args;
+> > +	int len;
+> > 
+> > -	/*
+> > -	 * We check against num_envp - 1 to make sure there is at
+> > -	 * least one slot left after we return, since kobject_uevent()
+> > -	 * needs to set the last slot to NULL.
+> > -	 */
+> > -	if (*cur_index >= num_envp - 1)
+> > +	if (env->envp_idx >= ARRAY_SIZE(env->envp))
+> >  		return -ENOMEM;
+> > 
+> > -	envp[*cur_index] = buffer + *cur_len;
+> > -
+> >  	va_start(args, format);
+> > -	*cur_len += vsnprintf(envp[*cur_index],
+> > -			      max(buffer_size - *cur_len, 0),
+> > -			      format, args) + 1;
+> > +	len = vsnprintf(&env->buf[env->buflen],
+> > +			sizeof(env->buf) - env->buflen,
+> > +			format, args);
+> >  	va_end(args);
+> > 
+> > -	if (*cur_len > buffer_size)
+> > +	if (len + 1 >= (sizeof(env->buf) - env->buflen))
+> >  		return -ENOMEM;
+> > 
+> > -	(*cur_index)++;
+> > +	env->envp[env->envp_idx++] = &env->buf[env->buflen];
+> > +	env->buflen += len + 1;
+> >  	return 0;
+> >  }
+> >  EXPORT_SYMBOL_GPL(add_uevent_var);
+> 
+> Looks good!
+
+Thanks!
+
+Kay
+
