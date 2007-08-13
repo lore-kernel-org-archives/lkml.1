@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939300AbXHMVbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940034AbXHMVci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939300AbXHMVbt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 17:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbXHMVb0
+	id S940034AbXHMVci (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 17:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932988AbXHMVbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 17:31:26 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:46075 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754112AbXHMVbY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 17:31:24 -0400
-Date: Mon, 13 Aug 2007 23:31:14 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       sam@ravnborg.org, zippel@linux-m68k.org, vincent.legoll@gmail.com
-Subject: Re: [-mm patch] kconfig syntax cleanups
-Message-ID: <20070813213114.GL18945@stusta.de>
-References: <20070813113809.9a715e75.randy.dunlap@oracle.com> <20070813185431.GD18945@stusta.de> <Pine.LNX.4.64.0708131510140.14058@localhost.localdomain> <20070813200509.GF18945@stusta.de> <20070813141701.446990cb.randy.dunlap@oracle.com>
+	Mon, 13 Aug 2007 17:31:42 -0400
+Received: from er-systems.de ([85.25.136.202]:50274 "EHLO er-systems.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934219AbXHMVbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 17:31:40 -0400
+Date: Mon, 13 Aug 2007 23:31:38 +0200 (CEST)
+From: Thomas Voegtle <tv@lio96.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Thomas Voegtle <tv@lio96.de>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: 2.6.23-rc2 swsusp, suddenly increased uptime
+In-Reply-To: <200708132306.27587.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.63.0708132325580.29791@er-systems.de>
+References: <Pine.LNX.4.63.0708122137130.25343@er-systems.de>
+ <200708132306.27587.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070813141701.446990cb.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="425052808-1259902182-1187040698=:29791"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 02:17:01PM -0700, Randy Dunlap wrote:
-> On Mon, 13 Aug 2007 22:05:10 +0200 Adrian Bunk wrote:
->...
-> > This patch removes the following redundant and never or rarely used 
-> > kconfig syntax:
-> > - "def_boolean" (same as "def_bool")
-> > - "requires" (same as "depends on")
-> > - "depends" (same as "depends on")
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--425052808-1259902182-1187040698=:29791
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
+
+On Mon, 13 Aug 2007, Rafael J. Wysocki wrote:
+
+> On Sunday, 12 August 2007 21:39, Thomas Voegtle wrote:
 > > 
-> > Most of the size of this patch comes from regenerating generated files.
+> > Hi,
+> > 
+> > today I saw this (output from my suspend script):
+> > 
+> > -> woke up at Sun Aug 12 11:39:17 CEST 2007
+> > -> uptime is
+> >  11:39am  up 8 days  0:41,  10 users,  load average: 26.12, 6.35, 2.17
+> > 
+> > 
+> > Then I did a software suspend. After waking up, I saw this:
+> > 
+> > 
+> > -> woke up at Sun Aug 12 14:41:56 CEST 2007
+> > -> uptime is
+> >   2:41pm  up 44 days  9:11,  12 users,  load average: 35.17, 9.17, 3.33
+
+I just want to add, I built 2.6.23-rc2 on Aug 4th and this happened on Aug 
+12 and I suspend once a day. And the only thing which was odd was the 
+uptime, nothing else.
+
+I rebooted with 2.6.23-rc3 today, so the odd uptime is gone.
+Should I try 8 suspend cycles or something to reproduce it again?
+
+ 
+> Can you please boot the kernel in the minimal configuration (init=/bin/bash)
+> and try to hibernate, ie.
 > 
-> Looks OK to me.
+> # mount /proc
+> # mount /sys
+> # swapon -a
+> # echo disk > /sys/power/state
 > 
-> Missing S-O-B line...
+> Also, please check if anything changes if you do
+> 
+> # echo shutdown > /sys/power/disk
+> 
+> before the last command above.
 
-Ups, sorry:
+I did, but what could change? I did not see anything, nothing dmesg, no 
+odd uptime etc.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
-> ~Randy
-
-cu
-Adrian
+      Thomas
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+ Thomas Vögtle    email: thomas@voegtle-clan.de
+ ----- http://www.voegtle-clan.de/thomas ------
+--425052808-1259902182-1187040698=:29791--
