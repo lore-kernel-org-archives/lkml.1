@@ -1,129 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938743AbXHMWLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964908AbXHMWMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938743AbXHMWLX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 18:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761423AbXHMWLM
+	id S964908AbXHMWMy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 18:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbXHMWMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 18:11:12 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:53905 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752922AbXHMWLK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 18:11:10 -0400
-Message-ID: <46C0D6DB.7090703@suse.de>
-Date: Tue, 14 Aug 2007 02:10:35 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Mon, 13 Aug 2007 18:12:41 -0400
+Received: from er-systems.de ([85.25.136.202]:46501 "EHLO er-systems.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752137AbXHMWMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 18:12:39 -0400
+Date: Tue, 14 Aug 2007 00:12:34 +0200 (CEST)
+From: Thomas Voegtle <tv@lio96.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: 2.6.23-rc2 swsusp, suddenly increased uptime
+In-Reply-To: <200708132349.52763.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.63.0708140009110.32395@er-systems.de>
+References: <Pine.LNX.4.63.0708122137130.25343@er-systems.de>
+ <200708132306.27587.rjw@sisk.pl> <Pine.LNX.4.63.0708132325580.29791@er-systems.de>
+ <200708132349.52763.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Sergey Dolgov <solkaa@gmail.com>, Hugh Dickins <hugh@veritas.com>,
-       Len Brown <len.brown@intel.com>, Norbert Preining <preining@logic.at>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Henrique de Moraes Holshuh <hmh@hmh.eng.br>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc3 regression and bisection query
-References: <Pine.LNX.4.64.0708131905280.13982@blonde.wat.veritas.com> <20070813212204.GA2645@slk.laptop>
-In-Reply-To: <20070813212204.GA2645@slk.laptop>
-Content-Type: multipart/mixed;
- boundary="------------040807020604090304020908"
+Content-Type: MULTIPART/MIXED; BOUNDARY="425052808-121490045-1187043154=:32395"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040807020604090304020908
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Sergey Dolgov wrote:
-> On Mon, Aug 13, 2007 at 07:44:48PM +0100, Hugh Dickins wrote:
->
->   
->> Git bisection (with manual fixups to i386 mmiocfg horror, thanks
->> for drawing attention to that in your changelog) accuses Alexey's
->> ACPI: EC: If ECDT is not found, look up EC in DSDT
->> cd8c93a4e04dce8f00d1ef3a476aac8bd65ae40b
->> and if I revert that along with Len's subsequent
->> ACPI: EC: fix build warning
->> 52fe4bdf40bc07498c5f7935551774e8f8458190
->> then I have Fn-F4 suspending to RAM again.
->>
->>     
->
-> I've also noticed a regression since -rc2 in battery status reporting
-> on my HP nx7300 laptop: the output of
->
->     cat /proc/acpi/battery/C1BE/state
->
-> does not change after this file has been read for the the first time;
-> for exaple, the line "charging state: charged" does not change to
-> "charging state: discharging" upon unplugging the power cord.
->
-> Reverting the above 2 commits fixes this issue for me.
->
-> --
-> Sergey
->   
-Function to register query methods (means by which EC talks to ACPI)
-was deleted by mistake.
+--425052808-121490045-1187043154=:32395
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 
-Could you please try the attached patch?
+On Mon, 13 Aug 2007, Rafael J. Wysocki wrote:
 
-Sorry for all the trouble, and thanks for bisect.
-Alex.
+> On Monday, 13 August 2007 23:31, Thomas Voegtle wrote:
+> > On Mon, 13 Aug 2007, Rafael J. Wysocki wrote:
+> > 
+> > > On Sunday, 12 August 2007 21:39, Thomas Voegtle wrote:
+> > > > 
+> > > > Hi,
+> > > > 
+> > > > today I saw this (output from my suspend script):
+> > > > 
+> > > > -> woke up at Sun Aug 12 11:39:17 CEST 2007
+> > > > -> uptime is
+> > > >  11:39am  up 8 days  0:41,  10 users,  load average: 26.12, 6.35, 2.17
+> > > > 
+> > > > 
+> > > > Then I did a software suspend. After waking up, I saw this:
+> > > > 
+> > > > 
+> > > > -> woke up at Sun Aug 12 14:41:56 CEST 2007
+> > > > -> uptime is
+> > > >   2:41pm  up 44 days  9:11,  12 users,  load average: 35.17, 9.17, 3.33
+> > 
+> > I just want to add, I built 2.6.23-rc2 on Aug 4th and this happened on Aug 
+> > 12 and I suspend once a day. And the only thing which was odd was the 
+> > uptime, nothing else.
+> > 
+> > I rebooted with 2.6.23-rc3 today, so the odd uptime is gone.
+> > Should I try 8 suspend cycles or something to reproduce it again?
+> 
+> Well, if you can, please try to do something like this.
 
---------------040807020604090304020908
-Content-Type: text/plain;
- name="acpi-ec-fix-regression"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="acpi-ec-fix-regression"
+I tried 20 suspend cycles, but this time with 
+ echo reboot > /sys/power/disk
 
-ACPI: EC: Fix regression
+Nothing special happend.
 
-From: Alexey Starikovskiy <astarikivskiy@suse.de>
+I could try with "echo shutdown" if this makes sense, tomorrow.
+Just let me know.
 
-Undelete call to register query methods. 
+      Thomas
 
-Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
----
-
- drivers/acpi/ec.c |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-index 2300d81..56bee9e 100644
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -652,6 +652,19 @@ static struct acpi_ec *make_acpi_ec(void)
- }
- 
- static acpi_status
-+acpi_ec_register_query_methods(acpi_handle handle, u32 level,
-+			       void *context, void **return_value)
-+{
-+	struct acpi_namespace_node *node = handle;
-+	struct acpi_ec *ec = context;
-+	int value = 0;
-+	if (sscanf(node->name.ascii, "_Q%x", &value) == 1) {
-+		acpi_ec_add_query_handler(ec, value, handle, NULL, NULL);
-+	}
-+	return AE_OK;
-+}
-+
-+static acpi_status
- ec_parse_device(acpi_handle handle, u32 Level, void *context, void **retval)
- {
- 	acpi_status status;
-@@ -668,6 +681,10 @@ ec_parse_device(acpi_handle handle, u32 Level, void *context, void **retval)
- 	if (ACPI_FAILURE(status))
- 		return status;
- 
-+	/* Find and register all query methods */
-+	acpi_walk_namespace(ACPI_TYPE_METHOD, handle, 1,
-+			    acpi_ec_register_query_methods, ec, NULL);
-+
- 	/* Use the global lock for all EC transactions? */
- 	acpi_evaluate_integer(handle, "_GLK", NULL, &ec->global_lock);
- 
-
---------------040807020604090304020908--
+-- 
+ Thomas Vögtle    email: thomas@voegtle-clan.de
+ ----- http://www.voegtle-clan.de/thomas ------
+--425052808-121490045-1187043154=:32395--
