@@ -1,116 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031923AbXHMQg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967920AbXHMQhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031923AbXHMQg4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966349AbXHMPm2
+	id S967920AbXHMQhs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758912AbXHMPoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 11:42:28 -0400
-Received: from web36604.mail.mud.yahoo.com ([209.191.85.21]:30881 "HELO
-	web36604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965910AbXHMPmZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 11:42:25 -0400
-X-YMail-OSG: PjrwWR8VM1mg2ECgpCyMcmK1wgaAt8ITxI6OJoWtAHzhr3XxXvWxSKn9fOVfasiUso2H9I9vrQ--
-X-RocketYMMF: rancidfat
-Date: Mon, 13 Aug 2007 08:42:23 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 00/16] Permit filesystem local caching [try #3]
-To: Stephen Smalley <sds@tycho.nsa.gov>, David Howells <dhowells@redhat.com>
-Cc: casey@schaufler-ca.com, torvalds@osdl.org, akpm@osdl.org,
-       steved@redhat.com, trond.myklebust@fys.uio.no,
-       linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <1187017052.26008.51.camel@moss-spartans.epoch.ncsc.mil>
+	Mon, 13 Aug 2007 11:44:04 -0400
+Received: from mga09.intel.com ([134.134.136.24]:7415 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934781AbXHMPn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 11:43:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,255,1183359600"; 
+   d="scan'208";a="116942138"
+Message-ID: <46C07C16.6060406@intel.com>
+Date: Mon, 13 Aug 2007 08:43:18 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <98087.46480.qm@web36604.mail.mud.yahoo.com>
+To: Joe Perches <joe@perches.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -	scripts/get_maintainer.pl
+References: <1186984174.10249.7.camel@localhost>
+In-Reply-To: <1186984174.10249.7.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Aug 2007 15:43:52.0373 (UTC) FILETIME=[BFBE5650:01C7DDC0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Stephen Smalley <sds@tycho.nsa.gov> wrote:
-
-> On Mon, 2007-08-13 at 15:51 +0100, David Howells wrote:
-
-> ... 
-
-> > Actually, to address Stephen Smalley's requirements also, how about making
-> > things a bit more complex.  Have the following suite of functions:
-> > 
-> >  (1) int security_get_context(struct sec **_context);
-> > 
-> > 	This allocates and gives the caller a blob that describes the current
-> > 	context of all the LSM module states attached to the current task and
-> > 	stores a pointer to it in *_context.
-> > 
-> >  (2) int security_push(struct sec *context, struct sec **_old_context)
-> > 
-> > 	This causes all the LSM modules on the current task to switch to a new
-> > 	acting state, passing back the old state.  It does not change how
-> > 	other tasks do things to this one.
-> > 
-> >  (3) int security_pop(struct sec *context)
-> > 
-> > 	This causes all the LSM modules on the current task to switch to a new
-> > 	acting state, deleting the old state.  It does not change how
-> > 	other tasks do things to this one.
-> > 
-> >  (4) int security_delete_context(struct sec *context)
-> > 
-> > 	This deletes a context blob.
-> > 
-> > The context blob could then be structured very simply.  Give each loaded
-> LSM
-> > module an integer index as it is registered.  Having a limit to the number
-> of
-> > LSM modules would make things simpler.  The blob would then be an array of
-> > void pointers, one per LSM module, indexed by the integer index for each
-> one.
-> > It you don't have a limit on the number of LSM modules, you'd also need a
-> > count of slots in the blob.
-> > 
-> > Any LSM module that wanted to implement the above three functions would
-> fill
-> > in or otherwise use the slot that belongs to it.  Otherwise the slot would
-> > just be left NULL.
-> > 
-> > For example:
-> > 
-> > 	context --->+--------+                                    +---------+
-> > 	            | SLOT 0 |----------------------------------->| SELINUX |
-> > 	            +--------+                      +--------+    +---------+
-> > 	            | SLOT 1 |--------------------->| THINGY |
-> > 	            +--------+                      +--------+
-> > 	            | ...    |
-> > 	            +--------+         +-------+
-> > 	            | SLOT N |-------->| AUDIT |
-> > 	            +--------+         +-------+
-> > 
-> > For Stephen and NFS, he could then generate a context from NFS which nfsd
-> > could then put in place.  Perhaps any unfilled slot would be ignored by the
-> > LSM module to which it belonged.
+Joe Perches wrote:
+> I grew weary of looking up the appropriate
+> maintainer email address(es) to CC: for a patch.
 > 
-> Seems like over-design - we don't need to support LSM stacking, and we
-> don't need to support pushing/popping more than one level of context.
+> I added flags to the MAINTAINERS file
+> 
+> F:	file pattern
+> 
+> for each maintained block and a script to parse
+> the modified blocks for maintainer and list
+> email addresses.
+> 
+> perl scripts/get_maintainer.pl <patch>
+> 
+> gives the appropriate maintainer(s).
+> 
+> Modifications since last post:
+> 
+> Added options to control email address style and multiple address separator
+> 
+> Please apply.
 
-LSM stacking has always been contentious and I don't see
-that it addresses the issue, which is changing the data used
-by an LSM, not the LSM itself.
+Well, I came up with this implementation, so I definately support it and the way 
+Joe implemented it:
 
-> What was the objection again to the original interface, aside from
-> replacing "u32 secids" with "void* security blobs"?
+Acked-by: Auke Kok <auke-jan.h.kok@intel.com>
 
-The objection centers around exposing LSM specific data outside
-the LSM, and it applies to either secids or blobs, really. If you
-need this information outside the LSM odds are good that what you're
-using it for is going to be LSM specific, and hence should be inside
-the LSM. I admit to two gray areas, audit and system service tasks
-such as the two cited here. I like simplicity and find the single
-security_act_as() interface attractive for the latter case.
+Cheers,
+
+Auke
 
 
-Casey Schaufler
-casey@schaufler-ca.com
+> 
+> diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+> new file mode 100755
+> index 0000000..3e5cc6c
+> --- /dev/null
+> +++ b/scripts/get_maintainer.pl
+> @@ -0,0 +1,217 @@
+> +#!/usr/bin/perl -w
+> +# (c) 2007, Joe Perches <joe@perches.com>
+> +#           created from checkpatch.pl
+> +# Licensed under the terms of the GNU GPL License version 2
+> +
+> +use strict;
+> +
+> +my $P = $0;
+> +$P =~ s@.*/@@g;
+> +
+> +my $V = '0.02';
+> +
+> +use Getopt::Long qw(:config no_auto_abbrev);
+> +
+> +my $tree = "./";
+> +my $email_maintainer = 1;
+> +my $email_maintainer_name = 1;
+> +my $email_list = 1;
+> +my $email_subscriber_list = 0;
+> +my $email_separator = ", ";
+> +my %saw;
+> +
+> +GetOptions(
+> +	   'tree=s' => \$tree,
+> +	   'm!' => \$email_maintainer,
+> +	   'n!' => \$email_maintainer_name,
+> +	   'l!' => \$email_list,
+> +	   's!' => \$email_subscriber_list,
+> +	   'separator=s' => \$email_separator,
+> +	   ) or exit;
+> +
+> +my $exit = 0;
+> +
+> +if ($#ARGV < 0 ||
+> +    ($email_maintainer == 0 && $email_list == 0 && $email_subscriber_list == 0)) {
+> +    print "usage: $P [options] patchfile\n";
+> +    print "version: $V\n";
+> +    print "  --tree [path] => linux kernel source path\n";
+> +    print "  --m => include maintainer(s) if any\n";
+> +    print "  --n => include maintainer name 'Full Name <addr\@domain.tld>'\n";
+> +    print "  --l => include list(s) if any\n";
+> +    print "  --s => include subscriber only list(s) if any\n";
+> +    print "  --separator [, ] => separator for multiple addresses\n";
+> +    print "Default: [--m --l --separator \", \"]\n";
+> +    print "Be sure to select something...\n";
+> +    exit(1);
+> +}
+> +
+> +if ($tree && !top_of_kernel_tree($tree)) {
+> +    if (${tree} ne "") {
+> +	print "'${tree}' ";
+> +    } else {
+> +	print "The current directory ";
+> +    }
+> +    print "doesn't appear to be a linux kernel source tree\n";
+> +    exit(2);
+> +}
+> +
+> +## Read MAINTAINERS for type/value pairs
+> +
+> +my @typevalue = ();
+> +open(MAINT, "<${tree}MAINTAINERS") || die "$P: Can't open ${tree}MAINTAINERS\n";
+> +while (<MAINT>) {
+> +    if (m/^(\C):\s*(.*)/) {
+> +	my $type = $1;
+> +	my $value = $2;
+> +	if ($type eq "F") {              ##Filename pattern matching
+> +	    $value =~ s@\.@\\\.@g;       ##Convert . to \.
+> +	    $value =~ s/\*/\.\*/g;       ##Convert * to .*
+> +	}
+> +	push(@typevalue, "$type:$value");
+> +    } elsif (!/^(\s)*$/) {
+> +	push(@typevalue, $_);
+> +    }
+> +}
+> +close(MAINT);
+> +
+> +## Find the patched filenames
+> +
+> +my @patchedfiles = ();
+> +open(PATCH, "<$ARGV[0]") or die "Can't open $ARGV[0]\n";
+> +while (<PATCH>) {
+> +    if (m/^\+\+\+\s+(\S+)/) {
+> +	my $file = $1;
+> +	$file =~ s@^[^/]*/@@;
+> +	$file =~ s@\n@@;
+> +	push(@patchedfiles, $file);
+> +    }
+> +}
+> +close(PATCH);
+> +
+> +# Sort and uniq patchedfiles
+> +
+> +undef %saw;
+> +@patchedfiles = sort @patchedfiles;
+> +@patchedfiles = grep(!$saw{$_}++, @patchedfiles);
+> +
+> +# Find responsible parties
+> +
+> +my @email_to = ();
+> +foreach (@patchedfiles) {
+> +    my $patchedfile = $_;
+> +    my $tvi = 0;
+> +
+> +    foreach (@typevalue) {
+> +	if (m/^(\C):(.*)/) {
+> +	    my $type = $1;
+> +	    my $value = $2;
+> +	    if ($type eq 'F') {
+> +		if (file_match_pattern($patchedfile, $value)) {
+> +		    my $ptvi = $tvi - 1;
+> +		    while ($ptvi >= 0) {
+> +			my $tv = $typevalue[$ptvi];
+> +			if ($tv =~ m/^(\C):(.*)/) {
+> +			    my $ptype = $1;
+> +			    my $pvalue = $2;
+> +			    if ($ptype eq "L") {
+> +				my $subscr = $pvalue;
+> +				if ($subscr =~ m/\s*\(subscribers-only\)/) {
+> +				    if ($email_subscriber_list > 0) {
+> +					$subscr =~ s/\s*\(subscribers-only\)//g;
+> +					push(@email_to, $subscr);
+> +				    }
+> +				} else {
+> +				    if ($email_list > 0) {
+> +					push(@email_to, $pvalue);
+> +				    }
+> +				}
+> +			    } elsif ($ptype eq "M") {
+> +				if ($email_maintainer > 0) {
+> +				    if ($ptvi >= 0) {
+> +					my $tv = $typevalue[$ptvi - 1];
+> +					if ($tv =~ m/^(\C):(.*)/) {
+> +					    if ($1 eq "P" && $email_maintainer_name > 0) {
+> +						push(@email_to, "$2 <$pvalue>");
+> +					    } else {
+> +						push(@email_to, $pvalue);
+> +					    }
+> +					}
+> +				    } else {
+> +					push(@email_to, $pvalue);
+> +				    }
+> +				}
+> +			    }
+> +			    $ptvi--;
+> +			} else {
+> +			    $ptvi = -1;
+> +			}
+> +		    }
+> +		}
+> +	    }
+> +	}
+> +	$tvi++;
+> +    }
+> +}
+> +
+> +## sort and uniq email_to
+> +
+> +@email_to = sort @email_to;
+> +undef %saw;
+> +@email_to = grep(!$saw{$_}++, @email_to);
+> +
+> +## add lk if noone else...
+> +
+> +my $address_cnt = @email_to;
+> +if ($address_cnt == 0 && $email_list > 0) {
+> +    push(@email_to, "linux-kernel\@vger.kernel.org");
+> +}
+> +print(join($email_separator, @email_to));
+> +print("\n");
+> +
+> +exit($exit);
+> +
+> +sub file_match_pattern {
+> +    my ($file, $pattern) = @_;
+> +    if (substr($pattern, -1) eq "/") {
+> +	if ($file =~ m@^$pattern@) {
+> +	    return 1;
+> +	}
+> +    } else {
+> +	if ($file =~ m@^$pattern@) {
+> +	    my $s1 = ($file =~ tr@/@@);
+> +	    my $s2 = ($pattern =~ tr@/@@);
+> +	    if ($s1 == $s2) {
+> +		return 1;
+> +	    }
+> +	}
+> +    }
+> +    return 0;
+> +}
+> +
+> +sub top_of_kernel_tree {
+> +	my ($tree) = @_;
+> +
+> +	if ($tree ne "" && substr($tree,length($tree)-1,1) ne "/") {
+> +	    $tree = $tree . "/";
+> +	}
+> +	if (   (-f "${tree}COPYING")
+> +	    && (-f "${tree}CREDITS")
+> +	    && (-f "${tree}Kbuild")
+> +	    && (-f "${tree}MAINTAINERS")
+> +	    && (-f "${tree}Makefile")
+> +	    && (-f "${tree}README")
+> +	    && (-d "${tree}Documentation")
+> +	    && (-d "${tree}arch")
+> +	    && (-d "${tree}include")
+> +	    && (-d "${tree}drivers")
+> +	    && (-d "${tree}fs")
+> +	    && (-d "${tree}init")
+> +	    && (-d "${tree}ipc")
+> +	    && (-d "${tree}kernel")
+> +	    && (-d "${tree}lib")
+> +	    && (-d "${tree}scripts")) {
+> +		return 1;
+> +	}
+> +	return 0;
+> +}
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
