@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969658AbXHMLhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969929AbXHMLiC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969658AbXHMLhP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 07:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967285AbXHMGiv
+	id S969929AbXHMLiC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 07:38:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967307AbXHMGiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:38:51 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2246 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:38:52 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2237 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966787AbXHMGis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:38:48 -0400
-Date: Sun, 12 Aug 2007 23:38:34 -0700
+	id S1763869AbXHMGiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:38:46 -0400
+Date: Sun, 12 Aug 2007 23:38:32 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, support@reiner-sct.com,
+To: torvalds@linux-foundation.org, petkan@users.sourceforge.net,
+       netdev@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] [507/2many] MAINTAINERS - USB SERIAL CYBERJACK DRIVER
-Message-ID: <46bffc6a.NZpZQpkevLNuEPSk%joe@perches.com>
+Subject: [PATCH] [506/2many] MAINTAINERS - USB RTL8150 DRIVER
+Message-ID: <46bffc68.ob7E9N2RUcGCVFrT%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,14 +28,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 25df49f..93e31ac 100644
+index 02bb359..25df49f 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4796,6 +4796,7 @@ P:	Matthias Bruestle and Harald Welte
- M:	support@reiner-sct.com
- W:	http://www.reiner-sct.de/support/treiber_cyberjack.php
+@@ -4781,6 +4781,7 @@ L:	linux-usb-devel@lists.sourceforge.net
+ L:	netdev@vger.kernel.org
+ W:	http://pegasus2.sourceforge.net/
  S:	Maintained
-+F:	drivers/usb/serial/cyberjack.c
++F:	drivers/net/usb/rtl8150.c
  
- USB SERIAL DIGI ACCELEPORT DRIVER
- P:	Peter Berger and Al Borchers
+ USB SE401 DRIVER
+ P:	Jeroen Vreeken
