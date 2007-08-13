@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942439AbXHMHlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966494AbXHMHmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942439AbXHMHlk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 03:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966305AbXHMG00
+	id S966494AbXHMHmM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 03:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966066AbXHMG02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:26:26 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4158 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:26:28 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4164 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966299AbXHMG0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:26:25 -0400
-Date: Sun, 12 Aug 2007 23:26:06 -0700
+	id S966310AbXHMG00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:26:26 -0400
+Date: Sun, 12 Aug 2007 23:26:12 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, patrick@tykepenguin.com,
-       linux-kernel@vger.kernel.org, linux-decnet-user@lists.sourceforge.net,
-       akpm@linux-foundation.org
-Subject: [PATCH] [149/2many] MAINTAINERS - DECnet NETWORK LAYER
-Message-ID: <46bff97e.vVlPgIbC9AktbnVy%joe@perches.com>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Douglas_Warzecha@dell.com
+Subject: [PATCH] [152/2many] MAINTAINERS - DELL SYSTEMS MANAGEMENT BASE
+ DRIVER (dcdbas)
+Message-ID: <46bff984.uG3uqq9pSd6UO+mC%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,15 +28,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index c786066..02bdd54 100644
+index cbf381c..ea991f0 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1443,6 +1443,8 @@ M:	patrick@tykepenguin.com
- W:	http://linux-decnet.sourceforge.net
- L:	linux-decnet-user@lists.sourceforge.net
+@@ -1464,6 +1464,8 @@ DELL SYSTEMS MANAGEMENT BASE DRIVER (dcdbas)
+ P:	Doug Warzecha
+ M:	Douglas_Warzecha@dell.com
  S:	Maintained
-+F:	Documentation/networking/decnet.txt
-+F:	net/decnet/
++F:	Documentation/dcdbas.txt
++F:	drivers/firmware/dcdbas.*
  
- DEFXX FDDI NETWORK DRIVER
- P:	Maciej W. Rozycki
+ DEVICE-MAPPER  (LVM)
+ P:	Alasdair Kergon
