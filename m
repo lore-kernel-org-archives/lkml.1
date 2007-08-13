@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030520AbXHMMd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S945290AbXHMMem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030520AbXHMMd6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940038AbXHMG55
+	id S945290AbXHMMem (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757776AbXHMHAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:57:57 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:59309 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939352AbXHMG54 (ORCPT
+	Mon, 13 Aug 2007 03:00:16 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:26934 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753888AbXHMHAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:57:56 -0400
-Message-ID: <46C00050.5090208@linux.vnet.ibm.com>
-Date: Mon, 13 Aug 2007 12:25:12 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Mon, 13 Aug 2007 03:00:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:references:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:x-mimeole:in-reply-to:thread-index;
+        b=iTI0F8pAfhcaHiW0QmmKKnbgRM5yPACR0+JUInkls5Zo0kllljRY3teTg/1h7S252kLwg0iXJfMF8kmUIfpajJ6wRPKLkI+0eh3wcBL9PLiuRlKQVh/k/WEJYDo07Kp+/7O6gy60CBAbhVibDUCzfjscxjN6u56Fo8mBJd+rPg8=
+From: "Edison Wong" <hswong3i@gmail.com>
+To: <joe@perches.com>, <torvalds@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <hlhung3i@gmail.com>,
+       <akpm@linux-foundation.org>
+References: <46bffc0f.E8NW2ppJgFoVM7kH%joe@perches.com>
+Subject: RE: [PATCH] [470/2many] MAINTAINERS - TCP LOW PRIORITY MODULE
+Date: Mon, 13 Aug 2007 14:59:57 +0800
+Message-ID: <000f01c7dd77$91c67e60$6783a8c0@LENOVOBF3ABCC9>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Kernel 2.6.23-rc3 build fails
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+In-Reply-To: <46bffc0f.E8NW2ppJgFoVM7kH%joe@perches.com>
+Thread-Index: AcfddGTGGs+nv7eaQ9K4LrrPNJLQWQAAo/+Q
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Sorry that since Mike and I are both Chinese, the naming format is a bit different from English style
 
-The 2.6.23-rc3 kernel build fails with the following
-error message,
+Hung Hing Lun (Chinese full name), Mike (English name)
+Wong Hoi Sing (Chinese full name), Edison (English name)
 
-=======================================================
-Root device is (8, 1)
-Setup is 10200 bytes (padded to 10240 bytes).
-System is 2052 kB
-Kernel: arch/x86_64/boot/bzImage is ready (#1)
-08/12/07-22:39:51 Build the kernel. Succeeded
-CHK include/linux/version.h
-CHK include/linux/utsrelease.h
-CALL scripts/checksyscalls.sh
-CC [M] drivers/acpi/video.o
-CC [M] drivers/net/8139cp.o
-CC [M] drivers/net/8139too.o
-CC [M] drivers/net/e1000/e1000_main.o
-CC [M] drivers/net/e1000/e1000_hw.o
-CC [M] drivers/net/e1000/e1000_ethtool.o
-CC [M] drivers/net/e1000/e1000_param.o
-LD [M] drivers/net/e1000/e1000.o
-CC [M] drivers/scsi/ips.o
-drivers/scsi/ips.c: In function `ips_register_scsi':
-drivers/scsi/ips.c:6867: warning: ignoring return value of 
-`scsi_add_host', declared with attribute warn_unused_result
-CC [M] drivers/scsi/scsi_wait_scan.o
-CC [M] drivers/video/output.o
-Building modules, stage 2.
-MODPOST 7 modules
-FATAL: drivers/acpi/video: sizeof(struct acpi_device_id)=20 is not a 
-modulo of the size of section __mod_acpi_device_table=48.
-Fix definition of struct acpi_device_id in mod_devicetable.h
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+Regards,
+Edison
 
-Thanks,
-Kamalesh Babulal
+-----Original Message-----
+From: joe@perches.com [mailto:joe@perches.com] 
+Sent: Monday, August 13, 2007 2:37 PM
+To: torvalds@linux-foundation.org; linux-kernel@vger.kernel.org; hswong3i@gmail.com; hlhung3i@gmail.com; akpm@linux-foundation.org
+Subject: [PATCH] [470/2many] MAINTAINERS - TCP LOW PRIORITY MODULE
+
+Add file pattern to MAINTAINER entry
+
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index fc0589f..e45a848 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4462,12 +4462,13 @@ F:	include/net/pkt_cls.h
+ F:	net/sched/
+ 
+ TCP LOW PRIORITY MODULE
+-P:	Wong Hoi Sing, Edison
++P:	Wong Hoi (Edison) Sing
+ M:	hswong3i@gmail.com
+-P:	Hung Hing Lun, Mike
++P:	Hung Hing (Mike) Lun
+ M:	hlhung3i@gmail.com
+ W:	http://tcp-lp-mod.sourceforge.net/
+ S:	Maintained
++F:	net/ipv4/tcp_lp.c
+ 
+ TI FLASH MEDIA INTERFACE DRIVER
+ P:      Alex Dubov
 
