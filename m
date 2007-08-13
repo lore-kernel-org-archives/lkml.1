@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764434AbXHMHDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936801AbXHMHDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764434AbXHMHDK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 03:03:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936470AbXHMGYR
+	id S936801AbXHMHDl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 03:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965685AbXHMGYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:24:17 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3778 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:24:18 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3780 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966079AbXHMGYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:24:14 -0400
-Date: Sun, 12 Aug 2007 23:24:00 -0700
+	id S966081AbXHMGYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:24:15 -0400
+Date: Sun, 12 Aug 2007 23:24:02 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, ralf@linux-mips.org,
-       linux-kernel@vger.kernel.org, linux-hams@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH] [83/2many] MAINTAINERS - AX.25 NETWORK LAYER
-Message-ID: <46bff900.apRd8gxouba0kSsi%joe@perches.com>
+To: torvalds@linux-foundation.org, rpurdie@rpsys.net,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] [84/2many] MAINTAINERS - BACKLIGHT CLASS/SUBSYSTEM
+Message-ID: <46bff902.Datl2qKgRDdvrMhF%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,16 +27,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index cb74477..f8fe034 100644
+index f8fe034..a78c8e8 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -834,6 +834,9 @@ M:	ralf@linux-mips.org
- L:	linux-hams@vger.kernel.org
- W:	http://www.linux-ax25.org/
- S:	Maintained
-+F:	include/linux/ax25.h
-+F:	include/net/ax25.h
-+F:	net/ax25/
- 
- BACKLIGHT CLASS/SUBSYSTEM
+@@ -842,6 +842,8 @@ BACKLIGHT CLASS/SUBSYSTEM
  P:	Richard Purdie
+ M:	rpurdie@rpsys.net
+ S:	Maintained
++F:	drivers/video/backlight/
++F:	include/linux/backlight.h
+ 
+ BLACKFIN ARCHITECTURE
+ P:	Aubrey Li
