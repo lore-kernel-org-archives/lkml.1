@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S945107AbXHMMHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S943475AbXHMMIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S945107AbXHMMHs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965208AbXHMGk1
+	id S943475AbXHMMIk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967537AbXHMGka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:40:27 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2498 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:40:30 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2495 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967517AbXHMGkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S967423AbXHMGkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 02:40:12 -0400
-Date: Sun, 12 Aug 2007 23:39:55 -0700
+Date: Sun, 12 Aug 2007 23:39:22 -0700
 From: joe@perches.com
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       discuss@x86-64.org, akpm@linux-foundation.org, ak@suse.de
-Subject: [PATCH] [548/2many] MAINTAINERS - X86-64 port
-Message-ID: <46bffcbb.krlZ0rWUHcLEUTEW%joe@perches.com>
+       gerg@uclinux.org, akpm@linux-foundation.org
+Subject: [PATCH] [531/2many] MAINTAINERS - UCLINUX (AND M68KNOMMU)
+Message-ID: <46bffc9a.N6KOopoLanD1PsL/%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,16 +27,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 14de518..f932e7c 100644
+index be3d826..671bb8d 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -5189,6 +5189,9 @@ L:	discuss@x86-64.org
- W:	http://www.x86-64.org
- T:	quilt ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt-current
+@@ -5010,6 +5010,8 @@ M:	gerg@uclinux.org
+ W:	http://www.uclinux.org/
+ L:	uclinux-dev@uclinux.org  (subscribers-only)
  S:	Maintained
-+F:	Documentation/x86_64/
-+F:	arch/x86_64/
-+F:	include/asm-x86_64/
++F:	arch/m68knommu/
++F:	include/asm-m68knommu/
  
- YAM DRIVER FOR AX.25
- P:	Jean-Paul Roubelat
+ UCLINUX FOR NEC V850
+ P:	Miles Bader
