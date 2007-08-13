@@ -1,223 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939811AbXHMX7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938515AbXHNAAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939811AbXHMX7f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 19:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbXHMX7R
+	id S938515AbXHNAAc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 20:00:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbXHMX74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 19:59:17 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4983 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753961AbXHMX7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 19:59:14 -0400
-Date: Mon, 13 Aug 2007 19:58:02 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Ingo Oeser <ioe-lkml@rameria.de>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH]: proc: export a processes resource limits via proc/<pid>
-Message-ID: <20070813235802.GA20093@hmsreliant.think-freely.org>
-References: <20070813140044.GB1960@hmsreliant.think-freely.org> <200708132125.47188.ioe-lkml@rameria.de> <20070813201130.GD1960@hmsreliant.think-freely.org> <20070813210402.GB5870@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070813210402.GB5870@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Mon, 13 Aug 2007 19:59:56 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:56755 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756021AbXHMX7y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 19:59:54 -0400
+Date: Tue, 14 Aug 2007 01:59:30 +0200 (MEST)
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+To: chessman@tux.org
+Cc: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
+       tlan-devel@lists.sourceforge.net,
+       Richard Knutsson <ricknu-0@student.ltu.se>
+Message-Id: <20070813235804.13307.2178.sendpatchset@thinktank.campus.ltu.se>
+Subject: [PATCH] drivers/net/tlan: Convert to generic boolean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 14, 2007 at 01:04:02AM +0400, Alexey Dobriyan wrote:
-> On Mon, Aug 13, 2007 at 04:11:30PM -0400, Neil Horman wrote:
-> > --- a/fs/proc/base.c
-> > +++ b/fs/proc/base.c
-> > @@ -323,6 +324,68 @@ static int proc_oom_score(struct task_struct *task, char *buffer)
-> >  	return sprintf(buffer, "%lu\n", points);
-> >  }
-> >  
-> > +struct limit_names {
-> > +	char *name;
-> > +	char *unit;
-> > +};
-> > +
-> > +static const struct limit_names lnames[RLIM_NLIMITS] = {
-> > +	[RLIMIT_CPU] = {"Max cpu time", "ms"},
-> > +	[RLIMIT_FSIZE] = {"Max file size", "bytes"},
-> > +	[RLIMIT_DATA] = {"Max data size", "bytes"},
-> > +	[RLIMIT_STACK] = {"Max stack size", "bytes"},
-> > +	[RLIMIT_CORE] = {"Max core file size", "bytes"},
-> > +	[RLIMIT_RSS] = {"Max resident set", "bytes"},
-> > +	[RLIMIT_NPROC] = {"Max processes", "processes"},
-> > +	[RLIMIT_NOFILE] = {"Max open files", "files"},
-> > +	[RLIMIT_MEMLOCK] = {"Max locked memory", "bytes"},
-> > +	[RLIMIT_AS] = {"Max address space", "bytes"},
-> > +	[RLIMIT_LOCKS] = {"Max file locks", "locks"},
-> > +	[RLIMIT_SIGPENDING] = {"Max pending signals", "signals"},
-> 
-> this and processes should be left empty methinks, because max signals is
-> in fact unitless.
-> 
-not sure I agree with that.  According to the man page, RLIMIT_SIGPENDING is
-counted in number of signals and RLIMIT_NPROC is counted as a number of
-processes.
+Convert to generic boolean
 
-> > +	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes"},
-> > +	[RLIMIT_NICE] = {"Max nice priority", NULL},
-> > +	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL},
-> > +};	
-> 
-> aha! trailing whitespace!
-> 
-Fixed :)
-
-> > +static int proc_pid_limits(struct task_struct *task, char *buffer)
-> > +{
-> > +	unsigned int i;
-> > +	int count = 0;
-> > +	char *bufptr = buffer;
-> > +
-> > +	struct rlimit rlim[RLIM_NLIMITS];
-> > +
-> > +	read_lock(&tasklist_lock);
-> > +	memcpy(rlim, task->signal->rlim, (sizeof(struct rlimit) * RLIM_NLIMITS));
-> 
-> unneeded (, )
-> 
-I prefer to explicitly show order of operations, but I'm wierd that way, so I'll
-change it :)
-
-> > +	read_unlock(&tasklist_lock);
-> 
-> hmm, fork copies this under task lock of group leader and system calls
-> in sys.c too. What's up?
-> 
-> I'm sure it will give you nonsensical output because of wrong locks but
-> I haven't checked.
-> 
-I don't think so, I borrowed the code there from sys_getrlimit, which also reds
-task->signal->rlim (only for one element instead of the whole array, so if its
-broken here it should be broken there, but I don't see how.
-
-> FWIW, it survived ~1 hour of cat /proc/*/limits, mini fork bombs, LTP,
-> gdb testsuite and one sooper sikrit proggie. on core2
-> 
-Its survived for a few days for me (while true; do cat /proc/*/limits;done),
-with not noticible side effects (other than a slightly higher CPU load :)).
-
-New patch with the ()'s and whitespace fixed.
-
-Regards
-Neil
-
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+---
+Compile-tested with all(yes|mod|no)config on x86(|_64) & sparc(|64)
+Diffed against Linus' git-tree.
+Sent 2007-05-01, no replys
 
 
- base.c |   65 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 65 insertions(+)
-
-
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index ed2b224..b3ddf08 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -74,6 +74,7 @@
- #include <linux/nsproxy.h>
- #include <linux/oom.h>
- #include <linux/elf.h>
-+#include <asm/resource.h>
- #include "internal.h"
+diff --git a/drivers/net/tlan.c b/drivers/net/tlan.c
+index 106dc1e..db630c4 100644
+--- a/drivers/net/tlan.c
++++ b/drivers/net/tlan.c
+@@ -337,7 +337,7 @@ static int	TLan_PhyInternalService( struct net_device * );
+ static int	TLan_PhyDp83840aCheck( struct net_device * );
+ */
  
- /* NOTE:
-@@ -323,6 +324,68 @@ static int proc_oom_score(struct task_struct *task, char *buffer)
- 	return sprintf(buffer, "%lu\n", points);
- }
+-static int	TLan_MiiReadReg( struct net_device *, u16, u16, u16 * );
++static bool	TLan_MiiReadReg( struct net_device *, u16, u16, u16 * );
+ static void	TLan_MiiSendData( u16, u32, unsigned );
+ static void	TLan_MiiSync( u16 );
+ static void	TLan_MiiWriteReg( struct net_device *, u16, u16, u16 );
+@@ -2240,7 +2240,7 @@ TLan_ResetAdapter( struct net_device *dev )
+ 	u32		data;
+ 	u8		data8;
  
-+struct limit_names {
-+	char *name;
-+	char *unit;
-+};
-+
-+static const struct limit_names lnames[RLIM_NLIMITS] = {
-+	[RLIMIT_CPU] = {"Max cpu time", "ms"},
-+	[RLIMIT_FSIZE] = {"Max file size", "bytes"},
-+	[RLIMIT_DATA] = {"Max data size", "bytes"},
-+	[RLIMIT_STACK] = {"Max stack size", "bytes"},
-+	[RLIMIT_CORE] = {"Max core file size", "bytes"},
-+	[RLIMIT_RSS] = {"Max resident set", "bytes"},
-+	[RLIMIT_NPROC] = {"Max processes", "processes"},
-+	[RLIMIT_NOFILE] = {"Max open files", "files"},
-+	[RLIMIT_MEMLOCK] = {"Max locked memory", "bytes"},
-+	[RLIMIT_AS] = {"Max address space", "bytes"},
-+	[RLIMIT_LOCKS] = {"Max file locks", "locks"},
-+	[RLIMIT_SIGPENDING] = {"Max pending signals", "signals"},
-+	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes"},
-+	[RLIMIT_NICE] = {"Max nice priority", NULL},
-+	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL},
-+};
-+
-+/* Display limits for a process */
-+static int proc_pid_limits(struct task_struct *task, char *buffer)
-+{
-+	unsigned int i;
-+	int count = 0;
-+	char *bufptr = buffer;
-+
-+	struct rlimit rlim[RLIM_NLIMITS];
-+
-+	read_lock(&tasklist_lock);
-+	memcpy(rlim, task->signal->rlim, sizeof(struct rlimit) * RLIM_NLIMITS);
-+	read_unlock(&tasklist_lock);
-+
-+	/*
-+	 * print the file header
-+	 */
-+	count += sprintf(&bufptr[count], "%-25s %-20s %-20s %-10s\n",
-+			"Limit","Soft Limit","Hard Limit","Units");
-+
-+	for (i=0; i < RLIM_NLIMITS; i++) {
-+		if (rlim[i].rlim_cur == RLIM_INFINITY)
-+			count += sprintf(&bufptr[count], "%-25s %-20s ", lnames[i].name,"unlimited");
-+		else
-+			count += sprintf(&bufptr[count], "%-25s %-20lu ", lnames[i].name, rlim[i].rlim_cur);
-+
-+		if (rlim[i].rlim_max == RLIM_INFINITY)
-+			count += sprintf(&bufptr[count], "%-20s ","unlimited");
-+		else
-+			count += sprintf(&bufptr[count], "%-20lu ", rlim[i].rlim_max);
-+
-+		if (lnames[i].unit)
-+			count += sprintf(&bufptr[count],"%-10s\n", lnames[i].unit);
-+		else
-+			count += sprintf(&bufptr[count],"\n");
-+	}
-+
-+	return count;
-+}
-+
- /************************************************************************/
- /*                       Here the fs part begins                        */
- /************************************************************************/
-@@ -2017,6 +2080,7 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	INF("environ",    S_IRUSR, pid_environ),
- 	INF("auxv",       S_IRUSR, pid_auxv),
- 	INF("status",     S_IRUGO, pid_status),
-+	INF("limits",	  S_IRUSR, pid_limits),
- #ifdef CONFIG_SCHED_DEBUG
- 	REG("sched",      S_IRUGO|S_IWUSR, pid_sched),
- #endif
-@@ -2310,6 +2374,7 @@ static const struct pid_entry tid_base_stuff[] = {
- 	INF("environ",   S_IRUSR, pid_environ),
- 	INF("auxv",      S_IRUSR, pid_auxv),
- 	INF("status",    S_IRUGO, pid_status),
-+	INF("limits",	 S_IRUSR, pid_limits),
- #ifdef CONFIG_SCHED_DEBUG
- 	REG("sched",     S_IRUGO|S_IWUSR, pid_sched),
- #endif
-
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+-	priv->tlanFullDuplex = FALSE;
++	priv->tlanFullDuplex = false;
+ 	priv->phyOnline=0;
+ 	netif_carrier_off(dev);
+ 
+@@ -2295,7 +2295,7 @@ TLan_ResetAdapter( struct net_device *dev )
+ 			TLan_DioWrite8( dev->base_addr, TLAN_ACOMMIT, 0x0a );
+ 		} else if ( priv->duplex == TLAN_DUPLEX_FULL ) {
+ 			TLan_DioWrite8( dev->base_addr, TLAN_ACOMMIT, 0x00 );
+-			priv->tlanFullDuplex = TRUE;
++			priv->tlanFullDuplex = true;
+ 		} else {
+ 			TLan_DioWrite8( dev->base_addr, TLAN_ACOMMIT, 0x08 );
+ 		}
+@@ -2676,14 +2676,14 @@ void TLan_PhyStartLink( struct net_device *dev )
+ 			TLan_MiiWriteReg( dev, phy, MII_GEN_CTL, 0x0000);
+ 		} else if ( priv->speed == TLAN_SPEED_10 &&
+ 			    priv->duplex == TLAN_DUPLEX_FULL) {
+-			priv->tlanFullDuplex = TRUE;
++			priv->tlanFullDuplex = true;
+ 			TLan_MiiWriteReg( dev, phy, MII_GEN_CTL, 0x0100);
+ 		} else if ( priv->speed == TLAN_SPEED_100 &&
+ 			    priv->duplex == TLAN_DUPLEX_HALF) {
+ 			TLan_MiiWriteReg( dev, phy, MII_GEN_CTL, 0x2000);
+ 		} else if ( priv->speed == TLAN_SPEED_100 &&
+ 			    priv->duplex == TLAN_DUPLEX_FULL) {
+-			priv->tlanFullDuplex = TRUE;
++			priv->tlanFullDuplex = true;
+ 			TLan_MiiWriteReg( dev, phy, MII_GEN_CTL, 0x2100);
+ 		} else {
+ 
+@@ -2720,7 +2720,7 @@ void TLan_PhyStartLink( struct net_device *dev )
+                 	tctl &= ~TLAN_TC_AUISEL;
+ 			if ( priv->duplex == TLAN_DUPLEX_FULL ) {
+ 				control |= MII_GC_DUPLEX;
+-				priv->tlanFullDuplex = TRUE;
++				priv->tlanFullDuplex = true;
+ 			}
+ 			if ( priv->speed == TLAN_SPEED_100 ) {
+ 				control |= MII_GC_SPEEDSEL;
+@@ -2775,9 +2775,9 @@ void TLan_PhyFinishAutoNeg( struct net_device *dev )
+ 	TLan_MiiReadReg( dev, phy, MII_AN_LPA, &an_lpa );
+ 	mode = an_adv & an_lpa & 0x03E0;
+ 	if ( mode & 0x0100 ) {
+-		priv->tlanFullDuplex = TRUE;
++		priv->tlanFullDuplex = true;
+ 	} else if ( ! ( mode & 0x0080 ) && ( mode & 0x0040 ) ) {
+-		priv->tlanFullDuplex = TRUE;
++		priv->tlanFullDuplex = true;
+ 	}
+ 
+ 	if ( ( ! ( mode & 0x0180 ) ) && ( priv->adapter->flags & TLAN_ADAPTER_USE_INTERN_10 ) && ( priv->phyNum != 0 ) ) {
+@@ -2896,17 +2896,17 @@ void TLan_PhyMonitor( struct net_device *dev )
+ 	 *
+ 	 **************************************************************/
+ 
+-int TLan_MiiReadReg( struct net_device *dev, u16 phy, u16 reg, u16 *val )
++bool TLan_MiiReadReg( struct net_device *dev, u16 phy, u16 reg, u16 *val )
+ {
+ 	u8	nack;
+ 	u16	sio, tmp;
+  	u32	i;
+-	int	err;
++	bool	err;
+ 	int	minten;
+ 	TLanPrivateInfo *priv = netdev_priv(dev);
+ 	unsigned long flags = 0;
+ 
+-	err = FALSE;
++	err = false;
+ 	outw(TLAN_NET_SIO, dev->base_addr + TLAN_DIO_ADR);
+ 	sio = dev->base_addr + TLAN_DIO_DATA + TLAN_NET_SIO;
+ 
+@@ -2939,7 +2939,7 @@ int TLan_MiiReadReg( struct net_device *dev, u16 phy, u16 reg, u16 *val )
+ 			TLan_SetBit(TLAN_NET_SIO_MCLK, sio);
+ 		}
+ 		tmp = 0xffff;
+-		err = TRUE;
++		err = true;
+ 	} else {					/* ACK, so read data */
+ 		for (tmp = 0, i = 0x8000; i; i >>= 1) {
+ 			TLan_ClearBit(TLAN_NET_SIO_MCLK, sio);
+diff --git a/drivers/net/tlan.h b/drivers/net/tlan.h
+index 41ce0b6..e0791aa 100644
+--- a/drivers/net/tlan.h
++++ b/drivers/net/tlan.h
+@@ -33,9 +33,6 @@
+ 	 *
+ 	 ****************************************************************/
+ 
+-#define FALSE			0
+-#define TRUE			1
+-
+ #define TLAN_MIN_FRAME_SIZE	64
+ #define TLAN_MAX_FRAME_SIZE	1600
+ 
+@@ -204,7 +201,7 @@ typedef struct tlan_private_tag {
+ 	u32			phyNum;
+ 	u32			speed;
+ 	u8			tlanRev;
+-	u8			tlanFullDuplex;
++	bool			tlanFullDuplex : 8;
+ 	char                    devName[8];
+ 	spinlock_t		lock;
+ 	u8			link;
