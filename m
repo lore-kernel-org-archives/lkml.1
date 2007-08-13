@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969647AbXHMJ1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965748AbXHMJ2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969647AbXHMJ1z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 05:27:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966239AbXHMGc3
+	id S965748AbXHMJ2o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 05:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966682AbXHMGca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:32:29 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1168 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:32:30 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1171 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967023AbXHMGcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:32:23 -0400
-Date: Sun, 12 Aug 2007 23:32:10 -0700
+	id S966321AbXHMGcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:32:24 -0400
+Date: Sun, 12 Aug 2007 23:32:11 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, ppisa@pikron.com,
+To: torvalds@linux-foundation.org, rubini@vision.unipv.it,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] [322/2many] MAINTAINERS - MOTOROLA IMX MMC/SD HOST
- CONTROLLER INTERFACE DRIVER
-Message-ID: <46bffaea.9eZfjjbX0RTIxLG/%joe@perches.com>
+Subject: [PATCH] [323/2many] MAINTAINERS - MOUSE AND MISC DEVICES
+ [GENERAL]
+Message-ID: <46bffaeb.AZeyrG1Rf8qrXRM2%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,14 +28,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index aeb86e6..ddff41d 100644
+index ddff41d..451735d 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -3099,6 +3099,7 @@ M:	ppisa@pikron.com
- L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
- W:	http://mmc.drzeus.cx/wiki/Controllers/Freescale/SDHC
+@@ -3106,6 +3106,8 @@ P:	Alessandro Rubini
+ M:	rubini@ipvvis.unipv.it
+ L:	linux-kernel@vger.kernel.org
  S:	Maintained
-+F:	drivers/mmc/host/imxmmc.*
++F:	drivers/input/mouse/
++F:	include/linux/gpio_mouse.h
  
- MOUSE AND MISC DEVICES [GENERAL]
- P:	Alessandro Rubini
+ MOXA SMARTIO/INDUSTIO SERIAL CARD (MXSER 2.0)
+ P:	Jiri Slaby
