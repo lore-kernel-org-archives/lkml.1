@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S943040AbXHMIJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S942078AbXHMILH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S943040AbXHMIJr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 04:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966060AbXHMG2U
+	id S942078AbXHMILH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 04:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966633AbXHMG2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:28:20 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4455 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:28:23 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4458 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966353AbXHMG2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:28:17 -0400
-Date: Sun, 12 Aug 2007 23:27:57 -0700
+	id S965610AbXHMG2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:28:18 -0400
+Date: Sun, 12 Aug 2007 23:28:02 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, stefanr@s5r6.in-berlin.de,
-       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       krh@redhat.com, akpm@linux-foundation.org
-Subject: [PATCH] [198/2many] MAINTAINERS - FIREWIRE SUBSYSTEM
-Message-ID: <46bff9ed.Ya9JdXR0dvc3Ionf%joe@perches.com>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       hch@infradead.org, akpm@linux-foundation.org
+Subject: [PATCH] [201/2many] MAINTAINERS - FREEVXFS FILESYSTEM
+Message-ID: <46bff9f2.6alWOF0jJ4L0f+lJ%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,24 +27,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 9aa822a..18dfe29 100644
+index a6a9366..e1d3ee3 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1895,12 +1895,15 @@ S:	Maintained
- F:	fs/*
- 
- FIREWIRE SUBSYSTEM
--P:	Kristian Hoegsberg, Stefan Richter
--M:	krh@redhat.com, stefanr@s5r6.in-berlin.de
-+P:	Kristian Hoegsberg
-+M:	krh@redhat.com
-+P:	Stefan Richter
-+M:	stefanr@s5r6.in-berlin.de
- L:	linux1394-devel@lists.sourceforge.net
- W:	http://www.linux1394.org/
- T:	git kernel.org:/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
+@@ -1929,6 +1929,7 @@ P:	Christoph Hellwig
+ M:	hch@infradead.org
+ W:	ftp://ftp.openlinux.org/pub/people/hch/vxfs
  S:	Maintained
-+F:	drivers/ieee/1394/
++F:	fs/freevxfs/
  
- FIRMWARE LOADER (request_firmware)
- L:	linux-kernel@vger.kernel.org
+ FUJITSU FR-V (FRV) PORT
+ P:	David Howells
