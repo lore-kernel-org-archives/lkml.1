@@ -1,37 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032006AbXHMSUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937133AbXHMSVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032006AbXHMSUk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966733AbXHMSBP
+	id S937133AbXHMSVZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032195AbXHMSBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:01:15 -0400
-Received: from wx-out-0506.google.com ([66.249.82.225]:27651 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S974370AbXHMSBB (ORCPT
+	Mon, 13 Aug 2007 14:01:19 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:15654 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965381AbXHMSBL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:01:01 -0400
+	Mon, 13 Aug 2007 14:01:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=cFSTghBeGktWxpVWm3hJJ9AgEAW/6wrtP+0PsLutpxkA3s6Q2QGRobqXn9bJfGhumimLYwtIriTZPzT6nFBPYG/3LI6DxwDHy2YfLWRHNS0GQ+qg1+Y2Ri4b1XkTHKcL4TTrmHUq6bU6UXxXYroYUVbHHhvbqRsfpjIL/qN2kO0=
-Message-ID: <46C09C1A.7050706@googlemail.com>
-Date: Mon, 13 Aug 2007 19:59:54 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=WbXdw/oPvgQaopcdjlVAjj+T7jpcK2+rkTZUaPZNfA9Oi4cbGoZO+hCQay+LuG8IoiU5YQQU79CJe846WDzqjpzfxDfhVI5ay9F6tPNSLn0/VWDytWdsrvuaXpu3MJdk5MHIVyCslPPmsjlT7CZZYHqsW6MTTEUFntMgOWGhcsE=
+Message-ID: <46C09C23.8070906@googlemail.com>
+Date: Mon, 13 Aug 2007 20:00:03 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Vitaly Bordug <vitb@kernel.crashing.org>,
-       Dan Merillat <dan.merillat@gmail.com>,
-       Paolo Ornati <ornati@fastwebnet.it>, Andi Kleen <andi@firstfloor.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-fsdevel@vger.kernel.org,
-       nfs@lists.sourceforge.net, Jeff Garzik <jeff@garzik.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [1/2] 2.6.23-rc3: known regressions with patches
+       LKML <linux-kernel@vger.kernel.org>, Jan Dittmer <jdi@l4x.org>,
+       Thomas Renninger <trenn@suse.de>, linux-mtd@lists.infradead.org,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Tony Luck <tony.luck@intel.com>, Netdev <netdev@vger.kernel.org>,
+       Stephen Hemminger <shemminger@osdl.org>,
+       Florian Lohoff <flo@rfc822.org>, linux-usb-devel@lists.sourceforge.net,
+       Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>,
+       Dan Zwell <dzwell@gmail.com>
+Subject: Re: [2/2] 2.6.23-rc3: known regressions with patches
+References: <46C09B4D.6040907@googlemail.com>
+In-Reply-To: <46C09B4D.6040907@googlemail.com>
 X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
@@ -61,49 +60,56 @@ Tejun Heo                              3
 
 
 
-Unclassified
+Modpost
 
-Subject         : reset during bootup - 2.6.23-rc2 (git d23cf676)
-References      : http://lkml.org/lkml/2007/8/11/177
+Subject         : modpost bug breaks ia64 cross compilation
+References      : http://lkml.org/lkml/2007/7/27/30
+                  http://lkml.org/lkml/2007/7/27/418
 Last known good : ?
-Submitter       : Dan Merillat <dan.merillat@gmail.com>
-Caused-By       : Rusty Russell <rusty@rustcorp.com.au>
-                  ab144f5ec64c42218a555ec1dbde6b60cf2982d6
-Handled-By      : Paolo Ornati <ornati@fastwebnet.it>
-                  Andi Kleen <andi@firstfloor.org>
-Patch           : http://lkml.org/lkml/2007/8/12/76
+Submitter       : Jan Dittmer <jdi@l4x.org>
+Caused-By       : Thomas Renninger <trenn@suse.de>
+                  commit 29b71a1ca74491fab9fed09e9d835d840d042690
+Handled-By      : ?
+Patch           : http://lkml.org/lkml/2007/8/2/211
 Status          : patch was suggested
 
-Subject         : Kconfig prompts without help text
-References      : http://lkml.org/lkml/2007/7/16/326
-Last known good : ?
-Submitter       : Stefan Richter <stefanr@s5r6.in-berlin.de>
-Caused-By       : ?
-Handled-By      : Jan Engelhardt <jengelh@linux01.gwdg.de>
-Patch           : http://lkml.org/lkml/2007/7/18/236
-Status          : patch available
 
-Subject         : Oops while modprobing phy fixed module
-References      : http://lkml.org/lkml/2007/7/14/63
+
+MTD
+
+Subject         : error: implicit declaration of function 'cfi_interleave'
+References      : http://lkml.org/lkml/2007/8/6/272
 Last known good : ?
-Submitter       : Gabriel C <nix.or.die@googlemail.com>
+Submitter       : Ingo Molnar <mingo@elte.hu>
 Caused-By       : ?
-Handled-By      : Satyam Sharma <satyam.sharma@gmail.com>
-                  Vitaly Bordug <vitb@kernel.crashing.org>
-Patch1          : http://lkml.org/lkml/2007/7/18/506
+Handled-By      : David Woodhouse <dwmw2@infradead.org>
+Patch           : http://lkml.org/lkml/2007/8/9/586
 Status          : patch available
 
 
 
-FS
+Networking
 
-Subject         : NFSv4 poops itself
-References      : http://lkml.org/lkml/2007/7/27/144
+Subject         : sky2 boot crash in sky2_mac_intr
+References      : http://lkml.org/lkml/2007/7/24/91
 Last known good : ?
-Submitter       : Jeff Garzik <jeff@garzik.org> 
-Caused-By       : ?
-Handled-By      : Trond Myklebust <Trond.Myklebust@netapp.com>
-Patch           : http://lkml.org/lkml/2007/7/27/183
+Submitter       : Florian Lohoff <flo@rfc822.org>
+Caused-By       : 
+Handled-By      : Stephen Hemminger <shemminger@osdl.org>
+Patch           : http://marc.info/?l=linux-netdev&m=118651402523966&w=2
+Status          : patch available
+
+
+
+USB
+
+Subject         : USB hard disk problem due to "usb-storage: implement autosuspend" patch
+References      : http://lkml.org/lkml/2007/8/9/329
+Last known good : ?
+Submitter       : Dan Zwell <dzwell@gmail.com>
+Caused-By       : Alan Stern <stern@rowland.harvard.edu>
+                  commit 8dfe4b14869fd185ca25ee88b02ada58a3005eaf
+Handled-By      : Alan Stern <stern@rowland.harvard.edu>
 Status          : patch available
 
 
