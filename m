@@ -1,59 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965620AbXHMDPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937491AbXHMDZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965620AbXHMDPH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 23:15:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934597AbXHMDO4
+	id S937491AbXHMDZp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 23:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934337AbXHMDZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 23:14:56 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2106 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764188AbXHMDOz (ORCPT
+	Sun, 12 Aug 2007 23:25:31 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:38398
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759811AbXHMDZ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 23:14:55 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <noring@nocrew.org>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: RE: Improving read/write/close system call reliability when used with pthreads
-Date: Sun, 12 Aug 2007 20:14:47 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKOEHMGBAC.davids@webmaster.com>
+	Sun, 12 Aug 2007 23:25:29 -0400
+Date: Sun, 12 Aug 2007 20:21:17 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Paul Clements <paul.clements@steeleye.com>
+cc: Jan Engelhardt <jengelh@computergmbh.de>, Al Boldi <a1426z@gawab.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: [RFD] Layering: Use-Case Composers (was: DRBD - what is it,
+ anyways? [compare with e.g. NBD + MD raid])
+In-Reply-To: <46BFB6BB.80406@steeleye.com>
+Message-ID: <Pine.LNX.4.64.0708122016100.22470@asgard.lang.hm>
+References: <200708121335.17267.a1426z@gawab.com>
+ <Pine.LNX.4.64.0708121325170.28963@fbirervta.pbzchgretzou.qr>
+ <Pine.LNX.4.64.0708120933210.19502@asgard.lang.hm>
+ <Pine.LNX.4.64.0708121901290.28963@fbirervta.pbzchgretzou.qr>
+ <20070812174549.GA2915@teal.hq.k1024.org> <46BFB6BB.80406@steeleye.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <A94120FD-315A-45B7-A8F4-8DC8DC21279E@nocrew.org>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sun, 12 Aug 2007 20:15:26 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sun, 12 Aug 2007 20:15:26 -0700
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+per the message below MD (or DM) would need to be modified to work 
+reasonably well with one of the disk components being over an unreliable 
+link (like a network link)
 
-> 2) Do close reader fd, but what results can then applications
-> reliably expect? What would be the sane intention of applications
-> closing reader fd? Do programmers expect all of the current results?
+are the MD/DM maintainers interested in extending their code in this 
+direction? or would they prefer to keep it simpler by being able to 
+continue to assume that the raid components are connected over a highly 
+reliable connection?
 
-> Fredrik
+if they are interested in adding (and maintaining) this functionality then 
+there is a real possibility that NBD+MD/DM could eliminate the need for 
+DRDB. however if they are not interested in adding all the code to deal 
+with the network type issues, then the argument that DRDB should not be 
+merged becouse you can do the same thing with MD/DM + NBD is invalid and 
+can be dropped/ignored
 
-Since there's no atomic "unlock and read" function, any code that could ever
-close a socket in one thread while another thread is blocked on read might
-call close just before another thread blocks in read. Nothing stops another
-thread from opening something, getting the same file descriptor, and then
-allowing the thread to call "read" on the wrong file descriptor entirely.
+David Lang
 
-Since this can never be made sane in general, I see little point in making
-one variation of what can go wrong a bit saner. It is still irresponsible to
-code like this.
+On Sun, 12 Aug 2007, Paul Clements wrote:
 
-DS
-
-
+> Iustin Pop wrote:
+>>  On Sun, Aug 12, 2007 at 07:03:44PM +0200, Jan Engelhardt wrote:
+>> >  On Aug 12 2007 09:39, david@lang.hm wrote:
+>> > >  now, I am not an expert on either option, but three are a couple 
+>> > >  things that I
+>> > >  would question about the DRDB+MD option
+>> > > 
+>> > >  1. when the remote machine is down, how does MD deal with it for reads 
+>> > >  and
+>> > >  writes?
+>> >  I suppose it kicks the drive and you'd have to re-add it by hand unless 
+>> >  done by
+>> >  a cronjob.
+>
+> Yes, and with a bitmap configured on the raid1, you just resync the blocks 
+> that have been written while the connection was down.
+>
+>
+>> >From my tests, since NBD doesn't have a timeout option, MD hangs in the
+>>  write to that mirror indefinitely, somewhat like when dealing with a
+>>  broken IDE driver/chipset/disk.
+>
+> Well, if people would like to see a timeout option, I actually coded up a 
+> patch a couple of years ago to do just that, but I never got it into mainline 
+> because you can do almost as well by doing a check at user-level (I basically 
+> ping the nbd connection periodically and if it fails, I kill -9 the 
+> nbd-client).
+>
+>
+>> > >  2. MD over local drive will alternate reads between mirrors (or so 
+>> > >  I've been
+>> > >  told), doing so over the network is wrong.
+>> >  Certainly. In which case you set "write_mostly" (or even write_only, not 
+>> >  sure
+>> >  of its name) on the raid component that is nbd.
+>> > 
+>> > >  3. when writing, will MD wait for the network I/O to get the data 
+>> > >  saved on the
+>> > >  backup before returning from the syscall? or can it sync the data out 
+>> > >  lazily
+>> >  Can't answer this one - ask Neil :)
+>>
+>>  MD has the write-mostly/write-behind options - which help in this case
+>>  but only up to a certain amount.
+>
+> You can configure write_behind (aka, asynchronous writes) to buffer as much 
+> data as you have RAM to hold. At a certain point, presumably, you'd want to 
+> just break the mirror and take the hit of doing a resync once your network 
+> leg falls too far behind.
+>
+> --
+> Paul
+>
