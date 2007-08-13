@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942937AbXHMHxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940337AbXHMHyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942937AbXHMHxt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 03:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966380AbXHMG1S
+	id S940337AbXHMHyW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 03:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966474AbXHMG1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:27:18 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4304 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:27:20 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4307 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966463AbXHMG1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S966464AbXHMG1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 02:27:16 -0400
-Date: Sun, 12 Aug 2007 23:26:52 -0700
+Date: Sun, 12 Aug 2007 23:26:54 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       dougthompson@xmission.com, bluesmoke-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org
-Subject: [PATCH] [171/2many] MAINTAINERS - EDAC-CORE
-Message-ID: <46bff9ac.WLlw8+K3hdwRL7yr%joe@perches.com>
+To: torvalds@linux-foundation.org, mark.gross@intel.com,
+       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
+       bluesmoke-devel@lists.sourceforge.net, akpm@linux-foundation.org
+Subject: [PATCH] [172/2many] MAINTAINERS - EDAC-E752X
+Message-ID: <46bff9ae.GbQ+uKdS5rg6P1L+%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,16 +28,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index d4325c7..78e5b0c 100644
+index 78e5b0c..678cca3 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1662,6 +1662,9 @@ M:	dougthompson@xmission.com
+@@ -1674,6 +1674,7 @@ M:	dougthompson@xmission.com
  L:	bluesmoke-devel@lists.sourceforge.net
  W:	bluesmoke.sourceforge.net
- S:	Supported
-+F:	Documentation/drivers/edac/edac.txt
-+F:	drivers/edac/edac_*
-+F:	include/linux/edac.h
+ S:	Maintained
++F:	drivers/edac/e752x_edac.c
  
- EDAC-E752X
- P:	Mark Gross
+ EDAC-E7XXX
+ P:	Doug Thompson
