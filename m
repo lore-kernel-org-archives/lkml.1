@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S973208AbXHMQki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S944709AbXHMQld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S973208AbXHMQki (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968057AbXHMPqu
+	id S944709AbXHMQld (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbXHMPrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 11:46:50 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3063 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967516AbXHMPqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 11:46:48 -0400
-Subject: Re: [PATCH] [70/2many] MAINTAINERS - ARPD SUPPORT
-From: Joe Perches <joe@perches.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20070813114942.04a5483c@the-village.bc.nu>
-References: <46bff8e8.HhTQ7TBPy1zkcNfh%joe@perches.com>
-	 <20070813114942.04a5483c@the-village.bc.nu>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 08:46:06 -0700
-Message-Id: <1187019966.10249.75.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+	Mon, 13 Aug 2007 11:47:05 -0400
+Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:4887 "EHLO
+	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968379AbXHMPrB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 11:47:01 -0400
+Message-ID: <46C07CEF.1020207@xs4all.nl>
+Date: Mon, 13 Aug 2007 17:46:55 +0200
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
+Subject: Re: possible BUG while using CUPS
+References: <46BD762F.4060801@xs4all.nl> <6bffcb0e0708130839v27b4269dqfde702c410b33fd0@mail.gmail.com>
+In-Reply-To: <6bffcb0e0708130839v27b4269dqfde702c410b33fd0@mail.gmail.com>
+X-Enigmail-Version: 0.95.3
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 11:49 +0100, Alan Cox wrote:
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 90c1b81..ac2226b 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -697,6 +697,7 @@ ARPD SUPPORT
-> >  P:	Jonathan Layes
-> >  L:	netdev@vger.kernel.org
-> >  S:	Maintained
-> > +F:	net/ipv4/arp.c
+Michal Piotrowski wrote:
+> On 11/08/07, Udo van den Heuvel <udovdh@xs4all.nl> wrote:
+>> Using Cups 1.2.12 on Linux 2.6.22.1.
+(...)
+>> I clikc that link and hear the ping-ping of the BUG:
 > 
-> NAK
+> This is very interesting. Can you reproduce this bug?
+
+I think so. (at least: I have seen it before: clicking around in Cups
+and this crash/bug/whatever.)
+
+>> This is on a VIA Epia EK8000. ksymoops did not really help me, this is
+>> all output I got.
+>>
+>> Ideas?
 > 
-> arp.c is the netdev people, ARPD is a corner case bit of code within it,
-> something your patterns don't actually cope with
+> BTW. Please try 2.6.22.2.
 
-Suggestions?
-
+Compiling...
