@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936801AbXHMA0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937537AbXHMAd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936801AbXHMA0x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 20:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762760AbXHMA0o
+	id S937537AbXHMAd7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 20:33:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933138AbXHMAdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 20:26:44 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:43633 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759821AbXHMA0n (ORCPT
+	Sun, 12 Aug 2007 20:33:51 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:43755 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763636AbXHMAdu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 20:26:43 -0400
-Date: Sun, 12 Aug 2007 18:26:41 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jurij Smakov <jurij@wooyd.org>
-Cc: James Smart <James.Smart@Emulex.Com>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Josef Bacik <jwhiter@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] fix for async scsi scan sysfs problem (resend)
-Message-ID: <20070813002641.GA16277@parisc-linux.org>
-References: <20070419132459.GB1481@korben.rdu.redhat.com> <1176991356.31764.3.camel@mulgrave.il.steeleye.com> <20070419150655.GC1481@korben.rdu.redhat.com> <20070421002345.673d9988.akpm@linux-foundation.org> <20070421135956.GA22873@korben.rdu.redhat.com> <20070423181318.GD22873@korben.rdu.redhat.com> <1177352786.6284.51.camel@mulgrave.il.steeleye.com> <463A3F79.80809@emulex.com> <20070811150454.GA5808@droopy.oc.cox.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070811150454.GA5808@droopy.oc.cox.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 12 Aug 2007 20:33:50 -0400
+To: balbir@linux.vnet.ibm.com
+Cc: akpm@linux-foundation.org, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, ebiederm@xmission.com, containers@lists.osdl.org,
+       menage@google.com, xemul@openvz.org
+Subject: Re: [-mm PATCH 8/9] Memory controller add switch to control what type
+	of pages to limit (v4)
+In-Reply-To: Your message of "Sat, 28 Jul 2007 01:41:03 +0530"
+	<20070727201103.31565.3104.sendpatchset@balbir-laptop>
+References: <20070727201103.31565.3104.sendpatchset@balbir-laptop>
+X-Mailer: Cue version 0.8 (070404-1613/takashi)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20070813003348.91E3E1BF943@siro.lan>
+Date: Mon, 13 Aug 2007 09:33:48 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 11, 2007 at 04:04:54PM +0100, Jurij Smakov wrote:
-> [Please keep me on CC, as I'm not on LKML.]
-> I've recently got a Sun Blade 1000 box with a QLA2200 controller, and 
-> I'm bumping into exact same problem with 2.6.22:
+> Choose if we want cached pages to be accounted or not. By default both
+> are accounted for. A new set of tunables are added.
+> 
+> echo -n 1 > mem_control_type
+> 
+> switches the accounting to account for only mapped pages
+> 
+> echo -n 2 > mem_control_type
+> 
+> switches the behaviour back
 
-Please try
-http://marc.info/?l=linux-scsi&m=118289275414202
-which fixes a number of problems with the async scanning code.
+MEM_CONTAINER_TYPE_ALL is 3, not 2.
 
--- 
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+YAMAMOTO Takashi
+
+> +enum {
+> +	MEM_CONTAINER_TYPE_UNSPEC = 0,
+> +	MEM_CONTAINER_TYPE_MAPPED,
+> +	MEM_CONTAINER_TYPE_CACHED,
+> +	MEM_CONTAINER_TYPE_ALL,
+> +	MEM_CONTAINER_TYPE_MAX,
+> +} mem_control_type;
+> +
+> +static struct mem_container init_mem_container;
+
+> +	mem = rcu_dereference(mm->mem_container);
+> +	if (mem->control_type == MEM_CONTAINER_TYPE_ALL)
+> +		return mem_container_charge(page, mm);
+> +	else
+> +		return 0;
