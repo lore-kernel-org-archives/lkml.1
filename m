@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972198AbXHMMja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S972237AbXHMMk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972198AbXHMMja (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940827AbXHMHNy
+	id S972237AbXHMMk4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940932AbXHMHQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 03:13:54 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:48872 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S940815AbXHMHNv (ORCPT
+	Mon, 13 Aug 2007 03:16:13 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41985 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S940918AbXHMHQK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 03:13:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Dq7XYOKIR4pvMpV2O5us+W7eXBbzIPyZ+P7GrvqmIBXbVWtsXR67IGXwEDdvhIsU2CLxuhVYFfr6HLCXaOaLTpD1R4c4iJlKSJermoD1mxhHglMWaqaRxHElRBIsg6gty5EGFFMWsfwWCPEwa45QnUFoJupcdXSkABUIluOnGkU=
-Message-ID: <4bacf17f0708130013m67dcf91fx7136d0050aa08b82@mail.gmail.com>
-Date: Mon, 13 Aug 2007 09:13:50 +0200
-From: "=?ISO-8859-2?Q?Marcin_=A6lusarz?=" <marcin.slusarz@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: 2.6.23-rc2: WARNING: at kernel/irq/resend.c:70 check_irq_resend()
-Cc: "Jarek Poplawski" <jarkao2@o2.pl>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "John Stoffel" <john@stoffel.org>, linux-kernel@vger.kernel.org,
-       shemminger@linux-foundation.org, vignaud@xandmail.fr,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-net@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20070810101641.GA31396@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Aug 2007 03:16:10 -0400
+Date: Mon, 13 Aug 2007 08:16:06 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Joe Perches <joe@perches.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
+Message-ID: <20070813071606.GF21089@ftp.linux.org.uk>
+References: <1186984174.10249.7.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <18107.11431.838905.331157@stoffel.org>
-	 <1186733140.12828.45.camel@chaos> <20070810082346.GD1764@ff.dom.local>
-	 <20070810083050.GA4545@elte.hu> <20070810084924.GF1764@ff.dom.local>
-	 <20070810085611.GA11639@elte.hu> <20070810091231.GH1764@ff.dom.local>
-	 <20070810093353.GA19777@elte.hu> <20070810100513.GA3279@ff.dom.local>
-	 <20070810101641.GA31396@elte.hu>
+In-Reply-To: <1186984174.10249.7.camel@localhost>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/8/10, Ingo Molnar <mingo@elte.hu>:
-> Index: linux/arch/i386/kernel/io_apic.c
-> ===================================================================
-> --- linux.orig/arch/i386/kernel/io_apic.c
-> +++ linux/arch/i386/kernel/io_apic.c
-> @@ -735,7 +735,8 @@ void fastcall send_IPI_self(int vector)
->          * Wait for idle.
->          */
->         apic_wait_icr_idle();
-> -       cfg = APIC_DM_FIXED | APIC_DEST_SELF | vector | APIC_DEST_LOGICAL;
-> +       cfg = APIC_DM_FIXED | APIC_DEST_SELF | vector | APIC_DEST_LOGICAL |
-> +               APIC_INT_LEVELTRIG;
->         /*
->          * Send the IPI. The write to APIC_ICR fires this off.
->          */
-> Index: linux/arch/x86_64/kernel/genapic.c
-> ===================================================================
-> --- linux.orig/arch/x86_64/kernel/genapic.c
-> +++ linux/arch/x86_64/kernel/genapic.c
-> @@ -62,5 +62,6 @@ void __init setup_apic_routing(void)
->
->  void send_IPI_self(int vector)
->  {
-> -       __send_IPI_shortcut(APIC_DEST_SELF, vector, APIC_DEST_PHYSICAL);
-> +       __send_IPI_shortcut(APIC_DEST_SELF, vector, APIC_DEST_PHYSICAL |
-> +                           APIC_INT_LEVELTRIG);
->  }
->
-network card timed out as usual ;)
+On Sun, Aug 12, 2007 at 10:49:34PM -0700, Joe Perches wrote:
+> I grew weary of looking up the appropriate
+> maintainer email address(es) to CC: for a patch.
 
-Marcin
+Does the acronym GAFL ring any bells?  It's not that idea is worthless -
+it sure as hell is a useful thing, but what the bleeding hell is that
+splitup supposed to achieve?
+
+Please, people, try to think for a minute.  Patch series are good not
+just because; there are rational reasons for that.  None of those
+applies here; if anything, you've made sure that this patchbomb will
+be less reviewed.
+
+Seriously, get a fucking life.  This is way past ridiculous.  It does not
+make changes easier to test.  It does not help bisect.  It does not help
+to make changes more self-contained.  It does not reduce the odds of
+conflict with pending patches.  It does not simplify conflict resolution
+when porting.  It does not split the change into easier understood parts.
+Hell, it doesn't even make it easier to revert broken parts.
+
+Use the common sense, folks.  Please.
