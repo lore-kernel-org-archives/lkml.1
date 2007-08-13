@@ -1,36 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031489AbXHMNfP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S973118AbXHMNgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031489AbXHMNfP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:35:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S943743AbXHMJrQ
+	id S973118AbXHMNgK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:36:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971732AbXHMJuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 05:47:16 -0400
-Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:41268 "EHLO
+	Mon, 13 Aug 2007 05:50:01 -0400
+Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:41745 "EHLO
 	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S943735AbXHMJrO (ORCPT
+	with ESMTP id S971719AbXHMJt7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 05:47:14 -0400
-Subject: [KJ] replacing kmalloc with kzalloc in
+	Mon, 13 Aug 2007 05:49:59 -0400
+Subject: [KJ-resend]replacing kmalloc with kzalloc in
 	drivers/mtd/chips/cfi_probe.c
 From: Surya Prabhakar N <surya.prabhakar@wipro.com>
 Reply-To: surya.prabhakar@wipro.com
 To: dwmw2@infradead.org, linux-mtd@lists.infradead.org
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Organization: Linux Coe, Wipro Technologies
-Date: Mon, 13 Aug 2007 15:16:47 +0530
-Message-Id: <1186998407.29518.2.camel@bluegenie>
+Date: Mon, 13 Aug 2007 15:19:33 +0530
+Message-Id: <1186998573.29518.6.camel@bluegenie>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-X-OriginalArrivalTime: 13 Aug 2007 09:47:25.0684 (UTC) FILETIME=[F4489340:01C7DD8E]
+X-OriginalArrivalTime: 13 Aug 2007 09:50:10.0918 (UTC) FILETIME=[56C54860:01C7DD8F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
    Replacing kmalloc with kzalloc and cleaning up memset in 
-arch/i386/kernel/io_apic.c
-
+drivers/mtd/chips/cfi_probe.c. Kindly ignore the previous similar patch.
 
 Signed-off-by: Surya Prabhakar <surya.prabhakar@wipro.com>
 ---
@@ -56,6 +55,5 @@ index 60e11a0..efb51f7 100644
  
  	/* Read the CFI info structure */
 
---
-thanks 
+thanks
 surya.
