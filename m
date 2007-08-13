@@ -1,91 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S946208AbXHMOna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S947208AbXHMOoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S946208AbXHMOna (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S943787AbXHMLpR
+	id S947208AbXHMOoM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S944097AbXHMLpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 07:45:17 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:55171
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S941297AbXHMLpJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 07:45:09 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: Distributed storage.
-Date: Mon, 13 Aug 2007 04:45:06 -0700
-User-Agent: KMail/1.9.5
-Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708130312.33903.phillips@phunq.net> <20070813110302.GA28360@2ka.mipt.ru>
-In-Reply-To: <20070813110302.GA28360@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 13 Aug 2007 07:45:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56142 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S939106AbXHMLpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 07:45:42 -0400
+Subject: Re: [PATCH] [188/2many] MAINTAINERS - EXT4 FILE SYSTEM
+From: "Stephen C. Tweedie" <sct@redhat.com>
+To: Andreas Dilger <adilger@clusterfs.com>
+Cc: joe@perches.com, torvalds@linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       akpm@linux-foundation.org, Eric Sandeen <esandeen@redhat.com>,
+       Mingming Cao <cmm@us.ibm.com>, Stephen Tweedie <sct@redhat.com>
+In-Reply-To: <20070813090128.GJ6689@schatzie.adilger.int>
+References: <46bff9cc.cxIrFM29roaPmcfV%joe@perches.com>
+	 <20070813090128.GJ6689@schatzie.adilger.int>
+Content-Type: text/plain
+Organization: Red Hat UK Ltd, Amberley Place, 107-111 Peascod Street,
+	Windsor, Berkshire, SL4 1TE, United Kingdom. Registered in England and
+	Wales under Company Registration No. 03798903
+Date: Mon, 13 Aug 2007 12:45:13 +0100
+Message-Id: <1187005513.10472.1.camel@sisko.scot.redhat.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.0.4.el4) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708130445.06643.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 August 2007 04:03, Evgeniy Polyakov wrote:
-> On Mon, Aug 13, 2007 at 03:12:33AM -0700, Daniel Phillips 
-(phillips@phunq.net) wrote:
-> > > This is not a very good solution, since it requires all users of
-> > > the bios to know how to free it.
-> >
-> > No, only the specific ->endio needs to know that, which is set by
-> > the bio owner, so this knowledge lies in exactly the right place. 
-> > A small handful of generic endios all with the same destructor are
-> > used nearly everywhere.
->
-> That is what I meant - there will be no way to just alloc a bio and
-> put it, helpers for generic bio sets must be exported and each and
-> every bi_end_io() must be changed to check reference counter and they
-> must know how they were allocated.
+Hi,
 
-There are fewer non-generic bio allocators than you think.
+On Mon, 2007-08-13 at 03:01 -0600, Andreas Dilger wrote:
 
-> Endio callback is of course quite rare and additional atomic
-> reading will not kill the system, but why introduce another read?
-> It is possible to provide a flag for endio callback that it is last,
-> but it still requires to change every single callback - why do we
-> want this?
+> To be honest, Stephen and Andrew haven't been directly involved in
+> the ext4 development.  It probably makes more sense to have e.g.
+> Eric Sandeen, Ted Ts'o, and MingMing Cao in their place.
 
-We don't.  Struct bio does not need to be shrunk.  Jens wanted to talk 
-about what fields could be eliminated if we wanted to shrink it.  It is 
-about time to let that lie, don't you think?
+Works for me.
 
-> So, I'm a bit lost...
->
-> You say it is too big 
+--Stephen
 
-Did not say that.
 
-> and some parts can be removed or combined
-
-True.
-
-> and  then that size does not matter.
-
-Also true, backed up by numbers on real systems.
-
-> Last/not-last checks in the code is 
-> not clear design, so I do not see why it is needed at all if not for
-> size shrinking.
-
-Not needed, indeed.  Accurate throttling is needed.  If the best way to 
-throttle requires expanding struct bio a little then we should not let 
-concerns about the cost  of an int or two stand in the way.  Like Jens, 
-I am more concerned about the complexity cost, and that is minimized in 
-my opinion by throttling in the generic code rather than with custom 
-code in each specialized block driver.
-
-Your patch does throttle in the generic code, great.  Next thing is to 
-be sure that it completely closes the window for reserve leakage, which 
-is not yet clear.
-
-Regards,
-
-Daniel
