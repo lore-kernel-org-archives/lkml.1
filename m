@@ -1,87 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S947101AbXHMPHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S948036AbXHMPIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S947101AbXHMPHm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030669AbXHMMuS
+	id S948036AbXHMPIg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S945603AbXHMMvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 08:50:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50049 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030639AbXHMMuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 08:50:15 -0400
-Date: Mon, 13 Aug 2007 08:46:52 -0400
-From: Chris Snook <csnook@redhat.com>
-To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: [PATCH 3/23] make atomic_read() and atomic_set() behavior consistent on arm
-Message-ID: <20070813124652.GA2805@shell.boston.redhat.com>
-References: <46C03885.7000109@redhat.com> <20070813110946.GC24018@shell.boston.redhat.com> <20070813121931.GA9165@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070813121931.GA9165@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.1i
+	Mon, 13 Aug 2007 08:51:05 -0400
+Received: from smtp3.hushmail.com ([65.39.178.135]:59891 "EHLO
+	smtp3.hushmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935974AbXHMMvA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 08:51:00 -0400
+Date: Mon, 13 Aug 2007 08:50:56 -0400
+To: <alan@lxorguk.ukuu.org.uk>
+Cc: <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>
+Subject: Re: [PATCH 4 of 5 ] /drivers/char/rio ioremap balancing/ returncode check
+Reply-to: postfail@hushmail.com
+From: "Scott Thompson" <postfail@hushmail.com>
+Content-type: text/plain; charset="UTF-8"
+Message-Id: <20070813125056.E10A0DA832@mailserver8.hushmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 01:19:31PM +0100, Russell King wrote:
-> On Mon, Aug 13, 2007 at 07:09:46AM -0400, Chris Snook wrote:
-> > By popular demand, I've redone the patchset to include volatile casts in
-> > atomic_set as well.  I've also converted the macros to inline functions, to
-> > help catch type mismatches at compile time.
-> 
-> and in the rest of include/asm-arm/atomic.h:
-> 
-> #else /* ARM_ARCH_6 */
-> 
-> #include <asm/system.h>
-> 
-> #ifdef CONFIG_SMP
-> #error SMP not supported on pre-ARMv6 CPUs
-> #endif
-> 
-> #define atomic_set(v,i) (((v)->counter) = (i))
-> 
-> Seems you missed that.  Grep is a wonderful tool.
+On Mon, 13 Aug 2007 06:42:35 -0400 Alan Cox 
+<alan@lxorguk.ukuu.org.uk> wrote:
 
-D'oh!  Try this.
+>Your mail client has wrapped the patches. Please resend without 
+>wrapping
 
-	-- Chris
+Much as I'd love to blame my mail client for this one...
 
---- linux-2.6.23-rc3-orig/include/asm-arm/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc3/include/asm-arm/atomic.h	2007-08-13 08:39:52.000000000 -0400
-@@ -14,13 +14,16 @@
- #include <linux/compiler.h>
- #include <asm/system.h>
- 
--typedef struct { volatile int counter; } atomic_t;
-+typedef struct { int counter; } atomic_t;
- 
- #define ATOMIC_INIT(i)	{ (i) }
- 
- #ifdef __KERNEL__
- 
--#define atomic_read(v)	((v)->counter)
-+static inline int atomic_read(atomic_t *v)
-+{
-+        return *(volatile int *)&v->counter;
-+}
- 
- #if __LINUX_ARM_ARCH__ >= 6
- 
-@@ -122,7 +125,10 @@ static inline void atomic_clear_mask(uns
- #error SMP not supported on pre-ARMv6 CPUs
- #endif
- 
--#define atomic_set(v,i)	(((v)->counter) = (i))
-+static inline void atomic_set(atomic_t *v, int i)
-+{
-+        *(volatile int *)&v->counter = i;
-+}
- 
- static inline int atomic_add_return(int i, atomic_t *v)
- {
+Patch 4 of the 5 I sent was the only one with wrapping, and that 
+wrapping existed in abundance in /drivers/char/rio/rio_linux.c file 
+long before I got there.  Several lines in that file exceed 100 
+columns, I think the "winner" was around 142.
+
+I think tackling all the wordwrap issues would belong in a 
+different patch as I'm just trying to clean up ioremap usage.  And, 
+yes, I contributed *one more* wordwrap issue to the file, but when 
+in Rome...
+
+---------------------------------------
+Scott Thompson / postfail@hushmail.com
+---------------------------------------
+
+
+
