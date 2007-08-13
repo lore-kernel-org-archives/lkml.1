@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764433AbXHMWmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761423AbXHMWsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764433AbXHMWmc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 18:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbXHMWmK
+	id S1761423AbXHMWsX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 18:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbXHMWsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 18:42:10 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:32972 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbXHMWmI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 18:42:08 -0400
-Date: Tue, 14 Aug 2007 00:42:05 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, sam@ravnborg.org
-Subject: binutils trouble was Re: [1/2] 2.6.23-rc3: known regressions with patches
-Message-ID: <20070813224205.GA8760@one.firstfloor.org>
-References: <46C09C1A.7050706@googlemail.com> <20070813184204.GA6071@one.firstfloor.org> <6bffcb0e0708131324x29211ef5sd5154d44f0c2e79f@mail.gmail.com> <20070813205653.GA7069@one.firstfloor.org> <20070813212947.GK18945@stusta.de>
-Mime-Version: 1.0
+	Mon, 13 Aug 2007 18:48:09 -0400
+Received: from ns2.suse.de ([195.135.220.15]:45829 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750722AbXHMWsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 18:48:08 -0400
+Date: Tue, 14 Aug 2007 01:42:17 +0200
+From: Andi Kleen <ak@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <ak@suse.de>, Mel Gorman <mel@skynet.ie>,
+       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones pointer
+Message-ID: <20070813234217.GI3406@bingen.suse.de>
+References: <200708102013.49170.ak@suse.de> <Pine.LNX.4.64.0708101201240.17549@schroedinger.engr.sgi.com> <200708110304.55433.ak@suse.de> <Pine.LNX.4.64.0708131423050.28026@schroedinger.engr.sgi.com> <20070813225020.GE3406@bingen.suse.de> <Pine.LNX.4.64.0708131457190.28445@schroedinger.engr.sgi.com> <20070813225841.GG3406@bingen.suse.de> <Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com> <20070813230801.GH3406@bingen.suse.de> <Pine.LNX.4.64.0708131518320.28626@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070813212947.GK18945@stusta.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0708131518320.28626@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 11:29:47PM +0200, Adrian Bunk wrote:
-> Debian 4.0 has older ones, and all distributions released more than a 
-> year ago for sure also have older ones (the required patch went into 
-> binutils CVS on 2006-05-30 and 2.17.50.0.3 was released on 2006-07-15).
+On Mon, Aug 13, 2007 at 03:22:25PM -0700, Christoph Lameter wrote:
+> On Tue, 14 Aug 2007, Andi Kleen wrote:
+> 
+> > > x86_64 is the only platforms that uses ZONE_DMA32. Ia64 and other 64 bit 
+> > > platforms use ZONE_DMA for <4GB allocs.
+> > 
+> > Yes, but ZONE_DMA32 == ZONE_DMA.
+> 
+> I am not sure what you mean by that. Ia64 ZONE_DMA == x86_84 ZONE_DMA32?
 
-I have no problem on SUSE 10.0 (2.16.91.0.2-8) or SLES9 (2.15.90.0.1.1-32.10) 
-which are both far older than a year.  Both produce good looking
-vdso.sos.
+Hmm, when I wrote GFP_DMA32 it was a #define GFP_DMA32 GFP_DMA 
+on ia64 so that drivers not need to ifdef.  Someone nasty
+seems to have removed that too. I guess it would be best
+to readd.
 
-sles8 (2.12.90.0.15; it was really one of the first production
-binutils for x86-64) doesn't work out of the box (looks like as-instr doesn't 
-work anymore and it has another assembler issue I'll fix) 
-but with that workarounded it also builds a reasonble looking vdso
+> 
+> > Also when the slab users of GFP_DMA are all gone ia64 won't need
+> > the slab support anymore. So either you change your ifdef in slub or 
+> > switch to ZONE_DMA32 for IA64.
+> 
+> If you have gotten rid of all slab users of GFP_DMA (and also all arch 
+> uses of it) then we can drop the code in SLAB.
 
-Sam, can you please take a look at the as-instr issue? It seems
-to succeed now when it should fail.
+No, e.g. s390 and some other architectures still use it.
+You'll need to bug their respective maintainers.
 
-It would be useful if someone could find out which binutils versions
-really not work.
+
+> 1. Drop sl?b support for GFP_DMA.
+
+Not yet.
+
+> 
+> 2. Drop GFP_DMA32 support.
+> 
+> Then we only allow page allocator allocs using GFP_DMA? That may be the 
+
+Kind of yes.
+
+> least invasive for arch code.
+
+I would prefer for GFP_DMA to go away on x86 (but GFP_DMA32 stay). This way
+we get clean compile errors instead of subtle breakage. Silently
+changing the semantics would be bad.
+
+But then it wouldn't make sense to have GFP_DMA on ia64 and GFP_DMA32
+on x86. Since driver writers are more likely to test on x86
+I would recommend ia64 having compatible semantics. It'll
+save everybody trouble long term. This means it wouldn't 
+help on IA64 machines that don't have a DMA zone -- they
+would still need to validate drivers especially -- but at least
+the others.
+
+Also from my driver review driver authors often seem to have
+trouble understanding what GFP_DMA really does. With GFP_DMA32 it 
+is clearer that it applies to a address range and is not
+some synonym for pci_map_*
 
 -Andi
+
