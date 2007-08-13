@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763857AbXHMOzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S947672AbXHMOz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763857AbXHMOzE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969408AbXHMMSK
+	id S947672AbXHMOz4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbXHMMSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 08:18:10 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:27985 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965954AbXHMMSH (ORCPT
+	Mon, 13 Aug 2007 08:18:22 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:35543
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S969852AbXHMMSS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 08:18:07 -0400
-Date: Mon, 13 Aug 2007 15:18:03 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: joe@perches.com
-Cc: torvalds@linux-foundation.org, mulix@mulix.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] [481/2many] MAINTAINERS - TRIDENT 4DWAVE/SIS 7018 PCI AUDIO CORE
-Message-ID: <20070813121803.GB1374@rhun.haifa.ibm.com>
-References: <46bffc25.miV0BBr9F/41UwE2%joe@perches.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 13 Aug 2007 08:18:18 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Block device throttling [Re: Distributed storage.]
+Date: Mon, 13 Aug 2007 05:18:14 -0700
+User-Agent: KMail/1.9.5
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708130404.26572.phillips@phunq.net> <20070813120417.GA5992@2ka.mipt.ru>
+In-Reply-To: <20070813120417.GA5992@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46bffc25.miV0BBr9F/41UwE2%joe@perches.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200708130518.14974.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 12, 2007 at 11:37:25PM -0700, joe@perches.com wrote:
+On Monday 13 August 2007 05:04, Evgeniy Polyakov wrote:
+> On Mon, Aug 13, 2007 at 04:04:26AM -0700, Daniel Phillips 
+(phillips@phunq.net) wrote:
+> > On Monday 13 August 2007 01:14, Evgeniy Polyakov wrote:
+> > > > Oops, and there is also:
+> > > >
+> > > > 3) The bio throttle, which is supposed to prevent deadlock, can
+> > > > itself deadlock.  Let me see if I can remember how it goes.
+> > > >
+> > > >   * generic_make_request puts a bio in flight
+> > > >   * the bio gets past the throttle and initiates network IO
+> > > >   * net calls sk_alloc->alloc_pages->shrink_caches
+> > > >   * shrink_caches submits a bio recursively to our block device
+> > > >   * this bio blocks on the throttle
+> > > >   * net may never get the memory it needs, and we are wedged
+> > >
+> > > If system is in such condition, it is already broken - throttle
+> > > limit must be lowered (next time) not to allow such situation.
+> >
+> > Agreed that the system is broken, however lowering the throttle
+> > limit gives no improvement in this case.
+>
+> How is it ever possible? The whole idea of throttling is to remove
+> such situation, and now you say it can not be solved.
 
-> Add file pattern to MAINTAINER entry
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 7927653..fbd699e 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4563,6 +4563,7 @@ P:	Muli Ben-Yehuda
->  M:	mulix@mulix.org
->  L:	linux-kernel@vger.kernel.org
->  S:	Maintained
-> +F:	sound/pci/trident/
+It was solved, by not throttling writeout that comes from shrink_caches.
+Ugly.
 
-Nope, this entry is for sound/oss/trident*.
+> If limit is for 
+> 1gb of pending block io, and system has for example 2gbs of ram (or
+> any other resonable parameters), then there is no way we can deadlock
+> in allocation, since it will not force page reclaim mechanism.
 
-Cheers,
-Muli
+The problem is that sk_alloc (called from our block driver via 
+socket->write) would recurse into shrink_pages, which recursively 
+submits IO to our block driver and blocks on the throttle.  Subtle 
+indeed, and yet another demonstration of why vm recursion is a Bad 
+Thing.
+
+I will find a traceback for you tomorrow, which makes this deadlock much 
+clearer.
+
+Regards
