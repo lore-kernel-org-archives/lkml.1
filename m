@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966493AbXHMG1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966256AbXHMG1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966493AbXHMG1Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 02:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965584AbXHMGWc
+	id S966256AbXHMG1w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 02:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965579AbXHMGWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:22:32 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3458 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:22:35 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3456 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965523AbXHMGW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:22:27 -0400
-Date: Sun, 12 Aug 2007 23:22:09 -0700
+	id S965511AbXHMGW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:22:26 -0400
+Date: Sun, 12 Aug 2007 23:22:10 -0700
 From: joe@perches.com
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, astarikovskiy@suse.de,
+       linux-acpi@vger.kernel.org, konstantin.a.karasyov@intel.com,
        akpm@linux-foundation.org
-Subject: [PATCH] [24/2many] MAINTAINERS - ACPI EC DRIVER
-Message-ID: <46bff891.lrg/Kun4A1PmeyoK%joe@perches.com>
+Subject: [PATCH] [25/2many] MAINTAINERS - ACPI FAN DRIVER
+Message-ID: <46bff892.QY86DfzmPpGJRVW1%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,14 +28,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 6bb5785..ef63c9d 100644
+index ef63c9d..e99d959 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -269,6 +269,7 @@ M:	astarikovskiy@suse.de
+@@ -277,6 +277,7 @@ M:	konstantin.a.karasyov@intel.com
  L:	linux-acpi@vger.kernel.org
  W:	http://acpi.sourceforge.net/
  S:	Supported
-+F:	drivers/acpi/ec.c
++F:	drivers/acpi/fan.c
  
- ACPI FAN DRIVER
- P:	Konstantin A. Karasyov
+ ACPI PCI HOTPLUG DRIVER
+ P:	Kristen Carlson Accardi
