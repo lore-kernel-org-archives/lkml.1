@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763094AbXHMWe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765432AbXHMWfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763094AbXHMWe2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 18:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbXHMWeQ
+	id S1765432AbXHMWfd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 18:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbXHMWfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 18:34:16 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:45012 "EHLO atlrel7.hp.com"
+	Mon, 13 Aug 2007 18:35:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59082 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753943AbXHMWeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 18:34:14 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Michael Mauch <michael.mauch@gmx.de>
-Subject: Re: Serial ports rearranged in 2.6.22?
-Date: Mon, 13 Aug 2007 16:33:56 -0600
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-References: <20070810213925.GB10855@elmicha> <200708131534.15235.bjorn.helgaas@hp.com> <20070813222800.GB25159@elmicha>
-In-Reply-To: <20070813222800.GB25159@elmicha>
+	id S1754799AbXHMWfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 18:35:05 -0400
+Date: Mon, 13 Aug 2007 17:09:56 -0400
+From: Dave Jones <davej@redhat.com>
+To: Zan Lynx <zlynx@acm.org>
+Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
+Subject: Re: How to make -mm a more viable testbed (was: [PATCH] [1/12]
+	x86: Work around mmio config space quirk on AMD)
+Message-ID: <20070813210956.GA18334@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Zan Lynx <zlynx@acm.org>,
+	Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
+References: <200708130808.46989.a1426z@gawab.com> <1187037607.7855.21.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708131633.56908.bjorn.helgaas@hp.com>
+In-Reply-To: <1187037607.7855.21.camel@localhost>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 August 2007 04:28:00 pm Michael Mauch wrote:
-> Bjorn Helgaas wrote:
-> 
-> > On Saturday 11 August 2007 09:49:25 am Michael Mauch wrote:
-> > > Yinghai Lu wrote:
-> > > 
-> > > > On 8/10/07, Michael Mauch <michael.mauch@gmx.de> wrote:
-> > > > >
-> > > > > With 2.6.22 I get the names <-> ports/irqs the other way around:
-> > > > >
-> > > > > 00:08: ttyS0 at I/O 0x2f8 (irq = 3) is a 16550A
-> > > > > 00:09: ttyS1 at I/O 0x3f8 (irq = 4) is a 16550A
-> > > > > ...
-> > > > http://lkml.org/lkml/2007/7/25/455
-> > > 
-> > > Thanks - I applied that patch and the names are back to normal again:
-> > > 
-> > > 00:06: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-> > > 00:07: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-> > 
-> > Just FYI, the patch Yinghai mentioned above was experimental, and
-> > we decided it was the wrong solution.
-> > 
-> > For 2.6.22, the easiest workaround is to boot with the 
-> > "legacy_serial.force" option.
-> 
-> Ah, ok, and load the legacy_serial module. Going from built-in serial to
-> modules I was already challenged to find serial_core, 8250, 8250_pnp
-> and/or 8250_pci (the help in "make menuconfig" does not seem to show the
-> help that is written in the Kconfig file for 8250_pnp and 8250_pci).
+On Mon, Aug 13, 2007 at 02:40:06PM -0600, Zan Lynx wrote:
+ > On Mon, 2007-08-13 at 08:08 +0300, Al Boldi wrote:
+ > > Linus Torvalds wrote:
+ > > > On Sun, 12 Aug 2007, Dave Jones wrote:
+ > > > > 
+ > > > > This does make me wonder, why these weren't caught in -mm ?
+ > > > 
+ > > > I'm worried that -mm isn't getting a lot of exposure these days. People do 
+ > > > run it, but I wonder how many..
+ > > 
+ > > Well, I'm not running it because it's got too much garbage in it, which makes 
+ > > it a pretty unrealistic testbed.  And to make matters worse, I also stay 
+ > > away from rc's as a consequence.
+ > > 
+ > > To make -mm more viable, it may be advisable to restructure -mm in such a way 
+ > > as to be a Kconfig option to mainline.  This would probably involve some 
+ > > patch management functionality to apply experimental submissions on a 
+ > > per-patch basis, as opposed to being a 'take it or leave it slam onto 
+ > > mainline' patch.
+ > 
+ > I thought most people running -mm were running klive, which shou
+ > ld tell kernel versions, uptime and other things.  I run it, anyway.
+ > 
+ > http://klive.cpushare.com/
 
-Yes, I messed up the legacy_serial module stuff.
+If that's the case, there are 3 people running 2.6.23-rc2-mm2.
+I suspect the actual number of users is considerably higher.
+Somehow I doubt that 'most' people are running klive.
 
-> > For 2.6.23, we reverted my patch that caused the names to be swapped:
-> >   http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=57d4810ea0d9ca58a7bcc1336607f0cede0a2abf
-> 
-> Thanks for the information - I wondered how you decided. 
-> 
-> What about 2.6.22.x? Or should the distro kernels use that revert patch
-> for their stable 2.6.22 kernels?
+	Dave
 
-I would not recommend the experimental patch (http://lkml.org/lkml/2007/7/25/455).
-Using the revert patch is probably safest, since it also avoids
-the module load issues.
-
-Bjorn
+-- 
+http://www.codemonkey.org.uk
