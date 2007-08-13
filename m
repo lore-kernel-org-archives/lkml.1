@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938427AbXHMLXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965532AbXHMLY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938427AbXHMLXg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 07:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939199AbXHMGiR
+	id S965532AbXHMLY1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 07:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939204AbXHMGiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 13 Aug 2007 02:38:17 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2138 "EHLO perches.com"
+Received: from DSL022.labridge.com ([206.117.136.22]:2143 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966931AbXHMGiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:38:09 -0400
-Date: Sun, 12 Aug 2007 23:37:54 -0700
+	id S966693AbXHMGiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:38:10 -0400
+Date: Sun, 12 Aug 2007 23:37:58 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, akpm@linux-foundation.org
-Subject: [PATCH] [488/2many] MAINTAINERS - UNIFORM CDROM DRIVER
-Message-ID: <46bffc42.3KJnrhmdUyXsNsFd%joe@perches.com>
+To: torvalds@linux-foundation.org, oliver@neukum.name,
+       linux-usb-users@lists.sourceforge.net,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH] [489/2many] MAINTAINERS - USB ACM DRIVER
+Message-ID: <46bffc46.O/fR8Jb6biDdSbFC%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,16 +29,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 9bea953..51e9dec 100644
+index 51e9dec..228b49f 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4625,6 +4625,9 @@ M:	axboe@kernel.dk
- L:	linux-kernel@vger.kernel.org
- W:	http://www.kernel.dk
+@@ -4635,6 +4635,8 @@ M:	oliver@neukum.name
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
  S:	Maintained
-+F:	Documentation/cdrom/
-+F:	drivers/cdrom/cdrom.c
-+F:	include/linux/cdrom/h
++F:	Documentation/usb/acm.txt
++F:	drivers/usb/class/cdc-acm.*
  
- USB ACM DRIVER
- P:	Oliver Neukum
+ USB BLOCK DRIVER (UB ub)
+ P:	Pete Zaitcev
