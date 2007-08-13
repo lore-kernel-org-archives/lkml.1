@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S946316AbXHMOGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S946285AbXHMOHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S946316AbXHMOGf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S943909AbXHMLEd
+	id S946285AbXHMOHO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:07:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S943912AbXHMLEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 13 Aug 2007 07:04:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40963 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S943846AbXHMLEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 07:04:33 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:59481
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S936278AbXHMLEa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 07:04:30 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: Block device throttling [Re: Distributed storage.]
-Date: Mon, 13 Aug 2007 04:04:26 -0700
-User-Agent: KMail/1.9.5
-Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708122344.00343.phillips@phunq.net> <20070813081441.GA30089@2ka.mipt.ru>
-In-Reply-To: <20070813081441.GA30089@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Date: Mon, 13 Aug 2007 07:04:15 -0400
+From: Chris Snook <csnook@redhat.com>
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: [PATCH 1/23] document preferred use of volatile with atomic_t
+Message-ID: <20070813110415.GA24018@shell.boston.redhat.com>
+References: <46C03885.7000109@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708130404.26572.phillips@phunq.net>
+In-Reply-To: <46C03885.7000109@redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 August 2007 01:14, Evgeniy Polyakov wrote:
-> > Oops, and there is also:
-> >
-> > 3) The bio throttle, which is supposed to prevent deadlock, can
-> > itself deadlock.  Let me see if I can remember how it goes.
-> >
-> >   * generic_make_request puts a bio in flight
-> >   * the bio gets past the throttle and initiates network IO
-> >   * net calls sk_alloc->alloc_pages->shrink_caches
-> >   * shrink_caches submits a bio recursively to our block device
-> >   * this bio blocks on the throttle
-> >   * net may never get the memory it needs, and we are wedged
->
-> If system is in such condition, it is already broken - throttle limit
-> must be lowered (next time) not to allow such situation.
+From: Chris Snook <csnook@redhat.com>
 
-Agreed that the system is broken, however lowering the throttle limit 
-gives no improvement in this case.
+Document proper use of volatile for atomic_t operations.
 
-This is not theoretical, but a testable, repeatable result.  
-Instructions to reproduce should show up tomorrow.
+Signed-off-by: Chris Snook <csnook@redhat.com>
 
-This bug is now solved in a kludgy way.  Now, Peter's patch set offers a 
-much cleaner way to fix this little problem, along with at least one 
-other nasty that it already fixed.
-
-Regards,
-
-Daniel
+--- linux-2.6.23-rc3-orig/Documentation/atomic_ops.txt	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc3/Documentation/atomic_ops.txt	2007-08-13 03:36:43.000000000 -0400
+@@ -12,13 +12,20 @@
+ C integer type will fail.  Something like the following should
+ suffice:
+ 
+-	typedef struct { volatile int counter; } atomic_t;
++	typedef struct { int counter; } atomic_t;
++
++	Historically, counter has been declared as a volatile int.  This
++is now discouraged in favor of explicitly casting it as volatile where
++volatile behavior is required.  Most architectures will only require such
++a cast in atomic_read() and atomic_set(), as well as their 64-bit versions
++if applicable, since the more complex atomic operations directly or
++indirectly use assembly that results in volatile behavior.
+ 
+ 	The first operations to implement for atomic_t's are the
+ initializers and plain reads.
+ 
+ 	#define ATOMIC_INIT(i)		{ (i) }
+-	#define atomic_set(v, i)	((v)->counter = (i))
++	#define atomic_set(v, i)	(*(volatile int *)&(v)->counter = (i))
+ 
+ The first macro is used in definitions, such as:
+ 
+@@ -38,7 +45,7 @@
+ 
+ Next, we have:
+ 
+-	#define atomic_read(v)	((v)->counter)
++	#define atomic_read(v)	(*(volatile int *)&(v)->counter)
+ 
+ which simply reads the current value of the counter.
+ 
