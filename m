@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971732AbXHMJU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030241AbXHMJVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971732AbXHMJU5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 05:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966962AbXHMGcP
+	id S1030241AbXHMJVf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 05:21:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966949AbXHMGcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:32:15 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1135 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:32:17 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1136 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966580AbXHMGcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:32:12 -0400
-Date: Sun, 12 Aug 2007 23:31:57 -0700
+	id S967009AbXHMGcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:32:13 -0400
+Date: Sun, 12 Aug 2007 23:32:00 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, dedekind@infradead.org,
-       akpm@linux-foundation.org
-Subject: [PATCH] [316/2many] MAINTAINERS - UNSORTED BLOCK IMAGES (UBI)
-Message-ID: <46bffadd.MOYXflWOCrfSrneX%joe@perches.com>
+To: torvalds@linux-foundation.org, oliver@neukum.name,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] [317/2many] MAINTAINERS - MICROTEK X6 SCANNER
+Message-ID: <46bffae0.KP+YslNjkl3AdDHb%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,16 +27,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index e4aa236..2667601 100644
+index 2667601..0c98162 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -3045,6 +3045,9 @@ W:	http://www.linux-mtd.infradead.org/
- L:	linux-mtd@lists.infradead.org
- T:	git git://git.infradead.org/~dedekind/ubi-2.6.git
- S:	Maintained
-+F:	drivers/mtd/ubi
-+F:	include/linux/mtd/ubi.h
-+F:	include/mtd/ubi-*
- 
- MICROTEK X6 SCANNER
+@@ -3053,6 +3053,7 @@ MICROTEK X6 SCANNER
  P:	Oliver Neukum
+ M:	oliver@neukum.name
+ S:	Maintained
++F:	drivers/usb/image/microtek.*
+ 
+ MIPS
+ P:	Ralf Baechle
