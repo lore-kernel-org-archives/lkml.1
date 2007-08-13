@@ -1,60 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S948180AbXHMPRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968515AbXHMPS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S948180AbXHMPRg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935052AbXHMNDv
+	id S968515AbXHMPS2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031032AbXHMNEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 09:03:51 -0400
-Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:59215 "EHLO
-	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030914AbXHMNDt (ORCPT
+	Mon, 13 Aug 2007 09:04:14 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:56784
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1031028AbXHMNEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 09:03:49 -0400
-Subject: [kj] is_power_of_2 in mm/slub.c
-From: vignesh babu <vignesh.babu@wipro.com>
-Reply-To: vigneshbabu@gmail.com
-To: clameter@sgi.com
-Cc: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Janitors List <kernel-janitors@lists.osdl.org>
-Content-Type: text/plain
+	Mon, 13 Aug 2007 09:04:09 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Block device throttling [Re: Distributed storage.]
+Date: Mon, 13 Aug 2007 06:04:06 -0700
+User-Agent: KMail/1.9.5
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708130418.03667.phillips@phunq.net> <20070813121802.GB5992@2ka.mipt.ru>
+In-Reply-To: <20070813121802.GB5992@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Organization: WIPRO Technologies
-Date: Mon, 13 Aug 2007 18:33:13 +0530
-Message-Id: <1187010193.7273.15.camel@merlin.linuxcoe.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-X-OriginalArrivalTime: 13 Aug 2007 13:04:08.0110 (UTC) FILETIME=[6F13DCE0:01C7DDAA]
+Content-Disposition: inline
+Message-Id: <200708130604.07154.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replacing n & (n - 1) for power of 2 check by is_power_of_2(n)
+On Monday 13 August 2007 05:18, Evgeniy Polyakov wrote:
+> > Say you have a device mapper device with some physical device
+> > sitting underneath, the classic use case for this throttle code. 
+> > Say 8,000 threads each submit an IO in parallel.  The device mapper
+> > mapping function will be called 8,000 times with associated
+> > resource allocations, regardless of any throttling on the physical
+> > device queue.
+>
+> Each thread will sleep in generic_make_request(), if limit is
+> specified correctly, then allocated number of bios will be enough to
+> have a progress.
 
-Signed-off-by: vignesh babu <vignesh.babu@wipro.com>
----
-diff --git a/mm/slub.c b/mm/slub.c
-index 69d02e3..1241d14 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -20,6 +20,7 @@
- #include <linux/mempolicy.h>
- #include <linux/ctype.h>
- #include <linux/kallsyms.h>
-+#include <linux/log2.h>
- 
- /*
-  * Lock order:
-@@ -2606,7 +2607,7 @@ void __init kmem_cache_init(void)
- 	 * around with ARCH_KMALLOC_MINALIGN
- 	 */
- 	BUILD_BUG_ON(KMALLOC_MIN_SIZE > 256 ||
--		(KMALLOC_MIN_SIZE & (KMALLOC_MIN_SIZE - 1)));
-+		!is_power_of_2(KMALLOC_MIN_SIZE));
- 
- 	for (i = 8; i < KMALLOC_MIN_SIZE; i += 8)
- 		size_index[(i - 1) / 8] = KMALLOC_SHIFT_LOW;
+The problem is, the sleep does not occur before the virtual device 
+mapping function is called.  Let's consider two devices, a physical 
+device named pdev and a virtual device sitting on top of it called 
+vdev.   vdev's throttle limit is just one element, but we will see that 
+in spite of this, two bios can be handled by the vdev's mapping method 
+before any IO completes, which violates the throttling rules. According 
+to your patch it works like this:
 
--- 
-Vignesh Babu BM 
-_____________________________________________________________ 
-"Why is it that every time I'm with you, makes me believe in magic?"
+                     Thread 1                                Thread  2
 
+	<no wait because vdev->bio_queued is zero>
+
+	vdev->q->bio_queued++
+
+	<enter devmapper map method>
+
+	blk_set_bdev(bio, pdev)
+	     vdev->bio_queued--
+	   
+					<no wait because vdev->bio_queued is zero>
+
+					vdev->q->bio_queued++
+
+					<enter devmapper map method>
+
+					whoops!  Our virtual device mapping
+					function has now allocated resources
+					for two in-flight bios in spite of having its
+					throttle limit set to 1.
+
+Perhaps you never worried about the resources that the device mapper 
+mapping function allocates to handle each bio and so did not consider 
+this hole significant.  These resources can be significant, as is the 
+case with ddsnap.  It is essential to close that window through with 
+the virtual device's queue limit may be violated.  Not doing so will 
+allow deadlock.
+
+Regards,
+
+Daniel
