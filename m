@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764353AbXHMOgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S947007AbXHMOhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764353AbXHMOgr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969519AbXHMLgb
+	id S947007AbXHMOhx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968515AbXHMLgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 07:36:31 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:40456 "EHLO
-	viefep24-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S968777AbXHMLg2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 07:36:28 -0400
-Subject: Re: [PATCH] [369/2many] MAINTAINERS - PCI SOUND DRIVERS (ES1370,
-	ES1371 and SONICVIBES)
-From: Thomas Sailer <sailer@ife.ee.ethz.ch>
-To: joe@perches.com
-Cc: torvalds@linux-foundation.org, linux-sound@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <46bffb42.66N9BeQ36i0N7cgE%joe@perches.com>
-References: <46bffb42.66N9BeQ36i0N7cgE%joe@perches.com>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 13:36:23 +0200
-Message-Id: <1187004983.13673.229.camel@xbox360>
+	Mon, 13 Aug 2007 07:36:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53404 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S938691AbXHMLgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 07:36:33 -0400
+Date: Mon, 13 Aug 2007 07:36:19 -0400
+From: Chris Snook <csnook@redhat.com>
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: [PATCH 18/23] make atomic_read() and atomic_set() behavior consistent on sh
+Message-ID: <20070813113619.GR24018@shell.boston.redhat.com>
+References: <46C03885.7000109@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C03885.7000109@redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-08-12 at 23:33 -0700, joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-Acked-By: Thomas Sailer <t.sailer@alumni.ethz.ch>
+From: Chris Snook <csnook@redhat.com>
 
-NB: I thought these old non-alsa drivers were going to be removed
-"soon"...
+Use volatile consistently in atomic.h on sh.
 
-Tom
+Signed-off-by: Chris Snook <csnook@redhat.com>
 
-
+--- linux-2.6.23-rc3-orig/include/asm-sh/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc3/include/asm-sh/atomic.h	2007-08-13 06:07:16.000000000 -0400
+@@ -7,12 +7,19 @@
+  *
+  */
+ 
+-typedef struct { volatile int counter; } atomic_t;
++typedef struct { int counter; } atomic_t;
+ 
+ #define ATOMIC_INIT(i)	( (atomic_t) { (i) } )
+ 
+-#define atomic_read(v)		((v)->counter)
+-#define atomic_set(v,i)		((v)->counter = (i))
++static inline int atomic_read(atomic_t *v)
++{
++        return *(volatile int *)&v->counter;
++}
++
++static inline void atomic_set(atomic_t *v, int i)
++{
++        *(volatile int *)&v->counter = i;
++}
+ 
+ #include <linux/compiler.h>
+ #include <asm/system.h>
