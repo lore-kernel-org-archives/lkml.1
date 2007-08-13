@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938145AbXHMKtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941299AbXHMKuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938145AbXHMKtY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 06:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967352AbXHMGgf
+	id S941299AbXHMKuF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 06:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967241AbXHMGgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:36:35 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1900 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:36:33 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1879 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967341AbXHMGgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:36:31 -0400
-Date: Sun, 12 Aug 2007 23:36:15 -0700
+	id S967236AbXHMGg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:36:26 -0400
+Date: Sun, 12 Aug 2007 23:36:11 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       liam.girdwood@wolfsonmicro.com, akpm@linux-foundation.org
-Subject: [PATCH] [448/2many] MAINTAINERS - SOUND - SOC LAYER / DYNAMIC
- AUDIO POWER MANAGEMENT
-Message-ID: <46bffbdf.hk8pJPA76+HVWPPg%joe@perches.com>
+To: torvalds@linux-foundation.org, malattia@linux.it,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH] [446/2many] MAINTAINERS - SONY VAIO CONTROL DEVICE DRIVER
+Message-ID: <46bffbdb.CiCc1bB4g9HMdx0f%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,14 +28,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index c27dc46..a168f36 100644
+index 6175c77..ea4d9d9 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4256,6 +4256,7 @@ P:	Liam Girdwood
- M:	liam.girdwood@wolfsonmicro.com
- L:	alsa-devel@alsa-project.org (subscribers-only)
- S:	Supported
-+F:	sound/soc/
+@@ -4241,6 +4241,8 @@ M:	malattia@linux.it
+ L:	linux-acpi@vger.kernel.org
+ W:	http://www.linux.it/~malattia/wiki/index.php/Sony_drivers
+ S:	Maintained
++F:	drivers/char/sonypi.c
++F:	drivers/misc/sony-laptop.c
  
- SPI SUBSYSTEM
- P:	David Brownell
+ SOUND
+ P:	Jaroslav Kysela
