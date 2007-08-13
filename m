@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1033150AbXHMS2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1033089AbXHMS2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1033150AbXHMS2H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S973290AbXHMSHj
+	id S1033089AbXHMS2v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974405AbXHMSII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:07:39 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2585 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765059AbXHMSHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:07:35 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-Date: Mon, 13 Aug 2007 20:07:32 +0200
-User-Agent: KMail/1.9.5
-Cc: Joe Perches <joe@perches.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-References: <1186984174.10249.7.camel@localhost> <200708131933.10125.m.kozlowski@tuxland.pl> <1187026955.2688.4.camel@laptopd505.fenrus.org>
-In-Reply-To: <1187026955.2688.4.camel@laptopd505.fenrus.org>
+	Mon, 13 Aug 2007 14:08:08 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:13148 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S974402AbXHMSID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 14:08:03 -0400
+Date: Mon, 13 Aug 2007 20:07:57 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
+Message-ID: <20070813180757.GZ23758@kernel.dk>
+References: <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org> <1186458941.6637.44.camel@localhost.localdomain> <20070807001429.f8cb3b22.akpm@linux-foundation.org> <1186496712.3414.17.camel@localhost.localdomain> <46B88B91.4050703@garzik.org> <1186501124.3414.32.camel@localhost.localdomain> <20070807105144.0ba67d81.akpm@linux-foundation.org> <20070813124225.GT23758@kernel.dk> <46C07FAE.1040504@garzik.org> <20070813180212.GY23758@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708132007.32334.m.kozlowski@tuxland.pl>
+In-Reply-To: <20070813180212.GY23758@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 	I don't recall discusion about this so here are my 3 cents:
+On Mon, Aug 13 2007, Jens Axboe wrote:
+> On Mon, Aug 13 2007, Jeff Garzik wrote:
+> > Jens Axboe wrote:
+> > >#for-akpm is usually only in very few -mm release anyway, so it's not
+> > >like it would have made much difference. We/you/I need to improve that,
+> > >certainly.
+> > >
+> > >Honestly, for bsg, it wasn't much of an issue. We had build problems
+> > >when bsg was merged which was unfortunate but got fixed quickly. Having
+> > >bsg in -mm would not have caused any testing of the driver in question
+> > >outside of what it already received, given the nature of it.
 > > 
-> > 	I like the idea. 
+> > 
+> > That's just an excuse for what happened -- you made an end run around 
+> > our test tree.  Pretty please with sugar on it -- make sure changes show 
+> > up in -mm.
 > 
-> I don't actually. It shows a central MAINTAINERS file is the wrong
-> approach; just that 500+ patches to the same file were needed shows
-> that. 
-> 
-> The maintainer info should be in the source file itself! That's the only
-> reasonable way to keep it updated; now I'm all for having it machine
-> parsable so that tools can use it, but it still really should be in the
-> code itself, not in some central file that will always just go out of
-> data, and will be a huge source of needless patch conflicts.
+> It's not just an excuse, there are repeatably problems with getting the
+> block stuff pulled into -mm. Sometimes it's my problem, but not always.
+> Then I get a note saying that pulling was disabled due to merge
+> problems, usually right before -mmX goes out. So it misses that release.
 
-The downside is that a lot of info will get duplicated. It will be more accurate though.
-I agree either way. 
+This may sound like I'm blaming Andrew, but that is not my intention. He
+does a lot of work and he can't (and should not) attempt to fix every
+integration and merge issue. Perhaps if I/we were more strict in pushing
+every block bit through the block git tree, it wouldn't be so much of an
+integration pain. Then the work would be in me to sort out, which I'm
+happy to do.
 
-Regards,
+Then there are things like the sg chaining bits, which touch a lot of
+arch code. Those are just painful to deal with, for obvious reasons.
+Right now there are not in -mm, but that's because of a bug that
+prevents Andrews laptop from booting properly.
 
-	Mariusz
+-- 
+Jens Axboe
+
