@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032024AbXHMRSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032447AbXHMRSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032024AbXHMRSE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032237AbXHMRGs
+	id S1032447AbXHMRSz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031805AbXHMRHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:06:48 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3192 "EHLO perches.com"
+	Mon, 13 Aug 2007 13:07:44 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3200 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1032221AbXHMRGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:06:45 -0400
-Subject: Re: [PATCH] [394/2many] MAINTAINERS - PXA2xx SUPPORT
+	id S1032051AbXHMRHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 13:07:39 -0400
+Subject: Re: [PATCH] [459/2many] MAINTAINERS - SPIDERNET NETWORK DRIVER for
+	CELL
 From: Joe Perches <joe@perches.com>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-In-Reply-To: <alpine.LFD.0.999.0708131227240.5415@xanadu.home>
-References: <46bffb75.pNKePQf1hTn1GZ01%joe@perches.com>
-	 <alpine.LFD.0.999.0708131009480.5415@xanadu.home>
-	 <1187020775.10249.86.camel@localhost>
-	 <alpine.LFD.0.999.0708131227240.5415@xanadu.home>
+To: Linas Vepstas <linas@austin.ibm.com>
+Cc: torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20070813154548.GA4338@austin.ibm.com>
+References: <46bffbfa.6q67BtSh8n+UV4q4%joe@perches.com>
+	 <20070813154548.GA4338@austin.ibm.com>
 Content-Type: text/plain
-Date: Mon, 13 Aug 2007 10:06:22 -0700
-Message-Id: <1187024782.10249.127.camel@localhost>
+Date: Mon, 13 Aug 2007 10:07:25 -0700
+Message-Id: <1187024846.10249.130.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 12:28 -0400, Nicolas Pitre wrote:
-> > +F:	Documentation/spi/pxa2xx
-> I'd like you remove that one too.
+On Mon, 2007-08-13 at 10:45 -0500, Linas Vepstas wrote:
+> Note quite right. spider-pic is not part of spider_net.
 
-PXA2xx SUPPORT
-P:	Nicolas Pitre
-M:	nico@cam.org
-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
-S:	Maintained
-F:	drivers/pcmcia/pxa2xx*
-F:	drivers/spi/pxa2xx*
-F:	drivers/usb/gadget/pxa2xx*
-F:	sound/soc/pxa/pxa2xx*
+SPIDERNET NETWORK DRIVER for CELL
+P:	Linas Vepstas
+M:	linas@austin.ibm.com
+L:	netdev@vger.kernel.org
+S:	Supported
+F:	Documentation/networking/spider_net.txt
+F:	drivers/net/spider_net*
 
 
 
