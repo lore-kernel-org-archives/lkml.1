@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S944399AbXHMO2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S946731AbXHMO2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S944399AbXHMO2B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939215AbXHML1z
+	id S946731AbXHMO2x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965813AbXHML2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 07:27:55 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:49732 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967618AbXHML1u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 07:27:50 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Mon, 13 Aug 2007 05:47:01 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Surya Prabhakar N <surya.prabhakar@wipro.com>
-cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [KJ-resend]replacing kmalloc with kzalloc in drivers/mtd/chips/cfi_probe.c
-In-Reply-To: <1186998573.29518.6.camel@bluegenie>
-Message-ID: <Pine.LNX.4.64.0708130545510.19318@localhost.localdomain>
-References: <1186998573.29518.6.camel@bluegenie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
-	score=-16.541, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	SARE_SUB_OBFU_Z 0.26)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Mon, 13 Aug 2007 07:28:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49736 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S944260AbXHML2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 07:28:16 -0400
+Date: Mon, 13 Aug 2007 07:28:04 -0400
+From: Chris Snook <csnook@redhat.com>
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: [PATCH 13/23] make atomic_read() and atomic_set() behavior consistent on m68k
+Message-ID: <20070813112804.GM24018@shell.boston.redhat.com>
+References: <46C03885.7000109@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C03885.7000109@redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007, Surya Prabhakar N wrote:
+From: Chris Snook <csnook@redhat.com>
 
->
-> Hi,
->    Replacing kmalloc with kzalloc and cleaning up memset in
-> drivers/mtd/chips/cfi_probe.c. Kindly ignore the previous similar patch.
->
-> Signed-off-by: Surya Prabhakar <surya.prabhakar@wipro.com>
-> ---
->
-> diff --git a/drivers/mtd/chips/cfi_probe.c b/drivers/mtd/chips/cfi_probe.c
-> index 60e11a0..efb51f7 100644
-> --- a/drivers/mtd/chips/cfi_probe.c
-> +++ b/drivers/mtd/chips/cfi_probe.c
-> @@ -203,14 +203,12 @@ static int __xipram cfi_chip_setup(struct map_info *map,
->  	if (!num_erase_regions)
->  		return 0;
->
-> -	cfi->cfiq = kmalloc(sizeof(struct cfi_ident) + num_erase_regions * 4, GFP_KERNEL);
-> +	cfi->cfiq = kzalloc(sizeof(struct cfi_ident) + num_erase_regions * 4, GFP_KERNEL);
->  	if (!cfi->cfiq) {
->  		printk(KERN_WARNING "%s: kmalloc failed for CFI ident structure\n", map->name);
->  		return 0;
->  	}
->
-> -	memset(cfi->cfiq,0,sizeof(struct cfi_ident));
-> -
->  	cfi->cfi_mode = CFI_MODE_CFI;
+Use volatile consistently in atomic.h on m68k.
 
-but that change is not precisely equivalent, it now clears more than
-the original code.  as long as that's not a problem.
+Signed-off-by: Chris Snook <csnook@redhat.com>
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+--- linux-2.6.23-rc3-orig/include/asm-m68k/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc3/include/asm-m68k/atomic.h	2007-08-13 05:45:43.000000000 -0400
+@@ -16,8 +16,15 @@
+ typedef struct { int counter; } atomic_t;
+ #define ATOMIC_INIT(i)	{ (i) }
+ 
+-#define atomic_read(v)		((v)->counter)
+-#define atomic_set(v, i)	(((v)->counter) = i)
++static inline int atomic_read(atomic_t *v)
++{
++        return *(volatile int *)&v->counter;
++}
++
++static inline void atomic_set(atomic_t *v, int i)
++{
++        *(volatile int *)&v->counter = i;
++}
+ 
+ static inline void atomic_add(int i, atomic_t *v)
+ {
