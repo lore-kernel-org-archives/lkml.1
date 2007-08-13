@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941514AbXHMHUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941636AbXHMHUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941514AbXHMHUR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 03:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965847AbXHMGZF
+	id S941636AbXHMHUu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 03:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966188AbXHMGZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:25:05 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3925 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:25:07 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3930 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966188AbXHMGZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:25:03 -0400
-Date: Sun, 12 Aug 2007 23:24:49 -0700
+	id S966065AbXHMGZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:25:05 -0400
+Date: Sun, 12 Aug 2007 23:24:51 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, marcel@holtmann.org,
+To: torvalds@linux-foundation.org, maxk@qualcomm.com,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] [109/2many] MAINTAINERS - BLUETOOTH HCI BTUART DRIVER
-Message-ID: <46bff931.hGlmDh6yg+ACTQDH%joe@perches.com>
+Subject: [PATCH] [110/2many] MAINTAINERS - BLUETOOTH HCI VHCI DRIVER
+Message-ID: <46bff933.rn+yrrVwctRXuakn%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,14 +27,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index ac9cded..a341fc0 100644
+index a341fc0..3d198df 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1066,6 +1066,7 @@ BLUETOOTH HCI BTUART DRIVER
- P:	Marcel Holtmann
- M:	marcel@holtmann.org
- S:	Maintained
-+F:	drivers/bluetooth/btuart_cs.c
- 
- BLUETOOTH HCI VHCI DRIVER
+@@ -1072,6 +1072,7 @@ BLUETOOTH HCI VHCI DRIVER
  P:	Maxim Krasnyansky
+ M:	maxk@qualcomm.com
+ S:	Maintained
++F:	drivers/bluetooth/hci_vhci.c
+ 
+ BONDING DRIVER
+ P:	Chad Tindel
