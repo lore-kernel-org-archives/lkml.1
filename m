@@ -1,58 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934337AbXHMFRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935632AbXHMFWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934337AbXHMFRX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 01:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbXHMFRJ
+	id S935632AbXHMFWc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 01:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbXHMFWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 01:17:09 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:1387 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752666AbXHMFRH (ORCPT
+	Mon, 13 Aug 2007 01:22:21 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:55047
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752666AbXHMFWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 01:17:07 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
-Cc: herbert@gondor.apana.org.au, csnook@redhat.com, dhowells@redhat.com,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
-       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
-Organization: Core
-In-Reply-To: <20070811042943.GA13410@linux.vnet.ibm.com>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1IKSHQ-0007hg-00@gondolin.me.apana.org.au>
-Date: Mon, 13 Aug 2007 13:15:52 +0800
+	Mon, 13 Aug 2007 01:22:19 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Block device throttling [Re: Distributed storage.]
+Date: Sun, 12 Aug 2007 22:22:11 -0700
+User-Agent: KMail/1.9.5
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <20070807205538.GB5245@kernel.dk> <20070808095448.GA3440@2ka.mipt.ru>
+In-Reply-To: <20070808095448.GA3440@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708122222.12189.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> On Sat, Aug 11, 2007 at 08:54:46AM +0800, Herbert Xu wrote:
->> Chris Snook <csnook@redhat.com> wrote:
->> > 
->> > cpu_relax() contains a barrier, so it should do the right thing.  For 
->> > non-smp architectures, I'm concerned about interacting with interrupt 
->> > handlers.  Some drivers do use atomic_* operations.
->> 
->> What problems with interrupt handlers? Access to int/long must
->> be atomic or we're in big trouble anyway.
-> 
-> Reordering due to compiler optimizations.  CPU reordering does not
-> affect interactions with interrupt handlers on a given CPU, but
-> reordering due to compiler code-movement optimization does.  Since
-> volatile can in some cases suppress code-movement optimizations,
-> it can affect interactions with interrupt handlers.
+On Wednesday 08 August 2007 02:54, Evgeniy Polyakov wrote:
+> On Tue, Aug 07, 2007 at 10:55:38PM +0200, Jens Axboe 
+(jens.axboe@oracle.com) wrote:
+>
+> So, what did we decide? To bloat bio a bit (add a queue pointer) or
+> to use physical device limits? The latter requires to replace all
+> occurence of bio->bi_bdev = something_new with blk_set_bdev(bio,
+> somthing_new), where queue limits will be appropriately charged. So
+> far I'm testing second case, but I only changed DST for testing, can
+> change all other users if needed though.
 
-If such reordering matters, then you should use one of the
-*mb macros or barrier() rather than relying on possibly
-hidden volatile cast.
+Adding a queue pointer to struct bio and using physical device limits as 
+in your posted patch both suffer from the same problem: you release the 
+throttling on the previous queue when the bio moves to a new one, which 
+is a bug because memory consumption on the previous queue then becomes 
+unbounded, or limited only by the number of struct requests that can be 
+allocated.  In other words, it reverts to the same situation we have 
+now as soon as the IO stack has more than one queue.  (Just a shorter 
+version of my previous post.)
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+We can solve this by having the bio only point at the queue to which it 
+was originally submitted, since throttling the top level queue 
+automatically throttles all queues lower down the stack.  Alternatively 
+the bio can point at the block_device or straight at the 
+backing_dev_info, which is the per-device structure it actually needs 
+to touch.
+
+Note!  There are two more issues I forgot to mention earlier.
+
+1) One throttle count per submitted bio is too crude a measure.  A bio 
+can carry as few as one page or as many as 256 pages.  If you take only 
+one throttle count per bio and that data will be transferred over the 
+network then you have to assume that (a little more than) 256 pages of 
+sk_alloc reserve will be needed for every bio, resulting in a grossly 
+over-provisioned reserve.  The precise reserve calculation we want to 
+do is per-block device, and you will find hooks like this already 
+living in backing_dev_info.  We need to place our own fn+data there to 
+calculate the throttle draw for each bio.  Unthrottling gets trickier 
+with variable size throttle draw.  In ddsnap, we simply write the 
+amount we drew from the throttle into (the private data of) bio for use 
+later by unthrottle, thus avoiding the issue that the bio fields we 
+used to calculate might have changed during the lifetime of the bio.  
+This would translate into one more per-bio field.
+
+
+
+the throttling performs another function: keeping a reasonable amount of 
+IO in flight for the device.  The definition of "reasonable" is 
+complex.  For a hard disk it depends on the physical distance between 
+sector addresses of the bios in flight.  In ddsnap we make a crude but 
+workable approximation that 
+
+
+ In general, a per block device 
+
+The throttle count needs to cover 
+
+Regards,
+
+Daniel
