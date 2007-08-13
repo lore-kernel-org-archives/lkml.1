@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031976AbXHMQu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S942870AbXHMQvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031976AbXHMQu1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S947387AbXHMQOl
+	id S942870AbXHMQvY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938254AbXHMQPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 12:14:41 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3099 "EHLO perches.com"
+	Mon, 13 Aug 2007 12:15:50 -0400
+Received: from mga02.intel.com ([134.134.136.20]:6760 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938075AbXHMQOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 12:14:38 -0400
-Subject: Re: [PATCH] [188/2many] MAINTAINERS - EXT4 FILE SYSTEM
-From: Joe Perches <joe@perches.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: torvalds@linux-foundation.org, sct@redhat.com,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       akpm@linux-foundation.org, Eric Sandeen <esandeen@redhat.com>,
-       Mingming Cao <cmm@us.ibm.com>
-In-Reply-To: <20070813151917.GA28130@thunk.org>
-References: <46bff9cc.cxIrFM29roaPmcfV%joe@perches.com>
-	 <20070813090128.GJ6689@schatzie.adilger.int>
-	 <20070813151917.GA28130@thunk.org>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 09:14:01 -0700
-Message-Id: <1187021641.10249.90.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+	id S946557AbXHMQPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 12:15:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,255,1183359600"; 
+   d="scan'208";a="278218270"
+Message-ID: <46C0838A.2030504@intel.com>
+Date: Mon, 13 Aug 2007 09:15:06 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
+MIME-Version: 1.0
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, joe@perches.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Eng.Linux@digi.com
+Subject: Re: [PATCH] [154/2many] MAINTAINERS - DIGI INTL. EPCA DRIVER
+References: <46bff988.qGtTTlNorD2He7J3%joe@perches.com> <20070813115344.04759b74@the-village.bc.nu> <46C06E70.9090905@s5r6.in-berlin.de>
+In-Reply-To: <46C06E70.9090905@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Aug 2007 16:15:39.0368 (UTC) FILETIME=[3066AE80:01C7DDC5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 11:19 -0400, Theodore Tso wrote:
-> Yep, agreed.
+Stefan Richter wrote:
+> Alan Cox wrote:
+>> On Sun, 12 Aug 2007 23:26:16 -0700
+>> joe@perches.com wrote:
+>>>  DIGI INTL. EPCA DRIVER
+>>> -P:	Digi International, Inc
+>>> +P:	Digi International Inc
+>> The "," is correct and how they added themselves.
+>>
+>> Please don't hide other types of change in a large changeset without
+>> notice, thats not good
+>>
+>> NAK
+> 
+> I'm not Joe, but I gather this change is in order to support generation
+> of RFC 278 headers by the proposed script.
+> 
+> However, rather than mangle entries in MAINTAINERS for the script, I
+> suggest that the script is enhanced instead.  Simplest solution:  If the
+> script finds punctuation and other problematic characters in the P:
+> field, simply omit that part from the e-mail address.
 
-OK. saved in my tree as
+or properly put it on "quotes":
 
-EXT4 FILE SYSTEM
-P:      Ted Ts'o
-M:	tytso@mit.edu
-P:	Eric Sandeen
-M:	sandeen@sgi.com
-P:	Mingming Cao
-M:	cmm@us.ibm.com
-L:	linux-ext4@vger.kernel.org
-S:	Maintained
-F:	fs/ext4/
-F:	include/linux/ext4*
+Cc: "Digi International, Inc" <foo@bar.com>
 
-Separate question.  Is it right that the L: entries
-for ext2/3/4 are all linux-ext4@vger.kernel.org?
+is perfectly valid.
 
+
+Auke
