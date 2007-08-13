@@ -1,484 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965291AbXHMBim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965433AbXHMBlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965291AbXHMBim (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 21:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935096AbXHMBic
+	id S965433AbXHMBlb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 21:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935290AbXHMBlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 21:38:32 -0400
-Received: from smtpout.mac.com ([17.250.248.178]:50701 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935103AbXHMBia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 21:38:30 -0400
-In-Reply-To: <255628.7187.qm@web36607.mail.mud.yahoo.com>
-References: <255628.7187.qm@web36607.mail.mud.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <10247DAA-D04B-42D5-B67B-C2D3BD42A94F@mac.com>
-Cc: linux-security-module@vger.kernel.org,
-       LKML Kernel <linux-kernel@vger.kernel.org>
+	Sun, 12 Aug 2007 21:41:19 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:37484 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762461AbXHMBlR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 21:41:17 -0400
+Message-ID: <46BFB6BB.80406@steeleye.com>
+Date: Sun, 12 Aug 2007 21:41:15 -0400
+From: Paul Clements <paul.clements@steeleye.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>, david@lang.hm,
+       Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: [RFD] Layering: Use-Case Composers (was: DRBD - what is it,	anyways?
+ [compare with e.g. NBD + MD raid])
+References: <200708121335.17267.a1426z@gawab.com> <Pine.LNX.4.64.0708121325170.28963@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0708120933210.19502@asgard.lang.hm> <Pine.LNX.4.64.0708121901290.28963@fbirervta.pbzchgretzou.qr> <20070812174549.GA2915@teal.hq.k1024.org>
+In-Reply-To: <20070812174549.GA2915@teal.hq.k1024.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
-Date: Sun, 12 Aug 2007 21:38:39 -0400
-To: casey@schaufler-ca.com
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 12, 2007, at 15:41:46, Casey Schaufler wrote:
-> --- Kyle Moffett <mrmacman_g4@mac.com> wrote:
->> On Aug 11, 2007, at 21:21:55, Casey Schaufler wrote:
->>> --- Kyle Moffett <mrmacman_g4@mac.com> wrote:
->>>> I was considering compiling the complete list, but such an  
->>>> exercise would take me at least an hour to do properly and which  
->>>> categories individual permissions should be placed in could be  
->>>> argued for weeks.
+Iustin Pop wrote:
+> On Sun, Aug 12, 2007 at 07:03:44PM +0200, Jan Engelhardt wrote:
+>> On Aug 12 2007 09:39, david@lang.hm wrote:
+>>> now, I am not an expert on either option, but three are a couple things that I
+>>> would question about the DRDB+MD option
 >>>
->>> I will be happy to consider your arguement when you are willing  
->>> to present the complete argument.
+>>> 1. when the remote machine is down, how does MD deal with it for reads and
+>>> writes?
+>> I suppose it kicks the drive and you'd have to re-add it by hand unless done by
+>> a cronjob.
+
+Yes, and with a bitmap configured on the raid1, you just resync the 
+blocks that have been written while the connection was down.
+
+
+>>From my tests, since NBD doesn't have a timeout option, MD hangs in the
+> write to that mirror indefinitely, somewhat like when dealing with a
+> broken IDE driver/chipset/disk.
+
+Well, if people would like to see a timeout option, I actually coded up 
+a patch a couple of years ago to do just that, but I never got it into 
+mainline because you can do almost as well by doing a check at 
+user-level (I basically ping the nbd connection periodically and if it 
+fails, I kill -9 the nbd-client).
+
+
+>>> 2. MD over local drive will alternate reads between mirrors (or so I've been
+>>> told), doing so over the network is wrong.
+>> Certainly. In which case you set "write_mostly" (or even write_only, not sure
+>> of its name) on the raid component that is nbd.
 >>
->> Here's my complete argument:
->>
->> Regardless of how you categorize "read", "write", "execute", and  
->> "doesnt-need-protection" in your policy language, I can write an  
->> SELinux policy and a list of labels which expresses that policy.    
->> Moreover, without too much work I can probably write a Perl script  
->> to do it for you.  On the other hand I can only do that if you  
->> tell me exactly how you want to categorize those things, though.   
->> In my personal opinion they cannot be reasonably categorized  
->> without breaking all sorts of tools or leaving gaping holes;  
->> precisely the reason that SELinux uses such a fine-grained list.
->
-> This identifies an important design philosophy issue, that being  
-> what granularity is appropriate. I have no interest in composing a  
-> description of Smack at the granularity that SELinux uses.
-
-If you have no interest in categorizing the SELinux access vectors,  
-then how do you expect to categorize the LSM hooks, which are almost  
-1-to-1 mapped with the SELinux access vectors?
-
-
-> The point you make, that you need to have that in order to create a  
-> policy description, is one of the reasons for Smack. Simplified.
-
-Well yes, but a simplified policy is useless if it uses no LSM  
-hooks.  I will write you a Perl script which will generate a complete  
-and functionally equivalent SELinux policy (assuming I have enough  
-free time) given a file with your policy language.  But I can do this  
-if and only if you tell me which of the SELinux access vectors you  
-care about (In other words, which of the LSM hooks you want to  
-require "read", "write", or "execute" privileges for).  With such a  
-little script you could write all the "simplified" policy you want,  
-without having to change the kernel code at all.
-
-
->> Ok, you want sample policy to match your "MLS" sample?  For  
->> convenience here's one more macro:
->> define(`rx',`r(`$1',`$2') x(`$1',`$2')')
->>
->> type unclass;
->> type c;
->> type s;
->> type ts;
->> rx(c, unclass)
->> rx(s, c)
->> rx(s, unclass)
->> rx(ts, s)
->> rx(ts, c)
->> rx(ts, unclass)
->>
->> In case you don't have the policy you typed into your email, it  
->> looks almost identical with a few exceptions for slightly modified  
->> syntax:
->>> C        Unclass rx
->>> S        C       rx
->>> S        Unclass rx
->>> TS       S       rx
->>> TS       C       rx
->>> TS       Unclass rx
->
-> Yup. Your macro invocations look very much like the Smack  
-> specification.  Your macro definitions are of course unnecessary in  
-> Smack, and you really ought to be using the MLS labels SELinux  
-> supports, and you need a base policy underneath this.
-
-My point is your policy format is SO simple it doesn't even need the  
-SELinux MLS code to handle it.  From the way you've described it the  
-base policy (~200 lines) would be *identical* regardless of the  
-entries in your policy language, and the rest could be generated by a  
-script directly from the "C Unclass rx"-type stuff.
-
->> Whoops, I think I must have smashed the delete key or something  
->> while sending.  Here's the paragraphs which got elided:
->>
->> Well, yes, but a policy which completely ignores future  
->> expandability can't be expanded upon regardless. It would also be  
->> very hard to add new policy without a lot of duplication under  
->> your system. On the other hand, with SELinux you can very easily  
->> add attribute-based policy so adding new capabilities is as simple  
->> as sticking existing attributes on newly defined types.  For example:
->>
->> type my_log_t, file_type, log_file;
->> type my_log_daemon, daemon;
->>
->> Right there I just gave permission for the logrotate to recycle  
->> files labelled my_log_t, which the sysadmin and audit admin can  
->> also read (and the audit admin can delete).  I also gave  
->> permission for my daemon to send SIGCHLD to init, and for init/ 
->> initscripts to send it a SIGTERM/SIGQUIT.  All without writing a  
->> SINGLE policy rule.  Basically all of those existing behaviors are  
->> found in allow rules built on the "file_type", "log_file", and  
->> "daemon" attributes.
->
-> Ah, now you're refering to the reference policy, right?
-
-Yes, precisely.  For most of that functionality there are existing  
-attributes and types defined in the reference policy to make custom  
-policy much easier.  Furthermore, there are interface files which  
-allow me to say something like "Let this program spawn an Apache  
-daemon in the right domain" with a single line.  If I only want to do  
-that when the "httpd" module is loaded I can put the line in an  
-"optional" block.  A policy for a basic network daemon with a couple  
-log files, a config file, and a little database is all of 30 lines,  
-maybe 50 if you throw in comments.
-
-
->>> They can be added or changed one by one as required while the  
->>> system is running, and there are uses that exploit that. One  
->>> example is to put the label "Game" on certain programs and:
->>>
->>>    at 8:00am "Worker Game no"
->>>    at 5:00pm "Worker Game x"
->>>
->>> Thus Worker processes can access Game files only during off hours.
->>
->> This is fundamentally broken:
->> [...]
->> Secondly, you can already do the same thing with DAC and a PAM  
->> groups-from-time-of-day module, I don't see why such a thing is  
->> special enough to need MAC.  Thirdly, I could do exactly the same  
->> thing with an SELinux boolean and a cronjob (once we get proper  
->> revoke support):
->
-> There is usually a way to address any particular problem using DAC,  
-> it's often sufficiently painful that MAC looks like a better approach.
-
-No, generally the only reason to use MAC is when it's security- 
-critical (system compromise, classified data, critical  
-infrastructure, etc).  Denying users access to games during the  
-workday is hardly "security-critical".  If that system's CPU time was  
-exclusively needed for a life support machine during the day then  
-maybe, but that's what renice or realtime scheduling are for and why  
-the hell are you installing games on a heart monitor?
-
-
-> Your boolean solution requires more forthought than the Smack rule  
-> solution, but I'll give it to you once you've fleshed out your "##"  
-> lines.
-
-How does it require more forethought?  When I want to turn it on, I  
-write and load the 5 line policy then add the cronjobs.  Yours  
-involves giving cron unconditional permission to write to your  
-security database (always a bad idea) and then adding similar cronjobs.
-
-
->> ## Rule to allow cron to tweak the "can_play_games" boolean value
-
-Hmm, looking at this again the current policy language doesn't have a  
-way of delegating access to boolean values, so there's no way to let  
-cron directly poke at booleans right now.  You could do it with this  
-shell script:
-
-#! /bin/sh
-now=$(date +'%H%M')
-if [ 800 -le "$now" -a 1700 -ge "$now" ]; then
-	setsebool can_play_games false
-else
-	setsebool can_play_games true
-fi
-
-
-Label that script as games_changer_exec_t then use this bit of policy
-   type_transition cron_t games_changer_exec_t:process games_changer_t;
-   can_setbool(games_changer_t);
-
-
->> if (can_play_games) {
->> 	## Insert game-playing allow rules here
->> }
-
-Once you have written a policy specific to the game you want to allow  
-or disallow, you would just put that policy inside of the  
-conditional.  As a simple policy example for the ping program (from  
-an older refpolicy, now a bit out of date, but still useful as an  
-example):
-
-## The ping domain
-type ping_t, domain, privlog;
-
-## Daemons, sysadmins, and users may assume the ping type if allowed  
-below
-role system_r types ping_t;
-role sysadm_r types ping_t;
-in_user_role(ping_t)
-
-## The ping binary
-type ping_exec_t, file_type, sysadmfile, exec_type;
-
-## Allow the sysadmin and init scripts to run ping
-domain_auto_trans(sysadm_t, ping_exec_t, ping_t)
-domain_auto_trans(initrc_t, ping_exec_t, ping_t)
-
-## Boolean controlling user access to ping
-bool user_ping false;
-if (user_ping) {
-	domain_auto_trans(unpriv_userdomain, ping_exec_t, ping_t)
-	allow ping_t { ttyfile ptyfile }:chr_file rw_file_perms;
-}
-
-## Allow ping to do what it needs to do
-uses_shlib(ping_t)
-can_network(ping_t)
-can_ypbind(ping_t)
-
-## Allow additional permissions that ping needs to operate
-allow ping_t etc_t:file { getattr read };
-allow ping_t self:unix_stream_socket create_socket_perms;
-allow ping_t self:rawip_socket { create ioctl read write bind getopt  
-setopt };
-allow ping_t netif_type:netif { rawip_send rawip_recv };
-allow ping_t node_type:node { rawip_send rawip_recv };
-allow ping_t self:capability { net_raw setuid };
-
-## Allow ping to poke at the terminal
-allow ping_t admin_tty_type:chr_file rw_file_perms;
-allow ping_t { userdomain privfd kernel_t }:fd use;
-
-## Ping wants to get FS attributes and look in /var but doesn't need to
-dontaudit ping_t fs_t:filesystem getattr;
-dontaudit ping_t var_t:dir search;
-
-
-It should be pretty clear what every part of the policy is there for;  
-basically that's the minimum necessary set of permissions for ping to  
-run, with an optional boolean to control user pings.  There's also a  
-macro to give your arbitrary process the ability to run ping, such as  
-for the "heartbeat" daemon for example.
-
-
->>> As far as relabeling the file system goes, the rules apply to  
->>> processes and objects, not to programs. The label on a program  
->>> describes who can access it, it will run with the label of the  
->>> process that exec's it. A change in the rules does not require a  
->>> change to the labels on the file system for things to work  
->>> according to the rules of engagement.
->>
->> By this logic, every program will always have the same label,  
->> unless you recode every program to explicitly change it when it  
->> starts; precisely the thing that the SELinux type transitions were  
->> designed to avoid.
->
-> Yes. This is the way it should be. A small set of very carefully  
-> analysed programs that change labels under carefully controlled  
-> circumstances is what I want. login, sshd, cron, special purpose  
-> launchers. Written with the assumption that they will be attacked.
-
-Well, under SELinux, all 3 of those processes go through the special  
-purpose PAM module to get their labels changed.  Are you planning to  
-modify *every* daemon to have special type-changing code?  Hell, most  
-don't even have setuid/chroot support and that's all of 15 lines of  
-code and is supported in every UNIX/Linux distro released in the last  
-10 years (or more).  Besides, why allow the program (say, "ping") to  
-change its own label when the policy could forcibly change it for  
-you.  The label change is NOT just to *give* permissions, it's also  
-to take them away.  For example, when I run "ping", the process gains  
-raw network access but loses access to almost every user file and  
-disables LD_PRELOAD, etc, making it a thousand times harder to  
-compromise it from the inside too.
-
->>>> When you change the meaning of new types, you clearly would need  
->>>> to first reload the policy then relaunch programs or relabel  
->>>> files to take advantage of the new types, otherwise they would  
->>>> be categorically ignored by the system.
->>>
->>> I'm sorry, but again, I don't know what you mean by "changing the  
->>> meaning of new types".
->>
->> Oh, say something like "Oh, drat, I wanted this daemon to run as  
->> some other type".
->
-> Sorry, "type" is a meaningless attribute in Smack.
-
-Sorry for being unclear.  Assume s/type/label/g; the question still  
-stands.
-
-
->> Unless you relabel the files and relaunch the daemon the system  
->> will have no idea how the system will change.  And if you let  
->> arbitrary root processes relabel things on the fly then you've  
->> lost all the security advantages to a MAC system.
->
-> MAC systems have been behaving this way for decades. SELinux is the  
-> exception, not the rule on this.
-
-"People have been burning witches for decades, that must be the right  
-thing to do"
-
-The fact that something is commonly done does not make it right,  
-especially when there is a significantly more secure alternative  
-available.
-
-
->> I think you may be making assumptions about the behaviour of  
->> SELinux based on what other OSes do which don't hold:
->>
->> (a)  SELinux does not care about user id, current directory, time  
->> of day, etc.  It cares solely about 3 things:  the Subject, the  
->> Object, and the Action.  For example, if an init script attempts  
->> to execute the apache binary then SELinux gets the following data  
->> for parameters: subject="system_u:system_r:initrc_t:SystemLow- 
->> SystemHigh" object="system_u:object_r:httpd_exec_t:SystemLow"  
->> action="file->execute".
->
-> Yes, and each of the components of the subject and object contexts  
-> is dependent on a more circumstances than I'd care to deal with.   
-> You've demonstrated that SELinux implements fine granularity.
-
-The beauty of fine granularity is that you can ignore it without  
-changing code.  If you don't want to use the "user" and "role"  
-portions, then just set them to always be "allusers" and "allroles"  
-and be done with it.  If you don't want MLS then just define one  
-sensitivity (s0) and no categories.  Likewise if want your system to  
-use only 8 types then only define 8 types.  It's just that easy!   
-Admittedly your policy can't then deal with most of the real-world  
-situations (like logging in or running the "passwd" command), but  
-that's your choice.
-
-
->> (b)  SELinux does NOT have a capability which overrides it.  If  
->> you want to do something that the policy categorically does not  
->> allow, you have 2 choices:  change the policy or disable SELinux.   
->> You can also use a policy which disables both of those options
->
-> Yup. I think that's bad.
-
-Which part do you think is bad?  The fact that the policy is  
-guaranteed to be non-overrideable, or the fact that you can even  
-prevent changing the security policy from the policy?  If you really  
-want a root-hole in the policy then you can write one, see the  
-"unconfined_t" in the "targeted" policy.
-
-
-> And Bell & LaPadula using a combination of levels and categories is  
-> probably the Smack worst case. But guess what?  The dig against  
-> that policy has always been that no one wanted to combine levels  
-> and categories.
-
-So how would you secure a system moving data between 3 TS/SCI  
-compartments and a Secret network?   You can say "no one wanted  
-to...", but we have a couple million dollars worth of business that  
-says they do.
-
-
->> Ok, fine, how does "moving data around a system" require anything  
->> more than bog-standard user-level privileges?  Normal users under  
->> Linux are not permitted to change "security.*" attributes at all,  
->> but they may bind to sockets, etc.  You can define a "capability"  
->> which lets you do all that, but then you're just blindly giving  
->> processes more privileges than they need to complete an  
->> operation.  Why should you get the "rename all files" priv when  
->> all you need is "Make my log files get $LABEL when I put them in / 
->> var/log/mydaemon/"?
->
-> Privilege granularity is a seperate issue. Smack uses Linux  
-> privilege machanisms and is happy to do so.
-
-"Linux privilege mechanisms" covers no less than 20,000 lines of  
-code, including DAC, capabilities, LSM, namespaces, keyrings, and  
-more.  Please be more specific here.
-
->>>> Why should it?  Admittedly, moving data from "TopSecret" to   
->>>> "Secret" requires a process labeled with a range including at  
->>>> least "S-TS"  *and* with the MLS "read-to-clearance" attribute,  
->>>> but you can be as stingy with that attribute as you like.
->>>
->>> Yup. And plenty of people like you think that is really spiffy.
->>
->> Please explain why you think it isn't?
->
-> I grew up believing that downgrading classified information should  
-> always be an explicit, concious act.
-
-It still is in SELinux too.  The only difference is that in SELinux  
-*all* of the possible ways to downgrade classified information are  
-listed for you in the policy file for easy analysis; one of the most  
-common complaints about SUID binaries in UNIX is that they aren't all  
-listed in one place for easy auditing.  Moreover, you can see exactly  
-how the information may be downgraded.  For example, in one policy I  
-use, I can prove that specific components of our guard software have  
-permission to move data from a category such as "Secret:NukeTesting"  
-to just "Secret", but cannot access "TopSecret".  I can also verify  
-that the program itself cannot modify the levels it has access to,  
-even though it does have permissions to move data between them.  It  
-doesn't make you immune to flaws, but it lets you vastly limit the  
-damage any given flaw can accomplish.
-
-
->> You can call them "process capabilities" or "magic attributes",  
->> they're the same thing, just more fine-grained.  Instead of (Note:  
->> r1 == subject role, r2 == target role, t2 == target type):
->>    mlsconstrain process transition ( (r1 == r2) || (t1 ==   
->> i_am_a_role_changing_capability) )
->>
->> you have (Note: t1 == subject type):
->>    mlsconstrain process transition ( (r1 == r2) || (r1 == system_r  
->> && t1 == i_am_a_login_process && t2 == i_am_a_user_entrypoint) )
->>
->> The latter is like the former, except instead of one single  
->> ultimate "change-any-role" capability, you have a capability which  
->> allows a system login process to change roles *ONLY* if it's also  
->> changing to a user entrypoint.  Please tell me which you think is  
->> more secure.
->
-> Don't look at me. A well written program could do fine with either.
-
-The WHOLE POINT of a mandatory access control system is to protect  
-against *poorly* written programs.  If we can verify the kernel (~8  
-million lines), and the policy (~8,000 lines), then we've saved  
-ourselves from having to audit all of userspace (~80+ million  
-lines).  Seems a worthy goal to me.
-
-
->>>> So the implicit labeling of files actually restricts every  
->>>> process *FURTHER*.  They no longer have even an inkling of a  
->>>> choice about file labeling, and that's a GOOD thing.
->>>
->>> That's true about Smack, you know. The process has no choice  
->>> about the label that the files get.
->>
->> So how do you selectively label files based on criteria such as  
->> "where did I get put"?  How do you distinguish between a "log  
->> file" which is create-and-append-only, a "database file" which I  
->> can modify however I want to, and a "unix socket" which I can bind  
->> in /var/run and get connections from user processes?
->
-> I don't. They're all objects.
-
-And by extension you have no way of saying "The apache log files  
-can't be modified after they are written."  That feature is part of  
-virtually every MAC system anybody's ever made, precisely because you  
-can't really trust audit logs without it.
-
->>> Thank you for your comments.    I hope that I have made the  
->>> behavior and value of Smack clearer in responding to them.
->>
->> You're welcome.  I endeavor to poke my nose into every little LSM- 
->> related corner in the kernel, this one included.
->
-> Why?
-
-Firstly because it's interesting, and secondly because it's related  
-to my work (which of course comes back to point 1) :-D.
-
-Cheers,
-Kyle Moffett
+>>> 3. when writing, will MD wait for the network I/O to get the data saved on the
+>>> backup before returning from the syscall? or can it sync the data out lazily
+>> Can't answer this one - ask Neil :)
+> 
+> MD has the write-mostly/write-behind options - which help in this case
+> but only up to a certain amount.
+
+You can configure write_behind (aka, asynchronous writes) to buffer as 
+much data as you have RAM to hold. At a certain point, presumably, you'd 
+want to just break the mirror and take the hit of doing a resync once 
+your network leg falls too far behind.
+
+--
+Paul
