@@ -1,69 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972811AbXHMNU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939963AbXHMNVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972811AbXHMNU2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971179AbXHMJJW
+	id S939963AbXHMNVQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971172AbXHMJMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 05:09:22 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:4119 "EHLO relay.sw.ru"
+	Mon, 13 Aug 2007 05:12:42 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:7040 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S971129AbXHMJJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 05:09:20 -0400
-Date: Mon, 13 Aug 2007 13:09:54 +0400
-From: Dmitry Monakhov <dmonakhov@openvz.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-ext4@vger.kernel.org, devel@openvz.org
-Subject: [PATCH] ext3: fix ext34_fill_super group description initialization
-Message-ID: <20070813090954.GA25226@dnb.sw.ru>
-Mail-Followup-To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-	devel@openvz.org
+	id S970477AbXHMJMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 05:12:38 -0400
+Date: Mon, 13 Aug 2007 11:12:35 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Distributed storage.
+Message-ID: <20070813091235.GI23758@kernel.dk>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708121637.00144.phillips@phunq.net> <20070813072848.GC23758@kernel.dk> <200708130159.22407.phillips@phunq.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Organization: SWsoft
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <200708130159.22407.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-->s_group_desc have to be zero filled because if sb_read() failed
-we jump to following error path.
-failed_mount2:
-	for (i = 0; i < db_count; i++)
-		brelse(sbi->s_group_desc[i]);<< Bad things may happen here
+On Mon, Aug 13 2007, Daniel Phillips wrote:
+> On Monday 13 August 2007 00:28, Jens Axboe wrote:
+> > On Sun, Aug 12 2007, Daniel Phillips wrote:
+> > > Right, that is done by bi_vcnt.  I meant bi_max_vecs, which you can
+> > > derive efficiently from BIO_POOL_IDX() provided the bio was
+> > > allocated in the standard way.
+> >
+> > That would only be feasible, if we ruled that any bio in the system
+> > must originate from the standard pools.
+> 
+> Not at all.
+> 
+> > > This leaves a little bit of clean up to do for bios not allocated
+> > > from a standard pool.
+> >
+> > Please suggest how to do such a cleanup.
+> 
+> Easy, use the BIO_POOL bits to know the bi_max_size, the same as for a 
+> bio from the standard pool.  Just put the power of two size in the bits 
+> and map that number to the standard pool arrangement with a table 
+> lookup.
 
-Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
----
- fs/ext3/super.c |    2 +-
- fs/ext4/super.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+So reserve a bit that tells you how to interpret the (now) 3 remaining
+bits. Doesn't sound very pretty, does it?
 
-diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-index f8ac18f..208738e 100644
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -1718,7 +1718,7 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
- 				       / EXT3_BLOCKS_PER_GROUP(sb)) + 1;
- 	db_count = (sbi->s_groups_count + EXT3_DESC_PER_BLOCK(sb) - 1) /
- 		   EXT3_DESC_PER_BLOCK(sb);
--	sbi->s_group_desc = kmalloc(db_count * sizeof (struct buffer_head *),
-+	sbi->s_group_desc = kzalloc(db_count * sizeof (struct buffer_head *),
- 				    GFP_KERNEL);
- 	if (sbi->s_group_desc == NULL) {
- 		printk (KERN_ERR "EXT3-fs: not enough memory\n");
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 8f1d2f6..fefffc0 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -1830,7 +1830,7 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
- 	sbi->s_groups_count = blocks_count;
- 	db_count = (sbi->s_groups_count + EXT4_DESC_PER_BLOCK(sb) - 1) /
- 		   EXT4_DESC_PER_BLOCK(sb);
--	sbi->s_group_desc = kmalloc(db_count * sizeof (struct buffer_head *),
-+	sbi->s_group_desc = kzalloc(db_count * sizeof (struct buffer_head *),
- 				    GFP_KERNEL);
- 	if (sbi->s_group_desc == NULL) {
- 		printk (KERN_ERR "EXT4-fs: not enough memory\n");
+> > > On the other hand, vm writeout deadlock ranks smack dab at the top
+> > > of the list, so that is where the patching effort must go for the
+> > > forseeable future.  Without bio throttling, the ddsnap load can go
+> > > to 24 MB for struct bio alone.  That definitely moves the needle. 
+> > > in short, we save 3,200 times more memory by putting decent
+> > > throttling in place than by saving an int in struct bio.
+> >
+> > Then fix the damn vm writeout. I always thought it was silly to
+> > depend on the block layer for any sort of throttling. If it's not a
+> > system wide problem, then throttle the io count in the
+> > make_request_fn handler of that problematic driver.
+> 
+> It is a system wide problem.  Every block device needs throttling, 
+> otherwise queues expand without limit.  Currently, block devices that 
+> use the standard request library get a slipshod form of throttling for 
+> free in the form of limiting in-flight request structs.  Because the 
+> amount of IO carried by a single request can vary by two orders of 
+> magnitude, the system behavior of this approach is far from 
+> predictable.
+
+Is it? Consider just 10 standard sata disks. The next kernel revision
+will have sg chaining support, so that allows 32MiB per request. Even if
+we disregard reads (not so interesting in this discussion) and just look
+at potentially pinned dirty data in a single queue, that number comes to
+4GiB PER disk. Or 40GiB for 10 disks. Auch.
+
+So I still think that this throttling needs to happen elsewhere, you
+cannot rely the block layer throttling globally or for a single device.
+It just doesn't make sense.
+
+> > > You did not comment on the one about putting the bio destructor in
+> > > the ->endio handler, which looks dead simple.  The majority of
+> > > cases just use the default endio handler and the default
+> > > destructor.  Of the remaining cases, where a specialized destructor
+> > > is needed, typically a specialized endio handler is too, so
+> > > combining is free.  There are few if any cases where a new
+> > > specialized endio handler would need to be written.
+> >
+> > We could do that without too much work, I agree.
+> 
+> OK, we got one and another is close to cracking, enough of that.
+
+No we did not, I already failed this one in the next mail.
+
+> > > As far as code stability goes, current kernels are horribly
+> > > unstable in a variety of contexts because of memory deadlock and
+> > > slowdowns related to the attempt to fix the problem via dirty
+> > > memory limits.  Accurate throttling of bio traffic is one of the
+> > > two key requirements to fix this instability, the other other is
+> > > accurate writeout path reserve management, which is only partially
+> > > addressed by BIO_POOL.
+> >
+> > Which, as written above and stated many times over the years on lkml,
+> > is not a block layer issue imho.
+> 
+> Whoever stated that was wrong, but this should be no surprise.  There 
+> have been many wrong things said about this particular bug over the 
+> years.  The one thing that remains constant is, Linux continues to 
+> deadlock under a variety of loads both with and without network 
+> involvement, making it effectively useless as a storage platform.
+> 
+> These deadlocks are first and foremost, block layer deficiencies.  Even 
+> the network becomes part of the problem only because it lies in the 
+> block IO path.
+
+The block layer has NEVER guaranteed throttling, so it can - by
+definition - not be a block layer deficiency.
+
 -- 
-1.5.2.2
-
+Jens Axboe
 
