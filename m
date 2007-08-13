@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030862AbXHMRPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S972353AbXHMRQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030862AbXHMRPU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032024AbXHMQ6n
+	id S972353AbXHMRQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S948252AbXHMRAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 12:58:43 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3174 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S948193AbXHMQ6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 12:58:40 -0400
-Subject: Re: [PATCH] [344/2many] MAINTAINERS - NFS CLIENT
-From: Joe Perches <joe@perches.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <1187022940.6628.18.camel@heimdal.trondhjem.org>
-References: <46bffb13.g6PWKhDCxXTpAZFm%joe@perches.com>
-	 <1187022387.6628.16.camel@heimdal.trondhjem.org>
-	 <1187022827.10249.95.camel@localhost>
-	 <1187022940.6628.18.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 09:57:47 -0700
-Message-Id: <1187024267.10249.117.camel@localhost>
+	Mon, 13 Aug 2007 13:00:55 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:56906 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030788AbXHMRAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 13:00:52 -0400
+Date: Mon, 13 Aug 2007 18:58:21 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Karl Meyer <adhocrocker@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
+Message-ID: <20070813165821.GA19356@electric-eye.fr.zoreil.com>
+References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 12:35 -0400, Trond Myklebust wrote:
->> F:    include/linux/nfsd/
-         ^^^^^^^^^^^^^^^^^^ This needs to go
+(netdev Cced)
 
-NFS CLIENT
-P:	Trond Myklebust
-M:	trond.myklebust@fys.uio.no
-L:	linux-kernel@vger.kernel.org
-S:	Maintained
-F:	fs/lockd/
-F:	fs/nfs/
-F:	fs/nfs_common/
-F:	net/sunrpc/
-F:	include/linux/lockd/
-F:	include/linux/nfs*
-F:	include/linux/sunrpc/
+Karl Meyer <adhocrocker@gmail.com> :
+[...]
+> I am having trouble with the 2.6.23 kernel. With all versions since
+> 2.6.23-rc1 I have trouble with my network connection. When using the
+> network over a certain level (just browsing the web seems not to be
+> enough) e.g. when installing packages over the nvsv4 share, all
+> network stuff freezes for some time and syslog tells me:
+> Aug 13 13:16:09 frege NETDEV WATCHDOG: eth0: transmit timed out
+> Aug 13 13:16:39 frege NETDEV WATCHDOG: eth0: transmit timed out
+> Aug 13 13:17:09 frege NETDEV WATCHDOG: eth0: transmit timed out
+> Aug 13 13:17:57 frege NETDEV WATCHDOG: eth0: transmit timed out
 
+Can you:
+- send a complete dmesg + /proc/interrupts + .config
+- use git bisect to find a suspect changeset
+  I do not expect any change of behavior between 2.6.22 and
+  25805dcf9d83098cf5492117ad2669cd14cc9b24 if it can help you narrow
+  things down (assuming it is a r8169 regression).
 
+-- 
+Ueimor
