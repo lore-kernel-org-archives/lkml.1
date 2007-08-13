@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S973224AbXHMNi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031618AbXHMNjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S973224AbXHMNi6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S972103AbXHMJzq
+	id S1031618AbXHMNjn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968996AbXHMJ5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 05:55:46 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:48491
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757459AbXHMJzl (ORCPT
+	Mon, 13 Aug 2007 05:57:01 -0400
+Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:42604 "EHLO
+	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759398AbXHMJ47 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 05:55:41 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Distributed storage.
-Date: Mon, 13 Aug 2007 02:55:35 -0700
-User-Agent: KMail/1.9.5
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708130208.57542.phillips@phunq.net> <20070813091348.GJ23758@kernel.dk>
-In-Reply-To: <20070813091348.GJ23758@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 13 Aug 2007 05:56:59 -0400
+Subject: [KJ] replacing kmalloc with kzalloc in
+	drivers/mtd/devices/docprobe.c
+From: Surya Prabhakar N <surya.prabhakar@wipro.com>
+Reply-To: surya.prabhakar@wipro.com
+To: dwmw2@infradead.org, linux-mtd@lists.infradead.org
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       kernel-janitors <kernel-janitors@lists.osdl.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708130255.35828.phillips@phunq.net>
+Organization: Linux Coe, Wipro Technologies
+Date: Mon, 13 Aug 2007 15:26:32 +0530
+Message-Id: <1186998992.29518.15.camel@bluegenie>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-OriginalArrivalTime: 13 Aug 2007 09:57:10.0622 (UTC) FILETIME=[50EF07E0:01C7DD90]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 August 2007 02:13, Jens Axboe wrote:
-> On Mon, Aug 13 2007, Daniel Phillips wrote:
-> > On Monday 13 August 2007 00:45, Jens Axboe wrote:
-> > > On Mon, Aug 13 2007, Jens Axboe wrote:
-> > > > > You did not comment on the one about putting the bio
-> > > > > destructor in the ->endio handler, which looks dead simple. 
-> > > > > The majority of cases just use the default endio handler and
-> > > > > the default destructor.  Of the remaining cases, where a
-> > > > > specialized destructor is needed, typically a specialized
-> > > > > endio handler is too, so combining is free.  There are few if
-> > > > > any cases where a new specialized endio handler would need to
-> > > > > be written.
-> > > >
-> > > > We could do that without too much work, I agree.
-> > >
-> > > But that idea fails as well, since reference counts and IO
-> > > completion are two completely seperate entities. So unless end IO
-> > > just happens to be the last user holding a reference to the bio,
-> > > you cannot free it.
-> >
-> > That is not a problem.  When bio_put hits zero it calls ->endio
-> > instead of the destructor.  The ->endio sees that the count is zero
-> > and destroys the bio.
->
-> You can't be serious? You'd stall end io completion notification
-> because someone holds a reference to a bio.
+Hi,
+   Replacing kmalloc with kzalloc and cleaning up memset in
+drivers/mtd/devices/docprobe.c.
 
-Of course not.  Nothing I said stops endio from being called in the 
-usual way as well.  For this to work, endio just needs to know that one 
-call means "end" and the other means "destroy", this is trivial.
 
-Regards,
+Signed-off-by: Surya Prabhakar <surya.prabhakar@wipro.com>
+---
 
-Daniel
+diff --git a/drivers/mtd/devices/docprobe.c b/drivers/mtd/devices/docprobe.c
+index 54aa759..53be397 100644
+--- a/drivers/mtd/devices/docprobe.c
++++ b/drivers/mtd/devices/docprobe.c
+@@ -254,7 +254,7 @@ static void __init DoC_Probe(unsigned long physadr)
+ 			return;
+ 		}
+ 		docfound = 1;
+-		mtd = kmalloc(sizeof(struct DiskOnChip) + sizeof(struct mtd_info), GFP_KERNEL);
++		mtd = kzalloc(sizeof(struct DiskOnChip) + sizeof(struct mtd_info), GFP_KERNEL);
+ 
+ 		if (!mtd) {
+ 			printk(KERN_WARNING "Cannot allocate memory for data structures. Dropping.\n");
+@@ -264,9 +264,6 @@ static void __init DoC_Probe(unsigned long physadr)
+ 
+ 		this = (struct DiskOnChip *)(&mtd[1]);
+ 
+-		memset((char *)mtd,0, sizeof(struct mtd_info));
+-		memset((char *)this, 0, sizeof(struct DiskOnChip));
+-
+ 		mtd->priv = this;
+ 		this->virtadr = docptr;
+ 		this->physadr = physadr;
+
+--
+thanks
+surya.
