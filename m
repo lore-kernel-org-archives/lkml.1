@@ -1,66 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972657AbXHMNPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031234AbXHMNQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972657AbXHMNPE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:15:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970560AbXHMIrs
+	id S1031234AbXHMNQU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970780AbXHMI7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 04:47:48 -0400
-Received: from [221.202.118.17] ([221.202.118.17]:1730 "HELO 221.202.118.17"
-	rhost-flags-FAIL-FAIL-FAIL-FAIL) by vger.kernel.org with SMTP
-	id S967084AbXHMIqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 04:46:08 -0400
-Message-Id: <IK2CT54I.YYB24GC@gmail.com>
-From: "David L Collick" <prolaser.groups@gmail.com>
-Subject: Original Toner Cartridge promotion
-To: "Webmaster" <linux-kernel@vger.kernel.org>
+	Mon, 13 Aug 2007 04:59:38 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:33495
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S970530AbXHMI7d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 04:59:33 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Distributed storage.
+Date: Mon, 13 Aug 2007 01:59:22 -0700
+User-Agent: KMail/1.9.5
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708121637.00144.phillips@phunq.net> <20070813072848.GC23758@kernel.dk>
+In-Reply-To: <20070813072848.GC23758@kernel.dk>
+MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ISO-8859-1"
-Reply-To: "David L Collick" <prolaser.groups@gmail.com>
-Date: Mon, 13 Aug 2007 10:58:43 -1000
-X-Priority: 3
-X-Mailer: Microsoft Outlook Express 6.00.2600.0000
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708130159.22407.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear All Customers,
+On Monday 13 August 2007 00:28, Jens Axboe wrote:
+> On Sun, Aug 12 2007, Daniel Phillips wrote:
+> > Right, that is done by bi_vcnt.  I meant bi_max_vecs, which you can
+> > derive efficiently from BIO_POOL_IDX() provided the bio was
+> > allocated in the standard way.
+>
+> That would only be feasible, if we ruled that any bio in the system
+> must originate from the standard pools.
 
-===========================
-Original Toner Cartridge promotion
-===========================
+Not at all.
 
-HP toner:
-1) C7115A = RM170;
-2) C3906F = RM175;
-3) Q2612A = RM 199;
-4) Q5949A = RM 199;
+> > This leaves a little bit of clean up to do for bios not allocated
+> > from a standard pool.
+>
+> Please suggest how to do such a cleanup.
 
+Easy, use the BIO_POOL bits to know the bi_max_size, the same as for a 
+bio from the standard pool.  Just put the power of two size in the bits 
+and map that number to the standard pool arrangement with a table 
+lookup.
 
-Samsung toner:
-1) ML-1710 = RM 249;
-2) ML-2010 = RM 239;
+> > On the other hand, vm writeout deadlock ranks smack dab at the top
+> > of the list, so that is where the patching effort must go for the
+> > forseeable future.  Without bio throttling, the ddsnap load can go
+> > to 24 MB for struct bio alone.  That definitely moves the needle. 
+> > in short, we save 3,200 times more memory by putting decent
+> > throttling in place than by saving an int in struct bio.
+>
+> Then fix the damn vm writeout. I always thought it was silly to
+> depend on the block layer for any sort of throttling. If it's not a
+> system wide problem, then throttle the io count in the
+> make_request_fn handler of that problematic driver.
 
-Xerox toner:
-1) 203A = RM 149;
+It is a system wide problem.  Every block device needs throttling, 
+otherwise queues expand without limit.  Currently, block devices that 
+use the standard request library get a slipshod form of throttling for 
+free in the form of limiting in-flight request structs.  Because the 
+amount of IO carried by a single request can vary by two orders of 
+magnitude, the system behavior of this approach is far from 
+predictable.
 
+> > You did not comment on the one about putting the bio destructor in
+> > the ->endio handler, which looks dead simple.  The majority of
+> > cases just use the default endio handler and the default
+> > destructor.  Of the remaining cases, where a specialized destructor
+> > is needed, typically a specialized endio handler is too, so
+> > combining is free.  There are few if any cases where a new
+> > specialized endio handler would need to be written.
+>
+> We could do that without too much work, I agree.
 
-**************************************************************
-ADVANTAGES : Printer repairs & services available
-**************************************************************
+OK, we got one and another is close to cracking, enough of that.
 
+> > As far as code stability goes, current kernels are horribly
+> > unstable in a variety of contexts because of memory deadlock and
+> > slowdowns related to the attempt to fix the problem via dirty
+> > memory limits.  Accurate throttling of bio traffic is one of the
+> > two key requirements to fix this instability, the other other is
+> > accurate writeout path reserve management, which is only partially
+> > addressed by BIO_POOL.
+>
+> Which, as written above and stated many times over the years on lkml,
+> is not a block layer issue imho.
 
-To REDUCE or SAVE more cost, please do not hesitate to contact us for more information.
+Whoever stated that was wrong, but this should be no surprise.  There 
+have been many wrong things said about this particular bug over the 
+years.  The one thing that remains constant is, Linux continues to 
+deadlock under a variety of loads both with and without network 
+involvement, making it effectively useless as a storage platform.
 
-regards,
+These deadlocks are first and foremost, block layer deficiencies.  Even 
+the network becomes part of the problem only because it lies in the 
+block IO path.
 
-Mr Ken
-Tel: 012-366 2818
+Regards,
 
-IT CITY COMPUTER
-46M, Jalan Wangsa 2/5, Taman Wangsa Permai,
-Kepong 52100. Kuala Lumpur.
-Tel: 03-6276 3561
-Fax: 03-6272 9718
-Email: prolaser_toner@yahoo.com
-
------------------------------------------------------------------------------------------
-pls refer to terms & conditions
+Daniel
