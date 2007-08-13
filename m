@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031619AbXHMRbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936683AbXHMRby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031619AbXHMRbM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S973640AbXHMR1k
+	id S936683AbXHMRby (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S973693AbXHMR2C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:27:40 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:30405 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S973668AbXHMR1S (ORCPT
+	Mon, 13 Aug 2007 13:28:02 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:21474 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S973645AbXHMR17 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:27:18 -0400
-X-IronPort-AV: i="4.19,255,1183359600"; 
-   d="scan'208"; a="170724293:sNHT44510616"
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, surya.prabhakar@wipro.com,
-       mingo@redhat.com, yaku@css1.kbnes.nec.co.jp,
-       kisimoto@css1.kbnes.nec.co.jp, zab@redhat.com,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [KJ] replacing kmalloc with kzalloc in io_apic.c
-X-Message-Flag: Warning: May contain useful information
-References: <1186993881.3175.15.camel@bluegenie>
-	<200708131518.20580.m.kozlowski@tuxland.pl>
-	<Pine.LNX.4.64.0708131153190.4382@localhost.localdomain>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 13 Aug 2007 10:27:07 -0700
-In-Reply-To: <Pine.LNX.4.64.0708131153190.4382@localhost.localdomain> (Robert P. J. Day's message of "Mon, 13 Aug 2007 11:54:42 -0400 (EDT)")
-Message-ID: <aday7gf8hw4.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
-MIME-Version: 1.0
+	Mon, 13 Aug 2007 13:27:59 -0400
+Date: Mon, 13 Aug 2007 20:27:54 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Joe Perches <joe@perches.com>
+Cc: torvalds@linux-foundation.org, mulix@mulix.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] [481/2many] MAINTAINERS - TRIDENT 4DWAVE/SIS 7018 PCI AUDIO CORE
+Message-ID: <20070813172754.GR7649@rhun.ibm.com>
+References: <46bffc25.miV0BBr9F/41UwE2%joe@perches.com> <20070813121803.GB1374@rhun.haifa.ibm.com> <1187025902.10249.145.camel@localhost>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 Aug 2007 17:27:07.0780 (UTC) FILETIME=[2C7E6C40:01C7DDCF]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <1187025902.10249.145.camel@localhost>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > from my days submitting numerous patches of this type, i can recall
- > that in cases like the above, it's a judgment call -- use kzalloc to
- > get the zeroing, or use kcalloc to get the array-flavoured behaviour.
- > what a shame you can't have both at the same time.
+On Mon, Aug 13, 2007 at 10:25:02AM -0700, Joe Perches wrote:
+> On Mon, 2007-08-13 at 15:18 +0300, Muli Ben-Yehuda wrote:
+> > Nope, this entry is for sound/oss/trident*.
+> 
+> TRIDENT 4DWAVE/SIS 7018 PCI AUDIO CORE
+> P:	Muli Ben-Yehuda
+> M:	mulix@mulix.org
+> L:	linux-kernel@vger.kernel.org
+> S:	Maintained
+> F:	sound/oss/trident*
 
-kcalloc() zeros memory just like standard calloc() in userspace.
+Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
 
-As <linux/slab.h> says:
-
- * kcalloc - allocate memory for an array. The memory is set to zero.
+Cheers,
+Muli
