@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbXHMKAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbXHMKBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756370AbXHMKAk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 06:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967112AbXHMGeG
+	id S1756291AbXHMKBi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 06:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967100AbXHMGeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:34:06 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1461 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:34:09 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1474 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967154AbXHMGd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:33:56 -0400
-Date: Sun, 12 Aug 2007 23:33:40 -0700
+	id S967161AbXHMGd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:33:59 -0400
+Date: Sun, 12 Aug 2007 23:33:46 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org
-Subject: [PATCH] [370/2many] MAINTAINERS - PCI SUBSYSTEM
-Message-ID: <46bffb44.cxVxpLtQYfiDVMDe%joe@perches.com>
+To: torvalds@linux-foundation.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] [373/2many] MAINTAINERS - PCMCIA SUBSYSTEM
+Message-ID: <46bffb4a.T4iLrjVaXLCXPxXL%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,16 +27,22 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 59ba494..86e2e6c 100644
+index b0cf0a7..f6b84d2 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -3563,6 +3563,9 @@ L:	linux-kernel@vger.kernel.org
- L:	linux-pci@atrey.karlin.mff.cuni.cz
- T:	quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
- S:	Supported
-+F:	Documentation/pci.txt
-+F:	drivers/pci/
-+F:	include/linux/pci*
+@@ -3585,9 +3585,14 @@ F:	drivers/pci/pcie/
+ PCMCIA SUBSYSTEM
+ P:	Linux PCMCIA Team
+ L:	linux-pcmcia@lists.infradead.org
+-L:	http://lists.infradead.org/mailman/listinfo/linux-pcmcia
++W:	http://lists.infradead.org/mailman/listinfo/linux-pcmcia
+ T:	git kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
+ S:	Maintained
++F:	Documentation/pcmcia/
++F:	drivers/*/pcmcia/
++F:	drivers/pcmcia/
++F:	include/pcmcia/
++F:	sound/pcmcia/
  
- PCI HOTPLUG CORE
- P: 	Kristen Carlson Accardi
+ PCNET32 NETWORK DRIVER
+ P:	Don Fry
