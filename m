@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937754AbXHMV3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936243AbXHMVae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937754AbXHMV3V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 17:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758783AbXHMV24
+	id S936243AbXHMVae (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 17:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760213AbXHMVaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 17:28:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37862 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754391AbXHMV2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 17:28:55 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Joe Perches <joe@perches.com>, pavel@suse.cz
-Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka Software Suspend, aka swsusp):
-Date: Mon, 13 Aug 2007 23:38:24 +0200
-User-Agent: KMail/1.9.5
-Cc: torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com> <200708132325.04810.rjw@sisk.pl> <1187040080.10249.323.camel@localhost>
-In-Reply-To: <1187040080.10249.323.camel@localhost>
+	Mon, 13 Aug 2007 17:30:00 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:47381 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758783AbXHMV36 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 17:29:58 -0400
+Date: Mon, 13 Aug 2007 23:29:47 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Vitaly Bordug <vitb@kernel.crashing.org>,
+       Dan Merillat <dan.merillat@gmail.com>,
+       Paolo Ornati <ornati@fastwebnet.it>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-fsdevel@vger.kernel.org,
+       nfs@lists.sourceforge.net, Jeff Garzik <jeff@garzik.org>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: Re: [1/2] 2.6.23-rc3: known regressions with patches
+Message-ID: <20070813212947.GK18945@stusta.de>
+References: <46C09C1A.7050706@googlemail.com> <20070813184204.GA6071@one.firstfloor.org> <6bffcb0e0708131324x29211ef5sd5154d44f0c2e79f@mail.gmail.com> <20070813205653.GA7069@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200708132338.25925.rjw@sisk.pl>
+In-Reply-To: <20070813205653.GA7069@one.firstfloor.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 13 August 2007 23:21, Joe Perches wrote:
-> On Mon, 2007-08-13 at 23:25 +0200, Rafael J. Wysocki wrote:
-> > + include/linux/suspend.h
-> > + include/linux/freezer.h
-> > + include/linux/pm.h
-> > + include/asm-*/suspend.h
+On Mon, Aug 13, 2007 at 10:56:53PM +0200, Andi Kleen wrote:
+> On Mon, Aug 13, 2007 at 10:24:52PM +0200, Michal Piotrowski wrote:
+> > On 13/08/07, Andi Kleen <andi@firstfloor.org> wrote:
+> > > > Unclassified
+> > > >
+> > > > Subject         : reset during bootup - 2.6.23-rc2 (git d23cf676)
+> > >
+> > > This is already fixed in mainline
 > > 
-> > Hm, they are also relevant for suspend to RAM, so perhaps one common
-> > list of files for suspend to RAM and hibernation would be better?
+> > commit b8d3f2448b8f4ba24f301e23585547ba1acc1f04
+> > 
+> > >
+> > > There is a real regression with failing builds on some old binutils on
+> > > x86-64 know, but I don't know how to fix it.
+> > 
+> > Did you mean this?
 > 
-> Maybe just collapse the 2 maintainers blocks into one?
-> 
-> HIBERNATION (aka Software Suspend, aka swsusp) and SUSPEND TO RAM:
-> P:	Pavel Machek
-> M:	pavel@suse.cz
-> P:	Rafael J. Wysocki
-> M:	rjw@sisk.pl
-> L:	linux-pm@lists.linux-foundation.org
-> S:	Supported
+> Yes. Anyways it be likely a WONT-FIX -- aka document newer binutils
+> version required. We haven't had any other reports so likely
+> that version is not too widely used.
 
-Then I think it should be "Maintained".
+IOW: Either the Linux binutils >= 2.17.50.0.3 or the not yet released 
+GNU binutils 2.18 are now required.
 
-> F:	Documentation/power/swsusp*
+Debian 4.0 has older ones, and all distributions released more than a 
+year ago for sure also have older ones (the required patch went into 
+binutils CVS on 2006-05-30 and 2.17.50.0.3 was released on 2006-07-15).
 
-F: Documentation/power/
+Isn't that a bit too recent?
 
-> F:	arch/i386/kernel/acpi/
-> F:	arch/i386/power/
-> F:	arch/x86_64/kernel/acpi/
-> F:	arch/x86_64/kernel/suspend_asm.S
-> F:	arch/x86_64/kernel/suspend.c
-> F:	drivers/base/power/
-> F:	kernel/power/
-> F:	include/linux/suspend.h
-> F:	include/linux/freezer.h
-> F:	include/linux/pm.h
-> F:	include/asm-*/suspend.h
+> -Andi
 
-Pavel, what do you think?
-
+cu
+Adrian
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
