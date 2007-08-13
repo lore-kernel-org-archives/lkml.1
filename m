@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbXHMNzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbXHMN4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754235AbXHMNzp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938385AbXHMKka
+	id S1752562AbXHMN4e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939585AbXHMKlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 06:40:30 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:58364 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S938906AbXHMKkX convert rfc822-to-8bit (ORCPT
+	Mon, 13 Aug 2007 06:41:15 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38728 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S939536AbXHMKlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 06:40:23 -0400
-Date: Mon, 13 Aug 2007 12:39:24 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+	Mon, 13 Aug 2007 06:41:13 -0400
+Date: Mon, 13 Aug 2007 11:47:30 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: joe@perches.com
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] [206/2many] MAINTAINERS - GENERIC GPIO I2C DRIVER
-Message-ID: <20070813123924.25d422ac@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <46bff9fc.i+o8WMM7bF8WiNL9%joe@perches.com>
-References: <46bff9fc.i+o8WMM7bF8WiNL9%joe@perches.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Cc: torvalds@linux-foundation.org, sfr@canb.auug.org.au,
+       linux-laptop@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] [44/2many] MAINTAINERS - APM DRIVER
+Message-ID: <20070813114730.107f1402@the-village.bc.nu>
+In-Reply-To: <46bff8b6.XgYxpWqOSD9Itfw6%joe@perches.com>
+References: <46bff8b6.XgYxpWqOSD9Itfw6%joe@perches.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Aug 2007 23:28:12 -0700
+On Sun, 12 Aug 2007 23:22:46 -0700
 joe@perches.com wrote:
 
-> @@ -1967,6 +1967,8 @@ GENERIC GPIO I2C DRIVER
->  P:	Haavard Skinnemoen
->  M:	hskinnemoen@atmel.com
+> Add file pattern to MAINTAINER entry
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 016f342..da9bc6d 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -428,6 +428,9 @@ M:	sfr@canb.auug.org.au
+>  L:	linux-laptop@vger.kernel.org
+>  W:	http://www.canb.auug.org.au/~sfr/
 >  S:	Supported
-> +F:	Documentation/gpio.txt
+> +F:	arch/i386/boot/apm.c
+> +F:	arch/i386/kernel/apm.c
+> +F:	include/linux/apm_bios.h
 
-This document describes the generic GPIO interface which is used by the
-i2c-gpio driver as well as many others. I don't think it should be
-associated with this particular driver.
+NAK - boot/apm.c seems to be maintained by H Peter Anvin
 
-Patches for Documentation/gpio.txt should probably be sent to
-linux-arch and David Brownell, who is the one who wrote it.
-
-> +F:	drivers/i2c/busses/i2c-gpio.c
-
-F: include/linux/i2c-gpio.h
-
-The other patches I was Cc'ed on (77, 78, 81 and 82) all look good to
-me.
-
-Håvard
