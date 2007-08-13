@@ -1,42 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972353AbXHMR07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S945592AbXHMR1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972353AbXHMR07 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032440AbXHMRXd
+	id S945592AbXHMR1u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938851AbXHMRZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:23:33 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3229 "EHLO perches.com"
+	Mon, 13 Aug 2007 13:25:22 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3236 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S973614AbXHMRXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:23:30 -0400
-Subject: Re: [PATCH] [397/2many] MAINTAINERS - QNX4 FILESYSTEM
+	id S1030940AbXHMRZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 13:25:19 -0400
+Subject: Re: [PATCH] [481/2many] MAINTAINERS - TRIDENT 4DWAVE/SIS 7018 PCI
+	AUDIO CORE
 From: Joe Perches <joe@perches.com>
-To: Anders Larsen <al@alarsen.net>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <1187009505l.26974l.0l@ecxwww1.reanet.de>
-References: <46bffb7b.C++26gfic9//+SQA%joe@perches.com>
-	 <1187009505l.26974l.0l@ecxwww1.reanet.de>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: torvalds@linux-foundation.org, mulix@mulix.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20070813121803.GB1374@rhun.haifa.ibm.com>
+References: <46bffc25.miV0BBr9F/41UwE2%joe@perches.com>
+	 <20070813121803.GB1374@rhun.haifa.ibm.com>
 Content-Type: text/plain
-Date: Mon, 13 Aug 2007 10:23:06 -0700
-Message-Id: <1187025786.10249.143.camel@localhost>
+Date: Mon, 13 Aug 2007 10:25:02 -0700
+Message-Id: <1187025902.10249.145.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 14:51 +0200, Anders Larsen wrote:
-> include/linux/qnxtypes.h too
+On Mon, 2007-08-13 at 15:18 +0300, Muli Ben-Yehuda wrote:
+> Nope, this entry is for sound/oss/trident*.
 
-QNX4 FILESYSTEM
-P:	Anders Larsen
-M:	al@alarsen.net
+TRIDENT 4DWAVE/SIS 7018 PCI AUDIO CORE
+P:	Muli Ben-Yehuda
+M:	mulix@mulix.org
 L:	linux-kernel@vger.kernel.org
-W:	http://www.alarsen.net/linux/qnx4fs/
 S:	Maintained
-F:	fs/qnx4
-F:	include/linux/qnx4_fs.h
-F:	include/linux/qnxtypes.h
+F:	sound/oss/trident*
 
 
