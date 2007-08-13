@@ -1,199 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757692AbXHMEXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759535AbXHME2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757692AbXHMEXb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 00:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbXHMEXW
+	id S1759535AbXHME2H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 00:28:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbXHME14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 00:23:22 -0400
-Received: from web36611.mail.mud.yahoo.com ([209.191.85.28]:41046 "HELO
-	web36611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750787AbXHMEXV (ORCPT
+	Mon, 13 Aug 2007 00:27:56 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46374 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750953AbXHME1z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 00:23:21 -0400
-X-YMail-OSG: 7ZD1SIUVM1k5uTmRpuptKB1.4.BZod4h5V24rTQqAoa2ETWl
-X-RocketYMMF: rancidfat
-Date: Sun, 12 Aug 2007 21:23:20 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
-To: Kyle Moffett <mrmacman_g4@mac.com>, casey@schaufler-ca.com
-Cc: linux-security-module@vger.kernel.org,
-       LKML Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <10247DAA-D04B-42D5-B67B-C2D3BD42A94F@mac.com>
+	Mon, 13 Aug 2007 00:27:55 -0400
+Message-ID: <46BFDDBB.2020104@zytor.com>
+Date: Sun, 12 Aug 2007 21:27:39 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <134690.82938.qm@web36611.mail.mud.yahoo.com>
+To: rae l <crquan@gmail.com>
+CC: Steven Whitehouse <swhiteho@redhat.com>, cluster-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] gfs2: better code for translating characters
+References: <11869741183677-git-send-email-crquan@gmail.com> <91b13c310708122008w27b86359n5b135df3e229e616@mail.gmail.com>
+In-Reply-To: <91b13c310708122008w27b86359n5b135df3e229e616@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Kyle Moffett <mrmacman_g4@mac.com> wrote:
-
-> <really big snip>
+rae l wrote:
+> On 8/13/07, Denis Cheng <crquan@gmail.com> wrote:
+>> the original code could work, but I think this code could work better.
+>>
+>> Signed-off-by: Denis Cheng <crquan@gmail.com>
+>> ---
+>>  fs/gfs2/ops_fstype.c |    3 ++-
+>>  1 files changed, 2 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
+>> index cf5aa50..b9a7759 100644
+>> --- a/fs/gfs2/ops_fstype.c
+>> +++ b/fs/gfs2/ops_fstype.c
+>> @@ -145,7 +145,8 @@ static int init_names(struct gfs2_sbd *sdp, int silent)
+>>         snprintf(sdp->sd_proto_name, GFS2_FSNAME_LEN, "%s", proto);
+>>         snprintf(sdp->sd_table_name, GFS2_FSNAME_LEN, "%s", table);
+>>
+>> -       while ((table = strchr(sdp->sd_table_name, '/')))
+>> +       table = sdp->sd_table_name;
+>> +       while ((table = strchr(table, '/')))
+>>                 *table = '_';
+> Sorry, I don't know what the while loop really means, what's the
+> common case that slash character exists? if the '/' appears multiple,
+> the latter code would be better; however, if slash appears rarely, the
+> original would still be better.
 > 
-> If you have no interest in categorizing the SELinux access vectors,  
-> then how do you expect to categorize the LSM hooks, which are almost  
-> 1-to-1 mapped with the SELinux access vectors?
 
-Those that refer to object accesses and those that do not. The former
-are generally interesting, the latter are generally not. That's a
-rule of thumb, mind you. Anyway, have a look at the hook table, it's
-in smack_lsm.c
+Only if the compiler is stupid.
 
-> > The point you make, that you need to have that in order to create a  
-> > policy description, is one of the reasons for Smack. Simplified.
-> 
-> Well yes, but a simplified policy is useless if it uses no LSM  
-> hooks. 
-
-As above, that's smack_lsm.c, a little over 2000 lines of good old
-fashioned C code.
-
-> I will write you a Perl script which will generate a complete  
-> and functionally equivalent SELinux policy (assuming I have enough  
-> free time) given a file with your policy language.  But I can do this  
-> if and only if you tell me which of the SELinux access vectors you  
-> care about (In other words, which of the LSM hooks you want to  
-> require "read", "write", or "execute" privileges for).  With such a  
-> little script you could write all the "simplified" policy you want,  
-> without having to change the kernel code at all.
-
-It's all spelled out in the module. Go wild.
-
-> <another major snip>
-> 
-> My point is your policy format is SO simple it doesn't even need the  
-> SELinux MLS code to handle it.  From the way you've described it the  
-> base policy (~200 lines) would be *identical* regardless of the  
-> entries in your policy language, and the rest could be generated by a  
-> script directly from the "C Unclass rx"-type stuff.
-
-Ok.
-
-> >> Whoops, I think I must have smashed the delete key or something  
-> >> while sending.  Here's the paragraphs which got elided:
-> >>
-> >> Well, yes, but a policy which completely ignores future  
-> >> expandability can't be expanded upon regardless. It would also be  
-> >> very hard to add new policy without a lot of duplication under  
-> >> your system. On the other hand, with SELinux you can very easily  
-> >> add attribute-based policy so adding new capabilities is as simple  
-> >> as sticking existing attributes on newly defined types.  For example:
-> >>
-> >> type my_log_t, file_type, log_file;
-> >> type my_log_daemon, daemon;
-> >>
-> >> Right there I just gave permission for the logrotate to recycle  
-> >> files labelled my_log_t, which the sysadmin and audit admin can  
-> >> also read (and the audit admin can delete).  I also gave  
-> >> permission for my daemon to send SIGCHLD to init, and for init/ 
-> >> initscripts to send it a SIGTERM/SIGQUIT.  All without writing a  
-> >> SINGLE policy rule.  Basically all of those existing behaviors are  
-> >> found in allow rules built on the "file_type", "log_file", and  
-> >> "daemon" attributes.
-> >
-> > Ah, now you're refering to the reference policy, right?
-> 
-> Yes, precisely.  For most of that functionality there are existing  
-> attributes and types defined in the reference policy to make custom  
-> policy much easier.  Furthermore, there are interface files which  
-> allow me to say something like "Let this program spawn an Apache  
-> daemon in the right domain" with a single line.  If I only want to do  
-> that when the "httpd" module is loaded I can put the line in an  
-> "optional" block.  A policy for a basic network daemon with a couple  
-> log files, a config file, and a little database is all of 30 lines,  
-> maybe 50 if you throw in comments.
-
-After you have the 400,000 lines of reference policy behind it.
-
-> >>> They can be added or changed one by one as required while the  
-> >>> system is running, and there are uses that exploit that. One  
-> >>> example is to put the label "Game" on certain programs and:
-> >>>
-> >>>    at 8:00am "Worker Game no"
-> >>>    at 5:00pm "Worker Game x"
-> >>>
-> >>> Thus Worker processes can access Game files only during off hours.
-> >>
-> >> This is fundamentally broken:
-> >> [...]
-> >> Secondly, you can already do the same thing with DAC and a PAM  
-> >> groups-from-time-of-day module, I don't see why such a thing is  
-> >> special enough to need MAC.  Thirdly, I could do exactly the same  
-> >> thing with an SELinux boolean and a cronjob (once we get proper  
-> >> revoke support):
-> >
-> > There is usually a way to address any particular problem using DAC,  
-> > it's often sufficiently painful that MAC looks like a better approach.
-> 
-> No, generally the only reason to use MAC is when it's security- 
-> critical (system compromise, classified data, critical  
-> infrastructure, etc).  Denying users access to games during the  
-> workday is hardly "security-critical".  If that system's CPU time was  
-> exclusively needed for a life support machine during the day then  
-> maybe, but that's what renice or realtime scheduling are for and why  
-> the hell are you installing games on a heart monitor?
-
-HeeHee. Don't think heart monitor, think in-car trip recorder.
-The games can only be used when the car's at rest. It's a strange
-world we live in today.
-
-> <Another big snip>
-
-> > Yes. This is the way it should be. A small set of very carefully  
-> > analysed programs that change labels under carefully controlled  
-> > circumstances is what I want. login, sshd, cron, special purpose  
-> > launchers. Written with the assumption that they will be attacked.
-> 
-> Well, under SELinux, all 3 of those processes go through the special  
-> purpose PAM module to get their labels changed.  Are you planning to  
-> modify *every* daemon to have special type-changing code?  Hell, most  
-> don't even have setuid/chroot support and that's all of 15 lines of  
-> code and is supported in every UNIX/Linux distro released in the last  
-> 10 years (or more).  Besides, why allow the program (say, "ping") to  
-> change its own label when the policy could forcibly change it for  
-> you.  The label change is NOT just to *give* permissions, it's also  
-> to take them away.  For example, when I run "ping", the process gains  
-> raw network access but loses access to almost every user file and  
-> disables LD_PRELOAD, etc, making it a thousand times harder to  
-> compromise it from the inside too.
-
-I don't think we're debating the same issues any more. I can see
-that you are well versed in the nuances of SELinux behavior. I
-understand what SELinux does, and the arguements in it's favor.
-I don't see that the complexity it requires is necessary in many
-cases. 
- 
-
-> >> Unless you relabel the files and relaunch the daemon the system  
-> >> will have no idea how the system will change.  And if you let  
-> >> arbitrary root processes relabel things on the fly then you've  
-> >> lost all the security advantages to a MAC system.
-> >
-> > MAC systems have been behaving this way for decades. SELinux is the  
-> > exception, not the rule on this.
-> 
-> "People have been burning witches for decades, that must be the right  
-> thing to do"
-> 
-> The fact that something is commonly done does not make it right,  
-> especially when there is a significantly more secure alternative  
-> available.
-
-That sword cuts both ways, you know. And if a complex system
-is intractable for an environment it cannot make you feel 
-more secure.
-
-I think that below here it's all philosophical differences based
-on significantly different experiance and goals. Can you run
-SELinux successfully on an 2 megahertz ARM processor with 8 meg
-of ram, and no labeled file systems? I don't know that Smack
-will ever be as appropriate for an enterprise server as SELinux is
-today, but time will tell.
-
-
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+	-hpa
