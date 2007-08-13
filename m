@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S943643AbXHMP1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938215AbXHMP2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S943643AbXHMP1k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S972883AbXHMNW2
+	id S938215AbXHMP2R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030240AbXHMNX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 09:22:28 -0400
-Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:4287 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S972197AbXHMNWZ (ORCPT
+	Mon, 13 Aug 2007 09:23:26 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60589 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S972837AbXHMNXT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 09:22:25 -0400
-Date: Mon, 13 Aug 2007 15:22:51 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Markus Rechberger" <markus.rechberger@amd.com>
-Cc: linux-kernel@vger.kernel.org, "Greg KH" <greg@kroah.com>
-Subject: Re: [PATCH] Firmware class name collision
-Message-ID: <20070813152251.032fb302@hyperion.delvare>
-In-Reply-To: <46C05896.4050509@amd.com>
-References: <46C05896.4050509@amd.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Mon, 13 Aug 2007 09:23:19 -0400
+Date: Mon, 13 Aug 2007 14:30:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: mikpe@it.uu.se, bzolnier@gmail.com, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pata_artop: fix UDMA5 for AEC6280[R] and UDMA6 for
+ AEC6880[R]
+Message-ID: <20070813143032.4caffc28@the-village.bc.nu>
+In-Reply-To: <200708121153.l7CBrsm5011470@harpo.it.uu.se>
+References: <200708121153.l7CBrsm5011470@harpo.it.uu.se>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Markus,
+> > It would be nice to know why - is the cable detet coming out right on
+> > this ?
+> 
+> The box has a short 40-wire cable, so pata_artop drops to udma/33
+> while aec62xx does udma/100 without intervention. I added an override
 
-On Mon, 13 Aug 2007 15:11:50 +0200, Markus Rechberger wrote:
-> following patch fixes the i2c name collision with i2c-dev.
-> 
-> http://mcentral.de/wiki/index.php/Bugtracker#i2c_core_problem
-> 
-> This issue has been experienced with em28xx and saa7133 based devices.
-> I discussed that problem with Jean Delvare a while ago and he proposed 
-> to add a prefix to the class name.
-> 
-> http://mcentral.de/~mrec/patches/firmware_class_name_collision.diff
-> 
-> Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
+Curious as both use the same cable detect logic. 
 
-Acked-by: Jean Delvare <khali@linux-fr.org>
+> to artop6260_cable_detect() to make it return PATA40_SHORT on this
+> platform, and with that it does udma/100 as expected.
 
-> 
-> index b24efd4..bfc54a1 100644
-> --- a/drivers/base/firmware_class.c
-> +++ b/drivers/base/firmware_class.c
-> @@ -297,8 +297,7 @@ firmware_class_timeout(u_long data)
->  
->  static inline void fw_setup_device_id(struct device *f_dev, struct 
-> device *dev)
->  {
-> -       /* XXX warning we should watch out for name collisions */
-> -       strlcpy(f_dev->bus_id, dev->bus_id, BUS_ID_SIZE);
-> +       snprintf(f_dev->bus_id, BUS_ID_SIZE, "fw-%s", dev->bus_id);
->  }
->  
->  static int fw_register_device(struct device **dev_p, const char *fw_name,
+Patch would be good. Looks like there are a couple of cases anyway where
+artop needs platform specific uglies
 
 
--- 
-Jean Delvare
+> 
+> Read performance fluctuates quite a bit, but seems to be 1-3 MB/s
+> slower than aec62xx on average. I compared lspci -vvxxx and the
+> only differences are a latency setting and some ROM thingy:
+
+Latency shouldn't matter but you can tweak the driver to verify easily
+enough
