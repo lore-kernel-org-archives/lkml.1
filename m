@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S973397AbXHMQtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031976AbXHMQu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S973397AbXHMQtc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S972542AbXHMQIi
+	id S1031976AbXHMQu1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S947387AbXHMQOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 12:08:38 -0400
-Received: from mga01.intel.com ([192.55.52.88]:6502 "EHLO mga01.intel.com"
+	Mon, 13 Aug 2007 12:14:41 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3099 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S972526AbXHMQIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 12:08:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,255,1183359600"; 
-   d="scan'208";a="280331935"
-Date: Mon, 13 Aug 2007 09:05:33 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, akpm@linux-foundation.org
-Subject: Re: [2.6 patch] cpqphp_ctrl.c: remove dead code
-Message-Id: <20070813090533.4a363c5a.kristen.c.accardi@intel.com>
-In-Reply-To: <20070809233910.GB18938@stusta.de>
-References: <20070723145105.GK26212@stusta.de>
-	<20070809145140.654303a0.kristen.c.accardi@intel.com>
-	<20070809222427.GA32127@suse.de>
-	<20070809154702.caa67a61.kristen.c.accardi@intel.com>
-	<20070809230436.GA18938@stusta.de>
-	<20070809162001.a5dc0b76.kristen.c.accardi@intel.com>
-	<20070809233910.GB18938@stusta.de>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+	id S938075AbXHMQOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 12:14:38 -0400
+Subject: Re: [PATCH] [188/2many] MAINTAINERS - EXT4 FILE SYSTEM
+From: Joe Perches <joe@perches.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: torvalds@linux-foundation.org, sct@redhat.com,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       akpm@linux-foundation.org, Eric Sandeen <esandeen@redhat.com>,
+       Mingming Cao <cmm@us.ibm.com>
+In-Reply-To: <20070813151917.GA28130@thunk.org>
+References: <46bff9cc.cxIrFM29roaPmcfV%joe@perches.com>
+	 <20070813090128.GJ6689@schatzie.adilger.int>
+	 <20070813151917.GA28130@thunk.org>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 09:14:01 -0700
+Message-Id: <1187021641.10249.90.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007 01:39:10 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
+On Mon, 2007-08-13 at 11:19 -0400, Theodore Tso wrote:
+> Yep, agreed.
 
-> As I've wrote in the patch description, all it does is to remove an if() 
-> check that could never be false (which is easily verifyable if you look 
-> at the source code).
-> 
-> I've also verified that my patch does not change a single bit in the 
-> object file (after compilation with gcc 4.2.1).
+OK. saved in my tree as
 
-while you are correct that your patch will not change the object,
-the reason I think that we should not do this patch is because it appears
-to me that this code path was meant to be taken, and perhaps it was a 
-mistake to return -ENOMEM further up (the reason the code isn't taken).
-It seems to me that the thing to do is to leave the code as is, and then when
-someone picks up the code again, they can clean it up after they've determined
-they truly don't want that code path taken.
+EXT4 FILE SYSTEM
+P:      Ted Ts'o
+M:	tytso@mit.edu
+P:	Eric Sandeen
+M:	sandeen@sgi.com
+P:	Mingming Cao
+M:	cmm@us.ibm.com
+L:	linux-ext4@vger.kernel.org
+S:	Maintained
+F:	fs/ext4/
+F:	include/linux/ext4*
 
-My definition of trivial is a patch that is both simple and obviously the 
-right thing to do.
-Kristen
- 
+Separate question.  Is it right that the L: entries
+for ext2/3/4 are all linux-ext4@vger.kernel.org?
+
