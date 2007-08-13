@@ -1,40 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941679AbXHMTTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S943447AbXHMTT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941679AbXHMTTV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 15:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758254AbXHMTS4
+	id S943447AbXHMTT7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 15:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbXHMTTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 15:18:56 -0400
-Received: from smtprelay12.ispgateway.de ([80.67.29.29]:44316 "EHLO
-	smtprelay12.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755359AbXHMTSz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 15:18:55 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: [PATCH]: proc: export a processes resource limits via proc/<pid>
-Date: Mon, 13 Aug 2007 21:25:45 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-References: <20070813140044.GB1960@hmsreliant.think-freely.org>
-In-Reply-To: <20070813140044.GB1960@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 13 Aug 2007 15:19:36 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3548 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758254AbXHMTTe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 15:19:34 -0400
+Subject: Re: Bad addresses in MAINTAINERS
+From: Joe Perches <joe@perches.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <8bd0f97a0708131210i13d2eeefp8055d444a9d2ce7a@mail.gmail.com>
+References: <1187032024.10249.266.camel@localhost>
+	 <8bd0f97a0708131210i13d2eeefp8055d444a9d2ce7a@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 12:19:29 -0700
+Message-Id: <1187032769.10249.270.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708132125.47188.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Neil,
+On Mon, 2007-08-13 at 15:10 -0400, Mike Frysinger wrote:
+> On 8/13/07, Joe Perches <joe@perches.com> wrote:
+> > But if anyone has a new email address and still wants
+> > to be in the maintainers file, please send.
+> >
+> > BLACKFIN ARCHITECTURE
+> > P:      Aubrey Li
+> > M:      aubrey.li@analog.com
+> > P:      Jerry Zeng
+> > M:      jerry.zeng@analog.com
+> 
+> we know these guys needed to be removed as they've recently left ADI,
+> we just havent pushed to mainline
 
-> +static struct limit_names lnames[RLIM_NLIMITS] = {
-static const ...
+Maybe you can have a "blackfin_arch@analog.com" list as maintainers?
 
-may be better here.
-
-Best Regards
-
-Ingo Oeser
