@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S973945AbXHMRnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S973793AbXHMRoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S973945AbXHMRnj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032579AbXHMRjx
+	id S973793AbXHMRoQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S973839AbXHMRko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:39:53 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:45106 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1032587AbXHMRjs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:39:48 -0400
-Date: Mon, 13 Aug 2007 12:39:45 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Joe Perches <joe@perches.com>
-Cc: torvalds@linux-foundation.org, mporter@kernel.crashing.org,
-       linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] [292/2many] MAINTAINERS - LINUX FOR POWERPC EMBEDDED
- PPC4XX
-Message-ID: <20070813123945.6ea0d77b@weaponx.rchland.ibm.com>
-In-Reply-To: <1187026501.10249.158.camel@localhost>
-References: <46bffaaf.2ObqORfh5YL/9ILj%joe@perches.com>
-	<20070813061854.644e6e5e@zod.rchland.ibm.com>
-	<1187026501.10249.158.camel@localhost>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; powerpc-redhat-linux-gnu)
+	Mon, 13 Aug 2007 13:40:44 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3287 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S973837AbXHMRkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 13:40:41 -0400
+Subject: Re: [PATCH] [298/2many] MAINTAINERS - LINUX FOR 64BIT POWERPC
+From: Joe Perches <joe@perches.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: torvalds@linux-foundation.org, paulus@samba.org, paulus@au1.ibm.com,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, anton@samba.org,
+       anton@au1.ibm.com, akpm@linux-foundation.org
+In-Reply-To: <20070813061522.57ca3662@zod.rchland.ibm.com>
+References: <46bffaba.dVM9Q/vXNeROaC6B%joe@perches.com>
+	 <20070813061522.57ca3662@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 10:40:08 -0700
+Message-Id: <1187026808.10249.162.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007 10:35:01 -0700
-Joe Perches <joe@perches.com> wrote:
+On Mon, 2007-08-13 at 06:15 -0500, Josh Boyer wrote:
+> Erm, there's a lot more to 64-bit PowerPC than those 3 files.  You're
+> better off just doing arch/powerpc/, include/asm-powerpc.
 
-> On Mon, 2007-08-13 at 06:18 -0500, Josh Boyer wrote:
-> > You're missing arch/ppc/platforms/4xx/, among other things.
-> > Also, we're in the middle of merging 4xx to arch/powerpc.
-> 
-> We can leave the whole block unmodified until you're ready.
-> 
-> LINUX FOR POWERPC EMBEDDED PPC4XX
-> P:	Matt Porter
-> M:	mporter@kernel.crashing.org
-> W:	http://www.penguinppc.org/
-> L:	linuxppc-embedded@ozlabs.org
-> S:	Maintained
+LINUX FOR 64BIT POWERPC
+P:	Paul Mackerras
+M:	paulus@samba.org
+M:	paulus@au.ibm.com
+P:	Anton Blanchard
+M:	anton@samba.org
+M:	anton@au.ibm.com
+W:	http://www.penguinppc.org/ppc64/
+L:	linuxppc-dev@ozlabs.org
+S:	Supported
+F:	arch/powerpc/
+F:	include/asm-powerpc/
 
-Yeah.  I would actually prefer that, thanks.
 
-josh 
+
