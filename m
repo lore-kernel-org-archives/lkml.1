@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939033AbXHMGSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938906AbXHMGV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939033AbXHMGSs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 02:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757548AbXHMGSl
+	id S938906AbXHMGV7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 02:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759718AbXHMGVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:18:41 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:48469 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756303AbXHMGSk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:18:40 -0400
-Message-ID: <46BFF75F.9000900@linux.vnet.ibm.com>
-Date: Mon, 13 Aug 2007 11:47:03 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Mon, 13 Aug 2007 02:21:40 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3364 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755831AbXHMGVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:21:39 -0400
+Date: Sun, 12 Aug 2007 23:21:29 -0700
+From: joe@perches.com
+To: torvalds@linux-foundation.org, netdev@vger.kernel.org, mikep@linuxtr.net,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] [3/2many] MAINTAINERS - 3C359 NETWORK DRIVER
+Message-ID: <46bff869.Zymd4IfBmaZBPKxx%joe@perches.com>
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
-To: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
-CC: akpm@linux-foundation.org, a.p.zijlstra@chello.nl,
-       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, ebiederm@xmission.com, containers@lists.osdl.org,
-       menage@google.com, xemul@openvz.org
-Subject: Re: [-mm PATCH 8/9] Memory controller add switch to control what
- type of pages to limit (v4)
-References: <46BFEE72.9080209@linux.vnet.ibm.com> <20070813060427.0334E1BF9D8@siro.lan>
-In-Reply-To: <20070813060427.0334E1BF9D8@siro.lan>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YAMAMOTO Takashi wrote:
->> YAMAMOTO Takashi wrote:
->>>> Choose if we want cached pages to be accounted or not. By default both
->>>> are accounted for. A new set of tunables are added.
->>>>
->>>> echo -n 1 > mem_control_type
->>>>
->>>> switches the accounting to account for only mapped pages
->>>>
->>>> echo -n 2 > mem_control_type
->>>>
->>>> switches the behaviour back
->>> MEM_CONTAINER_TYPE_ALL is 3, not 2.
->>>
->> Thanks, I'll fix the comment on the top.
->>
->>> YAMAMOTO Takashi
->>>
->>>> +enum {
->>>> +	MEM_CONTAINER_TYPE_UNSPEC = 0,
->>>> +	MEM_CONTAINER_TYPE_MAPPED,
->>>> +	MEM_CONTAINER_TYPE_CACHED,
-> 
-> what's MEM_CONTAINER_TYPE_CACHED, btw?
-> it seems that nothing distinguishes it from MEM_CONTAINER_TYPE_MAPPED.
-> 
+Add file pattern to MAINTAINER entry
 
-The important types are currently MEM_CONTAINER_TYPE_MAPPED and MEM_CONTAINER_TYPE_ALL.
-I added the types for future use (may be for finer accounting of types, later).
+Signed-off-by: Joe Perches <joe@perches.com>
 
-> YAMAMOTO Takashi
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 0d7f856..f74f7d5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -94,9 +94,9 @@ F: Files and directories with wildcard patterns.
+ P:	Mike Phillips
+ M:	mikep@linuxtr.net
+ L:	netdev@vger.kernel.org
+-L:	linux-tr@linuxtr.net
+ W:	http://www.linuxtr.net
+ S:	Maintained
++F:	drivers/net/tokenring/3c359*
+ 
+ 3C505 NETWORK DRIVER
+ P:	Philip Blundell
