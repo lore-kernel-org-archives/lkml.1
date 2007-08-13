@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942268AbXHMNkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S972920AbXHMNlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942268AbXHMNkh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933721AbXHMJ66
+	id S972920AbXHMNlc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935775AbXHMJ7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 05:58:58 -0400
-Received: from smtp-101-monday.nerim.net ([62.4.16.101]:63739 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932325AbXHMJ64 (ORCPT
+	Mon, 13 Aug 2007 05:59:14 -0400
+Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:42830 "EHLO
+	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934323AbXHMJ7K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 05:58:56 -0400
-Date: Mon, 13 Aug 2007 11:59:21 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: joe@perches.com
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       i2c@lm-sensors.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] [231/2many] MAINTAINERS - I2C SUBSYSTEM
-Message-ID: <20070813115921.1fac3ccd@hyperion.delvare>
-In-Reply-To: <46bffa2e.Gcwew3sHyZdFHycV%joe@perches.com>
-References: <46bffa2e.Gcwew3sHyZdFHycV%joe@perches.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 13 Aug 2007 05:59:10 -0400
+Subject: [KJ] replacing kmalloc with kzalloc in drivers/net/sb1250-mac.c
+From: Surya Prabhakar N <surya.prabhakar@wipro.com>
+Reply-To: surya.prabhakar@wipro.com
+To: netdev@vger.kernel.org
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Linux Coe, Wipro Technologies
+Date: Mon, 13 Aug 2007 15:28:43 +0530
+Message-Id: <1186999123.29518.18.camel@bluegenie>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-OriginalArrivalTime: 13 Aug 2007 09:59:21.0418 (UTC) FILETIME=[9EE4EAA0:01C7DD90]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Aug 2007 23:29:02 -0700, joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 491a5a6..2c78350 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2199,6 +2199,9 @@ M:	khali@linux-fr.org
->  L:	i2c@lm-sensors.org
->  T:	quilt http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/
->  S:	Maintained
-> +F:	Documentation/i2c/
-> +F:	drivers/i2c/
-> +F:	include/linux/i2c*
-
-As far as the i2c subsystem itself is concerned, the relevant header
-files are only:
-
-F: include/linux/i2c.h
-F: include/linux/i2c-dev.h
-F: include/linux/i2c-id.h
-
-All the other i2c*.h files are driver-specific.
-
->  
->  I2C-TINY-USB DRIVER
->  P:	Till Harbaum
+Hi,
+   Replacing kmalloc with kzalloc and cleaning up memset in 
+drivers/net/sb1250-mac.c
 
 
--- 
-Jean Delvare
+Signed-off-by: Surya Prabhakar <surya.prabhakar@wipro.com>
+---
+
+diff --git a/drivers/net/sb1250-mac.c b/drivers/net/sb1250-mac.c
+index e7fdcf1..2dca5a7 100644
+--- a/drivers/net/sb1250-mac.c
++++ b/drivers/net/sb1250-mac.c
+@@ -760,7 +760,7 @@ static void sbdma_initctx(sbmacdma_t *d,
+ 
+ 	d->sbdma_dscrtable_unaligned =
+ 	d->sbdma_dscrtable = (sbdmadscr_t *)
+-		kmalloc((d->sbdma_maxdescr+1)*sizeof(sbdmadscr_t), GFP_KERNEL);
++		kzalloc((d->sbdma_maxdescr+1)*sizeof(sbdmadscr_t), GFP_KERNEL);
+ 
+ 	/*
+ 	 * The descriptor table must be aligned to at least 16 bytes or the
+@@ -769,8 +769,6 @@ static void sbdma_initctx(sbmacdma_t *d,
+ 	d->sbdma_dscrtable = (sbdmadscr_t *)
+ 		ALIGN((unsigned long)d->sbdma_dscrtable, sizeof(sbdmadscr_t));
+ 
+-	memset(d->sbdma_dscrtable,0,d->sbdma_maxdescr*sizeof(sbdmadscr_t));
+-
+ 	d->sbdma_dscrtable_end = d->sbdma_dscrtable + d->sbdma_maxdescr;
+ 
+ 	d->sbdma_dscrtable_phys = virt_to_phys(d->sbdma_dscrtable);
+@@ -780,9 +778,7 @@ static void sbdma_initctx(sbmacdma_t *d,
+ 	 */
+ 
+ 	d->sbdma_ctxtable = (struct sk_buff **)
+-		kmalloc(d->sbdma_maxdescr*sizeof(struct sk_buff *), GFP_KERNEL);
+-
+-	memset(d->sbdma_ctxtable,0,d->sbdma_maxdescr*sizeof(struct sk_buff *));
++		kzalloc(d->sbdma_maxdescr*sizeof(struct sk_buff *), GFP_KERNEL);
+ 
+ #ifdef CONFIG_SBMAC_COALESCE
+ 	/*
+
+--
+thanks
+surya.
