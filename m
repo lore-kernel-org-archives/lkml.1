@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965702AbXHMLMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S944116AbXHMLNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965702AbXHMLMz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 07:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939090AbXHMGh4
+	id S944116AbXHMLNm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 07:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966714AbXHMGh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:37:56 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2075 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:37:58 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2076 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966714AbXHMGhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S967406AbXHMGhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 02:37:33 -0400
-Date: Sun, 12 Aug 2007 23:37:19 -0700
+Date: Sun, 12 Aug 2007 23:37:16 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, netdev@vger.kernel.org, mikep@linuxtr.net,
-       linux-tr@linuxtr.net, linux-kernel@vger.kernel.org,
+To: torvalds@linux-foundation.org, tipc-discussion@lists.sourceforge.net,
+       per.liden@ericsson.com, linux-kernel@vger.kernel.org,
+       jon.maloy@ericsson.com, allan.stephens@windriver.com,
        akpm@linux-foundation.org
-Subject: [PATCH] [478/2many] MAINTAINERS - TOKEN-RING NETWORK DRIVER
-Message-ID: <46bffc1f.jeLQtdRi39eTOfu9%joe@perches.com>
+Subject: [PATCH] [476/2many] MAINTAINERS - TIPC NETWORK LAYER
+Message-ID: <46bffc1c.YfyZKtgaE1Ftgt6g%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,15 +29,16 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index fda287c..b5dc1ac 100644
+index 1be2281..9ae0a45 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4539,6 +4539,8 @@ L:	netdev@vger.kernel.org
- L:	linux-tr@linuxtr.net
- W:	http://www.linuxtr.net
+@@ -4519,6 +4519,9 @@ W:	http://tipc.sourceforge.net/
+ W:	http://tipc.cslab.ericsson.net/
+ T:	git tipc.cslab.ericsson.net:/pub/git/tipc.git
  S:	Maintained
-+F:	drivers/net/tokenring/
-+F:	net/802/tr.c
++F:	include/linux/tipc*.h
++F:	include/net/tipc/
++F:	net/tipc/
  
- TOSHIBA ACPI EXTRAS DRIVER
- P:	John Belmonte
+ TLAN NETWORK DRIVER
+ P:	Samuel Chessman
