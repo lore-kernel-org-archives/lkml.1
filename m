@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764509AbXHMVTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934644AbXHMVWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764509AbXHMVTg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 17:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbXHMVTL
+	id S934644AbXHMVWO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 17:22:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbXHMVVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 17:19:11 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3729 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbXHMVTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 17:19:09 -0400
-Subject: Re: [PATCH] [444/2many] MAINTAINERS - SUSPEND TO RAM:
-From: Joe Perches <joe@perches.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: torvalds@linux-foundation.org, pavel@suse.cz,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <200708132322.16316.rjw@sisk.pl>
-References: <46bffbd5.kKrnXsYdLyNKojxF%joe@perches.com>
-	 <200708132252.55738.rjw@sisk.pl> <1187038670.10249.307.camel@localhost>
-	 <200708132322.16316.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 14:17:26 -0700
-Message-Id: <1187039846.10249.319.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Aug 2007 17:21:54 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48947 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752111AbXHMVVx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 17:21:53 -0400
+Date: Mon, 13 Aug 2007 14:21:52 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Joe Perches <joe@perches.com>
+cc: torvalds@linux-foundation.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] [438/2many] MAINTAINERS - SLAB ALLOCATOR
+In-Reply-To: <1187039557.10249.312.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0708131421070.28026@schroedinger.engr.sgi.com>
+References: <46bffbc9.9Jtz7kOTKn1mqlkq%joe@perches.com> 
+ <Pine.LNX.4.64.0708131345130.27728@schroedinger.engr.sgi.com>
+ <1187039557.10249.312.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 23:22 +0200, Rafael J. Wysocki wrote:
-> > What about arch/x86_64/kernel/acpi.c ?
-> Well, there's no such file in current -git.
-> > F:	arch/x86_64/kernel/acpi.c
-> Please remove the above
+On Mon, 13 Aug 2007, Joe Perches wrote:
 
-SUSPEND TO RAM:
-P:	Pavel Machek
-M:	pavel@suse.cz
-P:	Rafael J. Wysocki
-M:	rjw@sisk.pl
-L:	linux-pm@lists.linux-foundation.org
-S:	Maintained
-F:	arch/x86_64/kernel/acpi/
-F:	arch/i386/kernel/acpi/
-F:	drivers/base/power
-F:	kernel/power/
+> Do you want slob too?
 
+Sure we usually have to update all the slab allocators for changes.
+ 
+> SLAB/SLUB ALLOCATOR
+> P:	Christoph Lameter
+> M:	clameter@sgi.com
+> P:	Pekka Enberg
+> M:	penberg@cs.helsinki.fi
+> L:	linux-mm@kvack.org
+> S:	Maintained
+> F:	include/linux/sl?b*.h
+> F:	mm/sl?b.c
+
+This one.
 
