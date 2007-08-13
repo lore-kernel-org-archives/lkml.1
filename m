@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S973351AbXHMNuD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031735AbXHMNu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S973351AbXHMNuD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:50:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937895AbXHMKXC
+	id S1031735AbXHMNu5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938205AbXHMKZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 06:23:02 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:1758 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937823AbXHMKW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 06:22:59 -0400
-Date: Mon, 13 Aug 2007 12:22:55 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Distributed storage.
-Message-ID: <20070813102255.GN23758@kernel.dk>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708130255.35828.phillips@phunq.net> <20070813100636.GL23758@kernel.dk> <200708130315.08382.phillips@phunq.net>
+	Mon, 13 Aug 2007 06:25:23 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4473 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936278AbXHMKZS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 06:25:18 -0400
+Message-ID: <46C03166.1000301@shadowen.org>
+Date: Mon, 13 Aug 2007 11:24:38 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708130315.08382.phillips@phunq.net>
+To: Dave Jones <davej@redhat.com>
+CC: jschopp <jschopp@austin.ibm.com>, rdunlap@xenotime.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Make checkpatch warn about pointless casting of kalloc returns.
+References: <20070808024321.GA6316@redhat.com> <46B9F7C9.9060406@austin.ibm.com>
+In-Reply-To: <46B9F7C9.9060406@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13 2007, Daniel Phillips wrote:
-> On Monday 13 August 2007 03:06, Jens Axboe wrote:
-> > On Mon, Aug 13 2007, Daniel Phillips wrote:
-> > > Of course not.  Nothing I said stops endio from being called in the
-> > > usual way as well.  For this to work, endio just needs to know that
-> > > one call means "end" and the other means "destroy", this is
-> > > trivial.
-> >
-> > Sorry Daniel, but your suggestions would do nothing more than uglify
-> > the code and design.
+jschopp wrote:
+>> +# check for pointless casting of kmalloc return
+>> +        if ($rawline =~ /\*\)[ ]k[czm]alloc/) {
 > 
-> Pretty much exactly what was said about shrinking struct page, ask Bill.  
-> The difference was, shrinking struct page actually mattered whereas 
-> shrinking struct bio does not, and neither does expanding it by a few 
-> bytes.
+> It looks to me like this will catch
+> 
+> foo = (char *) kmalloc(512);
+> 
+> but not
+> 
+> for = (char* )kmalloc(512);
+> 
+> I haven't tried it but how about something like:
+> 
+> if($rawline =~/\(.*\)\s*k[czm]alloc/){
+> 
+> which if I got it right should match the typecast with any combination
+> of spacing.
+> 
+>> +            WARN("No need to cast return value.\n");
+> 
+> Could the warning be more descriptive?  This describes what, but it
+> should also describe why; after all if somebody made this error they may
+> not know they why.
 
-Lets back this up a bit - this whole thing began with you saying that
-struct bio was bloated already, which I said wasn't true. You then
-continued to hand wave your wave through various suggestions to trim the
-obvious fat from that structure, none of which were nice or feasible.
+Yes there are a few problems with the match, plus it needs to be on the
+processed line to avoid false matches in strings (however unlikely).  I
+ended up with the following:
 
-I never compared the bio to struct page, I'd obviously agree that
-shrinking struct page was a worthy goal and that it'd be ok to uglify
-some code to do that. The same isn't true for struct bio.
+                if ($line =~ /\*\s*\)\s*k[czm]alloc\b/) {
+                        WARN("unnecessary cast may hide bugs, see
+http://c-faq.com/malloc/mallocnocast.html\n" . $herecurr);
+                }
 
-And we can expand struct bio if we have to, naturally. And I've done it
-before, which I wrote in the initial mail. I just don't want to do it
-casually, then it WILL be bloated all of a sudden. Your laissez faire
-attitude towards adding members to struct bio "oh I'll just add it and
-someone less lazy than me will fix it up in the future" makes me happy
-that you are not maintaining anything that I use.
+Which just fits on the line :).
 
-I'll stop replying to your mails until something interesting surfaces.
-I've already made my points clear about both the above and the
-throttling. And I'd advise you to let Evgeniy take this forward, he
-seems a lot more adept to actually getting CODE done and - at least from
-my current and past perspective - is someone you can actually have a
-fruitful conversation with.
+Thanks for the patch.  Will be in 0.10 coming to an -mm near you soon.
 
--- 
-Jens Axboe
-
+-apw
