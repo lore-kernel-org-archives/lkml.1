@@ -1,109 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932329AbXHMPQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S948180AbXHMPRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932329AbXHMPQn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030841AbXHMNAa
+	id S948180AbXHMPRg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935052AbXHMNDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 09:00:30 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:49306 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939823AbXHMNA1 (ORCPT
+	Mon, 13 Aug 2007 09:03:51 -0400
+Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:59215 "EHLO
+	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030914AbXHMNDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 09:00:27 -0400
-Date: Mon, 13 Aug 2007 13:59:45 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Chris Snook <csnook@redhat.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: [PATCH 3/23] make atomic_read() and atomic_set() behavior consistent on arm
-Message-ID: <20070813125944.GB9165@flint.arm.linux.org.uk>
-Mail-Followup-To: Chris Snook <csnook@redhat.com>,
-	linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
-	Segher Boessenkool <segher@kernel.crashing.org>,
-	"Luck, Tony" <tony.luck@intel.com>,
-	Chris Friesen <cfriesen@nortel.com>,
-	"Robert P. J. Day" <rpjday@mindspring.com>
-References: <46C03885.7000109@redhat.com> <20070813110946.GC24018@shell.boston.redhat.com> <20070813121931.GA9165@flint.arm.linux.org.uk> <20070813124652.GA2805@shell.boston.redhat.com>
+	Mon, 13 Aug 2007 09:03:49 -0400
+Subject: [kj] is_power_of_2 in mm/slub.c
+From: vignesh babu <vignesh.babu@wipro.com>
+Reply-To: vigneshbabu@gmail.com
+To: clameter@sgi.com
+Cc: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Janitors List <kernel-janitors@lists.osdl.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: WIPRO Technologies
+Date: Mon, 13 Aug 2007 18:33:13 +0530
+Message-Id: <1187010193.7273.15.camel@merlin.linuxcoe.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070813124652.GA2805@shell.boston.redhat.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+X-OriginalArrivalTime: 13 Aug 2007 13:04:08.0110 (UTC) FILETIME=[6F13DCE0:01C7DDAA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 08:46:52AM -0400, Chris Snook wrote:
-> On Mon, Aug 13, 2007 at 01:19:31PM +0100, Russell King wrote:
-> > On Mon, Aug 13, 2007 at 07:09:46AM -0400, Chris Snook wrote:
-> > > By popular demand, I've redone the patchset to include volatile casts in
-> > > atomic_set as well.  I've also converted the macros to inline functions, to
-> > > help catch type mismatches at compile time.
-> > 
-> > and in the rest of include/asm-arm/atomic.h:
-> > 
-> > #else /* ARM_ARCH_6 */
-> > 
-> > #include <asm/system.h>
-> > 
-> > #ifdef CONFIG_SMP
-> > #error SMP not supported on pre-ARMv6 CPUs
-> > #endif
-> > 
-> > #define atomic_set(v,i) (((v)->counter) = (i))
-> > 
-> > Seems you missed that.  Grep is a wonderful tool.
-> 
-> D'oh!  Try this.
+Replacing n & (n - 1) for power of 2 check by is_power_of_2(n)
 
-Thanks.
-
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
-
-> --- linux-2.6.23-rc3-orig/include/asm-arm/atomic.h	2007-07-08 19:32:17.000000000 -0400
-> +++ linux-2.6.23-rc3/include/asm-arm/atomic.h	2007-08-13 08:39:52.000000000 -0400
-> @@ -14,13 +14,16 @@
->  #include <linux/compiler.h>
->  #include <asm/system.h>
->  
-> -typedef struct { volatile int counter; } atomic_t;
-> +typedef struct { int counter; } atomic_t;
->  
->  #define ATOMIC_INIT(i)	{ (i) }
->  
->  #ifdef __KERNEL__
->  
-> -#define atomic_read(v)	((v)->counter)
-> +static inline int atomic_read(atomic_t *v)
-> +{
-> +        return *(volatile int *)&v->counter;
-> +}
->  
->  #if __LINUX_ARM_ARCH__ >= 6
->  
-> @@ -122,7 +125,10 @@ static inline void atomic_clear_mask(uns
->  #error SMP not supported on pre-ARMv6 CPUs
->  #endif
->  
-> -#define atomic_set(v,i)	(((v)->counter) = (i))
-> +static inline void atomic_set(atomic_t *v, int i)
-> +{
-> +        *(volatile int *)&v->counter = i;
-> +}
->  
->  static inline int atomic_add_return(int i, atomic_t *v)
->  {
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: vignesh babu <vignesh.babu@wipro.com>
+---
+diff --git a/mm/slub.c b/mm/slub.c
+index 69d02e3..1241d14 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -20,6 +20,7 @@
+ #include <linux/mempolicy.h>
+ #include <linux/ctype.h>
+ #include <linux/kallsyms.h>
++#include <linux/log2.h>
+ 
+ /*
+  * Lock order:
+@@ -2606,7 +2607,7 @@ void __init kmem_cache_init(void)
+ 	 * around with ARCH_KMALLOC_MINALIGN
+ 	 */
+ 	BUILD_BUG_ON(KMALLOC_MIN_SIZE > 256 ||
+-		(KMALLOC_MIN_SIZE & (KMALLOC_MIN_SIZE - 1)));
++		!is_power_of_2(KMALLOC_MIN_SIZE));
+ 
+ 	for (i = 8; i < KMALLOC_MIN_SIZE; i += 8)
+ 		size_index[(i - 1) / 8] = KMALLOC_SHIFT_LOW;
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Vignesh Babu BM 
+_____________________________________________________________ 
+"Why is it that every time I'm with you, makes me believe in magic?"
+
