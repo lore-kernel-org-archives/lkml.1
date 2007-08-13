@@ -1,50 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970814AbXHMRtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937208AbXHMRu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970814AbXHMRtx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:49:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974062AbXHMRoB
+	id S937208AbXHMRu6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974071AbXHMRo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:44:01 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:50320 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S971196AbXHMRn7 (ORCPT
+	Mon, 13 Aug 2007 13:44:28 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:47045 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S974079AbXHMRoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:43:59 -0400
-Message-ID: <46C0977A.9010308@gmail.com>
-Date: Mon, 13 Aug 2007 19:40:10 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Joe Perches <joe@perches.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-References: <1186984174.10249.7.camel@localhost> <20070813071606.GF21089@ftp.linux.org.uk>
-In-Reply-To: <20070813071606.GF21089@ftp.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Mon, 13 Aug 2007 13:44:16 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Eric W Biederman <ebiederm@xmission.com>
+Date: Mon, 13 Aug 2007 23:14:08 +0530
+Message-Id: <20070813174408.14593.46255.sendpatchset@balbir-laptop>
+In-Reply-To: <20070813174346.14593.30033.sendpatchset@balbir-laptop>
+References: <20070813174346.14593.30033.sendpatchset@balbir-laptop>
+Subject: [-mm PATCH 5/9] Memory controller task migration (v5)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/13/2007 09:16 AM, Al Viro wrote:
 
-> On Sun, Aug 12, 2007 at 10:49:34PM -0700, Joe Perches wrote:
->> I grew weary of looking up the appropriate
->> maintainer email address(es) to CC: for a patch.
-> 
-> Does the acronym GAFL ring any bells?  It's not that idea is worthless -
-> it sure as hell is a useful thing, but what the bleeding hell is that
-> splitup supposed to achieve?
+Allow tasks to migrate from one container to the other. We migrate
+mm_struct's mem_container only when the thread group id migrates.
 
-Well, to be fair, he's CCing the addresses in the individual entries which 
-is at least somewhat of a reason. Yes, could've worked via preparation via 
-private mail as well or something but hey, posting some 600 patches is at 
-least incredibly funny :-)
 
-Only thing left now is to now teach Linus's copy of git about these entries 
-so that it doesn't turn into an wholy incomplete, obsolete mess through 
-addition, removal and movement of files in a few months time...
+Signed-off-by: <balbir@linux.vnet.ibm.com>
+---
 
-Rene.
+ mm/memcontrol.c |   35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+diff -puN mm/memcontrol.c~mem-control-task-migration mm/memcontrol.c
+--- linux-2.6.23-rc1-mm1/mm/memcontrol.c~mem-control-task-migration	2007-08-13 23:06:12.000000000 +0530
++++ linux-2.6.23-rc1-mm1-balbir/mm/memcontrol.c	2007-08-13 23:06:12.000000000 +0530
+@@ -325,11 +325,46 @@ static int mem_container_populate(struct
+ 					ARRAY_SIZE(mem_container_files));
+ }
+ 
++static void mem_container_move_task(struct container_subsys *ss,
++				struct container *cont,
++				struct container *old_cont,
++				struct task_struct *p)
++{
++	struct mm_struct *mm;
++	struct mem_container *mem, *old_mem;
++
++	mm = get_task_mm(p);
++	if (mm == NULL)
++		return;
++
++	mem = mem_container_from_cont(cont);
++	old_mem = mem_container_from_cont(old_cont);
++
++	if (mem == old_mem)
++		goto out;
++
++	/*
++	 * Only thread group leaders are allowed to migrate, the mm_struct is
++	 * in effect owned by the leader
++	 */
++	if (p->tgid != p->pid)
++		goto out;
++
++	css_get(&mem->css);
++	rcu_assign_pointer(mm->mem_container, mem);
++	css_put(&old_mem->css);
++
++out:
++	mmput(mm);
++	return;
++}
++
+ struct container_subsys mem_container_subsys = {
+ 	.name = "memory",
+ 	.subsys_id = mem_container_subsys_id,
+ 	.create = mem_container_create,
+ 	.destroy = mem_container_destroy,
+ 	.populate = mem_container_populate,
++	.attach = mem_container_move_task,
+ 	.early_init = 1,
+ };
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
