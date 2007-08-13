@@ -1,62 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032047AbXHMQ5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S946618AbXHMQ63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032047AbXHMQ5l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968072AbXHMQ3t
+	id S946618AbXHMQ63 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031128AbXHMQa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 12:29:49 -0400
-Received: from mga02.intel.com ([134.134.136.20]:55744 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031551AbXHMQ3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 12:29:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,255,1183359600"; 
-   d="scan'208";a="278224156"
-Date: Mon, 13 Aug 2007 09:26:43 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Cc: jeff@garzik.org, James.Bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, "David Zeuthen" <david@fubar.dk>
-Subject: Re: [patch 0/4] Updated AN patches, now without gendisk
-Message-Id: <20070813092643.6f15aa8a.kristen.c.accardi@intel.com>
-In-Reply-To: <3ae72650708110700x7ddf3d57ue9a8875761425f52@mail.gmail.com>
-References: <20070808120739.c3097d19.kristen.c.accardi@intel.com>
-	<3ae72650708110700x7ddf3d57ue9a8875761425f52@mail.gmail.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+	Mon, 13 Aug 2007 12:30:29 -0400
+Received: from www.osadl.org ([213.239.205.134]:48847 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934657AbXHMQaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 12:30:25 -0400
+Subject: Re: [patch 3/3] genirq: mark io_apic level interrupts to avoid
+	resend
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Stable Team <stable@kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       "marcin.slusarz" <marcin.slusarz@gmail.com>
+In-Reply-To: <20070813135311.GB4026@ff.dom.local>
+References: <20070812152213.551812576@inhelltoy.tec.linutronix.de>
+	 <20070812152303.177006193@inhelltoy.tec.linutronix.de>
+	 <20070813112821.GA2863@ff.dom.local> <1187006835.12828.112.camel@chaos>
+	 <20070813135311.GB4026@ff.dom.local>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 18:30:20 +0200
+Message-Id: <1187022620.12828.127.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Aug 2007 16:00:53 +0200
-"Kay Sievers" <kay.sievers@vrfy.org> wrote:
-
-> On 8/8/07, Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
-> > Here is an updated set of patches that implement Asynchronous Notification
-> > support for ATAPI devices.  In this version I no longer export the AN
-> > capability through genhd, and the uevent is sent by the scsi_device
-> > instead of gendisk.  I added a generic SCSI device event mechanism so
-> > that it can be expanded in the future with other types of events.  Please
-> > let me know what you think.
+On Mon, 2007-08-13 at 15:53 +0200, Jarek Poplawski wrote:
+> On Mon, Aug 13, 2007 at 02:07:15PM +0200, Thomas Gleixner wrote:
+> > On Mon, 2007-08-13 at 13:28 +0200, Jarek Poplawski wrote:
+> > > Maybe I miss something, but:
+> > > - why it's not done in other places with handle_level_irq or
+> > 
+> > I removed the PENDING bit magic in handle_level_irq, which was put there
+> > by a mismerge.
 > 
-> Does that mean:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=8ce7ad7b2d11fae2c3d285a6a0caea9322c0b8fc
+> But, this flag is used in many "strange" places like e.g. autoprobe,
+> so, on any problems with this, we have to check them all...
+
+No, the point is that the resend is suppressed for all interrupts which
+are marked with IRQ_LEVEL:
+
+        /*
+         * We do not resend level type interrupts. Level type
+         * interrupts are resent by hardware when they are still
+         * active.
+         */
+        if ((status & (IRQ_LEVEL | IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
+	....
+
+This is not witchcraft, this is how the hardware works.
+
+> > It is quite clear what happened:
+> > 
+> > 1. The retrigger/resend mechanism was never meant to be used for level
+> > type interrupts and it makes absolutely no sense. When a level type
+> > interrupt is masked while active it is resent by hardware on unmask when
+> > it is still active. The resend / retrigger mechanism is only useful for
+> > edge type interrupts, because we would lose an interrupt when we mask it
+> > delayed without triggering a resend on unmask.
 > 
-> will go away?
+> Of course, I think you are right with this, but:
+> - this patch was active for quite a long time and, if it was so wrong
+> there was astonishingly small number of similar problems;
+> - there where many changes in drivers done around similar problems,
+> so how can you guarantee, they will behave resonably after such serious
+> change again;
+> - this new way with levels is different from 2.6.21/22 and 2.6.20 too;
+> it was tested only on 2 x86_64 boxes mainly for network; it's really
+> not much considering the number of various quirks.
 
-Yes - this method was rejected by James, so I had to change away from
-using the genhd to transmit events.
+But it is not different from the original implementation before we
+introduced the delayed disable, simply because before the delayed
+disable change only edge type interrupts were ever resent.
 
+> > There is nothing to confuse anymore. The resend for level type
+> > interrupts is not happening, which is the same behavior as we had before
+> > the delayed disable. The edge type interrupts resend is there since we
+> > did the big genirq changes (2.6.18) and it was tested on various boxen
+> > (including the above one) quite extensive.
+> > 
+> > The delayed disable was added later and unfortunately introduced the
+> > problems we've seen.
 > 
-> Then we will need to come up with an idea to propagate that to the
-> blockdev, it gets a bit nasty for userspace to find out which
-> blockdevice it should update. It's certainly possible, but just not as
-> easy as it is now, because userspace just doesn't really care in most
-> cases what kind of bus device a block device is coming from.
+> See my argument above... This is not 100% guarantee, and I think,
 
-Is it possible to use the linkage that is in the scsi_device directory
-of the disk that is sending the event to find the relevant block devices?
-For example, /sys/class/scsi_device/0:0:0:0/device/block:sda
-on my system tells me which block devices belong to this device.
+There is no 100% guarantee for any of the proposed changes.
+
+> there is no reason to endanger even a small number of users/admins
+> for stresses like this, done to Marcin or Jean-Baptiste, when it's
+> possible to do this safer without much changes.
+
+Safer in what way ? 
+
+The alternative patches (including my first debug patch, which got
+merged during my vacation) are just pampering over the real problem
+instead of fixing it.
+
+> As a matter of fact I think about still another possibility, which
+> wasn't tested at all: let's say there is this "new" (retriggered)
+> interrupt possible instantly after enable_irq in a place, which
+> earlier wasn't affected with this. So, e.g. network _xmit or
+> _timeout code for some drivers can be interrupted in a place which
+> was always "wrong" for this, but for some reasons, not very probable
+> to hit (before this resending patch). Then, maybe it's all wrong
+> only because this level resending works OK here, but uncovers weak,
+> not irq-safe  places? In such a case skipping resend and software
+> resend should be OK: sw resend could be blocked here by softirqs off.
+> Of course, this can be false idea as well, but since it wasn't checked
+> yet (plus maybe several other possibilities) - we should be rather
+> cautious here.
+
+If there is code which gets affected by the removal of the useless
+resend of level type interrupts, then this code needs to be fixed and
+not a wrong behavior preserved for no good reason.
+
+	tglx
+
+
