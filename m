@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1033488AbXHMSsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbXHMStA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1033488AbXHMSsH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:48:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968198AbXHMSeO
+	id S1755453AbXHMStA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1033177AbXHMSeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:34:14 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:55106 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762840AbXHMSdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:33:47 -0400
-Date: Mon, 13 Aug 2007 20:35:03 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Meelis Roos <mroos@linux.ee>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
-Message-ID: <20070813183503.GA18722@uranus.ravnborg.org>
-References: <46B9F664.9060600@googlemail.com> <200708102206.58438.rjw@sisk.pl> <Pine.SOC.4.64.0708111349520.725@math.ut.ee> <200708112342.01989.rjw@sisk.pl> <6bffcb0e0708130621s74411866mc07446854fb96cd4@mail.gmail.com>
+	Mon, 13 Aug 2007 14:34:20 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:10994 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S974056AbXHMSeQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 14:34:16 -0400
+Date: Mon, 13 Aug 2007 11:38:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, sam@ravnborg.org, zippel@linux-m68k.org,
+       vincent.legoll@gmail.com
+Subject: [PATCH] kconfig: update kconfig-language text
+Message-Id: <20070813113809.9a715e75.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6bffcb0e0708130621s74411866mc07446854fb96cd4@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 03:21:54PM +0200, Michal Piotrowski wrote:
-> > >
-> > > The patch changes the warning to a different warning, it's now
-> > > kernel/power/Kconfig:79:warning: 'select' used by config symbol 'PM_SLEEP_SMP' refers to undefined symbol 'HOTPLUG_CPU'
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-So we have something like this for ppc:
+Add kconfig-language docs for mainmenu, def_bool[ean],
+and def_tristate.
 
-config PM_SLEEP_SMP
-	bool "bla bla"
-	select HOTPLUG_CPU
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Vincent Legoll <vincent.legoll@gmail.com>
+---
+ Documentation/kbuild/kconfig-language.txt |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-As it is not in my -linus tree it has been added by the referanced patch
-in the text I zapped.
-
-
-The warning is generated _independently_ of the actual configuration.
-All it says is that the symbol PM_SLEEP_SMP has a seelct statement
-for an unknown symbol - unknown for this architecture at least.
-
-Grepping will reveal that HOTPLUG_CPU is not present for ppc and
-the easiet fix here seems to just add it like in the following:
-
-diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
-index 6bdeeb7..e7bcd57 100644
---- a/arch/ppc/Kconfig
-+++ b/arch/ppc/Kconfig
-@@ -65,6 +65,10 @@ config GENERIC_BUG
-        default y
-        depends on BUG
+--- linux-2.6.23-rc3.orig/Documentation/kbuild/kconfig-language.txt
++++ linux-2.6.23-rc3/Documentation/kbuild/kconfig-language.txt
+@@ -77,6 +77,11 @@ applicable everywhere (see syntax).
+   Optionally, dependencies only for this default value can be added with
+   "if".
  
-+config HOTPLUG_CPU
-+       bool
-+       default n
++- type definition + default value:
++	"def_bool"/"def_boolean"/"def_tristate" <expr> ["if" <expr>]
++  This is a shorthand notation for a type definition plus a value.
++  Optionally dependencies for this default value can be added with "if".
 +
- source "init/Kconfig"
+ - dependencies: "depends on"/"requires" <expr>
+   This defines a dependency for this menu entry. If multiple
+   dependencies are defined, they are connected with '&&'. Dependencies
+@@ -289,3 +294,10 @@ source:
+ 	"source" <prompt>
  
- menu "Processor"
-
-[cut'n'paste so whitespace damaged...]
-This will silence the warning...
-
-
-Now as PM_SLEEP_SMP requires HOTPLUG_CPU there most be done
-something else to prevent this config symbol to be selected
-otherwise we would end up with a kernel that has HOTPLUG_CPU
-defined even it is not supported.
-
-
-	Sam
+ This reads the specified configuration file. This file is always parsed.
++
++mainmenu:
++
++	"mainmenu" <prompt>
++
++This sets the config program's title bar if the config program chooses
++to use it.
