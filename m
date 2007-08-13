@@ -1,61 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970404AbXHMUsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030958AbXHMUsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970404AbXHMUsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967584AbXHMUrc
+	id S1030958AbXHMUsu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939239AbXHMUsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:47:32 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:54835 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S968993AbXHMUra (ORCPT
+	Mon, 13 Aug 2007 16:48:18 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46588 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S968228AbXHMUsQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:47:30 -0400
-Date: Mon, 13 Aug 2007 22:47:20 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Chris Wright <chrisw@sous-sol.org>,
-       joe@perches.com, xen-devel@lists.xensource.com,
-       virtualization@lists.osdl.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, jeremy@xensource.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] [545/2many] MAINTAINERS - XEN HYPERVISOR INTERFACE
-Message-ID: <20070813204720.GI18945@stusta.de>
-References: <46bffcb5.o/KKCq3EZH4S47k3%joe@perches.com> <20070813185536.GH3672@sequoia.sous-sol.org> <20070813121005.af159d1d.randy.dunlap@oracle.com> <22502.1187032979@turing-police.cc.vt.edu> <20070813201324.GG18945@stusta.de> <27429.1187037139@turing-police.cc.vt.edu>
+	Mon, 13 Aug 2007 16:48:16 -0400
+Date: Mon, 13 Aug 2007 13:48:15 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: vigneshbabu@gmail.com
+cc: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Janitors List <kernel-janitors@lists.osdl.org>
+Subject: Re: [kj] is_power_of_2 in mm/slub.c
+In-Reply-To: <1187010193.7273.15.camel@merlin.linuxcoe.com>
+Message-ID: <Pine.LNX.4.64.0708131348010.27728@schroedinger.engr.sgi.com>
+References: <1187010193.7273.15.camel@merlin.linuxcoe.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <27429.1187037139@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 04:32:19PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 13 Aug 2007 22:13:24 +0200, Adrian Bunk said:
-> > On Mon, Aug 13, 2007 at 03:22:59PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> > > On Mon, 13 Aug 2007 12:10:05 PDT, Randy Dunlap said:
-> > > 
-> > > > Agreed.  But not everyone wants to or should have to use git,
-> > > > so what are the alternatives?
-> > > 
-> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=tree
-> > > 
-> > > and start chasing down 'History' pointers?
-> > >...
-> > 
-> > And that brings you what?
-> 
-> You got a better alternative to 'git history' or 'git blame' to find who
-> to cc: regarding a bug, feel free to propose it. ;)
-
-Joe's patches
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Acked-by: Christoph Lameter <clameter@sgi.com>
 
