@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936297AbXHMKS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936670AbXHMKT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936297AbXHMKS7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 06:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967224AbXHMGfE
+	id S936670AbXHMKT2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 06:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967169AbXHMGfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:35:04 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1618 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:35:05 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1632 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967212AbXHMGex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:34:53 -0400
-Date: Sun, 12 Aug 2007 23:34:39 -0700
+	id S967209AbXHMGe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:34:58 -0400
+Date: Sun, 12 Aug 2007 23:34:44 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, paulus@samba.org,
+To: torvalds@linux-foundation.org, mporter@kernel.crashing.org,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] [399/2many] MAINTAINERS - RAGE128 FRAMEBUFFER DISPLAY
- DRIVER
-Message-ID: <46bffb7f.MBC+BLOxcxJusFcu%joe@perches.com>
+Subject: [PATCH] [402/2many] MAINTAINERS - RAPIDIO SUBSYSTEM
+Message-ID: <46bffb84.nbB4r3XvF6NULNYT%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,14 +27,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 5d45c74..da61adc 100644
+index a2484d5..776ca59 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -3815,6 +3815,7 @@ P:	Paul Mackerras
- M:	paulus@samba.org
- L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+@@ -3835,6 +3835,7 @@ P:	Matt Porter
+ M:	mporter@kernel.crashing.org
+ L:	linux-kernel@vger.kernel.org
  S:	Maintained
-+F:	drivers/video/aty/aty*
++F:	drivers/rapidio/
  
- RAYLINK/WEBGEAR 802.11 WIRELESS LAN DRIVER
- P:	Corey Thomas
+ READ-COPY UPDATE (RCU)
+ P:	Dipankar Sarma
