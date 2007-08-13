@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S948380AbXHMQrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031961AbXHMQr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S948380AbXHMQrN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:47:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031190AbXHMQAh
+	id S1031961AbXHMQr7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S972050AbXHMQA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 12:00:37 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52155 "EHLO mail.dvmed.net"
+	Mon, 13 Aug 2007 12:00:57 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3087 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S971870AbXHMQAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 12:00:32 -0400
-Message-ID: <46C0801C.4020304@garzik.org>
-Date: Mon, 13 Aug 2007 12:00:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: postfail@hushmail.com
-CC: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: Withdrawn for now: /drivers/char/* /drivers/net/* drivers/atm/*
- ioremap balancing/ returncode check
-References: <20070813140926.6AA23DA82D@mailserver7.hushmail.com>
-In-Reply-To: <20070813140926.6AA23DA82D@mailserver7.hushmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1030857AbXHMQAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 12:00:55 -0400
+Subject: Re: [PATCH] [394/2many] MAINTAINERS - PXA2xx SUPPORT
+From: Joe Perches <joe@perches.com>
+To: Nicolas Pitre <nico@cam.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+In-Reply-To: <alpine.LFD.0.999.0708131009480.5415@xanadu.home>
+References: <46bffb75.pNKePQf1hTn1GZ01%joe@perches.com>
+	 <alpine.LFD.0.999.0708131009480.5415@xanadu.home>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 08:59:35 -0700
+Message-Id: <1187020775.10249.86.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott Thompson wrote:
-> On Mon, 13 Aug 2007 09:21:03 -0400 Alan Cox 
-> <alan@lxorguk.ukuu.org.uk> wrote:
-> the patch itself appears to be wrapped and 
->> mangled
->> and is not suitable for application.
+On Mon, 2007-08-13 at 10:14 -0400, Nicolas Pitre wrote:
+> On Sun, 12 Aug 2007, joe@perches.com wrote:
 > 
-> I just verified that several patches I've submitted since 8/10 hit 
-> this same issue due to *some* recent change on the server side of 
-> my mail client.
+> > Add file pattern to MAINTAINER entry
+> > 
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > 
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index 3889034..6e99107 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -3768,6 +3768,11 @@ P:	Nicolas Pitre
+> >  M:	nico@cam.org
+> >  L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+> >  S:	Maintained
+> > +F:	Documentation/spi/pxa2xx
+> > +F:	drivers/pcmcia/pxa2xx*
+> > +F:	drivers/spi/pxa2xx*
+> > +F:	drivers/usb/gadget/pxa2xx*
+> > +F:	sound/soc/pxa/pxa2xx*
 > 
-> Will resubmit after resolving issue w/ mail provider...
+> Please don't apply this one as is.  The spi and usb bits weren't written 
+> by me, and given that I don't have access to the corresponding hardware 
+> at the moment, I'd have a really hard time maintaining those bits.
 
-It's highly unlikely that the server side would wrap email.
+What's your pleasure?  Prefer this?
 
-	Jeff
-
-
++F:	Documentation/spi/pxa2xx
++F:	drivers/pcmcia/pxa2xx*
++F:	sound/soc/pxa/pxa2xx*
 
 
