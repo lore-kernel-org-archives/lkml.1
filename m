@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936272AbXHMCPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937290AbXHMCRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936272AbXHMCPU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 22:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934597AbXHMCPG
+	id S937290AbXHMCRn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 22:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934687AbXHMCRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 22:15:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53452 "EHLO mx1.redhat.com"
+	Sun, 12 Aug 2007 22:17:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53957 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934536AbXHMCPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 22:15:04 -0400
+	id S934597AbXHMCRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 22:17:35 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,18 @@ To: akpm@linux-foundation.org
 X-Fcc: ~/Mail/linus
 Cc: linux-kernel@vger.kernel.org
 Cc: ak@suse.de, sam@ravnborg.org
-Subject: [PATCH] i386 vDSO: install unstripped copies on disk
-In-Reply-To: akpm@linux-foundation.org's message of  Friday, 10 August 2007 14:59:46 -0700 <200708102159.l7ALxk8u011793@imap1.linux-foundation.org>
+Subject: [PATCH 1/2] x86_64 ia32 vDSO: install unstripped copies on disk
+In-Reply-To: akpm@linux-foundation.org's message of  Friday, 10 August 2007 14:59:46 -0700 <200708102159.l7ALxkLx011796@imap1.linux-foundation.org>
 X-Fcc: ~/Mail/linus
-X-Shopping-List: (1) Celebrity table polluters
-   (2) Complaisant exclamations
-   (3) Prestigious conspicuous nostril socks
-   (4) Omnipotent secretions
-Message-Id: <20070813021459.271D74D057D@magilla.localdomain>
-Date: Sun, 12 Aug 2007 19:14:59 -0700 (PDT)
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20070813021700.10E054D057D@magilla.localdomain>
+Date: Sun, 12 Aug 2007 19:17:00 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 While integrating these with the Fedora kernel build, I worked out a few kinks.
-This patch replaces i386-vdso-install-unstripped-copies-on-disk.patch and
-i386-vdso-install-unstripped-copies-on-disk-fix.patch
+This patch replaces x86_64-ia32-vdso-install-unstripped-copies-on-disk.patch
+
 
 Thanks,
 Roland
@@ -49,68 +46,65 @@ Cc: Sam Ravnborg <sam@ravnborg.org>
 Cc: Andi Kleen <ak@suse.de>
 ---
 
- arch/i386/Makefile        |    1 +
- arch/i386/kernel/Makefile |   27 ++++++++++++++++++++++-----
- 2 files changed, 23 insertions(+), 5 deletions(-)
+ arch/x86_64/Makefile      |    3 +++
+ arch/x86_64/ia32/Makefile |   25 +++++++++++++++++++++----
+ 2 files changed, 24 insertions(+), 4 deletions(-)
 
-diff -puN arch/i386/Makefile~i386-vdso-install-unstripped-copies-on-disk arch/i386/Makefile
---- a/arch/i386/Makefile~i386-vdso-install-unstripped-copies-on-disk
-+++ a/arch/i386/Makefile
-@@ -141,9 +141,12 @@ zdisk bzdisk: vmlinux
+diff -puN arch/x86_64/Makefile~x86_64-ia32-vdso-install-unstripped-copies-on-disk arch/x86_64/Makefile
+--- a/arch/x86_64/Makefile~x86_64-ia32-vdso-install-unstripped-copies-on-disk
++++ a/arch/x86_64/Makefile
+@@ -105,9 +105,14 @@ bzdisk: vmlinux
  fdimage fdimage144 fdimage288 isoimage: vmlinux
- 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(KBUILD_IMAGE) $@
+ 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(BOOTIMAGE) $@
  
 -install:
 +install: vdso_install
- 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(KBUILD_IMAGE) install
+ 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(BOOTIMAGE) $@ 
  
 +vdso_install:
-+	$(Q)$(MAKE) $(build)=arch/i386/kernel vdso_install
++ifeq ($(CONFIG_IA32_EMULATION),y)
++	$(Q)$(MAKE) $(build)=arch/x86_64/ia32 $@
++endif
 +
  archclean:
- 	$(Q)$(MAKE) $(clean)=arch/i386/boot
+ 	$(Q)$(MAKE) $(clean)=$(boot)
+
+diff -puN arch/x86_64/ia32/Makefile~x86_64-ia32-vdso-install-unstripped-copies-on-disk arch/x86_64/ia32/Makefile
+--- a/arch/x86_64/ia32/Makefile~x86_64-ia32-vdso-install-unstripped-copies-on-disk
++++ a/arch/x86_64/ia32/Makefile
+@@ -18,18 +18,35 @@ $(obj)/syscall32_syscall.o: \
+ 	$(foreach F,sysenter syscall,$(obj)/vsyscall-$F.so)
  
-diff -puN arch/i386/kernel/Makefile~i386-vdso-install-unstripped-copies-on-disk arch/i386/kernel/Makefile
---- a/arch/i386/kernel/Makefile~i386-vdso-install-unstripped-copies-on-disk
-+++ a/arch/i386/kernel/Makefile
-@@ -52,7 +52,8 @@ obj-$(CONFIG_SCx200)		+= scx200.o
- # We must build both images before we can assemble it.
- # Note: kbuild does not track this dependency due to usage of .incbin
- $(obj)/vsyscall.o: $(obj)/vsyscall-int80.so $(obj)/vsyscall-sysenter.so
--targets += $(foreach F,int80 sysenter,vsyscall-$F.o vsyscall-$F.so)
-+targets += $(foreach F,$(addprefix vsyscall-,int80 sysenter),\
+ # Teach kbuild about targets
+-targets := $(foreach F,sysenter syscall,vsyscall-$F.o vsyscall-$F.so)
++targets := $(foreach F,$(addprefix vsyscall-,sysenter syscall),\
 +		     $F.o $F.so $F.so.dbg)
- targets += vsyscall-note.o vsyscall.lds
  
- # The DSO images are built using a special linker script.
-@@ -62,16 +63,32 @@ quiet_cmd_syscall = SYSCALL $@
+ # The DSO images are built using a special linker script
+ quiet_cmd_syscall = SYSCALL $@
+-      cmd_syscall = $(CC) -m32 -nostdlib -shared -s \
++      cmd_syscall = $(CC) -m32 -nostdlib -shared \
+ 			  $(call ld-option, -Wl$(comma)--hash-style=sysv) \
+ 			   -Wl,-soname=linux-gate.so.1 -o $@ \
+ 			   -Wl,-T,$(filter-out FORCE,$^)
  
- export CPPFLAGS_vsyscall.lds += -P -C -U$(ARCH)
- 
--vsyscall-flags = -shared -s -Wl,-soname=linux-gate.so.1 \
-+vsyscall-flags = -shared -Wl,-soname=linux-gate.so.1 \
- 		 $(call ld-option, -Wl$(comma)--hash-style=sysv)
--SYSCFLAGS_vsyscall-sysenter.so	= $(vsyscall-flags)
--SYSCFLAGS_vsyscall-int80.so	= $(vsyscall-flags)
-+SYSCFLAGS_vsyscall-sysenter.so.dbg	= $(vsyscall-flags)
-+SYSCFLAGS_vsyscall-int80.so.dbg		= $(vsyscall-flags)
- 
--$(obj)/vsyscall-int80.so $(obj)/vsyscall-sysenter.so: \
--$(obj)/vsyscall-%.so: $(src)/vsyscall.lds \
--		      $(obj)/vsyscall-%.o $(obj)/vsyscall-note.o FORCE
-+$(obj)/vsyscall-int80.so.dbg $(obj)/vsyscall-sysenter.so.dbg: \
-+$(obj)/vsyscall-%.so.dbg: $(src)/vsyscall.lds \
-+		      $(obj)/vsyscall-%.o $(obj)/vsyscall-note.o FORCE
- 	$(call if_changed,syscall)
- 
+-$(obj)/vsyscall-sysenter.so $(obj)/vsyscall-syscall.so: \
+-$(obj)/vsyscall-%.so: $(src)/vsyscall.lds $(obj)/vsyscall-%.o FORCE
 +$(obj)/%.so: OBJCOPYFLAGS := -S
 +$(obj)/%.so: $(obj)/%.so.dbg FORCE
 +	$(call if_changed,objcopy)
 +
-+vdsos := vdso-int80.so vdso-sysenter.so
++$(obj)/vsyscall-sysenter.so.dbg $(obj)/vsyscall-syscall.so.dbg: \
++$(obj)/vsyscall-%.so.dbg: $(src)/vsyscall.lds $(obj)/vsyscall-%.o FORCE
+ 	$(call if_changed,syscall)
+ 
+ AFLAGS_vsyscall-sysenter.o = -m32 -Wa,-32
+ AFLAGS_vsyscall-syscall.o = -m32 -Wa,-32
++
++vdsos := vdso32-sysenter.so vdso32-syscall.so
 +
 +quiet_cmd_vdso_install = INSTALL $@
-+      cmd_vdso_install = cp $(@:vdso-%.so=$(obj)/vsyscall-%.so.dbg) \
++      cmd_vdso_install = cp $(@:vdso32-%.so=$(obj)/vsyscall-%.so.dbg) \
 +			    $(MODLIB)/vdso/$@
 +
 +$(vdsos):
@@ -118,7 +112,4 @@ diff -puN arch/i386/kernel/Makefile~i386-vdso-install-unstripped-copies-on-disk 
 +	$(call cmd,vdso_install)
 +
 +vdso_install: $(vdsos)
-+
- # We also create a special relocatable object that should mirror the symbol
- # table and layout of the linked DSO.  With ld -R we can then refer to
- # these symbols in the kernel code rather than hand-coded addresses.
+
