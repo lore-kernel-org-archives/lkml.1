@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936501AbXHMVO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937235AbXHMVPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936501AbXHMVO6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 17:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764361AbXHMVNB
+	id S937235AbXHMVPm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 17:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932523AbXHMVPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 17:13:01 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3719 "EHLO perches.com"
+	Mon, 13 Aug 2007 17:15:15 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37807 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765952AbXHMVNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 17:13:00 -0400
-Subject: Re: [PATCH] [438/2many] MAINTAINERS - SLAB ALLOCATOR
-From: Joe Perches <joe@perches.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: torvalds@linux-foundation.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <Pine.LNX.4.64.0708131345130.27728@schroedinger.engr.sgi.com>
-References: <46bffbc9.9Jtz7kOTKn1mqlkq%joe@perches.com>
-	 <Pine.LNX.4.64.0708131345130.27728@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 14:12:37 -0700
-Message-Id: <1187039557.10249.312.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+	id S1754801AbXHMVPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 17:15:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka Software Suspend, aka swsusp):
+Date: Mon, 13 Aug 2007 23:25:03 +0200
+User-Agent: KMail/1.9.5
+Cc: torvalds@linux-foundation.org, pavel@suse.cz,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com> <200708132250.15466.rjw@sisk.pl> <1187038479.10249.304.camel@localhost>
+In-Reply-To: <1187038479.10249.304.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708132325.04810.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 13:46 -0700, Christoph Lameter wrote:
-> On Sun, 12 Aug 2007, joe@perches.com wrote:
+On Monday, 13 August 2007 22:54, Joe Perches wrote:
+> On Mon, 2007-08-13 at 22:50 +0200, Rafael J. Wysocki wrote:
+> > Please add
+> > arch/i386/power/
+> > arch/x86_64/kernel/suspend_asm.S
+> > arch/x86_64/kernel/suspend.c
+> > drivers/base/power/
+> > There also is a couple of headers.  Do you want to list them too?
 > 
-> > Add file pattern to MAINTAINER entry
-> > 
-> > Signed-off-by: Joe Perches <joe@perches.com>
-> > 
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index b2dd6f5..a3c6123 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -4168,6 +4168,8 @@ P:	Pekka Enberg
-> >  M:	penberg@cs.helsinki.fi
-> >  L:	linux-mm@kvack.org
-> >  S:	Maintained
-> > +F:	include/linux/slab*
+> Your choice.  Just let me know.
+
++ include/linux/suspend.h
++ include/linux/freezer.h
++ include/linux/pm.h
++ include/asm-*/suspend.h
+
+Hm, they are also relevant for suspend to RAM, so perhaps one common
+list of files for suspend to RAM and hibernation would be better?
+
+> HIBERNATION (aka Software Suspend, aka swsusp):
+> P:	Pavel Machek
+> M:	pavel@suse.cz
+> P:	Rafael J. Wysocki
+> M:	rjw@sisk.pl
+> L:	linux-pm@lists.linux-foundation.org
+> S:	Supported
+> F:	Documentation/power/swsusp*
+> F:	arch/i386/power/
+> F:	arch/x86_64/kernel/suspend*
+> F:	drivers/base/power/
+> F:	kernel/power/
 > 
-> Use include/linux/sl?b*.h 
 > 
-> > +F:	mm/slab.c
 > 
-> Use mm/sl?b.c ?
 > 
-> Otherwise this does not include slub f.e.
+> 
 
-Do you want slob too?
-
-SLAB/SLUB ALLOCATOR
-P:	Christoph Lameter
-M:	clameter@sgi.com
-P:	Pekka Enberg
-M:	penberg@cs.helsinki.fi
-L:	linux-mm@kvack.org
-S:	Maintained
-F:	include/linux/slab*.h
-F:	include/linux/slub*.h
-F:	mm/slab.c
-F:	mm/slub.c
-
-otherwise:
-
-SLAB/SLUB ALLOCATOR
-P:	Christoph Lameter
-M:	clameter@sgi.com
-P:	Pekka Enberg
-M:	penberg@cs.helsinki.fi
-L:	linux-mm@kvack.org
-S:	Maintained
-F:	include/linux/sl?b*.h
-F:	mm/sl?b.c
-
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
