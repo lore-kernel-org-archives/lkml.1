@@ -1,57 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936874AbXHMOSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935599AbXHMOSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936874AbXHMOSJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:18:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S944328AbXHMLRS
+	id S935599AbXHMOSt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S943731AbXHMLSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 07:17:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45973 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S941245AbXHMLRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 07:17:16 -0400
-Date: Mon, 13 Aug 2007 07:15:59 -0400
-From: Chris Snook <csnook@redhat.com>
-To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: [PATCH 7/23] make atomic_read() and atomic_set() behavior consistent on frv
-Message-ID: <20070813111559.GG24018@shell.boston.redhat.com>
-References: <46C03885.7000109@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 13 Aug 2007 07:18:12 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:46615
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S944390AbXHMLSJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 07:18:09 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Block device throttling [Re: Distributed storage.]
+Date: Mon, 13 Aug 2007 04:18:03 -0700
+User-Agent: KMail/1.9.5
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708122236.24096.phillips@phunq.net> <20070813082326.GC30089@2ka.mipt.ru>
+In-Reply-To: <20070813082326.GC30089@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46C03885.7000109@redhat.com>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200708130418.03667.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Snook <csnook@redhat.com>
+On Monday 13 August 2007 01:23, Evgeniy Polyakov wrote:
+> On Sun, Aug 12, 2007 at 10:36:23PM -0700, Daniel Phillips 
+(phillips@phunq.net) wrote:
+> > (previous incomplete message sent accidentally)
+> >
+> > On Wednesday 08 August 2007 02:54, Evgeniy Polyakov wrote:
+> > > On Tue, Aug 07, 2007 at 10:55:38PM +0200, Jens Axboe wrote:
+> > >
+> > > So, what did we decide? To bloat bio a bit (add a queue pointer)
+> > > or to use physical device limits? The latter requires to replace
+> > > all occurence of bio->bi_bdev = something_new with
+> > > blk_set_bdev(bio, somthing_new), where queue limits will be
+> > > appropriately charged. So far I'm testing second case, but I only
+> > > changed DST for testing, can change all other users if needed
+> > > though.
+> >
+> > Adding a queue pointer to struct bio and using physical device
+> > limits as in your posted patch both suffer from the same problem:
+> > you release the throttling on the previous queue when the bio moves
+> > to a new one, which is a bug because memory consumption on the
+> > previous queue then becomes unbounded, or limited only by the
+> > number of struct requests that can be allocated.  In other words,
+> > it reverts to the same situation we have now as soon as the IO
+> > stack has more than one queue.  (Just a shorter version of my
+> > previous post.)
+>
+> No. Since all requests for virtual device end up in physical devices,
+> which have limits, this mechanism works. Virtual device will
+> essentially call either generic_make_request() for new physical
+> device (and thus will sleep is limit is over), or will process bios
+> directly, but in that case it will sleep in generic_make_request()
+> for virutal device.
 
-Use volatile consistently in atomic.h on frv.
+What can happen is, as soon as you unthrottle the previous queue, 
+another thread can come in and put another request on it.  Sure, that 
+thread will likely block on the physical throttle and so will the rest 
+of the incoming threads, but it still allows the higher level queue to 
+grow past any given limit, with the help of lots of threads.  JVM for 
+example?
 
-Signed-off-by: Chris Snook <csnook@redhat.com>
+Say you have a device mapper device with some physical device sitting 
+underneath, the classic use case for this throttle code.  Say 8,000 
+threads each submit an IO in parallel.  The device mapper mapping 
+function will be called 8,000 times with associated resource 
+allocations, regardless of any throttling on the physical device queue.
 
---- linux-2.6.23-rc3-orig/include/asm-frv/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc3/include/asm-frv/atomic.h	2007-08-13 05:27:08.000000000 -0400
-@@ -40,8 +40,16 @@ typedef struct {
- } atomic_t;
- 
- #define ATOMIC_INIT(i)		{ (i) }
--#define atomic_read(v)		((v)->counter)
--#define atomic_set(v, i)	(((v)->counter) = (i))
-+
-+static inline int atomic_read(atomic_t *v)
-+{
-+        return *(volatile int *)&v->counter;
-+}
-+
-+static inline void atomic_set(atomic_t *v, int i)
-+{
-+        *(volatile int *)&v->counter = i;
-+}
- 
- #ifndef CONFIG_FRV_OUTOFLINE_ATOMIC_OPS
- static inline int atomic_add_return(int i, atomic_t *v)
+Anyway, your approach is awfully close to being airtight, there is just 
+a small hole.  I would be more than happy to be proved wrong about 
+that, but the more I look, the more I see that hole.
+
+> > 1) One throttle count per submitted bio is too crude a measure.  A
+> > bio can carry as few as one page or as many as 256 pages.  If you
+> > take only
+>
+> It does not matter - we can count bytes, pages, bio vectors or
+> whatever we like, its just a matter of counter and can be changed
+> without problem.
+
+Quite true.  In some cases the simple inc/dec per bio works just fine.  
+But the general case where finer granularity is required comes up in 
+existing code, so there needs to be a plan.
+
+Regards,
+
+Daniel
