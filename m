@@ -1,46 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932539AbXHMUy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966123AbXHMU4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932539AbXHMUy5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765999AbXHMUxs
+	id S966123AbXHMU4E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbXHMUz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:53:48 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3684 "EHLO perches.com"
+	Mon, 13 Aug 2007 16:55:29 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:35228 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965799AbXHMUxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:53:46 -0400
-Subject: Re: [PATCH] [467/2many] MAINTAINERS - SVGA HANDLING
-From: Joe Perches <joe@perches.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>, hpa@xytor.com
-Cc: Martin Mares <mj@ucw.cz>, torvalds@linux-foundation.org,
-       linux-video@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <1187036301.5058.5.camel@daplas>
-References: <46bffc09.olZ/JU6zLi5nghOY%joe@perches.com>
-	 <mj+md-20070813.084046.10732.nikam@ucw.cz>
-	 <1187028193.10249.197.camel@localhost>  <1187036301.5058.5.camel@daplas>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 13:27:08 -0700
-Message-Id: <1187036828.10249.297.camel@localhost>
+	id S1760616AbXHMUz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 16:55:26 -0400
+Date: Mon, 13 Aug 2007 22:56:42 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Meelis Roos <mroos@linux.ee>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
+Message-ID: <20070813205642.GB19688@uranus.ravnborg.org>
+References: <46B9F664.9060600@googlemail.com> <6bffcb0e0708130621s74411866mc07446854fb96cd4@mail.gmail.com> <20070813183503.GA18722@uranus.ravnborg.org> <200708132259.42937.rjw@sisk.pl>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708132259.42937.rjw@sisk.pl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-14 at 04:18 +0800, Antonino A. Daplas wrote:
-> video.S is no more. Replaced by arch/i386/boot/video-*.c
+On Mon, Aug 13, 2007 at 10:59:41PM +0200, Rafael J. Wysocki wrote:
+> On Monday, 13 August 2007 20:35, Sam Ravnborg wrote:
+> > On Mon, Aug 13, 2007 at 03:21:54PM +0200, Michal Piotrowski wrote:
+> > > > >
+> > > > > The patch changes the warning to a different warning, it's now
+> > > > > kernel/power/Kconfig:79:warning: 'select' used by config symbol 'PM_SLEEP_SMP' refers to undefined symbol 'HOTPLUG_CPU'
+> > 
+> > So we have something like this for ppc:
+> > 
+> > config PM_SLEEP_SMP
+> > 	bool "bla bla"
+> 
+> Plus a couple of "depends on ..." here, which cannot be true.
+> 
+> > 	select HOTPLUG_CPU
+> > 
+> > As it is not in my -linus tree it has been added by the referanced patch
+> > in the text I zapped.
+> > 
+> > 
+> > The warning is generated _independently_ of the actual configuration.
+> > All it says is that the symbol PM_SLEEP_SMP has a seelct statement
+> > for an unknown symbol - unknown for this architecture at least.
+> > 
+> > Grepping will reveal that HOTPLUG_CPU is not present for ppc and
+> > the easiet fix here seems to just add it like in the following:
+> > 
+> > diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+> > index 6bdeeb7..e7bcd57 100644
+> > --- a/arch/ppc/Kconfig
+> > +++ b/arch/ppc/Kconfig
+> > @@ -65,6 +65,10 @@ config GENERIC_BUG
+> >         default y
+> >         depends on BUG
+> >  
+> > +config HOTPLUG_CPU
+> > +       bool
+> > +       default n
+> > +
+> >  source "init/Kconfig"
+> >  
+> >  menu "Processor"
+> > 
+> > [cut'n'paste so whitespace damaged...]
+> > This will silence the warning...
+> > 
+> > 
+> > Now as PM_SLEEP_SMP requires HOTPLUG_CPU there most be done
+> > something else to prevent this config symbol to be selected
+> > otherwise we would end up with a kernel that has HOTPLUG_CPU
+> > defined even it is not supported.
+> 
+> Well, the issue at hand is that PM_SLEEP_SMP will never be set on this arch
+> and the warning is printed nevertheless.
 
-SVGA HANDLING
-P:	Martin Mares
-M:	mj@ucw.cz
-L:	linux-kernel@vger.kernel.org
-S:	Maintained
-F:	Documentation/svga.txt
+Yep - because the warnign is correct.
+The symbol PM_NEED_SMP refer to an undefined symbol
+no matter the case that PM_NEED_SMP can be set or not.
 
-H. Peter Anvin is added via the arch/i386/boot/
-That's probably good enough.
+So either provide the symbol or drop the select. It is as simple as that.
 
-Martin, do you still want to be CC'd on changes
-to arch/i386/boot/vid* here?
-
+	Sam
