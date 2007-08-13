@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971749AbXHMU7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1033081AbXHMU76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971749AbXHMU7S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S943838AbXHMU47
+	id S1033081AbXHMU76 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031552AbXHMU6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:56:59 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44537 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S944450AbXHMU44 (ORCPT
+	Mon, 13 Aug 2007 16:58:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37530
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S966422AbXHMU6M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:56:56 -0400
-Date: Mon, 13 Aug 2007 22:56:53 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Vitaly Bordug <vitb@kernel.crashing.org>,
-       Dan Merillat <dan.merillat@gmail.com>,
-       Paolo Ornati <ornati@fastwebnet.it>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-fsdevel@vger.kernel.org,
-       nfs@lists.sourceforge.net, Jeff Garzik <jeff@garzik.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: Re: [1/2] 2.6.23-rc3: known regressions with patches
-Message-ID: <20070813205653.GA7069@one.firstfloor.org>
-References: <46C09C1A.7050706@googlemail.com> <20070813184204.GA6071@one.firstfloor.org> <6bffcb0e0708131324x29211ef5sd5154d44f0c2e79f@mail.gmail.com>
+	Mon, 13 Aug 2007 16:58:12 -0400
+Date: Mon, 13 Aug 2007 13:58:11 -0700 (PDT)
+Message-Id: <20070813.135811.06543390.davem@davemloft.net>
+To: divy@chelsio.com
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 2.6.23] cxgb3 - Fix dev->priv usage
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070813193303.15321.49171.stgit@speedy5>
+References: <20070813193303.15321.49171.stgit@speedy5>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6bffcb0e0708131324x29211ef5sd5154d44f0c2e79f@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 10:24:52PM +0200, Michal Piotrowski wrote:
-> On 13/08/07, Andi Kleen <andi@firstfloor.org> wrote:
-> > > Unclassified
-> > >
-> > > Subject         : reset during bootup - 2.6.23-rc2 (git d23cf676)
-> >
-> > This is already fixed in mainline
-> 
-> commit b8d3f2448b8f4ba24f301e23585547ba1acc1f04
-> 
-> >
-> > There is a real regression with failing builds on some old binutils on
-> > x86-64 know, but I don't know how to fix it.
-> 
-> Did you mean this?
+From: Divy Le Ray <divy@chelsio.com>
+Date: Mon, 13 Aug 2007 12:33:04 -0700
 
-Yes. Anyways it be likely a WONT-FIX -- aka document newer binutils
-version required. We haven't had any other reports so likely
-that version is not too widely used.
+> From: Divy Le Ray <divy@chelsio.com>
+> 
+> cxgb3 used netdev_priv() and dev->priv for different purposes.
+> In 2.6.23, netdev_priv() == dev->priv, cxgb3 needs a fix.
+> This patch is a partial backport of Dave Miller's changes in the 
+> net-2.6.24 git branch. 
+> 
+> Signed-off-by: Divy Le Ray <divy@chelsio.com>
 
--Andi
+Thank you for doing this backport.
