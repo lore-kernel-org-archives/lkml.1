@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940841AbXHMHgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941744AbXHMHhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940841AbXHMHgh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 03:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966261AbXHMG0N
+	id S941744AbXHMHhF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 03:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965876AbXHMG0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:26:13 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4107 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:26:14 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4113 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966057AbXHMG0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S966258AbXHMG0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 02:26:07 -0400
-Date: Sun, 12 Aug 2007 23:25:14 -0700
+Date: Sun, 12 Aug 2007 23:25:52 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, rdunlap@xenotime.net,
-       linux-kernel@vger.kernel.org, jschopp@austin.ibm.com, apw@shadowen.org,
-       akpm@linux-foundation.org
-Subject: [PATCH] [122/2many] MAINTAINERS - CHECKPATCH
-Message-ID: <46bff94a.HzXjcz4XpSWqTMJs%joe@perches.com>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Knut_Petersen@t-online.de
+Subject: [PATCH] [142/2many] MAINTAINERS - CYBLAFB FRAMEBUFFER DRIVER
+Message-ID: <46bff970.4ojjGbkTVi9aDwkX%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,14 +27,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 9157b5d..1c014f1 100644
+index aee6296..062e662 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1191,6 +1191,7 @@ M:	rdunlap@xenotime.net
- P:	Joel Schopp
- M:	jschopp@austin.ibm.com
- S:	Supported
-+F:	scripts/checkpatch.pl
+@@ -1372,6 +1372,7 @@ P:	Knut Petersen
+ M:	Knut_Petersen@t-online.de
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
++F:	drivers/video/cyblafb.c
  
- COMMON INTERNET FILE SYSTEM (CIFS)
- P:	Steve French
+ CYCLADES 2X SYNC CARD DRIVER
+ P:	Arnaldo Carvalho de Melo
