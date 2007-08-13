@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942690AbXHMIuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S943013AbXHMIun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942690AbXHMIuA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 04:50:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966591AbXHMGae
+	id S943013AbXHMIun (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 04:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966873AbXHMGag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:30:34 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4805 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:30:36 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4813 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966251AbXHMGaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:30:30 -0400
-Date: Sun, 12 Aug 2007 23:30:11 -0700
+	id S966816AbXHMGad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:30:33 -0400
+Date: Sun, 12 Aug 2007 23:30:21 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       infinipath@qlogic.com, general@lists.openfabrics.org,
+To: torvalds@linux-foundation.org, perex@suse.cz, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
-Subject: [PATCH] [263/2many] MAINTAINERS - IPATH DRIVER:
-Message-ID: <46bffa73.TlHrGgz5328/gmg4%joe@perches.com>
+Subject: [PATCH] [267/2many] MAINTAINERS - ISAPNP
+Message-ID: <46bffa7d.5LzVq5KCXqfE59nJ%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,14 +27,16 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 629b64c..4157218 100644
+index 3d726c8..ab9ba39 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2516,6 +2516,7 @@ M:	infinipath@qlogic.com
- L:	general@lists.openfabrics.org
- T:	git git://git.qlogic.com/ipath-linux-2.6
- S:	Supported
-+F:	drivers/infiniband/hw/ipath/
+@@ -2552,6 +2552,9 @@ ISAPNP
+ P:	Jaroslav Kysela
+ M:	perex@suse.cz
+ S:	Maintained
++F:	Documentation/isapnp.txt
++F:	drivers/pnp/isapnp/
++F:	include/linux/isapnp.h
  
- IPMI SUBSYSTEM
- P:	Corey Minyard
+ ISDN SUBSYSTEM
+ P:	Karsten Keil
