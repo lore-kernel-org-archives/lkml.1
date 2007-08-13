@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S946838AbXHMObJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbXHMOb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S946838AbXHMObJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S942054AbXHMLas
+	id S1753108AbXHMOb6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S944057AbXHMLbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 07:30:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50560 "EHLO mx1.redhat.com"
+	Mon, 13 Aug 2007 07:31:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50777 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S944498AbXHMLao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 07:30:44 -0400
-Date: Mon, 13 Aug 2007 07:29:33 -0400
+	id S943765AbXHMLba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 07:31:30 -0400
+Date: Mon, 13 Aug 2007 07:31:10 -0400
 From: Chris Snook <csnook@redhat.com>
 To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>
@@ -17,8 +17,8 @@ Cc: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
        Segher Boessenkool <segher@kernel.crashing.org>,
        "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
        "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: [PATCH 14/23] make atomic_read() and atomic_set() behavior consistent on mips
-Message-ID: <20070813112933.GN24018@shell.boston.redhat.com>
+Subject: [PATCH 15/23] make atomic_read() and atomic_set() behavior consistent on parisc
+Message-ID: <20070813113110.GO24018@shell.boston.redhat.com>
 References: <46C03885.7000109@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -30,74 +30,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Chris Snook <csnook@redhat.com>
 
-Use volatile consistently in atomic.h on mips.
+Use volatile consistently in atomic.h on parisc.
 
 Signed-off-by: Chris Snook <csnook@redhat.com>
 
---- linux-2.6.23-rc3-orig/include/asm-mips/atomic.h	2007-08-13 03:14:13.000000000 -0400
-+++ linux-2.6.23-rc3/include/asm-mips/atomic.h	2007-08-13 05:52:14.000000000 -0400
-@@ -20,7 +20,7 @@
- #include <asm/war.h>
- #include <asm/system.h>
+--- linux-2.6.23-rc3-orig/include/asm-parisc/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc3/include/asm-parisc/atomic.h	2007-08-13 05:59:35.000000000 -0400
+@@ -128,7 +128,7 @@ __cmpxchg(volatile void *ptr, unsigned l
+  * Cache-line alignment would conflict with, for example, linux/module.h
+  */
  
 -typedef struct { volatile int counter; } atomic_t;
 +typedef struct { int counter; } atomic_t;
  
- #define ATOMIC_INIT(i)    { (i) }
+ /* It's possible to reduce all atomic operations to either
+  * __atomic_add_return, atomic_set and atomic_read (the latter
+@@ -159,7 +159,7 @@ static __inline__ void atomic_set(atomic
  
-@@ -30,7 +30,10 @@ typedef struct { volatile int counter; }
-  *
-  * Atomically reads the value of @v.
-  */
--#define atomic_read(v)		((v)->counter)
-+static __inline__ int atomic_read(atomic_t *v)
-+{
-+        return *(volatile int *)&v->counter;
-+}
+ static __inline__ int atomic_read(const atomic_t *v)
+ {
+-	return v->counter;
++	return *(volatile int *)&v->counter;
+ }
  
- /*
-  * atomic_set - set atomic variable
-@@ -39,7 +42,10 @@ typedef struct { volatile int counter; }
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic_set(v,i)		((v)->counter = (i))
-+static __inline__ void atomic_set(atomic_t *v, int i)
-+{
-+        *(volatile int *)&v->counter = i;
-+}
- 
- /*
-  * atomic_add - add integer to atomic variable
-@@ -404,7 +410,7 @@ static __inline__ int atomic_add_unless(
+ /* exported interface */
+@@ -227,7 +227,7 @@ static __inline__ int atomic_add_unless(
  
  #ifdef CONFIG_64BIT
  
--typedef struct { volatile long counter; } atomic64_t;
-+typedef struct { long counter; } atomic64_t;
+-typedef struct { volatile s64 counter; } atomic64_t;
++typedef struct { s64 counter; } atomic64_t;
  
- #define ATOMIC64_INIT(i)    { (i) }
+ #define ATOMIC64_INIT(i) ((atomic64_t) { (i) })
  
-@@ -413,14 +419,20 @@ typedef struct { volatile long counter; 
-  * @v: pointer of type atomic64_t
-  *
-  */
--#define atomic64_read(v)	((v)->counter)
-+static __inline__ long atomic64_read(atomic64_t *v)
-+{
-+        return *(volatile long *)&v->counter;
-+}
+@@ -258,7 +258,7 @@ atomic64_set(atomic64_t *v, s64 i)
+ static __inline__ s64
+ atomic64_read(const atomic64_t *v)
+ {
+-	return v->counter;
++	return *(volatile s64 *)&v->counter;
+ }
  
- /*
-  * atomic64_set - set atomic variable
-  * @v: pointer of type atomic64_t
-  * @i: required value
-  */
--#define atomic64_set(v,i)	((v)->counter = (i))
-+static __inline__ void atomic64_set(atomic64_t *v, long i)
-+{
-+        *(volatile long *)&v->counter = i;
-+}
- 
- /*
-  * atomic64_add - add integer to atomic variable
+ #define atomic64_add(i,v)	((void)(__atomic64_add_return( ((s64)i),(v))))
