@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S948091AbXHMPLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S948150AbXHMPL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S948091AbXHMPLY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S943669AbXHMMwo
+	id S948150AbXHMPL6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S945700AbXHMMxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 08:52:44 -0400
-Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:58151 "EHLO
+	Mon, 13 Aug 2007 08:53:51 -0400
+Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:58331 "EHLO
 	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S945726AbXHMMwl (ORCPT
+	with ESMTP id S945691AbXHMMxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 08:52:41 -0400
-Subject: [kj] is_power_of_2 in drivers/md/dm-raid1.c
+	Mon, 13 Aug 2007 08:53:49 -0400
+Subject: [kj] is_power_of_2 in drivers/pci/pci.c
 From: vignesh babu <vignesh.babu@wipro.com>
 Reply-To: vigneshbabu@gmail.com
-To: mingo@redhat.com, neilb@suse.de
-Cc: linux-raid@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+To: gregkh@suse.de
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Kernel Janitors List <kernel-janitors@lists.osdl.org>
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Organization: WIPRO Technologies
-Date: Mon, 13 Aug 2007 18:22:06 +0530
-Message-Id: <1187009526.7273.2.camel@merlin.linuxcoe.com>
+Date: Mon, 13 Aug 2007 18:23:14 +0530
+Message-Id: <1187009594.7273.4.camel@merlin.linuxcoe.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-X-OriginalArrivalTime: 13 Aug 2007 12:52:53.0575 (UTC) FILETIME=[DD05FD70:01C7DDA8]
+X-OriginalArrivalTime: 13 Aug 2007 12:54:08.0852 (UTC) FILETIME=[09E45940:01C7DDA9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -30,69 +32,36 @@ Replacing n & (n - 1) for power of 2 check by is_power_of_2(n)
 
 Signed-off-by: vignesh babu <vignesh.babu@wipro.com>
 ---
-diff --git a/drivers/md/dm-raid1.c b/drivers/md/dm-raid1.c
-index 144071e..969b398 100644
---- a/drivers/md/dm-raid1.c
-+++ b/drivers/md/dm-raid1.c
-@@ -19,6 +19,7 @@
- #include <linux/time.h>
- #include <linux/vmalloc.h>
- #include <linux/workqueue.h>
-+#include <linux/log2.h>
- 
- #define DM_MSG_PREFIX "raid1"
- #define DM_IO_PAGES 64
-@@ -994,7 +995,7 @@ static void free_context(struct mirror_set *ms, struct dm_target *ti,
- 
- static inline int _check_region_size(struct dm_target *ti, uint32_t size)
- {
--	return !(size % (PAGE_SIZE >> 9) || (size & (size - 1)) ||
-+	return !(size % (PAGE_SIZE >> 9) || !is_power_of_2(size) ||
- 		 size > ti->len);
- }
- 
-diff --git a/drivers/md/dm-snap.c b/drivers/md/dm-snap.c
-index 83ddbfe..ad2836a 100644
---- a/drivers/md/dm-snap.c
-+++ b/drivers/md/dm-snap.c
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 37c00f6..19a64a3 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
 @@ -17,6 +17,7 @@
  #include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/vmalloc.h>
+ #include <linux/spinlock.h>
+ #include <linux/string.h>
 +#include <linux/log2.h>
+ #include <asm/dma.h>	/* isa_dma_bridge_buggy */
+ #include "pci.h"
  
- #include "dm-snap.h"
- #include "dm-bio-list.h"
-@@ -415,7 +416,7 @@ static int set_chunk_size(struct dm_snapshot *s, const char *chunk_size_arg,
- 	chunk_size = round_up(chunk_size, PAGE_SIZE >> 9);
+@@ -1454,7 +1455,7 @@ int pcix_set_mmrbc(struct pci_dev *dev, int mmrbc)
+ 	int cap, err = -EINVAL;
+ 	u32 stat, cmd, v, o;
  
- 	/* Check chunk_size is a power of 2 */
--	if (chunk_size & (chunk_size - 1)) {
-+	if (!is_power_of_2(chunk_size)) {
- 		*error = "Chunk size is not a power of 2";
- 		return -EINVAL;
- 	}
-diff --git a/drivers/md/dm-stripe.c b/drivers/md/dm-stripe.c
-index 51f5e07..969944a 100644
---- a/drivers/md/dm-stripe.c
-+++ b/drivers/md/dm-stripe.c
-@@ -11,6 +11,7 @@
- #include <linux/blkdev.h>
- #include <linux/bio.h>
- #include <linux/slab.h>
-+#include <linux/log2.h>
+-	if (mmrbc < 512 || mmrbc > 4096 || (mmrbc & (mmrbc-1)))
++	if (mmrbc < 512 || mmrbc > 4096 || !is_power_of_2(mmrbc))
+ 		goto out;
  
- #define DM_MSG_PREFIX "striped"
+ 	v = ffs(mmrbc) - 10;
+@@ -1526,7 +1527,7 @@ int pcie_set_readrq(struct pci_dev *dev, int rq)
+ 	int cap, err = -EINVAL;
+ 	u16 ctl, v;
  
-@@ -99,7 +100,7 @@ static int stripe_ctr(struct dm_target *ti, unsigned int argc, char **argv)
- 	/*
- 	 * chunk_size is a power of two
- 	 */
--	if (!chunk_size || (chunk_size & (chunk_size - 1)) ||
-+	if (!is_power_of_2(chunk_size) ||
- 	    (chunk_size < (PAGE_SIZE >> SECTOR_SHIFT))) {
- 		ti->error = "Invalid chunk size";
- 		return -EINVAL;
+-	if (rq < 128 || rq > 4096 || (rq & (rq-1)))
++	if (rq < 128 || rq > 4096 || !is_power_of_2(rq))
+ 		goto out;
+ 
+ 	v = (ffs(rq) - 8) << 12;
 
 -- 
 Vignesh Babu BM 
