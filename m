@@ -1,111 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937991AbXHMCTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938127AbXHMC3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937991AbXHMCTo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 22:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934687AbXHMCTg
+	id S938127AbXHMC3Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 22:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934545AbXHMC3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 22:19:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54384 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934795AbXHMCTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 22:19:35 -0400
+	Sun, 12 Aug 2007 22:29:14 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:3398 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S934170AbXHMC3N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 22:29:13 -0400
+Date: Sun, 12 Aug 2007 22:29:12 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] Re: When to use a freezeable workqueue?
+In-Reply-To: <200708130018.38652.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0708122222000.5743-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: akpm@linux-foundation.org
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Cc: ak@suse.de
-Subject: [PATCH 2/2] x86_64 vDSO: install unstripped copies on disk
-In-Reply-To: akpm@linux-foundation.org's message of  Friday, 10 August 2007 14:59:50 -0700 <200708102159.l7ALxolY011805@imap1.linux-foundation.org>
-X-Fcc: ~/Mail/linus
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20070813021931.1406A4D057D@magilla.localdomain>
-Date: Sun, 12 Aug 2007 19:19:31 -0700 (PDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While integrating these with the Fedora kernel build, I worked out a few kinks.
-This patch replaces x86_64-vdso-install-unstripped-copies-on-disk.patch
-and expects x86_64-ia32-vdso-install-unstripped-copies-on-disk.patch
-was applied first.
+On Mon, 13 Aug 2007, Rafael J. Wysocki wrote:
 
+> On Sunday, 12 August 2007 10:11, Stefan Richter wrote:
+> > In which situations is create_freezeable_workqueue() to be preferred
+> > over create_singlethread_workqueue()?
+> > 
+> > Is a freezable worqueue preferable whenever the worker thread /can/ be
+> > frozen, or is it only to be used if the thread /must/ be frozen during
+> > suspend?
+> 
+> The latter, IMO.
+> 
+> Generally, if you want it to be frozen.
 
-Thanks,
-Roland
+A good example of a reason for making a workqueue freezable is that the 
+workqueue contains entries which would cause a suspended device to be 
+resumed.  Obviously you don't want such things to happen while the 
+system is going to sleep.  A little less obviously, there might also be 
+problems if such a routine ran while the system was waking up.
 
----
+Another reason might be that the workqueue contains entries which would
+try to register or unregister a device.  Such actions aren't a good
+idea at times when the PM core is iterating through a list of all
+devices in order to suspend or resume them.  And in the future such
+actions may block, effectively freezing the workqueue anyway -- which
+could be troublesome if you don't want the workqueue to be frozen!
 
-This keeps an unstripped copy of the vDSO images built before they are
-stripped and embedded in the kernel.  The unstripped copies get installed
-in $(MODLIB)/vdso/ by "make install" (or you can explicitly use the
-subtarget "make vdso_install").  These files can be useful when they
-contain source-level debugging information.
+Alan Stern
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/x86_64/Makefile      |    1 +
- arch/x86_64/vdso/Makefile |   20 ++++++++++++++++----
- 2 files changed, 17 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86_64/Makefile b/arch/x86_64/Makefile
-index 93fc1f2..c0905ae 100644
---- a/arch/x86_64/Makefile
-+++ b/arch/x86_64/Makefile
-@@ -112,6 +112,7 @@ vdso_install:
- ifeq ($(CONFIG_IA32_EMULATION),y)
- 	$(Q)$(MAKE) $(build)=arch/x86_64/ia32 $@
- endif
-+	$(Q)$(MAKE) $(build)=arch/x86_64/vdso $@
- 
- archclean:
- 	$(Q)$(MAKE) $(clean)=$(boot)
-
-diff --git a/arch/x86_64/vdso/Makefile b/arch/x86_64/vdso/Makefile
-index faaa72f..20ecf05 100644
---- a/arch/x86_64/vdso/Makefile
-+++ b/arch/x86_64/vdso/Makefile
-@@ -13,7 +13,7 @@ vobjs := $(foreach F,$(vobjs-y),$(obj)/$F)
- 
- $(obj)/vdso.o: $(obj)/vdso.so
- 
--targets += vdso.so vdso.lds $(vobjs-y) vdso-syms.o
-+targets += vdso.so vdso.so.dbg vdso.lds $(vobjs-y) vdso-syms.o
- 
- # The DSO images are built using a special linker script.
- quiet_cmd_syscall = SYSCALL $@
-@@ -25,14 +25,18 @@ export CPPFLAGS_vdso.lds += -P -C -U$(ARCH)
- vdso-flags = -fPIC -shared -Wl,-soname=linux-vdso.so.1 \
- 		 $(call ld-option, -Wl$(comma)--hash-style=sysv) \
- 		-Wl,-z,max-page-size=4096 -Wl,-z,common-page-size=4096
--SYSCFLAGS_vdso.so = $(vdso-flags)
-+SYSCFLAGS_vdso.so.dbg = $(vdso-flags)
- 
- $(obj)/vdso.o: $(src)/vdso.S $(obj)/vdso.so
- 
--$(obj)/vdso.so: $(src)/vdso.lds $(vobjs) FORCE
-+$(obj)/vdso.so.dbg: $(src)/vdso.lds $(vobjs) FORCE
- 	$(call if_changed,syscall)
- 
--CFL := $(PROFILING) -mcmodel=small -fPIC -g0 -O2 -fasynchronous-unwind-tables -m64
-+$(obj)/%.so: OBJCOPYFLAGS := -S
-+$(obj)/%.so: $(obj)/%.so.dbg FORCE
-+	$(call if_changed,objcopy)
-+
-+CFL := $(PROFILING) -mcmodel=small -fPIC $(if $(CONFIG_DEBUG_INFO),-g,-g0) -O2 -fasynchronous-unwind-tables -m64
- 
- $(obj)/vclock_gettime.o: CFLAGS = $(CFL)
- $(obj)/vgetcpu.o: CFLAGS = $(CFL)
-@@ -47,3 +51,11 @@ $(obj)/built-in.o: ld_flags += -R $(obj)/vdso-syms.o
- SYSCFLAGS_vdso-syms.o = -r -d
- $(obj)/vdso-syms.o: $(src)/vdso.lds $(vobjs) FORCE
- 	$(call if_changed,syscall)
-+
-+quiet_cmd_vdso_install = INSTALL $@
-+      cmd_vdso_install = cp $(obj)/$@.dbg $(MODLIB)/vdso/$@
-+vdso.so:
-+	@mkdir -p $(MODLIB)/vdso
-+	$(call cmd,vdso_install)
-+
-+vdso_install: vdso.so
