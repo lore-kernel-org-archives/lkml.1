@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S946897AbXHMQN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S943636AbXHMQOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S946897AbXHMQN7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S947636AbXHMOyN
+	id S943636AbXHMQOv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S947529AbXHMO6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 10:54:13 -0400
-Received: from vms044pub.verizon.net ([206.46.252.44]:56101 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S944345AbXHMOyJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 10:54:09 -0400
-Date: Mon, 13 Aug 2007 09:54:06 -0500
-From: Corey Minyard <minyard@acm.org>
-Subject: Re: [PATCH] [264/2many] MAINTAINERS - IPMI SUBSYSTEM
-In-reply-to: <46bffa75.qEmjEDgYnspaocFg%joe@perches.com>
-To: joe@perches.com
-Cc: torvalds@linux-foundation.org, openipmi-developer@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Message-id: <46C0708E.1060903@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <46bffa75.qEmjEDgYnspaocFg%joe@perches.com>
-User-Agent: Icedove 1.5.0.12 (X11/20070606)
+	Mon, 13 Aug 2007 10:58:11 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:63177 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S946748AbXHMO6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 10:58:08 -0400
+Date: Mon, 13 Aug 2007 16:57:27 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [patch 04/23] Add cmpxchg_local to avr32
+Message-ID: <20070813165727.2ad676d1@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <20070812145835.883846016@polymtl.ca>
+References: <20070812145434.520271946@polymtl.ca>
+	<20070812145835.883846016@polymtl.ca>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks.
+On Sun, 12 Aug 2007 10:54:38 -0400
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-Acked-by: Corey Minyard <cminyard@mvista.com>
+> Use the new generic cmpxchg_local (disables interrupt) for 8, 16 and
+> 64 bits cmpxchg_local. Use the __cmpxchg_u32 primitive for 32 bits
+> cmpxchg_local.
+> 
+> Note that cmpxchg only uses the __cmpxchg_u32 or __cmpxchg_u64 and
+> will cause a linker error if called with 8 or 16 bits argument.
 
-joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
->
-> Signed-off-by: Joe Perches <joe@perches.com>
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 4157218..c1a9131 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2524,6 +2524,9 @@ M:	minyard@acm.org
->  L:	openipmi-developer@lists.sourceforge.net
->  W:	http://openipmi.sourceforge.net/
->  S:	Supported
-> +F:	Documentation/IPMI.txt
-> +F:	drivers/char/ipmi/
-> +F:	include/linux/ipmi*
->  
->  IPX NETWORK LAYER
->  P:	Arnaldo Carvalho de Melo
->   
+Actually, you'll get a linker error if it's called with a 64-bit
+argument too. But your patch doesn't use __cmpxchg_u64 so it's fine.
 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+
+Looks good to me. I suppose we _could_ implement 8- and 16-bit cmpxchg
+using stcond, but I really doubt it's worth it.
+
+Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
