@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S947912AbXHMQZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S948331AbXHMQ0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S947912AbXHMQZS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967421AbXHMPQm
+	id S948331AbXHMQ0Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031032AbXHMPTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 11:16:42 -0400
-Received: from mga03.intel.com ([143.182.124.21]:14173 "EHLO mga03.intel.com"
+	Mon, 13 Aug 2007 11:19:25 -0400
+Received: from THUNK.ORG ([69.25.196.29]:48753 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967113AbXHMPQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 11:16:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,255,1183359600"; 
-   d="scan'208";a="262458940"
-Message-ID: <46C075AF.4000103@intel.com>
-Date: Mon, 13 Aug 2007 08:15:59 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
+	id S947206AbXHMPTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 11:19:23 -0400
+Date: Mon, 13 Aug 2007 11:19:18 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: joe@perches.com, torvalds@linux-foundation.org, sct@redhat.com,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       akpm@linux-foundation.org, Eric Sandeen <esandeen@redhat.com>,
+       Mingming Cao <cmm@us.ibm.com>
+Subject: Re: [PATCH] [188/2many] MAINTAINERS - EXT4 FILE SYSTEM
+Message-ID: <20070813151917.GA28130@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, joe@perches.com,
+	torvalds@linux-foundation.org, sct@redhat.com,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	akpm@linux-foundation.org, Eric Sandeen <esandeen@redhat.com>,
+	Mingming Cao <cmm@us.ibm.com>
+References: <46bff9cc.cxIrFM29roaPmcfV%joe@perches.com> <20070813090128.GJ6689@schatzie.adilger.int>
 MIME-Version: 1.0
-To: joe@perches.com
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       john.ronciak@intel.com, jesse.brandeburg@intel.com,
-       jeffrey.t.kirsher@intel.com, e1000-devel@lists.sourceforge.net,
-       cramerj@intel.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] [257/2many] MAINTAINERS - INTEL PRO/1000 GIGABIT ETHERNET
- SUPPORT
-References: <46bffa66.QCw+66otGbnO9zGl%joe@perches.com>
-In-Reply-To: <46bffa66.QCw+66otGbnO9zGl%joe@perches.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Aug 2007 15:16:34.0713 (UTC) FILETIME=[EF9F4090:01C7DDBC]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070813090128.GJ6689@schatzie.adilger.int>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
+On Mon, Aug 13, 2007 at 03:01:28AM -0600, Andreas Dilger wrote:
+> >  EXT4 FILE SYSTEM
+> > -P:	Stephen Tweedie, Andrew Morton
+> > -M:	sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com
+> > +P:	Stephen Tweedie
+> > +M:	sct@redhat.com
+> > +P:	Andrew Morton
+> > +M:	akpm@linux-foundation.org
+> > +P:	Andreas Dilger
+> > +M:	adilger@clusterfs.com
+> >  L:	linux-ext4@vger.kernel.org
+> >  S:	Maintained
+> > +F:	fs/ext4/
+> > +F:	include/linux/ext4*
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index c4a3480..4cf1579 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2453,6 +2453,7 @@ M:	auke-jan.h.kok@intel.com
->  L:	e1000-devel@lists.sourceforge.net
->  W:	http://sourceforge.net/projects/e1000/
->  S:	Supported
-> +F:	drivers/net/e100.c
->  
->  INTEL PRO/10GbE SUPPORT
->  P:	Jeff Kirsher
+> To be honest, Stephen and Andrew haven't been directly involved in
+> the ext4 development.  It probably makes more sense to have e.g.
+> Eric Sandeen, Ted Ts'o, and MingMing Cao in their place.
 
+Yep, agreed.
 
-that would be horribly wrong looking at the subject: drivers/net/e1000/ would be 
-more appropriate.
-
-Auke
+					- Ted
