@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970820AbXHMI6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970855AbXHMI7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970820AbXHMI6m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 04:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966750AbXHMGbI
+	id S970855AbXHMI7V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 04:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966669AbXHMGbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:31:08 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4906 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:31:10 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4910 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966348AbXHMGbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:31:04 -0400
-Date: Sun, 12 Aug 2007 23:30:38 -0700
+	id S966826AbXHMGbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:31:06 -0400
+Date: Sun, 12 Aug 2007 23:30:53 -0700
 From: joe@perches.com
-To: vgoyal@in.ibm.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-       hbabu@us.ibm.com, akpm@linux-foundation.org
-Subject: [PATCH] [275/2many] MAINTAINERS - KDUMP
-Message-ID: <46bffa8e.NHuk7h7puR+3eDXo%joe@perches.com>
+To: torvalds@linux-foundation.org, maxextreme@gmail.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] [283/2many] MAINTAINERS - KS0108 LCD CONTROLLER DRIVER
+Message-ID: <46bffa9d.KmZJgBW4fj2hb2jU%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,14 +27,16 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 1ea2c63..d61676a 100644
+index 534403d..5c4d564 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2634,6 +2634,7 @@ L:	kexec@lists.infradead.org
+@@ -2718,6 +2718,9 @@ M:	maxextreme@gmail.com
  L:	linux-kernel@vger.kernel.org
- W:	http://lse.sourceforge.net/kdump/
+ W:	http://auxdisplay.googlepages.com/
  S:	Maintained
-+F:	Documentation/kdump
++F:	Documentation/auxdisplay/ks0108
++F:	drivers/auxdisplay/ks0108.c
++F:	include/linux/ks0108.h
  
- KERNEL AUTOMOUNTER (AUTOFS)
- P:	H. Peter Anvin
+ LAPB module
+ L:	linux-x25@vger.kernel.org
