@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938941AbXHMCat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965440AbXHMCph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938941AbXHMCat (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 22:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934795AbXHMCal
+	id S965440AbXHMCph (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 22:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935150AbXHMCp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 22:30:41 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:34573 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933531AbXHMCak (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 22:30:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XEo/mPKJkNwNFy7j3bJc0WNnFQJRElZltznjTh+zLM3MmMTuxVvPKNaQ3gzq4jVY761Xb525p/0iAZdARdl253iUe3Z2SghvBvbeqy3863SUmDnRZBNd5rRoIoRpnn+347lZ7nSzqnQz9jmof72IFVzNt2/e59yPUuWRK3oDspk=
-Message-ID: <b14e81f00708121930n7d9eab99r6fa776120c6287c1@mail.gmail.com>
-Date: Sun, 12 Aug 2007 22:30:39 -0400
-From: "Michael Chang" <thenewme91@gmail.com>
-To: "Dr. David Alan Gilbert" <linux@treblig.org>
-Subject: Re: encrypted hibernation (was Re: Hibernation considerations)
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Vojtech Pavlik" <vojtech@suse.cz>,
-       seife@suse.de, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       "Jeremy Maitin-Shepard" <jbms@cmu.edu>,
-       "Kyle Moffett" <mrmacman_g4@mac.com>,
-       "Nigel Cunningham" <nigel@nigel.suspend2.net>,
-       "pm list" <linux-pm@lists.linux-foundation.org>, david@lang.hm,
-       "Al Boldi" <a1426z@gawab.com>
-In-Reply-To: <20070811234356.GA19183@gallifrey>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 12 Aug 2007 22:45:28 -0400
+Received: from smtpout.mac.com ([17.250.248.176]:60536 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934597AbXHMCp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 22:45:27 -0400
+In-Reply-To: <46BFC39F.1020703@manicmethod.com>
+References: <255628.7187.qm@web36607.mail.mud.yahoo.com> <10247DAA-D04B-42D5-B67B-C2D3BD42A94F@mac.com> <46BFC39F.1020703@manicmethod.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <F249B290-129C-4A41-8BBF-2C601D3B00F6@mac.com>
+Cc: casey@schaufler-ca.com, linux-security-module@vger.kernel.org,
+       LKML Kernel <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200707151433.34625.rjw@sisk.pl> <20070715125855.GA1737@gallifrey>
-	 <200707160038.12943.rjw@sisk.pl> <20070729065352.GB17084@suse.cz>
-	 <20070805195628.GA1947@elf.ucw.cz> <20070811234356.GA19183@gallifrey>
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
+Date: Sun, 12 Aug 2007 22:45:38 -0400
+To: Joshua Brindle <method@manicmethod.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/11/07, Dr. David Alan Gilbert <linux@treblig.org> wrote:
-> * Pavel Machek (pavel@ucw.cz) wrote:
-> > Hi!
-> >
-> > > > > Two things which I think would be nice to consider are:
-> > > > >    1) Encryption - I'd actually prefer if my luks device did not
-> > > > >        remember the key accross a hibernation; I want to be forced to
-> > > > >        reenter the phrase.  However I don't know what the best thing
-> > > > >        to do to partitions/applications using the luks device is.
-> > > >
-> > > > Encryption is possible with both the userland hibernation (aka uswsusp) and
-> > > > TuxOnIce (formerly known as suspend2).  Still, I don't consider it as a "must
-> > > > have" feature for a framework to be generally useful (many users don't use it
-> > > > anyway).
-> > >
-> > > If a user uses an encrypted filesystem, then he also needs an encrypted
-> > > swap and encrypted hibernation image: Otherwise the fileystem encryption
-> > > is not very useful.
-> >
-> > Actually, we can do most of that stuff already.
-> >
-> > We can encrypt filesystems, encrypt swaps (LVM), and encrypt hibernation.
+On Aug 12, 2007, at 22:36:15, Joshua Brindle wrote:
+> Kyle Moffett wrote:
+>> On Aug 12, 2007, at 15:41:46, Casey Schaufler wrote:
+>>> Your boolean solution requires more forthought than the Smack  
+>>> rule solution, but I'll give it to you once you've fleshed out  
+>>> your "##" lines.
+>>
+>> How does it require more forethought?  When I want to turn it on,  
+>> I write and load the 5 line policy then add the cronjobs.  Yours  
+>> involves giving cron unconditional permission to write to your  
+>> security database (always a bad idea) and then adding similar  
+>> cronjobs.
 >
-> But can you do what my original question was; find a way to lose a luks
-> encrypted device key and cleanly unmount the filesystem that was
-> using it?  (and preferably put it all back together after resume).
->
+> nit: without the selinux policy server (which is not production  
+> ready by any means) we have to grant the same to cron in this case  
+> (or at least to the domain that cron runs the cronjobs in). SELinux  
+> and Smack alike need special permissions to modify the running  
+> policy, no surprises there.
 
-If you lose the device key, how are you going to get luks to find it
-again when resuming? Wouldn't it make more sense to have it remember
-the key? I can't see it being advisable to allow input or similar
-before resume has completed...
+Yeah, I figured this out a couple minutes ago.  Turns out you can get  
+a similar effect with a little properly labeled shell script though  
+(text included in my last email), but it does decrease overall system  
+security.
 
--- 
-Michael Chang
+Cheers,
+Kyle Moffett
 
-Please avoid sending me Word or PowerPoint attachments. Send me ODT,
-RTF, or HTML instead.
-See http://www.gnu.org/philosophy/no-word-attachments.html
-Thank you.
