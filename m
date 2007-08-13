@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S947926AbXHMPJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S944348AbXHMPKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S947926AbXHMPJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938087AbXHMMva
+	id S944348AbXHMPKj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S945468AbXHMMvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 08:51:30 -0400
-Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:58001 "EHLO
+	Mon, 13 Aug 2007 08:51:41 -0400
+Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:58088 "EHLO
 	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S943669AbXHMMvW (ORCPT
+	with ESMTP id S945635AbXHMMvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 08:51:22 -0400
+	Mon, 13 Aug 2007 08:51:39 -0400
 Subject: [kj] is_power_of_2 in drivers/block/rd.c
 From: vignesh babu <vignesh.babu@wipro.com>
 Reply-To: vigneshbabu@gmail.com
@@ -19,11 +19,11 @@ Cc: linux-kernel <linux-kernel@vger.kernel.org>,
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Organization: WIPRO Technologies
-Date: Mon, 13 Aug 2007 18:20:33 +0530
-Message-Id: <1187009433.7273.0.camel@merlin.linuxcoe.com>
+Date: Mon, 13 Aug 2007 18:20:57 +0530
+Message-Id: <1187009457.7273.1.camel@merlin.linuxcoe.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-X-OriginalArrivalTime: 13 Aug 2007 12:51:40.0651 (UTC) FILETIME=[B18EABB0:01C7DDA8]
+X-OriginalArrivalTime: 13 Aug 2007 12:51:51.0012 (UTC) FILETIME=[B7BBA240:01C7DDA8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
