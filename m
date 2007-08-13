@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972677AbXHMNQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965568AbXHMNRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972677AbXHMNQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970864AbXHMI7v
+	id S965568AbXHMNRm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970665AbXHMJAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 04:59:51 -0400
-Received: from mail.clusterfs.com ([74.0.229.162]:43514 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S970787AbXHMI7k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 04:59:40 -0400
-Date: Mon, 13 Aug 2007 02:59:41 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
+	Mon, 13 Aug 2007 05:00:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50861 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S970866AbXHMJAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 05:00:19 -0400
+Subject: Re: [PATCH] [208/2many] MAINTAINERS - GFS2 FILE SYSTEM
+From: Steven Whitehouse <swhiteho@redhat.com>
 To: joe@perches.com
-Cc: torvalds@linux-foundation.org, sct@redhat.com,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] [187/2many] MAINTAINERS - EXT3 FILE SYSTEM
-Message-ID: <20070813085941.GI6689@schatzie.adilger.int>
-Mail-Followup-To: joe@perches.com, torvalds@linux-foundation.org,
-	sct@redhat.com, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, akpm@linux-foundation.org
-References: <46bff9ca.G6SlSSqj37lZdpz+%joe@perches.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       cluster-devel@redhat.com, akpm@linux-foundation.org
+In-Reply-To: <46bffa01.umS2rSd+AoRJwoFx%joe@perches.com>
+References: <46bffa01.umS2rSd+AoRJwoFx%joe@perches.com>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Mon, 13 Aug 2007 09:54:18 +0100
+Message-Id: <1186995258.8765.795.camel@quoit>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46bff9ca.G6SlSSqj37lZdpz+%joe@perches.com>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 12, 2007  23:27 -0700, joe@perches.com wrote:
+Hi,
+
+On Sun, 2007-08-12 at 23:28 -0700, joe@perches.com wrote:
 > Add file pattern to MAINTAINER entry
 > 
 > Signed-off-by: Joe Perches <joe@perches.com>
 > 
 > diff --git a/MAINTAINERS b/MAINTAINERS
-> index 653b9a0..814168d 100644
+> index d8063ee..b4183e7 100644
 > --- a/MAINTAINERS
 > +++ b/MAINTAINERS
-> @@ -1796,10 +1796,16 @@ F:	fs/ext2/
->  F:	include/linux/ext2*
+> @@ -1992,6 +1992,9 @@ W:	http://sources.redhat.com/cluster/
+>  T:	git kernel.org:/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git
+>  T:	git kernel.org:/pub/scm/linux/kernel/git/steve/gfs2-2.6-nmw.git
+>  S:	Supported
+> +F:	/Documentation/filesystems/gfs2.txt
+> +F:	fs/gfs2/
+> +F:	include/linux/gfs2_ondisk.h
+This is missing:
+   F:     include/linux/lm_interface.h
+
+Steve.
+
 >  
->  EXT3 FILE SYSTEM
-> -P:	Stephen Tweedie, Andrew Morton
-> -M:	sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com
-> +P:	Stephen Tweedie
-> +M:	sct@redhat.com
-> +P:	Andrew Morton
-> +M:	akpm@linux-foundation.org
-> +P:	Andreas Dilger
-> +M:	adilger@clusterfs.com
->  L:	linux-ext4@vger.kernel.org
->  S:	Maintained
-> +F:	fs/ext3/
-> +F:	include/linux/ext3*
-
-You may as well have fs/jbd/* and include/linux/jbd.h for ext3.
-
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
+>  GIGASET ISDN DRIVERS
+>  P:	Hansjoerg Lipp
 
