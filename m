@@ -1,62 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939108AbXHMPt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968738AbXHMPuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939108AbXHMPt6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S941793AbXHMOJx
+	id S968738AbXHMPuv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S946409AbXHMOLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 10:09:53 -0400
-Received: from il.qumranet.com ([82.166.9.18]:50089 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S945842AbXHMOJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 10:09:51 -0400
-Message-ID: <46C06638.6010108@qumranet.com>
-Date: Mon, 13 Aug 2007 17:10:00 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 13 Aug 2007 10:11:14 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:59025 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S946369AbXHMOLL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 10:11:11 -0400
+Message-ID: <46C0667C.2030606@s5r6.in-berlin.de>
+Date: Mon, 13 Aug 2007 16:11:08 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
 MIME-Version: 1.0
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-CC: kvm-devel@lists.sourceforge.net, Laurent Vivier <Laurent.Vivier@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [kvm-devel] [PATCH 0/2][KVM] guest time accounting
-References: <46BC8B39.6050202@bull.net> <200708131605.40479.borntraeger@de.ibm.com>
-In-Reply-To: <200708131605.40479.borntraeger@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Joe Perches <joe@perches.com>
+CC: Pete Zaitcev <zaitcev@redhat.com>, torvalds@linux-foundation.org,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] [490/2many] MAINTAINERS - USB BLOCK DRIVER (UB ub)
+References: <46bffc48.jq7Ax2MlK/hZ/ANM%joe@perches.com>	 <20070813000440.fedfa634.zaitcev@redhat.com> <1186989060.10249.32.camel@localhost>
+In-Reply-To: <1186989060.10249.32.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Borntraeger wrote:
-> Am Freitag, 10. August 2007 schrieb Laurent Vivier:
->   
->> The aim of these two patches is to measure the CPU time used by a virtual
->> machine. All comments are welcome... I'm not sure it's the good way to do 
->>     
-> that.
->
-> I did something similar for or s390guest prototype, that Carsten posted in 
-> May.  I decided to account guest time to the user process instead of adding a 
-> new field to avoid hazzle with old top. As you can read in the patch comment, 
-> I personally prefer a new field if we can get one.
->   
+Joe Perches wrote:
+> I'll fix it and resubmit about 10 non-individual patches
+> in a couple of days.
 
-Laurent's patch gives the best of both worlds: on old 'top', you get 
-guest time accounted as user time, while on new 'top' it is accounted 
-separately.  This is done by reporting user time as the sum of the real 
-user time and guest time.  A newer 'top' can subtract guest time from 
-user time to get the correct statistic.
-
-
-> My implementation uses a similar mechanism like hard and softirq. So I have an 
-> sie_enter an sie_exit and a task_is_in_sie function - like irq_enter and 
-> irq_exit. The main difference is based on the fact, that s390 has precise 
-> accouting for irq, steal, user and system time, and therefore my patch is 
-> based on architecture specifc code using CONFIG_VIRT_CPU_ACCOUNT. 
->   
-
-Okay, so the code should be under that config option, and kvm should 
-select it.
-
-
+Better resubmit a single updated combo patch, for the entire MAINTAINERS
+file in one go.  Unless you receive general objections.
 -- 
-error compiling committee.c: too many arguments to function
-
+Stefan Richter
+-=====-=-=== =--- -==-=
+http://arcgraph.de/sr/
