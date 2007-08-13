@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966119AbXHMHYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941457AbXHMHYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966119AbXHMHYA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 03:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966193AbXHMGZ2
+	id S941457AbXHMHYf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 03:24:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966122AbXHMGZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:25:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:29406 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966058AbXHMGZT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:25:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CtMs9rSxFFXMCv8Qz8+xVon+pKrbGbZoS3osdc79AenSH1XCd3SBDsTv3XOnySyaBGxWF/ZbdYIgZZmSxcCuwOfHQfV43vq4gECOySP5yUxQJu5+UO6fjn8s94DS4sCO4TLeGJlOX7jYulN8sYBIRouSr9zUCIj+ujVTCAQc04Y=
-Message-ID: <6bffcb0e0708122325l4087f85cjb4308616f8111a7d@mail.gmail.com>
-Date: Mon, 13 Aug 2007 08:25:15 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.23-rc3
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.999.0708122143240.30176@woody.linux-foundation.org>
+	Mon, 13 Aug 2007 02:25:30 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3977 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S938433AbXHMGZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:25:21 -0400
+Date: Sun, 12 Aug 2007 23:25:08 -0700
+From: joe@perches.com
+To: torvalds@linux-foundation.org, maxextreme@gmail.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] [119/2many] MAINTAINERS - CFAG12864B LCD DRIVER
+Message-ID: <46bff944.TXRyfpw7R3rhvEwe%joe@perches.com>
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.0.999.0708122143240.30176@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Add file pattern to MAINTAINER entry
 
-On 13/08/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
-> Either people really are calming down, and figuring out that we're in the
-> stabilization phase, or it's just that it's the middle of August, and
-> most everybody at least in Europe are off on vacation.
+Signed-off-by: Joe Perches <joe@perches.com>
 
-Yeah right.
-
-I will fill a bug report against the weather.
-
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 9c26e7b..fdedf32 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1160,6 +1160,8 @@ M:	maxextreme@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://auxdisplay.googlepages.com/
+ S:	Maintained
++F:	drivers/auxdisplay/cfag12864b.c
++F:	include/linux/cfag12864b.h
+ 
+ CFAG12864BFB LCD FRAMEBUFFER DRIVER
+ P:	Miguel Ojeda Sandonis
