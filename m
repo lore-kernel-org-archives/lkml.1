@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940895AbXHMIEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941106AbXHMIF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940895AbXHMIEq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 04:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966465AbXHMG1x
+	id S941106AbXHMIF3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 04:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966573AbXHMG1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:27:53 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4390 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:27:54 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4391 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966553AbXHMG1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S966433AbXHMG1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 02:27:52 -0400
-Date: Sun, 12 Aug 2007 23:27:36 -0700
+Date: Sun, 12 Aug 2007 23:27:26 -0700
 From: joe@perches.com
-To: vbordug@ru.mvista.com, torvalds@linux-foundation.org,
-       pantelis.antoniou@gmail.com, netdev@vger.kernel.org,
-       linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org,
+To: torvalds@linux-foundation.org, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, khali@linux-fr.org,
        akpm@linux-foundation.org
-Subject: [PATCH] [193/2many] MAINTAINERS - FREESCALE SOC FS_ENET DRIVER
-Message-ID: <46bff9d8.wK4SjlojmM1YMQd3%joe@perches.com>
+Subject: [PATCH] [189/2many] MAINTAINERS - F71805F HARDWARE MONITORING
+ DRIVER
+Message-ID: <46bff9ce.q5IFWhx41NPHIs5g%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,15 +29,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index e06f478..2ef0ec4 100644
+index 992a314..73ce5d8 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1859,6 +1859,8 @@ M:	vbordug@ru.mvista.com
- L:	linuxppc-embedded@ozlabs.org
- L:	netdev@vger.kernel.org
+@@ -1824,6 +1824,8 @@ P:	Jean Delvare
+ M:	khali@linux-fr.org
+ L:	lm-sensors@lm-sensors.org
  S:	Maintained
-+F:	drivers/net/fs_enet/
-+F:	include/linus/fs_enet_pd.h
++F:	Documentation/hwmon/f71805f
++F:	drivers/hwmon/f71805f.c
  
- FREESCALE HIGHSPEED USB DEVICE DRIVER
- P:	Li Yang
+ FARSYNC SYNCHRONOUS DRIVER
+ P:	Kevin Curtis
