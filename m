@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031280AbXHMNY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938215AbXHMNZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031280AbXHMNY1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971735AbXHMJT6
+	id S938215AbXHMNZL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:25:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971776AbXHMJUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 05:19:58 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:14600 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S970414AbXHMJT4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 05:19:56 -0400
-Message-ID: <5640c7e00708130219i463817bbu2b4c3e299b778cf4@mail.gmail.com>
-Date: Mon, 13 Aug 2007 21:19:54 +1200
-From: "Ian McDonald" <ian.mcdonald@jandi.co.nz>
-To: "joe@perches.com" <joe@perches.com>
-Subject: Re: [PATCH] [148/2many] MAINTAINERS - DCCP PROTOCOL
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       dccp@vger.kernel.org, akpm@linux-foundation.org,
-       acme@ghostprotocols.net
-In-Reply-To: <46bff97c.9avHEM3TinhF1DrA%joe@perches.com>
+	Mon, 13 Aug 2007 05:20:42 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54882 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S971768AbXHMJUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 05:20:39 -0400
+Date: Mon, 13 Aug 2007 11:20:36 +0200
+From: Jan Blunck <jblunck@suse.de>
+To: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 05/11] dm-snap: remove SECTOR_SHIFT define
+Message-ID: <20070813092036.GB12730@hasse.suse.de>
+References: <20070810200204.455820246@suse.de>> <20070810200205.703776854@suse.de> <20070810203854.GG2064@agk.fab.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <46bff97c.9avHEM3TinhF1DrA%joe@perches.com>
+In-Reply-To: <20070810203854.GG2064@agk.fab.redhat.com>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
+	Nuernberg)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/13/07, joe@perches.com <joe@perches.com> wrote:
-> Add file pattern to MAINTAINER entry
->
-> Signed-off-by: Joe Perches <joe@perches.com>
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 7f54480..c786066 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -1434,6 +1434,8 @@ M:        acme@ghostprotocols.net
->  L:     dccp@vger.kernel.org
->  W:     http://linux-net.osdl.org/index.php/DCCP
->  S:     Maintained
-> +F:     include/linux/dccp.h
-> +F:     net/dccp/
->
-Provided this patch series goes in then we need to add this in as well
-as part of DCCP subsystem:
-F:  include/linux/tfrc.h
+On Fri, Aug 10, Alasdair G Kergon wrote:
 
-Once this is done, and series goes in then:
-Acked-by: Ian McDonald <ian.mcdonald@jandi.co.nz>
+> On Fri, Aug 10, 2007 at 10:02:09PM +0200, Jan Blunck wrote:
+> > Sector size on Linux is always 512 bytes. Don't even try to give the
+> > impression this is changeable.
+> 
+> If that's what worries you, add a comment next to the definition,
+> perhaps?
+
+That and that the code just looks more like the rest of the block layer
+code. Only a few users (UFS, MSDOS, HFS, IDE) use a predefined
+SECTOR_{SHIFT,SIZE}.
+
+> It's there so you can easily locate all the places within dm that
+> perform these conversions by using a simple search.  Searching for '9'
+> wouldn't be as easy.  (I don't know about other people, but I find the
+> code easier to read the way it is.)
+
+Hmm, so I guess this is more about dis/like of how the code looks. Maybe we
+should define a global SECTOR_{SIZE,SHIFT} into blkdev.h.
+
+Regards,
+	Jan
+
 -- 
-Web1: http://wand.net.nz/~iam4/
-Web2: http://www.jandi.co.nz
-Blog: http://iansblog.jandi.co.nz
+Jan Blunck <jblunck@suse.de>
