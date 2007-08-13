@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932456AbXHMLVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941536AbXHMLWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932456AbXHMLVb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 07:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937893AbXHMGiN
+	id S941536AbXHMLWG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 07:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939180AbXHMGiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:38:13 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2089 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:38:15 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2118 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967379AbXHMGhh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:37:37 -0400
-Date: Sun, 12 Aug 2007 23:37:18 -0700
+	id S938964AbXHMGhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:37:54 -0400
+Date: Sun, 12 Aug 2007 23:37:39 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, tlan-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, chessman@tux.org,
+To: torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ballabio_dario@emc.com,
        akpm@linux-foundation.org
-Subject: [PATCH] [477/2many] MAINTAINERS - TLAN NETWORK DRIVER
-Message-ID: <46bffc1e.SoHjsrOJwnqXMU0X%joe@perches.com>
+Subject: [PATCH] [486/2many] MAINTAINERS - U14-34F SCSI DRIVER
+Message-ID: <46bffc33.soe/Y4NC9xOEjIkz%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,15 +28,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 9ae0a45..fda287c 100644
+index 374ee9b..e28c8d4 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4529,6 +4529,8 @@ M:	chessman@tux.org
- L:	tlan-devel@lists.sourceforge.net
- W:	http://sourceforge.net/projects/tlan/
+@@ -4609,6 +4609,7 @@ P:	Dario Ballabio
+ M:	ballabio_dario@emc.com
+ L:	linux-scsi@vger.kernel.org
  S:	Maintained
-+F:	Documentation/networking/tlan.txt
-+F:	drivers/net/tlan.*
++F:	drivers/scsi/u14-34f.c
  
- TOKEN-RING NETWORK DRIVER
- P:	Mike Phillips
+ UDF FILESYSTEM
+ P:	Ben Fennema
