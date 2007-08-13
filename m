@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S947056AbXHMOih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S947103AbXHMOjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S947056AbXHMOih (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969765AbXHMLke
+	id S947103AbXHMOjF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:39:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970845AbXHMLlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 07:40:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54630 "EHLO mx1.redhat.com"
+	Mon, 13 Aug 2007 07:41:17 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:16582 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753801AbXHMLka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 07:40:30 -0400
-Date: Mon, 13 Aug 2007 07:40:20 -0400
-From: Chris Snook <csnook@redhat.com>
-To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: [PATCH 19/23] make atomic_read() and atomic_set() behavior consistent on sparc64
-Message-ID: <20070813114020.GS24018@shell.boston.redhat.com>
-References: <46C03885.7000109@redhat.com>
-Mime-Version: 1.0
+	id S970583AbXHMLlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 07:41:16 -0400
+Date: Mon, 13 Aug 2007 13:41:13 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: joe@perches.com
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] [488/2many] MAINTAINERS - UNIFORM CDROM DRIVER
+Message-ID: <20070813114112.GP23758@kernel.dk>
+References: <46bffc42.3KJnrhmdUyXsNsFd%joe@perches.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46C03885.7000109@redhat.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <46bffc42.3KJnrhmdUyXsNsFd%joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Snook <csnook@redhat.com>
+On Sun, Aug 12 2007, joe@perches.com wrote:
+> Add file pattern to MAINTAINER entry
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 9bea953..51e9dec 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4625,6 +4625,9 @@ M:	axboe@kernel.dk
+>  L:	linux-kernel@vger.kernel.org
+>  W:	http://www.kernel.dk
+>  S:	Maintained
+> +F:	Documentation/cdrom/
+> +F:	drivers/cdrom/cdrom.c
+> +F:	include/linux/cdrom/h
 
-Use volatile consistently in atomic.h on sparc64.
+Also wrong. Joe, please stop posting insane amount of patches. Describe
+what you are doing and put them somewhere for people to reach. If you
+have to post for review, do a combined patch. Nobody is going to leaf
+over 500+ patches.
 
-Signed-off-by: Chris Snook <csnook@redhat.com>
+-- 
+Jens Axboe
 
---- linux-2.6.23-rc3-orig/include/asm-sparc64/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc3/include/asm-sparc64/atomic.h	2007-08-13 06:17:01.000000000 -0400
-@@ -11,17 +11,31 @@
- #include <linux/types.h>
- #include <asm/system.h>
- 
--typedef struct { volatile int counter; } atomic_t;
--typedef struct { volatile __s64 counter; } atomic64_t;
-+typedef struct { int counter; } atomic_t;
-+typedef struct { __s64 counter; } atomic64_t;
- 
- #define ATOMIC_INIT(i)		{ (i) }
- #define ATOMIC64_INIT(i)	{ (i) }
- 
--#define atomic_read(v)		((v)->counter)
--#define atomic64_read(v)	((v)->counter)
-+static __inline__ int atomic_read(atomic_t *v)
-+{
-+        return *(volatile int *)&v->counter;
-+}
-+
-+static __inline__ __s64 atomic64_read(atomic64_t *v)
-+{
-+        return *(volatile __s64 *)&v->counter;
-+}
- 
--#define atomic_set(v, i)	(((v)->counter) = i)
--#define atomic64_set(v, i)	(((v)->counter) = i)
-+static __inline__ void atomic_set(atomic_t *v, int i)
-+{
-+        *(volatile int *)&v->counter = i;
-+}
-+
-+static __inline__ void atomic64_set(atomic64_t *v, __s64 i)
-+{
-+        *(volatile __s64 *)&v->counter = i;
-+}
- 
- extern void atomic_add(int, atomic_t *);
- extern void atomic64_add(int, atomic64_t *);
