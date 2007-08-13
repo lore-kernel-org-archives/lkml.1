@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970248AbXHMU4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966422AbXHMU5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970248AbXHMU4u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939278AbXHMUzg
+	id S966422AbXHMU5t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938662AbXHMUzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:55:36 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:52256 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752137AbXHMUza (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:55:30 -0400
-Date: Mon, 13 Aug 2007 16:55:23 -0400
-To: Brad Campbell <brad@wasp.net.au>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Advice on a userspace tty serial driver
-Message-ID: <20070813205523.GA9412@csclub.uwaterloo.ca>
-References: <46BC59E3.2010402@wasp.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46BC59E3.2010402@wasp.net.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Mon, 13 Aug 2007 16:55:52 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3693 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S939213AbXHMUzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 16:55:48 -0400
+Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka Software
+	Suspend, aka swsusp):
+From: Joe Perches <joe@perches.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: torvalds@linux-foundation.org, pavel@suse.cz,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <200708132250.15466.rjw@sisk.pl>
+References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>
+	 <200708132250.15466.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 13:54:39 -0700
+Message-Id: <1187038479.10249.304.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 04:28:19PM +0400, Brad Campbell wrote:
-> I'm building a bit of hardware. It's basically a serial multiplexer that 
-> communicates to the PC using a single usb-serial port. It has the ability 
-> to run between 2 and 8 standard async ports over this single interface.
-> 
-> I'd rather not write a kernel driverif possible as I figure this would be a 
-> perfect application for a userspace daemon to do the control and mux/demux. 
-> I'd prefer to present standard serial style devices (/dev/ttySxx) to 
-> userspace giving me the ability to run unmodified software to talk to the 
-> multiplexed ports.
-> 
-> I think tty/pty pairs looks roughly what I'm after, but will they allow me 
-> to use standard IOCTLS for conveying baud rate and other standard serial 
-> parameters to the daemon?
-> 
-> I've spotted several userspace serial driver projects in the last 7 or so 
-> years, but I can't seem to find any that made it into the kernel.
-> 
-> Am I on the right track with tty/pty or is there a better way?
+On Mon, 2007-08-13 at 22:50 +0200, Rafael J. Wysocki wrote:
+> Please add
+> arch/i386/power/
+> arch/x86_64/kernel/suspend_asm.S
+> arch/x86_64/kernel/suspend.c
+> drivers/base/power/
+> There also is a couple of headers.  Do you want to list them too?
 
-I don't think you can do any serial specific stuff, like parity and stop
-bits and the like across a pty.  You might have to actually write a
-serial driver to present the devices and handle the ioctls, even if you
-have a user space process handle the mux/demux between the real serial
-port and the fake ports.
+Your choice.  Just let me know.
 
-I am curious how you are going to pass the data to the external device,
-and indicate which port the data should go through.  What will you do
-when there is too much data being sent for the real serial port to
-handle?  I guess if you had a single high speed port, that would be a
-start.
+HIBERNATION (aka Software Suspend, aka swsusp):
+P:	Pavel Machek
+M:	pavel@suse.cz
+P:	Rafael J. Wysocki
+M:	rjw@sisk.pl
+L:	linux-pm@lists.linux-foundation.org
+S:	Supported
+F:	Documentation/power/swsusp*
+F:	arch/i386/power/
+F:	arch/x86_64/kernel/suspend*
+F:	drivers/base/power/
+F:	kernel/power/
 
---
-Len Sorensen
+
+
