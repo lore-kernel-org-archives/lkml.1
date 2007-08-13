@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966422AbXHMU5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970555AbXHMU6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966422AbXHMU5t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938662AbXHMUzw
+	id S970555AbXHMU6f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970226AbXHMU4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:55:52 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3693 "EHLO perches.com"
+	Mon, 13 Aug 2007 16:56:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37715 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S939213AbXHMUzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:55:48 -0400
-Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka Software
-	Suspend, aka swsusp):
-From: Joe Perches <joe@perches.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: torvalds@linux-foundation.org, pavel@suse.cz,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <200708132250.15466.rjw@sisk.pl>
-References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>
-	 <200708132250.15466.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 13:54:39 -0700
-Message-Id: <1187038479.10249.304.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+	id S970024AbXHMU4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 16:56:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Voegtle <tv@lio96.de>
+Subject: Re: 2.6.23-rc2 swsusp, suddenly increased uptime
+Date: Mon, 13 Aug 2007 23:06:26 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.63.0708122137130.25343@er-systems.de>
+In-Reply-To: <Pine.LNX.4.63.0708122137130.25343@er-systems.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708132306.27587.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 22:50 +0200, Rafael J. Wysocki wrote:
-> Please add
-> arch/i386/power/
-> arch/x86_64/kernel/suspend_asm.S
-> arch/x86_64/kernel/suspend.c
-> drivers/base/power/
-> There also is a couple of headers.  Do you want to list them too?
+On Sunday, 12 August 2007 21:39, Thomas Voegtle wrote:
+> 
+> Hi,
+> 
+> today I saw this (output from my suspend script):
+> 
+> -> woke up at Sun Aug 12 11:39:17 CEST 2007
+> -> uptime is
+>  11:39am  up 8 days  0:41,  10 users,  load average: 26.12, 6.35, 2.17
+> 
+> 
+> Then I did a software suspend. After waking up, I saw this:
+> 
+> 
+> -> woke up at Sun Aug 12 14:41:56 CEST 2007
+> -> uptime is
+>   2:41pm  up 44 days  9:11,  12 users,  load average: 35.17, 9.17, 3.33
 
-Your choice.  Just let me know.
+Can you please boot the kernel in the minimal configuration (init=/bin/bash)
+and try to hibernate, ie.
 
-HIBERNATION (aka Software Suspend, aka swsusp):
-P:	Pavel Machek
-M:	pavel@suse.cz
-P:	Rafael J. Wysocki
-M:	rjw@sisk.pl
-L:	linux-pm@lists.linux-foundation.org
-S:	Supported
-F:	Documentation/power/swsusp*
-F:	arch/i386/power/
-F:	arch/x86_64/kernel/suspend*
-F:	drivers/base/power/
-F:	kernel/power/
+# mount /proc
+# mount /sys
+# swapon -a
+# echo disk > /sys/power/state
+
+Also, please check if anything changes if you do
+
+# echo shutdown > /sys/power/disk
+
+before the last command above.
+
+Greetings,
+Rafael
 
 
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
