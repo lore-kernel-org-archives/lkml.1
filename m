@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S974630AbXHMS7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S974658AbXHMTA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S974630AbXHMS7i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032733AbXHMSyu
+	id S974658AbXHMTA2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 15:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1033531AbXHMS5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:54:50 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47613 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S939438AbXHMSyr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:54:47 -0400
-Date: Mon, 13 Aug 2007 20:54:31 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       sam@ravnborg.org, zippel@linux-m68k.org, vincent.legoll@gmail.com
-Subject: Re: [PATCH] kconfig: update kconfig-language text
-Message-ID: <20070813185431.GD18945@stusta.de>
-References: <20070813113809.9a715e75.randy.dunlap@oracle.com>
+	Mon, 13 Aug 2007 14:57:08 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:45374 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S938984AbXHMS5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 14:57:04 -0400
+Date: Mon, 13 Aug 2007 11:55:36 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: joe@perches.com
+Cc: xen-devel@lists.xensource.com, virtualization@lists.osdl.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jeremy@xensource.com, chrisw@sous-sol.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] [545/2many] MAINTAINERS - XEN HYPERVISOR INTERFACE
+Message-ID: <20070813185536.GH3672@sequoia.sous-sol.org>
+References: <46bffcb5.o/KKCq3EZH4S47k3%joe@perches.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070813113809.9a715e75.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <46bffcb5.o/KKCq3EZH4S47k3%joe@perches.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 11:38:09AM -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+* joe@perches.com (joe@perches.com) wrote:
+> Add file pattern to MAINTAINER entry
 > 
-> Add kconfig-language docs for mainmenu, def_bool[ean],
-> and def_tristate.
+> Signed-off-by: Joe Perches <joe@perches.com>
 > 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Signed-off-by: Vincent Legoll <vincent.legoll@gmail.com>
-> ---
->  Documentation/kbuild/kconfig-language.txt |   12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
-> --- linux-2.6.23-rc3.orig/Documentation/kbuild/kconfig-language.txt
-> +++ linux-2.6.23-rc3/Documentation/kbuild/kconfig-language.txt
-> @@ -77,6 +77,11 @@ applicable everywhere (see syntax).
->    Optionally, dependencies only for this default value can be added with
->    "if".
->  
-> +- type definition + default value:
-> +	"def_bool"/"def_boolean"/"def_tristate" <expr> ["if" <expr>]
->...
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index e4e1cc3..8395aba 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -5153,6 +5153,11 @@ M:	chrisw@sous-sol.org
+>  L:	virtualization@lists.osdl.org
+>  L:	xen-devel@lists.xensource.com
+>  S:	Supported
+> +F:	arch/i386/xen/
+> +F:	drivers/*/xen-*front.c
+> +F:	drivers/xen/
+> +F:	include/asm-i386/xen/
+> +F:	include/xen/
 
-Should the redundant and unused def_boolean be documented or removed?
-
-I'd prefer the latter.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+I think this data will easily become stale.  What is the point again?
