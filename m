@@ -1,64 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S944848AbXHMVNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935100AbXHMVOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S944848AbXHMVNc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 17:13:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762690AbXHMVMj
+	id S935100AbXHMVOH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 17:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939794AbXHMVMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 17:12:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37784 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765823AbXHMVMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 17:12:38 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] [444/2many] MAINTAINERS - SUSPEND TO RAM:
-Date: Mon, 13 Aug 2007 23:22:15 +0200
-User-Agent: KMail/1.9.5
-Cc: torvalds@linux-foundation.org, pavel@suse.cz,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <46bffbd5.kKrnXsYdLyNKojxF%joe@perches.com> <200708132252.55738.rjw@sisk.pl> <1187038670.10249.307.camel@localhost>
-In-Reply-To: <1187038670.10249.307.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 13 Aug 2007 17:12:49 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:26745 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933987AbXHMVMr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 17:12:47 -0400
+Date: Mon, 13 Aug 2007 14:17:01 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       sam@ravnborg.org, zippel@linux-m68k.org, vincent.legoll@gmail.com
+Subject: Re: [-mm patch] kconfig syntax cleanups
+Message-Id: <20070813141701.446990cb.randy.dunlap@oracle.com>
+In-Reply-To: <20070813200509.GF18945@stusta.de>
+References: <20070813113809.9a715e75.randy.dunlap@oracle.com>
+	<20070813185431.GD18945@stusta.de>
+	<Pine.LNX.4.64.0708131510140.14058@localhost.localdomain>
+	<20070813200509.GF18945@stusta.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708132322.16316.rjw@sisk.pl>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 13 August 2007 22:57, Joe Perches wrote:
-> On Mon, 2007-08-13 at 22:52 +0200, Rafael J. Wysocki wrote:
-> > +F:	drivers/base/power
-> > +F:	arch/x86_64/kernel/acpi
-> > +F:	arch/i386/kernel/acpi/
-> 
-> What about arch/x86_64/kernel/acpi.c ?
+On Mon, 13 Aug 2007 22:05:10 +0200 Adrian Bunk wrote:
 
-Well, there's no such file in current -git.
+> On Mon, Aug 13, 2007 at 03:13:30PM -0400, Robert P. J. Day wrote:
+> > On Mon, 13 Aug 2007, Adrian Bunk wrote:
+> > 
+> > > On Mon, Aug 13, 2007 at 11:38:09AM -0700, Randy Dunlap wrote:
+> > > > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > > >
+> > > > Add kconfig-language docs for mainmenu, def_bool[ean],
+> > > > and def_tristate.
+> > > >
+> > > > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > > > Signed-off-by: Vincent Legoll <vincent.legoll@gmail.com>
+> > > > ---
+> > > >  Documentation/kbuild/kconfig-language.txt |   12 ++++++++++++
+> > > >  1 file changed, 12 insertions(+)
+> > > >
+> > > > --- linux-2.6.23-rc3.orig/Documentation/kbuild/kconfig-language.txt
+> > > > +++ linux-2.6.23-rc3/Documentation/kbuild/kconfig-language.txt
+> > > > @@ -77,6 +77,11 @@ applicable everywhere (see syntax).
+> > > >    Optionally, dependencies only for this default value can be added with
+> > > >    "if".
+> > > >
+> > > > +- type definition + default value:
+> > > > +	"def_bool"/"def_boolean"/"def_tristate" <expr> ["if" <expr>]
+> > > >...
+> > >
+> > > Should the redundant and unused def_boolean be documented or removed?
+> > >
+> > > I'd prefer the latter.
+> > 
+> > me too.  and, as i've suggested before, it would also be cleaner to
+> > remove the redundant "requires" and almost redundant "depends" from
+> > Kconfig files, and standardize exclusively on "depends on".
+> >...
+> 
+> Patch below.
+> 
+> > rday
+> 
+> cu
+> Adrian
+> 
+> 
+> <--  snip  -->
+> 
+> 
+> This patch removes the following redundant and never or rarely used 
+> kconfig syntax:
+> - "def_boolean" (same as "def_bool")
+> - "requires" (same as "depends on")
+> - "depends" (same as "depends on")
+> 
+> Most of the size of this patch comes from regenerating generated files.
 
-> Perhaps:
-> 
-> SUSPEND TO RAM:
-> P:	Pavel Machek
-> M:	pavel@suse.cz
-> P:	Rafael J. Wysocki
-> M:	rjw@sisk.pl
-> L:	linux-pm@lists.linux-foundation.org
-> S:	Maintained
-> F:	arch/x86_64/kernel/acpi.c
+Looks OK to me.
 
-Please remove the above
+Missing S-O-B line...
 
-> F:	arch/x86_64/kernel/acpi/
-> F:	arch/i386/kernel/acpi/
-> F:	drivers/base/power
-> F:	kernel/power/
-> 
-> 
-> 
-> 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+> ---
+> 
+>  arch/blackfin/Kconfig                |    2 
+>  arch/powerpc/Kconfig.debug           |    6 
+>  arch/powerpc/platforms/Kconfig       |    2 
+>  drivers/input/misc/Kconfig           |    2 
+>  drivers/leds/Kconfig                 |    2 
+>  drivers/telephony/Kconfig            |    2 
+>  net/wireless/Kconfig                 |    2 
+>  scripts/kconfig/lex.zconf.c_shipped  |    4 
+>  scripts/kconfig/zconf.gperf          |    2 
+>  scripts/kconfig/zconf.hash.c_shipped |  223 ++--
+>  scripts/kconfig/zconf.tab.c_shipped  | 1406 ++++++++++++++-------------
+>  scripts/kconfig/zconf.y              |   11 
+>  12 files changed, 889 insertions(+), 775 deletions(-)
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
