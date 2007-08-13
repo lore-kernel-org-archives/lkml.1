@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932302AbXHML64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S943293AbXHML7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932302AbXHML64 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 07:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967503AbXHMGjz
+	id S943293AbXHML7n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 07:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967452AbXHMGj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:39:55 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2438 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:39:57 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2441 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967496AbXHMGjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:39:53 -0400
-Date: Sun, 12 Aug 2007 23:39:38 -0700
+	id S967502AbXHMGjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:39:55 -0400
+Date: Sun, 12 Aug 2007 23:39:41 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       drzeus-wbsd@drzeus.cx, akpm@linux-foundation.org
-Subject: [PATCH] [539/2many] MAINTAINERS - W83L51xD SD/MMC CARD INTERFACE
- DRIVER
-Message-ID: <46bffcaa.WjxiY3mQd2T6Hf5B%joe@perches.com>
+To: zaga@fly.cc.fer.hr, torvalds@linux-foundation.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH] [541/2many] MAINTAINERS - WD7000 SCSI DRIVER
+Message-ID: <46bffcad.4+O9axGOMiHNnF8m%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,14 +28,22 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index dcbcd74..71ffe5d 100644
+index d8ee850..4172b36 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -5095,6 +5095,7 @@ M:	drzeus-wbsd@drzeus.cx
- L:	linux-kernel@vger.kernel.org
- W:	http://projects.drzeus.cx/wbsd
+@@ -5112,12 +5112,15 @@ M:	jt@hpl.hp.com
+ L:	linux-wireless@vger.kernel.org
+ W:	http://www.hpl.hp.com/personal/Jean_Tourrilhes/Linux/
  S:	Maintained
-+F:	drivers/mmc/host/wbsd.*
++F:	Documentation/networking/wavelan.txt
++F:	drivers/net/wireless/wavelan*
  
- WATCHDOG DEVICE DRIVERS
- P:	Wim Van Sebroeck
+ WD7000 SCSI DRIVER
+ P:	Miroslav Zagorac
+ M:	zaga@fly.cc.fer.hr
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/wd7000.c
+ 
+ WISTRON LAPTOP BUTTON DRIVER
+ P:	Miloslav Trmac
