@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S944116AbXHMLNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939090AbXHMLOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S944116AbXHMLNm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 07:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966714AbXHMGh6
+	id S939090AbXHMLOg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 07:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939125AbXHMGh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:37:58 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2076 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:37:59 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2082 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967406AbXHMGhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:37:33 -0400
-Date: Sun, 12 Aug 2007 23:37:16 -0700
+	id S967249AbXHMGhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:37:36 -0400
+Date: Sun, 12 Aug 2007 23:36:49 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, tipc-discussion@lists.sourceforge.net,
-       per.liden@ericsson.com, linux-kernel@vger.kernel.org,
-       jon.maloy@ericsson.com, allan.stephens@windriver.com,
-       akpm@linux-foundation.org
-Subject: [PATCH] [476/2many] MAINTAINERS - TIPC NETWORK LAYER
-Message-ID: <46bffc1c.YfyZKtgaE1Ftgt6g%joe@perches.com>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       laredo@gnu.org, akpm@linux-foundation.org
+Subject: [PATCH] [463/2many] MAINTAINERS - STRADIS MPEG-2 DECODER DRIVER
+Message-ID: <46bffc01.7c95Dz5xUUkjysHI%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,16 +27,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 1be2281..9ae0a45 100644
+index 9da5a44..3e51fc6 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4519,6 +4519,9 @@ W:	http://tipc.sourceforge.net/
- W:	http://tipc.cslab.ericsson.net/
- T:	git tipc.cslab.ericsson.net:/pub/git/tipc.git
+@@ -4406,6 +4406,7 @@ P:	Nathan Laredo
+ M:	laredo@gnu.org
+ W:	http://www.stradis.com/
  S:	Maintained
-+F:	include/linux/tipc*.h
-+F:	include/net/tipc/
-+F:	net/tipc/
++F:	drivers/media/video/stradis.c
  
- TLAN NETWORK DRIVER
- P:	Samuel Chessman
+ SUPERH (sh)
+ P:	Paul Mundt
