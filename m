@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968165AbXHMGtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761455AbXHMGuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968165AbXHMGtq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 02:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965880AbXHMGX0
+	id S1761455AbXHMGuW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 02:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965777AbXHMGX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:23:26 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3641 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:23:27 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3643 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965869AbXHMGXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:23:25 -0400
-Date: Sun, 12 Aug 2007 23:23:11 -0700
+	id S965870AbXHMGX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:23:26 -0400
+Date: Sun, 12 Aug 2007 23:22:40 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       kernel@wantstofly.org, akpm@linux-foundation.org
-Subject: [PATCH] [57/2many] MAINTAINERS - ARM/GLOMATION GESBC9312SX
- MACHINE SUPPORT
-Message-ID: <46bff8cf.mPd/PGXTt9E1ALmQ%joe@perches.com>
+To: torvalds@linux-foundation.org, stelian@popies.net,
+       linux-kernel@vger.kernel.org, linux-kernel@hansmi.ch,
+       akpm@linux-foundation.org
+Subject: [PATCH] [41/2many] MAINTAINERS - AMS (Apple Motion Sensor) DRIVER
+Message-ID: <46bff8b0.JhFVUDfXiqPuQ4ng%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,15 +28,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 2176101..926fb9f 100644
+index 35ebb00..635d812 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -529,6 +529,8 @@ P:	Lennert Buytenhek
- M:	kernel@wantstofly.org
- L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
- S:	Maintained
-+F:	arch/arm/mach-ep93xx/gesbc9312.c
-+F:	include/asm-arm/arch-ep93xx/
+@@ -403,6 +403,7 @@ M:	stelian@popies.net
+ P:	Michael Hanselmann
+ M:	linux-kernel@hansmi.ch
+ S:	Supported
++F:	drivers/hwmon/ams/
  
- ARM/HP JORNADA 7XX MACHINE SUPPORT
- P:      Kristoffer Ericson
+ AMSO1100 RNIC DRIVER
+ P:	Tom Tucker
