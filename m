@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S944740AbXHMUhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940902AbXHMUid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S944740AbXHMUhu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbXHMUhj
+	id S940902AbXHMUid (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762768AbXHMUiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:37:39 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:8213 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753266AbXHMUhi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:37:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=S3nTh4n4qin4+CXbf7VTE01ufNW4ACPciT5h6gqgnlCxseGAkmj7iShuF7CHzLSOxo8o3vDx0Pmw7qjoVp2KbyM8okntGVuknD0PXM28haBWenhu+bWgohl8b3WRUHyyQRTe0TIlz9UEw7Mgj3NYPJwdXiUojMAaKVLYrUrl8Zg=
-Message-ID: <524f69650708131337i5f9f9761gea2600c1c1be3be7@mail.gmail.com>
-Date: Mon, 13 Aug 2007 15:37:36 -0500
-From: "Steve French" <smfrench@gmail.com>
-To: "Andrew Bartlett" <abartlet@samba.org>
-Subject: Re: [PATCH] [123/2many] MAINTAINERS - COMMON INTERNET FILE SYSTEM (CIFS)
-Cc: joe@perches.com, torvalds@linux-foundation.org, sfrench@samba.org,
-       samba-technical@lists.samba.org, linux-kernel@vger.kernel.org,
-       linux-cifs-client@lists.samba.org, akpm@linux-foundation.org
-In-Reply-To: <1187002400.22086.6.camel@dragonlady>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 13 Aug 2007 16:38:09 -0400
+Received: from pat.uio.no ([129.240.10.15]:56408 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754091AbXHMUiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 16:38:07 -0400
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -
+	scripts/get_maintainer.pl
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, Joe Perches <joe@perches.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <1187026955.2688.4.camel@laptopd505.fenrus.org>
+References: <1186984174.10249.7.camel@localhost>
+	 <200708131933.10125.m.kozlowski@tuxland.pl>
+	 <1187026955.2688.4.camel@laptopd505.fenrus.org>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 16:37:25 -0400
+Message-Id: <1187037445.6628.98.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46bff94b.cqAV08ZZtCVJZMCU%joe@perches.com>
-	 <1187002400.22086.6.camel@dragonlady>
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.086)
+X-UiO-Scanned: 1937CE7189E2E085CA71354C2427EE9290012DC7
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 445 total 3226585 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/13/07, Andrew Bartlett <abartlet@samba.org> wrote:
-> On Sun, 2007-08-12 at 23:25 -0700, joe@perches.com wrote:
-> > Add file pattern to MAINTAINER entry
-> >
-> > Signed-off-by: Joe Perches <joe@perches.com>
-> >
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 1c014f1..5144e4e 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -1201,6 +1201,7 @@ L:      samba-technical@lists.samba.org
-> >  W:   http://us1.samba.org/samba/Linux_CIFS_client.html
-> >  T:   git kernel.org:/pub/scm/linux/kernel/git/sfrench/cifs-2.6.git
-> >  S:   Supported
-> > +F:   fs/cifs/
->
-> No comment on the F:, but the L: entry here is interesting.  Is
-> samba-technical really the right list for cifs-vfs patches?  Aside from
-> being CC'ed on such patches, I've never seen discussion of them on the
-> Samba mailing lists.
->
-> Steve: Shouldn't that be linux-cifs-client?
+On Mon, 2007-08-13 at 10:42 -0700, Arjan van de Ven wrote:
+> The maintainer info should be in the source file itself! That's the only
+> reasonable way to keep it updated; now I'm all for having it machine
+> parsable so that tools can use it, but it still really should be in the
+> code itself, not in some central file that will always just go out of
+> data, and will be a huge source of needless patch conflicts.
 
-linux-cifs-client is mentioned on the L: entry immediately before the
-samba-technical one so no change seems to be needed for that.
+If the problem is to do with people failing to update the MAINTAINERS
+file, why would moving the same data into 20 or 30 source files motivate
+them to keep it up to date? As far as I can see, that would just serve
+to multiply the amount of stale data...
 
-I updated the W: line to point to the preferred URL
-(http://linux-cifs.samba.org)
+Trond
 
-Adding an F: entry in the future is fine by me
-
--- 
-Thanks,
-
-Steve
