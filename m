@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937582AbXHMX1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932620AbXHMX2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937582AbXHMX1U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 19:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757593AbXHMX1K
+	id S932620AbXHMX2K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 19:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbXHMX1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 19:27:10 -0400
-Received: from flvpn.ccur.com ([66.10.65.2]:59684 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756404AbXHMX1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 19:27:09 -0400
-Date: Mon, 13 Aug 2007 19:26:26 -0400
-From: Joe Korty <joe.korty@ccur.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: [PATCH] hres_timers_resume must block interrupts
-Message-ID: <20070813232626.GA24938@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Mon, 13 Aug 2007 19:27:45 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55506 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761790AbXHMX1n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 19:27:43 -0400
+Date: Mon, 13 Aug 2007 16:27:42 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <ak@suse.de>
+cc: Mel Gorman <mel@skynet.ie>, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones
+ pointer
+In-Reply-To: <20070814001659.GP3406@bingen.suse.de>
+Message-ID: <Pine.LNX.4.64.0708131625320.19910@schroedinger.engr.sgi.com>
+References: <20070813225020.GE3406@bingen.suse.de>
+ <Pine.LNX.4.64.0708131457190.28445@schroedinger.engr.sgi.com>
+ <20070813225841.GG3406@bingen.suse.de> <Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com>
+ <20070813230801.GH3406@bingen.suse.de> <Pine.LNX.4.64.0708131536340.29946@schroedinger.engr.sgi.com>
+ <20070813234322.GJ3406@bingen.suse.de> <Pine.LNX.4.64.0708131553050.30626@schroedinger.engr.sgi.com>
+ <20070814000041.GL3406@bingen.suse.de> <Pine.LNX.4.64.0708131614270.19910@schroedinger.engr.sgi.com>
+ <20070814001659.GP3406@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Retrigger_next_event() must be called with interrupts disabled.
+On Tue, 14 Aug 2007, Andi Kleen wrote:
 
-All internal (to hrtimer.c) uses of retrigger_next_event() are correct.
-But the version exported to other files, hres_timers_resume(), does not
-do the IRQ blocking, nor does the (single) external caller of it.
+> > Ok then lets do it.
+> 
+> Conversion only makes sense once an API with a explicit mask
+> is in. Otherwise we have muddled semantics again.
 
-Rather than require that users of hres_timers_resume() do the IRQ blocking,
-this patch makes the blocking part of the hres_timers_resume() functionality.
+pci_set_consistent_dma_mask
 
-(Also remove the meaningless WARN_ON_ONCE() call in hres_timers_resume)
-
-Signed-off-by: Joe Korty (joe.korty@ccur.com)
-
-Index: 2.6.23-rc3/kernel/hrtimer.c
-===================================================================
---- 2.6.23-rc3.orig/kernel/hrtimer.c	2007-08-13 18:30:09.000000000 -0400
-+++ 2.6.23-rc3/kernel/hrtimer.c	2007-08-13 18:38:48.000000000 -0400
-@@ -463,10 +463,11 @@
-  */
- void hres_timers_resume(void)
- {
--	WARN_ON_ONCE(num_online_cpus() > 1);
-+	unsigned long flags;
- 
--	/* Retrigger the CPU local events: */
-+	local_irq_save(flags);
- 	retrigger_next_event(NULL);
-+	local_irq_restore(flags);
- }
- 
- /*
+has that.
 
