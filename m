@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968898AbXHMIWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969161AbXHMIXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968898AbXHMIWh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 04:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966748AbXHMG26
+	id S969161AbXHMIXP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 04:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966563AbXHMG27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:28:58 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4558 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:28:59 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4566 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966354AbXHMG2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:28:55 -0400
-Date: Sun, 12 Aug 2007 23:28:35 -0700
+	id S966599AbXHMG26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:28:58 -0400
+Date: Sun, 12 Aug 2007 23:28:33 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz, jkosina@suse.cz,
+To: torvalds@linux-foundation.org, linux-nvidia@lists.surfsouth.com,
+       linux-kernel@vger.kernel.org, fero@drama.obuda.kando.hu,
        akpm@linux-foundation.org
-Subject: [PATCH] [217/2many] MAINTAINERS - HID CORE LAYER
-Message-ID: <46bffa13.u2UP+i4L1tdJi0Sf%joe@perches.com>
+Subject: [PATCH] [216/2many] MAINTAINERS - HGA FRAMEBUFFER DRIVER
+Message-ID: <46bffa11.PDitL0kohwTckB4J%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,15 +28,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index bdbf999..4a8770c 100644
+index 48d6b69..bdbf999 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2071,6 +2071,8 @@ M:	jkosina@suse.cz
- L:	linux-input@atrey.karlin.mff.cuni.cz
- T:	git kernel.org:/pub/scm/linux/kernel/git/jikos/hid.git
+@@ -2063,6 +2063,7 @@ M:	fero@drama.obuda.kando.hu
+ L:	linux-nvidia@lists.surfsouth.com
+ W:	http://drama.obuda.kando.hu/~fero/cgi-bin/hgafb.shtml
  S:	Maintained
-+F:	drivers/hid/
-+F:	include/linux/hid*
++F:	drivers/video/hgafb.c
  
- HIGH-RESOLUTION TIMERS, CLOCKEVENTS, DYNTICKS
- P:	Thomas Gleixner
+ HID CORE LAYER
+ P:	Jiri Kosina
