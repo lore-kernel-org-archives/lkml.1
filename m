@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939887AbXHMKmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939599AbXHMKnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939887AbXHMKmt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 06:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965980AbXHMGgU
+	id S939599AbXHMKnh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 06:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967326AbXHMGgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:36:20 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1854 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:36:18 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1842 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967207AbXHMGgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:36:14 -0400
-Date: Sun, 12 Aug 2007 23:36:01 -0700
+	id S967316AbXHMGgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:36:10 -0400
+Date: Sun, 12 Aug 2007 23:35:57 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, neilb@suse.de, mingo@redhat.com,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: torvalds@linux-foundation.org, mhoffman@lightlink.com,
+       lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
-Subject: [PATCH] [442/2many] MAINTAINERS - SOFTWARE RAID (Multiple Disks)
- SUPPORT
-Message-ID: <46bffbd1.6OOR1+/x0yRKyfpY%joe@perches.com>
+Subject: [PATCH] [440/2many] MAINTAINERS - SMSC47B397 HARDWARE MONITOR
+ DRIVER
+Message-ID: <46bffbcd.ByWqlMNDQcr1aAxq%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,15 +29,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index d17ae3d..29a2179 100644
+index 140eb07..2bda79d 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4205,6 +4205,8 @@ P:	Neil Brown
- M:	neilb@suse.de
- L:	linux-raid@vger.kernel.org
- S:	Supported
-+F:	drivers/md/
-+F:	include/linux/raid/
+@@ -4182,6 +4182,8 @@ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/smsc47b397
++F:	drivers/hwmon/smsc47b397.c
  
- HIBERNATION (aka Software Suspend, aka swsusp):
- P:	Pavel Machek
+ SOFTMAC LAYER (IEEE 802.11)
+ P:	Johannes Berg
