@@ -1,40 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032223AbXHMTDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S974672AbXHMTFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032223AbXHMTDZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 15:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbXHMTC5
+	id S974672AbXHMTFL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 15:05:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936468AbXHMTEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 15:02:57 -0400
-Received: from khc.piap.pl ([195.187.100.11]:39183 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753687AbXHMTCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 15:02:55 -0400
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, Joe Perches <joe@perches.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-References: <1186984174.10249.7.camel@localhost>
-	<200708131933.10125.m.kozlowski@tuxland.pl>
-	<1187026955.2688.4.camel@laptopd505.fenrus.org>
-	<m3odhb46rk.fsf@maximus.localdomain>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 13 Aug 2007 21:02:53 +0200
-In-Reply-To: <m3odhb46rk.fsf@maximus.localdomain> (Krzysztof Halasa's message of "Mon, 13 Aug 2007 20:41:03 +0200")
-Message-ID: <m3bqdb45r6.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 13 Aug 2007 15:04:52 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43982 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763338AbXHMTEu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 15:04:50 -0400
+Subject: Re: [v4l-dvb-maintainer] [PATCH] [534/2many] MAINTAINERS - VIDEO
+	FOR LINUX
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Joe Perches <joe@perches.com>
+Cc: video4linux-list@redhat.com, v4l-dvb-maintainer@linuxtv.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <1187030038.10249.237.camel@localhost>
+References: <46bffca0.bx1Cr4B33dN1FJPN%joe@perches.com>
+	 <1187028910.664.11.camel@gaivota>  <1187030038.10249.237.camel@localhost>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 13 Aug 2007 15:58:09 -0300
+Message-Id: <1187031489.664.19.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1-1mdv2008.0 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa <khc@pm.waw.pl> writes:
 
-> Nope, it should be outside of the (downloadable) tarball, because
-> once someone get a tarball you can't update the data in it.
-> This is fine WRT source (which is static given a version) but
-> doesn't work for fast-changing data.
+Em Seg, 2007-08-13 às 11:33 -0700, Joe Perches escreveu:
+> On Mon, 2007-08-13 at 15:15 -0300, Mauro Carvalho Chehab wrote:
+> > There are more include files to be added, for the older V4L APIs:
+> > F: include/linux/video_decoder.h
+> > F: include/linux/videodev.h
+> 
+> VIDEO FOR LINUX
+> P:	Mauro Carvalho Chehab
+> M:	mchehab@infradead.org
+> M:	v4l-dvb-maintainer@linuxtv.org
+> L:	video4linux-list@redhat.com
+> W:	http://linuxtv.org
+> T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
+> S:	Maintained
+> F:	Documentation/video4linux/
+> F:	drivers/media/
+> F:	include/linux/video_decoder.h
+> F	include/linux/videodev.h
+> F:	include/linux/videodev2.h
+> F:	include/media/
 
-... OTOH I think this additional info in MAINTAINERS file is better
-than the file without it.
+Acked-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+> 
+> 
 -- 
-Krzysztof Halasa
+Cheers,
+Mauro
+
