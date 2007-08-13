@@ -1,44 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939532AbXHMUko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965839AbXHMUl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939532AbXHMUko (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756466AbXHMUk1
+	id S965839AbXHMUl2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965016AbXHMUkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:40:27 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:8936 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759289AbXHMUkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:40:25 -0400
-Date: Mon, 13 Aug 2007 22:40:23 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       kvm-devel@lists.sourceforge.net,
-       Laurent Vivier <Laurent.Vivier@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       cotte@de.ibm.com
-Subject: Re: [kvm-devel] [PATCH 0/2][KVM] guest time accounting
-Message-ID: <20070813204023.GA10283@osiris.ibm.com>
-References: <46BC8B39.6050202@bull.net> <200708131615.42643.borntraeger@de.ibm.com> <46C06885.3020908@qumranet.com> <200708131626.36275.borntraeger@de.ibm.com> <46C06CA2.8010303@qumranet.com>
+	Mon, 13 Aug 2007 16:40:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37598 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S947105AbXHMUkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 16:40:40 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: joe@perches.com
+Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka Software Suspend, aka swsusp):
+Date: Mon, 13 Aug 2007 22:50:14 +0200
+User-Agent: KMail/1.9.5
+Cc: torvalds@linux-foundation.org, pavel@suse.cz,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>
+In-Reply-To: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46C06CA2.8010303@qumranet.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Message-Id: <200708132250.15466.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  The only thing remotely relevant in the list config is that 'Filter out 
->  duplicate messages to list members (if possible)' is set as a default for 
->  new members.  Maybe this means that if a cc is also part of the list, that 
->  cc is stripped (which seems a wierd implementation; I'd have expected that 
->  cc be kept and just one copy sent out).
+On Monday, 13 August 2007 08:36, joe@perches.com wrote:
+> Add file pattern to MAINTAINER entry
 > 
->  Anybody have a clue?
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 29a2179..5ae90a2 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4215,6 +4215,9 @@ P:	Rafael J. Wysocki
+>  M:	rjw@sisk.pl
+>  L:	linux-pm@lists.linux-foundation.org
+>  S:	Supported
+> +F:	Documentation/power/swsusp*
+> +F:	arch/i386/power/swsusp.S
+> +F:	kernel/power/
 
-I got also removed when I was cc'ed. IIRC that started when I subscribed to
-the list. So it looks like people who are subscribed to the list get
-removed from the cc list.
-That's very annoying btw. ;)
+Well, the list isn't complete.  Please add
+
+arch/i386/power/
+arch/x86_64/kernel/suspend_asm.S
+arch/x86_64/kernel/suspend.c
+drivers/base/power/
+
+There also is a couple of headers.  Do you want to list them too?
+
+>  
+>  SUSPEND TO RAM:
+>  P:	Pavel Machek
+> 
+> 
+
+Greetings,
+Rafael
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
