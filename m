@@ -1,66 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S947930AbXHMVF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967849AbXHMVKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S947930AbXHMVF4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 17:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937311AbXHMVFJ
+	id S967849AbXHMVKd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 17:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbXHMVKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 17:05:09 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:55762 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934455AbXHMVFH (ORCPT
+	Mon, 13 Aug 2007 17:10:21 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45772 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752921AbXHMVKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 17:05:07 -0400
-Date: Mon, 13 Aug 2007 23:04:57 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Joe Perches <joe@perches.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -
-	scripts/get_maintainer.pl
-Message-ID: <20070813210457.GJ18945@stusta.de>
-References: <1186984174.10249.7.camel@localhost> <2c0942db0708131009y6f1c4cc4n59d8b36943643955@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2c0942db0708131009y6f1c4cc4n59d8b36943643955@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Mon, 13 Aug 2007 17:10:20 -0400
+Date: Mon, 13 Aug 2007 22:17:45 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Brad Campbell <brad@wasp.net.au>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Advice on a userspace tty serial driver
+Message-ID: <20070813221745.71fdf942@the-village.bc.nu>
+In-Reply-To: <20070813205523.GA9412@csclub.uwaterloo.ca>
+References: <46BC59E3.2010402@wasp.net.au>
+	<20070813205523.GA9412@csclub.uwaterloo.ca>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 10:09:08AM -0700, Ray Lee wrote:
-> On 8/12/07, Joe Perches <joe@perches.com> wrote:
-> > I grew weary of looking up the appropriate
-> > maintainer email address(es) to CC: for a patch.
-> >
-> > I added flags to the MAINTAINERS file
-> >
-> > F:      file pattern
-> >
-> > for each maintained block and a script to parse
-> > the modified blocks for maintainer and list
-> > email addresses.
-> 
-> Why not parse git annotate or blame instead (other than it's freakin'
-> slow)? Using the repository history has the added benefit of telling
-> you a lot more fine-grained detail about who may want to know about
-> your patch.
+> I don't think you can do any serial specific stuff, like parity and stop
+> bits and the like across a pty.  You might have to actually write a
 
-The git tree simply does not contain this information.
+They will let you do that. Any options you set one side become visible
+the other.
 
-Some of the obvious problems:
-- recently changed maintainership
-- new maintainer email address with the old one bouncing
-- git never contains maintainer mailing list addresses
-- you can't distinguish between a maintainer of a driver and people only
-  writing or forwarding patches for a driver
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Alan
