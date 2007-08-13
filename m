@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032406AbXHMRUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032465AbXHMRVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032406AbXHMRUn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S947059AbXHMRJR
+	id S1032465AbXHMRVe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031702AbXHMRM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:09:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:16268 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031858AbXHMRJN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:09:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=qliZcUrt95/51XBduODNhQxlj58h1ZWsI+GvxBB2CcLAbrNFbnsYGojcw7xtID4UFCu1wPYLdIKvysnP/sTPyY31fxlff9p6Olq0pGws3Fun/VObhV3ceaVTmCPYeFwKbjUJdMqubVgrL11QGC9R/Z2mhDKlMKOr9vo3IhVPG+k=
-Message-ID: <2c0942db0708131009y6f1c4cc4n59d8b36943643955@mail.gmail.com>
-Date: Mon, 13 Aug 2007 10:09:08 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Joe Perches" <joe@perches.com>
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <1186984174.10249.7.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 13 Aug 2007 13:12:26 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3209 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S942648AbXHMRMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 13:12:23 -0400
+Subject: Re: [PATCH] [385/2many] MAINTAINERS - PPP OVER ATM (RFC 2364)
+From: Joe Perches <joe@perches.com>
+To: Mitchell Blank Jr <mitch@sfgoth.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070813170949.GD74912@gaz.sfgoth.com>
+References: <46bffb64.f8MZ035Z9dhqViPX%joe@perches.com>
+	 <20070813170949.GD74912@gaz.sfgoth.com>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 10:12:10 -0700
+Message-Id: <1187025130.10249.132.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1186984174.10249.7.camel@localhost>
-X-Google-Sender-Auth: efb5daf09dfdebc6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/12/07, Joe Perches <joe@perches.com> wrote:
-> I grew weary of looking up the appropriate
-> maintainer email address(es) to CC: for a patch.
->
-> I added flags to the MAINTAINERS file
->
-> F:      file pattern
->
-> for each maintained block and a script to parse
-> the modified blocks for maintainer and list
-> email addresses.
+On Mon, 2007-08-13 at 10:09 -0700, Mitchell Blank Jr wrote:
+> ACK.  I don't know if you're also tracking header files, but there's also
+> include/linux/atmppp.h
 
-Why not parse git annotate or blame instead (other than it's freakin'
-slow)? Using the repository history has the added benefit of telling
-you a lot more fine-grained detail about who may want to know about
-your patch.
+PPP OVER ATM (RFC 2364)
+P:	Mitchell Blank Jr
+M:	mitch@sfgoth.com
+S:	Maintained
+F:	net/atm/pppoatm.c
+F:	include/linux/atmppp.h
+
+
+
