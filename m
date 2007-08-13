@@ -1,46 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933635AbXHMHF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937623AbXHMHGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933635AbXHMHF0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 03:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966095AbXHMGYX
+	id S937623AbXHMHGD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 03:06:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965937AbXHMGYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:24:23 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3796 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:24:24 -0400
+Received: from dimail1.hmi.de ([134.30.95.50]:34960 "EHLO dimail1.hmi.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965946AbXHMGYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S965848AbXHMGYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 02:24:20 -0400
-Date: Sun, 12 Aug 2007 23:24:04 -0700
-From: joe@perches.com
-To: yi.li@analog.com, vivi.li@analog.com, torvalds@linux-foundation.org,
-       sonic.zhang@analog.com, roy.huang@analog.com, robin.getz@analog.com,
-       michael.hennerich@analog.com, michael.frysinger@analog.com,
-       marc.hoffman@analog.com, linux-kernel@vger.kernel.org,
-       jie.zhang@analog.com, jerry.zeng@analog.com, grace.pan@analog.com,
-       bryan.wu@analog.com, bernd.schmidt@analog.com, aubrey.li@analog.com,
-       akpm@linux-foundation.org
-Subject: [PATCH] [85/2many] MAINTAINERS - BLACKFIN ARCHITECTURE
-Message-ID: <46bff904.ANPWrqncsP8VpmBH%joe@perches.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
+Message-ID: <46BFF8E4.9090203@lns.pnpi.spb.ru>
+Date: Mon, 13 Aug 2007 10:23:32 +0400
+From: Vadim Dyadkin <dyadkin@lns.pnpi.spb.ru>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+To: Francois Romieu <romieu@fr.zoreil.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: troubles with r8169
+References: <46BF5357.6080205@lns.pnpi.spb.ru> <20070812223243.GA20921@electric-eye.fr.zoreil.com>
+In-Reply-To: <20070812223243.GA20921@electric-eye.fr.zoreil.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0a4 (dimail1.hmi.de [134.30.95.94]); Mon, 13 Aug 2007 08:24:11 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add file pattern to MAINTAINER entry
+Francois Romieu пишет:
+>> I need help from developers, may be, because I have some troubles with
+>> r8169 card.
+>>     
+>
+> Which kernel do you use ?
+>   
 
-Signed-off-by: Joe Perches <joe@perches.com>
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a78c8e8..6afe57b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -877,6 +877,8 @@ M:	yi.li@analog.com
- L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
- W:	http://blackfin.uclinux.org
- S:	Supported
-+F:	arch/blackfin/
-+F:	include/asm-blackfin/
- 
- BLACKFIN EMAC DRIVER
- P:	Bryan Wu
+This problem appeared with the kernel 2.6.19 - 2.6.22 (since I use this
+laptop). Now I use the last kernel 2.6.22.2 with Gentoo patches.
