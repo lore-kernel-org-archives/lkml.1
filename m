@@ -1,89 +1,468 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965181AbXHMX2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937700AbXHMX32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965181AbXHMX2m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 19:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937727AbXHMX1x
+	id S937700AbXHMX32 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 19:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965287AbXHMX2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 19:27:53 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:47587
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S934333AbXHMX1u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 19:27:50 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Distributed storage.
-Date: Mon, 13 Aug 2007 16:27:42 -0700
-User-Agent: KMail/1.9.5
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708130159.22407.phillips@phunq.net> <20070813091235.GI23758@kernel.dk>
-In-Reply-To: <20070813091235.GI23758@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 13 Aug 2007 19:28:48 -0400
+Received: from xenotime.net ([66.160.160.81]:60096 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S965194AbXHMX2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 19:28:43 -0400
+Date: Mon, 13 Aug 2007 16:34:48 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Linux Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, drepper@redhat.com,
+       stable@kernel.org, Christoph Hellwig <hch@lst.de>,
+       Jan Engelhardt <jengelh@computergmbh.de>, mtk@google.com
+Subject: Re: [PATCH] Revised timerfd() interface
+Message-Id: <20070813163448.0fbb6a73.rdunlap@xenotime.net>
+In-Reply-To: <46BB8311.6040702@gmx.net>
+References: <46A44B7D.3030700@gmx.net>
+	<20070722233826.20efa6e5.akpm@linux-foundation.org>
+	<46A7940B.4070901@gmx.net>
+	<20070725151252.8d2d5141.akpm@linux-foundation.org>
+	<46B81745.9010409@gmx.net>
+	<46BB8311.6040702@gmx.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708131627.42859.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 August 2007 02:12, Jens Axboe wrote:
-> > It is a system wide problem.  Every block device needs throttling,
-> > otherwise queues expand without limit.  Currently, block devices
-> > that use the standard request library get a slipshod form of
-> > throttling for free in the form of limiting in-flight request
-> > structs.  Because the amount of IO carried by a single request can
-> > vary by two orders of magnitude, the system behavior of this
-> > approach is far from predictable.
->
-> Is it? Consider just 10 standard sata disks. The next kernel revision
-> will have sg chaining support, so that allows 32MiB per request. Even
-> if we disregard reads (not so interesting in this discussion) and
-> just look at potentially pinned dirty data in a single queue, that
-> number comes to 4GiB PER disk. Or 40GiB for 10 disks. Auch.
->
-> So I still think that this throttling needs to happen elsewhere, you
-> cannot rely the block layer throttling globally or for a single
-> device. It just doesn't make sense.
+On Thu, 09 Aug 2007 23:11:45 +0200 Michael Kerrisk wrote:
 
-You are right, so long as the unit of throttle accounting remains one 
-request.  This is not what we do in ddsnap.  Instead we inc/dec the 
-throttle counter by the number of bvecs in each bio, which produces a 
-nice steady data flow to the disk under a wide variety of loads, and 
-provides the memory resource bound we require.
+> Andrew,
+> 
+> Here's my first shot at changing the timerfd() interface; patch
+> is against 2.6.23-rc1-mm2.
+> 
+> I think I got to the bottom of understanding the timer code in
+> the end, but I may still have missed some things...
+> 
+> This is my first kernel patch of any substance.  Perhaps Randy
+> or Christoph can give my toes a light toasting for the various
+> boobs I've likely made.
+> 
+> Thomas, would you please look over this patch to verify my
+> timer code?
+> 
+> Davide: would you please bless this interface change ;-).
+> It makes it possible to:
+> 
+> 1) Fetch the previous timer settings (i.e., interval, and time
+>    remaining until next expiration) while installing new settings
+> 
+> 2) Retrieve the settings of an existing timer without changing
+>    the timer.
+> 
+> Both of these features are supported by the older Unix timer APIs
+> (setitimer/getitimer and timer_create/timer_settime/timer_gettime).
 
-One throttle count per bvec will not be the right throttling metric for 
-every driver.  To customize this accounting metric for a given driver 
-we already have the backing_dev_info structure, which provides 
-per-device-instance accounting functions and instance data.  Perfect! 
-This allows us to factor the throttling mechanism out of the driver, so 
-the only thing the driver has to do is define the throttle accounting 
-if it needs a custom one.
+Hi,
 
-We can avoid affecting the traditional behavior quite easily, for 
-example if backing_dev_info->throttle_fn (new method) is null then 
-either not throttle at all (and rely on the struct request in-flight 
-limit) or we can move the in-flight request throttling logic into core 
-as the default throttling method, simplifying the request library and 
-not changing its behavior.
+OK, I'll make a few comments.
 
-> > These deadlocks are first and foremost, block layer deficiencies. 
-> > Even the network becomes part of the problem only because it lies
-> > in the block IO path.
->
-> The block layer has NEVER guaranteed throttling, so it can - by
-> definition - not be a block layer deficiency.
+1.  Provide a full changelog, including reasons why the patch is
+needed.  Don't assume that we have read the previous email threads.
+(We haven't. :)
 
-The block layer has always been deficient by not providing accurate 
-throttling, or any throttling at all for some devices.  We have 
-practical proof that this causes deadlock and a good theoretical basis 
-for describing exactly how it happens.
 
-To be sure, vm and net are co-conspirators, however the block layer 
-really is the main actor in this little drama.
+> The changes are as follows:
+> 
+> a) A further argument, outmr, can be used to retrieve the interval
+>    and time remaining before the expiration of a previously created
+>    timer.  Thus the call signature is now:
+> 
+>    timerfd(int utmr, int clockid, int flags,
 
-Regards,
+                 ufd,
 
-Daniel
+>            struct itimerspec *utmr,
+>            struct itimerspec *outmr)
+> 
+>    The outmr argument:
+> 
+>    1) must be NULL for a new timer (ufd == -1).
+>    2) can be NULL if we are updating an existing
+>       timer (i.e., utmr != NULL), but we are not
+>       interested in the previous timer value.
+>    3) can be used to retrieve the time until next timer
+>       expiration, without changing the timer.
+>       (In this case, utmr == NULL and ufd >= 0.)
+> 
+> b) Make the 'clockid' immutable: it can only be set
+>    if 'ufd' is -1 -- that is, on the timerfd() call that
+>    first creates a timer.  (This is effectively
+>    the limitation that is imposed by POSIX timers: the
+>    clockid is specified when the timer is created with
+>    timer_create(), and can't be changed.)
+> 
+>    [In the 2.6.22 interface, the clockid of an existing
+>    timer can be changed with a further call to timerfd()
+>    that specifies the file descriptor of an existing timer.]
+> 
+> The use cases are as follows:
+> 
+> ufd = timerfd(-1, clockid, flags, utmr, NULL);
+> to create a new timer with given clockid, flags, and utmr (initial
+> expiration + interval).  outmr must be NULL.
+> 
+> ufd = timerfd(ufd, -1, flags, utmr, NULL);
+> to change the flags and timer settings of an existing timer.
+> (The clockid argument serves no purpose when modifying an
+> existing timer, and as I've implemented things, the argument
+> must be specified as -1 for an existing timer.)
+> 
+> ufd = timerfd(ufd, -1, flags, utmr, &outmr);
+> to change the flags and timer settings of an existing timer, and
+> retrieve the time until the next expiration of the timer (and
+> the associated interval).
+> 
+> ufd = timerfd(ufd, -1, 0, NULL, &outmr);
+> Return the time until the next expiration of the timer (and the
+> associated interval), without changing the existing timer settings.
+> The flags argument has no meaning in this case, and must be
+> specified as 0.
+> 
+> Other changes:
+> 
+> * I've added checks for various combinations of arguments values
+>   that could be deemed invalid; there is probably room for debate
+>   about whether we want all of these checks.  Comments in the
+>   patch describe these checks.
+> 
+> * Appropriate, and possibly even correct, changes made in fs/compat.c.
+> 
+> * Jan Engelhardt noted that a cast could be removed from Davide's
+>   original code; I've removed it.
+> 
+> The changes are correct as far as I've tested them.  I've attached a
+> test program.  Davide, could you subject this to further test please?
+> 
+> I'm off on holiday the day after tomorrow, back in two weeks, with
+> very limited computer access.  I may have time for another pass of
+> the code if comments come in over(euro)night, otherwise Davide may
+> be willing to clean up whatever I messed up...
+> 
+> Cheers,
+> 
+> Michael
+> 
+> diff -ruN linux-2.6.23-rc1-mm2-orig/fs/compat.c linux-2.6.23-rc1-mm2/fs/compat.c
+> --- linux-2.6.23-rc1-mm2-orig/fs/compat.c	2007-08-05 10:43:30.000000000 +0200
+> +++ linux-2.6.23-rc1-mm2/fs/compat.c	2007-08-07 22:08:15.000000000 +0200
+> @@ -2211,18 +2211,38 @@
+>  #ifdef CONFIG_TIMERFD
+> 
+>  asmlinkage long compat_sys_timerfd(int ufd, int clockid, int flags,
+> -				   const struct compat_itimerspec __user *utmr)
+> +			 const struct compat_itimerspec __user *utmr,
+> +			 struct compat_itimerspec __user *old_utmr)
+>  {
+>  	struct itimerspec t;
+>  	struct itimerspec __user *ut;
+> +	long ret;
+> 
+> -	if (get_compat_itimerspec(&t, utmr))
+> -		return -EFAULT;
+> -	ut = compat_alloc_user_space(sizeof(*ut));
+> -	if (copy_to_user(ut, &t, sizeof(t)))
+> -		return -EFAULT;
+> +	/*:mtk: Framework taken from compat_sys_mq_getsetattr() */
+
+Drop the :mtk: string(s).
+
+> -	return sys_timerfd(ufd, clockid, flags, ut);
+> +	ut = compat_alloc_user_space(2 * sizeof(*ut));
+> +
+> +	if (utmr) {
+> +		if (get_compat_itimerspec(&t, utmr))
+> +			return -EFAULT;
+> +		if (copy_to_user(ut, &t, sizeof(t)))
+> +			return -EFAULT;
+> +	}
+> +
+> +	ret = sys_timerfd(ufd, clockid, flags,
+> +			utmr ? ut : NULL,
+> +			old_utmr ? ut + 1 : NULL);
+> +
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (old_utmr) {
+> +	    	if (copy_from_user(&t, old_ut, sizeof(t)) ||
+
+I can't find <old_ut> anywhere.  Should be old_utmr I guess.
+
+> +		    put_compat_itimerspec(&t, old_utmr))
+
+		    put_compat_itimerspec(old_utmr, &t))
+
+IOW, I think that the parameters are reversed (at least this way
+their types match the function prototype).
+
+> +			return -EFAULT;
+> +	}
+> +
+> +	return 0;
+>  }
+> 
+>  #endif /* CONFIG_TIMERFD */
+> diff -ruN linux-2.6.23-rc1-mm2-orig/fs/timerfd.c linux-2.6.23-rc1-mm2/fs/timerfd.c
+> --- linux-2.6.23-rc1-mm2-orig/fs/timerfd.c	2007-08-05 10:44:24.000000000 +0200
+> +++ linux-2.6.23-rc1-mm2/fs/timerfd.c	2007-08-09 22:11:25.000000000 +0200
+> @@ -2,6 +2,8 @@
+>   *  fs/timerfd.c
+>   *
+>   *  Copyright (C) 2007  Davide Libenzi <davidel@xmailserver.org>
+> + *  and Copyright (C) 2007 Google, Inc.
+> + *      (Author: Michael Kerrisk <mtk@google.com>)
+>   *
+>   *
+>   *  Thanks to Thomas Gleixner for code reviews and useful comments.
+> @@ -26,6 +28,12 @@
+>  	ktime_t tintv;
+>  	wait_queue_head_t wqh;
+>  	int expired;
+> +	int clockid;	/* Established when timer is created, then
+> +			   immutable */
+> +	int overrun;	/* Number of overruns for this timer so far,
+> +			   updated on calls to timerfd() that retrieve
+> +			   settings of an existing timer, reset to zero
+> +			   by timerfd_read() */
+>  };
+> 
+>  /*
+> @@ -61,6 +69,7 @@
+>  	hrtimer_init(&ctx->tmr, clockid, htmode);
+>  	ctx->tmr.expires = texp;
+>  	ctx->tmr.function = timerfd_tmrproc;
+> +	ctx->overrun = 0;
+>  	if (texp.tv64 != 0)
+>  		hrtimer_start(&ctx->tmr, texp, htmode);
+>  }
+> @@ -130,10 +139,11 @@
+>  			 * callback to avoid DoS attacks specifying a very
+>  			 * short timer period.
+>  			 */
+> -			ticks = (u64)
+> +			ticks = ctx->overrun +
+>  				hrtimer_forward(&ctx->tmr,
+>  						hrtimer_cb_get_time(&ctx->tmr),
+>  						ctx->tintv);
+> +			ctx->overrun = 0;
+>  			hrtimer_restart(&ctx->tmr);
+>  		} else
+>  			ticks = 1;
+> @@ -151,24 +161,69 @@
+>  };
+> 
+>  asmlinkage long sys_timerfd(int ufd, int clockid, int flags,
+> -			    const struct itimerspec __user *utmr)
+> +			const struct itimerspec __user *utmr,
+> +			struct itimerspec __user *old_utmr)
+>  {
+>  	int error;
+>  	struct timerfd_ctx *ctx;
+>  	struct file *file;
+>  	struct inode *inode;
+> -	struct itimerspec ktmr;
+> +	struct itimerspec ktmr, oktmr;
+> 
+> -	if (copy_from_user(&ktmr, utmr, sizeof(ktmr)))
+> -		return -EFAULT;
+> +	/*
+> +	 * Not sure if we really need the first check below -- it
+> +	 * relies on all clocks having a non-negative value.  That's
+> +	 * currently true, but I'm not sure that it is anywhere
+> +	 * documented as a requirement.
+> +	 * (The point of the check is that clockid has no meaning if
+> +	 * we are changing the settings of an existing timer
+> +	 * (i.e., ufd >= 0), so let's require it to be an otherwise
+> +	 * unused value.)
+> +	 */
+> 
+> -	if (clockid != CLOCK_MONOTONIC &&
+> -	    clockid != CLOCK_REALTIME)
+> +	if (ufd >= 0) {
+> +		if (clockid != -1)
+> +			return -EINVAL;
+> +	} else if (clockid != CLOCK_MONOTONIC && clockid != CLOCK_REALTIME)
+> +		return -EINVAL;
+> +
+> +	/*
+> +	 * Disallow any other bits in flags than those we implement.
+> +	 */
+> +	if ((flags & ~(TFD_TIMER_ABSTIME)) != 0)
+> +		return -EINVAL;
+> +
+> +	/*
+> +         * Not sure if this check is strictly necessary, except to stop
+
+Use tab+space instead of spaces.
+
+> +	 * userspace trying to do something silly.  Flags only has meaning
+> +	 * if we are creating/modifying a timer.
+> +	 */
+> +	if (utmr == NULL && flags != 0)
+>  		return -EINVAL;
+> -	if (!timespec_valid(&ktmr.it_value) ||
+> -	    !timespec_valid(&ktmr.it_interval))
+> +
+> +	/*
+> +	 * If we are creating a new timer, then we must supply the setting
+> +	 * and there is no previous timer setting to retrieve.
+> +	 */
+> +	if (ufd == -1 && (utmr == NULL || old_utmr != NULL))
+> +		return -EINVAL;
+> +	
+> +	/*
+> +	 * Caller must provide a new timer setting, or ask for previous
+> +	 * setting, or both.
+> +	 */
+> +	if (utmr == NULL && old_utmr == NULL)
+>  		return -EINVAL;
+> 
+> +	if (utmr) {
+> +		if (copy_from_user(&ktmr, utmr, sizeof(ktmr)))
+> +			return -EFAULT;
+> +
+> +		if (!timespec_valid(&ktmr.it_value) ||
+> +		    !timespec_valid(&ktmr.it_interval))
+> +			return -EINVAL;
+> +	}
+> +
+>  	if (ufd == -1) {
+>  		ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
+>  		if (!ctx)
+> @@ -176,6 +231,11 @@
+> 
+>  		init_waitqueue_head(&ctx->wqh);
+> 
+> +		/*
+> +		 * Save the clockid since we need it later if we modify
+> +		 * the timer.
+> +		 */
+> +		ctx->clockid = clockid;
+>  		timerfd_setup(ctx, clockid, flags, &ktmr);
+> 
+>  		/*
+> @@ -195,23 +255,61 @@
+>  			fput(file);
+>  			return -EINVAL;
+>  		}
+> -		/*
+> -		 * We need to stop the existing timer before reprogramming
+> -		 * it to the new values.
+> -		 */
+> -		for (;;) {
+> -			spin_lock_irq(&ctx->wqh.lock);
+> -			if (hrtimer_try_to_cancel(&ctx->tmr) >= 0)
+> -				break;
+> -			spin_unlock_irq(&ctx->wqh.lock);
+> -			cpu_relax();
+> +
+> +		if (old_utmr) {
+> +
+> +			/*
+> +			 * Retrieve interval and time remaining before
+> +			 * next expiration of timer.
+> +			 */
+> +
+> +			struct hrtimer *timer = &ctx->tmr;
+> +			ktime_t iv = ctx->tintv;
+> +			ktime_t now, remaining;
+> +
+> +			clockid = ctx->clockid;
+> +
+> +			memset(&oktmr, 0, sizeof(struct itimerspec));
+> +			if (iv.tv64)
+> +				oktmr.it_interval = ktime_to_timespec(iv);
+> +
+> +			now = timer->base->get_time();
+> +			ctx->overrun += hrtimer_forward(&ctx->tmr,
+> +					hrtimer_cb_get_time(&ctx->tmr),
+> +					ctx->tintv);
+> +			remaining = ktime_sub(timer->expires, now);
+> +			if (remaining.tv64 <= 0)
+> +				oktmr.it_value.tv_nsec = 1;
+> +			else
+> +				oktmr.it_value = ktime_to_timespec(remaining);
+> +
+> +			if (copy_to_user(old_utmr, &oktmr, sizeof (oktmr))) {
+> +				fput(file);
+> +				return -EFAULT;
+> +			}
+>  		}
+> -		/*
+> -		 * Re-program the timer to the new value ...
+> -		 */
+> -		timerfd_setup(ctx, clockid, flags, &ktmr);
+> 
+> -		spin_unlock_irq(&ctx->wqh.lock);
+> +		if (utmr) {
+> +			/*
+> +			 * Modify settings of existing timer.
+> +			 * We need to stop the existing timer before
+> +			 * reprogramming it to the new values.
+> +			 */
+> +			for (;;) {
+> +				spin_lock_irq(&ctx->wqh.lock);
+> +				if (hrtimer_try_to_cancel(&ctx->tmr) >= 0)
+> +					break;
+> +				spin_unlock_irq(&ctx->wqh.lock);
+> +				cpu_relax();
+> +			}
+> +
+> +			/*
+> +			 * Re-program the timer to the new value ...
+> +			 */
+> +			timerfd_setup(ctx, ctx->clockid, flags, &ktmr);
+> +
+> +			spin_unlock_irq(&ctx->wqh.lock);
+> +		}
+>  		fput(file);
+>  	}
+> 
+> @@ -222,4 +320,3 @@
+>  	kfree(ctx);
+>  	return error;
+>  }
+> -
+> diff -ruN linux-2.6.23-rc1-mm2-orig/include/linux/compat.h linux-2.6.23-rc1-mm2/include/linux/compat.h
+> --- linux-2.6.23-rc1-mm2-orig/include/linux/compat.h	2007-07-09 01:32:17.000000000 +0200
+> +++ linux-2.6.23-rc1-mm2/include/linux/compat.h	2007-08-05 17:46:33.000000000 +0200
+> @@ -265,7 +265,8 @@
+>  				const compat_sigset_t __user *sigmask,
+>                                  compat_size_t sigsetsize);
+>  asmlinkage long compat_sys_timerfd(int ufd, int clockid, int flags,
+> -				const struct compat_itimerspec __user *utmr);
+> +			const struct compat_itimerspec __user *utmr,
+> +			struct compat_itimerspec __user *old_utmr);
+> 
+>  #endif /* CONFIG_COMPAT */
+>  #endif /* _LINUX_COMPAT_H */
+> diff -ruN linux-2.6.23-rc1-mm2-orig/include/linux/syscalls.h linux-2.6.23-rc1-mm2/include/linux/syscalls.h
+> --- linux-2.6.23-rc1-mm2-orig/include/linux/syscalls.h	2007-08-05 10:44:32.000000000 +0200
+> +++ linux-2.6.23-rc1-mm2/include/linux/syscalls.h	2007-08-05 17:47:15.000000000 +0200
+> @@ -608,7 +608,8 @@
+>  asmlinkage long sys_getcpu(unsigned __user *cpu, unsigned __user *node, struct getcpu_cache __user *cache);
+>  asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemask);
+>  asmlinkage long sys_timerfd(int ufd, int clockid, int flags,
+> -			    const struct itimerspec __user *utmr);
+> +			const struct itimerspec __user *utmr,
+> +			struct itimerspec __user *old_utmr);
+>  asmlinkage long sys_eventfd(unsigned int count);
+>  asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
