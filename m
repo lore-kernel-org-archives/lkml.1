@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032724AbXHMSGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S974361AbXHMSGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032724AbXHMSGA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S973532AbXHMRuO
+	id S974361AbXHMSGp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974175AbXHMRx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:50:14 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:45661 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1032620AbXHMRuF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:50:05 -0400
-Date: Mon, 13 Aug 2007 19:50:03 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jiri Kosina <jikos@jikos.cz>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [374/2many] MAINTAINERS - PCNET32 NETWORK DRIVER
-In-Reply-To: <Pine.LNX.4.64.0708131402490.3948@twin.jikos.cz>
-Message-ID: <Pine.LNX.4.64.0708131947500.9759@fbirervta.pbzchgretzou.qr>
-References: <46bffb4c.nrqicrPs7IJXlgQ0%joe@perches.com>
- <20070812.233630.00455011.davem@davemloft.net> <Pine.LNX.4.64.0708131402490.3948@twin.jikos.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 13 Aug 2007 13:53:26 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3331 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S974171AbXHMRxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 13:53:21 -0400
+Subject: Re: [PATCH] [206/2many] MAINTAINERS - GENERIC GPIO I2C DRIVER
+From: Joe Perches <joe@perches.com>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, David Brownell <david-b@pacbell.net>
+In-Reply-To: <20070813123924.25d422ac@dhcp-255-175.norway.atmel.com>
+References: <46bff9fc.i+o8WMM7bF8WiNL9%joe@perches.com>
+	 <20070813123924.25d422ac@dhcp-255-175.norway.atmel.com>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 10:52:33 -0700
+Message-Id: <1187027553.10249.179.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-08-13 at 12:39 +0200, Haavard Skinnemoen wrote:
+> Patches for Documentation/gpio.txt should probably be sent to
+> linux-arch and David Brownell, who is the one who wrote it.
 
-On Aug 13 2007 14:08, Jiri Kosina wrote:
->On Sun, 12 Aug 2007, David Miller wrote:
->
->> Ok, 374 patches is just rediculious.
->> So many patches eats up an enormous amount of mailing list resources, 
->> and for these patches in particular there are few reasons to split them 
->> up at all.  The fact that the split up landed you at 300+ patches is a 
->> very good indication of that.
->
->Actually, I can see 546 patches up to now. Horrid.
->
->Besides that, it's very unfortunate that every single mail of this 
->ridiculously huuuuge patch series starts a new thread (no 'References' or 
->'In-Reply-To' header), so it's not possible to nuke it at once in an usual 
->way.
+Thanks.
 
-Pine:
-	; t s MAINTAINERS <enter> a d x
+David, think it's worth tracking gpio.txt somewhere at all?
 
-and it's all gone ;-) though.. it does not cover for replies trickling in
-later. Granted, ^D to delete the whole thread (if there was one)
-would have been easier.
+GENERIC GPIO I2C DRIVER
+P:	Haavard Skinnemoen
+M:	hskinnemoen@atmel.com
+S:	Supported
+F:	drivers/i2c/busses/i2c-gpio.c
+F:	include/linux/i2c-gpio.h
 
 
-
-	Jan
--- 
