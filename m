@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S947916AbXHMPEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S947045AbXHMPFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S947916AbXHMPEG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:04:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S972314AbXHMMme
+	id S947045AbXHMPFs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S972336AbXHMMoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 08:42:34 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:1453 "EHLO kernel.dk"
+	Mon, 13 Aug 2007 08:44:04 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:52200 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S972272AbXHMMma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 08:42:30 -0400
-Date: Mon, 13 Aug 2007 14:42:26 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
-Message-ID: <20070813124225.GT23758@kernel.dk>
-References: <1186248703.3439.20.camel@localhost.localdomain> <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org> <1186458941.6637.44.camel@localhost.localdomain> <20070807001429.f8cb3b22.akpm@linux-foundation.org> <1186496712.3414.17.camel@localhost.localdomain> <46B88B91.4050703@garzik.org> <1186501124.3414.32.camel@localhost.localdomain> <20070807105144.0ba67d81.akpm@linux-foundation.org>
+	id S1753904AbXHMMn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 08:43:59 -0400
+Message-ID: <46C0520B.20804@dgreaves.com>
+Date: Mon, 13 Aug 2007 13:43:55 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070807105144.0ba67d81.akpm@linux-foundation.org>
+To: david@lang.hm
+Cc: Paul Clements <paul.clements@steeleye.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>, Al Boldi <a1426z@gawab.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: [RFD] Layering: Use-Case Composers (was: DRBD - what is it, anyways?
+ [compare with e.g. NBD + MD raid])
+References: <200708121335.17267.a1426z@gawab.com> <Pine.LNX.4.64.0708121325170.28963@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0708120933210.19502@asgard.lang.hm> <Pine.LNX.4.64.0708121901290.28963@fbirervta.pbzchgretzou.qr> <20070812174549.GA2915@teal.hq.k1024.org> <46BFB6BB.80406@steeleye.com> <Pine.LNX.4.64.0708122016100.22470@asgard.lang.hm> <46C01052.4050708@dgreaves.com> <Pine.LNX.4.64.0708130127260.22470@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0708130127260.22470@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07 2007, Andrew Morton wrote:
-> On Tue, 07 Aug 2007 10:38:44 -0500 James Bottomley <James.Bottomley@SteelEye.com> wrote:
+david@lang.hm wrote:
+>> Would this just be relevant to network devices or would it improve 
+>> support for jostled usb and sata hot-plugging I wonder?
 > 
-> > On Tue, 2007-08-07 at 11:11 -0400, Jeff Garzik wrote:
-> > > James Bottomley wrote:
-> > > > The initial bsg submit went via the block git tree ... which I believe
-> > > > you have in -mm.  We only started taking the updates via the scsi tree
-> > > 
-> > > Seven hours before you posted this, in 
-> > > <20070807001429.f8cb3b22.akpm@linux-foundation.org>, Andrew already 
-> > > noted it was not in -mm.
-> > > 
-> > > A trivial examination of the broken-out mm patches backs up the absence 
-> > >   of Jens' block tree, too.
-> > > 
-> > > So let's put this myth / bad assumption to rest, shall we?
-> > 
-> > Sorry ... I just assumed from the fact that it had been in the block git
-> > tree for six months that it was also in -mm.
-> 
-> bsg was never in the #for-akpm branch of git-block.  So I assume that
-> Jens had it in some other branch and for some reason never pulled it
-> across into #for-akpm.
+> good question, I suspect that some of the error handling would be 
+> similar (for devices that are unreachable not haning the system for 
+> example), but a lot of the rest would be different (do you really want 
+> to try to auto-resync to a drive that you _think_ just reappeared,
+Well, omit 'think' and the answer may be "yes". A lot of systems are quite 
+simple and RAID is common on the desktop now. If jostled USB fits into this 
+category - then "yes".
 
-#for-akpm is usually only in very few -mm release anyway, so it's not
-like it would have made much difference. We/you/I need to improve that,
-certainly.
+> what 
+> if it's a different drive? how can you be sure?
+And that's the key isn't it. We have the RAID device UUID and the superblock 
+info. Isn't that enough? If not then given the work involved an extended 
+superblock wouldn't be unreasonable.
+And I suspect the capability of devices would need recording in the superblock 
+too? eg 'retry-on-fail'
+I can see how md would fail a device but may now periodically retry it. If a 
+retry shows that it's back then it would validate it (UUID) and then resync it.
 
-Honestly, for bsg, it wasn't much of an issue. We had build problems
-when bsg was merged which was unfortunate but got fixed quickly. Having
-bsg in -mm would not have caused any testing of the driver in question
-outside of what it already received, given the nature of it.
+> ) the error rate of a 
+> network is gong to be significantly higher then for USB or SATA drives 
+> (although I suppose iscsi would be limilar)
 
--- 
-Jens Axboe
+I do agree - I was looking for value-add for the existing subsystem. If this 
+benefits existing RAID users then it's more likely to be attractive.
 
+David
