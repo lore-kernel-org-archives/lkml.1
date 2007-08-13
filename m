@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972773AbXHMNTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S972811AbXHMNU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972773AbXHMNTe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970196AbXHMJJK
+	id S972811AbXHMNU2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971179AbXHMJJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 05:09:10 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:53610
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S966936AbXHMJJG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 05:09:06 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Distributed storage.
-Date: Mon, 13 Aug 2007 02:08:57 -0700
-User-Agent: KMail/1.9.5
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20070731171347.GA14267@2ka.mipt.ru> <20070813072848.GC23758@kernel.dk> <20070813074530.GE23758@kernel.dk>
-In-Reply-To: <20070813074530.GE23758@kernel.dk>
+	Mon, 13 Aug 2007 05:09:22 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:4119 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S971129AbXHMJJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 05:09:20 -0400
+Date: Mon, 13 Aug 2007 13:09:54 +0400
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-ext4@vger.kernel.org, devel@openvz.org
+Subject: [PATCH] ext3: fix ext34_fill_super group description initialization
+Message-ID: <20070813090954.GA25226@dnb.sw.ru>
+Mail-Followup-To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	devel@openvz.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708130208.57542.phillips@phunq.net>
+Organization: SWsoft
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 August 2007 00:45, Jens Axboe wrote:
-> On Mon, Aug 13 2007, Jens Axboe wrote:
-> > > You did not comment on the one about putting the bio destructor
-> > > in the ->endio handler, which looks dead simple.  The majority of
-> > > cases just use the default endio handler and the default
-> > > destructor.  Of the remaining cases, where a specialized
-> > > destructor is needed, typically a specialized endio handler is
-> > > too, so combining is free.  There are few if any cases where a
-> > > new specialized endio handler would need to be written.
-> >
-> > We could do that without too much work, I agree.
->
-> But that idea fails as well, since reference counts and IO completion
-> are two completely seperate entities. So unless end IO just happens
-> to be the last user holding a reference to the bio, you cannot free
-> it.
+->s_group_desc have to be zero filled because if sb_read() failed
+we jump to following error path.
+failed_mount2:
+	for (i = 0; i < db_count; i++)
+		brelse(sbi->s_group_desc[i]);<< Bad things may happen here
 
-That is not a problem.  When bio_put hits zero it calls ->endio instead 
-of the destructor.  The ->endio sees that the count is zero and 
-destroys the bio.
+Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+---
+ fs/ext3/super.c |    2 +-
+ fs/ext4/super.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Regards,
+diff --git a/fs/ext3/super.c b/fs/ext3/super.c
+index f8ac18f..208738e 100644
+--- a/fs/ext3/super.c
++++ b/fs/ext3/super.c
+@@ -1718,7 +1718,7 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
+ 				       / EXT3_BLOCKS_PER_GROUP(sb)) + 1;
+ 	db_count = (sbi->s_groups_count + EXT3_DESC_PER_BLOCK(sb) - 1) /
+ 		   EXT3_DESC_PER_BLOCK(sb);
+-	sbi->s_group_desc = kmalloc(db_count * sizeof (struct buffer_head *),
++	sbi->s_group_desc = kzalloc(db_count * sizeof (struct buffer_head *),
+ 				    GFP_KERNEL);
+ 	if (sbi->s_group_desc == NULL) {
+ 		printk (KERN_ERR "EXT3-fs: not enough memory\n");
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 8f1d2f6..fefffc0 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -1830,7 +1830,7 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+ 	sbi->s_groups_count = blocks_count;
+ 	db_count = (sbi->s_groups_count + EXT4_DESC_PER_BLOCK(sb) - 1) /
+ 		   EXT4_DESC_PER_BLOCK(sb);
+-	sbi->s_group_desc = kmalloc(db_count * sizeof (struct buffer_head *),
++	sbi->s_group_desc = kzalloc(db_count * sizeof (struct buffer_head *),
+ 				    GFP_KERNEL);
+ 	if (sbi->s_group_desc == NULL) {
+ 		printk (KERN_ERR "EXT4-fs: not enough memory\n");
+-- 
+1.5.2.2
 
-Daniel
+
