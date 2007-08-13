@@ -1,34 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S974573AbXHMSvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S974590AbXHMSwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S974573AbXHMSvp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974180AbXHMSjM
+	id S974590AbXHMSwk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974449AbXHMSlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:39:12 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3496 "EHLO perches.com"
+	Mon, 13 Aug 2007 14:41:08 -0400
+Received: from khc.piap.pl ([195.187.100.11]:56632 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761687AbXHMSjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:39:10 -0400
-Subject: Re: [PATCH] [467/2many] MAINTAINERS - SVGA HANDLING
-From: Joe Perches <joe@perches.com>
-To: Martin Mares <mj@ucw.cz>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <1187028193.10249.197.camel@localhost>
-References: <46bffc09.olZ/JU6zLi5nghOY%joe@perches.com>
-	 <mj+md-20070813.084046.10732.nikam@ucw.cz>
-	 <1187028193.10249.197.camel@localhost>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 11:38:29 -0700
-Message-Id: <1187030310.10249.243.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	id S972932AbXHMSlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 14:41:07 -0400
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, Joe Perches <joe@perches.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
+References: <1186984174.10249.7.camel@localhost>
+	<200708131933.10125.m.kozlowski@tuxland.pl>
+	<1187026955.2688.4.camel@laptopd505.fenrus.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 13 Aug 2007 20:41:03 +0200
+In-Reply-To: <1187026955.2688.4.camel@laptopd505.fenrus.org> (Arjan van de Ven's message of "Mon, 13 Aug 2007 10:42:35 -0700")
+Message-ID: <m3odhb46rk.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 11:03 -0700, Joe Perches wrote:
-> L:	linux-video@atrey.karlin.mff.cuni.cz
+Arjan van de Ven <arjan@infradead.org> writes:
 
-Bounces.  Delete or change?
+> The maintainer info should be in the source file itself!
 
+Nope, it should be outside of the (downloadable) tarball, because
+once someone get a tarball you can't update the data in it.
+This is fine WRT source (which is static given a version) but
+doesn't work for fast-changing data.
+-- 
+Krzysztof Halasa
