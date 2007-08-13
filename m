@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S973118AbXHMNgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030784AbXHMNg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S973118AbXHMNgK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971732AbXHMJuB
+	id S1030784AbXHMNg6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971988AbXHMJvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 05:50:01 -0400
-Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:41745 "EHLO
-	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S971719AbXHMJt7 (ORCPT
+	Mon, 13 Aug 2007 05:51:52 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52597 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S969062AbXHMJvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 05:49:59 -0400
-Subject: [KJ-resend]replacing kmalloc with kzalloc in
-	drivers/mtd/chips/cfi_probe.c
-From: Surya Prabhakar N <surya.prabhakar@wipro.com>
-Reply-To: surya.prabhakar@wipro.com
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
+	Mon, 13 Aug 2007 05:51:50 -0400
+Message-ID: <46C02973.6030709@sgi.com>
+Date: Mon, 13 Aug 2007 11:50:43 +0200
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Steven Rostedt <rostedt@goodmis.org>, lguest <lguest@ozlabs.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Carsten Otte <cotte@de.ibm.com>
+Subject: Re: [PATCH 0/7] Modify lguest32 to make room for lguest64
+References: <20070809003211.373543702@goodmis.org> <1186803724.30899.62.camel@localhost.localdomain>
+In-Reply-To: <1186803724.30899.62.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Linux Coe, Wipro Technologies
-Date: Mon, 13 Aug 2007 15:19:33 +0530
-Message-Id: <1186998573.29518.6.camel@bluegenie>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-X-OriginalArrivalTime: 13 Aug 2007 09:50:10.0918 (UTC) FILETIME=[56C54860:01C7DD8F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-   Replacing kmalloc with kzalloc and cleaning up memset in 
-drivers/mtd/chips/cfi_probe.c. Kindly ignore the previous similar patch.
+Rusty Russell wrote:
+> Yeah, after some more thought I've not applied most of this.  We really
+> don't want to move everything then move it back; I prefer Jes' more
+> cautious approach of moving a little bit at a time.
+> 
+> We really have three parts: (1) bits that are generic, (2) bits that
+> should be generic but my implementation is naive, (3) bits that really
+> are i386-specific.
 
-Signed-off-by: Surya Prabhakar <surya.prabhakar@wipro.com>
----
+I have actually been using Steven's patchset to do my work, but in a
+way it's a tool. Moving things out of the way in bulk and see whats
+missing kinda helps for that :)
 
-diff --git a/drivers/mtd/chips/cfi_probe.c b/drivers/mtd/chips/cfi_probe.c
-index 60e11a0..efb51f7 100644
---- a/drivers/mtd/chips/cfi_probe.c
-+++ b/drivers/mtd/chips/cfi_probe.c
-@@ -203,14 +203,12 @@ static int __xipram cfi_chip_setup(struct map_info *map,
- 	if (!num_erase_regions)
- 		return 0;
- 
--	cfi->cfiq = kmalloc(sizeof(struct cfi_ident) + num_erase_regions * 4, GFP_KERNEL);
-+	cfi->cfiq = kzalloc(sizeof(struct cfi_ident) + num_erase_regions * 4, GFP_KERNEL);
- 	if (!cfi->cfiq) {
- 		printk(KERN_WARNING "%s: kmalloc failed for CFI ident structure\n", map->name);
- 		return 0;
- 	}
- 
--	memset(cfi->cfiq,0,sizeof(struct cfi_ident));
--
- 	cfi->cfi_mode = CFI_MODE_CFI;
- 
- 	/* Read the CFI info structure */
+> Patches which move 2 to 1 are gratefully accepted: I realize a mass move
+> is easier and this requires thought, but that's what we need.
+> 
+> Since I can't build a module over two directories, that seems to destroy
+> the idea of an i386/ subdir.  Instead I've done a patch which renames
+> the *clearly* i386-specific things to i386_<name>, which at least works.
+> I've pushed it into the repository http://lguest.ozlabs.org/patches/
 
-thanks
-surya.
+That works - alternatively we could build two modules, lg and lg_<arch>
+and just have lg pull in the arch one as well? I'm not really biased,
+but I think it will get messy later once we add ia64 and x86_64 to the
+directory.
+
+Cheers,
+Jes
+
