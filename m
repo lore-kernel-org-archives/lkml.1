@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972108AbXHMJ4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761141AbXHMJ5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972108AbXHMJ4e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 05:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967129AbXHMGdz
+	id S1761141AbXHMJ5Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 05:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967144AbXHMGd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:33:55 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1423 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:33:57 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1401 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967030AbXHMGds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:33:48 -0400
-Date: Sun, 12 Aug 2007 23:32:43 -0700
+	id S967131AbXHMGdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:33:40 -0400
+Date: Sun, 12 Aug 2007 23:33:27 -0700
 From: joe@perches.com
-To: yoshfuji@linux-ipv6.org, torvalds@linux-foundation.org, pekkas@netcore.fi,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kuznet@ms2.inr.ac.ru, kaber@coreworks.de, jmorris@namei.org,
-       davem@davemloft.net, akpm@linux-foundation.org
-Subject: [PATCH] [340/2many] MAINTAINERS - NETWORKING [IPv4/IPv6]
-Message-ID: <46bffb0b.VAaHa7pZZVVq5+mP%joe@perches.com>
+To: torvalds@linux-foundation.org, tim@cyberelk.net,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] [363/2many] MAINTAINERS - PARIDE DRIVERS FOR PARALLEL
+ PORT IDE DEVICES
+Message-ID: <46bffb37.uJKVC62Ju0tBtIp3%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,16 +28,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 1ddb242..91cdf28 100644
+index 21a427e..0134f18 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -3270,6 +3270,9 @@ M:	kaber@coreworks.de
- L:	netdev@vger.kernel.org
- T:	git kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git
+@@ -3489,6 +3489,8 @@ M:	tim@cyberelk.net
+ L:	linux-parport@lists.infradead.org (subscribers-only)
+ W:	http://www.torque.net/linux-pp.html
  S:	Maintained
-+F:	net/ipv4/
-+F:	net/ipv6/
-+F:	include/net/ip*
++F:	Documentation/paride.txt
++F:	drivers/block/paride/
  
- NETWORKING [WIRELESS]
- P:	John W. Linville
+ PARISC ARCHITECTURE
+ P:	Matthew Wilcox
