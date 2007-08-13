@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965293AbXHMAAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938558AbXHMASM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965293AbXHMAAe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 20:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758210AbXHMAAX
+	id S938558AbXHMASM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 20:18:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759821AbXHMASA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 20:00:23 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:35597 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752836AbXHMAAW (ORCPT
+	Sun, 12 Aug 2007 20:18:00 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:52491 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752836AbXHMAR7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 20:00:22 -0400
-Subject: Re: [PATCH] [MTD] Fix CFI build error with meaningless
-	nonfunctional .config
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070812162417.GA15412@elte.hu>
-References: <20070806161537.GA1269@elte.hu>
-	 <1186717841.7282.104.camel@shinybook.infradead.org>
-	 <20070810074140.GB28264@elte.hu>
-	 <1186731902.3571.1.camel@shinybook.infradead.org>
-	 <20070812162417.GA15412@elte.hu>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 08:00:11 +0800
-Message-Id: <1186963211.3973.25.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-3.fc7.dwmw2.1) 
+	Sun, 12 Aug 2007 20:17:59 -0400
+Message-ID: <46BFA25A.2040108@gmail.com>
+Date: Mon, 13 Aug 2007 02:14:18 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: WU Fengguang <wfg@mail.ustc.edu.cn>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Paul Moore <paul.moore@hp.com>, Stephen Smalley <sds@epoch.ncsc.mil>,
+       Chris Vance <cvance@nai.com>, Wayne Salamon <wsalamon@nai.com>,
+       James Morris <jmorris@redhat.com>, dgoeddel@trustedcs.com
+Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
+References: <20070812141905.4ee423b9@the-village.bc.nu>	<386927758.14086@ustc.edu.cn> <20070812161744.200d4252@the-village.bc.nu>
+In-Reply-To: <20070812161744.200d4252@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-08-12 at 18:24 +0200, Ingo Molnar wrote:
-> just found another one via randconfig, it fails with:
-> 
->  In file included from drivers/mtd/chips/map_rom.c:16:
->  include/linux/mtd/map.h:128:2: error: #error "No bus width supported. What's the point?"
->
-> config attached below. Because it's so nice to be able to keep a 
-> randconfig build-test running overnight, i think this needs to be 
-> fixed  too. (even if with just a runtime BUG())
+On 08/12/2007 05:17 PM, Alan Cox wrote:
 
+> Try this (it compiles but isnt tested). Its a weekend here, the sun is
+> shining, the beach is a short walk, and I have more interesting things to
+> do right now 8)
 
+Oh come on, you have a beard. You can't go to the beach.
 
-On Fri, 2007-08-10 at 11:50 +0800, David Woodhouse wrote:
-> -#error "No bus width supported. What's the point?"
-> +#warning "No CONFIG_MTD_MAP_BANK_WIDTH_xx selected. No NOR chip support can work"
-> +static inline int map_bankwidth(void *map)
-> +{
-> +       BUG(); 
-> 
--- 
-dwmw2
-
+Rene.
