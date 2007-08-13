@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbXHMEAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbXHMECo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753511AbXHMEAv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 00:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbXHMEAl
+	id S1753376AbXHMECo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 00:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbXHMECh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 00:00:41 -0400
-Received: from smtp3.hushmail.com ([65.39.178.135]:63711 "EHLO
+	Mon, 13 Aug 2007 00:02:37 -0400
+Received: from smtp3.hushmail.com ([65.39.178.135]:56626 "EHLO
 	smtp3.hushmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbXHMEAk (ORCPT
+	with ESMTP id S1750840AbXHMECg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 00:00:40 -0400
-Date: Mon, 13 Aug 2007 00:00:38 -0400
+	Mon, 13 Aug 2007 00:02:36 -0400
+Date: Mon, 13 Aug 2007 00:02:33 -0400
 To: <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>,
        <dri-devel@lists.sourceforge.net>
-Subject: [PATCH 1 of 5 ] /drivers/char ioremap balancing/ returncode check
+Subject: [PATCH 2 of 5 ] /drivers/char/agp ioremap balancing/ returncode check
 Reply-to: postfail@hushmail.com
 From: "Scott Thompson" <postfail@hushmail.com>
 Content-type: text/plain; charset="UTF-8"
-Message-Id: <20070813040039.71A3DDA820@mailserver8.hushmail.com>
+Message-Id: <20070813040234.44A89DA838@mailserver8.hushmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -30,89 +30,127 @@ iounmap calls..
 
 Signed-off-by: Scott Thompson <postfail <at> hushmail.com>
 ----------------------------------------------------------
-diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
-index 77bf4aa..53d233e 100644
---- a/drivers/char/hpet.c
-+++ b/drivers/char/hpet.c
-@@ -936,6 +936,12 @@ static acpi_status hpet_resources(struct 
-acpi_resource *res, void *data)
- 		hdp->hd_phys_address = addr.minimum;
- 		hdp->hd_address = ioremap(addr.minimum, addr.address_length);
+diff --git a/drivers/char/agp/amd-k7-agp.c b/drivers/char/agp/amd-
+k7-agp.c
+index df0ddf1..ad946fd 100644
+--- a/drivers/char/agp/amd-k7-agp.c
++++ b/drivers/char/agp/amd-k7-agp.c
+@@ -223,7 +223,9 @@ static int amd_irongate_configure(void)
+ 	pci_read_config_dword(agp_bridge->dev, AMD_MMBASE, &temp);
+ 	temp = (temp & PCI_BASE_ADDRESS_MEM_MASK);
+ 	amd_irongate_private.registers = (volatile u8 __iomem *) 
+ioremap(temp, 4096);
+-
++	if (!amd_irongate_private.registers) 
++		return -ENOMEM;
++	
+ 	/* Write out the address of the gatt table */
+ 	writel(agp_bridge->gatt_bus_addr, 
+amd_irongate_private.registers+AMD_ATTBASE);
+ 	readl(amd_irongate_private.registers+AMD_ATTBASE);	/* PCI 
+Posting. */
+diff --git a/drivers/char/agp/ati-agp.c b/drivers/char/agp/ati-agp.c
+index da7513d..95200f8 100644
+--- a/drivers/char/agp/ati-agp.c
++++ b/drivers/char/agp/ati-agp.c
+@@ -213,6 +213,9 @@ static int ati_configure(void)
+ 	temp = (temp & 0xfffff000);
+ 	ati_generic_private.registers = (volatile u8 __iomem *) 
+ioremap(temp, 4096);
  
-+		if (!hdp->hd_address) {
-+			printk(KERN_DEBUG "%s: ioremap failed\n",
-+				__FUNCTION__);
-+			return -ENOMEM;
-+		}
++	if (!ati_generic_private.registers) 
++		return -ENOMEM;
 +
- 		if (hpet_is_known(hdp)) {
- 			printk(KERN_DEBUG "%s: 0x%lx is busy\n",
- 				__FUNCTION__, hdp->hd_phys_address);
-@@ -953,6 +959,12 @@ static acpi_status hpet_resources(struct 
-acpi_resource *res, void *data)
- 		hdp->hd_address = ioremap(fixmem32->address,
- 						HPET_RANGE_SIZE);
- 
-+		if (!hdp->hd_address) {
-+			printk(KERN_DEBUG "%s: ioremap failed\n",
-+				__FUNCTION__);
-+			return -ENOMEM;
-+		}
-+
- 		if (hpet_is_known(hdp)) {
- 			printk(KERN_DEBUG "%s: 0x%lx is busy\n",
- 				__FUNCTION__, hdp->hd_phys_address);
-diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index ed76f0a..094323d 100644
---- a/drivers/char/moxa.c
-+++ b/drivers/char/moxa.c
-@@ -447,6 +447,13 @@ static int __init moxa_init(void)
- 	for (i = 0; i < numBoards; i++) {
- 		moxa_boards[i].basemem = ioremap(moxa_boards[i].baseAddr,
- 				0x4000);
-+		if (!moxa_boards[i].basemem) { 
-+			for (;i > 0;i--)
-+				if (moxa_boards[i].basemem)
-+					iounmap(moxa_boards[i].basemem);
-+
-+			return -ENOMEM; 
-+		}
+ 	if (is_r200())
+ 		pci_write_config_dword(agp_bridge->dev, ATI_RS100_IG_AGPMODE, 
+0x20000);
+ 	else
+diff --git a/drivers/char/agp/hp-agp.c b/drivers/char/agp/hp-agp.c
+index bcdb149..313a133 100644
+--- a/drivers/char/agp/hp-agp.c
++++ b/drivers/char/agp/hp-agp.c
+@@ -221,6 +221,7 @@ hp_zx1_lba_init (u64 hpa)
+ 	if (cap != PCI_CAP_ID_AGP) {
+ 		printk(KERN_ERR PFX "Invalid capability ID 0x%02x at 0x%x\n",
+ 		       cap, hp->lba_cap_offset);
++		iounmap(hp->lba_regs);
+ 		return -ENODEV;
  	}
  
- 	return retval;
-diff --git a/drivers/char/sx.c b/drivers/char/sx.c
-index 85a2328..30829ed 100644
---- a/drivers/char/sx.c
-+++ b/drivers/char/sx.c
-@@ -2627,6 +2627,12 @@ static void __devinit fix_sx_pci(struct 
-pci_dev *pdev, struct sx_board *board)
- 	pci_read_config_dword(pdev, PCI_BASE_ADDRESS_0, &hwbase);
- 	hwbase &= PCI_BASE_ADDRESS_MEM_MASK;
- 	rebase = ioremap(hwbase, 0x80);
-+	if (!rebase) {
-+		printk(KERN_DEBUG 
-+			"sx:ioremap fail, unable to perform cntrl reg fix\n");
-+		return;
-+	}
-+		
- 	t = readl(rebase + CNTRL_REG_OFFSET);
- 	if (t != CNTRL_REG_GOODVALUE) {
- 		printk(KERN_DEBUG "sx: performing cntrl reg fix: %08x -> "
-diff --git a/drivers/char/vr41xx_giu.c b/drivers/char/vr41xx_giu.c
-index e5ed091..2381162 100644
---- a/drivers/char/vr41xx_giu.c
-+++ b/drivers/char/vr41xx_giu.c
-@@ -639,8 +639,10 @@ static int __devinit giu_probe(struct 
-platform_device *dev)
- 	}
+diff --git a/drivers/char/agp/i460-agp.c b/drivers/char/agp/i460-
+agp.c
+index 53354bf..75d2aca 100644
+--- a/drivers/char/agp/i460-agp.c
++++ b/drivers/char/agp/i460-agp.c
+@@ -249,6 +249,10 @@ static int i460_create_gatt_table (struct 
+agp_bridge_data *bridge)
+ 	num_entries = A_SIZE_8(temp)->num_entries;
  
- 	irq = platform_get_irq(dev, 0);
--	if (irq < 0 || irq >= NR_IRQS)
-+	if (irq < 0 || irq >= NR_IRQS) {
-+		iounmap(giu_base);
- 		return -EBUSY;
+ 	i460.gatt = ioremap(INTEL_I460_ATTBASE, PAGE_SIZE << page_order);
++	if (!i460.gatt) {
++		printk(KERN_ERR PFX "ioremap failed\n");
++		return -ENOMEM;
 +	}
  
- 	return cascade_irq(irq, giu_get_irq);
+ 	/* These are no good, the should be removed from the agp_bridge 
+strucure... */
+ 	agp_bridge->gatt_table_real = NULL;
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-
+agp.c
+index 294cdbf..ffa7cdf 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -930,8 +930,10 @@ static int intel_i915_create_gatt_table(struct 
+agp_bridge_data *bridge)
+ 	temp &= 0xfff80000;
+ 
+ 	intel_private.registers = ioremap(temp,128 * 4096);
+-	if (!intel_private.registers)
++	if (!intel_private.registers) {
++		iounmap(intel_private.gtt);
+ 		return -ENOMEM;
++	}
+ 
+ 	temp = readl(intel_private.registers+I810_PGETBL_CTL) & 
+0xfffff000;
+ 	global_cache_flush();	/* FIXME: ? */
+@@ -985,13 +987,15 @@ static int 
+intel_i965_create_gatt_table(struct agp_bridge_data *bridge)
+        temp &= 0xfff00000;
+        intel_private.gtt = ioremap((temp + (512 * 1024)) , 512 * 
+1024);
+ 
+-       if (!intel_private.gtt)
+-               return -ENOMEM;
++	if (!intel_private.gtt)
++		return -ENOMEM;
+ 
+ 
+        intel_private.registers = ioremap(temp,128 * 4096);
+-       if (!intel_private.registers)
+-               return -ENOMEM;
++       if (!intel_private.registers) {
++		iounmap(intel_private.gtt);
++		return -ENOMEM;
++	}
+ 
+        temp = readl(intel_private.registers+I810_PGETBL_CTL) & 
+0xfffff000;
+        global_cache_flush();   /* FIXME: ? */
+diff --git a/drivers/char/agp/nvidia-agp.c 
+b/drivers/char/agp/nvidia-agp.c
+index 6cd7373..225ed2a 100644
+--- a/drivers/char/agp/nvidia-agp.c
++++ b/drivers/char/agp/nvidia-agp.c
+@@ -157,6 +157,9 @@ static int nvidia_configure(void)
+ 	nvidia_private.aperture =
+ 		(volatile u32 __iomem *) ioremap(apbase, 33 * PAGE_SIZE);
+ 
++	if (!nvidia_private.aperture)
++		return -ENOMEM;
++
+ 	return 0;
  }
+ 
+
 
