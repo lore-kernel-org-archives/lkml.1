@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938214AbXHMUAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761122AbXHMUBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938214AbXHMUAK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:00:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970597AbXHMT7C
+	id S1761122AbXHMUBv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbXHMUBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 15:59:02 -0400
-Received: from mx0.karneval.cz ([81.27.192.14]:55023 "EHLO av6.karneval.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965938AbXHMT67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 15:58:59 -0400
-X-Greylist: delayed 1645 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Aug 2007 15:58:59 EDT
-From: Pavel Pisa <ppisa@pikron.com>
-Organization: PiKRON Ltd.
-To: joe@perches.com
-Subject: Re: [PATCH] [322/2many] MAINTAINERS - MOTOROLA IMX MMC/SD HOST CONTROLLER INTERFACE DRIVER
-Date: Mon, 13 Aug 2007 21:29:22 +0200
-User-Agent: KMail/1.9.4
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <46bffaea.9eZfjjbX0RTIxLG/%joe@perches.com>
-In-Reply-To: <46bffaea.9eZfjjbX0RTIxLG/%joe@perches.com>
+	Mon, 13 Aug 2007 16:01:14 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42709 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754582AbXHMUBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 16:01:12 -0400
+Date: Mon, 13 Aug 2007 21:55:07 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Arkadiusz Miskiewicz <arekm@maven.pl>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: resume from ram much slower
+Message-ID: <20070813195507.GB18731@elf.ucw.cz>
+References: <200708101848.37222.arekm@maven.pl> <6bffcb0e0708101034x44ef5bd0we6a94e398c30c511@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708132129.23407.ppisa@pikron.com>
+In-Reply-To: <6bffcb0e0708101034x44ef5bd0we6a94e398c30c511@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 August 2007 08:32, joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
->
-> Signed-off-by: Joe Perches <joe@perches.com>
+Hi!
 
-Acked-by: Pavel Pisa <pisa@cmp.felk.cvut.cz>
-
-By the way, I am hunting write timeouts bugs now.
-I expect it is some MX1 SDHC hardware-driver
-interaction problem. Any help appreciated.
-
-I have patch implementing specialized imxmmc
-logger which writes couple of last 64 SDHC events
-before bug occurred.
-
-Best wishes
-
-             Pavel Pisa
-
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index aeb86e6..ddff41d 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3099,6 +3099,7 @@ M:	ppisa@pikron.com
->  L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
->  W:	http://mmc.drzeus.cx/wiki/Controllers/Freescale/SDHC
->  S:	Maintained
-> +F:	drivers/mmc/host/imxmmc.*
->
->  MOUSE AND MISC DEVICES [GENERAL]
->  P:	Alessandro Rubini
+> [S-T-R wizards CC'ed]
+> 
+> On 10/08/07, Arkadiusz Miskiewicz <arekm@maven.pl> wrote:
+> > Hi,
+> >
+> > Starting 1-2 weeks ago I have very long resume from
+> > ram times. It takes more than 1 min to resume. Does anyone see such behaviour?
+> >
+> > Kernel from yesterday git, thinkpad z60m, suspend.sf.net tools 20070801
+> >
+> > "ACPI handle has no context!" are interesting btw.
 
 
+Usual way to debug it is to unload as many modules as possible, to
+find out if it is caused by one of them...
+
+If that does not help, you can try playing with git to find out which
+commit caused the regression.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
