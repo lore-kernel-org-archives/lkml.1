@@ -1,73 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969575AbXHMMz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S943643AbXHMM41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969575AbXHMMz2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S942600AbXHMHqK
+	id S943643AbXHMM41 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S942652AbXHMHq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 03:46:10 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48064 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S942593AbXHMHqG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 03:46:06 -0400
-Subject: Re: ATA over ethernet swapping
-From: Peter Zijlstra <peterz@infradead.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Ed L. Cashin" <ecashin@coraid.com>,
-       kernel list <linux-kernel@vger.kernel.org>, ak@suse.de,
-       Netdev list <netdev@vger.kernel.org>
-In-Reply-To: <20070809101105.GA7581@elf.ucw.cz>
-References: <20070731135831.GA4604@elf.ucw.cz>
-	 <20070731150324.GE3206@coraid.com> <20070731152924.GM2087@elf.ucw.cz>
-	 <20070731162140.GI3206@coraid.com> <20070731222742.GR2087@elf.ucw.cz>
-	 <1185959909.12034.38.camel@twins>  <20070809101105.GA7581@elf.ucw.cz>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 09:45:57 +0200
-Message-Id: <1186991157.20108.47.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Aug 2007 03:46:29 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:8496 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S942638AbXHMHq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 03:46:27 -0400
+Date: Mon, 13 Aug 2007 09:46:24 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Joe Perches <joe@perches.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] [95/2many] MAINTAINERS - BLOCK LAYER
+Message-ID: <20070813074624.GF23758@kernel.dk>
+References: <46bff917.EmblDII2NfX3zJ2k%joe@perches.com> <20070813072851.GD23758@kernel.dk> <1186990866.10249.42.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1186990866.10249.42.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-09 at 12:11 +0200, Pavel Machek wrote:
-> Hi!
+On Mon, Aug 13 2007, Joe Perches wrote:
+> On Mon, 2007-08-13 at 09:28 +0200, Jens Axboe wrote:
+> > drivers/block/ is block device drivers, not the block layer. That mostly
+> > resides in block/, with some parts in fs/ as well.
 > 
-> > I've been working on this for quite some time. And should post again
-> > soon. Please see the patches:
-> > 
-> >   http://programming.kicks-ass.net/kernel-patches/vm_deadlock/current/
-> > 
-> > For now it requires one uses SLUB, I hope that SLAB will go away (will
-> > save me the trouble of adding support) and I guess I ought to do SLOB
-> > some time (if that does stay).
-> > 
-> > You'd need the first 22 patches of that series, and then call
-> > sk_set_memalloc(sk) on the proper socket, and do some fiddling with the
-> > reconnect logic. See nfs-swapfile.patch for examples.
+> ok, Do you want to be cc'd on mods in fs/*
 > 
-> What do you use for testing? I set up ata over ethernet... swapping
-> over that should deadlock w/o your patches.
-> 
-> But I'm able to compile kernel (-j 10) on 128MB machine, and I tried
-> cat /dev/zero | grep foo to exhaust memory... and could not reproduce
-> the deadlock. Should I pingflood? Tweak down ammount of atomic memory
-> avaialable to make deadlocks easier to reproduce?
+> F:	block/
+> F:	fs/*
 
-I usually test swap over NFS in the following manner, I setup a regular
-inet service on the machine (apache or a bunch of ncat sockets piping to
-files or something) and run a heavy workload on the machine (128M):
-2*64M file backed thrashers and 2*64M anonymous thrashers. Then I start
-clients for the regular inet service, wait for a bit, and shut down the
-NFS server.
+Not really, I'm only interested in select files in under fs/ - as are
+most, I suspect.
 
-This makes the machine grind to a halt, I then restart the NFS server,
-wait for it to reconnect and the client to come alive again.
-
-Without the last few swap-over-NFS patches this last bit - getting back
-out of that situation - never happens.
-
-The basic idea is to make connectivity to the machine where swap traffic
-goes very hard (pull a cable, cleanly shut down the server) and to keep
-other network traffic pounding the machine.
+-- 
+Jens Axboe
 
