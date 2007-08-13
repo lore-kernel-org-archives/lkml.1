@@ -1,45 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932620AbXHMX2K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965181AbXHMX2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932620AbXHMX2K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 19:28:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbXHMX1p
+	id S965181AbXHMX2m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 19:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937727AbXHMX1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 19:27:45 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55506 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761790AbXHMX1n (ORCPT
+	Mon, 13 Aug 2007 19:27:53 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:47587
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S934333AbXHMX1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 19:27:43 -0400
-Date: Mon, 13 Aug 2007 16:27:42 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: Mel Gorman <mel@skynet.ie>, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones
- pointer
-In-Reply-To: <20070814001659.GP3406@bingen.suse.de>
-Message-ID: <Pine.LNX.4.64.0708131625320.19910@schroedinger.engr.sgi.com>
-References: <20070813225020.GE3406@bingen.suse.de>
- <Pine.LNX.4.64.0708131457190.28445@schroedinger.engr.sgi.com>
- <20070813225841.GG3406@bingen.suse.de> <Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com>
- <20070813230801.GH3406@bingen.suse.de> <Pine.LNX.4.64.0708131536340.29946@schroedinger.engr.sgi.com>
- <20070813234322.GJ3406@bingen.suse.de> <Pine.LNX.4.64.0708131553050.30626@schroedinger.engr.sgi.com>
- <20070814000041.GL3406@bingen.suse.de> <Pine.LNX.4.64.0708131614270.19910@schroedinger.engr.sgi.com>
- <20070814001659.GP3406@bingen.suse.de>
+	Mon, 13 Aug 2007 19:27:50 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Distributed storage.
+Date: Mon, 13 Aug 2007 16:27:42 -0700
+User-Agent: KMail/1.9.5
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708130159.22407.phillips@phunq.net> <20070813091235.GI23758@kernel.dk>
+In-Reply-To: <20070813091235.GI23758@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708131627.42859.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Aug 2007, Andi Kleen wrote:
+On Monday 13 August 2007 02:12, Jens Axboe wrote:
+> > It is a system wide problem.  Every block device needs throttling,
+> > otherwise queues expand without limit.  Currently, block devices
+> > that use the standard request library get a slipshod form of
+> > throttling for free in the form of limiting in-flight request
+> > structs.  Because the amount of IO carried by a single request can
+> > vary by two orders of magnitude, the system behavior of this
+> > approach is far from predictable.
+>
+> Is it? Consider just 10 standard sata disks. The next kernel revision
+> will have sg chaining support, so that allows 32MiB per request. Even
+> if we disregard reads (not so interesting in this discussion) and
+> just look at potentially pinned dirty data in a single queue, that
+> number comes to 4GiB PER disk. Or 40GiB for 10 disks. Auch.
+>
+> So I still think that this throttling needs to happen elsewhere, you
+> cannot rely the block layer throttling globally or for a single
+> device. It just doesn't make sense.
 
-> > Ok then lets do it.
-> 
-> Conversion only makes sense once an API with a explicit mask
-> is in. Otherwise we have muddled semantics again.
+You are right, so long as the unit of throttle accounting remains one 
+request.  This is not what we do in ddsnap.  Instead we inc/dec the 
+throttle counter by the number of bvecs in each bio, which produces a 
+nice steady data flow to the disk under a wide variety of loads, and 
+provides the memory resource bound we require.
 
-pci_set_consistent_dma_mask
+One throttle count per bvec will not be the right throttling metric for 
+every driver.  To customize this accounting metric for a given driver 
+we already have the backing_dev_info structure, which provides 
+per-device-instance accounting functions and instance data.  Perfect! 
+This allows us to factor the throttling mechanism out of the driver, so 
+the only thing the driver has to do is define the throttle accounting 
+if it needs a custom one.
 
-has that.
+We can avoid affecting the traditional behavior quite easily, for 
+example if backing_dev_info->throttle_fn (new method) is null then 
+either not throttle at all (and rely on the struct request in-flight 
+limit) or we can move the in-flight request throttling logic into core 
+as the default throttling method, simplifying the request library and 
+not changing its behavior.
 
+> > These deadlocks are first and foremost, block layer deficiencies. 
+> > Even the network becomes part of the problem only because it lies
+> > in the block IO path.
+>
+> The block layer has NEVER guaranteed throttling, so it can - by
+> definition - not be a block layer deficiency.
+
+The block layer has always been deficient by not providing accurate 
+throttling, or any throttling at all for some devices.  We have 
+practical proof that this causes deadlock and a good theoretical basis 
+for describing exactly how it happens.
+
+To be sure, vm and net are co-conspirators, however the block layer 
+really is the main actor in this little drama.
+
+Regards,
+
+Daniel
