@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933243AbXHMFJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934337AbXHMFRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933243AbXHMFJH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 01:09:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbXHMFI4
+	id S934337AbXHMFRX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 01:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbXHMFRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 01:08:56 -0400
-Received: from [212.12.190.150] ([212.12.190.150]:32834 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752595AbXHMFI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 01:08:56 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: How to make -mm a more viable testbed (was: [PATCH] [1/12] x86: Work around mmio config space quirk on AMD)
-Date: Mon, 13 Aug 2007 08:08:46 +0300
-User-Agent: KMail/1.5
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708130808.46989.a1426z@gawab.com>
+	Mon, 13 Aug 2007 01:17:09 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:1387 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752666AbXHMFRH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 01:17:07 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
+Cc: herbert@gondor.apana.org.au, csnook@redhat.com, dhowells@redhat.com,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
+Organization: Core
+In-Reply-To: <20070811042943.GA13410@linux.vnet.ibm.com>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1IKSHQ-0007hg-00@gondolin.me.apana.org.au>
+Date: Mon, 13 Aug 2007 13:15:52 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Sun, 12 Aug 2007, Dave Jones wrote:
-> > 
-> > This does make me wonder, why these weren't caught in -mm ?
+Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> On Sat, Aug 11, 2007 at 08:54:46AM +0800, Herbert Xu wrote:
+>> Chris Snook <csnook@redhat.com> wrote:
+>> > 
+>> > cpu_relax() contains a barrier, so it should do the right thing.  For 
+>> > non-smp architectures, I'm concerned about interacting with interrupt 
+>> > handlers.  Some drivers do use atomic_* operations.
+>> 
+>> What problems with interrupt handlers? Access to int/long must
+>> be atomic or we're in big trouble anyway.
 > 
-> I'm worried that -mm isn't getting a lot of exposure these days. People do 
-> run it, but I wonder how many..
+> Reordering due to compiler optimizations.  CPU reordering does not
+> affect interactions with interrupt handlers on a given CPU, but
+> reordering due to compiler code-movement optimization does.  Since
+> volatile can in some cases suppress code-movement optimizations,
+> it can affect interactions with interrupt handlers.
 
-Well, I'm not running it because it's got too much garbage in it, which makes 
-it a pretty unrealistic testbed.  And to make matters worse, I also stay 
-away from rc's as a consequence.
+If such reordering matters, then you should use one of the
+*mb macros or barrier() rather than relying on possibly
+hidden volatile cast.
 
-To make -mm more viable, it may be advisable to restructure -mm in such a way 
-as to be a Kconfig option to mainline.  This would probably involve some 
-patch management functionality to apply experimental submissions on a 
-per-patch basis, as opposed to being a 'take it or leave it slam onto 
-mainline' patch.
-
-
-Thanks!
-
---
-Al
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
