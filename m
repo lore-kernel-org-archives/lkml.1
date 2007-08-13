@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031054AbXHMNEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S972423AbXHMNEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031054AbXHMNEY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940416AbXHMINt
+	id S972423AbXHMNEt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966112AbXHMIPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 04:13:49 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:58134 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S943284AbXHMINo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 04:13:44 -0400
-Message-ID: <46C012B7.2050604@s5r6.in-berlin.de>
-Date: Mon, 13 Aug 2007 10:13:43 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: joe@perches.com
-CC: torvalds@linux-foundation.org, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, krh@redhat.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] [198/2many] MAINTAINERS - FIREWIRE SUBSYSTEM
-References: <46bff9ed.Ya9JdXR0dvc3Ionf%joe@perches.com> <46C011FB.9080109@s5r6.in-berlin.de>
-In-Reply-To: <46C011FB.9080109@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Aug 2007 04:15:23 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:42789 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967511AbXHMIPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 04:15:17 -0400
+Date: Mon, 13 Aug 2007 12:14:41 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Block device throttling [Re: Distributed storage.]
+Message-ID: <20070813081441.GA30089@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru> <20070808095448.GA3440@2ka.mipt.ru> <200708122236.24096.phillips@phunq.net> <200708122344.00343.phillips@phunq.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708122344.00343.phillips@phunq.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/13/2007 10:10 AM, Stefan Richter wrote:
-> joe@perches.com wrote:
->> Add file pattern to MAINTAINER entry
->> 
->> Signed-off-by: Joe Perches <joe@perches.com>
->> 
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index 9aa822a..18dfe29 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -1895,12 +1895,15 @@ S:	Maintained
->>  F:	fs/*
->>  
->>  FIREWIRE SUBSYSTEM
->> -P:	Kristian Hoegsberg, Stefan Richter
->> -M:	krh@redhat.com, stefanr@s5r6.in-berlin.de
->> +P:	Kristian Hoegsberg
->> +M:	krh@redhat.com
->> +P:	Stefan Richter
->> +M:	stefanr@s5r6.in-berlin.de
->>  L:	linux1394-devel@lists.sourceforge.net
->>  W:	http://www.linux1394.org/
->>  T:	git kernel.org:/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
->>  S:	Maintained
->> +F:	drivers/ieee/1394/
+On Sun, Aug 12, 2007 at 11:44:00PM -0700, Daniel Phillips (phillips@phunq.net) wrote:
+> On Sunday 12 August 2007 22:36, I wrote:
+> > Note!  There are two more issues I forgot to mention earlier.
 > 
-> Wrong path.
+> Oops, and there is also:
 > 
->>  
->>  FIRMWARE LOADER (request_firmware)
->>  L:	linux-kernel@vger.kernel.org
+> 3) The bio throttle, which is supposed to prevent deadlock, can itself 
+> deadlock.  Let me see if I can remember how it goes.
 > 
-> 
-> +F:	drivers/firewire/
-> +F:	include/linux/firewire-*.h
-> 
+>   * generic_make_request puts a bio in flight
+>   * the bio gets past the throttle and initiates network IO
+>   * net calls sk_alloc->alloc_pages->shrink_caches
+>   * shrink_caches submits a bio recursively to our block device
+>   * this bio blocks on the throttle
+>   * net may never get the memory it needs, and we are wedged
 
-PS:  This is of course for FIREWIRE, not for FIRMWARE LOADER.
+If system is in such condition, it is already broken - throttle limit
+must be lowered (next time) not to allow such situation.
+
 -- 
-Stefan Richter
--=====-=-=== =--- -==-=
-http://arcgraph.de/sr/
+	Evgeniy Polyakov
