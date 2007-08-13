@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbXHMXKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936106AbXHMXKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760592AbXHMXKK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 19:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbXHMXJt
+	id S936106AbXHMXKq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 19:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761249AbXHMXJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 19:09:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50179 "EHLO mx1.redhat.com"
+	Mon, 13 Aug 2007 19:09:53 -0400
+Received: from mga01.intel.com ([192.55.52.88]:54922 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755543AbXHMXJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 19:09:48 -0400
-Date: Mon, 13 Aug 2007 19:09:42 -0400
-From: Dave Jones <davej@redhat.com>
-To: Zan Lynx <zlynx@acm.org>
-Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
-Subject: Re: How to make -mm a more viable testbed (was: [PATCH] [1/12]
-	x86: Work around mmio config space quirk on AMD)
-Message-ID: <20070813230942.GA5804@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Zan Lynx <zlynx@acm.org>,
-	Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
-References: <200708130808.46989.a1426z@gawab.com> <1187037607.7855.21.camel@localhost> <20070813210956.GA18334@redhat.com> <1187046443.7855.38.camel@localhost>
+	id S1758712AbXHMXJv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 19:09:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,256,1183359600"; 
+   d="scan'208";a="280520810"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187046443.7855.38.camel@localhost>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] [61/2many] MAINTAINERS - ARM/INTEL IOP13XX ARM ARCHITECTURE
+Date: Mon, 13 Aug 2007 16:09:49 -0700
+Message-ID: <0C7297FA1D2D244A9C7F6959C0BF1E5202472724@azsmsx413.amr.corp.intel.com>
+In-Reply-To: <46bff8d6.PYudRDbPa4sSlAOV%joe@perches.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] [61/2many] MAINTAINERS - ARM/INTEL IOP13XX ARM ARCHITECTURE
+Thread-Index: AcfdcnmBpQtyzUOxSce9hjbG+ovi3QAi/84w
+References: <46bff8d6.PYudRDbPa4sSlAOV%joe@perches.com>
+From: "Williams, Dan J" <dan.j.williams@intel.com>
+To: <joe@perches.com>, <torvalds@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <kernel@wantstofly.org>,
+       <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 13 Aug 2007 23:09:50.0309 (UTC) FILETIME=[0CB75950:01C7DDFF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 05:07:23PM -0600, Zan Lynx wrote:
- > On Mon, 2007-08-13 at 17:09 -0400, Dave Jones wrote:
- > > On Mon, Aug 13, 2007 at 02:40:06PM -0600, Zan Lynx wrote:
- > >  > I thought most people running -mm were running klive, which shou
- > >  > ld tell kernel versions, uptime and other things.  I run it, anyway.
- > >  > 
- > >  > http://klive.cpushare.com/
- > > 
- > > If that's the case, there are 3 people running 2.6.23-rc2-mm2.
- > > I suspect the actual number of users is considerably higher.
- > > Somehow I doubt that 'most' people are running klive.
- > 
- > I had thought Andrew asked people to do it at one point.  Could have
- > been someone else, I suppose.  Ah, it was Andrea Arcangeli.
- > 
- > At the time, it seemed more people were doing it.  I guess not though.
- > Or there really aren't many people running the latest -mm.  It *is*
- > quite a hassle.  I only do it because I'm crazy. :)
- > 
- > I think klive is a good idea for tracking kernel testing.  Perhaps
- > mentioning it here again will get more people running it.
- > 
- > I suppose that someone could try to estimate usage by counting patch
- > downloads off kernel.org.
+> From: joe@perches.com [mailto:joe@perches.com]
+> Add file pattern to MAINTAINER entry
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index dd0806c..aaacc55 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -565,6 +565,8 @@ P:	Dan Williams
+>  M:	dan.j.williams@intel.com
+>  L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+>  S:	Supported
+> +F:	arch/arm/mach-iop13xx/
+> +F:	include/asm-arm/plat-iop/
+> 
+>  ARM/INTEL IQ81342EX MACHINE SUPPORT
+>  P:	Lennert Buytenhek
 
-The fallout from bugs found each time Andrew makes an announcement
-should be a fairly good indicator :-)
+For IOP13XX, IOP33X, and IOP32X add:
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+F: arch/arm/plat-iop/
+F: include/asm-arm/hardware/iop*
