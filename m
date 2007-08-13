@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S944709AbXHMQld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030623AbXHMQm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S944709AbXHMQld (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbXHMPrF
+	id S1030623AbXHMQm3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968835AbXHMPu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 11:47:05 -0400
-Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:4887 "EHLO
-	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968379AbXHMPrB (ORCPT
+	Mon, 13 Aug 2007 11:50:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45032 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S969781AbXHMPup (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 11:47:01 -0400
-Message-ID: <46C07CEF.1020207@xs4all.nl>
-Date: Mon, 13 Aug 2007 17:46:55 +0200
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
-Subject: Re: possible BUG while using CUPS
-References: <46BD762F.4060801@xs4all.nl> <6bffcb0e0708130839v27b4269dqfde702c410b33fd0@mail.gmail.com>
-In-Reply-To: <6bffcb0e0708130839v27b4269dqfde702c410b33fd0@mail.gmail.com>
-X-Enigmail-Version: 0.95.3
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 13 Aug 2007 11:50:45 -0400
+Subject: Re: [PATCH]: proc: export a processes resource limits via
+	proc/<pid>
+From: Arjan van de Ven <arjan@infradead.org>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <20070813140044.GB1960@hmsreliant.think-freely.org>
+References: <20070813140044.GB1960@hmsreliant.think-freely.org>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Mon, 13 Aug 2007 08:47:10 -0700
+Message-Id: <1187020030.2688.1.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1 (2.11.6.1-1.fc8) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski wrote:
-> On 11/08/07, Udo van den Heuvel <udovdh@xs4all.nl> wrote:
->> Using Cups 1.2.12 on Linux 2.6.22.1.
-(...)
->> I clikc that link and hear the ping-ping of the BUG:
-> 
-> This is very interesting. Can you reproduce this bug?
 
-I think so. (at least: I have seen it before: clicking around in Cups
-and this crash/bug/whatever.)
+On Mon, 2007-08-13 at 10:00 -0400, Neil Horman wrote:
+> Hey there-
+> 	Currently, there exists no method for a process to query the resource
+> limits of another process.  They can be inferred via some mechanisms but they
+> cannot be explicitly determined.  Given that this information can be usefull to
+> know during the debugging of an application, I've written this patch which
+> exports all of a processes limits via /proc/<pid>/limits.  Tested successfully
+> by myself on x86 on top of 2.6.23-rc2-mm1.
 
->> This is on a VIA Epia EK8000. ksymoops did not really help me, this is
->> all output I got.
->>
->> Ideas?
-> 
-> BTW. Please try 2.6.22.2.
 
-Compiling...
+since this information, by it's nature, is security sensitive, I would
+really really strongly suggest that you make this restricted to those
+processes that can ptrace the victim only... (which is basically "same
+user or root")
+
+Making this world readable is very much a bad thing to do 
+
