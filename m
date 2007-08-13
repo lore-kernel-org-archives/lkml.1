@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969866AbXHMJIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971075AbXHMJJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969866AbXHMJIs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 05:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966936AbXHMGbe
+	id S971075AbXHMJJe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 05:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966945AbXHMGbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:31:34 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4978 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:31:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54581 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966939AbXHMGb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:31:27 -0400
-Date: Sun, 12 Aug 2007 23:31:15 -0700
-From: joe@perches.com
-To: torvalds@linux-foundation.org, marcelo@kvack.org,
-       linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH] [294/2many] MAINTAINERS - LINUX FOR POWERPC EMBEDDED
- PPC8XX
-Message-ID: <46bffab3.asnUCoB0NHzqk6/c%joe@perches.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	id S966936AbXHMGb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:31:26 -0400
+Message-ID: <46BFFA71.4080601@redhat.com>
+Date: Mon, 13 Aug 2007 02:30:09 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Paul Mackerras <paulus@samba.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Luck, Tony" <tony.luck@intel.com>, Andreas Schwab <schwab@suse.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com
+Subject: Re: [PATCH 9/24] make atomic_read() behave consistently on ia64
+References: <20070809135107.GA15985@shell.boston.redhat.com>	<617E1C2C70743745A92448908E030B2A02213B3C@scsmsx411.amr.corp.intel.com>	<46BCC1AF.5050204@redhat.com>	<617E1C2C70743745A92448908E030B2A0224C777@scsmsx411.amr.corp.intel.com>	<jewsw3oyl8.fsf@sykes.suse.de>	<617E1C2C70743745A92448908E030B2A0224C88B@scsmsx411.amr.corp.intel.com>	<46BCE9F8.4060009@redhat.com>	<617E1C2C70743745A92448908E030B2A0224C8D7@scsmsx411.amr.corp.intel.com>	<alpine.LFD.0.999.0708101607130.30176@woody.linux-foundation.org>	<46BCF19E.5000702@redhat.com> <18109.1084.917429.585224@cargo.ozlabs.ibm.com>
+In-Reply-To: <18109.1084.917429.585224@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add file pattern to MAINTAINER entry
+Paul Mackerras wrote:
+> Chris Snook writes:
+> 
+>> I'll do this for the whole patchset.  Stay tuned for the resubmit.
+> 
+> Could you incorporate Segher's patch to turn atomic_{read,set} into
+> asm on powerpc?  Segher claims that using asm is really the only
+> reliable way to ensure that gcc does what we want, and he seems to
+> have a point.
+> 
+> Paul.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+I haven't seen a patch yet.  I'm going to resubmit with inline volatile-cast 
+atomic[64]_[read|set] on all architectures as a reference point, and if anyone 
+wants to go and implement some of them in assembly, that's between them and the 
+relevant arch maintainers.  I have no problem with (someone else) doing it in 
+assembly.  I just don't think it's necessary and won't let it hold up the effort 
+to get consistent behavior on all architectures.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e295b18..896c8bf 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2821,6 +2821,7 @@ M:	marcelo@kvack.org
- W:	http://www.penguinppc.org/
- L:	linuxppc-embedded@ozlabs.org
- S:	Maintained
-+F:	arch/ppc/syslib/ppc8xx*
- 
- LINUX FOR POWERPC EMBEDDED PPC83XX AND PPC85XX
- P:	Kumar Gala
+	-- Chris
