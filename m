@@ -1,69 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969845AbXHMUGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763219AbXHMUL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969845AbXHMUGi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760379AbXHMUGT
+	id S1763219AbXHMUL7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758547AbXHMULc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:06:19 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:50355 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760047AbXHMUGR (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:06:17 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Satyam Sharma <satyam@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Joe Perches <joe@perches.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-In-Reply-To: Your message of "Mon, 13 Aug 2007 21:21:10 +0200."
-             <Pine.LNX.4.64.0708132120520.30582@fbirervta.pbzchgretzou.qr>
-From: Valdis.Kletnieks@vt.edu
-References: <1186984174.10249.7.camel@localhost> <200708131933.10125.m.kozlowski@tuxland.pl> <1187026955.2688.4.camel@laptopd505.fenrus.org> <alpine.LFD.0.999.0708132351320.29609@enigma.security.iitk.ac.in>
-            <Pine.LNX.4.64.0708132120520.30582@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1187035553_3175P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 13 Aug 2007 16:11:32 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:30221 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757845AbXHMULa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 16:11:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ER/2j4h//snuXKgGkR7Ccbx6UBgqQKYmJ0M+INipxjc5jXjFQ6t4O9q5PAlqmdTxNbnD9VWX88DHO05ZoMUHmrWka2ESwENlKL91SVREMqtdiKBgQalbG9lJasqrlEUoqP3jdgtXSQN6DyaFO8P8wKvdDXUtDXEjAI2WU3adIRk=
+Message-ID: <6bffcb0e0708131311k51238bb0l63eeb2fce53e3481@mail.gmail.com>
+Date: Mon, 13 Aug 2007 22:11:29 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Andreas Radke" <a.radke@arcor.de>
+Subject: Re: sata drive loosing connection/resetting port
+Cc: linux-kernel@vger.kernel.org, "Jeff Garzik" <jgarzik@pobox.com>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>
+In-Reply-To: <20070813220241.3f4b8df5@workstation64.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 13 Aug 2007 16:05:53 -0400
-Message-ID: <25564.1187035553@turing-police.cc.vt.edu>
+Content-Disposition: inline
+References: <20070813220241.3f4b8df5@workstation64.home>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1187035553_3175P
-Content-Type: text/plain; charset=us-ascii
+Hi Andreas,
 
-On Mon, 13 Aug 2007 21:21:10 +0200, Jan Engelhardt said:
-> 
-> On Aug 14 2007 00:02, Satyam Sharma wrote:
-> >
-> >Better solution is to have multiple MAINTAINERS files distributed in the
-> >kernel tree, IMHO -- say a drivers/net/MAINTAINERS for maintainer info on
-> >all various net drivers, drivers/kvm/MAINTAINERS for KVM maintainer info,
-> >fs/ext3/MAINTAINERS for ext3 maintainers, fs/MAINTAINERS for generic VFS
-> >maintainers info, so on and so forth. Of course, these individual
-> >MAINTAINERS files could still have the newly-introduced "F:" fields as
-> >well (drivers/net/MAINTAINERS would clearly require it, f.e.) ...
-> 
-> Yes please.
-> 
-> Or perhaps even putting the maintainer into the Kconfig files?
+[Adding Jeff and linux-ide to CC]
 
-There's large swaths of code that don't have an obvious Kconfig entry
-but do have a Maintainer entry - VFS, lots of kernel/*, and so on.
+On 13/08/07, Andreas Radke <a.radke@arcor.de> wrote:
+> running ArchLinux kernel 2.6.22.2 on a Abit IP35 Pro motherboard with
+> Pro Intel P35 chipset (ICH9R + Jmicron) i have these entries all few
+> minutes:
+>
+> ata1.00: exception Emask 0x10 SAct 0x0 SErr 0x400101 action 0x2 frozen
+> ata1.00: (irq_stat 0x08000000, interface fatal error)
+> ata1.00: cmd ca/00:f8:18:d2:27/00:00:00:00:00/e6 tag 0 cdb 0x0 data
+> 126976 out res 50/00:00:80:2b:3d/00:00:00:00:00/e0 Emask 0x10 (ATA bus
+> error) ata1: soft resetting port
+> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ata1.00: configured for UDMA/133
+> ata1: EH complete
+> sd 0:0:0:0: [sda] 145226112 512-byte hardware sectors (74356 MB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
+> support DPO or FUA
+>
+>
+> hard disc is a Western Digital 10k Raptor connected to the ICH9R. on
+> the second port of the southbridge is another Samsung hard disc drive
+> connected without errors. both controllers are running ahci mode.
+>
+> lsmod:
+> sr_mod                 16548  0
+> cdrom                  38312  1 sr_mod
+> sd_mod                 25088  6
+> pata_jmicron            5888  0
+> ahci                   22404  4
+> libata                119440  2 pata_jmicron,ahci
+>
+> i've tried changing the SATA cables and also the power wire to the
+> disc without success. i checked the disc successfully with Hitachi
+> drive fitness test. it has worked without any trouble so far in a Intel
+> P965 ICH8 based mainboard.
+>
+> any idea how to find the reason?
+>
+> Andreas Radke
+> ArchLinux developer/maintainer
 
---==_Exmh_1187035553_3175P
-Content-Type: application/pgp-signature
+Please try to CC to the appropriate maintainer(s).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Regards,
+Michal
 
-iD8DBQFGwLmhcC3lWbTT17ARAi3wAJ4xVndc8WlXvvZE8CfB1BNGcglSZACgpgal
-dbTBZl3VIvUlOS/TRCsFD80=
-=YmEi
------END PGP SIGNATURE-----
-
---==_Exmh_1187035553_3175P--
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
