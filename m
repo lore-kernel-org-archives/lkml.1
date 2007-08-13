@@ -1,69 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937235AbXHMVPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S945602AbXHMVQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937235AbXHMVPm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 17:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932523AbXHMVPP
+	id S945602AbXHMVQY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 17:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759743AbXHMVPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 17:15:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37807 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754801AbXHMVPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 17:15:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka Software Suspend, aka swsusp):
-Date: Mon, 13 Aug 2007 23:25:03 +0200
-User-Agent: KMail/1.9.5
-Cc: torvalds@linux-foundation.org, pavel@suse.cz,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com> <200708132250.15466.rjw@sisk.pl> <1187038479.10249.304.camel@localhost>
-In-Reply-To: <1187038479.10249.304.camel@localhost>
+	Mon, 13 Aug 2007 17:15:18 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43292 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764361AbXHMVPO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 17:15:14 -0400
+Date: Mon, 13 Aug 2007 14:15:12 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/23] Atomic operations updates: add cmpxchg_local
+In-Reply-To: <20070812145434.520271946@polymtl.ca>
+Message-ID: <Pine.LNX.4.64.0708131409590.28026@schroedinger.engr.sgi.com>
+References: <20070812145434.520271946@polymtl.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708132325.04810.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 13 August 2007 22:54, Joe Perches wrote:
-> On Mon, 2007-08-13 at 22:50 +0200, Rafael J. Wysocki wrote:
-> > Please add
-> > arch/i386/power/
-> > arch/x86_64/kernel/suspend_asm.S
-> > arch/x86_64/kernel/suspend.c
-> > drivers/base/power/
-> > There also is a couple of headers.  Do you want to list them too?
-> 
-> Your choice.  Just let me know.
+On Sun, 12 Aug 2007, Mathieu Desnoyers wrote:
 
-+ include/linux/suspend.h
-+ include/linux/freezer.h
-+ include/linux/pm.h
-+ include/asm-*/suspend.h
+> I have been asked for a cmpxchg_local implementation by Christoph Lameter so he
+> can use it to accelerate the slub allocator.
 
-Hm, they are also relevant for suspend to RAM, so perhaps one common
-list of files for suspend to RAM and hibernation would be better?
+Hmmm... I have run my own and tested a variety of approaches on cmpxchg a 
+couple of weeks ago on an Athlong64. There was no significant performance 
+gain (even on a test to just allocate from the same slab cache) and there 
+were actual losses in the free path since the logic got a bit complex.
 
-> HIBERNATION (aka Software Suspend, aka swsusp):
-> P:	Pavel Machek
-> M:	pavel@suse.cz
-> P:	Rafael J. Wysocki
-> M:	rjw@sisk.pl
-> L:	linux-pm@lists.linux-foundation.org
-> S:	Supported
-> F:	Documentation/power/swsusp*
-> F:	arch/i386/power/
-> F:	arch/x86_64/kernel/suspend*
-> F:	drivers/base/power/
-> F:	kernel/power/
-> 
-> 
-> 
-> 
-> 
+The main performance issue are still the cacheline that are 
+touched and cmpxchg will not change that.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+The exact code that was used to run these tests can be found in the 
+Performance Counter Patchset that I posted 2 weeks ago.
+
+cmpxchg_local
+
+SLUB Performance testing
+========================
+1. Kmalloc: Repeatedly allocate then free test
+10000 times kmalloc(8) = 2.3ms kfree() = 1.1ms
+10000 times kmalloc(16) = 2.4ms kfree() = 1.2ms
+10000 times kmalloc(32) = 2.4ms kfree() = 1.2ms
+10000 times kmalloc(64) = 2.6ms kfree() = 1.4ms
+10000 times kmalloc(128) = 2.8ms kfree() = 1.9ms
+10000 times kmalloc(256) = 3ms kfree() = 2ms
+10000 times kmalloc(512) = 3.4ms kfree() = 2.1ms
+10000 times kmalloc(1024) = 3.9ms kfree() = 2.4ms
+10000 times kmalloc(2048) = 4.1ms kfree() = 2.6ms
+10000 times kmalloc(4096) = 4.8ms kfree() = 3.5ms
+2. Kmalloc: alloc/free test
+10000 times kmalloc(8)/kfree = 3ms
+10000 times kmalloc(16)/kfree = 3.1ms
+10000 times kmalloc(32)/kfree = 3.1ms
+10000 times kmalloc(64)/kfree = 3.1ms
+10000 times kmalloc(128)/kfree = 3.2ms
+10000 times kmalloc(256)/kfree = 3.3ms
+10000 times kmalloc(512)/kfree = 3.3ms
+10000 times kmalloc(1024)/kfree = 3.4ms
+10000 times kmalloc(2048)/kfree = 3.4ms
+10000 times kmalloc(4096)/kfree = 3.5ms
+
+base line
+
+1. Repeatedly allocate then free test
+10000 times kmalloc(8) = 2.4ms kfree() = 1.1ms
+10000 times kmalloc(16) = 2.5ms kfree() = 1.1ms
+10000 times kmalloc(32) = 2.5ms kfree() = 1.1ms
+10000 times kmalloc(64) = 2.7ms kfree() = 1.4ms
+10000 times kmalloc(128) = 2.9ms kfree() = 1.9ms
+10000 times kmalloc(256) = 3.1ms kfree() = 2ms
+10000 times kmalloc(512) = 3.4ms kfree() = 2.1ms
+10000 times kmalloc(1024) = 3.9ms kfree() = 2.4ms
+10000 times kmalloc(2048) = 4.2ms kfree() = 2.5ms
+10000 times kmalloc(4096) = 4.9ms kfree() = 3.2ms
+2. Alloc/Free test
+10000 times kmalloc(8)/kfree = 3ms
+10000 times kmalloc(16)/kfree = 3.1ms
+10000 times kmalloc(32)/kfree = 3.1ms
+10000 times kmalloc(64)/kfree = 3.1ms
+10000 times kmalloc(128)/kfree = 3.2ms
+10000 times kmalloc(256)/kfree = 3.2ms
+10000 times kmalloc(512)/kfree = 3.2ms
+10000 times kmalloc(1024)/kfree = 3.3ms
+10000 times kmalloc(2048)/kfree = 3.3ms
+10000 times kmalloc(4096)/kfree = 3.3ms
+
