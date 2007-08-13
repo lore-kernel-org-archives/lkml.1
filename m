@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762807AbXHMNwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940603AbXHMNxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762807AbXHMNwk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762395AbXHMKcm
+	id S940603AbXHMNxg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762871AbXHMKdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 06:32:42 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:38459
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1763622AbXHMKck (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 06:32:40 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Distributed storage.
-Date: Mon, 13 Aug 2007 03:32:33 -0700
-User-Agent: KMail/1.9.5
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708130315.08382.phillips@phunq.net> <20070813102255.GN23758@kernel.dk>
-In-Reply-To: <20070813102255.GN23758@kernel.dk>
+	Mon, 13 Aug 2007 06:33:04 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:29823 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760859AbXHMKc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 06:32:59 -0400
+Date: Mon, 13 Aug 2007 12:32:55 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: joe@perches.com
+Cc: torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] [418/2many] MAINTAINERS - SCSI CDROM DRIVER
+Message-ID: <20070813103254.GO23758@kernel.dk>
+References: <46bffba3.92NZRByJnVYnqXQs%joe@perches.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708130332.33737.phillips@phunq.net>
+In-Reply-To: <46bffba3.92NZRByJnVYnqXQs%joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 August 2007 03:22, Jens Axboe wrote:
-> I never compared the bio to struct page, I'd obviously agree that
-> shrinking struct page was a worthy goal and that it'd be ok to uglify
-> some code to do that. The same isn't true for struct bio.
+On Sun, Aug 12 2007, joe@perches.com wrote:
+> Add file pattern to MAINTAINER entry
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index c08c8af..d7a1c74 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3981,6 +3981,7 @@ M:	axboe@kernel.dk
+>  L:	linux-scsi@vger.kernel.org
+>  W:	http://www.kernel.dk
+>  S:	Maintained
+> +F:	drivers/scsi/sr.*
 
-I thought I just said that.
+Not correct, it should be sr*
 
-Regards,
+And could you please just put these patches online somewhere, posting
+hundreds of them individually (and non threaded!) is pretty much pain
+:-)
 
-Daniel
+-- 
+Jens Axboe
+
