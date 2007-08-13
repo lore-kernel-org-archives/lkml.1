@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbXHMM1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971876AbXHMM2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757184AbXHMM1t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968140AbXHMGux
+	id S971876AbXHMM2b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968082AbXHMGvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:50:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33663 "EHLO mx1.redhat.com"
+	Mon, 13 Aug 2007 02:51:43 -0400
+Received: from smtpserver.stunet.se ([85.194.0.110]:60796 "EHLO mail.visit.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967968AbXHMGuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:50:50 -0400
-Message-ID: <46BFFF02.9090704@redhat.com>
-Date: Mon, 13 Aug 2007 02:49:38 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: joe@perches.com
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jcliburn@gmail.com, atl1-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] [74/2many] MAINTAINERS - ATL1 ETHERNET DRIVER
-References: <46bff8ef./PAU8OU4FL0OGX8r%joe@perches.com> <46BFFCA0.3090600@redhat.com>
-In-Reply-To: <46BFFCA0.3090600@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S968138AbXHMGvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:51:41 -0400
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKOEHMGBAC.davids@webmaster.com>
+References: <MDEHLPKNGKAHNMBLJOLKOEHMGBAC.davids@webmaster.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+X-Priority: 3 (Normal)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5E4153F3-80E6-4425-A5C8-47E29A549030@nocrew.org>
+Cc: <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
+From: Fredrik Noring <noring@nocrew.org>
+Subject: Re: Improving read/write/close system call reliability when used with pthreads
+Date: Mon, 13 Aug 2007 08:50:39 +0200
+To: davids@webmaster.com
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook wrote:
-> joe@perches.com wrote:
->> Add file pattern to MAINTAINER entry
->>
->> Signed-off-by: Joe Perches <joe@perches.com>
->>
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index b8bb108..d9d1bcc 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -752,6 +752,7 @@ L:    atl1-devel@lists.sourceforge.net
->>  W:    http://sourceforge.net/projects/atl1
->>  W:    http://atl1.sourceforge.net
->>  S:    Maintained
->> +F:    drivers/net/atl1*
->>  
->>  ATM
->>  P:    Chas Williams
-> 
-> atl1 has its own directory, so this one should read
-> 
-> F:    drivers/net/atl1/*
-> 
->     -- Chris
-> 
+David,
 
-Actually, now that I've seen the format in the intro patch, it would be simpler 
-just to use this:
+True. Even though there is a point in making the kernel detect and  
+behave consistently in this case applications (often) end up with  
+their own mess they cannot easily handle. A few more use cases would  
+now work OK but probably not enough to make the improvement worthwhile.
 
-F:	drivers/net/atl1/
+Thanks,
+Fredrik
 
-	-- Chris
+13 aug 2007 kl. 05.14 skrev David Schwartz:
+> Since there's no atomic "unlock and read" function, any code that  
+> could ever
+> close a socket in one thread while another thread is blocked on  
+> read might
+> call close just before another thread blocks in read. Nothing stops  
+> another
+> thread from opening something, getting the same file descriptor,  
+> and then
+> allowing the thread to call "read" on the wrong file descriptor  
+> entirely.
+>
+> Since this can never be made sane in general, I see little point in  
+> making
+> one variation of what can go wrong a bit saner. It is still  
+> irresponsible to
+> code like this.
+>
+> DS
+>
+>
+>
+
