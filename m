@@ -1,192 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765336AbXHMPq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967606AbXHMPrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765336AbXHMPq0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939916AbXHMOFw
+	id S967606AbXHMPrZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S945482AbXHMOJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 10:05:52 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:16737 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S945859AbXHMOFp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 10:05:45 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: kvm-devel@lists.sourceforge.net
-Subject: Re: [kvm-devel] [PATCH 0/2][KVM] guest time accounting
-Date: Mon, 13 Aug 2007 16:05:40 +0200
-User-Agent: KMail/1.9.7
-Cc: Laurent Vivier <Laurent.Vivier@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, cotte@de.ibm.com
-References: <46BC8B39.6050202@bull.net>
-In-Reply-To: <46BC8B39.6050202@bull.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 13 Aug 2007 10:09:06 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:41926 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936256AbXHMOI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 10:08:59 -0400
+Subject: Re: [patch][rfc] 2.6.23-rc1 mm: NUMA replicated pagecache
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Joachim Deguara <joachim.deguara@amd.com>,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
+       Eric Whitney <eric.whitney@hp.com>
+In-Reply-To: <20070813074351.GA15609@wotan.suse.de>
+References: <20070727084252.GA9347@wotan.suse.de>
+	 <1186604723.5055.47.camel@localhost> <1186780099.5246.6.camel@localhost>
+	 <20070813074351.GA15609@wotan.suse.de>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Mon, 13 Aug 2007 10:05:01 -0400
+Message-Id: <1187013901.5592.24.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708131605.40479.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 10. August 2007 schrieb Laurent Vivier:
-> The aim of these two patches is to measure the CPU time used by a virtual
-> machine. All comments are welcome... I'm not sure it's the good way to do 
-that.
+On Mon, 2007-08-13 at 09:43 +0200, Nick Piggin wrote:
+> On Fri, Aug 10, 2007 at 05:08:18PM -0400, Lee Schermerhorn wrote:
+> > On Wed, 2007-08-08 at 16:25 -0400, Lee Schermerhorn wrote:
+> > > On Fri, 2007-07-27 at 10:42 +0200, Nick Piggin wrote:
+> > > > Hi,
+> > > > 
+> > > > Just got a bit of time to take another look at the replicated pagecache
+> > > > patch. The nopage vs invalidate race and clear_page_dirty_for_io fixes
+> > > > gives me more confidence in the locking now; the new ->fault API makes
+> > > > MAP_SHARED write faults much more efficient; and a few bugs were found
+> > > > and fixed.
+> > > > 
+> > > > More stats were added: *repl* in /proc/vmstat. Survives some kbuilding
+> > > > tests...
+> > > > 
 
-I did something similar for or s390guest prototype, that Carsten posted in 
-May.  I decided to account guest time to the user process instead of adding a 
-new field to avoid hazzle with old top. As you can read in the patch comment, 
-I personally prefer a new field if we can get one.
+<snip>
+> 
+> Hi Lee,
+> 
+> Am sick with the flu for the past few days, so I haven't done much more
+> work here, but I'll just add some (not very useful) comments....
+> 
+> The get_page_from_freelist hang is quite strange. It would be zone->lock,
+> which shouldn't have too much contention...
+> 
+> Replication may be putting more stress on some locks. It will cause more
+> tlb flushing that can not be batched well, which could cause the call_lock
+> to get hotter. Then i_mmap_lock is held over tlb flushing, so it will
+> inherit the latency from call_lock. (If this is the case, we could
+> potentially extend the tlb flushing API slightly to cope better with
+> unmapping of pages from multiple mm's, but that comes way down the track
+> when/if replication proves itself!).
+> 
+> tlb flushing AFAIKS should not do the IPI unless it is deadling with a
+> multithreaded mm... does usex use threads?
 
-My implementation uses a similar mechanism like hard and softirq. So I have an 
-sie_enter an sie_exit and a task_is_in_sie function - like irq_enter and 
-irq_exit. The main difference is based on the fact, that s390 has precise 
-accouting for irq, steal, user and system time, and therefore my patch is 
-based on architecture specifc code using CONFIG_VIRT_CPU_ACCOUNT. 
+Yes.  Apparently, there are some tests, perhaps some of the /usr/bin
+apps that get run repeatedly, that are multi-threaded.  This job mix
+caught a number of races in my auto-migration patches when
+multi-threaded tasks race in the page fault paths.
 
-In general my patch has the same idea as your patch, so I am going to review 
-your patch and see if it would fit for s390.
+More below...
 
-For reference this is the (never posted) old patch for our virtualisation 
-prototype. It wont work with kvm but it gives you the idea what we had in 
-mind on s390.
+> 
+> 
+> > I should note that I was trying to unmap all mappings to the file backed pages
+> > on internode task migration, instead of just the current task's pte's.  However,
+> > I was only attempting this on pages with  mapcount <= 4.  So, I don't think I 
+> > was looping trying to unmap pages with mapcounts of several 10s--such as I see
+> > on some page cache pages in my traces.
+> 
+> Replication teardown would still have to unmap all... but that shouldn't
+> particularly be any worse than, say, page reclaim (except I guess that it
+> could occur more often).
+> 
+>  
+> > Today, after rebasing to 23-rc2-mm2, I added a patch to unmap only the current
+> > task's ptes for ALL !anon pages, regardless of mapcount.  I've started the test
+> > again and will let it run over the weekend--or as long as it stays up, which 
+> > ever is shorter :-).
+> 
+> Ah, so it does eventually die? Any hints of why?
 
------------ snip old PATCH GPLv2 ----------
+No, doesn't die--as in panic.  I was just commenting that I'd leave it
+running ...  However [:-(], it DID hang again.  The test window said
+that the tests ran for 62h:28m before the screen stopped updating.  In
+another window, I was running a script to snap the replication and #
+file pages vmstats, along with a timestamp, every 10 minutes.  That
+stopped reporting stats at about 7:30am on Saturday--about 14h:30m into
+the test.  It still wrote the timestamps [date command] until around 7am
+this morning [Monday]--or ~62 hours into test.
 
-Subject: [PATCH/RFC] Fix system<->user misaccount of interpreted execution
+So, I do have ~14 hours of replication stats that I can send you or plot
+up...
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+Re: the hang:  again, console was scrolling soft lockups continuously.
+Checking the messages file, I see hangs in copy_process(),
+smp_call_function [as in prev test], vma_link [from mmap], ...
 
-This patches fixes the accouting of guest cpu time. As sie is executed via a
-system call, all guest operations were accounted as system time. To fix this
-we define a per thread "sie context". Before issuing the sie instruction we
-enter this context and leave the context afterwards. sie_enter and sie_exit
-call account_system_vtime, which now checks for being in sie_context. We 
-define the sie_context to be accounted as user time.
+I also see a number of NaT ["not a thing"] consumptions--ia64 specific
+error, probably invalid pointer deref--in swapin_readahead, which my
+patches hack.  These might be the cause of the fork/mmap hangs.
 
-Possible future enhancement: We could add an additional field: "interpretion
-time" to cpu stat and process time. Thus we could differentiate between user
-time in the host and host user time spent for guests. The main challenge is
-the necessary user space change. Therefore, we could export the interpretion
-time with a new interface. To be defined.
+Didn't see that in the 8-9Aug runs, so it might be a result of continued
+operation after other hangs/problems; or a botch in the rebase to
+rc2-mm2.  In any case, I have some work to do there...
 
-Signed-off-By: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-By: Carsten Otte <cotte@de.ibm.com>
+> 
+> > 
+> > I put a tarball with the rebased series in the Replication directory linked
+> > above, in case you're interested.  I haven't added the patch description for
+> > the new patch yet, but it's pretty simple.  Maybe even correct.
+> > 
+> > ----
+> > 
+> > Unrelated to the lockups  [I think]:
+> > 
+> > I forgot to look before I rebooted, but earlier the previous evening, I checked
+> > the vmstats and at that point [~1.5 hours into the test] we had done ~4.88 million
+> > replications and ~4.8 million "zaps" [collapse of replicated page].  That's around
+> > 98% zaps.  Do we need some filter in the fault path to reduce the "thrashing"--if
+> > that's what I'm seeing.  
+> 
+> Yep. The current replication patch is very much only infrastructure at
+> this stage (and is good for stress testing). I feel sure that heuristics
+> and perhaps tunables would be needed to make the most of it.
 
----
- arch/s390/Kconfig              |    1 +
- arch/s390/host/s390host.c      |   15 +++++++++++++++
- arch/s390/kernel/process.c     |    1 +
- arch/s390/kernel/vtime.c       |   12 +++++++++++-
- include/asm-s390/thread_info.h |    2 ++
- 5 files changed, 30 insertions(+), 1 deletion(-)
+Yeah.  I have some ideas to try...
 
-Index: linux-2.6.22/arch/s390/kernel/vtime.c
-===================================================================
---- linux-2.6.22.orig/arch/s390/kernel/vtime.c
-+++ linux-2.6.22/arch/s390/kernel/vtime.c
-@@ -97,6 +97,11 @@ void account_vtime(struct task_struct *t
- 	account_system_time(tsk, 0, cputime);
- }
- 
-+static inline int task_is_in_sie(struct thread_info *thread)
-+{
-+	return thread->in_sie;
-+}
-+
- /*
-  * Update process times based on virtual cpu times stored by entry.S
-  * to the lowcore fields user_timer, system_timer & steal_clock.
-@@ -114,7 +119,12 @@ void account_system_vtime(struct task_st
- 	cputime =  S390_lowcore.system_timer >> 12;
- 	S390_lowcore.system_timer -= cputime << 12;
- 	S390_lowcore.steal_clock -= cputime << 12;
--	account_system_time(tsk, 0, cputime);
-+
-+	if (task_is_in_sie(task_thread_info(tsk)) && !hardirq_count() &&
-+							!softirq_count())
-+		account_user_time(tsk, cputime);
-+	else
-+		account_system_time(tsk, 0, cputime);
- }
- 
- static inline void set_vtimer(__u64 expires)
-Index: linux-2.6.22/arch/s390/host/s390host.c
-===================================================================
---- linux-2.6.22.orig/arch/s390/host/s390host.c
-+++ linux-2.6.22/arch/s390/host/s390host.c
-@@ -27,6 +27,19 @@ static int s390host_do_action(unsigned l
- 
- static DEFINE_MUTEX(s390host_init_mutex);
- 
-+static void enter_sie(void)
-+{
-+	account_system_vtime(current);
-+	current_thread_info()->in_sie = 1;
-+}
-+
-+static void exit_sie(void)
-+{
-+	account_system_vtime(current);
-+	current_thread_info()->in_sie = 0;
-+}
-+
-+
- static void s390host_get_data(struct s390host_data *data)
- {
- 	atomic_inc(&data->count);
-@@ -297,7 +310,9 @@ again:
- 		schedule();
- 
- 	sie_kernel->sie_block.icptcode = 0;
-+	enter_sie();
- 	ret = sie64a(sie_kernel);
-+	exit_sie();
- 	if (ret)
- 		goto out;
- 
-Index: linux-2.6.22/include/asm-s390/thread_info.h
-===================================================================
---- linux-2.6.22.orig/include/asm-s390/thread_info.h
-+++ linux-2.6.22/include/asm-s390/thread_info.h
-@@ -55,6 +55,7 @@ struct thread_info {
- 	struct restart_block	restart_block;
- 	struct s390host_data	*s390host_data;	/* s390host data */
- 	int			sie_cpu;	/* sie cpu number */
-+	int			in_sie;		/* 1 => cpu is in sie*/
- };
- 
- /*
-@@ -72,6 +73,7 @@ struct thread_info {
- 	},					\
- 	.s390host_data	= NULL,			\
- 	.sie_cpu	= 0,			\
-+	.in_sie		= 0,			\
- }
- 
- #define init_thread_info	(init_thread_union.thread_info)
-Index: linux-2.6.22/arch/s390/kernel/process.c
-===================================================================
---- linux-2.6.22.orig/arch/s390/kernel/process.c
-+++ linux-2.6.22/arch/s390/kernel/process.c
-@@ -277,6 +277,7 @@ int copy_thread(int nr, unsigned long cl
-         memset(&p->thread.per_info,0,sizeof(p->thread.per_info));
- 	task_thread_info(p)->s390host_data = NULL;
- 	task_thread_info(p)->sie_cpu = -1;
-+	task_thread_info(p)->in_sie = 0;
-         return 0;
- }
- 
-Index: linux-2.6.22/arch/s390/Kconfig
-===================================================================
---- linux-2.6.22.orig/arch/s390/Kconfig
-+++ linux-2.6.22/arch/s390/Kconfig
-@@ -524,6 +524,7 @@ config S390_HOST
- 	bool "s390 host support (EXPERIMENTAL)"
- 	depends on 64BIT && EXPERIMENTAL
- 	select S390_SWITCH_AMODE
-+	select VIRT_CPU_ACCOUNTING
- 	help
- 	  Select this option if you want to host guest Linux images
- 
+At the end of the 14.5 hours when it stopped dumping vmstats, we were at
+~95% zaps.
+
+> 
+> 
+> > A while back I took a look at the Virtual Iron page replication patch.  They had
+> > set VM_DENY_WRITE when mapping shared executable segments, and only replicated pages
+> > in those VMAs.  Maybe 'DENY_WRITE isn't exactly what we want.  Possibly set another
+> > flag for shared executables, if we can detect them, and any shared mapping that has
+> > no writable mappings ?
+> 
+> mapping_writably_mapped would be a good one to try. That may be too
+> broad in some corner cases where we do want occasionally-written files
+> or even parts of files to be replicated, but if we were ever to enable
+> CONFIG_REPLICATION by default, I imagine mapping_writably_mapped would
+> be the default heuristic.
+> 
+> Still, I appreciate the testing of the "thrashing" case, because with
+> the mapping_writably_mapped heuristic, it is likely that bugs could
+> remain lurking even in production workloads on huge systems (because
+> they will hardly ever get unreplicated).
+> 
+>  
+> > I'll try to remember to check the replication statistics after the currently
+> > running test.  If the system stays up, that is.  A quick look < 10 minutes into
+> > the test shows that zaps are now ~84% of replications.  Also, ~47k replicated pages
+> > out of ~287K file pages.
+> 
+> Yeah I guess it can be a little misleading: as time approaches infinity,
+> zaps will probably approach replications. But that doesn't tell you how
+> long a replica stayed around and usefully fed CPUs with local memory...
+
+May be able to capture that info with a more invasive patch -- e.g., add
+a timestamp to the page struct.  I'll think about it.
+
+And, I'll keep you posted.  Not sure how much time I'll be able to
+dedicate to this patch stream.  Got a few others I need to get back
+to...
+
+Later,
+Lee
+
 
