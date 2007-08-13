@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971095AbXHMJEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971061AbXHMJFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971095AbXHMJEs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 05:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966932AbXHMGbW
+	id S971061AbXHMJFk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 05:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966602AbXHMGbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:31:22 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4949 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:31:24 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4945 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966602AbXHMGbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:31:18 -0400
-Date: Sun, 12 Aug 2007 23:30:59 -0700
+	id S966928AbXHMGbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:31:17 -0400
+Date: Sun, 12 Aug 2007 23:31:03 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, starblue@users.sourceforge.net,
-       linux-kernel@vger.kernel.org, legousb-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org
-Subject: [PATCH] [286/2many] MAINTAINERS - LEGO USB Tower driver
-Message-ID: <46bffaa3.SM8uGoC6ubi8uzui%joe@perches.com>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, James.Bottomley@HansenPartnership.com
+Subject: [PATCH] [288/2many] MAINTAINERS - LINUX FOR NCR VOYAGER
+Message-ID: <46bffaa7.9ahuoTZtN1Yl0OMV%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,14 +27,18 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 5b8199d..836c58d 100644
+index f833a74..c643ebe 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2747,6 +2747,7 @@ M:	starblue@users.sourceforge.net
- L:	legousb-devel@lists.sourceforge.net
- W:	http://legousb.sourceforge.net/
+@@ -2762,6 +2762,11 @@ P:	James Bottomley
+ M:	James.Bottomley@HansenPartnership.com
+ W:	http://www.hansenpartnership.com/voyager
  S:	Maintained
-+F:	drivers/usb/misc/legousbtower.c
++F:	Documentation/voyager.txt
++F:	arch/i386/boot/voyager.c
++F:	arch/i386/mach-voyager/
++F:	include/asm-i386/mach-voyager/
++F:	include/asm-i386/voyager.h
  
- LINUX FOR IBM pSERIES (RS/6000)
+ LINUX FOR POWERPC
  P:	Paul Mackerras
