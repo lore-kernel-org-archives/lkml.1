@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972495AbXHMNoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031673AbXHMNoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972495AbXHMNoK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765525AbXHMKKO
+	id S1031673AbXHMNoo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932733AbXHMKMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 06:10:14 -0400
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:53684 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765487AbXHMKKL (ORCPT
+	Mon, 13 Aug 2007 06:12:44 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:41721
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932678AbXHMKMk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 06:10:11 -0400
-Date: Mon, 13 Aug 2007 12:10:09 +0200
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: regression from 2.6.23-rc2 to -rc3 BAT missing
-Message-ID: <20070813101009.GB4881@gamma.logic.tuwien.ac.at>
-References: <20070813094354.GA4881@gamma.logic.tuwien.ac.at> <46C02D52.40002@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 13 Aug 2007 06:12:40 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Distributed storage.
+Date: Mon, 13 Aug 2007 03:12:33 -0700
+User-Agent: KMail/1.9.5
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708130208.57542.phillips@phunq.net> <20070813091856.GA5503@2ka.mipt.ru>
+In-Reply-To: <20070813091856.GA5503@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46C02D52.40002@gmail.com>
-User-Agent: Mutt/1.3.28i
-From: Norbert Preining <preining@logic.at>
+Message-Id: <200708130312.33903.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007, Alexey Starikovskiy wrote:
-> Do you know if you have SBS or CM battery? 
-> What driver do you use: sbs.ko or battery.ko?
+On Monday 13 August 2007 02:18, Evgeniy Polyakov wrote:
+> On Mon, Aug 13, 2007 at 02:08:57AM -0700, Daniel Phillips 
+(phillips@phunq.net) wrote:
+> > > But that idea fails as well, since reference counts and IO
+> > > completion are two completely seperate entities. So unless end IO
+> > > just happens to be the last user holding a reference to the bio,
+> > > you cannot free it.
+> >
+> > That is not a problem.  When bio_put hits zero it calls ->endio
+> > instead of the destructor.  The ->endio sees that the count is zero
+> > and destroys the bio.
+>
+> This is not a very good solution, since it requires all users of the
+> bios to know how to free it.
 
-I am quite sure that it is a CM battery, not a SBS:
+No, only the specific ->endio needs to know that, which is set by the 
+bio owner, so this knowledge lies in exactly the right place.  A small 
+handful of generic endios all with the same destructor are used nearly 
+everywhere.
 
-CONFIG_ACPI_BATTERY=y
+> Right now it is hidden. 
+> And adds additional atomic check (although reading is quite fast) in
+> the end_io.
 
-did normal work, and CONFIG_ACPI_SBS=m but module not loaded. Same
-setting as always.
+Actual endio happens once in the lifetime of the transfer, this read 
+will be entirely lost in the noise.
 
-I also loaded sbs.ko without any change.
+> And for what purpose? To eat 8 bytes on 64bit platform? 
+> This will not reduce its size noticebly, so the same number of bios
+> will be in the cache's page, so what is a gain? All this cleanups and
+> logic complicatins should be performed only if after size shring
+> increased number of bios can fit into cache's page, will it be done
+> after such cleanups?
 
-Best wishes
+Well, exactly,   My point from the beginning was that the size of struct 
+bio is not even close to being a problem and adding a few bytes to it 
+in the interest of doing the cleanest fix to a core kernel bug is just 
+not a dominant issue.
 
-Norbert
+I suppose that leaving out the word "bloated" and skipping straight to 
+the "doesn't matter" proof would have saved some bandwidth.
 
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-SCREMBY (n.)
-The dehydrated felt-tip pen attached by a string to the 'Don't Forget'
-board in the kitchen which has never worked in living memory but which
-no one can be bothered to throw away.
-			--- Douglas Adams, The Meaning of Liff
+Regards,
+
+Daniel
