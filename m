@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972343AbXHMM7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940675AbXHMNAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972343AbXHMM7M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968774AbXHMIA5
+	id S940675AbXHMNAE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:00:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968605AbXHMIDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 04:00:57 -0400
-Received: from il.qumranet.com ([82.166.9.18]:33347 "EHLO il.qumranet.com"
+	Mon, 13 Aug 2007 04:03:43 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:48823 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968773AbXHMIAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 04:00:55 -0400
-Message-ID: <46C00FC1.1070306@qumranet.com>
-Date: Mon, 13 Aug 2007 11:01:05 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	id S965155AbXHMIDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 04:03:34 -0400
+Message-ID: <46C01052.4050708@dgreaves.com>
+Date: Mon, 13 Aug 2007 09:03:30 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
 MIME-Version: 1.0
-To: Laurent Vivier <Laurent.Vivier@bull.net>
-CC: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [kvm-devel] [PATCH 0/2][KVM] guest time accounting
-References: <46BC8B39.6050202@bull.net>
-In-Reply-To: <46BC8B39.6050202@bull.net>
+To: david@lang.hm
+Cc: Paul Clements <paul.clements@steeleye.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>, Al Boldi <a1426z@gawab.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: [RFD] Layering: Use-Case Composers (was: DRBD - what is it, anyways?
+ [compare with e.g. NBD + MD raid])
+References: <200708121335.17267.a1426z@gawab.com> <Pine.LNX.4.64.0708121325170.28963@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0708120933210.19502@asgard.lang.hm> <Pine.LNX.4.64.0708121901290.28963@fbirervta.pbzchgretzou.qr> <20070812174549.GA2915@teal.hq.k1024.org> <46BFB6BB.80406@steeleye.com> <Pine.LNX.4.64.0708122016100.22470@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0708122016100.22470@asgard.lang.hm>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Laurent Vivier wrote:
-> The aim of these two patches is to measure the CPU time used by a virtual
-> machine. All comments are welcome... I'm not sure it's the good way to do that.
->
-> [PATCH 1/2] introduce a new field, "guest", in cpustat to store the time used by
-> the CPU to run virtual CPU. Modify /proc/stat to display this new field.
->
-> [PATCH 2/2] modify account_system_time() to add cputime to cpustat->guest if we
-> are running a VCPU. We add this cputime to  cpustat->user instead of
-> cpustat->system because this part of KVM code is in fact user code although it
-> is executed in the kernel. We duplicate VCPU time between guest and user to
-> allow an unmodified "top(1)" to display correct value. A modified "top(1)" is
-> able to display good cpu user time and cpu guest time by subtracting cpu guest
-> time from cpu user time.
->   
+david@lang.hm wrote:
+> per the message below MD (or DM) would need to be modified to work 
+> reasonably well with one of the disk components being over an unreliable 
+> link (like a network link)
+> 
+> are the MD/DM maintainers interested in extending their code in this 
+> direction? or would they prefer to keep it simpler by being able to 
+> continue to assume that the raid components are connected over a highly 
+> reliable connection?
+> 
+> if they are interested in adding (and maintaining) this functionality 
+> then there is a real possibility that NBD+MD/DM could eliminate the need 
+> for DRDB. however if they are not interested in adding all the code to 
+> deal with the network type issues, then the argument that DRDB should 
+> not be merged becouse you can do the same thing with MD/DM + NBD is 
+> invalid and can be dropped/ignored
+> 
+> David Lang
 
-[copying Ingo and Rusty]
-
-The patches look good.  A couple of comments:
-
-- perhaps the new fields should be guarded by a #ifdef CONFIG_HYPERVISOR 
-(selected by CONFIG_KVM)?  that way the (minor) additional overhead is 
-only incurred if it can possibly be used.  I imagine that our canine 
-cousin will want to use this as well.
-
-- I think that there is per-task accounting of user time and system 
-time; that should be extended as well.
+As a user I'd like to see md/nbd be extended to cope with unreliable links.
+I think md could be better in handling link exceptions. My unreliable memory 
+recalls sporadic issues with hot-plug leaving md hanging and certain lower level 
+errors (or even very high latency) causing unsatisfactory behaviour in what is 
+supposed to be a fault 'tolerant' subsystem.
 
 
+Would this just be relevant to network devices or would it improve support for 
+jostled usb and sata hot-plugging I wonder?
 
--- 
-error compiling committee.c: too many arguments to function
+David
 
