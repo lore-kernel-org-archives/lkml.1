@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1033089AbXHMS2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbXHMS3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1033089AbXHMS2v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974405AbXHMSII
+	id S932153AbXHMS3n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937009AbXHMSIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:08:08 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:13148 "EHLO kernel.dk"
+	Mon, 13 Aug 2007 14:08:23 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3395 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S974402AbXHMSID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:08:03 -0400
-Date: Mon, 13 Aug 2007 20:07:57 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
-Message-ID: <20070813180757.GZ23758@kernel.dk>
-References: <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org> <1186458941.6637.44.camel@localhost.localdomain> <20070807001429.f8cb3b22.akpm@linux-foundation.org> <1186496712.3414.17.camel@localhost.localdomain> <46B88B91.4050703@garzik.org> <1186501124.3414.32.camel@localhost.localdomain> <20070807105144.0ba67d81.akpm@linux-foundation.org> <20070813124225.GT23758@kernel.dk> <46C07FAE.1040504@garzik.org> <20070813180212.GY23758@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070813180212.GY23758@kernel.dk>
+	id S974414AbXHMSIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 14:08:13 -0400
+Subject: Re: [PATCH] [347/2many] MAINTAINERS - NINJA SCSI-32Bi/UDE
+	PCI/CARDBUS SCSI HOST ADAPTER DRIVER
+From: Joe Perches <joe@perches.com>
+To: Masanori Goto <gotom@sanori.org>
+Cc: yokota@netlab.is.tsukuba.ac.jp, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <de88ba480708130022y1cc9b9a7ucbaf376a572e0f4e@mail.gmail.com>
+References: <46bffb18.d2jtcobSM4uNoxbu%joe@perches.com>
+	 <de88ba480708130022y1cc9b9a7ucbaf376a572e0f4e@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 11:07:27 -0700
+Message-Id: <1187028447.10249.205.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13 2007, Jens Axboe wrote:
-> On Mon, Aug 13 2007, Jeff Garzik wrote:
-> > Jens Axboe wrote:
-> > >#for-akpm is usually only in very few -mm release anyway, so it's not
-> > >like it would have made much difference. We/you/I need to improve that,
-> > >certainly.
-> > >
-> > >Honestly, for bsg, it wasn't much of an issue. We had build problems
-> > >when bsg was merged which was unfortunate but got fixed quickly. Having
-> > >bsg in -mm would not have caused any testing of the driver in question
-> > >outside of what it already received, given the nature of it.
-> > 
-> > 
-> > That's just an excuse for what happened -- you made an end run around 
-> > our test tree.  Pretty please with sugar on it -- make sure changes show 
-> > up in -mm.
-> 
-> It's not just an excuse, there are repeatably problems with getting the
-> block stuff pulled into -mm. Sometimes it's my problem, but not always.
-> Then I get a note saying that pulling was disabled due to merge
-> problems, usually right before -mmX goes out. So it misses that release.
+On Mon, 2007-08-13 at 16:22 +0900, Masanori Goto wrote:
+> Could you take a look at them again?
 
-This may sound like I'm blaming Andrew, but that is not my intention. He
-does a lot of work and he can't (and should not) attempt to fix every
-integration and merge issue. Perhaps if I/we were more strict in pushing
-every block bit through the block git tree, it wouldn't be so much of an
-integration pain. Then the work would be in me to sort out, which I'm
-happy to do.
+NINJA SCSI-3 / NINJA SCSI-32Bi (16bit/CardBus) PCMCIA SCSI HOST ADAPTER DRIVER
+P:	YOKOTA Hiroshi
+M:	yokota@netlab.is.tsukuba.ac.jp
+W:	http://www.netlab.is.tsukuba.ac.jp/~yokota/izumi/ninja/
+S:	Maintained
+F:	Documentation/scsi/NinjaSCSI.txt
+F:	drivers/scsi/pcmcia/nsp_*
 
-Then there are things like the sg chaining bits, which touch a lot of
-arch code. Those are just painful to deal with, for obvious reasons.
-Right now there are not in -mm, but that's because of a bug that
-prevents Andrews laptop from booting properly.
+NINJA SCSI-32Bi/UDE PCI/CARDBUS SCSI HOST ADAPTER DRIVER
+P:	GOTO Masanori
+M:	gotom@debian.or.jp
+P:	YOKOTA Hiroshi
+M:	yokota@netlab.is.tsukuba.ac.jp
+W:	http://www.netlab.is.tsukuba.ac.jp/~yokota/izumi/ninja/
+S:	Maintained
+F:	Documentation/scsi/NinjaSCSI.txt
+F:	drivers/scsi/nsp32*
 
--- 
-Jens Axboe
 
