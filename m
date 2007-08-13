@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbXHMLSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S944440AbXHMLTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754780AbXHMLSR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 07:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965842AbXHMGiI
+	id S944440AbXHMLTK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 07:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965938AbXHMGiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:38:08 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2105 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:38:10 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2108 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938636AbXHMGho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:37:44 -0400
-Date: Sun, 12 Aug 2007 23:37:23 -0700
+	id S966447AbXHMGhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:37:45 -0400
+Date: Sun, 12 Aug 2007 23:37:01 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, tlinux-users@linux.toshiba-dme.co.jp,
-       linux-kernel@vger.kernel.org, jonathan@buzzard.org.uk,
+To: torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hadi@cyberus.ca,
        akpm@linux-foundation.org
-Subject: [PATCH] [480/2many] MAINTAINERS - TOSHIBA SMM DRIVER
-Message-ID: <46bffc23.OZWI3zpYZY7agi2A%joe@perches.com>
+Subject: [PATCH] [469/2many] MAINTAINERS - TC CLASSIFIER
+Message-ID: <46bffc0d.KtaxHSXc/hUmQUps%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,15 +28,16 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index ba55e00..7927653 100644
+index f00640b..fc0589f 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4555,6 +4555,8 @@ M:	jonathan@buzzard.org.uk
- L:	tlinux-users@tce.toshiba-dme.co.jp
- W:	http://www.buzzard.org.uk/toshiba/
+@@ -4457,6 +4457,9 @@ P:	Jamal Hadi Salim
+ M:	hadi@cyberus.ca
+ L:	netdev@vger.kernel.org
  S:	Maintained
-+F:	drivers/char/toshiba.c
-+F:	include/linux/toshiba.h
++F:	include/linux/pkt_cls.h
++F:	include/net/pkt_cls.h
++F:	net/sched/
  
- TRIDENT 4DWAVE/SIS 7018 PCI AUDIO CORE
- P:	Muli Ben-Yehuda
+ TCP LOW PRIORITY MODULE
+ P:	Wong Hoi Sing, Edison
