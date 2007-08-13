@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S974160AbXHMSbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032630AbXHMSca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S974160AbXHMSbh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032735AbXHMSKU
+	id S1032630AbXHMSca (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971400AbXHMSKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:10:20 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3408 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1032685AbXHMSKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:10:16 -0400
-Subject: Re: [PATCH] [156/2many] MAINTAINERS - DISTRIBUTED LOCK MANAGER
-From: Joe Perches <joe@perches.com>
-To: Patrick Caulfield <pcaulfie@redhat.com>
-Cc: torvalds@linux-foundation.org, teigland@redhat.com,
-       linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
-       akpm@linux-foundation.org
-In-Reply-To: <46BFFFDC.1040406@redhat.com>
-References: <46bff98d.YdH+q2D3/NHHu3IX%joe@perches.com>
-	 <46BFFFDC.1040406@redhat.com>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 11:09:29 -0700
-Message-Id: <1187028569.10249.210.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Aug 2007 14:10:39 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:41827 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S973407AbXHMSKe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 14:10:34 -0400
+Date: Mon, 13 Aug 2007 20:10:33 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: torvalds@linux-foundation.org
+cc: michal.k.k.piotrowski@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Vitaly Bordug <vitb@kernel.crashing.org>,
+       Dan Merillat <dan.merillat@gmail.com>,
+       Paolo Ornati <ornati@fastwebnet.it>, Andi Kleen <andi@firstfloor.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-fsdevel@vger.kernel.org,
+       nfs@lists.sourceforge.net, Jeff Garzik <jeff@garzik.org>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: Re: [1/2] 2.6.23-rc3: known regressions with patches
+In-Reply-To: <46C09C1A.7050706@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0708132009510.9759@fbirervta.pbzchgretzou.qr>
+References: <46C09C1A.7050706@googlemail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 07:53 +0100, Patrick Caulfield wrote:
-> NACK - that dlmfs.txt file refers to the DLM in ocfs2, not to the DLM in fs/dlm
 
-DISTRIBUTED LOCK MANAGER
-P:	Patrick Caulfield
-M:	pcaulfie@redhat.com
-P:	David Teigland
-M:	teigland@redhat.com
-L:	cluster-devel@redhat.com
-W:	http://sources.redhat.com/cluster/
-T:	git kernel.org:/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git
-T:	git kernel.org:/pub/scm/linux/kernel/git/steve/gfs2-2.6-nmw.git
-S:	Supported
-F:	fs/dlm/
+On Aug 13 2007 19:59, Michal Piotrowski wrote:
+>
+>Subject         : Kconfig prompts without help text
+>References      : http://lkml.org/lkml/2007/7/16/326
+>Last known good : ?
+>Submitter       : Stefan Richter <stefanr@s5r6.in-berlin.de>
+>Caused-By       : ?
+>Handled-By      : Jan Engelhardt <jengelh@linux01.gwdg.de>
+>Patch           : http://lkml.org/lkml/2007/7/18/236
+>Status          : patch available
+
+Is there some special magic needed (like resubmit), or will you slurp this one
+yourself?
 
 
 
+	Jan
+-- 
