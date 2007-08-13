@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S944191AbXHMLMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965702AbXHMLMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S944191AbXHMLMZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 07:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966037AbXHMGhy
+	id S965702AbXHMLMz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 07:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939090AbXHMGh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:37:54 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1665 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:37:56 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2075 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967237AbXHMGfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:35:09 -0400
-Date: Sun, 12 Aug 2007 23:34:52 -0700
+	id S966714AbXHMGhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:37:33 -0400
+Date: Sun, 12 Aug 2007 23:37:19 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, rtc-linux@googlegroups.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       a.zummo@towertech.it
-Subject: [PATCH] [406/2many] MAINTAINERS - REAL TIME CLOCK (RTC) SUBSYSTEM
-Message-ID: <46bffb8c.bS/OwD84s6M3twOY%joe@perches.com>
+To: torvalds@linux-foundation.org, netdev@vger.kernel.org, mikep@linuxtr.net,
+       linux-tr@linuxtr.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH] [478/2many] MAINTAINERS - TOKEN-RING NETWORK DRIVER
+Message-ID: <46bffc1f.jeLQtdRi39eTOfu9%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,16 +28,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index de22969..390e389 100644
+index fda287c..b5dc1ac 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -3870,6 +3870,9 @@ P:	Alessandro Zummo
- M:	a.zummo@towertech.it
- L:	rtc-linux@googlegroups.com
+@@ -4539,6 +4539,8 @@ L:	netdev@vger.kernel.org
+ L:	linux-tr@linuxtr.net
+ W:	http://www.linuxtr.net
  S:	Maintained
-+F:	Documentation/rtc.txt
-+F:	drivers/rtc/
-+F:	include/linux/rtc.h
++F:	drivers/net/tokenring/
++F:	net/802/tr.c
  
- REISERFS FILE SYSTEM
- P:	Hans Reiser
+ TOSHIBA ACPI EXTRAS DRIVER
+ P:	John Belmonte
