@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967683AbXHMGlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967706AbXHMGmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967683AbXHMGlr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 02:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965812AbXHMGW7
+	id S967706AbXHMGmS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 02:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965090AbXHMGXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:22:59 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3555 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:23:00 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3528 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965786AbXHMGWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:22:54 -0400
-Date: Sun, 12 Aug 2007 23:22:37 -0700
+	id S965732AbXHMGWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:22:44 -0400
+Date: Sun, 12 Aug 2007 23:21:57 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, thomas.dahlmann@amd.com,
-       linux-kernel@vger.kernel.org, info-linux@geode.amd.com,
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-acenic@sunsite.dk, jes@trained-monkey.org,
        akpm@linux-foundation.org
-Subject: [PATCH] [39/2many] MAINTAINERS - AMD GEODE CS5536 USB DEVICE
- CONTROLLER DRIVER
-Message-ID: <46bff8ad.cOI7Tkr99Hdgb2e2%joe@perches.com>
+Subject: [PATCH] [18/2many] MAINTAINERS - ACENIC DRIVER
+Message-ID: <46bff885.mB2LD2Mu8yjtR8xr%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,14 +28,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index e6c018d..47d1ca1 100644
+index 909875d..141b08a 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -383,6 +383,7 @@ P:	Thomas Dahlmann
- M:	thomas.dahlmann@amd.com
- L:	info-linux@geode.amd.com
- S:	Supported
-+F:	drivers/usb/gadget/amd5536udc.*
+@@ -216,6 +216,7 @@ P:	Jes Sorensen
+ M:	jes@trained-monkey.org
+ L:	linux-acenic@sunsite.dk
+ S:	Maintained
++F:	drivers/net/acenic*
  
- AMD GEODE PROCESSOR/CHIPSET SUPPORT
- P:	Jordan Crouse
+ IPS SCSI RAID DRIVER
+ P:	Adaptec OEM Raid Solutions
