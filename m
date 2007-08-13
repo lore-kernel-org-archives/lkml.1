@@ -1,35 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S973887AbXHMR5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S974342AbXHMR7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S973887AbXHMR5Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:57:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031241AbXHMRpn
+	id S974342AbXHMR7D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:59:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939858AbXHMRqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:45:43 -0400
-Received: from iasrv1.idleaire.net ([63.78.244.180]:33909 "EHLO
-	iasrv1.idleaire.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S973813AbXHMRpY (ORCPT
+	Mon, 13 Aug 2007 13:46:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56683 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939713AbXHMRqJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:45:24 -0400
-X-Greylist: delayed 2109 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Aug 2007 13:45:24 EDT
-Subject: Re: [PATCH] [5/2many] MAINTAINERS - 3CR990 NETWORK DRIVER
-From: Dave Dillow <dave@thedillows.org>
-To: joe@perches.com
-Cc: torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <46bff86d.3nPB+/nZUm72NBI6%joe@perches.com>
-References: <46bff86d.3nPB+/nZUm72NBI6%joe@perches.com>
+	Mon, 13 Aug 2007 13:46:09 -0400
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -
+	scripts/get_maintainer.pl
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: Joe Perches <joe@perches.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+In-Reply-To: <200708131933.10125.m.kozlowski@tuxland.pl>
+References: <1186984174.10249.7.camel@localhost>
+	 <200708131933.10125.m.kozlowski@tuxland.pl>
 Content-Type: text/plain
-Date: Mon, 13 Aug 2007 13:09:17 -0400
-Message-Id: <1187024957.10819.2.camel@dillow.idleaire.net>
+Organization: Intel International BV
+Date: Mon, 13 Aug 2007 10:42:35 -0700
+Message-Id: <1187026955.2688.4.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+X-Mailer: Evolution 2.11.6.1 (2.11.6.1-1.fc8) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-08-12 at 23:21 -0700, joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
+
+On Mon, 2007-08-13 at 19:33 +0200, Mariusz Kozlowski wrote:
+> Hello,
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
-Acked-by: Dave Dillow <dave@thedillows.org>
+> 	I don't recall discusion about this so here are my 3 cents:
+> 
+> 	I like the idea. 
+
+I don't actually. It shows a central MAINTAINERS file is the wrong
+approach; just that 500+ patches to the same file were needed shows
+that. 
+
+The maintainer info should be in the source file itself! That's the only
+reasonable way to keep it updated; now I'm all for having it machine
+parsable so that tools can use it, but it still really should be in the
+code itself, not in some central file that will always just go out of
+data, and will be a huge source of needless patch conflicts.
+
 
