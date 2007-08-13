@@ -1,235 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S947846AbXHMPDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S947916AbXHMPEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S947846AbXHMPDO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758771AbXHMMhw
+	id S947916AbXHMPEG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:04:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S972314AbXHMMme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 08:37:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45278 "EHLO mx1.redhat.com"
+	Mon, 13 Aug 2007 08:42:34 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:1453 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S969789AbXHMMhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 08:37:21 -0400
-Date: Mon, 13 Aug 2007 08:36:16 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
-       zippel@linux-m68k.org, dhowells@redhat.com,
-       linux-cifs-client@lists.samba.org, codalist@TELEMANN.coda.cs.cmu.edu,
-       joel.becker@oracle.com, linux-ext4@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net, cluster-devel@redhat.com,
-       user-mode-linux-user@lists.sourceforge.net,
-       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com, jffs-dev@axis.com,
-       jfs-discussion@lists.sourceforge.net, ocfs2-devel@oss.oracle.com,
-       reiserfs-devel@vger.kernel.org, bfennema@falcon.csc.calpoly.edu,
-       xfs@oss.sgi.com
-Subject: Re: [PATCH 00/25] move handling of setuid/gid bits from VFS into
- individual setattr functions (RESEND)
-Message-Id: <20070813083616.642c7f27.jlayton@redhat.com>
-In-Reply-To: <20070813080134.f770814b.jlayton@redhat.com>
-References: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com>
-	<20070807171501.e31c4a97.akpm@linux-foundation.org>
-	<1186533934.6625.91.camel@heimdal.trondhjem.org>
-	<20070810164752.23117e0e.jlayton@redhat.com>
-	<20070811025739.GA21244@infradead.org>
-	<20070813080134.f770814b.jlayton@redhat.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S972272AbXHMMma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 08:42:30 -0400
+Date: Mon, 13 Aug 2007 14:42:26 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
+Message-ID: <20070813124225.GT23758@kernel.dk>
+References: <1186248703.3439.20.camel@localhost.localdomain> <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org> <1186458941.6637.44.camel@localhost.localdomain> <20070807001429.f8cb3b22.akpm@linux-foundation.org> <1186496712.3414.17.camel@localhost.localdomain> <46B88B91.4050703@garzik.org> <1186501124.3414.32.camel@localhost.localdomain> <20070807105144.0ba67d81.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070807105144.0ba67d81.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007 08:01:34 -0400
-Jeff Layton <jlayton@redhat.com> wrote:
-
-> On Sat, 11 Aug 2007 03:57:39 +0100
-> Christoph Hellwig <hch@infradead.org> wrote:
+On Tue, Aug 07 2007, Andrew Morton wrote:
+> On Tue, 07 Aug 2007 10:38:44 -0500 James Bottomley <James.Bottomley@SteelEye.com> wrote:
+> 
+> > On Tue, 2007-08-07 at 11:11 -0400, Jeff Garzik wrote:
+> > > James Bottomley wrote:
+> > > > The initial bsg submit went via the block git tree ... which I believe
+> > > > you have in -mm.  We only started taking the updates via the scsi tree
+> > > 
+> > > Seven hours before you posted this, in 
+> > > <20070807001429.f8cb3b22.akpm@linux-foundation.org>, Andrew already 
+> > > noted it was not in -mm.
+> > > 
+> > > A trivial examination of the broken-out mm patches backs up the absence 
+> > >   of Jens' block tree, too.
+> > > 
+> > > So let's put this myth / bad assumption to rest, shall we?
 > > 
-> > I like the idea of checking ia_valid after return a lot.  But instead of
-> > going BUG() it should just do the default action, that we can avoid
-> > touching all the filesystem and only need to change those that need
-> > special care.  I also have plans to add some new AT_ flags for implementing
-> > some filesystem ioctl in generic code that would benefit greatly from
-> > the ia_valid checkin after return to return ENOTTY fr filesystems not
-> > implementing those ioctls.
+> > Sorry ... I just assumed from the fact that it had been in the block git
+> > tree for six months that it was also in -mm.
 > 
-> That sounds good (if I follow your meaning correctly). How about
-> something like the patch below? If either ATTR_KILL bit is set after
-> the setattr, try to handle them in the "standard" way with a second
-> setattr call. It also does a printk in this situation to alert
-> filesystem developers that they should convert to the "new" scheme,
-> so they can avoid this second setattr call.
-> 
-> If this idea seems sound then I'll start the grunt work to fix up the
-> in-tree filesystems so that they don't need the second setattr call.
-> 
+> bsg was never in the #for-akpm branch of git-block.  So I assume that
+> Jens had it in some other branch and for some reason never pulled it
+> across into #for-akpm.
 
-The earlier patch has a misplaced comma and won't build. This one
-builds. This should be considered an RFC, as I've not yet done any
-real testing of this patch:
+#for-akpm is usually only in very few -mm release anyway, so it's not
+like it would have made much difference. We/you/I need to improve that,
+certainly.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Honestly, for bsg, it wasn't much of an issue. We had build problems
+when bsg was merged which was unfortunate but got fixed quickly. Having
+bsg in -mm would not have caused any testing of the driver in question
+outside of what it already received, given the nature of it.
 
-commit ad00450c4532da32718efe39e27d99060f04e396
-Author: Jeff Layton <jlayton@redhat.com>
-Date:   Mon Aug 13 08:33:10 2007 -0400
-
-    VFS: move ATTR_KILL handling from notify_change into helper function
-    
-    Separate the handling of the local ia_valid bitmask from the one in
-    attr->ia_valid. This allows us to hand off the actual handling of the
-    ATTR_KILL_* flags to the .setattr i_op when one is defined.
-    
-    notify_change still needs to process those flags for the local ia_valid
-    variable, since it uses that to decide whether to return early, and to pass
-    a (hopefully) appropriate bitmask to fsnotify_change.
-    
-    Also, check the ia_valid after the setattr op returns and see if either
-    ATTR_KILL_* bit is set. If so, then throw a warning and try to clear the
-    bits in the "standard" way. This should help us to catch filesystems that
-    don't handle these bits correctly without breaking them outright.
-
-diff --git a/fs/attr.c b/fs/attr.c
-index f8dfc22..9585e45 100644
---- a/fs/attr.c
-+++ b/fs/attr.c
-@@ -100,15 +100,53 @@ int inode_setattr(struct inode * inode, struct iattr * attr)
- }
- EXPORT_SYMBOL(inode_setattr);
- 
-+/**
-+ * generic_attrkill - helper to convert ATTR_KILL_* bits into mode change
-+ * @mode: current mode of inode
-+ * @attr: inode attribute changes requested by VFS
-+ * Context: anywhere
-+ *
-+ * This is a helper function to convert ATTR_KILL_SUID and ATTR_KILL_SGID
-+ * into a mode change. Filesystems should call this from their setattr
-+ * inode op when they want "conventional" setuid-clearing behavior.
-+ *
-+ * Filesystems that declare a setattr inode operation are now expected to
-+ * handle the ATTR_KILL_SUID and ATTR_KILL_SGID bits appropriately. The VFS
-+ * no longer automatically converts these bits to a mode change for
-+ * inodes that have their own setattr operation.
-+ **/
-+void generic_attrkill(mode_t mode, struct iattr *attr)
-+{
-+	if (attr->ia_valid & ATTR_KILL_SUID) {
-+		attr->ia_valid &= ~ATTR_KILL_SUID;
-+		if (mode & S_ISUID) {
-+			if (!(attr->ia_valid & ATTR_MODE)) {
-+				attr->ia_valid |= ATTR_MODE;
-+				attr->ia_mode = mode;
-+			}
-+			attr->ia_mode &= ~S_ISUID;
-+		}
-+	}
-+	if (attr->ia_valid & ATTR_KILL_SGID) {
-+		attr->ia_valid &= ~ATTR_KILL_SGID;
-+		if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
-+			if (!(attr->ia_valid & ATTR_MODE)) {
-+				attr->ia_valid |= ATTR_MODE;
-+				attr->ia_mode = mode;
-+			}
-+			attr->ia_mode &= ~S_ISGID;
-+		}
-+	}
-+}
-+EXPORT_SYMBOL(generic_attrkill);
-+
- int notify_change(struct dentry * dentry, struct iattr * attr)
- {
- 	struct inode *inode = dentry->d_inode;
--	mode_t mode;
--	int error;
-+	int error, once = 0;
- 	struct timespec now;
- 	unsigned int ia_valid = attr->ia_valid;
- 
--	mode = inode->i_mode;
- 	now = current_fs_time(inode->i_sb);
- 
- 	attr->ia_ctime = now;
-@@ -117,36 +155,48 @@ int notify_change(struct dentry * dentry, struct iattr * attr)
- 	if (!(ia_valid & ATTR_MTIME_SET))
- 		attr->ia_mtime = now;
- 	if (ia_valid & ATTR_KILL_SUID) {
--		attr->ia_valid &= ~ATTR_KILL_SUID;
--		if (mode & S_ISUID) {
--			if (!(ia_valid & ATTR_MODE)) {
--				ia_valid = attr->ia_valid |= ATTR_MODE;
--				attr->ia_mode = inode->i_mode;
--			}
--			attr->ia_mode &= ~S_ISUID;
--		}
-+		ia_valid &= ~ATTR_KILL_SUID;
-+		if (inode->i_mode & S_ISUID)
-+			ia_valid |= ATTR_MODE;
- 	}
- 	if (ia_valid & ATTR_KILL_SGID) {
--		attr->ia_valid &= ~ ATTR_KILL_SGID;
--		if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
--			if (!(ia_valid & ATTR_MODE)) {
--				ia_valid = attr->ia_valid |= ATTR_MODE;
--				attr->ia_mode = inode->i_mode;
--			}
--			attr->ia_mode &= ~S_ISGID;
--		}
-+		ia_valid &= ~ATTR_KILL_SGID;
-+		if ((inode->i_mode & (S_ISGID | S_IXGRP)) ==
-+		    (S_ISGID | S_IXGRP))
-+			ia_valid |= ATTR_MODE;
- 	}
--	if (!attr->ia_valid)
-+	if (!ia_valid)
- 		return 0;
- 
- 	if (ia_valid & ATTR_SIZE)
- 		down_write(&dentry->d_inode->i_alloc_sem);
- 
- 	if (inode->i_op && inode->i_op->setattr) {
-+try_again:
- 		error = security_inode_setattr(dentry, attr);
- 		if (!error)
- 			error = inode->i_op->setattr(dentry, attr);
-+		/*
-+		 * if ATTR_KILL_SUID or ATTR_KILL_SGID is still set, then
-+		 * assume that the setattr inode op didn't handle them
-+		 * correctly. Try to clear these bits the standard way
-+		 * and throw a warning.
-+		 */
-+		if (!error && !once && unlikely(attr->ia_valid &
-+					(ATTR_KILL_SUID|ATTR_KILL_SGID))) {
-+			attr->ia_valid &=
-+				(ATTR_MODE|ATTR_KILL_SUID|ATTR_KILL_SGID);
-+			generic_attrkill(inode->i_mode, attr);
-+			once = 1;
-+			if (printk_ratelimit())
-+				printk(KERN_ERR "%s: %s doesn't seem to "
-+					"handle setuid/setgid bit clearing "
-+					"correctly.\n", __func__,
-+					inode->i_sb->s_type->name);
-+			goto try_again;
-+		}
- 	} else {
-+		generic_attrkill(inode->i_mode, attr);
- 		error = inode_change_ok(inode, attr);
- 		if (!error)
- 			error = security_inode_setattr(dentry, attr);
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 6bf1395..daac0e5 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1561,6 +1561,7 @@ extern int do_remount_sb(struct super_block *sb, int flags,
- #ifdef CONFIG_BLOCK
- extern sector_t bmap(struct inode *, sector_t);
- #endif
-+extern void generic_attrkill(mode_t mode, struct iattr *attr);
- extern int notify_change(struct dentry *, struct iattr *);
- extern int permission(struct inode *, int, struct nameidata *);
- extern int generic_permission(struct inode *, int,
-
+-- 
+Jens Axboe
 
