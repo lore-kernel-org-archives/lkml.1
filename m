@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971527AbXHMT0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764250AbXHMT1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971527AbXHMT0c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 15:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S942777AbXHMTYW
+	id S1764250AbXHMT1T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 15:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S941637AbXHMTYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 15:24:22 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:35651 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762858AbXHMTYU (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 15:24:24 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:56484 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S969601AbXHMTYU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 15:24:20 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, joe@perches.com,
-       xen-devel@lists.xensource.com, virtualization@lists.osdl.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jeremy@xensource.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] [545/2many] MAINTAINERS - XEN HYPERVISOR INTERFACE
-In-Reply-To: Your message of "Mon, 13 Aug 2007 12:10:05 PDT."
-             <20070813121005.af159d1d.randy.dunlap@oracle.com>
-From: Valdis.Kletnieks@vt.edu
-References: <46bffcb5.o/KKCq3EZH4S47k3%joe@perches.com> <20070813185536.GH3672@sequoia.sous-sol.org>
-            <20070813121005.af159d1d.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1187032979_3175P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 13 Aug 2007 15:22:59 -0400
-Message-ID: <22502.1187032979@turing-police.cc.vt.edu>
+Date: Mon, 13 Aug 2007 21:24:08 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Joe Perches <joe@perches.com>, len.brown@intel.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Bad addresses in MAINTAINERS
+Message-ID: <20070813192408.GE18945@stusta.de>
+References: <1187032024.10249.266.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1187032024.10249.266.camel@localhost>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1187032979_3175P
-Content-Type: text/plain; charset=us-ascii
+On Mon, Aug 13, 2007 at 12:07:04PM -0700, Joe Perches wrote:
+> After that unfortunately large patch-bomb
+> (apologies to all concerned), I received
+> these fatal user-unknown bounces.
+> 
+> Most of these bounces are for obsolete systems.
+>...
+> MARVELL YUKON / SYSKONNECT DRIVER
+> P:	Mirko Lindner
+> M:	mlindner@syskonnect.de
+> P:	Ralph Roesler
+> M:	rroesler@syskonnect.de
 
-On Mon, 13 Aug 2007 12:10:05 PDT, Randy Dunlap said:
+Driver was removed.
 
-> Agreed.  But not everyone wants to or should have to use git,
-> so what are the alternatives?
+>...
+> ACPI FAN DRIVER
+> P:	Konstantin A. Karasyov
+> M:	konstantin.a.karasyov@intel.com
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=tree
+Len?
 
-and start chasing down 'History' pointers?
+>...
+> ZR36120 VIDEO FOR LINUX DRIVER
+> P:	Pauline Middelink
+> M:	middelin@polyware.nl
 
-(Of course, mentioning that in Documentation/somewhere would be a good start)
+Driver was removed.
 
---==_Exmh_1187032979_3175P
-Content-Type: application/pgp-signature
+cu
+Adrian
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+-- 
 
-iD8DBQFGwK+TcC3lWbTT17ARAlcAAKCmlf6+fVK6BnVemX+uc1yVte8gwwCfbX5v
-+5FfB74UFjTlL6GEqKq80dg=
-=BulP
------END PGP SIGNATURE-----
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
---==_Exmh_1187032979_3175P--
