@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970433AbXHMIwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969238AbXHMIxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970433AbXHMIwl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 04:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966823AbXHMGas
+	id S969238AbXHMIxT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 04:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966588AbXHMGav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:30:48 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4842 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:30:51 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4843 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966888AbXHMGao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:30:44 -0400
-Date: Sun, 12 Aug 2007 23:30:27 -0700
+	id S966891AbXHMGap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:30:45 -0400
+Date: Sun, 12 Aug 2007 23:30:31 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jffs-dev@axis.com, dwmw2@infradead.org, akpm@linux-foundation.org
-Subject: [PATCH] [270/2many] MAINTAINERS - JOURNALLING FLASH FILE SYSTEM
- V2 (JFFS2)
-Message-ID: <46bffa83.emNejMN83QXswNRE%joe@perches.com>
+To: torvalds@linux-foundation.org, sct@redhat.com,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH] [272/2many] MAINTAINERS - JOURNALLING LAYER FOR BLOCK
+ DEVICES (JBD)
+Message-ID: <46bffa87.q9xwD9sRCNFqd2m6%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,16 +29,24 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index cbf6cdb..16b6def 100644
+index ad68cfe..f0d1bce 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2584,6 +2584,9 @@ M:	dwmw2@infradead.org
- L:	jffs-dev@axis.com
- W:	http://sources.redhat.com/jffs2/
- S:	Maintained
-+F:	fs/jffs2/
-+F:	include/linux/jffs2.h
-+F:	include/mtd/jffs2-user.h
+@@ -2599,10 +2599,15 @@ F:	Documentation/filesystems/jfs.txt
+ F:	fs/jfs/
  
- JFS FILESYSTEM
- P:	Dave Kleikamp
+ JOURNALLING LAYER FOR BLOCK DEVICES (JBD)
+-P:	Stephen Tweedie, Andrew Morton
+-M:	sct@redhat.com, akpm@linux-foundation.org
++P:	Stephen Tweedie
++M:	sct@redhat.com
++P:	Andrew Morton
++M:	akpm@linux-foundation.org
+ L:	linux-ext4@vger.kernel.org
+ S:	Maintained
++F:	fs/jbd*/
++F:	include/linux/ext*jbd*.h
++F:	include/linux/jbd*.h
+ 
+ K8TEMP HARDWARE MONITORING DRIVER
+ P:	Rudolf Marek
