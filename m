@@ -1,60 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S946587AbXHMOpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S947019AbXHMOqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S946587AbXHMOpy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S943239AbXHML4B
+	id S947019AbXHMOqf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967263AbXHMMCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 07:56:01 -0400
-Received: from hu-out-0506.google.com ([72.14.214.224]:50597 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S943381AbXHMLz4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 07:55:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=MpzyW6XeA3V9/XaaWQRQb4XA+8B7KYDJhbULiCziyYbfzuc+4FwCd9um+0Onhm8QJ9QI1R3mracnR0lvYNpkFEuRRrDKLMVBMLCQnsLBF7RKYNvg7l65IWIdxYvRBxzYPSZxbVU42feDqrfVxPh1DhozKAB1TcmyhklL+wD/sOs=
-Date: Mon, 13 Aug 2007 15:55:40 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Paul Moore <paul.moore@hp.com>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Chris Vance <cvance@nai.com>, Wayne Salamon <wsalamon@nai.com>,
-       James Morris <jmorris@redhat.com>, dgoeddel@trustedcs.com,
-       Fengguang Wu <fengguang.wu@gmail.com>
-Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
-Message-ID: <20070813115540.GB7239@cvg>
-References: <20070812141905.4ee423b9@the-village.bc.nu> <386927758.14086@ustc.edu.cn> <20070812161744.200d4252@the-village.bc.nu> <20070812162143.GA7202@cvg> <20070813002342.GA6908@mail.ustc.edu.cn> <20070813095302.GA7239@cvg> <20070813122224.6b9d90fd@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070813122224.6b9d90fd@the-village.bc.nu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 13 Aug 2007 08:02:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34365 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966283AbXHMMCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 08:02:45 -0400
+Date: Mon, 13 Aug 2007 08:01:34 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
+       zippel@linux-m68k.org, dhowells@redhat.com,
+       linux-cifs-client@lists.samba.org, codalist@TELEMANN.coda.cs.cmu.edu,
+       joel.becker@oracle.com, linux-ext4@vger.kernel.org,
+       fuse-devel@lists.sourceforge.net, cluster-devel@redhat.com,
+       user-mode-linux-user@lists.sourceforge.net,
+       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com, jffs-dev@axis.com,
+       jfs-discussion@lists.sourceforge.net, ocfs2-devel@oss.oracle.com,
+       reiserfs-devel@vger.kernel.org, bfennema@falcon.csc.calpoly.edu,
+       xfs@oss.sgi.com
+Subject: Re: [PATCH 00/25] move handling of setuid/gid bits from VFS into
+ individual setattr functions (RESEND)
+Message-Id: <20070813080134.f770814b.jlayton@redhat.com>
+In-Reply-To: <20070811025739.GA21244@infradead.org>
+References: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com>
+	<20070807171501.e31c4a97.akpm@linux-foundation.org>
+	<1186533934.6625.91.camel@heimdal.trondhjem.org>
+	<20070810164752.23117e0e.jlayton@redhat.com>
+	<20070811025739.GA21244@infradead.org>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Alan Cox - Mon, Aug 13, 2007 at 12:22:24PM +0100]
-| > Well, as I see, it seems the Alan's patch is correct. We pass
-| > newly created mm to security_vm_enough_memory_mm() and get no errors
-| > here even for overcommit = 2. But my question was that mm->total_vm
-| > = 0 for this case and that is probably valid too I think. What about
-| > the thing you pointed about? Well I think security_vm_enough_memory
-| > should never be called from kernel thread (we have secrurity_vm_enough_memory_mm
-| > for this). But I will check it more closely. Dont get me wrong - I'm not
-| > VMM expert and may do errors ;)
-| 
-| A vma has to inserted into an mm struct so we are fine in terms of kernel
-| threads. init_bprm showed up a new case where we add vma's to an mm that
-| isn't current->mm. The rest of the vm subsystem supports this and there
-| are cases for the future (eg the usermode linux mm switching patch) where
-| it might matter that we do it right.
-| 
-| Alan
-| 
+On Sat, 11 Aug 2007 03:57:39 +0100
+Christoph Hellwig <hch@infradead.org> wrote:
+> 
+> I like the idea of checking ia_valid after return a lot.  But instead of
+> going BUG() it should just do the default action, that we can avoid
+> touching all the filesystem and only need to change those that need
+> special care.  I also have plans to add some new AT_ flags for implementing
+> some filesystem ioctl in generic code that would benefit greatly from
+> the ia_valid checkin after return to return ENOTTY fr filesystems not
+> implementing those ioctls.
 
-ok, thanks for explanation, Alan.
+That sounds good (if I follow your meaning correctly). How about
+something like the patch below? If either ATTR_KILL bit is set after
+the setattr, try to handle them in the "standard" way with a second
+setattr call. It also does a printk in this situation to alert
+filesystem developers that they should convert to the "new" scheme,
+so they can avoid this second setattr call.
 
-		Cyrill
+If this idea seems sound then I'll start the grunt work to fix up the
+in-tree filesystems so that they don't need the second setattr call.
 
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+
+commit 521ada37ab165d9d0a12dfb59a631a2ec58a8f84
+Author: Jeff Layton <jlayton@redhat.com>
+Date:   Mon Aug 13 07:43:56 2007 -0400
+
+    VFS: move ATTR_KILL handling from notify_change into helper function
+    
+    Separate the handling of the local ia_valid bitmask from the one in
+    attr->ia_valid. This allows us to hand off the actual handling of the
+    ATTR_KILL_* flags to the .setattr i_op when one is defined.
+    
+    notify_change still needs to process those flags for the local ia_valid
+    variable, since it uses that to decide whether to return early, and to pass
+    a (hopefully) appropriate bitmask to fsnotify_change.
+    
+    Also, check the ia_valid after the setattr op returns and see if either
+    ATTR_KILL_* bit is set. If so, then throw a warning and try to clear the
+    bits in the "standard" way. This should help us to catch filesystems that
+    don't handle these bits correctly without breaking them outright.
+
+diff --git a/fs/attr.c b/fs/attr.c
+index f8dfc22..7cbb883 100644
+--- a/fs/attr.c
++++ b/fs/attr.c
+@@ -100,15 +100,53 @@ int inode_setattr(struct inode * inode, struct iattr * attr)
+ }
+ EXPORT_SYMBOL(inode_setattr);
+ 
++/**
++ * generic_attrkill - helper to convert ATTR_KILL_* bits into mode change
++ * @mode: current mode of inode
++ * @attr: inode attribute changes requested by VFS
++ * Context: anywhere
++ *
++ * This is a helper function to convert ATTR_KILL_SUID and ATTR_KILL_SGID
++ * into a mode change. Filesystems should call this from their setattr
++ * inode op when they want "conventional" setuid-clearing behavior.
++ *
++ * Filesystems that declare a setattr inode operation are now expected to
++ * handle the ATTR_KILL_SUID and ATTR_KILL_SGID bits appropriately. The VFS
++ * no longer automatically converts these bits to a mode change for
++ * inodes that have their own setattr operation.
++ **/
++void generic_attrkill(mode_t mode, struct iattr *attr)
++{
++	if (attr->ia_valid & ATTR_KILL_SUID) {
++		attr->ia_valid &= ~ATTR_KILL_SUID;
++		if (mode & S_ISUID) {
++			if (!(attr->ia_valid & ATTR_MODE)) {
++				attr->ia_valid |= ATTR_MODE;
++				attr->ia_mode = mode;
++			}
++			attr->ia_mode &= ~S_ISUID;
++		}
++	}
++	if (attr->ia_valid & ATTR_KILL_SGID) {
++		attr->ia_valid &= ~ATTR_KILL_SGID;
++		if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
++			if (!(attr->ia_valid & ATTR_MODE)) {
++				attr->ia_valid |= ATTR_MODE;
++				attr->ia_mode = mode;
++			}
++			attr->ia_mode &= ~S_ISGID;
++		}
++	}
++}
++EXPORT_SYMBOL(generic_attrkill);
++
+ int notify_change(struct dentry * dentry, struct iattr * attr)
+ {
+ 	struct inode *inode = dentry->d_inode;
+-	mode_t mode;
+-	int error;
++	int error, once = 0;
+ 	struct timespec now;
+ 	unsigned int ia_valid = attr->ia_valid;
+ 
+-	mode = inode->i_mode;
+ 	now = current_fs_time(inode->i_sb);
+ 
+ 	attr->ia_ctime = now;
+@@ -117,36 +155,48 @@ int notify_change(struct dentry * dentry, struct iattr * attr)
+ 	if (!(ia_valid & ATTR_MTIME_SET))
+ 		attr->ia_mtime = now;
+ 	if (ia_valid & ATTR_KILL_SUID) {
+-		attr->ia_valid &= ~ATTR_KILL_SUID;
+-		if (mode & S_ISUID) {
+-			if (!(ia_valid & ATTR_MODE)) {
+-				ia_valid = attr->ia_valid |= ATTR_MODE;
+-				attr->ia_mode = inode->i_mode;
+-			}
+-			attr->ia_mode &= ~S_ISUID;
+-		}
++		ia_valid &= ~ATTR_KILL_SUID;
++		if (inode->i_mode & S_ISUID)
++			ia_valid |= ATTR_MODE;
+ 	}
+ 	if (ia_valid & ATTR_KILL_SGID) {
+-		attr->ia_valid &= ~ ATTR_KILL_SGID;
+-		if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
+-			if (!(ia_valid & ATTR_MODE)) {
+-				ia_valid = attr->ia_valid |= ATTR_MODE;
+-				attr->ia_mode = inode->i_mode;
+-			}
+-			attr->ia_mode &= ~S_ISGID;
+-		}
++		ia_valid &= ~ATTR_KILL_SGID;
++		if ((inode->i_mode & (S_ISGID | S_IXGRP)) ==
++		    (S_ISGID | S_IXGRP))
++			ia_valid |= ATTR_MODE;
+ 	}
+-	if (!attr->ia_valid)
++	if (!ia_valid)
+ 		return 0;
+ 
+ 	if (ia_valid & ATTR_SIZE)
+ 		down_write(&dentry->d_inode->i_alloc_sem);
+ 
+ 	if (inode->i_op && inode->i_op->setattr) {
++try_again:
+ 		error = security_inode_setattr(dentry, attr);
+ 		if (!error)
+ 			error = inode->i_op->setattr(dentry, attr);
++		/*
++		 * if ATTR_KILL_SUID or ATTR_KILL_SGID is still set, then
++		 * assume that the setattr inode op didn't handle them
++		 * correctly. Try to clear these bits the standard way
++		 * and throw a warning.
++		 */
++		if (!error && !once && unlikely(attr->ia_valid &
++					(ATTR_KILL_SUID|ATTR_KILL_SGID))) {
++			attr->ia_valid &=
++				(ATTR_MODE|ATTR_KILL_SUID|ATTR_KILL_SGID);
++			generic_attrkill(inode->i_mode, attr);
++			once = 1;
++			if (printk_ratelimit())
++				printk(KERN_ERR "%s: %s doesn't seem to "
++					"handle setuid/setgid bit clearing "
++					"correctly.\n"
++					__func__, inode->i_sb->s_type->name);
++			goto try_again;
++		}
+ 	} else {
++		generic_attrkill(inode->i_mode, attr);
+ 		error = inode_change_ok(inode, attr);
+ 		if (!error)
+ 			error = security_inode_setattr(dentry, attr);
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 6bf1395..daac0e5 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1561,6 +1561,7 @@ extern int do_remount_sb(struct super_block *sb, int flags,
+ #ifdef CONFIG_BLOCK
+ extern sector_t bmap(struct inode *, sector_t);
+ #endif
++extern void generic_attrkill(mode_t mode, struct iattr *attr);
+ extern int notify_change(struct dentry *, struct iattr *);
+ extern int permission(struct inode *, int, struct nameidata *);
+ extern int generic_permission(struct inode *, int,
