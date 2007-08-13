@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030375AbXHMMQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966749AbXHMMRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030375AbXHMMQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967784AbXHMGml
+	id S966749AbXHMMRs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966921AbXHMGmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 13 Aug 2007 02:42:43 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2537 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967777AbXHMGml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 02:42:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:59389 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967711AbXHMGmk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:42:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Y85aaAdbEidVwlZoZL2PtEMg3wmUc6YR63oU5ILmoVGM6shXMYE13wtUD5NWdn5CXuLYrIht8uxrRsEs0n/Vee+Rkx2ervTfpBbYJiPuDykPfntrhkeMNdn8cNRolRMuuxh0I60FgdOqkYnUeh9HNjM5DfQdJIp518b1yVjB8WY=
-Message-ID: <6bffcb0e0708122342k5c1fcdd4h82486006509d2788@mail.gmail.com>
-Date: Mon, 13 Aug 2007 08:42:39 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Joe Perches" <joe@perches.com>
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <1186984174.10249.7.camel@localhost>
+Date: Sun, 12 Aug 2007 23:29:04 -0700
+From: joe@perches.com
+To: torvalds@linux-foundation.org, till@harbaum.org,
+       linux-kernel@vger.kernel.org, i2c@lm-sensors.org,
+       akpm@linux-foundation.org
+Subject: [PATCH] [232/2many] MAINTAINERS - I2C-TINY-USB DRIVER
+Message-ID: <46bffa30.GWmcp+60bI7IUrAi%joe@perches.com>
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1186984174.10249.7.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Joe,
+Add file pattern to MAINTAINER entry
 
-On 13/08/07, Joe Perches <joe@perches.com> wrote:
-> I grew weary of looking up the appropriate
-> maintainer email address(es) to CC: for a patch.
->
-> I added flags to the MAINTAINERS file
->
-> F:      file pattern
->
-> for each maintained block and a script to parse
-> the modified blocks for maintainer and list
-> email addresses.
->
-> perl scripts/get_maintainer.pl <patch>
->
-> gives the appropriate maintainer(s).
+Signed-off-by: Joe Perches <joe@perches.com>
 
-Cool thing.
-
-Please do not send gazzillion patches against the same file.
-
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 2c78350..5f90c75 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2209,6 +2209,7 @@ M:	till@harbaum.org
+ L:	i2c@lm-sensors.org
+ T:	http://www.harbaum.org/till/i2c_tiny_usb
+ S:	Maintained
++F:	drivers/i2c/busses/i2c-tiny-usb.c
+ 
+ i386 BOOT CODE
+ P:	H. Peter Anvin
