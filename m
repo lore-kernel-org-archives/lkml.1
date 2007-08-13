@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032332AbXHMRTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032406AbXHMRUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032332AbXHMRTt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S944611AbXHMRI7
+	id S1032406AbXHMRUn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S947059AbXHMRJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:08:59 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:42410 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753870AbXHMRI4 (ORCPT
+	Mon, 13 Aug 2007 13:09:17 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:16268 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031858AbXHMRJN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:08:56 -0400
-Subject: Re: [PATCH] Firmware class name collision
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Markus Rechberger <markus.rechberger@amd.com>
-Cc: linux-kernel@vger.kernel.org, Jean Delvare <khali@linux-fr.org>,
-       Greg KH <greg@kroah.com>
-In-Reply-To: <46C05896.4050509@amd.com>
-References: <46C05896.4050509@amd.com>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 19:10:47 +0200
-Message-Id: <1187025047.6698.219.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 13 Aug 2007 13:09:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=qliZcUrt95/51XBduODNhQxlj58h1ZWsI+GvxBB2CcLAbrNFbnsYGojcw7xtID4UFCu1wPYLdIKvysnP/sTPyY31fxlff9p6Olq0pGws3Fun/VObhV3ceaVTmCPYeFwKbjUJdMqubVgrL11QGC9R/Z2mhDKlMKOr9vo3IhVPG+k=
+Message-ID: <2c0942db0708131009y6f1c4cc4n59d8b36943643955@mail.gmail.com>
+Date: Mon, 13 Aug 2007 10:09:08 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Joe Perches" <joe@perches.com>
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <1186984174.10249.7.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1186984174.10249.7.camel@localhost>
+X-Google-Sender-Auth: efb5daf09dfdebc6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Markus,
+On 8/12/07, Joe Perches <joe@perches.com> wrote:
+> I grew weary of looking up the appropriate
+> maintainer email address(es) to CC: for a patch.
+>
+> I added flags to the MAINTAINERS file
+>
+> F:      file pattern
+>
+> for each maintained block and a script to parse
+> the modified blocks for maintainer and list
+> email addresses.
 
-> following patch fixes the i2c name collision with i2c-dev.
-> 
-> http://mcentral.de/wiki/index.php/Bugtracker#i2c_core_problem
-> 
-> This issue has been experienced with em28xx and saa7133 based devices.
-> I discussed that problem with Jean Delvare a while ago and he proposed 
-> to add a prefix to the class name.
-> 
-> http://mcentral.de/~mrec/patches/firmware_class_name_collision.diff
-> 
-> Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
-> 
-> index b24efd4..bfc54a1 100644
-> --- a/drivers/base/firmware_class.c
-> +++ b/drivers/base/firmware_class.c
-> @@ -297,8 +297,7 @@ firmware_class_timeout(u_long data)
->  
->  static inline void fw_setup_device_id(struct device *f_dev, struct 
-> device *dev)
->  {
-> -       /* XXX warning we should watch out for name collisions */
-> -       strlcpy(f_dev->bus_id, dev->bus_id, BUS_ID_SIZE);
-> +       snprintf(f_dev->bus_id, BUS_ID_SIZE, "fw-%s", dev->bus_id);
->  }
-
-I would prefer if we use "firmware-%s" since the "fw" might collide with
-the new Firewire stack. Please change that and I agree.
-
-Acked-by: Marcel Holtmann <marcel@holtmann.org>
-
-Regards
-
-Marcel
-
-
+Why not parse git annotate or blame instead (other than it's freakin'
+slow)? Using the repository history has the added benefit of telling
+you a lot more fine-grained detail about who may want to know about
+your patch.
