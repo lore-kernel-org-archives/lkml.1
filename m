@@ -1,28 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965839AbXHMUuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970255AbXHMUvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965839AbXHMUuZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939640AbXHMUsj
+	id S970255AbXHMUvY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965872AbXHMUsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:48:39 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56641 "EHLO
+	Mon, 13 Aug 2007 16:48:53 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56643 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966380AbXHMUsh (ORCPT
+	with ESMTP id S971149AbXHMUsv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:48:37 -0400
-Date: Mon, 13 Aug 2007 21:54:50 +0100
+	Mon, 13 Aug 2007 16:48:51 -0400
+Date: Mon, 13 Aug 2007 21:56:07 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, joe@perches.com,
-       xen-devel@lists.xensource.com, virtualization@lists.osdl.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jeremy@xensource.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] [545/2many] MAINTAINERS - XEN HYPERVISOR INTERFACE
-Message-ID: <20070813215450.34585d80@the-village.bc.nu>
-In-Reply-To: <20070813121005.af159d1d.randy.dunlap@oracle.com>
-References: <46bffcb5.o/KKCq3EZH4S47k3%joe@perches.com>
-	<20070813185536.GH3672@sequoia.sous-sol.org>
-	<20070813121005.af159d1d.randy.dunlap@oracle.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Bad addresses in MAINTAINERS
+Message-ID: <20070813215607.3ab5b1e4@the-village.bc.nu>
+In-Reply-To: <1187032024.10249.266.camel@localhost>
+References: <1187032024.10249.266.camel@localhost>
 X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -33,8 +28,16 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Agreed.  But not everyone wants to or should have to use git,
-> so what are the alternatives?
+> 3C359 NETWORK DRIVER
+> OLYMPIC NETWORK DRIVER
+> TOKEN-RING NETWORK DRIVER
+> TMS380 TOKEN-RING NETWORK DRIVER
+> L:	linux-tr@linuxtr.net
 
-Export the recent git history each release into an XML file at known
-locations on the kernel web site. Wait for tools to appear
+Probably linux-net
+
+
+
+For the others be careful. My mail system is probably like many others
+that decided you were an attack and some of them may well have bounced as
+a result
