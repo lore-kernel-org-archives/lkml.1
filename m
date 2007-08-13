@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942642AbXHMJmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971937AbXHMJmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942642AbXHMJmR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 05:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966580AbXHMGdG
+	id S971937AbXHMJmp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 05:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967087AbXHMGdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:33:06 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1279 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:33:16 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1311 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967077AbXHMGdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:33:03 -0400
-Date: Sun, 12 Aug 2007 23:32:51 -0700
+	id S967070AbXHMGdN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:33:13 -0400
+Date: Sun, 12 Aug 2007 23:32:56 -0700
 From: joe@perches.com
-To: trond.myklebust@fys.uio.no, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] [344/2many] MAINTAINERS - NFS CLIENT
-Message-ID: <46bffb13.g6PWKhDCxXTpAZFm%joe@perches.com>
+To: yokota@netlab.is.tsukuba.ac.jp, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, gotom@debian.or.jp,
+       akpm@linux-foundation.org
+Subject: [PATCH] [347/2many] MAINTAINERS - NINJA SCSI-32Bi/UDE PCI/CARDBUS SCSI HOST ADAPTER DRIVER
+Message-ID: <46bffb18.d2jtcobSM4uNoxbu%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,19 +28,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index a8fb231..1f81c05 100644
+index 6f7fc81..378ad04 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -3308,6 +3308,12 @@ P:	Trond Myklebust
- M:	trond.myklebust@fys.uio.no
- L:	linux-kernel@vger.kernel.org
+@@ -3339,6 +3339,8 @@ P:	YOKOTA Hiroshi
+ M:	yokota@netlab.is.tsukuba.ac.jp
+ W:	http://www.netlab.is.tsukuba.ac.jp/~yokota/izumi/ninja/
  S:	Maintained
-+F:	fs/nfs/
-+F:	fs/nfs_common/
-+F:	fs/nfsctl.c
-+F:	fs/nfsd/
-+F:	include/linux/nfs*
-+F:	include/linux/nfsd/
++F:	Documentation/scsi/NinjaSCSI.txt
++F:	drivers/scsi/pcmcia/nsp_*
  
- NI5010 NETWORK DRIVER
- P:	Jan-Pascal van Best
+ NTFS FILESYSTEM
+ P:	Anton Altaparmakov
