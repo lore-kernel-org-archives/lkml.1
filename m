@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934682AbXHMViF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933872AbXHMVke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934682AbXHMViF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 17:38:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764742AbXHMVha
+	id S933872AbXHMVke (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 17:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbXHMVkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 17:37:30 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3759 "EHLO perches.com"
+	Mon, 13 Aug 2007 17:40:07 -0400
+Received: from mail.suse.de ([195.135.220.2]:43340 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758344AbXHMVhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 17:37:25 -0400
-Subject: Re: [v4l-dvb-maintainer] [PATCH] [534/2many] MAINTAINERS - VIDEO
-	FOR LINUX
-From: Joe Perches <joe@perches.com>
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: v4l-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       torvalds@linux-foundation.org, mchehab@infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <200708132032.51610.hverkuil@xs4all.nl>
-References: <46bffca0.bx1Cr4B33dN1FJPN%joe@perches.com>
-	 <200708132032.51610.hverkuil@xs4all.nl>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 14:34:19 -0700
-Message-Id: <1187040859.10249.327.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	id S1757176AbXHMVkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 17:40:04 -0400
+Date: Mon, 13 Aug 2007 14:17:50 -0700
+From: Greg KH <gregkh@suse.de>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: Re: [patch] encapsulate uevent()/add_uevent_var() buffer handling
+Message-ID: <20070813211750.GA16120@suse.de>
+References: <20070813143711.GA24536@s15225674.onlinehome-server.info>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070813143711.GA24536@s15225674.onlinehome-server.info>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 20:32 +0200, Hans Verkuil wrote:
-> --- MAINTAINERS.org     2007-08-13 20:23:47.000000000 +0200
-> +++ MAINTAINERS 2007-08-13 20:28:17.000000000 +0200
-> +IVTV VIDEO4LINUX DRIVER
-> +P:     Hans Verkuil
-> +M:     hverkuil@xs4all.nl
-> +L:     ivtv-devel@ivtvdriver.org
-> +L:     ivtv-users@ivtvdriver.org
-> +L:     video4linux-list@redhat.com
-> +W:     http://www.ivtvdriver.org
-> +S:     Maintained
-> +F:     Documentation/video4linux/README.ivtv
-> +F:     drivers/media/video/ivtv/
+On Mon, Aug 13, 2007 at 04:37:11PM +0200, Kay Sievers wrote:
+> Hi,
+> this changes the uevent buffer stuff to use a struct instead
+> of tons of parameters. It does no longer require the caller to
+> do the proper buffer termination and size accounting, which is
+> currently wrong in a lot of places.
+> 
+> This tells everything:
+>   47 files changed, 265 insertions(+), 605 deletions(-)
+> 
+> Thanks,
+> Kay
+> 
+> From: Kay Sievers <kay.sievers@vrfy.org>
+> Subject: Driver core: encapsulate uevent()/add_uevent_var() buffer handling
 
-Added locally.
+Very nice, care to respin this with the one issue that Cornelia pointed
+out?
 
+thanks,
+
+greg k-h
