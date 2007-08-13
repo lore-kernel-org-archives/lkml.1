@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935991AbXHMWWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764332AbXHMWZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935991AbXHMWWh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 18:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbXHMWW1
+	id S1764332AbXHMWZB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 18:25:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbXHMWYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 18:22:27 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47901 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754705AbXHMWW0 (ORCPT
+	Mon, 13 Aug 2007 18:24:50 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:28587 "EHLO
+	outbound9-dub-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752680AbXHMWYt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 18:22:26 -0400
-Date: Mon, 13 Aug 2007 15:22:25 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: Mel Gorman <mel@skynet.ie>, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones
- pointer
-In-Reply-To: <20070813230801.GH3406@bingen.suse.de>
-Message-ID: <Pine.LNX.4.64.0708131518320.28626@schroedinger.engr.sgi.com>
-References: <20070809210616.14702.73376.sendpatchset@skynet.skynet.ie>
- <200708102013.49170.ak@suse.de> <Pine.LNX.4.64.0708101201240.17549@schroedinger.engr.sgi.com>
- <200708110304.55433.ak@suse.de> <Pine.LNX.4.64.0708131423050.28026@schroedinger.engr.sgi.com>
- <20070813225020.GE3406@bingen.suse.de> <Pine.LNX.4.64.0708131457190.28445@schroedinger.engr.sgi.com>
- <20070813225841.GG3406@bingen.suse.de> <Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com>
- <20070813230801.GH3406@bingen.suse.de>
+	Mon, 13 Aug 2007 18:24:49 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <46C0DA2B.6080407@am.sony.com>
+Date: Mon, 13 Aug 2007 15:24:43 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: joe@perches.com
+CC: torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, cbe-oss-dev@ozlabs.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] [392/2many] MAINTAINERS - PS3 PLATFORM SUPPORT
+References: <46bffb71.JWcVvIR5pg3biTEh%joe@perches.com>
+In-Reply-To: <46bffb71.JWcVvIR5pg3biTEh%joe@perches.com>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Aug 2007 22:24:44.0442 (UTC) FILETIME=[BFE4CFA0:01C7DDF8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Aug 2007, Andi Kleen wrote:
+From: joe@perches.com
 
-> > x86_64 is the only platforms that uses ZONE_DMA32. Ia64 and other 64 bit 
-> > platforms use ZONE_DMA for <4GB allocs.
-> 
-> Yes, but ZONE_DMA32 == ZONE_DMA.
+Add file pattern to MAINTAINER entry
 
-I am not sure what you mean by that. Ia64 ZONE_DMA == x86_84 ZONE_DMA32?
+Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+I also maintain the file include/asm-powerpc/lv1call.h.
+This updated patch adds that file.
 
-> Also when the slab users of GFP_DMA are all gone ia64 won't need
-> the slab support anymore. So either you change your ifdef in slub or 
-> switch to ZONE_DMA32 for IA64.
+-Geoff
 
-If you have gotten rid of all slab users of GFP_DMA (and also all arch 
-uses of it) then we can drop the code in SLAB.
+ MAINTAINERS |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-> The trouble is that this cannot be done globally, at least not
-> until s390 and a few other architures using GFP_DMA with slab
-> are all converted.
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3015,6 +3015,13 @@ M:	geoffrey.levand@am.sony.com
+ L:	linuxppc-dev@ozlabs.org
+ L:	cbe-oss-dev@ozlabs.org
+ S:	Supported
++F:	arch/powerpc/boot/ps3*
++F:	arch/powerpc/platforms/ps3/
++F:	drivers/*/ps3*
++F:	drivers/ps3/
++F:	drivers/usb/host/*ps3.c
++F:	include/asm-powerpc/ps3*
++F:	include/asm-powerpc/lv1call.h
+ 
+ PVRUSB2 VIDEO4LINUX DRIVER
+ P:	Mike Isely
 
-The s390 arch code still contains GFP_DMA uses? No drivers elsewhere 
-still use GFP_DMA?
-
-> 
-> > I think s/ZONE_DMA32/ZONE_DMA would restore the one DMA zone thing which 
-> > is good. We could drop all ZONE_DMA32 stuff that is only needed by a 
-> > single arch.
-> 
-> But it's not quite the same: GFP_DMA32 has no explicit slab support.
-
-Right. So we could
-
-1. Drop sl?b support for GFP_DMA.
-
-2. Drop GFP_DMA32 support.
-
-Then we only allow page allocator allocs using GFP_DMA? That may be the 
-least invasive for arch code.
