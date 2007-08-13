@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765432AbXHMWfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932319AbXHMWgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765432AbXHMWfd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 18:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbXHMWfJ
+	id S932319AbXHMWgg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 18:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbXHMWgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 18:35:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59082 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754799AbXHMWfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 18:35:05 -0400
-Date: Mon, 13 Aug 2007 17:09:56 -0400
-From: Dave Jones <davej@redhat.com>
-To: Zan Lynx <zlynx@acm.org>
-Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
-Subject: Re: How to make -mm a more viable testbed (was: [PATCH] [1/12]
-	x86: Work around mmio config space quirk on AMD)
-Message-ID: <20070813210956.GA18334@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Zan Lynx <zlynx@acm.org>,
-	Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
-References: <200708130808.46989.a1426z@gawab.com> <1187037607.7855.21.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187037607.7855.21.camel@localhost>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Mon, 13 Aug 2007 18:36:13 -0400
+Received: from hu-out-0506.google.com ([72.14.214.233]:40546 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753863AbXHMWgK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 18:36:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:date:to:subject:cc:message-id;
+        b=Ot/7djFEOm0FGiqhkqkTjYa95r0W+yXpTMHS6J7E1XJycPx4bSXMDQ4KVoTDsCl3wKAEitDzwkf1hwOKLVw1EdFCnakHzTtHFGy8+WtSUVQn57VcBaoQj0dau6WxF7yHvfo/TF/IdZOyXf0+tn7334wodEYbj34xqG6wrCcNzmw=
+From: mbressers@gmail.com
+Date: Tue, 14 Aug 2007 00:37:29 +0200
+To: linux-usb-devel@lists.sourceforge.net
+Subject: [PATCH] [TRIVIAL] fix spelling mistake   in drivers/usb/host/Kconfig
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Message-ID: <46c0dcd5.17e7300a.7396.ffff8322@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 02:40:06PM -0600, Zan Lynx wrote:
- > On Mon, 2007-08-13 at 08:08 +0300, Al Boldi wrote:
- > > Linus Torvalds wrote:
- > > > On Sun, 12 Aug 2007, Dave Jones wrote:
- > > > > 
- > > > > This does make me wonder, why these weren't caught in -mm ?
- > > > 
- > > > I'm worried that -mm isn't getting a lot of exposure these days. People do 
- > > > run it, but I wonder how many..
- > > 
- > > Well, I'm not running it because it's got too much garbage in it, which makes 
- > > it a pretty unrealistic testbed.  And to make matters worse, I also stay 
- > > away from rc's as a consequence.
- > > 
- > > To make -mm more viable, it may be advisable to restructure -mm in such a way 
- > > as to be a Kconfig option to mainline.  This would probably involve some 
- > > patch management functionality to apply experimental submissions on a 
- > > per-patch basis, as opposed to being a 'take it or leave it slam onto 
- > > mainline' patch.
- > 
- > I thought most people running -mm were running klive, which shou
- > ld tell kernel versions, uptime and other things.  I run it, anyway.
- > 
- > http://klive.cpushare.com/
+From: Maarten Bressers <mbressers@gmail.com>
 
-If that's the case, there are 3 people running 2.6.23-rc2-mm2.
-I suspect the actual number of users is considerably higher.
-Somehow I doubt that 'most' people are running klive.
+Greetings,
 
-	Dave
+A very trivial patch: fixes a spelling mistake in drivers/usb/host/Kconfig,
+wrt the R8A66597_HCD driver. The patch applies to kernel 2.6.23-rc3.
 
--- 
-http://www.codemonkey.org.uk
+Signed-off by: Maarten Bressers <mbressers@gmail.com>
+
+---
+
+--- a/drivers/usb/host/Kconfig.orig	2007-08-13 19:40:34.000000000 +0200
++++ b/drivers/usb/host/Kconfig	2007-08-13 19:40:44.000000000 +0200
+@@ -237,7 +237,7 @@ config USB_SL811_CS
+ 	  module will be called "sl811_cs".
+ 
+ config USB_R8A66597_HCD
+-	tristate "R8A66597 HCD suppoort"
++	tristate "R8A66597 HCD support"
+ 	depends on USB
+ 	help
+ 	  The R8A66597 is a USB 2.0 host and peripheral controller.
