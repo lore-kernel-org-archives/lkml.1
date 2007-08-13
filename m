@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935015AbXHMUWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S943606AbXHMUZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935015AbXHMUWv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933046AbXHMUWP
+	id S943606AbXHMUZV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbXHMUYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:22:15 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39991 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759996AbXHMUWN (ORCPT
+	Mon, 13 Aug 2007 16:24:54 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:5557 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753810AbXHMUYx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:22:13 -0400
-Date: Mon, 13 Aug 2007 22:21:58 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, joe@perches.com,
-       xen-devel@lists.xensource.com, virtualization@lists.osdl.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jeremy@xensource.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] [545/2many] MAINTAINERS - XEN HYPERVISOR INTERFACE
-Message-ID: <20070813202158.GH18945@stusta.de>
-References: <46bffcb5.o/KKCq3EZH4S47k3%joe@perches.com> <20070813185536.GH3672@sequoia.sous-sol.org> <20070813121005.af159d1d.randy.dunlap@oracle.com> <20070813191938.GI3672@sequoia.sous-sol.org>
+	Mon, 13 Aug 2007 16:24:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZSLOdmndrPx1olNKXdycoxHGEp41pTueXL0fbr/lHiBa+vFc0Sg7Z6Q+sAIa+jmHcqAyR0JfxXg1FPo57Ev+yI8eVST3vKHHhV9iOeRu0HBOHTfvDgb3ve2uGbnvBSIra7R6fQueobTUJMWoGoXdjBB7b8ty8yBlVJnaGBC7jaw=
+Message-ID: <6bffcb0e0708131324x29211ef5sd5154d44f0c2e79f@mail.gmail.com>
+Date: Mon, 13 Aug 2007 22:24:52 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [1/2] 2.6.23-rc3: known regressions with patches
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Gabriel C" <nix.or.die@googlemail.com>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
+       "Satyam Sharma" <satyam.sharma@gmail.com>,
+       "Vitaly Bordug" <vitb@kernel.crashing.org>,
+       "Dan Merillat" <dan.merillat@gmail.com>,
+       "Paolo Ornati" <ornati@fastwebnet.it>,
+       "Rusty Russell" <rusty@rustcorp.com.au>, linux-fsdevel@vger.kernel.org,
+       nfs@lists.sourceforge.net, "Jeff Garzik" <jeff@garzik.org>,
+       "Trond Myklebust" <Trond.Myklebust@netapp.com>
+In-Reply-To: <20070813184204.GA6071@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070813191938.GI3672@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <46C09C1A.7050706@googlemail.com>
+	 <20070813184204.GA6071@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 12:19:38PM -0700, Chris Wright wrote:
-> * Randy Dunlap (randy.dunlap@oracle.com) wrote:
-> > On Mon, 13 Aug 2007 11:55:36 -0700 Chris Wright wrote:
-> > > * joe@perches.com (joe@perches.com) wrote:
-> > > > +F:	arch/i386/xen/
-> > > > +F:	drivers/*/xen-*front.c
-> > > > +F:	drivers/xen/
-> > > > +F:	include/asm-i386/xen/
-> > > > +F:	include/xen/
-> > > 
-> > > I think this data will easily become stale.  What is the point again?
-> > 
-> > Agreed.  But not everyone wants to or should have to use git,
-> > so what are the alternatives?
-> 
-> Between git (or gitweb), existing MAINTAINERS and a bit of common
-> sense (or extra sleuthing), I never perceived a significant problem.
+On 13/08/07, Andi Kleen <andi@firstfloor.org> wrote:
+> > Unclassified
+> >
+> > Subject         : reset during bootup - 2.6.23-rc2 (git d23cf676)
+>
+> This is already fixed in mainline
 
-For active kernel developers like you and me it's not a problem.
+commit b8d3f2448b8f4ba24f301e23585547ba1acc1f04
 
-But for other people it's non-trivial to always figure out who the 
-maintainer of some part of the kernel is.
+>
+> There is a real regression with failing builds on some old binutils on
+> x86-64 know, but I don't know how to fix it.
 
-> Alternative could be to place info directly in source files.  If not
-> all of MAINTAINERS info, it could be a tag to reference the relevant
-> MAINTAINERS entry.
+Did you mean this?
 
-Having the information in MAINTAINERS is what creates the least 
-redundancies.
+Subject         : /usr/bin/ld: section .text [ffffffffff700500 ->
+ffffffffff7007e3] overlaps section .gnu.version_d [ffffffffff7004d8 ->
+ffffffffff70050f]
+References      : http://lkml.org/lkml/2007/7/22/239
+Last known good : ?
+Submitter       : Andre Noll <maan@systemlinux.org>
+Caused-By       : ?
+Handled-By      : Andi Kleen <ak@suse.de>
+Status          : problem is being debugged
 
-> thanks,
-> -chris
+>
+> -Andi
+>
 
-cu
-Adrian
+Regards,
+Michal
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+LOG
+http://www.stardust.webpages.pl/log/
