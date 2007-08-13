@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965155AbXHMCMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936272AbXHMCPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965155AbXHMCMk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 22:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934170AbXHMCMa
+	id S936272AbXHMCPU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 22:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934597AbXHMCPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 22:12:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52900 "EHLO mx1.redhat.com"
+	Sun, 12 Aug 2007 22:15:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53452 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933531AbXHMCM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 22:12:29 -0400
+	id S934536AbXHMCPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 22:15:04 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -16,19 +16,22 @@ From: Roland McGrath <roland@redhat.com>
 To: akpm@linux-foundation.org
 X-Fcc: ~/Mail/linus
 Cc: linux-kernel@vger.kernel.org
-Cc: paulus@samba.org, benh@kernel.crashing.org, sam@ravnborg.org
-Subject: [PATCH] powerpc vDSO: install unstripped copies on disk
-In-Reply-To: akpm@linux-foundation.org's message of  Friday, 10 August 2007 13:49:45 -0700 <200708102049.l7AKnkr7008081@imap1.linux-foundation.org>
+Cc: ak@suse.de, sam@ravnborg.org
+Subject: [PATCH] i386 vDSO: install unstripped copies on disk
+In-Reply-To: akpm@linux-foundation.org's message of  Friday, 10 August 2007 14:59:46 -0700 <200708102159.l7ALxk8u011793@imap1.linux-foundation.org>
 X-Fcc: ~/Mail/linus
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20070813021222.0C8554D057D@magilla.localdomain>
-Date: Sun, 12 Aug 2007 19:12:22 -0700 (PDT)
+X-Shopping-List: (1) Celebrity table polluters
+   (2) Complaisant exclamations
+   (3) Prestigious conspicuous nostril socks
+   (4) Omnipotent secretions
+Message-Id: <20070813021459.271D74D057D@magilla.localdomain>
+Date: Sun, 12 Aug 2007 19:14:59 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 While integrating these with the Fedora kernel build, I worked out a few kinks.
-This patch replaces powerpc-vdso-install-unstripped-copies-on-disk.patch
-
+This patch replaces i386-vdso-install-unstripped-copies-on-disk.patch and
+i386-vdso-install-unstripped-copies-on-disk-fix.patch
 
 Thanks,
 Roland
@@ -43,123 +46,79 @@ contain source-level debugging information.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Andi Kleen <ak@suse.de>
 ---
 
- arch/powerpc/Makefile               |    5 ++++-
- arch/powerpc/kernel/vdso32/Makefile |   20 +++++++++++++++++---
- arch/powerpc/kernel/vdso64/Makefile |   19 ++++++++++++++++---
- 3 files changed, 37 insertions(+), 7 deletions(-)
+ arch/i386/Makefile        |    1 +
+ arch/i386/kernel/Makefile |   27 ++++++++++++++++++++++-----
+ 2 files changed, 23 insertions(+), 5 deletions(-)
 
-diff -puN arch/powerpc/Makefile~powerpc-vdso-install-unstripped-copies-on-disk arch/powerpc/Makefile
---- a/arch/powerpc/Makefile~powerpc-vdso-install-unstripped-copies-on-disk
-+++ a/arch/powerpc/Makefile
-@@ -166,9 +166,15 @@ define archhelp
-   @echo '  *_defconfig     - Select default config from arch/$(ARCH)/configs'
- endef
+diff -puN arch/i386/Makefile~i386-vdso-install-unstripped-copies-on-disk arch/i386/Makefile
+--- a/arch/i386/Makefile~i386-vdso-install-unstripped-copies-on-disk
++++ a/arch/i386/Makefile
+@@ -141,9 +141,12 @@ zdisk bzdisk: vmlinux
+ fdimage fdimage144 fdimage288 isoimage: vmlinux
+ 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(KBUILD_IMAGE) $@
  
 -install:
 +install: vdso_install
  	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(KBUILD_IMAGE) install
  
 +vdso_install:
-+ifeq ($(CONFIG_PPC64),y)
-+	$(Q)$(MAKE) $(build)=arch/$(ARCH)/kernel/vdso64 $@
-+endif
-+	$(Q)$(MAKE) $(build)=arch/$(ARCH)/kernel/vdso32 $@
++	$(Q)$(MAKE) $(build)=arch/i386/kernel vdso_install
 +
  archclean:
- 	$(Q)$(MAKE) $(clean)=$(boot)
-
-diff -puN arch/powerpc/kernel/vdso32/Makefile~powerpc-vdso-install-unstripped-copies-on-disk arch/powerpc/kernel/vdso32/Makefile
---- a/arch/powerpc/kernel/vdso32/Makefile~powerpc-vdso-install-unstripped-copies-on-disk
-+++ a/arch/powerpc/kernel/vdso32/Makefile
-@@ -9,11 +9,11 @@ ifeq ($(CONFIG_PPC32),y)
- CROSS32CC := $(CC)
- endif
+ 	$(Q)$(MAKE) $(clean)=arch/i386/boot
  
--targets := $(obj-vdso32) vdso32.so
-+targets := $(obj-vdso32) vdso32.so vdso32.so.dbg
- obj-vdso32 := $(addprefix $(obj)/, $(obj-vdso32))
+diff -puN arch/i386/kernel/Makefile~i386-vdso-install-unstripped-copies-on-disk arch/i386/kernel/Makefile
+--- a/arch/i386/kernel/Makefile~i386-vdso-install-unstripped-copies-on-disk
++++ a/arch/i386/kernel/Makefile
+@@ -52,7 +52,8 @@ obj-$(CONFIG_SCx200)		+= scx200.o
+ # We must build both images before we can assemble it.
+ # Note: kbuild does not track this dependency due to usage of .incbin
+ $(obj)/vsyscall.o: $(obj)/vsyscall-int80.so $(obj)/vsyscall-sysenter.so
+-targets += $(foreach F,int80 sysenter,vsyscall-$F.o vsyscall-$F.so)
++targets += $(foreach F,$(addprefix vsyscall-,int80 sysenter),\
++		     $F.o $F.so $F.so.dbg)
+ targets += vsyscall-note.o vsyscall.lds
  
+ # The DSO images are built using a special linker script.
+@@ -62,16 +63,32 @@ quiet_cmd_syscall = SYSCALL $@
  
--EXTRA_CFLAGS := -shared -s -fno-common -fno-builtin
-+EXTRA_CFLAGS := -shared -fno-common -fno-builtin
- EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso32.so.1 \
- 		$(call ld-option, -Wl$(comma)--hash-style=sysv)
- EXTRA_AFLAGS := -D__VDSO32__ -s
-@@ -26,9 +26,14 @@ CPPFLAGS_vdso32.lds += -P -C -Upowerpc
- $(obj)/vdso32_wrapper.o : $(obj)/vdso32.so
+ export CPPFLAGS_vsyscall.lds += -P -C -U$(ARCH)
  
- # link rule for the .so file, .lds has to be first
--$(obj)/vdso32.so: $(src)/vdso32.lds $(obj-vdso32)
-+$(obj)/vdso32.so.dbg: $(src)/vdso32.lds $(obj-vdso32)
- 	$(call if_changed,vdso32ld)
+-vsyscall-flags = -shared -s -Wl,-soname=linux-gate.so.1 \
++vsyscall-flags = -shared -Wl,-soname=linux-gate.so.1 \
+ 		 $(call ld-option, -Wl$(comma)--hash-style=sysv)
+-SYSCFLAGS_vsyscall-sysenter.so	= $(vsyscall-flags)
+-SYSCFLAGS_vsyscall-int80.so	= $(vsyscall-flags)
++SYSCFLAGS_vsyscall-sysenter.so.dbg	= $(vsyscall-flags)
++SYSCFLAGS_vsyscall-int80.so.dbg		= $(vsyscall-flags)
  
-+# strip rule for the .so file
+-$(obj)/vsyscall-int80.so $(obj)/vsyscall-sysenter.so: \
+-$(obj)/vsyscall-%.so: $(src)/vsyscall.lds \
+-		      $(obj)/vsyscall-%.o $(obj)/vsyscall-note.o FORCE
++$(obj)/vsyscall-int80.so.dbg $(obj)/vsyscall-sysenter.so.dbg: \
++$(obj)/vsyscall-%.so.dbg: $(src)/vsyscall.lds \
++		      $(obj)/vsyscall-%.o $(obj)/vsyscall-note.o FORCE
+ 	$(call if_changed,syscall)
+ 
 +$(obj)/%.so: OBJCOPYFLAGS := -S
 +$(obj)/%.so: $(obj)/%.so.dbg FORCE
 +	$(call if_changed,objcopy)
 +
- # assembly rules for the .S files
- $(obj-vdso32): %.o: %.S
- 	$(call if_changed_dep,vdso32as)
-@@ -39,3 +44,12 @@ quiet_cmd_vdso32ld = VDSO32L $@
- quiet_cmd_vdso32as = VDSO32A $@
-       cmd_vdso32as = $(CROSS32CC) $(a_flags) -c -o $@ $<
- 
-+# install commands for the unstripped file
-+quiet_cmd_vdso_install = INSTALL $@
-+      cmd_vdso_install = cp $(obj)/$@.dbg $(MODLIB)/vdso/$@
++vdsos := vdso-int80.so vdso-sysenter.so
 +
-+vdso32.so: $(obj)/vdso32.so.dbg
++quiet_cmd_vdso_install = INSTALL $@
++      cmd_vdso_install = cp $(@:vdso-%.so=$(obj)/vsyscall-%.so.dbg) \
++			    $(MODLIB)/vdso/$@
++
++$(vdsos):
 +	@mkdir -p $(MODLIB)/vdso
 +	$(call cmd,vdso_install)
 +
-+vdso_install: vdso32.so
-diff -puN arch/powerpc/kernel/vdso64/Makefile~powerpc-vdso-install-unstripped-copies-on-disk arch/powerpc/kernel/vdso64/Makefile
---- a/arch/powerpc/kernel/vdso64/Makefile~powerpc-vdso-install-unstripped-copies-on-disk
-+++ a/arch/powerpc/kernel/vdso64/Makefile
-@@ -4,10 +4,10 @@ obj-vdso64 = sigtramp.o gettimeofday.o d
- 
- # Build rules
- 
--targets := $(obj-vdso64) vdso64.so
-+targets := $(obj-vdso64) vdso64.so vdso64.so.dbg
- obj-vdso64 := $(addprefix $(obj)/, $(obj-vdso64))
- 
--EXTRA_CFLAGS := -shared -s -fno-common -fno-builtin
-+EXTRA_CFLAGS := -shared -fno-common -fno-builtin
- EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso64.so.1 \
- 		$(call ld-option, -Wl$(comma)--hash-style=sysv)
- EXTRA_AFLAGS := -D__VDSO64__ -s
-@@ -20,9 +20,14 @@ CPPFLAGS_vdso64.lds += -P -C -U$(ARCH)
- $(obj)/vdso64_wrapper.o : $(obj)/vdso64.so
- 
- # link rule for the .so file, .lds has to be first
--$(obj)/vdso64.so: $(src)/vdso64.lds $(obj-vdso64)
-+$(obj)/vdso64.so.dbg: $(src)/vdso64.lds $(obj-vdso64)
- 	$(call if_changed,vdso64ld)
- 
-+# strip rule for the .so file
-+$(obj)/%.so: OBJCOPYFLAGS := -S
-+$(obj)/%.so: $(obj)/%.so.dbg FORCE
-+	$(call if_changed,objcopy)
++vdso_install: $(vdsos)
 +
- # assembly rules for the .S files
- $(obj-vdso64): %.o: %.S
- 	$(call if_changed_dep,vdso64as)
-@@ -33,4 +38,12 @@ quiet_cmd_vdso64ld = VDSO64L $@
- quiet_cmd_vdso64as = VDSO64A $@
-       cmd_vdso64as = $(CC) $(a_flags) -c -o $@ $<
- 
-+# install commands for the unstripped file
-+quiet_cmd_vdso_install = INSTALL $@
-+      cmd_vdso_install = cp $(obj)/$@.dbg $(MODLIB)/vdso/$@
-+
-+vdso64.so: $(obj)/vdso64.so.dbg
-+	@mkdir -p $(MODLIB)/vdso
-+	$(call cmd,vdso_install)
- 
-+vdso_install: vdso64.so
+ # We also create a special relocatable object that should mirror the symbol
+ # table and layout of the linked DSO.  With ld -R we can then refer to
+ # these symbols in the kernel code rather than hand-coded addresses.
