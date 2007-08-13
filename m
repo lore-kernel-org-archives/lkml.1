@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966869AbXHMGbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967039AbXHMGcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966869AbXHMGbv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 02:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965029AbXHMGWm
+	id S967039AbXHMGcl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 02:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935796AbXHMGWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:22:42 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3507 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:22:44 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3508 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965681AbXHMGWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762228AbXHMGWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 02:22:40 -0400
-Date: Sun, 12 Aug 2007 23:22:22 -0700
+Date: Sun, 12 Aug 2007 23:22:20 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       colin@colino.net, akpm@linux-foundation.org
-Subject: [PATCH] [31/2many] MAINTAINERS - ADT746X FAN DRIVER
-Message-ID: <46bff89e.OiHF39uY/kJ4MHw3%joe@perches.com>
+To: torvalds@linux-foundation.org, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, corentin.labbe@geomatys.fr,
+       akpm@linux-foundation.org
+Subject: [PATCH] [30/2many] MAINTAINERS - ADM1029 HARDWARE MONITOR DRIVER
+Message-ID: <46bff89c.FBiaofxrQB6NbVOc%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,14 +28,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 641cebb..1db3c5d 100644
+index 91bc5cd..641cebb 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -320,6 +320,7 @@ ADT746X FAN DRIVER
- P:	Colin Leroy
- M:	colin@colino.net
+@@ -314,6 +314,7 @@ P:	Corentin Labbe
+ M:	corentin.labbe@geomatys.fr
+ L:	lm-sensors@lm-sensors.org
  S:	Maintained
-+F:	drivers/macintosh/therm_adt746x.c
++F:	drivers/hwmon/adm1029.c
  
- AEDSP16 DRIVER
- P:	Riccardo Facchetti
+ ADT746X FAN DRIVER
+ P:	Colin Leroy
