@@ -1,40 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S945592AbXHMR1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S973707AbXHMR2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S945592AbXHMR1u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938851AbXHMRZW
+	id S973707AbXHMR2w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032550AbXHMR0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:25:22 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3236 "EHLO perches.com"
+	Mon, 13 Aug 2007 13:26:39 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3240 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030940AbXHMRZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:25:19 -0400
-Subject: Re: [PATCH] [481/2many] MAINTAINERS - TRIDENT 4DWAVE/SIS 7018 PCI
-	AUDIO CORE
+	id S1032509AbXHMR0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 13:26:35 -0400
+Subject: Re: [PATCH] [426/2many] MAINTAINERS - SELINUX SECURITY MODULE
 From: Joe Perches <joe@perches.com>
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-Cc: torvalds@linux-foundation.org, mulix@mulix.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20070813121803.GB1374@rhun.haifa.ibm.com>
-References: <46bffc25.miV0BBr9F/41UwE2%joe@perches.com>
-	 <20070813121803.GB1374@rhun.haifa.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, linux-kernel@vger.kernel.org,
+       Eric Paris <eparis@parisplace.org>
+In-Reply-To: <Pine.LNX.4.64.0708130512560.10561@us.intercode.com.au>
+References: <46bffbb2.DuT+iothoJWb9xhc%joe@perches.com>
+	 <Pine.LNX.4.64.0708130512560.10561@us.intercode.com.au>
 Content-Type: text/plain
-Date: Mon, 13 Aug 2007 10:25:02 -0700
-Message-Id: <1187025902.10249.145.camel@localhost>
+Date: Mon, 13 Aug 2007 10:26:28 -0700
+Message-Id: <1187025988.10249.148.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 15:18 +0300, Muli Ben-Yehuda wrote:
-> Nope, this entry is for sound/oss/trident*.
+On Mon, 2007-08-13 at 05:13 -0700, James Morris wrote:
+> On Sun, 12 Aug 2007, joe@perches.com wrote:
+> > -L:	linux-kernel@vger.kernel.org (kernel issues)
+> > -L: 	selinux@tycho.nsa.gov (subscribers-only, general discussion)
+> > +L:	linux-kernel@vger.kernel.org
+> > +L:	selinux@tycho.nsa.gov (subscribers-only)
+> >  W:	http://www.nsa.gov/selinux
+> >  S:	Supported
+> > +F:	include/linux/selinux*
+> > +F:	security/selinux/
+> 
+> Why are you changing descriptions of the maiking lists ?
 
-TRIDENT 4DWAVE/SIS 7018 PCI AUDIO CORE
-P:	Muli Ben-Yehuda
-M:	mulix@mulix.org
-L:	linux-kernel@vger.kernel.org
-S:	Maintained
-F:	sound/oss/trident*
+Ease of script identification of subscribers-only lists
 
 
