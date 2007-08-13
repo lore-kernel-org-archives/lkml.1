@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965524AbXHMDGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965582AbXHMDIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965524AbXHMDGu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 23:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765965AbXHMDGm
+	id S965582AbXHMDIh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 23:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934597AbXHMDI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 23:06:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42623 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759811AbXHMDGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 23:06:41 -0400
-Date: Sun, 12 Aug 2007 23:06:32 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, dean@arctic.org, patches@x86-64.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [1/12] x86: Work around mmio config space quirk on AMD
-	Fam10h
-Message-ID: <20070813030632.GA1445@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andi Kleen <ak@suse.de>, dean@arctic.org, patches@x86-64.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20070809241.425881000@suse.de> <20070809124128.886BE14F3B@wotan.suse.de> <alpine.LFD.0.999.0708120216470.30176@woody.linux-foundation.org> <200708121203.23741.ak@suse.de> <alpine.LFD.0.999.0708121205210.30176@woody.linux-foundation.org>
+	Sun, 12 Aug 2007 23:08:28 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:22607 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759716AbXHMDI1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Aug 2007 23:08:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ksO5AUbeTVJ2lRXMBb+jrwhJMYxp5sZz0LG+xaSyLfb/G0PN96yT5okbU9FYydzUniSGbd/JnRAUqTZbGw69aB2qLde0iqifxNP1l42EL/moUQ0dw/X3ZCUQmm8OfVLTxBodycdIakT55idDXceRQCbQNBdm/1gLKuyzNwuRPvI=
+Message-ID: <91b13c310708122008w27b86359n5b135df3e229e616@mail.gmail.com>
+Date: Mon, 13 Aug 2007 11:08:26 +0800
+From: "rae l" <crquan@gmail.com>
+To: "Steven Whitehouse" <swhiteho@redhat.com>
+Subject: Re: [PATCH] gfs2: better code for translating characters
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <11869741183677-git-send-email-crquan@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708121205210.30176@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+References: <11869741183677-git-send-email-crquan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 12, 2007 at 12:15:26PM -0700, Linus Torvalds wrote:
+On 8/13/07, Denis Cheng <crquan@gmail.com> wrote:
+> the original code could work, but I think this code could work better.
+>
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
+> ---
+>  fs/gfs2/ops_fstype.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+>
+> diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
+> index cf5aa50..b9a7759 100644
+> --- a/fs/gfs2/ops_fstype.c
+> +++ b/fs/gfs2/ops_fstype.c
+> @@ -145,7 +145,8 @@ static int init_names(struct gfs2_sbd *sdp, int silent)
+>         snprintf(sdp->sd_proto_name, GFS2_FSNAME_LEN, "%s", proto);
+>         snprintf(sdp->sd_table_name, GFS2_FSNAME_LEN, "%s", table);
+>
+> -       while ((table = strchr(sdp->sd_table_name, '/')))
+> +       table = sdp->sd_table_name;
+> +       while ((table = strchr(table, '/')))
+>                 *table = '_';
+Sorry, I don't know what the while loop really means, what's the
+common case that slash character exists? if the '/' appears multiple,
+the latter code would be better; however, if slash appears rarely, the
+original would still be better.
 
- > Bugs happen, but (a) they should happen during the merge window, not when 
- > we're in stabilization phase and (b) the percentages here were just not 
- > very good.
+>
+>  out:
+> --
+> 1.5.2.2
+>
+>
 
-This does make me wonder, why these weren't caught in -mm ?
-Andrew lines up Andi's quilt series in each run afaik, or was
-the last patchbombing all stuff that bypassed -mm for some reason?
-
-	Dave
 
 -- 
-http://www.codemonkey.org.uk
+Denis Cheng
+Linux Application Developer
+
+"One of my most productive days was throwing away 1000 lines of code."
+ - Ken Thompson.
