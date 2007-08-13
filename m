@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S946092AbXHMQyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031656AbXHMQzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S946092AbXHMQyg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:54:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S948353AbXHMQ1C
+	id S1031656AbXHMQzV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S948405AbXHMQ2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 12:27:02 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:56860 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S948349AbXHMQ06 (ORCPT
+	Mon, 13 Aug 2007 12:28:17 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:16192 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S948398AbXHMQ2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 12:26:58 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Mon, 13 Aug 2007 11:24:10 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Surya Prabhakar N <surya.prabhakar@wipro.com>
-cc: netdev@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [KJ] replacing kmalloc with kzalloc in drivers/net/sb1250-mac.c
-In-Reply-To: <1186999123.29518.18.camel@bluegenie>
-Message-ID: <Pine.LNX.4.64.0708131123020.2277@localhost.localdomain>
-References: <1186999123.29518.18.camel@bluegenie>
+	Mon, 13 Aug 2007 12:28:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aCi0mQRfU3tRymK/0ViyDGqkDjiDFEpBPvhFB2sSncAmBo1X74fMujCiqulHPmIT4A9Oh7CGAc/RE1Gepht1cslj2ooax1cEpWNhTshYyFnXAzwUsuyC/Cl4j9J21oinE9U1tQZUzjIqQBZG2cOToARKNFZQ3xmk7p56qacSzzA=
+Message-ID: <6bffcb0e0708130928k726bd676p79c18549dc814d05@mail.gmail.com>
+Date: Mon, 13 Aug 2007 18:28:09 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Chris Holvenstot" <cholvenstot@comcast.net>
+Subject: Re: Kernel 2.6.23-rc2 git4 & git5
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1186954962.8166.19.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.541, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	SARE_SUB_OBFU_Z 0.26)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1186954962.8166.19.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007, Surya Prabhakar N wrote:
+Hi Chris,
 
-> Hi,
->    Replacing kmalloc with kzalloc and cleaning up memset in
-> drivers/net/sb1250-mac.c
+On 12/08/07, Chris Holvenstot <cholvenstot@comcast.net> wrote:
+> This morning I reported an issue which cause a failure of the
+> 2.6.23-rc2-git4 kernel to boot on my system.  The contents of my post
+> may be viewed here:
 >
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0708.1/1959.html
 >
-> Signed-off-by: Surya Prabhakar <surya.prabhakar@wipro.com>
-> ---
+> After 3 separate builds from "virgin sources" I still had the boot
+> failure with the git4 level kernel.
 >
-> diff --git a/drivers/net/sb1250-mac.c b/drivers/net/sb1250-mac.c
-> index e7fdcf1..2dca5a7 100644
-> --- a/drivers/net/sb1250-mac.c
-> +++ b/drivers/net/sb1250-mac.c
-> @@ -760,7 +760,7 @@ static void sbdma_initctx(sbmacdma_t *d,
->
->  	d->sbdma_dscrtable_unaligned =
->  	d->sbdma_dscrtable = (sbdmadscr_t *)
-                             ^^^^^^^^^^^^^^^
-> -		kmalloc((d->sbdma_maxdescr+1)*sizeof(sbdmadscr_t), GFP_KERNEL);
-> +		kzalloc((d->sbdma_maxdescr+1)*sizeof(sbdmadscr_t), GFP_KERNEL);
+> This afternoon I picked up the git5 patch and it comes up and appears to
+> run without problem.
 
-i'm fairly sure you can drop all of those superfluous casts when
-calling one of those memory allocation routines.
+Great!
 
-rday
+Next time, please reply to original report. It is much easier to track bugs.
+
+>
+> Same base system.  Same hardware.  Same build process.
+>
+> So even though I have only been building and running "pre-release"
+> kernels for a short time I feel confident in saying that something was
+> not kosher with the git4 patch - at least when it came to my system.
+>
+> (system configuration data is in the original post)
+>
+> I would not normally burn the valuable time of others with a rhetorical
+> post but I looked at the changes out into the git5 patch and did not
+> spot anything that looked like it would have resolved the issue I was
+> having and I hate not being  able to correlate a cause and effect here.
+>
+> Any clues, or did I just get lucky with this one?
+>
+
+I guess the problem is fixed.
+
+Regards,
+Michal
+
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+LOG
+http://www.stardust.webpages.pl/log/
