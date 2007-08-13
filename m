@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935210AbXHMHin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S942321AbXHMHjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935210AbXHMHin (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 03:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966259AbXHMG0T
+	id S942321AbXHMHjO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 03:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966120AbXHMG0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:26:19 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4118 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:26:21 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4130 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966246AbXHMG0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:26:08 -0400
-Date: Sun, 12 Aug 2007 23:25:55 -0700
+	id S965948AbXHMG0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:26:13 -0400
+Date: Sun, 12 Aug 2007 23:25:34 -0700
 From: joe@perches.com
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH] [144/2many] MAINTAINERS - CYCLADES PC300 DRIVER
-Message-ID: <46bff973.gmZImob3iG7eyk6i%joe@perches.com>
+       cxacru@fire.lp0.eu, akpm@linux-foundation.org,
+       accessrunner-general@lists.sourceforge.net
+Subject: [PATCH] [133/2many] MAINTAINERS - CONEXANT ACCESSRUNNER USB
+ DRIVER
+Message-ID: <46bff95e.3/UvsFLGAGauZhiR%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,14 +29,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index b816e4d..f7e928d 100644
+index 594881d..d0a436a 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1388,6 +1388,7 @@ S:	Orphan
- CYCLADES PC300 DRIVER
- W:	http://www.cyclades.com/
- S:	Orphan
-+F:	drivers/net/wan/pc300*
+@@ -1287,6 +1287,7 @@ M:	cxacru@fire.lp0.eu
+ L:	accessrunner-general@lists.sourceforge.net
+ W:	http://accessrunner.sourceforge.net/
+ S:	Maintained
++F:	drivers/usb/atm/cxacru.c
  
- DAMA SLAVE for AX.25
- P:	Joerg Reuter
+ CORETEMP HARDWARE MONITORING DRIVER
+ P:	Rudolf Marek
