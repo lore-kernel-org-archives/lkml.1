@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972920AbXHMQpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S973450AbXHMQqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972920AbXHMQpv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971703AbXHMP6y
+	id S973450AbXHMQqf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971964AbXHMP7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 11:58:54 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58169 "EHLO mail.dvmed.net"
+	Mon, 13 Aug 2007 11:59:19 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3083 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S971344AbXHMP6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 11:58:50 -0400
-Message-ID: <46C07FAE.1040504@garzik.org>
-Date: Mon, 13 Aug 2007 11:58:38 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
-References: <1186248703.3439.20.camel@localhost.localdomain> <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org> <1186458941.6637.44.camel@localhost.localdomain> <20070807001429.f8cb3b22.akpm@linux-foundation.org> <1186496712.3414.17.camel@localhost.localdomain> <46B88B91.4050703@garzik.org> <1186501124.3414.32.camel@localhost.localdomain> <20070807105144.0ba67d81.akpm@linux-foundation.org> <20070813124225.GT23758@kernel.dk>
-In-Reply-To: <20070813124225.GT23758@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S971927AbXHMP7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 11:59:16 -0400
+Subject: Re: [PATCH] [490/2many] MAINTAINERS - USB BLOCK DRIVER (UB ub)
+From: Joe Perches <joe@perches.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Pete Zaitcev <zaitcev@redhat.com>, torvalds@linux-foundation.org,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <46C0667C.2030606@s5r6.in-berlin.de>
+References: <46bffc48.jq7Ax2MlK/hZ/ANM%joe@perches.com>
+	 <20070813000440.fedfa634.zaitcev@redhat.com>
+	 <1186989060.10249.32.camel@localhost>  <46C0667C.2030606@s5r6.in-berlin.de>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 08:55:52 -0700
+Message-Id: <1187020552.10249.80.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> #for-akpm is usually only in very few -mm release anyway, so it's not
-> like it would have made much difference. We/you/I need to improve that,
-> certainly.
+On Mon, 2007-08-13 at 16:11 +0200, Stefan Richter wrote:
+> Joe Perches wrote:
+> > I'll fix it and resubmit about 10 non-individual patches
+> > in a couple of days.
 > 
-> Honestly, for bsg, it wasn't much of an issue. We had build problems
-> when bsg was merged which was unfortunate but got fixed quickly. Having
-> bsg in -mm would not have caused any testing of the driver in question
-> outside of what it already received, given the nature of it.
+> Better resubmit a single updated combo patch, for the entire MAINTAINERS
+> file in one go.  Unless you receive general objections.
 
-
-That's just an excuse for what happened -- you made an end run around 
-our test tree.  Pretty please with sugar on it -- make sure changes show 
-up in -mm.
-
-	Jeff
-
+Before I sent these n/2many things, I twice sent a single
+integrated patch to the kernel list without it being forwarded.
 
