@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031080AbXHMNHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S972387AbXHMNId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031080AbXHMNHf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969364AbXHMI0c
+	id S972387AbXHMNId (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968389AbXHMI2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 04:26:32 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:45662 "EHLO mail.screens.ru"
+	Mon, 13 Aug 2007 04:28:52 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:41424 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S969113AbXHMI01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 04:26:27 -0400
-Date: Mon, 13 Aug 2007 12:26:15 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Kerrisk <mtk-manpages@gmx.net>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH 3/4] signalfd: fix interaction with posix-timers
-Message-ID: <20070813082615.GA90@tv-sign.ru>
-References: <20070812170530.GA4302@tv-sign.ru> <20070812230350.A6F874D057D@magilla.localdomain>
+	id S941280AbXHMI2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 04:28:47 -0400
+Date: Mon, 13 Aug 2007 12:23:27 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Block device throttling [Re: Distributed storage.]
+Message-ID: <20070813082326.GC30089@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru> <20070807205538.GB5245@kernel.dk> <20070808095448.GA3440@2ka.mipt.ru> <200708122236.24096.phillips@phunq.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070812230350.A6F874D057D@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <200708122236.24096.phillips@phunq.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/12, Roland McGrath wrote:
->
-> This only affects signalfd and so the core change seems ok vs status quo.
+On Sun, Aug 12, 2007 at 10:36:23PM -0700, Daniel Phillips (phillips@phunq.net) wrote:
+> (previous incomplete message sent accidentally)
 > 
-> I think it would be better overall not to have anyone like signalfd calling
-> dequeue_signal in its current form at all.  (The function is too much an
-> internal piece of the core signals code.  The SIGNAL_STOP_DEQUEUED code
-> applying for signalfd calls is probably another problem, for example.)
+> On Wednesday 08 August 2007 02:54, Evgeniy Polyakov wrote:
+> > On Tue, Aug 07, 2007 at 10:55:38PM +0200, Jens Axboe wrote:
+> >
+> > So, what did we decide? To bloat bio a bit (add a queue pointer) or
+> > to use physical device limits? The latter requires to replace all
+> > occurence of bio->bi_bdev = something_new with blk_set_bdev(bio,
+> > somthing_new), where queue limits will be appropriately charged. So
+> > far I'm testing second case, but I only changed DST for testing, can
+> > change all other users if needed though.
+> 
+> Adding a queue pointer to struct bio and using physical device limits as 
+> in your posted patch both suffer from the same problem: you release the 
+> throttling on the previous queue when the bio moves to a new one, which 
+> is a bug because memory consumption on the previous queue then becomes 
+> unbounded, or limited only by the number of struct requests that can be 
+> allocated.  In other words, it reverts to the same situation we have 
+> now as soon as the IO stack has more than one queue.  (Just a shorter 
+> version of my previous post.)
 
-I agree, the "tsk != current" case is not nice. We can forbid fetching
-signals from another thread group and remove it, this is very easy.
-Until then, we can't avoid it without the code duplication.
+No. Since all requests for virtual device end up in physical devices,
+which have limits, this mechanism works. Virtual device will essentially 
+call either generic_make_request() for new physical device (and thus
+will sleep is limit is over), or will process bios directly, but in that
+case it will sleep in generic_make_request() for virutal device.
 
-But SIGNAL_STOP_DEQUEUED code should be OK, afaics. We only need it to
-make sure do_signal_stop() can't miss SIGNAL_STOP_CONTINUED/GROUP_EXIT.
+> 1) One throttle count per submitted bio is too crude a measure.  A bio 
+> can carry as few as one page or as many as 256 pages.  If you take only 
 
-Can't we remove SIGNAL_STOP_DEQUEUED, btw?
+It does not matter - we can count bytes, pages, bio vectors or whatever
+we like, its just a matter of counter and can be changed without
+problem.
 
-	dequeue_signal:
+> 2) Exposing the per-block device throttle limits via sysfs or similar is 
+> really not a good long term solution for system administration.  
+> Imagine our help text: "just keep trying smaller numbers until your 
+> system deadlocks".  We really need to figure this out internally and 
+> get it correct.  I can see putting in a temporary userspace interface 
+> just for experimentation, to help determine what really is safe, and 
+> what size the numbers should be to approach optimal throughput in a 
+> fully loaded memory state.
 
-		if (sig_kernel_stop(sig))
-			->flags &= ~SIGNAL_STOP_CONTINUED;
+Well, we already have number of such 'supposed-to-be-automatic'
+variables exported to userspace, so this will not change a picture,
+frankly I do not care if there will or will not be any sysfs exported
+tunable, eventually we can remove it or do not create at all.
 
-	do_signal_stop:
-
-		if (flags & (SIGNAL_STOP_CONTINUED | SIGNAL_GROUP_EXIT))
-			return 0;
-
-Possible?
-
-Oleg.
-
+-- 
+	Evgeniy Polyakov
