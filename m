@@ -1,133 +1,653 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S944542AbXHMQLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S942063AbXHMQMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S944542AbXHMQLp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S947376AbXHMOuf
+	id S942063AbXHMQMb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S947520AbXHMOwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 10:50:35 -0400
-Received: from main.gmane.org ([80.91.229.2]:54637 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759875AbXHMOub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 10:50:31 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Niels <zorglub_olsen@hotmail.com>
-Subject: Re: Problems with USB disk [solved]
-Date: Mon, 13 Aug 2007 16:50:08 +0200
-Message-ID: <f9pr31$rdq$1@sea.gmane.org>
-References: <f9akh8$ori$1@sea.gmane.org> <20070807211847.GA25391@kroah.com> <f9c71t$r60$1@sea.gmane.org> <200708081357.03238.ismail@pardus.org.tr> <f9hmia$dol$1@sea.gmane.org> <f9mlcc$njk$1@sea.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8Bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 62.79.44.136.adsl.gl.tiscali.dk
-User-Agent: KNode/0.10.5
+	Mon, 13 Aug 2007 10:52:07 -0400
+Received: from el-out-1112.google.com ([209.85.162.182]:46390 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S947509AbXHMOwA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 10:52:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=mP7rNNMZP4a1p9vznEDt9Eibw1V7B71SFn/o+b79XA6emOaciQYbUjJ/xyCWSemf24D2QWGKWqZrrtI234XJzjhQJIYf3xRx0zF+Xg+8+Y+8vegmshSs1ugriduwjjY+lPvf2In5r3KWXfXv8MV7gXnHijNiki11R7FaK5Rbj5Q=
+Message-ID: <e1d5030b0708130751if39e36fx303e8cdaae21b927@mail.gmail.com>
+Date: Mon, 13 Aug 2007 20:21:58 +0530
+From: "Midhun A" <midhunagni@gmail.com>
+To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: USB HC on i.MX21 hangs with error -110
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 August 2007 11:54, Niels wrote:
+Hi All,
 
-> On Friday 10 August 2007 14:43, Niels wrote:
-> 
->> On Wednesday 08 August 2007 12:57, Ismail Dönmez wrote:
->> 
->>> On Wednesday 08 August 2007 13:48:29 you wrote:
->>>> On Tuesday 07 August 2007 23:18, Greg KH wrote:
->>>> > On Tue, Aug 07, 2007 at 10:26:15PM +0200, Niels wrote:
->>>> >> Hi,
->>>> >>
->>>> >> I'm having problems with a new 500 GB USB disk. It works, but
->>>> >> sometimes I get these in dmesg:
->>>> >>
->>>> >>
->>>> >> usb 1-3: reset high speed USB device using ehci_hcd and address 2
->>>> >> usb 5-1: USB disconnect, address 2
->>>> >> drivers/usb/class/usblp.c: usblp0: removed
->>>> >> sd 0:0:0:0: Device not ready: <6>: Sense Key : 0x2 [current]
->>>> >>
->>>> >> : ASC=0x4 ASCQ=0x2
->>>> >>
->>>> >> end_request: I/O error, dev sda, sector 254148215
->>>> >> sd 0:0:0:0: Device not ready: <6>: Sense Key : 0x2 [current]
->>>> >>
->>>> >> : ASC=0x4 ASCQ=0x2
->>>> >>
->>>> >> end_request: I/O error, dev sda, sector 252434023
->>>> >> EXT3-fs error (device sda1): ext3_find_entry: reading directory
->>>> >> #15761836 offset 0
->>>> >>
->>>> >>
->>>> >> There's also a printer connected. This is on a pci/usb2 card. When
->>>> >> the above happens, I get I/O errors. When I mount the drive next,
->>>> >> there are errors and often missing files. Quite annoying!
->>>> >>
->>>> >> Kernel is 2.6.21
->>>> >>
->>>> >> What's going on?
->>>> >
->>>> > You have a low voltage issue, or a bad cable.  The device is
->>>> > electronically disconnecting itself.  Try using a externally-powered
->>>> > hub, or a new cable.
->>> 
->>> I am seeing a similar problem with 2.6.22 and 2.6.23-* kernels with my
->>> 60G iPod Video, works fine with 2.6.18 kernel though.
->>> 
->>> Rehards,
->>> ismail
->>> 
->> 
->> (no need to CC me)
->> 
->> So far I'm seeing this:
->> 
->> - On 2.6.21 I mount the drive. After a while it spins down, and when I
->> then unmount it, an error pops up in dmesg.
->> 
->> - On 2.6.18 I can't provoke the same error. The drive doesn't appear to
->> spin down. I don't know if the data corruption from 2.6.21 occurs with
->> regular use.
->> 
->> There are a number of other factor I need to eliminate on my system, but
->> that's it so far. CONFIG_USB_SUSPEND is not set on either kernel.
->> 
->> 
->> //Niels
-> 
-> 
-> OK, on a vanilla 2.6.18.8 I also have this problem, with both the pci/usb2
-> card, and the usb1 on the board. I listen to music from the drive, and
-> after some time (10-20 minutes or so), it freaks out:
-> 
-> =========
-> sd 1:0:0:0: Device not ready: <6>: Current: sense key=0x2
->     ASC=0x4 ASCQ=0x2
-> end_request: I/O error, dev sda, sector 126693711
-> sd 1:0:0:0: Device not ready: <6>: Current: sense key=0x2
->     ASC=0x4 ASCQ=0x2
-> end_request: I/O error, dev sda, sector 126693711
-> sd 1:0:0:0: Device not ready: <6>: Current: sense key=0x2
->     ASC=0x4 ASCQ=0x2
-> end_request: I/O error, dev sda, sector 126693711
-> =========
-> 
-> Will updating to 2.6.23 and turning off autosuspend explicitly help? Will
-> putting the disk on a powered hub help?
-> 
-> 
-> //Niels
+    We are using the i.MX21 Litekit. It has got a USB host port on it
+and the driver is imx21-hcd.c provided by the vendor. When I plug in a
+USB stick into the host port, the kernel hangs with the following
+error:
+
+   usb 1-2: device descriptor read/64, error -110
+
+  I have read on the net that -110 means timeout error. Also there
+were suggestions to unload ehci-hcd module. But I do not have ehci-hcd
+built into my kernel. My kernel config for USB is:
+
+#
+# USB support
+#
+CONFIG_USB_ARCH_HAS_HCD=y
+# CONFIG_USB_ARCH_HAS_OHCI is not set
+# CONFIG_USB_ARCH_HAS_EHCI is not set
+CONFIG_USB=y
+# CONFIG_USB_DEBUG is not set
 
 
-Using a new PSU and a powered hub made no difference. But I found a solution
-here:
 
-http://alienghic.livejournal.com/382903.html
-
-Basically, the problem is, as suspected, that the drive spins down / goes to
-suspend. This can be disabled with "sdparm --clear STANDBY -6 /dev/sda".
-
-It seems to me to be an error that the kernel reports this as something like
-a hardware failure. Or at least very misleading.
+   The kernel boots with the following log on enabling CONFIG_USB_DEBUG.
 
 
-//Niels
 
+
+imx21_hcd_init:1838
+imx21_probe:1765
+imx21-hc imx21-hc.0: IMX21 USB Host Controller
+imx21-hc imx21-hc.0: new USB bus registered, assigned bus number 1
+imx21_hc_reset:1430
+imx21-hc imx21-hc.0: irq 55, io base 0x00000000
+imx21_hc_start:1438
+imx21_hc_start:1451
+usb usb1: Product: IMX21 USB Host Controller
+usb usb1: Manufacturer: Linux 2.6.22 imx21-hc
+usb usb1: SerialNumber: imx21-hc.0
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+imx21_hc_hub_control:1579
+  GetHubDescriptor
+hub 1-0:1.0: 3 ports detected
+imx21_hc_hub_control:1579
+  GetHubStatus
+imx21_hc_hub_control:1579
+  SetPortFeature
+    USB_PORT_FEAT_POWER
+imx21_hc_hub_control:1579
+  SetPortFeature
+    USB_PORT_FEAT_POWER
+imx21_hc_hub_control:1579
+  SetPortFeature
+    USB_PORT_FEAT_POWER
+>>usb_add_hcd - Exiting without error
+imx21_probe:1822
+imx21_hc_hub_control:1579
+  GetPortStatus: port: 1, 0x100
+imx21_hc_hub_control:1579
+  GetPortStatus: port: 2, 0x100
+imx21_hc_hub_control:1579
+  GetPortStatus: port: 3, 0x100
+
+
+
+
+
+The debug on plugging in the flash drive is:
+
+
+
+/ # imx21_hc_hub_status_data:1555
+    port 1 (of 3): 0x10101
+imx21_hc_hub_control:1579
+  GetPortStatus: port: 2, 0x10101
+imx21_hc_hub_control:1579
+  ClearPortFeature
+    USB_PORT_FEAT_C_CONNECTION
+imx21_hc_hub_control:1579
+  GetPortStatus: port: 2, 0x101
+imx21_hc_hub_control:1579
+  GetPortStatus: port: 2, 0x101
+imx21_hc_hub_control:1579
+  GetPortStatus: port: 2, 0x101
+imx21_hc_hub_control:1579
+  GetPortStatus: port: 2, 0x101
+imx21_hc_hub_control:1579
+  GetPortStatus: port: 2, 0x101
+imx21_hc_hub_control:1579
+  SetPortFeature
+    USB_PORT_FEAT_RESET
+
+hwmode     = 0x202000a2  cint_stat  = 0x00000000  cint_sten = 0x00000001
+clk_ctrl   = 0x00000003  rst_ctrl   = 0x00000000  frm_intvl = 0x2a2f2edf
+frm_remain = 0x28cd0000  hnp_csr   = 0x20440200  hint_isr = 0x00000000
+hnp_ien    = 0x00000000  usbctrl    = 0x000f1004
+
+host_ctrl  = 0x00000008  sysisr     = 0x00000004  sysien    = 0x00000000
+xbufstat   = 0x00000000  ybufstat   = 0x00000000  xyinten   = 0x00000000
+xfillstat  = 0x00000000  yfillstat  = 0x00000000  etdenset  = 0x00000000
+etdenclr   = 0x00000000  immedint   = 0x00000000  etddonest = 0x00000000
+etddoneen  = 0x00000000  frmnub     = 0x00002f1e  lsthresh  = 0x00000628
+roothuba   = 0x01000103  roothubb   = 0x00070000  rootstat  = 0x00000000
+portst1    = 0x00000100  portst2    = 0x00000101  portst3   = 0x00000100
+imx21_hc_hub_control:1579
+  GetPortStatus: port: 2, 0x100103
+imx21_hc_hub_control:1579
+  ClearPortFeature
+    USB_PORT_FEAT_C_RESET
+usb 1-2: new full speed USB device using imx21-hc and address 2
+imx21_hc_urb_enqueue:1466
+ep: c2d94034
+ep->hcpriv: 00000000
+ep->urb_list: c2d94040
+ep->descriptor:
+    bEndpointAddress: 0
+    wMaxPacketSize: 64
+urb: c2d524a0
+   ->dev->speed: FULL
+   ->hcpriv: 00000000
+   ->pipe: 0x80000080  IN  CTRL
+   ->transfer_flags: 0x0
+   ->transfer_buffer: c2d734a0
+   ->transfer_dma: 0xc2d734a0
+   ->transfer_buffer_length: 64
+   ->setup_packet: c2cb1200
+   ->setup_dma: 0xc2cb1200
+       0x80 0x06 0x00 0x01 0x00 0x00 0x40 0x00
+   maxpacket: 64
+imx21_irq:1403
+imx21_irq:1413
+etd(0): 0x00400000 0x00400000 0xf0800000 0x07e00008
+imx21_irq:1403
+imx21_irq:1407
+sh_done_list:1176
+hc_parse_trans:1036
+hc_parse_trans:1039
+hc_parse_trans:1043
+etd(0): 0x08400000 0x00400000 0x53800000 0x07e00008
+hc_parse_trans:1113
+hc_parse_trans:1144
+hc_parse_trans:1152
+urb: c2d524a0
+   ->dev->speed: FULL
+   ->hcpriv: c2d4e160
+   ->pipe: 0x80000082  IN  CTRL
+   ->transfer_flags: 0x0
+   ->transfer_buffer: c2d734a0
+   ->transfer_dma: 0xc2d734a0
+   ->transfer_buffer_length: 64
+   ->setup_packet: c2cb1200
+   ->setup_dma: 0xc2cb1200
+       0x80 0x06 0x00 0x01 0x00 0x00 0x40 0x00
+   maxpacket: 64
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+imx21_irq:1413
+imx21_hc_urb_enqueue:1466
+ep: c2d94034
+ep->hcpriv: 00000000
+ep->urb_list: c2d94040
+ep->descriptor:
+    bEndpointAddress: 0
+    wMaxPacketSize: 64
+urb: c2d52500
+   ->dev->speed: FULL
+   ->hcpriv: 00000000
+   ->pipe: 0x80000080  IN  CTRL
+   ->transfer_flags: 0x0
+   ->transfer_buffer: c2d734a0
+   ->transfer_dma: 0xc2d734a0
+   ->transfer_buffer_length: 64
+   ->setup_packet: c2cb1200
+   ->setup_dma: 0xc2cb1200
+       0x80 0x06 0x00 0x01 0x00 0x00 0x40 0x00
+   maxpacket: 64
+imx21_irq:1403
+imx21_irq:1413
+etd(0): 0x00400000 0x00400000 0xf0800000 0x07e00008
+imx21_irq:1403
+imx21_irq:1407
+sh_done_list:1176
+hc_parse_trans:1036
+hc_parse_trans:1039
+hc_parse_trans:1043
+etd(0): 0x08400000 0x00400000 0x53800000 0x07e00008
+hc_parse_trans:1113
+hc_parse_trans:1144
+hc_parse_trans:1152
+urb: c2d52500
+   ->dev->speed: FULL
+   ->hcpriv: c2d4e160
+   ->pipe: 0x80000082  IN  CTRL
+   ->transfer_flags: 0x0
+   ->transfer_buffer: c2d734a0
+   ->transfer_dma: 0xc2d734a0
+   ->transfer_buffer_length: 64
+   ->setup_packet: c2cb1200
+   ->setup_dma: 0xc2cb1200
+       0x80 0x06 0x00 0x01 0x00 0x00 0x40 0x00
+   maxpacket: 64
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+imx21_irq:1413
+imx21_hc_urb_enqueue:1466
+ep: c2d94034
+ep->hcpriv: 00000000
+ep->urb_list: c2d94040
+ep->descriptor:
+    bEndpointAddress: 0
+    wMaxPacketSize: 64
+urb: c2d52560
+   ->dev->speed: FULL
+   ->hcpriv: 00000000
+   ->pipe: 0x80000080  IN  CTRL
+   ->transfer_flags: 0x0
+   ->transfer_buffer: c2d734a0
+   ->transfer_dma: 0xc2d734a0
+   ->transfer_buffer_length: 64
+   ->setup_packet: c2cb1200
+   ->setup_dma: 0xc2cb1200
+       0x80 0x06 0x00 0x01 0x00 0x00 0x40 0x00
+   maxpacket: 64
+imx21_irq:1403
+imx21_irq:1413
+etd(0): 0x00400000 0x00400000 0xf0800000 0x07e00008
+imx21_irq:1403
+imx21_irq:1407
+sh_done_list:1176
+hc_parse_trans:1036
+hc_parse_trans:1039
+hc_parse_trans:1043
+etd(0): 0x08400000 0x00400000 0x53800000 0x07e00008
+hc_parse_trans:1113
+hc_parse_trans:1144
+hc_parse_trans:1152
+urb: c2d52560
+   ->dev->speed: FULL
+   ->hcpriv: c2d4e160
+   ->pipe: 0x80000082  IN  CTRL
+   ->transfer_flags: 0x0
+   ->transfer_buffer: c2d734a0
+   ->transfer_dma: 0xc2d734a0
+   ->transfer_buffer_length: 64
+   ->setup_packet: c2cb1200
+   ->setup_dma: 0xc2cb1200
+       0x80 0x06 0x00 0x01 0x00 0x00 0x40 0x00
+   maxpacket: 64
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+imx21_irq:1413
+imx21_hc_hub_control:1579
+  SetPortFeature
+    USB_PORT_FEAT_RESET
+
+hwmode     = 0x202000a2  cint_stat  = 0x00000000  cint_sten = 0x00000001
+clk_ctrl   = 0x00000003  rst_ctrl   = 0x00000000  frm_intvl = 0x2a2f2edf
+frm_remain = 0x06810000  hnp_csr   = 0x20440200  hint_isr = 0x00000000
+hnp_ien    = 0x00000000  usbctrl    = 0x000f1004
+
+host_ctrl  = 0x00000008  sysisr     = 0x00000004  sysien    = 0x00000000
+xbufstat   = 0x00000000  ybufstat   = 0x00000000  xyinten   = 0x00000000
+xfillstat  = 0x00000000  yfillstat  = 0x00000000  etdenset  = 0x00000000
+etdenclr   = 0x00000000  immedint   = 0x00000000  etddonest = 0x00000000
+etddoneen  = 0x00000001  frmnub     = 0x0000344a  lsthresh  = 0x00000628
+roothuba   = 0x01000103  roothubb   = 0x00070000  rootstat  = 0x00000000
+portst1    = 0x00000100  portst2    = 0x00000103  portst3   = 0x00000100
+imx21_hc_hub_control:1579
+  GetPortStatus: port: 2, 0x100103
+imx21_hc_hub_control:1579
+  ClearPortFeature
+    USB_PORT_FEAT_C_RESET
+usb 1-2: device descriptor read/64, error -110
+imx21_hc_urb_enqueue:1466
+ep: c2d94034
+ep->hcpriv: 00000000
+ep->urb_list: c2d94040
+ep->descriptor:
+    bEndpointAddress: 0
+    wMaxPacketSize: 64
+urb: c2d525c0
+   ->dev->speed: FULL
+   ->hcpriv: 00000000
+   ->pipe: 0x80000080  IN  CTRL
+   ->transfer_flags: 0x0
+   ->transfer_buffer: c2d734a0
+   ->transfer_dma: 0xc2d734a0
+   ->transfer_buffer_length: 64
+   ->setup_packet: c2cb1200
+   ->setup_dma: 0xc2cb1200
+       0x80 0x06 0x00 0x01 0x00 0x00 0x40 0x00
+   maxpacket: 64
+imx21_irq:1403
+imx21_irq:1413
+etd(0): 0x00400000 0x00400000 0xf0800000 0x07e00008
+imx21_irq:1403
+imx21_irq:1407
+sh_done_list:1176
+hc_parse_trans:1036
+hc_parse_trans:1039
+hc_parse_trans:1043
+etd(0): 0x08400000 0x00400000 0x53800000 0x07e00008
+hc_parse_trans:1113
+hc_parse_trans:1144
+hc_parse_trans:1152
+urb: c2d525c0
+   ->dev->speed: FULL
+   ->hcpriv: c2d4e160
+   ->pipe: 0x80000082  IN  CTRL
+   ->transfer_flags: 0x0
+   ->transfer_buffer: c2d734a0
+   ->transfer_dma: 0xc2d734a0
+   ->transfer_buffer_length: 64
+   ->setup_packet: c2cb1200
+   ->setup_dma: 0xc2cb1200
+       0x80 0x06 0x00 0x01 0x00 0x00 0x40 0x00
+   maxpacket: 64
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+imx21_irq:1413
+imx21_hc_urb_enqueue:1466
+ep: c2d94034
+ep->hcpriv: 00000000
+ep->urb_list: c2d94040
+ep->descriptor:
+    bEndpointAddress: 0
+    wMaxPacketSize: 64
+urb: c2d52620
+   ->dev->speed: FULL
+   ->hcpriv: 00000000
+   ->pipe: 0x80000080  IN  CTRL
+   ->transfer_flags: 0x0
+   ->transfer_buffer: c2d734a0
+   ->transfer_dma: 0xc2d734a0
+   ->transfer_buffer_length: 64
+   ->setup_packet: c2cb1200
+   ->setup_dma: 0xc2cb1200
+       0x80 0x06 0x00 0x01 0x00 0x00 0x40 0x00
+   maxpacket: 64
+imx21_irq:1403
+imx21_irq:1413
+etd(0): 0x00400000 0x00400000 0xf0800000 0x07e00008
+imx21_irq:1403
+imx21_irq:1407
+sh_done_list:1176
+hc_parse_trans:1036
+hc_parse_trans:1039
+hc_parse_trans:1043
+etd(0): 0x08400000 0x00400000 0x53800000 0x07e00008
+hc_parse_trans:1113
+hc_parse_trans:1144
+hc_parse_trans:1152
+urb: c2d52620
+   ->dev->speed: FULL
+   ->hcpriv: c2d4e160
+   ->pipe: 0x80000082  IN  CTRL
+   ->transfer_flags: 0x0
+   ->transfer_buffer: c2d734a0
+   ->transfer_dma: 0xc2d734a0
+   ->transfer_buffer_length: 64
+   ->setup_packet: c2cb1200
+   ->setup_dma: 0xc2cb1200
+       0x80 0x06 0x00 0x01 0x00 0x00 0x40 0x00
+   maxpacket: 64
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+imx21_irq:1413
+imx21_hc_urb_enqueue:1466
+ep: c2d94034
+ep->hcpriv: 00000000
+ep->urb_list: c2d94040
+ep->descriptor:
+    bEndpointAddress: 0
+    wMaxPacketSize: 64
+urb: c2d52680
+   ->dev->speed: FULL
+   ->hcpriv: 00000000
+   ->pipe: 0x80000080  IN  CTRL
+   ->transfer_flags: 0x0
+   ->transfer_buffer: c2d734a0
+   ->transfer_dma: 0xc2d734a0
+   ->transfer_buffer_length: 64
+   ->setup_packet: c2cb1200
+   ->setup_dma: 0xc2cb1200
+       0x80 0x06 0x00 0x01 0x00 0x00 0x40 0x00
+   maxpacket: 64
+imx21_irq:1403
+imx21_irq:1413
+etd(0): 0x00400000 0x00400000 0xf0800000 0x07e00008
+imx21_irq:1403
+imx21_irq:1407
+sh_done_list:1176
+hc_parse_trans:1036
+hc_parse_trans:1039
+hc_parse_trans:1043
+etd(0): 0x08400000 0x00400000 0x53800000 0x07e00008
+hc_parse_trans:1113
+hc_parse_trans:1144
+hc_parse_trans:1152
+urb: c2d52680
+   ->dev->speed: FULL
+   ->hcpriv: c2d4e160
+   ->pipe: 0x80000082  IN  CTRL
+   ->transfer_flags: 0x0
+   ->transfer_buffer: c2d734a0
+   ->transfer_dma: 0xc2d734a0
+   ->transfer_buffer_length: 64
+   ->setup_packet: c2cb1200
+   ->setup_dma: 0xc2cb1200
+       0x80 0x06 0x00 0x01 0x00 0x00 0x40 0x00
+   maxpacket: 64
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+hc_parse_trans:1036
+imx21_irq:1413
+imx21_hc_hub_control:1579
+  SetPortFeature
+    USB_PORT_FEAT_RESET
+
+hwmode     = 0x202000a2  cint_stat  = 0x00000000  cint_sten = 0x00000001
+clk_ctrl   = 0x00000003  rst_ctrl   = 0x00000000  frm_intvl = 0x2a2f2edf
+frm_remain = 0x082e0000  hnp_csr   = 0x20440200  hint_isr = 0x00000000
+hnp_ien    = 0x00000000  usbctrl    = 0x000f1004
+
+host_ctrl  = 0x00000008  sysisr     = 0x00000004  sysien    = 0x00000000
+xbufstat   = 0x00000000  ybufstat   = 0x00000000  xyinten   = 0x00000000
+xfillstat  = 0x00000000  yfillstat  = 0x00000000  etdenset  = 0x00000000
+etdenclr   = 0x00000000  immedint   = 0x00000000  etddonest = 0x00000000
+etddoneen  = 0x00000001  frmnub     = 0x00003a5e  lsthresh  = 0x00000628
+roothuba   = 0x01000103  roothubb   = 0x00070000  rootstat  = 0x00000000
+portst1    = 0x00000100  portst2    = 0x00000103  portst3   = 0x00000100
+imx21_hc_hub_control:1579
+  GetPortStatus: port: 2, 0x100103
+imx21_hc_hub_status_data:1555
+    port 1 (of 3): 0x100103
+imx21_hc_hub_control:1579
+  ClearPortFeature
+    USB_PORT_FEAT_C_RESET
+usb 1-2: device descriptor read/64, error -110
+imx21_hc_hub_control:1579
+  ClearPortFeature
+    USB_PORT_FEAT_ENABLE
+
+
+  The host controller has been configured for Full speed only. Should
+I change the speed to LOW?
+
+
+Thanks,
+Midhun.
