@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S945290AbXHMMem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S945417AbXHMMfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S945290AbXHMMem (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757776AbXHMHAQ
+	id S945417AbXHMMfa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932194AbXHMHDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 03:00:16 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:26934 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753888AbXHMHAM (ORCPT
+	Mon, 13 Aug 2007 03:03:46 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:60900 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933460AbXHMHDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 03:00:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:references:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:x-mimeole:in-reply-to:thread-index;
-        b=iTI0F8pAfhcaHiW0QmmKKnbgRM5yPACR0+JUInkls5Zo0kllljRY3teTg/1h7S252kLwg0iXJfMF8kmUIfpajJ6wRPKLkI+0eh3wcBL9PLiuRlKQVh/k/WEJYDo07Kp+/7O6gy60CBAbhVibDUCzfjscxjN6u56Fo8mBJd+rPg8=
-From: "Edison Wong" <hswong3i@gmail.com>
-To: <joe@perches.com>, <torvalds@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <hlhung3i@gmail.com>,
-       <akpm@linux-foundation.org>
-References: <46bffc0f.E8NW2ppJgFoVM7kH%joe@perches.com>
-Subject: RE: [PATCH] [470/2many] MAINTAINERS - TCP LOW PRIORITY MODULE
-Date: Mon, 13 Aug 2007 14:59:57 +0800
-Message-ID: <000f01c7dd77$91c67e60$6783a8c0@LENOVOBF3ABCC9>
+	Mon, 13 Aug 2007 03:03:43 -0400
+Message-ID: <46BFEE72.9080209@linux.vnet.ibm.com>
+Date: Mon, 13 Aug 2007 11:08:58 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+CC: akpm@linux-foundation.org, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, ebiederm@xmission.com, containers@lists.osdl.org,
+       menage@google.com, xemul@openvz.org
+Subject: Re: [-mm PATCH 8/9] Memory controller add switch to control what
+ type of pages to limit (v4)
+References: <20070727201103.31565.3104.sendpatchset@balbir-laptop> <20070813003348.91E3E1BF943@siro.lan>
+In-Reply-To: <20070813003348.91E3E1BF943@siro.lan>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-In-Reply-To: <46bffc0f.E8NW2ppJgFoVM7kH%joe@perches.com>
-Thread-Index: AcfddGTGGs+nv7eaQ9K4LrrPNJLQWQAAo/+Q
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry that since Mike and I are both Chinese, the naming format is a bit different from English style
+YAMAMOTO Takashi wrote:
+>> Choose if we want cached pages to be accounted or not. By default both
+>> are accounted for. A new set of tunables are added.
+>>
+>> echo -n 1 > mem_control_type
+>>
+>> switches the accounting to account for only mapped pages
+>>
+>> echo -n 2 > mem_control_type
+>>
+>> switches the behaviour back
+> 
+> MEM_CONTAINER_TYPE_ALL is 3, not 2.
+> 
 
-Hung Hing Lun (Chinese full name), Mike (English name)
-Wong Hoi Sing (Chinese full name), Edison (English name)
+Thanks, I'll fix the comment on the top.
 
-Regards,
-Edison
+> YAMAMOTO Takashi
+> 
+>> +enum {
+>> +	MEM_CONTAINER_TYPE_UNSPEC = 0,
+>> +	MEM_CONTAINER_TYPE_MAPPED,
+>> +	MEM_CONTAINER_TYPE_CACHED,
+>> +	MEM_CONTAINER_TYPE_ALL,
+>> +	MEM_CONTAINER_TYPE_MAX,
+>> +} mem_control_type;
+>> +
+>> +static struct mem_container init_mem_container;
+> 
+>> +	mem = rcu_dereference(mm->mem_container);
+>> +	if (mem->control_type == MEM_CONTAINER_TYPE_ALL)
+>> +		return mem_container_charge(page, mm);
+>> +	else
+>> +		return 0;
 
------Original Message-----
-From: joe@perches.com [mailto:joe@perches.com] 
-Sent: Monday, August 13, 2007 2:37 PM
-To: torvalds@linux-foundation.org; linux-kernel@vger.kernel.org; hswong3i@gmail.com; hlhung3i@gmail.com; akpm@linux-foundation.org
-Subject: [PATCH] [470/2many] MAINTAINERS - TCP LOW PRIORITY MODULE
 
-Add file pattern to MAINTAINER entry
-
-Signed-off-by: Joe Perches <joe@perches.com>
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index fc0589f..e45a848 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4462,12 +4462,13 @@ F:	include/net/pkt_cls.h
- F:	net/sched/
- 
- TCP LOW PRIORITY MODULE
--P:	Wong Hoi Sing, Edison
-+P:	Wong Hoi (Edison) Sing
- M:	hswong3i@gmail.com
--P:	Hung Hing Lun, Mike
-+P:	Hung Hing (Mike) Lun
- M:	hlhung3i@gmail.com
- W:	http://tcp-lp-mod.sourceforge.net/
- S:	Maintained
-+F:	net/ipv4/tcp_lp.c
- 
- TI FLASH MEDIA INTERFACE DRIVER
- P:      Alex Dubov
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
