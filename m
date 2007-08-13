@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030658AbXHMSWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759846AbXHMSXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030658AbXHMSWY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940574AbXHMSC0
+	id S1759846AbXHMSXQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S946008AbXHMSEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:02:26 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:19602 "EHLO kernel.dk"
+	Mon, 13 Aug 2007 14:04:01 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3380 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S940388AbXHMSCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:02:21 -0400
-Date: Mon, 13 Aug 2007 20:02:12 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
-Message-ID: <20070813180212.GY23758@kernel.dk>
-References: <1186248703.3439.20.camel@localhost.localdomain> <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org> <1186458941.6637.44.camel@localhost.localdomain> <20070807001429.f8cb3b22.akpm@linux-foundation.org> <1186496712.3414.17.camel@localhost.localdomain> <46B88B91.4050703@garzik.org> <1186501124.3414.32.camel@localhost.localdomain> <20070807105144.0ba67d81.akpm@linux-foundation.org> <20070813124225.GT23758@kernel.dk> <46C07FAE.1040504@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46C07FAE.1040504@garzik.org>
+	id S946725AbXHMSD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 14:03:59 -0400
+Subject: Re: [PATCH] [467/2many] MAINTAINERS - SVGA HANDLING
+From: Joe Perches <joe@perches.com>
+To: Martin Mares <mj@ucw.cz>
+Cc: torvalds@linux-foundation.org, linux-video@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <mj+md-20070813.084046.10732.nikam@ucw.cz>
+References: <46bffc09.olZ/JU6zLi5nghOY%joe@perches.com>
+	 <mj+md-20070813.084046.10732.nikam@ucw.cz>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 11:03:13 -0700
+Message-Id: <1187028193.10249.197.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13 2007, Jeff Garzik wrote:
-> Jens Axboe wrote:
-> >#for-akpm is usually only in very few -mm release anyway, so it's not
-> >like it would have made much difference. We/you/I need to improve that,
-> >certainly.
-> >
-> >Honestly, for bsg, it wasn't much of an issue. We had build problems
-> >when bsg was merged which was unfortunate but got fixed quickly. Having
-> >bsg in -mm would not have caused any testing of the driver in question
-> >outside of what it already received, given the nature of it.
-> 
-> 
-> That's just an excuse for what happened -- you made an end run around 
-> our test tree.  Pretty please with sugar on it -- make sure changes show 
-> up in -mm.
+> > +F:	drivers/video/svgalib.c
+> > +F:	include/linux/svga.h
+> These two are not a part of the video mode selection code, but
+> arch/i386/boot/video.S is.
 
-It's not just an excuse, there are repeatably problems with getting the
-block stuff pulled into -mm. Sometimes it's my problem, but not always.
-Then I get a note saying that pulling was disabled due to merge
-problems, usually right before -mmX goes out. So it misses that release.
+SVGA HANDLING
+P:	Martin Mares
+M:	mj@ucw.cz
+L:	linux-video@atrey.karlin.mff.cuni.cz
+S:	Maintained
+F:	Documentation/svga.txt
+F:	arch/i386/boot/video.S
 
-With bsg it wasn't a huge issue imho, since it was in fairly good shape
-and it the issue were mainly with integration. I do try to make sure
-stuff gets tested, but I also know which stuff is more important to get
-exposure and multi-user testing on. bsg wasn't one of those, it's just a
-lowly driver.
-
--- 
-Jens Axboe
 
