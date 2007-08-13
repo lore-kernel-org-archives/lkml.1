@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S947062AbXHMOrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S947283AbXHMOsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S947062AbXHMOrV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967519AbXHMMFV
+	id S947283AbXHMOsM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969322AbXHMMF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 08:05:21 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:45421 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968580AbXHMMFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 08:05:17 -0400
-Date: Mon, 13 Aug 2007 16:04:17 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Block device throttling [Re: Distributed storage.]
-Message-ID: <20070813120417.GA5992@2ka.mipt.ru>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708122344.00343.phillips@phunq.net> <20070813081441.GA30089@2ka.mipt.ru> <200708130404.26572.phillips@phunq.net>
-Mime-Version: 1.0
+	Mon, 13 Aug 2007 08:05:57 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:56860 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S969193AbXHMMFy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 08:05:54 -0400
+Date: Mon, 13 Aug 2007 13:05:50 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>, dtor@mail.ru,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH] SERIO: Fix modpost warning.
+Message-ID: <20070813120550.GA27033@linux-mips.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708130404.26572.phillips@phunq.net>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 04:04:26AM -0700, Daniel Phillips (phillips@phunq.net) wrote:
-> On Monday 13 August 2007 01:14, Evgeniy Polyakov wrote:
-> > > Oops, and there is also:
-> > >
-> > > 3) The bio throttle, which is supposed to prevent deadlock, can
-> > > itself deadlock.  Let me see if I can remember how it goes.
-> > >
-> > >   * generic_make_request puts a bio in flight
-> > >   * the bio gets past the throttle and initiates network IO
-> > >   * net calls sk_alloc->alloc_pages->shrink_caches
-> > >   * shrink_caches submits a bio recursively to our block device
-> > >   * this bio blocks on the throttle
-> > >   * net may never get the memory it needs, and we are wedged
-> >
-> > If system is in such condition, it is already broken - throttle limit
-> > must be lowered (next time) not to allow such situation.
-> 
-> Agreed that the system is broken, however lowering the throttle limit 
-> gives no improvement in this case.
+i8042_unregister_ports's only caller i8042_remove is a __devexit function
+so make it __devexit too.
 
-How is it ever possible? The whole idea of throttling is to remove such
-situation, and now you say it can not be solved. If limit is for 1gb of
-pending block io, and system has for example 2gbs of ram (or any other
-resonable parameters), then there is no way we can deadlock in
-allocation, since it will not force page reclaim mechanism.
+  Ralf
 
--- 
-	Evgeniy Polyakov
+diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
+index 3888dc3..ed286aa 100644
+--- a/drivers/input/serio/i8042.c
++++ b/drivers/input/serio/i8042.c
+@@ -1038,7 +1038,7 @@ static void __devinit i8042_register_ports(void)
+ 	}
+ }
+ 
+-static void __devinit i8042_unregister_ports(void)
++static void __devexit i8042_unregister_ports(void)
+ {
+ 	int i;
+ 
