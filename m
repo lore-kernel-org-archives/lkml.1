@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934562AbXHMXCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934952AbXHMXEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934562AbXHMXCw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 19:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbXHMXCm
+	id S934952AbXHMXEA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 19:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbXHMXDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 19:02:42 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55520 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750932AbXHMXCl (ORCPT
+	Mon, 13 Aug 2007 19:03:48 -0400
+Received: from mga03.intel.com ([143.182.124.21]:5289 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753479AbXHMXDr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 19:02:41 -0400
-Date: Tue, 14 Aug 2007 00:09:56 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: hinoue@ccsl.carleton.ca
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: System call interposition/unprotecting the table
-Message-ID: <20070814000956.7c8929dd@the-village.bc.nu>
-In-Reply-To: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca>
-References: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Aug 2007 19:03:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,256,1183359600"; 
+   d="scan'208";a="262658033"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] [253/2many] MAINTAINERS - INTEL IOP-ADMA DMA DRIVER
+Date: Mon, 13 Aug 2007 16:03:44 -0700
+Message-ID: <0C7297FA1D2D244A9C7F6959C0BF1E5202472711@azsmsx413.amr.corp.intel.com>
+In-Reply-To: <46bffa59.ydZjAhAKpNNtyksl%joe@perches.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] [253/2many] MAINTAINERS - INTEL IOP-ADMA DMA DRIVER
+Thread-Index: Acfdc17Xg7/tGa4hQz+kMdFyL0/fIwAir3DA
+References: <46bffa59.ydZjAhAKpNNtyksl%joe@perches.com>
+From: "Williams, Dan J" <dan.j.williams@intel.com>
+To: <joe@perches.com>, <torvalds@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 13 Aug 2007 23:03:45.0521 (UTC) FILETIME=[33491E10:01C7DDFE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007 18:05:35 -0400
-hinoue@ccsl.carleton.ca wrote:
+> From: joe@perches.com [mailto:joe@perches.com]
+> Sent: Sunday, August 12, 2007 11:30 PM
+> To: torvalds@linux-foundation.org; linux-kernel@vger.kernel.org;
+Williams, Dan
+> J; akpm@linux-foundation.org
+> Subject: [PATCH] [253/2many] MAINTAINERS - INTEL IOP-ADMA DMA DRIVER
+> 
+> Add file pattern to MAINTAINER entry
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 773dd76..da059b9 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2410,6 +2410,7 @@ P:	Dan Williams
+>  M:	dan.j.williams@intel.com
+>  L:	linux-kernel@vger.kernel.org
+>  S:	Supported
+> +F:	drivers/dma/ioatdma*
+> 
+>  INTEL IXP4XX RANDOM NUMBER GENERATOR SUPPORT
+>  P:	Deepak Saxena
 
-> I have a question about changing the page attributes of the
-> system call table.
-
-Please don't do that.
-
-> This works fine on my debian system, but apparently the stock Fedora
-> kernel (2.6.22) has the system call table write protected.  
-
-This is to protect it from being changed by an attacker or someone trying
-to do strange and bogus things to the kernel.
-
-What are you actually trying to achieve ?
+Acked-by: Dan Williams <dan.j.williams@intel.com>
