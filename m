@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937393AbXHMGDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938042AbXHMGEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937393AbXHMGDY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 02:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbXHMGDK
+	id S938042AbXHMGEh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 02:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbXHMGE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:03:10 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:42823 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754712AbXHMGDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:03:08 -0400
-Date: Sun, 12 Aug 2007 23:03:02 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: csnook@redhat.com, dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com
-Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
-Message-ID: <20070813060302.GF13410@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070811042943.GA13410@linux.vnet.ibm.com> <E1IKSHQ-0007hg-00@gondolin.me.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1IKSHQ-0007hg-00@gondolin.me.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 13 Aug 2007 02:04:29 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:33928 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753893AbXHMGE2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:04:28 -0400
+To: balbir@linux.vnet.ibm.com
+Cc: akpm@linux-foundation.org, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, ebiederm@xmission.com, containers@lists.osdl.org,
+       menage@google.com, xemul@openvz.org
+Subject: Re: [-mm PATCH 8/9] Memory controller add switch to control what
+ type of pages to limit (v4)
+In-Reply-To: Your message of "Mon, 13 Aug 2007 11:08:58 +0530"
+	<46BFEE72.9080209@linux.vnet.ibm.com>
+References: <46BFEE72.9080209@linux.vnet.ibm.com>
+X-Mailer: Cue version 0.8 (070404-1613/takashi)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20070813060427.0334E1BF9D8@siro.lan>
+Date: Mon, 13 Aug 2007 15:04:26 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 01:15:52PM +0800, Herbert Xu wrote:
-> Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > On Sat, Aug 11, 2007 at 08:54:46AM +0800, Herbert Xu wrote:
-> >> Chris Snook <csnook@redhat.com> wrote:
-> >> > 
-> >> > cpu_relax() contains a barrier, so it should do the right thing.  For 
-> >> > non-smp architectures, I'm concerned about interacting with interrupt 
-> >> > handlers.  Some drivers do use atomic_* operations.
-> >> 
-> >> What problems with interrupt handlers? Access to int/long must
-> >> be atomic or we're in big trouble anyway.
+> YAMAMOTO Takashi wrote:
+> >> Choose if we want cached pages to be accounted or not. By default both
+> >> are accounted for. A new set of tunables are added.
+> >>
+> >> echo -n 1 > mem_control_type
+> >>
+> >> switches the accounting to account for only mapped pages
+> >>
+> >> echo -n 2 > mem_control_type
+> >>
+> >> switches the behaviour back
 > > 
-> > Reordering due to compiler optimizations.  CPU reordering does not
-> > affect interactions with interrupt handlers on a given CPU, but
-> > reordering due to compiler code-movement optimization does.  Since
-> > volatile can in some cases suppress code-movement optimizations,
-> > it can affect interactions with interrupt handlers.
+> > MEM_CONTAINER_TYPE_ALL is 3, not 2.
+> > 
 > 
-> If such reordering matters, then you should use one of the
-> *mb macros or barrier() rather than relying on possibly
-> hidden volatile cast.
+> Thanks, I'll fix the comment on the top.
+> 
+> > YAMAMOTO Takashi
+> > 
+> >> +enum {
+> >> +	MEM_CONTAINER_TYPE_UNSPEC = 0,
+> >> +	MEM_CONTAINER_TYPE_MAPPED,
+> >> +	MEM_CONTAINER_TYPE_CACHED,
 
-If communicating among CPUs, sure.  However, when communicating between
-mainline and interrupt/NMI handlers on the same CPU, the barrier() and
-most expecially the *mb() macros are gross overkill.  So there really
-truly is a place for volatile -- not a large place, to be sure, but a
-place nonetheless.
+what's MEM_CONTAINER_TYPE_CACHED, btw?
+it seems that nothing distinguishes it from MEM_CONTAINER_TYPE_MAPPED.
 
-						Thanx, Paul
+YAMAMOTO Takashi
