@@ -1,99 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941292AbXHMVpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934707AbXHMV4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941292AbXHMVpA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 17:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764522AbXHMVon
+	id S934707AbXHMV4Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 17:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbXHMV4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 17:44:43 -0400
-Received: from web36605.mail.mud.yahoo.com ([209.191.85.22]:36423 "HELO
-	web36605.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754525AbXHMVol (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 17:44:41 -0400
-X-YMail-OSG: PcqLSHQVM1n6LSLaPBASi9HeW2RwCVLiH.ZOGY_FR.6G_SIJNyafir4zJKsBBxqkLlqvKTkt1w--
-X-RocketYMMF: rancidfat
-Date: Mon, 13 Aug 2007 14:44:40 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 00/16] Permit filesystem local caching [try #3]
-To: David Howells <dhowells@redhat.com>, casey@schaufler-ca.com
-Cc: dhowells@redhat.com, Stephen Smalley <sds@tycho.nsa.gov>,
-       torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
-       trond.myklebust@fys.uio.no, linux-fsdevel@vger.kernel.org,
-       linux-cachefs@redhat.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <16119.1187034756@redhat.com>
+	Mon, 13 Aug 2007 17:56:13 -0400
+Received: from ns1.suse.de ([195.135.220.2]:44253 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752816AbXHMV4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 17:56:12 -0400
+Date: Tue, 14 Aug 2007 00:50:20 +0200
+From: Andi Kleen <ak@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <ak@suse.de>, Mel Gorman <mel@skynet.ie>,
+       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones pointer
+Message-ID: <20070813225020.GE3406@bingen.suse.de>
+References: <20070809210616.14702.73376.sendpatchset@skynet.skynet.ie> <200708102013.49170.ak@suse.de> <Pine.LNX.4.64.0708101201240.17549@schroedinger.engr.sgi.com> <200708110304.55433.ak@suse.de> <Pine.LNX.4.64.0708131423050.28026@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <462850.65153.qm@web36605.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708131423050.28026@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- David Howells <dhowells@redhat.com> wrote:
-
-> Casey Schaufler <casey@schaufler-ca.com> wrote:
+On Mon, Aug 13, 2007 at 02:25:36PM -0700, Christoph Lameter wrote:
+> On Sat, 11 Aug 2007, Andi Kleen wrote:
 > 
-> > The specification of your push interface that the push operation
-> > not affect how others access the process is OK for SELinux, but
-> > not for any other MAC scheme that I've dealt with, and I think
-> > that's most of them. Nuts. Smack, for example, uses exactly one
-> > label on the process for all purposes.
-> 
-> It's a fairly important concept.  The victimisation security context on a
-> process must not change, even if the kernel overrides the security context
-> that that process acts as so that it can transparently do work on its behalf.
-> 
-> IMO, the right way to do this is to pass the security context directly to
-> vfs_mkdir() and co.
-> 
-> > Are you concerned about accesses other than signals? Signals
-> > could be staitforward to deal with in a pushed situation, but
-> > I'd hesitate to say that the solution would generalize without
-> > additional thought.
-> 
-> There's also /proc and ptrace() for example.  ps -z must not show the
-> overridden state.
-> 
-> > > > >   (5) int security_xfrm_to_kernel_context(void *from, void **_to);
-> > > > 
-> > > > Woof. What are you transforming from? 
-> > > 
-> > > In CacheFiles case, the cachefilesd daemon's security label into the
-> label
-> > > the cache driver acts as on behalf of other processes.
+> > > Hallelujah. You are my hero! x86_64 will switch off CONFIG_ZONE_DMA?
 > > 
-> > I'm not sure I understand what this is doing.
+> > Yes. i386 too actually.
+> > 
+> > The DMA zone will be still there, but only reachable with special functions.
 > 
-> CacheFiles consists of two parts: the kernel module which creates things in
-> the cache and does accesses into the cache on behalf of processes that access
-> cached filesystems, and the userspace daemon that builds cull tables and
-> deletes things.
+> Not too happy with that one but this is going the right direcrtion.
 > 
-> The reason there are two security labels is that the daemon's label gives it
-> just enough rights to be able to do its job.  More or less all it can do is
-> lookup, opendir, readdir, stat, rmdir, unlink and open the chardev for
-> talking
-> to the kernel module.  This means that the daemon can't, for example, be made
-> to read or modify cache storage objects.
-> 
-> Thus means, however, that the daemon's label isn't sufficient for the kernel
-> module to do its job.  But since there's no way for the kernel module to
-> directly get a label (and indeed it doesn't know the label it needs), a
-> transformation has to be applied that turns the process label used by the
-> daemon into a process label that the kernel, and only the kernel, can use.
-> 
-> The kernel's label gives it, amongst other things, the additional rights to
-> do
-> mkdir, creat, open, read, write, setxattr, getxattr, rename - things the
-> daemon isn't allowed to do.
+> On NUMA this would still mean allocating space for the DMA zone on all 
+> nodes although we only need this on node 0.
 
-With Smack you can leave the label alone, raise CAP_MAC_OVERRIDE,
-do your business of setting the label correctly, and then drop
-the capability. No new hooks required.
+The DMA allocator is NUMA unaware. This means it doesn't require multiple
+dma zones per node, but is happy with a global one that can live somewhere
+else outside the pgdat. I also removed PCP and other fanciness so it's
+really quite independent and much simpler than the normal one.  It also
+doesn't need try_to_free_pages() because in a isolated zone there
+shouldn't be any freeable pages.
 
+The big difference is that it can go into a slower than O(1) mode that tries
+to find pages based on the DMA mask
 
-Casey Schaufler
-casey@schaufler-ca.com
+> > This also means the DMA support in sl[a-z]b is not needed anymore.
+> 
+> Tell me when. SLUB has an #ifdef CONFIG_ZONE_DMA. We can just drop that 
+> code in the #ifdef's if you are ready.
+
+There are still other architectures that use it. Biggest offender
+is s390. I'll leave them to their respective maintainers.
+
+It's not clear s390 really needs the mask allocator anyways.
+e.g. I suspect they just need to put data into a specific 
+range, but if there are no subranges then it might be
+overkill.
+
+-Andi
+
