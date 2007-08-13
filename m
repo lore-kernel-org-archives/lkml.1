@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S946006AbXHMPgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S946512AbXHMPgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S946006AbXHMPgN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030839AbXHMNet
+	id S946512AbXHMPgs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030924AbXHMNgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 09:34:49 -0400
-Received: from mail-gw3.adaptec.com ([216.52.22.36]:42797 "EHLO
-	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030766AbXHMNer convert rfc822-to-8bit (ORCPT
+	Mon, 13 Aug 2007 09:36:05 -0400
+Received: from opal.biophys.uni-duesseldorf.de ([134.99.176.7]:36956 "EHLO
+	opal.biophys.uni-duesseldorf.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S973114AbXHMNgB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 09:34:47 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 13 Aug 2007 09:36:01 -0400
+Date: Mon, 13 Aug 2007 15:35:04 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Finn Thain <fthain@telegraphics.com.au>
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
+       debian-68k@lists.debian.org
+Subject: Re: [patch 10/10] m68k/mac: Make mac_hid_mouse_emulate_buttons()
+ declaration visible
+In-Reply-To: <Pine.LNX.4.64.0708132253530.21364@loopy.telegraphics.com.au>
+Message-ID: <Pine.LNX.4.58.0708131531440.585@om.biophys.uni-duesseldorf.de>
+References: <20070812094050.522858761@mail.of.borg> <20070812094119.910815432@mail.of.borg>
+ <Pine.LNX.4.58.0708131432560.32732@om.biophys.uni-duesseldorf.de>
+ <Pine.LNX.4.64.0708132253530.21364@loopy.telegraphics.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] [19/2many] MAINTAINERS - IPS SCSI RAID DRIVER
-Date: Mon, 13 Aug 2007 09:34:06 -0400
-Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01D12A94@otce2k301.adaptec.com>
-In-Reply-To: <46bff887.tZoEfrDzIK+F6h6p%joe@perches.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] [19/2many] MAINTAINERS - IPS SCSI RAID DRIVER
-Thread-Index: AcfdckYI9fdLFfzoQV+p9IFI9btlZQAPFD2Q
-From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-To: <joe@perches.com>, <torvalds@linux-foundation.org>,
-       <linux-scsi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>, "AACRAID" <aacraid@adaptec.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACK
+> > Anyone using mouseemu on m68k Mac?
+>
+> Yes, and on powermac too. It provides the paste key for gpm and I'm quite
+> fond of it. But if there's a better alternative, I'll happily try it
+> instead.
 
-Sincerely -- Mark Salyzyn
+Too much overhead on m68k? On powermac it never gave me trouble, but I was
+surprised to hear people use it on m68k.
 
-> -----Original Message-----
-> From: joe@perches.com [mailto:joe@perches.com] 
-> Sent: Monday, August 13, 2007 2:22 AM
-> To: torvalds@linux-foundation.org; 
-> linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org; 
-> akpm@linux-foundation.org; AACRAID
-> Subject: [PATCH] [19/2many] MAINTAINERS - IPS SCSI RAID DRIVER
-> 
-> 
-> Add file pattern to MAINTAINER entry
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 141b08a..71e09b7 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -224,6 +224,7 @@ M:	aacraid@adaptec.com
->  L:	linux-scsi@vger.kernel.org
->  W:	http://www.adaptec.com/
->  S:	Maintained
-> +F:	drivers/scsi/ips*
->  
->  DPT_I2O SCSI RAID DRIVER
->  P:	Adaptec OEM Raid Solutions
-> 
+If it works OK, we can really drop the kernel support.
+
+	Michael
