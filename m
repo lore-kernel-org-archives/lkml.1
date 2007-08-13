@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032983AbXHMSRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032687AbXHMSSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032983AbXHMSRm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974193AbXHMSAi
+	id S1032687AbXHMSSf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:18:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032203AbXHMSAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:00:38 -0400
+	Mon, 13 Aug 2007 14:00:47 -0400
 Received: from wr-out-0506.google.com ([64.233.184.229]:35919 "EHLO
 	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S974364AbXHMSA3 (ORCPT
+	with ESMTP id S974364AbXHMSAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:00:29 -0400
+	Mon, 13 Aug 2007 14:00:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=PK1chFbhd43vgJLDGTdr9qjb1rXlXLa/ZeMT9e76yIIGAbw7BSI1qCWYiTNKwCW7FfYCaHungPNRc/4vmpvdpYRCrhQZluADelr86wMgp7UlrWMv7a4oSzOLwbnm02PRm5obo2hf/+QDCyWedJqCAJxdwpku+Bjp++SO8FNEBeE=
-Message-ID: <46C09BFA.5090604@googlemail.com>
-Date: Mon, 13 Aug 2007 19:59:22 +0200
+        b=oKrXCDPDct8WeQ17h0DSD3ogvbBkBKiC8/C+f0sI+Z5TL+BhMjIcb4yh348RoUKniWNF0GQJhWPMxq3SkAUP2jsgzJ4lgmIEYP6aK1Bod+p5CSDDsZ95qS7IRIeenUv7vRfhdc8l3PMCZOSnioFEtHKGoMTeVh7TPdTx1VD0j4A=
+Message-ID: <46C09C09.7010605@googlemail.com>
+Date: Mon, 13 Aug 2007 19:59:37 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
-       linux-acpi@vger.kernel.org, Plamen Petrov <plamen.petrov@tk.ru.acad.bg>,
-       Michael Sedkowski <sedmich@gmail.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Norbert Preining <preining@logic.at>, dth <dth@dth.net>
-Subject: Re: [2/4] 2.6.23-rc3: known regressions
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Stephen Hemminger <shemminger@osdl.org>, Thomas Meyer <thomas@m3y3r.de>,
+       Uwe Bugla <uwe.bugla@gmx.de>, "Daniel K." <daniel@cluded.net>,
+       Shish <shish@shishnet.org>, Karl Meyer <adhocrocker@gmail.com>
+Subject: Re: [3/4] 2.6.23-rc3: known regressions
 References: <46C098FD.1030601@googlemail.com>
 In-Reply-To: <46C098FD.1030601@googlemail.com>
 X-Enigmail-Version: 0.95.3
@@ -56,53 +55,48 @@ Tejun Heo                              3
 
 
 
-ACPI
+Networking
 
-Subject         : regression from 2.6.23-rc2 to -rc3 BAT missing
-References      : http://lkml.org/lkml/2007/8/13/661
+Subject         : NETDEV WATCHDOG: eth0: transmit timed out
+References      : http://lkml.org/lkml/2007/8/13/737
 Last known good : ?
-Submitter       : Norbert Preining <preining@logic.at>
+Submitter       : Karl Meyer <adhocrocker@gmail.com>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : FATAL: drivers/acpi/video: sizeof(struct acpi_device_id)=20 is not a modulo of the size of section __mod_acpi_device_table=48
-References      : http://lkml.org/lkml/2007/8/13/584
+Subject         : Weird network problems with 2.6.23-rc2
+References      : http://lkml.org/lkml/2007/8/11/40
 Last known good : ?
-Submitter       : Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Submitter       : Shish <shish@shishnet.org>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : MCFG bug on hp nx6310
-References      : http://lkml.org/lkml/2007/8/8/252
-Last known good : ?
-Submitter       : Michael Sedkowski <sedmich@gmail.com>
+Subject         : BUG: when using 'brctl stp'
+References      : http://lkml.org/lkml/2007/8/10/441
+Last known good : 2.6.23-rc1
+Submitter       : Daniel K. <daniel@cluded.net>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : 2.6.23-rc1-git10 hangs on boot - needs "acpi=off"
-References      : http://lkml.org/lkml/2007/8/2/24
-Last known good : ?
-Submitter       : Plamen Petrov <plamen.petrov@tk.ru.acad.bg>
+Subject         : IP v4 routing is broken
+References      : http://www.stardust.webpages.pl/files/tbf/bugs/bug_report01.txt
+Last known good : 2.6.22-git2
+Submitter       : Uwe Bugla <uwe.bugla@gmx.de>
 Caused-By       : ?
-Handled-By      : Len Brown <len.brown@intel.com>
-Status          : problem is being debugged
+Handled-By      : ?
+Status          : unknown
 
-
-
-CPUFREQ
-
-Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-References      : http://lkml.org/lkml/2007/7/27/298
-                  http://lkml.org/lkml/2007/7/29/371
+Subject         : New wake ups from sky2
+References      : http://lkml.org/lkml/2007/7/20/386
 Last known good : ?
-Submitter       : dth <dth@dth.net>
-Caused-By       : Len Brown <lenb@kernel.org>
-                  commit f79e3185dd0f8650022518d7624c876d8929061b
-Handled-By      : Len Brown <lenb@kernel.org>
-Status          : problem is being debugged
+Submitter       : Thomas Meyer <thomas@m3y3r.de>
+Caused-By       : Stephen Hemminger <shemminger@osdl.org>
+                  commit eb35cf60e462491249166182e3e755d3d5d91a28
+Handled-By      : Stephen Hemminger <shemminger@osdl.org>
+Status          : unknown
 
 
 
