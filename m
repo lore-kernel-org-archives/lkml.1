@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970992AbXHMJCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970972AbXHMJDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970992AbXHMJCl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 05:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966831AbXHMGbR
+	id S970972AbXHMJDc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 05:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966920AbXHMGbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:31:17 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4936 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:31:18 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4938 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966895AbXHMGbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S966923AbXHMGbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Aug 2007 02:31:15 -0400
-Date: Sun, 12 Aug 2007 23:31:01 -0700
+Date: Sun, 12 Aug 2007 23:30:49 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, paulus@au.ibm.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] [287/2many] MAINTAINERS - LINUX FOR IBM pSERIES (RS/6000)
-Message-ID: <46bffaa5.L7wWLRrjFwLlnubU%joe@perches.com>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       kexec@lists.infradead.org, ebiederm@xmission.com,
+       akpm@linux-foundation.org
+Subject: [PATCH] [281/2many] MAINTAINERS - KEXEC
+Message-ID: <46bffa99.nQ27DQOgkKo2uOy+%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,15 +28,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 836c58d..f833a74 100644
+index d9a53d9..71738bd 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2754,6 +2754,8 @@ P:	Paul Mackerras
- M:	paulus@au.ibm.com
- W:	http://www.ibm.com/linux/ltc/projects/ppc
- S:	Supported
-+F:	arch/powerpc/boot/rs6000.h
-+F:	arch/ppc/boot/include/rs6000.h
+@@ -2694,6 +2694,8 @@ W:	http://www.xmission.com/~ebiederm/files/kexec/
+ L:	linux-kernel@vger.kernel.org
+ L:	kexec@lists.infradead.org
+ S:	Maintained
++F:	include/linux/kexec.h
++F:	kernel/kexec.c
  
- LINUX FOR NCR VOYAGER
- P:	James Bottomley
+ KPROBES
+ P:	Prasanna S Panchamukhi
