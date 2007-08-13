@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970569AbXHMPV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbXHMPWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970569AbXHMPV1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031053AbXHMNK4
+	id S1755656AbXHMPWH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940241AbXHMNLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 09:10:56 -0400
-Received: from emulex.emulex.com ([138.239.112.1]:59150 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030820AbXHMNKy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 09:10:54 -0400
-Message-ID: <46C0584E.5060906@emulex.com>
-Date: Mon, 13 Aug 2007 09:10:38 -0400
-From: James Smart <James.Smart@Emulex.Com>
-Reply-To: James.Smart@Emulex.Com
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Mon, 13 Aug 2007 09:11:09 -0400
+Received: from www.osadl.org ([213.239.205.134]:52872 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1031105AbXHMNLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 09:11:07 -0400
+From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+To: Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] [374/2many] MAINTAINERS - PCNET32 NETWORK DRIVER
+Date: Mon, 13 Aug 2007 15:11:02 +0200
+User-Agent: KMail/1.9.5
+Cc: Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
+       torvalds@linux-foundation.org, pcnet32@verizon.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <46bffb4c.nrqicrPs7IJXlgQ0%joe@perches.com> <1186987609.10249.22.camel@localhost> <20070813071806.GG21089@ftp.linux.org.uk>
+In-Reply-To: <20070813071806.GG21089@ftp.linux.org.uk>
+Organization: Linutronix
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@steeleye.com>
-Subject: Re: [PATCH 4/6][RESEND] Emulex FC HBA driver: fix overflow of statically
- allocated array
-References: <200708130016.11281.jesper.juhl@gmail.com>	 <200708130021.07068.jesper.juhl@gmail.com>	 <46C038E3.5090204@emulex.com> <9a8748490708130415j790d6e49y6ae12ca8dad780f2@mail.gmail.com>
-In-Reply-To: <9a8748490708130415j790d6e49y6ae12ca8dad780f2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Aug 2007 13:10:39.0300 (UTC) FILETIME=[583EB840:01C7DDAB]
+Content-Disposition: inline
+Message-Id: <200708131511.02733.hjk@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok.... here's what happened,
+Am Montag 13 August 2007 09:18 schrieb Al Viro:
+> On Sun, Aug 12, 2007 at 11:46:49PM -0700, Joe Perches wrote:
+> > On Sun, 2007-08-12 at 23:36 -0700, David Miller wrote:
+> > > Ok, 374 patches is just rediculious.
+> > > 
+> > > So many patches eats up an enormous amount of mailing list resources,
+> > > and for these patches in particular there are few reasons to split
+> > > them up at all.  The fact that the split up landed you at 300+ patches
+> > > is a very good indication of that.
+> > 
+> > More than ridiculous.  Completely agree.
+> > 
+> > I tried to send 1 patch over the last couple of days.
+> > Unfortunately, it's > 100KB and disappears into the void.
+> 
+> So put it on anonftp/webpage/git tree and post the URI, damnit.
+> Of all ridiculous reasons for a mailbomb...
 
-- We changed the define so that it matched what we are using. We never configure
-   more than 4 HBQ, thus the index will never be beyond 0-3. The if-check is actually
-   innoculous. Given that the change wasn't your patch, we didn't include you as
-   the author.
+Or make it 3 or 4 or even 40 patches, but not 500.
 
-- Coding-wise, you are right, we still didn't fix the range check.
+Hans
 
-Since this really is just something to keep the tools happy - I'll recind the NACK.
-I'll worry about simply removing this if-check later...
-
-James/Andrew, accept this patch - ACK.
-
--- james s
-
-Jesper Juhl wrote:
-> On 13/08/07, James Smart <James.Smart@emulex.com> wrote:
->> NACK
->>
->> The fix is contained in our 8.2.2 sources recently posted and pushed by James
->> as part of his last scsi fixes.
->>
-> 
-> I actually did look for it, but couldn't find any lpfc commits with me
-> listed as author, so I assumed it had not been merged.
-> I just looked again, at the source this time, up-to-date mainline git
-> tree, and I still see
-> 
->         hbqno = tag >> 16;
->         if (hbqno > LPFC_MAX_HBQS)
->                 return NULL;
-> 
-> in drivers/scsi/lpfc/lpfc_sli.c
-> 
-> ???
-> 
-> 
->> -- james s
->>
->> Jesper Juhl wrote:
->>> (previously send on 09-Aug-2007 20:47)
->>>
->>> Hi,
->>>
->>> The Coverity checker noticed that we may overrun a statically allocated
->>> array in drivers/scsi/lpfc/lpfc_sli.c::lpfc_sli_hbqbuf_find().
-> ...
-> 
