@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030706AbXHMMuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940387AbXHMMvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030706AbXHMMuY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763249AbXHMHfo
+	id S940387AbXHMMvH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S942307AbXHMHjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 03:35:44 -0400
-Received: from www.osadl.org ([213.239.205.134]:49059 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764954AbXHMHfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 03:35:42 -0400
-Subject: Re: [PATCH 2/4] posix-timers: fix creation race
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-In-Reply-To: <20070812194455.GA113@tv-sign.ru>
-References: <20070812170522.GA4299@tv-sign.ru>
-	 <1186945555.12828.89.camel@chaos>  <20070812194455.GA113@tv-sign.ru>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 09:35:22 +0200
-Message-Id: <1186990522.12828.94.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Aug 2007 03:39:04 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:46705 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S942297AbXHMHi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 03:38:59 -0400
+Message-ID: <386990734.21206@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Mon, 13 Aug 2007 15:38:53 +0800
+From: WU Fengguang <wfg@mail.ustc.edu.cn>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Paul Moore <paul.moore@hp.com>, Stephen Smalley <sds@epoch.ncsc.mil>,
+       Chris Vance <cvance@nai.com>, Wayne Salamon <wsalamon@nai.com>,
+       James Morris <jmorris@redhat.com>, dgoeddel@trustedcs.com
+Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
+Message-ID: <20070813073853.GA5262@mail.ustc.edu.cn>
+Mail-Followup-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Paul Moore <paul.moore@hp.com>,
+	Stephen Smalley <sds@epoch.ncsc.mil>, Chris Vance <cvance@nai.com>,
+	Wayne Salamon <wsalamon@nai.com>, James Morris <jmorris@redhat.com>,
+	dgoeddel@trustedcs.com
+References: <20070812141905.4ee423b9@the-village.bc.nu> <386927758.14086@ustc.edu.cn> <20070812161744.200d4252@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070812161744.200d4252@the-village.bc.nu>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-08-12 at 23:44 +0400, Oleg Nesterov wrote:
-> > > --- t/kernel/posix-timers.c~2_CREATE	2007-08-12 17:59:17.000000000 +0400
-> > > +++ t/kernel/posix-timers.c	2007-08-12 18:11:33.000000000 +0400
-> > > @@ -547,13 +547,12 @@ sys_timer_create(const clockid_t which_c
-> > >  				new_timer->it_process = process;
-> > >  				list_add(&new_timer->list,
-> > >  					 &process->signal->posix_timers);
-> > > -				spin_unlock_irqrestore(&process->sighand->siglock, flags);
-> > >  				if (new_timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
-> > >  					get_task_struct(process);
-> > >  			} else {
-> > > -				spin_unlock_irqrestore(&process->sighand->siglock, flags);
-> > >  				process = NULL;
-> > >  			}
-> > > +			spin_unlock_irqrestore(&process->sighand->siglock, flags);
-> 
-> i'll resend this patch tomorrow. We can't do spin_unlock_irqrestore(&process->...)
-> if we set process = NULL above.
+On Sun, Aug 12, 2007 at 04:17:44PM +0100, Alan Cox wrote:
+> Try this (it compiles but isnt tested). Its a weekend here, the sun is
+> shining, the beach is a short walk, and I have more interesting things to
+> do right now 8)
 
-Doh, half of my brain seems to be still on vacation.
+Have a nice day~~~ It works!
 
-	tglx
+> --- linux.vanilla-2.6.23rc1-mm1/mm/mmap.c	2007-07-26 15:02:58.000000000 +0100
+> +++ linux-2.6.23rc1-mm1/mm/mmap.c	2007-08-12 13:53:22.000000000 +0100
+> @@ -2058,7 +2058,7 @@
+>  	if (__vma && __vma->vm_start < vma->vm_end)
+>  		return -ENOMEM;
+>  	if ((vma->vm_flags & VM_ACCOUNT) &&
+> -	     security_vm_enough_memory(vma_pages(vma)))
+> +	     security_vm_enough_memory_mm(mm, vma_pages(vma)))
+>  		return -ENOMEM;
+>  	vma_link(mm, vma, prev, rb_link, rb_parent);
+>  	return 0;
 
+Sorry, I overlooked this chunk in int insert_vm_struct(mm, vma), hehe.
 
