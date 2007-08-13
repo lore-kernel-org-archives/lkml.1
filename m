@@ -1,82 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S972218AbXHMQA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031570AbXHMQBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S972218AbXHMQA5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765991AbXHMOTk
+	id S1031570AbXHMQBo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031702AbXHMOWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 10:19:40 -0400
-Received: from il.qumranet.com ([82.166.9.18]:40947 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S944551AbXHMOTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 10:19:39 -0400
-Message-ID: <46C06885.3020908@qumranet.com>
-Date: Mon, 13 Aug 2007 17:19:49 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 13 Aug 2007 10:22:50 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56397 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031670AbXHMOWs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 10:22:48 -0400
+Message-ID: <46C0693A.1080900@bull.net>
+Date: Mon, 13 Aug 2007 16:22:50 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
 To: Christian Borntraeger <borntraeger@de.ibm.com>
-CC: kvm-devel@lists.sourceforge.net, Laurent Vivier <Laurent.Vivier@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       cotte@de.ibm.com
+Cc: kvm-devel@lists.sourceforge.net,
+       linux-kernel <linux-kernel@vger.kernel.org>, cotte@de.ibm.com
 Subject: Re: [kvm-devel] [PATCH 0/2][KVM] guest time accounting
-References: <46BC8B39.6050202@bull.net> <46C00FC1.1070306@qumranet.com> <46C012A8.2040908@bull.net> <200708131615.42643.borntraeger@de.ibm.com>
-In-Reply-To: <200708131615.42643.borntraeger@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <46BC8B39.6050202@bull.net> <200708131605.40479.borntraeger@de.ibm.com>
+In-Reply-To: <200708131605.40479.borntraeger@de.ibm.com>
+X-Enigmail-Version: 0.94.0.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 13/08/2007 16:27:52,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 13/08/2007 16:27:53,
+	Serialize complete at 13/08/2007 16:27:53
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig17F904F63489DD33255C7245"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig17F904F63489DD33255C7245
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
 Christian Borntraeger wrote:
-> Am Montag, 13. August 2007 schrieb Laurent Vivier:
->   
->>> [copying Ingo and Rusty]
->>>       
->
-> @Avi, seems that sourceforge is mangling the cc list?
->
->   
+> Am Freitag, 10. August 2007 schrieb Laurent Vivier:
+>> The aim of these two patches is to measure the CPU time used by a virt=
+ual
+>> machine. All comments are welcome... I'm not sure it's the good way to=
+ do=20
+> that.
+>=20
+> I did something similar for or s390guest prototype, that Carsten posted=
+ in=20
+> May.  I decided to account guest time to the user process instead of ad=
+ding a=20
+> new field to avoid hazzle with old top. As you can read in the patch co=
+mment,=20
+> I personally prefer a new field if we can get one.
+>=20
+> My implementation uses a similar mechanism like hard and softirq. So I =
+have an=20
+> sie_enter an sie_exit and a task_is_in_sie function - like irq_enter an=
+d=20
+> irq_exit. The main difference is based on the fact, that s390 has preci=
+se=20
+> accouting for irq, steal, user and system time, and therefore my patch =
+is=20
+> based on architecture specifc code using CONFIG_VIRT_CPU_ACCOUNT.=20
+>=20
+> In general my patch has the same idea as your patch, so I am going to r=
+eview=20
+> your patch and see if it would fit for s390.
+>=20
+> For reference this is the (never posted) old patch for our virtualisati=
+on=20
+> prototype. It wont work with kvm but it gives you the idea what we had =
+in=20
+> mind on s390.
+>=20
 
-It's not configured to do so.  Can you be more specific?
+thank you for your comment.
+
+As virtualization becomes very popular, perhaps we should implement somet=
+hing
+which could be used by all linux supported architectures ?
+(yes, I know it's non-sense for archs like m68k...)
+But my [PATCH 1/2] can be a good start (adding "guest" in cpustat)
+As guest accounting is hw dependent, I think we should add a hook in the
+accounting functions.
+
+Laurent
+--=20
+------------- Laurent.Vivier@bull.net  --------------
+          "Software is hard" - Donald Knuth
 
 
->>> The patches look good.  A couple of comments:
->>>
->>> - perhaps the new fields should be guarded by a #ifdef CONFIG_HYPERVISOR
->>> (selected by CONFIG_KVM)?  that way the (minor) additional overhead is
->>> only incurred if it can possibly be used.  I imagine that our canine
->>> cousin will want to use this as well.
->>>       
->> There is also a CONFIG_VIRTUALIZATION and a CONFIG_VIRT_CPU_ACCOUNTING (from
->> s390 and powerpc) Which one to use ?
->>     
->
-> CONFIG_VIRT_CPU_ACCOUNTING is used for the precise accouting of user,system, 
-> steal and irq time on these platforms and is not what you want for the on/off 
-> decision. 
->   
+--------------enig17F904F63489DD33255C7245
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Ah, ok.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.7 (GNU/Linux)
 
->> I'm wondering if we can have a more accurate accounting:
->>
->> - For the moment we add all system time since the previous entering to the
->> VCPU to the guest time (and I guess there is some real system time in
->> it ???) 
->> - Perhaps we can sum nanoseconds spent in the VCPU and add it to cpustat
->> when these ns are greater than 1 ms ? (I'm trying to make something in this 
->>     
-> way)
->
-> If you look at the patch I have posted some minutes ago, I use a method 
-> similar to irq_enter and irq_exit to separate real system time from guest 
-> time. 
+iD8DBQFGwGk+9Kffa9pFVzwRAjcQAJ9KWtGGM50u/4sypi4myGY7IJyA6wCgoBNC
++GNRE5w60CEhMhMt6gXHn5Y=
+=bPBU
+-----END PGP SIGNATURE-----
 
-Yes.  This is orthogonal to the current accounting patch and should make 
-a nice extension.  It's probably useful with dynamic tick where timer 
-interrupts can be rare.
-
-
--- 
-error compiling committee.c: too many arguments to function
-
+--------------enig17F904F63489DD33255C7245--
