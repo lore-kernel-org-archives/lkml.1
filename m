@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S945319AbXHMMbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S945397AbXHMMcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S945319AbXHMMbc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939754AbXHMGxz
+	id S945397AbXHMMcO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:32:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939725AbXHMGym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:53:55 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2599 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:54:42 -0400
+Received: from ozlabs.org ([203.10.76.45]:49975 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S939334AbXHMGxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:53:53 -0400
-Date: Sun, 12 Aug 2007 23:27:14 -0700
-From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       ch@murgatroid.com, ch@hpl.hp.com, akpm@linux-foundation.org
-Subject: [PATCH] [183/2many] MAINTAINERS - EPSON 1355 FRAMEBUFFER DRIVER
-Message-ID: <46bff9c2.ihOxmsFj6y9757gN%joe@perches.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S933810AbXHMGyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:54:40 -0400
+Subject: Re: [PATCH] [43/2many] MAINTAINERS - AOA (Apple Onboard Audio)
+	ALSA DRIVER
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: joe@perches.com
+Cc: torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, johannes@sipsolutions.net,
+       akpm@linux-foundation.org
+In-Reply-To: <46bff8b4.nGsvrO+zx5IWj+A6%joe@perches.com>
+References: <46bff8b4.nGsvrO+zx5IWj+A6%joe@perches.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zUvc+fxifubz63AfX3S9"
+Date: Mon, 13 Aug 2007 16:54:37 +1000
+Message-Id: <1186988077.32127.2.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add file pattern to MAINTAINER entry
 
-Signed-off-by: Joe Perches <joe@perches.com>
+--=-zUvc+fxifubz63AfX3S9
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6da519c..6fe987d 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1763,8 +1763,11 @@ F:	drivers/scsi/lpfc/
- 
- EPSON 1355 FRAMEBUFFER DRIVER
- P:	Christopher Hoover
--M:	ch@murgatroid.com, ch@hpl.hp.com
-+M:	ch@murgatroid.com
-+P:	Christopher Hoover
-+M:	ch@hpl.hp.com
- S:	Maintained
-+F:	drivers/video/epson1355fb.c
- 
- ETHEREXPRESS-16 NETWORK DRIVER
- P:	Philip Blundell
+On Sun, 2007-08-12 at 23:22 -0700, joe@perches.com wrote:
+> Add file pattern to MAINTAINER entry
+>=20
+> Signed-off-by: Joe Perches <joe@perches.com>
+>=20
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index e2e88f3..016f342 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -420,6 +420,7 @@ M:	johannes@sipsolutions.net
+>  L:	linuxppc-dev@ozlabs.org
+>  L:	alsa-devel@alsa-project.org (subscribers-only)
+>  S:	Maintained
+> +F:	sound/oao/
+
+Should be aoa.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-zUvc+fxifubz63AfX3S9
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGwAAtdSjSd0sB4dIRAtBKAJ94YhEUOxFBNTBAyma3UcyCQztmBQCfXTPj
+SpFkCCOFuW894gwMhtXyDuc=
+=AJkb
+-----END PGP SIGNATURE-----
+
+--=-zUvc+fxifubz63AfX3S9--
+
