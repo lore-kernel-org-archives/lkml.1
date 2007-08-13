@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965789AbXHMHWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964903AbXHMHX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965789AbXHMHWy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 03:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965841AbXHMGZ0
+	id S964903AbXHMHX3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 03:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938989AbXHMGZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:25:26 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3970 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:25:23 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3969 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966067AbXHMGZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:25:19 -0400
-Date: Sun, 12 Aug 2007 23:25:04 -0700
+	id S965974AbXHMGZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:25:18 -0400
+Date: Sun, 12 Aug 2007 23:24:53 -0700
 From: joe@perches.com
-To: video4linux-list@redhat.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, corbet@lwn.net, akpm@linux-foundation.org
-Subject: [PATCH] [117/2many] MAINTAINERS - CAFE CMOS INTEGRATED CAMERA
- CONTROLLER DRIVER
-Message-ID: <46bff940.mdOV99GH883Zi3ha%joe@perches.com>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       fubar@us.ibm.com, ctindel@users.sourceforge.net,
+       bonding-devel@lists.sourceforge.net, akpm@linux-foundation.org
+Subject: [PATCH] [111/2many] MAINTAINERS - BONDING DRIVER
+Message-ID: <46bff935.qa3GpQ519F+Oumol%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,20 +28,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index c5d9bbe..482d255 100644
+index 3d198df..a21ccf1 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1133,10 +1133,12 @@ F:	Documentation/video4linux/bttv/
- F:	drivers/media/video/bt8xx/bttv*
+@@ -1082,6 +1082,8 @@ M:	fubar@us.ibm.com
+ L:	bonding-devel@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/bonding/
+ S:	Supported
++F:	drivers/net/bonding/
++F:	include/linux/if_bonding.h
  
- CAFE CMOS INTEGRATED CAMERA CONTROLLER DRIVER
--P:   	Jonathan Corbet
-+P:	Jonathan Corbet
- M:	corbet@lwn.net
- L:	video4linux-list@redhat.com
- S:	Maintained
-+F:	Documentation/video4linux/cafe_ccic
-+F:	drivers/media/video/cafe_ccic*
- 
- CALGARY x86-64 IOMMU
- P:	Muli Ben-Yehuda
+ BROADBAND PROCESSOR ARCHITECTURE
+ P:	Arnd Bergmann
