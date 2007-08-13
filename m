@@ -1,122 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937133AbXHMSVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030658AbXHMSWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937133AbXHMSVZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032195AbXHMSBT
+	id S1030658AbXHMSWY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940574AbXHMSC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:01:19 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:15654 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965381AbXHMSBL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:01:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=WbXdw/oPvgQaopcdjlVAjj+T7jpcK2+rkTZUaPZNfA9Oi4cbGoZO+hCQay+LuG8IoiU5YQQU79CJe846WDzqjpzfxDfhVI5ay9F6tPNSLn0/VWDytWdsrvuaXpu3MJdk5MHIVyCslPPmsjlT7CZZYHqsW6MTTEUFntMgOWGhcsE=
-Message-ID: <46C09C23.8070906@googlemail.com>
-Date: Mon, 13 Aug 2007 20:00:03 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 13 Aug 2007 14:02:26 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:19602 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S940388AbXHMSCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 14:02:21 -0400
+Date: Mon, 13 Aug 2007 20:02:12 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
+Message-ID: <20070813180212.GY23758@kernel.dk>
+References: <1186248703.3439.20.camel@localhost.localdomain> <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org> <1186458941.6637.44.camel@localhost.localdomain> <20070807001429.f8cb3b22.akpm@linux-foundation.org> <1186496712.3414.17.camel@localhost.localdomain> <46B88B91.4050703@garzik.org> <1186501124.3414.32.camel@localhost.localdomain> <20070807105144.0ba67d81.akpm@linux-foundation.org> <20070813124225.GT23758@kernel.dk> <46C07FAE.1040504@garzik.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jan Dittmer <jdi@l4x.org>,
-       Thomas Renninger <trenn@suse.de>, linux-mtd@lists.infradead.org,
-       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Tony Luck <tony.luck@intel.com>, Netdev <netdev@vger.kernel.org>,
-       Stephen Hemminger <shemminger@osdl.org>,
-       Florian Lohoff <flo@rfc822.org>, linux-usb-devel@lists.sourceforge.net,
-       Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>,
-       Dan Zwell <dzwell@gmail.com>
-Subject: Re: [2/2] 2.6.23-rc3: known regressions with patches
-References: <46C09B4D.6040907@googlemail.com>
-In-Reply-To: <46C09B4D.6040907@googlemail.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C07FAE.1040504@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Mon, Aug 13 2007, Jeff Garzik wrote:
+> Jens Axboe wrote:
+> >#for-akpm is usually only in very few -mm release anyway, so it's not
+> >like it would have made much difference. We/you/I need to improve that,
+> >certainly.
+> >
+> >Honestly, for bsg, it wasn't much of an issue. We had build problems
+> >when bsg was merged which was unfortunate but got fixed quickly. Having
+> >bsg in -mm would not have caused any testing of the driver in question
+> >outside of what it already received, given the nature of it.
+> 
+> 
+> That's just an excuse for what happened -- you made an end run around 
+> our test tree.  Pretty please with sugar on it -- make sure changes show 
+> up in -mm.
 
-Here is a list of some known regressions in 2.6.23-rc3
-with patches available.
+It's not just an excuse, there are repeatably problems with getting the
+block stuff pulled into -mm. Sometimes it's my problem, but not always.
+Then I get a note saying that pulling was disabled due to merge
+problems, usually right before -mmX goes out. So it misses that release.
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+With bsg it wasn't a huge issue imho, since it was in fairly good shape
+and it the issue were mainly with integration. I do try to make sure
+stuff gets tested, but I also know which stuff is more important to get
+exposure and multi-user testing on. bsg wasn't one of those, it's just a
+lowly driver.
 
-List of Aces
+-- 
+Jens Axboe
 
-Name                    Regressions fixed since 21-Jun-2007
-Adrian Bunk                            9
-Andi Kleen                             5
-Linus Torvalds                         5
-Andrew Morton                          4
-Al Viro                                3
-Cornelia Huck                          3
-Jens Axboe                             3
-Tejun Heo                              3
-
-
-
-Modpost
-
-Subject         : modpost bug breaks ia64 cross compilation
-References      : http://lkml.org/lkml/2007/7/27/30
-                  http://lkml.org/lkml/2007/7/27/418
-Last known good : ?
-Submitter       : Jan Dittmer <jdi@l4x.org>
-Caused-By       : Thomas Renninger <trenn@suse.de>
-                  commit 29b71a1ca74491fab9fed09e9d835d840d042690
-Handled-By      : ?
-Patch           : http://lkml.org/lkml/2007/8/2/211
-Status          : patch was suggested
-
-
-
-MTD
-
-Subject         : error: implicit declaration of function 'cfi_interleave'
-References      : http://lkml.org/lkml/2007/8/6/272
-Last known good : ?
-Submitter       : Ingo Molnar <mingo@elte.hu>
-Caused-By       : ?
-Handled-By      : David Woodhouse <dwmw2@infradead.org>
-Patch           : http://lkml.org/lkml/2007/8/9/586
-Status          : patch available
-
-
-
-Networking
-
-Subject         : sky2 boot crash in sky2_mac_intr
-References      : http://lkml.org/lkml/2007/7/24/91
-Last known good : ?
-Submitter       : Florian Lohoff <flo@rfc822.org>
-Caused-By       : 
-Handled-By      : Stephen Hemminger <shemminger@osdl.org>
-Patch           : http://marc.info/?l=linux-netdev&m=118651402523966&w=2
-Status          : patch available
-
-
-
-USB
-
-Subject         : USB hard disk problem due to "usb-storage: implement autosuspend" patch
-References      : http://lkml.org/lkml/2007/8/9/329
-Last known good : ?
-Submitter       : Dan Zwell <dzwell@gmail.com>
-Caused-By       : Alan Stern <stern@rowland.harvard.edu>
-                  commit 8dfe4b14869fd185ca25ee88b02ada58a3005eaf
-Handled-By      : Alan Stern <stern@rowland.harvard.edu>
-Status          : patch available
-
-
-
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
