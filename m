@@ -1,46 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942782AbXHMPou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967787AbXHMPpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942782AbXHMPou (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S946155AbXHMODa
+	id S967787AbXHMPpk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S946166AbXHMOE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 10:03:30 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:46280 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S946144AbXHMOD1 (ORCPT
+	Mon, 13 Aug 2007 10:04:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47652 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S944457AbXHMOEz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 10:03:27 -0400
-Date: Mon, 13 Aug 2007 16:03:25 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "Perches, Joe" <joe@perches.com>
-cc: Edison Wong <hswong3i@gmail.com>, torvalds@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       hlhung3i@gmail.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: RE: [PATCH] [470/2many] MAINTAINERS - TCP LOW PRIORITY MODULE
-In-Reply-To: <1186988847.10249.27.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0708131602150.29571@fbirervta.pbzchgretzou.qr>
-References: <46bffc0f.E8NW2ppJgFoVM7kH%joe@perches.com> 
- <000f01c7dd77$91c67e60$6783a8c0@LENOVOBF3ABCC9> <1186988847.10249.27.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 13 Aug 2007 10:04:55 -0400
+Subject: Re: [PATCH] [3/2many] MAINTAINERS - 3C359 NETWORK DRIVER
+From: Arjan van de Ven <arjan@infradead.org>
+To: joe@perches.com
+Cc: torvalds@linux-foundation.org, netdev@vger.kernel.org, mikep@linuxtr.net,
+       linux-tr@linuxtr.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <46bff703.S76S51omMOUeUM3N%joe@perches.com>
+References: <46bff703.S76S51omMOUeUM3N%joe@perches.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Mon, 13 Aug 2007 07:01:22 -0700
+Message-Id: <1187013682.2854.23.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1 (2.11.6.1-1.fc8) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 13 2007 00:07, Joe Perches wrote:
->> Hung Hing Lun (Chinese full name), Mike (English name)
->> Wong Hoi Sing (Chinese full name), Edison (English name)
->> 
->> Regards,
->> Edison
->
->I believe commas will cause problems with some
->emailers.  If you weren't allowed to use a comma,
->what would you choose to display your names?
+Hi,
 
-Commas work well, the string just needs to be enclosed in quotes, since 
-commas are otherwise taken as separators for multiple recipients.
-	"Perches, Joe" <joe@perches.com>
+please in the future send just one patch for this; there's no real
+reason to split this up this finegrained...
 
 
-	Jan
--- 
