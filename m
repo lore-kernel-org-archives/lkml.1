@@ -1,48 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936531AbXHMFXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936732AbXHMFgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936531AbXHMFXa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 01:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbXHMFXW
+	id S936732AbXHMFgk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 01:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXHMFg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 01:23:22 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:45575 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752595AbXHMFXV (ORCPT
+	Mon, 13 Aug 2007 01:36:29 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:40019
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752504AbXHMFg1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 01:23:21 -0400
-Date: Sun, 12 Aug 2007 22:29:06 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: 2.6.23-rc2-mm2 (libertas)
-Message-Id: <20070812222906.e6510c4b.randy.dunlap@oracle.com>
-In-Reply-To: <20070809224254.11f42716.akpm@linux-foundation.org>
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 13 Aug 2007 01:36:27 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Block device throttling [Re: Distributed storage.]
+User-Agent: KMail/1.9.5
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <20070807205538.GB5245@kernel.dk> <20070808095448.GA3440@2ka.mipt.ru>
+In-Reply-To: <20070808095448.GA3440@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Disposition: inline
+Date: Sun, 12 Aug 2007 22:36:23 -0700
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Message-Id: <200708122236.24096.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007 22:42:54 -0700 Andrew Morton wrote:
+(previous incomplete message sent accidentally)
 
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc2/2.6.23-rc2-mm2/
-> 
-> - Various problems from 2.6.23-rc2-mm1 were fixed
+On Wednesday 08 August 2007 02:54, Evgeniy Polyakov wrote:
+> On Tue, Aug 07, 2007 at 10:55:38PM +0200, Jens Axboe wrote:
+>
+> So, what did we decide? To bloat bio a bit (add a queue pointer) or
+> to use physical device limits? The latter requires to replace all
+> occurence of bio->bi_bdev = something_new with blk_set_bdev(bio,
+> somthing_new), where queue limits will be appropriately charged. So
+> far I'm testing second case, but I only changed DST for testing, can
+> change all other users if needed though.
 
-libertas wireless warnings on x86_64:
+Adding a queue pointer to struct bio and using physical device limits as 
+in your posted patch both suffer from the same problem: you release the 
+throttling on the previous queue when the bio moves to a new one, which 
+is a bug because memory consumption on the previous queue then becomes 
+unbounded, or limited only by the number of struct requests that can be 
+allocated.  In other words, it reverts to the same situation we have 
+now as soon as the IO stack has more than one queue.  (Just a shorter 
+version of my previous post.)
 
-drivers/net/wireless/libertas/if_cs.c:462: warning: format '%d' expects type 'int', but argument 3 has type 'size_t'
-drivers/net/wireless/libertas/if_cs.c:538: warning: format '%d' expects type 'int', but argument 3 has type 'size_t'
+We can solve this by having the bio only point at the queue to which it 
+was originally submitted, since throttling the top level queue 
+automatically throttles all queues lower down the stack.  Alternatively 
+the bio can point at the block_device or straight at the 
+backing_dev_info, which is the per-device structure it actually needs 
+to touch.
+
+Note!  There are two more issues I forgot to mention earlier.
+
+1) One throttle count per submitted bio is too crude a measure.  A bio 
+can carry as few as one page or as many as 256 pages.  If you take only 
+one throttle count per bio and that data will be transferred over the 
+network then you have to assume that (a little more than) 256 pages of 
+sk_alloc reserve will be needed for every bio, resulting in a grossly 
+over-provisioned reserve.  The precise reserve calculation we want to 
+do is per-block device, and you will find hooks like this already 
+living in backing_dev_info.  We need to place our own fn+data there to 
+calculate the throttle draw for each bio.  Unthrottling gets trickier 
+with variable size throttle draw.  In ddsnap, we simply write the 
+amount we drew from the throttle into (the private data of) bio for use 
+later by unthrottle, thus avoiding the issue that the bio fields we 
+used to calculate might have changed during the lifetime of the bio.  
+This would translate into one more per-bio field.
+
+2) Exposing the per-block device throttle limits via sysfs or similar is 
+really not a good long term solution for system administration.  
+Imagine our help text: "just keep trying smaller numbers until your 
+system deadlocks".  We really need to figure this out internally and 
+get it correct.  I can see putting in a temporary userspace interface 
+just for experimentation, to help determine what really is safe, and 
+what size the numbers should be to approach optimal throughput in a 
+fully loaded memory state.
+
+Regards,
+
+Daniel
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Regards,
+
+Daniel
