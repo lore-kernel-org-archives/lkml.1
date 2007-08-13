@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968591AbXHMIT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969016AbXHMIUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968591AbXHMIT7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 04:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966296AbXHMG2p
+	id S969016AbXHMIUi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 04:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966324AbXHMG2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:28:45 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4528 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:28:52 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4542 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966707AbXHMG2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:28:43 -0400
-Date: Sun, 12 Aug 2007 23:28:31 -0700
+	id S966729AbXHMG2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:28:49 -0400
+Date: Sun, 12 Aug 2007 23:28:36 -0700
 From: joe@perches.com
-To: zippel@linux-m68k.org, torvalds@linux-foundation.org,
+To: torvalds@linux-foundation.org, tglx@linutronix.de,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] [215/2many] MAINTAINERS - HFS FILESYSTEM
-Message-ID: <46bffa0f.b08quvuVQ/G8TfC/%joe@perches.com>
+Subject: [PATCH] [218/2many] MAINTAINERS - HIGH-RESOLUTION TIMERS,
+ CLOCKEVENTS, DYNTICKS
+Message-ID: <46bffa14.uS7V9tvGL3tGxHWo%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,15 +28,17 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index cabdc6b..48d6b69 100644
+index 4a8770c..0202a00 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2054,6 +2054,8 @@ P:	Roman Zippel
- M:	zippel@linux-m68k.org
+@@ -2079,6 +2079,10 @@ P:	Thomas Gleixner
+ M:	tglx@linutronix.de
  L:	linux-kernel@vger.kernel.org
  S:	Maintained
-+F:	Documentation/filesystems/hfs.txt
-+F:	fs/hfs/
++F:	Documentation/hrtimer/
++F:	Documentation/hrtimers/
++F:	kernel/hrtimer.c
++F:	include/linux/hrtimer.h
  
- HGA FRAMEBUFFER DRIVER
- P:	Ferenc Bakonyi
+ HIGH-SPEED SCC DRIVER FOR AX.25
+ P:	Klaus Kudielka
