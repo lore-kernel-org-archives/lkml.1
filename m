@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935450AbXHMKRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935553AbXHMKSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935450AbXHMKRy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 06:17:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967206AbXHMGet
+	id S935553AbXHMKSg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 06:18:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967210AbXHMGez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:34:49 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1589 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:34:55 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1614 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965988AbXHMGen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:34:43 -0400
-Date: Sun, 12 Aug 2007 23:34:29 -0700
+	id S967209AbXHMGev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:34:51 -0400
+Date: Sun, 12 Aug 2007 23:34:37 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, nico@cam.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH] [394/2many] MAINTAINERS - PXA2xx SUPPORT
-Message-ID: <46bffb75.pNKePQf1hTn1GZ01%joe@perches.com>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org, akpm@linux-foundation.org
+Subject: [PATCH] [398/2many] MAINTAINERS - RADEON FRAMEBUFFER DISPLAY
+ DRIVER
+Message-ID: <46bffb7d.tUq6cv69dFlkL8ng%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,18 +28,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 3889034..6e99107 100644
+index ed3be09..5d45c74 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -3768,6 +3768,11 @@ P:	Nicolas Pitre
- M:	nico@cam.org
- L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+@@ -3807,6 +3807,8 @@ P:	Benjamin Herrenschmidt
+ M:	benh@kernel.crashing.org
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
  S:	Maintained
-+F:	Documentation/spi/pxa2xx
-+F:	drivers/pcmcia/pxa2xx*
-+F:	drivers/spi/pxa2xx*
-+F:	drivers/usb/gadget/pxa2xx*
-+F:	sound/soc/pxa/pxa2xx*
++F:	drivers/video/aty/radeon*
++F:	include/linux/radeonfb.h
  
- PXA MMCI DRIVER
- S:	Orphan
+ RAGE128 FRAMEBUFFER DISPLAY DRIVER
+ P:	Paul Mackerras
