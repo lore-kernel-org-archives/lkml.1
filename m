@@ -1,85 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S948306AbXHMQ1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S948371AbXHMQ2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S948306AbXHMQ1N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970834AbXHMPWi
+	id S948371AbXHMQ2G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969512AbXHMPWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 11:22:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44540 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755650AbXHMPWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 11:22:33 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1187017052.26008.51.camel@moss-spartans.epoch.ncsc.mil>
-References: <1187017052.26008.51.camel@moss-spartans.epoch.ncsc.mil> <353795.27307.qm@web36612.mail.mud.yahoo.com> <9536.1187016680@redhat.com>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: dhowells@redhat.com, casey@schaufler-ca.com, torvalds@osdl.org,
-       akpm@osdl.org, steved@redhat.com, trond.myklebust@fys.uio.no,
-       linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, LSM List <linux-security-module@vger.kernel.org>
-Subject: Re: [PATCH 00/16] Permit filesystem local caching [try #3]
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Mon, 13 Aug 2007 16:22:06 +0100
-Message-ID: <10228.1187018526@redhat.com>
+	Mon, 13 Aug 2007 11:22:51 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:11187 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S971552AbXHMPWs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 11:22:48 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: kvm-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [PATCH 0/2][KVM] guest time accounting
+Date: Mon, 13 Aug 2007 17:22:43 +0200
+User-Agent: KMail/1.9.7
+Cc: Laurent Vivier <Laurent.Vivier@bull.net>, Avi Kivity <avi@qumranet.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, cotte@de.ibm.com
+References: <46BC8B39.6050202@bull.net> <46C06AFE.2050702@qumranet.com> <46C06D99.2030106@bull.net>
+In-Reply-To: <46C06D99.2030106@bull.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708131722.43936.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Smalley <sds@tycho.nsa.gov> wrote:
+Am Montag, 13. August 2007 schrieb Laurent Vivier:
+> >> As guest accounting is hw dependent, I think we should add a hook in the
+> >> accounting functions.
+> >>   
+> > 
+> > Isn't PF_VM exactly such a hook?  All the hypervisor needs to do is to
+> > set/unset it correctly?
+> 
+> In fact, no.
+> 
+> PF_VM is used to know we have entered a virtual CPU (the hypervisor set it,
+> the scheduler unset it on accounting)
 
-> Seems like over-design - we don't need to support LSM stacking, and we
-> don't need to support pushing/popping more than one level of context.
+Why not do something like the following. (This patch does not work as it 
+relies on the no-existing var cputime_since_last_update, but it shows the 
+idea)
 
-It will, at some point hopefully, be possible for someone to try, say, NFS
-exporting a cached ISO9660 mount (CDROM) - in which case, we'd should allow
-for two levels of stack.  If we can pass the displaced context to the caller
-to restore later then that allows for more or less unlimited depth.
+---
+ drivers/kvm/kvm.h |   13 +++++++++++++
+ drivers/kvm/svm.c |    3 ++-
+ drivers/kvm/vmx.c |    3 ++-
+ kernel/sched.c    |    1 -
+ 4 files changed, 17 insertions(+), 3 deletions(-)
 
-It occurs to me that the following is almost good enough, but not quite:
-
-  (1) int security_get_context(void **_context);
-
-	This allocates and gives the caller a blob that describes the current
-	context of all the LSM module states attached to the current task and
-	stores a pointer to it in *_context.
-
-  (2) int security_push(void *context, struct sec **_old_context)
-
-	This causes all the LSM modules on the current task to switch to a new
-	acting state, passing back the old state.  It does not change how
-	other tasks do things to this one.
-
-  (3) int security_pop(void *context)
-
-	This causes all the LSM modules on the current task to switch to a new
-	acting state, deleting the old state.  It does not change how
-	other tasks do things to this one.
-
-  (4) int security_delete_context(void *context)
-
-I still need a way to transform the cachefilesd context into the kernel's
-context.  See patch:
-
-   Subject: [Linux-cachefs] [PATCH 12/16] CacheFiles: Get the SID under which
-	the CacheFiles module should operate [try #3]
-
-However, this seems to add a fairly generic tranformation, so that could be
-generalised:
-
-  (5) int security_xfrm_to_kernel_context(void *from, void **_to);
-
-> What was the objection again to the original interface, aside from
-> replacing "u32 secids" with "void* security blobs"?
-
-I got the impression that Casey thought much of this was tied to SELinux, but
-rereading his/her emails, I'm not so certain.  Maybe that's sufficient.  Casey?
-
-However, I've realised a problem (as outlined above) with what I've got.
-Namely its stack isn't necessarily deep enough.  Alternatively, nfsd perhaps
-should suppress caching on what it reads.
-
-David
+Index: kvm/drivers/kvm/kvm.h
+===================================================================
+--- kvm.orig/drivers/kvm/kvm.h
++++ kvm/drivers/kvm/kvm.h
+@@ -8,6 +8,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/list.h>
++#include <linux/kernel_stat.h>
+ #include <linux/mutex.h>
+ #include <linux/spinlock.h>
+ #include <linux/signal.h>
+@@ -726,6 +727,18 @@ static inline u32 get_rdx_init_val(void)
+ 	return 0x600; /* P6 family */
+ }
+ 
++static inline guest_enter(void)
++{
++	account_system_time(current, 0, cputime_since_last_update);
++	current->flags |= PF_VCPU;
++}
++
++static inline guest_exit(void)
++{
++	current->flags &= ~PF_VCPU;
++	account_system_time(current, 0, cputime_since_last_update);
++}
++
+ #define ASM_VMX_VMCLEAR_RAX       ".byte 0x66, 0x0f, 0xc7, 0x30"
+ #define ASM_VMX_VMLAUNCH          ".byte 0x0f, 0x01, 0xc2"
+ #define ASM_VMX_VMRESUME          ".byte 0x0f, 0x01, 0xc3"
+Index: kvm/kernel/sched.c
+===================================================================
+--- kvm.orig/kernel/sched.c
++++ kvm/kernel/sched.c
+@@ -3251,7 +3251,6 @@ void account_system_time(struct task_str
+ 		p->utime = cputime_add(p->utime, cputime);
+ 		cpustat->user = cputime64_add(cpustat->user, tmp);
+ 		cpustat->guest = cputime64_add(cpustat->guest, tmp);
+-		p->flags &= ~PF_VCPU;
+ 		return;
+ 	}
+ 
+Index: kvm/drivers/kvm/svm.c
+===================================================================
+--- kvm.orig/drivers/kvm/svm.c
++++ kvm/drivers/kvm/svm.c
+@@ -1404,7 +1404,7 @@ again:
+ 	clgi();
+ 
+ 	vcpu->guest_mode = 1;
+-	current->flags |= PF_VCPU;
++	guest_enter();
+ 	if (vcpu->requests)
+ 		if (test_and_clear_bit(KVM_TLB_FLUSH, &vcpu->requests))
+ 		    svm_flush_tlb(vcpu);
+@@ -1537,6 +1537,7 @@ again:
+ #endif
+ 		: "cc", "memory" );
+ 
++	guest_exit();
+ 	vcpu->guest_mode = 0;
+ 
+ 	if (vcpu->fpu_active) {
+Index: kvm/drivers/kvm/vmx.c
+===================================================================
+--- kvm.orig/drivers/kvm/vmx.c
++++ kvm/drivers/kvm/vmx.c
+@@ -2078,7 +2078,7 @@ again:
+ 	local_irq_disable();
+ 
+ 	vcpu->guest_mode = 1;
+-	current->flags |= PF_VCPU;
++	guest_enter();
+ 	if (vcpu->requests)
+ 		if (test_and_clear_bit(KVM_TLB_FLUSH, &vcpu->requests))
+ 		    vmx_flush_tlb(vcpu);
+@@ -2199,6 +2199,7 @@ again:
+ 		[cr2]"i"(offsetof(struct kvm_vcpu, cr2))
+ 	      : "cc", "memory" );
+ 
++	guest_exit();
+ 	vcpu->guest_mode = 0;
+ 	local_irq_enable();
+ 
