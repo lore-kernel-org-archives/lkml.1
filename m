@@ -1,63 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942653AbXHMMpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030301AbXHMMqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942653AbXHMMpq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940957AbXHMHYa
+	id S1030301AbXHMMqS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936169AbXHMH24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 03:24:30 -0400
-Received: from smtp110.sbc.mail.re2.yahoo.com ([68.142.229.95]:29887 "HELO
-	smtp110.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S940757AbXHMHY2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 03:24:28 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=G4S8DpvWdBUFz42+/CvlNXzzanFolQ/U56KUqmY23ULAO/r7p9HRdY0mMjYCXAl3AAmxHV4acXw30ON8nZLYf5b2oGYMbLGxXJu7Ol38xRPmnx6rdpYO+FTFStFdL/9fjtGN0RMqn8IsQp0SmMASDCEKoHXiC8btPhm37P2VrIo=  ;
-X-YMail-OSG: hqzLng8VM1k5abMho0QWPmhduRV7zUp7d8rK6v.i1Mwif2oL.9vPoHAelGZd2k6bEHAQscB1kg--
-From: David Brownell <david-b@pacbell.net>
-To: joe@perches.com
-Subject: Re: [linux-usb-devel] [PATCH] [497/2many] MAINTAINERS - USB HUB DRIVER
-Date: Mon, 13 Aug 2007 00:24:23 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-usb-devel@lists.sourceforge.net, torvalds@linux-foundation.org,
-       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       johannes@erdfelt.com, akpm@linux-foundation.org
-References: <46bffc57.+VLVIUHqG3mGbW2w%joe@perches.com>
-In-Reply-To: <46bffc57.+VLVIUHqG3mGbW2w%joe@perches.com>
+	Mon, 13 Aug 2007 03:28:56 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:25529 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S942002AbXHMH2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 03:28:52 -0400
+Date: Mon, 13 Aug 2007 09:28:49 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Distributed storage.
+Message-ID: <20070813072848.GC23758@kernel.dk>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708071124.56859.phillips@phunq.net> <20070807205538.GB5245@kernel.dk> <200708121637.00144.phillips@phunq.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708130024.23968.david-b@pacbell.net>
+In-Reply-To: <200708121637.00144.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 August 2007, joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
+On Sun, Aug 12 2007, Daniel Phillips wrote:
+> On Tuesday 07 August 2007 13:55, Jens Axboe wrote:
+> > I don't like structure bloat, but I do like nice design. Overloading
+> > is a necessary evil sometimes, though. Even today, there isn't enough
+> > room to hold bi_rw and bi_flags in the same variable on 32-bit archs,
+> > so that concern can be scratched. If you read bio.h, that much is
+> > obvious.
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
+> Sixteen bits in bi_rw are consumed by queue priority.  Is there a reason 
+> this lives in struct bio instead of struct request?
+
+If you don't, you have to pass them down. You can make that very
+statement about basically any member of struct bio, until we end up with
+a submit_bio() path and down taking 16 arguments.
+
+> > If you check up on the iommu virtual merging, you'll understand the
+> > front and back size members. They may smell dubious to you, but
+> > please take the time to understand why it looks the way it does.
 > 
+> Virtual merging is only needed at the physical device, so why do these 
+> fields live in struct bio instead of struct request?
 
-I seem to be missing some context for these "2many" patches; and
-don't really see any in the MARC archives either.  This seems like
-about 600 patches out of the blue.  A lot for RC3, even if it is
-"just" for the MAINTAINERS file.
+A bio does exist outside of a struct request, and bio buildup also
+happens before it gets attached to such.
 
-Is the motivation here purely to make it easier to find out how to
-report bugs and suggest improvements?  If so, that seems like only
-one of many related issues ...
+> > Changing the number of bvecs is integral to how bio buildup current
+> > works.
+> 
+> Right, that is done by bi_vcnt.  I meant bi_max_vecs, which you can 
+> derive efficiently from BIO_POOL_IDX() provided the bio was allocated 
+> in the standard way.
 
-Is there general agreement that these "F:" entries should be used?
-Rather than, say, embedding references in the relevant parts of
-the source tree, adjacent to those files, where they would be more
-visible to people making relevant changes.
+That would only be feasible, if we ruled that any bio in the system must
+originate from the standard pools.
 
-I'm also concerned with the reality that the MAINTAINERS file is
-not accurate.  The $SUBJECT patch is one example; the named maintainer
-is no longer active (in that area, at least) and the named driver is
-not actually separable from the rest of usbcore.  Better IMO to just
-remove the "hub driver" entry.
+> This leaves a little bit of clean up to do for bios not allocated from
+> a standard pool.
 
+Please suggest how to do such a cleanup.
+
+> Incidentally, why does the bvl need to be memset to zero on allocation?  
+> bi_vcnt already tells you which bvecs are valid and the only field in a 
+> bvec that can reasonably default to zero is the offset, which ought to 
+> be set set every time a bvec is initialized anyway.
+
+We could probably skip that, but that's an unrelated subject.
+
+> > > bi_destructor could be combined.  I don't see a lot of users of
+> > > bi_idx,
+> >
+> > bi_idx is integral to partial io completions.
+> 
+> Struct request has a remaining submission sector count so what does 
+> bi_idx do that is different?
+
+Struct request has remaining IO count. You still need to know where to
+start in the bio.
+
+> > > that looks like a soft target.  See what happened to struct page
+> > > when a couple of folks got serious about attacking it, some really
+> > > deep hacks were done to pare off a few bytes here and there.  But
+> > > struct bio as a space waster is not nearly in the same ballpark.
+> >
+> > So show some concrete patches and examples, hand waving and
+> > assumptions is just a waste of everyones time.
+> 
+> Average struct bio memory footprint ranks near the bottom of the list of 
+> things that suck most about Linux storage.  At idle I see 8K in use 
+> (reserves); during updatedb it spikes occasionally to 50K; under a 
+> heavy  load generated by ddsnap on a storage box it sometimes goes to 
+> 100K with bio throttling in place.  Really not moving the needle.
+
+Then, again, stop wasting time on this subject. Just because struct bio
+isn't a huge bloat is absolutely no justification for adding extra
+members to it. It's not just about system wide bloat.
+
+> On the other hand, vm writeout deadlock ranks smack dab at the top of 
+> the list, so that is where the patching effort must go for the 
+> forseeable future.  Without bio throttling, the ddsnap load can go to 
+> 24 MB for struct bio alone.  That definitely moves the needle.  in 
+> short, we save 3,200 times more memory by putting decent throttling in 
+> place than by saving an int in struct bio.
+
+Then fix the damn vm writeout. I always thought it was silly to depend
+on the block layer for any sort of throttling. If it's not a system wide
+problem, then throttle the io count in the make_request_fn handler of
+that problematic driver.
+
+> That said, I did a little analysis to get an idea of where the soft 
+> targets are in struct bio, and to get to know the bio layer a little 
+> better.  Maybe these few hints will get somebody interested enough to 
+> look further.
+> 
+> > > It would be interesting to see if bi_bdev could be made read only.
+> > > Generally, each stage in the block device stack knows what the next
+> > > stage is going to be, so why do we have to write that in the bio? 
+> > > For error reporting from interrupt context?  Anyway, if Evgeniy
+> > > wants to do the patch, I will happily unload the task of convincing
+> > > you that random fields are/are not needed in struct bio :-)
+> >
+> > It's a trade off, otherwise you'd have to pass the block device
+> > around a lot.
+> 
+> Which costs very little, probably less than trashing an extra field's 
+> worth of cache.
+
+Again, you can make that argument for most of the members. It's a
+non-starter.
+
+> > And it's, again, a design issue. A bio contains 
+> > destination information, that means device/offset/size information.
+> > I'm all for shaving structure bytes where it matters, but not for the
+> > sake of sacrificing code stability or design. I consider struct bio
+> > quite lean and have worked hard to keep it that way. In fact, iirc,
+> > the only addition to struct bio since 2001 is the iommu front/back
+> > size members. And I resisted those for quite a while.
+> 
+> You did not comment on the one about putting the bio destructor in 
+> the ->endio handler, which looks dead simple.  The majority of cases 
+> just use the default endio handler and the default destructor.  Of the 
+> remaining cases, where a specialized destructor is needed, typically a 
+> specialized endio handler is too, so combining is free.  There are few 
+> if any cases where a new specialized endio handler would need to be 
+> written.
+
+We could do that without too much work, I agree.
+
+> As far as code stability goes, current kernels are horribly unstable in 
+> a variety of contexts because of memory deadlock and slowdowns related 
+> to the attempt to fix the problem via dirty memory limits.  Accurate 
+> throttling of bio traffic is one of the two key requirements to fix 
+> this instability, the other other is accurate writeout path reserve 
+> management, which is only partially addressed by BIO_POOL.
+
+Which, as written above and stated many times over the years on lkml, is
+not a block layer issue imho.
+
+> Nice to see you jumping in Jens.  Now it is over to the other side of 
+> the thread where Evgeniy has posted a patch that a) grants your wish to 
+> add no new field in struct bio and b) does not fix the problem.
+
+This is why it's impossible for me to have any sort of constructive
+conversation with you.
+
+-- 
+Jens Axboe
 
