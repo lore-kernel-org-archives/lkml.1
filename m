@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939988AbXHMM0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S944392AbXHMM04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939988AbXHMM0L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967581AbXHMGti
+	id S944392AbXHMM04 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968057AbXHMGun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:49:38 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2578 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:50:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33608 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966149AbXHMGth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:49:37 -0400
-Date: Sun, 12 Aug 2007 23:26:04 -0700
-From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       dccp@vger.kernel.org, akpm@linux-foundation.org,
-       acme@ghostprotocols.net
-Subject: [PATCH] [148/2many] MAINTAINERS - DCCP PROTOCOL
-Message-ID: <46bff97c.9avHEM3TinhF1DrA%joe@perches.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	id S967818AbXHMGuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:50:37 -0400
+Message-ID: <46BFFDBD.6080804@redhat.com>
+Date: Mon, 13 Aug 2007 02:44:13 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: David Howells <dhowells@redhat.com>
+CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
+Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
+References: <46BCC26B.6080600@redhat.com> <46BB46B2.60808@redhat.com> <20070809134150.GA14890@shell.boston.redhat.com> <2708.1186737826@redhat.com> <7680.1186822071@redhat.com>
+In-Reply-To: <7680.1186822071@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add file pattern to MAINTAINER entry
+David Howells wrote:
+> Chris Snook <csnook@redhat.com> wrote:
+> 
+>> cpu_relax() contains a barrier, so it should do the right thing.  For non-smp
+>> architectures, I'm concerned about interacting with interrupt handlers.  Some
+>> drivers do use atomic_* operations.
+> 
+> I'm not sure that actually answers my question.  Why not smp_rmb()?
+> 
+> David
 
-Signed-off-by: Joe Perches <joe@perches.com>
+I would assume because we want to waste time efficiently even on non-smp 
+architectures, rather than frying the CPU or draining the battery.  Certain 
+looping execution patterns can cause the CPU to operate above thermal design 
+power.  I have fans on my workstation that only ever come on when running 
+LINPACK, and that's generally memory bandwidth-bound.  Just imagine what happens 
+when you're executing the same few non-serializing instructions in a tight loop 
+without ever stalling on memory fetches, or being scheduled out.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 7f54480..c786066 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1434,6 +1434,8 @@ M:	acme@ghostprotocols.net
- L:	dccp@vger.kernel.org
- W:	http://linux-net.osdl.org/index.php/DCCP
- S:	Maintained
-+F:	include/linux/dccp.h
-+F:	net/dccp/
- 
- DECnet NETWORK LAYER
- P:	Patrick Caulfield
+If there's another reason, I'd like to hear it too, because I'm just guessing here.
+
+	-- Chris
