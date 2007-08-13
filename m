@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S943148AbXHMJdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939297AbXHMJdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S943148AbXHMJdE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 05:33:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965903AbXHMGcm
+	id S939297AbXHMJdp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 05:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967046AbXHMGcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:32:42 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1206 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:32:43 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1212 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965772AbXHMGci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:32:38 -0400
-Date: Sun, 12 Aug 2007 23:32:23 -0700
+	id S966963AbXHMGcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:32:39 -0400
+Date: Sun, 12 Aug 2007 23:32:26 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com, akpm@linux-foundation.org
-Subject: [PATCH] [329/2many] MAINTAINERS - MULTITECH MULTIPORT CARD
- (ISICOM)
-Message-ID: <46bffaf7.EQ2rPPIU9TvbGkfv%joe@perches.com>
+To: vandrove@vc.cvut.cz, torvalds@linux-foundation.org, linware@sh.cvut.cz,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] [331/2many] MAINTAINERS - NCP FILESYSTEM
+Message-ID: <46bffafa.sN6Vsxjg2xz6a1/X%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,15 +27,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index c74e9a6..409dd81 100644
+index 5b7039c..e372aeb 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -3156,6 +3156,8 @@ P:	Jiri Slaby
- M:	jirislaby@gmail.com
- L:	linux-kernel@vger.kernel.org
+@@ -3170,6 +3170,7 @@ P:	Petr Vandrovec
+ M:	vandrove@vc.cvut.cz
+ L:	linware@sh.cvut.cz
  S:	Maintained
-+F:	drivers/char/isicom.c
-+F:	include/linux/isicom.h
++F:	fs/ncpfs/
  
- NATSEMI ETHERNET DRIVER (DP8381x)
- P: 	Tim Hockin
+ NCR DUAL 700 SCSI DRIVER (MICROCHANNEL)
+ P:	James E.J. Bottomley
