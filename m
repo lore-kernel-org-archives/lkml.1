@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938018AbXHMHem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933325AbXHMHfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938018AbXHMHem (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 03:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966166AbXHMG0H
+	id S933325AbXHMHfM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 03:35:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966254AbXHMG0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:26:07 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4097 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:26:09 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4100 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966238AbXHMG0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:26:01 -0400
-Date: Sun, 12 Aug 2007 23:25:48 -0700
+	id S966252AbXHMG0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:26:05 -0400
+Date: Sun, 12 Aug 2007 23:25:50 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jayakumar.alsa@gmail.com, akpm@linux-foundation.org
-Subject: [PATCH] [140/2many] MAINTAINERS - CS5535 Audio ALSA driver
-Message-ID: <46bff96c.J9yFP7daYOKvLMb1%joe@perches.com>
+To: torvalds@linux-foundation.org, rmk@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] [141/2many] MAINTAINERS - CYBERPRO FB DRIVER
+Message-ID: <46bff96e.xEoD4RsjRAkgRDG3%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,14 +27,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index bc2e348..26eeef8 100644
+index 26eeef8..aee6296 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1358,6 +1358,7 @@ CS5535 Audio ALSA driver
- P:	Jaya Kumar
- M:	jayakumar.alsa@gmail.com
+@@ -1365,6 +1365,7 @@ P:	Russell King
+ M:	rmk@arm.linux.org.uk
+ W:	http://www.arm.linux.org.uk/
  S:	Maintained
-+F:	sound/pci/cs5535audio/
++F:	drivers/video/cyber2000fb.*
  
- CYBERPRO FB DRIVER
- P:	Russell King
+ CYBLAFB FRAMEBUFFER DRIVER
+ P:	Knut Petersen
