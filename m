@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S945397AbXHMMcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbXHMMdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S945397AbXHMMcO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939725AbXHMGym
+	id S1758132AbXHMMdG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933777AbXHMGzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:54:42 -0400
-Received: from ozlabs.org ([203.10.76.45]:49975 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933810AbXHMGyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:54:40 -0400
-Subject: Re: [PATCH] [43/2many] MAINTAINERS - AOA (Apple Onboard Audio)
-	ALSA DRIVER
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: joe@perches.com
-Cc: torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, johannes@sipsolutions.net,
-       akpm@linux-foundation.org
-In-Reply-To: <46bff8b4.nGsvrO+zx5IWj+A6%joe@perches.com>
-References: <46bff8b4.nGsvrO+zx5IWj+A6%joe@perches.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zUvc+fxifubz63AfX3S9"
-Date: Mon, 13 Aug 2007 16:54:37 +1000
-Message-Id: <1186988077.32127.2.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 13 Aug 2007 02:55:49 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:52148
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S937558AbXHMGzr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:55:47 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
+Date: Sun, 12 Aug 2007 23:55:34 -0700
+User-Agent: KMail/1.9.5
+Cc: Daniel Phillips <daniel.raymond.phillips@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>
+References: <20070806102922.907530000@chello.nl> <4a5909270708100115v4ad10c4es697d216edf29b07d@mail.gmail.com> <Pine.LNX.4.64.0708101041040.12758@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0708101041040.12758@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708122355.34652.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 10 August 2007 10:46, Christoph Lameter wrote:
+> On Fri, 10 Aug 2007, Daniel Phillips wrote:
+> > It is quite clear what is in your patch.  Instead of just grabbing
+> > a page off the buddy free lists in a critical allocation situation
+> > you go invoke shrink_caches.  Why oh why?  All the memory needed to
+> > get
+>
+> Because we get to the code of interest when we have no memory on the
+> buddy free lists...
 
---=-zUvc+fxifubz63AfX3S9
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Ah wait, that statement is incorrect and may well be the crux of your 
+misunderstanding.  Buddy free lists are not exhausted until the entire 
+memalloc reserve has been depleted, which would indicate a kernel bug 
+and imminent system death.
 
-On Sun, 2007-08-12 at 23:22 -0700, joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
->=20
-> Signed-off-by: Joe Perches <joe@perches.com>
->=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index e2e88f3..016f342 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -420,6 +420,7 @@ M:	johannes@sipsolutions.net
->  L:	linuxppc-dev@ozlabs.org
->  L:	alsa-devel@alsa-project.org (subscribers-only)
->  S:	Maintained
-> +F:	sound/oao/
+> ...and need to reclaim memory to fill them up again. 
 
-Should be aoa.
+That we do, but we satisfy the allocations in the vm writeout path 
+first, without waiting for shrink_caches to do its thing.
 
-cheers
+Regards,
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-zUvc+fxifubz63AfX3S9
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGwAAtdSjSd0sB4dIRAtBKAJ94YhEUOxFBNTBAyma3UcyCQztmBQCfXTPj
-SpFkCCOFuW894gwMhtXyDuc=
-=AJkb
------END PGP SIGNATURE-----
-
---=-zUvc+fxifubz63AfX3S9--
-
+Daniel
