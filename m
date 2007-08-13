@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S947007AbXHMOhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S947056AbXHMOih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S947007AbXHMOhx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968515AbXHMLgj
+	id S947056AbXHMOih (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969765AbXHMLke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 07:36:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53404 "EHLO mx1.redhat.com"
+	Mon, 13 Aug 2007 07:40:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54630 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938691AbXHMLgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 07:36:33 -0400
-Date: Mon, 13 Aug 2007 07:36:19 -0400
+	id S1753801AbXHMLka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 07:40:30 -0400
+Date: Mon, 13 Aug 2007 07:40:20 -0400
 From: Chris Snook <csnook@redhat.com>
 To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>
@@ -17,8 +17,8 @@ Cc: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
        Segher Boessenkool <segher@kernel.crashing.org>,
        "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
        "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: [PATCH 18/23] make atomic_read() and atomic_set() behavior consistent on sh
-Message-ID: <20070813113619.GR24018@shell.boston.redhat.com>
+Subject: [PATCH 19/23] make atomic_read() and atomic_set() behavior consistent on sparc64
+Message-ID: <20070813114020.GS24018@shell.boston.redhat.com>
 References: <46C03885.7000109@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -30,32 +30,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Chris Snook <csnook@redhat.com>
 
-Use volatile consistently in atomic.h on sh.
+Use volatile consistently in atomic.h on sparc64.
 
 Signed-off-by: Chris Snook <csnook@redhat.com>
 
---- linux-2.6.23-rc3-orig/include/asm-sh/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc3/include/asm-sh/atomic.h	2007-08-13 06:07:16.000000000 -0400
-@@ -7,12 +7,19 @@
-  *
-  */
+--- linux-2.6.23-rc3-orig/include/asm-sparc64/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc3/include/asm-sparc64/atomic.h	2007-08-13 06:17:01.000000000 -0400
+@@ -11,17 +11,31 @@
+ #include <linux/types.h>
+ #include <asm/system.h>
  
 -typedef struct { volatile int counter; } atomic_t;
+-typedef struct { volatile __s64 counter; } atomic64_t;
 +typedef struct { int counter; } atomic_t;
++typedef struct { __s64 counter; } atomic64_t;
  
- #define ATOMIC_INIT(i)	( (atomic_t) { (i) } )
+ #define ATOMIC_INIT(i)		{ (i) }
+ #define ATOMIC64_INIT(i)	{ (i) }
  
 -#define atomic_read(v)		((v)->counter)
--#define atomic_set(v,i)		((v)->counter = (i))
-+static inline int atomic_read(atomic_t *v)
+-#define atomic64_read(v)	((v)->counter)
++static __inline__ int atomic_read(atomic_t *v)
 +{
 +        return *(volatile int *)&v->counter;
 +}
 +
-+static inline void atomic_set(atomic_t *v, int i)
++static __inline__ __s64 atomic64_read(atomic64_t *v)
++{
++        return *(volatile __s64 *)&v->counter;
++}
+ 
+-#define atomic_set(v, i)	(((v)->counter) = i)
+-#define atomic64_set(v, i)	(((v)->counter) = i)
++static __inline__ void atomic_set(atomic_t *v, int i)
 +{
 +        *(volatile int *)&v->counter = i;
 +}
++
++static __inline__ void atomic64_set(atomic64_t *v, __s64 i)
++{
++        *(volatile __s64 *)&v->counter = i;
++}
  
- #include <linux/compiler.h>
- #include <asm/system.h>
+ extern void atomic_add(int, atomic_t *);
+ extern void atomic64_add(int, atomic64_t *);
