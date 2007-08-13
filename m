@@ -1,138 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965305AbXHLXhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965293AbXHMAAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965305AbXHLXhX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Aug 2007 19:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934666AbXHLXhJ
+	id S965293AbXHMAAe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Aug 2007 20:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758210AbXHMAAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Aug 2007 19:37:09 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:35691
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S934890AbXHLXhG (ORCPT
+	Sun, 12 Aug 2007 20:00:23 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:35597 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752836AbXHMAAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Aug 2007 19:37:06 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Distributed storage.
-Date: Sun, 12 Aug 2007 16:36:59 -0700
-User-Agent: KMail/1.9.5
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708071124.56859.phillips@phunq.net> <20070807205538.GB5245@kernel.dk>
-In-Reply-To: <20070807205538.GB5245@kernel.dk>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 12 Aug 2007 20:00:22 -0400
+Subject: Re: [PATCH] [MTD] Fix CFI build error with meaningless
+	nonfunctional .config
+From: David Woodhouse <dwmw2@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070812162417.GA15412@elte.hu>
+References: <20070806161537.GA1269@elte.hu>
+	 <1186717841.7282.104.camel@shinybook.infradead.org>
+	 <20070810074140.GB28264@elte.hu>
+	 <1186731902.3571.1.camel@shinybook.infradead.org>
+	 <20070812162417.GA15412@elte.hu>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 08:00:11 +0800
+Message-Id: <1186963211.3973.25.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-3.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708121637.00144.phillips@phunq.net>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 07 August 2007 13:55, Jens Axboe wrote:
-> I don't like structure bloat, but I do like nice design. Overloading
-> is a necessary evil sometimes, though. Even today, there isn't enough
-> room to hold bi_rw and bi_flags in the same variable on 32-bit archs,
-> so that concern can be scratched. If you read bio.h, that much is
-> obvious.
-
-Sixteen bits in bi_rw are consumed by queue priority.  Is there a reason 
-this lives in struct bio instead of struct request?
-
-> If you check up on the iommu virtual merging, you'll understand the
-> front and back size members. They may smell dubious to you, but
-> please take the time to understand why it looks the way it does.
-
-Virtual merging is only needed at the physical device, so why do these 
-fields live in struct bio instead of struct request?
-
-> Changing the number of bvecs is integral to how bio buildup current
-> works.
-
-Right, that is done by bi_vcnt.  I meant bi_max_vecs, which you can 
-derive efficiently from BIO_POOL_IDX() provided the bio was allocated 
-in the standard way.  This leaves a little bit of clean up to do for 
-bios not allocated from a standard pool.
-
-Incidentally, why does the bvl need to be memset to zero on allocation?  
-bi_vcnt already tells you which bvecs are valid and the only field in a 
-bvec that can reasonably default to zero is the offset, which ought to 
-be set set every time a bvec is initialized anyway.
-
-> > bi_destructor could be combined.  I don't see a lot of users of
-> > bi_idx,
+On Sun, 2007-08-12 at 18:24 +0200, Ingo Molnar wrote:
+> just found another one via randconfig, it fails with:
+> 
+>  In file included from drivers/mtd/chips/map_rom.c:16:
+>  include/linux/mtd/map.h:128:2: error: #error "No bus width supported. What's the point?"
 >
-> bi_idx is integral to partial io completions.
+> config attached below. Because it's so nice to be able to keep a 
+> randconfig build-test running overnight, i think this needs to be 
+> fixed  too. (even if with just a runtime BUG())
 
-Struct request has a remaining submission sector count so what does 
-bi_idx do that is different?
 
-> > that looks like a soft target.  See what happened to struct page
-> > when a couple of folks got serious about attacking it, some really
-> > deep hacks were done to pare off a few bytes here and there.  But
-> > struct bio as a space waster is not nearly in the same ballpark.
->
-> So show some concrete patches and examples, hand waving and
-> assumptions is just a waste of everyones time.
 
-Average struct bio memory footprint ranks near the bottom of the list of 
-things that suck most about Linux storage.  At idle I see 8K in use 
-(reserves); during updatedb it spikes occasionally to 50K; under a 
-heavy  load generated by ddsnap on a storage box it sometimes goes to 
-100K with bio throttling in place.  Really not moving the needle.
+On Fri, 2007-08-10 at 11:50 +0800, David Woodhouse wrote:
+> -#error "No bus width supported. What's the point?"
+> +#warning "No CONFIG_MTD_MAP_BANK_WIDTH_xx selected. No NOR chip support can work"
+> +static inline int map_bankwidth(void *map)
+> +{
+> +       BUG(); 
+> 
+-- 
+dwmw2
 
-On the other hand, vm writeout deadlock ranks smack dab at the top of 
-the list, so that is where the patching effort must go for the 
-forseeable future.  Without bio throttling, the ddsnap load can go to 
-24 MB for struct bio alone.  That definitely moves the needle.  in 
-short, we save 3,200 times more memory by putting decent throttling in 
-place than by saving an int in struct bio.
-
-That said, I did a little analysis to get an idea of where the soft 
-targets are in struct bio, and to get to know the bio layer a little 
-better.  Maybe these few hints will get somebody interested enough to 
-look further.
-
-> > It would be interesting to see if bi_bdev could be made read only.
-> > Generally, each stage in the block device stack knows what the next
-> > stage is going to be, so why do we have to write that in the bio? 
-> > For error reporting from interrupt context?  Anyway, if Evgeniy
-> > wants to do the patch, I will happily unload the task of convincing
-> > you that random fields are/are not needed in struct bio :-)
->
-> It's a trade off, otherwise you'd have to pass the block device
-> around a lot.
-
-Which costs very little, probably less than trashing an extra field's 
-worth of cache.
-
-> And it's, again, a design issue. A bio contains 
-> destination information, that means device/offset/size information.
-> I'm all for shaving structure bytes where it matters, but not for the
-> sake of sacrificing code stability or design. I consider struct bio
-> quite lean and have worked hard to keep it that way. In fact, iirc,
-> the only addition to struct bio since 2001 is the iommu front/back
-> size members. And I resisted those for quite a while.
-
-You did not comment on the one about putting the bio destructor in 
-the ->endio handler, which looks dead simple.  The majority of cases 
-just use the default endio handler and the default destructor.  Of the 
-remaining cases, where a specialized destructor is needed, typically a 
-specialized endio handler is too, so combining is free.  There are few 
-if any cases where a new specialized endio handler would need to be 
-written.
-
-As far as code stability goes, current kernels are horribly unstable in 
-a variety of contexts because of memory deadlock and slowdowns related 
-to the attempt to fix the problem via dirty memory limits.  Accurate 
-throttling of bio traffic is one of the two key requirements to fix 
-this instability, the other other is accurate writeout path reserve 
-management, which is only partially addressed by BIO_POOL.
-
-Nice to see you jumping in Jens.  Now it is over to the other side of 
-the thread where Evgeniy has posted a patch that a) grants your wish to 
-add no new field in struct bio and b) does not fix the problem.
-
-Regards,
-
-Daniel
