@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968837AbXHMRIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032246AbXHMRJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968837AbXHMRIu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 13:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031946AbXHMQsM
+	id S1032246AbXHMRJl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 13:09:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S973411AbXHMQss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 12:48:12 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34205 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S970039AbXHMQsK (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 12:48:10 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH]: proc: export a processes resource limits via proc/<pid>
-In-Reply-To: Your message of "Mon, 13 Aug 2007 10:00:44 EDT."
-             <20070813140044.GB1960@hmsreliant.think-freely.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070813140044.GB1960@hmsreliant.think-freely.org>
+	Mon, 13 Aug 2007 12:48:48 -0400
+Received: from chaph.opaya.de ([217.10.9.96]:56844 "EHLO chaph.opaya.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S973405AbXHMQsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 12:48:45 -0400
+X-Greylist: delayed 1260 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Aug 2007 12:48:45 EDT
+Date: Mon, 13 Aug 2007 18:27:42 +0200
+From: Steffen Koepf <steffen.koepf@opaya.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] USB-Core, Kernel 2.6.22.2
+Message-ID: <20070813162742.GA31804@chaph>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1187023658_3175P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 13 Aug 2007 12:47:38 -0400
-Message-ID: <10638.1187023658@turing-police.cc.vt.edu>
+Content-Type: multipart/mixed; boundary="X1bOJ3K7DJ5YkBrT"
+Content-Disposition: inline
+User-Agent: Mutt/1.3.99i
+X-Mailer: Mutt
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1187023658_3175P
+
+--X1bOJ3K7DJ5YkBrT
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Mon, 13 Aug 2007 10:00:44 EDT, Neil Horman said:
-> Hey there-
-> 	Currently, there exists no method for a process to query the resource
-> limits of another process.  They can be inferred via some mechanisms but they
-> cannot be explicitly determined.  Given that this information can be usefull to
-> know during the debugging of an application, I've written this patch which
-> exports all of a processes limits via /proc/<pid>/limits.  Tested successfully
-> by myself on x86 on top of 2.6.23-rc2-mm1.
+Hello,
 
->  /************************************************************************/
->  /*                       Here the fs part begins                        */
->  /************************************************************************/
-> @@ -2017,6 +2080,7 @@ static const struct pid_entry tgid_base_stuff[] = {
->  	INF("environ",    S_IRUSR, pid_environ),
->  	INF("auxv",       S_IRUSR, pid_auxv),
->  	INF("status",     S_IRUGO, pid_status),
-> +	INF("limits",	  S_IRUGO, pid_limits),
+there is a USB-Device Init-Problem with the Apacer AE161 USB-Cardreader,
+which contains the Chip AU6375. The Cardreader init fails in about 50%
+of system boots, with the following lines:
 
-Any takers for S_IRUSR instead?  Either that, or lay out the use case for
-making it S_IRUGO.  (I'm OK on it being world-visible *if* there's a good
-and sane reason for it)
+usb 1-6: unable to read config index 0 descriptor/all
+usb 1-6: can't read configurations, error -71
+hub 1-0:1.0: Cannot enable port 6.  Maybe the USB cable is bad?
 
->  #ifdef CONFIG_SCHED_DEBUG
->  	REG("sched",      S_IRUGO|S_IWUSR, pid_sched),
->  #endif
-> @@ -2310,6 +2374,7 @@ static const struct pid_entry tid_base_stuff[] = {
->  	INF("environ",   S_IRUSR, pid_environ),
->  	INF("auxv",      S_IRUSR, pid_auxv),
->  	INF("status",    S_IRUGO, pid_status),
-> +	INF("limits",	 S_IRUGO, pid_limits),
+The patch let's the kernel stay in the loop, the cardreader is detected
+properly and the loop is never executed more than two times. The second
+call of usb_control_msg succeeds always. Maybe it was the developer's 
+goal of the loop to fix such things?
 
-Here too.
+cu,
 
---==_Exmh_1187023658_3175P
-Content-Type: application/pgp-signature
+Steffen
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFGwIsqcC3lWbTT17ARAj90AJwNaHgTgWN91dKPxTqUcjaDC/TuiwCgwAOg
-iUDlsa+b/VUTg4VPSZ1My6M=
-=95Fs
------END PGP SIGNATURE-----
+--X1bOJ3K7DJ5YkBrT
+Content-Type: application/x-gunzip
+Content-Disposition: attachment; filename="usb-initfix.diff.gz"
+Content-Transfer-Encoding: base64
 
---==_Exmh_1187023658_3175P--
+H4sICEuEwEYCA3VzYi1pbml0Zml4LmRpZmYAlY1BT8JAEIXPu7/iHTHrbstUCxRN6sGjYgh/
+oJQpNOA22e2qF/67beECB6LJTGbm5Zv3NnVVQb8XweFQ2/CjyaSGyFC0cfUXOx8Fv47KxnH0
+yd4XWzblFWksf9+gpdb6795itQt4CVtgBkoymmbjR1AcT6RS6n/B4q2xg9U4QTzLiLo6WeU5
+dJo83KdQ/ZgizyWEEI59OLR4hn79WC5Wi/mglo1tu1werqNUQtQVRmf2CfFdL11Sa8fFvt+O
+XTtug7M4PczlL5TN5fZyAQAA
+
+--X1bOJ3K7DJ5YkBrT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=README
+
+USB-Cardreader (AU6375) init fix, Steffen Koepf, steffen.koepf@opaya.de
+
+--X1bOJ3K7DJ5YkBrT--
