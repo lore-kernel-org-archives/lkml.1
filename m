@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S945725AbXHMNGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031080AbXHMNHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S945725AbXHMNGi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968900AbXHMIS4
+	id S1031080AbXHMNHf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969364AbXHMI0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 04:18:56 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:42800 "EHLO 2ka.mipt.ru"
+	Mon, 13 Aug 2007 04:26:32 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:45662 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968867AbXHMISx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 04:18:53 -0400
-Date: Mon, 13 Aug 2007 12:18:26 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [1/1] Block device throttling [Re: Distributed storage.]
-Message-ID: <20070813081826.GB30089@2ka.mipt.ru>
-References: <20070731171347.GA14267@2ka.mipt.ru> <20070808095448.GA3440@2ka.mipt.ru> <20070808101708.GA23815@2ka.mipt.ru> <200708121616.10670.phillips@phunq.net>
+	id S969113AbXHMI01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 04:26:27 -0400
+Date: Mon, 13 Aug 2007 12:26:15 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk-manpages@gmx.net>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH 3/4] signalfd: fix interaction with posix-timers
+Message-ID: <20070813082615.GA90@tv-sign.ru>
+References: <20070812170530.GA4302@tv-sign.ru> <20070812230350.A6F874D057D@magilla.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708121616.10670.phillips@phunq.net>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070812230350.A6F874D057D@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel.
+On 08/12, Roland McGrath wrote:
+>
+> This only affects signalfd and so the core change seems ok vs status quo.
+> 
+> I think it would be better overall not to have anyone like signalfd calling
+> dequeue_signal in its current form at all.  (The function is too much an
+> internal piece of the core signals code.  The SIGNAL_STOP_DEQUEUED code
+> applying for signalfd calls is probably another problem, for example.)
 
-On Sun, Aug 12, 2007 at 04:16:10PM -0700, Daniel Phillips (phillips@phunq.net) wrote:
-> Your patch is close to the truth, but it needs to throttle at the top 
-> (virtual) end of each block device stack instead of the bottom 
-> (physical) end.  It does head in the direction of eliminating your own 
-> deadlock risk indeed, however there are block devices it does not 
-> cover.
+I agree, the "tsk != current" case is not nice. We can forbid fetching
+signals from another thread group and remove it, this is very easy.
+Until then, we can't avoid it without the code duplication.
 
-I decided to limit physical devices just because any limit on top of
-virtual one is not correct. When system recharges bio from virtual
-device to physical, and the latter is full, virtual device will not
-accept any new blocks for that physical device, but can accept for
-another ones. That was created specially to allow fair use for network
-and physical storages.
+But SIGNAL_STOP_DEQUEUED code should be OK, afaics. We only need it to
+make sure do_signal_stop() can't miss SIGNAL_STOP_CONTINUED/GROUP_EXIT.
 
--- 
-	Evgeniy Polyakov
+Can't we remove SIGNAL_STOP_DEQUEUED, btw?
+
+	dequeue_signal:
+
+		if (sig_kernel_stop(sig))
+			->flags &= ~SIGNAL_STOP_CONTINUED;
+
+	do_signal_stop:
+
+		if (flags & (SIGNAL_STOP_CONTINUED | SIGNAL_GROUP_EXIT))
+			return 0;
+
+Possible?
+
+Oleg.
+
