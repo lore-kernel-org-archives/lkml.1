@@ -1,64 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965341AbXHMPng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940233AbXHMPoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965341AbXHMPng (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 11:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968475AbXHMN5j
+	id S940233AbXHMPoR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 11:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S946015AbXHMOBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 09:57:39 -0400
-Received: from ananke.telenet-ops.be ([195.130.137.78]:59286 "EHLO
-	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S969440AbXHMN5f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 09:57:35 -0400
-Date: Mon, 13 Aug 2007 15:57:28 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: Finn Thain <fthain@telegraphics.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
-       debian-68k@lists.debian.org
-Subject: Re: [patch 10/10] m68k/mac: Make mac_hid_mouse_emulate_buttons()
- declaration visible
-In-Reply-To: <Pine.LNX.4.58.0708131531440.585@om.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.4.64.0708131552400.8645@anakin>
-References: <20070812094050.522858761@mail.of.borg> <20070812094119.910815432@mail.of.borg>
- <Pine.LNX.4.58.0708131432560.32732@om.biophys.uni-duesseldorf.de>
- <Pine.LNX.4.64.0708132253530.21364@loopy.telegraphics.com.au>
- <Pine.LNX.4.58.0708131531440.585@om.biophys.uni-duesseldorf.de>
+	Mon, 13 Aug 2007 10:01:18 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3351 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S946008AbXHMOBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 10:01:15 -0400
+Date: Mon, 13 Aug 2007 10:00:44 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       nhorman@tuxdriver.com
+Subject: [PATCH]: proc: export a processes resource limits via proc/<pid>
+Message-ID: <20070813140044.GB1960@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007, Michael Schmitz wrote:
-> > > Anyone using mouseemu on m68k Mac?
-> >
-> > Yes, and on powermac too. It provides the paste key for gpm and I'm quite
-> > fond of it. But if there's a better alternative, I'll happily try it
-> > instead.
-> 
-> Too much overhead on m68k? On powermac it never gave me trouble, but I was
-> surprised to hear people use it on m68k.
-> 
-> If it works OK, we can really drop the kernel support.
+Hey there-
+	Currently, there exists no method for a process to query the resource
+limits of another process.  They can be inferred via some mechanisms but they
+cannot be explicitly determined.  Given that this information can be usefull to
+know during the debugging of an application, I've written this patch which
+exports all of a processes limits via /proc/<pid>/limits.  Tested successfully
+by myself on x86 on top of 2.6.23-rc2-mm1.
 
-If it can be removed completely, for PowerMac, Mac/m68k, and IntelliMac (or
-whatever it's called), fine for me!  Please coordinate with the other
-Mac people.
+Thanks & Regards
+Neil
 
-But for now, Linus, please apply, as the missing prototype causes a
-broken Mac/m68k build.
 
-Gr{oetje,eeting}s,
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
-						Geert
+ base.c |   65 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 65 insertions(+)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index ed2b224..b3ddf08 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -74,6 +74,7 @@
+ #include <linux/nsproxy.h>
+ #include <linux/oom.h>
+ #include <linux/elf.h>
++#include <asm/resource.h>
+ #include "internal.h"
+ 
+ /* NOTE:
+@@ -323,6 +324,68 @@ static int proc_oom_score(struct task_struct *task, char *buffer)
+ 	return sprintf(buffer, "%lu\n", points);
+ }
+ 
++struct limit_names {
++	char *name;
++	char *unit;
++};
++
++static struct limit_names lnames[RLIM_NLIMITS] = {
++	[RLIMIT_CPU] = {"Max cpu time", "ms"},
++	[RLIMIT_FSIZE] = {"Max file size", "bytes"},
++	[RLIMIT_DATA] = {"Max data size", "bytes"},
++	[RLIMIT_STACK] = {"Max stack size", "bytes"},
++	[RLIMIT_CORE] = {"Max core file size", "bytes"},
++	[RLIMIT_RSS] = {"Max resident set", "bytes"},
++	[RLIMIT_NPROC] = {"Max processes", "processes"},
++	[RLIMIT_NOFILE] = {"Max open files", "files"},
++	[RLIMIT_MEMLOCK] = {"Max locked memory", "bytes"},
++	[RLIMIT_AS] = {"Max address space", "bytes"},
++	[RLIMIT_LOCKS] = {"Max file locks", "locks"},
++	[RLIMIT_SIGPENDING] = {"Max pending signals", "signals"},
++	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes"},
++	[RLIMIT_NICE] = {"Max nice priority", NULL},
++	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL},
++};	
++
++/* Display limits for a process */
++static int proc_pid_limits(struct task_struct *task, char *buffer)
++{
++	unsigned int i;
++	int count = 0;
++	char *bufptr = buffer;
++
++	struct rlimit rlim[RLIM_NLIMITS];
++
++	read_lock(&tasklist_lock);
++	memcpy(rlim, task->signal->rlim, (sizeof(struct rlimit) * RLIM_NLIMITS));
++	read_unlock(&tasklist_lock);
++
++	/*
++	 * print the file header
++	 */
++	count += sprintf(&bufptr[count], "%-25s %-20s %-20s %-10s\n",
++			"Limit","Soft Limit","Hard Limit","Units");
++
++	for (i=0; i < RLIM_NLIMITS; i++) {
++		if (rlim[i].rlim_cur == RLIM_INFINITY)
++			count += sprintf(&bufptr[count], "%-25s %-20s ", lnames[i].name,"unlimited");
++		else
++			count += sprintf(&bufptr[count], "%-25s %-20lu ", lnames[i].name, rlim[i].rlim_cur);
++
++		if (rlim[i].rlim_max == RLIM_INFINITY)
++			count += sprintf(&bufptr[count], "%-20s ","unlimited");
++		else
++			count += sprintf(&bufptr[count], "%-20lu ", rlim[i].rlim_max);
++
++		if (lnames[i].unit)
++			count += sprintf(&bufptr[count],"%-10s\n", lnames[i].unit);
++		else
++			count += sprintf(&bufptr[count],"\n");
++	}
++
++	return count;
++}
++
+ /************************************************************************/
+ /*                       Here the fs part begins                        */
+ /************************************************************************/
+@@ -2017,6 +2080,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	INF("environ",    S_IRUSR, pid_environ),
+ 	INF("auxv",       S_IRUSR, pid_auxv),
+ 	INF("status",     S_IRUGO, pid_status),
++	INF("limits",	  S_IRUGO, pid_limits),
+ #ifdef CONFIG_SCHED_DEBUG
+ 	REG("sched",      S_IRUGO|S_IWUSR, pid_sched),
+ #endif
+@@ -2310,6 +2374,7 @@ static const struct pid_entry tid_base_stuff[] = {
+ 	INF("environ",   S_IRUSR, pid_environ),
+ 	INF("auxv",      S_IRUSR, pid_auxv),
+ 	INF("status",    S_IRUGO, pid_status),
++	INF("limits",	 S_IRUGO, pid_limits),
+ #ifdef CONFIG_SCHED_DEBUG
+ 	REG("sched",     S_IRUGO|S_IWUSR, pid_sched),
+ #endif
+-- 
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
