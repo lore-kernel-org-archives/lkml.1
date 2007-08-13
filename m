@@ -1,91 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S973402AbXHMQsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S973397AbXHMQtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S973402AbXHMQsn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 12:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971767AbXHMQFW
+	id S973397AbXHMQtc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 12:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S972542AbXHMQIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 12:05:22 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:56160 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S971824AbXHMQFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 12:05:13 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Mon, 13 Aug 2007 11:54:42 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-cc: surya.prabhakar@wipro.com, mingo@redhat.com, yaku@css1.kbnes.nec.co.jp,
-       kisimoto@css1.kbnes.nec.co.jp, zab@redhat.com,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [KJ] replacing kmalloc with kzalloc in io_apic.c
-In-Reply-To: <200708131518.20580.m.kozlowski@tuxland.pl>
-Message-ID: <Pine.LNX.4.64.0708131153190.4382@localhost.localdomain>
-References: <1186993881.3175.15.camel@bluegenie> <200708131518.20580.m.kozlowski@tuxland.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.541, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	SARE_SUB_OBFU_Z 0.26)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Mon, 13 Aug 2007 12:08:38 -0400
+Received: from mga01.intel.com ([192.55.52.88]:6502 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S972526AbXHMQIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 12:08:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,255,1183359600"; 
+   d="scan'208";a="280331935"
+Date: Mon, 13 Aug 2007 09:05:33 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, akpm@linux-foundation.org
+Subject: Re: [2.6 patch] cpqphp_ctrl.c: remove dead code
+Message-Id: <20070813090533.4a363c5a.kristen.c.accardi@intel.com>
+In-Reply-To: <20070809233910.GB18938@stusta.de>
+References: <20070723145105.GK26212@stusta.de>
+	<20070809145140.654303a0.kristen.c.accardi@intel.com>
+	<20070809222427.GA32127@suse.de>
+	<20070809154702.caa67a61.kristen.c.accardi@intel.com>
+	<20070809230436.GA18938@stusta.de>
+	<20070809162001.a5dc0b76.kristen.c.accardi@intel.com>
+	<20070809233910.GB18938@stusta.de>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007, Mariusz Kozlowski wrote:
+On Fri, 10 Aug 2007 01:39:10 +0200
+Adrian Bunk <bunk@kernel.org> wrote:
 
-> > Hi,
-> >    Replacing kmalloc with kzalloc and cleaning up memset in
-> > arch/i386/kernel/io_apic.c
-> >
-> >
-> > Signed-off-by: Surya Prabhakar <surya.prabhakar@wipro.com>
-> > ---
-> >
-> > diff --git a/arch/i386/kernel/io_apic.c b/arch/i386/kernel/io_apic.c
-> > index 4b8a8da..1329615 100644
-> > --- a/arch/i386/kernel/io_apic.c
-> > +++ b/arch/i386/kernel/io_apic.c
-> > @@ -690,14 +690,12 @@ static int __init balanced_irq_init(void)
-> >  		physical_balance = 1;
-> >
-> >  	for_each_online_cpu(i) {
-> > -		irq_cpu_data[i].irq_delta = kmalloc(sizeof(unsigned long) * NR_IRQS,
-> > GFP_KERNEL); -		irq_cpu_data[i].last_irq = kmalloc(sizeof(unsigned long) *
-> > NR_IRQS, GFP_KERNEL); +		irq_cpu_data[i].irq_delta =
-> > kzalloc(sizeof(unsigned long) * NR_IRQS, GFP_KERNEL);
-> > +		irq_cpu_data[i].last_irq = kzalloc(sizeof(unsigned long) * NR_IRQS,
-> > GFP_KERNEL); if (irq_cpu_data[i].irq_delta == NULL ||
-> > irq_cpu_data[i].last_irq == NULL) { printk(KERN_ERR "balanced_irq_init: out
-> > of memory");
-> >  			goto failed;
-> >  		}
-> > -		memset(irq_cpu_data[i].irq_delta,0,sizeof(unsigned long) * NR_IRQS);
-> > -		memset(irq_cpu_data[i].last_irq,0,sizeof(unsigned long) * NR_IRQS);
-> >  	}
-> >
-> >  	printk(KERN_INFO "Starting balanced_irq\n");
->
-> How about using kcalloc here?
->
-> i.e.
-> ...
-> ... = kcalloc(NR_IRQS, sizeof(unsigned long), GFP_KERNEL);
-> ...
+> As I've wrote in the patch description, all it does is to remove an if() 
+> check that could never be false (which is easily verifyable if you look 
+> at the source code).
+> 
+> I've also verified that my patch does not change a single bit in the 
+> object file (after compilation with gcc 4.2.1).
 
-from my days submitting numerous patches of this type, i can recall
-that in cases like the above, it's a judgment call -- use kzalloc to
-get the zeroing, or use kcalloc to get the array-flavoured behaviour.
-what a shame you can't have both at the same time.
+while you are correct that your patch will not change the object,
+the reason I think that we should not do this patch is because it appears
+to me that this code path was meant to be taken, and perhaps it was a 
+mistake to return -ENOMEM further up (the reason the code isn't taken).
+It seems to me that the thing to do is to leave the code as is, and then when
+someone picks up the code again, they can clean it up after they've determined
+they truly don't want that code path taken.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+My definition of trivial is a patch that is both simple and obviously the 
+right thing to do.
+Kristen
+ 
