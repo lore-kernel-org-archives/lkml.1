@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939484AbXHMHSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941389AbXHMHSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939484AbXHMHSQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 03:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966069AbXHMGY5
+	id S941389AbXHMHSw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 03:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965650AbXHMGY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:24:57 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3899 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:24:58 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3903 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965270AbXHMGYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:24:55 -0400
-Date: Sun, 12 Aug 2007 23:24:42 -0700
+	id S966059AbXHMGY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:24:57 -0400
+Date: Sun, 12 Aug 2007 23:24:43 -0700
 From: joe@perches.com
 To: torvalds@linux-foundation.org, marcel@holtmann.org,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] [105/2many] MAINTAINERS - BLUETOOTH HCI BFUSB DRIVER
-Message-ID: <46bff92a.xq64LWGT6XJHlIII%joe@perches.com>
+Subject: [PATCH] [106/2many] MAINTAINERS - BLUETOOTH HCI DTL1 DRIVER
+Message-ID: <46bff92b.TxgSr/e/GX2BywAh%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,14 +27,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 90b43a2..4b702bf 100644
+index 4b702bf..ea3634e 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1042,6 +1042,7 @@ BLUETOOTH HCI BFUSB DRIVER
+@@ -1048,6 +1048,7 @@ BLUETOOTH HCI DTL1 DRIVER
  P:	Marcel Holtmann
  M:	marcel@holtmann.org
  S:	Maintained
-+F:	drivers/bluetooth/bfusb.c
++F:	drivers/bluetooth/dtl1_cs.c
  
- BLUETOOTH HCI DTL1 DRIVER
+ BLUETOOTH HCI BLUECARD DRIVER
  P:	Marcel Holtmann
