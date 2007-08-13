@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1033096AbXHMSYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1033048AbXHMSYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1033096AbXHMSYF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:24:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934740AbXHMSFG
+	id S1033048AbXHMSYz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S946852AbXHMSFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:05:06 -0400
-Received: from mga03.intel.com ([143.182.124.21]:49255 "EHLO mga03.intel.com"
+	Mon, 13 Aug 2007 14:05:19 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:57450 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966922AbXHMSFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:05:01 -0400
-X-ExtLoop1: 1
+	id S971189AbXHMSFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 14:05:09 -0400
 X-IronPort-AV: E=Sophos;i="4.19,256,1183359600"; 
-   d="scan'208";a="262532335"
-Date: Mon, 13 Aug 2007 10:58:24 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: clameter@sgi.com
-Cc: lethal@linux-sh.org, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [patch] slab: revert "slab: fix alien cache handling"
-Message-ID: <20070813175824.GB12874@linux-os.sc.intel.com>
+   d="scan'208";a="92001317"
+Subject: Re: [1/2] 2.6.23-rc3: known regressions with patches
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Vitaly Bordug <vitb@kernel.crashing.org>,
+       Dan Merillat <dan.merillat@gmail.com>,
+       Paolo Ornati <ornati@fastwebnet.it>, Andi Kleen <andi@firstfloor.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-fsdevel@vger.kernel.org,
+       nfs@lists.sourceforge.net, Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <46C09C1A.7050706@googlemail.com>
+References: <46C09C1A.7050706@googlemail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Mon, 13 Aug 2007 14:04:41 -0400
+Message-Id: <1187028281.6628.46.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 13 Aug 2007 18:04:42.0087 (UTC) FILETIME=[6C2A5F70:01C7DDD4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph,
+On Mon, 2007-08-13 at 19:59 +0200, Michal Piotrowski wrote:
 
-Can we revert git commit 3cdc0ed0cea50ea08dd146c1bbc82b1bcc2e1b80 ?
-This is introducing a performance regression and nullifies the previous
-commit.
+> FS
+> 
+> Subject         : NFSv4 poops itself
+> References      : http://lkml.org/lkml/2007/7/27/144
+> Last known good : ?
+> Submitter       : Jeff Garzik <jeff@garzik.org> 
+> Caused-By       : ?
+> Handled-By      : Trond Myklebust <Trond.Myklebust@netapp.com>
+> Patch           : http://lkml.org/lkml/2007/7/27/183
+> Status          : patch available
 
-commit 62918a036148230ba1ad175dc8a0952e3752ac57
-Author: Siddha, Suresh B <suresh.b.siddha@intel.com>
-Date:   Wed May 2 19:27:18 2007 +0200
+A fix for this was merged by Linus prior to the release of 2.6.23-rc3.
 
-    [PATCH] x86-64: skip cache_free_alien() on non NUMA
-    
-    Set use_alien_caches to 0 on non NUMA platforms.  And avoid calling the
-    cache_free_alien() when use_alien_caches is not set.  This will avoid the
-    cache miss that happens while dereferencing slabp to get nodeid.
-
-Looking at the 3cdc0ed0cea50ea08dd146c1bbc82b1bcc2e1b80 changelog, I can't find
-enough info of why cache_free_alien() must be called regardless if we use alien
-caches or not.
-
-Appended patch fixes the performance regression. Please  comment the need
-for 3cdc0ed0cea50ea08dd146c1bbc82b1bcc2e1b80, if I miss something.
-
-thanks,
-suresh
----
-
-Skip calling cache_free_alien() when alien caches are not used.
-This will avoid cache misses that happen while accessing slabp (which
-is per page memory  reference) to get nodeid. Instead use a global
-variable to skip the call, which is mostly likely to be present in the
-cache.
-
-This gives a 0.8% performance boost with the database oltp workload
-on a quad-core SMP platform and by any means the number is not small :)
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
-
-diff --git a/mm/slab.c b/mm/slab.c
-index a684778..d6e2251 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -3558,7 +3558,14 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
- 	check_irq_off();
- 	objp = cache_free_debugcheck(cachep, objp, __builtin_return_address(0));
- 
--	if (cache_free_alien(cachep, objp))
-+	/*
-+	 * Skip calling cache_free_alien() when alien caches are not used.
-+	 * This will avoid cache misses that happen while accessing slabp (which
-+	 * is per page memory  reference) to get nodeid. Instead use a global
-+	 * variable to skip the call, which is mostly likely to be present in the
-+	 * cache.
-+	 */
-+	if (use_alien_caches && cache_free_alien(cachep, objp))
- 		return;
- 
- 	if (likely(ac->avail < ac->limit)) {
+Cheers
+  Trond
