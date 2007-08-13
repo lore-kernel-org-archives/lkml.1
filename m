@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936194AbXHMKh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937051AbXHMKio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936194AbXHMKh6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 06:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967297AbXHMGgJ
+	id S937051AbXHMKio (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 06:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967318AbXHMGgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:36:09 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1807 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:36:10 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1820 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967209AbXHMGf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:35:57 -0400
-Date: Sun, 12 Aug 2007 23:35:44 -0700
+	id S967294AbXHMGgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:36:01 -0400
+Date: Sun, 12 Aug 2007 23:35:48 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Lionel.Bouton@inet6.fr
-Subject: [PATCH] [433/2many] MAINTAINERS - SIS 5513 IDE CONTROLLER DRIVER
-Message-ID: <46bffbc0.Ettk8Q1XcMX1P3NI%joe@perches.com>
+To: torvalds@linux-foundation.org, mhoffman@lightlink.com,
+       lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH] [435/2many] MAINTAINERS - SIS 96X I2C/SMBUS DRIVER
+Message-ID: <46bffbc4./AOzDIg28g0KVR/0%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,14 +28,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 38f1b0d..228e077 100644
+index b74e343..761029d 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4127,6 +4127,7 @@ M:	Lionel.Bouton@inet6.fr
- W:	http://inet6.dyn.dhs.org/sponsoring/sis5513/index.html
- W:	http://gyver.homeip.net/sis5513/index.html
+@@ -4142,6 +4142,8 @@ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
  S:	Maintained
-+F:	drivers/ide/pci/sis5513.c
++F:	Documentation/i2c/busses/i2c-sis96x
++F:	drivers/i2c/busses/i2c-sis96x.c
  
- SIS 900/7016 FAST ETHERNET DRIVER
- P:	Daniele Venzano
+ SIS FRAMEBUFFER DRIVER
+ P:	Thomas Winischhofer
