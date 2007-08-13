@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S946700AbXHMOUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763744AbXHMOV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S946700AbXHMOUW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 10:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965908AbXHMLT4
+	id S1763744AbXHMOV1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 10:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936190AbXHMLVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 07:19:56 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:43594 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965928AbXHMLTy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 07:19:54 -0400
-Date: Mon, 13 Aug 2007 06:18:54 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: joe@perches.com
-Cc: torvalds@linux-foundation.org, mporter@kernel.crashing.org,
-       linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] [292/2many] MAINTAINERS - LINUX FOR POWERPC EMBEDDED
- PPC4XX
-Message-ID: <20070813061854.644e6e5e@zod.rchland.ibm.com>
-In-Reply-To: <46bffaaf.2ObqORfh5YL/9ILj%joe@perches.com>
-References: <46bffaaf.2ObqORfh5YL/9ILj%joe@perches.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+	Mon, 13 Aug 2007 07:21:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47396 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S940260AbXHMLVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 07:21:18 -0400
+Date: Mon, 13 Aug 2007 07:21:05 -0400
+From: Chris Snook <csnook@redhat.com>
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: [PATCH 9/23] make atomic_read() and atomic_set() behavior consistent on i386
+Message-ID: <20070813112105.GI24018@shell.boston.redhat.com>
+References: <46C03885.7000109@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C03885.7000109@redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Aug 2007 23:31:11 -0700
-joe@perches.com wrote:
+From: Chris Snook <csnook@redhat.com>
 
-> Add file pattern to MAINTAINER entry
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 0862965..38810b7 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2804,6 +2804,8 @@ M:	mporter@kernel.crashing.org
->  W:	http://www.penguinppc.org/
->  L:	linuxppc-embedded@ozlabs.org
->  S:	Maintained
-> +F:	arch/ppc/syslib/ppc4xx_*
-> +F:	include/asm-ppc/ppc4xx_*
+Use volatile consistently in atomic.h on i386.
 
-You're missing arch/ppc/platforms/4xx/, among other things.  Also, we're
-in the middle of merging 4xx to arch/powerpc.
+Signed-off-by: Chris Snook <csnook@redhat.com>
 
-josh
+--- linux-2.6.23-rc3-orig/include/asm-i386/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc3/include/asm-i386/atomic.h	2007-08-13 05:31:45.000000000 -0400
+@@ -25,7 +25,10 @@ typedef struct { int counter; } atomic_t
+  * 
+  * Atomically reads the value of @v.
+  */ 
+-#define atomic_read(v)		((v)->counter)
++static __inline__ int atomic_read(atomic_t *v)
++{
++        return *(volatile int *)&v->counter;
++}
+ 
+ /**
+  * atomic_set - set atomic variable
+@@ -34,7 +37,10 @@ typedef struct { int counter; } atomic_t
+  * 
+  * Atomically sets the value of @v to @i.
+  */ 
+-#define atomic_set(v,i)		(((v)->counter) = (i))
++static __inline__ void atomic_set(atomic_t *v, int i)
++{
++        *(volatile int *)&v->counter = i;
++}
+ 
+ /**
+  * atomic_add - add integer to atomic variable
