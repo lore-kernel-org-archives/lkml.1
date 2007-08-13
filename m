@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966123AbXHMU4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970248AbXHMU4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966123AbXHMU4E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 16:56:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbXHMUz3
+	id S970248AbXHMU4u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 16:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939278AbXHMUzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 16:55:29 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:35228 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760616AbXHMUz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 16:55:26 -0400
-Date: Mon, 13 Aug 2007 22:56:42 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Meelis Roos <mroos@linux.ee>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
-Message-ID: <20070813205642.GB19688@uranus.ravnborg.org>
-References: <46B9F664.9060600@googlemail.com> <6bffcb0e0708130621s74411866mc07446854fb96cd4@mail.gmail.com> <20070813183503.GA18722@uranus.ravnborg.org> <200708132259.42937.rjw@sisk.pl>
-Mime-Version: 1.0
+	Mon, 13 Aug 2007 16:55:36 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:52256 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752137AbXHMUza (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 16:55:30 -0400
+Date: Mon, 13 Aug 2007 16:55:23 -0400
+To: Brad Campbell <brad@wasp.net.au>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Advice on a userspace tty serial driver
+Message-ID: <20070813205523.GA9412@csclub.uwaterloo.ca>
+References: <46BC59E3.2010402@wasp.net.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708132259.42937.rjw@sisk.pl>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <46BC59E3.2010402@wasp.net.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 10:59:41PM +0200, Rafael J. Wysocki wrote:
-> On Monday, 13 August 2007 20:35, Sam Ravnborg wrote:
-> > On Mon, Aug 13, 2007 at 03:21:54PM +0200, Michal Piotrowski wrote:
-> > > > >
-> > > > > The patch changes the warning to a different warning, it's now
-> > > > > kernel/power/Kconfig:79:warning: 'select' used by config symbol 'PM_SLEEP_SMP' refers to undefined symbol 'HOTPLUG_CPU'
-> > 
-> > So we have something like this for ppc:
-> > 
-> > config PM_SLEEP_SMP
-> > 	bool "bla bla"
+On Fri, Aug 10, 2007 at 04:28:19PM +0400, Brad Campbell wrote:
+> I'm building a bit of hardware. It's basically a serial multiplexer that 
+> communicates to the PC using a single usb-serial port. It has the ability 
+> to run between 2 and 8 standard async ports over this single interface.
 > 
-> Plus a couple of "depends on ..." here, which cannot be true.
+> I'd rather not write a kernel driverif possible as I figure this would be a 
+> perfect application for a userspace daemon to do the control and mux/demux. 
+> I'd prefer to present standard serial style devices (/dev/ttySxx) to 
+> userspace giving me the ability to run unmodified software to talk to the 
+> multiplexed ports.
 > 
-> > 	select HOTPLUG_CPU
-> > 
-> > As it is not in my -linus tree it has been added by the referanced patch
-> > in the text I zapped.
-> > 
-> > 
-> > The warning is generated _independently_ of the actual configuration.
-> > All it says is that the symbol PM_SLEEP_SMP has a seelct statement
-> > for an unknown symbol - unknown for this architecture at least.
-> > 
-> > Grepping will reveal that HOTPLUG_CPU is not present for ppc and
-> > the easiet fix here seems to just add it like in the following:
-> > 
-> > diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
-> > index 6bdeeb7..e7bcd57 100644
-> > --- a/arch/ppc/Kconfig
-> > +++ b/arch/ppc/Kconfig
-> > @@ -65,6 +65,10 @@ config GENERIC_BUG
-> >         default y
-> >         depends on BUG
-> >  
-> > +config HOTPLUG_CPU
-> > +       bool
-> > +       default n
-> > +
-> >  source "init/Kconfig"
-> >  
-> >  menu "Processor"
-> > 
-> > [cut'n'paste so whitespace damaged...]
-> > This will silence the warning...
-> > 
-> > 
-> > Now as PM_SLEEP_SMP requires HOTPLUG_CPU there most be done
-> > something else to prevent this config symbol to be selected
-> > otherwise we would end up with a kernel that has HOTPLUG_CPU
-> > defined even it is not supported.
+> I think tty/pty pairs looks roughly what I'm after, but will they allow me 
+> to use standard IOCTLS for conveying baud rate and other standard serial 
+> parameters to the daemon?
 > 
-> Well, the issue at hand is that PM_SLEEP_SMP will never be set on this arch
-> and the warning is printed nevertheless.
+> I've spotted several userspace serial driver projects in the last 7 or so 
+> years, but I can't seem to find any that made it into the kernel.
+> 
+> Am I on the right track with tty/pty or is there a better way?
 
-Yep - because the warnign is correct.
-The symbol PM_NEED_SMP refer to an undefined symbol
-no matter the case that PM_NEED_SMP can be set or not.
+I don't think you can do any serial specific stuff, like parity and stop
+bits and the like across a pty.  You might have to actually write a
+serial driver to present the devices and handle the ioctls, even if you
+have a user space process handle the mux/demux between the real serial
+port and the fake ports.
 
-So either provide the symbol or drop the select. It is as simple as that.
+I am curious how you are going to pass the data to the external device,
+and indicate which port the data should go through.  What will you do
+when there is too much data being sent for the real serial port to
+handle?  I guess if you had a single high speed port, that would be a
+start.
 
-	Sam
+--
+Len Sorensen
