@@ -1,42 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968062AbXHMT4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S943209AbXHMT5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968062AbXHMT4h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 15:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S947649AbXHMTzu
+	id S943209AbXHMT5d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 15:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S942229AbXHMT4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 15:55:50 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3594 "EHLO perches.com"
+	Mon, 13 Aug 2007 15:56:42 -0400
+Received: from gw.goop.org ([64.81.55.164]:48356 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S947332AbXHMTzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 15:55:49 -0400
-Subject: Re: [PATCH] [324/2many] MAINTAINERS - MOXA SMARTIO/INDUSTIO SERIAL
-	CARD (MXSER 2.0)
-From: Joe Perches <joe@perches.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <46C0B6C9.8000107@gmail.com>
-References: <46bffaed.zgG/64zMGWFNDCEO%joe@perches.com>
-	 <46C0B235.1030302@gmail.com> <1187033981.10249.275.camel@localhost>
-	 <46C0B6C9.8000107@gmail.com>
-Content-Type: text/plain
-Date: Mon, 13 Aug 2007 12:55:04 -0700
-Message-Id: <1187034904.10249.281.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+	id S968071AbXHMT4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 15:56:38 -0400
+Message-ID: <46C0B6FD.7020701@goop.org>
+Date: Mon, 13 Aug 2007 12:54:37 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: NetDev <netdev@vger.kernel.org>, Keir Fraser <keir@xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] xen-netfront: Avoid deref'ing skbafter it is potentially
+ freed.
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 21:53 +0200, Jiri Slaby wrote:
-> No, only mxser_new.*
+xennet_tx_bug_gc can free the skb before we use it, so make sure we don't.
 
-MOXA SMARTIO/INDUSTIO SERIAL CARD (MXSER 2.0)
-P:	Jiri Slaby
-M:	jirislaby@gmail.com
-L:	linux-kernel@vger.kernel.org
-S:	Maintained
-F:	Documentation/moxa-smartio
-F:	drivers/char/mxser_new.*
+Jeff, this is -rc material.
+
+Signed-off-by: Keir Fraser <keir@xensource.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Jeff Garzik <jeff@garzik.org>
+
+diff -r 8bfc43f6d1b0 drivers/net/xen-netfront.c
+--- a/drivers/net/xen-netfront.c	Tue Aug 07 14:26:30 2007 -0700
++++ b/drivers/net/xen-netfront.c	Mon Aug 13 09:39:15 2007 -0700
+@@ -566,15 +566,16 @@ static int xennet_start_xmit(struct sk_b
+ 	if (notify)
+ 		notify_remote_via_irq(np->netdev->irq);
+ 
++	np->stats.tx_bytes += skb->len;
++	np->stats.tx_packets++;
++
++	/* Note: It is not safe to access skb after xennet_tx_buf_gc()! */
+ 	xennet_tx_buf_gc(dev);
+ 
+ 	if (!netfront_tx_slot_available(np))
+ 		netif_stop_queue(dev);
+ 
+ 	spin_unlock_irq(&np->tx_lock);
+-
+-	np->stats.tx_bytes += skb->len;
+-	np->stats.tx_packets++;
+ 
+ 	return 0;
+ 
 
 
