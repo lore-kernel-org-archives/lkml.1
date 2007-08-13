@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S973061AbXHMN2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S972053AbXHMN3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S973061AbXHMN2u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968732AbXHMJ1r
+	id S972053AbXHMN3l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970698AbXHMJ3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 05:27:47 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:38289 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968193AbXHMJ1p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 05:27:45 -0400
-Message-ID: <46C02274.7060600@linux.vnet.ibm.com>
-Date: Mon, 13 Aug 2007 14:50:52 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Mon, 13 Aug 2007 05:29:20 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36786 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S970672AbXHMJ3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 05:29:18 -0400
+Date: Mon, 13 Aug 2007 11:29:16 +0200
+From: Jan Blunck <jblunck@suse.de>
+To: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 03/11] dm-snap: Remove dead queued_bios code
+Message-ID: <20070813092916.GD12730@hasse.suse.de>
+References: <20070810200204.455820246@suse.de>> <20070810200205.299669010@suse.de> <20070810204337.GH2064@agk.fab.redhat.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, devel@openvz.org
-Subject: Re: [PATCH] ext3: fix ext34_fill_super group description initialization
-References: <20070813090954.GA25226@dnb.sw.ru>
-In-Reply-To: <20070813090954.GA25226@dnb.sw.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070810204337.GH2064@agk.fab.redhat.com>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
+	Nuernberg)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 10, Alasdair G Kergon wrote:
 
+> On Fri, Aug 10, 2007 at 10:02:07PM +0200, Jan Blunck wrote:
+> > This patch removes the unused queued_bios handling code.
+>  
+> Well I'm going to leave this in for now (as one existing unfinished
+> patch series does build upon it).  We can include its removal as part of
+> your following patch series that no doubt replaces the functionality
+> with something better.
 
-Dmitry Monakhov wrote:
-> ->s_group_desc have to be zero filled because if sb_read() failed
-> we jump to following error path.
-> failed_mount2:
-> 	for (i = 0; i < db_count; i++)
-> 		brelse(sbi->s_group_desc[i]);<< Bad things may happen here
-> 
+You mean the snapshot read tracking. Yes, I think I can fix this problem too.
 
+Regards,
+	Jan
 
-But the db_count is updated in the failure path to point to the number
-of successful sb_read. 
-
--aneesh
+-- 
+Jan Blunck <jblunck@suse.de>
