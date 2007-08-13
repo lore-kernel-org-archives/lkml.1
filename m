@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S974396AbXHMSlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1033296AbXHMSl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S974396AbXHMSlJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:41:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1033047AbXHMSWp
+	id S1033296AbXHMSl4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933948AbXHMSYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:22:45 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3455 "EHLO perches.com"
+	Mon, 13 Aug 2007 14:24:10 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3460 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759417AbXHMSWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:22:43 -0400
-Subject: Re: [v4l-dvb-maintainer] [PATCH] [165/2many] MAINTAINERS - DVB
-	SUBSYSTEM AND DRIVERS
+	id S1033097AbXHMSYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 14:24:07 -0400
+Subject: Re: [PATCH] [488/2many] MAINTAINERS - UNIFORM CDROM DRIVER
 From: Joe Perches <joe@perches.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: v4l-dvb-maintainer@linuxtv.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <1187028726.664.7.camel@gaivota>
-References: <46bff9a0.e/9yM2yHeGs6e+wx%joe@perches.com>
-	 <1187005362.7067.15.camel@gaivota>  <1187026197.10249.150.camel@localhost>
-	 <1187028726.664.7.camel@gaivota>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20070813114112.GP23758@kernel.dk>
+References: <46bffc42.3KJnrhmdUyXsNsFd%joe@perches.com>
+	 <20070813114112.GP23758@kernel.dk>
 Content-Type: text/plain
-Date: Mon, 13 Aug 2007 11:21:23 -0700
-Message-Id: <1187029283.10249.225.camel@localhost>
+Date: Mon, 13 Aug 2007 11:23:46 -0700
+Message-Id: <1187029426.10249.228.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-13 at 15:12 -0300, Mauro Carvalho Chehab wrote:
-> Probably, you should also add:
-> F: Documentation/dvb/
+On Mon, 2007-08-13 at 13:41 +0200, Jens Axboe wrote:
+> > +F:	Documentation/cdrom/
+> > +F:	drivers/cdrom/cdrom.c
+> > +F:	include/linux/cdrom/h
+> Also wrong.
 
-DVB SUBSYSTEM AND DRIVERS
-P:	LinuxTV.org Project
-M:	v4l-dvb-maintainer@linuxtv.org
-L:	linux-dvb@linuxtv.org (subscribers-only)
-W:	http://linuxtv.org/
-T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
+UNIFORM CDROM DRIVER
+P:	Jens Axboe
+M:	axboe@kernel.dk
+L:	linux-kernel@vger.kernel.org
+W:	http://www.kernel.dk
 S:	Maintained
-F:	Documentation/dvb/
-F:	drivers/media/dvb/
-F:	drivers/media/common/saa7146*.c
-F:	include/linux/dvb/
+F:	Documentation/cdrom/
+F:	drivers/cdrom/cdrom.c
+F:	include/linux/cdrom.h
 
 
 
