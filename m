@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbXHMStA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032807AbXHMStx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbXHMStA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1033177AbXHMSeU
+	id S1032807AbXHMStx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974056AbXHMSe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 14:34:20 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:10994 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S974056AbXHMSeQ (ORCPT
+	Mon, 13 Aug 2007 14:34:26 -0400
+Received: from nikam-dmz.ms.mff.cuni.cz ([195.113.20.16]:39381 "EHLO
+	nikam.ms.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S974494AbXHMSeY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 14:34:16 -0400
-Date: Mon, 13 Aug 2007 11:38:09 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, sam@ravnborg.org, zippel@linux-m68k.org,
-       vincent.legoll@gmail.com
-Subject: [PATCH] kconfig: update kconfig-language text
-Message-Id: <20070813113809.9a715e75.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 13 Aug 2007 14:34:24 -0400
+Date: Mon, 13 Aug 2007 20:34:22 +0200
+From: Martin Mares <mj@ucw.cz>
+To: Joe Perches <joe@perches.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] [467/2many] MAINTAINERS - SVGA HANDLING
+Message-ID: <mj+md-20070813.183311.30826.nikam@ucw.cz>
+References: <46bffc09.olZ/JU6zLi5nghOY%joe@perches.com> <mj+md-20070813.084046.10732.nikam@ucw.cz> <1187028193.10249.197.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1187028193.10249.197.camel@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+> SVGA HANDLING
+> P:	Martin Mares
+> M:	mj@ucw.cz
+> L:	linux-video@atrey.karlin.mff.cuni.cz
+> S:	Maintained
+> F:	Documentation/svga.txt
+> F:	arch/i386/boot/video.S
 
-Add kconfig-language docs for mainmenu, def_bool[ean],
-and def_tristate.
+Please also kill linux-video and replace it by linux-kernel. Not
+a single on-topic mail has arrived to linux-video in a couple of years
+and it seems that the list didn't survive update of the list server
+a week or so ago.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Vincent Legoll <vincent.legoll@gmail.com>
----
- Documentation/kbuild/kconfig-language.txt |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
---- linux-2.6.23-rc3.orig/Documentation/kbuild/kconfig-language.txt
-+++ linux-2.6.23-rc3/Documentation/kbuild/kconfig-language.txt
-@@ -77,6 +77,11 @@ applicable everywhere (see syntax).
-   Optionally, dependencies only for this default value can be added with
-   "if".
- 
-+- type definition + default value:
-+	"def_bool"/"def_boolean"/"def_tristate" <expr> ["if" <expr>]
-+  This is a shorthand notation for a type definition plus a value.
-+  Optionally dependencies for this default value can be added with "if".
-+
- - dependencies: "depends on"/"requires" <expr>
-   This defines a dependency for this menu entry. If multiple
-   dependencies are defined, they are connected with '&&'. Dependencies
-@@ -289,3 +294,10 @@ source:
- 	"source" <prompt>
- 
- This reads the specified configuration file. This file is always parsed.
-+
-+mainmenu:
-+
-+	"mainmenu" <prompt>
-+
-+This sets the config program's title bar if the config program chooses
-+to use it.
+				Have a nice fortnight
+-- 
+Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
+Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
+War doesn't determine who's right. It determines who's left.
