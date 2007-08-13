@@ -1,92 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933547AbXHMWih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764433AbXHMWmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933547AbXHMWih (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 18:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480AbXHMWiO
+	id S1764433AbXHMWmc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 18:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbXHMWmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 18:38:14 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52823 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756181AbXHMWiM (ORCPT
+	Mon, 13 Aug 2007 18:42:10 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:32972 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751992AbXHMWmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 18:38:12 -0400
-Date: Mon, 13 Aug 2007 15:38:10 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: Mel Gorman <mel@skynet.ie>, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones
- pointer
-In-Reply-To: <20070813230801.GH3406@bingen.suse.de>
-Message-ID: <Pine.LNX.4.64.0708131536340.29946@schroedinger.engr.sgi.com>
-References: <20070809210616.14702.73376.sendpatchset@skynet.skynet.ie>
- <200708102013.49170.ak@suse.de> <Pine.LNX.4.64.0708101201240.17549@schroedinger.engr.sgi.com>
- <200708110304.55433.ak@suse.de> <Pine.LNX.4.64.0708131423050.28026@schroedinger.engr.sgi.com>
- <20070813225020.GE3406@bingen.suse.de> <Pine.LNX.4.64.0708131457190.28445@schroedinger.engr.sgi.com>
- <20070813225841.GG3406@bingen.suse.de> <Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com>
- <20070813230801.GH3406@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 13 Aug 2007 18:42:08 -0400
+Date: Tue, 14 Aug 2007 00:42:05 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, sam@ravnborg.org
+Subject: binutils trouble was Re: [1/2] 2.6.23-rc3: known regressions with patches
+Message-ID: <20070813224205.GA8760@one.firstfloor.org>
+References: <46C09C1A.7050706@googlemail.com> <20070813184204.GA6071@one.firstfloor.org> <6bffcb0e0708131324x29211ef5sd5154d44f0c2e79f@mail.gmail.com> <20070813205653.GA7069@one.firstfloor.org> <20070813212947.GK18945@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070813212947.GK18945@stusta.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just did a grep for GFP_DMA and I still see a large list of GFP_DMA 
-kmallocs???
+On Mon, Aug 13, 2007 at 11:29:47PM +0200, Adrian Bunk wrote:
+> Debian 4.0 has older ones, and all distributions released more than a 
+> year ago for sure also have older ones (the required patch went into 
+> binutils CVS on 2006-05-30 and 2.17.50.0.3 was released on 2006-07-15).
 
+I have no problem on SUSE 10.0 (2.16.91.0.2-8) or SLES9 (2.15.90.0.1.1-32.10) 
+which are both far older than a year.  Both produce good looking
+vdso.sos.
 
-arch/mips/au1000/common/dbdma.c:		if ((desc_base = (u32)kmalloc(i, GFP_KERNEL|GFP_DMA)) == 0)
-arch/m68k/kernel/dma.c:	map = kmalloc(sizeof(struct page *) << order, flag & ~__GFP_DMA);
-arch/s390/hypfs/hypfs_diag.c:	diag224_cpu_names = kmalloc(PAGE_SIZE, GFP_KERNEL | GFP_DMA);
-arch/s390/mm/extmem.c:	struct qin64  *qin = kmalloc (sizeof(struct qin64), GFP_DMA);
-arch/s390/mm/extmem.c:	struct qout64 *qout = kmalloc (sizeof(struct qout64), GFP_DMA);
-arch/s390/kernel/cpcmd.c:		lowbuf = kmalloc(rlen, GFP_KERNEL | GFP_DMA);
-drivers/block/ps3disk.c:	dev->bounce_buf = kmalloc(BOUNCE_SIZE, GFP_DMA);
-drivers/scsi/sr_vendor.c:	buffer = kmalloc(512, GFP_KERNEL | GFP_DMA);
-drivers/scsi/sr_vendor.c:	buffer = kmalloc(512, GFP_KERNEL | GFP_DMA);
-drivers/scsi/aha1542.c:		SCpnt->host_scribble = kmalloc(512, GFP_KERNEL | GFP_DMA);
-drivers/scsi/ps3rom.c:	dev->bounce_buf = kmalloc(BOUNCE_SIZE, GFP_DMA);
-drivers/scsi/aacraid/commctrl.c:				p = kmalloc(upsg->sg[i].count,GFP_KERNEL|__GFP_DMA);
-drivers/scsi/aacraid/commctrl.c:				p = kmalloc(usg->sg[i].count,GFP_KERNEL|__GFP_DMA);
-drivers/scsi/aacraid/commctrl.c:				p = kmalloc(usg->sg[i].count,GFP_KERNEL|__GFP_DMA);
-drivers/scsi/pluto.c:	fcs = kmalloc(sizeof (struct ctrl_inquiry) * fcscount, GFP_DMA);
-drivers/scsi/sr_ioctl.c:	buffer = kmalloc(32, GFP_KERNEL | SR_GFP_DMA(cd));
-drivers/scsi/sr_ioctl.c:	buffer = kmalloc(32, GFP_KERNEL | SR_GFP_DMA(cd));
-drivers/scsi/sr_ioctl.c:	char *buffer = kmalloc(32, GFP_KERNEL | SR_GFP_DMA(cd));
-drivers/scsi/sr_ioctl.c:	raw_sector = kmalloc(2048, GFP_KERNEL | SR_GFP_DMA(cd));
-drivers/scsi/sr.c:	buffer = kmalloc(512, GFP_KERNEL | GFP_DMA);
-drivers/scsi/sr.c:	buffer = kmalloc(512, GFP_KERNEL | GFP_DMA);
-drivers/scsi/ch.c:	buffer = kmalloc(512, GFP_KERNEL | GFP_DMA);
-drivers/scsi/ch.c:		buffer = kmalloc(512, GFP_KERNEL | GFP_DMA);
-drivers/net/tokenring/3c359.c:	xl_priv->xl_tx_ring = kmalloc((sizeof(struct xl_tx_desc) * XL_TX_RING_SIZE) + 7, GFP_DMA | GFP_KERNEL) ; 
-drivers/net/tokenring/3c359.c:	xl_priv->xl_rx_ring = kmalloc((sizeof(struct xl_rx_desc) * XL_RX_RING_SIZE) +7, GFP_DMA | GFP_KERNEL) ; 
-drivers/net/znet.c:	if (!(znet->rx_start = kmalloc (DMA_BUF_SIZE, GFP_KERNEL | GFP_DMA)))
-drivers/net/znet.c:	if (!(znet->tx_start = kmalloc (DMA_BUF_SIZE, GFP_KERNEL | GFP_DMA)))
-drivers/net/lance.c:			rx_buff = kmalloc(PKT_BUF_SZ, GFP_DMA | gfp);
-drivers/net/wan/cosa.c:	cosa->bouncebuf = kmalloc(COSA_MTU, GFP_KERNEL|GFP_DMA);
-drivers/net/wan/cosa.c:	if ((chan->rxdata = kmalloc(COSA_MTU, GFP_DMA|GFP_KERNEL)) == NULL) {
-drivers/net/wan/cosa.c:	if ((kbuf = kmalloc(count, GFP_KERNEL|GFP_DMA)) == NULL) {
-drivers/net/irda/sa1100_ir.c:	io->head = kmalloc(size, GFP_KERNEL | GFP_DMA);
-drivers/net/irda/pxaficp_ir.c:	io->head = kmalloc(size, GFP_KERNEL | GFP_DMA);
-drivers/net/irda/vlsi_ir.c:		rd->buf = kmalloc(len, GFP_KERNEL|GFP_DMA);
-drivers/net/ni65.c:		ret = ptr = kmalloc(T_BUF_SIZE,GFP_KERNEL | GFP_DMA);
-drivers/usb/core/buffer.c:/* sometimes alloc/free could use kmalloc with GFP_DMA, for
-drivers/media/video/arv.c:	ar->line_buff = kmalloc(MAX_AR_LINE_BYTES, GFP_KERNEL | GFP_DMA);
-drivers/media/dvb/dvb-usb/gp8psk.c:	buf = kmalloc(512, GFP_KERNEL | GFP_DMA);
-drivers/atm/fore200e.c:	data = kmalloc(tx_len, GFP_ATOMIC | GFP_DMA);
-drivers/atm/iphase.c:       	    cpcs = kmalloc(sizeof(*cpcs), GFP_KERNEL|GFP_DMA);
-drivers/char/synclink.c:	info->intermediate_rxbuffer = kmalloc(info->max_frame_size, GFP_KERNEL | GFP_DMA);
-drivers/s390/net/qeth_main.c:			kmalloc(QETH_BUFSIZE, GFP_DMA|GFP_KERNEL);
-drivers/s390/net/smsgiucv.c:	buffer = kmalloc(msg->length + 1, GFP_ATOMIC | GFP_DMA);
-drivers/s390/char/tape_core.c:	device->modeset_byte = kmalloc(1, GFP_KERNEL | GFP_DMA);
-drivers/s390/char/vmur.c:		kbuf = kmalloc(reclen, GFP_KERNEL | GFP_DMA);
-drivers/s390/char/vmur.c:	fcb = kmalloc(sizeof(*fcb), GFP_KERNEL | GFP_DMA);
-drivers/s390/char/vmur.c:	fcb = kmalloc(sizeof(*fcb), GFP_KERNEL | GFP_DMA);
-drivers/s390/char/raw3270.c:		rq->buffer = kmalloc(size, GFP_KERNEL | GFP_DMA);
-drivers/s390/char/raw3270.c:	rp = kmalloc(sizeof(struct raw3270), GFP_KERNEL | GFP_DMA);
-drivers/s390/char/tape_3590.c:	int_kekls = kmalloc(sizeof(*int_kekls), GFP_KERNEL|GFP_DMA);
-drivers/s390/char/tape_3590.c:	rdc_data = kmalloc(sizeof(*rdc_data), GFP_KERNEL | GFP_DMA);
-drivers/s390/cio/device_ops.c:	buf = kmalloc(32*sizeof(char), GFP_DMA|GFP_KERNEL);
-drivers/s390/cio/device_ops.c:	buf2 = kmalloc(32*sizeof(char), GFP_DMA|GFP_KERNEL);
-drivers/s390/cio/css.c:	sch = kmalloc (sizeof (*sch), GFP_KERNEL | GFP_DMA);
+sles8 (2.12.90.0.15; it was really one of the first production
+binutils for x86-64) doesn't work out of the box (looks like as-instr doesn't 
+work anymore and it has another assembler issue I'll fix) 
+but with that workarounded it also builds a reasonble looking vdso
 
+Sam, can you please take a look at the as-instr issue? It seems
+to succeed now when it should fail.
+
+It would be useful if someone could find out which binutils versions
+really not work.
+
+-Andi
