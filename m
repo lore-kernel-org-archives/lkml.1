@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031530AbXHMNnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S972495AbXHMNoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031530AbXHMNnR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 09:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762907AbXHMKIA
+	id S972495AbXHMNoK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 09:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765525AbXHMKKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 06:08:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:41494 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761548AbXHMKHy (ORCPT
+	Mon, 13 Aug 2007 06:10:14 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:53684 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765487AbXHMKKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 06:07:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=S0JlnvT1fpQd0+7FZ4Aoc1xuvY12G0GfJPXB5DQxPsqRIke/JZwmyXRnT4AkhfgM2648QObe9PzL9gdIC14oQ1KJ5yL7bOfsVieUG5Crr6UCY8fv72N1Juuh4Wx1pNe9oilr1zGJfikW7pk3Mw7D4RTTebDlMqKz+BnPf++E5xU=
-Message-ID: <46C02D52.40002@gmail.com>
-Date: Mon, 13 Aug 2007 14:07:14 +0400
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Norbert Preining <preining@logic.at>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+	Mon, 13 Aug 2007 06:10:11 -0400
+Date: Mon, 13 Aug 2007 12:10:09 +0200
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: regression from 2.6.23-rc2 to -rc3 BAT missing
-References: <20070813094354.GA4881@gamma.logic.tuwien.ac.at>
-In-Reply-To: <20070813094354.GA4881@gamma.logic.tuwien.ac.at>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070813101009.GB4881@gamma.logic.tuwien.ac.at>
+References: <20070813094354.GA4881@gamma.logic.tuwien.ac.at> <46C02D52.40002@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C02D52.40002@gmail.com>
+User-Agent: Mutt/1.3.28i
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Norbert,
+On Mon, 13 Aug 2007, Alexey Starikovskiy wrote:
+> Do you know if you have SBS or CM battery? 
+> What driver do you use: sbs.ko or battery.ko?
 
-Do you know if you have SBS or CM battery? 
-What driver do you use: sbs.ko or battery.ko?
+I am quite sure that it is a CM battery, not a SBS:
 
-Regards,
-Alex.
+CONFIG_ACPI_BATTERY=y
 
+did normal work, and CONFIG_ACPI_SBS=m but module not loaded. Same
+setting as always.
 
+I also loaded sbs.ko without any change.
 
-Norbert Preining wrote:
-> Hi all!
-> 
-> Starting with 2.6.23-rc3 the battery from my laptop (Acer TM3012) is
-> missing for linux (but not physically):
-> 
-> ACPI: AC Adapter [ACAD] (on-line)
-> ACPI: Battery Slot [BAT1] (battery absent)
-> 
-> But it is definitely there and running, even when I unplug the AC power.
-> 
-> Any patch I can use to change this?
-> 
-> Best wishes
-> 
-> Norbert
-> 
-> -------------------------------------------------------------------------------
-> Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-> Debian Developer <preining@debian.org>                         Debian TeX Group
-> gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
-> -------------------------------------------------------------------------------
-> GLOSSOP (n.)
-> A rouge blob of food. Glossops, which are generally streaming hot and
-> highly adhesive invariably fall off your spoon and on to the surface
-> of your host's highly polished antique-rosewood dining table. If this
-> has not, or may not have, been noticed by the company present, swanage
-> (q.v.) may be employed.
-> 			--- Douglas Adams, The Meaning of Liff
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Best wishes
 
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+SCREMBY (n.)
+The dehydrated felt-tip pen attached by a string to the 'Don't Forget'
+board in the kitchen which has never worked in living memory but which
+no one can be bothered to throw away.
+			--- Douglas Adams, The Meaning of Liff
