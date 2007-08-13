@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764332AbXHMWZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbXHMWZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764332AbXHMWZB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 18:25:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbXHMWYu
+	id S1759284AbXHMWZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 18:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbXHMWZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 18:24:50 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:28587 "EHLO
-	outbound9-dub-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752680AbXHMWYt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 18:24:49 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
-Message-ID: <46C0DA2B.6080407@am.sony.com>
-Date: Mon, 13 Aug 2007 15:24:43 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Mon, 13 Aug 2007 18:25:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38073 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751634AbXHMWZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 18:25:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Voegtle <tv@lio96.de>
+Subject: Re: 2.6.23-rc2 swsusp, suddenly increased uptime
+Date: Tue, 14 Aug 2007 00:35:23 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.63.0708122137130.25343@er-systems.de> <200708132349.52763.rjw@sisk.pl> <Pine.LNX.4.63.0708140009110.32395@er-systems.de>
+In-Reply-To: <Pine.LNX.4.63.0708140009110.32395@er-systems.de>
 MIME-Version: 1.0
-To: joe@perches.com
-CC: torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, cbe-oss-dev@ozlabs.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] [392/2many] MAINTAINERS - PS3 PLATFORM SUPPORT
-References: <46bffb71.JWcVvIR5pg3biTEh%joe@perches.com>
-In-Reply-To: <46bffb71.JWcVvIR5pg3biTEh%joe@perches.com>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Aug 2007 22:24:44.0442 (UTC) FILETIME=[BFE4CFA0:01C7DDF8]
+Content-Disposition: inline
+Message-Id: <200708140035.24240.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: joe@perches.com
+On Tuesday, 14 August 2007 00:12, Thomas Voegtle wrote:
+> On Mon, 13 Aug 2007, Rafael J. Wysocki wrote:
+> 
+> > On Monday, 13 August 2007 23:31, Thomas Voegtle wrote:
+> > > On Mon, 13 Aug 2007, Rafael J. Wysocki wrote:
+> > > 
+> > > > On Sunday, 12 August 2007 21:39, Thomas Voegtle wrote:
+> > > > > 
+> > > > > Hi,
+> > > > > 
+> > > > > today I saw this (output from my suspend script):
+> > > > > 
+> > > > > -> woke up at Sun Aug 12 11:39:17 CEST 2007
+> > > > > -> uptime is
+> > > > >  11:39am  up 8 days  0:41,  10 users,  load average: 26.12, 6.35, 2.17
+> > > > > 
+> > > > > 
+> > > > > Then I did a software suspend. After waking up, I saw this:
+> > > > > 
+> > > > > 
+> > > > > -> woke up at Sun Aug 12 14:41:56 CEST 2007
+> > > > > -> uptime is
+> > > > >   2:41pm  up 44 days  9:11,  12 users,  load average: 35.17, 9.17, 3.33
+> > > 
+> > > I just want to add, I built 2.6.23-rc2 on Aug 4th and this happened on Aug 
+> > > 12 and I suspend once a day. And the only thing which was odd was the 
+> > > uptime, nothing else.
+> > > 
+> > > I rebooted with 2.6.23-rc3 today, so the odd uptime is gone.
+> > > Should I try 8 suspend cycles or something to reproduce it again?
+> > 
+> > Well, if you can, please try to do something like this.
+> 
+> I tried 20 suspend cycles, but this time with 
+>  echo reboot > /sys/power/disk
+> 
+> Nothing special happend.
+> 
+> I could try with "echo shutdown" if this makes sense, tomorrow.
+> Just let me know.
 
-Add file pattern to MAINTAINER entry
+Please try "platform" (ie. the default).  "shutdown" is very similar to
+"reboot", so I think it'll behave correctly.
 
-Signed-off-by: Joe Perches <joe@perches.com>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
-I also maintain the file include/asm-powerpc/lv1call.h.
-This updated patch adds that file.
+Greetings,
+Rafael
 
--Geoff
 
- MAINTAINERS |    7 +++++++
- 1 file changed, 7 insertions(+)
-
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3015,6 +3015,13 @@ M:	geoffrey.levand@am.sony.com
- L:	linuxppc-dev@ozlabs.org
- L:	cbe-oss-dev@ozlabs.org
- S:	Supported
-+F:	arch/powerpc/boot/ps3*
-+F:	arch/powerpc/platforms/ps3/
-+F:	drivers/*/ps3*
-+F:	drivers/ps3/
-+F:	drivers/usb/host/*ps3.c
-+F:	include/asm-powerpc/ps3*
-+F:	include/asm-powerpc/lv1call.h
- 
- PVRUSB2 VIDEO4LINUX DRIVER
- P:	Mike Isely
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
