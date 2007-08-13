@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S944349AbXHMLRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbXHMLSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S944349AbXHMLRX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 07:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966246AbXHMGiH
+	id S1754780AbXHMLSR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 07:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965842AbXHMGiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:38:07 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2102 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:38:08 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2105 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937284AbXHMGhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:37:42 -0400
-Date: Sun, 12 Aug 2007 23:37:30 -0700
+	id S938636AbXHMGho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:37:44 -0400
+Date: Sun, 12 Aug 2007 23:37:23 -0700
 From: joe@perches.com
-To: tulip-users@lists.sourceforge.net, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] [483/2many] MAINTAINERS - TULIP NETWORK DRIVER
-Message-ID: <46bffc2a.ruErqJOsVbJkM+7r%joe@perches.com>
+To: torvalds@linux-foundation.org, tlinux-users@linux.toshiba-dme.co.jp,
+       linux-kernel@vger.kernel.org, jonathan@buzzard.org.uk,
+       akpm@linux-foundation.org
+Subject: [PATCH] [480/2many] MAINTAINERS - TOSHIBA SMM DRIVER
+Message-ID: <46bffc23.OZWI3zpYZY7agi2A%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,14 +28,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 473d852..b8806b8 100644
+index ba55e00..7927653 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4586,6 +4586,7 @@ TULIP NETWORK DRIVER
- L:	tulip-users@lists.sourceforge.net
- W:	http://sourceforge.net/projects/tulip/
- S:	Orphan
-+F:	drivers/net/tulip/
+@@ -4555,6 +4555,8 @@ M:	jonathan@buzzard.org.uk
+ L:	tlinux-users@tce.toshiba-dme.co.jp
+ W:	http://www.buzzard.org.uk/toshiba/
+ S:	Maintained
++F:	drivers/char/toshiba.c
++F:	include/linux/toshiba.h
  
- TUN/TAP driver
- P:	Maxim Krasnyansky
+ TRIDENT 4DWAVE/SIS 7018 PCI AUDIO CORE
+ P:	Muli Ben-Yehuda
