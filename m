@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941536AbXHMLWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965132AbXHMLWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941536AbXHMLWG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 07:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939180AbXHMGiP
+	id S965132AbXHMLWt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 07:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939190AbXHMGiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:38:15 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2118 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:38:16 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2128 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938964AbXHMGhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:37:54 -0400
-Date: Sun, 12 Aug 2007 23:37:39 -0700
+	id S939159AbXHMGiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:38:04 -0400
+Date: Sun, 12 Aug 2007 23:37:49 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ballabio_dario@emc.com,
-       akpm@linux-foundation.org
-Subject: [PATCH] [486/2many] MAINTAINERS - U14-34F SCSI DRIVER
-Message-ID: <46bffc33.soe/Y4NC9xOEjIkz%joe@perches.com>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       bfennema@falcon.csc.calpoly.edu, akpm@linux-foundation.org
+Subject: [PATCH] [487/2many] MAINTAINERS - UDF FILESYSTEM
+Message-ID: <46bffc3d.mL8kSMMVOUW/hs8u%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,14 +27,15 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 374ee9b..e28c8d4 100644
+index e28c8d4..9bea953 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4609,6 +4609,7 @@ P:	Dario Ballabio
- M:	ballabio_dario@emc.com
- L:	linux-scsi@vger.kernel.org
+@@ -4616,6 +4616,8 @@ P:	Ben Fennema
+ M:	bfennema@falcon.csc.calpoly.edu
+ W:	http://linux-udf.sourceforge.net
  S:	Maintained
-+F:	drivers/scsi/u14-34f.c
++F:	Documentation/filesystems/udf.txt
++F:	fs/udf/
  
- UDF FILESYSTEM
- P:	Ben Fennema
+ UNIFORM CDROM DRIVER
+ P:	Jens Axboe
