@@ -1,39 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030532AbXHMMgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S972050AbXHMMgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030532AbXHMMgO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 08:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760829AbXHMHDs
+	id S972050AbXHMMgt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 08:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937826AbXHMHGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 03:03:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37064 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933933AbXHMHDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 03:03:47 -0400
-Date: Mon, 13 Aug 2007 00:04:40 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: joe@perches.com
-Cc: torvalds@linux-foundation.org, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] [490/2many] MAINTAINERS - USB BLOCK DRIVER (UB ub)
-Message-Id: <20070813000440.fedfa634.zaitcev@redhat.com>
-In-Reply-To: <46bffc48.jq7Ax2MlK/hZ/ANM%joe@perches.com>
-References: <46bffc48.jq7Ax2MlK/hZ/ANM%joe@perches.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.5; x86_64-redhat-linux-gnu)
+	Mon, 13 Aug 2007 03:06:24 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36102 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S936054AbXHMHGW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 03:06:22 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
+From: Keith Owens <kaos@ocs.com.au>
+To: linux-kernel@vger.kernel.org
+Subject: Unbalanced stack usage in arch/i386/math-emu/wm_sqrt.S
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Date: Mon, 13 Aug 2007 17:06:16 +1000
+Message-ID: <11592.1186988776@kao2.melbourne.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I received two updates, and something jumped out:
+Originally sent to the maintainer of the i386 math-emu code
+(billm@suburbia.net) but that mail was bounced[1].  Is anybody
+maintaining the math-emu code and do we even care about it anymore?
 
-On Sun, 12 Aug 2007 23:38:00 -0700, joe@perches.com wrote:
-> +F:	drivers/block/ub.c
+I am doing static code analysis on the kernel and have found a stack
+imbalance in arch/i386/math-emu/wm_sqrt.S.  2.6.23-rc2, but it has
+probably been there for a while.
 
-On Sun, 12 Aug 2007 23:38:30 -0700, joe@perches.com wrote:
-> +F:	/drivers/usb/class/usblp.c
+    The code starts off with
 
-Why do some patterns start with a leading slash and others do not?
+        pushl   %ebp
+        movl    %esp,%ebp
+#ifndef NON_REENTRANT_FPU
+        subl    $28,%esp
+#endif /* NON_REENTRANT_FPU */
+        pushl   %esi
+        pushl   %edi
+        pushl   %ebx
 
--- Pete
+    At this point, the code is using 0x2c bytes of stack space.
+
+    .... do some work
+
+sqrt_stage_2_finish:
+	sarl	$1,%ecx		/* divide by 2 */
+	rcrl	$1,%eax
+
+	/* Form the new estimate in %esi:%edi */
+	movl	%eax,%edi
+	addl	%ecx,%esi
+
+	jnz	sqrt_stage_2_done	/* result should be [1..2) */
+
+    ... still using 0x2c bytes of stack space
+
+#ifdef PARANOID
+/* It should be possible to get here only if the arg is ffff....ffff */
+	cmp	$0xffffffff,FPU_fsqrt_arg_1
+	jnz	sqrt_stage_2_error
+#endif /* PARANOID */
+
+/* The best rounded result. */
+	xorl	%eax,%eax
+	decl	%eax
+	movl	%eax,%edi
+	movl	%eax,%esi
+	movl	$0x7fffffff,%eax
+	jmp	sqrt_round_result
+
+#ifdef PARANOID
+sqrt_stage_2_error:
+
+    .... 0x2c bytes of stack space
+
+	pushl	EX_INTERNAL|0x213
+
+    .... 0x30 bytes of stack space
+
+	call	EXCEPTION
+
+    .... EXCEPTION is FPU_exception which only aborts if __DEBUG__ is
+    defined, __DEBUG__ is not defined.  So FPU_exception will return
+    and we still have 0x30 bytes of stack used.  But the code drops
+    through to sqrt_stage_2_done which (like the rest of the code) only
+    expects 0x2c bytes of stack ===>  stack imbalance.
+
+#endif /* PARANOID */ 
+
+sqrt_stage_2_done:
+
+
+The obvious fix is to add 'pop %eax' after 'call EXCEPTION' which will
+remove the extra word from the stack.  Alas that only fixes the stack
+imbalance, but does it even make sense for the code to continue after
+calling EXCEPTION?
+
+
+[1] <billm@suburbia.net>: host suburbia.com.au[203.24.247.1] said: 554
+    <billm@suburbia.net>: Recipient address rejected: Access denied (in
+    reply to RCPT TO command)
+
+The URL listed in MAINTAINERS for FPU Emulator gets a 404 as well.
+
