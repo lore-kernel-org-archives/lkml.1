@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970127AbXHMIiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941342AbXHMIjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970127AbXHMIiv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 04:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966843AbXHMG3x
+	id S941342AbXHMIjk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 04:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966516AbXHMG3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 02:29:53 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4712 "EHLO perches.com"
+	Mon, 13 Aug 2007 02:29:55 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4714 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966833AbXHMG3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 02:29:51 -0400
-Date: Sun, 12 Aug 2007 23:29:38 -0700
+	id S966840AbXHMG3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 02:29:53 -0400
+Date: Sun, 12 Aug 2007 23:29:39 -0700
 From: joe@perches.com
-To: torvalds@linux-foundation.org, sylvain.meyer@worldonline.fr,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] [249/2many] MAINTAINERS - INTEL FRAMEBUFFER DRIVER
- (excluding 810 and 815)
-Message-ID: <46bffa52.XCWGxsrarfXII06h%joe@perches.com>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, adaplas@gmail.com
+Subject: [PATCH] [250/2many] MAINTAINERS - INTEL 810/815 FRAMEBUFFER
+ DRIVER
+Message-ID: <46bffa53.XSXQKJKDticFOiSe%joe@perches.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,15 +28,14 @@ Add file pattern to MAINTAINER entry
 Signed-off-by: Joe Perches <joe@perches.com>
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 9608731..85dbec2 100644
+index 85dbec2..34d406e 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2369,6 +2369,8 @@ P:	Sylvain Meyer
- M:	sylvain.meyer@worldonline.fr
+@@ -2377,6 +2377,7 @@ P:	Antonino Daplas
+ M:	adaplas@gmail.com
  L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
  S:	Maintained
-+F:	Documentation/fb/intelfb.txt
-+F:	drivers/video/intelfb/
++F:	drivers/video/i810/
  
- INTEL 810/815 FRAMEBUFFER DRIVER
- P:	Antonino Daplas
+ INTEL APIC/IOAPIC, LOWLEVEL X86 SMP SUPPORT
+ P:	Ingo Molnar
