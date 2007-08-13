@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S973624AbXHMSNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032756AbXHMSOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S973624AbXHMSNr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 14:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974334AbXHMR6z
+	id S1032756AbXHMSOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 14:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S974343AbXHMR7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 13:58:55 -0400
-Received: from smtp113.sbc.mail.re2.yahoo.com ([68.142.229.92]:27288 "HELO
-	smtp113.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S974146AbXHMR6w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 13:58:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Qw7FxO+06qZoh9K/McFm9jSTWfXnJV86OyBjkCtXsSs6+Dewg5TLTAHUumfs2OEM1gzB5DIpizKftelYzgWoHJu4/HBwRcUaaksyyXm9vQTttPh6CdwqLK5Cs9a3TMg1QGEvMw0FzcjMwd5rrxkRkeSsTIjy9HzZ6s6cPTbLgA0=  ;
-X-YMail-OSG: Vu3zcGUVM1mhNLpStrjmSGGTmU9S5JkxVsnde47AtlD43nm108a0YbUEKVoIgh9OxPbr6DByDg--
-From: David Brownell <david-b@pacbell.net>
-To: "Midhun A" <midhunagni@gmail.com>
-Subject: Re: USB HC on i.MX21 hangs with error -110
-Date: Mon, 13 Aug 2007 10:58:56 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-References: <e1d5030b0708130751if39e36fx303e8cdaae21b927@mail.gmail.com>
-In-Reply-To: <e1d5030b0708130751if39e36fx303e8cdaae21b927@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200708131058.56598.david-b@pacbell.net>
+	Mon, 13 Aug 2007 13:59:00 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3361 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967978AbXHMR65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 13:58:57 -0400
+Subject: Re: [PATCH] [148/2many] MAINTAINERS - DCCP PROTOCOL
+From: Joe Perches <joe@perches.com>
+To: Ian McDonald <ian.mcdonald@jandi.co.nz>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dccp@vger.kernel.org, akpm@linux-foundation.org,
+       acme@ghostprotocols.net
+In-Reply-To: <5640c7e00708130219i463817bbu2b4c3e299b778cf4@mail.gmail.com>
+References: <46bff97c.9avHEM3TinhF1DrA%joe@perches.com>
+	 <5640c7e00708130219i463817bbu2b4c3e299b778cf4@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 13 Aug 2007 10:58:18 -0700
+Message-Id: <1187027898.10249.189.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 August 2007, Midhun A wrote:
->     We are using the i.MX21 Litekit. It has got a USB host port on it
-> and the driver is imx21-hcd.c provided by the vendor.
+On Mon, 2007-08-13 at 21:19 +1200, Ian McDonald wrote:
+> Provided this patch series goes in then we need to add this in as well
+> as part of DCCP subsystem:
+> F:  include/linux/tfrc.h
 
-Let's see ... Linux-ARM is a "please don't crosspost" list;
-but you did (including linux-kernel).  And then you also
-posted much the same message to linux-usb-users and then
-linux-usb-devel.
+DCCP PROTOCOL
+P:	Arnaldo Carvalho de Melo
+M:	acme@ghostprotocols.net
+L:	dccp@vger.kernel.org
+W:	http://linux-net.osdl.org/index.php/DCCP
+S:	Maintained
+F:	include/linux/dccp.h
+F:	include/linux/tfrc.h
+F:	net/dccp/
 
-In none of these messages do you report what that vendor said
-about these problems ...
 
-In short, a good lesson in how NOT to ask for help!
-
-If anyone feels inclined to follow up on this, please do so
-only on linux-usb-devel.
 
