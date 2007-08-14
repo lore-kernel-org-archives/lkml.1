@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761796AbXHNOfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762696AbXHNOhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761796AbXHNOfU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 10:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762530AbXHNOeS
+	id S1762696AbXHNOhH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 10:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbXHNOgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 10:34:18 -0400
-Received: from cm135.gamma145.maxonline.com.sg ([202.156.145.135]:43019 "EHLO
-	kerndev.sin.redhat.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762172AbXHNOeP (ORCPT
+	Tue, 14 Aug 2007 10:36:52 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33854 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbXHNOgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 10:34:15 -0400
-Date: Tue, 14 Aug 2007 22:34:11 +0800
-From: Eugene Teo <eugeneteo@kernel.sg>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix tsk->exit_state usage
-Message-ID: <20070814143411.GA23268@kernel.sg>
-Reply-To: Eugene Teo <eugeneteo@kernel.sg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 14 Aug 2007 10:36:51 -0400
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070814142103.204771292@sgi.com>
+References: <20070814142103.204771292@sgi.com>
+Content-Type: text/plain
+Date: Tue, 14 Aug 2007 16:36:43 +0200
+Message-Id: <1187102203.6114.2.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tsk->exit_state can only be 0, EXIT_ZOMBIE, or EXIT_DEAD. A non-zero test
-is the same as tsk->exit_state & (EXIT_ZOMBIE | EXIT_DEAD), so just testing
-tsk->exit_state is sufficient.
+On Tue, 2007-08-14 at 07:21 -0700, Christoph Lameter wrote:
+> The following patchset implements recursive reclaim. Recursive reclaim
+> is necessary if we run out of memory in the writeout patch from reclaim.
+> 
+> This is f.e. important for stacked filesystems or anything that does
+> complicated processing in the writeout path.
+> 
+> Recursive reclaim works because it limits itself to only reclaim pages
+> that do not require writeout. It will only remove clean pages from the LRU.
+> The dirty throttling of the VM during regular reclaim insures that the amount
+> of dirty pages is limited. 
 
-Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
----
- fs/proc/array.c |    3 +--
- kernel/fork.c   |    2 +-
- kernel/sched.c  |    2 +-
- 3 files changed, 3 insertions(+), 4 deletions(-)
+No it doesn't. All memory can be tied up by anonymous pages - who are
+dirty by definition and are not clamped by the dirty limit.
 
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index 965625a..babb24d 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -145,8 +145,7 @@ static inline const char *get_task_state(struct task_struct *tsk)
- 					    TASK_UNINTERRUPTIBLE |
- 					    TASK_STOPPED |
- 					    TASK_TRACED)) |
--			(tsk->exit_state & (EXIT_ZOMBIE |
--					    EXIT_DEAD));
-+					   tsk->exit_state;
- 	const char **p = &task_state_array[0];
- 
- 	while (state) {
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 7332e23..56d1b8b 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -115,7 +115,7 @@ EXPORT_SYMBOL(free_task);
- 
- void __put_task_struct(struct task_struct *tsk)
- {
--	WARN_ON(!(tsk->exit_state & (EXIT_DEAD | EXIT_ZOMBIE)));
-+	WARN_ON(!tsk->exit_state);
- 	WARN_ON(atomic_read(&tsk->usage));
- 	WARN_ON(tsk == current);
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 45e17b8..8c27f08 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5190,7 +5190,7 @@ static void migrate_dead(unsigned int dead_cpu, struct task_struct *p)
- 	struct rq *rq = cpu_rq(dead_cpu);
- 
- 	/* Must be exiting, otherwise would be on tasklist. */
--	BUG_ON(p->exit_state != EXIT_ZOMBIE && p->exit_state != EXIT_DEAD);
-+	BUG_ON(!p->exit_state);
- 
- 	/* Cannot have done final schedule yet: would have vanished. */
- 	BUG_ON(p->state == TASK_DEAD);
+> If recursive reclaim causes too many clean pages
+> to be removed then regular reclaim will throttle all processes until the
+> dirty ratio is restored. This means that the amount of memory that can
+> be reclaimed via recursive reclaim is limited to clean memory. The default
+> ratio is 10%. This means that recursive reclaim can reclaim 90% of memory
+> before failing. Reclaiming excessive amounts of clean pages may have a
+> significant performance impact because this means that executable pages
+> will be removed. However, it ensures that we will no longer fail in the
+> writeout path.
+> 
+> A patch is included to test this functionality. The test involved allocating
+> 12 Megabytes from the reclaim paths when __PF_MEMALLOC is set. This is enough
+> to exhaust the reserves.
+> 
 
