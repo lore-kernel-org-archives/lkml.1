@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbXHNVWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbXHNVWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576AbXHNVWN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 17:22:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbXHNVVy
+	id S1753437AbXHNVWo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 17:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbXHNVWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:21:54 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38384 "EHLO
+	Tue, 14 Aug 2007 17:22:00 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:38387 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750984AbXHNVVx (ORCPT
+	with ESMTP id S1753075AbXHNVV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:21:53 -0400
-Date: Tue, 14 Aug 2007 23:21:43 +0200
+	Tue, 14 Aug 2007 17:21:59 -0400
+Date: Tue, 14 Aug 2007 23:21:50 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Shannon Nelson <shannon.nelson@intel.com>,
-       "David S. Miller" <davem@davemloft.net>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Antonino Daplas <adaplas@gmail.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] #if 0 dma_async_memcpy_buf_to_buf()
-Message-ID: <20070814212143.GR18945@stusta.de>
+Subject: [-mm patch] make pm3fb_init() static again
+Message-ID: <20070814212150.GS18945@stusta.de>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20070731230932.a9459617.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch #if 0's the unused dma_async_memcpy_buf_to_buf().
+On Tue, Jul 31, 2007 at 11:09:32PM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.23-rc1-mm1:
+>...
+> +pm3fb-mtrr-support-and-noaccel-option.patch
+>...
+>  fbdev updates
+>...
+
+pm3fb_init() needlessly became global.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/dma/dmaengine.c   |    2 ++
- include/linux/dmaengine.h |    2 --
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/pm3fb.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-b91933344bed48adf2b64ca0f98c45b92ef69b79 
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 8248992..f0cda56 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -459,6 +459,7 @@ void dma_async_device_unregister(struct dma_device *device)
+9d0fd36d6429c19ac4377c19172d021b3aaa52e8 
+diff --git a/drivers/video/pm3fb.c b/drivers/video/pm3fb.c
+index 3f004e8..195bcdb 100644
+--- a/drivers/video/pm3fb.c
++++ b/drivers/video/pm3fb.c
+@@ -798,8 +798,6 @@ static void pm3fb_write_mode(struct fb_info *info)
+ /*
+  * hardware independent functions
+  */
+-int pm3fb_init(void);
+-
+ static int pm3fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 	u32 lpitch;
+@@ -1419,7 +1417,7 @@ static int __init pm3fb_setup(char *options)
  }
- EXPORT_SYMBOL(dma_async_device_unregister);
+ #endif /* MODULE */
  
-+#if 0
- /**
-  * dma_async_memcpy_buf_to_buf - offloaded copy between virtual addresses
-  * @chan: DMA channel to offload copy to
-@@ -501,6 +502,7 @@ dma_async_memcpy_buf_to_buf(struct dma_chan *chan, void *dest,
- 	return cookie;
- }
- EXPORT_SYMBOL(dma_async_memcpy_buf_to_buf);
-+#endif  /*  0  */
- 
- /**
-  * dma_async_memcpy_buf_to_pg - offloaded copy from address to page
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index a3b6035..75bdd65 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -302,8 +302,6 @@ struct dma_device {
- void dma_async_client_register(struct dma_client *client);
- void dma_async_client_unregister(struct dma_client *client);
- void dma_async_client_chan_request(struct dma_client *client);
--dma_cookie_t dma_async_memcpy_buf_to_buf(struct dma_chan *chan,
--	void *dest, void *src, size_t len);
- dma_cookie_t dma_async_memcpy_buf_to_pg(struct dma_chan *chan,
- 	struct page *page, unsigned int offset, void *kdata, size_t len);
- dma_cookie_t dma_async_memcpy_pg_to_pg(struct dma_chan *chan,
+-int __init pm3fb_init(void)
++static int __init pm3fb_init(void)
+ {
+ 	/*
+ 	 *  For kernel boot options (in 'video=pm3fb:<options>' format)
 
