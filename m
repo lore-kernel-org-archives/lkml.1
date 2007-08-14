@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934617AbXHNTDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934394AbXHNTI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934617AbXHNTDe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 15:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933987AbXHNTDF
+	id S934394AbXHNTI0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 15:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbXHNTIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 15:03:05 -0400
-Received: from aa012msr.fastwebnet.it ([85.18.95.72]:37574 "EHLO
-	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933930AbXHNTDD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 15:03:03 -0400
-Date: Tue, 14 Aug 2007 21:02:46 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: linux-usb-devel@lists.sourceforge.net,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] spontaneous disconnect with "usb-storage:
- implement autosuspend"
-Message-ID: <20070814210246.0c25643d@localhost>
-In-Reply-To: <200708142033.23158.oliver@neukum.org>
-References: <20070814131557.5653d991@localhost>
-	<200708141746.16958.oliver@neukum.org>
-	<20070814183857.28997de1@localhost>
-	<200708142033.23158.oliver@neukum.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Aug 2007 15:08:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57612 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753361AbXHNTIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 15:08:16 -0400
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 4/9] Atomic reclaim: Save irq flags in vmscan.c
+References: <20070814153021.446917377@sgi.com>
+	<20070814153501.766137366@sgi.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 14 Aug 2007 22:02:23 +0200
+In-Reply-To: <20070814153501.766137366@sgi.com>
+Message-ID: <p73vebhnauo.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Aug 2007 20:33:22 +0200
-Oliver Neukum <oliver@neukum.org> wrote:
+Christoph Lameter <clameter@sgi.com> writes:
 
-> Exactly. This is not reliable. It needs to be done in kernel. This patch
-> should do it.
+> Reclaim can be called with interrupts disabled in atomic reclaim.
+> vmscan.c is currently using spinlock_irq(). Switch to spin_lock_irqsave().
 
-ok, this one works  :)
+I like the idea in principle. If this fully works out we could
+potentially keep less memory free by default which would be a good
+thing in general: free memory is bad memory.
 
-I suspect that there are many more broken devices out there ;)
+But would be interesting to measure what the lock
+changes do to interrupt latency. Probably nothing good.
 
+A more benign alternative might be to just set a per CPU flag during
+these critical sections and then only do atomic reclaim on a local
+interrupt when the flag is not set.  That would make it a little less
+reliable, but much less intrusive and with some luck still give many
+of the benefits.
 
-thanks,
-
--- 
-	Paolo Ornati
-	Linux 2.6.23-rc3-gbfefa254 on x86_64
+-Andi
