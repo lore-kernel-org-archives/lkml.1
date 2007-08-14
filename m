@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764424AbXHNRPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764677AbXHNRVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764424AbXHNRPk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 13:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXHNRPb
+	id S1764677AbXHNRVL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 13:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbXHNRUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 13:15:31 -0400
-Received: from fmmailgate01.web.de ([217.72.192.221]:52225 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751537AbXHNRPa (ORCPT
+	Tue, 14 Aug 2007 13:20:51 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:37386 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753640AbXHNRUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 13:15:30 -0400
-From: Markus <lists4me@web.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v19
-Date: Tue, 14 Aug 2007 19:15:22 +0200
-User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <20070706173319.GA2356@elte.hu> <200708091934.10962.lists4me@web.de> <20070810074615.GC28264@elte.hu>
-In-Reply-To: <20070810074615.GC28264@elte.hu>
+	Tue, 14 Aug 2007 13:20:50 -0400
+Date: Tue, 14 Aug 2007 19:20:49 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Distributed storage. Mirroring to any number of devices.
+In-Reply-To: <20070814162918.GA30330@2ka.mipt.ru>
+Message-ID: <Pine.LNX.4.64.0708141919230.10912@fbirervta.pbzchgretzou.qr>
+References: <20070814162918.GA30330@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708141915.23738.lists4me@web.de>
-X-Provags-ID: V01U2FsdGVkX18lM3TsTUUOcVI0zFHYbaAyXTWc9EcQONq9EcCa
-	04dmoXKu3HdeG4A5+iXqWm32hFrbPBDyzhc8rnnUmr3kavBLWM
-	81gLhvtBY=
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> could you send me your debug-info:
-> 
->   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
-> 
-> just run that script on 2.6.23-rc2 system and send me the file it 
-> produces. I've got a theory about what might be going on, and this 
-> debug-info could help prove/disprove it.
-Done by private mail on friday.
 
-Also tried the very current linux-2.6.git (friday aswell) with 
-sched-ingo-combo.patch (as told in a private answer mail).
+On Aug 14 2007 20:29, Evgeniy Polyakov wrote:
+>
+>I'm pleased to announce second release of the distributed storage
+>subsystem, which allows to form a storage on top of remote and local
+>nodes, which in turn can be exported to another storage as a node to
+>form tree-like storages.
 
-Nothing fixed it so far.
+I'll be quick: what is it good for, are there any users, and what could
+it have to do with DRBD and all the other distribution storage talk
+that has come up lately (namely NBD w/Raid1)?
 
-If I can do anything...
 
-   Markus
+	Jan
+-- 
