@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761292AbXHNM0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbXHNMcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761292AbXHNM0b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 08:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757437AbXHNM0R
+	id S1758749AbXHNMcy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 08:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbXHNMcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 08:26:17 -0400
-Received: from emulex.emulex.com ([138.239.112.1]:57827 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758265AbXHNM0Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 08:26:16 -0400
-Message-ID: <46C19F57.3070801@emulex.com>
-Date: Tue, 14 Aug 2007 08:25:59 -0400
-From: James Smart <James.Smart@Emulex.Com>
-Reply-To: James.Smart@Emulex.Com
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Tue, 14 Aug 2007 08:32:42 -0400
+Received: from phunq.net ([64.81.85.152]:49935 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751993AbXHNMck (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 08:32:40 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Block device throttling [Re: Distributed storage.]
+Date: Tue, 14 Aug 2007 05:32:29 -0700
+User-Agent: KMail/1.9.5
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708140435.44979.phillips@phunq.net> <20070814115037.GA2958@2ka.mipt.ru>
+In-Reply-To: <20070814115037.GA2958@2ka.mipt.ru>
 MIME-Version: 1.0
-To: Tore Anderson <tore@linpro.no>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, James Smart <James.Smart@Emulex.Com>
-Subject: Re: Linux 2.6.23-rc3
-References: <alpine.LFD.0.999.0708122143240.30176@woody.linux-foundation.org> <46C1717E.3030908@linpro.no>
-In-Reply-To: <46C1717E.3030908@linpro.no>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Aug 2007 12:25:59.0470 (UTC) FILETIME=[455ADCE0:01C7DE6E]
+Message-Id: <200708140532.31378.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fyi....
+On Tuesday 14 August 2007 04:50, Evgeniy Polyakov wrote:
+> On Tue, Aug 14, 2007 at 04:35:43AM -0700, Daniel Phillips 
+(phillips@phunq.net) wrote:
+> > On Tuesday 14 August 2007 04:30, Evgeniy Polyakov wrote:
+> > > > And it will not solve the deadlock problem in general.  (Maybe
+> > > > it works for your virtual device, but I wonder...)  If the
+> > > > virtual device allocates memory during generic_make_request
+> > > > then the memory needs to be throttled.
+> > >
+> > > Daniel, if device process bio by itself, it has a limit and thus
+> > > it will wait in generic_make_request()
+> >
+> > What will make it wait?
+>
+> gneric_make_request() for given block device.
 
-I've seen these before (and they haven't been specific to the LLDD).
+Not good enough, that only makes one thread wait.  Look here:
 
-The "-EEXIST" error, was an issue of rescan-while-deleting, and where
-refcounts held the old sdevs in place. They were ramant in 2.6.18/2.6.19.
-Supposedly, we had patches from Hannes Reinecke. to resolve it, but that
-was a while ago.  Additionally, the traps around the attribute containers
-are similar. There are still some cases of data structures being freed
-(and thus erroneously reused later) in the midlayer and transports
-even though the refcounts on child-structures haven't finished.
+    http://lkml.org/lkml/2007/8/13/788
 
-If you believe these are related to the -rc3 lpfc mods, I recommend
-retesting on an -rc2 or 2.6.22 to see how similar they are.
+An unlimited number of threads can come in, each consuming resources of 
+the virtual device, and violating the throttling rules.
 
-I'll pull in -rc3 and see if I can't see more on my end..
+The throttling of the virtual device must begin in generic_make_request 
+and last to ->endio.  You release the throttle of the virtual device at 
+the point you remap the bio to an underlying device, which you have 
+convinced yourself is ok, but it is not.  You seem to miss the fact 
+that whatever resources the virtual device has allocated are no longer 
+protected by the throttle count *of the virtual device*, or you do not 
+see why that is a bad thing.  It is a very bad thing, roughly like 
+leaving some shared data outside a spin_lock/unlock.
 
--- james s
+Regards,
 
-Tore Anderson wrote:
->   I gave it a spin, and got quite a few troubles that appears related to
->  the lpfc driver.  I don't know if these problems happened due to the
->  recent update as the latest kernel I ran before was 2.6.20 (where I
->  never saw problems like these).  First I see that something failed when
->  the volumes on the SAN (on a Sun StorageTek 6140 / Engenio 3994) is
->  registered, causing two errors errors such as:
+Daniel
