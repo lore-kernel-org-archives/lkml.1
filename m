@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761445AbXHNNdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761647AbXHNNf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761445AbXHNNdW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 09:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbXHNNdN
+	id S1761647AbXHNNf6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 09:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757709AbXHNNfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 09:33:13 -0400
-Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:52110 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751168AbXHNNdM (ORCPT
+	Tue, 14 Aug 2007 09:35:48 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:51156 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752222AbXHNNfr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 09:33:12 -0400
-Date: Tue, 14 Aug 2007 15:33:40 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Markus Rechberger" <markus.rechberger@amd.com>
-Cc: "Marcel Holtmann" <marcel@holtmann.org>, linux-kernel@vger.kernel.org,
-       "Greg KH" <greg@kroah.com>
-Subject: Re: [PATCH] Firmware class name collision
-Message-ID: <20070814153340.4f844f5a@hyperion.delvare>
-In-Reply-To: <46C092EB.1070501@amd.com>
-References: <46C05896.4050509@amd.com>
-	<1187025047.6698.219.camel@violet>
-	<46C092EB.1070501@amd.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Aug 2007 09:35:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Kb7K56RnkC5dQoOVofgRDhvdlvERNwcYcGD7XW/UTmXGN70MVx1sInV+qSFkJQNONpRtpLm4MDKysIPM4LJjQ+hIV5YwGoCzQAqSs3eJaCY/oSwb//ZtYa9qkRtqKJ4WOtAo1inQbrkfRMgXEFMslOiwYvyZzRalg1cncrK9KXQ=
+Message-ID: <1a297b360708140635h3f7d00e5sa8c98a84340b8ff5@mail.gmail.com>
+Date: Tue, 14 Aug 2007 17:35:46 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "Mauro Carvalho Chehab" <mchehab@infradead.org>
+Subject: Re: [v4l-dvb-maintainer] [PATCH] [534/2many] MAINTAINERS - VIDEO FOR LINUX
+Cc: "Joe Perches" <joe@perches.com>, "Michael Krufky" <mkrufky@linuxtv.org>,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       v4l-dvb-maintainer@linuxtv.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org
+In-Reply-To: <1187098031.7287.10.camel@gaivota>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <46bffca0.bx1Cr4B33dN1FJPN%joe@perches.com>
+	 <1187028910.664.11.camel@gaivota>
+	 <1187030038.10249.237.camel@localhost>
+	 <1a297b360708131222t55be6fbax78a6659762a98e7e@mail.gmail.com>
+	 <1187056816.10249.366.camel@localhost> <46C10E85.2070902@linuxtv.org>
+	 <1187059484.10249.370.camel@localhost>
+	 <1187098031.7287.10.camel@gaivota>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Markus,
+On 8/14/07, Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
+>
+> Em Seg, 2007-08-13 às 19:44 -0700, Joe Perches escreveu:
+> > On Mon, 2007-08-13 at 22:08 -0400, Michael Krufky wrote:
+> > > drivers/media/video  -- v4l
+> > > drivers/media/radio  -- v4l
+> > >
+> > > drivers/media/dvb   -- dvb
+> >
+> > VIDEO FOR LINUX
+> > P:    Mauro Carvalho Chehab
+> > M:    mchehab@infradead.org
+> > P:    LinuxTV.org Project
+> > M:    v4l-dvb-maintainer@linuxtv.org
+> > L:    video4linux-list@redhat.com
+> > W:    http://linuxtv.org
+> > T:    git kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
+> > S:    Maintained
+> > F:    Documentation/video4linux/
+> > F:    drivers/media/video/
+> > F:    drivers/media/radio/
+> > F:    include/linux/video_decoder.h
+> > F     include/linux/videodev.h
+> You missed ':'
+> > F:    include/linux/videodev2.h
+> > F:    include/media/
+>
+> This is not ok. Some maintained files won't be hit. You should add also
+> something like:
 
-On Mon, 13 Aug 2007 19:20:43 +0200, Markus Rechberger wrote:
-> Marcel Holtmann wrote:
-> > I would prefer if we use "firmware-%s" since the "fw" might collide with
-> > the new Firewire stack. Please change that and I agree.
-> 
-> firmware-%s sounds more informative and cannot be mistaken with firewire 
-> yes.
-> 
-> Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
-> 
-> http://mcentral.de/~mrec/patches/firmware_class_name_collision_2.diff
-> 
-> diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-> index b24efd4..bfc54a1 100644
-> --- a/drivers/base/firmware_class.c
-> +++ b/drivers/base/firmware_class.c
-> @@ -297,8 +297,7 @@ firmware_class_timeout(u_long data)
-> 
->  static inline void fw_setup_device_id(struct device *f_dev, struct 
-> device *dev)
->  {
-> -       /* XXX warning we should watch out for name collisions */
-> -       strlcpy(f_dev->bus_id, dev->bus_id, BUS_ID_SIZE);
-> +       snprintf(f_dev->bus_id, BUS_ID_SIZE, "firmware-%s", dev->bus_id);
->  }
 
-Please keep in mind that BUS_ID_SIZE is "only" 20. "firmware-" takes 9
-characters, add one for the trailing zero and this only leaves room for
-10 characters for the original bus id. While this will be enough for
-the i2c case, I suspect that some other bus IDs won't fit. 
+> F: drivers/media/*
 
--- 
-Jean Delvare
+
+This is NOT OK !
