@@ -1,114 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760152AbXHNKXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759158AbXHNK2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760152AbXHNKXa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 06:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755335AbXHNKXH
+	id S1759158AbXHNK2U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 06:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbXHNK2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 06:23:07 -0400
-Received: from nef2.ens.fr ([129.199.96.40]:1540 "EHLO nef2.ens.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756099AbXHNKXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 06:23:05 -0400
-X-Greylist: delayed 3187 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Aug 2007 06:23:05 EDT
-Date: Tue, 14 Aug 2007 11:29:42 +0200
-From: Nicolas George <nicolas.george@ens.fr>
-To: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
-       jdike@linux.intel.com, mtk-manpages@gmx.net
-Message-ID: <20070814092942.GA14324@clipper.ens.fr>
+	Tue, 14 Aug 2007 06:28:11 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:60434 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753104AbXHNK2J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 06:28:09 -0400
+X-Sasl-enc: C1mS9Xh0GpVu6Cf6JwX/AAmeztVdJCE+HJIYkyv/juZp 1187087287
+Subject: [PATCH] autofs4: deadlock during create
+From: Ian Kent <raven@themaw.net>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>
+Content-Type: text/plain
+Date: Tue, 14 Aug 2007 18:28:00 +0800
+Message-Id: <1187087280.4963.18.camel@raven.themaw.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="kXdP64Ggrk/fb43R"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Tue, 14 Aug 2007 11:29:43 +0200 (CEST)
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---kXdP64Ggrk/fb43R
-Content-Type: multipart/mixed; boundary="u3/rZRmxL6MmkK24"
-Content-Disposition: inline
+Due to inconsistent locking in the VFS between calls to lookup and
+revalidate deadlock can occur in the automounter.
 
+The inconsistency is that the directory inode mutex is held for both
+lookup and revalidate calls when called via lookup_hash whereas it is
+held only for lookup during a path walk. Consequently, if the mutex
+is held during a call to revalidate autofs4 can't release the mutex
+to callback the daemon as it can't know whether it owns the mutex.
 
---u3/rZRmxL6MmkK24
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This situation happens when a process tries to create a directory
+within an automount and a second process also tries to create the
+same directory between the lookup and the mkdir. Since the first
+process has dropped the mutex for the daemon callback, the second
+process takes it during revalidate leading to deadlock between the
+autofs daemon and the second process when the daemon tries to create
+the mount point directory.
 
-Cc:=20
-Bcc:=20
-Subject: Re: UML/man: BLKGETSIZE takes a long, not an int
-Reply-To:=20
-In-Reply-To: <20070813124247.GA7414@she-seel.salle-s.org>
+After spending quite a bit of time trying to resolve this on more than
+one occassion, using rather complex and ulgy approaches, it turns out
+that just delaying the hashing of the dentry until the create operation
+work fine.
 
-Hi.
+Signed-off-by: Ian Kent <raven@themaw.net>
 
-I fear that my bug-report yesterday was very badly written, with me writing
-to the wrong mailing-list and all.
-
-I was saying:
-
-> I found a type mismatch in UML that makes host block devices unusable as =
-ubd
-> devices on x86_64 and other 64 bits systems (segfault of the mm subsystem=
-):
->=20
-> In block/ioctl.c, the following lines show that the BLKGETSIZE ioctl expe=
-cts
-> a pointer to a long:
->=20
-> 	case BLKGETSIZE:
-> 		if ((bdev->bd_inode->i_size >> 9) > ~0UL)
-> 			return -EFBIG;
-> 		return put_ulong(arg, bdev->bd_inode->i_size >> 9);
->=20
-> In arch/um/os-Linux/file.c, os_file_size calls it with an int.
->=20
-> The ioctl_list man page should be fixed as well.
-
-I add that the bug was still there yesterday in the git repository.
-
-I join the patch to file.c.
-
-Regards,
-
---=20
-  Nicolas George
-
---u3/rZRmxL6MmkK24
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="linux-umlblkgetsize-20070813.diff"
-Content-Transfer-Encoding: quoted-printable
-
-diff --git a/arch/um/os-Linux/file.c b/arch/um/os-Linux/file.c
-index 6f92f73..c3ecc2a 100644
---- a/arch/um/os-Linux/file.c
-+++ b/arch/um/os-Linux/file.c
-@@ -320,7 +320,8 @@ int os_file_size(char *file, unsigned long long *size_o=
-ut)
+---
+--- linux-2.6.23-rc2-mm2/fs/autofs4/root.c.lookup-delay-hash	2007-08-14 16:41:57.000000000 +0800
++++ linux-2.6.23-rc2-mm2/fs/autofs4/root.c	2007-08-14 17:18:46.000000000 +0800
+@@ -587,19 +587,20 @@ static struct dentry *autofs4_lookup(str
+ 	unhashed = autofs4_lookup_unhashed(sbi, dentry->d_parent, &dentry->d_name);
+ 	if (!unhashed) {
+ 		/*
+-		 * Mark the dentry incomplete, but add it. This is needed so
+-		 * that the VFS layer knows about the dentry, and we can count
+-		 * on catching any lookups through the revalidate.
+-		 *
+-		 * Let all the hard work be done by the revalidate function that
+-		 * needs to be able to do this anyway..
+-		 *
+-		 * We need to do this before we release the directory semaphore.
++		 * Mark the dentry incomplete but don't hash it. We do this 
++		 * to serialize our inode creation operations (symlink and
++		 * mkdir) which prevents deadlock during the callback to
++		 * the daemon. Subsequent user space lookups for the same
++		 * dentry are placed on the wait queue while the daemon
++		 * itself is allowed passage unresticted so the create
++		 * operation itself can then hash the dentry. Finally,
++		 * we check for the hashed dentry and return the newly
++		 * hashed dentry.
+ 		 */
+ 		dentry->d_op = &autofs4_root_dentry_operations;
+ 
+ 		dentry->d_fsdata = NULL;
+-		d_add(dentry, NULL);
++		d_instantiate(dentry, NULL);
+ 	} else {
+ 		struct autofs_info *ino = autofs4_dentry_ino(unhashed);
+ 		DPRINTK("rehash %p with %p", dentry, unhashed);
+@@ -615,7 +616,6 @@ static struct dentry *autofs4_lookup(str
+ 			autofs4_wait(sbi, unhashed, NFY_NONE);
+ 			DPRINTK("request completed");
+ 		}
+-		d_rehash(unhashed);
+ 		dentry = unhashed;
  	}
-=20
- 	if(S_ISBLK(buf.ust_mode)){
--		int fd, blocks;
-+		int fd;
-+		long blocks;
-=20
- 		fd =3D os_open_file(file, of_read(OPENFLAGS()), 0);
- 		if(fd < 0){
+ 
+@@ -658,7 +658,7 @@ static struct dentry *autofs4_lookup(str
+ 	 * for all system calls, but it should be OK for the operations
+ 	 * we permit from an autofs.
+ 	 */
+-	if (dentry->d_inode && d_unhashed(dentry)) {
++	if (!oz_mode && d_unhashed(dentry)) {
+ 		/*
+ 		 * A user space application can (and has done in the past)
+ 		 * remove and re-create this directory during the callback.
+@@ -716,7 +716,7 @@ static int autofs4_dir_symlink(struct in
+ 	strcpy(cp, symname);
+ 
+ 	inode = autofs4_get_inode(dir->i_sb, ino);
+-	d_instantiate(dentry, inode);
++	d_add(dentry, inode);
+ 
+ 	if (dir == dir->i_sb->s_root->d_inode)
+ 		dentry->d_op = &autofs4_root_dentry_operations;
+@@ -844,7 +844,7 @@ static int autofs4_dir_mkdir(struct inod
+ 		return -ENOSPC;
+ 
+ 	inode = autofs4_get_inode(dir->i_sb, ino);
+-	d_instantiate(dentry, inode);
++	d_add(dentry, inode);
+ 
+ 	if (dir == dir->i_sb->s_root->d_inode)
+ 		dentry->d_op = &autofs4_root_dentry_operations;
 
---u3/rZRmxL6MmkK24--
 
---kXdP64Ggrk/fb43R
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (SunOS)
-
-iD8DBQFGwXYGsGPZlzblTJMRApedAJ9Wq+sRaXrv62yt9NIxanJ548jzUgCgzG8a
-2uU1AubmBlL7YVZIQHv28KE=
-=82ZP
------END PGP SIGNATURE-----
-
---kXdP64Ggrk/fb43R--
