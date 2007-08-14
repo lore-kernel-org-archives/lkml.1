@@ -1,57 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934030AbXHNTNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934456AbXHNTX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934030AbXHNTNM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 15:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934257AbXHNTMR
+	id S934456AbXHNTX1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 15:23:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933729AbXHNTWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 15:12:17 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39877 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934243AbXHNTMQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 15:12:16 -0400
-Date: Tue, 14 Aug 2007 12:12:15 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 4/9] Atomic reclaim: Save irq flags in vmscan.c
-In-Reply-To: <p73vebhnauo.fsf@bingen.suse.de>
-Message-ID: <Pine.LNX.4.64.0708141209270.29498@schroedinger.engr.sgi.com>
-References: <20070814153021.446917377@sgi.com> <20070814153501.766137366@sgi.com>
- <p73vebhnauo.fsf@bingen.suse.de>
+	Tue, 14 Aug 2007 15:22:30 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:37344 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760466AbXHNTW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 15:22:28 -0400
+X-Greylist: delayed 1528 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Aug 2007 15:22:27 EDT
+Date: Tue, 14 Aug 2007 21:56:57 +0300 (EEST)
+From: Timo Jantunen <jeti@iki.fi>
+To: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+cc: stable@kernel.org
+Subject: [PATCH] fix random hang in forcedeth driver when using netconsole
+Message-ID: <Pine.LNX.4.64.0708142147130.6769@limbo>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Aug 2007, Andi Kleen wrote:
+Heip!
 
-> Christoph Lameter <clameter@sgi.com> writes:
-> 
-> > Reclaim can be called with interrupts disabled in atomic reclaim.
-> > vmscan.c is currently using spinlock_irq(). Switch to spin_lock_irqsave().
-> 
-> I like the idea in principle. If this fully works out we could
-> potentially keep less memory free by default which would be a good
-> thing in general: free memory is bad memory.
+If the forcedeth driver receives too much work in an interrupt, it assumes
+it has a broken hardware with stuck IRQ. It works around the problem by
+disabling interrupts on the nic but makes a printk while holding device
+spinlog - which isn't smart thing to do if you have netconsole on the
+same nic.
 
-Right.
+This patch moves the printk's out of the spinlock protected area.
+
+
+Without this patch the machine hangs hard. With this patch everything still 
+works even when there is significant increase on CPU usage while using the 
+nic.
+
+//T
+
+
+Signed-off-by: Timo Jantunen <jeti@iki.fi>
+
+
+diff -uprN -X linux-2.6.22.2/Documentation/dontdiff linux-2.6.22.2.original/drivers/net/forcedeth.c linux-2.6.22.2/drivers/net/forcedeth.c
+--- linux-2.6.22.2.original/drivers/net/forcedeth.c	2007-08-10 08:20:27.761813671 +0300
++++ linux-2.6.22.2/drivers/net/forcedeth.c	2007-08-14 21:03:14.109056661 +0300
+@@ -3067,8 +3067,8 @@ static irqreturn_t nv_nic_irq(int foo, v
+ 				np->nic_poll_irq = np->irqmask;
+ 				mod_timer(&np->nic_poll, jiffies + POLL_WAIT);
+ 			}
+-			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq.\n", dev->name, i);
+ 			spin_unlock(&np->lock);
++			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq.\n", dev->name, i);
+ 			break;
+ 		}
  
-> But would be interesting to measure what the lock
-> changes do to interrupt latency. Probably nothing good.
-
-Yup.
+@@ -3185,8 +3185,8 @@ static irqreturn_t nv_nic_irq_optimized(
+ 				np->nic_poll_irq = np->irqmask;
+ 				mod_timer(&np->nic_poll, jiffies + POLL_WAIT);
+ 			}
+-			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq.\n", dev->name, i);
+ 			spin_unlock(&np->lock);
++			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq.\n", dev->name, i);
+ 			break;
+ 		}
  
-> A more benign alternative might be to just set a per CPU flag during
-> these critical sections and then only do atomic reclaim on a local
-> interrupt when the flag is not set.  That would make it a little less
-> reliable, but much less intrusive and with some luck still give many
-> of the benefits.
-
-There are other lock interactions that may cause problems. If we do not 
-switch to the saving of irq flags then all involved spinlocks must become 
-trylocks because the interrupt could have happened while the spinlock is 
-held. So interrupts must be disabled on locks acquired during an 
-interrupt.
+@@ -3232,8 +3232,8 @@ static irqreturn_t nv_nic_irq_tx(int foo
+ 				np->nic_poll_irq |= NVREG_IRQ_TX_ALL;
+ 				mod_timer(&np->nic_poll, jiffies + POLL_WAIT);
+ 			}
+-			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq_tx.\n", dev->name, i);
+ 			spin_unlock_irqrestore(&np->lock, flags);
++			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq_tx.\n", dev->name, i);
+ 			break;
+ 		}
+ 
+@@ -3347,8 +3347,8 @@ static irqreturn_t nv_nic_irq_rx(int foo
+ 				np->nic_poll_irq |= NVREG_IRQ_RX_ALL;
+ 				mod_timer(&np->nic_poll, jiffies + POLL_WAIT);
+ 			}
+-			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq_rx.\n", dev->name, i);
+ 			spin_unlock_irqrestore(&np->lock, flags);
++			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq_rx.\n", dev->name, i);
+ 			break;
+ 		}
+ 	}
+@@ -3420,8 +3420,8 @@ static irqreturn_t nv_nic_irq_other(int 
+ 				np->nic_poll_irq |= NVREG_IRQ_OTHER;
+ 				mod_timer(&np->nic_poll, jiffies + POLL_WAIT);
+ 			}
+-			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq_other.\n", dev->name, i);
+ 			spin_unlock_irqrestore(&np->lock, flags);
++			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq_other.\n", dev->name, i);
+ 			break;
+ 		}
+ 
 
