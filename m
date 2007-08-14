@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932533AbXHNRlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932494AbXHNRns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932533AbXHNRlY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 13:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762985AbXHNRkx
+	id S932494AbXHNRns (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 13:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758026AbXHNRni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 13:40:53 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48840 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763078AbXHNRkw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 13:40:52 -0400
-Date: Tue, 14 Aug 2007 18:48:16 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Hajime Inoue <hinoue@ccsl.carleton.ca>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: System call interposition/unprotecting the table
-Message-ID: <20070814184816.12a8a94c@the-village.bc.nu>
-In-Reply-To: <46C1E5F5.9050702@ccsl.carleton.ca>
-References: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca>
-	<20070814000956.7c8929dd@the-village.bc.nu>
-	<46C1E5F5.9050702@ccsl.carleton.ca>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 14 Aug 2007 13:43:38 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:46374 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757550AbXHNRni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 13:43:38 -0400
+X-Greylist: delayed 1122 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Aug 2007 13:43:37 EDT
+Date: Tue, 14 Aug 2007 19:24:53 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Cc: linux-netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: dst cache overflow
+Message-Id: <20070814192453.5a873723.dada1@cosmosbay.com>
+In-Reply-To: <20070814160646.GA16283@yamamaya.is-a-geek.org>
+References: <20070814160646.GA16283@yamamaya.is-a-geek.org>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.11; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Just protecting the table does not stop rootkits.  A highly referenced
-> phrack article explains how to bypass the table.  
+On Tue, 14 Aug 2007 18:06:46 +0200
+Tobias Diedrich <ranma+kernel@tdiedrich.de> wrote:
 
-But most people are not capable of fllowing that article - or they
-wouldn't be asking here whatever their intention.
+> Hello,
+> 
+> I suspect I'm seeing a slow dst cache leakage on one of my servers.
+> The server in question (oni) regularly needs to be rebooted, because
+> it loses network connectivity. However, netconsole and syslog shows that the
+> machine is still running and the kernel complains about "dst cache
+> overflow".
+> 
+> I have since installed a monitoring script, which stores the output of
+> both "ip route ls cache | fgrep cache | wc -l" and the 'entries' value
+> of /proc/net/stat/rt_cache (as suggested in 
+> http://www.mail-archive.com/netdev@vger.kernel.org/msg02107.html)
+> and produces a nice rrd graph:
+> 
+> http://uguu.de/~ranma/route-month-oni.png
+> So entries is growing more or less constantly, while the number of
+> active routes (not visible on the graph due to being too small) is
+> relatively constant.
+> 
+> Comparing this to another host running the exact same kernel:
+> http://uguu.de/~ranma/route-month-ari.png
+> Here cached_routes and entries barely differ at all.
+> 
+> The funny thing is, both hosts are running the exact same kernel
+> and use more or less the same iptables rules.
+> 
+> So I'm not sure what would cause the dst cache to leak only on host
+> oni?
+> 
 
-> Why isn't the rest of the kernel code protected along with the table?
+Could you send the result of these commands on oni and ari ?
 
-Thats in progress actually and hopefully then in the hypervisor case
-implementing irrevocably read-only pages.
-
-> Finally, system call interposition is used in several interesting
-> systems, most notably, systrace.  It's unclear to me how one would
-> implement something like systrace without modifying the table or doing
-> other rootkit-like antics.
-
-Always wrongly. You can't be sure the table format will not change, you
-can't reliably restore the table and its virtually impossible to do any
-kind of trace reliably this way as you end up with two copies of the data
-from user space which may vary (and leads to bad problems - see BSD
-recently).
+ip route ls
+grep . /proc/sys/net/ipv4/route/*
 
