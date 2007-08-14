@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764785AbXHNPq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764843AbXHNPra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764785AbXHNPq4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 11:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758915AbXHNPqh
+	id S1764843AbXHNPra (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 11:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762200AbXHNPrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 11:46:37 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:34597 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757005AbXHNPqg (ORCPT
+	Tue, 14 Aug 2007 11:47:09 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:64985 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758915AbXHNPrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 11:46:36 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Paolo Ornati <ornati@fastwebnet.it>
-Subject: Re: [linux-usb-devel] spontaneous disconnect with "usb-storage: implement autosuspend"
-Date: Tue, 14 Aug 2007 17:46:16 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-usb-devel@lists.sourceforge.net,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20070814131557.5653d991@localhost> <200708141530.28182.oliver@neukum.org> <20070814154747.6272ccf3@localhost>
-In-Reply-To: <20070814154747.6272ccf3@localhost>
+	Tue, 14 Aug 2007 11:47:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YNcPPjgLYa43h3a49GOkwSXS/MePAlz3H0HoCjgzR7KsteZUbNi2QQ46siLVyxyphBSYXQHRX01xFC5x42eGmXDHlJ6ofNGhULHULMYFimFtP3VK7FecFI84gD+34Sn3q0Dn57SY9mNeFUMz421mGmO9mPYO/N/ljVN9M+OKFj8=
+Message-ID: <be1b757c0708140847g4900624oee28eb214ff7e735@mail.gmail.com>
+Date: Tue, 14 Aug 2007 17:47:04 +0200
+From: "Karl Meyer" <adhocrocker@gmail.com>
+To: "Francois Romieu" <romieu@fr.zoreil.com>
+Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070814070901.GA14693@electric-eye.fr.zoreil.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708141746.16958.oliver@neukum.org>
+References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com>
+	 <20070813165821.GA19356@electric-eye.fr.zoreil.com>
+	 <be1b757c0708131027v5c57822as2d9bd3190fd19b71@mail.gmail.com>
+	 <20070814070901.GA14693@electric-eye.fr.zoreil.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 14 August 2007 schrieb Paolo Ornati:
-> Hewlett-Packard PhotoSmart 720 / PhotoSmart 935 (storage)
+Hi,
 
-Please try this patch.
+I successfully ran git bisect:
+0127215c17414322b350c3c6fbd1a7d8dd13856f is first bad commit
+commit 0127215c17414322b350c3c6fbd1a7d8dd13856f
+Author: Francois Romieu <romieu@fr.zoreil.com>
+Date:   Tue Feb 20 22:58:51 2007 +0100
 
-	Regards
-		Oliver
+    r8169: small 8101 comment
 
------
+    Extracted from version 1.001.00 of Realtek's r8101.
 
---- a/drivers/usb/core/quirks.c	2007-08-14 17:42:22.000000000 +0200
-+++ b/drivers/usb/core/quirks.c	2007-08-14 17:43:51.000000000 +0200
-@@ -30,6 +30,8 @@
- static const struct usb_device_id usb_quirk_list[] = {
- 	/* HP 5300/5370C scanner */
- 	{ USB_DEVICE(0x03f0, 0x0701), .driver_info = USB_QUIRK_STRING_FETCH_255 },
-+	/* Hewlett-Packard PhotoSmart 720 / PhotoSmart 935 (storage) */
-+	{ USB_DEVICE(0x03f0, 0x4002), .driver_info = USB_QUIRK_RESET_RESUME },
- 	/* Acer Peripherals Inc. (now BenQ Corp.) Prisa 640BU */
- 	{ USB_DEVICE(0x04a5, 0x207e), .driver_info = USB_QUIRK_NO_AUTOSUSPEND },
- 	/* Benq S2W 3300U */
+    Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
+    Cc: Edward Hsu <edward_hsu@realtek.com.tw>
 
+:040000 040000 07dc911509e8d1b4ff2dfb013401108d4be85095
+d41a52a215fb1b38ba652dda90faf6ed951bccd1 M      drivers
+
+I did proof it by doing "git revert
+0127215c17414322b350c3c6fbd1a7d8dd13856f"  on my git clone, now I am
+happily running 2.6.23-rc3-ge60a without the NETDEV WATCHDOG message.
+
+2007/8/14, Francois Romieu <romieu@fr.zoreil.com>:
+> Karl Meyer <adhocrocker@gmail.com> :
+> [...]
+> > dmesg, interrupts and .config are attached. I will have a look at git bisect.
+>
+> Can you reproduce the problem when nvidia binary-only stuff is not loaded
+> after boot ?
+>
+> --
+> Ueimor
+>
