@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935578AbXHNWth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933217AbXHNWvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935578AbXHNWth (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbXHNWtN
+	id S933217AbXHNWvg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbXHNWvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 18:49:13 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:56488 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753913AbXHNWtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 18:49:11 -0400
-Date: Wed, 15 Aug 2007 00:46:29 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Karl Meyer <adhocrocker@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
-Message-ID: <20070814224629.GB3495@electric-eye.fr.zoreil.com>
-References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com> <20070813165821.GA19356@electric-eye.fr.zoreil.com> <be1b757c0708131027v5c57822as2d9bd3190fd19b71@mail.gmail.com> <20070814070901.GA14693@electric-eye.fr.zoreil.com> <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+	Tue, 14 Aug 2007 18:51:16 -0400
+Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:57837 "EHLO
+	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753860AbXHNWvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 18:51:15 -0400
+Date: Tue, 14 Aug 2007 15:51:14 -0700 (PDT)
+From: alan <alan@clueserver.org>
+X-X-Sender: alan@blackbox.fnordora.org
+To: Marc Perkel <mperkel@yahoo.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Thinking outside the box on file systems
+In-Reply-To: <106259.96671.qm@web52501.mail.re2.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0708141546510.22494@blackbox.fnordora.org>
+References: <106259.96671.qm@web52501.mail.re2.yahoo.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karl Meyer <adhocrocker@gmail.com> :
-> I did some additional testing, the results are:
-> [0e4851502f846b13b29b7f88f1250c980d57e944] r8169: merge with version
-> 8.001.00 of Realtek's r8168 driver
-> does not work, I after some traffic the transmit timeout occurs.
-> [6dccd16b7c2703e8bbf8bca62b5cf248332afbe2] r8169: merge with version
-> 6.001.00 of Realtek's r8169 driver
-> Seems to be the last version to work. I did some stress testing (much
-> more than the level that was enough to make
-> [0e4851502f846b13b29b7f88f1250c980d57e944]  break) and am currently
-> using this version and no problems so far.
+On Tue, 14 Aug 2007, Marc Perkel wrote:
 
-Thanks for the quick feedback.
+> For example. If you list a directory you only see the
+> files that you have some rights to and files where you
+> have no rights are invisible to you. If a file is read
+> only to you then you can't delete it either. Having
+> write access to a directory really means that you have
+> file create rights. You can also delete files that you
+> have write access to. You would also allocate
+> permissions to manage file rights like being able to
+> set the rights of inferior users.
 
-Can you try the patch below on top of 2.6.23-rc3 ?
+Imagine the fun you will have trying to write a file name and being told 
+you cannot write it for some unknown reason.  Unbeknownst to you, there is 
+a file there, but it is not owned by you, thus invisible.
 
-If it does not work I'll dissect 0e4851502f846b13b29b7f88f1250c980d57e944
-tomorrow.
+Making a file system more user oriented would avoid little gotchas like 
+this.  The reason it is "programmer oriented" is that those are the people 
+who have worked out why it works and why certain things are bad ideas.
 
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index b85ab4a..cdb8a08 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -2749,6 +2749,7 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
- 		if (!(status & tp->intr_event))
- 			break;
- 
-+#if 0
-                 /* Work around for rx fifo overflow */
-                 if (unlikely(status & RxFIFOOver) &&
- 		    (tp->mac_version == RTL_GIGA_MAC_VER_11)) {
-@@ -2756,6 +2757,7 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
- 			rtl8169_tx_timeout(dev);
- 			break;
- 		}
-+#endif
- 
- 		if (unlikely(status & SYSErr)) {
- 			rtl8169_pcierr_interrupt(dev);
 -- 
-Ueimor
+Refrigerator Rule #1: If you don't remember when you bought it, Don't eat it.
