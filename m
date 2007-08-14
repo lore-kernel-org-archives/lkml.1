@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759581AbXHNOdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbXHNOeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759581AbXHNOdm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 10:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbXHNOdK
+	id S1758459AbXHNOeI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 10:34:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758259AbXHNOdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 10:33:10 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36388 "EHLO
+	Tue, 14 Aug 2007 10:33:11 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46747 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757124AbXHNOdH (ORCPT
+	with ESMTP id S1757709AbXHNOdH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 14 Aug 2007 10:33:07 -0400
-Message-Id: <20070814142103.204771292@sgi.com>
+Message-Id: <20070814143302.954893066@sgi.com>
+References: <20070814142103.204771292@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 14 Aug 2007 07:21:03 -0700
+Date: Tue, 14 Aug 2007 07:21:04 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org
@@ -21,31 +22,105 @@ Cc: dkegel@google.com
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: David Miller <davem@davemloft.net>
 Cc: Nick Piggin <npiggin@suse.de>
-Subject: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+Subject: [RFC 1/3] Allow reclaim via __GFP_NOMEMALLOC reclaim
+Content-Disposition: inline; filename=vmscan_nomemalloc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patchset implements recursive reclaim. Recursive reclaim
-is necessary if we run out of memory in the writeout patch from reclaim.
+Make try_to_free_pages() not perform any allocations if __GFP_NOMEMALLOC
+is set.
 
-This is f.e. important for stacked filesystems or anything that does
-complicated processing in the writeout path.
+We can avoid allocations by not writing pages out or swapping. So on entry
+to try_to_free_pages() we check for __GFP_NOMEMALLOC. If it is set
+then sc.may_writepage and sc.mayswap are switched off and we short
+circuit the writeout handling.
 
-Recursive reclaim works because it limits itself to only reclaim pages
-that do not require writeout. It will only remove clean pages from the LRU.
-The dirty throttling of the VM during regular reclaim insures that the amount
-of dirty pages is limited. If recursive reclaim causes too many clean pages
-to be removed then regular reclaim will throttle all processes until the
-dirty ratio is restored. This means that the amount of memory that can
-be reclaimed via recursive reclaim is limited to clean memory. The default
-ratio is 10%. This means that recursive reclaim can reclaim 90% of memory
-before failing. Reclaiming excessive amounts of clean pages may have a
-significant performance impact because this means that executable pages
-will be removed. However, it ensures that we will no longer fail in the
-writeout path.
+The throttling of VM writeout is also bypassed since there is no
+writeout occurring.
 
-A patch is included to test this functionality. The test involved allocating
-12 Megabytes from the reclaim paths when __PF_MEMALLOC is set. This is enough
-to exhaust the reserves.
+It is likely difficult to make sure that the slab shrinkers do
+not perform any allocations. So we simply do not shrink slabs.
+
+The type of pages that can be reclaimed by a call to try_to_free_pages()
+with the __GFP_NOMEMALLOC parameter is:
+
+- Unmapped clean page cache pages.
+- Mapped clean pages
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+
+---
+ mm/vmscan.c |   25 ++++++++++++++++++++++---
+ 1 file changed, 22 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/mm/vmscan.c
+===================================================================
+--- linux-2.6.orig/mm/vmscan.c	2007-08-13 23:43:45.000000000 -0700
++++ linux-2.6/mm/vmscan.c	2007-08-13 23:51:05.000000000 -0700
+@@ -161,6 +161,13 @@ unsigned long shrink_slab(unsigned long 
+ 	if (scanned == 0)
+ 		scanned = SWAP_CLUSTER_MAX;
+ 
++	/*
++	 * Not sure if we can keep this clean of allocs.
++	 * Better leave it off for now
++	 */
++	if (gfp_mask & __GFP_NOMEMALLOC)
++		return 1;
++
+ 	if (!down_read_trylock(&shrinker_rwsem))
+ 		return 1;	/* Assume we'll be able to shrink next time */
+ 
+@@ -1053,7 +1060,8 @@ static unsigned long shrink_zone(int pri
+ 		}
+ 	}
+ 
+-	throttle_vm_writeout(sc->gfp_mask);
++	if (!(sc->gfp_mask & __GFP_NOMEMALLOC))
++		throttle_vm_writeout(sc->gfp_mask);
+ 
+ 	atomic_dec(&zone->reclaim_in_progress);
+ 	return nr_reclaimed;
+@@ -1115,6 +1123,9 @@ static unsigned long shrink_zones(int pr
+  * hope that some of these pages can be written.  But if the allocating task
+  * holds filesystem locks which prevent writeout this might not work, and the
+  * allocation attempt will fail.
++ *
++ * The __GFP_NOMEMALLOC flag has a special role. If it is set then no memory
++ * allocations or writeout will occur.
+  */
+ unsigned long try_to_free_pages(struct zone **zones, int order, gfp_t gfp_mask)
+ {
+@@ -1127,15 +1138,17 @@ unsigned long try_to_free_pages(struct z
+ 	int i;
+ 	struct scan_control sc = {
+ 		.gfp_mask = gfp_mask,
+-		.may_writepage = !laptop_mode,
+ 		.swap_cluster_max = SWAP_CLUSTER_MAX,
+-		.may_swap = 1,
+ 		.swappiness = vm_swappiness,
+ 		.order = order,
+ 	};
+ 
+ 	count_vm_event(ALLOCSTALL);
+ 
++	if (!(gfp_mask & __GFP_NOMEMALLOC)) {
++		sc.may_writepage = !laptop_mode;
++		sc.may_swap = 1;
++	}
+ 	for (i = 0; zones[i] != NULL; i++) {
+ 		struct zone *zone = zones[i];
+ 
+@@ -1162,6 +1175,9 @@ unsigned long try_to_free_pages(struct z
+ 			goto out;
+ 		}
+ 
++		if (!(gfp_mask & __GFP_NOMEMALLOC))
++			continue;
++
+ 		/*
+ 		 * Try to write back as many pages as we just scanned.  This
+ 		 * tends to cause slow streaming writers to write data to the
 
 -- 
