@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938259AbXHNCDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939227AbXHNCFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938259AbXHNCDa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 22:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXHNCDP
+	id S939227AbXHNCFa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 22:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbXHNCFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 22:03:15 -0400
-Received: from emerald.lightlink.com ([205.232.34.14]:26734 "EHLO
-	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbXHNCDO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 22:03:14 -0400
-Date: Mon, 13 Aug 2007 21:59:45 -0400
-From: "Mark M. Hoffman" <mhoffman@lightlink.com>
-To: joe@perches.com
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [210/2many] MAINTAINERS - HARDWARE MONITORING
-Message-ID: <20070814015945.GC7748@jupiter.solarsys.private>
-References: <46bffa04.JW3S0ykNGAQACMv1%joe@perches.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 13 Aug 2007 22:05:13 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:56866 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758226AbXHNCFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 22:05:11 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: ignoring unimplemented functions that are old and crusty on shiny new ports
+Date: Mon, 13 Aug 2007 22:05:20 -0400
+User-Agent: KMail/1.9.7
+Cc: vapier.adi@gmail.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46bffa04.JW3S0ykNGAQACMv1%joe@perches.com>
-User-Agent: Mutt/1.4.2.3i
+Message-Id: <200708132205.20454.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe:
+would it be possible to get the class of "old and crusty" functions
+permanently ignored ?  i'm thinking of course of "uselib" and "sysfs" ...
+Blackfin does not implement either of these and i think that's a good thing
 
-* joe@perches.com <joe@perches.com> [2007-08-12 23:28:20 -0700]:
-> Add file pattern to MAINTAINER entry
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index e35e29c..f422277 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2015,6 +2015,7 @@ L:	lm-sensors@lm-sensors.org
->  W:	http://www.lm-sensors.org/
->  T:	git lm-sensors.org:/kernel/mhoffman/hwmon-2.6.git
->  S:	Maintained
-> +F:	drivers/hwmon/
->  
->  HARDWARE RANDOM NUMBER GENERATOR CORE
->  P:	Michael Buesch
-
-I guess you know by now not to ever do that again.
-
-If you collect the hwmon stuff into one (1) patch, I'll take it.
-
-Now you'll excuse me while I drive a nail through my delete key.
-
--- 
-Mark M. Hoffman
-mhoffman@lightlink.com
-
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+diff --git a/scripts/checksyscalls.sh b/scripts/checksyscalls.sh
+index 0dcc01c..7f1a830 100755
+--- a/scripts/checksyscalls.sh
++++ b/scripts/checksyscalls.sh
+@@ -104,6 +104,10 @@ cat << EOF
+ #define __IGNORE_sync_file_range
+ #endif
+ 
++/* Old optional stuff no one actually uses */
++#define __IGNORE_sysfs
++#define __IGNORE_uselib
++
+ /* Unmerged syscalls for AFS, STREAMS, etc. */
+ #define __IGNORE_afs_syscall
+ #define __IGNORE_getpmsg
