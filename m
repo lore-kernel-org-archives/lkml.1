@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935551AbXHNVwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbXHNVw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935551AbXHNVwZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 17:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762184AbXHNV2j
+	id S1754643AbXHNVw6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 17:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbXHNV3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:28:39 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35381 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762005AbXHNV2i (ORCPT
+	Tue, 14 Aug 2007 17:29:06 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51070 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760625AbXHNV3E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:28:38 -0400
-Date: Tue, 14 Aug 2007 14:28:34 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Serge E. Hallyn" <serge@hallyn.com>
-cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, bob.picco@hp.com,
-       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
-       akpm@linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       ckrm-tech <ckrm-tech@lists.sourceforge.net>
-Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
-In-Reply-To: <20070814204951.GA2065@vino.hallyn.com>
-Message-ID: <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
-References: <20070812152126.GA26239@linux.vnet.ibm.com>
- <20070813201215.GA16908@vino.hallyn.com> <1187103831.6281.24.camel@localhost>
- <20070814180339.GA32553@vino.hallyn.com> <1187115224.6281.40.camel@localhost>
- <20070814192306.GB32553@vino.hallyn.com> <20070814204951.GA2065@vino.hallyn.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 14 Aug 2007 17:29:04 -0400
+Date: Tue, 14 Aug 2007 23:28:58 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: William Cattey <wdc@MIT.EDU>
+Cc: Andi Kleen <andi@firstfloor.org>, cra@WPI.EDU,
+       linux-kernel@vger.kernel.org
+Subject: Re: vm86.c audit_syscall_exit() call trashes registers
+Message-ID: <20070814212858.GB23308@one.firstfloor.org>
+References: <20070814183119.GC17694@angus.ind.WPI.EDU> <p73r6m5n90l.fsf@bingen.suse.de> <78642229-39DD-4956-9385-5A3F960BFEEF@mit.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <78642229-39DD-4956-9385-5A3F960BFEEF@mit.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Aug 2007, Serge E. Hallyn wrote:
+On Tue, Aug 14, 2007 at 04:52:54PM -0400, William Cattey wrote:
+> The corruption originally looked like a race condition.
+> 
+> Sometimes the EDID buffer would be all zeros.
+> Sometimes it would contain partial data, and then the rest of the  
+> buffer filled with zeros.
+> The amount of data transferred into the buffer before going to all  
+> zeros is non-deterministic.
+> 
+> When we put a known value in each byte of the buffer before making  
+> the vm86 call, the known data would always be overwritten either with  
+> EDID data or zeros.
 
-> CONFIG_NODES_SHIFT was unset, so MAX_NUMNODES=1, so
-> node_state() and node_set_state() are dummies.
+Hmm, that might be consistent with something going wrong with sleeping.
+Was the system under high load? Perhaps something else can thrash
+some real mode state when you sleep. On the other hand vm86 in user
+mode can schedule anyways, so it might have already happened.
 
-Ok then you did not have a NUMA system configured. So its okay for the 
-dummies to ignore the stuff. CONFIG_NODES_SHIFT is a constant and does not 
-change. The first bit is always set.
+But I think the mutex was actually added post 2.6.16 so if you saw
+it in 2.6.16 already it might have been something else.
 
+Also when audit is not enabled (did you have it enabled?) the audit
+function doesn't do very much?
+
+If you can reliably reproduce it one way might be to comment
+out more and more of the audit code until you find who causes
+the corruption (that might cause some corrupted audit data,
+but that should be fine for testing) 
+
+-Andi
