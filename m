@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751974AbXHNWNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761241AbXHNWNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751974AbXHNWNF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933554AbXHNVvV
+	id S1761241AbXHNWNm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935462AbXHNVvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:51:21 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:40196 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753440AbXHNVvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:51:12 -0400
-Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, bob.picco@hp.com,
-       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
-       akpm@linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       ckrm-tech <ckrm-tech@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
-References: <20070812152126.GA26239@linux.vnet.ibm.com>
-	 <20070813201215.GA16908@vino.hallyn.com>
-	 <1187103831.6281.24.camel@localhost>
-	 <20070814180339.GA32553@vino.hallyn.com>
-	 <1187115224.6281.40.camel@localhost>
-	 <20070814192306.GB32553@vino.hallyn.com>
-	 <20070814204951.GA2065@vino.hallyn.com>
-	 <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 14 Aug 2007 17:41:25 -0400
-Message-Id: <1187127685.6281.139.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Tue, 14 Aug 2007 17:51:48 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:17737 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbXHNVvp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 17:51:45 -0400
+Message-ID: <246a89290708141451n742a0f0bv2e95114319252050@mail.gmail.com>
+Date: Tue, 14 Aug 2007 14:51:38 -0700
+From: "Nathan Laredo" <laredo@gnu.org>
+To: "Joe Perches" <joe@perches.com>
+Subject: Re: [PATCH] [463/2many] MAINTAINERS - STRADIS MPEG-2 DECODER DRIVER
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <1187065967.32555.19.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46bffc01.7c95Dz5xUUkjysHI%joe@perches.com>
+	 <246a89290708132104h4145349ah4a4a56ef852a1bb3@mail.gmail.com>
+	 <1187065967.32555.19.camel@localhost>
+X-Google-Sender-Auth: 72d620e24dc24d42
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-14 at 14:28 -0700, Christoph Lameter wrote:
-> On Tue, 14 Aug 2007, Serge E. Hallyn wrote:
-> 
-> > CONFIG_NODES_SHIFT was unset, so MAX_NUMNODES=1, so
-> > node_state() and node_set_state() are dummies.
-> 
-> Ok then you did not have a NUMA system configured. So its okay for the 
-> dummies to ignore the stuff. CONFIG_NODES_SHIFT is a constant and does not 
-> change. The first bit is always set.
+No, not all of them.  Just the ones that show my name at the top of
+the source file.
 
-The first bit [node 0] is only set for the N_ONLINE [and N_POSSIBLE]
-mask.  We could add the static init for the other masks, but since
-non-numa platforms are going through the __build_all_zonelists, they
-might as well set the MEMORY bits explicitly.  Or, maybe you'll
-disagree ;-).
+cs8240.h, ibmmpeg2.h, saa7121.h, saa7146*.h, stradis.c
 
-Lee
+stradis.c includes all of the above .h files, so they weren't listed separately.
 
+Additionally, it should probably be noted that I still use a 2.2
+kernel with this device and haven't tested the 3rd party ports to 2.6
+yet but I've never actually gotten a bug report yet from someone
+claiming it isn't working (but I'm pretty confident it will crash).
 
+Thanks,
+- Nathan Laredo
+laredo@gnu.org
+
+On 8/13/07, Joe Perches <joe@perches.com> wrote:
+> On Mon, 2007-08-13 at 21:04 -0700, Nathan Laredo wrote:
+> > Well, technically speaking, there are multiple files to the stradis
+> > driver, not just stradis.c.
+>
+> These files seem to be shared between drivers.
+>
+> the Kconfig file shows:
+>
+> obj-$(CONFIG_VIDEO_STRADIS) += stradis.o
+>
+> as the only STRADIS file.
+>
+> Are you the maintainer for other entries?
+> Should I add these entries?
+>
+> drivers/media/video/cs8420.h
+> drivers/media/video/ibmmpeg2.h
+> drivers/media/video/saa5249.c
+> drivers/media/video/saa7110.c
+> drivers/media/video/saa7111.c
+> drivers/media/video/saa7121.h
+> drivers/media/video/saa7146*.h
+> drivers/media/video/saa7185.h
+> drivers/media/video/saa7196.h
+> drivers/media/video/videodev.c
+>
+>
+>
+>
