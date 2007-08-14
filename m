@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765977AbXHNR1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762813AbXHNR2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765977AbXHNR1s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 13:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759604AbXHNR1g
+	id S1762813AbXHNR2O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 13:28:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759604AbXHNR1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 13:27:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43137 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758162AbXHNR1f convert rfc822-to-8bit (ORCPT
+	Tue, 14 Aug 2007 13:27:55 -0400
+Received: from shakespeare.ccsl.carleton.ca ([134.117.225.11]:32908 "EHLO
+	shakespeare.ccsl.carleton.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1766004AbXHNR1w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 13:27:35 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>, Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka Software Suspend, aka swsusp):
-Date: Tue, 14 Aug 2007 19:37:05 +0200
-User-Agent: KMail/1.9.5
-Cc: torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com> <200708132338.25925.rjw@sisk.pl> <20070814070528.GA2903@elf.ucw.cz>
-In-Reply-To: <20070814070528.GA2903@elf.ucw.cz>
+	Tue, 14 Aug 2007 13:27:52 -0400
+Message-ID: <46C1E5F5.9050702@ccsl.carleton.ca>
+Date: Tue, 14 Aug 2007 13:27:17 -0400
+From: Hajime Inoue <hinoue@ccsl.carleton.ca>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200708141937.06676.rjw@sisk.pl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: System call interposition/unprotecting the table
+References: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca> <20070814000956.7c8929dd@the-village.bc.nu>
+In-Reply-To: <20070814000956.7c8929dd@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 14 August 2007 09:05, Pavel Machek wrote:
-> Hi!
-> 
-> > > > + include/linux/suspend.h
-> > > > + include/linux/freezer.h
-> > > > + include/linux/pm.h
-> > > > + include/asm-*/suspend.h
-> > > > 
-> > > > Hm, they are also relevant for suspend to RAM, so perhaps one common
-> > > > list of files for suspend to RAM and hibernation would be better?
-> > > 
-> > > Maybe just collapse the 2 maintainers blocks into one?
-> 
-> No, please don't.
+Thanks for your comments.
 
-So, I think the F: entries should be the following:
+Alan Cox wrote:
+ > This is to protect it from being changed by an attacker or someone trying
+ > to do strange and bogus things to the kernel.
+ >
+ > What are you actually trying to achieve ?
 
-(1) hibernation
-F:      Documentation/power/
-F:      arch/i386/power/
-F:      arch/x86_64/kernel/suspend_asm.S
-F:      arch/x86_64/kernel/suspend.c
-F:      drivers/base/power/
-F:      kernel/power/
-F:      include/linux/suspend.h
-F:      include/linux/freezer.h
-F:      include/linux/pm.h
-F:      include/asm-*/suspend.h
+I am trying to emulate an attacker.  I'm helping develop a system that
+that detects stealthy malware.  To that end, we need to test the system in
+an environment we completely understand.
 
-(2) suspend
-F:      Documentation/power/
-F:      arch/i386/kernel/acpi/
-F:      arch/x86_64/kernel/acpi/
-F:      arch/x86_64/kernel/suspend.c
-F:      drivers/base/power/
-F:      kernel/power/
-F:      include/linux/suspend.h
-F:      include/linux/freezer.h
-F:      include/linux/pm.h
-F:      include/asm-*/suspend.h
+Just protecting the table does not stop rootkits.  A highly referenced
+phrack article explains how to bypass the table.  Enyelkm and mood-nt
+are both compatible with a protected system call table (I tested them
+against the latest Fedora stock kernel).  I'm trying to simulate a
+rootkit less capable then those publicly available.
 
-> > > HIBERNATION (aka Software Suspend, aka swsusp) and SUSPEND TO RAM:
-> > > P:	Pavel Machek
-> > > M:	pavel@suse.cz
-> > > P:	Rafael J. Wysocki
-> > > M:	rjw@sisk.pl
-> > > L:	linux-pm@lists.linux-foundation.org
-> > > S:	Supported
-> > 
-> > Then I think it should be "Maintained".
-> 
-> No, supported is still right :-).
+Why isn't the rest of the kernel code protected along with the table?
+Your response leads to the inverse of my question.  How would I protect
+the system call table (and other areas) in systems, without recompiling,
+that do not protect them?
 
-OK
+Finally, system call interposition is used in several interesting
+systems, most notably, systrace.  It's unclear to me how one would
+implement something like systrace without modifying the table or doing
+other rootkit-like antics.
 
-Greetings,
-Rafael
+If anyone has problems explaining this publicly, please contact me
+privately.  If anyone doubts my motivation, read my home page
+(http://www.ccsl.carleton.ca/~hinoue/), or google my name.
+
+-Hajime Inoue
+
