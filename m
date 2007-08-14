@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764363AbXHNXWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763298AbXHNXZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764363AbXHNXWZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 19:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbXHNXWN
+	id S1763298AbXHNXZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 19:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755392AbXHNXZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 19:22:13 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:29167 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754232AbXHNXWL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 19:22:11 -0400
-Message-ID: <46C2391D.1060608@chelsio.com>
-Date: Tue, 14 Aug 2007 16:22:05 -0700
-From: Divy Le Ray <divy@chelsio.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Tue, 14 Aug 2007 19:25:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48720 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754828AbXHNXZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 19:25:07 -0400
+Date: Tue, 14 Aug 2007 19:24:30 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Joe Perches <joe@perches.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka Software
+	Suspend, aka swsusp):
+Message-ID: <20070814232430.GA9325@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Joe Perches <joe@perches.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+	linux-kernel@vger.kernel.org
+References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com> <200708132338.25925.rjw@sisk.pl> <20070814070528.GA2903@elf.ucw.cz> <200708141937.06676.rjw@sisk.pl> <1187114231.32555.105.camel@localhost> <alpine.LFD.0.999.0708141112110.30176@woody.linux-foundation.org> <20070814112237.a5f1e1a4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Steve Wise <swise@opengridcomputing.com>
-Subject: Re: [PATCH 2/13] cxgb3 - Update rx coalescing length
-References: <20070811062939.8040.31490.stgit@speedy5> <46C14096.3020905@garzik.org>
-In-Reply-To: <46C14096.3020905@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Aug 2007 23:20:48.0685 (UTC) FILETIME=[BF8D4DD0:01C7DEC9]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070814112237.a5f1e1a4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
->
-> Divy Le Ray wrote:
-> > From: Divy Le Ray <divy@chelsio.com>
-> >
-> > Set max Rx coalescing length to 12288
-> >
-> > Signed-off-by: Divy Le Ray <divy@chelsio.com>
-> > ---
-> >
-> >  drivers/net/cxgb3/common.h |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/drivers/net/cxgb3/common.h b/drivers/net/cxgb3/common.h
-> > index c46c249..55922ed 100644
-> > --- a/drivers/net/cxgb3/common.h
-> > +++ b/drivers/net/cxgb3/common.h
-> > @@ -104,7 +104,7 @@ enum {
-> >       PROTO_SRAM_LINES = 128, /* size of TP sram */
-> >  };
-> > 
-> > -#define MAX_RX_COALESCING_LEN 16224U
-> > +#define MAX_RX_COALESCING_LEN 12288U
->
-> neither the patch nor description explains -why-
->
+On Tue, Aug 14, 2007 at 11:22:37AM -0700, Andrew Morton wrote:
+ > On Tue, 14 Aug 2007 11:15:41 -0700 (PDT)
+ > Linus Torvalds <torvalds@linux-foundation.org> wrote:
+ > 
+ > > In other words, it would be much better to just have per-file markers, 
+ > > along with some per-subdirectory stuff or similar.
+ > 
+ > And a `make maintainers' target to pull it all together..
+ > 
+ > (perhaps we could add a
+ > 
+ > 	maintainer <keyword>
+ > 
+ > record to Kconfig, then `make maintainers' goes and looks up <keyword>
+ > somewhere and does something with it)
 
-We're seeing back pressure from PCIe with large bursts, this patch 
-allows to cut down on the burst size.
+Not everything that's in MAINTAINERS has a Kconfig entry though,
+so it really needs to live in the .c/.h files.
 
-Divy
+	Dave
 
+
+-- 
+http://www.codemonkey.org.uk
