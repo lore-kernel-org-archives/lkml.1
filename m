@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbXHNUkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934715AbXHNUmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760642AbXHNUkP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 16:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759800AbXHNUjc
+	id S934715AbXHNUmg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 16:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760344AbXHNUmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 16:39:32 -0400
-Received: from styx.suse.cz ([82.119.242.94]:55229 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757334AbXHNUja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 16:39:30 -0400
-Date: Tue, 14 Aug 2007 22:41:06 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jakub Jelinek <jakub@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ulrich Kunitz <kune@deine-taler.de>, Bret Towe <magnade@gmail.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] [RESEND] PIE executable randomization
-In-Reply-To: <20070814200647.GN2063@devserv.devel.redhat.com>
-Message-ID: <Pine.LNX.4.64.0708142224540.29843@jikos.suse.cz>
-References: <Pine.LNX.4.64.0708081552010.11054@jikos.suse.cz>
- <20070814200647.GN2063@devserv.devel.redhat.com>
+	Tue, 14 Aug 2007 16:42:25 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45246 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760059AbXHNUmY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 16:42:24 -0400
+Date: Tue, 14 Aug 2007 13:42:23 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 4/9] Atomic reclaim: Save irq flags in vmscan.c
+In-Reply-To: <20070814203329.GA22202@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0708141341120.31513@schroedinger.engr.sgi.com>
+References: <20070814153021.446917377@sgi.com> <20070814153501.766137366@sgi.com>
+ <p73vebhnauo.fsf@bingen.suse.de> <Pine.LNX.4.64.0708141209270.29498@schroedinger.engr.sgi.com>
+ <20070814203329.GA22202@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(added Arjan to CC, as he has been working on the kernel part of the 
-randomization previously)
+On Tue, 14 Aug 2007, Andi Kleen wrote:
 
-On Tue, 14 Aug 2007, Jakub Jelinek wrote:
+> > There are other lock interactions that may cause problems. If we do not 
+> > switch to the saving of irq flags then all involved spinlocks must become 
+> > trylocks because the interrupt could have happened while the spinlock is 
+> > held. So interrupts must be disabled on locks acquired during an 
+> > interrupt.
+> 
+> I was thinking of a per cpu flag that is set before and unset after
+> taking the lock in process context. If the flag is set the interrupt
+> will never try to take the spinlock and return NULL instead. 
+> That should be equivalent to cli/sti for this special case.
 
-> If I'm reading the above hunk correctly, this means we will randomize 
-> all PIEs and even all dynamic linkers invoked as executables on i?86 and 
-> x86_64, and on the rest of arches we won't randomize at all, instead 
-> load ET_DYN objects at ELF_ET_DYN_BASE address. But I don't see anything 
-> i?86/x86_64 specific on this.
+Hmmmm... The spinlock is its own flag. If the lock is taken then the flag 
+is set. So if we check all relevant spinlocks before going into reclaim 
+then we could return NULL.
 
-Hi Jakub,
-
-actually, it is currently arch-specific, and that's because of different 
-memory layouts on different archs.
-
-It turned out recently that PIE-compiled binaries on x86_64, that perform 
-larger amount of brk-allocations (for example bash) will not work (but 
-they will work on ?86). This is because currently on ?86 the memory layout 
-is as follows:
-
-[TEXT][HEAP]...[MMAP area]..[STACK]..[VDSO]
-
-for PIE-complied binaries, the situation is as follows (with the patch):
-
-[MMAP area]...[TEXT][HEAP]..[STACK]..[VDSO]
-
-which is perfectly fine (except for the non-randomized brk). However, on 
-x86_64, the memory layout is different:
-
-[TEXT][HEAP][MMAP area]..[STACK]..[VDSO]
-
-which directly shows why brk() doesn't work well here -- it very soon hits 
-another mmaped VMA.
-
-I am currently thinking about the best way to address this issue -- I am 
-thinking about randomizing brk properly (which we want to do anyway), so 
-that it is placed in the area that doesn't overlap with mmap range.
-
-> What would make much more sense to me would be conditionalizing on
-> whether we are loading a dynamic linker (in which case loading it
-> at ELF_ET_DYN_BASE is desirable or not (PIEs, ...; and for PIEs we
-> want to randomize on all architectures).
-
-Yes, I agree -- when we sort out the memory layout problems.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
