@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757047AbXHNKAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbXHNKAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757047AbXHNKAT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 06:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbXHNJ76
+	id S1757606AbXHNKAt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 06:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbXHNKAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 05:59:58 -0400
-Received: from ns.burlesk.fr ([82.224.75.159]:33331 "EHLO tux.burlesk.fr"
+	Tue, 14 Aug 2007 06:00:03 -0400
+Received: from ns.burlesk.fr ([82.224.75.159]:49018 "EHLO tux.burlesk.fr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753513AbXHNJ7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753845AbXHNJ7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 14 Aug 2007 05:59:55 -0400
-X-Greylist: delayed 492 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Aug 2007 05:59:53 EDT
 MIME-Version: 1.0
-Date: Tue, 14 Aug 2007 11:58:33 +0200
+Date: Tue, 14 Aug 2007 11:58:40 +0200
 From: bizu <bizu@burlesk.fr>
 To: linux-kernel@vger.kernel.org
 Subject: linux-kernel@vger.kernel.org
-Message-ID: <27551bba9696ad70fe3e7843781542e3@127.0.0.1>
+Message-ID: <f32f0c9c0d35b37cc0291951fed2de15@127.0.0.1>
 User-Agent: RoundCube Webmail/0.1b
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
