@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759583AbXHNORR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761380AbXHNOSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759583AbXHNORR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 10:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbXHNORG
+	id S1761380AbXHNOSX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 10:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755486AbXHNOSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 10:17:06 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:49508 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754378AbXHNORC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 10:17:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=f1tKEZz+p25F07t6s0MiL54r788O+Lm4jTyMaM1qcCwwUNb4S7I0LTzo6AwQSclKDrX00lkiGauc2z6XGaWfG654+/tfBPNKfR47mzyWR/4C9e+hAHmm+yG8DwBfExeBri8FTPUr1LeYMZrYnKyto95VJo+4mpKMilQWQ5RKo6Y=
-Message-ID: <3ae72650708140717y73697cd6ua126440e44a7ad20@mail.gmail.com>
-Date: Tue, 14 Aug 2007 16:17:01 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH] Firmware class name collision
-Cc: "Markus Rechberger" <markus.rechberger@amd.com>,
-       "Marcel Holtmann" <marcel@holtmann.org>, linux-kernel@vger.kernel.org,
-       "Greg KH" <greg@kroah.com>
-In-Reply-To: <20070814153340.4f844f5a@hyperion.delvare>
+	Tue, 14 Aug 2007 10:18:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48232 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754378AbXHNOSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 10:18:10 -0400
+To: Ian Kent <raven@themaw.net>
+Cc: Andrew Morton <akpm@osdl.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [autofs] [PATCH] autofs4: deadlock during create
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+References: <1187087280.4963.18.camel@raven.themaw.net>
+From: Jeff Moyer <jmoyer@redhat.com>
+Date: Tue, 14 Aug 2007 10:17:45 -0400
+In-Reply-To: <1187087280.4963.18.camel@raven.themaw.net> (Ian Kent's message of "Tue\, 14 Aug 2007 18\:28\:00 +0800")
+Message-ID: <x49mywuci9i.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46C05896.4050509@amd.com> <1187025047.6698.219.camel@violet>
-	 <46C092EB.1070501@amd.com> <20070814153340.4f844f5a@hyperion.delvare>
-X-Google-Sender-Auth: 40bcc0e965ca6738
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/14/07, Jean Delvare <khali@linux-fr.org> wrote:
-> On Mon, 13 Aug 2007 19:20:43 +0200, Markus Rechberger wrote:
-> > Marcel Holtmann wrote:
-> > > I would prefer if we use "firmware-%s" since the "fw" might collide with
-> > > the new Firewire stack. Please change that and I agree.
-> >
-> > firmware-%s sounds more informative and cannot be mistaken with firewire
-> > yes.
-> >
-> > Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
-> >
-> > http://mcentral.de/~mrec/patches/firmware_class_name_collision_2.diff
-> >
-> > diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-> > index b24efd4..bfc54a1 100644
-> > --- a/drivers/base/firmware_class.c
-> > +++ b/drivers/base/firmware_class.c
-> > @@ -297,8 +297,7 @@ firmware_class_timeout(u_long data)
-> >
-> >  static inline void fw_setup_device_id(struct device *f_dev, struct
-> > device *dev)
-> >  {
-> > -       /* XXX warning we should watch out for name collisions */
-> > -       strlcpy(f_dev->bus_id, dev->bus_id, BUS_ID_SIZE);
-> > +       snprintf(f_dev->bus_id, BUS_ID_SIZE, "firmware-%s", dev->bus_id);
-> >  }
+Ian Kent <raven@themaw.net> writes:
+
+> Hi,
 >
-> Please keep in mind that BUS_ID_SIZE is "only" 20. "firmware-" takes 9
-> characters, add one for the trailing zero and this only leaves room for
-> 10 characters for the original bus id. While this will be enough for
-> the i2c case, I suspect that some other bus IDs won't fit.
+> Due to inconsistent locking in the VFS between calls to lookup and
+> revalidate deadlock can occur in the automounter.
+>
+> The inconsistency is that the directory inode mutex is held for both
+> lookup and revalidate calls when called via lookup_hash whereas it is
+> held only for lookup during a path walk. Consequently, if the mutex
+> is held during a call to revalidate autofs4 can't release the mutex
+> to callback the daemon as it can't know whether it owns the mutex.
+>
+> This situation happens when a process tries to create a directory
+> within an automount and a second process also tries to create the
+> same directory between the lookup and the mkdir. Since the first
+> process has dropped the mutex for the daemon callback, the second
+> process takes it during revalidate leading to deadlock between the
+> autofs daemon and the second process when the daemon tries to create
+> the mount point directory.
+>
+> After spending quite a bit of time trying to resolve this on more than
+> one occassion, using rather complex and ulgy approaches, it turns out
+> that just delaying the hashing of the dentry until the create operation
+> work fine.
+>
+> Signed-off-by: Ian Kent <raven@themaw.net>
 
-Hmm, is there any case where .bus_id is different from .kobj.k_name?
-We always do:
-  kobject_set_name(&dev->kobj, "%s", dev->bus_id);
+Acked-by: Jeff Moyer <jmoyer@redhat.com>
 
-Which looks kind of weird, as the kobject (which doesn't have that
-name size limitation) is always embedded in the same struct anyway.
-
-Thanks,
-Kay
+-Jeff
