@@ -1,103 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941739AbXHNFex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938444AbXHNFhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941739AbXHNFex (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 01:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766004AbXHNFel
+	id S938444AbXHNFhE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 01:37:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934359AbXHNFgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 01:34:41 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:23288 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S935392AbXHNFej (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 01:34:39 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=48y2vrMfhPw5YsoolLz5IARExDpwAFZSpG6+d6d4hfdSCvxqWjxbNG+8NWc0Iu08F6htebHoXXtLEjkDrrZRHOkksAwyn8j2eFr0+ZZPluxJl1L96ZDSYGoYjhtVXuYYxIO4UToe4v4BUusQPN/spVJdtZfQSnnbjjDSEU783T0=  ;
-X-YMail-OSG: mS2CdTgVM1lxNjIpBKA4X1w5JLV.QWvag8YezsQlBwG5mub1KwXnTRNWKEl.3j2Fe4IHxgcUHw--
-Message-ID: <46C13EE1.1000707@yahoo.com.au>
-Date: Tue, 14 Aug 2007 15:34:25 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Herbert Xu <herbert@gondor.apana.org.au>, csnook@redhat.com,
-       dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com
-Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
-References: <20070811042943.GA13410@linux.vnet.ibm.com> <E1IKSHQ-0007hg-00@gondolin.me.apana.org.au> <20070813060302.GF13410@linux.vnet.ibm.com>
-In-Reply-To: <20070813060302.GF13410@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 14 Aug 2007 01:36:37 -0400
+Received: from www.osadl.org ([213.239.205.134]:38065 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S936507AbXHNFgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 01:36:35 -0400
+Subject: Re: [PATCH] hres_timers_resume must block interrupts
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Joe Korty <joe.korty@ccur.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070813232626.GA24938@tsunami.ccur.com>
+References: <20070813232626.GA24938@tsunami.ccur.com>
+Content-Type: text/plain
+Date: Tue, 14 Aug 2007 07:36:30 +0200
+Message-Id: <1187069790.12828.131.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Mon, Aug 13, 2007 at 01:15:52PM +0800, Herbert Xu wrote:
+On Mon, 2007-08-13 at 19:26 -0400, Joe Korty wrote:
+> Retrigger_next_event() must be called with interrupts disabled.
 > 
->>Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
->>
->>>On Sat, Aug 11, 2007 at 08:54:46AM +0800, Herbert Xu wrote:
->>>
->>>>Chris Snook <csnook@redhat.com> wrote:
->>>>
->>>>>cpu_relax() contains a barrier, so it should do the right thing.  For 
->>>>>non-smp architectures, I'm concerned about interacting with interrupt 
->>>>>handlers.  Some drivers do use atomic_* operations.
->>>>
->>>>What problems with interrupt handlers? Access to int/long must
->>>>be atomic or we're in big trouble anyway.
->>>
->>>Reordering due to compiler optimizations.  CPU reordering does not
->>>affect interactions with interrupt handlers on a given CPU, but
->>>reordering due to compiler code-movement optimization does.  Since
->>>volatile can in some cases suppress code-movement optimizations,
->>>it can affect interactions with interrupt handlers.
->>
->>If such reordering matters, then you should use one of the
->>*mb macros or barrier() rather than relying on possibly
->>hidden volatile cast.
+> All internal (to hrtimer.c) uses of retrigger_next_event() are correct.
+> But the version exported to other files, hres_timers_resume(), does not
+> do the IRQ blocking, nor does the (single) external caller of it.
 > 
+> Rather than require that users of hres_timers_resume() do the IRQ blocking,
+> this patch makes the blocking part of the hres_timers_resume() functionality.
+
+Ack.
+
+> (Also remove the meaningless WARN_ON_ONCE() call in hres_timers_resume)
+
+It's not that meaningless. It catched a resume order problem some time
+ago.
+
+	tglx
+
+> Signed-off-by: Joe Korty (joe.korty@ccur.com)
 > 
-> If communicating among CPUs, sure.  However, when communicating between
-> mainline and interrupt/NMI handlers on the same CPU, the barrier() and
-> most expecially the *mb() macros are gross overkill.  So there really
-> truly is a place for volatile -- not a large place, to be sure, but a
-> place nonetheless.
+> Index: 2.6.23-rc3/kernel/hrtimer.c
+> ===================================================================
+> --- 2.6.23-rc3.orig/kernel/hrtimer.c	2007-08-13 18:30:09.000000000 -0400
+> +++ 2.6.23-rc3/kernel/hrtimer.c	2007-08-13 18:38:48.000000000 -0400
+> @@ -463,10 +463,11 @@
+>   */
+>  void hres_timers_resume(void)
+>  {
+> -	WARN_ON_ONCE(num_online_cpus() > 1);
+> +	unsigned long flags;
+>  
+> -	/* Retrigger the CPU local events: */
+> +	local_irq_save(flags);
+>  	retrigger_next_event(NULL);
+> +	local_irq_restore(flags);
+>  }
+>  
+>  /*
+> 
 
-I really would like all volatile users to go away and be replaced
-by explicit barriers. It makes things nicer and more explicit... for
-atomic_t type there probably aren't many optimisations that can be
-made which volatile would disallow (in actual kernel code), but for
-others (eg. bitops, maybe atomic ops in UP kernels), there would be.
-
-Maybe it is the safe way to go, but it does obscure cases where there
-is a real need for barriers.
-
-Many atomic operations are allowed to be reordered between CPUs, so
-I don't have a good idea for the rationale to order them within the
-CPU (also loads and stores to long and ptr types are not ordered like
-this, although we do consider those to be atomic operations too).
-
-barrier() in a way is like enforcing sequential memory ordering
-between process and interrupt context, wheras volatile is just
-enforcing coherency of a single memory location (and as such is
-cheaper).
-
-What do you think of this crazy idea?
-
-/* Enforce a compiler barrier for only operations to location X.
-  * Call multiple times to provide an ordering between multiple
-  * memory locations. Other memory operations can be assumed by
-  * the compiler to remain unchanged and may be reordered
-  */
-#define order(x) asm volatile("" : "+m" (x))
-
--- 
-SUSE Labs, Novell Inc.
