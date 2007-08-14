@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbXHNE6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937995AbXHNFCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933080AbXHNE6l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 00:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761736AbXHNE6S
+	id S937995AbXHNFCj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 01:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbXHNFCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 00:58:18 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:25836 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755502AbXHNE6P (ORCPT
+	Tue, 14 Aug 2007 01:02:30 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52344 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755502AbXHNFC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 00:58:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iuLSGSFs5hgYbcZ8NThOdEAG4TK3ELsIsKef31o/l7LOevaQ7p7+7bVasxZXrMes+7IgN2aB8g4kRLA5R8w8c2TFsS0UcNzb65AviCB0bJUFgZHf9/QQ1UwlniaYNjwvHNgfzu7L/WFPS9wp/YEDIsclAN3Ip1QYQW/Uorqqlhg=
-Message-ID: <8bd0f97a0708132158r764ce172g2c8302fa6e72e8d3@mail.gmail.com>
-Date: Tue, 14 Aug 2007 00:58:14 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: bryan.wu@analog.com
-Subject: Re: Bad addresses in MAINTAINERS
-Cc: "Robin Getz" <rgetz@blackfin.uclinux.org>, "Joe Perches" <joe@perches.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1187064764.21177.20.camel@roc-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 14 Aug 2007 01:02:29 -0400
+Date: Mon, 13 Aug 2007 22:01:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: WU Fengguang <wfg@mail.ustc.edu.cn>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@redhat.com>
+Subject: Re: [PATCH] fix NULL pointer dereference in __vm_enough_memory()
+Message-Id: <20070813220142.99e46091.akpm@linux-foundation.org>
+In-Reply-To: <20070813140106.23b93ff5@the-village.bc.nu>
+References: <20070812141905.4ee423b9@the-village.bc.nu>
+	<386927758.14086@ustc.edu.cn>
+	<20070812161744.200d4252@the-village.bc.nu>
+	<386990734.21206@ustc.edu.cn>
+	<20070813140106.23b93ff5@the-village.bc.nu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1187032024.10249.266.camel@localhost>
-	 <1187032769.10249.270.camel@localhost>
-	 <8bd0f97a0708131256r447890c8q4848b333cf23d4f0@mail.gmail.com>
-	 <200708132354.22273.rgetz@blackfin.uclinux.org>
-	 <1187064764.21177.20.camel@roc-desktop>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/14/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> On Mon, 2007-08-13 at 23:54 -0400, Robin Getz wrote:
-> > On Mon 13 Aug 2007 15:56, Mike Frysinger pondered:
-> > > On 8/13/07, Joe Perches <joe@perches.com> wrote:
-> > > > On Mon, 2007-08-13 at 15:10 -0400, Mike Frysinger wrote:
-> > > > > On 8/13/07, Joe Perches <joe@perches.com> wrote:
-> > > > > > But if anyone has a new email address and still wants
-> > > > > > to be in the maintainers file, please send.
-> > > > > >
-> > > > > > BLACKFIN ARCHITECTURE
-> > > > > > P:      Aubrey Li
-> > > > > > M:      aubrey.li@analog.com
-> > > > > > P:      Jerry Zeng
-> > > > > > M:      jerry.zeng@analog.com
-> > > > >
-> > > > > we know these guys needed to be removed as they've recently left ADI,
-> > > > > we just havent pushed to mainline
-> > > >
-> > > > Maybe you can have a "blackfin_arch@analog.com" list as maintainers?
-> > >
-> > > we have a mailing list already ... could just drop the general list of
-> > > people for Blackfin and keep specific e-mails for specific drivers
-> >
-> > There is a public mailing list - but it is closed - must be subscribed to post
-> > (cuts down on spam), and I thought the requirement was to have these be open
-> > lists?
->
-> Yes, open a public mailing list is a good choice to replace the whole
-> team member list.
+On Mon, 13 Aug 2007 14:01:06 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-something@analog.com would not be an open public mailing list, it'd be
-a private alias that only ADI people can subscribe to.  what we have
-now (uclinux-dist-devel@blackfin.uclinux.org) is best i think:
-[quickly] moderated for non-subscribers, open subscription, no spam.
--mike
+> On Mon, 13 Aug 2007 15:38:53 +0800
+> WU Fengguang <wfg@mail.ustc.edu.cn> wrote:
+> 
+> > On Sun, Aug 12, 2007 at 04:17:44PM +0100, Alan Cox wrote:
+> > > Try this (it compiles but isnt tested). Its a weekend here, the sun is
+> > > shining, the beach is a short walk, and I have more interesting things to
+> > > do right now 8)
+> > 
+> > Have a nice day~~~ It works!
+> 
+> Ok please apply the patch then Andrew
+> 
+> ---
+> 
+> The new exec code inserts an accounted vma into an mm struct which is not
+> current->mm. The existing memory check code has a hard coded assumption
+> that this does not happen as does the security code.
+> 
+> As the correct mm is known we pass the mm to the security method and the
+> helper function. A new security test is added for the case where we need
+> to pass the mm and the existing one is modified to pass current->mm to
+> avoid the need to change large amounts of code.
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
+> 
+> 
+> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.23rc1-mm1/include/linux/mm.h linux-2.6.23rc1-mm1/include/linux/mm.h
+> --- linux.vanilla-2.6.23rc1-mm1/include/linux/mm.h	2007-07-26 15:02:58.000000000 +0100
+
+erp, we have major version skew between 2.6.23-rc1-mm1 and 2.6.23-rc3 here, sorry.
+
+Could I ask for a redone patch against mainline?
+
+Thanks.
