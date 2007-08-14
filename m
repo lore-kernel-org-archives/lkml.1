@@ -1,57 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765924AbXHNVkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbXHNVlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765924AbXHNVkR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 17:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbXHNVZT
+	id S1755209AbXHNVlV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 17:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757280AbXHNVZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:25:19 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:21965 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758009AbXHNVZO (ORCPT
+	Tue, 14 Aug 2007 17:25:37 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38467 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757086AbXHNVZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:25:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=df40dxyEsuQvY2pl+8vIvGsfg3y/FPUxIw3bPhAXsDCvkY3MJoJj/APjn/xiUHarz4LiP8AVQXMDGvgBJ0kHghgkpzuDy44ZrfJvWHErTbCF9a4dLbA/i5uKjDikTJufodLEPOcAxyJVZiAtXlWifC4vYJAH2TbDXU7+8vi9EwM=
-Message-ID: <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com>
-Date: Tue, 14 Aug 2007 23:25:04 +0200
-From: "Karl Meyer" <adhocrocker@gmail.com>
-To: "Francois Romieu" <romieu@fr.zoreil.com>
-Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
+	Tue, 14 Aug 2007 17:25:33 -0400
+Date: Tue, 14 Aug 2007 23:25:19 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: rmk@arm.linux.org.uk
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070814070901.GA14693@electric-eye.fr.zoreil.com>
+Subject: [2.6 patch] arm: "extern inline" -> "static inline"
+Message-ID: <20070814212519.GR18945@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com>
-	 <20070813165821.GA19356@electric-eye.fr.zoreil.com>
-	 <be1b757c0708131027v5c57822as2d9bd3190fd19b71@mail.gmail.com>
-	 <20070814070901.GA14693@electric-eye.fr.zoreil.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I did some additional testing, the results are:
-[0e4851502f846b13b29b7f88f1250c980d57e944] r8169: merge with version
-8.001.00 of Realtek's r8168 driver
-does not work, I after some traffic the transmit timeout occurs.
-[6dccd16b7c2703e8bbf8bca62b5cf248332afbe2] r8169: merge with version
-6.001.00 of Realtek's r8169 driver
-Seems to be the last version to work. I did some stress testing (much
-more than the level that was enough to make
-[0e4851502f846b13b29b7f88f1250c980d57e944]  break) and am currently
-using this version and no problems so far.
+"extern inline" will have different semantics with gcc 4.3.
 
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-2007/8/14, Francois Romieu <romieu@fr.zoreil.com>:
-> Karl Meyer <adhocrocker@gmail.com> :
-> [...]
-> > dmesg, interrupts and .config are attached. I will have a look at git bisect.
->
-> Can you reproduce the problem when nvidia binary-only stuff is not loaded
-> after boot ?
->
-> --
-> Ueimor
->
+---
+
+ arch/arm/nwfpe/ARM-gcc.h                |    2 +-
+ arch/arm/nwfpe/fpa11.inl                |    8 ++++----
+ include/asm-arm/arch-ixp23xx/platform.h |    6 +++---
+ 3 files changed, 8 insertions(+), 8 deletions(-)
+
+348e0e79b7ce03132287290b9598a16d3b6350cd 
+diff --git a/arch/arm/nwfpe/ARM-gcc.h b/arch/arm/nwfpe/ARM-gcc.h
+index e659847..436e54a 100644
+--- a/arch/arm/nwfpe/ARM-gcc.h
++++ b/arch/arm/nwfpe/ARM-gcc.h
+@@ -68,7 +68,7 @@ a compiler does not support explicit inlining, this macro should be defined
+ to be `static'.
+ -------------------------------------------------------------------------------
+ */
+-#define INLINE extern __inline__
++#define INLINE static inline
+ 
+ 
+ /* For use as a GCC soft-float library we need some special function names. */
+diff --git a/arch/arm/nwfpe/fpa11.inl b/arch/arm/nwfpe/fpa11.inl
+index 10c3caf..ab8d682 100644
+--- a/arch/arm/nwfpe/fpa11.inl
++++ b/arch/arm/nwfpe/fpa11.inl
+@@ -22,13 +22,13 @@
+ #include "fpa11.h"
+ 
+ /* Read and write floating point status register */
+-extern __inline__ unsigned int readFPSR(void)
++static inline unsigned int readFPSR(void)
+ {
+ 	FPA11 *fpa11 = GET_FPA11();
+ 	return (fpa11->fpsr);
+ }
+ 
+-extern __inline__ void writeFPSR(FPSR reg)
++static inline void writeFPSR(FPSR reg)
+ {
+ 	FPA11 *fpa11 = GET_FPA11();
+ 	/* the sysid byte in the status register is readonly */
+@@ -36,14 +36,14 @@ extern __inline__ void writeFPSR(FPSR reg)
+ }
+ 
+ /* Read and write floating point control register */
+-extern __inline__ FPCR readFPCR(void)
++static inline FPCR readFPCR(void)
+ {
+ 	FPA11 *fpa11 = GET_FPA11();
+ 	/* clear SB, AB and DA bits before returning FPCR */
+ 	return (fpa11->fpcr & ~MASK_RFC);
+ }
+ 
+-extern __inline__ void writeFPCR(FPCR reg)
++static inline void writeFPCR(FPCR reg)
+ {
+ 	FPA11 *fpa11 = GET_FPA11();
+ 	fpa11->fpcr &= ~MASK_WFC;		/* clear SB, AB and DA bits */
+diff --git a/include/asm-arm/arch-ixp23xx/platform.h b/include/asm-arm/arch-ixp23xx/platform.h
+index 56e16d6..db8aa30 100644
+--- a/include/asm-arm/arch-ixp23xx/platform.h
++++ b/include/asm-arm/arch-ixp23xx/platform.h
+@@ -14,17 +14,17 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
+-extern inline unsigned long ixp2000_reg_read(volatile void *reg)
++static inline unsigned long ixp2000_reg_read(volatile void *reg)
+ {
+ 	return *((volatile unsigned long *)reg);
+ }
+ 
+-extern inline void ixp2000_reg_write(volatile void *reg, unsigned long val)
++static inline void ixp2000_reg_write(volatile void *reg, unsigned long val)
+ {
+ 	*((volatile unsigned long *)reg) = val;
+ }
+ 
+-extern inline void ixp2000_reg_wrb(volatile void *reg, unsigned long val)
++static inline void ixp2000_reg_wrb(volatile void *reg, unsigned long val)
+ {
+ 	*((volatile unsigned long *)reg) = val;
+ }
+
