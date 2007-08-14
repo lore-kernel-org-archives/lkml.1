@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbXHNKAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbXHNKBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757606AbXHNKAt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 06:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbXHNKAD
+	id S1757900AbXHNKBW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 06:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbXHNKAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 06:00:03 -0400
-Received: from ns.burlesk.fr ([82.224.75.159]:49018 "EHLO tux.burlesk.fr"
+	Tue, 14 Aug 2007 06:00:10 -0400
+Received: from ns.burlesk.fr ([82.224.75.159]:59917 "EHLO tux.burlesk.fr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753845AbXHNJ7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753803AbXHNJ7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 14 Aug 2007 05:59:55 -0400
 MIME-Version: 1.0
-Date: Tue, 14 Aug 2007 11:58:40 +0200
+Date: Tue, 14 Aug 2007 11:59:13 +0200
 From: bizu <bizu@burlesk.fr>
 To: linux-kernel@vger.kernel.org
-Subject: linux-kernel@vger.kernel.org
-Message-ID: <f32f0c9c0d35b37cc0291951fed2de15@127.0.0.1>
+Subject: HTC as USB gprs/edge modem on linux
+Message-ID: <c929dccd5f4f0fec6ad55e93caafae43@127.0.0.1>
 User-Agent: RoundCube Webmail/0.1b
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
