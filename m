@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbXHNIx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756016AbXHNJGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755100AbXHNIx4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 04:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbXHNIx2
+	id S1756016AbXHNJGt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 05:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXHNJGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 04:53:28 -0400
-Received: from ns1.suse.de ([195.135.220.2]:35596 "EHLO mx1.suse.de"
+	Tue, 14 Aug 2007 05:06:30 -0400
+Received: from iona.labri.fr ([147.210.8.143]:56064 "EHLO iona.labri.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753161AbXHNIxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 04:53:25 -0400
-Date: Tue, 14 Aug 2007 10:53:24 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Takenori Nagano <t-nagano@ah.jp.nec.com>
-Cc: vgoyal@in.ibm.com, Keith Owens <kaos@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, k-miyoshi@cb.jp.nec.com,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] add kdump_after_notifier
-Message-ID: <20070814085324.GB19512@suse.de>
-Mail-Followup-To: Takenori Nagano <t-nagano@ah.jp.nec.com>,
-	vgoyal@in.ibm.com, Keith Owens <kaos@sgi.com>,
-	"Eric W. Biederman" <ebiederm@xmission.com>, k-miyoshi@cb.jp.nec.com,
-	kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20070802112852.GA7054@in.ibm.com> <31687.1186113947@kao2.melbourne.sgi.com> <20070805110746.GA12540@in.ibm.com> <46C1691E.7090708@ah.jp.nec.com> <20070814083710.GA14538@suse.de> <46C16C7B.603@ah.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1752403AbXHNJG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 05:06:28 -0400
+Date: Tue, 14 Aug 2007 11:00:23 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: akpm@google.com, kernel@vger.kernel.org, dtor@mail.ru,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Keyboard CapsShift Lock
+Message-ID: <20070814090023.GB3344@implementation.labri.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	akpm@google.com, kernel@vger.kernel.org, dtor@mail.ru,
+	linux-input@atrey.karlin.mff.cuni.cz
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46C16C7B.603@ah.jp.nec.com>
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Takenori Nagano <t-nagano@ah.jp.nec.com> [2007-08-14 10:48]:
-> Bernhard Walle wrote:
-> > * Takenori Nagano <t-nagano@ah.jp.nec.com> [2007-08-14 10:34]:
-> >> Vivek Goyal wrote:
-> >>> On Fri, Aug 03, 2007 at 02:05:47PM +1000, Keith Owens wrote:
-> >>>
-> >>>
-> >>> To sum up, couple of options come to mind.
-> >>>
-> >>> - Register all the RAS tools on die notifier and panic
-> >>>   notifier lists with fairly high priority. Export list
-> >>>   of RAS tools to user space and allow users to decide the
-> >>>   order of execution and priority of RAS tools.
-> >>>
-> >>> - Create a separate RAS tool notifier list (ras_tool_notifer_list).
-> >>>   All the RAS tools register on this list. This list gets priority
-> >>>   over die or panic notifier list. User decides the oder of execution
-> >>>   of RAS tools. 
-> >>>
-> >>>   Here assumption is that above list will not be exported to modules.
-> >>>   All the RAS tools will be in kernel and they always get a priority
-> >>>   to inspect an event.
-> >>>
-> >>> What do others think?
-> >> Very good idea. But there is a problem how to give default priority to RAS tools.
-> >>
-> >> How about priority changeable notifier_list? User can change list order
-> >> dynamically if they want. Of course, we have to give highest priority to kdump
-> >> by default. It is very useful for users who want to use some RAS tools.
-> > 
-> > I think that was the idea of the first “-” (“export list of RAS tools
-> > to user space”).
-> 
-> Ah, sorry.
-> 
-> I think first idea is very good. How export the list? (sysfs? procfs?)
+Hi,
 
-I think sysfs would be a good solution, e.g. assigning each RAS tool a
-priority from 0 to 100 or something like this.
+There exists a CapsShift lock called KG_CAPSSHIFT, but no associated
+lock/slock, here is a patch.
 
+Samuel
 
-Thanks,
-   Bernhard
+Add CapsShift lock and slock.
+
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+
+diff --git a/include/linux/keyboard.h b/include/linux/keyboard.h
+index d97066f..61f12d4 100644
+--- a/include/linux/keyboard.h
++++ b/include/linux/keyboard.h
+@@ -426,6 +426,7 @@ extern int unregister_keyboard_notifier(struct notifier_block *nb);
+ #define K_SHIFTRLOCK	K(KT_LOCK,KG_SHIFTR)
+ #define K_CTRLLLOCK	K(KT_LOCK,KG_CTRLL)
+ #define K_CTRLRLOCK	K(KT_LOCK,KG_CTRLR)
++#define K_CAPSSHIFTLOCK	K(KT_LOCK,KG_CAPSSHIFT)
+ 
+ #define K_SHIFT_SLOCK	K(KT_SLOCK,KG_SHIFT)
+ #define K_CTRL_SLOCK	K(KT_SLOCK,KG_CTRL)
+@@ -435,8 +436,9 @@ extern int unregister_keyboard_notifier(struct notifier_block *nb);
+ #define K_SHIFTR_SLOCK	K(KT_SLOCK,KG_SHIFTR)
+ #define K_CTRLL_SLOCK	K(KT_SLOCK,KG_CTRLL)
+ #define K_CTRLR_SLOCK	K(KT_SLOCK,KG_CTRLR)
++#define K_CAPSSHIFT_SLOCK	K(KT_SLOCK,KG_CAPSSHIFT)
+ 
+-#define NR_LOCK		8
++#define NR_LOCK		9
+ 
+ #define K_BRL_BLANK     K(KT_BRL, 0)
+ #define K_BRL_DOT1      K(KT_BRL, 1)
