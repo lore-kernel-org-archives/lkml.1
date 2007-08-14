@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936199AbXHNEyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932993AbXHNEz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936199AbXHNEyY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 00:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762817AbXHNEx7
+	id S932993AbXHNEz2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 00:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932539AbXHNEyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 00:53:59 -0400
-Received: from livid.absolutedigital.net ([66.92.46.173]:38870 "EHLO
-	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762457AbXHNEx6 (ORCPT
+	Tue, 14 Aug 2007 00:54:50 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47542 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932731AbXHNEyr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 00:53:58 -0400
-Date: Tue, 14 Aug 2007 00:52:49 -0400 (EDT)
-From: Cal Peake <cp@absolutedigital.net>
-To: Joe Perches <joe@perches.com>
-cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Eng.Linux@digi.com
-Subject: Re: [PATCH] [154/2many] MAINTAINERS - DIGI INTL. EPCA DRIVER
-In-Reply-To: <1187066391.32555.27.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0708140040280.11945@lancer.cnet.absolutedigital.net>
-References: <46bff988.qGtTTlNorD2He7J3%joe@perches.com> 
- <20070813115344.04759b74@the-village.bc.nu>  <46C06E70.9090905@s5r6.in-berlin.de>
- <46C0838A.2030504@intel.com>  <1187022904.10249.97.camel@localhost>
- <1187064798.32555.7.camel@localhost>  <Pine.LNX.4.64.0708140021460.11945@lancer.cnet.absolutedigital.net>
- <1187066391.32555.27.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 14 Aug 2007 00:54:47 -0400
+Date: Mon, 13 Aug 2007 21:53:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net, Pierre Ossman <drzeus@drzeus.cx>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: bugme-daemon@bugzilla.kernel.org, casteyde.christian@free.fr
+Subject: Re: [Bugme-new] [Bug 8885] New: Unable to access memory card reader
+ anymore
+Message-Id: <20070813215352.18af0776.akpm@linux-foundation.org>
+In-Reply-To: <bug-8885-10286@http.bugzilla.kernel.org/>
+References: <bug-8885-10286@http.bugzilla.kernel.org/>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007, Joe Perches wrote:
 
-> On Tue, 2007-08-14 at 00:29 -0400, Cal Peake wrote:
-> > Prolly /[^a-z0-9]/i would the safest bet. Also don't forget to escape 
-> > double quotes (e.g. "Jonathan \"Jon\" Doe" <jon@example.net>).
+(resend, fixed mailing list address)
+
+On Mon, 13 Aug 2007 09:07:36 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+
+> http://bugzilla.kernel.org/show_bug.cgi?id=8885
 > 
-> A-Z and [[:space:]] are OK too.
+>            Summary: Unable to access memory card reader anymore
+>            Product: IO/Storage
+>            Version: 2.5
+>      KernelVersion: 2.6.23-rc3
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: SCSI
+>         AssignedTo: io_scsi@kernel-bugs.osdl.org
+>         ReportedBy: casteyde.christian@free.fr
+> 
+> 
+> Most recent kernel where this bug did not occur: 2.6.22.1, maybe 2.6.23-rc2
+> Distribution: Slackware 12.0
+> Hardware Environment: Athlon64 3000, laptop Aspire 1511LMi, nForce3 150
+> Software Environment: Kernel 2.6.23-rc3, blockdev, udev, KDE 3.5.7
+> Problem Description:
+> With kernel 2.6.22.1, when I plug a memory card in the integrated card reader
+> of my laptop, the card is detected and KDE(via udev) asks me for mounting the
+> device.
+> With kernel 2.6.23-rc3, this does not happens anymore:
+> - first, at boot, there are some new lines in dmesg saying /dev/sda is seen but
+> size cannot be get (normal: there is no memory card in the reader);
+> - second, plugging the card does nothing;
+> - third, issuing "blockdev --rereadpt /dev/sda" does not work;
+> - finally, fdisk /dev/sda fails (unable to open /dev/sda).
+> So the device seems to be completly unusable now (this is a Thomson card reader
+> if I remember well).
+> 
+> dmesg output for 2.6.22.1-cfs19 and 2.6.23-rc3 appended to show the
+> differences.
+> 
+> Steps to reproduce:
+> Maybe the problem is specific to my hardware. I presume: boot with an empty
+> card reader connected, the plug the card and see it is inaccessible?
+> 
 
-The 'i' at the end of the regex means case-insensitive ;) but yes, I 
-forgot whitespace. So something like:
+I'm struggling a bit to work out if this is a scsi bug, a USB bug, an MMC bug
+or whatever.  But it's a bug.
 
-  if ($name =~ /[^a-z0-9[:space:]]/i) {
-    quote_name;
-  }
+Michal, can you please track this as a post-2.6.22 regression?
 
-> I skimmed the spec, but nothing jumped out at me.
+Others: can you please take a look at the dmesg output, see if we can work
+out which subsystem is (newly) failing?
 
-My recommendation was mostly based on what pine does. It seems to be a 
-pretty sane MUA...
-
--- 
-Cal Peake
-
+Thanks.
