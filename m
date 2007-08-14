@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764097AbXHNWOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751928AbXHNWPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764097AbXHNWOZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935871AbXHNV4j
+	id S1751928AbXHNWPx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936161AbXHNWAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:56:39 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36880 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755107AbXHNV4h (ORCPT
+	Tue, 14 Aug 2007 18:00:13 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3258 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935222AbXHNWAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:56:37 -0400
-Date: Tue, 14 Aug 2007 14:56:35 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: "Serge E. Hallyn" <serge@hallyn.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, bob.picco@hp.com,
-       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
-       akpm@linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       ckrm-tech <ckrm-tech@lists.sourceforge.net>
-Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
-In-Reply-To: <1187127685.6281.139.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
-References: <20070812152126.GA26239@linux.vnet.ibm.com> 
- <20070813201215.GA16908@vino.hallyn.com>  <1187103831.6281.24.camel@localhost>
-  <20070814180339.GA32553@vino.hallyn.com>  <1187115224.6281.40.camel@localhost>
-  <20070814192306.GB32553@vino.hallyn.com>  <20070814204951.GA2065@vino.hallyn.com>
-  <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
- <1187127685.6281.139.camel@localhost>
+	Tue, 14 Aug 2007 18:00:10 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: RE: O_NONBLOCK is broken
+Date: Tue, 14 Aug 2007 14:59:21 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKIEKAGCAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <200708141241.44021.vda.linux@googlemail.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Tue, 14 Aug 2007 14:59:58 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Tue, 14 Aug 2007 14:59:58 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Aug 2007, Lee Schermerhorn wrote:
 
-> > Ok then you did not have a NUMA system configured. So its okay for the 
-> > dummies to ignore the stuff. CONFIG_NODES_SHIFT is a constant and does not 
-> > change. The first bit is always set.
-> 
-> The first bit [node 0] is only set for the N_ONLINE [and N_POSSIBLE]
-> mask.  We could add the static init for the other masks, but since
-> non-numa platforms are going through the __build_all_zonelists, they
-> might as well set the MEMORY bits explicitly.  Or, maybe you'll
-> disagree ;-).
+> The problem is, O_NONBLOCK flag is not attached to file *descriptor*,
+> but to a "file description" mentioned in fcntl manpage:
+[snip]
+> We don't know whether our stdout descriptor #1 is shared with
+> anyone or not,
+> and if we were started from shell, it typically is. That's why we try to
+> restore flags ASAP.
 
-The bitmaps can be completely ignored if !NUMA.
+> But "ASAP" isn't soon enough. Between setting and clearing O_NONBLOCK,
+> other process which share fd #1 with us may well be affected
+> by file suddenly becoming O_NONBLOCK under its feet.
+>
+> Worse, other process can do the same
+>     fcntl(1, F_SETFL, fl | O_NONBLOCK);
+>     ...
+>     fcntl(1, F_SETFL, fl);
+> sequence, and first fcntl can return flags with O_NONBLOCK set
+> (because of
+> us), and then second fcntl will set O_NONBLOCK permanently, which is not
+> what was intended!
+[snip]
+> P.S. Hmm, it seems fcntl GETFL/SETFL interface seems to be racy:
+>
+>     int fl = fcntl(fd, F_GETFL, 0);
+>     /* other process can muck with file flags here */
+>     fcntl(fd, F_SETFL, fl | SOME_BITS);
+>
+> How can I *atomically* add or remove bits from file flags?
 
-In the non NUMA case we define
+Simply put, you cannot change file flags on a shared descriptor. It is a bug
+to do so, a bug that is sadly present in many common programs.
 
-static inline int node_state(int node, enum node_states state)
-{
-        return node == 0;
-}
+I like the idea of being able to specify blocking or non-blocking behavior
+in the operation. It is not too uncommon to want to perform blocking
+operations sometimes and non-blocking operations other times for the same
+object and having to keep changing modes, even if it wasn't racy, is a pain.
 
-So its always true for node 0. The "bit" is set.
+However, there's a much more fundamental problem here. Processes need a good
+way to get exclusive use of their stdin, stdout, and stderr streams and
+there is no good way. Perhaps an "exclusive lock" that blocked all other
+process' attempts to use the terminal until it was released would be a good
+thing.
 
-We are trying to get cpusets to work with !NUMA?
-
-
+DS
 
 
