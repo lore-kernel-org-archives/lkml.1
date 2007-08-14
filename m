@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760444AbXHNLpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760715AbXHNLqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760444AbXHNLpV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 07:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759279AbXHNLng
+	id S1760715AbXHNLqU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 07:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760178AbXHNLno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 07:43:36 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56061 "EHLO amd.ucw.cz"
+	Tue, 14 Aug 2007 07:43:44 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56066 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757930AbXHNLne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 07:43:34 -0400
-Date: Tue, 14 Aug 2007 09:46:57 +0200
+	id S1759564AbXHNLnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 07:43:42 -0400
+Date: Tue, 14 Aug 2007 12:09:14 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andres Salomon <dilinger@queued.net>, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial: turn serial console suspend a boot rather than compile time option
-Message-ID: <20070814074657.GB2905@elf.ucw.cz>
-References: <20070808183535.2a2c6edf.dilinger@queued.net> <20070808154130.9cc3a30e.akpm@linux-foundation.org>
+To: Norbert Preining <preining@logic.at>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+Message-ID: <20070814100914.GE2900@elf.ucw.cz>
+References: <878xb35sje.fsf@goat.bogus.local> <20070612153102.GD5986@ucw.cz> <20070613173925.GA20628@gamma.logic.tuwien.ac.at> <200706132342.55336.rjw@sisk.pl> <878xb35sje.fsf@goat.bogus.local> <20070612153102.GD5986@ucw.cz> <20070614181329.GA31277@gamma.logic.tuwien.ac.at> <20070722091010.GH3701@elf.ucw.cz> <20070812165202.GI5363@gamma.logic.tuwien.ac.at>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070808154130.9cc3a30e.akpm@linux-foundation.org>
+In-Reply-To: <20070812165202.GI5363@gamma.logic.tuwien.ac.at>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2007-08-08 15:41:30, Andrew Morton wrote:
-> On Wed, 8 Aug 2007 18:35:35 -0400
-> Andres Salomon <dilinger@queued.net> wrote:
+On Sun 2007-08-12 18:52:02, Norbert Preining wrote:
+> Hi Pavel, hi all,
 > 
-> > Currently, there's a CONFIG_DISABLE_CONSOLE_SUSPEND that allows one to stop
-> > the serial console from being suspended when the rest of the machine goes
-> > to sleep.  This is incredibly useful for debugging power management-related
-> > things; however, having it as a compile-time option has proved to be
-> > incredibly inconvenient for us (OLPC).  There are plenty of times that we
-> > want serial console to not suspend, but for the most part we'd like serial
-> > console to be suspended.
+> On Son, 22 Jul 2007, Pavel Machek wrote:
+> > > Ok, no beeping at all. Nothing after resume, only fan. And I did not
+> > > forget to activate the BEEP line.
+> > > 
+> > > So where can I go from here? DSDT hacking? Anything else?
 > > 
-> > This drops CONFIG_DISABLE_CONSOLE_SUSPEND, and replaces it with a kernel
-> > boot parameter (no_console_suspend).  By default, the serial console will
-> > be suspended along with the rest of the system; by passing
-> > 'no_console_suspend' to the kernel during boot, serial console will remain
-> > alive during suspend.
-> > 
-> > I have another version of this patch which keeps #ifdefs around; however,
-> > it's uglier.  I prefer this version of the patch, and don't feel that it
-> > increases bloat.  If people strongly disagree, let me know and I'll submit
-> > the other patch.
-> > 
+> > Hmm, it was 'hardware debugger' time when I hit similar problem few
+> > years ago :-(.
 > 
-> yep, compile-time options suck.
+> Something else helped, don't ask me what, but with
+> 
+> 	2.6.32-rc2
+> 
+> and
+> 
+> 	s2ram -f -p
+> 
+> it does work. Even with X and 3D running. Nice.
+> 
+> Anything I should do now?
 
-Run-time options suck, too, for stuff that should not be optional; we
-should keep console live if the console driver can handle it, not
-otherwise.
+Submit whitelist entry to seife@suse.de?
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
