@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936705AbXHNWF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964835AbXHNWGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936705AbXHNWF6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:05:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934591AbXHNVlP
+	id S964835AbXHNWGw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934948AbXHNVlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:41:15 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:42233 "EHLO
+	Tue, 14 Aug 2007 17:41:17 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:42235 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934151AbXHNVlB (ORCPT
+	with ESMTP id S934469AbXHNVlD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:41:01 -0400
-Date: Tue, 14 Aug 2007 17:40:25 -0400
+	Tue, 14 Aug 2007 17:41:03 -0400
+Date: Tue, 14 Aug 2007 17:40:18 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 11/14] UML - Rename pt_regs general-purpose register file
-Message-ID: <20070814214025.GA17544@c2.user-mode-linux.org>
+Subject: [PATCH 3/14] UML - Style fixes pass 1
+Message-ID: <20070814214018.GA17290@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,379 +24,1167 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before the removal of tt mode, access to a register on the skas-mode
-side of a pt_regs struct looked like pt_regs.regs.skas.regs.regs[FOO].
-This was bad enough, but it became pt_regs.regs.regs.regs[FOO] with
-the removal of the union from the middle.  To get rid of the run of
-three "regs", the last field is renamed to "gp".
+Formatting changes in the files which have been changed in the
+tt-removal patchset so far.  These include:
+	copyright updates
+	header file trimming
+	style fixes
+	adding severity to printks
+	indenting Kconfig help according to the predominant kernel style
+
+These changes should be entirely non-functional.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- arch/um/include/sysdep-i386/ptrace.h   |   36 +++++++++---------
- arch/um/include/sysdep-x86_64/ptrace.h |   60 +++++++++++++++---------------
- arch/um/kernel/process.c               |    4 +-
- arch/um/kernel/skas/syscall.c          |    2 -
- arch/um/os-Linux/registers.c           |    6 +--
- arch/um/os-Linux/skas/process.c        |    4 +-
- arch/um/sys-i386/signal.c              |   64 ++++++++++++++++-----------------
- arch/um/sys-x86_64/signal.c            |    6 +--
- arch/um/sys-x86_64/tls.c               |    2 -
- 9 files changed, 92 insertions(+), 92 deletions(-)
+ arch/um/Kconfig                          |  199 +++++++++++++++----------------
+ arch/um/Kconfig.char                     |  139 ++++++++++-----------
+ arch/um/Kconfig.debug                    |   24 +--
+ arch/um/Makefile                         |    8 -
+ arch/um/include/sysdep-i386/sigcontext.h |   12 -
+ arch/um/kernel/Makefile                  |    2 
+ arch/um/kernel/init_task.c               |    8 -
+ arch/um/kernel/smp.c                     |   31 ++--
+ arch/um/kernel/trap.c                    |  111 ++++++++---------
+ arch/um/os-Linux/Makefile                |    2 
+ arch/um/os-Linux/sys-i386/Makefile       |    2 
+ arch/um/os-Linux/time.c                  |   38 ++---
+ arch/um/os-Linux/tls.c                   |    4 
+ arch/um/sys-i386/Makefile                |    4 
+ arch/um/sys-i386/ptrace_user.c           |   13 --
+ 15 files changed, 283 insertions(+), 314 deletions(-)
 
-Index: linux-2.6.22/arch/um/include/sysdep-i386/ptrace.h
+Index: linux-2.6.22/arch/um/kernel/trap.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/include/sysdep-i386/ptrace.h	2007-08-13 15:16:57.000000000 -0400
-+++ linux-2.6.22/arch/um/include/sysdep-i386/ptrace.h	2007-08-13 16:58:20.000000000 -0400
-@@ -53,7 +53,7 @@ extern int sysemu_supported;
- #endif
+--- linux-2.6.22.orig/arch/um/kernel/trap.c	2007-08-10 15:43:45.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/trap.c	2007-08-13 11:58:48.000000000 -0400
+@@ -1,38 +1,24 @@
+ /*
+- * Copyright (C) 2000, 2001 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
  
- struct uml_pt_regs {
--	unsigned long regs[MAX_REG_NR];
-+	unsigned long gp[MAX_REG_NR];
- 	unsigned long fp[HOST_FP_SIZE];
- 	unsigned long xfp[HOST_XFP_SIZE];
- 	struct faultinfo faultinfo;
-@@ -63,23 +63,23 @@ struct uml_pt_regs {
+-#include "linux/kernel.h"
+-#include "asm/errno.h"
+-#include "linux/sched.h"
+-#include "linux/mm.h"
+-#include "linux/spinlock.h"
+-#include "linux/init.h"
+-#include "linux/ptrace.h"
+-#include "asm/semaphore.h"
+-#include "asm/pgtable.h"
+-#include "asm/pgalloc.h"
+-#include "asm/tlbflush.h"
+-#include "asm/a.out.h"
+-#include "asm/current.h"
+-#include "asm/irq.h"
+-#include "sysdep/sigcontext.h"
+-#include "kern_util.h"
+-#include "as-layout.h"
++#include <linux/mm.h>
++#include <linux/sched.h>
++#include <linux/hardirq.h>
++#include <asm/current.h>
++#include <asm/pgtable.h>
++#include <asm/tlbflush.h>
+ #include "arch.h"
+-#include "kern.h"
+-#include "chan_kern.h"
+-#include "mconsole_kern.h"
+-#include "mem.h"
+-#include "mem_kern.h"
+-#include "sysdep/sigcontext.h"
+-#include "sysdep/ptrace.h"
+-#include "os.h"
+-#include "skas.h"
++#include "as-layout.h"
++#include "kern_util.h"
+ #include "os.h"
++#include "sysdep/sigcontext.h"
  
- #define EMPTY_UML_PT_REGS { }
- 
--#define UPT_IP(r) REGS_IP((r)->regs)
--#define UPT_SP(r) REGS_SP((r)->regs)
--#define UPT_EFLAGS(r) REGS_EFLAGS((r)->regs)
--#define UPT_EAX(r) REGS_EAX((r)->regs)
--#define UPT_EBX(r) REGS_EBX((r)->regs)
--#define UPT_ECX(r) REGS_ECX((r)->regs)
--#define UPT_EDX(r) REGS_EDX((r)->regs)
--#define UPT_ESI(r) REGS_ESI((r)->regs)
--#define UPT_EDI(r) REGS_EDI((r)->regs)
--#define UPT_EBP(r) REGS_EBP((r)->regs)
-+#define UPT_IP(r) REGS_IP((r)->gp)
-+#define UPT_SP(r) REGS_SP((r)->gp)
-+#define UPT_EFLAGS(r) REGS_EFLAGS((r)->gp)
-+#define UPT_EAX(r) REGS_EAX((r)->gp)
-+#define UPT_EBX(r) REGS_EBX((r)->gp)
-+#define UPT_ECX(r) REGS_ECX((r)->gp)
-+#define UPT_EDX(r) REGS_EDX((r)->gp)
-+#define UPT_ESI(r) REGS_ESI((r)->gp)
-+#define UPT_EDI(r) REGS_EDI((r)->gp)
-+#define UPT_EBP(r) REGS_EBP((r)->gp)
- #define UPT_ORIG_EAX(r) ((r)->syscall)
--#define UPT_CS(r) REGS_CS((r)->regs)
--#define UPT_SS(r) REGS_SS((r)->regs)
--#define UPT_DS(r) REGS_DS((r)->regs)
--#define UPT_ES(r) REGS_ES((r)->regs)
--#define UPT_FS(r) REGS_FS((r)->regs)
--#define UPT_GS(r) REGS_GS((r)->regs)
-+#define UPT_CS(r) REGS_CS((r)->gp)
-+#define UPT_SS(r) REGS_SS((r)->gp)
-+#define UPT_DS(r) REGS_DS((r)->gp)
-+#define UPT_ES(r) REGS_ES((r)->gp)
-+#define UPT_FS(r) REGS_FS((r)->gp)
-+#define UPT_GS(r) REGS_GS((r)->gp)
- 
- #define UPT_SYSCALL_ARG1(r) UPT_EBX(r)
- #define UPT_SYSCALL_ARG2(r) UPT_ECX(r)
-@@ -161,7 +161,7 @@ struct syscall_args {
- #define UPT_SET_SYSCALL_RETURN(r, res) \
- 	REGS_SET_SYSCALL_RETURN((r)->regs, (res))
- 
--#define UPT_RESTART_SYSCALL(r) REGS_RESTART_SYSCALL((r)->regs)
-+#define UPT_RESTART_SYSCALL(r) REGS_RESTART_SYSCALL((r)->gp)
- 
- #define UPT_ORIG_SYSCALL(r) UPT_EAX(r)
- #define UPT_SYSCALL_NR(r) UPT_ORIG_EAX(r)
-Index: linux-2.6.22/arch/um/include/sysdep-x86_64/ptrace.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/sysdep-x86_64/ptrace.h	2007-08-13 15:16:57.000000000 -0400
-+++ linux-2.6.22/arch/um/include/sysdep-x86_64/ptrace.h	2007-08-13 16:58:20.000000000 -0400
-@@ -85,7 +85,7 @@
- #define REGS_ERR(r) ((r)->fault_type)
- 
- struct uml_pt_regs {
--	unsigned long regs[MAX_REG_NR];
-+	unsigned long gp[MAX_REG_NR];
- 	unsigned long fp[HOST_FP_SIZE];
- 	struct faultinfo faultinfo;
- 	long syscall;
-@@ -94,36 +94,36 @@ struct uml_pt_regs {
- 
- #define EMPTY_UML_PT_REGS { }
- 
--#define UPT_RBX(r) REGS_RBX((r)->regs)
--#define UPT_RCX(r) REGS_RCX((r)->regs)
--#define UPT_RDX(r) REGS_RDX((r)->regs)
--#define UPT_RSI(r) REGS_RSI((r)->regs)
--#define UPT_RDI(r) REGS_RDI((r)->regs)
--#define UPT_RBP(r) REGS_RBP((r)->regs)
--#define UPT_RAX(r) REGS_RAX((r)->regs)
--#define UPT_R8(r) REGS_R8((r)->regs)
--#define UPT_R9(r) REGS_R9((r)->regs)
--#define UPT_R10(r) REGS_R10((r)->regs)
--#define UPT_R11(r) REGS_R11((r)->regs)
--#define UPT_R12(r) REGS_R12((r)->regs)
--#define UPT_R13(r) REGS_R13((r)->regs)
--#define UPT_R14(r) REGS_R14((r)->regs)
--#define UPT_R15(r) REGS_R15((r)->regs)
--#define UPT_CS(r) REGS_CS((r)->regs)
--#define UPT_FS_BASE(r) REGS_FS_BASE((r)->regs)
--#define UPT_FS(r) REGS_FS((r)->regs)
--#define UPT_GS_BASE(r) REGS_GS_BASE((r)->regs)
--#define UPT_GS(r) REGS_GS((r)->regs)
--#define UPT_DS(r) REGS_DS((r)->regs)
--#define UPT_ES(r) REGS_ES((r)->regs)
--#define UPT_CS(r) REGS_CS((r)->regs)
--#define UPT_SS(r) REGS_SS((r)->regs)
--#define UPT_ORIG_RAX(r) REGS_ORIG_RAX((r)->regs)
-+#define UPT_RBX(r) REGS_RBX((r)->gp)
-+#define UPT_RCX(r) REGS_RCX((r)->gp)
-+#define UPT_RDX(r) REGS_RDX((r)->gp)
-+#define UPT_RSI(r) REGS_RSI((r)->gp)
-+#define UPT_RDI(r) REGS_RDI((r)->gp)
-+#define UPT_RBP(r) REGS_RBP((r)->gp)
-+#define UPT_RAX(r) REGS_RAX((r)->gp)
-+#define UPT_R8(r) REGS_R8((r)->gp)
-+#define UPT_R9(r) REGS_R9((r)->gp)
-+#define UPT_R10(r) REGS_R10((r)->gp)
-+#define UPT_R11(r) REGS_R11((r)->gp)
-+#define UPT_R12(r) REGS_R12((r)->gp)
-+#define UPT_R13(r) REGS_R13((r)->gp)
-+#define UPT_R14(r) REGS_R14((r)->gp)
-+#define UPT_R15(r) REGS_R15((r)->gp)
-+#define UPT_CS(r) REGS_CS((r)->gp)
-+#define UPT_FS_BASE(r) REGS_FS_BASE((r)->gp)
-+#define UPT_FS(r) REGS_FS((r)->gp)
-+#define UPT_GS_BASE(r) REGS_GS_BASE((r)->gp)
-+#define UPT_GS(r) REGS_GS((r)->gp)
-+#define UPT_DS(r) REGS_DS((r)->gp)
-+#define UPT_ES(r) REGS_ES((r)->gp)
-+#define UPT_CS(r) REGS_CS((r)->gp)
-+#define UPT_SS(r) REGS_SS((r)->gp)
-+#define UPT_ORIG_RAX(r) REGS_ORIG_RAX((r)->gp)
- 
--#define UPT_IP(r) REGS_IP((r)->regs)
--#define UPT_SP(r) REGS_SP((r)->regs)
-+#define UPT_IP(r) REGS_IP((r)->gp)
-+#define UPT_SP(r) REGS_SP((r)->gp)
- 
--#define UPT_EFLAGS(r) REGS_EFLAGS((r)->regs)
-+#define UPT_EFLAGS(r) REGS_EFLAGS((r)->gp)
- #define UPT_SYSCALL_NR(r) ((r)->syscall)
- #define UPT_SYSCALL_RET(r) UPT_RAX(r)
- 
-@@ -228,7 +228,7 @@ struct syscall_args {
- #define UPT_SET_SYSCALL_RETURN(r, res) \
- 	REGS_SET_SYSCALL_RETURN((r)->regs, (res))
- 
--#define UPT_RESTART_SYSCALL(r) REGS_RESTART_SYSCALL((r)->regs)
-+#define UPT_RESTART_SYSCALL(r) REGS_RESTART_SYSCALL((r)->gp)
- 
- #define UPT_SEGV_IS_FIXABLE(r) REGS_SEGV_IS_FIXABLE(&r->skas)
- 
-Index: linux-2.6.22/arch/um/kernel/process.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/process.c	2007-08-13 15:16:57.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/process.c	2007-08-13 16:58:20.000000000 -0400
-@@ -201,9 +201,9 @@ int copy_thread(int nr, unsigned long cl
- 	if (current->thread.forking) {
- 	  	memcpy(&p->thread.regs.regs, &regs->regs,
- 		       sizeof(p->thread.regs.regs));
--		REGS_SET_SYSCALL_RETURN(p->thread.regs.regs.regs, 0);
-+		REGS_SET_SYSCALL_RETURN(p->thread.regs.regs.gp, 0);
- 		if (sp != 0)
--			REGS_SP(p->thread.regs.regs.regs) = sp;
-+			REGS_SP(p->thread.regs.regs.gp) = sp;
- 
- 		handler = fork_handler;
- 
-Index: linux-2.6.22/arch/um/kernel/skas/syscall.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/skas/syscall.c	2007-08-13 15:16:57.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/skas/syscall.c	2007-08-13 16:58:20.000000000 -0400
-@@ -34,7 +34,7 @@ void handle_syscall(struct uml_pt_regs *
- 		result = -ENOSYS;
- 	else result = EXECUTE_SYSCALL(syscall, regs);
- 
--	REGS_SET_SYSCALL_RETURN(r->regs, result);
-+	REGS_SET_SYSCALL_RETURN(r->gp, result);
- 
- 	syscall_trace(r, 1);
- }
-Index: linux-2.6.22/arch/um/os-Linux/registers.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/registers.c	2007-08-13 15:16:57.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/registers.c	2007-08-13 16:58:20.000000000 -0400
-@@ -16,14 +16,14 @@ static unsigned long exec_regs[MAX_REG_N
- 
- void init_thread_registers(struct uml_pt_regs *to)
+-/* Note this is constrained to return 0, -EFAULT, -EACCESS, -ENOMEM by segv(). */
++/*
++ * Note this is constrained to return 0, -EFAULT, -EACCESS, -ENOMEM by
++ * segv().
++ */
+ int handle_page_fault(unsigned long address, unsigned long ip,
+ 		      int is_write, int is_user, int *code_out)
  {
--	memcpy(to->regs, exec_regs, sizeof(to->regs));
-+	memcpy(to->gp, exec_regs, sizeof(to->gp));
- }
+@@ -46,31 +32,33 @@ int handle_page_fault(unsigned long addr
  
- void save_registers(int pid, struct uml_pt_regs *regs)
+ 	*code_out = SEGV_MAPERR;
+ 
+-	/* If the fault was during atomic operation, don't take the fault, just
+-	 * fail. */
++	/*
++	 * If the fault was during atomic operation, don't take the fault, just
++	 * fail.
++	 */
+ 	if (in_atomic())
+ 		goto out_nosemaphore;
+ 
+ 	down_read(&mm->mmap_sem);
+ 	vma = find_vma(mm, address);
+-	if(!vma)
++	if (!vma)
+ 		goto out;
+-	else if(vma->vm_start <= address)
++	else if (vma->vm_start <= address)
+ 		goto good_area;
+-	else if(!(vma->vm_flags & VM_GROWSDOWN))
++	else if (!(vma->vm_flags & VM_GROWSDOWN))
+ 		goto out;
+-	else if(is_user && !ARCH_IS_STACKGROW(address))
++	else if (is_user && !ARCH_IS_STACKGROW(address))
+ 		goto out;
+-	else if(expand_stack(vma, address))
++	else if (expand_stack(vma, address))
+ 		goto out;
+ 
+ good_area:
+ 	*code_out = SEGV_ACCERR;
+-	if(is_write && !(vma->vm_flags & VM_WRITE))
++	if (is_write && !(vma->vm_flags & VM_WRITE))
+ 		goto out;
+ 
+ 	/* Don't require VM_READ|VM_EXEC for write faults! */
+-	if(!is_write && !(vma->vm_flags & (VM_READ | VM_EXEC)))
++	if (!is_write && !(vma->vm_flags & (VM_READ | VM_EXEC)))
+ 		goto out;
+ 
+ 	do {
+@@ -96,9 +84,10 @@ survive:
+ 		pud = pud_offset(pgd, address);
+ 		pmd = pmd_offset(pud, address);
+ 		pte = pte_offset_kernel(pmd, address);
+-	} while(!pte_present(*pte));
++	} while (!pte_present(*pte));
+ 	err = 0;
+-	/* The below warning was added in place of
++	/*
++	 * The below warning was added in place of
+ 	 *	pte_mkyoung(); if (is_write) pte_mkdirty();
+ 	 * If it's triggered, we'd see normally a hang here (a clean pte is
+ 	 * marked read-only to emulate the dirty bit).
+@@ -112,7 +101,7 @@ survive:
+ out:
+ 	up_read(&mm->mmap_sem);
+ out_nosemaphore:
+-	return(err);
++	return err;
+ 
+ /*
+  * We ran out of memory, or some other thing happened to us that made
+@@ -143,7 +132,7 @@ static void segv_handler(int sig, union 
  {
- 	int err;
+ 	struct faultinfo * fi = UPT_FAULTINFO(regs);
  
--	err = ptrace(PTRACE_GETREGS, pid, 0, regs->regs);
-+	err = ptrace(PTRACE_GETREGS, pid, 0, regs->gp);
- 	if (err < 0)
- 		panic("save_registers - saving registers failed, errno = %d\n",
- 		      errno);
-@@ -33,7 +33,7 @@ void restore_registers(int pid, struct u
- {
- 	int err;
- 
--	err = ptrace(PTRACE_SETREGS, pid, 0, regs->regs);
-+	err = ptrace(PTRACE_SETREGS, pid, 0, regs->gp);
- 	if (err < 0)
- 		panic("restore_registers - saving registers failed, "
- 		      "errno = %d\n", errno);
-Index: linux-2.6.22/arch/um/os-Linux/skas/process.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/skas/process.c	2007-08-13 16:33:26.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/skas/process.c	2007-08-13 16:59:28.000000000 -0400
-@@ -138,7 +138,7 @@ static void handle_trap(int pid, struct 
- 	int err, status;
- 
- 	/* Mark this as a syscall */
--	UPT_SYSCALL_NR(regs) = PT_SYSCALL_NR(regs->regs);
-+	UPT_SYSCALL_NR(regs) = PT_SYSCALL_NR(regs->gp);
- 
- 	if (!local_using_sysemu)
- 	{
-@@ -352,7 +352,7 @@ void userspace(struct uml_pt_regs *regs)
- 
- 			/* Avoid -ERESTARTSYS handling in host */
- 			if (PT_SYSCALL_NR_OFFSET != PT_SYSCALL_RET_OFFSET)
--				PT_SYSCALL_NR(regs->regs) = -1;
-+				PT_SYSCALL_NR(regs->gp) = -1;
- 		}
+-	if(UPT_IS_USER(regs) && !SEGV_IS_FIXABLE(fi)){
++	if (UPT_IS_USER(regs) && !SEGV_IS_FIXABLE(fi)) {
+ 		bad_segv(*fi, UPT_IP(regs));
+ 		return;
  	}
- }
-Index: linux-2.6.22/arch/um/sys-i386/signal.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-i386/signal.c	2007-08-13 15:16:57.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-i386/signal.c	2007-08-13 16:58:20.000000000 -0400
-@@ -14,22 +14,22 @@ void copy_sc(struct uml_pt_regs *regs, v
+@@ -165,37 +154,41 @@ unsigned long segv(struct faultinfo fi, 
+ 	int is_write = FAULT_WRITE(fi);
+ 	unsigned long address = FAULT_ADDRESS(fi);
+ 
+-	if(!is_user && (address >= start_vm) && (address < end_vm)){
++	if (!is_user && (address >= start_vm) && (address < end_vm)) {
+ 		flush_tlb_kernel_vm();
+ 		return 0;
+ 	}
+-	else if(current->mm == NULL) {
++	else if (current->mm == NULL) {
+ 		show_regs(container_of(regs, struct pt_regs, regs));
+-  		panic("Segfault with no mm");
++		panic("Segfault with no mm");
+ 	}
+ 
+ 	if (SEGV_IS_FIXABLE(&fi) || SEGV_MAYBE_FIXABLE(&fi))
+-		err = handle_page_fault(address, ip, is_write, is_user, &si.si_code);
++		err = handle_page_fault(address, ip, is_write, is_user,
++					&si.si_code);
+ 	else {
+ 		err = -EFAULT;
+-		/* A thread accessed NULL, we get a fault, but CR2 is invalid.
+-		 * This code is used in __do_copy_from_user() of TT mode. */
++		/*
++		 * A thread accessed NULL, we get a fault, but CR2 is invalid.
++		 * This code is used in __do_copy_from_user() of TT mode.
++		 * XXX tt mode is gone, so maybe this isn't needed any more
++		 */
+ 		address = 0;
+ 	}
+ 
+ 	catcher = current->thread.fault_catcher;
+-	if(!err)
++	if (!err)
+ 		return 0;
+-	else if(catcher != NULL){
++	else if (catcher != NULL) {
+ 		current->thread.fault_addr = (void *) address;
+ 		do_longjmp(catcher, 1);
+ 	}
+-	else if(current->thread.fault_addr != NULL)
++	else if (current->thread.fault_addr != NULL)
+ 		panic("fault_addr set but no fault catcher");
+-	else if(!is_user && arch_fixup(ip, regs))
++	else if (!is_user && arch_fixup(ip, regs))
+ 		return 0;
+ 
+-	if(!is_user) {
++	if (!is_user) {
+ 		show_regs(container_of(regs, struct pt_regs, regs));
+ 		panic("Kernel mode fault at addr 0x%lx, ip 0x%lx",
+ 		      address, ip);
+@@ -209,7 +202,7 @@ unsigned long segv(struct faultinfo fi, 
+ 		current->thread.arch.faultinfo = fi;
+ 		force_sig_info(SIGBUS, &si, current);
+ 	} else if (err == -ENOMEM) {
+-		printk("VM: killing process %s\n", current->comm);
++		printk(KERN_INFO "VM: killing process %s\n", current->comm);
+ 		do_exit(SIGKILL);
+ 	} else {
+ 		BUG_ON(err != -EFAULT);
+@@ -223,13 +216,13 @@ unsigned long segv(struct faultinfo fi, 
+ 
+ void relay_signal(int sig, union uml_pt_regs *regs)
  {
- 	struct sigcontext *sc = from;
+-	if(arch_handle_signal(sig, regs))
++	if (arch_handle_signal(sig, regs))
+ 		return;
  
--	REGS_GS(regs->regs) = sc->gs;
--	REGS_FS(regs->regs) = sc->fs;
--	REGS_ES(regs->regs) = sc->es;
--	REGS_DS(regs->regs) = sc->ds;
--	REGS_EDI(regs->regs) = sc->edi;
--	REGS_ESI(regs->regs) = sc->esi;
--	REGS_EBP(regs->regs) = sc->ebp;
--	REGS_SP(regs->regs) = sc->esp;
--	REGS_EBX(regs->regs) = sc->ebx;
--	REGS_EDX(regs->regs) = sc->edx;
--	REGS_ECX(regs->regs) = sc->ecx;
--	REGS_EAX(regs->regs) = sc->eax;
--	REGS_IP(regs->regs) = sc->eip;
--	REGS_CS(regs->regs) = sc->cs;
--	REGS_EFLAGS(regs->regs) = sc->eflags;
--	REGS_SS(regs->regs) = sc->ss;
-+	REGS_GS(regs->gp) = sc->gs;
-+	REGS_FS(regs->gp) = sc->fs;
-+	REGS_ES(regs->gp) = sc->es;
-+	REGS_DS(regs->gp) = sc->ds;
-+	REGS_EDI(regs->gp) = sc->edi;
-+	REGS_ESI(regs->gp) = sc->esi;
-+	REGS_EBP(regs->gp) = sc->ebp;
-+	REGS_SP(regs->gp) = sc->esp;
-+	REGS_EBX(regs->gp) = sc->ebx;
-+	REGS_EDX(regs->gp) = sc->edx;
-+	REGS_ECX(regs->gp) = sc->ecx;
-+	REGS_EAX(regs->gp) = sc->eax;
-+	REGS_IP(regs->gp) = sc->eip;
-+	REGS_CS(regs->gp) = sc->cs;
-+	REGS_EFLAGS(regs->gp) = sc->eflags;
-+	REGS_SS(regs->gp) = sc->ss;
+-	if(!UPT_IS_USER(regs)){
+-		if(sig == SIGBUS)
+-			printk("Bus error - the host /dev/shm or /tmp mount "
+-			       "likely just ran out of space\n");
++	if (!UPT_IS_USER(regs)) {
++		if (sig == SIGBUS)
++			printk(KERN_ERR "Bus error - the host /dev/shm or /tmp "
++			       "mount likely just ran out of space\n");
+ 		panic("Kernel mode signal %d", sig);
+ 	}
+ 
+@@ -239,7 +232,7 @@ void relay_signal(int sig, union uml_pt_
+ 
+ static void bus_handler(int sig, union uml_pt_regs *regs)
+ {
+-	if(current->thread.fault_catcher != NULL)
++	if (current->thread.fault_catcher != NULL)
+ 		do_longjmp(current->thread.fault_catcher, 1);
+ 	else relay_signal(sig, regs);
  }
- 
- static int copy_sc_from_user(struct pt_regs *regs,
-@@ -65,23 +65,23 @@ static int copy_sc_to_user(struct sigcon
- 	struct faultinfo * fi = &current->thread.arch.faultinfo;
- 	int err;
- 
--	sc.gs = REGS_GS(regs->regs.regs);
--	sc.fs = REGS_FS(regs->regs.regs);
--	sc.es = REGS_ES(regs->regs.regs);
--	sc.ds = REGS_DS(regs->regs.regs);
--	sc.edi = REGS_EDI(regs->regs.regs);
--	sc.esi = REGS_ESI(regs->regs.regs);
--	sc.ebp = REGS_EBP(regs->regs.regs);
-+	sc.gs = REGS_GS(regs->regs.gp);
-+	sc.fs = REGS_FS(regs->regs.gp);
-+	sc.es = REGS_ES(regs->regs.gp);
-+	sc.ds = REGS_DS(regs->regs.gp);
-+	sc.edi = REGS_EDI(regs->regs.gp);
-+	sc.esi = REGS_ESI(regs->regs.gp);
-+	sc.ebp = REGS_EBP(regs->regs.gp);
- 	sc.esp = sp;
--	sc.ebx = REGS_EBX(regs->regs.regs);
--	sc.edx = REGS_EDX(regs->regs.regs);
--	sc.ecx = REGS_ECX(regs->regs.regs);
--	sc.eax = REGS_EAX(regs->regs.regs);
--	sc.eip = REGS_IP(regs->regs.regs);
--	sc.cs = REGS_CS(regs->regs.regs);
--	sc.eflags = REGS_EFLAGS(regs->regs.regs);
--	sc.esp_at_signal = regs->regs.regs[UESP];
--	sc.ss = regs->regs.regs[SS];
-+	sc.ebx = REGS_EBX(regs->regs.gp);
-+	sc.edx = REGS_EDX(regs->regs.gp);
-+	sc.ecx = REGS_ECX(regs->regs.gp);
-+	sc.eax = REGS_EAX(regs->regs.gp);
-+	sc.eip = REGS_IP(regs->regs.gp);
-+	sc.cs = REGS_CS(regs->regs.gp);
-+	sc.eflags = REGS_EFLAGS(regs->regs.gp);
-+	sc.esp_at_signal = regs->regs.gp[UESP];
-+	sc.ss = regs->regs.gp[SS];
- 	sc.cr2 = fi->cr2;
- 	sc.err = fi->error_code;
- 	sc.trapno = fi->trap_no;
-Index: linux-2.6.22/arch/um/sys-x86_64/signal.c
+Index: linux-2.6.22/arch/um/os-Linux/time.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/sys-x86_64/signal.c	2007-08-13 15:16:57.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-x86_64/signal.c	2007-08-13 16:58:20.000000000 -0400
-@@ -16,7 +16,7 @@ void copy_sc(struct uml_pt_regs *regs, v
- 	struct sigcontext *sc = from;
+--- linux-2.6.22.orig/arch/um/os-Linux/time.c	2007-08-10 15:43:45.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/time.c	2007-08-13 11:23:23.000000000 -0400
+@@ -1,21 +1,17 @@
+ /*
+- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
  
- #define GETREG(regs, regno, sc, regname)				\
--	(regs)->regs[(regno) / sizeof(unsigned long)] = (sc)->regname
-+	(regs)->gp[(regno) / sizeof(unsigned long)] = (sc)->regname
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <unistd.h>
++#include <stddef.h>
++#include <errno.h>
++#include <signal.h>
+ #include <time.h>
+ #include <sys/time.h>
+-#include <signal.h>
+-#include <errno.h>
+ #include "kern_util.h"
+-#include "user.h"
+-#include "process.h"
+ #include "kern_constants.h"
+ #include "os.h"
+-#include "uml-config.h"
++#include "user.h"
  
- 	GETREG(regs, R8, sc, r8);
- 	GETREG(regs, R9, sc, r9);
-@@ -47,7 +47,7 @@ static int copy_sc_from_user(struct pt_r
- 	int err = 0;
+ int set_interval(int is_virtual)
+ {
+@@ -24,7 +20,7 @@ int set_interval(int is_virtual)
+ 	struct itimerval interval = ((struct itimerval) { { 0, usec },
+ 							  { 0, usec } });
  
- #define GETREG(regs, regno, sc, regname)				\
--	__get_user((regs)->regs.regs[(regno) / sizeof(unsigned long)],	\
-+	__get_user((regs)->regs.gp[(regno) / sizeof(unsigned long)],	\
- 		   &(sc)->regname)
- 
- 	err |= GETREG(regs, R8, from, r8);
-@@ -86,7 +86,7 @@ static int copy_sc_to_user(struct sigcon
- 	err |= __put_user(0, &to->fs);
- 
- #define PUTREG(regs, regno, sc, regname)				\
--	__put_user((regs)->regs.regs[(regno) / sizeof(unsigned long)],	\
-+	__put_user((regs)->regs.gp[(regno) / sizeof(unsigned long)],	\
- 		   &(sc)->regname)
- 
- 	err |= PUTREG(regs, RDI, to, rdi);
-Index: linux-2.6.22/arch/um/sys-x86_64/tls.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-x86_64/tls.c	2007-08-13 15:24:34.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-x86_64/tls.c	2007-08-13 16:58:20.000000000 -0400
-@@ -11,7 +11,7 @@ int arch_copy_tls(struct task_struct *t)
- 	 * (which is argument 5, child_tid, of clone) so it can be set
- 	 * during context switches.
- 	 */
--	t->thread.arch.fs = t->thread.regs.regs.regs[R8 / sizeof(long)];
-+	t->thread.arch.fs = t->thread.regs.regs.gp[R8 / sizeof(long)];
+-	if(setitimer(timer_type, &interval, NULL) == -1)
++	if (setitimer(timer_type, &interval, NULL) == -1)
+ 		return -errno;
  
  	return 0;
+@@ -33,10 +29,12 @@ int set_interval(int is_virtual)
+ void disable_timer(void)
+ {
+ 	struct itimerval disable = ((struct itimerval) { { 0, 0 }, { 0, 0 }});
+-	if((setitimer(ITIMER_VIRTUAL, &disable, NULL) < 0) ||
+-	   (setitimer(ITIMER_REAL, &disable, NULL) < 0))
+-		printk("disnable_timer - setitimer failed, errno = %d\n",
+-		       errno);
++
++	if ((setitimer(ITIMER_VIRTUAL, &disable, NULL) < 0) ||
++	    (setitimer(ITIMER_REAL, &disable, NULL) < 0))
++		printk(UM_KERN_ERR "disable_timer - setitimer failed, "
++		       "errno = %d\n", errno);
++
+ 	/* If there are signals already queued, after unblocking ignore them */
+ 	signal(SIGALRM, SIG_IGN);
+ 	signal(SIGVTALRM, SIG_IGN);
+@@ -49,7 +47,7 @@ void switch_timers(int to_real)
+ 							{ 0, 1000000/hz() }});
+ 	int old, new;
+ 
+-	if(to_real){
++	if (to_real) {
+ 		old = ITIMER_VIRTUAL;
+ 		new = ITIMER_REAL;
+ 	}
+@@ -58,10 +56,10 @@ void switch_timers(int to_real)
+ 		new = ITIMER_VIRTUAL;
+ 	}
+ 
+-	if((setitimer(old, &disable, NULL) < 0) ||
+-	   (setitimer(new, &enable, NULL)))
+-		printk("switch_timers - setitimer failed, errno = %d\n",
+-		       errno);
++	if ((setitimer(old, &disable, NULL) < 0) ||
++	    (setitimer(new, &enable, NULL)))
++		printk(UM_KERN_ERR "switch_timers - setitimer failed, "
++		       "errno = %d\n", errno);
  }
+ 
+ unsigned long long os_nsecs(void)
+@@ -69,7 +67,7 @@ unsigned long long os_nsecs(void)
+ 	struct timeval tv;
+ 
+ 	gettimeofday(&tv, NULL);
+-	return((unsigned long long) tv.tv_sec * BILLION + tv.tv_usec * 1000);
++	return (unsigned long long) tv.tv_sec * BILLION + tv.tv_usec * 1000;
+ }
+ 
+ void idle_sleep(int secs)
+Index: linux-2.6.22/arch/um/os-Linux/Makefile
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/Makefile	2007-08-10 15:43:44.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/Makefile	2007-08-13 11:23:33.000000000 -0400
+@@ -1,5 +1,5 @@
+ # 
+-# Copyright (C) 2000 Jeff Dike (jdike@karaya.com)
++# Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+ # Licensed under the GPL
+ #
+ 
+Index: linux-2.6.22/arch/um/os-Linux/sys-i386/Makefile
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/sys-i386/Makefile	2007-08-10 15:43:45.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/sys-i386/Makefile	2007-08-10 15:48:04.000000000 -0400
+@@ -1,5 +1,5 @@
+ #
+-# Copyright (C) 2000 Jeff Dike (jdike@karaya.com)
++# Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+ # Licensed under the GPL
+ #
+ 
+Index: linux-2.6.22/arch/um/os-Linux/tls.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/tls.c	2007-08-10 15:43:45.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/tls.c	2007-08-10 15:48:04.000000000 -0400
+@@ -1,10 +1,6 @@
+ #include <errno.h>
+-#include <unistd.h>
+ #include <sys/ptrace.h>
+-#include <sys/syscall.h>
+-#include <asm/ldt.h>
+ #include "sysdep/tls.h"
+-#include "uml-config.h"
+ 
+ /* TLS support - we basically rely on the host's one.*/
+ 
+Index: linux-2.6.22/arch/um/Kconfig.char
+===================================================================
+--- linux-2.6.22.orig/arch/um/Kconfig.char	2007-08-10 15:43:45.000000000 -0400
++++ linux-2.6.22/arch/um/Kconfig.char	2007-08-13 11:23:23.000000000 -0400
+@@ -5,7 +5,7 @@ config STDERR_CONSOLE
+ 	bool "stderr console"
+ 	default y
+ 	help
+-	console driver which dumps all printk messages to stderr.
++	  console driver which dumps all printk messages to stderr.
+ 
+ config STDIO_CONSOLE
+ 	bool
+@@ -14,58 +14,58 @@ config STDIO_CONSOLE
+ config SSL
+ 	bool "Virtual serial line"
+ 	help
+-        The User-Mode Linux environment allows you to create virtual serial
+-        lines on the UML that are usually made to show up on the host as
+-        ttys or ptys.
++          The User-Mode Linux environment allows you to create virtual serial
++          lines on the UML that are usually made to show up on the host as
++          ttys or ptys.
+ 
+-        See <http://user-mode-linux.sourceforge.net/input.html> for more
+-        information and command line examples of how to use this facility.
++          See <http://user-mode-linux.sourceforge.net/input.html> for more
++          information and command line examples of how to use this facility.
+ 
+-        Unless you have a specific reason for disabling this, say Y.
++          Unless you have a specific reason for disabling this, say Y.
+ 
+ config NULL_CHAN
+ 	bool "null channel support"
+ 	help
+-        This option enables support for attaching UML consoles and serial
+-        lines to a device similar to /dev/null.  Data written to it disappears
+-        and there is never any data to be read.
++          This option enables support for attaching UML consoles and serial
++          lines to a device similar to /dev/null.  Data written to it disappears
++          and there is never any data to be read.
+ 
+ config PORT_CHAN
+ 	bool "port channel support"
+ 	help
+-        This option enables support for attaching UML consoles and serial
+-        lines to host portals.  They may be accessed with 'telnet <host>
+-        <port number>'.  Any number of consoles and serial lines may be
+-        attached to a single portal, although what UML device you get when
+-        you telnet to that portal will be unpredictable.
+-        It is safe to say 'Y' here.
++          This option enables support for attaching UML consoles and serial
++          lines to host portals.  They may be accessed with 'telnet <host>
++          <port number>'.  Any number of consoles and serial lines may be
++          attached to a single portal, although what UML device you get when
++          you telnet to that portal will be unpredictable.
++          It is safe to say 'Y' here.
+ 
+ config PTY_CHAN
+ 	bool "pty channel support"
+ 	help
+-        This option enables support for attaching UML consoles and serial
+-        lines to host pseudo-terminals.  Access to both traditional
+-        pseudo-terminals (/dev/pty*) and pts pseudo-terminals are controlled
+-        with this option.  The assignment of UML devices to host devices
+-        will be announced in the kernel message log.
+-        It is safe to say 'Y' here.
++          This option enables support for attaching UML consoles and serial
++          lines to host pseudo-terminals.  Access to both traditional
++          pseudo-terminals (/dev/pty*) and pts pseudo-terminals are controlled
++          with this option.  The assignment of UML devices to host devices
++          will be announced in the kernel message log.
++          It is safe to say 'Y' here.
+ 
+ config TTY_CHAN
+ 	bool "tty channel support"
+ 	help
+-        This option enables support for attaching UML consoles and serial
+-        lines to host terminals.  Access to both virtual consoles
+-        (/dev/tty*) and the slave side of pseudo-terminals (/dev/ttyp* and
+-        /dev/pts/*) are controlled by this option.
+-        It is safe to say 'Y' here.
++          This option enables support for attaching UML consoles and serial
++          lines to host terminals.  Access to both virtual consoles
++          (/dev/tty*) and the slave side of pseudo-terminals (/dev/ttyp* and
++          /dev/pts/*) are controlled by this option.
++          It is safe to say 'Y' here.
+ 
+ config XTERM_CHAN
+ 	bool "xterm channel support"
+ 	help
+-        This option enables support for attaching UML consoles and serial
+-        lines to xterms.  Each UML device so assigned will be brought up in
+-        its own xterm.
+-        It is safe to say 'Y' here.
++          This option enables support for attaching UML consoles and serial
++          lines to xterms.  Each UML device so assigned will be brought up in
++          its own xterm.
++          It is safe to say 'Y' here.
+ 
+ config NOCONFIG_CHAN
+ 	bool
+@@ -75,39 +75,39 @@ config CON_ZERO_CHAN
+ 	string "Default main console channel initialization"
+ 	default "fd:0,fd:1"
+ 	help
+-        This is the string describing the channel to which the main console
+-        will be attached by default.  This value can be overridden from the
+-        command line.  The default value is "fd:0,fd:1", which attaches the
+-        main console to stdin and stdout.
+-        It is safe to leave this unchanged.
++          This is the string describing the channel to which the main console
++          will be attached by default.  This value can be overridden from the
++          command line.  The default value is "fd:0,fd:1", which attaches the
++          main console to stdin and stdout.
++          It is safe to leave this unchanged.
+ 
+ config CON_CHAN
+ 	string "Default console channel initialization"
+ 	default "xterm"
+ 	help
+-        This is the string describing the channel to which all consoles
+-        except the main console will be attached by default.  This value can
+-        be overridden from the command line.  The default value is "xterm",
+-        which brings them up in xterms.
+-        It is safe to leave this unchanged, although you may wish to change
+-        this if you expect the UML that you build to be run in environments
+-        which don't have X or xterm available.
++          This is the string describing the channel to which all consoles
++          except the main console will be attached by default.  This value can
++          be overridden from the command line.  The default value is "xterm",
++          which brings them up in xterms.
++          It is safe to leave this unchanged, although you may wish to change
++          this if you expect the UML that you build to be run in environments
++          which don't have X or xterm available.
+ 
+ config SSL_CHAN
+ 	string "Default serial line channel initialization"
+ 	default "pty"
+ 	help
+-        This is the string describing the channel to which the serial lines
+-        will be attached by default.  This value can be overridden from the
+-        command line.  The default value is "pty", which attaches them to
+-        traditional pseudo-terminals.
+-        It is safe to leave this unchanged, although you may wish to change
+-        this if you expect the UML that you build to be run in environments
+-        which don't have a set of /dev/pty* devices.
++          This is the string describing the channel to which the serial lines
++          will be attached by default.  This value can be overridden from the
++          command line.  The default value is "pty", which attaches them to
++          traditional pseudo-terminals.
++          It is safe to leave this unchanged, although you may wish to change
++          this if you expect the UML that you build to be run in environments
++          which don't have a set of /dev/pty* devices.
+ 
+ config UNIX98_PTYS
+ 	bool "Unix98 PTY support"
+-	---help---
++	help
+ 	  A pseudo terminal (PTY) is a software device consisting of two
+ 	  halves: a master and a slave. The slave device behaves identical to
+ 	  a physical terminal; the master device is used by a process to
+@@ -130,7 +130,7 @@ config UNIX98_PTYS
+ config LEGACY_PTYS
+ 	bool "Legacy (BSD) PTY support"
+ 	default y
+-	---help---
++	help
+ 	  A pseudo terminal (PTY) is a software device consisting of two
+ 	  halves: a master and a slave. The slave device behaves identical to
+ 	  a physical terminal; the master device is used by a process to
+@@ -168,7 +168,7 @@ config LEGACY_PTY_COUNT
+ 	int "Maximum number of legacy PTY in use"
+ 	depends on LEGACY_PTYS
+ 	default "256"
+-	---help---
++	help
+ 	  The maximum number of legacy PTYs that can be used at any one time.
+ 	  The default is 256, and should be more than enough.  Embedded
+ 	  systems may want to reduce this to save memory.
+@@ -194,10 +194,10 @@ config UML_WATCHDOG
+ config UML_SOUND
+ 	tristate "Sound support"
+ 	help
+-        This option enables UML sound support.  If enabled, it will pull in
+-        soundcore and the UML hostaudio relay, which acts as a intermediary
+-        between the host's dsp and mixer devices and the UML sound system.
+-        It is safe to say 'Y' here.
++          This option enables UML sound support.  If enabled, it will pull in
++          soundcore and the UML hostaudio relay, which acts as a intermediary
++          between the host's dsp and mixer devices and the UML sound system.
++          It is safe to say 'Y' here.
+ 
+ config SOUND
+ 	tristate
+@@ -215,22 +215,21 @@ config HW_RANDOM
+ config UML_RANDOM
+ 	tristate "Hardware random number generator"
+ 	help
+-	This option enables UML's "hardware" random number generator.  It
+-	attaches itself to the host's /dev/random, supplying as much entropy
+-	as the host has, rather than the small amount the UML gets from its
+-	own drivers.  It registers itself as a standard hardware random number
+-	generator, major 10, minor 183, and the canonical device name is
+-	/dev/hwrng.
+-	The way to make use of this is to install the rng-tools package
+-	(check your distro, or download from
+-	http://sourceforge.net/projects/gkernel/).  rngd periodically reads
+-	/dev/hwrng and injects the entropy into /dev/random.
++	  This option enables UML's "hardware" random number generator.  It
++	  attaches itself to the host's /dev/random, supplying as much entropy
++	  as the host has, rather than the small amount the UML gets from its
++	  own drivers.  It registers itself as a standard hardware random number
++	  generator, major 10, minor 183, and the canonical device name is
++	  /dev/hwrng.
++	  The way to make use of this is to install the rng-tools package
++	  (check your distro, or download from
++	  http://sourceforge.net/projects/gkernel/).  rngd periodically reads
++	  /dev/hwrng and injects the entropy into /dev/random.
+ 
+ config MMAPPER
+ 	tristate "iomem emulation driver"
+ 	help
+-	This driver allows a host file to be used as emulated IO memory inside
+-	UML.
++	  This driver allows a host file to be used as emulated IO memory inside
++	  UML.
+ 
+ endmenu
+-
+Index: linux-2.6.22/arch/um/Kconfig
+===================================================================
+--- linux-2.6.22.orig/arch/um/Kconfig	2007-08-10 15:43:44.000000000 -0400
++++ linux-2.6.22/arch/um/Kconfig	2007-08-13 11:24:16.000000000 -0400
+@@ -66,12 +66,12 @@ config STATIC_LINK
+ 	bool "Force a static link"
+ 	default n
+ 	help
+-	This option gives you the ability to force a static link of UML.
+-	Normally, UML is linked as a shared binary.  This is inconvenient for
+-	use in a chroot jail.  So, if you intend to run UML inside a chroot,
+-	you probably want to say Y here.
+-	Additionally, this option enables using higher memory spaces (up to
+-	2.75G) for UML.
++	  This option gives you the ability to force a static link of UML.
++	  Normally, UML is linked as a shared binary.  This is inconvenient for
++	  use in a chroot jail.  So, if you intend to run UML inside a chroot,
++	  you probably want to say Y here.
++	  Additionally, this option enables using higher memory spaces (up to
++	  2.75G) for UML.
+ 
+ source "arch/um/Kconfig.arch"
+ source "mm/Kconfig"
+@@ -89,18 +89,18 @@ config LD_SCRIPT_DYN
+ config NET
+ 	bool "Networking support"
+ 	help
+-	Unless you really know what you are doing, you should say Y here.
+-	The reason is that some programs need kernel networking support even
+-	when running on a stand-alone machine that isn't connected to any
+-	other computer. If you are upgrading from an older kernel, you
+-	should consider updating your networking tools too because changes
+-	in the kernel and the tools often go hand in hand. The tools are
+-	contained in the package net-tools, the location and version number
+-	of which are given in <file:Documentation/Changes>.
+-
+-	For a general introduction to Linux networking, it is highly
+-	recommended to read the NET-HOWTO, available from
+-	<http://www.tldp.org/docs.html#howto>.
++	  Unless you really know what you are doing, you should say Y here.
++	  The reason is that some programs need kernel networking support even
++	  when running on a stand-alone machine that isn't connected to any
++	  other computer. If you are upgrading from an older kernel, you
++	  should consider updating your networking tools too because changes
++	  in the kernel and the tools often go hand in hand. The tools are
++	  contained in the package net-tools, the location and version number
++	  of which are given in <file:Documentation/Changes>.
++
++	  For a general introduction to Linux networking, it is highly
++	  recommended to read the NET-HOWTO, available from
++	  <http://www.tldp.org/docs.html#howto>.
+ 
+ 
+ source "fs/Kconfig.binfmt"
+@@ -108,74 +108,74 @@ source "fs/Kconfig.binfmt"
+ config HOSTFS
+ 	tristate "Host filesystem"
+ 	help
+-        While the User-Mode Linux port uses its own root file system for
+-        booting and normal file access, this module lets the UML user
+-        access files stored on the host.  It does not require any
+-        network connection between the Host and UML.  An example use of
+-        this might be:
+-
+-        mount none /tmp/fromhost -t hostfs -o /tmp/umlshare
+-
+-        where /tmp/fromhost is an empty directory inside UML and
+-        /tmp/umlshare is a directory on the host with files the UML user
+-        wishes to access.
++          While the User-Mode Linux port uses its own root file system for
++          booting and normal file access, this module lets the UML user
++          access files stored on the host.  It does not require any
++          network connection between the Host and UML.  An example use of
++          this might be:
++
++          mount none /tmp/fromhost -t hostfs -o /tmp/umlshare
++
++          where /tmp/fromhost is an empty directory inside UML and
++          /tmp/umlshare is a directory on the host with files the UML user
++          wishes to access.
+ 
+-        For more information, see
+-        <http://user-mode-linux.sourceforge.net/hostfs.html>.
++          For more information, see
++          <http://user-mode-linux.sourceforge.net/hostfs.html>.
+ 
+-        If you'd like to be able to work with files stored on the host,
+-        say Y or M here; otherwise say N.
++          If you'd like to be able to work with files stored on the host,
++          say Y or M here; otherwise say N.
+ 
+ config HPPFS
+ 	tristate "HoneyPot ProcFS (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+ 	help
+-	hppfs (HoneyPot ProcFS) is a filesystem which allows UML /proc
+-	entries to be overridden, removed, or fabricated from the host.
+-	Its purpose is to allow a UML to appear to be a physical machine
+-	by removing or changing anything in /proc which gives away the
+-	identity of a UML.
++	  hppfs (HoneyPot ProcFS) is a filesystem which allows UML /proc
++	  entries to be overridden, removed, or fabricated from the host.
++	  Its purpose is to allow a UML to appear to be a physical machine
++	  by removing or changing anything in /proc which gives away the
++	  identity of a UML.
+ 
+-	See <http://user-mode-linux.sf.net/hppfs.html> for more information.
++	  See <http://user-mode-linux.sf.net/hppfs.html> for more information.
+ 
+-	You only need this if you are setting up a UML honeypot.  Otherwise,
+-	it is safe to say 'N' here.
++	  You only need this if you are setting up a UML honeypot.  Otherwise,
++	  it is safe to say 'N' here.
+ 
+ config MCONSOLE
+ 	bool "Management console"
+ 	default y
+ 	help
+-        The user mode linux management console is a low-level interface to
+-        the kernel, somewhat like the i386 SysRq interface.  Since there is
+-        a full-blown operating system running under every user mode linux
+-        instance, there is much greater flexibility possible than with the
+-        SysRq mechanism.
+-
+-        If you answer 'Y' to this option, to use this feature, you need the
+-        mconsole client (called uml_mconsole) which is present in CVS in
+-        2.4.5-9um and later (path /tools/mconsole), and is also in the
+-        distribution RPM package in 2.4.6 and later.
++          The user mode linux management console is a low-level interface to
++          the kernel, somewhat like the i386 SysRq interface.  Since there is
++          a full-blown operating system running under every user mode linux
++          instance, there is much greater flexibility possible than with the
++          SysRq mechanism.
++
++          If you answer 'Y' to this option, to use this feature, you need the
++          mconsole client (called uml_mconsole) which is present in CVS in
++          2.4.5-9um and later (path /tools/mconsole), and is also in the
++          distribution RPM package in 2.4.6 and later.
+ 
+-        It is safe to say 'Y' here.
++          It is safe to say 'Y' here.
+ 
+ config MAGIC_SYSRQ
+ 	bool "Magic SysRq key"
+ 	depends on MCONSOLE
+-	---help---
+-	If you say Y here, you will have some control over the system even
+-	if the system crashes for example during kernel debugging (e.g., you
+-	will be able to flush the buffer cache to disk, reboot the system
+-	immediately or dump some status information). A key for each of the
+-	possible requests is provided.
++	help
++	  If you say Y here, you will have some control over the system even
++	  if the system crashes for example during kernel debugging (e.g., you
++	  will be able to flush the buffer cache to disk, reboot the system
++	  immediately or dump some status information). A key for each of the
++	  possible requests is provided.
+ 
+-	This is the feature normally accomplished by pressing a key
+-	while holding SysRq (Alt+PrintScreen).
++	  This is the feature normally accomplished by pressing a key
++	  while holding SysRq (Alt+PrintScreen).
+ 
+-	On UML, this is accomplished by sending a "sysrq" command with
+-	mconsole, followed by the letter for the requested command.
++	  On UML, this is accomplished by sending a "sysrq" command with
++	  mconsole, followed by the letter for the requested command.
+ 
+-	The keys are documented in <file:Documentation/sysrq.txt>. Don't say Y
+-	unless you really know what this hack does.
++	  The keys are documented in <file:Documentation/sysrq.txt>. Don't say Y
++	  unless you really know what this hack does.
+ 
+ config SMP
+ 	bool "Symmetric multi-processing support (EXPERIMENTAL)"
+@@ -183,24 +183,24 @@ config SMP
+ 	#SMP_BROKEN is for x86_64.
+ 	depends on EXPERIMENTAL && (!SMP_BROKEN || (BROKEN && SMP_BROKEN))
+ 	help
+-	This option enables UML SMP support.
+-	It is NOT related to having a real SMP box. Not directly, at least.
++	  This option enables UML SMP support.
++	  It is NOT related to having a real SMP box. Not directly, at least.
+ 
+-	UML implements virtual SMP by allowing as many processes to run
+-	simultaneously on the host as there are virtual processors configured.
++	  UML implements virtual SMP by allowing as many processes to run
++	  simultaneously on the host as there are virtual processors configured.
+ 
+-	Obviously, if the host is a uniprocessor, those processes will
+-	timeshare, but, inside UML, will appear to be running simultaneously.
+-	If the host is a multiprocessor, then UML processes may run
+-	simultaneously, depending on the host scheduler.
+-
+-	This, however, is supported only in TT mode. So, if you use the SKAS
+-	patch on your host, switching to TT mode and enabling SMP usually gives
+-	you worse performances.
+-	Also, since the support for SMP has been under-developed, there could
+-	be some bugs being exposed by enabling SMP.
++	  Obviously, if the host is a uniprocessor, those processes will
++	  timeshare, but, inside UML, will appear to be running simultaneously.
++	  If the host is a multiprocessor, then UML processes may run
++	  simultaneously, depending on the host scheduler.
++
++	  This, however, is supported only in TT mode. So, if you use the SKAS
++	  patch on your host, switching to TT mode and enabling SMP usually
++	  gives	you worse performances.
++	  Also, since the support for SMP has been under-developed, there could
++	  be some bugs being exposed by enabling SMP.
+ 
+-	If you don't know what to do, say N.
++	  If you don't know what to do, say N.
+ 
+ config NR_CPUS
+ 	int "Maximum number of CPUs (2-32)"
+@@ -212,24 +212,24 @@ config NEST_LEVEL
+ 	int "Nesting level"
+ 	default "0"
+ 	help
+-        This is set to the number of layers of UMLs that this UML will be run
+-        in.  Normally, this is zero, meaning that it will run directly on the
+-        host.  Setting it to one will build a UML that can run inside a UML
+-        that is running on the host.  Generally, if you intend this UML to run
+-        inside another UML, set CONFIG_NEST_LEVEL to one more than the host
+-        UML.
++          This is set to the number of layers of UMLs that this UML will be run
++          in.  Normally, this is zero, meaning that it will run directly on the
++          host.  Setting it to one will build a UML that can run inside a UML
++          that is running on the host.  Generally, if you intend this UML to run
++          inside another UML, set CONFIG_NEST_LEVEL to one more than the host
++          UML.
+ 
+ config HIGHMEM
+ 	bool "Highmem support (EXPERIMENTAL)"
+ 	depends on !64BIT && EXPERIMENTAL
+ 	default n
+ 	help
+-	This was used to allow UML to run with big amounts of memory.
+-	Currently it is unstable, so if unsure say N.
++	  This was used to allow UML to run with big amounts of memory.
++	  Currently it is unstable, so if unsure say N.
+ 
+-	To use big amounts of memory, it is recommended enable static
+-	linking (i.e. CONFIG_STATIC_LINK) - this should allow the
+-	guest to use up to 2.75G of memory.
++	  To use big amounts of memory, it is recommended enable static
++	  linking (i.e. CONFIG_STATIC_LINK) - this should allow the
++	  guest to use up to 2.75G of memory.
+ 
+ config KERNEL_STACK_ORDER
+ 	int "Kernel stack size order"
+@@ -237,20 +237,21 @@ config KERNEL_STACK_ORDER
+ 	range 1 10 if 64BIT
+ 	default 0 if !64BIT
+ 	help
+-	This option determines the size of UML kernel stacks.  They will
+-	be 1 << order pages.  The default is OK unless you're running Valgrind
+-	on UML, in which case, set this to 3.
++	  This option determines the size of UML kernel stacks.  They will
++	  be 1 << order pages.  The default is OK unless you're running Valgrind
++	  on UML, in which case, set this to 3.
+ 
+ config UML_REAL_TIME_CLOCK
+ 	bool "Real-time Clock"
+ 	default y
+ 	help
+-	This option makes UML time deltas match wall clock deltas.  This should
+-	normally be enabled.  The exception would be if you are debugging with
+-	UML and spend long times with UML stopped at a breakpoint.  In this
+-	case, when UML is restarted, it will call the timer enough times to make
+-	up for the time spent at the breakpoint.  This could result in a
+-	noticeable lag.  If this is a problem, then disable this option.
++	  This option makes UML time deltas match wall clock deltas.  This
++	  should normally be enabled.  The exception would be if you are
++	  debugging with UML and spend long times with UML stopped at a
++	  breakpoint.  In this case, when UML is restarted, it will call the
++	  timer enough times to make up for the time spent at the breakpoint.
++	  This could result in a noticeable lag.  If this is a problem, then
++	  disable this option.
+ 
+ endmenu
+ 
+Index: linux-2.6.22/arch/um/Makefile
+===================================================================
+--- linux-2.6.22.orig/arch/um/Makefile	2007-08-10 15:43:44.000000000 -0400
++++ linux-2.6.22/arch/um/Makefile	2007-08-13 11:23:54.000000000 -0400
+@@ -2,7 +2,7 @@
+ # This file is included by the global makefile so that you can add your own
+ # architecture-specific flags and dependencies.
+ #
+-# Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++# Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+ # Licensed under the GPL
+ #
+ 
+@@ -124,7 +124,7 @@ endif
+ CPPFLAGS_vmlinux.lds = -U$(SUBARCH) -DSTART=$(START) -DELF_ARCH=$(ELF_ARCH) \
+ 	-DELF_FORMAT="$(ELF_FORMAT)" -DKERNEL_STACK_SIZE=$(STACK_SIZE)
+ 
+-#The wrappers will select whether using "malloc" or the kernel allocator.
++# The wrappers will select whether using "malloc" or the kernel allocator.
+ LINK_WRAPS = -Wl,--wrap,malloc -Wl,--wrap,free -Wl,--wrap,calloc
+ 
+ CFLAGS_vmlinux := $(LINK-y) $(LINK_WRAPS)
+@@ -137,8 +137,8 @@ define cmd_vmlinux__
+ 	FORCE ,$^) ; rm -f linux
+ endef
+ 
+-#When cleaning we don't include .config, so we don't include
+-#TT or skas makefiles and don't clean skas_ptregs.h.
++# When cleaning we don't include .config, so we don't include
++# TT or skas makefiles and don't clean skas_ptregs.h.
+ CLEAN_FILES += linux x.i gmon.out $(ARCH_DIR)/include/uml-config.h \
+ 	$(ARCH_DIR)/include/user_constants.h \
+ 	$(ARCH_DIR)/include/kern_constants.h $(ARCH_DIR)/Kconfig.arch
+Index: linux-2.6.22/arch/um/kernel/init_task.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/init_task.c	2007-08-10 15:43:45.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/init_task.c	2007-08-10 15:48:04.000000000 -0400
+@@ -3,16 +3,12 @@
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/mm.h"
+-#include "linux/fs.h"
+-#include "linux/module.h"
+ #include "linux/sched.h"
+ #include "linux/init_task.h"
++#include "linux/fs.h"
++#include "linux/module.h"
+ #include "linux/mqueue.h"
+ #include "asm/uaccess.h"
+-#include "asm/pgtable.h"
+-#include "mem_user.h"
+-#include "os.h"
+ 
+ static struct fs_struct init_fs = INIT_FS;
+ struct mm_struct init_mm = INIT_MM(init_mm);
+Index: linux-2.6.22/arch/um/sys-i386/Makefile
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-i386/Makefile	2007-08-10 15:43:44.000000000 -0400
++++ linux-2.6.22/arch/um/sys-i386/Makefile	2007-08-13 11:23:58.000000000 -0400
+@@ -1,3 +1,7 @@
++#
++# Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
++#
++
+ obj-y = bug.o bugs.o checksum.o delay.o fault.o ksyms.o ldt.o ptrace.o \
+ 	ptrace_user.o setjmp.o signal.o sigcontext.o stub.o stub_segv.o \
+ 	syscalls.o sysrq.o sys_call_table.o tls.o
+Index: linux-2.6.22/arch/um/Kconfig.debug
+===================================================================
+--- linux-2.6.22.orig/arch/um/Kconfig.debug	2007-08-10 15:43:44.000000000 -0400
++++ linux-2.6.22/arch/um/Kconfig.debug	2007-08-13 11:23:02.000000000 -0400
+@@ -6,27 +6,27 @@ config GPROF
+ 	bool "Enable gprof support"
+ 	depends on DEBUG_INFO
+ 	help
+-        This allows profiling of a User-Mode Linux kernel with the gprof
+-        utility.
++	  This allows profiling of a User-Mode Linux kernel with the gprof
++	  utility.
+ 
+-        See <http://user-mode-linux.sourceforge.net/gprof.html> for more
+-        details.
++	  See <http://user-mode-linux.sourceforge.net/gprof.html> for more
++	  details.
+ 
+-        If you're involved in UML kernel development and want to use gprof,
+-        say Y.  If you're unsure, say N.
++	  If you're involved in UML kernel development and want to use gprof,
++	  say Y.  If you're unsure, say N.
+ 
+ config GCOV
+ 	bool "Enable gcov support"
+ 	depends on DEBUG_INFO
+ 	help
+-        This option allows developers to retrieve coverage data from a UML
+-        session.
++	  This option allows developers to retrieve coverage data from a UML
++	  session.
+ 
+-        See <http://user-mode-linux.sourceforge.net/gprof.html> for more
+-        details.
++	  See <http://user-mode-linux.sourceforge.net/gprof.html> for more
++	  details.
+ 
+-        If you're involved in UML kernel development and want to use gcov,
+-        say Y.  If you're unsure, say N.
++	  If you're involved in UML kernel development and want to use gcov,
++	  say Y.  If you're unsure, say N.
+ 
+ config DEBUG_STACK_USAGE
+ 	bool "Stack utilization instrumentation"
+Index: linux-2.6.22/arch/um/kernel/smp.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/smp.c	2007-08-10 15:43:45.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/smp.c	2007-08-13 11:23:08.000000000 -0400
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2000 - 2003 Jeff Dike (jdike@addtoit.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+@@ -56,12 +56,12 @@ void smp_send_stop(void)
+ 	int i;
+ 
+ 	printk(KERN_INFO "Stopping all CPUs...");
+-	for(i = 0; i < num_online_cpus(); i++){
+-		if(i == current_thread->cpu)
++	for (i = 0; i < num_online_cpus(); i++) {
++		if (i == current_thread->cpu)
+ 			continue;
+ 		os_write_file(cpu_data[i].ipi_pipe[1], "S", 1);
+ 	}
+-	printk("done\n");
++	printk(KERN_INFO "done\n");
+ }
+ 
+ static cpumask_t smp_commenced_mask = CPU_MASK_NONE;
+@@ -72,7 +72,7 @@ static int idle_proc(void *cpup)
+ 	int cpu = (int) cpup, err;
+ 
+ 	err = os_pipe(cpu_data[cpu].ipi_pipe, 1, 1);
+-	if(err < 0)
++	if (err < 0)
+ 		panic("CPU#%d failed to create IPI pipe, err = %d", cpu, -err);
+ 
+ 	os_set_fd_async(cpu_data[cpu].ipi_pipe[0],
+@@ -80,7 +80,7 @@ static int idle_proc(void *cpup)
+ 
+ 	wmb();
+ 	if (cpu_test_and_set(cpu, cpu_callin_map)) {
+-		printk("huh, CPU#%d already present??\n", cpu);
++		printk(KERN_ERR "huh, CPU#%d already present??\n", cpu);
+ 		BUG();
+ 	}
+ 
+@@ -99,7 +99,7 @@ static struct task_struct *idle_thread(i
+ 	current->thread.request.u.thread.proc = idle_proc;
+ 	current->thread.request.u.thread.arg = (void *) cpu;
+ 	new_task = fork_idle(cpu);
+-	if(IS_ERR(new_task))
++	if (IS_ERR(new_task))
+ 		panic("copy_process failed in idle_thread, error = %ld",
+ 		      PTR_ERR(new_task));
+ 
+@@ -126,14 +126,14 @@ void smp_prepare_cpus(unsigned int maxcp
+ 	cpu_set(me, cpu_callin_map);
+ 
+ 	err = os_pipe(cpu_data[me].ipi_pipe, 1, 1);
+-	if(err < 0)
++	if (err < 0)
+ 		panic("CPU#0 failed to create IPI pipe, errno = %d", -err);
+ 
+ 	os_set_fd_async(cpu_data[me].ipi_pipe[0],
+ 		     current->thread.mode.tt.extern_pid);
+ 
+-	for(cpu = 1; cpu < ncpus; cpu++){
+-		printk("Booting processor %d...\n", cpu);
++	for (cpu = 1; cpu < ncpus; cpu++) {
++		printk(KERN_INFO "Booting processor %d...\n", cpu);
+ 
+ 		idle = idle_thread(cpu);
+ 
+@@ -144,8 +144,8 @@ void smp_prepare_cpus(unsigned int maxcp
+ 			cpu_relax();
+ 
+ 		if (cpu_isset(cpu, cpu_callin_map))
+-			printk("done\n");
+-		else printk("failed\n");
++			printk(KERN_INFO "done\n");
++		else printk(KERN_INFO "failed\n");
+ 	}
+ }
+ 
+@@ -187,13 +187,14 @@ void IPI_handler(int cpu)
+ 			break;
+ 
+ 		case 'S':
+-			printk("CPU#%d stopping\n", cpu);
+-			while(1)
++			printk(KERN_INFO "CPU#%d stopping\n", cpu);
++			while (1)
+ 				pause();
+ 			break;
+ 
+ 		default:
+-			printk("CPU#%d received unknown IPI [%c]!\n", cpu, c);
++			printk(KERN_ERR "CPU#%d received unknown IPI [%c]!\n",
++			       cpu, c);
+ 			break;
+ 		}
+ 	}
+Index: linux-2.6.22/arch/um/sys-i386/ptrace_user.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-i386/ptrace_user.c	2007-08-10 15:47:41.000000000 -0400
++++ linux-2.6.22/arch/um/sys-i386/ptrace_user.c	2007-08-10 15:48:04.000000000 -0400
+@@ -1,19 +1,10 @@
+ /*
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include <stdio.h>
+-#include <stddef.h>
+ #include <errno.h>
+-#include <unistd.h>
+-#include "ptrace_user.h"
+-/* Grr, asm/user.h includes asm/ptrace.h, so has to follow ptrace_user.h */
+-#include <asm/user.h>
+-#include "kern_util.h"
+-#include "user.h"
+-#include "os.h"
+-#include "uml-config.h"
++#include <sys/ptrace.h>
+ 
+ int ptrace_getregs(long pid, unsigned long *regs_out)
+ {
+Index: linux-2.6.22/arch/um/include/sysdep-i386/sigcontext.h
+===================================================================
+--- linux-2.6.22.orig/arch/um/include/sysdep-i386/sigcontext.h	2007-08-10 15:47:41.000000000 -0400
++++ linux-2.6.22/arch/um/include/sysdep-i386/sigcontext.h	2007-08-10 15:48:04.000000000 -0400
+@@ -1,5 +1,5 @@
+ /* 
+- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+@@ -37,13 +37,3 @@ extern unsigned long *sc_sigmask(void *s
+ extern int sc_get_fpregs(unsigned long buf, void *sc_ptr);
+ 
+ #endif
+-/*
+- * Overrides for Emacs so that we follow Linus's tabbing style.
+- * Emacs will notice this stuff at the end of the file and automatically
+- * adjust the settings for this buffer only.  This must remain at the end
+- * of the file.
+- * ---------------------------------------------------------------------------
+- * Local variables:
+- * c-file-style: "linux"
+- * End:
+- */
+Index: linux-2.6.22/arch/um/kernel/Makefile
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/Makefile	2007-08-10 15:43:44.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/Makefile	2007-08-13 11:24:14.000000000 -0400
+@@ -1,5 +1,5 @@
+ #
+-# Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++# Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux,intel}.com)
+ # Licensed under the GPL
+ #
+ 
