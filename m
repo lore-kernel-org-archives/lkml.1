@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762696AbXHNOhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762875AbXHNOhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762696AbXHNOhH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 10:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbXHNOgw
+	id S1762875AbXHNOhq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 10:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762556AbXHNOhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 10:36:52 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33854 "EHLO
+	Tue, 14 Aug 2007 10:37:01 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33858 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbXHNOgv (ORCPT
+	with ESMTP id S1762452AbXHNOg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 10:36:51 -0400
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070814142103.204771292@sgi.com>
-References: <20070814142103.204771292@sgi.com>
+	Tue, 14 Aug 2007 10:36:59 -0400
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -
+	scripts/get_maintainer.pl
+From: Arjan van de Ven <arjan@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Rene Herman <rene.herman@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Joe Perches <joe@perches.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+In-Reply-To: <20070814142853.GQ18945@stusta.de>
+References: <1186984174.10249.7.camel@localhost>
+	 <200708131933.10125.m.kozlowski@tuxland.pl>
+	 <1187026955.2688.4.camel@laptopd505.fenrus.org>
+	 <1187037445.6628.98.camel@heimdal.trondhjem.org>
+	 <1187054366.2757.0.camel@laptopd505.fenrus.org>
+	 <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu>
+	 <1187099240.3537.1.camel@laptopd505.fenrus.org>
+	 <20070814142853.GQ18945@stusta.de>
 Content-Type: text/plain
-Date: Tue, 14 Aug 2007 16:36:43 +0200
-Message-Id: <1187102203.6114.2.camel@twins>
+Organization: Intel International BV
+Date: Tue, 14 Aug 2007 07:33:09 -0700
+Message-Id: <1187101989.3537.9.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.11.6.1 (2.11.6.1-1.fc8) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-14 at 07:21 -0700, Christoph Lameter wrote:
-> The following patchset implements recursive reclaim. Recursive reclaim
-> is necessary if we run out of memory in the writeout patch from reclaim.
-> 
-> This is f.e. important for stacked filesystems or anything that does
-> complicated processing in the writeout path.
-> 
-> Recursive reclaim works because it limits itself to only reclaim pages
-> that do not require writeout. It will only remove clean pages from the LRU.
-> The dirty throttling of the VM during regular reclaim insures that the amount
-> of dirty pages is limited. 
 
-No it doesn't. All memory can be tied up by anonymous pages - who are
-dirty by definition and are not clamped by the dirty limit.
+> > the other angle is this: if someone becomes the new maintainer, does he
+> > really want to "maintain" all the really old versions of the code out
+> > there that predate him, or does he only want to go forward? 
+> >...
+> 
+> What about cases like maintainers using company email addresses and 
+> changing company?
+> 
+> E.g. Jens is still block layer maintainer but the @suse address he used 
+> for years suddenly no longer existed after he left Suse.
 
-> If recursive reclaim causes too many clean pages
-> to be removed then regular reclaim will throttle all processes until the
-> dirty ratio is restored. This means that the amount of memory that can
-> be reclaimed via recursive reclaim is limited to clean memory. The default
-> ratio is 10%. This means that recursive reclaim can reclaim 90% of memory
-> before failing. Reclaiming excessive amounts of clean pages may have a
-> significant performance impact because this means that executable pages
-> will be removed. However, it ensures that we will no longer fail in the
-> writeout path.
-> 
-> A patch is included to test this functionality. The test involved allocating
-> 12 Megabytes from the reclaim paths when __PF_MEMALLOC is set. This is enough
-> to exhaust the reserves.
-> 
+if you're using a current enough kernel, no big deal. If you use an old
+one and it bounces, then you go look further. The biggest deal for this
+feature is to find out mechanically whom to CC patches to; if you're
+doing patches, you better use a recent enough kernel annyway. 
+(and if you're doing patches against something ancient, you more than
+likely have a modern tree somewhere for lookaside)
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
