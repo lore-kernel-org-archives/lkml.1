@@ -1,133 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761787AbXHNOep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761796AbXHNOfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761787AbXHNOep (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 10:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758551AbXHNOdN
+	id S1761796AbXHNOfU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 10:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762530AbXHNOeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 10:33:13 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46748 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757731AbXHNOdI (ORCPT
+	Tue, 14 Aug 2007 10:34:18 -0400
+Received: from cm135.gamma145.maxonline.com.sg ([202.156.145.135]:43019 "EHLO
+	kerndev.sin.redhat.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762172AbXHNOeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 10:33:08 -0400
-Message-Id: <20070814143303.432960585@sgi.com>
-References: <20070814142103.204771292@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 14 Aug 2007 07:21:06 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Cc: dkegel@google.com
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: David Miller <davem@davemloft.net>
-Cc: Nick Piggin <npiggin@suse.de>
-Subject: [RFC 3/3] Test code for PF_MEMALLOC reclaim
-Content-Disposition: inline; filename=test_reclaim
+	Tue, 14 Aug 2007 10:34:15 -0400
+Date: Tue, 14 Aug 2007 22:34:11 +0800
+From: Eugene Teo <eugeneteo@kernel.sg>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix tsk->exit_state usage
+Message-ID: <20070814143411.GA23268@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.sg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Insert an allocation of 12 MB into shrink_slab(). The allocation occurs every
-2 minutes. Reserves are typically around 5-10MB and so it will invariably
-exhaust the reserves.
+tsk->exit_state can only be 0, EXIT_ZOMBIE, or EXIT_DEAD. A non-zero test
+is the same as tsk->exit_state & (EXIT_ZOMBIE | EXIT_DEAD), so just testing
+tsk->exit_state is sufficient.
 
-Without the earlier patches this will cause an OOM.
-
-With the patches to allow reclaim with PF_MEMALLOC we will reclaim and
-continue
-
-Typical trace output is:
-
-Reclaim: Excessive GFP_KERNEL allocs
-Reclaimed 63 pages with NOMEMALLOC
-Reclaimed 60 pages with NOMEMALLOC
-Reclaimed 52 pages with NOMEMALLOC
-Reclaimed 62 pages with NOMEMALLOC
-Reclaimed 64 pages with NOMEMALLOC
-Reclaimed 64 pages with NOMEMALLOC
-Reclaimed 64 pages with NOMEMALLOC
-Reclaim: Memory freed
-
+Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
 ---
- mm/vmscan.c |   45 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 44 insertions(+), 1 deletion(-)
+ fs/proc/array.c |    3 +--
+ kernel/fork.c   |    2 +-
+ kernel/sched.c  |    2 +-
+ 3 files changed, 3 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/mm/vmscan.c
-===================================================================
---- linux-2.6.orig/mm/vmscan.c	2007-08-14 00:04:26.000000000 -0700
-+++ linux-2.6/mm/vmscan.c	2007-08-14 00:15:41.000000000 -0700
-@@ -132,6 +132,14 @@ void unregister_shrinker(struct shrinker
- }
- EXPORT_SYMBOL(unregister_shrinker);
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 965625a..babb24d 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -145,8 +145,7 @@ static inline const char *get_task_state(struct task_struct *tsk)
+ 					    TASK_UNINTERRUPTIBLE |
+ 					    TASK_STOPPED |
+ 					    TASK_TRACED)) |
+-			(tsk->exit_state & (EXIT_ZOMBIE |
+-					    EXIT_DEAD));
++					   tsk->exit_state;
+ 	const char **p = &task_state_array[0];
  
-+/*
-+ * Min freekbytes is 2m. 3000 pages give us 12M which is
-+ * able to exhaust the reserves
-+ */
-+#define NR_TEST 3000
-+
-+static void isittime(void);
-+
- #define SHRINK_BATCH 128
- /*
-  * Call the shrink functions to age shrinkable caches
-@@ -161,6 +169,7 @@ unsigned long shrink_slab(unsigned long 
- 	if (scanned == 0)
- 		scanned = SWAP_CLUSTER_MAX;
+ 	while (state) {
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 7332e23..56d1b8b 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -115,7 +115,7 @@ EXPORT_SYMBOL(free_task);
  
-+	isittime();
- 	/*
- 	 * Not sure if we can keep this clean of allocs.
- 	 * Better leave it off for now
-@@ -1110,7 +1119,36 @@ static unsigned long shrink_zones(int pr
- 	}
- 	return nr_reclaimed;
- }
-- 
-+
-+
-+static void isittime(void)
-+{
-+	struct page **base;
-+	int i;
-+	static unsigned long lasttime = 120 * HZ;
-+
-+	/* Every 2 minutes */
-+	if (time_after(jiffies, lasttime)) {
-+		lasttime = jiffies + 120 * HZ;
-+		printk(KERN_CRIT "Reclaim: Excessive GFP_KERNEL allocs\n");
-+		/* Force memory to become exhausted */
-+		base = kzalloc(NR_TEST * sizeof(void *), GFP_KERNEL);
-+
-+		for (i = 0; i < NR_TEST; i++) {
-+			base[i] = alloc_page(GFP_KERNEL);
-+			if (!base[i]) {
-+				printk("Alloc failed at %d\n", i);
-+				break;
-+			}
-+		}
-+		for (i = 0; i < NR_TEST; i++)
-+			if (base[i])
-+				put_page(base[i]);
-+		kfree(base);
-+		printk(KERN_CRIT "Reclaim: Memory freed\n");
-+	}
-+}
-+
- /*
-  * This is the main entry point to direct page reclaim.
-  *
-@@ -1216,6 +1254,11 @@ out:
+ void __put_task_struct(struct task_struct *tsk)
+ {
+-	WARN_ON(!(tsk->exit_state & (EXIT_DEAD | EXIT_ZOMBIE)));
++	WARN_ON(!tsk->exit_state);
+ 	WARN_ON(atomic_read(&tsk->usage));
+ 	WARN_ON(tsk == current);
  
- 		zone->prev_priority = priority;
- 	}
-+
-+	if (gfp_mask & __GFP_NOMEMALLOC)
-+		printk(KERN_WARNING "Reclaimed %lu pages with NOMEMALLOC\n",
-+								nr_reclaimed);
-+
- 	return ret;
- }
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 45e17b8..8c27f08 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5190,7 +5190,7 @@ static void migrate_dead(unsigned int dead_cpu, struct task_struct *p)
+ 	struct rq *rq = cpu_rq(dead_cpu);
  
+ 	/* Must be exiting, otherwise would be on tasklist. */
+-	BUG_ON(p->exit_state != EXIT_ZOMBIE && p->exit_state != EXIT_DEAD);
++	BUG_ON(!p->exit_state);
+ 
+ 	/* Cannot have done final schedule yet: would have vanished. */
+ 	BUG_ON(p->state == TASK_DEAD);
 
--- 
