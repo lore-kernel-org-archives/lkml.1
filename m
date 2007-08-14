@@ -1,32 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939720AbXHNF2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941362AbXHNF31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939720AbXHNF2j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 01:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbXHNF2Z
+	id S941362AbXHNF31 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 01:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933858AbXHNF24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 01:28:25 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:37398 "EHLO
+	Tue, 14 Aug 2007 01:28:56 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:37631 "EHLO
 	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757324AbXHNF2X (ORCPT
+	with ESMTP id S940470AbXHNF2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 01:28:23 -0400
-Message-ID: <46C13CF4.1040202@linux.vnet.ibm.com>
-Date: Tue, 14 Aug 2007 10:56:12 +0530
+	Tue, 14 Aug 2007 01:28:54 -0400
+Message-ID: <46C13D43.8070502@linux.vnet.ibm.com>
+Date: Tue, 14 Aug 2007 10:57:31 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
 Organization: IBM
 User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>,
-       John Berthels <jjberthels@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] PSS(proportional set size) accounting in smaps
-References: <387055231.26624@ustc.edu.cn>
-In-Reply-To: <387055231.26624@ustc.edu.cn>
+To: WU Fengguang <wfg@mail.ustc.edu.cn>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       John Berthels <jjberthels@gmail.com>, Matt Mackall <mpm@selenic.com>
+Subject: [Fwd: Re: [PATCH] PSS(proportional set size) accounting in smaps]
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+I keep forgetting to check that you are on the cc. My email client
+loves dropping you from the to/cc list.
+
+
+
+-------- Original Message --------
+Subject: Re: [PATCH] PSS(proportional set size) accounting in smaps
+Date: Tue, 14 Aug 2007 10:56:12 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+To: Andrew Morton <akpm@linux-foundation.org>,  Matt Mackall <mpm@selenic.com>, John Berthels <jjberthels@gmail.com>,  linux-kernel <linux-kernel@vger.kernel.org>
+References: <387055231.26624@ustc.edu.cn>
 
 Fengguang Wu wrote:
 > The "proportional set size" (PSS) of a process is the count of pages it has in
