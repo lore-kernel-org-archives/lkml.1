@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932494AbXHNRns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbXHNRrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932494AbXHNRns (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 13:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758026AbXHNRni
+	id S932190AbXHNRrU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 13:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXHNRrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 13:43:38 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:46374 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757550AbXHNRni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 13:43:38 -0400
-X-Greylist: delayed 1122 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Aug 2007 13:43:37 EDT
-Date: Tue, 14 Aug 2007 19:24:53 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Cc: linux-netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: dst cache overflow
-Message-Id: <20070814192453.5a873723.dada1@cosmosbay.com>
-In-Reply-To: <20070814160646.GA16283@yamamaya.is-a-geek.org>
-References: <20070814160646.GA16283@yamamaya.is-a-geek.org>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.11; i686-pc-linux-gnu)
+	Tue, 14 Aug 2007 13:47:09 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:45616 "EHLO jazzhorn.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758026AbXHNRrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 13:47:07 -0400
+Subject: Re: [PATCH 00/16] Permit filesystem local caching [try #3]
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: casey@schaufler-ca.com
+Cc: David Howells <dhowells@redhat.com>, torvalds@osdl.org, akpm@osdl.org,
+       steved@redhat.com, trond.myklebust@fys.uio.no,
+       linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <861956.50630.qm@web36613.mail.mud.yahoo.com>
+References: <861956.50630.qm@web36613.mail.mud.yahoo.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 14 Aug 2007 13:42:48 -0400
+Message-Id: <1187113368.26008.226.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Aug 2007 18:06:46 +0200
-Tobias Diedrich <ranma+kernel@tdiedrich.de> wrote:
+On Tue, 2007-08-14 at 08:53 -0700, Casey Schaufler wrote:
+> --- David Howells <dhowells@redhat.com> wrote:
+> 
+> > Casey Schaufler <casey@schaufler-ca.com> wrote:
+> > 
+> > > With Smack you can leave the label alone, raise CAP_MAC_OVERRIDE,
+> > > do your business of setting the label correctly, and then drop
+> > > the capability. No new hooks required.
+> > 
+> > That sounds like a contradiction.  How can you both leave it alone and set
+> > it?
+> 
+> Whoops, sorry. You leave the process label alone and explicitly
+> set the file label using the xattr interfaces.
 
-> Hello,
-> 
-> I suspect I'm seeing a slow dst cache leakage on one of my servers.
-> The server in question (oni) regularly needs to be rebooted, because
-> it loses network connectivity. However, netconsole and syslog shows that the
-> machine is still running and the kernel complains about "dst cache
-> overflow".
-> 
-> I have since installed a monitoring script, which stores the output of
-> both "ip route ls cache | fgrep cache | wc -l" and the 'entries' value
-> of /proc/net/stat/rt_cache (as suggested in 
-> http://www.mail-archive.com/netdev@vger.kernel.org/msg02107.html)
-> and produces a nice rrd graph:
-> 
-> http://uguu.de/~ranma/route-month-oni.png
-> So entries is growing more or less constantly, while the number of
-> active routes (not visible on the graph due to being too small) is
-> relatively constant.
-> 
-> Comparing this to another host running the exact same kernel:
-> http://uguu.de/~ranma/route-month-ari.png
-> Here cached_routes and entries barely differ at all.
-> 
-> The funny thing is, both hosts are running the exact same kernel
-> and use more or less the same iptables rules.
-> 
-> So I'm not sure what would cause the dst cache to leak only on host
-> oni?
-> 
+xattr interfaces don't help with the initial labeling of the file when
+it is created.
 
-Could you send the result of these commands on oni and ari ?
-
-ip route ls
-grep . /proc/sys/net/ipv4/route/*
+-- 
+Stephen Smalley
+National Security Agency
 
