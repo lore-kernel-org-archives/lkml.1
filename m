@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755767AbXHNWWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936564AbXHNWWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755767AbXHNWWN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:22:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761837AbXHNWNr
+	id S936564AbXHNWWi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763425AbXHNWQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 18:13:47 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:43491 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757498AbXHNWNn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 18:13:43 -0400
-Date: Wed, 15 Aug 2007 00:09:26 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Stephen Hemminger <shemminger@osdl.org>,
-       "Daniel K." <daniel@cluded.net>, Shish <shish@shishnet.org>,
-       Karl Meyer <adhocrocker@gmail.com>
-Subject: Re: [3/4] 2.6.23-rc3: known regressions
-Message-ID: <20070814220926.GA3495@electric-eye.fr.zoreil.com>
-References: <46C098FD.1030601@googlemail.com> <46C09C09.7010605@googlemail.com>
+	Tue, 14 Aug 2007 18:16:20 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49245 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759644AbXHNWQS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 18:16:18 -0400
+Date: Wed, 15 Aug 2007 00:16:16 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 4/9] Atomic reclaim: Save irq flags in vmscan.c
+Message-ID: <20070814221616.GG23308@one.firstfloor.org>
+References: <20070814204454.GC22202@one.firstfloor.org> <Pine.LNX.4.64.0708141414260.31693@schroedinger.engr.sgi.com> <20070814212355.GA23308@one.firstfloor.org> <Pine.LNX.4.64.0708141425000.31693@schroedinger.engr.sgi.com> <20070814212955.GC23308@one.firstfloor.org> <Pine.LNX.4.64.0708141436380.31693@schroedinger.engr.sgi.com> <20070814214430.GD23308@one.firstfloor.org> <Pine.LNX.4.64.0708141444590.32110@schroedinger.engr.sgi.com> <20070814215659.GF23308@one.firstfloor.org> <Pine.LNX.4.64.0708141504350.32420@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46C09C09.7010605@googlemail.com>
+In-Reply-To: <Pine.LNX.4.64.0708141504350.32420@schroedinger.engr.sgi.com>
 User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski <michal.k.k.piotrowski@gmail.com> :
-[...]
-> Networking
+On Tue, Aug 14, 2007 at 03:07:10PM -0700, Christoph Lameter wrote:
+> There are more spinlocks needed. So we would just check the whole bunch 
+> and fail if any of them are used?
+
+Yes zone_flag would apply to all of them.
+
 > 
-> Subject         : NETDEV WATCHDOG: eth0: transmit timed out
-> References      : http://lkml.org/lkml/2007/8/13/737
-> Last known good : ?
-> Submitter       : Karl Meyer <adhocrocker@gmail.com>
-> Caused-By       : ?
-> Handled-By      : ?
+> > 		do things with zone locks 
+> > 	}
+> > 
+> > The interrupt handler shouldn't touch zone_flag. If it wants
+> > to it would need to be converted to a local_t and incremented/decremented
+> > (should be about the same cost at least on architectures with sane
+> > local_t implementation) 
+> 
+> That would mean we need to fork the code for reclaim?
 
-  Handled-By      : romieu@fr.zoreil.com
+Not with the local_t increment.
 
-> Status          : unknown
-
-> Subject         : Weird network problems with 2.6.23-rc2
-> References      : http://lkml.org/lkml/2007/8/11/40
-> Last known good : ?
-> Submitter       : Shish <shish@shishnet.org>
-> Caused-By       : ?
-> Handled-By      : ?
-> Status          : unknown
-
-The PR does not give any driver nor hardware detail. :o/
-
-> Subject         : BUG: when using 'brctl stp'
-> References      : http://lkml.org/lkml/2007/8/10/441
-> Last known good : 2.6.23-rc1
-> Submitter       : Daniel K. <daniel@cluded.net>
-> Caused-By       : ?
-> Handled-By      : ?
-
-  Handled-By      : shemminger@linux-foundation.org
-
-> Status          : unknown
-
-  Status          : fix applied by David Miller
-
--- 
-Ueimor
+-Andi
