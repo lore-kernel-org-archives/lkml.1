@@ -1,142 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933568AbXHNUvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764942AbXHNVCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933568AbXHNUvn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 16:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759642AbXHNUve
+	id S1764942AbXHNVCZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 17:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbXHNVCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 16:51:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36742 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753009AbXHNUvc (ORCPT
+	Tue, 14 Aug 2007 17:02:14 -0400
+Received: from tayrelbas04.tay.hp.com ([161.114.80.247]:43961 "EHLO
+	tayrelbas04.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753043AbXHNVCN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 16:51:32 -0400
-Date: Tue, 14 Aug 2007 13:50:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH -mm] Fix some section mismatch warnings
-Message-Id: <20070814135035.cb8e3aac.akpm@linux-foundation.org>
-In-Reply-To: <46BC661E.9000006@googlemail.com>
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-	<46BC3CB1.2090503@googlemail.com>
-	<46BC5C1D.50205@googlemail.com>
-	<46BC661E.9000006@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 14 Aug 2007 17:02:13 -0400
+Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, clameter@sgi.com,
+       bob.picco@hp.com, nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
+       mel@skynet.ie, akpm@linux-foundation.org,
+       Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       ckrm-tech <ckrm-tech@lists.sourceforge.net>
+In-Reply-To: <20070814192306.GB32553@vino.hallyn.com>
+References: <20070812152126.GA26239@linux.vnet.ibm.com>
+	 <20070813201215.GA16908@vino.hallyn.com>
+	 <1187103831.6281.24.camel@localhost>
+	 <20070814180339.GA32553@vino.hallyn.com>
+	 <1187115224.6281.40.camel@localhost>
+	 <20070814192306.GB32553@vino.hallyn.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 14 Aug 2007 17:01:15 -0400
+Message-Id: <1187125275.6281.122.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007 15:20:30 +0200
-Gabriel C <nix.or.die@googlemail.com> wrote:
+On Tue, 2007-08-14 at 14:23 -0500, Serge E. Hallyn wrote:
+> Quoting Lee Schermerhorn (Lee.Schermerhorn@hp.com):
+> > On Tue, 2007-08-14 at 13:03 -0500, Serge E. Hallyn wrote:
+> > > Quoting Lee Schermerhorn (Lee.Schermerhorn@hp.com):
+> > > > On Mon, 2007-08-13 at 15:12 -0500, Serge E. Hallyn wrote:
+> > > > > Quoting Dhaval Giani (dhaval@linux.vnet.ibm.com):
+> > > > > > Hi,
+> > > > > > 
+> > > > > > On mounting cpusets using containers, I have been hitting the following
+> > > > > > bug.
+> > > > > > 
+> > > > > > 
+> > > > > > -----------[ cut here ]------------
+> > > > > > kernel BUG at kernel/cpuset.c:331!
+> > > > <snip>
+> > > > > > CONFIG_HIGHMEM=y
+> > > > > > CONFIG_X86_PAE=y
+> > > > > > # CONFIG_NUMA is not set
+> > > > > > CONFIG_ARCH_POPULATES_NODE_MAP=y
+> > > > > > CONFIG_SELECT_MEMORY_MODEL=y
+> > > > > > CONFIG_FLATMEM_MANUAL=y
+> > > > > > # CONFIG_DISCONTIGMEM_MANUAL is not set
+> > > > > > # CONFIG_SPARSEMEM_MANUAL is not set
+> > > > > > CONFIG_FLATMEM=y
+> > > > > > CONFIG_FLAT_NODE_MEM_MAP=y
+> > > > > > # CONFIG_SPARSEMEM_STATIC is not set
+> > > > > > CONFIG_SPLIT_PTLOCK_CPUS=4
+> > > > > > CONFIG_RESOURCES_64BIT=y
+> > > > > > CONFIG_ZONE_DMA_FLAG=1
+> > > > <snip>
+> > > > > 
+> > > > > Yeah, I'm seeing the same thing.  Oddly, my node_states[N_NORMAL_MEMORY]
+> > > > > and node_states[N_HIGH_MEMORY] are empty, while node_states[N_ONLINE]
+> > > > > contains my single cpu (on i386 kvm image).
+> > > > > 
+> > > > > -serge
+> > > > 
+> > > > Yes, you'll definitely hit that BUG if the N_HIGH_MEMORY mask is empty.
+> > > > So far, I can't see how this could be, tho'.  __build_all_zonelists()
+> > > > should be called for non-NUMA as well as NUMA.  It iterates over "all
+> > > 
+> > > Yup, and it is, and some debug statements insist that
+> > > node_set_state(nid, N_HIGH_MEMORY) is being called for cpu 0,
+> > > and the state is in fact being correctly set.
+> > > 
+> > > So it must get cleared later...
+> > 
+> > OK.  That helps.  I'll see what I can find...
+> 
+> Well apparently I lied?  I don't think it's getting cleared in node_states.
+> I'm doing:
+> 
+> static void guarantee_online_mems(const struct cpuset *cs, nodemask_t *pmask)
+> {
+>         int nid=0;
+>         printk(KERN_NOTICE "%s: at top, node %d is %d\n",
+>                 __FUNCTION__, nid, node_state(nid, N_HIGH_MEMORY));
+>         while (cs && !nodes_intersects(cs->mems_allowed,
+>                                         node_states[N_HIGH_MEMORY])) {
+>                 printk(KERN_NOTICE "%s: in loop\n", __FUNCTION__);
+>                 cs = cs->parent;
+>         }
+>         if (cs) {
+>                 printk(KERN_NOTICE "%s: cs was true\n", __FUNCTION__);
+>                 nodes_and(*pmask, cs->mems_allowed,
+>                                         node_states[N_HIGH_MEMORY]);
+>         }
+>         else
+>         {
+>                 printk(KERN_NOTICE "%s: cs was false\n", __FUNCTION__);
+>                 *pmask = node_states[N_HIGH_MEMORY];
+>         }
+>         printk(KERN_NOTICE "%s: at bottom, node %d is %d\n",
+>                 __FUNCTION__, nid, node_state(nid, N_HIGH_MEMORY));
+>         printk(KERN_NOTICE "%s: at bottom, in pmask node %d is %d\n",
+>                 __FUNCTION__, nid, node_isset(nid, *pmask));
+>         BUG_ON(!nodes_intersects(*pmask, node_states[N_HIGH_MEMORY]));
+> }
+> 
+> and getting:
+> 
+> guarantee_online_mems: in loop
+> guarantee_online_mems: cs was false
 
-> Gabriel C wrote:
-> > Some new section mismatch warnings:
-> > 
-> > ...
-> > 
-> >   MODPOST vmlinux.o
-> > WARNING: vmlinux.o(.text+0x17e): Section mismatch: reference to .init.text:initialize_secondary (between 'is386' and 'check_x87')
-> > WARNING: vmlinux.o(.text+0x183): Section mismatch: reference to .init.text:start_kernel (between 'is386' and 'check_x87')
-> > WARNING: vmlinux.o(.text+0x8c82): Section mismatch: reference to .init.text:register_cpu (between 'arch_register_cpu' and 'alternatives_smp_switch')
-> > WARNING: vmlinux.o(.text+0x984d): Section mismatch: reference to .init.data:disable_pse (between 'identify_cpu' and 'identify_secondary_cpu')
-> > WARNING: vmlinux.o(.text+0xac59): Section mismatch: reference to .init.text:calibrate_delay (between 'init_cyrix' and 'init_nsc')
-> > WARNING: vmlinux.o(.text+0xb4ac): Section mismatch: reference to .init.text:select_idle_routine (between 'init_intel' and 'init_intel_cacheinfo')
-> > WARNING: vmlinux.o(.text+0xe49c): Section mismatch: reference to .init.data:cpu_idle_tasks (between 'do_boot_cpu' and 'do_warm_boot_cpu')
-> > WARNING: vmlinux.o(.text+0xe881): Section mismatch: reference to .init.data:cpu_idle_tasks (between 'do_boot_cpu' and 'do_warm_boot_cpu')
-> > WARNING: vmlinux.o(.text+0xecd8): Section mismatch: reference to .init.data:smp_b_stepping (between 'smp_store_cpu_info' and '__cpu_die')
-> > WARNING: vmlinux.o(.text+0xecdd): Section mismatch: reference to .init.data:smp_b_stepping (between 'smp_store_cpu_info' and '__cpu_die')
-> > WARNING: vmlinux.o(.text+0xf055): Section mismatch: reference to .init.text:setup_local_APIC (between 'start_secondary' and 'check_tsc_warp')
-> > WARNING: vmlinux.o(.text+0xf05f): Section mismatch: reference to .init.text:calibrate_delay (between 'start_secondary' and 'check_tsc_warp')
-> > WARNING: vmlinux.o(.text+0xf08e): Section mismatch: reference to .init.text:setup_secondary_APIC_clock (between 'start_secondary' and 'check_tsc_warp')
-> > WARNING: vmlinux.o(.text+0x1fe6e): Section mismatch: reference to .init.text:idle_regs (between 'fork_idle' and '__put_task_struct')
-> > WARNING: vmlinux.o(.text+0x2717a): Section mismatch: reference to .init.data:tvec_base_done.16336 (between 'timer_cpu_notify' and 'run_timer_softirq')
-> > WARNING: vmlinux.o(.text+0x272df): Section mismatch: reference to .init.data:tvec_base_done.16336 (between 'timer_cpu_notify' and 'run_timer_softirq')
-> > WARNING: vmlinux.o(.text+0x51df3): Section mismatch: reference to .init.text:start_cpu_timer (between 'vmstat_cpuup_callback' and 'refresh_cpu_vm_stats')
-> > WARNING: vmlinux.o(.text+0xcac51): Section mismatch: reference to .init.text:pcibios_fixup_bus (between 'pci_scan_child_bus' and 'pci_scan_bus_parented')
-> > WARNING: vmlinux.o(.data+0x5480): Section mismatch: reference to .init.text:workqueue_cpu_callback (between 'workqueue_cpu_callback_nb.12121' and 'workqueue_mutex')
-> > WARNING: vmlinux.o(.data+0x90c4): Section mismatch: reference to .init.text:cpu_callback (between 'cpu_callback_nb.18502' and 'shrinker_rwsem')
-> > WARNING: vmlinux.o(.data+0x14d84): Section mismatch: reference to .init.text:pci_ite887x_init (between 'pci_serial_quirks' and 'serial_pci_tbl')
-> > 
-> > ...
-> > 
-> > 
-> > config :
-> > 
-> > http://194.231.229.228/kernel/mm/2.6.23-rc2-mm2/randconfig-auto-5
-> > 
+The above message indicates that you went off the top of the cpuset
+hierarchy w/o finding a non-empty intersection with
+node_states[N_HIGH_MEMORY].  The top cpuset should include all nodes
+with memory--and there has to be at least one, right?.  See
+cpuset_init_smp().  That would indicate that node_states[N_HIGH_MEMORY]
+was empty when cpuset_init_smp() was called or when you entered
+guarantee_online_mems().  One can't tell because you didn't include the
+"at top" message [are you seeing it?] and node_state() always returns
+true for node zero on non-NUMA platforms [!(MAX_NUMANODES > 1)].
+
+If you're still investigating, I'd suggest a printk in
+cpuset_init_smp().  And use node_isset() directly, instead of
+node_state.  Or you can really look beneath the covers of nodemask_t and
+print 'node_states[N_HIGH_MEMORY].bits[0]' using a hex format.  
+
+I should note that this works on my ia64 NUMA platform and other folks'
+x86_64 platforms.  So, it's looking like an i386 specific issue.
+
+> guarantee_online_mems: at bottom, node 0 is 1
+> guarantee_online_mems: at bottom, in pmask node 0 is 0
 > 
 > 
-> This patch fixes the .init.data ones
-> 
-> Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
-> 
-> ---
-> 
-> 
-> diff -Nurp linux-2.6.23-rc2-mm2/arch/i386/kernel/setup.c linux-2.6.23-rc2-mm2-p/arch/i386/kernel/setup.c
-> --- linux-2.6.23-rc2-mm2/arch/i386/kernel/setup.c	2007-08-10 15:05:26.000000000 +0200
-> +++ linux-2.6.23-rc2-mm2-p/arch/i386/kernel/setup.c	2007-08-10 15:10:41.000000000 +0200
-> @@ -68,7 +68,7 @@
->     address, and must not be in the .bss segment! */
->  unsigned long init_pg_tables_end __initdata = ~0UL;
->  
-> -int disable_pse __devinitdata = 0;
-> +int disable_pse __cpuinitdata = 0;
->  
->  /*
->   * Machine setup..
-> diff -Nurp linux-2.6.23-rc2-mm2/arch/i386/kernel/smpboot.c linux-2.6.23-rc2-mm2-p/arch/i386/kernel/smpboot.c
-> --- linux-2.6.23-rc2-mm2/arch/i386/kernel/smpboot.c	2007-08-10 15:05:26.000000000 +0200
-> +++ linux-2.6.23-rc2-mm2-p/arch/i386/kernel/smpboot.c	2007-08-10 15:12:19.000000000 +0200
-> @@ -60,7 +60,7 @@
->  #include <asm/mtrr.h>
->  
->  /* Set if we find a B stepping CPU */
-> -static int __devinitdata smp_b_stepping;
-> +static int __cpuinitdata smp_b_stepping;
->  
->  /* Number of siblings per CPU package */
->  int smp_num_siblings = 1;
-> @@ -736,7 +736,7 @@ static inline int alloc_cpu_id(void)
->  }
->  
->  #ifdef CONFIG_HOTPLUG_CPU
-> -static struct task_struct * __devinitdata cpu_idle_tasks[NR_CPUS];
-> +static struct task_struct * __cpuinitdata cpu_idle_tasks[NR_CPUS];
->  static inline struct task_struct * alloc_idle_task(int cpu)
->  {
->  	struct task_struct *idle;
-> diff -Nurp linux-2.6.23-rc2-mm2/kernel/timer.c linux-2.6.23-rc2-mm2-p/kernel/timer.c
-> --- linux-2.6.23-rc2-mm2/kernel/timer.c	2007-08-10 15:05:34.000000000 +0200
-> +++ linux-2.6.23-rc2-mm2-p/kernel/timer.c	2007-08-10 15:13:14.000000000 +0200
-> @@ -1216,7 +1216,7 @@ static int __devinit init_timers_cpu(int
->  {
->  	int j;
->  	tvec_base_t *base;
-> -	static char __devinitdata tvec_base_done[NR_CPUS];
-> +	static char __cpuinitdata tvec_base_done[NR_CPUS];
->  
->  	if (!tvec_base_done[cpu]) {
->  		static char boot_done;
+> So I'm guess that
+> 	*pmask = node_states[N_HIGH_MEMORY];
+> isn't doing what it was intended to do?  
 
-This patch causes more work than it should, really.
+Should just do the structure assignment, right?  That's used pretty
+heavily throughout the mem policy and cpuset sources.  
 
-- it's not clear which of the above warnings this patch addresses
+Hmmm, including to initialize the top cpuset's mems_allowed.  If that
+assignment failed, as well, it might indicate that the compiler is
+having difficulty handling the indexed array of structs?  
 
-- there is no explanation telling us where these references come from
-
-- the patch purports to fix three unrelated things.
-
-So, ideally we'd have seen three separate patches, each one accompanied by
-an explanation of why the warning arose and how it was fixed.
-
-I'm left to pick through this lot wondering which bits are applicable to
-mainline and whether I need to split it up or what.
+Try the patch below to see if the changes the behavior.  I didn't change
+all of the struct assignments.  Just the ones involving the indexed
+node_state array element.
 
 
-I don't understand the init_timers_cpu() change.  tvec_base_done[] is
-referred to only from init_timers_cpu(), and init_timers_cpu() is
-__devinit?
+> That or I've got node_state()
+> wrong...
+
+Uh, no.  you're using it correctly.  But as I mentioned above, for
+MAX_NUMANODES <= 1, node_state() just does "return node == 0;"  Better
+to use node_isset() directly for this case.
+
+Lee
+
+===========================================================
+PATCH -- use memcpy() for node_state[] assignment
+
+to see if this fixes the i386 cpusets empty mems_allowed 
+problem.
+
+N.B., compile-tested only on ia64.
+
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+
+ kernel/cpuset.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+Index: Linux/kernel/cpuset.c
+===================================================================
+--- Linux.orig/kernel/cpuset.c	2007-08-14 16:28:27.000000000 -0400
++++ Linux/kernel/cpuset.c	2007-08-14 16:37:27.000000000 -0400
+@@ -327,7 +327,7 @@ static void guarantee_online_mems(const 
+ 		nodes_and(*pmask, cs->mems_allowed,
+ 					node_states[N_HIGH_MEMORY]);
+ 	else
+-		*pmask = node_states[N_HIGH_MEMORY];
++		memcpy(pmask, &node_states[N_HIGH_MEMORY], sizeof(*pmask));
+ 	BUG_ON(!nodes_intersects(*pmask, node_states[N_HIGH_MEMORY]));
+ }
+ 
+@@ -1396,7 +1396,8 @@ static void common_cpu_mem_hotplug_unplu
+ 
+ 	guarantee_online_cpus_mems_in_subtree(&top_cpuset);
+ 	top_cpuset.cpus_allowed = cpu_online_map;
+-	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
++	memcpy(&top_cpuset.mems_allowed, &node_states[N_HIGH_MEMORY],
++			sizeof(top_cpuset.mems_allowed));
+ 
+ 	mutex_unlock(&callback_mutex);
+ 	container_unlock();
+@@ -1445,7 +1446,8 @@ void cpuset_track_online_nodes(void)
+ void __init cpuset_init_smp(void)
+ {
+ 	top_cpuset.cpus_allowed = cpu_online_map;
+-	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
++	memcpy(&top_cpuset.mems_allowed, &node_states[N_HIGH_MEMORY],
++			sizeof(top_cpuset.mems_allowed));
+ 
+ 	hotcpu_notifier(cpuset_handle_cpuhp, 0);
+ }
+
 
