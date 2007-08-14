@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761863AbXHNWbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764176AbXHNWf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761863AbXHNWbd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbXHNWbR
+	id S1764176AbXHNWf0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXHNWfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 18:31:17 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51794 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751393AbXHNWbQ (ORCPT
+	Tue, 14 Aug 2007 18:35:01 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40787 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753416AbXHNWe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 18:31:16 -0400
-Date: Tue, 14 Aug 2007 15:31:12 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Chris Snook <csnook@redhat.com>
-cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
-       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <20070809131423.GA9927@shell.boston.redhat.com>
-Message-ID: <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
-References: <20070809131423.GA9927@shell.boston.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 14 Aug 2007 18:34:59 -0400
+Date: Tue, 14 Aug 2007 23:42:06 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Hajime Inoue <hinoue@ccsl.carleton.ca>, linux-kernel@vger.kernel.org
+Subject: Re: System call interposition/unprotecting the table
+Message-ID: <20070814234206.76121d02@the-village.bc.nu>
+In-Reply-To: <p73zm0tnbf8.fsf@bingen.suse.de>
+References: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca>
+	<20070814000956.7c8929dd@the-village.bc.nu>
+	<46C1E5F5.9050702@ccsl.carleton.ca>
+	<p73zm0tnbf8.fsf@bingen.suse.de>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, Chris Snook wrote:
+> So even with Alan's hypervisor support the whole thing would be still
+> quite holey.  The argument of raising the bar also doesn't seem very
 
-> This patchset makes the behavior of atomic_read uniform by removing the
-> volatile keyword from all atomic_t and atomic64_t definitions that currently
-> have it, and instead explicitly casts the variable as volatile in
-> atomic_read().  This leaves little room for creative optimization by the
-> compiler, and is in keeping with the principles behind "volatile considered
-> harmful".
+Its materially harder, especially with the hypervisor.
 
-volatile is generally harmful even in atomic_read(). Barriers control
-visibility and AFAICT things are fine.
+> convincing to me, because attackers reuse code too and it's enough
+> when someone publishes such code once, then they can cut'n'paste
+> it into any exploits forever.
+
+Then you fix the specific case and the game continues.
+
+> In general the .data protection is only considered a debugging
+> feature. I don't know why Fedora enables it in their production
+> kernels.
+
+That would be because we think you are wrong 8)
+
+Alan
