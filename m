@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761241AbXHNWNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933410AbXHNWOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761241AbXHNWNm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935462AbXHNVvs
+	id S933410AbXHNWOv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbXHNV5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:51:48 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:17737 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751658AbXHNVvp (ORCPT
+	Tue, 14 Aug 2007 17:57:08 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55985 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935725AbXHNV5E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:51:45 -0400
-Message-ID: <246a89290708141451n742a0f0bv2e95114319252050@mail.gmail.com>
-Date: Tue, 14 Aug 2007 14:51:38 -0700
-From: "Nathan Laredo" <laredo@gnu.org>
-To: "Joe Perches" <joe@perches.com>
-Subject: Re: [PATCH] [463/2many] MAINTAINERS - STRADIS MPEG-2 DECODER DRIVER
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <1187065967.32555.19.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Aug 2007 17:57:04 -0400
+Date: Tue, 14 Aug 2007 23:56:59 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 4/9] Atomic reclaim: Save irq flags in vmscan.c
+Message-ID: <20070814215659.GF23308@one.firstfloor.org>
+References: <20070814203329.GA22202@one.firstfloor.org> <Pine.LNX.4.64.0708141341120.31513@schroedinger.engr.sgi.com> <20070814204454.GC22202@one.firstfloor.org> <Pine.LNX.4.64.0708141414260.31693@schroedinger.engr.sgi.com> <20070814212355.GA23308@one.firstfloor.org> <Pine.LNX.4.64.0708141425000.31693@schroedinger.engr.sgi.com> <20070814212955.GC23308@one.firstfloor.org> <Pine.LNX.4.64.0708141436380.31693@schroedinger.engr.sgi.com> <20070814214430.GD23308@one.firstfloor.org> <Pine.LNX.4.64.0708141444590.32110@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <46bffc01.7c95Dz5xUUkjysHI%joe@perches.com>
-	 <246a89290708132104h4145349ah4a4a56ef852a1bb3@mail.gmail.com>
-	 <1187065967.32555.19.camel@localhost>
-X-Google-Sender-Auth: 72d620e24dc24d42
+In-Reply-To: <Pine.LNX.4.64.0708141444590.32110@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No, not all of them.  Just the ones that show my name at the top of
-the source file.
+On Tue, Aug 14, 2007 at 02:48:31PM -0700, Christoph Lameter wrote:
+> On Tue, 14 Aug 2007, Andi Kleen wrote:
+> 
+> > > But that still creates lots of overhead each time we take the lru lock!
+> > 
+> > A lot of overhead in what way? Setting a flag in a cache hot
+> > per CPU data variable shouldn't be more than a few cycles.
+> 
+> Could you be a bit more specific? Where do you want to place the data?
 
-cs8240.h, ibmmpeg2.h, saa7121.h, saa7146*.h, stradis.c
+DEFINE_PER_CPU(int, zone_flag);
 
-stradis.c includes all of the above .h files, so they weren't listed separately.
+	get_cpu();	// likely already true and then not needed
+	__get_cpu(zone_flag) = 1;
+	/* wmb is implied in spin_lock I think */
+	spin_lock(&zone->lru_lock);
+	...
+	spin_unlock(&zone->lru_lock);
+	__get_cpu(zone_flag) = 0;
+	put_cpu();
 
-Additionally, it should probably be noted that I still use a 2.2
-kernel with this device and haven't tested the 3rd party ports to 2.6
-yet but I've never actually gotten a bug report yet from someone
-claiming it isn't working (but I'm pretty confident it will crash).
+Interrupt handler
 
-Thanks,
-- Nathan Laredo
-laredo@gnu.org
+	if (!__get_cpu(zone_flag)) {
+		do things with zone locks 
+	}
 
-On 8/13/07, Joe Perches <joe@perches.com> wrote:
-> On Mon, 2007-08-13 at 21:04 -0700, Nathan Laredo wrote:
-> > Well, technically speaking, there are multiple files to the stradis
-> > driver, not just stradis.c.
->
-> These files seem to be shared between drivers.
->
-> the Kconfig file shows:
->
-> obj-$(CONFIG_VIDEO_STRADIS) += stradis.o
->
-> as the only STRADIS file.
->
-> Are you the maintainer for other entries?
-> Should I add these entries?
->
-> drivers/media/video/cs8420.h
-> drivers/media/video/ibmmpeg2.h
-> drivers/media/video/saa5249.c
-> drivers/media/video/saa7110.c
-> drivers/media/video/saa7111.c
-> drivers/media/video/saa7121.h
-> drivers/media/video/saa7146*.h
-> drivers/media/video/saa7185.h
-> drivers/media/video/saa7196.h
-> drivers/media/video/videodev.c
->
->
->
->
+The interrupt handler shouldn't touch zone_flag. If it wants
+to it would need to be converted to a local_t and incremented/decremented
+(should be about the same cost at least on architectures with sane
+local_t implementation) 
+		
+-Andi
+
