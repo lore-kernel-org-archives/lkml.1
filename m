@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937092AbXHNXGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbXHNXOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937092AbXHNXGB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 19:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932581AbXHNXF3
+	id S1760116AbXHNXOi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 19:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbXHNXO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 19:05:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41110 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765118AbXHNXF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 19:05:26 -0400
-Message-ID: <46C2350A.1010807@redhat.com>
-Date: Tue, 14 Aug 2007 19:04:42 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Satyam Sharma <satyam@infradead.org>
-CC: Christoph Lameter <clameter@sgi.com>,
+	Tue, 14 Aug 2007 19:14:26 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40718 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753015AbXHNXOY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 19:14:24 -0400
+Date: Tue, 14 Aug 2007 16:14:21 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Chris Snook <csnook@redhat.com>
+cc: Satyam Sharma <satyam@infradead.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
        netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
@@ -26,48 +25,38 @@ CC: Christoph Lameter <clameter@sgi.com>,
        segher@kernel.crashing.org
 Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
  architectures
-References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <46C2350A.1010807@redhat.com>
+Message-ID: <Pine.LNX.4.64.0708141612590.693@schroedinger.engr.sgi.com>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2350A.1010807@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> 
-> On Tue, 14 Aug 2007, Christoph Lameter wrote:
-> 
->> On Thu, 9 Aug 2007, Chris Snook wrote:
->>
->>> This patchset makes the behavior of atomic_read uniform by removing the
->>> volatile keyword from all atomic_t and atomic64_t definitions that currently
->>> have it, and instead explicitly casts the variable as volatile in
->>> atomic_read().  This leaves little room for creative optimization by the
->>> compiler, and is in keeping with the principles behind "volatile considered
->>> harmful".
->> volatile is generally harmful even in atomic_read(). Barriers control
->> visibility and AFAICT things are fine.
-> 
-> Frankly, I don't see the need for this series myself either. Personal
-> opinion (others may differ), but I consider "volatile" to be a sad /
-> unfortunate wart in C (numerous threads on this list and on the gcc
-> lists/bugzilla over the years stand testimony to this) and if we _can_
-> steer clear of it, then why not -- why use this ill-defined primitive
-> whose implementation has often differed over compiler versions and
-> platforms? Granted, barrier() _is_ heavy-handed in that it makes the
-> optimizer forget _everything_, but then somebody did post a forget()
-> macro on this thread itself ...
-> 
-> [ BTW, why do we want the compiler to not optimize atomic_read()'s in
->   the first place? Atomic ops guarantee atomicity, which has nothing
->   to do with "volatility" -- users that expect "volatility" from
->   atomic ops are the ones who must be fixed instead, IMHO. ]
+On Tue, 14 Aug 2007, Chris Snook wrote:
 
-Because atomic operations are generally used for synchronization, which requires 
-volatile behavior.  Most such codepaths currently use an inefficient barrier(). 
-  Some forget to and we get bugs, because people assume that atomic_read() 
-actually reads something, and atomic_write() actually writes something.  Worse, 
-these are architecture-specific, even compiler version-specific bugs that are 
-often difficult to track down.
+> Because atomic operations are generally used for synchronization, which
+> requires volatile behavior.  Most such codepaths currently use an inefficient
+> barrier().  Some forget to and we get bugs, because people assume that
+> atomic_read() actually reads something, and atomic_write() actually writes
+> something.  Worse, these are architecture-specific, even compiler
+> version-specific bugs that are often difficult to track down.
 
-	-- Chris
+Looks like we need to have lock and unlock semantics?
+
+atomic_read()
+
+which has no barrier or volatile implications.
+
+atomic_read_for_lock
+
+	Acquire semantics?
+
+
+atomic_read_for_unlock
+
+	Release semantics?
+
