@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765943AbXHNRDB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764330AbXHNRJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765943AbXHNRDB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 13:03:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759844AbXHNRCk
+	id S1764330AbXHNRJN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 13:09:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXHNRJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 13:02:40 -0400
-Received: from mail-in-11.arcor-online.net ([151.189.21.51]:39059 "EHLO
-	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759147AbXHNRCi (ORCPT
+	Tue, 14 Aug 2007 13:09:00 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:38212 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753954AbXHNRI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 13:02:38 -0400
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [patch 00/12] 2.6.22-stable review
-Date: Tue, 14 Aug 2007 19:02:33 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org
-References: <20070814072813.GA15025@kroah.com> <200708141813.34951.prakash@punnoor.de> <20070814160419.GA18195@suse.de>
-In-Reply-To: <20070814160419.GA18195@suse.de>
+	Tue, 14 Aug 2007 13:08:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jZnlYthko0bRcmcQZVp+jmWjMHduBUa8+/p/BoBtC498Z5jVgqqbDYdxvKK63f8IDKFC7SrM/sFgxShld91m25wBeODHtUm5Iv9QizLF90UJfKiaEiQq1rOvxM61FQ4X5SYg2buKfJcyxvOvQ7V/y7Tb7jCtaS6ZUTOU0FpBUIg=
+Message-ID: <82e4877d0708141008y4252e5f8nb38ddf28439c8d6c@mail.gmail.com>
+Date: Tue, 14 Aug 2007 13:08:57 -0400
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: 2.6.23-rc3 - CONFIG_VMI broken
+Cc: linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>, zach@vmware.com,
+       rusty@rustcorp.com.au
+In-Reply-To: <6bffcb0e0708140844x1aabaa63k5aba807961950462@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2691850.J4vzRuNBQT";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708141902.33731.prakash@punnoor.de>
+Content-Disposition: inline
+References: <82e4877d0708140839y3550bfa6of6a369251db517f3@mail.gmail.com>
+	 <6bffcb0e0708140844x1aabaa63k5aba807961950462@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2691850.J4vzRuNBQT
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi Michal
 
-Am Dienstag 14 August 2007 schrieb Greg KH:
-> On Tue, Aug 14, 2007 at 06:13:34PM +0200, Prakash Punnoor wrote:
-> > Am Dienstag 14 August 2007 schrieb Greg KH:
-> > > This is the start of the stable review cycle for the 2.6.22.3 release.
-> >
-> > You missed this one: http://lkml.org/lkml/2007/8/10/296
-> >
-> > The buggy patch was introduced in 2.6.22.2, so it wouldn't be bad to fix
-> > in .3...
+On 8/14/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> Hi Parag,
 >
-> I asked for clarification about that patch, if it is really needed and
-> matters, yet did not recieve any response yet.
 
-Well, I can't speak for the author, but I at least would find it disturbing=
- if=20
-some random values would be written into random registers of my hardware,=20
-when they were meant for a different hardware...
+> Please check the latest -stable and let me know if it is a regression.
+>
+> Regards,
+> Michal
+>
 
-=2D-=20
-(=B0=3D                 =3D=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
+Latest stable (2.6.22.2) is fine.
 
---nextPart2691850.J4vzRuNBQT
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
-
-iD8DBQBGweApxU2n/+9+t5gRAlLIAJ9x0sd9dg1fj3zgCuRW6gzd9nWjdACeKkcf
-4jApx9ySpQ4PTOhI2l12pP8=
-=b4PR
------END PGP SIGNATURE-----
-
---nextPart2691850.J4vzRuNBQT--
+Parag
