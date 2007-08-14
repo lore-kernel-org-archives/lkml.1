@@ -1,75 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933723AbXHNSnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934008AbXHNSnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933723AbXHNSnR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 14:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758967AbXHNSm7
+	id S934008AbXHNSnt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 14:43:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbXHNSnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 14:42:59 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37564 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753499AbXHNSm5 (ORCPT
+	Tue, 14 Aug 2007 14:43:33 -0400
+Received: from elasmtp-galgo.atl.sa.earthlink.net ([209.86.89.61]:36617 "EHLO
+	elasmtp-galgo.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753414AbXHNSnc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 14:42:57 -0400
-Date: Tue, 14 Aug 2007 11:40:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-cc: Rene Herman <rene.herman@gmail.com>, git@vger.kernel.org,
-       Junio C Hamano <gitster@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -
- scripts/get_maintainer.pl
-In-Reply-To: <1187116082.32555.122.camel@localhost>
-Message-ID: <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>
-References: <1186984174.10249.7.camel@localhost>  <200708131933.10125.m.kozlowski@tuxland.pl>
-  <1187026955.2688.4.camel@laptopd505.fenrus.org>  <1187037445.6628.98.camel@heimdal.trondhjem.org>
-  <1187054366.2757.0.camel@laptopd505.fenrus.org>  <46C10AA8.3090505@gmail.com>
- <20070814102033.604c8695@the-village.bc.nu>  <46C1CFFE.4000001@gmail.com>
- <1187110824.32555.76.camel@localhost>  <46C1EE6F.2080807@gmail.com>
- <1187116082.32555.122.camel@localhost>
+	Tue, 14 Aug 2007 14:43:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=TP3S9U0yWyovfKUGOMhayKy3VR+zcyVEuHT3r+z15hRLJRvyN5U9QXwxLWwL+6tV;
+  h=Received:Message-ID:Reply-To:From:To:Cc:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE:X-ELNK-Trace:X-Originating-IP;
+Message-ID: <000501c7dea3$48bf98a0$6501a8c0@earthlink.net>
+Reply-To: "Mitchell Erblich" <erblichs@earthlink.net>
+From: "Mitchell Erblich" <erblichs@earthlink.net>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Cc: <akpm@zip.com.au>, "Ingo Molnar" <mingo@elte.hu>,
+       "\"Dmitry Adamushko\"" <dmitry.adamushko@gmail.com>
+Subject: minor Suggested cleanup: RT / sched : Have RT tasks use PF_LESS_THROTTLE flag
+Date: Tue, 14 Aug 2007 11:45:25 -0700
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1106
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1106
+X-ELNK-Trace: 074f60c55517ea841aa676d7e74259b7b3291a7d08dfec7929c61f3345233a22fe77862b9f1ee4e0350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 68.164.86.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Group, Ingo Molnar, and Dmitry, et al,
+
+task mm/page-writeback.c : get_dirty_limits()
+
+Shouldn't the PF_LESS_THROTTLE flag be
+scheduling class independent?
+
+The below is a suggestion is to use the flag for
+RT tasks.
+
+-- to drop the rt_task() call within the function
+
+if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk)) {
+
+1) becomes
+if (tsk->flags & PF_LESS_THROTTLE)
+
+Then 
+2) in kernel/sched.c set:
+   p->flags |= PF_LESS_THROTTLE before the break;
+
+case SCHED_FIFO:
+case SCHED_RR:
+              p->sched_class = &rt_sched_class;
+              p->flags |= PF_LESS_THROTTLE;
+            break;
+
+3) Unset it in case sched class changed; before the break
+case SCHED_NORMAL:
+case SCHED_BATCH:
+case SCHED_IDLE:
+           p->sched_class = &fair_sched_class;
+           p->flags &= ~PF_LESS_THROTTLE;
+           break;
+
+4) set the flag rt_mutex_setprio with braces
+if (rt_prio(prio)) {
+                 p->sched_class = &rt_sched_class;
+                 p->flags |= PF_LESS_THROTTLE;
+
+                 
+ }      else
 
 
-On Tue, 14 Aug 2007, Joe Perches wrote:
+5) Am I missing anything?
 
-> On Tue, 2007-08-14 at 20:03 +0200, Rene Herman wrote:
-> > "git info --maintainer drivers/ide/ide-cd.c" or some such would say "Alan 
-> > Cox <alan@...>".
-> 
-> Perhaps maintainer(s), approver(s), listener(s)?
-> 
-> I think something like this should be a git-goal.
-> What do the git-wranglers think?
+Mitchell Erblich
 
-The thing is, if you have git, you can basically already do this.
-
-Do a script like this:
-
-	#!/bin/sh
-	git log --since=6.months.ago -- "$@" |
-		grep -i '^    [-a-z]*by:.*@' |
-		sort | uniq -c |
-		sort -r -n | head
-
-and it gives you a rather good picture of who is involved with a 
-particular subdirectory or file.
-
-A much *better* picture than some manually maintained thing, in fact, 
-because it tells you who really does the work, and which way patches go...
-
-(Maybe you want to add a
-
-	grep -v '\(Linus Torvalds\)\|\(Andrew Morton\)'
-
-to avoid seeing the normal chain too much, but hey, we probably want to 
-know too. Anyway - the script can certainly be tweaked, the point is 
-really just that the git tree _already_ contains the relevant 
-information).
-
-		Linus
