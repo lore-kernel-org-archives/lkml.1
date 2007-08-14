@@ -1,155 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938852AbXHMXbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939227AbXHMXbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938852AbXHMXbK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 19:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938024AbXHMXah
+	id S939227AbXHMXbw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 19:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937990AbXHMXa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 19:30:37 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:55480 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937946AbXHMXac (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 19:30:32 -0400
-Date: Tue, 14 Aug 2007 01:30:28 +0200 (MEST)
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, Richard Knutsson <ricknu-0@student.ltu.se>
-Message-Id: <20070813232902.13138.30065.sendpatchset@thinktank.campus.ltu.se>
-Subject: [PATCH] arch/i386: Convert to generic boolean
+	Mon, 13 Aug 2007 19:30:57 -0400
+Received: from mx2.suse.de ([195.135.220.15]:47839 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S938759AbXHMXaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 19:30:55 -0400
+Date: Tue, 14 Aug 2007 02:25:03 +0200
+From: Andi Kleen <ak@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <ak@suse.de>, Mel Gorman <mel@skynet.ie>,
+       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones pointer
+Message-ID: <20070814002503.GQ3406@bingen.suse.de>
+References: <20070813225841.GG3406@bingen.suse.de> <Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com> <20070813230801.GH3406@bingen.suse.de> <Pine.LNX.4.64.0708131518320.28626@schroedinger.engr.sgi.com> <20070813234217.GI3406@bingen.suse.de> <Pine.LNX.4.64.0708131550100.30626@schroedinger.engr.sgi.com> <20070813235518.GK3406@bingen.suse.de> <Pine.LNX.4.64.0708131611001.19910@schroedinger.engr.sgi.com> <20070814001624.GO3406@bingen.suse.de> <Pine.LNX.4.64.0708131622380.19910@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708131622380.19910@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert to generic boolean (+ some minor cleanup).
+On Mon, Aug 13, 2007 at 04:25:23PM -0700, Christoph Lameter wrote:
+> On Tue, 14 Aug 2007, Andi Kleen wrote:
+> 
+> > > But they use GFP_DMA right now and drivers cannot use DMA32 if they want 
+> > 
+> > The way it was originally designed was that they use GFP_DMA32,
+> > which would map to itself on x86-64, to GFP_DMA on ia64 and to
+> > GFP_KERNEL on i386. Unfortunately that seems to have bitrotted
+> > (perhaps I should have better documented it) 
+> 
+> The DMA boundaries are hardware depending. A 4GB boundary 
+> may not make sense on certain platforms. 
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
----
-Compile-tested with all(yes|mod|no)config on i386
-Diffed against Linus' git-tree
-Sent on 2007-05-12, no replys
+If it makes sense for the driver it has to make sense
+for the platform too. If not it cannot run the driver
+(which might be fine; a lot of architectures only
+run their own specialized drivers) 
 
- amd.c     |    2 --
- cyrix.c   |    2 +-
- generic.c |   20 +++++++++-----------
- mtrr.h    |    5 -----
- 4 files changed, 10 insertions(+), 19 deletions(-)
+> 
+> > > to be cross platforms compatible? Doesnt the dma API completely do away 
+> > > with these things?
+> > 
+> > No GFP_DMA32 in my current plan is still there.
+> 
+> AFAIK GFP_DMA32 is a x86_64 special that would be easy to remove. Dealing 
+> with physical boundaries is current done via the dma interface right? Lets 
+> keep it there?
 
+The difference between the low dma allocation and GFP_DMA32 is that
+the low dma allocation zone is isolated. This means it is not shared
+with user pages, no LRU, no vmscan, no try_to_free_pages etc.
 
-diff --git a/arch/i386/kernel/cpu/mtrr/amd.c b/arch/i386/kernel/cpu/mtrr/amd.c
-index 0949cdb..ee2331b 100644
---- a/arch/i386/kernel/cpu/mtrr/amd.c
-+++ b/arch/i386/kernel/cpu/mtrr/amd.c
-@@ -53,8 +53,6 @@ static void amd_set_mtrr(unsigned int reg, unsigned long base,
-     <base> The base address of the region.
-     <size> The size of the region. If this is 0 the region is disabled.
-     <type> The type of the region.
--    <do_safe> If TRUE, do the change safely. If FALSE, safety measures should
--    be done externally.
-     [RETURNS] Nothing.
- */
- {
-diff --git a/arch/i386/kernel/cpu/mtrr/cyrix.c b/arch/i386/kernel/cpu/mtrr/cyrix.c
-index 0737a59..8b1b9fd 100644
---- a/arch/i386/kernel/cpu/mtrr/cyrix.c
-+++ b/arch/i386/kernel/cpu/mtrr/cyrix.c
-@@ -322,7 +322,7 @@ cyrix_arr_init(void)
- 			setCx86(CX86_CCR6, ccr[6]);
- 		}
- 		/* Disable ARR3. This is safe now that we disabled SMM. */
--		/* cyrix_set_arr_up (3, 0, 0, 0, FALSE); */
-+		/* cyrix_set_arr_up (3, 0, 0, 0, false); */
- 	}
- 	/* If we changed CCR1 in memory, change it in the processor, too. */
- 	if (ccrc[1])
-diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
-index 5367e32..fd6ffc5 100644
---- a/arch/i386/kernel/cpu/mtrr/generic.c
-+++ b/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -187,7 +187,7 @@ static inline void k8_enable_fixed_iorrs(void)
-  * \param changed pointer which indicates whether the MTRR needed to be changed
-  * \param msrwords pointer to the MSR values which the MSR should have
-  */
--static void set_fixed_range(int msr, int * changed, unsigned int * msrwords)
-+static void set_fixed_range(int msr, bool * changed, unsigned int * msrwords)
- {
- 	unsigned lo, hi;
- 
-@@ -199,7 +199,7 @@ static void set_fixed_range(int msr, int * changed, unsigned int * msrwords)
- 		    ((msrwords[0] | msrwords[1]) & K8_MTRR_RDMEM_WRMEM_MASK))
- 			k8_enable_fixed_iorrs();
- 		mtrr_wrmsr(msr, msrwords[0], msrwords[1]);
--		*changed = TRUE;
-+		*changed = true;
- 	}
- }
- 
-@@ -256,10 +256,10 @@ static void generic_get_mtrr(unsigned int reg, unsigned long *base,
-  * Checks and updates the fixed-range MTRRs if they differ from the saved set
-  * \param frs pointer to fixed-range MTRR values, saved by get_fixed_ranges()
-  */
--static int set_fixed_ranges(mtrr_type * frs)
-+static bool set_fixed_ranges(mtrr_type * frs)
- {
- 	unsigned long long *saved = (unsigned long long *) frs;
--	int changed = FALSE;
-+	bool changed = false;
- 	int block=-1, range;
- 
- 	while (fixed_range_blocks[++block].ranges)
-@@ -270,19 +270,19 @@ static int set_fixed_ranges(mtrr_type * frs)
- 	return changed;
- }
- 
--/*  Set the MSR pair relating to a var range. Returns TRUE if
-+/*  Set the MSR pair relating to a var range. Returns 'true' if
-     changes are made  */
--static int set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
-+static bool set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
- {
- 	unsigned int lo, hi;
--	int changed = FALSE;
-+	bool changed = false;
- 
- 	rdmsr(MTRRphysBase_MSR(index), lo, hi);
- 	if ((vr->base_lo & 0xfffff0ffUL) != (lo & 0xfffff0ffUL)
- 	    || (vr->base_hi & (size_and_mask >> (32 - PAGE_SHIFT))) !=
- 		(hi & (size_and_mask >> (32 - PAGE_SHIFT)))) {
- 		mtrr_wrmsr(MTRRphysBase_MSR(index), vr->base_lo, vr->base_hi);
--		changed = TRUE;
-+		changed = true;
- 	}
- 
- 	rdmsr(MTRRphysMask_MSR(index), lo, hi);
-@@ -291,7 +291,7 @@ static int set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
- 	    || (vr->mask_hi & (size_and_mask >> (32 - PAGE_SHIFT))) !=
- 		(hi & (size_and_mask >> (32 - PAGE_SHIFT)))) {
- 		mtrr_wrmsr(MTRRphysMask_MSR(index), vr->mask_lo, vr->mask_hi);
--		changed = TRUE;
-+		changed = true;
- 	}
- 	return changed;
- }
-@@ -416,8 +416,6 @@ static void generic_set_mtrr(unsigned int reg, unsigned long base,
-     <base> The base address of the region.
-     <size> The size of the region. If this is 0 the region is disabled.
-     <type> The type of the region.
--    <do_safe> If TRUE, do the change safely. If FALSE, safety measures should
--    be done externally.
-     [RETURNS] Nothing.
- */
- {
-diff --git a/arch/i386/kernel/cpu/mtrr/mtrr.h b/arch/i386/kernel/cpu/mtrr/mtrr.h
-index 289dfe6..3aea07c 100644
---- a/arch/i386/kernel/cpu/mtrr/mtrr.h
-+++ b/arch/i386/kernel/cpu/mtrr/mtrr.h
-@@ -2,11 +2,6 @@
-  * local mtrr defines.
-  */
- 
--#ifndef TRUE
--#define TRUE  1
--#define FALSE 0
--#endif
--
- #define MTRRcap_MSR     0x0fe
- #define MTRRdefType_MSR 0x2ff
- 
+But that cannot be obviously done for a full 4GB, only for a small
+area.  Right now on swiotlb systems we reserved 82MB for this
+(64MB swiotlb + 16MB ZONE_DMA). So the new zone is by default <100MB
+and can afford to be isolated.
+
+If GFP_DMA32 was merged into the mask allocator then it would
+need to learn about all that mess by itself. If GFP_DMA32
+stays it can just use the current page allocator which avoids
+a lot of code duplication.
+
+The DMA allocator calls the normal page allocator implicitely
+though for a 4GB mask, but that still needs such a bit to specify.
+
+-Andi
