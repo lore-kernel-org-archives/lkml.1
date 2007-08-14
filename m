@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760424AbXHNX2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935944AbXHNX2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760424AbXHNX2O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 19:28:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933729AbXHNX0h
+	id S935944AbXHNX2f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 19:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933387AbXHNX1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 19:26:37 -0400
-Received: from ns2.suse.de ([195.135.220.15]:50883 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765924AbXHNX0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 19:26:32 -0400
-Date: Wed, 15 Aug 2007 02:20:35 +0200
-From: Andi Kleen <ak@suse.de>
-To: Sebastian Siewior <sebastian@breakpoint.cc>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 1/2] i386: use asm() like the other atomic operations already do.
-Message-ID: <20070815002034.GW3406@bingen.suse.de>
-References: <20070814223845.518697567@breakpoint.cc> <20070814224337.547449183@breakpoint.cc>
+	Tue, 14 Aug 2007 19:27:44 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:49068 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765737AbXHNX1k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 19:27:40 -0400
+Message-ID: <246a89290708141627l1f7b9f01t18540ff1b693330a@mail.gmail.com>
+Date: Tue, 14 Aug 2007 16:27:32 -0700
+From: "Nathan Laredo" <laredo@gnu.org>
+To: "Joe Perches" <joe@perches.com>
+Subject: Re: [PATCH] [463/2many] MAINTAINERS - STRADIS MPEG-2 DECODER DRIVER
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <1187131532.32555.168.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070814224337.547449183@breakpoint.cc>
+References: <46bffc01.7c95Dz5xUUkjysHI%joe@perches.com>
+	 <246a89290708132104h4145349ah4a4a56ef852a1bb3@mail.gmail.com>
+	 <1187065967.32555.19.camel@localhost>
+	 <246a89290708141451n742a0f0bv2e95114319252050@mail.gmail.com>
+	 <1187131532.32555.168.camel@localhost>
+X-Google-Sender-Auth: 6e4ab45f2fd0d38e
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> My config with march=pentium-m and gcc (GCC) 4.1.2 (Gentoo 4.1.2):
->   text    data     bss     dec     hex filename
-> 3434150  249176  176128 3859454  3ae3fe atomic_normal/vmlinux
-> 3435308  249176  176128 3860612  3ae884 atomic_inlineasm/vmlinux
+Looks good to me.
 
-What is the difference between atomic_normal and atomic_inlineasm? 
+Signed-off-by: Nathan Laredo <laredo@gnu.org>
 
->  /**
->   * atomic_read - read atomic variable
->   * @v: pointer of type atomic_t
-> - * 
-> + *
+- Nathan
 
-Please don't change white space in patches
 
->   * Atomically reads the value of @v.
-> - */ 
-> -#define atomic_read(v)		((v)->counter)
-> + */
-> +static __inline__ int atomic_read(const atomic_t *v)
-> +{
-> +	int t;
-> +
-> +	__asm__ __volatile__(
-
-And don't use __*__ in new code
-
--Andi
+On 8/14/07, Joe Perches <joe@perches.com> wrote:
+> On Tue, 2007-08-14 at 14:51 -0700, Nathan Laredo wrote:
+> > Just the ones that show my name at the top of the source file.
+> > cs8240.h, ibmmpeg2.h, saa7121.h, saa7146*.h, stradis.c
+>
+> STRADIS MPEG-2 DECODER DRIVER
+> P:      Nathan Laredo
+> M:      laredo@gnu.org
+> W:      http://www.stradis.com/
+> S:      Maintained
+> F:      drivers/media/video/cs8240.h
+> F:      drivers/media/video/ibmmpeg2.h
+> F:      drivers/media/video/saa7121.h
+> F:      drivers/media/video/saa7146*.h
+> F:      drivers/media/video/stradis.c
+>
+>
+>
