@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760834AbXHNEEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbXHNELY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760834AbXHNEEk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 00:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbXHNEEY
+	id S1760918AbXHNELY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 00:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbXHNELK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 00:04:24 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:59048 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751578AbXHNEEX (ORCPT
+	Tue, 14 Aug 2007 00:11:10 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:61978 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753155AbXHNELI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 00:04:23 -0400
-Message-ID: <246a89290708132104h4145349ah4a4a56ef852a1bb3@mail.gmail.com>
-Date: Mon, 13 Aug 2007 21:04:20 -0700
-From: "Nathan Laredo" <laredo@gnu.org>
-To: "joe@perches.com" <joe@perches.com>
-Subject: Re: [PATCH] [463/2many] MAINTAINERS - STRADIS MPEG-2 DECODER DRIVER
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <46bffc01.7c95Dz5xUUkjysHI%joe@perches.com>
+	Tue, 14 Aug 2007 00:11:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Nypy5fFT0ZVEh5E3sD1Byfj3FaZVvSUVl4UWBe+ARm5BIOP4wZQiol1ZDIVExuO5seVqiO4ggNJwzDO9CgccsnHZ3Ewsl/amyNkTZ0aoupFmiSMT9/1RygqsehG2N9+uxOkzG9ypvvXDRBeH3/sapMyT8y9mgrdKpTyRiT9pgKs=
+Message-ID: <8bd0f97a0708132111w25b39901p2eec57125bb03920@mail.gmail.com>
+Date: Tue, 14 Aug 2007 00:11:07 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Robin Getz" <rgetz@blackfin.uclinux.org>
+Subject: Re: Bad addresses in MAINTAINERS
+Cc: "Joe Perches" <joe@perches.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200708132354.22273.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <46bffc01.7c95Dz5xUUkjysHI%joe@perches.com>
-X-Google-Sender-Auth: a95edb7e4626f000
+References: <1187032024.10249.266.camel@localhost>
+	 <1187032769.10249.270.camel@localhost>
+	 <8bd0f97a0708131256r447890c8q4848b333cf23d4f0@mail.gmail.com>
+	 <200708132354.22273.rgetz@blackfin.uclinux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, technically speaking, there are multiple files to the stradis
-driver, not just stradis.c.
+On 8/13/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+> On Mon 13 Aug 2007 15:56, Mike Frysinger pondered:
+> > On 8/13/07, Joe Perches <joe@perches.com> wrote:
+> > > On Mon, 2007-08-13 at 15:10 -0400, Mike Frysinger wrote:
+> > > > On 8/13/07, Joe Perches <joe@perches.com> wrote:
+> > > > > But if anyone has a new email address and still wants
+> > > > > to be in the maintainers file, please send.
+> > > > >
+> > > > > BLACKFIN ARCHITECTURE
+> > > > > P:      Aubrey Li
+> > > > > M:      aubrey.li@analog.com
+> > > > > P:      Jerry Zeng
+> > > > > M:      jerry.zeng@analog.com
+> > > >
+> > > > we know these guys needed to be removed as they've recently left ADI,
+> > > > we just havent pushed to mainline
+> > >
+> > > Maybe you can have a "blackfin_arch@analog.com" list as maintainers?
+> >
+> > we have a mailing list already ... could just drop the general list of
+> > people for Blackfin and keep specific e-mails for specific drivers
+>
+> There is a public mailing list - but it is closed - must be subscribed to post
+> (cuts down on spam), and I thought the requirement was to have these be open
+> lists?
 
-The tar file, http://kernel.org/pub/linux/kernel/people/laredo/stradis.tar.gz
-should make clear which files originated in the stradis driver.
+many other people do the same ... just a subscriber list
 
-- Nathan Laredo
-laredo@gnu.org
-
-On 8/12/07, joe@perches.com <joe@perches.com> wrote:
-> Add file pattern to MAINTAINER entry
->
-> Signed-off-by: Joe Perches <joe@perches.com>
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 9da5a44..3e51fc6 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4406,6 +4406,7 @@ P:        Nathan Laredo
->  M:     laredo@gnu.org
->  W:     http://www.stradis.com/
->  S:     Maintained
-> +F:     drivers/media/video/stradis.c
->
->  SUPERH (sh)
->  P:     Paul Mundt
->
+but ours is more open -- we moderate e-mails, they dont get flat out rejected ;)
+-mike
