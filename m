@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934299AbXHNVih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934121AbXHNVjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934299AbXHNVih (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 17:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756288AbXHNVXm
+	id S934121AbXHNVjV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 17:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbXHNVX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:23:42 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:38462 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756886AbXHNVXi (ORCPT
+	Tue, 14 Aug 2007 17:23:59 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55476 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757157AbXHNVX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:23:38 -0400
-Date: Tue, 14 Aug 2007 23:23:29 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: [-mm patch] AFLAGS: fix the -g setting
-Message-ID: <20070814212329.GQ18945@stusta.de>
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 14 Aug 2007 17:23:57 -0400
+Date: Tue, 14 Aug 2007 23:23:55 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 4/9] Atomic reclaim: Save irq flags in vmscan.c
+Message-ID: <20070814212355.GA23308@one.firstfloor.org>
+References: <20070814153021.446917377@sgi.com> <20070814153501.766137366@sgi.com> <p73vebhnauo.fsf@bingen.suse.de> <Pine.LNX.4.64.0708141209270.29498@schroedinger.engr.sgi.com> <20070814203329.GA22202@one.firstfloor.org> <Pine.LNX.4.64.0708141341120.31513@schroedinger.engr.sgi.com> <20070814204454.GC22202@one.firstfloor.org> <Pine.LNX.4.64.0708141414260.31693@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070809224254.11f42716.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <Pine.LNX.4.64.0708141414260.31693@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's -gdwarf-2, not -gdwarf2. With this fix it can actually work.
+On Tue, Aug 14, 2007 at 02:15:12PM -0700, Christoph Lameter wrote:
+> On Tue, 14 Aug 2007, Andi Kleen wrote:
+> 
+> > > Hmmmm... The spinlock is its own flag.
+> > 
+> > Yes, but it's not CPU local. Taking the spinlock from another CPU's
+> > interrupt handler is perfectly safe, just not from the local CPU.
+> > If you use the spinlock as flag you would need to lock out everybody.
+> 
+> So every spinlock would have an array of chars sized to NR_CPUS and set 
+> the flag when the lock is taken?
 
-And since even gcc 3.2 supports -gdwarf-2 there's no reason for checking 
-with as-option.
+I was more thinking of a single per cpu flag for all of page reclaim
+That keeps it also cache local.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-6ab1091b06e762635430b452f82a474890bda230 
-diff --git a/Makefile b/Makefile
-index 5b0d58c..accfdc4 100644
---- a/Makefile
-+++ b/Makefile
-@@ -504,7 +504,7 @@ endif
- 
- ifdef CONFIG_DEBUG_INFO
- CFLAGS		+= -g
--AFLAGS		+= $(call as-option, -gdwarf2)
-+AFLAGS		+= -gdwarf-2
- endif
- 
- # Force gcc to behave correct even for buggy distributions
-
+-Andi
