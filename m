@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937037AbXHNW6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936978AbXHNW73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937037AbXHNW6n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936227AbXHNW42
+	id S936978AbXHNW73 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936662AbXHNW4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 18:56:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53605 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935463AbXHNW4Y (ORCPT
+	Tue, 14 Aug 2007 18:56:54 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40014 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S936651AbXHNW4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 18:56:24 -0400
-Date: Wed, 15 Aug 2007 04:38:54 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Christoph Lameter <clameter@sgi.com>
-cc: Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       ak@suse.de, heiko.carstens@de.ibm.com, davem@davemloft.net,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
-Message-ID: <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
-References: <20070809131423.GA9927@shell.boston.redhat.com>
- <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+	Tue, 14 Aug 2007 18:56:52 -0400
+Date: Tue, 14 Aug 2007 15:56:51 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Chris Snook <csnook@redhat.com>
+cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [PATCH 1/23] document preferred use of volatile with atomic_t
+In-Reply-To: <46C2325C.8040900@redhat.com>
+Message-ID: <Pine.LNX.4.64.0708141555300.579@schroedinger.engr.sgi.com>
+References: <46C03885.7000109@redhat.com> <20070813110415.GA24018@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141544001.401@schroedinger.engr.sgi.com>
+ <46C2325C.8040900@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 14 Aug 2007, Chris Snook wrote:
 
-
-On Tue, 14 Aug 2007, Christoph Lameter wrote:
-
-> On Thu, 9 Aug 2007, Chris Snook wrote:
+> > volatile means that there is some vague notion of "read it now". But that
+> > really does not exist. Instead we control visibility via barriers (smp_wmb,
+> > smp_rmb). Would it not be best to not have volatile at all in atomic
+> > operations and let the barriers do the work?
 > 
-> > This patchset makes the behavior of atomic_read uniform by removing the
-> > volatile keyword from all atomic_t and atomic64_t definitions that currently
-> > have it, and instead explicitly casts the variable as volatile in
-> > atomic_read().  This leaves little room for creative optimization by the
-> > compiler, and is in keeping with the principles behind "volatile considered
-> > harmful".
+> From my reply in the other thread...
 > 
-> volatile is generally harmful even in atomic_read(). Barriers control
-> visibility and AFAICT things are fine.
+> But barriers force a flush of *everything* in scope, which we generally don't
+> want.  On the other hand, we pretty much always want to flush atomic_*
+> operations.  One way or another, we should be restricting the volatile
+> behavior to the thing that needs it.  On most architectures, this patch set
+> just moves that from the declaration, where it is considered harmful, to the
+> use, where it is considered an occasional necessary evil.
+> 
+> If you really, *really* distrust the compiler that much, you shouldn't be
+> using barrier, since that uses volatile under the hood too.  You should just
+> go ahead and implement the atomic operations in assembler, like Segher
+> Boessenkool did for powerpc in response to my previous patchset.
 
-Frankly, I don't see the need for this series myself either. Personal
-opinion (others may differ), but I consider "volatile" to be a sad /
-unfortunate wart in C (numerous threads on this list and on the gcc
-lists/bugzilla over the years stand testimony to this) and if we _can_
-steer clear of it, then why not -- why use this ill-defined primitive
-whose implementation has often differed over compiler versions and
-platforms? Granted, barrier() _is_ heavy-handed in that it makes the
-optimizer forget _everything_, but then somebody did post a forget()
-macro on this thread itself ...
+>From my reply on the other thread:
 
-[ BTW, why do we want the compiler to not optimize atomic_read()'s in
-  the first place? Atomic ops guarantee atomicity, which has nothing
-  to do with "volatility" -- users that expect "volatility" from
-  atomic ops are the ones who must be fixed instead, IMHO. ]
+Maybe we need two read functions? One volatile, one not?
+
+The atomic_read()s that I have in slub really do not care about when the 
+variables are read. And if volatile creates overhead then I rather not have it.
+
