@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764677AbXHNRVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765438AbXHNR1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764677AbXHNRVL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 13:21:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbXHNRUv
+	id S1765438AbXHNR1B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 13:27:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759689AbXHNR0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 13:20:51 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37386 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753640AbXHNRUu (ORCPT
+	Tue, 14 Aug 2007 13:26:53 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41350 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750888AbXHNR0w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 13:20:50 -0400
-Date: Tue, 14 Aug 2007 19:20:49 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Mirroring to any number of devices.
-In-Reply-To: <20070814162918.GA30330@2ka.mipt.ru>
-Message-ID: <Pine.LNX.4.64.0708141919230.10912@fbirervta.pbzchgretzou.qr>
-References: <20070814162918.GA30330@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 14 Aug 2007 13:26:52 -0400
+Date: Tue, 14 Aug 2007 18:33:35 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Len Brown <lenb@kernel.org>
+Cc: trenn@suse.de, "Brown, Len" <len.brown@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>, Zhang Rui <rui.zhang@intel.com>,
+       Alexey Starikovskiy <aystarik@gmail.com>
+Subject: Re: Documentation - How to debug ACPI Problems
+Message-ID: <20070814183335.67ac0e29@the-village.bc.nu>
+In-Reply-To: <200708141140.02233.lenb@kernel.org>
+References: <1181140008.28514.259.camel@queen.suse.de>
+	<9a8748490706060759s5d8c43bdoc34334fcf56ee96@mail.gmail.com>
+	<1181579321.28514.304.camel@queen.suse.de>
+	<200708141140.02233.lenb@kernel.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 14 Aug 2007 11:40:01 -0400
+Len Brown <lenb@kernel.org> wrote:
 
-On Aug 14 2007 20:29, Evgeniy Polyakov wrote:
->
->I'm pleased to announce second release of the distributed storage
->subsystem, which allows to form a storage on top of remote and local
->nodes, which in turn can be exported to another storage as a node to
->form tree-like storages.
+> 
+> > +Thomas Renninger <trenn@suse.de>, 2007
+> > +Copyright (C) 2007 SUSE Linux GmbH
+> 
+> While it seems to be generally customary to identify the authors of Documentation
+> files, it doesn't seem to be customary for them to assert a copyright.
+> Is this really necessary?  My concern is that it could discourage contributors
+> for user or changing the text in any way they see fit.
+> 
+> can anybody offer guidance on this?
 
-I'll be quick: what is it good for, are there any users, and what could
-it have to do with DRBD and all the other distribution storage talk
-that has come up lately (namely NBD w/Raid1)?
-
-
-	Jan
--- 
+Its under the GPL so I don't see a problem really. I'd do the same for
+Red Hat for new documents of substance I was adding to be honest.
