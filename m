@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934434AbXHNWsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935578AbXHNWth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934434AbXHNWsx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbXHNWsi
+	id S935578AbXHNWth (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbXHNWtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 18:48:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:33192 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754199AbXHNWsh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 18:48:37 -0400
-Date: Wed, 15 Aug 2007 00:48:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>, Hajime Inoue <hinoue@ccsl.carleton.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: System call interposition/unprotecting the table
-Message-ID: <20070814224835.GJ23308@one.firstfloor.org>
-References: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca> <20070814000956.7c8929dd@the-village.bc.nu> <46C1E5F5.9050702@ccsl.carleton.ca> <p73zm0tnbf8.fsf@bingen.suse.de> <20070814234206.76121d02@the-village.bc.nu>
+	Tue, 14 Aug 2007 18:49:13 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:56488 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753913AbXHNWtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 18:49:11 -0400
+Date: Wed, 15 Aug 2007 00:46:29 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Karl Meyer <adhocrocker@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
+Message-ID: <20070814224629.GB3495@electric-eye.fr.zoreil.com>
+References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com> <20070813165821.GA19356@electric-eye.fr.zoreil.com> <be1b757c0708131027v5c57822as2d9bd3190fd19b71@mail.gmail.com> <20070814070901.GA14693@electric-eye.fr.zoreil.com> <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070814234206.76121d02@the-village.bc.nu>
+In-Reply-To: <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com>
 User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Then you fix the specific case and the game continues.
+Karl Meyer <adhocrocker@gmail.com> :
+> I did some additional testing, the results are:
+> [0e4851502f846b13b29b7f88f1250c980d57e944] r8169: merge with version
+> 8.001.00 of Realtek's r8168 driver
+> does not work, I after some traffic the transmit timeout occurs.
+> [6dccd16b7c2703e8bbf8bca62b5cf248332afbe2] r8169: merge with version
+> 6.001.00 of Realtek's r8169 driver
+> Seems to be the last version to work. I did some stress testing (much
+> more than the level that was enough to make
+> [0e4851502f846b13b29b7f88f1250c980d57e944]  break) and am currently
+> using this version and no problems so far.
 
-If they intercept netdev->hard_start_xmit there is nothing
-to fix. Or inode->i_ops or any other virtual method pointer
-that is called often..
+Thanks for the quick feedback.
 
-Putting i_ops into const memory doesn't help either -- they
-can just copy them and use their own and replace the pointer
-in any accessed inode.
+Can you try the patch below on top of 2.6.23-rc3 ?
 
-It's also not that doing this is rocket science. Anybody
-barely skilled in computer architecture should be able
-to figure this out.
+If it does not work I'll dissect 0e4851502f846b13b29b7f88f1250c980d57e944
+tomorrow.
 
-Ok the only thing that could help is IA64/PPC64 style smart pointer
-checking that could prevent foreign code from being 
-executed, but you won't get that on x86 or most other
-architectures any time soon.
-
-And that would also only work if you disable module loading
-or implement a likely impractical/incompatible
-with free software code signing scheme
-(and Vista has just shown that these don't work anyways) 
-
-> > In general the .data protection is only considered a debugging
-> > feature. I don't know why Fedora enables it in their production
-> > kernels.
-> 
-> That would be because we think you are wrong 8)
-
-Well, it might at best buy you a few weeks/months in
-terms of the exploit arms race, but thrash your user's TLBs
-forever.
-
--Andi
-
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index b85ab4a..cdb8a08 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -2749,6 +2749,7 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
+ 		if (!(status & tp->intr_event))
+ 			break;
+ 
++#if 0
+                 /* Work around for rx fifo overflow */
+                 if (unlikely(status & RxFIFOOver) &&
+ 		    (tp->mac_version == RTL_GIGA_MAC_VER_11)) {
+@@ -2756,6 +2757,7 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
+ 			rtl8169_tx_timeout(dev);
+ 			break;
+ 		}
++#endif
+ 
+ 		if (unlikely(status & SYSErr)) {
+ 			rtl8169_pcierr_interrupt(dev);
+-- 
+Ueimor
