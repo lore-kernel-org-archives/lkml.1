@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935134AbXHNFGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936507AbXHNFNE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935134AbXHNFGa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 01:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765773AbXHNFFq
+	id S936507AbXHNFNE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 01:13:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933192AbXHNFMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 01:05:46 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36177 "EHLO mail.dvmed.net"
+	Tue, 14 Aug 2007 01:12:35 -0400
+Received: from il.qumranet.com ([82.166.9.18]:45467 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765298AbXHNFFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 01:05:43 -0400
-Message-ID: <46C13822.7040803@pobox.com>
-Date: Tue, 14 Aug 2007 01:05:38 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1752245AbXHNFMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 01:12:33 -0400
+Message-ID: <46C139BD.1030607@argo.co.il>
+Date: Tue, 14 Aug 2007 08:12:29 +0300
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-CC: Arjan van de Ven <arjan@infradead.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net/tulip/xircom_cb.c: remove superfulous priv assignment
-References: <200708081320.26756.m.kozlowski@tuxland.pl>
-In-Reply-To: <200708081320.26756.m.kozlowski@tuxland.pl>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: hinoue@ccsl.carleton.ca, linux-kernel@vger.kernel.org
+Subject: Re: System call interposition/unprotecting the table
+References: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca> <20070814000956.7c8929dd@the-village.bc.nu>
+In-Reply-To: <20070814000956.7c8929dd@the-village.bc.nu>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Tue, 14 Aug 2007 08:12:29 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mariusz Kozlowski wrote:
-> Hello,
-> 
-> 	Unpatched version does sth like this:
-> 
-> dev = alloc_etherdev(...
-> private = netdev_priv(dev);
-> ...
-> dev->priv = private;
-> 
-> which doesn't make much sense (does it?) because this is done in
-> alloc_netdev() already.
-> 
-> struct net_device *alloc_netdev(...
-> {
-> ...
-> 	if (sizeof_priv)
-> 		dev->priv = netdev_priv(dev);
-> 
-> This patch removes superfluous code.
-> 
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Alan Cox wrote:
+> This is to protect it from being changed by an attacker or someone trying
+> to do strange and bogus things to the kernel.
+>   
 
-applied
+Someone who apparently hasn't heard of vmap(), etc.
 
+It's a debug aid at best.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
