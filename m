@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762606AbXHNV2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbXHNV3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762606AbXHNV2o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 17:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbXHNVXB
+	id S1758244AbXHNV3N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 17:29:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbXHNVXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:23:01 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38413 "EHLO
+	Tue, 14 Aug 2007 17:23:04 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:38409 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755636AbXHNVW5 (ORCPT
+	with ESMTP id S1752271AbXHNVWz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:22:57 -0400
-Date: Tue, 14 Aug 2007 23:22:48 +0200
+	Tue, 14 Aug 2007 17:22:55 -0400
+Date: Tue, 14 Aug 2007 23:22:44 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: johnpol@2ka.mipt.ru
+To: netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] w1_remove_master_device(): fix check-after-use
-Message-ID: <20070814212248.GD18945@stusta.de>
+Subject: [2.6 patch] net/8021q/vlanproc.c: fix check-after-use
+Message-ID: <20070814212244.GB18945@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,34 +23,31 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted that we'd have already oops'ed if "dev"
+The Coverity checker spotted that we'd have already oops'ed if "vlandev"
 was NULL.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
---- linux-2.6.23-rc1-mm2/drivers/w1/w1_int.c.old	2007-08-08 14:38:50.000000000 +0200
-+++ linux-2.6.23-rc1-mm2/drivers/w1/w1_int.c	2007-08-08 14:38:58.000000000 +0200
-@@ -171,22 +171,17 @@
- void w1_remove_master_device(struct w1_bus_master *bm)
+--- linux-2.6.23-rc1-mm2/net/8021q/vlanproc.c.old	2007-08-08 06:22:40.000000000 +0200
++++ linux-2.6.23-rc1-mm2/net/8021q/vlanproc.c	2007-08-08 06:23:13.000000000 +0200
+@@ -314,17 +314,17 @@
+ static int vlandev_seq_show(struct seq_file *seq, void *offset)
  {
- 	struct w1_master *dev = NULL;
+ 	struct net_device *vlandev = (struct net_device *) seq->private;
+ 	const struct vlan_dev_info *dev_info = VLAN_DEV_INFO(vlandev);
+ 	struct net_device_stats *stats;
+ 	static const char fmt[] = "%30s %12lu\n";
+ 	int i;
  
- 	list_for_each_entry(dev, &w1_masters, w1_master_entry) {
- 		if (!dev->initialized)
- 			continue;
+-	if ((vlandev == NULL) || (!(vlandev->priv_flags & IFF_802_1Q_VLAN)))
++	if (!(vlandev->priv_flags & IFF_802_1Q_VLAN))
+ 		return 0;
  
- 		if (dev->bus_master->data == bm->data)
- 			break;
- 	}
+ 	seq_printf(seq, "%s  VID: %d	 REORDER_HDR: %i  dev->priv_flags: %hx\n",
+ 		       vlandev->name, dev_info->vlan_id,
+ 		       (int)(dev_info->flags & 1), vlandev->priv_flags);
  
--	if (!dev) {
--		printk(KERN_ERR "Device doesn't exist.\n");
--		return;
--	}
--
- 	__w1_remove_master_device(dev);
- }
  
- EXPORT_SYMBOL(w1_add_master_device);
- EXPORT_SYMBOL(w1_remove_master_device);
+ 	stats = vlan_dev_get_stats(vlandev);
+
