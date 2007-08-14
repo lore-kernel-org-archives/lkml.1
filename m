@@ -1,100 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbXHNHyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbXHNHzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755605AbXHNHyX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 03:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbXHNHqt
+	id S1755374AbXHNHzg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 03:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbXHNHzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 03:46:49 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:55495 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751691AbXHNHqg (ORCPT
+	Tue, 14 Aug 2007 03:55:14 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:29174 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751680AbXHNHzL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 03:46:36 -0400
-Date: Tue, 14 Aug 2007 00:29:50 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, kyle@mcmartin.ca, deller@gmx.de,
-       adaplas@gmail.com
-Subject: [patch 09/12] stifb: detect cards in double buffer mode more
-	reliably
-Message-ID: <20070814072950.GM15025@kroah.com>
-References: <20070814072244.882283903@mini.kroah.org>
+	Tue, 14 Aug 2007 03:55:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=nKgx2YkT+Japl8C6vgrGs7J6FDGs+hhGl63Racvwkw4MfdYvoC94iq5EQ58kjro+oW7nMY0KU6WnrBOO4ULDBCT/qmcFcmwlTRQOKzBklxiuPQ0wCowYW0uzg/JHbhO/97uqEnE6dtZZZvTViOIDpEbTO6/245lyj5anduBo/RU=
+Date: Tue, 14 Aug 2007 11:54:51 +0400
+From: Sergey Dolgov <solkaa@gmail.com>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: Hugh Dickins <hugh@veritas.com>, Sergey Dolgov <solkaa@gmail.com>,
+       Len Brown <len.brown@intel.com>, Norbert Preining <preining@logic.at>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Henrique de Moraes Holshuh <hmh@hmh.eng.br>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc3 regression and bisection query
+Message-ID: <20070814075422.GA2586@slk.laptop>
+References: <Pine.LNX.4.64.0708131905280.13982@blonde.wat.veritas.com> <20070813212204.GA2645@slk.laptop> <46C0D6DB.7090703@suse.de> <Pine.LNX.4.64.0708132353480.6269@blonde.wat.veritas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="stifb-detect-cards-in-double-buffer-mode-more-reliably.patch"
-In-Reply-To: <20070814072813.GA15025@kroah.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708132353480.6269@blonde.wat.veritas.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
+On Mon, Aug 13, 2007 at 11:56:22PM +0100, Hugh Dickins wrote:
+> On Tue, 14 Aug 2007, Alexey Starikovskiy wrote:
+> > Sergey Dolgov wrote:
+> > > On Mon, Aug 13, 2007 at 07:44:48PM +0100, Hugh Dickins wrote:
+> > >   
+> > >> Git bisection (with manual fixups to i386 mmiocfg horror, thanks
+> > >> for drawing attention to that in your changelog) accuses Alexey's
+> > >> ACPI: EC: If ECDT is not found, look up EC in DSDT
+> > >> cd8c93a4e04dce8f00d1ef3a476aac8bd65ae40b
+> > >> and if I revert that along with Len's subsequent
+> > >> ACPI: EC: fix build warning
+> > >> 52fe4bdf40bc07498c5f7935551774e8f8458190
+> > >> then I have Fn-F4 suspending to RAM again.
+> > >
+> > > I've also noticed a regression since -rc2 in battery status reporting
+> > > on my HP nx7300 laptop: the output of
+> > >
+> > >     cat /proc/acpi/battery/C1BE/state
+> > >
+> > > does not change after this file has been read for the the first time;
+> > > for exaple, the line "charging state: charged" does not change to
+> > > "charging state: discharging" upon unplugging the power cord.
+> > >
+> > > Reverting the above 2 commits fixes this issue for me.
+> > >
+> > > --
+> > > Sergey
+> > >   
+> > Function to register query methods (means by which EC talks to ACPI)
+> > was deleted by mistake.
+> > 
+> > Could you please try the attached patch?
+> 
+> Great, that indeed fixes my Thinkpad suspend-to-RAM cases
+> (both the Fn-F4, and resume from echo mem >/sys/power/state):
+> thanks a lot, Alexey.
 
-------------------
+Same thing here, your patch ontop of -rc3 fixes battery status
+reporting for me.
 
-From: Helge Deller <deller@gmx.de>
+Thanks, Alexey.
 
-Visualize-EG, Graffiti and A4450A graphics cards on PARISC can
-be configured in double-buffer and standard mode, but the stifb
-driver supports standard mode only.
-This patch detects double-buffered cards more reliable.
-
-It is a real bugfix for a very nasty problem for all parisc users which have
-wrongly configured their graphic card.  The problem: The stifb graphics driver
-will not detect that the card is wrongly configured and then nevertheless just
-enables the graphics mode, which it shouldn't.  In the end, the user will see
-no further updates / boot messages on the screen.
-
-We had documented this problem already on our FAQ
-(http://parisc-linux.org/faq/index.html#viseg "Why do I get corrupted graphics
-with my Vis-EG/Graffiti/A4450A card?") but people still run into this problem.
- So having this fix in as early as possible can help us.
-
-Signed-off-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/video/stifb.c |   19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
-
---- a/drivers/video/stifb.c
-+++ b/drivers/video/stifb.c
-@@ -1100,13 +1100,18 @@ stifb_init_fb(struct sti_struct *sti, in
- 	/* only supported cards are allowed */
- 	switch (fb->id) {
- 	case CRT_ID_VISUALIZE_EG:
--		/* look for a double buffering device like e.g. the 
--		   "INTERNAL_EG_DX1024" in the RDI precisionbook laptop
--		   which won't work. The same device in non-double 
--		   buffering mode returns "INTERNAL_EG_X1024". */
--		if (strstr(sti->outptr.dev_name, "EG_DX")) {
--		   printk(KERN_WARNING 
--			"stifb: ignoring '%s'. Disable double buffering in IPL menu.\n",
-+		/* Visualize cards can run either in "double buffer" or
-+ 		  "standard" mode. Depending on the mode, the card reports
-+		  a different device name, e.g. "INTERNAL_EG_DX1024" in double
-+		  buffer mode and "INTERNAL_EG_X1024" in standard mode.
-+		  Since this driver only supports standard mode, we check
-+		  if the device name contains the string "DX" and tell the
-+		  user how to reconfigure the card. */
-+		if (strstr(sti->outptr.dev_name, "DX")) {
-+		   printk(KERN_WARNING "WARNING: stifb framebuffer driver does not "
-+			"support '%s' in double-buffer mode.\n"
-+			KERN_WARNING "WARNING: Please disable the double-buffer mode "
-+			"in IPL menu (the PARISC-BIOS).\n",
- 			sti->outptr.dev_name);
- 		   goto out_err0;
- 		}
-
--- 
+--
+Sergey
