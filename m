@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbXHNXzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765099AbXHNXzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759473AbXHNXzX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 19:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXHNXzA
+	id S1765099AbXHNXzs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 19:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXHNXzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 19:55:00 -0400
-Received: from styx.suse.cz ([82.119.242.94]:48818 "EHLO mail.suse.cz"
+	Tue, 14 Aug 2007 19:55:03 -0400
+Received: from styx.suse.cz ([82.119.242.94]:48875 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754073AbXHNXy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 19:54:59 -0400
-Date: Wed, 15 Aug 2007 01:51:09 +0200 (CEST)
+	id S1754073AbXHNXzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 19:55:00 -0400
+Date: Wed, 15 Aug 2007 01:52:08 +0200 (CEST)
 From: Jiri Kosina <jkosina@suse.cz>
 To: joe@perches.com
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [217/2many] MAINTAINERS - HID CORE LAYER
-In-Reply-To: <46bffa13.u2UP+i4L1tdJi0Sf%joe@perches.com>
-Message-ID: <Pine.LNX.4.64.0708150148190.29843@jikos.suse.cz>
-References: <46bffa13.u2UP+i4L1tdJi0Sf%joe@perches.com>
+Subject: Re: [PATCH] [496/2many] MAINTAINERS - USB HID/HIDBP DRIVERS (USB
+ KEYBOARDS, MICE, REMOTE CONTROLS, ...)
+In-Reply-To: <46bffc55.PFZbCJDLM7vdarZe%joe@perches.com>
+Message-ID: <Pine.LNX.4.64.0708150151210.29843@jikos.suse.cz>
+References: <46bffc55.PFZbCJDLM7vdarZe%joe@perches.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,23 +30,24 @@ On Sun, 12 Aug 2007, joe@perches.com wrote:
 > Signed-off-by: Joe Perches <joe@perches.com>
 > 
 > diff --git a/MAINTAINERS b/MAINTAINERS
-> index bdbf999..4a8770c 100644
+> index ae24def..270952c 100644
 > --- a/MAINTAINERS
 > +++ b/MAINTAINERS
-> @@ -2071,6 +2071,8 @@ M:	jkosina@suse.cz
->  L:	linux-input@atrey.karlin.mff.cuni.cz
+> @@ -4696,6 +4696,8 @@ M:	jkosina@suse.cz
+>  L:	linux-usb-devel@lists.sourceforge.net
 >  T:	git kernel.org:/pub/scm/linux/kernel/git/jikos/hid.git
 >  S:	Maintained
-> +F:	drivers/hid/
-> +F:	include/linux/hid*
+> +F:	Documentation/usb/hiddev.txt
+> +F:	drivers/hid/usbhid/
 >  
->  HIGH-RESOLUTION TIMERS, CLOCKEVENTS, DYNTICKS
->  P:	Thomas Gleixner
-> 
+>  USB HUB DRIVER
+>  P:	Johannes Erdfelt
 
-If this is ever going to be merged, you can add
+Same here -- if this goes upstream, you can add
 
 	Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+Thanks,
 
 -- 
 Jiri Kosina
