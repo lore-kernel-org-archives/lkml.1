@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbXHNKtD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758371AbXHNLNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758195AbXHNKtD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 06:49:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755787AbXHNKsw
+	id S1758371AbXHNLNk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 07:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756819AbXHNLN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 06:48:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55745 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754423AbXHNKsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 06:48:51 -0400
-Message-ID: <46C1888E.4060501@redhat.com>
-Date: Tue, 14 Aug 2007 12:48:46 +0200
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Tue, 14 Aug 2007 07:13:27 -0400
+Received: from phunq.net ([64.81.85.152]:47871 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755094AbXHNLNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 07:13:24 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Block device throttling [Re: Distributed storage.]
+Date: Tue, 14 Aug 2007 04:13:10 -0700
+User-Agent: KMail/1.9.5
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708130604.07154.phillips@phunq.net> <20070814084625.GA20265@2ka.mipt.ru>
+In-Reply-To: <20070814084625.GA20265@2ka.mipt.ru>
 MIME-Version: 1.0
-To: joe@perches.com
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, akpm@linux-foundation.org,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: Re: [PATCH] [153/2many] MAINTAINERS - DEVICE-MAPPER  (LVM)
-References: <46bff986.szARdClTcYqQa8So%joe@perches.com>
-In-Reply-To: <46bff986.szARdClTcYqQa8So%joe@perches.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708140413.12530.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index ea991f0..36a7d25 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -1472,6 +1472,7 @@ P:	Alasdair Kergon
->  L:	dm-devel@redhat.com
->  W:	http://sources.redhat.com/dm
->  S:	Maintained
-> +F:	drivers/md/dm*
+On Tuesday 14 August 2007 01:46, Evgeniy Polyakov wrote:
+> On Mon, Aug 13, 2007 at 06:04:06AM -0700, Daniel Phillips 
+(phillips@phunq.net) wrote:
+> > Perhaps you never worried about the resources that the device
+> > mapper mapping function allocates to handle each bio and so did not
+> > consider this hole significant.  These resources can be
+> > significant, as is the case with ddsnap.  It is essential to close
+> > that window through with the virtual device's queue limit may be
+> > violated.  Not doing so will allow deadlock.
+>
+> This is not a bug, this is special kind of calculation - total limit
+> is number of physical devices multiplied by theirs limits. It was
+> done _on purpose_ to allow different device to have different limits
+> (for example in distributed storage project it is possible to have
+> both remote and local node in the same device, but local device
+> should not have _any_ limit at all, but network one should).
+>
+> Virtual device essentially has _no_ limit. And that as done on
+> purpose.
 
-File pattern should be:
+And it will not solve the deadlock problem in general.  (Maybe it works 
+for your virtual device, but I wonder...)  If the virtual device 
+allocates memory during generic_make_request then the memory needs to 
+be throttled.
 
-F:	drivers/md/dm*
-F:	drivers/md/kcopyd*
-F:	include/linux/device-mapper.h
-F:	include/linux/dm-ioctl.h
-F:	Documentation/device-mapper/
+Regards,
 
---
-mbroz@redhat.com
+Daniel
