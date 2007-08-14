@@ -1,141 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764371AbXHNPkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764576AbXHNPlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764371AbXHNPkr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 11:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762507AbXHNPfV
+	id S1764576AbXHNPlN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 11:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbXHNPjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 11:35:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52223 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760402AbXHNPfG (ORCPT
+	Tue, 14 Aug 2007 11:39:21 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:47570 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763698AbXHNPjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 11:35:06 -0400
-Message-Id: <20070814153502.997795796@sgi.com>
-References: <20070814153021.446917377@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 14 Aug 2007 08:30:30 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Cc: dkegel@google.com
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: David Miller <davem@davemloft.net>
-Cc: Nick Piggin <npiggin@suse.de>
-Subject: [RFC 9/9] Testing: Perform GFP_ATOMIC overallocation
-Content-Disposition: inline; filename=test_timer
+	Tue, 14 Aug 2007 11:39:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=hKd+OZHJwgASNmHNuESznDdKb/Dq45/yno5JrNFOV60E9CDLRvUgMPYoAlfEQBfrxy7cGZpMZ1K6VZ9cxEHsRa9aa4UUdJJ/FwJKKeS2S/Njn8n3ELRYs/S7AhTQnr4MaKx1PO2WDZB+u7ZGK6zW/40OsjJdWaIuJ65bwJJPg5Y=
+Message-ID: <82e4877d0708140839y3550bfa6of6a369251db517f3@mail.gmail.com>
+Date: Tue, 14 Aug 2007 11:39:16 -0400
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.23-rc3 - CONFIG_VMI broken
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>, zach@vmware.com,
+       rusty@rustcorp.com.au
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trigger a failure or reclaim by allocating large amounts of memory from the
-timer interrupt.
+CONFIG_VMI seems to be broken, but I am not sure when - the last
+kernel I was running was 2.6.22-rc4 which used to boot fine and use
+VMI. Current git with same configuration causes the kernel to reboot
+early. Logs below.
 
-This will show a protocol of what happened. F.e.
+Deselecting CONFIG_VMI and rebuilding allows the kernel to boot normally.
 
-Timer: Excesssive Atomic allocs
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 96 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Atomically reclaimed 64 pages
-Timer: Memory freed
+(I am running it on VMWare workstation 6 latest release.)
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Thanks
 
----
- kernel/timer.c |   30 ++++++++++++++++++++++++++++++
- mm/vmscan.c    |    4 ++++
- 2 files changed, 34 insertions(+)
+Parag
 
-Index: linux-2.6/kernel/timer.c
-===================================================================
---- linux-2.6.orig/kernel/timer.c	2007-08-14 07:43:21.000000000 -0700
-+++ linux-2.6/kernel/timer.c	2007-08-14 07:43:22.000000000 -0700
-@@ -817,6 +817,12 @@ unsigned long next_timer_interrupt(void)
- #endif
- 
- /*
-+ * Min freekbytes is 2m. 3000 pages give us 12M which is
-+ * able to exhaust the reserves
-+ */
-+#define NR_TEST 3000
-+
-+/*
-  * Called from the timer interrupt handler to charge one tick to the current 
-  * process.  user_tick is 1 if the tick is user time, 0 for system.
-  */
-@@ -824,6 +830,9 @@ void update_process_times(int user_tick)
- {
- 	struct task_struct *p = current;
- 	int cpu = smp_processor_id();
-+	struct page **base;
-+	int i;
-+	static unsigned long lasttime = 0;
- 
- 	/* Note: this timer irq context must be accounted for as well. */
- 	if (user_tick)
-@@ -835,6 +844,27 @@ void update_process_times(int user_tick)
- 		rcu_check_callbacks(cpu, user_tick);
- 	scheduler_tick();
- 	run_posix_cpu_timers(p);
-+
-+	/* Every 2 minutes */
-+	if (jiffies % (120 * HZ) == 0 && time_after(jiffies, lasttime)) {
-+		printk(KERN_CRIT "Timer: Excesssive Atomic allocs\n");
-+		/* Force memory to become exhausted */
-+		base = kzalloc(NR_TEST * sizeof(void *), GFP_ATOMIC);
-+
-+		for (i = 0; i < NR_TEST; i++) {
-+			base[i] = alloc_page(GFP_ATOMIC);
-+			if (!base[i]) {
-+				printk("Alloc failed at %d\n", i);
-+				break;
-+			}
-+		}
-+		for (i = 0; i < NR_TEST; i++)
-+			if (base[i])
-+				put_page(base[i]);
-+		kfree(base);
-+		printk(KERN_CRIT "Timer: Memory freed\n");
-+		lasttime = jiffies;
-+	}
- }
- 
- /*
-Index: linux-2.6/mm/vmscan.c
-===================================================================
---- linux-2.6.orig/mm/vmscan.c	2007-08-14 07:53:17.000000000 -0700
-+++ linux-2.6/mm/vmscan.c	2007-08-14 08:09:12.000000000 -0700
-@@ -1232,6 +1232,10 @@ out:
- 
- 		zone->prev_priority = priority;
- 	}
-+
-+	if (!(gfp_mask & __GFP_WAIT))
-+		printk(KERN_WARNING "Atomically reclaimed %lu pages\n", nr_reclaimed);
-+
- 	return ret;
- }
- 
-
--- 
+Linux version 2.6.23-rc3 (root@ubuntu) (gcc version 4.1.2 (Ubuntu
+4.1.2-0ubuntu4)) #4 Mon Aug 13 21:50:06 EDT 2007
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+ BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000ca000 - 00000000000cc000 (reserved)
+ BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 000000001fef0000 (usable)
+ BIOS-e820: 000000001fef0000 - 000000001feff000 (ACPI data)
+ BIOS-e820: 000000001feff000 - 000000001ff00000 (ACPI NVS)
+ BIOS-e820: 000000001ff00000 - 0000000020000000 (usable)
+ BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
+ BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+ BIOS-e820: 00000000fffe0000 - 0000000100000000 (reserved)
+console [earlyser0] enabled
+0MB HIGHMEM available.
+512MB LOWMEM available.
+found SMP MP-table at 000f6c90
+VMI: Found VMware, Inc. Hypervisor OPROM, API version 3.0, ROM version 1.0
+Reserving virtual address space above 0xfc000000
+Int 14: CR2 fc37e260  err 00000000  EIP fc37e260  CS 00000062  flags 00010006
+Stack: c0490ec7 c04913cb 00000001 00000000 fc001340 c047fff4 c04a6080 c047aa00
