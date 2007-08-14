@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932316AbXHNRiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932315AbXHNRkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932316AbXHNRiG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 13:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765811AbXHNRhu
+	id S932315AbXHNRkh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 13:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763078AbXHNRkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 13:37:50 -0400
-Received: from straum.hexapodia.org ([64.81.70.185]:7373 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765807AbXHNRhs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 13:37:48 -0400
-X-Greylist: delayed 1607 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Aug 2007 13:37:47 EDT
-Date: Tue, 14 Aug 2007 10:10:58 -0700
-From: Andy Isaacson <adi@hexapodia.org>
-To: WU Fengguang <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
-Message-ID: <20070814171058.GA14093@hexapodia.org>
-References: <46BEF5C0.3080902@linux.vnet.ibm.com> <20070812120902.GA9972@mail.ustc.edu.cn> <20070812122746.GA10109@mail.ustc.edu.cn>
+	Tue, 14 Aug 2007 13:40:12 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:60352 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762947AbXHNRkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 13:40:09 -0400
+Date: Tue, 14 Aug 2007 21:40:03 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Distributed storage. Mirroring to any number of devices.
+Message-ID: <20070814174003.GA31716@2ka.mipt.ru>
+References: <20070814162918.GA30330@2ka.mipt.ru> <Pine.LNX.4.64.0708141919230.10912@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070812122746.GA10109@mail.ustc.edu.cn>
-User-Agent: Mutt/1.4.2.2i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+In-Reply-To: <Pine.LNX.4.64.0708141919230.10912@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 12, 2007 at 08:27:46PM +0800, WU Fengguang wrote:
-> On Sun, Aug 12, 2007 at 05:27:52PM +0530, Balbir Singh wrote:
-> > For some reason my mailer keeps removing you from the cc.
+On Tue, Aug 14, 2007 at 07:20:49PM +0200, Jan Engelhardt (jengelh@computergmbh.de) wrote:
+> >I'm pleased to announce second release of the distributed storage
+> >subsystem, which allows to form a storage on top of remote and local
+> >nodes, which in turn can be exported to another storage as a node to
+> >form tree-like storages.
 > 
-> Or maybe it's my SMTP server's problem. Email systems are complex.
+> I'll be quick: what is it good for, are there any users, and what could
+> it have to do with DRBD and all the other distribution storage talk
+> that has come up lately (namely NBD w/Raid1)?
 
-It's the Mail-Followup-To header you include in your emails:
+It has number of advantages, outlined in the first release and on the
+project homepage, namely:
+* non-blocking processing without busy loops (compared to iSCSI and NBD)
+* small, plugable architecture
+* failover recovery (reconnect to remote target)
+* autoconfiguration
+* no additional allocatins (not including network  part) - at least two 
+	in device mapper for fast path
+* very simple - try to compare with iSCSI
+* works with different network protocols
+* storage can be formed on top of remote nodes and be exported 
+	simultaneously (iSCSI is peer-to-peer only, NBD
+	requires device mapper, is synchronous and wants special
+	userspace thread)
 
-> Mail-Followup-To: Balbir Singh <balbir@linux.vnet.ibm.com>,
->        Andrew Morton <akpm@linux-foundation.org>,
->        linux-kernel <linux-kernel@vger.kernel.org>
+Compared to DRBD, which is a mirroring of the local requests to remote
+node, and raid on top of NBD, DST supports multiple remote nodes, it allows 
+to remove any of them and then turn it back into the storage without
+breaking the dataflow, dst core will reconnect automatically to the
+failed remote nodes, it allows to work with detouched devices just like 
+with usual filesystems (in case it was not formed as a part of linear 
+storage, since in that case meta information is spreaded between nodes).
+It does not require special processes on behalf of network connection,
+everything will be performed automatically on behalf of DST core
+workers, it allows to export new device, created on top of mirror or
+linear combination of the others, which in turn can be formed on top of
+another and so on...
 
-The mail clients are just doing what you asked.  Perhaps you need to
-turn off followup_to (and turn on edit_headers).
+This was designed to allow to create a distributed storage with
+completely transparent failover recovery, with ability to detouch remote
+nodes from mirror array to became standalone realtime backups (or
+snapshots) and turn it back into the storage without stopping main 
+device node.
 
-Mutt has "set honor_followup_to=ask-yes" to fix this in 1.5 (though it's
-broken in "1.4.2.2i"); I don't know if the GUI clients have such a
-switch.
-
--andy
+-- 
+	Evgeniy Polyakov
