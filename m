@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935002AbXHNTdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934041AbXHNTeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935002AbXHNTdY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 15:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765471AbXHNTdO
+	id S934041AbXHNTeT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 15:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934804AbXHNTds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 15:33:14 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:51625 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764368AbXHNTdN (ORCPT
+	Tue, 14 Aug 2007 15:33:48 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:46144 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760367AbXHNTdq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 15:33:13 -0400
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0708140828060.27248@schroedinger.engr.sgi.com>
-References: <20070814142103.204771292@sgi.com>
-	 <1187102203.6114.2.camel@twins>
-	 <Pine.LNX.4.64.0708140828060.27248@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Tue, 14 Aug 2007 21:32:58 +0200
-Message-Id: <1187119978.5337.1.camel@lappy>
+	Tue, 14 Aug 2007 15:33:46 -0400
+Date: Tue, 14 Aug 2007 20:33:33 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Joe Perches <joe@perches.com>, Rene Herman <rene.herman@gmail.com>,
+       git@vger.kernel.org, Junio C Hamano <gitster@pobox.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
+Message-ID: <20070814193333.GI21089@ftp.linux.org.uk>
+References: <1187026955.2688.4.camel@laptopd505.fenrus.org> <1187037445.6628.98.camel@heimdal.trondhjem.org> <1187054366.2757.0.camel@laptopd505.fenrus.org> <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu> <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost> <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost> <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-14 at 08:29 -0700, Christoph Lameter wrote:
-> On Tue, 14 Aug 2007, Peter Zijlstra wrote:
+On Tue, Aug 14, 2007 at 11:40:09AM -0700, Linus Torvalds wrote:
+
+> A much *better* picture than some manually maintained thing, in fact, 
+> because it tells you who really does the work, and which way patches go...
 > 
-> > On Tue, 2007-08-14 at 07:21 -0700, Christoph Lameter wrote:
-> > > The following patchset implements recursive reclaim. Recursive reclaim
-> > > is necessary if we run out of memory in the writeout patch from reclaim.
-> > > 
-> > > This is f.e. important for stacked filesystems or anything that does
-> > > complicated processing in the writeout path.
-> > > 
-> > > Recursive reclaim works because it limits itself to only reclaim pages
-> > > that do not require writeout. It will only remove clean pages from the LRU.
-> > > The dirty throttling of the VM during regular reclaim insures that the amount
-> > > of dirty pages is limited. 
-> > 
-> > No it doesn't. All memory can be tied up by anonymous pages - who are
-> > dirty by definition and are not clamped by the dirty limit.
+> (Maybe you want to add a
 > 
-> Ok but that could be addressed by making sure that a certain portion of 
-> memory is reserved for clean file backed pages.
+> 	grep -v '\(Linus Torvalds\)\|\(Andrew Morton\)'
+> 
+> to avoid seeing the normal chain too much, but hey, we probably want to 
+> know too. Anyway - the script can certainly be tweaked, the point is 
+> really just that the git tree _already_ contains the relevant 
+> information).
 
-Which gets us back to the initial problem of sizing this portion and
-ensuring it is big enough to service the need.
+FWIW, I suspect that we are looking at that from the wrong POV.  If
+that's about "who ought to be Cc'd on the issues dealing with <list
+of pathnames>", why does it have to be tied to "who is maintainer for
+<pathname>"?
 
-
-
+I'm not suggesting something like fs.ext2@kernel.org with something
+like majordomo allowing to add yourself to those, but something less
+extreme in that direction might be worth thinking about...  Hell,
+even simple
+$ finger fs/minix/dir.c@cc.kernel.org
+with majordomo-like interface for adding yourself to such lists
+might solve most of those problems...
