@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761636AbXHNPf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763362AbXHNPfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761636AbXHNPf1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 11:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760636AbXHNPfH
+	id S1763362AbXHNPfv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 11:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760830AbXHNPfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 11:35:07 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40794 "EHLO
+	Tue, 14 Aug 2007 11:35:08 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40792 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755694AbXHNPfF (ORCPT
+	with ESMTP id S1757621AbXHNPfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 14 Aug 2007 11:35:05 -0400
-Message-Id: <20070814153502.753854133@sgi.com>
+Message-Id: <20070814153501.075312763@sgi.com>
 References: <20070814153021.446917377@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 14 Aug 2007 08:30:29 -0700
+Date: Tue, 14 Aug 2007 08:30:22 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org
@@ -22,43 +22,105 @@ Cc: dkegel@google.com
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: David Miller <davem@davemloft.net>
 Cc: Nick Piggin <npiggin@suse.de>
-Subject: [RFC 8/9] Reclaim on an atomic allocation if necessary
-Content-Disposition: inline; filename=reclaim_on_atomic_alloc
+Subject: [RFC 1/9] Allow reclaim via __GFP_NOMEMALLOC reclaim
+Content-Disposition: inline; filename=vmscan_nomemalloc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simply call reclaim if we get to a point where we cannot perform
-the desired atomic allocation. If the reclaim is successful then
-restart the allocation.
+Make try_to_free_pages() not perform any allocations if __GFP_NOMEMALLOC
+is set.
 
-This will allow atomic allocs to not run out of memory. We reclaim clean
-pages instead. If we are in an interrupt then the interrupt holdoff
-will be long since reclaim processing is intensive. However, we will
-no longer OOM.
+We can avoid allocations by not writing pages out or swapping. So on entry
+to try_to_free_pages() we check for __GFP_NOMEMALLOC. If it is set
+then sc.may_writepage and sc.mayswap are switched off and we short
+circuit the writeout handling.
+
+The throttling of VM writeout is also bypassed since there is no
+writeout occurring.
+
+It is likely difficult to make sure that the slab shrinkers do
+not perform any allocations. So we simply do not shrink slabs.
+
+The type of pages that can be reclaimed by a call to try_to_free_pages()
+with the __GFP_NOMEMALLOC parameter is:
+
+- Unmapped clean page cache pages.
+- Mapped clean pages
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
----
- mm/page_alloc.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/mm/page_alloc.c
+---
+ mm/vmscan.c |   25 ++++++++++++++++++++++---
+ 1 file changed, 22 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/mm/vmscan.c
 ===================================================================
---- linux-2.6.orig/mm/page_alloc.c	2007-08-14 07:42:09.000000000 -0700
-+++ linux-2.6/mm/page_alloc.c	2007-08-14 07:53:34.000000000 -0700
-@@ -1326,8 +1326,12 @@ nofail_alloc:
+--- linux-2.6.orig/mm/vmscan.c	2007-08-13 23:43:45.000000000 -0700
++++ linux-2.6/mm/vmscan.c	2007-08-13 23:51:05.000000000 -0700
+@@ -161,6 +161,13 @@ unsigned long shrink_slab(unsigned long 
+ 	if (scanned == 0)
+ 		scanned = SWAP_CLUSTER_MAX;
+ 
++	/*
++	 * Not sure if we can keep this clean of allocs.
++	 * Better leave it off for now
++	 */
++	if (gfp_mask & __GFP_NOMEMALLOC)
++		return 1;
++
+ 	if (!down_read_trylock(&shrinker_rwsem))
+ 		return 1;	/* Assume we'll be able to shrink next time */
+ 
+@@ -1053,7 +1060,8 @@ static unsigned long shrink_zone(int pri
+ 		}
  	}
  
- 	/* Atomic allocations - we can't balance anything */
--	if (!wait)
-+	if (!wait) {
-+		if (try_to_free_pages(zonelist->zones, order, gfp_mask
-+							| __GFP_NOMEMALLOC))
-+			goto restart;
- 		goto nopage;
+-	throttle_vm_writeout(sc->gfp_mask);
++	if (!(sc->gfp_mask & __GFP_NOMEMALLOC))
++		throttle_vm_writeout(sc->gfp_mask);
+ 
+ 	atomic_dec(&zone->reclaim_in_progress);
+ 	return nr_reclaimed;
+@@ -1115,6 +1123,9 @@ static unsigned long shrink_zones(int pr
+  * hope that some of these pages can be written.  But if the allocating task
+  * holds filesystem locks which prevent writeout this might not work, and the
+  * allocation attempt will fail.
++ *
++ * The __GFP_NOMEMALLOC flag has a special role. If it is set then no memory
++ * allocations or writeout will occur.
+  */
+ unsigned long try_to_free_pages(struct zone **zones, int order, gfp_t gfp_mask)
+ {
+@@ -1127,15 +1138,17 @@ unsigned long try_to_free_pages(struct z
+ 	int i;
+ 	struct scan_control sc = {
+ 		.gfp_mask = gfp_mask,
+-		.may_writepage = !laptop_mode,
+ 		.swap_cluster_max = SWAP_CLUSTER_MAX,
+-		.may_swap = 1,
+ 		.swappiness = vm_swappiness,
+ 		.order = order,
+ 	};
+ 
+ 	count_vm_event(ALLOCSTALL);
+ 
++	if (!(gfp_mask & __GFP_NOMEMALLOC)) {
++		sc.may_writepage = !laptop_mode;
++		sc.may_swap = 1;
 +	}
+ 	for (i = 0; zones[i] != NULL; i++) {
+ 		struct zone *zone = zones[i];
  
- 	cond_resched();
+@@ -1162,6 +1175,9 @@ unsigned long try_to_free_pages(struct z
+ 			goto out;
+ 		}
  
++		if (!(gfp_mask & __GFP_NOMEMALLOC))
++			continue;
++
+ 		/*
+ 		 * Try to write back as many pages as we just scanned.  This
+ 		 * tends to cause slow streaming writers to write data to the
 
 -- 
