@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934116AbXHNTDH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934617AbXHNTDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934116AbXHNTDH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 15:03:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760056AbXHNTCz
+	id S934617AbXHNTDe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 15:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933987AbXHNTDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 15:02:55 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39284 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752620AbXHNTCy (ORCPT
+	Tue, 14 Aug 2007 15:03:05 -0400
+Received: from aa012msr.fastwebnet.it ([85.18.95.72]:37574 "EHLO
+	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933930AbXHNTDD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 15:02:54 -0400
-Date: Tue, 14 Aug 2007 12:02:52 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-cc: lethal@linux-sh.org, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch] slab: revert "slab: fix alien cache handling"
-In-Reply-To: <20070814065657.GF10033@linux-os.sc.intel.com>
-Message-ID: <Pine.LNX.4.64.0708141200470.29373@schroedinger.engr.sgi.com>
-References: <20070813175824.GB12874@linux-os.sc.intel.com>
- <Pine.LNX.4.64.0708131349100.27728@schroedinger.engr.sgi.com>
- <20070814065657.GF10033@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 14 Aug 2007 15:03:03 -0400
+Date: Tue, 14 Aug 2007 21:02:46 +0200
+From: Paolo Ornati <ornati@fastwebnet.it>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-usb-devel@lists.sourceforge.net,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] spontaneous disconnect with "usb-storage:
+ implement autosuspend"
+Message-ID: <20070814210246.0c25643d@localhost>
+In-Reply-To: <200708142033.23158.oliver@neukum.org>
+References: <20070814131557.5653d991@localhost>
+	<200708141746.16958.oliver@neukum.org>
+	<20070814183857.28997de1@localhost>
+	<200708142033.23158.oliver@neukum.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007, Siddha, Suresh B wrote:
+On Tue, 14 Aug 2007 20:33:22 +0200
+Oliver Neukum <oliver@neukum.org> wrote:
 
-> > Only if you find another way to fix the bug that is addressed there.
-> 
-> Does the appended version fix both the issues? Name alien in cache_free_alien
-> is confusing, as the function does two things. free through alien caches
-> or direct remote free..
+> Exactly. This is not reliable. It needs to be done in kernel. This patch
+> should do it.
 
-Yes calling cache_free_alien is not necessary if you just have a single 
-node. All memory is node local in that case.
+ok, this one works  :)
 
-I do not think that cache_free_alien is confusing since the name refers to 
-the function freeing an alien object. That alien object can be freed to an 
-alien cache or directly to a remote slab.
+I suspect that there are many more broken devices out there ;)
 
-Acked-by: Christoph Lameter <clameter@sgi.com>
+
+thanks,
+
+-- 
+	Paolo Ornati
+	Linux 2.6.23-rc3-gbfefa254 on x86_64
