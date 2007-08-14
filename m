@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965084AbXHNFv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965269AbXHNFwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965084AbXHNFv7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 01:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938115AbXHNFu3
+	id S965269AbXHNFwz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 01:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S942472AbXHNFug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 01:50:29 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52068 "EHLO mail.dvmed.net"
+	Tue, 14 Aug 2007 01:50:36 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52077 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932440AbXHNFuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 01:50:25 -0400
-Message-ID: <46C1429D.4080809@garzik.org>
-Date: Tue, 14 Aug 2007 01:50:21 -0400
+	id S940527AbXHNFud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 01:50:33 -0400
+Message-ID: <46C142A6.1080707@garzik.org>
+Date: Tue, 14 Aug 2007 01:50:30 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
 To: Richard Knutsson <ricknu-0@student.ltu.se>
-CC: mikep@linuxtr.net, netdev@vger.kernel.org, kernel-janitors@lists.osdl.org,
+CC: philb@gnu.org, netdev@vger.kernel.org, kernel-janitors@lists.osdl.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net/tokenring: Convert to generic boolean
-References: <20070814000543.13576.62289.sendpatchset@thinktank.campus.ltu.se>
-In-Reply-To: <20070814000543.13576.62289.sendpatchset@thinktank.campus.ltu.se>
+Subject: Re: [PATCH] drivers/net/3c505: Convert to generic boolean
+References: <20070813234814.13259.28175.sendpatchset@thinktank.campus.ltu.se>
+In-Reply-To: <20070813234814.13259.28175.sendpatchset@thinktank.campus.ltu.se>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
