@@ -1,34 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbXHNHrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbXHNHrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753703AbXHNHrY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 03:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbXHNHqd
+	id S1753947AbXHNHrz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 03:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbXHNHqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 03:46:33 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:55344 "EHLO
+	Tue, 14 Aug 2007 03:46:35 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:55359 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751139AbXHNHp5 (ORCPT
+	with ESMTP id S1751616AbXHNHqE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 03:45:57 -0400
-Date: Tue, 14 Aug 2007 00:28:50 -0700
+	Tue, 14 Aug 2007 03:46:04 -0400
+Date: Tue, 14 Aug 2007 00:28:57 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, security@kernel.org, Willy Tarreau <w@1wt.eu>,
-       Matt Mackall <mpm@selenic.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 02/12] random: fix bound check ordering (CVE-2007-3105)
-Message-ID: <20070814072850.GC15025@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       linux-wireless@vger.kernel.org,
+       Johannes Berg <johannes@sipsolutions.net>,
+       David Woodhouse <dwmw2@infradead.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Michael Buesch <mb@bu3sch.de>
+Subject: [patch 03/12] softmac: Fix deadlock of wx_set_essid with assoc work
+Message-ID: <20070814072857.GD15025@kroah.com>
 References: <20070814072244.882283903@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="random-fix-bound-check-ordering.patch"
+Content-Disposition: inline; filename="softmac-fix-deadlock-of-wx_set_essid-with-assoc-work.patch"
 In-Reply-To: <20070814072813.GA15025@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,43 +41,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+From: Michael Buesch <mb@bu3sch.de>
 
-From: Matt Mackall <mpm@selenic.com>
+The essid wireless extension does deadlock against the assoc mutex,
+as we don't unlock the assoc mutex when flushing the workqueue, which
+also holds the lock.
 
-If root raised the default wakeup threshold over the size of the
-output pool, the pool transfer function could overflow the stack with
-RNG bytes, causing a DoS or potential privilege escalation.
-
-(Bug reported by the PaX Team <pageexec@freemail.hu>)
-
-Cc: Theodore Tso <tytso@mit.edu>
-Cc: Willy Tarreau <w@1wt.eu>
-Signed-off-by: Matt Mackall <mpm@selenic.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/random.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ net/ieee80211/softmac/ieee80211softmac_wx.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
---- a/drivers/char/random.c
-+++ b/drivers/char/random.c
-@@ -693,9 +693,14 @@ static void xfer_secondary_pool(struct e
+--- a/net/ieee80211/softmac/ieee80211softmac_wx.c
++++ b/net/ieee80211/softmac/ieee80211softmac_wx.c
+@@ -74,8 +74,8 @@ ieee80211softmac_wx_set_essid(struct net
+ 	struct ieee80211softmac_auth_queue_item *authptr;
+ 	int length = 0;
  
- 	if (r->pull && r->entropy_count < nbytes * 8 &&
- 	    r->entropy_count < r->poolinfo->POOLBITS) {
--		int bytes = max_t(int, random_read_wakeup_thresh / 8,
--				min_t(int, nbytes, sizeof(tmp)));
-+		/* If we're limited, always leave two wakeup worth's BITS */
- 		int rsvd = r->limit ? 0 : random_read_wakeup_thresh/4;
-+		int bytes = nbytes;
-+
-+		/* pull at least as many as BYTES as wakeup BITS */
-+		bytes = max_t(int, bytes, random_read_wakeup_thresh / 8);
-+		/* but never more than the buffer size */
-+		bytes = min_t(int, bytes, sizeof(tmp));
++check_assoc_again:
+ 	mutex_lock(&sm->associnfo.mutex);
+-
+ 	/* Check if we're already associating to this or another network
+ 	 * If it's another network, cancel and start over with our new network
+ 	 * If it's our network, ignore the change, we're already doing it!
+@@ -98,13 +98,18 @@ ieee80211softmac_wx_set_essid(struct net
+ 				cancel_delayed_work(&authptr->work);
+ 			sm->associnfo.bssvalid = 0;
+ 			sm->associnfo.bssfixed = 0;
+-			flush_scheduled_work();
+ 			sm->associnfo.associating = 0;
+ 			sm->associnfo.associated = 0;
++			/* We must unlock to avoid deadlocks with the assoc workqueue
++			 * on the associnfo.mutex */
++			mutex_unlock(&sm->associnfo.mutex);
++			flush_scheduled_work();
++			/* Avoid race! Check assoc status again. Maybe someone started an
++			 * association while we flushed. */
++			goto check_assoc_again;
+ 		}
+ 	}
  
- 		DEBUG_ENT("going to reseed %s with %d bits "
- 			  "(%d of %d requested)\n",
+-
+ 	sm->associnfo.static_essid = 0;
+ 	sm->associnfo.assoc_wait = 0;
+ 
 
 -- 
