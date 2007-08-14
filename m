@@ -1,40 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936810AbXHNWYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935740AbXHNWZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936810AbXHNWYv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934718AbXHNWWR
+	id S935740AbXHNWZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762336AbXHNWW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 18:22:17 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:54001 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761800AbXHNWWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 18:22:14 -0400
-Date: Wed, 15 Aug 2007 02:22:03 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] w1_remove_master_device(): fix check-after-use
-Message-ID: <20070814222203.GA1844@2ka.mipt.ru>
-References: <20070814212248.GD18945@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 14 Aug 2007 18:22:58 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47460 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S936767AbXHNWW4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 18:22:56 -0400
+Date: Wed, 15 Aug 2007 00:22:45 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove Documentation/networking/net-modules.txt
+Message-ID: <20070814222245.GF18945@stusta.de>
+References: <20070814212604.GW18945@stusta.de> <46C226D1.4070203@pobox.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070814212248.GD18945@stusta.de>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <46C226D1.4070203@pobox.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian.
+On Tue, Aug 14, 2007 at 06:04:01PM -0400, Jeff Garzik wrote:
+> Adrian Bunk wrote:
+>> According to git, the only one who touched this file during the last
+>> 5 years was me when removing drivers...
+>> modinfo offers less ancient information.
+>> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>> ---
+>> This patch has been sent on:
+>> - 23 Jul 2007
+>>  Documentation/networking/00-INDEX        |    2  
+>> Documentation/networking/net-modules.txt |  315 -----------------------
+>>  2 files changed, 317 deletions(-)
+>
+> NAK, IMO it's still use for ancient drivers
 
-On Tue, Aug 14, 2007 at 11:22:48PM +0200, Adrian Bunk (bunk@kernel.org) wrote:
-> The Coverity checker spotted that we'd have already oops'ed if "dev"
-> was NULL.
+Is there any that lacks a MODULE_PARM_DESC()?
+If yes, shouln't we fix such drivers instead?
 
-This is wrong.
-Although dev can not be null there there is no way it will crash.
-The right paranoidal solution is to setup new pointer and make it equal
-to the found device and check if it is NULL or not out of the loop.
-I will cook up a patch tomorrow, thanks for pointing to this issue.
+Even for ancient drivers net-modules.txt is outdated and sometimes lists 
+no longer existing or doesn't document more recent parameters.
+
+cu
+Adrian
 
 -- 
-	Evgeniy Polyakov
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
