@@ -1,41 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932850AbXHNCXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934679AbXHNCZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932850AbXHNCXG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 22:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbXHNCWx
+	id S934679AbXHNCZr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 22:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbXHNCZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 22:22:53 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:41908 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752531AbXHNCWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 22:22:52 -0400
-Date: Tue, 14 Aug 2007 11:21:47 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-       Dave Airlie <airlied@linux.ie>
-Subject: Re: Bad addresses in MAINTAINERS
-Message-ID: <20070814022147.GC633@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	"Antonino A. Daplas" <adaplas@gmail.com>,
-	Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-	Dave Airlie <airlied@linux.ie>
-References: <1187032024.10249.266.camel@localhost> <1187036843.5058.10.camel@daplas>
-MIME-Version: 1.0
+	Mon, 13 Aug 2007 22:25:32 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58954 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753534AbXHNCZb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 22:25:31 -0400
+Date: Tue, 14 Aug 2007 04:25:29 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Stewart Smith <stewart@mysql.com>
+Cc: Brice Figureau <brice+lklm@daysofwonder.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070814022529.GA11322@one.firstfloor.org>
+References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu> <loom.20070805T190600-28@post.gmane.org> <p734pjdmxsz.fsf@bingen.suse.de> <1186389638.30448.29.camel@localhost.localdomain> <1187055897.18858.31.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1187036843.5058.10.camel@daplas>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1187055897.18858.31.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 14, 2007 at 04:27:23AM +0800, Antonino A. Daplas wrote:
-> On Mon, 2007-08-13 at 12:07 -0700, Joe Perches wrote:
-> > IMS TWINTURBO FRAMEBUFFER DRIVER
-> > P:	Paul Mundt
-> > M:	lethal@chaoticdreams.org
+On Tue, Aug 14, 2007 at 11:44:56AM +1000, Stewart Smith wrote:
+> > Since the database fits in RAM, the only kind of access Mysql is doing
+> > is writing to the innodb log, the mysql binlog and finally to the innodb
+> > database files.
+> > There are certainly a whole lot of fsync'ing happening.
 > 
-> That's not Paul's current email.
-> 
-I also haven't had one of these devices in years, though I never got
-around to updating MAINTAINERS. Perhaps this should be orphaned?
+> yes. Keep in mind that the binlog grows in file size too... so this has
+> to sync all the metadata as well (ick, i know).
+
+It might be an interesting experiment to see if it still happens
+with the file system remounted as ext2. ext2 has a much more 
+benign fsync than ext3.
+
+-Andi
