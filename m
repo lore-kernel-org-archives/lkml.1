@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752014AbXHNWHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936351AbXHNWIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752014AbXHNWHw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756702AbXHNVl2
+	id S936351AbXHNWIl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761773AbXHNVlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:41:28 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:42236 "EHLO
+	Tue, 14 Aug 2007 17:41:35 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:42240 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934902AbXHNVlG (ORCPT
+	with ESMTP id S934911AbXHNVlJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:41:06 -0400
-Date: Tue, 14 Aug 2007 17:40:17 -0400
+	Tue, 14 Aug 2007 17:41:09 -0400
+Date: Tue, 14 Aug 2007 17:40:20 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 1/14] UML - Throw out CONFIG_MODE_TT
-Message-ID: <20070814214017.GA17280@c2.user-mode-linux.org>
+Subject: [PATCH 7/14] UML - Style fixes pass 3
+Message-ID: <20070814214020.GA17310@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,5520 +24,6694 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Start getting rid of tt mode support.
+Formatting changes in the files which have been changed in the course
+of folding foo_skas functions into their callers.  These include:
+	copyright updates
+	header file trimming
+	style fixes
+	adding severity to printks
 
-This patch throws out CONFIG_MODE_TT and all config options, code, and
-files which depend on it.
-
-CONFIG_MODE_SKAS is gone and everything that depends on it is included
-unconditionally.
-
-The few changed lines are in re-written Kconfig help, lines which
-needed something skas-related removed from them, and a few more which
-weren't strictly deletions.
+These changes should be entirely non-functional.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- arch/um/Kconfig                          |   64 ----
- arch/um/Kconfig.char                     |    2 
- arch/um/Kconfig.debug                    |   23 -
- arch/um/Makefile                         |   26 -
- arch/um/Makefile-i386                    |    6 
- arch/um/defconfig                        |    2 
- arch/um/drivers/mconsole_kern.c          |   15 -
- arch/um/include/as-layout.h              |    1 
- arch/um/include/choose-mode.h            |   18 -
- arch/um/include/common-offsets.h         |    3 
- arch/um/include/irq_user.h               |    4 
- arch/um/include/kern_util.h              |    6 
- arch/um/include/mode.h                   |   19 -
- arch/um/include/mode_kern.h              |    6 
- arch/um/include/os.h                     |   26 -
- arch/um/include/sysdep-i386/ptrace.h     |   23 -
- arch/um/include/sysdep-i386/sigcontext.h |    4 
- arch/um/include/sysdep-i386/thread.h     |    3 
- arch/um/include/sysdep-x86_64/ptrace.h   |   21 -
- arch/um/include/sysdep-x86_64/thread.h   |    4 
- arch/um/include/tt/debug.h               |   18 -
- arch/um/include/tt/mmu-tt.h              |   12 
- arch/um/include/tt/mode-tt.h             |   23 -
- arch/um/include/tt/mode_kern_tt.h        |   40 --
- arch/um/include/tt/tt.h                  |   37 --
- arch/um/include/tt/uaccess-tt.h          |   46 ---
- arch/um/include/um_mmu.h                 |   23 -
- arch/um/include/um_uaccess.h             |    8 
- arch/um/kernel/Makefile                  |    5 
- arch/um/kernel/dyn.lds.S                 |    2 
- arch/um/kernel/exec.c                    |    1 
- arch/um/kernel/init_task.c               |    7 
- arch/um/kernel/irq.c                     |   24 -
- arch/um/kernel/ksyms.c                   |   10 
- arch/um/kernel/process.c                 |    7 
- arch/um/kernel/reboot.c                  |   19 -
- arch/um/kernel/smp.c                     |    5 
- arch/um/kernel/trap.c                    |    2 
- arch/um/kernel/tt/Makefile               |   14 
- arch/um/kernel/tt/exec_kern.c            |   84 -----
- arch/um/kernel/tt/exec_user.c            |   56 ---
- arch/um/kernel/tt/gdb.c                  |  280 ------------------
- arch/um/kernel/tt/gdb_kern.c             |   40 --
- arch/um/kernel/tt/include/mode-tt.h      |   34 --
- arch/um/kernel/tt/ksyms.c                |   29 -
- arch/um/kernel/tt/mem.c                  |   34 --
- arch/um/kernel/tt/mem_user.c             |   49 ---
- arch/um/kernel/tt/process_kern.c         |  461 -------------------------------
- arch/um/kernel/tt/ptproxy/Makefile       |   10 
- arch/um/kernel/tt/ptproxy/proxy.c        |  377 -------------------------
- arch/um/kernel/tt/ptproxy/ptproxy.h      |   61 ----
- arch/um/kernel/tt/ptproxy/ptrace.c       |  237 ---------------
- arch/um/kernel/tt/ptproxy/sysdep.c       |   70 ----
- arch/um/kernel/tt/ptproxy/sysdep.h       |   25 -
- arch/um/kernel/tt/ptproxy/wait.c         |   85 -----
- arch/um/kernel/tt/ptproxy/wait.h         |   15 -
- arch/um/kernel/tt/syscall_kern.c         |   46 ---
- arch/um/kernel/tt/syscall_user.c         |   60 ----
- arch/um/kernel/tt/tlb.c                  |  120 --------
- arch/um/kernel/tt/tracer.c               |  461 -------------------------------
- arch/um/kernel/tt/trap_user.c            |   70 ----
- arch/um/kernel/tt/uaccess.c              |   73 ----
- arch/um/kernel/tt/uaccess_user.c         |  105 -------
- arch/um/kernel/um_arch.c                 |  113 -------
- arch/um/kernel/uml.lds.S                 |    7 
- arch/um/os-Linux/Makefile                |    7 
- arch/um/os-Linux/main.c                  |   32 --
- arch/um/os-Linux/process.c               |   31 --
- arch/um/os-Linux/start_up.c              |   10 
- arch/um/os-Linux/sys-i386/Makefile       |    2 
- arch/um/os-Linux/sys-x86_64/Makefile     |    2 
- arch/um/os-Linux/time.c                  |   19 -
- arch/um/os-Linux/tls.c                   |   36 --
- arch/um/scripts/Makefile.rules           |    2 
- arch/um/sys-i386/Makefile                |   10 
- arch/um/sys-i386/ldt.c                   |   67 ----
- arch/um/sys-i386/ptrace.c                |  120 --------
- arch/um/sys-i386/ptrace_user.c           |   86 -----
- arch/um/sys-i386/signal.c                |   58 ---
- arch/um/sys-i386/tls.c                   |   16 -
- arch/um/sys-i386/unmap.c                 |   25 -
- arch/um/sys-x86_64/Makefile              |    9 
- arch/um/sys-x86_64/signal.c              |   50 ---
- arch/um/sys-x86_64/syscalls.c            |   31 --
- arch/um/sys-x86_64/unmap.c               |   25 -
- include/asm-um/mmu_context.h             |    6 
- include/asm-um/processor-generic.h       |   14 
- 87 files changed, 35 insertions(+), 4204 deletions(-)
+ arch/um/include/irq_user.h           |    4 
+ arch/um/include/kern_util.h          |    3 
+ arch/um/include/os.h                 |   16 +-
+ arch/um/include/skas/skas.h          |    3 
+ arch/um/include/sysdep-i386/ptrace.h |   12 -
+ arch/um/kernel/exec.c                |   41 ++----
+ arch/um/kernel/irq.c                 |   85 +++++-------
+ arch/um/kernel/physmem.c             |    9 -
+ arch/um/kernel/process.c             |  110 +++++++---------
+ arch/um/kernel/ptrace.c              |  114 ++++++++---------
+ arch/um/kernel/reboot.c              |   12 -
+ arch/um/kernel/signal.c              |   58 +++-----
+ arch/um/kernel/skas/Makefile         |    2 
+ arch/um/kernel/skas/mmu.c            |   64 ++++-----
+ arch/um/kernel/skas/process.c        |   27 +---
+ arch/um/kernel/skas/syscall.c        |   17 +-
+ arch/um/kernel/syscall.c             |   38 ++---
+ arch/um/kernel/time.c                |   32 +---
+ arch/um/kernel/tlb.c                 |  158 ++++++++++++------------
+ arch/um/kernel/um_arch.c             |   74 ++++-------
+ arch/um/os-Linux/aio.c               |  112 +++++++++--------
+ arch/um/os-Linux/file.c              |    4 
+ arch/um/os-Linux/main.c              |   80 ++++++------
+ arch/um/os-Linux/process.c           |  100 +++++++--------
+ arch/um/os-Linux/registers.c         |    9 -
+ arch/um/os-Linux/signal.c            |   96 +++++++-------
+ arch/um/os-Linux/skas/mem.c          |   94 +++++++-------
+ arch/um/os-Linux/skas/process.c      |  229 +++++++++++++++++------------------
+ arch/um/os-Linux/skas/trap.c         |   32 ++--
+ arch/um/os-Linux/start_up.c          |  153 +++++++++++------------
+ arch/um/os-Linux/trap.c              |    6 
+ arch/um/os-Linux/umid.c              |  136 +++++++++++---------
+ arch/um/sys-i386/bugs.c              |  106 ++++++++--------
+ arch/um/sys-i386/fault.c             |    8 -
+ arch/um/sys-i386/ldt.c               |  217 ++++++++++++++++-----------------
+ arch/um/sys-i386/ptrace.c            |  107 +++++++---------
+ arch/um/sys-i386/signal.c            |   62 ++++-----
+ arch/um/sys-i386/tls.c               |   74 ++++++-----
+ arch/um/sys-x86_64/fault.c           |    7 -
+ arch/um/sys-x86_64/signal.c          |  145 +++++++++-------------
+ arch/um/sys-x86_64/syscalls.c        |   68 +++++-----
+ arch/um/sys-x86_64/tls.c             |    2 
+ include/asm-um/mmu_context.h         |   13 -
+ include/asm-um/processor-generic.h   |   13 +
+ include/asm-um/ptrace-generic.h      |    2 
+ include/asm-um/ptrace-i386.h         |   11 +
+ 46 files changed, 1338 insertions(+), 1427 deletions(-)
 
-Index: linux-2.6.22/arch/um/Kconfig
-===================================================================
---- linux-2.6.22.orig/arch/um/Kconfig	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/Kconfig	2007-08-09 16:34:37.000000000 -0400
-@@ -62,55 +62,16 @@ config IRQ_RELEASE_METHOD
- 
- menu "UML-specific options"
- 
--config MODE_TT
--	bool "Tracing thread support (DEPRECATED)"
--	default n
--	depends on BROKEN
--	help
--	This option controls whether tracing thread support is compiled
--	into UML. This option is largely obsolete, given that skas0 provides
--	skas security and performance without needing to patch the host.
--	It is safe to say 'N' here; saying 'Y' may cause additional problems
--	with the resulting binary even if you run UML in SKAS mode, and running
--	in TT mode is strongly *NOT RECOMMENDED*.
--
- config STATIC_LINK
- 	bool "Force a static link"
- 	default n
--	depends on !MODE_TT
- 	help
--	If CONFIG_MODE_TT is disabled, then this option gives you the ability
--	to force a static link of UML.  Normally, if only skas mode is built
--	in to UML, it will be linked as a shared binary.  This is inconvenient
--	for use in a chroot jail.  So, if you intend to run UML inside a
--	chroot, and you disable CONFIG_MODE_TT, you probably want to say Y
--	here.
-+	This option gives you the ability to force a static link of UML.
-+	Normally, UML is linked as a shared binary.  This is inconvenient for
-+	use in a chroot jail.  So, if you intend to run UML inside a chroot,
-+	you probably want to say Y here.
- 	Additionally, this option enables using higher memory spaces (up to
--	2.75G) for UML - disabling CONFIG_MODE_TT and enabling this option leads
--	to best results for this.
--
--config KERNEL_HALF_GIGS
--	int "Kernel address space size (in .5G units)"
--	default "1"
--	depends on MODE_TT
--	help
--        This determines the amount of address space that UML will allocate for
--        its own, measured in half Gigabyte units.  The default is 1.
--        Change this only if you need to boot UML with an unusually large amount
--        of physical memory.
--
--config MODE_SKAS
--	bool "Separate Kernel Address Space support" if MODE_TT
--	default y
--	help
--	This option controls whether skas (separate kernel address space)
--	support is compiled in.
--	Unless you have specific needs to use TT mode (which applies almost only
--	to developers), you should say Y here.
--	SKAS mode will make use of the SKAS3 patch if it is applied on the host
--	(and your UML will run in SKAS3 mode), but if no SKAS patch is applied
--	on the host it will run in SKAS0 mode, which is anyway faster than TT
--	mode.
-+	2.75G) for UML.
- 
- source "arch/um/Kconfig.arch"
- source "mm/Kconfig"
-@@ -118,7 +79,7 @@ source "mm/Kconfig"
- config LD_SCRIPT_STATIC
- 	bool
- 	default y
--	depends on MODE_TT || STATIC_LINK
-+	depends on STATIC_LINK
- 
- config LD_SCRIPT_DYN
- 	bool
-@@ -220,7 +181,7 @@ config SMP
- 	bool "Symmetric multi-processing support (EXPERIMENTAL)"
- 	default n
- 	#SMP_BROKEN is for x86_64.
--	depends on MODE_TT && EXPERIMENTAL && (!SMP_BROKEN || (BROKEN && SMP_BROKEN))
-+	depends on EXPERIMENTAL && (!SMP_BROKEN || (BROKEN && SMP_BROKEN))
- 	help
- 	This option enables UML SMP support.
- 	It is NOT related to having a real SMP box. Not directly, at least.
-@@ -258,11 +219,6 @@ config NEST_LEVEL
-         inside another UML, set CONFIG_NEST_LEVEL to one more than the host
-         UML.
- 
--        Note that if the hosting UML has its CONFIG_KERNEL_HALF_GIGS set to
--        greater than one, then the guest UML should have its CONFIG_NEST_LEVEL
--        set to the host's CONFIG_NEST_LEVEL + CONFIG_KERNEL_HALF_GIGS.
--        Only change this if you are running nested UMLs.
--
- config HIGHMEM
- 	bool "Highmem support (EXPERIMENTAL)"
- 	depends on !64BIT && EXPERIMENTAL
-@@ -271,9 +227,9 @@ config HIGHMEM
- 	This was used to allow UML to run with big amounts of memory.
- 	Currently it is unstable, so if unsure say N.
- 
--	To use big amounts of memory, it is recommended to disable TT mode (i.e.
--	CONFIG_MODE_TT) and enable static linking (i.e. CONFIG_STATIC_LINK) -
--	this should allow the guest to use up to 2.75G of memory.
-+	To use big amounts of memory, it is recommended enable static
-+	linking (i.e. CONFIG_STATIC_LINK) - this should allow the
-+	guest to use up to 2.75G of memory.
- 
- config KERNEL_STACK_ORDER
- 	int "Kernel stack size order"
-Index: linux-2.6.22/arch/um/Makefile
-===================================================================
---- linux-2.6.22.orig/arch/um/Makefile	2007-08-09 13:25:53.000000000 -0400
-+++ linux-2.6.22/arch/um/Makefile	2007-08-09 16:34:37.000000000 -0400
-@@ -31,18 +31,9 @@ SYMLINK_HEADERS := $(foreach header,$(SY
- ARCH_SYMLINKS = include/asm-um/arch $(ARCH_DIR)/include/sysdep $(ARCH_DIR)/os \
- 	$(SYMLINK_HEADERS) $(ARCH_DIR)/include/uml-config.h
- 
--um-modes-$(CONFIG_MODE_TT) += tt
--um-modes-$(CONFIG_MODE_SKAS) += skas
-+MODE_INCLUDE	+= -I$(srctree)/$(ARCH_DIR)/include/skas
- 
--MODE_INCLUDE	+= $(foreach mode,$(um-modes-y),\
--		   -I$(srctree)/$(ARCH_DIR)/include/$(mode))
--
--MAKEFILES-INCL	+= $(foreach mode,$(um-modes-y),\
--		   $(srctree)/$(ARCH_DIR)/Makefile-$(mode))
--
--ifneq ($(MAKEFILES-INCL),)
--  include $(MAKEFILES-INCL)
--endif
-+include $(srctree)/$(ARCH_DIR)/Makefile-skas
- 
- ARCH_INCLUDE	:= -I$(ARCH_DIR)/include
- ifneq ($(KBUILD_SRC),)
-@@ -59,7 +50,7 @@ SYS_DIR		:= $(ARCH_DIR)/include/sysdep-$
- # These apply to USER_CFLAGS to.
- 
- CFLAGS += $(CFLAGS-y) -D__arch_um__ -DSUBARCH=\"$(SUBARCH)\"	\
--	$(ARCH_INCLUDE) $(MODE_INCLUDE) -Dvmap=kernel_vmap	\
-+	$(ARCH_INCLUDE) $(MODE_INCLUDE) -Dvmap=kernel_vmap \
- 	-Din6addr_loopback=kernel_in6addr_loopback \
- 	-Din6addr_any=kernel_in6addr_any
- 
-@@ -89,9 +80,8 @@ CFLAGS += $(call cc-option,-fno-unit-at-
- # included; the values here are meaningless
- 
- CONFIG_NEST_LEVEL ?= 0
--CONFIG_KERNEL_HALF_GIGS ?= 0
- 
--SIZE = (($(CONFIG_NEST_LEVEL) + $(CONFIG_KERNEL_HALF_GIGS)) * 0x20000000)
-+SIZE = ($(CONFIG_NEST_LEVEL) * 0x20000000)
- 
- PHONY += linux
- 
-@@ -124,7 +114,6 @@ CFLAGS_NO_HARDENING := $(call cc-option,
- 	$(call cc-option, -fno-stack-protector,) \
- 	$(call cc-option, -fno-stack-protector-all,)
- 
--CPP_MODE-$(CONFIG_MODE_TT) := -DMODE_TT
- CONFIG_KERNEL_STACK_ORDER ?= 2
- STACK_SIZE := $(shell echo $$[ 4096 * (1 << $(CONFIG_KERNEL_STACK_ORDER)) ] )
- 
-@@ -132,11 +121,8 @@ ifndef START
-   START = $(shell echo $$[ $(TOP_ADDR) - $(SIZE) ] )
- endif
- 
--CPPFLAGS_vmlinux.lds = -U$(SUBARCH) \
--	-DSTART=$(START) -DELF_ARCH=$(ELF_ARCH) \
--	-DELF_FORMAT="$(ELF_FORMAT)" $(CPP_MODE-y) \
--	-DKERNEL_STACK_SIZE=$(STACK_SIZE) \
--	-DUNMAP_PATH=arch/um/sys-$(SUBARCH)/unmap.o
-+CPPFLAGS_vmlinux.lds = -U$(SUBARCH) -DSTART=$(START) -DELF_ARCH=$(ELF_ARCH) \
-+	-DELF_FORMAT="$(ELF_FORMAT)" -DKERNEL_STACK_SIZE=$(STACK_SIZE)
- 
- #The wrappers will select whether using "malloc" or the kernel allocator.
- LINK_WRAPS = -Wl,--wrap,malloc -Wl,--wrap,free -Wl,--wrap,calloc
-Index: linux-2.6.22/arch/um/kernel/Makefile
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/Makefile	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/Makefile	2007-08-09 16:34:37.000000000 -0400
-@@ -9,15 +9,12 @@ clean-files :=
- obj-y = config.o exec.o exitcode.o init_task.o irq.o ksyms.o mem.o \
- 	physmem.o process.o ptrace.o reboot.o sigio.o \
- 	signal.o smp.o syscall.o sysrq.o time.o tlb.o trap.o uaccess.o \
--	um_arch.o umid.o
-+	um_arch.o umid.o skas/
- 
- obj-$(CONFIG_BLK_DEV_INITRD) += initrd.o
- obj-$(CONFIG_GPROF)	+= gprof_syms.o
- obj-$(CONFIG_GCOV)	+= gmon_syms.o
- 
--obj-$(CONFIG_MODE_TT) += tt/
--obj-$(CONFIG_MODE_SKAS) += skas/
--
- USER_OBJS := config.o
- 
- include arch/um/scripts/Makefile.rules
-Index: linux-2.6.22/arch/um/os-Linux/Makefile
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/Makefile	2007-08-09 13:25:53.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/Makefile	2007-08-09 16:34:37.000000000 -0400
-@@ -5,12 +5,7 @@
- 
- obj-y = aio.o elf_aux.o execvp.o file.o helper.o irq.o main.o mem.o process.o \
- 	registers.o sigio.o signal.o start_up.o time.o trap.o tty.o uaccess.o \
--	umid.o tls.o user_syms.o util.o drivers/ sys-$(SUBARCH)/
--
--obj-$(CONFIG_MODE_SKAS) += skas/
--
--obj-$(CONFIG_MODE_TT) += tt.o
--user-objs-$(CONFIG_MODE_TT) += tt.o
-+	umid.o tls.o user_syms.o util.o drivers/ sys-$(SUBARCH)/ skas/
- 
- obj-$(CONFIG_TTY_LOG) += tty_log.o
- user-objs-$(CONFIG_TTY_LOG) += tty_log.o
-Index: linux-2.6.22/arch/um/sys-i386/Makefile
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-i386/Makefile	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-i386/Makefile	2007-08-09 16:34:37.000000000 -0400
-@@ -1,8 +1,6 @@
- obj-y = bug.o bugs.o checksum.o delay.o fault.o ksyms.o ldt.o ptrace.o \
--	ptrace_user.o setjmp.o signal.o sigcontext.o syscalls.o sysrq.o \
--	sys_call_table.o tls.o
--
--obj-$(CONFIG_MODE_SKAS) += stub.o stub_segv.o
-+	ptrace_user.o setjmp.o signal.o sigcontext.o stub.o stub_segv.o \
-+	syscalls.o sysrq.o sys_call_table.o tls.o
- 
- subarch-obj-y = lib/bitops.o lib/semaphore.o lib/string.o
- subarch-obj-$(CONFIG_HIGHMEM) += mm/highmem.o
-@@ -13,11 +11,7 @@ USER_OBJS := bugs.o ptrace_user.o sigcon
- USER_OBJS += user-offsets.s
- extra-y += user-offsets.s
- 
--extra-$(CONFIG_MODE_TT) += unmap.o
--
- UNPROFILE_OBJS := stub_segv.o
- CFLAGS_stub_segv.o := $(CFLAGS_NO_HARDENING)
- 
- include arch/um/scripts/Makefile.rules
--
--$(obj)/unmap.%: _c_flags = $(call unprofile,$(CFLAGS))
-Index: linux-2.6.22/arch/um/sys-x86_64/Makefile
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-x86_64/Makefile	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-x86_64/Makefile	2007-08-09 16:34:35.000000000 -0400
-@@ -5,10 +5,9 @@
- #
- 
- obj-y = bug.o bugs.o delay.o fault.o ldt.o mem.o ptrace.o ptrace_user.o \
--	setjmp.o sigcontext.o signal.o syscalls.o syscall_table.o sysrq.o \
--	ksyms.o tls.o
-+	setjmp.o sigcontext.o signal.o stub.o stub_segv.o syscalls.o \
-+	syscall_table.o sysrq.o ksyms.o tls.o
- 
--obj-$(CONFIG_MODE_SKAS) += stub.o stub_segv.o
- obj-$(CONFIG_MODULES) += um_module.o
- 
- subarch-obj-y = lib/bitops.o lib/csum-partial.o lib/memcpy.o lib/thunk.o
-@@ -21,11 +20,7 @@ USER_OBJS := ptrace_user.o sigcontext.o
- USER_OBJS += user-offsets.s
- extra-y += user-offsets.s
- 
--extra-$(CONFIG_MODE_TT) += unmap.o
--
- UNPROFILE_OBJS := stub_segv.o
- CFLAGS_stub_segv.o := $(CFLAGS_NO_HARDENING)
- 
- include arch/um/scripts/Makefile.rules
--
--$(obj)/unmap.%: _c_flags = $(call unprofile,$(CFLAGS))
-Index: linux-2.6.22/arch/um/kernel/tt/Makefile
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/Makefile	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,14 +0,0 @@
--# 
--# Copyright (C) 2002 - 2003 Jeff Dike (jdike@addtoit.com)
--# Licensed under the GPL
--#
--
--obj-y = exec_kern.o exec_user.o gdb.o ksyms.o mem.o mem_user.o process_kern.o \
--	syscall_kern.o syscall_user.o tlb.o tracer.o trap_user.o \
--	uaccess.o uaccess_user.o
--
--obj-$(CONFIG_PT_PROXY) += gdb_kern.o ptproxy/
--
--USER_OBJS := gdb.o tracer.o
--
--include arch/um/scripts/Makefile.rules
-Index: linux-2.6.22/arch/um/kernel/tt/exec_user.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/exec_user.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,56 +0,0 @@
--/* 
-- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include <stdio.h>
--#include <unistd.h>
--#include <stdlib.h>
--#include <sched.h>
--#include <errno.h>
--#include <sys/wait.h>
--#include <signal.h>
--#include "kern_util.h"
--#include "user.h"
--#include "ptrace_user.h"
--#include "os.h"
--
--void do_exec(int old_pid, int new_pid)
--{
--	unsigned long regs[FRAME_SIZE];
--	int err;
--
--	if((ptrace(PTRACE_ATTACH, new_pid, 0, 0) < 0) ||
--	   (ptrace(PTRACE_CONT, new_pid, 0, 0) < 0))
--		tracer_panic("do_exec failed to attach proc - errno = %d",
--			     errno);
--
--	CATCH_EINTR(err = waitpid(new_pid, 0, WUNTRACED));
--	if (err < 0)
--		tracer_panic("do_exec failed to attach proc in waitpid - errno = %d",
--			     errno);
--
--	if(ptrace_getregs(old_pid, regs) < 0)
--		tracer_panic("do_exec failed to get registers - errno = %d",
--			     errno);
--
--	os_kill_ptraced_process(old_pid, 0);
--
--	if (ptrace(PTRACE_OLDSETOPTIONS, new_pid, 0, (void *)PTRACE_O_TRACESYSGOOD) < 0)
--		tracer_panic("do_exec: PTRACE_SETOPTIONS failed, errno = %d", errno);
--
--	if(ptrace_setregs(new_pid, regs) < 0)
--		tracer_panic("do_exec failed to start new proc - errno = %d",
--			     errno);
--}
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/gdb.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/gdb.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,280 +0,0 @@
--/* 
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include <stdio.h>
--#include <stdlib.h>
--#include <errno.h>
--#include <string.h>
--#include <signal.h>
--#include <sys/types.h>
--#include "ptrace_user.h"
--#include "uml-config.h"
--#include "kern_constants.h"
--#include "chan_user.h"
--#include "init.h"
--#include "user.h"
--#include "debug.h"
--#include "kern_util.h"
--#include "tt.h"
--#include "sysdep/thread.h"
--#include "os.h"
--
--extern int debugger_pid;
--extern int debugger_fd;
--extern int debugger_parent;
--
--int detach(int pid, int sig)
--{
--	return(ptrace(PTRACE_DETACH, pid, 0, sig));
--}
--
--int attach(int pid)
--{
--	int err;
--
--	err = ptrace(PTRACE_ATTACH, pid, 0, 0);
--	if(err < 0) return(-errno);
--	else return(err);
--}
--
--int cont(int pid)
--{
--	return(ptrace(PTRACE_CONT, pid, 0, 0));
--}
--
--#ifdef UML_CONFIG_PT_PROXY
--
--int debugger_signal(int status, pid_t pid)
--{
--	return(debugger_proxy(status, pid));
--}
--
--void child_signal(pid_t pid, int status)
--{
--	child_proxy(pid, status);
--}
--
--static void gdb_announce(char *dev_name, int dev)
--{
--	printf("gdb assigned device '%s'\n", dev_name);
--}
--
--static struct chan_opts opts = {
--	.announce  	= gdb_announce,
--	.xterm_title 	= "UML kernel debugger",
--	.raw 		= 0,
--	.tramp_stack 	= 0,
--	.in_kernel  	= 0,
--};
--
--/* Accessed by the tracing thread, which automatically serializes access */
--static void *xterm_data;
--static int xterm_fd;
--
--extern void *xterm_init(char *, int, struct chan_opts *);
--extern int xterm_open(int, int, int, void *, char **);
--extern void xterm_close(int, void *);
--
--int open_gdb_chan(void)
--{
--	char stack[UM_KERN_PAGE_SIZE], *dummy;
--
--	opts.tramp_stack = (unsigned long) stack;
--	xterm_data = xterm_init("", 0, &opts);
--	xterm_fd = xterm_open(1, 1, 1, xterm_data, &dummy);
--	return(xterm_fd);
--}
--
--static void exit_debugger_cb(void *unused)
--{
--	if(debugger_pid != -1){
--		if(gdb_pid != -1){
--			fake_child_exit();
--			gdb_pid = -1;
--		}
--		else kill_child_dead(debugger_pid);
--		debugger_pid = -1;
--		if(debugger_parent != -1)
--			detach(debugger_parent, SIGINT);
--	}
--	if(xterm_data != NULL) xterm_close(xterm_fd, xterm_data);
--}
--
--static void exit_debugger(void)
--{
--	initial_thread_cb(exit_debugger_cb, NULL);
--}
--
--__uml_exitcall(exit_debugger);
--
--struct gdb_data {
--	char *str;
--	int err;
--};
--
--extern char *linux_prog;
--
--static void config_gdb_cb(void *arg)
--{
--	struct gdb_data *data = arg;
--	void *task;
--	int pid;
--
--	data->err = -1;
--	if(debugger_pid != -1) exit_debugger_cb(NULL);
--	if(!strncmp(data->str, "pid,", strlen("pid,"))){
--		data->str += strlen("pid,");
--		pid = strtoul(data->str, NULL, 0);
--		task = cpu_tasks[0].task;
--		debugger_pid = attach_debugger(TASK_EXTERN_PID(task), pid, 0);
--		if(debugger_pid != -1){
--			data->err = 0;
--			gdb_pid = pid;
--		}
--		return;
--	}
--	data->err = 0;
--	debugger_pid = start_debugger(linux_prog, 0, 0, &debugger_fd);
--	init_proxy(debugger_pid, 0, 0);
--}
--
--int gdb_config(char *str, char **error_out)
--{
--	struct gdb_data data;
--
--	if(*str++ != '=') return(-1);
--	data.str = str;
--	initial_thread_cb(config_gdb_cb, &data);
--	return(data.err);
--}
--
--void remove_gdb_cb(void *unused)
--{
--	exit_debugger_cb(NULL);
--}
--
--int gdb_remove(int unused, char **error_out)
--{
--	initial_thread_cb(remove_gdb_cb, NULL);
--        return 0;
--}
--
--void signal_usr1(int sig)
--{
--	if(debugger_pid != -1){
--		printf("The debugger is already running\n");
--		return;
--	}
--	debugger_pid = start_debugger(linux_prog, 0, 0, &debugger_fd);
--	init_proxy(debugger_pid, 0, 0);
--}
--
--int init_ptrace_proxy(int idle_pid, int startup, int stop)
--{
--	int pid, status;
--
--	pid = start_debugger(linux_prog, startup, stop, &debugger_fd);
--	status = wait_for_stop(idle_pid, SIGSTOP, PTRACE_CONT, NULL);
-- 	if(pid < 0){
--		cont(idle_pid);
--		return(-1);
--	}
--	init_proxy(pid, 1, status);
--	return(pid);
--}
--
--int attach_debugger(int idle_pid, int pid, int stop)
--{
--	int status = 0, err;
--
--	err = attach(pid);
--	if(err < 0){
--		printf("Failed to attach pid %d, errno = %d\n", pid, -err);
--		return(-1);
--	}
--	if(stop) status = wait_for_stop(idle_pid, SIGSTOP, PTRACE_CONT, NULL);
--	init_proxy(pid, 1, status);
--	return(pid);
--}
--
--#ifdef notdef /* Put this back in when it does something useful */
--static int __init uml_gdb_init_setup(char *line, int *add)
--{
--	gdb_init = uml_strdup(line);
--	return 0;
--}
--
--__uml_setup("gdb=", uml_gdb_init_setup, 
--"gdb=<channel description>\n\n"
--);
--#endif
--
--static int __init uml_gdb_pid_setup(char *line, int *add)
--{
--	gdb_pid = strtoul(line, NULL, 0);
--	*add = 0;
--	return 0;
--}
--
--__uml_setup("gdb-pid=", uml_gdb_pid_setup, 
--"gdb-pid=<pid>\n"
--"    gdb-pid is used to attach an external debugger to UML.  This may be\n"
--"    an already-running gdb or a debugger-like process like strace.\n\n"
--);
--
--#else
--
--int debugger_signal(int status, pid_t pid){ return(0); }
--void child_signal(pid_t pid, int status){ }
--int init_ptrace_proxy(int idle_pid, int startup, int stop)
--{
--	printf("debug requested when CONFIG_PT_PROXY is off\n");
--	kill_child_dead(idle_pid);
--	exit(1);
--}
--
--void signal_usr1(int sig)
--{
--	printf("debug requested when CONFIG_PT_PROXY is off\n");
--}
--
--int attach_debugger(int idle_pid, int pid, int stop)
--{
--	printf("attach_debugger called when CONFIG_PT_PROXY "
--	       "is off\n");
--	return(-1);
--}
--
--int config_gdb(char *str)
--{
--	return(-1);
--}
--
--int remove_gdb(void)
--{
--	return(-1);
--}
--
--int init_parent_proxy(int pid)
--{
--	return(-1);
--}
--
--void debugger_parent_signal(int status, int pid)
--{
--}
--
--#endif
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/gdb_kern.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/gdb_kern.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,40 +0,0 @@
--/* 
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include "linux/init.h"
--#include "mconsole_kern.h"
--
--#ifdef CONFIG_MCONSOLE
--
--extern int gdb_config(char *str, char **error_out);
--extern int gdb_remove(int n, char **error_out);
--
--static struct mc_device gdb_mc = {
--	.list		= INIT_LIST_HEAD(gdb_mc.list),
--	.name		= "gdb",
--	.config		= gdb_config,
--	.remove		= gdb_remove,
--};
--
--int gdb_mc_init(void)
--{
--	mconsole_register_dev(&gdb_mc);
--	return(0);
--}
--
--__initcall(gdb_mc_init);
--
--#endif
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/include/mode-tt.h
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/include/mode-tt.h	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,34 +0,0 @@
--/*
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#ifndef __MODE_TT_H__
--#define __MODE_TT_H__
--
--#include "sysdep/ptrace.h"
--
--enum { OP_NONE, OP_EXEC, OP_FORK, OP_TRACE_ON, OP_REBOOT, OP_HALT, OP_CB };
--
--extern int tracing_pid;
--
--extern int tracer(int (*init_proc)(void *), void *sp);
--extern void sig_handler_common_tt(int sig, void *sc);
--extern void syscall_handler_tt(int sig, union uml_pt_regs *regs);
--extern void reboot_tt(void);
--extern void halt_tt(void);
--extern int is_tracer_winch(int pid, int fd, void *data);
--extern void kill_off_processes_tt(void);
--
--#endif
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/ksyms.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/ksyms.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,29 +0,0 @@
--/* 
-- * Copyright (C) 2001, 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include "linux/module.h"
--#include "asm/uaccess.h"
--#include "mode.h"
--
--EXPORT_SYMBOL(__do_copy_from_user);
--EXPORT_SYMBOL(__do_copy_to_user);
--EXPORT_SYMBOL(__do_strncpy_from_user);
--EXPORT_SYMBOL(__do_strnlen_user); 
--EXPORT_SYMBOL(__do_clear_user);
--EXPORT_SYMBOL(clear_user_tt);
--
--EXPORT_SYMBOL(tracing_pid);
--EXPORT_SYMBOL(honeypot);
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/mem.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/mem.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,34 +0,0 @@
--/* 
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include "linux/stddef.h"
--#include "linux/mm.h"
--#include "asm/uaccess.h"
--#include "mem_user.h"
--#include "kern_util.h"
--#include "kern.h"
--#include "tt.h"
--
--void before_mem_tt(unsigned long brk_start)
--{
--	if(debug)
--		remap_data(UML_ROUND_DOWN(&_stext), UML_ROUND_UP(&_etext), 1);
--	remap_data(UML_ROUND_DOWN(&_sdata), UML_ROUND_UP(&_edata), 1);
--	remap_data(UML_ROUND_DOWN(&__bss_start), UML_ROUND_UP(&_end), 1);
--}
--
--#define SIZE ((CONFIG_NEST_LEVEL + CONFIG_KERNEL_HALF_GIGS) * 0x20000000)
--#define START (CONFIG_TOP_ADDR - SIZE)
--
--unsigned long set_task_sizes_tt(unsigned long *task_size_out)
--{
--	unsigned long host_task_size;
--
--	/* Round up to the nearest 4M */
--	host_task_size = ROUND_4M((unsigned long) &host_task_size);
--	*task_size_out = START;
--
--	return host_task_size;
--}
-Index: linux-2.6.22/arch/um/kernel/tt/mem_user.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/mem_user.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,49 +0,0 @@
--/* 
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include <stdlib.h>
--#include <stdio.h>
--#include <unistd.h>
--#include <string.h>
--#include <errno.h>
--#include <sys/mman.h>
--#include "tt.h"
--#include "mem_user.h"
--#include "os.h"
--
--void remap_data(void *segment_start, void *segment_end, int w)
--{
--	void *addr;
--	unsigned long size;
--	int data, prot;
--
--	if(w) prot = PROT_WRITE;
--	else prot = 0;
--	prot |= PROT_READ | PROT_EXEC;
--	size = (unsigned long) segment_end - 
--		(unsigned long) segment_start;
--	data = create_mem_file(size);
--	addr = mmap(NULL, size, PROT_WRITE | PROT_READ, MAP_SHARED, data, 0);
--	if(addr == MAP_FAILED){
--		perror("mapping new data segment");
--		exit(1);
--	}
--	memcpy(addr, segment_start, size);
--	if(switcheroo(data, prot, addr, segment_start, size) < 0){
--		printf("switcheroo failed\n");
--		exit(1);
--	}
--}
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/process_kern.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/process_kern.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,461 +0,0 @@
--/* 
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include "linux/sched.h"
--#include "linux/signal.h"
--#include "linux/kernel.h"
--#include "linux/interrupt.h"
--#include "linux/ptrace.h"
--#include "asm/system.h"
--#include "asm/pgalloc.h"
--#include "asm/ptrace.h"
--#include "asm/tlbflush.h"
--#include "irq_user.h"
--#include "kern_util.h"
--#include "os.h"
--#include "kern.h"
--#include "sigcontext.h"
--#include "mem_user.h"
--#include "tlb.h"
--#include "mode.h"
--#include "mode_kern.h"
--#include "init.h"
--#include "tt.h"
--
--void switch_to_tt(void *prev, void *next)
--{
--	struct task_struct *from, *to, *prev_sched;
--	unsigned long flags;
--	int err, vtalrm, alrm, prof, cpu;
--	char c;
--
--	from = prev;
--	to = next;
--
--	cpu = task_thread_info(from)->cpu;
--	if(cpu == 0)
--		forward_interrupts(to->thread.mode.tt.extern_pid);
--#ifdef CONFIG_SMP
--	forward_ipi(cpu_data[cpu].ipi_pipe[0], to->thread.mode.tt.extern_pid);
--#endif
--	local_irq_save(flags);
--
--	vtalrm = change_sig(SIGVTALRM, 0);
--	alrm = change_sig(SIGALRM, 0);
--	prof = change_sig(SIGPROF, 0);
--
--	forward_pending_sigio(to->thread.mode.tt.extern_pid);
--
--	c = 0;
--
--	/* Notice that here we "up" the semaphore on which "to" is waiting, and
--	 * below (the read) we wait on this semaphore (which is implemented by
--	 * switch_pipe) and go sleeping. Thus, after that, we have resumed in
--	 * "to", and can't use any more the value of "from" (which is outdated),
--	 * nor the value in "to" (since it was the task which stole us the CPU,
--	 * which we don't care about). */
--
--	err = os_write_file(to->thread.mode.tt.switch_pipe[1], &c, sizeof(c));
--	if(err != sizeof(c))
--		panic("write of switch_pipe failed, err = %d", -err);
--
--	if(from->thread.mode.tt.switch_pipe[0] == -1)
--		os_kill_process(os_getpid(), 0);
--
--	err = os_read_file(from->thread.mode.tt.switch_pipe[0], &c,
--			     sizeof(c));
--	if(err != sizeof(c))
--		panic("read of switch_pipe failed, errno = %d", -err);
--
--	/* If the process that we have just scheduled away from has exited,
--	 * then it needs to be killed here.  The reason is that, even though
--	 * it will kill itself when it next runs, that may be too late.  Its
--	 * stack will be freed, possibly before then, and if that happens,
--	 * we have a use-after-free situation.  So, it gets killed here
--	 * in case it has not already killed itself.
--	 */
--	prev_sched = current->thread.prev_sched;
--        if(prev_sched->thread.mode.tt.switch_pipe[0] == -1)
--		os_kill_process(prev_sched->thread.mode.tt.extern_pid, 1);
--
--	change_sig(SIGVTALRM, vtalrm);
--	change_sig(SIGALRM, alrm);
--	change_sig(SIGPROF, prof);
--
--	arch_switch_to_tt(prev_sched, current);
--
--	flush_tlb_all();
--	local_irq_restore(flags);
--}
--
--void release_thread_tt(struct task_struct *task)
--{
--	int pid = task->thread.mode.tt.extern_pid;
--
--	/*
--         * We first have to kill the other process, before
--         * closing its switch_pipe. Else it might wake up
--         * and receive "EOF" before we could kill it.
--         */
--	if(os_getpid() != pid)
--		os_kill_process(pid, 0);
--
--        os_close_file(task->thread.mode.tt.switch_pipe[0]);
--        os_close_file(task->thread.mode.tt.switch_pipe[1]);
--	/* use switch_pipe as flag: thread is released */
--        task->thread.mode.tt.switch_pipe[0] = -1;
--}
--
--void suspend_new_thread(int fd)
--{
--	int err;
--	char c;
--
--	os_stop_process(os_getpid());
--	err = os_read_file(fd, &c, sizeof(c));
--	if(err != sizeof(c))
--		panic("read failed in suspend_new_thread, err = %d", -err);
--}
--
--void schedule_tail(struct task_struct *prev);
--
--static void new_thread_handler(int sig)
--{
--	unsigned long disable;
--	int (*fn)(void *);
--	void *arg;
--
--	fn = current->thread.request.u.thread.proc;
--	arg = current->thread.request.u.thread.arg;
--
--	UPT_SC(&current->thread.regs.regs) = (void *) (&sig + 1);
--	disable = (1 << (SIGVTALRM - 1)) | (1 << (SIGALRM - 1)) |
--		(1 << (SIGIO - 1)) | (1 << (SIGPROF - 1));
--	SC_SIGMASK(UPT_SC(&current->thread.regs.regs)) &= ~disable;
--
--	suspend_new_thread(current->thread.mode.tt.switch_pipe[0]);
--
--	force_flush_all();
--	if(current->thread.prev_sched != NULL)
--		schedule_tail(current->thread.prev_sched);
--	current->thread.prev_sched = NULL;
--
--	init_new_thread_signals();
--	enable_timer();
--	free_page(current->thread.temp_stack);
--	set_cmdline("(kernel thread)");
--
--	change_sig(SIGUSR1, 1);
--	change_sig(SIGPROF, 1);
--	local_irq_enable();
--	if(!run_kernel_thread(fn, arg, &current->thread.exec_buf))
--		do_exit(0);
--
--	/* XXX No set_user_mode here because a newly execed process will
--	 * immediately segfault on its non-existent IP, coming straight back
--	 * to the signal handler, which will call set_user_mode on its way
--	 * out.  This should probably change since it's confusing.
--	 */
--}
--
--static int new_thread_proc(void *stack)
--{
--	/* local_irq_disable is needed to block out signals until this thread is
--	 * properly scheduled.  Otherwise, the tracing thread will get mighty
--	 * upset about any signals that arrive before that.
--	 * This has the complication that it sets the saved signal mask in
--	 * the sigcontext to block signals.  This gets restored when this
--	 * thread (or a descendant, since they get a copy of this sigcontext)
--	 * returns to userspace.
--	 * So, this is compensated for elsewhere.
--	 * XXX There is still a small window until local_irq_disable() actually
--	 * finishes where signals are possible - shouldn't be a problem in
--	 * practice since SIGIO hasn't been forwarded here yet, and the
--	 * local_irq_disable should finish before a SIGVTALRM has time to be
--	 * delivered.
--	 */
--
--	local_irq_disable();
--	init_new_thread_stack(stack, new_thread_handler);
--	os_usr1_process(os_getpid());
--	change_sig(SIGUSR1, 1);
--	return(0);
--}
--
--/* Signal masking - signals are blocked at the start of fork_tramp.  They
-- * are re-enabled when finish_fork_handler is entered by fork_tramp hitting
-- * itself with a SIGUSR1.  set_user_mode has to be run with SIGUSR1 off,
-- * so it is blocked before it's called.  They are re-enabled on sigreturn
-- * despite the fact that they were blocked when the SIGUSR1 was issued because
-- * copy_thread copies the parent's sigcontext, including the signal mask
-- * onto the signal frame.
-- */
--
--void finish_fork_handler(int sig)
--{
-- 	UPT_SC(&current->thread.regs.regs) = (void *) (&sig + 1);
--	suspend_new_thread(current->thread.mode.tt.switch_pipe[0]);
--
--	force_flush_all();
--	if(current->thread.prev_sched != NULL)
--		schedule_tail(current->thread.prev_sched);
--	current->thread.prev_sched = NULL;
--
--	enable_timer();
--	change_sig(SIGVTALRM, 1);
--	local_irq_enable();
--	if(current->mm != current->parent->mm)
--		protect_memory(uml_reserved, high_physmem - uml_reserved, 1, 
--			       1, 0, 1);
--	stack_protections((unsigned long) current_thread);
--
--	free_page(current->thread.temp_stack);
--	local_irq_disable();
--	change_sig(SIGUSR1, 0);
--	set_user_mode(current);
--}
--
--int fork_tramp(void *stack)
--{
--	local_irq_disable();
--	arch_init_thread();
--	init_new_thread_stack(stack, finish_fork_handler);
--
--	os_usr1_process(os_getpid());
--	change_sig(SIGUSR1, 1);
--	return(0);
--}
--
--int copy_thread_tt(int nr, unsigned long clone_flags, unsigned long sp,
--		   unsigned long stack_top, struct task_struct * p, 
--		   struct pt_regs *regs)
--{
--	int (*tramp)(void *);
--	int new_pid, err;
--	unsigned long stack;
--	
--	if(current->thread.forking)
--		tramp = fork_tramp;
--	else {
--		tramp = new_thread_proc;
--		p->thread.request.u.thread = current->thread.request.u.thread;
--	}
--
--	err = os_pipe(p->thread.mode.tt.switch_pipe, 1, 1);
--	if(err < 0){
--		printk("copy_thread : pipe failed, err = %d\n", -err);
--		return(err);
--	}
--
--	stack = alloc_stack(0, 0);
--	if(stack == 0){
--		printk(KERN_ERR "copy_thread : failed to allocate "
--		       "temporary stack\n");
--		return(-ENOMEM);
--	}
--
--	clone_flags &= CLONE_VM;
--	p->thread.temp_stack = stack;
--	new_pid = start_fork_tramp(task_stack_page(p), stack, clone_flags, tramp);
--	if(new_pid < 0){
--		printk(KERN_ERR "copy_thread : clone failed - errno = %d\n", 
--		       -new_pid);
--		return(new_pid);
--	}
--
--	if(current->thread.forking){
--		sc_to_sc(UPT_SC(&p->thread.regs.regs), UPT_SC(&regs->regs));
--		SC_SET_SYSCALL_RETURN(UPT_SC(&p->thread.regs.regs), 0);
--		if(sp != 0)
--			SC_SP(UPT_SC(&p->thread.regs.regs)) = sp;
--	}
--	p->thread.mode.tt.extern_pid = new_pid;
--
--	current->thread.request.op = OP_FORK;
--	current->thread.request.u.fork.pid = new_pid;
--	os_usr1_process(os_getpid());
--
--	/* Enable the signal and then disable it to ensure that it is handled
--	 * here, and nowhere else.
--	 */
--	change_sig(SIGUSR1, 1);
--
--	change_sig(SIGUSR1, 0);
--	err = 0;
--	return(err);
--}
--
--void reboot_tt(void)
--{
--	current->thread.request.op = OP_REBOOT;
--	os_usr1_process(os_getpid());
--	change_sig(SIGUSR1, 1);
--}
--
--void halt_tt(void)
--{
--	current->thread.request.op = OP_HALT;
--	os_usr1_process(os_getpid());
--	change_sig(SIGUSR1, 1);
--}
--
--void kill_off_processes_tt(void)
--{
--	struct task_struct *p;
--	int me;
--
--	me = os_getpid();
--        for_each_process(p){
--		if(p->thread.mode.tt.extern_pid != me) 
--			os_kill_process(p->thread.mode.tt.extern_pid, 0);
--	}
--	if(init_task.thread.mode.tt.extern_pid != me) 
--		os_kill_process(init_task.thread.mode.tt.extern_pid, 0);
--}
--
--void initial_thread_cb_tt(void (*proc)(void *), void *arg)
--{
--	if(os_getpid() == tracing_pid){
--		(*proc)(arg);
--	}
--	else {
--		current->thread.request.op = OP_CB;
--		current->thread.request.u.cb.proc = proc;
--		current->thread.request.u.cb.arg = arg;
--		os_usr1_process(os_getpid());
--		change_sig(SIGUSR1, 1);
--
--		change_sig(SIGUSR1, 0);
--	}
--}
--
--int do_proc_op(void *t, int proc_id)
--{
--	struct task_struct *task;
--	struct thread_struct *thread;
--	int op, pid;
--
--	task = t;
--	thread = &task->thread;
--	op = thread->request.op;
--	switch(op){
--	case OP_NONE:
--	case OP_TRACE_ON:
--		break;
--	case OP_EXEC:
--		pid = thread->request.u.exec.pid;
--		do_exec(thread->mode.tt.extern_pid, pid);
--		thread->mode.tt.extern_pid = pid;
--		cpu_tasks[task_thread_info(task)->cpu].pid = pid;
--		break;
--	case OP_FORK:
--		attach_process(thread->request.u.fork.pid);
--		break;
--	case OP_CB:
--		(*thread->request.u.cb.proc)(thread->request.u.cb.arg);
--		break;
--	case OP_REBOOT:
--	case OP_HALT:
--		break;
--	default:
--		tracer_panic("Bad op in do_proc_op");
--		break;
--	}
--	thread->request.op = OP_NONE;
--	return(op);
--}
--
--void init_idle_tt(void)
--{
--	default_idle();
--}
--
--extern void start_kernel(void);
--
--static int start_kernel_proc(void *unused)
--{
--	int pid;
--
--	block_signals();
--	pid = os_getpid();
--
--	cpu_tasks[0].pid = pid;
--	cpu_tasks[0].task = current;
--#ifdef CONFIG_SMP
-- 	cpu_online_map = cpumask_of_cpu(0);
--#endif
--	if(debug) os_stop_process(pid);
--	start_kernel();
--	return(0);
--}
--
--void set_tracing(void *task, int tracing)
--{
--	((struct task_struct *) task)->thread.mode.tt.tracing = tracing;
--}
--
--int is_tracing(void *t)
--{
--	return (((struct task_struct *) t)->thread.mode.tt.tracing);
--}
--
--int set_user_mode(void *t)
--{
--	struct task_struct *task;
--
--	task = t ? t : current;
--	if(task->thread.mode.tt.tracing) 
--		return(1);
--	task->thread.request.op = OP_TRACE_ON;
--	os_usr1_process(os_getpid());
--	return(0);
--}
--
--void set_init_pid(int pid)
--{
--	int err;
--
--	init_task.thread.mode.tt.extern_pid = pid;
--	err = os_pipe(init_task.thread.mode.tt.switch_pipe, 1, 1);
--	if(err)
--		panic("Can't create switch pipe for init_task, errno = %d",
--		      -err);
--}
--
--int start_uml_tt(void)
--{
--	void *sp;
--	int pages;
--
--	pages = (1 << CONFIG_KERNEL_STACK_ORDER);
--	sp = task_stack_page(&init_task) +
--		pages * PAGE_SIZE - sizeof(unsigned long);
--	return(tracer(start_kernel_proc, sp));
--}
--
--int external_pid_tt(struct task_struct *task)
--{
--	return(task->thread.mode.tt.extern_pid);
--}
--
--int thread_pid_tt(struct task_struct *task)
--{
--	return(task->thread.mode.tt.extern_pid);
--}
--
--int is_valid_pid(int pid)
--{
--	struct task_struct *task;
--
--        read_lock(&tasklist_lock);
--        for_each_process(task){
--                if(task->thread.mode.tt.extern_pid == pid){
--			read_unlock(&tasklist_lock);
--			return(1);
--                }
--        }
--	read_unlock(&tasklist_lock);
--	return(0);
--}
-Index: linux-2.6.22/arch/um/kernel/tt/ptproxy/Makefile
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/ptproxy/Makefile	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,10 +0,0 @@
--# 
--# Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
--# Licensed under the GPL
--#
--
--obj-y = proxy.o ptrace.o sysdep.o wait.o
--
--USER_OBJS := $(obj-y)
--
--include arch/um/scripts/Makefile.rules
-Index: linux-2.6.22/arch/um/kernel/tt/ptproxy/ptproxy.h
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/ptproxy/ptproxy.h	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,61 +0,0 @@
--/**********************************************************************
--ptproxy.h
--
--Copyright (C) 1999 Lars Brinkhoff.  See the file COPYING for licensing
--terms and conditions.
--**********************************************************************/
--
--#ifndef __PTPROXY_H
--#define __PTPROXY_H
--
--#include <sys/types.h>
--
--typedef struct debugger debugger_state;
--typedef struct debugee debugee_state;
--
--struct debugger
--{
--	pid_t pid;
--	int wait_options;
--	int *wait_status_ptr;
--	unsigned int waiting : 1;
--	unsigned int real_wait : 1;
--	unsigned int expecting_child : 1;
--	int (*handle_trace) (debugger_state *, pid_t);
--
--	debugee_state *debugee;
--};
--
--struct debugee
--{
--	pid_t pid;
--	int wait_status;
--	unsigned int died : 1;
--	unsigned int event : 1;
--	unsigned int stopped : 1;
--	unsigned int trace_singlestep : 1;
--	unsigned int trace_syscall : 1;
--	unsigned int traced : 1;
--	unsigned int zombie : 1;
--	unsigned int in_context : 1;
--};
--
--extern int debugger_syscall(debugger_state *debugger, pid_t pid);
--extern int debugger_normal_return (debugger_state *debugger, pid_t unused);
--
--extern long proxy_ptrace (struct debugger *, int, pid_t, long, long, pid_t,
--			  int *strace_out);
--extern void debugger_cancelled_return(debugger_state *debugger, int result);
--
--#endif
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/ptproxy/ptrace.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/ptproxy/ptrace.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,237 +0,0 @@
--/**********************************************************************
--ptrace.c
--
--Copyright (C) 1999 Lars Brinkhoff.  See the file COPYING for licensing
--terms and conditions.
--
--Jeff Dike (jdike@karaya.com) : Modified for integration into uml
--**********************************************************************/
--
--#include <errno.h>
--#include <unistd.h>
--#include <signal.h>
--#include <sys/types.h>
--#include <sys/time.h>
--#include <sys/wait.h>
--
--#include "ptproxy.h"
--#include "debug.h"
--#include "kern_util.h"
--#include "ptrace_user.h"
--#include "tt.h"
--#include "os.h"
--
--long proxy_ptrace(struct debugger *debugger, int arg1, pid_t arg2,
--		  long arg3, long arg4, pid_t child, int *ret)
--{
--	sigset_t relay;
--	long result;
--	int status;
--
--	*ret = 0;
--	if(debugger->debugee->died) return(-ESRCH);
--
--	switch(arg1){
--	case PTRACE_ATTACH:
--		if(debugger->debugee->traced) return(-EPERM);
--
--		debugger->debugee->pid = arg2;
--		debugger->debugee->traced = 1;
--
--		if(is_valid_pid(arg2) && (arg2 != child)){
--			debugger->debugee->in_context = 0;
--			kill(arg2, SIGSTOP);
--			debugger->debugee->event = 1;
--			debugger->debugee->wait_status = W_STOPCODE(SIGSTOP);
--		}
--		else {
--			debugger->debugee->in_context = 1;
--			if(debugger->debugee->stopped) 
--				child_proxy(child, W_STOPCODE(SIGSTOP));
--			else kill(child, SIGSTOP);
--		}
--
--		return(0);
--
--	case PTRACE_DETACH:
--		if(!debugger->debugee->traced) return(-EPERM);
--		
--		debugger->debugee->traced = 0;
--		debugger->debugee->pid = 0;
--		if(!debugger->debugee->in_context)
--			kill(child, SIGCONT);
--
--		return(0);
--
--	case PTRACE_CONT:
--		if(!debugger->debugee->in_context) return(-EPERM);
--		*ret = PTRACE_CONT;
--		return(ptrace(PTRACE_CONT, child, arg3, arg4));
--
--#ifdef UM_HAVE_GETFPREGS
--	case PTRACE_GETFPREGS:
--	{
--		long regs[FP_FRAME_SIZE];
--		int i, result;
--
--		result = ptrace(PTRACE_GETFPREGS, child, 0, regs);
--		if(result == -1) return(-errno);
--		
--		for (i = 0; i < sizeof(regs)/sizeof(regs[0]); i++)
--			ptrace(PTRACE_POKEDATA, debugger->pid, arg4 + 4 * i,
--			       regs[i]);
--		return(result);
--	}
--#endif
--
--#ifdef UM_HAVE_GETFPXREGS
--	case PTRACE_GETFPXREGS:
--	{
--		long regs[FPX_FRAME_SIZE];
--		int i, result;
--
--		result = ptrace(PTRACE_GETFPXREGS, child, 0, regs);
--		if(result == -1) return(-errno);
--		
--		for (i = 0; i < sizeof(regs)/sizeof(regs[0]); i++)
--			ptrace(PTRACE_POKEDATA, debugger->pid, arg4 + 4 * i,
--			       regs[i]);
--		return(result);
--	}
--#endif
--
--#ifdef UM_HAVE_GETREGS
--	case PTRACE_GETREGS:
--	{
--		long regs[FRAME_SIZE];
--		int i, result;
--
--		result = ptrace(PTRACE_GETREGS, child, 0, regs);
--		if(result == -1) return(-errno);
--
--		for (i = 0; i < sizeof(regs)/sizeof(regs[0]); i++)
--			ptrace (PTRACE_POKEDATA, debugger->pid,
--				arg4 + 4 * i, regs[i]);
--		return(result);
--	}
--	break;
--#endif
--
--	case PTRACE_KILL:
--		result = ptrace(PTRACE_KILL, child, arg3, arg4);
--		if(result == -1) return(-errno);
--
--		return(result);
--
--	case PTRACE_PEEKDATA:
--	case PTRACE_PEEKTEXT:
--	case PTRACE_PEEKUSR:
--		/* The value being read out could be -1, so we have to 
--		 * check errno to see if there's an error, and zero it
--		 * beforehand so we're not faked out by an old error
--		 */
--
--		errno = 0;
--		result = ptrace(arg1, child, arg3, 0);
--		if((result == -1) && (errno != 0)) return(-errno);
--
--		result = ptrace(PTRACE_POKEDATA, debugger->pid, arg4, result);
--		if(result == -1) return(-errno);
--			
--		return(result);
--
--	case PTRACE_POKEDATA:
--	case PTRACE_POKETEXT:
--	case PTRACE_POKEUSR:
--		result = ptrace(arg1, child, arg3, arg4);
--		if(result == -1) return(-errno);
--
--		if(arg1 == PTRACE_POKEUSR) ptrace_pokeuser(arg3, arg4);
--		return(result);
--
--#ifdef UM_HAVE_SETFPREGS
--	case PTRACE_SETFPREGS:
--	{
--		long regs[FP_FRAME_SIZE];
--		int i;
--
--		for (i = 0; i < sizeof(regs)/sizeof(regs[0]); i++)
--			regs[i] = ptrace (PTRACE_PEEKDATA, debugger->pid,
--					  arg4 + 4 * i, 0);
--		result = ptrace(PTRACE_SETFPREGS, child, 0, regs);
--		if(result == -1) return(-errno);
--
--		return(result);
--	}
--#endif
--
--#ifdef UM_HAVE_SETFPXREGS
--	case PTRACE_SETFPXREGS:
--	{
--		long regs[FPX_FRAME_SIZE];
--		int i;
--
--		for (i = 0; i < sizeof(regs)/sizeof(regs[0]); i++)
--			regs[i] = ptrace (PTRACE_PEEKDATA, debugger->pid,
--					  arg4 + 4 * i, 0);
--		result = ptrace(PTRACE_SETFPXREGS, child, 0, regs);
--		if(result == -1) return(-errno);
--
--		return(result);
--	}
--#endif
--
--#ifdef UM_HAVE_SETREGS
--	case PTRACE_SETREGS:
--	{
--		long regs[FRAME_SIZE];
--		int i;
--
--		for (i = 0; i < sizeof(regs)/sizeof(regs[0]); i++)
--			regs[i] = ptrace(PTRACE_PEEKDATA, debugger->pid,
--					 arg4 + 4 * i, 0);
--		result = ptrace(PTRACE_SETREGS, child, 0, regs);
--		if(result == -1) return(-errno);
--
--		return(result);
--	}
--#endif
--
--	case PTRACE_SINGLESTEP:
--		if(!debugger->debugee->in_context) return(-EPERM);
--		sigemptyset(&relay);
--		sigaddset(&relay, SIGSEGV);
--		sigaddset(&relay, SIGILL);
--		sigaddset(&relay, SIGBUS);
--		result = ptrace(PTRACE_SINGLESTEP, child, arg3, arg4);
--		if(result == -1) return(-errno);
--		
--		status = wait_for_stop(child, SIGTRAP, PTRACE_SINGLESTEP,
--				       &relay);
--		child_proxy(child, status);
--		return(result);
--
--	case PTRACE_SYSCALL:
--		if(!debugger->debugee->in_context) return(-EPERM);
--		result = ptrace(PTRACE_SYSCALL, child, arg3, arg4);
--		if(result == -1) return(-errno);
--
--		*ret = PTRACE_SYSCALL;
--		return(result);
--
--	case PTRACE_TRACEME:
--	default:
--		return(-EINVAL);
--	}
--}
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/ptproxy/sysdep.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/ptproxy/sysdep.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,70 +0,0 @@
--/**********************************************************************
--sysdep.c
--
--Copyright (C) 1999 Lars Brinkhoff.  See the file COPYING for licensing
--terms and conditions.
--**********************************************************************/
--
--#include <stdio.h>
--#include <string.h>
--#include <stdlib.h>
--#include <signal.h>
--#include <errno.h>
--#include <sys/types.h>
--#include <linux/unistd.h>
--#include "ptrace_user.h"
--#include "user.h"
--#include "os.h"
--
--int get_syscall(pid_t pid, long *arg1, long *arg2, long *arg3, long *arg4, 
--		long *arg5)
--{
--	*arg1 = ptrace(PTRACE_PEEKUSR, pid, PT_SYSCALL_ARG1_OFFSET, 0);
--	*arg2 = ptrace(PTRACE_PEEKUSR, pid, PT_SYSCALL_ARG2_OFFSET, 0);
--	*arg3 = ptrace(PTRACE_PEEKUSR, pid, PT_SYSCALL_ARG3_OFFSET, 0);
--	*arg4 = ptrace(PTRACE_PEEKUSR, pid, PT_SYSCALL_ARG4_OFFSET, 0);
--	*arg5 = ptrace(PTRACE_PEEKUSR, pid, PT_SYSCALL_ARG5_OFFSET, 0);
--	return(ptrace(PTRACE_PEEKUSR, pid, PT_SYSCALL_NR_OFFSET, 0));
--}
--
--void syscall_cancel(pid_t pid, int result)
--{
--	if((ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_NR_OFFSET,
--		   __NR_getpid) < 0) ||
--	   (ptrace(PTRACE_SYSCALL, pid, 0, 0) < 0) ||
--	   (wait_for_stop(pid, SIGTRAP, PTRACE_SYSCALL, NULL) < 0) ||
--	   (ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_RET_OFFSET, result) < 0) ||
--	   (ptrace(PTRACE_SYSCALL, pid, 0, 0) < 0))
--		printk("ptproxy: couldn't cancel syscall: errno = %d\n", 
--		       errno);
--}
--
--void syscall_set_result(pid_t pid, long result)
--{
--	ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_RET_OFFSET, result);
--}
--
--void syscall_continue(pid_t pid)
--{
--	ptrace(PTRACE_SYSCALL, pid, 0, 0);
--}
--
--int syscall_pause(pid_t pid) 
--{
--	if(ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_NR_OFFSET, __NR_pause) < 0){
--		printk("syscall_change - ptrace failed, errno = %d\n", errno);
--		return(-1);
--	}
--	return(0);
--}
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/ptproxy/sysdep.h
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/ptproxy/sysdep.h	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,25 +0,0 @@
--/**********************************************************************
--sysdep.h
--
--Copyright (C) 1999 Lars Brinkhoff.
--Copyright (C) 2001 Jeff Dike (jdike@karaya.com)
--See the file COPYING for licensing terms and conditions.
--**********************************************************************/
--
--extern int get_syscall(pid_t pid, long *arg1, long *arg2, long *arg3, 
--		       long *arg4, long *arg5);
--extern void syscall_cancel (pid_t pid, long result);
--extern void syscall_set_result (pid_t pid, long result);
--extern void syscall_continue (pid_t pid);
--extern int syscall_pause(pid_t pid);
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/ptproxy/wait.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/ptproxy/wait.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,85 +0,0 @@
--/**********************************************************************
--wait.c
--
--Copyright (C) 1999 Lars Brinkhoff.  See the file COPYING for licensing
--terms and conditions.
--
--**********************************************************************/
--
--#include <errno.h>
--#include <signal.h>
--#include <sys/wait.h>
--
--#include "ptproxy.h"
--#include "sysdep.h"
--#include "wait.h"
--#include "ptrace_user.h"
--#include "sysdep/ptrace.h"
--#include "sysdep/sigcontext.h"
--
--int proxy_wait_return(struct debugger *debugger, pid_t unused)
--{
--	debugger->waiting = 0;
--
--	if(debugger->debugee->died || (debugger->wait_options & __WCLONE)){
--		debugger_cancelled_return(debugger, -ECHILD);
--		return(0);
--	}
--
--	if(debugger->debugee->zombie && debugger->debugee->event)
--		debugger->debugee->died = 1;
--
--	if(debugger->debugee->event){
--		debugger->debugee->event = 0;
--		ptrace(PTRACE_POKEDATA, debugger->pid,
--		       debugger->wait_status_ptr, 
--		       debugger->debugee->wait_status);
--		/* if (wait4)
--		   ptrace (PTRACE_POKEDATA, pid, rusage_ptr, ...); */
--		debugger_cancelled_return(debugger, debugger->debugee->pid);
--		return(0);
--	}
--
--	/* pause will return -EINTR, which happens to be right for wait */
--	debugger_normal_return(debugger, -1);
--	return(0);
--}
--
--int parent_wait_return(struct debugger *debugger, pid_t unused)
--{
--	return(debugger_normal_return(debugger, -1));
--}
--
--int real_wait_return(struct debugger *debugger)
--{
--	unsigned long ip;
--	int pid;
--
--	pid = debugger->pid;
--
--	ip = ptrace(PTRACE_PEEKUSR, pid, PT_IP_OFFSET, 0);
--	IP_RESTART_SYSCALL(ip);
--
--	if(ptrace(PTRACE_POKEUSR, pid, PT_IP_OFFSET, ip) < 0)
--		tracer_panic("real_wait_return : Failed to restart system "
--			     "call, errno = %d\n", errno);
--
--	if((ptrace(PTRACE_SYSCALL, debugger->pid, 0, SIGCHLD) < 0) ||
--	   (ptrace(PTRACE_SYSCALL, debugger->pid, 0, 0) < 0) ||
--	   (ptrace(PTRACE_SYSCALL, debugger->pid, 0, 0) < 0) ||
--	   debugger_normal_return(debugger, -1))
--		tracer_panic("real_wait_return : gdb failed to wait, "
--			     "errno = %d\n", errno);
--	return(0);
--}
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/ptproxy/wait.h
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/ptproxy/wait.h	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,15 +0,0 @@
--/**********************************************************************
--wait.h
--
--Copyright (C) 1999 Lars Brinkhoff.  See the file COPYING for licensing
--terms and conditions.
--**********************************************************************/
--
--#ifndef __PTPROXY_WAIT_H
--#define __PTPROXY_WAIT_H
--
--extern int proxy_wait_return(struct debugger *debugger, pid_t unused);
--extern int real_wait_return(struct debugger *debugger);
--extern int parent_wait_return(struct debugger *debugger, pid_t unused);
--
--#endif
-Index: linux-2.6.22/arch/um/kernel/tt/syscall_kern.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/syscall_kern.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,46 +0,0 @@
--/* 
-- * Copyright (C) 2000 - 2003 Jeff Dike (jdike@addtoit.com)
-- * Licensed under the GPL
-- */
--
--#include "linux/types.h"
--#include "linux/utime.h"
--#include "linux/sys.h"
--#include "linux/ptrace.h"
--#include "asm/unistd.h"
--#include "asm/ptrace.h"
--#include "asm/uaccess.h"
--#include "asm/stat.h"
--#include "sysdep/syscalls.h"
--#include "sysdep/sigcontext.h"
--#include "kern_util.h"
--#include "syscall.h"
--
--void syscall_handler_tt(int sig, struct pt_regs *regs)
--{
--	void *sc;
--	long result;
--	int syscall;
--
--	sc = UPT_SC(&regs->regs);
--	SC_START_SYSCALL(sc);
--
--	syscall = UPT_SYSCALL_NR(&regs->regs);
--	syscall_trace(&regs->regs, 0);
--
--	current->thread.nsyscalls++;
--	nsyscalls++;
--
--	if((syscall >= NR_syscalls) || (syscall < 0))
--		result = -ENOSYS;
--	else result = EXECUTE_SYSCALL(syscall, regs);
--
--	/* regs->sc may have changed while the system call ran (there may
--	 * have been an interrupt or segfault), so it needs to be refreshed.
--	 */
--	UPT_SC(&regs->regs) = sc;
--
--	SC_SET_SYSCALL_RETURN(sc, result);
--
--	syscall_trace(&regs->regs, 1);
--}
-Index: linux-2.6.22/arch/um/kernel/tt/syscall_user.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/syscall_user.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,60 +0,0 @@
--/* 
-- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include <unistd.h>
--#include <signal.h>
--#include <errno.h>
--#include <asm/unistd.h>
--#include "sysdep/ptrace.h"
--#include "sigcontext.h"
--#include "ptrace_user.h"
--#include "task.h"
--#include "kern_util.h"
--#include "syscall.h"
--#include "tt.h"
--
--void do_sigtrap(void *task)
--{
--	UPT_SYSCALL_NR(TASK_REGS(task)) = -1;
--}
--
--void do_syscall(void *task, int pid, int local_using_sysemu)
--{
--	unsigned long proc_regs[FRAME_SIZE];
--
--	if(ptrace_getregs(pid, proc_regs) < 0)
--		tracer_panic("Couldn't read registers");
--
--	UPT_SYSCALL_NR(TASK_REGS(task)) = PT_SYSCALL_NR(proc_regs);
--
--#ifdef UPT_ORIGGPR2
--        UPT_ORIGGPR2(TASK_REGS(task)) = REGS_ORIGGPR2(proc_regs);
--#endif
--
--	if(((unsigned long *) PT_IP(proc_regs) >= &_stext) &&
--	   ((unsigned long *) PT_IP(proc_regs) <= &_etext))
--		tracer_panic("I'm tracing myself and I can't get out");
--
--	/* advanced sysemu mode set syscall number to -1 automatically */
--	if (local_using_sysemu==2)
--		return;
--
--	/* syscall number -1 in sysemu skips syscall restarting in host */
--	if(ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_NR_OFFSET,
--		  local_using_sysemu ? -1 : __NR_getpid) < 0)
--		tracer_panic("do_syscall : Nullifying syscall failed, "
--			     "errno = %d", errno);
--}
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/tlb.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/tlb.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,120 +0,0 @@
--/* 
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Copyright 2003 PathScale, Inc.
-- * Licensed under the GPL
-- */
--
--#include "linux/stddef.h"
--#include "linux/kernel.h"
--#include "linux/sched.h"
--#include "linux/mm.h"
--#include "asm/page.h"
--#include "asm/pgtable.h"
--#include "asm/uaccess.h"
--#include "asm/tlbflush.h"
--#include "mem_user.h"
--#include "os.h"
--#include "tlb.h"
--
--static int do_ops(union mm_context *mmu, struct host_vm_op *ops, int last,
--		    int finished, void **flush)
--{
--	struct host_vm_op *op;
--        int i, ret=0;
--
--        for(i = 0; i <= last && !ret; i++){
--		op = &ops[i];
--		switch(op->type){
--		case MMAP:
--                        ret = os_map_memory((void *) op->u.mmap.addr,
--                                            op->u.mmap.fd, op->u.mmap.offset,
--                                            op->u.mmap.len, op->u.mmap.r,
--                                            op->u.mmap.w, op->u.mmap.x);
--			break;
--		case MUNMAP:
--                        ret = os_unmap_memory((void *) op->u.munmap.addr,
--                                              op->u.munmap.len);
--			break;
--		case MPROTECT:
--                        ret = protect_memory(op->u.mprotect.addr,
--                                             op->u.munmap.len,
--                                             op->u.mprotect.r,
--                                             op->u.mprotect.w,
--                                             op->u.mprotect.x, 1);
--			protect_memory(op->u.mprotect.addr, op->u.munmap.len,
--				       op->u.mprotect.r, op->u.mprotect.w,
--				       op->u.mprotect.x, 1);
--			break;
--		default:
--			printk("Unknown op type %d in do_ops\n", op->type);
--			break;
--		}
--	}
--
--	return ret;
--}
--
--static void fix_range(struct mm_struct *mm, unsigned long start_addr, 
--		      unsigned long end_addr, int force)
--{
--        if((current->thread.mode.tt.extern_pid != -1) &&
--           (current->thread.mode.tt.extern_pid != os_getpid()))
--                panic("fix_range fixing wrong address space, current = 0x%p",
--                      current);
--
--        fix_range_common(mm, start_addr, end_addr, force, do_ops);
--}
--
--atomic_t vmchange_seq = ATOMIC_INIT(1);
--
--void flush_tlb_kernel_range_tt(unsigned long start, unsigned long end)
--{
--        if(flush_tlb_kernel_range_common(start, end))
--                atomic_inc(&vmchange_seq);
--}
--
--void flush_tlb_kernel_vm_tt(void)
--{
--        flush_tlb_kernel_range(start_vm, end_vm);
--}
--
--void __flush_tlb_one_tt(unsigned long addr)
--{
--        flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
--}
--  
--void flush_tlb_range_tt(struct vm_area_struct *vma, unsigned long start, 
--		     unsigned long end)
--{
--	if(vma->vm_mm != current->mm) return;
--
--	/* Assumes that the range start ... end is entirely within
--	 * either process memory or kernel vm
--	 */
--	if((start >= start_vm) && (start < end_vm)){
--		if(flush_tlb_kernel_range_common(start, end))
--			atomic_inc(&vmchange_seq);
--	}
--	else fix_range(vma->vm_mm, start, end, 0);
--}
--
--void flush_tlb_mm_tt(struct mm_struct *mm)
--{
--	unsigned long seq;
--
--	if(mm != current->mm) return;
--
--	fix_range(mm, 0, STACK_TOP, 0);
--
--	seq = atomic_read(&vmchange_seq);
--	if(current->thread.mode.tt.vm_seq == seq)
--		return;
--	current->thread.mode.tt.vm_seq = seq;
--	flush_tlb_kernel_range_common(start_vm, end_vm);
--}
--
--void force_flush_all_tt(void)
--{
--	fix_range(current->mm, 0, STACK_TOP, 1);
--	flush_tlb_kernel_range_common(start_vm, end_vm);
--}
-Index: linux-2.6.22/arch/um/kernel/tt/tracer.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/tracer.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,461 +0,0 @@
--/* 
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include <stdio.h>
--#include <stdlib.h>
--#include <stdarg.h>
--#include <unistd.h>
--#include <signal.h>
--#include <errno.h>
--#include <sched.h>
--#include <string.h>
--#include <sys/mman.h>
--#include <sys/time.h>
--#include <sys/wait.h>
--#include "user.h"
--#include "sysdep/ptrace.h"
--#include "sigcontext.h"
--#include "sysdep/sigcontext.h"
--#include "os.h"
--#include "mem_user.h"
--#include "process.h"
--#include "kern_util.h"
--#include "chan_user.h"
--#include "ptrace_user.h"
--#include "irq_user.h"
--#include "mode.h"
--#include "tt.h"
--
--static int tracer_winch[2];
--
--int is_tracer_winch(int pid, int fd, void *data)
--{
--	if(pid != os_getpgrp())
--		return(0);
--
--	register_winch_irq(tracer_winch[0], fd, -1, data);
--	return(1);
--}
--
--static void tracer_winch_handler(int sig)
--{
--	int n;
--	char c = 1;
--
--	n = os_write_file(tracer_winch[1], &c, sizeof(c));
--	if(n != sizeof(c))
--		printk("tracer_winch_handler - write failed, err = %d\n", -n);
--}
--
--/* Called only by the tracing thread during initialization */
--
--static void setup_tracer_winch(void)
--{
--	int err;
--
--	err = os_pipe(tracer_winch, 1, 1);
--	if(err < 0){
--		printk("setup_tracer_winch : os_pipe failed, err = %d\n", -err);
--		return;
--	}
--	signal(SIGWINCH, tracer_winch_handler);
--}
--
--void attach_process(int pid)
--{
--	if((ptrace(PTRACE_ATTACH, pid, 0, 0) < 0) ||
--	   (ptrace(PTRACE_CONT, pid, 0, 0) < 0))
--		tracer_panic("OP_FORK failed to attach pid");
--	wait_for_stop(pid, SIGSTOP, PTRACE_CONT, NULL);
--	if (ptrace(PTRACE_OLDSETOPTIONS, pid, 0, (void *)PTRACE_O_TRACESYSGOOD) < 0)
--		tracer_panic("OP_FORK: PTRACE_SETOPTIONS failed, errno = %d", errno);
--	if(ptrace(PTRACE_CONT, pid, 0, 0) < 0)
--		tracer_panic("OP_FORK failed to continue process");
--}
--
--void tracer_panic(char *format, ...)
--{
--	va_list ap;
--
--	va_start(ap, format);
--	vprintf(format, ap);
--	va_end(ap);
--	printf("\n");
--	while(1) pause();
--}
--
--static void tracer_segv(int sig, struct sigcontext sc)
--{
--        struct faultinfo fi;
--        GET_FAULTINFO_FROM_SC(fi, &sc);
--	printf("Tracing thread segfault at address 0x%lx, ip 0x%lx\n",
--               FAULT_ADDRESS(fi), SC_IP(&sc));
--	while(1)
--		pause();
--}
--
--/* Changed early in boot, and then only read */
--int debug = 0;
--int debug_stop = 1;
--int debug_parent = 0;
--int honeypot = 0;
--
--static int signal_tramp(void *arg)
--{
--	int (*proc)(void *);
--
--	if(honeypot && munmap((void *) (host_task_size - 0x10000000),
--			      0x10000000)) 
--		panic("Unmapping stack failed");
--	if(ptrace(PTRACE_TRACEME, 0, 0, 0) < 0)
--		panic("ptrace PTRACE_TRACEME failed");
--	os_stop_process(os_getpid());
--	change_sig(SIGWINCH, 0);
--	signal(SIGUSR1, SIG_IGN);
--	change_sig(SIGCHLD, 0);
--	signal(SIGSEGV, (__sighandler_t) sig_handler);
--	set_cmdline("(idle thread)");
--	set_init_pid(os_getpid());
--	init_irq_signals(0);
--	proc = arg;
--	return((*proc)(NULL));
--}
--
--static void sleeping_process_signal(int pid, int sig)
--{
--	switch(sig){
--	/* These two result from UML being ^Z-ed and bg-ed.  PTRACE_CONT is
--	 * right because the process must be in the kernel already.
--	 */
--	case SIGCONT:
--	case SIGTSTP:
--		if(ptrace(PTRACE_CONT, pid, 0, sig) < 0)
--			tracer_panic("sleeping_process_signal : Failed to "
--				     "continue pid %d, signal = %d, "
--				     "errno = %d\n", pid, sig, errno);
--		break;
--
--	/* This happens when the debugger (e.g. strace) is doing system call 
--	 * tracing on the kernel.  During a context switch, the current task
--	 * will be set to the incoming process and the outgoing process will
--	 * hop into write and then read.  Since it's not the current process
--	 * any more, the trace of those will land here.  So, we need to just 
--	 * PTRACE_SYSCALL it.
--	 */
--	case (SIGTRAP + 0x80):
--		if(ptrace(PTRACE_SYSCALL, pid, 0, 0) < 0)
--			tracer_panic("sleeping_process_signal : Failed to "
--				     "PTRACE_SYSCALL pid %d, errno = %d\n",
--				     pid, errno);
--		break;
--	case SIGSTOP:
--		break;
--	default:
--		tracer_panic("sleeping process %d got unexpected "
--			     "signal : %d\n", pid, sig);
--		break;
--	}
--}
--
--/* Accessed only by the tracing thread */
--int debugger_pid = -1;
--int debugger_parent = -1;
--int debugger_fd = -1;
--int gdb_pid = -1;
--
--struct {
--	int pid;
--	int signal;
--	unsigned long addr;
--	struct timeval time;
--} signal_record[1024][32];
--
--int signal_index[32];
--int nsignals = 0;
--int debug_trace = 0;
--
--extern void signal_usr1(int sig);
--
--int tracing_pid = -1;
--
--int tracer(int (*init_proc)(void *), void *sp)
--{
--	void *task = NULL;
--	int status, pid = 0, sig = 0, cont_type, tracing = 0, op = 0;
--	int proc_id = 0, n, err, old_tracing = 0, strace = 0;
--	int local_using_sysemu = 0;
--
--	signal(SIGPIPE, SIG_IGN);
--	setup_tracer_winch();
--	tracing_pid = os_getpid();
--	printf("tracing thread pid = %d\n", tracing_pid);
--
--	pid = clone(signal_tramp, sp, CLONE_FILES | SIGCHLD, init_proc);
--	CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED));
--	if(n < 0){
--		printf("waitpid on idle thread failed, errno = %d\n", errno);
--		exit(1);
--	}
--	if (ptrace(PTRACE_OLDSETOPTIONS, pid, 0, (void *)PTRACE_O_TRACESYSGOOD) < 0) {
--		printf("Failed to PTRACE_SETOPTIONS for idle thread, errno = %d\n", errno);
--		exit(1);
--	}
--	if((ptrace(PTRACE_CONT, pid, 0, 0) < 0)){
--		printf("Failed to continue idle thread, errno = %d\n", errno);
--		exit(1);
--	}
--
--	signal(SIGSEGV, (sighandler_t) tracer_segv);
--	signal(SIGUSR1, signal_usr1);
--	if(debug_trace){
--		printf("Tracing thread pausing to be attached\n");
--		stop();
--	}
--	if(debug){
--		if(gdb_pid != -1) 
--			debugger_pid = attach_debugger(pid, gdb_pid, 1);
--		else debugger_pid = init_ptrace_proxy(pid, 1, debug_stop);
--		if(debug_parent){
--			debugger_parent = os_process_parent(debugger_pid);
--			init_parent_proxy(debugger_parent);
--			err = attach(debugger_parent);
--			if(err){
--				printf("Failed to attach debugger parent %d, "
--				       "errno = %d\n", debugger_parent, -err);
--				debugger_parent = -1;
--			}
--			else {
--				if(ptrace(PTRACE_SYSCALL, debugger_parent, 
--					  0, 0) < 0){
--					printf("Failed to continue debugger "
--					       "parent, errno = %d\n", errno);
--					debugger_parent = -1;
--				}
--			}
--		}
--	}
--	set_cmdline("(tracing thread)");
--	while(1){
--		CATCH_EINTR(pid = waitpid(-1, &status, WUNTRACED));
--		if(pid <= 0){
--			if(errno != ECHILD){
--				printf("wait failed - errno = %d\n", errno);
--			}
--			continue;
--		}
--		if(pid == debugger_pid){
--			int cont = 0;
--
--			if(WIFEXITED(status) || WIFSIGNALED(status))
--				debugger_pid = -1;
--			/* XXX Figure out how to deal with gdb and SMP */
--			else cont = debugger_signal(status, cpu_tasks[0].pid);
--			if(cont == PTRACE_SYSCALL) strace = 1;
--			continue;
--		}
--		else if(pid == debugger_parent){
--			debugger_parent_signal(status, pid);
--			continue;
--		}
--		nsignals++;
--		if(WIFEXITED(status)) ;
--#ifdef notdef
--		{
--			printf("Child %d exited with status %d\n", pid, 
--			       WEXITSTATUS(status));
--		}
--#endif
--		else if(WIFSIGNALED(status)){
--			sig = WTERMSIG(status);
--			if(sig != 9){
--				printf("Child %d exited with signal %d\n", pid,
--				       sig);
--			}
--		}
--		else if(WIFSTOPPED(status)){
--			proc_id = pid_to_processor_id(pid);
--			sig = WSTOPSIG(status);
--			if(proc_id == -1){
--				sleeping_process_signal(pid, sig);
--				continue;
--			}
--
--			task = cpu_tasks[proc_id].task;
--			tracing = is_tracing(task);
--			old_tracing = tracing;
--
--			/* Assume: no syscall, when coming from user */
--			if ( tracing )
--				do_sigtrap(task);
--
--			switch(sig){
--			case SIGUSR1:
--				sig = 0;
--				op = do_proc_op(task, proc_id);
--				switch(op){
--				/*
--				 * This is called when entering user mode; after
--				 * this, we start intercepting syscalls.
--				 *
--				 * In fact, a process is started in kernel mode,
--				 * so with is_tracing() == 0 (and that is reset
--				 * when executing syscalls, since UML kernel has
--				 * the right to do syscalls);
--				 */
--				case OP_TRACE_ON:
--					arch_leave_kernel(task, pid);
--					tracing = 1;
--					break;
--				case OP_REBOOT:
--				case OP_HALT:
--					unmap_physmem();
--					kmalloc_ok = 0;
--					os_kill_ptraced_process(pid, 0);
--					/* Now let's reap remaining zombies */
--					errno = 0;
--					do {
--						waitpid(-1, &status,
--							WUNTRACED);
--					} while (errno != ECHILD);
--					return(op == OP_REBOOT);
--				case OP_NONE:
--					printf("Detaching pid %d\n", pid);
--					detach(pid, SIGSTOP);
--					continue;
--				default:
--					break;
--				}
--				/* OP_EXEC switches host processes on us,
--				 * we want to continue the new one.
--				 */
--				pid = cpu_tasks[proc_id].pid;
--				break;
--			case (SIGTRAP + 0x80):
--				if(!tracing && (debugger_pid != -1)){
--					child_signal(pid, status & 0x7fff);
--					continue;
--				}
--				tracing = 0;
--				/* local_using_sysemu has been already set
--				 * below, since if we are here, is_tracing() on
--				 * the traced task was 1, i.e. the process had
--				 * already run through one iteration of the
--				 * loop which executed a OP_TRACE_ON request.*/
--				do_syscall(task, pid, local_using_sysemu);
--				sig = SIGUSR2;
--				break;
--			case SIGTRAP:
--				if(!tracing && (debugger_pid != -1)){
--					child_signal(pid, status);
--					continue;
--				}
--				tracing = 0;
--				break;
--			case SIGPROF:
--				if(tracing) sig = 0;
--				break;
--			case SIGCHLD:
--			case SIGHUP:
--				sig = 0;
--				break;
--			case SIGSEGV:
--			case SIGIO:
--			case SIGALRM:
--			case SIGVTALRM:
--			case SIGFPE:
--			case SIGBUS:
--			case SIGILL:
--			case SIGWINCH:
--
--			default:
--				tracing = 0;
--				break;
--			}
--			set_tracing(task, tracing);
--
--			if(!tracing && old_tracing)
--				arch_enter_kernel(task, pid);
--
--			if(!tracing && (debugger_pid != -1) && (sig != 0) &&
--				(sig != SIGALRM) && (sig != SIGVTALRM) &&
--				(sig != SIGSEGV) && (sig != SIGTRAP) &&
--				(sig != SIGUSR2) && (sig != SIGIO) &&
--				(sig != SIGFPE)){
--				child_signal(pid, status);
--				continue;
--			}
--
--			local_using_sysemu = get_using_sysemu();
--
--			if(tracing)
--				cont_type = SELECT_PTRACE_OPERATION(local_using_sysemu,
--				                                    singlestepping(task));
--			else if((debugger_pid != -1) && strace)
--				cont_type = PTRACE_SYSCALL;
--			else
--				cont_type = PTRACE_CONT;
--
--			if(ptrace(cont_type, pid, 0, sig) != 0){
--				tracer_panic("ptrace failed to continue "
--					     "process - errno = %d\n", 
--					     errno);
--			}
--		}
--	}
--	return(0);
--}
--
--static int __init uml_debug_setup(char *line, int *add)
--{
--	char *next;
--
--	debug = 1;
--	*add = 0;
--	if(*line != '=') return(0);
--	line++;
--
--	while(line != NULL){
--		next = strchr(line, ',');
--		if(next) *next++ = '\0';
--		
--		if(!strcmp(line, "go"))	debug_stop = 0;
--		else if(!strcmp(line, "parent")) debug_parent = 1;
--		else printf("Unknown debug option : '%s'\n", line);
--
--		line = next;
--	}
--	return(0);
--}
--
--__uml_setup("debug", uml_debug_setup,
--"debug\n"
--"    Starts up the kernel under the control of gdb. See the \n"
--"    kernel debugging tutorial and the debugging session pages\n"
--"    at http://user-mode-linux.sourceforge.net/ for more information.\n\n"
--);
--
--static int __init uml_debugtrace_setup(char *line, int *add)
--{
--	debug_trace = 1;
--	return 0;
--}
--__uml_setup("debugtrace", uml_debugtrace_setup,
--"debugtrace\n"
--"    Causes the tracing thread to pause until it is attached by a\n"
--"    debugger and continued.  This is mostly for debugging crashes\n"
--"    early during boot, and should be pretty much obsoleted by\n"
--"    the debug switch.\n\n"
--);
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/trap_user.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/trap_user.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,70 +0,0 @@
--/*
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include <stdlib.h>
--#include <errno.h>
--#include <signal.h>
--#include "sysdep/ptrace.h"
--#include "sysdep/sigcontext.h"
--#include "kern_util.h"
--#include "task.h"
--#include "tt.h"
--#include "os.h"
--
--void sig_handler_common_tt(int sig, void *sc_ptr)
--{
--	struct sigcontext *sc = sc_ptr;
--	struct tt_regs save_regs, *r;
--	int save_errno = errno, is_user = 0;
--	void (*handler)(int, union uml_pt_regs *);
--
--	/* This is done because to allow SIGSEGV to be delivered inside a SEGV
--	 * handler.  This can happen in copy_user, and if SEGV is disabled,
--	 * the process will die.
--	 */
--	if(sig == SIGSEGV)
--		change_sig(SIGSEGV, 1);
--
--	r = &TASK_REGS(get_current())->tt;
--        if ( sig == SIGFPE || sig == SIGSEGV ||
--             sig == SIGBUS || sig == SIGILL ||
--             sig == SIGTRAP ) {
--                GET_FAULTINFO_FROM_SC(r->faultinfo, sc);
--        }
--	save_regs = *r;
--	if (sc)
--		is_user = user_context(SC_SP(sc));
--	r->sc = sc;
--	if(sig != SIGUSR2) 
--		r->syscall = -1;
--
--	handler = sig_info[sig];
--
--	/* unblock SIGALRM, SIGVTALRM, SIGIO if sig isn't IRQ signal */
--	if (sig != SIGIO && sig != SIGWINCH &&
--	    sig != SIGVTALRM && sig != SIGALRM)
--		unblock_signals();
--
--	handler(sig, (union uml_pt_regs *) r);
--
--	if(is_user){
--		interrupt_end();
--		block_signals();
--		set_user_mode(NULL);
--	}
--	*r = save_regs;
--	errno = save_errno;
--}
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/uaccess.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/uaccess.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,73 +0,0 @@
--/*
-- * Copyright (C) 2000 - 2003 Jeff Dike (jdike@addtoit.com)
-- * Licensed under the GPL
-- */
--
--#include "linux/sched.h"
--#include "asm/uaccess.h"
--
--int copy_from_user_tt(void *to, const void __user *from, int n)
--{
--	if(!access_ok(VERIFY_READ, from, n))
--		return(n);
--
--	return(__do_copy_from_user(to, from, n, &current->thread.fault_addr,
--				   &current->thread.fault_catcher));
--}
--
--int copy_to_user_tt(void __user *to, const void *from, int n)
--{
--	if(!access_ok(VERIFY_WRITE, to, n))
--		return(n);
--
--	return(__do_copy_to_user(to, from, n, &current->thread.fault_addr,
--				 &current->thread.fault_catcher));
--}
--
--int strncpy_from_user_tt(char *dst, const char __user *src, int count)
--{
--	int n;
--
--	if(!access_ok(VERIFY_READ, src, 1))
--		return(-EFAULT);
--
--	n = __do_strncpy_from_user(dst, src, count,
--				   &current->thread.fault_addr,
--				   &current->thread.fault_catcher);
--	if(n < 0) return(-EFAULT);
--	return(n);
--}
--
--int __clear_user_tt(void __user *mem, int len)
--{
--	return(__do_clear_user(mem, len,
--			       &current->thread.fault_addr,
--			       &current->thread.fault_catcher));
--}
--
--int clear_user_tt(void __user *mem, int len)
--{
--	if(!access_ok(VERIFY_WRITE, mem, len))
--		return(len);
--
--	return(__do_clear_user(mem, len, &current->thread.fault_addr,
--			       &current->thread.fault_catcher));
--}
--
--int strnlen_user_tt(const void __user *str, int len)
--{
--	return(__do_strnlen_user(str, len,
--				 &current->thread.fault_addr,
--				 &current->thread.fault_catcher));
--}
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/scripts/Makefile.rules
-===================================================================
---- linux-2.6.22.orig/arch/um/scripts/Makefile.rules	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/scripts/Makefile.rules	2007-08-09 14:45:40.000000000 -0400
-@@ -21,7 +21,7 @@ $(UNPROFILE_OBJS:.o=.%): \
- $(UNPROFILE_OBJS) : CHECKFLAGS := -D__linux__ -Dlinux -D__STDC__ \
- 	-Dunix -D__unix__ -D__$(SUBARCH)__ $(CF)
- 
--# The stubs and unmap.o can't try to call mcount or update basic block data
-+# The stubs can't try to call mcount or update basic block data
- define unprofile
- 	$(patsubst -pg,,$(patsubst -fprofile-arcs -ftest-coverage,,$(1)))
- endef
-Index: linux-2.6.22/arch/um/sys-i386/unmap.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-i386/unmap.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,25 +0,0 @@
--/*
-- * Copyright (C) 2000 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include <linux/mman.h>
--#include <asm/unistd.h>
--
--static int errno;
--
--static inline _syscall2(int,munmap,void *,start,size_t,len)
--static inline _syscall6(void *,mmap2,void *,addr,size_t,len,int,prot,int,flags,int,fd,off_t,offset)
--int switcheroo(int fd, int prot, void *from, void *to, int size)
--{
--	if(munmap(to, size) < 0){
--		return(-1);
--	}
--	if(mmap2(to, size, prot, MAP_SHARED | MAP_FIXED, fd, 0) == (void*) -1 ){
--		return(-1);
--	}
--	if(munmap(from, size) < 0){
--		return(-1);
--	}
--	return(0);
--}
-Index: linux-2.6.22/arch/um/sys-x86_64/unmap.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-x86_64/unmap.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,25 +0,0 @@
--/*
-- * Copyright (C) 2000 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include <linux/mman.h>
--#include <asm/unistd.h>
--
--static int errno;
--
--static inline _syscall2(int,munmap,void *,start,size_t,len)
--static inline _syscall6(void *,mmap,void *,addr,size_t,len,int,prot,int,flags,int,fd,off_t,offset)
--int switcheroo(int fd, int prot, void *from, void *to, int size)
--{
--	if(munmap(to, size) < 0){
--		return(-1);
--	}
--	if(mmap(to, size, prot, MAP_SHARED | MAP_FIXED, fd, 0) == (void*) -1){
--		return(-1);
--	}
--	if(munmap(from, size) < 0){
--		return(-1);
--	}
--	return(0);
--}
-Index: linux-2.6.22/arch/um/Kconfig.debug
-===================================================================
---- linux-2.6.22.orig/arch/um/Kconfig.debug	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/Kconfig.debug	2007-08-09 16:34:37.000000000 -0400
-@@ -2,28 +2,9 @@ menu "Kernel hacking"
- 
- source "lib/Kconfig.debug"
- 
--config CMDLINE_ON_HOST
--	bool "Show command line arguments on the host in TT mode"
--	depends on MODE_TT
--	default !DEBUG_INFO
--	help
--	This controls whether arguments in guest processes should be shown on
--	the host's ps output.
--	Enabling this option hinders debugging on some recent GDB versions
--	(because GDB gets "confused" when we do an execvp()). So probably you
--	should disable it.
--
--config PT_PROXY
--	bool "Enable ptrace proxy"
--	depends on XTERM_CHAN && DEBUG_INFO && MODE_TT
--	help
--	This option enables a debugging interface which allows gdb to debug
--	the kernel without needing to actually attach to kernel threads.
--	If you want to do kernel debugging, say Y here; otherwise say N.
--
- config GPROF
- 	bool "Enable gprof support"
--	depends on DEBUG_INFO && MODE_SKAS && !MODE_TT
-+	depends on DEBUG_INFO
- 	help
-         This allows profiling of a User-Mode Linux kernel with the gprof
-         utility.
-@@ -36,7 +17,7 @@ config GPROF
- 
- config GCOV
- 	bool "Enable gcov support"
--	depends on DEBUG_INFO && MODE_SKAS
-+	depends on DEBUG_INFO
- 	help
-         This option allows developers to retrieve coverage data from a UML
-         session.
-Index: linux-2.6.22/arch/um/Makefile-i386
-===================================================================
---- linux-2.6.22.orig/arch/um/Makefile-i386	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/Makefile-i386	2007-08-09 16:34:35.000000000 -0400
-@@ -2,11 +2,7 @@ core-y += arch/um/sys-i386/ arch/i386/cr
- 
- TOP_ADDR := $(CONFIG_TOP_ADDR)
- 
--ifeq ($(CONFIG_MODE_SKAS),y)
--  ifneq ($(CONFIG_MODE_TT),y)
--     START := 0x8048000
--  endif
--endif
-+START := 0x8048000
- 
- LDFLAGS			+= -m elf_i386
- ELF_ARCH		:= $(SUBARCH)
-Index: linux-2.6.22/arch/um/defconfig
-===================================================================
---- linux-2.6.22.orig/arch/um/defconfig	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/defconfig	2007-08-09 16:34:36.000000000 -0400
-@@ -12,9 +12,7 @@ CONFIG_IRQ_RELEASE_METHOD=y
- #
- # UML-specific options
- #
--# CONFIG_MODE_TT is not set
- # CONFIG_STATIC_LINK is not set
--CONFIG_MODE_SKAS=y
- 
- #
- # Host processor type and features
-Index: linux-2.6.22/arch/um/include/choose-mode.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/choose-mode.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/include/choose-mode.h	2007-08-09 16:34:36.000000000 -0400
-@@ -8,26 +8,8 @@
- 
- #include "uml-config.h"
- 
--#if defined(UML_CONFIG_MODE_TT) && defined(UML_CONFIG_MODE_SKAS)
--#define CHOOSE_MODE(tt, skas) (mode_tt ? (tt) : (skas))
--
--extern int mode_tt;
--static inline void *__choose_mode(void *tt, void *skas) {
--	return mode_tt ? tt : skas;
--}
--
--#define __CHOOSE_MODE(tt, skas) (*( (typeof(tt) *) __choose_mode(&(tt), &(skas))))
--
--#elif defined(UML_CONFIG_MODE_SKAS)
- #define CHOOSE_MODE(tt, skas) (skas)
- 
--#elif defined(UML_CONFIG_MODE_TT)
--#define CHOOSE_MODE(tt, skas) (tt)
--
--#else
--#error CONFIG_MODE_SKAS and CONFIG_MODE_TT are both disabled
--#endif
--
- #define CHOOSE_MODE_PROC(tt, skas, args...) \
- 	CHOOSE_MODE(tt(args), skas(args))
- 
-Index: linux-2.6.22/arch/um/include/irq_user.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/irq_user.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/include/irq_user.h	2007-08-09 16:34:36.000000000 -0400
-@@ -30,8 +30,4 @@ extern void deactivate_fd(int fd, int ir
- extern int deactivate_all_fds(void);
- extern int activate_ipi(int fd, int pid);
- 
--#ifdef CONFIG_MODE_TT
--extern void forward_interrupts(int pid);
--#endif
--
- #endif
-Index: linux-2.6.22/arch/um/include/mode.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/mode.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/include/mode.h	2007-08-09 16:34:36.000000000 -0400
-@@ -6,25 +6,6 @@
- #ifndef __MODE_H__
- #define __MODE_H__
- 
--#include "uml-config.h"
--
--#ifdef UML_CONFIG_MODE_TT
--#include "mode-tt.h"
--#endif
--
--#ifdef UML_CONFIG_MODE_SKAS
- #include "mode-skas.h"
--#endif
- 
- #endif
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/include/mode_kern.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/mode_kern.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/include/mode_kern.h	2007-08-09 13:25:53.000000000 -0400
-@@ -6,12 +6,6 @@
- #ifndef __MODE_KERN_H__
- #define __MODE_KERN_H__
- 
--#ifdef CONFIG_MODE_TT
--#include "mode_kern_tt.h"
--#endif
--
--#ifdef CONFIG_MODE_SKAS
- #include "mode_kern_skas.h"
--#endif
- 
- #endif
-Index: linux-2.6.22/arch/um/include/sysdep-i386/ptrace.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/sysdep-i386/ptrace.h	2007-08-09 13:25:53.000000000 -0400
-+++ linux-2.6.22/arch/um/include/sysdep-i386/ptrace.h	2007-08-09 16:34:36.000000000 -0400
-@@ -14,12 +14,7 @@
- #define MAX_REG_NR (UM_FRAME_SIZE / sizeof(unsigned long))
- #define MAX_REG_OFFSET (UM_FRAME_SIZE)
- 
--#ifdef UML_CONFIG_PT_PROXY
--extern void update_debugregs(int seq);
--#else
- static inline void update_debugregs(int seq) {}
--#endif
--
- 
- /* syscall emulation path in ptrace */
- 
-@@ -31,12 +26,6 @@ void set_using_sysemu(int value);
- int get_using_sysemu(void);
- extern int sysemu_supported;
- 
--#ifdef UML_CONFIG_MODE_TT
--#include "sysdep/sc.h"
--#endif
--
--#ifdef UML_CONFIG_MODE_SKAS
--
- #include "skas_ptregs.h"
- 
- #define REGS_IP(r) ((r)[HOST_IP])
-@@ -60,20 +49,11 @@ extern int sysemu_supported;
- 
- #define REGS_RESTART_SYSCALL(r) IP_RESTART_SYSCALL(REGS_IP(r))
- 
--#endif
- #ifndef PTRACE_SYSEMU_SINGLESTEP
- #define PTRACE_SYSEMU_SINGLESTEP 32
- #endif
- 
- union uml_pt_regs {
--#ifdef UML_CONFIG_MODE_TT
--	struct tt_regs {
--		long syscall;
--		void *sc;
--                struct faultinfo faultinfo;
--	} tt;
--#endif
--#ifdef UML_CONFIG_MODE_SKAS
- 	struct skas_regs {
- 		unsigned long regs[MAX_REG_NR];
- 		unsigned long fp[HOST_FP_SIZE];
-@@ -82,13 +62,10 @@ union uml_pt_regs {
- 		long syscall;
- 		int is_user;
- 	} skas;
--#endif
- };
- 
- #define EMPTY_UML_PT_REGS { }
- 
--extern int mode_tt;
--
- #define UPT_SC(r) ((r)->tt.sc)
- #define UPT_IP(r) \
- 	__CHOOSE_MODE(SC_IP(UPT_SC(r)), REGS_IP((r)->skas.regs))
-Index: linux-2.6.22/arch/um/include/sysdep-i386/thread.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/sysdep-i386/thread.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/include/sysdep-i386/thread.h	2007-08-09 16:34:37.000000000 -0400
-@@ -4,8 +4,5 @@
- #include <kern_constants.h>
- 
- #define TASK_DEBUGREGS(task) ((unsigned long *) &(((char *) (task))[HOST_TASK_DEBUGREGS]))
--#ifdef UML_CONFIG_MODE_TT
--#define TASK_EXTERN_PID(task) *((int *) &(((char *) (task))[HOST_TASK_EXTERN_PID]))
--#endif
- 
- #endif
-Index: linux-2.6.22/arch/um/include/sysdep-x86_64/ptrace.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/sysdep-x86_64/ptrace.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/include/sysdep-x86_64/ptrace.h	2007-08-09 16:34:36.000000000 -0400
-@@ -1,5 +1,6 @@
- /*
-  * Copyright 2003 PathScale, Inc.
-+ * Copyright (C) 2003 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-  *
-  * Licensed under the GPL
-  */
-@@ -14,11 +15,6 @@
- #define MAX_REG_OFFSET (UM_FRAME_SIZE)
- #define MAX_REG_NR ((MAX_REG_OFFSET) / sizeof(unsigned long))
- 
--#ifdef UML_CONFIG_MODE_TT
--#include "sysdep/sc.h"
--#endif
--
--#ifdef UML_CONFIG_MODE_SKAS
- #include "skas_ptregs.h"
- 
- #define REGS_IP(r) ((r)[HOST_IP])
-@@ -88,21 +84,10 @@
- 
- #define REGS_ERR(r) ((r)->fault_type)
- 
--#endif
--
- #include "choose-mode.h"
- 
- /* XXX */
- union uml_pt_regs {
--#ifdef UML_CONFIG_MODE_TT
--	struct tt_regs {
--		long syscall;
--		unsigned long orig_rax;
--		void *sc;
--                struct faultinfo faultinfo;
--	} tt;
--#endif
--#ifdef UML_CONFIG_MODE_SKAS
- 	struct skas_regs {
- 		unsigned long regs[MAX_REG_NR];
- 		unsigned long fp[HOST_FP_SIZE];
-@@ -110,14 +95,10 @@ union uml_pt_regs {
- 		long syscall;
- 		int is_user;
- 	} skas;
--#endif
- };
- 
- #define EMPTY_UML_PT_REGS { }
- 
--/* XXX */
--extern int mode_tt;
--
- #define UPT_RBX(r) __CHOOSE_MODE(SC_RBX(UPT_SC(r)), REGS_RBX((r)->skas.regs))
- #define UPT_RCX(r) __CHOOSE_MODE(SC_RCX(UPT_SC(r)), REGS_RCX((r)->skas.regs))
- #define UPT_RDX(r) __CHOOSE_MODE(SC_RDX(UPT_SC(r)), REGS_RDX((r)->skas.regs))
-Index: linux-2.6.22/arch/um/include/sysdep-x86_64/thread.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/sysdep-x86_64/thread.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/include/sysdep-x86_64/thread.h	2007-08-09 16:34:37.000000000 -0400
-@@ -3,8 +3,4 @@
- 
- #include <kern_constants.h>
- 
--#ifdef UML_CONFIG_MODE_TT
--#define TASK_EXTERN_PID(task) *((int *) &(((char *) (task))[HOST_TASK_EXTERN_PID]))
--#endif
--
- #endif
-Index: linux-2.6.22/arch/um/include/tt/debug.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/tt/debug.h	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,18 +0,0 @@
--/*
-- * Copyright (C) 2000, 2001, 2002  Jeff Dike (jdike@karaya.com) and
-- * Lars Brinkhoff.
-- * Licensed under the GPL
-- */
--
--#ifndef __UML_TT_DEBUG_H
--#define __UML_TT_DEBUG_H
--
--extern int debugger_proxy(int status, pid_t pid);
--extern void child_proxy(pid_t pid, int status);
--extern void init_proxy (pid_t pid, int waiting, int status);
--extern int start_debugger(char *prog, int startup, int stop, int *debugger_fd);
--extern void fake_child_exit(void);
--extern int gdb_config(char *str);
--extern int gdb_remove(int unused);
--
--#endif
-Index: linux-2.6.22/arch/um/include/tt/mmu-tt.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/tt/mmu-tt.h	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,12 +0,0 @@
--/*
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#ifndef __TT_MMU_H
--#define __TT_MMU_H
--
--struct mmu_context_tt {
--};
--
--#endif
-Index: linux-2.6.22/arch/um/include/tt/mode-tt.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/tt/mode-tt.h	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,23 +0,0 @@
--/*
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#ifndef __MODE_TT_H__
--#define __MODE_TT_H__
--
--#include "sysdep/ptrace.h"
--
--enum { OP_NONE, OP_EXEC, OP_FORK, OP_TRACE_ON, OP_REBOOT, OP_HALT, OP_CB };
--
--extern int tracing_pid;
--
--extern int tracer(int (*init_proc)(void *), void *sp);
--extern void sig_handler_common_tt(int sig, void *sc);
--extern void syscall_handler_tt(int sig, union uml_pt_regs *regs);
--extern void reboot_tt(void);
--extern void halt_tt(void);
--extern int is_tracer_winch(int pid, int fd, void *data);
--extern void kill_off_processes_tt(void);
--
--#endif
-Index: linux-2.6.22/arch/um/include/tt/mode_kern_tt.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/tt/mode_kern_tt.h	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,40 +0,0 @@
--/*
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#ifndef __TT_MODE_KERN_H__
--#define __TT_MODE_KERN_H__
--
--#include "linux/sched.h"
--#include "asm/page.h"
--#include "asm/ptrace.h"
--#include "asm/uaccess.h"
--
--extern void switch_to_tt(void *prev, void *next);
--extern void flush_thread_tt(void);
--extern void start_thread_tt(struct pt_regs *regs, unsigned long eip,
--			   unsigned long esp);
--extern int copy_thread_tt(int nr, unsigned long clone_flags, unsigned long sp,
--			  unsigned long stack_top, struct task_struct *p,
--			  struct pt_regs *regs);
--extern void release_thread_tt(struct task_struct *task);
--extern void initial_thread_cb_tt(void (*proc)(void *), void *arg);
--extern void init_idle_tt(void);
--extern void flush_tlb_kernel_range_tt(unsigned long start, unsigned long end);
--extern void flush_tlb_kernel_vm_tt(void);
--extern void __flush_tlb_one_tt(unsigned long addr);
--extern void flush_tlb_range_tt(struct vm_area_struct *vma,
--			       unsigned long start, unsigned long end);
--extern void flush_tlb_mm_tt(struct mm_struct *mm);
--extern void force_flush_all_tt(void);
--extern long execute_syscall_tt(void *r);
--extern void before_mem_tt(unsigned long brk_start);
--extern unsigned long set_task_sizes_tt(unsigned long *task_size_out);
--extern int start_uml_tt(void);
--extern int external_pid_tt(struct task_struct *task);
--extern int thread_pid_tt(struct task_struct *task);
--
--#define kmem_end_tt (host_task_size - ABOVE_KMEM)
--
--#endif
-Index: linux-2.6.22/arch/um/include/tt/tt.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/tt/tt.h	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,37 +0,0 @@
--/*
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#ifndef __TT_H__
--#define __TT_H__
--
--#include "sysdep/ptrace.h"
--
--extern int gdb_pid;
--extern int debug;
--extern int debug_stop;
--extern int debug_trace;
--
--extern int honeypot;
--
--extern int fork_tramp(void *sig_stack);
--extern int do_proc_op(void *t, int proc_id);
--extern int tracer(int (*init_proc)(void *), void *sp);
--extern void attach_process(int pid);
--extern void tracer_panic(char *format, ...)
--	__attribute__ ((format (printf, 1, 2)));
--extern void set_init_pid(int pid);
--extern int set_user_mode(void *task);
--extern void set_tracing(void *t, int tracing);
--extern int is_tracing(void *task);
--extern void syscall_handler(int sig, union uml_pt_regs *regs);
--extern void exit_kernel(int pid, void *task);
--extern void do_syscall(void *task, int pid, int local_using_sysemu);
--extern void do_sigtrap(void *task);
--extern int is_valid_pid(int pid);
--extern void remap_data(void *segment_start, void *segment_end, int w);
--extern long execute_syscall_tt(void *r);
--
--#endif
--
-Index: linux-2.6.22/arch/um/include/tt/uaccess-tt.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/tt/uaccess-tt.h	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,46 +0,0 @@
--/*
-- * Copyright (C) 2000 - 2003 Jeff Dike (jdike@addtoit.com)
-- * Licensed under the GPL
-- */
--
--#ifndef __TT_UACCESS_H
--#define __TT_UACCESS_H
--
--#include "linux/string.h"
--#include "linux/sched.h"
--#include "asm/processor.h"
--#include "asm/errno.h"
--#include "asm/current.h"
--#include "asm/a.out.h"
--#include "uml_uaccess.h"
--
--#define ABOVE_KMEM (16 * 1024 * 1024)
--
--extern unsigned long end_vm;
--extern unsigned long uml_physmem;
--
--#define is_stack(addr, size) \
--	(((unsigned long) (addr) < STACK_TOP) && \
--	 ((unsigned long) (addr) >= STACK_TOP - ABOVE_KMEM) && \
--	 (((unsigned long) (addr) + (size)) <= STACK_TOP))
--
--#define access_ok_tt(type, addr, size) \
--	(is_stack(addr, size))
--
--extern int __do_copy_from_user(void *to, const void *from, int n,
--			       void **fault_addr, void **fault_catcher);
--extern int __do_strncpy_from_user(char *dst, const char *src, size_t n,
--				  void **fault_addr, void **fault_catcher);
--extern int __do_clear_user(void *mem, size_t len, void **fault_addr,
--			   void **fault_catcher);
--extern int __do_strnlen_user(const char *str, unsigned long n,
--			     void **fault_addr, void **fault_catcher);
--
--extern int copy_from_user_tt(void *to, const void __user *from, int n);
--extern int copy_to_user_tt(void __user *to, const void *from, int n);
--extern int strncpy_from_user_tt(char *dst, const char __user *src, int count);
--extern int __clear_user_tt(void __user *mem, int len);
--extern int clear_user_tt(void __user *mem, int len);
--extern int strnlen_user_tt(const void __user *str, int len);
--
--#endif
-Index: linux-2.6.22/arch/um/include/um_mmu.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/um_mmu.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/include/um_mmu.h	2007-08-09 16:34:36.000000000 -0400
-@@ -8,33 +8,10 @@
- 
- #include "uml-config.h"
- #include "choose-mode.h"
--
--#ifdef UML_CONFIG_MODE_TT
--#include "mmu-tt.h"
--#endif
--
--#ifdef UML_CONFIG_MODE_SKAS
- #include "mmu-skas.h"
--#endif
- 
- typedef union mm_context {
--#ifdef UML_CONFIG_MODE_TT
--	struct mmu_context_tt tt;
--#endif
--#ifdef UML_CONFIG_MODE_SKAS
- 	struct mmu_context_skas skas;
--#endif
- } mm_context_t;
- 
- #endif
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/include/um_uaccess.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/um_uaccess.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/include/um_uaccess.h	2007-08-09 16:34:36.000000000 -0400
-@@ -7,15 +7,7 @@
- #define __ARCH_UM_UACCESS_H
- 
- #include "choose-mode.h"
--
--#ifdef CONFIG_MODE_TT
--#include "uaccess-tt.h"
--#endif
--
--#ifdef CONFIG_MODE_SKAS
- #include "uaccess-skas.h"
--#endif
--
- #include "asm/fixmap.h"
- 
- #define __under_task_size(addr, size) \
-Index: linux-2.6.22/arch/um/kernel/dyn.lds.S
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/dyn.lds.S	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/dyn.lds.S	2007-08-09 16:34:35.000000000 -0400
-@@ -10,8 +10,6 @@ SECTIONS
-   PROVIDE (__executable_start = START);
-   . = START + SIZEOF_HEADERS;
-   .interp         : { *(.interp) }
--  /* Used in arch/um/kernel/mem.c. Any memory between START and __binary_start
--   * is remapped.*/
-   __binary_start = .;
-   . = ALIGN(4096);		/* Init code and data */
-   _text = .;
-Index: linux-2.6.22/arch/um/kernel/irq.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/irq.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/irq.c	2007-08-09 16:34:36.000000000 -0400
-@@ -339,30 +339,6 @@ int deactivate_all_fds(void)
- 	return 0;
- }
- 
--#ifdef CONFIG_MODE_TT
--void forward_interrupts(int pid)
--{
--	struct irq_fd *irq;
--	unsigned long flags;
--	int err;
--
--	spin_lock_irqsave(&irq_lock, flags);
--	for (irq = active_fds; irq != NULL; irq = irq->next) {
--		err = os_set_owner(irq->fd, pid);
--		if (err < 0) {
--			/* XXX Just remove the irq rather than
--			 * print out an infinite stream of these
--			 */
--			printk("Failed to forward %d to pid %d, err = %d\n",
--			       irq->fd, pid, -err);
--		}
--
--		irq->pid = pid;
--	}
--	spin_unlock_irqrestore(&irq_lock, flags);
--}
--#endif
--
- /*
-  * do_IRQ handles all normal device IRQ's (the special
-  * SMP cross-CPU interrupts have their own specific
-Index: linux-2.6.22/arch/um/kernel/ksyms.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/ksyms.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/ksyms.c	2007-08-09 16:34:36.000000000 -0400
-@@ -34,24 +34,14 @@ EXPORT_SYMBOL(get_kmem_end);
- EXPORT_SYMBOL(high_physmem);
- EXPORT_SYMBOL(empty_zero_page);
- EXPORT_SYMBOL(um_virt_to_phys);
--EXPORT_SYMBOL(mode_tt);
- EXPORT_SYMBOL(handle_page_fault);
- EXPORT_SYMBOL(find_iomem);
- 
--#ifdef CONFIG_MODE_TT
--EXPORT_SYMBOL(stop);
--EXPORT_SYMBOL(strncpy_from_user_tt);
--EXPORT_SYMBOL(copy_from_user_tt);
--EXPORT_SYMBOL(copy_to_user_tt);
--#endif
--
--#ifdef CONFIG_MODE_SKAS
- EXPORT_SYMBOL(strnlen_user_skas);
- EXPORT_SYMBOL(strncpy_from_user_skas);
- EXPORT_SYMBOL(copy_to_user_skas);
- EXPORT_SYMBOL(copy_from_user_skas);
- EXPORT_SYMBOL(clear_user_skas);
--#endif
- EXPORT_SYMBOL(uml_strdup);
- 
- EXPORT_SYMBOL(os_stat_fd);
-Index: linux-2.6.22/arch/um/kernel/reboot.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/reboot.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/reboot.c	2007-08-09 16:34:36.000000000 -0400
-@@ -14,28 +14,9 @@
- 
- void (*pm_power_off)(void);
- 
--#ifdef CONFIG_SMP
--static void kill_idlers(int me)
--{
--#ifdef CONFIG_MODE_TT
--	struct task_struct *p;
--	int i;
--
--	for(i = 0; i < ARRAY_SIZE(idle_threads); i++){
--		p = idle_threads[i];
--		if((p != NULL) && (p->thread.mode.tt.extern_pid != me))
--			os_kill_process(p->thread.mode.tt.extern_pid, 0);
--	}
--#endif
--}
--#endif
--
- static void kill_off_processes(void)
- {
- 	CHOOSE_MODE(kill_off_processes_tt(), kill_off_processes_skas());
--#ifdef CONFIG_SMP
--	kill_idlers(os_getpid());
--#endif
- }
- 
- void uml_cleanup(void)
-Index: linux-2.6.22/arch/um/kernel/smp.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/smp.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/smp.c	2007-08-09 16:34:37.000000000 -0400
-@@ -95,7 +95,6 @@ static int idle_proc(void *cpup)
- static struct task_struct *idle_thread(int cpu)
- {
- 	struct task_struct *new_task;
--	unsigned char c;
- 
- 	current->thread.request.u.thread.proc = idle_proc;
- 	current->thread.request.u.thread.arg = (void *) cpu;
-@@ -108,9 +107,7 @@ static struct task_struct *idle_thread(i
- 		          { .pid = 	new_task->thread.mode.tt.extern_pid,
- 			    .task = 	new_task } );
- 	idle_threads[cpu] = new_task;
--	CHOOSE_MODE(os_write_file(new_task->thread.mode.tt.switch_pipe[1], &c,
--				  sizeof(c)),
--		    ({ panic("skas mode doesn't support SMP"); }));
-+	panic("skas mode doesn't support SMP");
- 	return new_task;
- }
- 
-Index: linux-2.6.22/arch/um/kernel/um_arch.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/um_arch.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/um_arch.c	2007-08-09 16:34:36.000000000 -0400
-@@ -38,9 +38,7 @@
- #include "choose-mode.h"
- #include "mode_kern.h"
- #include "mode.h"
--#ifdef UML_CONFIG_MODE_SKAS
- #include "skas.h"
--#endif
- 
- #define DEFAULT_COMMAND_LINE "root=98:0"
- 
-@@ -132,43 +130,12 @@ unsigned long end_vm;
- /* Set in uml_ncpus_setup */
- int ncpus = 1;
- 
--#ifdef CONFIG_CMDLINE_ON_HOST
--/* Pointer set in linux_main, the array itself is private to each thread,
-- * and changed at address space creation time so this poses no concurrency
-- * problems.
-- */
--static char *argv1_begin = NULL;
--static char *argv1_end = NULL;
--#endif
--
- /* Set in early boot */
- static int have_root __initdata = 0;
- 
- /* Set in uml_mem_setup and modified in linux_main */
- long long physmem_size = 32 * 1024 * 1024;
- 
--void set_cmdline(char *cmd)
--{
--#ifdef CONFIG_CMDLINE_ON_HOST
--	char *umid, *ptr;
--
--	if(CHOOSE_MODE(honeypot, 0)) return;
--
--	umid = get_umid();
--	if(*umid != '\0'){
--		snprintf(argv1_begin, 
--			 (argv1_end - argv1_begin) * sizeof(*ptr), 
--			 "(%s) ", umid);
--		ptr = &argv1_begin[strlen(argv1_begin)];
--	}
--	else ptr = argv1_begin;
--
--	snprintf(ptr, (argv1_end - ptr) * sizeof(*ptr), "[%s]", cmd);
--	memset(argv1_begin + strlen(argv1_begin), '\0', 
--	       argv1_end - argv1_begin - strlen(argv1_begin));
--#endif
--}
--
- static char *usage_string = 
- "User Mode Linux v%s\n"
- "	available at http://user-mode-linux.sourceforge.net/\n\n";
-@@ -201,13 +168,10 @@ __uml_setup("root=", uml_root_setup,
- "        root=/dev/ubd5\n\n"
- );
- 
--#ifndef CONFIG_MODE_TT
--
- static int __init no_skas_debug_setup(char *line, int *add)
- {
- 	printf("'debug' is not necessary to gdb UML in skas mode - run \n");
--	printf("'gdb linux' and disable CONFIG_CMDLINE_ON_HOST if gdb \n");
--	printf("doesn't work as expected\n");
-+	printf("'gdb linux'");
- 
- 	return 0;
- }
-@@ -217,8 +181,6 @@ __uml_setup("debug", no_skas_debug_setup
- "    this flag is not needed to run gdb on UML in skas mode\n\n"
- );
- 
--#endif
--
- #ifdef CONFIG_SMP
- static int __init uml_ncpus_setup(char *line, int *add)
- {
-@@ -236,52 +198,6 @@ __uml_setup("ncpus=", uml_ncpus_setup,
- );
- #endif
- 
--static int force_tt = 0;
--
--#if defined(CONFIG_MODE_TT) && defined(CONFIG_MODE_SKAS)
--#define DEFAULT_TT 0
--
--static int __init mode_tt_setup(char *line, int *add)
--{
--	force_tt = 1;
--	return 0;
--}
--
--#else
--#ifdef CONFIG_MODE_SKAS
--
--#define DEFAULT_TT 0
--
--static int __init mode_tt_setup(char *line, int *add)
--{
--	printf("CONFIG_MODE_TT disabled - 'mode=tt' ignored\n");
--	return 0;
--}
--
--#else
--#ifdef CONFIG_MODE_TT
--
--#define DEFAULT_TT 1
--
--static int __init mode_tt_setup(char *line, int *add)
--{
--	printf("CONFIG_MODE_SKAS disabled - 'mode=tt' redundant\n");
--	return 0;
--}
--
--#endif
--#endif
--#endif
--
--__uml_setup("mode=tt", mode_tt_setup,
--"mode=tt\n"
--"    When both CONFIG_MODE_TT and CONFIG_MODE_SKAS are enabled, this option\n"
--"    forces UML to run in tt (tracing thread) mode.  It is not the default\n"
--"    because it's slower and less secure than skas mode.\n\n"
--);
--
--int mode_tt = DEFAULT_TT;
--
- static int __init Usage(char *line, int *add)
- {
- 	const char **p;
-@@ -357,29 +273,13 @@ int __init linux_main(int argc, char **a
- 		add_arg(DEFAULT_COMMAND_LINE);
- 
- 	os_early_checks();
--	if (force_tt)
--		clear_can_do_skas();
--	mode_tt = force_tt ? 1 : !can_do_skas();
--#ifndef CONFIG_MODE_TT
--	if (mode_tt) {
--		/*Since CONFIG_MODE_TT is #undef'ed, force_tt cannot be 1. So,
--		 * can_do_skas() returned 0, and the message is correct. */
--		printf("Support for TT mode is disabled, and no SKAS support is present on the host.\n");
--		exit(1);
--	}
--#endif
- 
--#ifndef CONFIG_MODE_SKAS
--	mode = "TT";
--#else
--	/* Show to the user the result of selection */
--	if (mode_tt)
--		mode = "TT";
--	else if (proc_mm && ptrace_faultinfo)
-+	can_do_skas();
-+
-+	if (proc_mm && ptrace_faultinfo)
- 		mode = "SKAS3";
- 	else
- 		mode = "SKAS0";
--#endif
- 
- 	printf("UML running in %s mode\n", mode);
- 
-@@ -411,11 +311,6 @@ int __init linux_main(int argc, char **a
- 
- 	setup_machinename(init_utsname()->machine);
- 
--#ifdef CONFIG_CMDLINE_ON_HOST
--	argv1_begin = argv[1];
--	argv1_end = &argv[1][strlen(argv[1])];
--#endif
--
- 	highmem = 0;
- 	iomem_size = (iomem_size + PAGE_SIZE - 1) & PAGE_MASK;
- 	max_physmem = get_kmem_end() - uml_physmem - iomem_size - MIN_VMALLOC;
-Index: linux-2.6.22/arch/um/kernel/uml.lds.S
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/uml.lds.S	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/uml.lds.S	2007-08-09 16:34:35.000000000 -0400
-@@ -18,13 +18,6 @@ SECTIONS
- 
-   . = START + SIZEOF_HEADERS;
- 
--#ifdef MODE_TT
--  .remap_data : { UNMAP_PATH (.data .bss) }
--  .remap : { UNMAP_PATH (.text) }
--
--  . = ALIGN(4096);		/* Init code and data */
--#endif
--
-   _text = .;
-   _stext = .;
-   __init_begin = .;
-Index: linux-2.6.22/arch/um/os-Linux/time.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/time.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/time.c	2007-08-09 16:34:37.000000000 -0400
-@@ -30,13 +30,6 @@ int set_interval(int is_virtual)
- 	return 0;
- }
- 
--#ifdef UML_CONFIG_MODE_TT
--void enable_timer(void)
--{
--	set_interval(1);
--}
--#endif
--
- void disable_timer(void)
- {
- 	struct itimerval disable = ((struct itimerval) { { 0, 0 }, { 0, 0 }});
-@@ -71,18 +64,6 @@ void switch_timers(int to_real)
- 		       errno);
- }
- 
--#ifdef UML_CONFIG_MODE_TT
--void uml_idle_timer(void)
--{
--	if(signal(SIGVTALRM, SIG_IGN) == SIG_ERR)
--		panic("Couldn't unset SIGVTALRM handler");
--
--	set_handler(SIGALRM, (__sighandler_t) alarm_handler,
--		    SA_RESTART, SIGUSR1, SIGIO, SIGWINCH, SIGVTALRM, -1);
--	set_interval(0);
--}
--#endif
--
- unsigned long long os_nsecs(void)
- {
- 	struct timeval tv;
-Index: linux-2.6.22/arch/um/os-Linux/tls.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/tls.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/tls.c	2007-08-09 16:34:37.000000000 -0400
-@@ -8,11 +8,6 @@
- 
- /* TLS support - we basically rely on the host's one.*/
- 
--/* In TT mode, this should be called only by the tracing thread, and makes sense
-- * only for PTRACE_SET_THREAD_AREA. In SKAS mode, it's used normally.
-- *
-- */
--
- #ifndef PTRACE_GET_THREAD_AREA
- #define PTRACE_GET_THREAD_AREA 25
- #endif
-@@ -32,8 +27,6 @@ int os_set_thread_area(user_desc_t *info
- 	return ret;
- }
- 
--#ifdef UML_CONFIG_MODE_SKAS
--
- int os_get_thread_area(user_desc_t *info, int pid)
- {
- 	int ret;
-@@ -44,32 +37,3 @@ int os_get_thread_area(user_desc_t *info
- 		ret = -errno;
- 	return ret;
- }
--
--#endif
--
--#ifdef UML_CONFIG_MODE_TT
--#include "linux/unistd.h"
--
--int do_set_thread_area_tt(user_desc_t *info)
--{
--	int ret;
--
--	ret = syscall(__NR_set_thread_area,info);
--	if (ret < 0) {
--		ret = -errno;
--	}
--	return ret;
--}
--
--int do_get_thread_area_tt(user_desc_t *info)
--{
--	int ret;
--
--	ret = syscall(__NR_get_thread_area,info);
--	if (ret < 0) {
--		ret = -errno;
--	}
--	return ret;
--}
--
--#endif /* UML_CONFIG_MODE_TT */
-Index: linux-2.6.22/arch/um/sys-i386/ldt.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-i386/ldt.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-i386/ldt.c	2007-08-09 16:34:36.000000000 -0400
-@@ -19,72 +19,6 @@
- 
- extern int modify_ldt(int func, void *ptr, unsigned long bytecount);
- 
--#ifdef CONFIG_MODE_TT
--
--static long do_modify_ldt_tt(int func, void __user *ptr,
--			      unsigned long bytecount)
--{
--	struct user_desc info;
--	int res = 0;
--	void *buf = NULL;
--	void *p = NULL; /* What we pass to host. */
--
--	switch(func){
--	case 1:
--	case 0x11: /* write_ldt */
--		/* Do this check now to avoid overflows. */
--		if (bytecount != sizeof(struct user_desc)) {
--			res = -EINVAL;
--			goto out;
--		}
--
--		if(copy_from_user(&info, ptr, sizeof(info))) {
--			res = -EFAULT;
--			goto out;
--		}
--
--		p = &info;
--		break;
--	case 0:
--	case 2: /* read_ldt */
--
--		/* The use of info avoids kmalloc on the write case, not on the
--		 * read one. */
--		buf = kmalloc(bytecount, GFP_KERNEL);
--		if (!buf) {
--			res = -ENOMEM;
--			goto out;
--		}
--		p = buf;
--		break;
--	default:
--		res = -ENOSYS;
--		goto out;
--	}
--
--	res = modify_ldt(func, p, bytecount);
--	if(res < 0)
--		goto out;
--
--	switch(func){
--	case 0:
--	case 2:
--		/* Modify_ldt was for reading and returned the number of read
--		 * bytes.*/
--		if(copy_to_user(ptr, p, res))
--			res = -EFAULT;
--		break;
--	}
--
--out:
--	kfree(buf);
--	return res;
--}
--
--#endif
--
--#ifdef CONFIG_MODE_SKAS
--
- #include "skas.h"
- #include "skas_ptrace.h"
- #include "asm/mmu_context.h"
-@@ -569,7 +503,6 @@ void free_ldt(struct mmu_context_skas * 
- 	}
- 	mm->ldt.entry_count = 0;
- }
--#endif
- 
- int sys_modify_ldt(int func, void __user *ptr, unsigned long bytecount)
- {
-Index: linux-2.6.22/arch/um/sys-i386/ptrace.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-i386/ptrace.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-i386/ptrace.c	2007-08-09 16:34:36.000000000 -0400
-@@ -14,12 +14,6 @@
- #include "sysdep/sigcontext.h"
- #include "sysdep/sc.h"
- 
--void arch_switch_to_tt(struct task_struct *from, struct task_struct *to)
--{
--	update_debugregs(to->thread.arch.debugregs_seq);
--	arch_switch_tls_tt(from, to);
--}
--
- void arch_switch_to_skas(struct task_struct *from, struct task_struct *to)
- {
- 	int err = arch_switch_tls_skas(from, to);
-@@ -233,79 +227,12 @@ static inline unsigned long twd_fxsr_to_
- 	return ret;
- }
- 
--/*
-- * FXSR floating point environment conversions.
-- */
--
--#ifdef CONFIG_MODE_TT
--static inline int convert_fxsr_to_user_tt(struct _fpstate __user *buf,
--					  struct pt_regs *regs)
--{
--	struct i387_fxsave_struct *fxsave = SC_FXSR_ENV(PT_REGS_SC(regs));
--	unsigned long env[7];
--	struct _fpreg __user *to;
--	struct _fpxreg *from;
--	int i;
--
--	env[0] = (unsigned long)fxsave->cwd | 0xffff0000;
--	env[1] = (unsigned long)fxsave->swd | 0xffff0000;
--	env[2] = twd_fxsr_to_i387(fxsave);
--	env[3] = fxsave->fip;
--	env[4] = fxsave->fcs | ((unsigned long)fxsave->fop << 16);
--	env[5] = fxsave->foo;
--	env[6] = fxsave->fos;
--
--	if ( __copy_to_user( buf, env, 7 * sizeof(unsigned long) ) )
--		return 1;
--
--	to = &buf->_st[0];
--	from = (struct _fpxreg *) &fxsave->st_space[0];
--	for ( i = 0 ; i < 8 ; i++, to++, from++ ) {
--		if ( __copy_to_user( to, from, sizeof(*to) ) )
--			return 1;
--	}
--	return 0;
--}
--#endif
--
- static inline int convert_fxsr_to_user(struct _fpstate __user *buf,
- 				       struct pt_regs *regs)
- {
- 	return(CHOOSE_MODE(convert_fxsr_to_user_tt(buf, regs), 0));
- }
- 
--#ifdef CONFIG_MODE_TT
--static inline int convert_fxsr_from_user_tt(struct pt_regs *regs,
--					    struct _fpstate __user *buf)
--{
--	struct i387_fxsave_struct *fxsave = SC_FXSR_ENV(PT_REGS_SC(regs));
--	unsigned long env[7];
--	struct _fpxreg *to;
--	struct _fpreg __user *from;
--	int i;
--
--	if ( __copy_from_user( env, buf, 7 * sizeof(long) ) )
--		return 1;
--
--	fxsave->cwd = (unsigned short)(env[0] & 0xffff);
--	fxsave->swd = (unsigned short)(env[1] & 0xffff);
--	fxsave->twd = twd_i387_to_fxsr((unsigned short)(env[2] & 0xffff));
--	fxsave->fip = env[3];
--	fxsave->fop = (unsigned short)((env[4] & 0xffff0000) >> 16);
--	fxsave->fcs = (env[4] & 0xffff);
--	fxsave->foo = env[5];
--	fxsave->fos = env[6];
--
--	to = (struct _fpxreg *) &fxsave->st_space[0];
--	from = &buf->_st[0];
--	for ( i = 0 ; i < 8 ; i++, to++, from++ ) {
--		if ( __copy_from_user( to, from, sizeof(*from) ) )
--			return 1;
--	}
--	return 0;
--}
--#endif
--
- static inline int convert_fxsr_from_user(struct pt_regs *regs, 
- 					 struct _fpstate __user *buf)
- {
-@@ -332,39 +259,11 @@ int set_fpregs(unsigned long buf, struct
- 	else return(0);
- }
- 
--#ifdef CONFIG_MODE_TT
--int get_fpxregs_tt(unsigned long buf, struct task_struct *tsk)
--{
--	struct pt_regs *regs = &tsk->thread.regs;
--	struct i387_fxsave_struct *fxsave = SC_FXSR_ENV(PT_REGS_SC(regs));
--	int err;
--
--	err = __copy_to_user((void __user *) buf, fxsave,
--			     sizeof(struct user_fxsr_struct));
--	if(err) return -EFAULT;
--	else return 0;
--}
--#endif
--
- int get_fpxregs(unsigned long buf, struct task_struct *tsk)
- {
- 	return(CHOOSE_MODE(get_fpxregs_tt(buf, tsk), 0));
- }
- 
--#ifdef CONFIG_MODE_TT
--int set_fpxregs_tt(unsigned long buf, struct task_struct *tsk)
--{
--	struct pt_regs *regs = &tsk->thread.regs;
--	struct i387_fxsave_struct *fxsave = SC_FXSR_ENV(PT_REGS_SC(regs));
--	int err;
--
--	err = __copy_from_user(fxsave, (void __user *) buf,
--			       sizeof(struct user_fxsr_struct) );
--	if(err) return -EFAULT;
--	else return 0;
--}
--#endif
--
- int set_fpxregs(unsigned long buf, struct task_struct *tsk)
- {
- 	return(CHOOSE_MODE(set_fpxregs_tt(buf, tsk), 0));
-@@ -387,25 +286,6 @@ int dump_fpu(struct pt_regs *regs, elf_f
- }
- #endif
- 
--#ifdef CONFIG_MODE_TT
--static inline void copy_fpu_fxsave_tt(struct pt_regs *regs,
--				      struct user_i387_struct *buf)
--{
--	struct i387_fxsave_struct *fpu = SC_FXSR_ENV(PT_REGS_SC(regs));
--	unsigned short *to;
--	unsigned short *from;
--	int i;
--
--	memcpy( buf, fpu, 7 * sizeof(long) );
--
--	to = (unsigned short *) &buf->st_space[0];
--	from = (unsigned short *) &fpu->st_space[0];
--	for ( i = 0 ; i < 8 ; i++, to += 5, from += 8 ) {
--		memcpy( to, from, 5 * sizeof(unsigned short) );
--	}
--}
--#endif
--
- static inline void copy_fpu_fxsave(struct pt_regs *regs,
- 				   struct user_i387_struct *buf)
- {
-Index: linux-2.6.22/arch/um/sys-i386/signal.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-i386/signal.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-i386/signal.c	2007-08-09 16:34:36.000000000 -0400
-@@ -13,9 +13,6 @@
- #include "sigcontext.h"
- #include "registers.h"
- #include "mode.h"
--
--#ifdef CONFIG_MODE_SKAS
--
- #include "skas.h"
- 
- void copy_sc(union uml_pt_regs *regs, void *from)
-@@ -108,61 +105,6 @@ int copy_sc_to_user_skas(struct sigconte
- 	return copy_to_user(to, &sc, sizeof(sc)) ||
- 	       copy_to_user(to_fp, fpregs, sizeof(fpregs));
- }
--#endif
--
--#ifdef CONFIG_MODE_TT
--
--/* These copy a sigcontext to/from userspace.  They copy the fpstate pointer,
-- * blowing away the old, good one.  So, that value is saved, and then restored
-- * after the sigcontext copy.  In copy_from, the variable holding the saved
-- * fpstate pointer, and the sigcontext that it should be restored to are both
-- * in the kernel, so we can just restore using an assignment.  In copy_to, the
-- * saved pointer is in the kernel, but the sigcontext is in userspace, so we
-- * copy_to_user it.
-- */
--int copy_sc_from_user_tt(struct sigcontext *to, struct sigcontext __user *from,
--			 int fpsize)
--{
--	struct _fpstate *to_fp;
--	struct _fpstate __user *from_fp;
--	unsigned long sigs;
--	int err;
--
--	to_fp = to->fpstate;
--	sigs = to->oldmask;
--	err = copy_from_user(to, from, sizeof(*to));
--	from_fp = to->fpstate;
--	to->oldmask = sigs;
--	to->fpstate = to_fp;
--	if(to_fp != NULL)
--		err |= copy_from_user(to_fp, from_fp, fpsize);
--	return err;
--}
--
--int copy_sc_to_user_tt(struct sigcontext __user *to, struct _fpstate __user *fp,
--		       struct sigcontext *from, int fpsize, unsigned long sp)
--{
--	struct _fpstate __user *to_fp;
--	struct _fpstate *from_fp;
--	int err;
--
--	to_fp =	(fp ? fp : (struct _fpstate __user *) (to + 1));
--	from_fp = from->fpstate;
--	err = copy_to_user(to, from, sizeof(*to));
--
--	/* The SP in the sigcontext is the updated one for the signal
--	 * delivery.  The sp passed in is the original, and this needs
--	 * to be restored, so we stick it in separately.
--	 */
--	err |= copy_to_user(&SC_SP(to), &sp, sizeof(sp));
--
--	if(from_fp != NULL){
--		err |= copy_to_user(&to->fpstate, &to_fp, sizeof(to->fpstate));
--		err |= copy_to_user(to_fp, from_fp, fpsize);
--	}
--	return err;
--}
--#endif
- 
- static int copy_sc_from_user(struct pt_regs *to, void __user *from)
- {
-Index: linux-2.6.22/arch/um/sys-x86_64/signal.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-x86_64/signal.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-x86_64/signal.c	2007-08-09 16:34:36.000000000 -0400
-@@ -15,9 +15,6 @@
- #include "choose-mode.h"
- #include "sysdep/ptrace.h"
- #include "frame_kern.h"
--
--#ifdef CONFIG_MODE_SKAS
--
- #include "skas.h"
- 
- void copy_sc(union uml_pt_regs *regs, void *from)
-@@ -134,53 +131,6 @@ int copy_sc_to_user_skas(struct sigconte
- 	return(err);
- }
- 
--#endif
--
--#ifdef CONFIG_MODE_TT
--int copy_sc_from_user_tt(struct sigcontext *to, struct sigcontext __user *from,
--			 int fpsize)
--{
--	struct _fpstate *to_fp;
--	struct _fpstate __user *from_fp;
--	unsigned long sigs;
--	int err;
--
--	to_fp = to->fpstate;
--	sigs = to->oldmask;
--	err = copy_from_user(to, from, sizeof(*to));
--	from_fp = to->fpstate;
--	to->fpstate = to_fp;
--	to->oldmask = sigs;
--	if(to_fp != NULL)
--		err |= copy_from_user(to_fp, from_fp, fpsize);
--	return(err);
--}
--
--int copy_sc_to_user_tt(struct sigcontext __user *to, struct _fpstate __user *fp,
--		       struct sigcontext *from, int fpsize, unsigned long sp)
--{
--	struct _fpstate __user *to_fp;
--	struct _fpstate *from_fp;
--	int err;
--
--	to_fp = (fp ? fp : (struct _fpstate __user *) (to + 1));
--	from_fp = from->fpstate;
--	err = copy_to_user(to, from, sizeof(*to));
--	/* The SP in the sigcontext is the updated one for the signal
--	 * delivery.  The sp passed in is the original, and this needs
--	 * to be restored, so we stick it in separately.
--	 */
--	err |= copy_to_user(&SC_SP(to), &sp, sizeof(sp));
--
--	if(from_fp != NULL){
--		err |= copy_to_user(&to->fpstate, &to_fp, sizeof(to->fpstate));
--		err |= copy_to_user(to_fp, from_fp, fpsize);
--	}
--	return err;
--}
--
--#endif
--
- static int copy_sc_from_user(struct pt_regs *to, void __user *from)
- {
-        int ret;
-Index: linux-2.6.22/arch/um/sys-x86_64/syscalls.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-x86_64/syscalls.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-x86_64/syscalls.c	2007-08-09 16:34:36.000000000 -0400
-@@ -29,36 +29,6 @@ asmlinkage long sys_uname64(struct new_u
- 	return err ? -EFAULT : 0;
- }
- 
--#ifdef CONFIG_MODE_TT
--extern long arch_prctl(int code, unsigned long addr);
--
--static long arch_prctl_tt(int code, unsigned long addr)
--{
--	unsigned long tmp;
--	long ret;
--
--	switch(code){
--	case ARCH_SET_GS:
--	case ARCH_SET_FS:
--		ret = arch_prctl(code, addr);
--		break;
--	case ARCH_GET_FS:
--	case ARCH_GET_GS:
--		ret = arch_prctl(code, (unsigned long) &tmp);
--		if(!ret)
--			ret = put_user(tmp, (long __user *)addr);
--		break;
--	default:
--		ret = -EINVAL;
--		break;
--	}
--
--	return(ret);
--}
--#endif
--
--#ifdef CONFIG_MODE_SKAS
--
- long arch_prctl_skas(struct task_struct *task, int code,
-                      unsigned long __user *addr)
- {
-@@ -119,7 +89,6 @@ long arch_prctl_skas(struct task_struct 
- 
- 	return ret;
- }
--#endif
- 
- long sys_arch_prctl(int code, unsigned long addr)
- {
-Index: linux-2.6.22/arch/um/Kconfig.char
-===================================================================
---- linux-2.6.22.orig/arch/um/Kconfig.char	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/Kconfig.char	2007-08-09 16:34:37.000000000 -0400
-@@ -65,8 +65,6 @@ config XTERM_CHAN
-         This option enables support for attaching UML consoles and serial
-         lines to xterms.  Each UML device so assigned will be brought up in
-         its own xterm.
--        If you disable this option, then CONFIG_PT_PROXY will be disabled as
--        well, since UML's gdb currently requires an xterm.
-         It is safe to say 'Y' here.
- 
- config NOCONFIG_CHAN
-Index: linux-2.6.22/arch/um/kernel/exec.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/exec.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/exec.c	2007-08-09 16:34:36.000000000 -0400
-@@ -57,7 +57,6 @@ static long execve1(char *file, char __u
- 		SUBARCH_EXECVE1(&current->thread.regs.regs);
- #endif
- 		task_unlock(current);
--                set_cmdline(current_cmd());
-         }
-         return(error);
- }
-Index: linux-2.6.22/arch/um/os-Linux/main.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/main.c	2007-08-09 13:25:53.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/main.c	2007-08-09 16:34:36.000000000 -0400
-@@ -25,9 +25,6 @@
- #include "um_malloc.h"
- #include "kern_constants.h"
- 
--/* Set in main, unchanged thereafter */
--char *linux_prog;
--
- #define PGD_BOUND (4 * 1024 * 1024)
- #define STACKSIZE (8 * 1024 * 1024)
- #define THREAD_NAME_LEN (256)
-@@ -125,35 +122,6 @@ int __init main(int argc, char **argv, c
- 	char **new_argv;
- 	int ret, i, err;
- 
--#ifdef UML_CONFIG_CMDLINE_ON_HOST
--	/* Allocate memory for thread command lines */
--	if(argc < 2 || strlen(argv[1]) < THREAD_NAME_LEN - 1){
--
--		char padding[THREAD_NAME_LEN] = {
--			[ 0 ...  THREAD_NAME_LEN - 2] = ' ', '\0'
--		};
--
--		new_argv = malloc((argc + 2) * sizeof(char*));
--		if(!new_argv) {
--			perror("Allocating extended argv");
--			exit(1);
--		}
--
--		new_argv[0] = argv[0];
--		new_argv[1] = padding;
--
--		for(i = 2; i <= argc; i++)
--			new_argv[i] = argv[i - 1];
--		new_argv[argc + 1] = NULL;
--
--		execvp(new_argv[0], new_argv);
--		perror("execing with extended args");
--		exit(1);
--	}
--#endif
--
--	linux_prog = argv[0];
--
- 	set_stklim();
- 
- 	setup_env_path();
-Index: linux-2.6.22/arch/um/sys-i386/ptrace_user.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-i386/ptrace_user.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-i386/ptrace_user.c	2007-08-09 16:34:37.000000000 -0400
-@@ -43,89 +43,3 @@ int ptrace_setfpregs(long pid, unsigned 
- 		return -errno;
- 	return 0;
- }
--
--#ifdef UML_CONFIG_MODE_TT
--
--static void write_debugregs(int pid, unsigned long *regs)
--{
--	struct user *dummy;
--	int nregs, i;
--
--	dummy = NULL;
--	nregs = ARRAY_SIZE(dummy->u_debugreg);
--	for(i = 0; i < nregs; i++){
--		if((i == 4) || (i == 5)) continue;
--		if(ptrace(PTRACE_POKEUSR, pid, &dummy->u_debugreg[i],
--			  regs[i]) < 0)
--			printk("write_debugregs - ptrace failed on "
--			       "register %d, value = 0x%lx, errno = %d\n", i,
--			       regs[i], errno);
--	}
--}
--
--static void read_debugregs(int pid, unsigned long *regs)
--{
--	struct user *dummy;
--	int nregs, i;
--
--	dummy = NULL;
--	nregs = ARRAY_SIZE(dummy->u_debugreg);
--	for(i = 0; i < nregs; i++){
--		regs[i] = ptrace(PTRACE_PEEKUSR, pid,
--				 &dummy->u_debugreg[i], 0);
--	}
--}
--
--/* Accessed only by the tracing thread */
--static unsigned long kernel_debugregs[8] = { [ 0 ... 7 ] = 0 };
--
--void arch_enter_kernel(void *task, int pid)
--{
--	read_debugregs(pid, TASK_DEBUGREGS(task));
--	write_debugregs(pid, kernel_debugregs);
--}
--
--void arch_leave_kernel(void *task, int pid)
--{
--	read_debugregs(pid, kernel_debugregs);
--	write_debugregs(pid, TASK_DEBUGREGS(task));
--}
--
--#ifdef UML_CONFIG_PT_PROXY
--/* Accessed only by the tracing thread */
--static int debugregs_seq;
--
--/* Only called by the ptrace proxy */
--void ptrace_pokeuser(unsigned long addr, unsigned long data)
--{
--	if((addr < offsetof(struct user, u_debugreg[0])) ||
--	   (addr > offsetof(struct user, u_debugreg[7])))
--		return;
--	addr -= offsetof(struct user, u_debugreg[0]);
--	addr = addr >> 2;
--	if(kernel_debugregs[addr] == data) return;
--
--	kernel_debugregs[addr] = data;
--	debugregs_seq++;
--}
--
--static void update_debugregs_cb(void *arg)
--{
--	int pid = *((int *) arg);
--
--	write_debugregs(pid, kernel_debugregs);
--}
--
--/* Optimized out in its header when not defined */
--void update_debugregs(int seq)
--{
--	int me;
--
--	if(seq == debugregs_seq) return;
--
--	me = os_getpid();
--	initial_thread_cb(update_debugregs_cb, &me);
--}
--#endif
--
--#endif
-Index: linux-2.6.22/arch/um/include/common-offsets.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/common-offsets.h	2007-08-09 13:25:53.000000000 -0400
-+++ linux-2.6.22/arch/um/include/common-offsets.h	2007-08-09 16:34:35.000000000 -0400
-@@ -1,9 +1,6 @@
- /* for use by sys-$SUBARCH/kernel-offsets.c */
- 
- DEFINE(KERNEL_MADV_REMOVE, MADV_REMOVE);
--#ifdef CONFIG_MODE_TT
--OFFSET(HOST_TASK_EXTERN_PID, task_struct, thread.mode.tt.extern_pid);
--#endif
- 
- OFFSET(HOST_TASK_REGS, task_struct, thread.regs);
- OFFSET(HOST_TASK_PID, task_struct, pid);
-Index: linux-2.6.22/arch/um/include/as-layout.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/as-layout.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/include/as-layout.h	2007-08-09 16:34:36.000000000 -0400
-@@ -28,7 +28,6 @@ extern unsigned long _unprotected_end;
- extern unsigned long brk_start;
- 
- extern int linux_main(int argc, char **argv);
--extern void set_cmdline(char *cmd);
- 
- extern void (*sig_info[])(int, union uml_pt_regs *);
- 
-Index: linux-2.6.22/arch/um/kernel/tt/exec_kern.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/exec_kern.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,84 +0,0 @@
--/* 
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include "linux/kernel.h"
--#include "linux/mm.h"
--#include "asm/signal.h"
--#include "asm/ptrace.h"
--#include "asm/uaccess.h"
--#include "asm/pgalloc.h"
--#include "asm/tlbflush.h"
--#include "kern_util.h"
--#include "irq_user.h"
--#include "mem_user.h"
--#include "os.h"
--#include "tlb.h"
--#include "mode.h"
--
--static int exec_tramp(void *sig_stack)
--{
--	init_new_thread_stack(sig_stack, NULL);
--	init_new_thread_signals();
--	os_stop_process(os_getpid());
--	return(0);
--}
--
--void flush_thread_tt(void)
--{
--	unsigned long stack;
--	int new_pid;
--
--	stack = alloc_stack(0, 0);
--	if(stack == 0){
--		printk(KERN_ERR 
--		       "flush_thread : failed to allocate temporary stack\n");
--		do_exit(SIGKILL);
--	}
--		
--	new_pid = start_fork_tramp(task_stack_page(current), stack, 0, exec_tramp);
--	if(new_pid < 0){
--		printk(KERN_ERR 
--		       "flush_thread : new thread failed, errno = %d\n",
--		       -new_pid);
--		do_exit(SIGKILL);
--	}
--
--	if(current_thread->cpu == 0)
--		forward_interrupts(new_pid);
--	current->thread.request.op = OP_EXEC;
--	current->thread.request.u.exec.pid = new_pid;
--	unprotect_stack((unsigned long) current_thread);
--	os_usr1_process(os_getpid());
--	change_sig(SIGUSR1, 1);
--
--	change_sig(SIGUSR1, 0);
--	enable_timer();
--	free_page(stack);
--	protect_memory(uml_reserved, high_physmem - uml_reserved, 1, 1, 0, 1);
--	stack_protections((unsigned long) current_thread);
--	force_flush_all();
--	unblock_signals();
--}
--
--void start_thread_tt(struct pt_regs *regs, unsigned long eip, 
--		     unsigned long esp)
--{
--	set_fs(USER_DS);
--	flush_tlb_mm(current->mm);
--	PT_REGS_IP(regs) = eip;
--	PT_REGS_SP(regs) = esp;
--	PT_FIX_EXEC_STACK(esp);
--}
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/ptproxy/proxy.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/ptproxy/proxy.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,377 +0,0 @@
--/**********************************************************************
--proxy.c
--
--Copyright (C) 1999 Lars Brinkhoff.  See the file COPYING for licensing
--terms and conditions.
--
--Jeff Dike (jdike@karaya.com) : Modified for integration into uml
--**********************************************************************/
--
--/* XXX This file shouldn't refer to CONFIG_* */
--
--#include <errno.h>
--#include <stdio.h>
--#include <stdlib.h>
--#include <unistd.h>
--#include <signal.h>
--#include <string.h>
--#include <termios.h>
--#include <sys/wait.h>
--#include <sys/types.h>
--#include <sys/ioctl.h>
--#include <asm/unistd.h>
--#include "ptrace_user.h"
--
--#include "ptproxy.h"
--#include "sysdep.h"
--#include "wait.h"
--
--#include "user.h"
--#include "os.h"
--#include "tempfile.h"
--
--static int debugger_wait(debugger_state *debugger, int *status, int options,
--			 int (*syscall)(debugger_state *debugger, pid_t child),
--			 int (*normal_return)(debugger_state *debugger, 
--					      pid_t unused),
--			 int (*wait_return)(debugger_state *debugger, 
--					    pid_t unused))
--{
--	if(debugger->real_wait){
--		debugger->handle_trace = normal_return;
--		syscall_continue(debugger->pid);
--		debugger->real_wait = 0;
--		return(1);
--	}
--	debugger->wait_status_ptr = status;
--	debugger->wait_options = options;
--	if((debugger->debugee != NULL) && debugger->debugee->event){
--		syscall_continue(debugger->pid);
--		wait_for_stop(debugger->pid, SIGTRAP, PTRACE_SYSCALL,
--			      NULL);
--		(*wait_return)(debugger, -1);
--		return(0);
--	}
--	else if(debugger->wait_options & WNOHANG){
--		syscall_cancel(debugger->pid, 0);
--		debugger->handle_trace = syscall;
--		return(0);
--	}
--	else {
--		syscall_pause(debugger->pid);
--		debugger->handle_trace = wait_return;
--		debugger->waiting = 1;
--	}
--	return(1);
--}
--
--/*
-- * Handle debugger trap, i.e. syscall.
-- */
--
--int debugger_syscall(debugger_state *debugger, pid_t child)
--{
--	long arg1, arg2, arg3, arg4, arg5, result;
--	int syscall, ret = 0;
--
--	syscall = get_syscall(debugger->pid, &arg1, &arg2, &arg3, &arg4, 
--			      &arg5);
--
--	switch(syscall){
--	case __NR_execve:
--		/* execve never returns */
--		debugger->handle_trace = debugger_syscall; 
--		break;
--
--	case __NR_ptrace:
--		if(debugger->debugee->pid != 0) arg2 = debugger->debugee->pid;
--		if(!debugger->debugee->in_context) 
--			child = debugger->debugee->pid;
--		result = proxy_ptrace(debugger, arg1, arg2, arg3, arg4, child,
--				      &ret);
--		syscall_cancel(debugger->pid, result);
--		debugger->handle_trace = debugger_syscall;
--		return(ret);
--
--#ifdef __NR_waitpid
--	case __NR_waitpid:
--#endif
--	case __NR_wait4:
--		if(!debugger_wait(debugger, (int *) arg2, arg3, 
--				  debugger_syscall, debugger_normal_return, 
--				  proxy_wait_return))
--			return(0);
--		break;
--
--	case __NR_kill:
--		if(!debugger->debugee->in_context) 
--			child = debugger->debugee->pid;
--		if(arg1 == debugger->debugee->pid){
--			result = kill(child, arg2);
--			syscall_cancel(debugger->pid, result);
--			debugger->handle_trace = debugger_syscall;
--			return(0);
--		}
--		else debugger->handle_trace = debugger_normal_return;
--		break;
--
--	default:
--		debugger->handle_trace = debugger_normal_return;
--	}
--
--	syscall_continue(debugger->pid);
--	return(0);
--}
--
--/* Used by the tracing thread */
--static debugger_state parent;
--static int parent_syscall(debugger_state *debugger, int pid);
--
--int init_parent_proxy(int pid)
--{
--	parent = ((debugger_state) { .pid 		= pid,
--				     .wait_options 	= 0,
--				     .wait_status_ptr 	= NULL,
--				     .waiting 		= 0,
--				     .real_wait 	= 0,
--				     .expecting_child 	= 0,
--				     .handle_trace  	= parent_syscall,
--				     .debugee 		= NULL } );
--	return(0);
--}
--
--int parent_normal_return(debugger_state *debugger, pid_t unused)
--{
--	debugger->handle_trace = parent_syscall;
--	syscall_continue(debugger->pid);
--	return(0);
--}
--
--static int parent_syscall(debugger_state *debugger, int pid)
--{
--	long arg1, arg2, arg3, arg4, arg5;
--	int syscall;
--
--	syscall = get_syscall(pid, &arg1, &arg2, &arg3, &arg4, &arg5);
--		
--	if((syscall == __NR_wait4)
--#ifdef __NR_waitpid
--	   || (syscall == __NR_waitpid)
--#endif
--	){
--		debugger_wait(&parent, (int *) arg2, arg3, parent_syscall,
--			      parent_normal_return, parent_wait_return);
--	}
--	else ptrace(PTRACE_SYSCALL, pid, 0, 0);
--	return(0);
--}
--
--int debugger_normal_return(debugger_state *debugger, pid_t unused)
--{
--	debugger->handle_trace = debugger_syscall;
--	syscall_continue(debugger->pid);
--	return(0);
--}
--
--void debugger_cancelled_return(debugger_state *debugger, int result)
--{
--	debugger->handle_trace = debugger_syscall;
--	syscall_set_result(debugger->pid, result);
--	syscall_continue(debugger->pid);
--}
--
--/* Used by the tracing thread */
--static debugger_state debugger;
--static debugee_state debugee;
--
--void init_proxy (pid_t debugger_pid, int stopped, int status)
--{
--	debugger.pid = debugger_pid;
--	debugger.handle_trace = debugger_syscall;
--	debugger.debugee = &debugee;
--	debugger.waiting = 0;
--	debugger.real_wait = 0;
--	debugger.expecting_child = 0;
--
--	debugee.pid = 0;
--	debugee.traced = 0;
--	debugee.stopped = stopped;
--	debugee.event = 0;
--	debugee.zombie = 0;
--	debugee.died = 0;
--	debugee.wait_status = status;
--	debugee.in_context = 1;
--}
--
--int debugger_proxy(int status, int pid)
--{
--	int ret = 0, sig;
--
--	if(WIFSTOPPED(status)){
--		sig = WSTOPSIG(status);
--		if (sig == SIGTRAP)
--			ret = (*debugger.handle_trace)(&debugger, pid);
--						       
--		else if(sig == SIGCHLD){
--			if(debugger.expecting_child){
--				ptrace(PTRACE_SYSCALL, debugger.pid, 0, sig);
--				debugger.expecting_child = 0;
--			}
--			else if(debugger.waiting)
--				real_wait_return(&debugger);
--			else {
--				ptrace(PTRACE_SYSCALL, debugger.pid, 0, sig);
--				debugger.real_wait = 1;
--			}
--		}
--		else ptrace(PTRACE_SYSCALL, debugger.pid, 0, sig);
--	}
--	else if(WIFEXITED(status)){
--		tracer_panic("debugger (pid %d) exited with status %d", 
--			     debugger.pid, WEXITSTATUS(status));
--	}
--	else if(WIFSIGNALED(status)){
--		tracer_panic("debugger (pid %d) exited with signal %d", 
--			     debugger.pid, WTERMSIG(status));
--	}
--	else {
--		tracer_panic("proxy got unknown status (0x%x) on debugger "
--			     "(pid %d)", status, debugger.pid);
--	}
--	return(ret);
--}
--
--void child_proxy(pid_t pid, int status)
--{
--	debugee.event = 1;
--	debugee.wait_status = status;
--
--	if(WIFSTOPPED(status)){
--		debugee.stopped = 1;
--		debugger.expecting_child = 1;
--		kill(debugger.pid, SIGCHLD);
--	}
--	else if(WIFEXITED(status) || WIFSIGNALED(status)){
--		debugee.zombie = 1;
--		debugger.expecting_child = 1;
--		kill(debugger.pid, SIGCHLD);
--	}
--	else panic("proxy got unknown status (0x%x) on child (pid %d)", 
--		   status, pid);
--}
--
--void debugger_parent_signal(int status, int pid)
--{
--	int sig;
--
--	if(WIFSTOPPED(status)){
--		sig = WSTOPSIG(status);
--		if(sig == SIGTRAP) (*parent.handle_trace)(&parent, pid);
--		else ptrace(PTRACE_SYSCALL, pid, 0, sig);
--	}
--}
--
--void fake_child_exit(void)
--{
--	int status, pid;
--
--	child_proxy(1, W_EXITCODE(0, 0));
--	while(debugger.waiting == 1){
--		CATCH_EINTR(pid = waitpid(debugger.pid, &status, WUNTRACED));
--		if(pid != debugger.pid){
--			printk("fake_child_exit - waitpid failed, "
--			       "errno = %d\n", errno);
--			return;
--		}
--		debugger_proxy(status, debugger.pid);
--	}
--	CATCH_EINTR(pid = waitpid(debugger.pid, &status, WUNTRACED));
--	if(pid != debugger.pid){
--		printk("fake_child_exit - waitpid failed, "
--		       "errno = %d\n", errno);
--		return;
--	}
--	if(ptrace(PTRACE_DETACH, debugger.pid, 0, SIGCONT) < 0)
--		printk("fake_child_exit - PTRACE_DETACH failed, errno = %d\n",
--		       errno);
--}
--
--char gdb_init_string[] = 
--"att 1 \n\
--b panic \n\
--b stop \n\
--handle SIGWINCH nostop noprint pass \n\
--";
--
--int start_debugger(char *prog, int startup, int stop, int *fd_out)
--{
--	int slave, child;
--
--	slave = open_gdb_chan();
--	child = fork();
--	if(child == 0){
--		char *tempname = NULL;
--		int fd;
--
--	        if(setsid() < 0) perror("setsid");
--		if((dup2(slave, 0) < 0) || (dup2(slave, 1) < 0) || 
--		   (dup2(slave, 2) < 0)){
--			printk("start_debugger : dup2 failed, errno = %d\n",
--			       errno);
--			exit(1);
--		}
--		if(ioctl(0, TIOCSCTTY, 0) < 0){
--			printk("start_debugger : TIOCSCTTY failed, "
--			       "errno = %d\n", errno);
--			exit(1);
--		}
--		if(tcsetpgrp (1, os_getpid()) < 0){
--			printk("start_debugger : tcsetpgrp failed, "
--			       "errno = %d\n", errno);
--#ifdef notdef
--			exit(1);
--#endif
--		}
--		fd = make_tempfile("/tmp/gdb_init-XXXXXX", &tempname, 0);
--		if(fd < 0){
--			printk("start_debugger : make_tempfile failed,"
--			       "err = %d\n", -fd);
--			exit(1);
--		}
--		os_write_file(fd, gdb_init_string,
--			      sizeof(gdb_init_string) - 1);
--		if(startup){
--			if(stop){
--				os_write_file(fd, "b start_kernel\n",
--						strlen("b start_kernel\n"));
--			}
--			os_write_file(fd, "c\n", strlen("c\n"));
--		}
--		if(ptrace(PTRACE_TRACEME, 0, 0, 0) < 0){
--			printk("start_debugger :  PTRACE_TRACEME failed, "
--			       "errno = %d\n", errno);
--			exit(1);
--		}
--		execlp("gdb", "gdb", "--command", tempname, prog, NULL);
--		printk("start_debugger : exec of gdb failed, errno = %d\n",
--		       errno);
--	}
--	if(child < 0){
--		printk("start_debugger : fork for gdb failed, errno = %d\n",
--		       errno);
--		return(-1);
--	}
--	*fd_out = slave;
--	return(child);
--}
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/kernel/tt/uaccess_user.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tt/uaccess_user.c	2007-08-09 13:11:42.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,105 +0,0 @@
--/* 
-- * Copyright (C) 2001 Chris Emerson (cemerson@chiark.greenend.org.uk)
-- * Copyright (C) 2001 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#include <string.h>
--#include "uml_uaccess.h"
--#include "task.h"
--#include "kern_util.h"
--#include "os.h"
--#include "longjmp.h"
--
--int __do_copy_from_user(void *to, const void *from, int n,
--			void **fault_addr, void **fault_catcher)
--{
--	struct tt_regs save = TASK_REGS(get_current())->tt;
--	unsigned long fault;
--	int faulted;
--
--	fault = __do_user_copy(to, from, n, fault_addr, fault_catcher,
--			       __do_copy, &faulted);
--	TASK_REGS(get_current())->tt = save;
--
--	if(!faulted)
--		return 0;
--	else if (fault)
--		return n - (fault - (unsigned long) from);
--	else
--		/* In case of a general protection fault, we don't have the
--		 * fault address, so NULL is used instead. Pretend we didn't
--		 * copy anything. */
--		return n;
--}
--
--static void __do_strncpy(void *dst, const void *src, int count)
--{
--	strncpy(dst, src, count);
--}	
--
--int __do_strncpy_from_user(char *dst, const char *src, unsigned long count,
--			   void **fault_addr, void **fault_catcher)
--{
--	struct tt_regs save = TASK_REGS(get_current())->tt;
--	unsigned long fault;
--	int faulted;
--
--	fault = __do_user_copy(dst, src, count, fault_addr, fault_catcher,
--			       __do_strncpy, &faulted);
--	TASK_REGS(get_current())->tt = save;
--
--	if(!faulted) return(strlen(dst));
--	else return(-1);
--}
--
--static void __do_clear(void *to, const void *from, int n)
--{
--	memset(to, 0, n);
--}	
--
--int __do_clear_user(void *mem, unsigned long len,
--		    void **fault_addr, void **fault_catcher)
--{
--	struct tt_regs save = TASK_REGS(get_current())->tt;
--	unsigned long fault;
--	int faulted;
--
--	fault = __do_user_copy(mem, NULL, len, fault_addr, fault_catcher,
--			       __do_clear, &faulted);
--	TASK_REGS(get_current())->tt = save;
--
--	if(!faulted) return(0);
--	else return(len - (fault - (unsigned long) mem));
--}
--
--int __do_strnlen_user(const char *str, unsigned long n,
--		      void **fault_addr, void **fault_catcher)
--{
--	struct tt_regs save = TASK_REGS(get_current())->tt;
--	int ret;
--	unsigned long *faddrp = (unsigned long *)fault_addr;
--	jmp_buf jbuf;
--
--	*fault_catcher = &jbuf;
--	if(UML_SETJMP(&jbuf) == 0)
--		ret = strlen(str) + 1;
--	else ret = *faddrp - (unsigned long) str;
--
--	*fault_addr = NULL;
--	*fault_catcher = NULL;
--
--	TASK_REGS(get_current())->tt = save;
--	return ret;
--}
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/drivers/mconsole_kern.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/mconsole_kern.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/mconsole_kern.c	2007-08-09 16:34:36.000000000 -0400
-@@ -735,8 +735,6 @@ void mconsole_sysrq(struct mc_request *r
- }
- #endif
- 
--#ifdef CONFIG_MODE_SKAS
--
- static void stack_proc(void *arg)
- {
- 	struct task_struct *from = current, *to = arg;
-@@ -750,7 +748,7 @@ static void stack_proc(void *arg)
-  *  Dumps a stacks registers to the linux console.
-  *  Usage stack <pid>.
-  */
--static void do_stack_trace(struct mc_request *req)
-+void mconsole_stack(struct mc_request *req)
- {
- 	char *ptr = req->request.data;
- 	int pid_requested= -1;
-@@ -781,17 +779,6 @@ static void do_stack_trace(struct mc_req
- 	}
- 	with_console(req, stack_proc, to);
- }
--#endif /* CONFIG_MODE_SKAS */
--
--void mconsole_stack(struct mc_request *req)
--{
--	/* This command doesn't work in TT mode, so let's check and then
--	 * get out of here
--	 */
--	CHOOSE_MODE(mconsole_reply(req, "Sorry, this doesn't work in TT mode",
--				   1, 0),
--		    do_stack_trace(req));
--}
- 
- /* Changed by mconsole_setup, which is __setup, and called before SMP is
-  * active.
-Index: linux-2.6.22/arch/um/sys-i386/tls.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-i386/tls.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-i386/tls.c	2007-08-09 16:34:36.000000000 -0400
-@@ -18,10 +18,7 @@
- #include "mode_kern.h"
- #include "os.h"
- #include "mode.h"
--
--#ifdef CONFIG_MODE_SKAS
- #include "skas.h"
--#endif
- 
- /*
-  * If needed we can detect when it's uninitialized.
-@@ -31,7 +28,6 @@
- static int host_supports_tls = -1;
- int host_gdt_entry_tls_min;
- 
--#ifdef CONFIG_MODE_SKAS
- int do_set_thread_area_skas(struct user_desc *info)
- {
- 	int ret;
-@@ -53,7 +49,6 @@ int do_get_thread_area_skas(struct user_
- 	put_cpu();
- 	return ret;
- }
--#endif
- 
- /*
-  * sys_get_thread_area: get a yet unused TLS descriptor index.
-@@ -187,17 +182,6 @@ int arch_switch_tls_skas(struct task_str
- 	return 0;
- }
- 
--int arch_switch_tls_tt(struct task_struct *from, struct task_struct *to)
--{
--	if (!host_supports_tls)
--		return 0;
--
--	if (needs_TLS_update(to))
--		return load_TLS(0, to);
--
--	return 0;
--}
--
- static int set_tls_entry(struct task_struct* task, struct user_desc *info,
- 			 int idx, int flushed)
- {
-Index: linux-2.6.22/arch/um/kernel/process.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/process.c	2007-08-09 13:25:53.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/process.c	2007-08-09 16:34:36.000000000 -0400
-@@ -183,13 +183,6 @@ void initial_thread_cb(void (*proc)(void
- 	kmalloc_ok = save_kmalloc_ok;
- }
- 
--#ifdef CONFIG_MODE_TT
--unsigned long stack_sp(unsigned long page)
--{
--	return page + PAGE_SIZE - sizeof(void *);
--}
--#endif
--
- void default_idle(void)
- {
- 	CHOOSE_MODE(uml_idle_timer(), (void) 0);
-Index: linux-2.6.22/include/asm-um/processor-generic.h
-===================================================================
---- linux-2.6.22.orig/include/asm-um/processor-generic.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/include/asm-um/processor-generic.h	2007-08-09 16:34:36.000000000 -0400
-@@ -34,20 +34,10 @@ struct thread_struct {
- 	void *exec_buf;
- 	struct arch_thread arch;
- 	union {
--#ifdef CONFIG_MODE_TT
--		struct {
--			int extern_pid;
--			int tracing;
--			int switch_pipe[2];
--			int vm_seq;
--		} tt;
--#endif
--#ifdef CONFIG_MODE_SKAS
- 		struct {
- 			jmp_buf switch_buf;
- 			int mm_count;
- 		} skas;
--#endif
- 	} mode;
- 	struct {
- 		int op;
-@@ -136,12 +126,8 @@ extern struct cpuinfo_um cpu_data[];
- #endif
- 
- 
--#ifdef CONFIG_MODE_SKAS
- #define KSTK_REG(tsk, reg) \
- 	get_thread_reg(reg, &tsk->thread.mode.skas.switch_buf)
--#else
--#define KSTK_REG(tsk, reg) (0xbadbabe)
--#endif
- #define get_wchan(p) (0)
- 
- #endif
-Index: linux-2.6.22/arch/um/include/kern_util.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/kern_util.h	2007-08-09 13:25:53.000000000 -0400
-+++ linux-2.6.22/arch/um/include/kern_util.h	2007-08-09 16:34:36.000000000 -0400
-@@ -34,9 +34,6 @@ extern int nsyscalls;
- 	UML_ROUND_DOWN(((unsigned long) addr) + PAGE_SIZE - 1)
- 
- extern int kernel_fork(unsigned long flags, int (*fn)(void *), void * arg);
--#ifdef UML_CONFIG_MODE_TT
--extern unsigned long stack_sp(unsigned long page);
--#endif
- extern int kernel_thread_proc(void *data);
- extern void syscall_segv(int sig);
- extern int current_pid(void);
-@@ -82,9 +79,6 @@ extern void check_stack_overflow(void *p
- extern void relay_signal(int sig, union uml_pt_regs *regs);
- extern int user_context(unsigned long sp);
- extern void timer_irq(union uml_pt_regs *regs);
--#ifdef CONFIG_MODE_TT
--extern void unprotect_stack(unsigned long stack);
--#endif
- extern void do_uml_exitcalls(void);
- extern int attach_debugger(int idle_pid, int pid, int stop);
- extern int config_gdb(char *str);
 Index: linux-2.6.22/arch/um/os-Linux/start_up.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/start_up.c	2007-08-09 13:25:53.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/start_up.c	2007-08-09 16:34:36.000000000 -0400
-@@ -35,12 +35,9 @@
- #include "mode.h"
- #include "tempfile.h"
+--- linux-2.6.22.orig/arch/um/os-Linux/start_up.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/start_up.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,41 +1,29 @@
+ /*
+- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include <pty.h>
+ #include <stdio.h>
+-#include <stddef.h>
+-#include <stdarg.h>
+ #include <stdlib.h>
+-#include <string.h>
++#include <stdarg.h>
+ #include <unistd.h>
+-#include <signal.h>
+-#include <sched.h>
+-#include <fcntl.h>
+ #include <errno.h>
+-#include <sys/time.h>
+-#include <sys/wait.h>
++#include <fcntl.h>
++#include <sched.h>
++#include <signal.h>
++#include <string.h>
+ #include <sys/mman.h>
+-#include <sys/resource.h>
++#include <sys/ptrace.h>
++#include <sys/stat.h>
++#include <sys/wait.h>
+ #include <asm/unistd.h>
+-#include <sys/types.h>
+-#include "kern_util.h"
+-#include "user.h"
+-#include "signal_kern.h"
+-#include "sysdep/ptrace.h"
+-#include "sysdep/sigcontext.h"
+-#include "irq_user.h"
+-#include "ptrace_user.h"
+-#include "mem_user.h"
+ #include "init.h"
+-#include "os.h"
+-#include "uml-config.h"
+-#include "tempfile.h"
  #include "kern_constants.h"
--
--#ifdef UML_CONFIG_MODE_SKAS
- #include "skas.h"
- #include "skas_ptrace.h"
+-#include "skas.h"
+-#include "skas_ptrace.h"
++#include "os.h"
++#include "mem_user.h"
++#include "ptrace_user.h"
  #include "registers.h"
--#endif
++#include "skas_ptrace.h"
  
  static int ptrace_child(void *arg)
  {
-@@ -407,7 +404,6 @@ __uml_setup("noptraceldt", noptraceldt_c
- "    To support PTRACE_LDT, the host needs to be patched using\n"
- "    the current skas3 patch.\n\n");
+@@ -44,26 +32,33 @@ static int ptrace_child(void *arg)
+ 	int sc_result;
  
--#ifdef UML_CONFIG_MODE_SKAS
- static inline void check_skas3_ptrace_faultinfo(void)
+ 	change_sig(SIGWINCH, 0);
+-	if(ptrace(PTRACE_TRACEME, 0, 0, 0) < 0){
++	if (ptrace(PTRACE_TRACEME, 0, 0, 0) < 0) {
+ 		perror("ptrace");
+ 		os_kill_process(pid, 0);
+ 	}
+ 	kill(pid, SIGSTOP);
+ 
+-	/*This syscall will be intercepted by the parent. Don't call more than
+-	 * once, please.*/
++	/*
++	 * This syscall will be intercepted by the parent. Don't call more than
++	 * once, please.
++	 */
+ 	sc_result = os_getpid();
+ 
+ 	if (sc_result == pid)
+-		ret = 1; /*Nothing modified by the parent, we are running
+-			   normally.*/
++		/* Nothing modified by the parent, we are running normally. */
++		ret = 1;
+ 	else if (sc_result == ppid)
+-		ret = 0; /*Expected in check_ptrace and check_sysemu when they
+-			   succeed in modifying the stack frame*/
++		/*
++		 * Expected in check_ptrace and check_sysemu when they succeed
++		 * in modifying the stack frame
++		 */
++		ret = 0;
+ 	else
+-		ret = 2; /*Serious trouble! This could be caused by a bug in
+-			   host 2.6 SKAS3/2.6 patch before release -V6, together
+-			   with a bug in the UML code itself.*/
++		/* Serious trouble! This could be caused by a bug in host 2.6
++		 * SKAS3/2.6 patch before release -V6, together with a bug in
++		 * the UML code itself.
++		 */
++		ret = 2;
+ 	_exit(ret);
+ }
+ 
+@@ -104,16 +99,18 @@ static int start_ptraced_child(void **st
+ 	stack = mmap(NULL, UM_KERN_PAGE_SIZE,
+ 		     PROT_READ | PROT_WRITE | PROT_EXEC,
+ 		     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+-	if(stack == MAP_FAILED)
++	if (stack == MAP_FAILED)
+ 		fatal_perror("check_ptrace : mmap failed");
++
+ 	sp = (unsigned long) stack + UM_KERN_PAGE_SIZE - sizeof(void *);
+ 	pid = clone(ptrace_child, (void *) sp, SIGCHLD, NULL);
+-	if(pid < 0)
++	if (pid < 0)
+ 		fatal_perror("start_ptraced_child : clone failed");
++
+ 	CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED));
+-	if(n < 0)
++	if (n < 0)
+ 		fatal_perror("check_ptrace : clone failed");
+-	if(!WIFSTOPPED(status) || (WSTOPSIG(status) != SIGSTOP))
++	if (!WIFSTOPPED(status) || (WSTOPSIG(status) != SIGSTOP))
+ 		fatal("check_ptrace : expected SIGSTOP, got status = %d",
+ 		      status);
+ 
+@@ -132,10 +129,10 @@ static int stop_ptraced_child(int pid, v
  {
- 	struct ptrace_faultinfo fi;
-@@ -504,12 +500,6 @@ int can_do_skas(void)
+ 	int status, n, ret = 0;
+ 
+-	if(ptrace(PTRACE_CONT, pid, 0, 0) < 0)
++	if (ptrace(PTRACE_CONT, pid, 0, 0) < 0)
+ 		fatal_perror("stop_ptraced_child : ptrace failed");
+ 	CATCH_EINTR(n = waitpid(pid, &status, 0));
+-	if(!WIFEXITED(status) || (WEXITSTATUS(status) != exitcode)) {
++	if (!WIFEXITED(status) || (WEXITSTATUS(status) != exitcode)) {
+ 		int exit_with = WEXITSTATUS(status);
+ 		if (exit_with == 2)
+ 			non_fatal("check_ptrace : child exited with status 2. "
+@@ -148,7 +145,7 @@ static int stop_ptraced_child(int pid, v
+ 		ret = -1;
+ 	}
+ 
+-	if(munmap(stack, UM_KERN_PAGE_SIZE) < 0)
++	if (munmap(stack, UM_KERN_PAGE_SIZE) < 0)
+ 		fatal_perror("check_ptrace : munmap failed");
+ 	return ret;
+ }
+@@ -209,26 +206,26 @@ static void __init check_sysemu(void)
+ 	sysemu_supported = 0;
+ 	pid = start_ptraced_child(&stack);
+ 
+-	if(ptrace(PTRACE_SYSEMU, pid, 0, 0) < 0)
++	if (ptrace(PTRACE_SYSEMU, pid, 0, 0) < 0)
+ 		goto fail;
+ 
+ 	CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED));
+ 	if (n < 0)
+ 		fatal_perror("check_sysemu : wait failed");
+-	if(!WIFSTOPPED(status) || (WSTOPSIG(status) != SIGTRAP))
++	if (!WIFSTOPPED(status) || (WSTOPSIG(status) != SIGTRAP))
+ 		fatal("check_sysemu : expected SIGTRAP, got status = %d",
+ 		      status);
+ 
+-	if(ptrace(PTRACE_GETREGS, pid, 0, regs) < 0)
++	if (ptrace(PTRACE_GETREGS, pid, 0, regs) < 0)
+ 		fatal_perror("check_sysemu : PTRACE_GETREGS failed");
+-	if(PT_SYSCALL_NR(regs) != __NR_getpid){
++	if (PT_SYSCALL_NR(regs) != __NR_getpid) {
+ 		non_fatal("check_sysemu got system call number %d, "
+ 			  "expected %d...", PT_SYSCALL_NR(regs), __NR_getpid);
+ 		goto fail;
+ 	}
+ 
+ 	n = ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_RET_OFFSET, os_getpid());
+-	if(n < 0){
++	if (n < 0) {
+ 		non_fatal("check_sysemu : failed to modify system call "
+ 			  "return");
+ 		goto fail;
+@@ -244,30 +241,31 @@ static void __init check_sysemu(void)
+ 	non_fatal("Checking advanced syscall emulation patch for ptrace...");
+ 	pid = start_ptraced_child(&stack);
+ 
+-	if((ptrace(PTRACE_OLDSETOPTIONS, pid, 0,
++	if ((ptrace(PTRACE_OLDSETOPTIONS, pid, 0,
+ 		   (void *) PTRACE_O_TRACESYSGOOD) < 0))
+ 		fatal_perror("check_ptrace: PTRACE_OLDSETOPTIONS failed");
+ 
+-	while(1){
++	while (1) {
+ 		count++;
+-		if(ptrace(PTRACE_SYSEMU_SINGLESTEP, pid, 0, 0) < 0)
++		if (ptrace(PTRACE_SYSEMU_SINGLESTEP, pid, 0, 0) < 0)
+ 			goto fail;
+ 		CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED));
+-		if(n < 0)
++		if (n < 0)
+ 			fatal_perror("check_ptrace : wait failed");
+ 
+-		if(WIFSTOPPED(status) && (WSTOPSIG(status) == (SIGTRAP|0x80))){
++		if (WIFSTOPPED(status) &&
++		    (WSTOPSIG(status) == (SIGTRAP|0x80))) {
+ 			if (!count)
+ 				fatal("check_ptrace : SYSEMU_SINGLESTEP "
+ 				      "doesn't singlestep");
+ 			n = ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_RET_OFFSET,
+ 				   os_getpid());
+-			if(n < 0)
++			if (n < 0)
+ 				fatal_perror("check_sysemu : failed to modify "
+ 					     "system call return");
+ 			break;
+ 		}
+-		else if(WIFSTOPPED(status) && (WSTOPSIG(status) == SIGTRAP))
++		else if (WIFSTOPPED(status) && (WSTOPSIG(status) == SIGTRAP))
+ 			count++;
+ 		else
+ 			fatal("check_ptrace : expected SIGTRAP or "
+@@ -279,7 +277,7 @@ static void __init check_sysemu(void)
+ 	sysemu_supported = 2;
+ 	non_fatal("OK\n");
+ 
+-	if ( !force_sysemu_disabled )
++	if (!force_sysemu_disabled)
+ 		set_using_sysemu(sysemu_supported);
+ 	return;
+ 
+@@ -297,29 +295,29 @@ static void __init check_ptrace(void)
+ 	non_fatal("Checking that ptrace can change system call numbers...");
+ 	pid = start_ptraced_child(&stack);
+ 
+-	if((ptrace(PTRACE_OLDSETOPTIONS, pid, 0,
++	if ((ptrace(PTRACE_OLDSETOPTIONS, pid, 0,
+ 		   (void *) PTRACE_O_TRACESYSGOOD) < 0))
+ 		fatal_perror("check_ptrace: PTRACE_OLDSETOPTIONS failed");
+ 
+-	while(1){
+-		if(ptrace(PTRACE_SYSCALL, pid, 0, 0) < 0)
++	while (1) {
++		if (ptrace(PTRACE_SYSCALL, pid, 0, 0) < 0)
+ 			fatal_perror("check_ptrace : ptrace failed");
+ 
+ 		CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED));
+-		if(n < 0)
++		if (n < 0)
+ 			fatal_perror("check_ptrace : wait failed");
+ 
+-		if(!WIFSTOPPED(status) ||
++		if (!WIFSTOPPED(status) ||
+ 		   (WSTOPSIG(status) != (SIGTRAP | 0x80)))
+ 			fatal("check_ptrace : expected (SIGTRAP|0x80), "
+ 			       "got status = %d", status);
+ 
+ 		syscall = ptrace(PTRACE_PEEKUSR, pid, PT_SYSCALL_NR_OFFSET,
+ 				 0);
+-		if(syscall == __NR_getpid){
++		if (syscall == __NR_getpid) {
+ 			n = ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_NR_OFFSET,
+ 				   __NR_getppid);
+-			if(n < 0)
++			if (n < 0)
+ 				fatal_perror("check_ptrace : failed to modify "
+ 					     "system call");
+ 			break;
+@@ -337,18 +335,18 @@ static void __init check_coredump_limit(
+ 	struct rlimit lim;
+ 	int err = getrlimit(RLIMIT_CORE, &lim);
+ 
+-	if(err){
++	if (err) {
+ 		perror("Getting core dump limit");
+ 		return;
+ 	}
+ 
+ 	printf("Core dump limits :\n\tsoft - ");
+-	if(lim.rlim_cur == RLIM_INFINITY)
++	if (lim.rlim_cur == RLIM_INFINITY)
+ 		printf("NONE\n");
+ 	else printf("%lu\n", lim.rlim_cur);
+ 
+ 	printf("\thard - ");
+-	if(lim.rlim_max == RLIM_INFINITY)
++	if (lim.rlim_max == RLIM_INFINITY)
+ 		printf("NONE\n");
+ 	else printf("%lu\n", lim.rlim_max);
+ }
+@@ -414,7 +412,7 @@ static inline void check_skas3_ptrace_fa
+ 	n = ptrace(PTRACE_FAULTINFO, pid, 0, &fi);
+ 	if (n < 0) {
+ 		ptrace_faultinfo = 0;
+-		if(errno == EIO)
++		if (errno == EIO)
+ 			non_fatal("not found\n");
+ 		else
+ 			perror("not found");
+@@ -446,7 +444,7 @@ static inline void check_skas3_ptrace_ld
+ 
+ 	n = ptrace(PTRACE_LDT, pid, 0, (unsigned long) &ldt_op);
+ 	if (n < 0) {
+-		if(errno == EIO)
++		if (errno == EIO)
+ 			non_fatal("not found\n");
+ 		else {
+ 			perror("not found");
+@@ -454,7 +452,7 @@ static inline void check_skas3_ptrace_ld
+ 		ptrace_ldt = 0;
+ 	}
+ 	else {
+-		if(ptrace_ldt)
++		if (ptrace_ldt)
+ 			non_fatal("found\n");
+ 		else
+ 			non_fatal("found, but use is disabled\n");
+@@ -477,12 +475,9 @@ static inline void check_skas3_proc_mm(v
+ 		proc_mm = 0;
+ 		perror("not found");
+ 	}
+-	else {
+-		if (!proc_mm)
+-			non_fatal("found but disabled on command line\n");
+-		else
+-			non_fatal("found\n");
+-	}
++	else if (!proc_mm)
++		non_fatal("found but disabled on command line\n");
++	else non_fatal("found\n");
+ }
+ 
+ int can_do_skas(void)
+@@ -493,7 +488,7 @@ int can_do_skas(void)
+ 	check_skas3_ptrace_faultinfo();
+ 	check_skas3_ptrace_ldt();
+ 
+-	if(!proc_mm || !ptrace_faultinfo || !ptrace_ldt)
++	if (!proc_mm || !ptrace_faultinfo || !ptrace_ldt)
+ 		skas_needs_stub = 1;
  
  	return 1;
- }
--#else
--int can_do_skas(void)
--{
--	return 0;
--}
--#endif
+@@ -508,25 +503,25 @@ int __init parse_iomem(char *str, int *a
  
- int __init parse_iomem(char *str, int *add)
+ 	driver = str;
+ 	file = strchr(str,',');
+-	if(file == NULL){
++	if (file == NULL) {
+ 		printf("parse_iomem : failed to parse iomem\n");
+ 		goto out;
+ 	}
+ 	*file = '\0';
+ 	file++;
+ 	fd = open(file, O_RDWR, 0);
+-	if(fd < 0){
++	if (fd < 0) {
+ 		os_print_error(fd, "parse_iomem - Couldn't open io file");
+ 		goto out;
+ 	}
+ 
+-	if(fstat64(fd, &buf) < 0){
++	if (fstat64(fd, &buf) < 0) {
+ 		perror("parse_iomem - cannot stat_fd file");
+ 		goto out_close;
+ 	}
+ 
+ 	new = malloc(sizeof(*new));
+-	if(new == NULL){
++	if (new == NULL) {
+ 		perror("Couldn't allocate iomem_region struct");
+ 		goto out_close;
+ 	}
+Index: linux-2.6.22/include/asm-um/processor-generic.h
+===================================================================
+--- linux-2.6.22.orig/include/asm-um/processor-generic.h	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/include/asm-um/processor-generic.h	2007-08-14 13:43:38.000000000 -0400
+@@ -1,5 +1,5 @@
+ /* 
+- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+@@ -17,11 +17,14 @@ struct task_struct;
+ struct mm_struct;
+ 
+ struct thread_struct {
+-	/* This flag is set to 1 before calling do_fork (and analyzed in
++	struct task_struct *saved_task;
++	/*
++	 * This flag is set to 1 before calling do_fork (and analyzed in
+ 	 * copy_thread) to mark that we are begin called from userspace (fork /
+ 	 * vfork / clone), and reset to 0 after. It is left to 0 when called
+-	 * from kernelspace (i.e. kernel_thread() or fork_idle(), as of 2.6.11). */
+-	struct task_struct *saved_task;
++	 * from kernelspace (i.e. kernel_thread() or fork_idle(),
++	 * as of 2.6.11).
++	 */
+ 	int forking;
+ 	int nsyscalls;
+ 	struct pt_regs regs;
+@@ -56,7 +59,7 @@ struct thread_struct {
+ { \
+ 	.forking		= 0, \
+ 	.nsyscalls		= 0, \
+-        .regs		   	= EMPTY_REGS, \
++	.regs		   	= EMPTY_REGS,	\
+ 	.fault_addr		= NULL, \
+ 	.prev_sched		= NULL, \
+ 	.temp_stack		= 0, \
+Index: linux-2.6.22/arch/um/kernel/process.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/process.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/process.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,51 +1,29 @@
+ /*
+- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Copyright 2003 PathScale, Inc.
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/kernel.h"
+-#include "linux/sched.h"
+-#include "linux/interrupt.h"
+-#include "linux/string.h"
++#include "linux/stddef.h"
++#include "linux/err.h"
++#include "linux/hardirq.h"
+ #include "linux/mm.h"
+-#include "linux/slab.h"
+-#include "linux/utsname.h"
+-#include "linux/fs.h"
+-#include "linux/utime.h"
+-#include "linux/smp_lock.h"
+-#include "linux/module.h"
+-#include "linux/init.h"
+-#include "linux/capability.h"
+-#include "linux/vmalloc.h"
+-#include "linux/spinlock.h"
++#include "linux/personality.h"
+ #include "linux/proc_fs.h"
+ #include "linux/ptrace.h"
+ #include "linux/random.h"
+-#include "linux/personality.h"
+-#include "asm/unistd.h"
+-#include "asm/mman.h"
+-#include "asm/segment.h"
+-#include "asm/stat.h"
++#include "linux/sched.h"
++#include "linux/threads.h"
+ #include "asm/pgtable.h"
+-#include "asm/processor.h"
+-#include "asm/tlbflush.h"
+ #include "asm/uaccess.h"
+-#include "asm/user.h"
+-#include "kern_util.h"
+ #include "as-layout.h"
+-#include "kern.h"
+-#include "signal_kern.h"
+-#include "init.h"
+-#include "irq_user.h"
+-#include "mem_user.h"
+-#include "tlb.h"
+-#include "frame_kern.h"
+-#include "sigcontext.h"
++#include "kern_util.h"
+ #include "os.h"
+ #include "skas.h"
++#include "tlb.h"
+ 
+-/* This is a per-cpu array.  A processor only modifies its entry and it only
++/*
++ * This is a per-cpu array.  A processor only modifies its entry and it only
+  * cares about its entry, so it's OK if another processor is modifying its
+  * entry.
+  */
+@@ -54,15 +32,15 @@ struct cpu_task cpu_tasks[NR_CPUS] = { [
+ static inline int external_pid(struct task_struct *task)
  {
+ 	/* FIXME: Need to look up userspace_pid by cpu */
+-	return(userspace_pid[0]);
++	return userspace_pid[0];
+ }
+ 
+ int pid_to_processor_id(int pid)
+ {
+ 	int i;
+ 
+-	for(i = 0; i < ncpus; i++){
+-		if(cpu_tasks[i].pid == pid)
++	for(i = 0; i < ncpus; i++) {
++		if (cpu_tasks[i].pid == pid)
+ 			return i;
+ 	}
+ 	return -1;
+@@ -118,7 +96,7 @@ void *_switch_to(void *prev, void *next,
+ 		current->thread.saved_task = NULL;
+ 
+ 		/* XXX need to check runqueues[cpu].idle */
+-		if(current->pid == 0)
++		if (current->pid == 0)
+ 			switch_timers(0);
+ 
+ 		switch_threads(&from->thread.switch_buf,
+@@ -126,10 +104,10 @@ void *_switch_to(void *prev, void *next,
+ 
+ 		arch_switch_to(current->thread.prev_sched, current);
+ 
+-		if(current->pid == 0)
++		if (current->pid == 0)
+ 			switch_timers(1);
+ 
+-		if(current->thread.saved_task)
++		if (current->thread.saved_task)
+ 			show_regs(&(current->thread.regs));
+ 		next= current->thread.saved_task;
+ 		prev= current;
+@@ -141,9 +119,9 @@ void *_switch_to(void *prev, void *next,
+ 
+ void interrupt_end(void)
+ {
+-	if(need_resched())
++	if (need_resched())
+ 		schedule();
+-	if(test_tsk_thread_flag(current, TIF_SIGPENDING))
++	if (test_tsk_thread_flag(current, TIF_SIGPENDING))
+ 		do_signal();
+ }
+ 
+@@ -158,7 +136,8 @@ void *get_current(void)
+ 
+ extern void schedule_tail(struct task_struct *prev);
+ 
+-/* This is called magically, by its address being stuffed in a jmp_buf
++/*
++ * This is called magically, by its address being stuffed in a jmp_buf
+  * and being longjmp-d to.
+  */
+ void new_thread_handler(void)
+@@ -166,18 +145,19 @@ void new_thread_handler(void)
+ 	int (*fn)(void *), n;
+ 	void *arg;
+ 
+-	if(current->thread.prev_sched != NULL)
++	if (current->thread.prev_sched != NULL)
+ 		schedule_tail(current->thread.prev_sched);
+ 	current->thread.prev_sched = NULL;
+ 
+ 	fn = current->thread.request.u.thread.proc;
+ 	arg = current->thread.request.u.thread.arg;
+ 
+-	/* The return value is 1 if the kernel thread execs a process,
++	/*
++	 * The return value is 1 if the kernel thread execs a process,
+ 	 * 0 if it just exits
+ 	 */
+ 	n = run_kernel_thread(fn, arg, &current->thread.exec_buf);
+-	if(n == 1){
++	if (n == 1) {
+ 		/* Handle any immediate reschedules or signals */
+ 		interrupt_end();
+ 		userspace(&current->thread.regs.regs);
+@@ -189,14 +169,16 @@ void new_thread_handler(void)
+ void fork_handler(void)
+ {
+ 	force_flush_all();
+-	if(current->thread.prev_sched == NULL)
++	if (current->thread.prev_sched == NULL)
+ 		panic("blech");
+ 
+ 	schedule_tail(current->thread.prev_sched);
+ 
+-	/* XXX: if interrupt_end() calls schedule, this call to
++	/*
++	 * XXX: if interrupt_end() calls schedule, this call to
+ 	 * arch_switch_to isn't needed. We could want to apply this to
+-	 * improve performance. -bb */
++	 * improve performance. -bb
++	 */
+ 	arch_switch_to(current->thread.prev_sched, current);
+ 
+ 	current->thread.prev_sched = NULL;
+@@ -216,11 +198,11 @@ int copy_thread(int nr, unsigned long cl
+ 
+ 	p->thread = (struct thread_struct) INIT_THREAD;
+ 
+-	if(current->thread.forking){
++	if (current->thread.forking) {
+ 	  	memcpy(&p->thread.regs.regs, &regs->regs,
+ 		       sizeof(p->thread.regs.regs));
+ 		REGS_SET_SYSCALL_RETURN(p->thread.regs.regs.regs, 0);
+-		if(sp != 0)
++		if (sp != 0)
+ 			REGS_SP(p->thread.regs.regs.regs) = sp;
+ 
+ 		handler = fork_handler;
+@@ -259,14 +241,14 @@ void initial_thread_cb(void (*proc)(void
+ 
+ void default_idle(void)
+ {
+-	while(1){
++	while(1) {
+ 		/* endless idle loop with no priority at all */
+ 
+ 		/*
+ 		 * although we are an idle CPU, we do not want to
+ 		 * get into the scheduler unnecessarily.
+ 		 */
+-		if(need_resched())
++		if (need_resched())
+ 			schedule();
+ 
+ 		idle_sleep(10);
+@@ -288,26 +270,26 @@ void *um_virt_to_phys(struct task_struct
+ 	pte_t *pte;
+ 	pte_t ptent;
+ 
+-	if(task->mm == NULL)
++	if (task->mm == NULL)
+ 		return ERR_PTR(-EINVAL);
+ 	pgd = pgd_offset(task->mm, addr);
+-	if(!pgd_present(*pgd))
++	if (!pgd_present(*pgd))
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	pud = pud_offset(pgd, addr);
+-	if(!pud_present(*pud))
++	if (!pud_present(*pud))
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	pmd = pmd_offset(pud, addr);
+-	if(!pmd_present(*pmd))
++	if (!pmd_present(*pmd))
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	pte = pte_offset_kernel(pmd, addr);
+ 	ptent = *pte;
+-	if(!pte_present(ptent))
++	if (!pte_present(ptent))
+ 		return ERR_PTR(-EINVAL);
+ 
+-	if(pte_out != NULL)
++	if (pte_out != NULL)
+ 		*pte_out = ptent;
+ 	return (void *) (pte_val(ptent) & PAGE_MASK) + (addr & ~PAGE_MASK);
+ }
+@@ -380,7 +362,7 @@ int smp_sigio_handler(void)
+ #ifdef CONFIG_SMP
+ 	int cpu = current_thread->cpu;
+ 	IPI_handler(cpu);
+-	if(cpu != 0)
++	if (cpu != 0)
+ 		return 1;
+ #endif
+ 	return 0;
+@@ -408,7 +390,8 @@ int get_using_sysemu(void)
+ 
+ static int proc_read_sysemu(char *buf, char **start, off_t offset, int size,int *eof, void *data)
+ {
+-	if (snprintf(buf, size, "%d\n", get_using_sysemu()) < size) /*No overflow*/
++	if (snprintf(buf, size, "%d\n", get_using_sysemu()) < size)
++		/* No overflow */
+ 		*eof = 1;
+ 
+ 	return strlen(buf);
+@@ -423,7 +406,8 @@ static int proc_write_sysemu(struct file
+ 
+ 	if (tmp[0] >= '0' && tmp[0] <= '2')
+ 		set_using_sysemu(tmp[0] - '0');
+-	return count; /*We use the first char, but pretend to write everything*/
++	/* We use the first char, but pretend to write everything */
++	return count;
+ }
+ 
+ int __init make_proc_sysemu(void)
+@@ -453,10 +437,10 @@ int singlestepping(void * t)
+ 	struct task_struct *task = t ? t : current;
+ 
+ 	if ( ! (task->ptrace & PT_DTRACE) )
+-		return(0);
++		return 0;
+ 
+ 	if (task->thread.singlestep_syscall)
+-		return(1);
++		return 1;
+ 
+ 	return 2;
+ }
+Index: linux-2.6.22/arch/um/sys-i386/signal.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-i386/signal.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/sys-i386/signal.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,17 +1,13 @@
+ /*
+- * Copyright (C) 2004 Jeff Dike (jdike@addtoit.com)
++ * Copyright (C) 2004 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/signal.h"
+ #include "linux/ptrace.h"
+-#include "asm/current.h"
+-#include "asm/ucontext.h"
+-#include "asm/uaccess.h"
+ #include "asm/unistd.h"
++#include "asm/uaccess.h"
++#include "asm/ucontext.h"
+ #include "frame_kern.h"
+-#include "sigcontext.h"
+-#include "registers.h"
+ #include "skas.h"
+ 
+ void copy_sc(struct uml_pt_regs *regs, void *from)
+@@ -39,21 +35,21 @@ void copy_sc(struct uml_pt_regs *regs, v
+ static int copy_sc_from_user(struct pt_regs *regs,
+ 			     struct sigcontext __user *from)
+ {
+-  	struct sigcontext sc;
++ 	struct sigcontext sc;
+ 	unsigned long fpregs[HOST_FP_SIZE];
+ 	int err;
+ 
+ 	err = copy_from_user(&sc, from, sizeof(sc));
+ 	err |= copy_from_user(fpregs, sc.fpstate, sizeof(fpregs));
+-	if(err)
++	if (err)
+ 		return err;
+ 
+ 	copy_sc(&regs->regs, &sc);
+ 
+ 	err = restore_fp_registers(userspace_pid[0], fpregs);
+-	if(err < 0) {
+-	  	printk("copy_sc_from_user_skas - PTRACE_SETFPREGS failed, "
+-		       "errno = %d\n", -err);
++	if (err < 0) {
++	  	printk(KERN_ERR "copy_sc_from_user_skas - PTRACE_SETFPREGS "
++		       "failed, errno = %d\n", -err);
+ 		return err;
+ 	}
+ 
+@@ -64,7 +60,7 @@ static int copy_sc_to_user(struct sigcon
+ 			   struct _fpstate __user *to_fp, struct pt_regs *regs,
+ 			   unsigned long sp)
+ {
+-  	struct sigcontext sc;
++	struct sigcontext sc;
+ 	unsigned long fpregs[HOST_FP_SIZE];
+ 	struct faultinfo * fi = &current->thread.arch.faultinfo;
+ 	int err;
+@@ -86,28 +82,29 @@ static int copy_sc_to_user(struct sigcon
+ 	sc.eflags = REGS_EFLAGS(regs->regs.regs);
+ 	sc.esp_at_signal = regs->regs.regs[UESP];
+ 	sc.ss = regs->regs.regs[SS];
+-        sc.cr2 = fi->cr2;
+-        sc.err = fi->error_code;
+-        sc.trapno = fi->trap_no;
++	sc.cr2 = fi->cr2;
++	sc.err = fi->error_code;
++	sc.trapno = fi->trap_no;
+ 
+ 	err = save_fp_registers(userspace_pid[0], fpregs);
+-	if(err < 0){
+-	  	printk("copy_sc_to_user_skas - PTRACE_GETFPREGS failed, "
+-		       "errno = %d\n", err);
++	if (err < 0) {
++	  	printk(KERN_ERR "copy_sc_to_user_skas - PTRACE_GETFPREGS "
++		       "failed, errno = %d\n", err);
+ 		return 1;
+ 	}
+ 	to_fp = (to_fp ? to_fp : (struct _fpstate __user *) (to + 1));
+ 	sc.fpstate = to_fp;
+ 
+-	if(err)
++	if (err)
+ 	  	return err;
+ 
+ 	return copy_to_user(to, &sc, sizeof(sc)) ||
+ 	       copy_to_user(to_fp, fpregs, sizeof(fpregs));
+ }
+ 
+-static int copy_ucontext_to_user(struct ucontext __user *uc, struct _fpstate __user *fp,
+-				 sigset_t *set, unsigned long sp)
++static int copy_ucontext_to_user(struct ucontext __user *uc,
++				 struct _fpstate __user *fp, sigset_t *set,
++				 unsigned long sp)
+ {
+ 	int err = 0;
+ 
+@@ -157,7 +154,7 @@ int setup_signal_stack_sc(unsigned long 
+ 		return 1;
+ 
+ 	restorer = frame->retcode;
+-	if(ka->sa.sa_flags & SA_RESTORER)
++	if (ka->sa.sa_flags & SA_RESTORER)
+ 		restorer = ka->sa.sa_restorer;
+ 
+ 	/* Update SP now because the page fault handler refuses to extend
+@@ -189,7 +186,7 @@ int setup_signal_stack_sc(unsigned long 
+ 	err |= __put_user(__NR_sigreturn, (int __user *)(frame->retcode+2));
+ 	err |= __put_user(0x80cd, (short __user *)(frame->retcode+6));
+ 
+-	if(err)
++	if (err)
+ 		goto err;
+ 
+ 	PT_REGS_SP(regs) = (unsigned long) frame;
+@@ -222,7 +219,7 @@ int setup_signal_stack_si(unsigned long 
+ 		return 1;
+ 
+ 	restorer = frame->retcode;
+-	if(ka->sa.sa_flags & SA_RESTORER)
++	if (ka->sa.sa_flags & SA_RESTORER)
+ 		restorer = ka->sa.sa_restorer;
+ 
+ 	/* See comment above about why this is here */
+@@ -247,7 +244,7 @@ int setup_signal_stack_si(unsigned long 
+ 	err |= __put_user(__NR_rt_sigreturn, (int __user *)(frame->retcode+1));
+ 	err |= __put_user(0x80cd, (short __user *)(frame->retcode+5));
+ 
+-	if(err)
++	if (err)
+ 		goto err;
+ 
+ 	PT_REGS_IP(regs) = (unsigned long) ka->sa.sa_handler;
+@@ -274,8 +271,8 @@ long sys_sigreturn(struct pt_regs regs)
+ 	unsigned long __user *extramask = frame->extramask;
+ 	int sig_size = (_NSIG_WORDS - 1) * sizeof(unsigned long);
+ 
+-	if(copy_from_user(&set.sig[0], oldmask, sizeof(set.sig[0])) ||
+-	   copy_from_user(&set.sig[1], extramask, sig_size))
++	if (copy_from_user(&set.sig[0], oldmask, sizeof(set.sig[0])) ||
++	    copy_from_user(&set.sig[1], extramask, sig_size))
+ 		goto segfault;
+ 
+ 	sigdelsetmask(&set, ~_BLOCKABLE);
+@@ -285,7 +282,7 @@ long sys_sigreturn(struct pt_regs regs)
+ 	recalc_sigpending();
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 
+-	if(copy_sc_from_user(&current->thread.regs, sc))
++	if (copy_sc_from_user(&current->thread.regs, sc))
+ 		goto segfault;
+ 
+ 	/* Avoid ERESTART handling */
+@@ -300,12 +297,13 @@ long sys_sigreturn(struct pt_regs regs)
+ long sys_rt_sigreturn(struct pt_regs regs)
+ {
+ 	unsigned long sp = PT_REGS_SP(&current->thread.regs);
+-	struct rt_sigframe __user *frame = (struct rt_sigframe __user *) (sp - 4);
++	struct rt_sigframe __user *frame =
++		(struct rt_sigframe __user *) (sp - 4);
+ 	sigset_t set;
+ 	struct ucontext __user *uc = &frame->uc;
+ 	int sig_size = _NSIG_WORDS * sizeof(unsigned long);
+ 
+-	if(copy_from_user(&set, &uc->uc_sigmask, sig_size))
++	if (copy_from_user(&set, &uc->uc_sigmask, sig_size))
+ 		goto segfault;
+ 
+ 	sigdelsetmask(&set, ~_BLOCKABLE);
+@@ -315,7 +313,7 @@ long sys_rt_sigreturn(struct pt_regs reg
+ 	recalc_sigpending();
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 
+-	if(copy_sc_from_user(&current->thread.regs, &uc->uc_mcontext))
++	if (copy_sc_from_user(&current->thread.regs, &uc->uc_mcontext))
+ 		goto segfault;
+ 
+ 	/* Avoid ERESTART handling */
+Index: linux-2.6.22/arch/um/kernel/reboot.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/reboot.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/reboot.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,13 +1,9 @@
+ /* 
+- * Copyright (C) 2000, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/module.h"
+ #include "linux/sched.h"
+-#include "asm/smp.h"
+-#include "kern_util.h"
+-#include "kern.h"
+ #include "os.h"
+ #include "skas.h"
+ 
+@@ -37,20 +33,20 @@ static void kill_off_processes(void)
+ 
+ void uml_cleanup(void)
+ {
+-        kmalloc_ok = 0;
++	kmalloc_ok = 0;
+ 	do_uml_exitcalls();
+ 	kill_off_processes();
+ }
+ 
+ void machine_restart(char * __unused)
+ {
+-        uml_cleanup();
++	uml_cleanup();
+ 	reboot_skas();
+ }
+ 
+ void machine_power_off(void)
+ {
+-        uml_cleanup();
++	uml_cleanup();
+ 	halt_skas();
+ }
+ 
+Index: linux-2.6.22/arch/um/sys-x86_64/syscalls.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-x86_64/syscalls.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/sys-x86_64/syscalls.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,36 +1,34 @@
+ /*
++ * Copyright (C) 2003 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Copyright 2003 PathScale, Inc.
+  *
+  * Licensed under the GPL
+  */
+ 
+ #include "linux/linkage.h"
+-#include "linux/slab.h"
+-#include "linux/shm.h"
+-#include "linux/utsname.h"
+ #include "linux/personality.h"
+-#include "asm/uaccess.h"
+-#define __FRAME_OFFSETS
+-#include "asm/ptrace.h"
+-#include "asm/unistd.h"
++#include "linux/utsname.h"
+ #include "asm/prctl.h" /* XXX This should get the constants from libc */
+-#include "kern.h"
++#include "asm/uaccess.h"
+ #include "os.h"
+ 
+ asmlinkage long sys_uname64(struct new_utsname __user * name)
+ {
+ 	int err;
++
+ 	down_read(&uts_sem);
+ 	err = copy_to_user(name, utsname(), sizeof (*name));
+ 	up_read(&uts_sem);
++
+ 	if (personality(current->personality) == PER_LINUX32)
+ 		err |= copy_to_user(&name->machine, "i686", 5);
++
+ 	return err ? -EFAULT : 0;
+ }
+ 
+ long arch_prctl(struct task_struct *task, int code, unsigned long __user *addr)
+ {
+-        unsigned long *ptr = addr, tmp;
++	unsigned long *ptr = addr, tmp;
+ 	long ret;
+ 	int pid = task->mm->context.skas.id.u.pid;
+ 
+@@ -47,42 +45,42 @@ long arch_prctl(struct task_struct *task
+ 	 * arch_prctl is run on the host, then the registers are read
+ 	 * back.
+ 	 */
+-	switch(code){
++	switch (code) {
+ 	case ARCH_SET_FS:
+ 	case ARCH_SET_GS:
+-                restore_registers(pid, &current->thread.regs.regs);
+-                break;
+-        case ARCH_GET_FS:
+-        case ARCH_GET_GS:
+-                /*
+-                 * With these two, we read to a local pointer and
+-                 * put_user it to the userspace pointer that we were
+-                 * given.  If addr isn't valid (because it hasn't been
+-                 * faulted in or is just bogus), we want put_user to
+-                 * fault it in (or return -EFAULT) instead of having
+-                 * the host return -EFAULT.
+-                 */
+-                ptr = &tmp;
+-        }
+-
+-        ret = os_arch_prctl(pid, code, ptr);
+-        if(ret)
+-                return ret;
++		restore_registers(pid, &current->thread.regs.regs);
++		break;
++	case ARCH_GET_FS:
++	case ARCH_GET_GS:
++		/*
++		 * With these two, we read to a local pointer and
++		 * put_user it to the userspace pointer that we were
++		 * given.  If addr isn't valid (because it hasn't been
++		 * faulted in or is just bogus), we want put_user to
++		 * fault it in (or return -EFAULT) instead of having
++		 * the host return -EFAULT.
++		 */
++		ptr = &tmp;
++	}
++
++	ret = os_arch_prctl(pid, code, ptr);
++	if (ret)
++		return ret;
+ 
+-        switch(code){
++	switch (code) {
+ 	case ARCH_SET_FS:
+ 		current->thread.arch.fs = (unsigned long) ptr;
+ 		save_registers(pid, &current->thread.regs.regs);
+ 		break;
+ 	case ARCH_SET_GS:
+-                save_registers(pid, &current->thread.regs.regs);
++		save_registers(pid, &current->thread.regs.regs);
+ 		break;
+ 	case ARCH_GET_FS:
+ 		ret = put_user(tmp, addr);
+-	        break;
++		break;
+ 	case ARCH_GET_GS:
+ 		ret = put_user(tmp, addr);
+-	        break;
++		break;
+ 	}
+ 
+ 	return ret;
+@@ -109,8 +107,8 @@ long sys_clone(unsigned long clone_flags
+ 
+ void arch_switch_to(struct task_struct *from, struct task_struct *to)
+ {
+-        if((to->thread.arch.fs == 0) || (to->mm == NULL))
+-                return;
++	if ((to->thread.arch.fs == 0) || (to->mm == NULL))
++		return;
+ 
+-        arch_prctl(to, ARCH_SET_FS, (void __user *) to->thread.arch.fs);
++	arch_prctl(to, ARCH_SET_FS, (void __user *) to->thread.arch.fs);
+ }
+Index: linux-2.6.22/arch/um/sys-i386/tls.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-i386/tls.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/sys-i386/tls.c	2007-08-14 13:43:58.000000000 -0400
+@@ -3,19 +3,12 @@
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/kernel.h"
++#include "linux/percpu.h"
+ #include "linux/sched.h"
+-#include "linux/slab.h"
+-#include "linux/types.h"
+ #include "asm/uaccess.h"
+-#include "asm/ptrace.h"
+-#include "asm/segment.h"
+-#include "asm/smp.h"
+-#include "asm/desc.h"
+-#include "kern.h"
+-#include "kern_util.h"
+ #include "os.h"
+ #include "skas.h"
++#include "sysdep/tls.h"
+ 
+ /*
+  * If needed we can detect when it's uninitialized.
+@@ -74,7 +67,8 @@ static inline void clear_user_desc(struc
+ 	/* Postcondition: LDT_empty(info) returns true. */
+ 	memset(info, 0, sizeof(*info));
+ 
+-	/* Check the LDT_empty or the i386 sys_get_thread_area code - we obtain
++	/*
++	 * Check the LDT_empty or the i386 sys_get_thread_area code - we obtain
+ 	 * indeed an empty user_desc.
+ 	 */
+ 	info->read_exec_only = 1;
+@@ -89,10 +83,13 @@ static int load_TLS(int flags, struct ta
+ 	int idx;
+ 
+ 	for (idx = GDT_ENTRY_TLS_MIN; idx < GDT_ENTRY_TLS_MAX; idx++) {
+-		struct uml_tls_struct* curr = &to->thread.arch.tls_array[idx - GDT_ENTRY_TLS_MIN];
++		struct uml_tls_struct* curr =
++			&to->thread.arch.tls_array[idx - GDT_ENTRY_TLS_MIN];
+ 
+-		/* Actually, now if it wasn't flushed it gets cleared and
+-		 * flushed to the host, which will clear it.*/
++		/*
++		 * Actually, now if it wasn't flushed it gets cleared and
++		 * flushed to the host, which will clear it.
++		 */
+ 		if (!curr->present) {
+ 			if (!curr->flushed) {
+ 				clear_user_desc(&curr->tls);
+@@ -116,7 +113,8 @@ out:
+ 	return ret;
+ }
+ 
+-/* Verify if we need to do a flush for the new process, i.e. if there are any
++/*
++ * Verify if we need to do a flush for the new process, i.e. if there are any
+  * present desc's, only if they haven't been flushed.
+  */
+ static inline int needs_TLS_update(struct task_struct *task)
+@@ -125,10 +123,13 @@ static inline int needs_TLS_update(struc
+ 	int ret = 0;
+ 
+ 	for (i = GDT_ENTRY_TLS_MIN; i < GDT_ENTRY_TLS_MAX; i++) {
+-		struct uml_tls_struct* curr = &task->thread.arch.tls_array[i - GDT_ENTRY_TLS_MIN];
++		struct uml_tls_struct* curr =
++			&task->thread.arch.tls_array[i - GDT_ENTRY_TLS_MIN];
+ 
+-		/* Can't test curr->present, we may need to clear a descriptor
+-		 * which had a value. */
++		/*
++		 * Can't test curr->present, we may need to clear a descriptor
++		 * which had a value.
++		 */
+ 		if (curr->flushed)
+ 			continue;
+ 		ret = 1;
+@@ -137,7 +138,8 @@ static inline int needs_TLS_update(struc
+ 	return ret;
+ }
+ 
+-/* On a newly forked process, the TLS descriptors haven't yet been flushed. So
++/*
++ * On a newly forked process, the TLS descriptors haven't yet been flushed. So
+  * we mark them as such and the first switch_to will do the job.
+  */
+ void clear_flushed_tls(struct task_struct *task)
+@@ -145,10 +147,13 @@ void clear_flushed_tls(struct task_struc
+ 	int i;
+ 
+ 	for (i = GDT_ENTRY_TLS_MIN; i < GDT_ENTRY_TLS_MAX; i++) {
+-		struct uml_tls_struct* curr = &task->thread.arch.tls_array[i - GDT_ENTRY_TLS_MIN];
++		struct uml_tls_struct* curr =
++			&task->thread.arch.tls_array[i - GDT_ENTRY_TLS_MIN];
+ 
+-		/* Still correct to do this, if it wasn't present on the host it
+-		 * will remain as flushed as it was. */
++		/*
++		 * Still correct to do this, if it wasn't present on the host it
++		 * will remain as flushed as it was.
++		 */
+ 		if (!curr->present)
+ 			continue;
+ 
+@@ -156,23 +161,27 @@ void clear_flushed_tls(struct task_struc
+ 	}
+ }
+ 
+-/* In SKAS0 mode, currently, multiple guest threads sharing the same ->mm have a
++/*
++ * In SKAS0 mode, currently, multiple guest threads sharing the same ->mm have a
+  * common host process. So this is needed in SKAS0 too.
+  *
+  * However, if each thread had a different host process (and this was discussed
+  * for SMP support) this won't be needed.
+  *
+  * And this will not need be used when (and if) we'll add support to the host
+- * SKAS patch. */
++ * SKAS patch.
++ */
+ 
+ int arch_switch_tls(struct task_struct *from, struct task_struct *to)
+ {
+ 	if (!host_supports_tls)
+ 		return 0;
+ 
+-	/* We have no need whatsoever to switch TLS for kernel threads; beyond
++	/*
++	 * We have no need whatsoever to switch TLS for kernel threads; beyond
+ 	 * that, that would also result in us calling os_set_thread_area with
+-	 * userspace_pid[cpu] == 0, which gives an error. */
++	 * userspace_pid[cpu] == 0, which gives an error.
++	 */
+ 	if (likely(to->mm))
+ 		return load_TLS(O_FORCE, to);
+ 
+@@ -232,17 +241,20 @@ static int get_tls_entry(struct task_str
+ 	*info = t->arch.tls_array[idx - GDT_ENTRY_TLS_MIN].tls;
+ 
+ out:
+-	/* Temporary debugging check, to make sure that things have been
++	/*
++	 * Temporary debugging check, to make sure that things have been
+ 	 * flushed. This could be triggered if load_TLS() failed.
+ 	 */
+-	if (unlikely(task == current && !t->arch.tls_array[idx - GDT_ENTRY_TLS_MIN].flushed)) {
++	if (unlikely(task == current &&
++		     !t->arch.tls_array[idx - GDT_ENTRY_TLS_MIN].flushed)) {
+ 		printk(KERN_ERR "get_tls_entry: task with pid %d got here "
+ 				"without flushed TLS.", current->pid);
+ 	}
+ 
+ 	return 0;
+ clear:
+-	/* When the TLS entry has not been set, the values read to user in the
++	/*
++	 * When the TLS entry has not been set, the values read to user in the
+ 	 * tls_array are 0 (because it's cleared at boot, see
+ 	 * arch/i386/kernel/head.S:cpu_gdt_table). Emulate that.
+ 	 */
+@@ -344,8 +356,10 @@ out:
+ }
+ 
+ 
+-/* XXX: This part is probably common to i386 and x86-64. Don't create a common
+- * file for now, do that when implementing x86-64 support.*/
++/*
++ * XXX: This part is probably common to i386 and x86-64. Don't create a common
++ * file for now, do that when implementing x86-64 support.
++ */
+ static int __init __setup_host_supports_tls(void)
+ {
+ 	check_host_supports_tls(&host_supports_tls, &host_gdt_entry_tls_min);
+Index: linux-2.6.22/arch/um/os-Linux/main.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/main.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/main.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,27 +1,21 @@
+ /*
+- * Copyright (C) 2000, 2001 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include <unistd.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+-#include <string.h>
+-#include <signal.h>
++#include <unistd.h>
+ #include <errno.h>
++#include <signal.h>
++#include <string.h>
+ #include <sys/resource.h>
+-#include <sys/mman.h>
+-#include <sys/user.h>
+-#include "kern_util.h"
+ #include "as-layout.h"
+-#include "mem_user.h"
+-#include "irq_user.h"
+-#include "user.h"
+ #include "init.h"
+-#include "uml-config.h"
++#include "kern_constants.h"
++#include "kern_util.h"
+ #include "os.h"
+ #include "um_malloc.h"
+-#include "kern_constants.h"
+ 
+ #define PGD_BOUND (4 * 1024 * 1024)
+ #define STACKSIZE (8 * 1024 * 1024)
+@@ -31,13 +25,13 @@ static void set_stklim(void)
+ {
+ 	struct rlimit lim;
+ 
+-	if(getrlimit(RLIMIT_STACK, &lim) < 0){
++	if (getrlimit(RLIMIT_STACK, &lim) < 0) {
+ 		perror("getrlimit");
+ 		exit(1);
+ 	}
+-	if((lim.rlim_cur == RLIM_INFINITY) || (lim.rlim_cur > STACKSIZE)){
++	if ((lim.rlim_cur == RLIM_INFINITY) || (lim.rlim_cur > STACKSIZE)) {
+ 		lim.rlim_cur = STACKSIZE;
+-		if(setrlimit(RLIMIT_STACK, &lim) < 0){
++		if (setrlimit(RLIMIT_STACK, &lim) < 0) {
+ 			perror("setrlimit");
+ 			exit(1);
+ 		}
+@@ -49,7 +43,7 @@ static __init void do_uml_initcalls(void
+ 	initcall_t *call;
+ 
+ 	call = &__uml_initcall_start;
+-	while (call < &__uml_initcall_end){
++	while (call < &__uml_initcall_end) {
+ 		(*call)();
+ 		call++;
+ 	}
+@@ -68,7 +62,8 @@ static void install_fatal_handler(int si
+ 	/* All signals are enabled in this handler ... */
+ 	sigemptyset(&action.sa_mask);
+ 
+-	/* ... including the signal being handled, plus we want the
++	/*
++	 * ... including the signal being handled, plus we want the
+ 	 * handler reset to the default behavior, so that if an exit
+ 	 * handler is hanging for some reason, the UML will just die
+ 	 * after this signal is sent a second time.
+@@ -76,7 +71,7 @@ static void install_fatal_handler(int si
+ 	action.sa_flags = SA_RESETHAND | SA_NODEFER;
+ 	action.sa_restorer = NULL;
+ 	action.sa_handler = last_ditch_exit;
+-	if(sigaction(sig, &action, NULL) < 0){
++	if (sigaction(sig, &action, NULL) < 0) {
+ 		printf("failed to install handler for signal %d - errno = %d\n",
+ 		       errno);
+ 		exit(1);
+@@ -92,7 +87,8 @@ static void setup_env_path(void)
+ 	int path_len = 0;
+ 
+ 	old_path = getenv("PATH");
+-	/* if no PATH variable is set or it has an empty value
++	/*
++	 * if no PATH variable is set or it has an empty value
+ 	 * just use the default + /usr/lib/uml
+ 	 */
+ 	if (!old_path || (path_len = strlen(old_path)) == 0) {
+@@ -125,38 +121,41 @@ int __init main(int argc, char **argv, c
+ 	setup_env_path();
+ 
+ 	new_argv = malloc((argc + 1) * sizeof(char *));
+-	if(new_argv == NULL){
++	if (new_argv == NULL) {
+ 		perror("Mallocing argv");
+ 		exit(1);
+ 	}
+-	for(i=0;i<argc;i++){
++	for (i = 0; i < argc; i++) {
+ 		new_argv[i] = strdup(argv[i]);
+-		if(new_argv[i] == NULL){
++		if (new_argv[i] == NULL) {
+ 			perror("Mallocing an arg");
+ 			exit(1);
+ 		}
+ 	}
+ 	new_argv[argc] = NULL;
+ 
+-	/* Allow these signals to bring down a UML if all other
++	/*
++	 * Allow these signals to bring down a UML if all other
+ 	 * methods of control fail.
+ 	 */
+ 	install_fatal_handler(SIGINT);
+ 	install_fatal_handler(SIGTERM);
+ 	install_fatal_handler(SIGHUP);
+ 
+-	scan_elf_aux( envp);
++	scan_elf_aux(envp);
+ 
+ 	do_uml_initcalls();
+ 	ret = linux_main(argc, argv);
+ 
+-	/* Disable SIGPROF - I have no idea why libc doesn't do this or turn
++	/*
++	 * Disable SIGPROF - I have no idea why libc doesn't do this or turn
+ 	 * off the profiling time, but UML dies with a SIGPROF just before
+ 	 * exiting when profiling is active.
+ 	 */
+ 	change_sig(SIGPROF, 0);
+ 
+-	/* This signal stuff used to be in the reboot case.  However,
++	/*
++	 * This signal stuff used to be in the reboot case.  However,
+ 	 * sometimes a SIGVTALRM can come in when we're halting (reproducably
+ 	 * when writing out gcov information, presumably because that takes
+ 	 * some time) and cause a segfault.
+@@ -167,17 +166,18 @@ int __init main(int argc, char **argv, c
+ 
+ 	/* disable SIGIO for the fds and set SIGIO to be ignored */
+ 	err = deactivate_all_fds();
+-	if(err)
++	if (err)
+ 		printf("deactivate_all_fds failed, errno = %d\n", -err);
+ 
+-	/* Let any pending signals fire now.  This ensures
++	/*
++	 * Let any pending signals fire now.  This ensures
+ 	 * that they won't be delivered after the exec, when
+ 	 * they are definitely not expected.
+ 	 */
+ 	unblock_signals();
+ 
+ 	/* Reboot */
+-	if(ret){
++	if (ret) {
+ 		printf("\n");
+ 		execvp(new_argv[0], new_argv);
+ 		perror("Failed to exec kernel");
+@@ -193,17 +193,18 @@ void *__wrap_malloc(int size)
+ {
+ 	void *ret;
+ 
+-	if(!kmalloc_ok)
++	if (!kmalloc_ok)
+ 		return __real_malloc(size);
+-	else if(size <= UM_KERN_PAGE_SIZE)
++	else if (size <= UM_KERN_PAGE_SIZE)
+ 		/* finding contiguous pages can be hard*/
+ 		ret = kmalloc(size, UM_GFP_KERNEL);
+ 	else ret = vmalloc(size);
+ 
+-	/* glibc people insist that if malloc fails, errno should be
++	/*
++	 * glibc people insist that if malloc fails, errno should be
+ 	 * set by malloc as well. So we do.
+ 	 */
+-	if(ret == NULL)
++	if (ret == NULL)
+ 		errno = ENOMEM;
+ 
+ 	return ret;
+@@ -213,7 +214,7 @@ void *__wrap_calloc(int n, int size)
+ {
+ 	void *ptr = __wrap_malloc(n * size);
+ 
+-	if(ptr == NULL)
++	if (ptr == NULL)
+ 		return NULL;
+ 	memset(ptr, 0, n * size);
+ 	return ptr;
+@@ -227,7 +228,8 @@ void __wrap_free(void *ptr)
+ {
+ 	unsigned long addr = (unsigned long) ptr;
+ 
+-	/* We need to know how the allocation happened, so it can be correctly
++	/*
++	 * We need to know how the allocation happened, so it can be correctly
+ 	 * freed.  This is done by seeing what region of memory the pointer is
+ 	 * in -
+ 	 * 	physical memory - kmalloc/kfree
+@@ -245,12 +247,12 @@ void __wrap_free(void *ptr)
+ 	 * there is a possibility for memory leaks.
+ 	 */
+ 
+-	if((addr >= uml_physmem) && (addr < high_physmem)){
+-		if(kmalloc_ok)
++	if ((addr >= uml_physmem) && (addr < high_physmem)) {
++		if (kmalloc_ok)
+ 			kfree(ptr);
+ 	}
+-	else if((addr >= start_vm) && (addr < end_vm)){
+-		if(kmalloc_ok)
++	else if ((addr >= start_vm) && (addr < end_vm)) {
++		if (kmalloc_ok)
+ 			vfree(ptr);
+ 	}
+ 	else __real_free(ptr);
+Index: linux-2.6.22/arch/um/sys-i386/ldt.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-i386/ldt.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/sys-i386/ldt.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,34 +1,26 @@
+ /*
+- * Copyright (C) 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2001 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/sched.h"
+-#include "linux/slab.h"
+-#include "linux/types.h"
+-#include "linux/errno.h"
+-#include "linux/spinlock.h"
+-#include "asm/uaccess.h"
+-#include "asm/smp.h"
+-#include "asm/ldt.h"
++#include "linux/mm.h"
+ #include "asm/unistd.h"
+-#include "kern.h"
+ #include "os.h"
+-
+-extern int modify_ldt(int func, void *ptr, unsigned long bytecount);
+-
++#include "proc_mm.h"
+ #include "skas.h"
+ #include "skas_ptrace.h"
+-#include "asm/mmu_context.h"
+-#include "proc_mm.h"
++#include "sysdep/tls.h"
++
++extern int modify_ldt(int func, void *ptr, unsigned long bytecount);
+ 
+ long write_ldt_entry(struct mm_id * mm_idp, int func, struct user_desc * desc,
+ 		     void **addr, int done)
+ {
+ 	long res;
+ 
+-	if(proc_mm){
+-		/* This is a special handling for the case, that the mm to
++	if (proc_mm) {
++		/*
++		 * This is a special handling for the case, that the mm to
+ 		 * modify isn't current->active_mm.
+ 		 * If this is called directly by modify_ldt,
+ 		 *     (current->active_mm->context.skas.u == mm_idp)
+@@ -40,12 +32,12 @@ long write_ldt_entry(struct mm_id * mm_i
+ 		 *
+ 		 * Note: I'm unsure: should interrupts be disabled here?
+ 		 */
+-		if(!current->active_mm || current->active_mm == &init_mm ||
+-		   mm_idp != &current->active_mm->context.skas.id)
++		if (!current->active_mm || current->active_mm == &init_mm ||
++		    mm_idp != &current->active_mm->context.skas.id)
+ 			__switch_mm(mm_idp);
+ 	}
+ 
+-	if(ptrace_ldt) {
++	if (ptrace_ldt) {
+ 		struct ptrace_ldt ldt_op = (struct ptrace_ldt) {
+ 			.func = func,
+ 			.ptr = desc,
+@@ -53,7 +45,7 @@ long write_ldt_entry(struct mm_id * mm_i
+ 		u32 cpu;
+ 		int pid;
+ 
+-		if(!proc_mm)
++		if (!proc_mm)
+ 			pid = mm_idp->u.pid;
+ 		else {
+ 			cpu = get_cpu();
+@@ -62,7 +54,7 @@ long write_ldt_entry(struct mm_id * mm_i
+ 
+ 		res = os_ptrace_ldt(pid, 0, (unsigned long) &ldt_op);
+ 
+-		if(proc_mm)
++		if (proc_mm)
+ 			put_cpu();
+ 	}
+ 	else {
+@@ -71,7 +63,7 @@ long write_ldt_entry(struct mm_id * mm_i
+ 					(sizeof(*desc) + sizeof(long) - 1) &
+ 					    ~(sizeof(long) - 1),
+ 					addr, &stub_addr);
+-		if(!res){
++		if (!res) {
+ 			unsigned long args[] = { func,
+ 						 (unsigned long)stub_addr,
+ 						 sizeof(*desc),
+@@ -81,12 +73,13 @@ long write_ldt_entry(struct mm_id * mm_i
+ 		}
+ 	}
+ 
+-	if(proc_mm){
+-		/* This is the second part of special handling, that makes
++	if (proc_mm) {
++		/*
++		 * This is the second part of special handling, that makes
+ 		 * PTRACE_LDT possible to implement.
+ 		 */
+-		if(current->active_mm && current->active_mm != &init_mm &&
+-		   mm_idp != &current->active_mm->context.skas.id)
++		if (current->active_mm && current->active_mm != &init_mm &&
++		    mm_idp != &current->active_mm->context.skas.id)
+ 			__switch_mm(&current->active_mm->context.skas.id);
+ 	}
+ 
+@@ -102,21 +95,22 @@ static long read_ldt_from_host(void __us
+ 			.ptr = kmalloc(bytecount, GFP_KERNEL)};
+ 	u32 cpu;
+ 
+-	if(ptrace_ldt.ptr == NULL)
++	if (ptrace_ldt.ptr == NULL)
+ 		return -ENOMEM;
+ 
+-	/* This is called from sys_modify_ldt only, so userspace_pid gives
++	/*
++	 * This is called from sys_modify_ldt only, so userspace_pid gives
+ 	 * us the right number
+ 	 */
+ 
+ 	cpu = get_cpu();
+ 	res = os_ptrace_ldt(userspace_pid[cpu], 0, (unsigned long) &ptrace_ldt);
+ 	put_cpu();
+-	if(res < 0)
++	if (res < 0)
+ 		goto out;
+ 
+ 	n = copy_to_user(ptr, ptrace_ldt.ptr, res);
+-	if(n != 0)
++	if (n != 0)
+ 		res = -EFAULT;
+ 
+   out:
+@@ -143,33 +137,32 @@ static int read_ldt(void __user * ptr, u
+ 	unsigned long size;
+ 	uml_ldt_t * ldt = &current->mm->context.skas.ldt;
+ 
+-	if(!ldt->entry_count)
++	if (!ldt->entry_count)
+ 		goto out;
+-	if(bytecount > LDT_ENTRY_SIZE*LDT_ENTRIES)
++	if (bytecount > LDT_ENTRY_SIZE*LDT_ENTRIES)
+ 		bytecount = LDT_ENTRY_SIZE*LDT_ENTRIES;
+ 	err = bytecount;
+ 
+-	if(ptrace_ldt){
++	if (ptrace_ldt)
+ 		return read_ldt_from_host(ptr, bytecount);
+-	}
+ 
+ 	down(&ldt->semaphore);
+-	if(ldt->entry_count <= LDT_DIRECT_ENTRIES){
++	if (ldt->entry_count <= LDT_DIRECT_ENTRIES) {
+ 		size = LDT_ENTRY_SIZE*LDT_DIRECT_ENTRIES;
+-		if(size > bytecount)
++		if (size > bytecount)
+ 			size = bytecount;
+-		if(copy_to_user(ptr, ldt->u.entries, size))
++		if (copy_to_user(ptr, ldt->u.entries, size))
+ 			err = -EFAULT;
+ 		bytecount -= size;
+ 		ptr += size;
+ 	}
+ 	else {
+-		for(i=0; i<ldt->entry_count/LDT_ENTRIES_PER_PAGE && bytecount;
+-			 i++){
++		for (i=0; i<ldt->entry_count/LDT_ENTRIES_PER_PAGE && bytecount;
++		     i++) {
+ 			size = PAGE_SIZE;
+-			if(size > bytecount)
++			if (size > bytecount)
+ 				size = bytecount;
+-			if(copy_to_user(ptr, ldt->u.pages[i], size)){
++			if (copy_to_user(ptr, ldt->u.pages[i], size)) {
+ 				err = -EFAULT;
+ 				break;
+ 			}
+@@ -179,10 +172,10 @@ static int read_ldt(void __user * ptr, u
+ 	}
+ 	up(&ldt->semaphore);
+ 
+-	if(bytecount == 0 || err == -EFAULT)
++	if (bytecount == 0 || err == -EFAULT)
+ 		goto out;
+ 
+-	if(clear_user(ptr, bytecount))
++	if (clear_user(ptr, bytecount))
+ 		err = -EFAULT;
+ 
+ out:
+@@ -193,15 +186,16 @@ static int read_default_ldt(void __user 
+ {
+ 	int err;
+ 
+-	if(bytecount > 5*LDT_ENTRY_SIZE)
++	if (bytecount > 5*LDT_ENTRY_SIZE)
+ 		bytecount = 5*LDT_ENTRY_SIZE;
+ 
+ 	err = bytecount;
+-	/* UML doesn't support lcall7 and lcall27.
++	/*
++	 * UML doesn't support lcall7 and lcall27.
+ 	 * So, we don't really have a default ldt, but emulate
+ 	 * an empty ldt of common host default ldt size.
+ 	 */
+-	if(clear_user(ptr, bytecount))
++	if (clear_user(ptr, bytecount))
+ 		err = -EFAULT;
+ 
+ 	return err;
+@@ -217,52 +211,52 @@ static int write_ldt(void __user * ptr, 
+ 	void *addr = NULL;
+ 
+ 	err = -EINVAL;
+-	if(bytecount != sizeof(ldt_info))
++	if (bytecount != sizeof(ldt_info))
+ 		goto out;
+ 	err = -EFAULT;
+-	if(copy_from_user(&ldt_info, ptr, sizeof(ldt_info)))
++	if (copy_from_user(&ldt_info, ptr, sizeof(ldt_info)))
+ 		goto out;
+ 
+ 	err = -EINVAL;
+-	if(ldt_info.entry_number >= LDT_ENTRIES)
++	if (ldt_info.entry_number >= LDT_ENTRIES)
+ 		goto out;
+-	if(ldt_info.contents == 3){
++	if (ldt_info.contents == 3) {
+ 		if (func == 1)
+ 			goto out;
+ 		if (ldt_info.seg_not_present == 0)
+ 			goto out;
+ 	}
+ 
+-        if(!ptrace_ldt)
+-                down(&ldt->semaphore);
++	if (!ptrace_ldt)
++		down(&ldt->semaphore);
+ 
+ 	err = write_ldt_entry(mm_idp, func, &ldt_info, &addr, 1);
+-	if(err)
++	if (err)
+ 		goto out_unlock;
+-        else if(ptrace_ldt) {
+-	/* With PTRACE_LDT available, this is used as a flag only */
+-                ldt->entry_count = 1;
+-                goto out;
+-        }
+-
+-	if(ldt_info.entry_number >= ldt->entry_count &&
+-	   ldt_info.entry_number >= LDT_DIRECT_ENTRIES){
+-		for(i=ldt->entry_count/LDT_ENTRIES_PER_PAGE;
+-		    i*LDT_ENTRIES_PER_PAGE <= ldt_info.entry_number;
+-		    i++){
+-			if(i == 0)
++	else if (ptrace_ldt) {
++		/* With PTRACE_LDT available, this is used as a flag only */
++		ldt->entry_count = 1;
++		goto out;
++	}
++
++	if (ldt_info.entry_number >= ldt->entry_count &&
++	    ldt_info.entry_number >= LDT_DIRECT_ENTRIES) {
++		for (i=ldt->entry_count/LDT_ENTRIES_PER_PAGE;
++		     i*LDT_ENTRIES_PER_PAGE <= ldt_info.entry_number;
++		     i++) {
++			if (i == 0)
+ 				memcpy(&entry0, ldt->u.entries,
+ 				       sizeof(entry0));
+ 			ldt->u.pages[i] = (struct ldt_entry *)
+ 				__get_free_page(GFP_KERNEL|__GFP_ZERO);
+-			if(!ldt->u.pages[i]){
++			if (!ldt->u.pages[i]) {
+ 				err = -ENOMEM;
+ 				/* Undo the change in host */
+ 				memset(&ldt_info, 0, sizeof(ldt_info));
+ 				write_ldt_entry(mm_idp, 1, &ldt_info, &addr, 1);
+ 				goto out_unlock;
+ 			}
+-			if(i == 0) {
++			if (i == 0) {
+ 				memcpy(ldt->u.pages[0], &entry0,
+ 				       sizeof(entry0));
+ 				memcpy(ldt->u.pages[0]+1, ldt->u.entries+1,
+@@ -271,17 +265,17 @@ static int write_ldt(void __user * ptr, 
+ 			ldt->entry_count = (i + 1) * LDT_ENTRIES_PER_PAGE;
+ 		}
+ 	}
+-	if(ldt->entry_count <= ldt_info.entry_number)
++	if (ldt->entry_count <= ldt_info.entry_number)
+ 		ldt->entry_count = ldt_info.entry_number + 1;
+ 
+-	if(ldt->entry_count <= LDT_DIRECT_ENTRIES)
++	if (ldt->entry_count <= LDT_DIRECT_ENTRIES)
+ 		ldt_p = ldt->u.entries + ldt_info.entry_number;
+ 	else
+ 		ldt_p = ldt->u.pages[ldt_info.entry_number/LDT_ENTRIES_PER_PAGE] +
+ 			ldt_info.entry_number%LDT_ENTRIES_PER_PAGE;
+ 
+-	if(ldt_info.base_addr == 0 && ldt_info.limit == 0 &&
+-	   (func == 1 || LDT_empty(&ldt_info))){
++	if (ldt_info.base_addr == 0 && ldt_info.limit == 0 &&
++	   (func == 1 || LDT_empty(&ldt_info))) {
+ 		ldt_p->a = 0;
+ 		ldt_p->b = 0;
+ 	}
+@@ -332,7 +326,7 @@ static void ldt_get_host_info(void)
+ 
+ 	spin_lock(&host_ldt_lock);
+ 
+-	if(host_ldt_entries != NULL){
++	if (host_ldt_entries != NULL) {
+ 		spin_unlock(&host_ldt_lock);
+ 		return;
+ 	}
+@@ -340,49 +334,49 @@ static void ldt_get_host_info(void)
+ 
+ 	spin_unlock(&host_ldt_lock);
+ 
+-	for(i = LDT_PAGES_MAX-1, order=0; i; i>>=1, order++);
++	for (i = LDT_PAGES_MAX-1, order=0; i; i>>=1, order++)
++		;
+ 
+ 	ldt = (struct ldt_entry *)
+ 	      __get_free_pages(GFP_KERNEL|__GFP_ZERO, order);
+-	if(ldt == NULL) {
+-		printk("ldt_get_host_info: couldn't allocate buffer for host "
+-		       "ldt\n");
++	if (ldt == NULL) {
++		printk(KERN_ERR "ldt_get_host_info: couldn't allocate buffer "
++		       "for host ldt\n");
+ 		return;
+ 	}
+ 
+ 	ret = modify_ldt(0, ldt, (1<<order)*PAGE_SIZE);
+-	if(ret < 0) {
+-		printk("ldt_get_host_info: couldn't read host ldt\n");
++	if (ret < 0) {
++		printk(KERN_ERR "ldt_get_host_info: couldn't read host ldt\n");
+ 		goto out_free;
+ 	}
+-	if(ret == 0) {
++	if (ret == 0) {
+ 		/* default_ldt is active, simply write an empty entry 0 */
+ 		host_ldt_entries = dummy_list;
+ 		goto out_free;
+ 	}
+ 
+-	for(i=0, size=0; i<ret/LDT_ENTRY_SIZE; i++){
+-		if(ldt[i].a != 0 || ldt[i].b != 0)
++	for (i=0, size=0; i<ret/LDT_ENTRY_SIZE; i++) {
++		if (ldt[i].a != 0 || ldt[i].b != 0)
+ 			size++;
+ 	}
+ 
+-	if(size < ARRAY_SIZE(dummy_list))
++	if (size < ARRAY_SIZE(dummy_list))
+ 		host_ldt_entries = dummy_list;
+ 	else {
+ 		size = (size + 1) * sizeof(dummy_list[0]);
+ 		tmp = kmalloc(size, GFP_KERNEL);
+-		if(tmp == NULL) {
+-			printk("ldt_get_host_info: couldn't allocate host ldt "
+-			       "list\n");
++		if (tmp == NULL) {
++			printk(KERN_ERR "ldt_get_host_info: couldn't allocate "
++			       "host ldt list\n");
+ 			goto out_free;
+ 		}
+ 		host_ldt_entries = tmp;
+ 	}
+ 
+-	for(i=0, k=0; i<ret/LDT_ENTRY_SIZE; i++){
+-		if(ldt[i].a != 0 || ldt[i].b != 0) {
++	for (i=0, k=0; i<ret/LDT_ENTRY_SIZE; i++) {
++		if (ldt[i].a != 0 || ldt[i].b != 0)
+ 			host_ldt_entries[k++] = i;
+-		}
+ 	}
+ 	host_ldt_entries[k] = -1;
+ 
+@@ -401,15 +395,15 @@ long init_new_ldt(struct mmu_context_ska
+ 	struct proc_mm_op copy;
+ 
+ 
+-	if(!ptrace_ldt)
++	if (!ptrace_ldt)
+ 		init_MUTEX(&new_mm->ldt.semaphore);
+ 
+-	if(!from_mm){
++	if (!from_mm) {
+ 		memset(&desc, 0, sizeof(desc));
+ 		/*
+ 		 * We have to initialize a clean ldt.
+ 		 */
+-		if(proc_mm) {
++		if (proc_mm) {
+ 			/*
+ 			 * If the new mm was created using proc_mm, host's
+ 			 * default-ldt currently is assigned, which normally
+@@ -417,8 +411,7 @@ long init_new_ldt(struct mmu_context_ska
+ 			 * To remove these gates, we simply write an empty
+ 			 * entry as number 0 to the host.
+ 			 */
+-			err = write_ldt_entry(&new_mm->id, 1, &desc,
+-					      &addr, 1);
++			err = write_ldt_entry(&new_mm->id, 1, &desc, &addr, 1);
+ 		}
+ 		else{
+ 			/*
+@@ -427,11 +420,11 @@ long init_new_ldt(struct mmu_context_ska
+ 			 * will be reset in the following loop
+ 			 */
+ 			ldt_get_host_info();
+-			for(num_p=host_ldt_entries; *num_p != -1; num_p++){
++			for (num_p=host_ldt_entries; *num_p != -1; num_p++) {
+ 				desc.entry_number = *num_p;
+ 				err = write_ldt_entry(&new_mm->id, 1, &desc,
+ 						      &addr, *(num_p + 1) == -1);
+-				if(err)
++				if (err)
+ 					break;
+ 			}
+ 		}
+@@ -440,8 +433,9 @@ long init_new_ldt(struct mmu_context_ska
+ 		goto out;
+ 	}
+ 
+-	if(proc_mm){
+-		/* We have a valid from_mm, so we now have to copy the LDT of
++	if (proc_mm) {
++		/*
++		 * We have a valid from_mm, so we now have to copy the LDT of
+ 		 * from_mm to new_mm, because using proc_mm an new mm with
+ 		 * an empty/default LDT was created in new_mm()
+ 		 */
+@@ -450,27 +444,27 @@ long init_new_ldt(struct mmu_context_ska
+ 					      { .copy_segments =
+ 							from_mm->id.u.mm_fd } } );
+ 		i = os_write_file(new_mm->id.u.mm_fd, &copy, sizeof(copy));
+-		if(i != sizeof(copy))
+-			printk("new_mm : /proc/mm copy_segments failed, "
+-			       "err = %d\n", -i);
++		if (i != sizeof(copy))
++			printk(KERN_ERR "new_mm : /proc/mm copy_segments "
++			       "failed, err = %d\n", -i);
+ 	}
+ 
+-	if(!ptrace_ldt) {
+-		/* Our local LDT is used to supply the data for
++	if (!ptrace_ldt) {
++		/*
++		 * Our local LDT is used to supply the data for
+ 		 * modify_ldt(READLDT), if PTRACE_LDT isn't available,
+ 		 * i.e., we have to use the stub for modify_ldt, which
+ 		 * can't handle the big read buffer of up to 64kB.
+ 		 */
+ 		down(&from_mm->ldt.semaphore);
+-		if(from_mm->ldt.entry_count <= LDT_DIRECT_ENTRIES){
++		if (from_mm->ldt.entry_count <= LDT_DIRECT_ENTRIES)
+ 			memcpy(new_mm->ldt.u.entries, from_mm->ldt.u.entries,
+ 			       sizeof(new_mm->ldt.u.entries));
+-		}
+-		else{
++		else {
+ 			i = from_mm->ldt.entry_count / LDT_ENTRIES_PER_PAGE;
+-			while(i-->0){
++			while (i-->0) {
+ 				page = __get_free_page(GFP_KERNEL|__GFP_ZERO);
+-				if (!page){
++				if (!page) {
+ 					err = -ENOMEM;
+ 					break;
+ 				}
+@@ -493,11 +487,10 @@ void free_ldt(struct mmu_context_skas * 
+ {
+ 	int i;
+ 
+-	if(!ptrace_ldt && mm->ldt.entry_count > LDT_DIRECT_ENTRIES){
++	if (!ptrace_ldt && mm->ldt.entry_count > LDT_DIRECT_ENTRIES) {
+ 		i = mm->ldt.entry_count / LDT_ENTRIES_PER_PAGE;
+-		while(i-- > 0){
+-			free_page((long )mm->ldt.u.pages[i]);
+-		}
++		while (i-- > 0)
++			free_page((long) mm->ldt.u.pages[i]);
+ 	}
+ 	mm->ldt.entry_count = 0;
+ }
+Index: linux-2.6.22/arch/um/kernel/um_arch.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/um_arch.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/um_arch.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,39 +1,22 @@
+ /*
+- * Copyright (C) 2000, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/kernel.h"
+-#include "linux/sched.h"
+-#include "linux/notifier.h"
+-#include "linux/mm.h"
+-#include "linux/types.h"
+-#include "linux/tty.h"
+-#include "linux/init.h"
+-#include "linux/bootmem.h"
+-#include "linux/spinlock.h"
+-#include "linux/utsname.h"
+-#include "linux/sysrq.h"
+-#include "linux/seq_file.h"
+ #include "linux/delay.h"
++#include "linux/mm.h"
+ #include "linux/module.h"
++#include "linux/seq_file.h"
++#include "linux/string.h"
+ #include "linux/utsname.h"
+-#include "asm/page.h"
+ #include "asm/pgtable.h"
+-#include "asm/ptrace.h"
+-#include "asm/elf.h"
+-#include "asm/user.h"
++#include "asm/processor.h"
+ #include "asm/setup.h"
+-#include "ubd_user.h"
+-#include "asm/current.h"
+-#include "kern_util.h"
+-#include "as-layout.h"
+ #include "arch.h"
++#include "as-layout.h"
++#include "init.h"
+ #include "kern.h"
+ #include "mem_user.h"
+-#include "mem.h"
+-#include "initrd.h"
+-#include "init.h"
+ #include "os.h"
+ #include "skas.h"
+ 
+@@ -48,7 +31,7 @@ static void __init add_arg(char *arg)
+ 		printf("add_arg: Too many command line arguments!\n");
+ 		exit(1);
+ 	}
+-	if(strlen(command_line) > 0)
++	if (strlen(command_line) > 0)
+ 		strcat(command_line, " ");
+ 	strcat(command_line, arg);
+ }
+@@ -133,7 +116,7 @@ static int have_root __initdata = 0;
+ /* Set in uml_mem_setup and modified in linux_main */
+ long long physmem_size = 32 * 1024 * 1024;
+ 
+-static char *usage_string = 
++static char *usage_string =
+ "User Mode Linux v%s\n"
+ "	available at http://user-mode-linux.sourceforge.net/\n\n";
+ 
+@@ -191,7 +174,7 @@ static int __init uml_ncpus_setup(char *
+ 
+ __uml_setup("ncpus=", uml_ncpus_setup,
+ "ncpus=<# of desired CPUs>\n"
+-"    This tells an SMP kernel how many virtual processors to start.\n\n" 
++"    This tells an SMP kernel how many virtual processors to start.\n\n"
+ );
+ #endif
+ 
+@@ -223,9 +206,8 @@ static int __init uml_checksetup(char *l
+ 		int n;
+ 
+ 		n = strlen(p->str);
+-		if(!strncmp(line, p->str, n)){
+-			if (p->setup_func(line + n, add)) return 1;
+-		}
++		if (!strncmp(line, p->str, n) && p->setup_func(line + n, add))
++			return 1;
+ 		p++;
+ 	}
+ 	return 0;
+@@ -236,7 +218,7 @@ static void __init uml_postsetup(void)
+ 	initcall_t *p;
+ 
+ 	p = &__uml_postsetup_start;
+-	while(p < &__uml_postsetup_end){
++	while(p < &__uml_postsetup_end) {
+ 		(*p)();
+ 		p++;
+ 	}
+@@ -272,16 +254,18 @@ int __init linux_main(int argc, char **a
+ 	unsigned int i, add;
+ 	char * mode;
+ 
+-	for (i = 1; i < argc; i++){
+-		if((i == 1) && (argv[i][0] == ' ')) continue;
++	for (i = 1; i < argc; i++) {
++		if ((i == 1) && (argv[i][0] == ' '))
++			continue;
+ 		add = 1;
+ 		uml_checksetup(argv[i], &add);
+ 		if (add)
+ 			add_arg(argv[i]);
+ 	}
+-	if(have_root == 0)
++	if (have_root == 0)
+ 		add_arg(DEFAULT_COMMAND_LINE);
+ 
++	/* OS sanity checks that need to happen before the kernel runs */
+ 	os_early_checks();
+ 
+ 	can_do_skas();
+@@ -302,12 +286,14 @@ int __init linux_main(int argc, char **a
+ 
+ 	brk_start = (unsigned long) sbrk(0);
+ 
+-	/* Increase physical memory size for exec-shield users
+-	so they actually get what they asked for. This should
+-	add zero for non-exec shield users */
++	/*
++	 * Increase physical memory size for exec-shield users
++	 * so they actually get what they asked for. This should
++	 * add zero for non-exec shield users
++	 */
+ 
+ 	diff = UML_ROUND_UP(brk_start) - UML_ROUND_UP(&_end);
+-	if(diff > 1024 * 1024){
++	if (diff > 1024 * 1024) {
+ 		printf("Adding %ld bytes to physical memory to account for "
+ 		       "exec-shield gap\n", diff);
+ 		physmem_size += UML_ROUND_UP(brk_start) - UML_ROUND_UP(&_end);
+@@ -324,11 +310,12 @@ int __init linux_main(int argc, char **a
+ 	iomem_size = (iomem_size + PAGE_SIZE - 1) & PAGE_MASK;
+ 	max_physmem = get_kmem_end() - uml_physmem - iomem_size - MIN_VMALLOC;
+ 
+-	/* Zones have to begin on a 1 << MAX_ORDER page boundary,
++	/*
++	 * Zones have to begin on a 1 << MAX_ORDER page boundary,
+ 	 * so this makes sure that's true for highmem
+ 	 */
+ 	max_physmem &= ~((1 << (PAGE_SHIFT + MAX_ORDER)) - 1);
+-	if(physmem_size + iomem_size > max_physmem){
++	if (physmem_size + iomem_size > max_physmem) {
+ 		highmem = physmem_size + iomem_size - max_physmem;
+ 		physmem_size -= highmem;
+ #ifndef CONFIG_HIGHMEM
+@@ -345,7 +332,7 @@ int __init linux_main(int argc, char **a
+ 	start_vm = VMALLOC_START;
+ 
+ 	setup_physmem(uml_physmem, uml_reserved, physmem_size, highmem);
+-	if(init_maps(physmem_size, iomem_size, highmem)){
++	if (init_maps(physmem_size, iomem_size, highmem)) {
+ 		printf("Failed to allocate mem_map for %Lu bytes of physical "
+ 		       "memory and %Lu bytes of highmem\n", physmem_size,
+ 		       highmem);
+@@ -354,10 +341,11 @@ int __init linux_main(int argc, char **a
+ 
+ 	virtmem_size = physmem_size;
+ 	avail = get_kmem_end() - start_vm;
+-	if(physmem_size > avail) virtmem_size = avail;
++	if (physmem_size > avail)
++		virtmem_size = avail;
+ 	end_vm = start_vm + virtmem_size;
+ 
+-	if(virtmem_size < physmem_size)
++	if (virtmem_size < physmem_size)
+ 		printf("Kernel virtual memory size shrunk to %lu bytes\n",
+ 		       virtmem_size);
+ 
+Index: linux-2.6.22/include/asm-um/mmu_context.h
+===================================================================
+--- linux-2.6.22.orig/include/asm-um/mmu_context.h	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/include/asm-um/mmu_context.h	2007-08-14 13:43:38.000000000 -0400
+@@ -1,5 +1,5 @@
+ /* 
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+@@ -55,14 +55,3 @@ extern int init_new_context(struct task_
+ extern void destroy_context(struct mm_struct *mm);
+ 
+ #endif
+-
+-/*
+- * Overrides for Emacs so that we follow Linus's tabbing style.
+- * Emacs will notice this stuff at the end of the file and automatically
+- * adjust the settings for this buffer only.  This must remain at the end
+- * of the file.
+- * ---------------------------------------------------------------------------
+- * Local variables:
+- * c-file-style: "linux"
+- * End:
+- */
+Index: linux-2.6.22/arch/um/sys-x86_64/signal.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-x86_64/signal.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/sys-x86_64/signal.c	2007-08-14 13:43:38.000000000 -0400
+@@ -3,16 +3,11 @@
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/stddef.h"
+-#include "linux/errno.h"
+ #include "linux/personality.h"
+ #include "linux/ptrace.h"
+-#include "asm/current.h"
++#include "asm/unistd.h"
+ #include "asm/uaccess.h"
+-#include "asm/sigcontext.h"
+-#include "asm/ptrace.h"
+-#include "asm/arch/ucontext.h"
+-#include "sysdep/ptrace.h"
++#include "asm/ucontext.h"
+ #include "frame_kern.h"
+ #include "skas.h"
+ 
+@@ -20,28 +15,28 @@ void copy_sc(struct uml_pt_regs *regs, v
+ {
+ 	struct sigcontext *sc = from;
+ 
+-#define GETREG(regs, regno, sc, regname) \
+-       (regs)->regs[(regno) / sizeof(unsigned long)] = (sc)->regname
++#define GETREG(regs, regno, sc, regname)				\
++	(regs)->regs[(regno) / sizeof(unsigned long)] = (sc)->regname
+ 
+-       GETREG(regs, R8, sc, r8);
+-       GETREG(regs, R9, sc, r9);
+-       GETREG(regs, R10, sc, r10);
+-       GETREG(regs, R11, sc, r11);
+-       GETREG(regs, R12, sc, r12);
+-       GETREG(regs, R13, sc, r13);
+-       GETREG(regs, R14, sc, r14);
+-       GETREG(regs, R15, sc, r15);
+-       GETREG(regs, RDI, sc, rdi);
+-       GETREG(regs, RSI, sc, rsi);
+-       GETREG(regs, RBP, sc, rbp);
+-       GETREG(regs, RBX, sc, rbx);
+-       GETREG(regs, RDX, sc, rdx);
+-       GETREG(regs, RAX, sc, rax);
+-       GETREG(regs, RCX, sc, rcx);
+-       GETREG(regs, RSP, sc, rsp);
+-       GETREG(regs, RIP, sc, rip);
+-       GETREG(regs, EFLAGS, sc, eflags);
+-       GETREG(regs, CS, sc, cs);
++	GETREG(regs, R8, sc, r8);
++	GETREG(regs, R9, sc, r9);
++	GETREG(regs, R10, sc, r10);
++	GETREG(regs, R11, sc, r11);
++	GETREG(regs, R12, sc, r12);
++	GETREG(regs, R13, sc, r13);
++	GETREG(regs, R14, sc, r14);
++	GETREG(regs, R15, sc, r15);
++	GETREG(regs, RDI, sc, rdi);
++	GETREG(regs, RSI, sc, rsi);
++	GETREG(regs, RBP, sc, rbp);
++	GETREG(regs, RBX, sc, rbx);
++	GETREG(regs, RDX, sc, rdx);
++	GETREG(regs, RAX, sc, rax);
++	GETREG(regs, RCX, sc, rcx);
++	GETREG(regs, RSP, sc, rsp);
++	GETREG(regs, RIP, sc, rip);
++	GETREG(regs, EFLAGS, sc, eflags);
++	GETREG(regs, CS, sc, cs);
+ 
+ #undef GETREG
+ }
+@@ -49,58 +44,58 @@ void copy_sc(struct uml_pt_regs *regs, v
+ static int copy_sc_from_user(struct pt_regs *regs,
+ 			     struct sigcontext __user *from)
+ {
+-       int err = 0;
++	int err = 0;
+ 
+-#define GETREG(regs, regno, sc, regname) \
+-       __get_user((regs)->regs.regs[(regno) / sizeof(unsigned long)], \
+-                  &(sc)->regname)
+-
+-       err |= GETREG(regs, R8, from, r8);
+-       err |= GETREG(regs, R9, from, r9);
+-       err |= GETREG(regs, R10, from, r10);
+-       err |= GETREG(regs, R11, from, r11);
+-       err |= GETREG(regs, R12, from, r12);
+-       err |= GETREG(regs, R13, from, r13);
+-       err |= GETREG(regs, R14, from, r14);
+-       err |= GETREG(regs, R15, from, r15);
+-       err |= GETREG(regs, RDI, from, rdi);
+-       err |= GETREG(regs, RSI, from, rsi);
+-       err |= GETREG(regs, RBP, from, rbp);
+-       err |= GETREG(regs, RBX, from, rbx);
+-       err |= GETREG(regs, RDX, from, rdx);
+-       err |= GETREG(regs, RAX, from, rax);
+-       err |= GETREG(regs, RCX, from, rcx);
+-       err |= GETREG(regs, RSP, from, rsp);
+-       err |= GETREG(regs, RIP, from, rip);
+-       err |= GETREG(regs, EFLAGS, from, eflags);
+-       err |= GETREG(regs, CS, from, cs);
++#define GETREG(regs, regno, sc, regname)				\
++	__get_user((regs)->regs.regs[(regno) / sizeof(unsigned long)],	\
++		   &(sc)->regname)
++
++	err |= GETREG(regs, R8, from, r8);
++	err |= GETREG(regs, R9, from, r9);
++	err |= GETREG(regs, R10, from, r10);
++	err |= GETREG(regs, R11, from, r11);
++	err |= GETREG(regs, R12, from, r12);
++	err |= GETREG(regs, R13, from, r13);
++	err |= GETREG(regs, R14, from, r14);
++	err |= GETREG(regs, R15, from, r15);
++	err |= GETREG(regs, RDI, from, rdi);
++	err |= GETREG(regs, RSI, from, rsi);
++	err |= GETREG(regs, RBP, from, rbp);
++	err |= GETREG(regs, RBX, from, rbx);
++	err |= GETREG(regs, RDX, from, rdx);
++	err |= GETREG(regs, RAX, from, rax);
++	err |= GETREG(regs, RCX, from, rcx);
++	err |= GETREG(regs, RSP, from, rsp);
++	err |= GETREG(regs, RIP, from, rip);
++	err |= GETREG(regs, EFLAGS, from, eflags);
++	err |= GETREG(regs, CS, from, cs);
+ 
+ #undef GETREG
+ 
+-       return err;
++	return err;
+ }
+ 
+ static int copy_sc_to_user(struct sigcontext __user *to,
+ 			   struct _fpstate __user *to_fp, struct pt_regs *regs,
+ 			   unsigned long mask, unsigned long sp)
+ {
+-        struct faultinfo * fi = &current->thread.arch.faultinfo;
++	struct faultinfo * fi = &current->thread.arch.faultinfo;
+ 	int err = 0;
+ 
+ 	err |= __put_user(0, &to->gs);
+ 	err |= __put_user(0, &to->fs);
+ 
+-#define PUTREG(regs, regno, sc, regname) \
+-       __put_user((regs)->regs.regs[(regno) / sizeof(unsigned long)], \
+-                  &(sc)->regname)
++#define PUTREG(regs, regno, sc, regname)				\
++	__put_user((regs)->regs.regs[(regno) / sizeof(unsigned long)],	\
++		   &(sc)->regname)
+ 
+ 	err |= PUTREG(regs, RDI, to, rdi);
+ 	err |= PUTREG(regs, RSI, to, rsi);
+ 	err |= PUTREG(regs, RBP, to, rbp);
+-        /* Must use orignal RSP, which is passed in, rather than what's in
+-         * the pt_regs, because that's already been updated to point at the
+-         * signal frame.
+-         */
++	/* Must use orignal RSP, which is passed in, rather than what's in
++	 * the pt_regs, because that's already been updated to point at the
++	 * signal frame.
++	 */
+ 	err |= __put_user(sp, &to->rsp);
+ 	err |= PUTREG(regs, RBX, to, rbx);
+ 	err |= PUTREG(regs, RDX, to, rdx);
+@@ -116,9 +111,9 @@ static int copy_sc_to_user(struct sigcon
+ 	err |= PUTREG(regs, R15, to, r15);
+ 	err |= PUTREG(regs, CS, to, cs); /* XXX x86_64 doesn't do this */
+ 
+-        err |= __put_user(fi->cr2, &to->cr2);
+-        err |= __put_user(fi->error_code, &to->err);
+-        err |= __put_user(fi->trap_no, &to->trapno);
++	err |= __put_user(fi->cr2, &to->cr2);
++	err |= __put_user(fi->error_code, &to->err);
++	err |= __put_user(fi->trap_no, &to->trapno);
+ 
+ 	err |= PUTREG(regs, RIP, to, rip);
+ 	err |= PUTREG(regs, EFLAGS, to, eflags);
+@@ -131,9 +126,9 @@ static int copy_sc_to_user(struct sigcon
+ 
+ struct rt_sigframe
+ {
+-       char __user *pretcode;
+-       struct ucontext uc;
+-       struct siginfo info;
++	char __user *pretcode;
++	struct ucontext uc;
++	struct siginfo info;
+ };
+ 
+ #define round_down(m, n) (((m) / (n)) * (n))
+@@ -151,7 +146,7 @@ int setup_signal_stack_si(unsigned long 
+ 	frame = (struct rt_sigframe __user *)
+ 		round_down(stack_top - sizeof(struct rt_sigframe), 16);
+ 	/* Subtract 128 for a red zone and 8 for proper alignment */
+-        frame = (struct rt_sigframe __user *) ((unsigned long) frame - 128 - 8);
++	frame = (struct rt_sigframe __user *) ((unsigned long) frame - 128 - 8);
+ 
+ 	if (!access_ok(VERIFY_WRITE, fp, sizeof(struct _fpstate)))
+ 		goto out;
+@@ -241,7 +236,7 @@ long sys_rt_sigreturn(struct pt_regs *re
+ 	struct ucontext __user *uc = &frame->uc;
+ 	sigset_t set;
+ 
+-	if(copy_from_user(&set, &uc->uc_sigmask, sizeof(set)))
++	if (copy_from_user(&set, &uc->uc_sigmask, sizeof(set)))
+ 		goto segfault;
+ 
+ 	sigdelsetmask(&set, ~_BLOCKABLE);
+@@ -251,7 +246,7 @@ long sys_rt_sigreturn(struct pt_regs *re
+ 	recalc_sigpending();
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 
+-	if(copy_sc_from_user(&current->thread.regs, &uc->uc_mcontext))
++	if (copy_sc_from_user(&current->thread.regs, &uc->uc_mcontext))
+ 		goto segfault;
+ 
+ 	/* Avoid ERESTART handling */
+@@ -262,13 +257,3 @@ long sys_rt_sigreturn(struct pt_regs *re
+ 	force_sig(SIGSEGV, current);
+ 	return 0;
+ }
+-/*
+- * Overrides for Emacs so that we follow Linus's tabbing style.
+- * Emacs will notice this stuff at the end of the file and automatically
+- * adjust the settings for this buffer only.  This must remain at the end
+- * of the file.
+- * ---------------------------------------------------------------------------
+- * Local variables:
+- * c-file-style: "linux"
+- * End:
+- */
+Index: linux-2.6.22/arch/um/sys-i386/ptrace.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-i386/ptrace.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/sys-i386/ptrace.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,18 +1,11 @@
+-/* 
+- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
++/*
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include <linux/compiler.h>
+-#include "linux/sched.h"
+ #include "linux/mm.h"
+-#include "asm/elf.h"
+-#include "asm/ptrace.h"
++#include "linux/sched.h"
+ #include "asm/uaccess.h"
+-#include "asm/unistd.h"
+-#include "sysdep/ptrace.h"
+-#include "sysdep/sigcontext.h"
+-#include "sysdep/sc.h"
+ 
+ extern int arch_switch_tls(struct task_struct *from, struct task_struct *to);
+ 
+@@ -23,7 +16,8 @@ void arch_switch_to(struct task_struct *
+ 		return;
+ 
+ 	if (err != -EINVAL)
+-		printk(KERN_WARNING "arch_switch_tls failed, errno %d, not EINVAL\n", -err);
++		printk(KERN_WARNING "arch_switch_tls failed, errno %d, "
++		       "not EINVAL\n", -err);
+ 	else
+ 		printk(KERN_WARNING "arch_switch_tls failed, errno = EINVAL\n");
+ }
+@@ -34,21 +28,21 @@ int is_syscall(unsigned long addr)
+ 	int n;
+ 
+ 	n = copy_from_user(&instr, (void __user *) addr, sizeof(instr));
+-	if(n){
++	if (n) {
+ 		/* access_process_vm() grants access to vsyscall and stub,
+ 		 * while copy_from_user doesn't. Maybe access_process_vm is
+ 		 * slow, but that doesn't matter, since it will be called only
+ 		 * in case of singlestepping, if copy_from_user failed.
+ 		 */
+ 		n = access_process_vm(current, addr, &instr, sizeof(instr), 0);
+-		if(n != sizeof(instr)) {
+-			printk("is_syscall : failed to read instruction from "
+-			       "0x%lx\n", addr);
+-			return(1);
++		if (n != sizeof(instr)) {
++			printk(KERN_ERR "is_syscall : failed to read "
++			       "instruction from 0x%lx\n", addr);
++			return 1;
+ 		}
+ 	}
+ 	/* int 0x80 or sysenter */
+-	return((instr == 0x80cd) || (instr == 0x340f));
++	return (instr == 0x80cd) || (instr == 0x340f);
+ }
+ 
+ /* determines which flags the user has access to. */
+@@ -92,21 +86,21 @@ int putreg(struct task_struct *child, in
+ 
+ int poke_user(struct task_struct *child, long addr, long data)
+ {
+-        if ((addr & 3) || addr < 0)
+-                return -EIO;
+-
+-        if (addr < MAX_REG_OFFSET)
+-                return putreg(child, addr, data);
++	if ((addr & 3) || addr < 0)
++		return -EIO;
+ 
+-        else if((addr >= offsetof(struct user, u_debugreg[0])) &&
+-                (addr <= offsetof(struct user, u_debugreg[7]))){
+-                addr -= offsetof(struct user, u_debugreg[0]);
+-                addr = addr >> 2;
+-                if((addr == 4) || (addr == 5)) return -EIO;
+-                child->thread.arch.debugregs[addr] = data;
+-                return 0;
+-        }
+-        return -EIO;
++	if (addr < MAX_REG_OFFSET)
++		return putreg(child, addr, data);
++	else if ((addr >= offsetof(struct user, u_debugreg[0])) &&
++		 (addr <= offsetof(struct user, u_debugreg[7]))) {
++		addr -= offsetof(struct user, u_debugreg[0]);
++		addr = addr >> 2;
++		if ((addr == 4) || (addr == 5))
++			return -EIO;
++		child->thread.arch.debugregs[addr] = data;
++		return 0;
++	}
++	return -EIO;
+ }
+ 
+ unsigned long getreg(struct task_struct *child, int regno)
+@@ -129,20 +123,20 @@ unsigned long getreg(struct task_struct 
+ 	return retval;
+ }
+ 
++/* read the word at location addr in the USER area. */
+ int peek_user(struct task_struct *child, long addr, long data)
+ {
+-/* read the word at location addr in the USER area. */
+ 	unsigned long tmp;
+ 
+ 	if ((addr & 3) || addr < 0)
+ 		return -EIO;
+ 
+ 	tmp = 0;  /* Default return condition */
+-	if(addr < MAX_REG_OFFSET){
++	if (addr < MAX_REG_OFFSET) {
+ 		tmp = getreg(child, addr);
+ 	}
+-	else if((addr >= offsetof(struct user, u_debugreg[0])) &&
+-		(addr <= offsetof(struct user, u_debugreg[7]))){
++	else if ((addr >= offsetof(struct user, u_debugreg[0])) &&
++		 (addr <= offsetof(struct user, u_debugreg[7]))) {
+ 		addr -= offsetof(struct user, u_debugreg[0]);
+ 		addr = addr >> 2;
+ 		tmp = child->thread.arch.debugregs[addr];
+@@ -173,15 +167,15 @@ struct i387_fxsave_struct {
+ static inline unsigned short twd_i387_to_fxsr( unsigned short twd )
+ {
+ 	unsigned int tmp; /* to avoid 16 bit prefixes in the code */
+- 
++
+ 	/* Transform each pair of bits into 01 (valid) or 00 (empty) */
+-        tmp = ~twd;
+-        tmp = (tmp | (tmp>>1)) & 0x5555; /* 0V0V0V0V0V0V0V0V */
+-        /* and move the valid bits to the lower byte. */
+-        tmp = (tmp | (tmp >> 1)) & 0x3333; /* 00VV00VV00VV00VV */
+-        tmp = (tmp | (tmp >> 2)) & 0x0f0f; /* 0000VVVV0000VVVV */
+-        tmp = (tmp | (tmp >> 4)) & 0x00ff; /* 00000000VVVVVVVV */
+-        return tmp;
++	tmp = ~twd;
++	tmp = (tmp | (tmp>>1)) & 0x5555; /* 0V0V0V0V0V0V0V0V */
++	/* and move the valid bits to the lower byte. */
++	tmp = (tmp | (tmp >> 1)) & 0x3333; /* 00VV00VV00VV00VV */
++	tmp = (tmp | (tmp >> 2)) & 0x0f0f; /* 0000VVVV0000VVVV */
++	tmp = (tmp | (tmp >> 4)) & 0x00ff; /* 00000000VVVVVVVV */
++	return tmp;
+ }
+ 
+ static inline unsigned long twd_fxsr_to_i387( struct i387_fxsave_struct *fxsave )
+@@ -235,7 +229,7 @@ static inline int convert_fxsr_to_user(s
+ 	return 0;
+ }
+ 
+-static inline int convert_fxsr_from_user(struct pt_regs *regs, 
++static inline int convert_fxsr_from_user(struct pt_regs *regs,
+ 					 struct _fpstate __user *buf)
+ {
+ 	return 0;
+@@ -247,18 +241,20 @@ int get_fpregs(unsigned long buf, struct
+ 
+ 	err = convert_fxsr_to_user((struct _fpstate __user *) buf,
+ 				   &child->thread.regs);
+-	if(err) return(-EFAULT);
+-	else return(0);
++	if (err)
++		return -EFAULT;
++	return 0;
+ }
+ 
+ int set_fpregs(unsigned long buf, struct task_struct *child)
+ {
+ 	int err;
+ 
+-	err = convert_fxsr_from_user(&child->thread.regs, 
++	err = convert_fxsr_from_user(&child->thread.regs,
+ 				     (struct _fpstate __user *) buf);
+-	if(err) return(-EFAULT);
+-	else return(0);
++	if (err)
++		return -EFAULT;
++	return 0;
+ }
+ 
+ int get_fpxregs(unsigned long buf, struct task_struct *tsk)
+@@ -284,7 +280,7 @@ int dump_fpu(struct pt_regs *regs, elf_f
+ 	fpu->fos = 0;
+ 	memcpy(fpu->st_space, (void *) SC_FP_ST(PT_REGS_SC(regs)),
+ 	       sizeof(fpu->st_space));
+-	return(1);
++	return 1;
+ }
+ #endif
+ 
+@@ -292,14 +288,3 @@ int dump_fpu(struct pt_regs *regs, elf_f
+ {
+ 	return 1;
+ }
+-
+-/*
+- * Overrides for Emacs so that we follow Linus's tabbing style.
+- * Emacs will notice this stuff at the end of the file and automatically
+- * adjust the settings for this buffer only.  This must remain at the end
+- * of the file.
+- * ---------------------------------------------------------------------------
+- * Local variables:
+- * c-file-style: "linux"
+- * End:
+- */
+Index: linux-2.6.22/arch/um/kernel/exec.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/exec.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/exec.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,24 +1,19 @@
+ /*
+- * Copyright (C) 2000, 2001 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/slab.h"
++#include "linux/stddef.h"
++#include "linux/fs.h"
+ #include "linux/smp_lock.h"
+ #include "linux/ptrace.h"
+-#include "linux/fs.h"
+-#include "asm/ptrace.h"
+-#include "asm/pgtable.h"
+-#include "asm/tlbflush.h"
++#include "linux/sched.h"
++#include "asm/current.h"
++#include "asm/processor.h"
+ #include "asm/uaccess.h"
+-#include "kern_util.h"
+-#include "as-layout.h"
+ #include "mem_user.h"
+-#include "kern.h"
+-#include "irq_user.h"
+-#include "tlb.h"
++#include "skas.h"
+ #include "os.h"
+-#include "skas/skas.h"
+ 
+ void flush_thread(void)
+ {
+@@ -29,8 +24,8 @@ void flush_thread(void)
+ 	arch_flush_thread(&current->thread.arch);
+ 
+ 	ret = unmap(&current->mm->context.skas.id, 0, end, 1, &data);
+-	if(ret){
+-		printk("flush_thread - clearing address space failed, "
++	if (ret) {
++		printk(KERN_ERR "flush_thread - clearing address space failed, "
+ 		       "err = %d\n", ret);
+ 		force_sig(SIGKILL, current);
+ 	}
+@@ -52,7 +47,7 @@ extern void log_exec(char **argv, void *
+ static long execve1(char *file, char __user * __user *argv,
+ 		    char __user *__user *env)
+ {
+-        long error;
++	long error;
+ #ifdef CONFIG_TTY_LOG
+ 	struct tty_struct *tty;
+ 
+@@ -62,16 +57,16 @@ static long execve1(char *file, char __u
+ 		log_exec(argv, tty);
+ 	mutex_unlock(&tty_mutex);
+ #endif
+-        error = do_execve(file, argv, env, &current->thread.regs);
+-        if (error == 0){
++	error = do_execve(file, argv, env, &current->thread.regs);
++	if (error == 0) {
+ 		task_lock(current);
+-                current->ptrace &= ~PT_DTRACE;
++		current->ptrace &= ~PT_DTRACE;
+ #ifdef SUBARCH_EXECVE1
+ 		SUBARCH_EXECVE1(&current->thread.regs.regs);
+ #endif
+ 		task_unlock(current);
+-        }
+-        return(error);
++	}
++	return error;
+ }
+ 
+ long um_execve(char *file, char __user *__user *argv, char __user *__user *env)
+@@ -79,9 +74,9 @@ long um_execve(char *file, char __user *
+ 	long err;
+ 
+ 	err = execve1(file, argv, env);
+-	if(!err)
++	if (!err)
+ 		do_longjmp(current->thread.exec_buf, 1);
+-	return(err);
++	return err;
+ }
+ 
+ long sys_execve(char __user *file, char __user *__user *argv,
+@@ -98,5 +93,5 @@ long sys_execve(char __user *file, char 
+ 	putname(filename);
+  out:
+ 	unlock_kernel();
+-	return(error);
++	return error;
+ }
+Index: linux-2.6.22/arch/um/include/sysdep-i386/ptrace.h
+===================================================================
+--- linux-2.6.22.orig/arch/um/include/sysdep-i386/ptrace.h	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/include/sysdep-i386/ptrace.h	2007-08-14 13:43:38.000000000 -0400
+@@ -97,12 +97,12 @@ struct syscall_args {
+ };
+ 
+ #define SYSCALL_ARGS(r) ((struct syscall_args) \
+-                        { .args = { UPT_SYSCALL_ARG1(r), \
+-                                    UPT_SYSCALL_ARG2(r), \
+- 			            UPT_SYSCALL_ARG3(r), \
+-                                    UPT_SYSCALL_ARG4(r), \
+-		                    UPT_SYSCALL_ARG5(r), \
+-                                    UPT_SYSCALL_ARG6(r) } } )
++			 { .args = { UPT_SYSCALL_ARG1(r),	\
++				     UPT_SYSCALL_ARG2(r),	\
++				     UPT_SYSCALL_ARG3(r),	\
++				     UPT_SYSCALL_ARG4(r),	\
++				     UPT_SYSCALL_ARG5(r),	\
++				     UPT_SYSCALL_ARG6(r) } } )
+ 
+ #define UPT_REG(regs, reg) \
+ 	({	unsigned long val; \
+Index: linux-2.6.22/arch/um/include/irq_user.h
+===================================================================
+--- linux-2.6.22.orig/arch/um/include/irq_user.h	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/include/irq_user.h	2007-08-14 13:30:08.000000000 -0400
+@@ -1,12 +1,12 @@
+ /*
+- * Copyright (C) 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2001 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+ #ifndef __IRQ_USER_H__
+ #define __IRQ_USER_H__
+ 
+-#include "uml-config.h"
++#include "sysdep/ptrace.h"
+ 
+ struct irq_fd {
+ 	struct irq_fd *next;
 Index: linux-2.6.22/arch/um/include/os.h
 ===================================================================
---- linux-2.6.22.orig/arch/um/include/os.h	2007-08-09 13:25:53.000000000 -0400
-+++ linux-2.6.22/arch/um/include/os.h	2007-08-09 16:34:36.000000000 -0400
-@@ -178,11 +178,7 @@ extern void check_host_supports_tls(int 
+--- linux-2.6.22.orig/arch/um/include/os.h	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/include/os.h	2007-08-14 13:43:38.000000000 -0400
+@@ -1,20 +1,18 @@
+ /*
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
  
- /* Make sure they are clear when running in TT mode. Required by
-  * SEGV_MAYBE_FIXABLE */
--#ifdef UML_CONFIG_MODE_SKAS
- #define clear_can_do_skas() do { ptrace_faultinfo = proc_mm = 0; } while (0)
--#else
--#define clear_can_do_skas() do {} while (0)
--#endif
+ #ifndef __OS_H__
+ #define __OS_H__
  
- /* mem.c */
- extern int create_mem_file(unsigned long long len);
-@@ -193,18 +189,11 @@ extern int os_process_parent(int pid);
- extern void os_stop_process(int pid);
- extern void os_kill_process(int pid, int reap_child);
- extern void os_kill_ptraced_process(int pid, int reap_child);
--#ifdef UML_CONFIG_MODE_TT
--extern void os_usr1_process(int pid);
--#endif
- extern long os_ptrace_ldt(long pid, long addr, long data);
+-#include "uml-config.h"
+-#include "asm/types.h"
+-#include "../os/include/file.h"
+-#include "sysdep/ptrace.h"
+-#include "kern_util.h"
+-#include "skas/mm_id.h"
++#include <stdarg.h>
+ #include "irq_user.h"
++#include "kern_util.h"
++#include "longjmp.h"
++#include "mm_id.h"
+ #include "sysdep/tls.h"
+-#include "sysdep/archsetjmp.h"
++#include "../os/include/file.h"
  
- extern int os_getpid(void);
- extern int os_getpgrp(void);
+ #define CATCH_EINTR(expr) while ((errno = 0, ((expr) < 0)) && (errno == EINTR))
  
--#ifdef UML_CONFIG_MODE_TT
--extern void init_new_thread_stack(void *sig_stack, void (*usr1_handler)(int));
--extern void stop(void);
--#endif
- extern void init_new_thread_signals(void);
- extern int run_kernel_thread(int (*fn)(void *), void *arg, void **jmp_ptr);
+@@ -140,7 +138,7 @@ extern int os_set_slip(int fd);
+ extern int os_set_owner(int fd, int pid);
+ extern int os_mode_fd(int fd, int mode);
  
-@@ -217,18 +206,6 @@ extern int os_drop_memory(void *addr, in
- extern int can_drop_memory(void);
- extern void os_flush_stdout(void);
- 
--/* tt.c
-- * for tt mode only (will be deleted in future...)
-- */
--extern void forward_ipi(int fd, int pid);
--extern void kill_child_dead(int pid);
--extern int wait_for_stop(int pid, int sig, int cont_type, void *relay);
--extern int protect_memory(unsigned long addr, unsigned long len,
--			  int r, int w, int x, int must_succeed);
--extern void forward_pending_sigio(int target);
--extern int start_fork_tramp(void *arg, unsigned long temp_stack,
--			    int clone_flags, int (*tramp)(void *));
--
- /* uaccess.c */
- extern unsigned long __do_user_copy(void *to, const void *from, int n,
- 				    void **fault_addr, void **fault_catcher,
-@@ -281,9 +258,6 @@ extern void os_dump_core(void);
- extern void switch_timers(int to_real);
- extern void idle_sleep(int secs);
- extern int set_interval(int is_virtual);
--#ifdef CONFIG_MODE_TT
--extern void enable_timer(void);
--#endif
- extern void disable_timer(void);
- extern void uml_idle_timer(void);
- extern unsigned long long os_nsecs(void);
-Index: linux-2.6.22/arch/um/kernel/init_task.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/init_task.c	2007-08-09 13:25:53.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/init_task.c	2007-08-09 16:34:37.000000000 -0400
-@@ -46,10 +46,3 @@ union thread_union init_thread_union
- union thread_union cpu0_irqstack
- 	__attribute__((__section__(".data.init_irqstack"))) =
- 		{ INIT_THREAD_INFO(init_task) };
--
--#ifdef CONFIG_MODE_TT
--void unprotect_stack(unsigned long stack)
--{
--	os_protect_memory((void *) stack, THREAD_SIZE, 1, 1, 0);
--}
--#endif
-Index: linux-2.6.22/arch/um/kernel/trap.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/trap.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/trap.c	2007-08-09 16:34:37.000000000 -0400
-@@ -29,9 +29,7 @@
- #include "sysdep/sigcontext.h"
- #include "sysdep/ptrace.h"
- #include "os.h"
--#ifdef CONFIG_MODE_SKAS
- #include "skas.h"
--#endif
- #include "os.h"
- 
- /* Note this is constrained to return 0, -EFAULT, -EACCESS, -ENOMEM by segv(). */
+-extern int os_seek_file(int fd, __u64 offset);
++extern int os_seek_file(int fd, unsigned long long offset);
+ extern int os_open_file(char *file, struct openflags flags, int mode);
+ extern int os_read_file(int fd, void *buf, int len);
+ extern int os_write_file(int fd, const void *buf, int count);
 Index: linux-2.6.22/arch/um/os-Linux/process.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/process.c	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/process.c	2007-08-09 16:34:36.000000000 -0400
-@@ -133,13 +133,6 @@ void os_kill_ptraced_process(int pid, in
+--- linux-2.6.22.orig/arch/um/os-Linux/process.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/process.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,27 +1,23 @@
+-/* 
+- * Copyright (C) 2002 Jeff Dike (jdike@addtoit.com)
++/*
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include <unistd.h>
+ #include <stdio.h>
++#include <unistd.h>
+ #include <errno.h>
+ #include <signal.h>
+ #include <sys/mman.h>
++#include <sys/ptrace.h>
+ #include <sys/wait.h>
+-#include <sys/mman.h>
+-#include <sys/syscall.h>
+-#include "ptrace_user.h"
++#include <asm/unistd.h>
++#include "init.h"
++#include "kern_constants.h"
++#include "longjmp.h"
+ #include "os.h"
+-#include "user.h"
+ #include "process.h"
+-#include "irq_user.h"
+-#include "kern_util.h"
+-#include "longjmp.h"
+ #include "skas_ptrace.h"
+-#include "kern_constants.h"
+-#include "uml-config.h"
+-#include "init.h"
++#include "user.h"
+ 
+ #define ARBITRARY_ADDR -1
+ #define FAILURE_PID    -1
+@@ -37,24 +33,25 @@ unsigned long os_process_pc(int pid)
+ 
+ 	sprintf(proc_stat, "/proc/%d/stat", pid);
+ 	fd = os_open_file(proc_stat, of_read(OPENFLAGS()), 0);
+-	if(fd < 0){
+-		printk("os_process_pc - couldn't open '%s', err = %d\n",
+-		       proc_stat, -fd);
++	if (fd < 0) {
++		printk(UM_KERN_ERR "os_process_pc - couldn't open '%s', "
++		       "err = %d\n", proc_stat, -fd);
+ 		return ARBITRARY_ADDR;
+ 	}
+ 	CATCH_EINTR(err = read(fd, buf, sizeof(buf)));
+-	if(err < 0){
+-		printk("os_process_pc - couldn't read '%s', err = %d\n",
+-		       proc_stat, errno);
++	if (err < 0) {
++		printk(UM_KERN_ERR "os_process_pc - couldn't read '%s', "
++		       "err = %d\n", proc_stat, errno);
+ 		os_close_file(fd);
+ 		return ARBITRARY_ADDR;
+ 	}
+ 	os_close_file(fd);
+ 	pc = ARBITRARY_ADDR;
+-	if(sscanf(buf, "%*d " COMM_SCANF " %*c %*d %*d %*d %*d %*d %*d %*d "
++	if (sscanf(buf, "%*d " COMM_SCANF " %*c %*d %*d %*d %*d %*d %*d %*d "
+ 		  "%*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d "
+-		  "%*d %*d %*d %*d %*d %lu", &pc) != 1){
+-		printk("os_process_pc - couldn't find pc in '%s'\n", buf);
++		  "%*d %*d %*d %*d %*d %lu", &pc) != 1) {
++		printk(UM_KERN_ERR "os_process_pc - couldn't find pc in '%s'\n",
++		       buf);
+ 	}
+ 	return pc;
+ }
+@@ -65,28 +62,29 @@ int os_process_parent(int pid)
+ 	char data[256];
+ 	int parent, n, fd;
+ 
+-	if(pid == -1)
++	if (pid == -1)
+ 		return -1;
+ 
+ 	snprintf(stat, sizeof(stat), "/proc/%d/stat", pid);
+ 	fd = os_open_file(stat, of_read(OPENFLAGS()), 0);
+-	if(fd < 0){
+-		printk("Couldn't open '%s', err = %d\n", stat, -fd);
++	if (fd < 0) {
++		printk(UM_KERN_ERR "Couldn't open '%s', err = %d\n", stat, -fd);
+ 		return FAILURE_PID;
+ 	}
+ 
+ 	CATCH_EINTR(n = read(fd, data, sizeof(data)));
+ 	os_close_file(fd);
+ 
+-	if(n < 0){
+-		printk("Couldn't read '%s', err = %d\n", stat, errno);
++	if (n < 0) {
++		printk(UM_KERN_ERR "Couldn't read '%s', err = %d\n", stat,
++		       errno);
+ 		return FAILURE_PID;
+ 	}
+ 
+ 	parent = FAILURE_PID;
+ 	n = sscanf(data, "%*d " COMM_SCANF " %*c %d", &parent);
+-	if(n != 1)
+-		printk("Failed to scan '%s'\n", data);
++	if (n != 1)
++		printk(UM_KERN_ERR "Failed to scan '%s'\n", data);
+ 
+ 	return parent;
+ }
+@@ -99,9 +97,8 @@ void os_stop_process(int pid)
+ void os_kill_process(int pid, int reap_child)
+ {
+ 	kill(pid, SIGKILL);
+-	if(reap_child)
++	if (reap_child)
+ 		CATCH_EINTR(waitpid(pid, NULL, 0));
+-		
+ }
+ 
+ /* This is here uniquely to have access to the userspace errno, i.e. the one
+@@ -129,7 +126,7 @@ void os_kill_ptraced_process(int pid, in
+ 	kill(pid, SIGKILL);
+ 	ptrace(PTRACE_KILL, pid);
+ 	ptrace(PTRACE_CONT, pid);
+-	if(reap_child)
++	if (reap_child)
  		CATCH_EINTR(waitpid(pid, NULL, 0));
  }
  
--#ifdef UML_CONFIG_MODE_TT
--void os_usr1_process(int pid)
--{
--	kill(pid, SIGUSR1);
--}
--#endif
--
- /* Don't use the glibc version, which caches the result in TLS. It misses some
-  * syscalls, and also breaks with clone(), which does not unshare the TLS.
-  */
-@@ -239,30 +232,6 @@ out:
- 	return ok;
+@@ -153,34 +150,35 @@ int os_map_memory(void *virt, int fd, un
+ 	void *loc;
+ 	int prot;
+ 
+-	prot = (r ? PROT_READ : 0) | (w ? PROT_WRITE : 0) | 
++	prot = (r ? PROT_READ : 0) | (w ? PROT_WRITE : 0) |
+ 		(x ? PROT_EXEC : 0);
+ 
+ 	loc = mmap64((void *) virt, len, prot, MAP_SHARED | MAP_FIXED,
+ 		     fd, off);
+-	if(loc == MAP_FAILED)
++	if (loc == MAP_FAILED)
+ 		return -errno;
+ 	return 0;
  }
  
--#ifdef UML_CONFIG_MODE_TT
--void init_new_thread_stack(void *sig_stack, void (*usr1_handler)(int))
--{
--	int flags = 0, pages;
--
--	if(sig_stack != NULL){
--		pages = (1 << UML_CONFIG_KERNEL_STACK_ORDER);
--		set_sigstack(sig_stack, pages * UM_KERN_PAGE_SIZE);
--		flags = SA_ONSTACK;
--	}
--	if(usr1_handler){
--		struct sigaction sa;
--
--		sa.sa_handler = usr1_handler;
--		sigemptyset(&sa.sa_mask);
--		sa.sa_flags = flags;
--		sa.sa_restorer = NULL;
--		if(sigaction(SIGUSR1, &sa, NULL) < 0)
--			panic("init_new_thread_stack - sigaction failed - "
--			      "errno = %d\n", errno);
--	}
--}
--#endif
--
- void init_new_thread_signals(void)
+ int os_protect_memory(void *addr, unsigned long len, int r, int w, int x)
  {
- 	set_handler(SIGSEGV, (__sighandler_t) sig_handler, SA_ONSTACK,
-Index: linux-2.6.22/arch/um/include/sysdep-i386/sigcontext.h
+-        int prot = ((r ? PROT_READ : 0) | (w ? PROT_WRITE : 0) | 
++	int prot = ((r ? PROT_READ : 0) | (w ? PROT_WRITE : 0) |
+ 		    (x ? PROT_EXEC : 0));
+ 
+-        if(mprotect(addr, len, prot) < 0)
++	if (mprotect(addr, len, prot) < 0)
+ 		return -errno;
+-        return 0;
++
++	return 0;
+ }
+ 
+ int os_unmap_memory(void *addr, int len)
+ {
+-        int err;
++	int err;
+ 
+-        err = munmap(addr, len);
+-	if(err < 0)
++	err = munmap(addr, len);
++	if (err < 0)
+ 		return -errno;
+-        return 0;
++	return 0;
+ }
+ 
+ #ifndef MADV_REMOVE
+@@ -192,7 +190,7 @@ int os_drop_memory(void *addr, int lengt
+ 	int err;
+ 
+ 	err = madvise(addr, length, MADV_REMOVE);
+-	if(err < 0)
++	if (err < 0)
+ 		err = -errno;
+ 	return err;
+ }
+@@ -202,22 +200,24 @@ int __init can_drop_memory(void)
+ 	void *addr;
+ 	int fd, ok = 0;
+ 
+-	printk("Checking host MADV_REMOVE support...");
++	printk(UM_KERN_INFO "Checking host MADV_REMOVE support...");
+ 	fd = create_mem_file(UM_KERN_PAGE_SIZE);
+-	if(fd < 0){
+-		printk("Creating test memory file failed, err = %d\n", -fd);
++	if (fd < 0) {
++		printk(UM_KERN_ERR "Creating test memory file failed, "
++		       "err = %d\n", -fd);
+ 		goto out;
+ 	}
+ 
+ 	addr = mmap64(NULL, UM_KERN_PAGE_SIZE, PROT_READ | PROT_WRITE,
+ 		      MAP_SHARED, fd, 0);
+-	if(addr == MAP_FAILED){
+-		printk("Mapping test memory file failed, err = %d\n", -errno);
++	if (addr == MAP_FAILED) {
++		printk(UM_KERN_ERR "Mapping test memory file failed, "
++		       "err = %d\n", -errno);
+ 		goto out_close;
+ 	}
+ 
+-	if(madvise(addr, UM_KERN_PAGE_SIZE, MADV_REMOVE) != 0){
+-		printk("MADV_REMOVE failed, err = %d\n", -errno);
++	if (madvise(addr, UM_KERN_PAGE_SIZE, MADV_REMOVE) != 0) {
++		printk(UM_KERN_ERR "MADV_REMOVE failed, err = %d\n", -errno);
+ 		goto out_unmap;
+ 	}
+ 
+@@ -256,7 +256,7 @@ int run_kernel_thread(int (*fn)(void *),
+ 
+ 	*jmp_ptr = &buf;
+ 	n = UML_SETJMP(&buf);
+-	if(n != 0)
++	if (n != 0)
+ 		return n;
+ 	(*fn)(arg);
+ 	return 0;
+Index: linux-2.6.22/arch/um/include/kern_util.h
 ===================================================================
---- linux-2.6.22.orig/arch/um/include/sysdep-i386/sigcontext.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/include/sysdep-i386/sigcontext.h	2007-08-09 16:34:37.000000000 -0400
-@@ -30,11 +30,7 @@
- #define SEGV_IS_FIXABLE(fi)	((fi)->trap_no == 14)
+--- linux-2.6.22.orig/arch/um/include/kern_util.h	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/include/kern_util.h	2007-08-14 13:30:08.000000000 -0400
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
  
- /* SKAS3 has no trap_no on i386, but get_skas_faultinfo() sets it to 0. */
--#ifdef UML_CONFIG_MODE_SKAS
- #define SEGV_MAYBE_FIXABLE(fi)	((fi)->trap_no == 0 && ptrace_faultinfo)
--#else
--#define SEGV_MAYBE_FIXABLE(fi)	0
--#endif
+@@ -8,7 +8,6 @@
  
- extern unsigned long *sc_sigmask(void *sc_ptr);
- extern int sc_get_fpregs(unsigned long buf, void *sc_ptr);
-Index: linux-2.6.22/include/asm-um/mmu_context.h
+ #include "sysdep/ptrace.h"
+ #include "sysdep/faultinfo.h"
+-#include "uml-config.h"
+ 
+ typedef void (*kern_hndl)(int, struct uml_pt_regs *);
+ 
+Index: linux-2.6.22/arch/um/os-Linux/file.c
 ===================================================================
---- linux-2.6.22.orig/include/asm-um/mmu_context.h	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/include/asm-um/mmu_context.h	2007-08-09 16:34:36.000000000 -0400
-@@ -56,12 +56,6 @@ static inline void enter_lazy_tlb(struct
- extern int init_new_context_skas(struct task_struct *task, 
- 				 struct mm_struct *mm);
+--- linux-2.6.22.orig/arch/um/os-Linux/file.c	2007-08-14 13:28:18.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/file.c	2007-08-14 13:43:38.000000000 -0400
+@@ -267,9 +267,9 @@ void os_close_file(int fd)
+ 	close(fd);
+ }
  
--static inline int init_new_context_tt(struct task_struct *task, 
--				      struct mm_struct *mm)
--{
+-int os_seek_file(int fd, __u64 offset)
++int os_seek_file(int fd, unsigned long long offset)
+ {
+-	__u64 actual;
++	unsigned long long actual;
+ 
+ 	actual = lseek64(fd, offset, SEEK_SET);
+ 	if(actual != offset)
+Index: linux-2.6.22/arch/um/kernel/irq.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/irq.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/irq.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,37 +1,19 @@
+ /*
+- * Copyright (C) 2000 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  * Derived (i.e. mostly copied) from arch/i386/kernel/irq.c:
+  *	Copyright (C) 1992, 1998 Linus Torvalds, Ingo Molnar
+  */
+ 
+-#include "linux/kernel.h"
+-#include "linux/module.h"
+-#include "linux/smp.h"
+-#include "linux/kernel_stat.h"
++#include "linux/cpumask.h"
++#include "linux/hardirq.h"
+ #include "linux/interrupt.h"
+-#include "linux/random.h"
+-#include "linux/slab.h"
+-#include "linux/file.h"
+-#include "linux/proc_fs.h"
+-#include "linux/init.h"
++#include "linux/kernel_stat.h"
++#include "linux/module.h"
+ #include "linux/seq_file.h"
+-#include "linux/profile.h"
+-#include "linux/hardirq.h"
+-#include "asm/irq.h"
+-#include "asm/hw_irq.h"
+-#include "asm/atomic.h"
+-#include "asm/signal.h"
+-#include "asm/system.h"
+-#include "asm/errno.h"
+-#include "asm/uaccess.h"
++#include "as-layout.h"
+ #include "kern_util.h"
+-#include "irq_user.h"
+-#include "irq_kern.h"
+ #include "os.h"
+-#include "sigio.h"
+-#include "misc_constants.h"
+-#include "as-layout.h"
+ 
+ /*
+  * Generic, controller-independent functions:
+@@ -71,9 +53,8 @@ int show_interrupts(struct seq_file *p, 
+ 		seq_putc(p, '\n');
+ skip:
+ 		spin_unlock_irqrestore(&irq_desc[i].lock, flags);
+-	} else if (i == NR_IRQS) {
++	} else if (i == NR_IRQS)
+ 		seq_putc(p, '\n');
+-	}
+ 
+ 	return 0;
+ }
+@@ -102,11 +83,13 @@ void sigio_handler(int sig, struct uml_p
+ 	while (1) {
+ 		n = os_waiting_for_events(active_fds);
+ 		if (n <= 0) {
+-			if(n == -EINTR) continue;
++			if (n == -EINTR)
++				continue;
+ 			else break;
+ 		}
+ 
+-		for (irq_fd = active_fds; irq_fd != NULL; irq_fd = irq_fd->next) {
++		for (irq_fd = active_fds; irq_fd != NULL;
++		     irq_fd = irq_fd->next) {
+ 			if (irq_fd->current_events != 0) {
+ 				irq_fd->current_events = 0;
+ 				do_IRQ(irq_fd->irq, regs);
+@@ -138,8 +121,7 @@ int activate_fd(int irq, int fd, int typ
+ 
+ 	if (type == IRQ_READ)
+ 		events = UM_POLLIN | UM_POLLPRI;
+-	else
+-		events = UM_POLLOUT;
++	else events = UM_POLLOUT;
+ 	*new_fd = ((struct irq_fd) { .next  		= NULL,
+ 				     .id 		= dev_id,
+ 				     .fd 		= fd,
+@@ -153,9 +135,10 @@ int activate_fd(int irq, int fd, int typ
+ 	spin_lock_irqsave(&irq_lock, flags);
+ 	for (irq_fd = active_fds; irq_fd != NULL; irq_fd = irq_fd->next) {
+ 		if ((irq_fd->fd == fd) && (irq_fd->type == type)) {
+-			printk("Registering fd %d twice\n", fd);
+-			printk("Irqs : %d, %d\n", irq_fd->irq, irq);
+-			printk("Ids : 0x%p, 0x%p\n", irq_fd->id, dev_id);
++			printk(KERN_ERR "Registering fd %d twice\n", fd);
++			printk(KERN_ERR "Irqs : %d, %d\n", irq_fd->irq, irq);
++			printk(KERN_ERR "Ids : 0x%p, 0x%p\n", irq_fd->id,
++			       dev_id);
+ 			goto out_unlock;
+ 		}
+ 	}
+@@ -171,7 +154,8 @@ int activate_fd(int irq, int fd, int typ
+ 		if (n == 0)
+ 			break;
+ 
+-		/* n > 0
++		/*
++		 * n > 0
+ 		 * It means we couldn't put new pollfd to current pollfds
+ 		 * and tmp_fds is NULL or too small for new pollfds array.
+ 		 * Needed size is equal to n as minimum.
+@@ -197,7 +181,8 @@ int activate_fd(int irq, int fd, int typ
+ 
+ 	spin_unlock_irqrestore(&irq_lock, flags);
+ 
+-	/* This calls activate_fd, so it has to be outside the critical
++	/*
++	 * This calls activate_fd, so it has to be outside the critical
+ 	 * section.
+ 	 */
+ 	maybe_sigio_broken(fd, (type == IRQ_READ));
+@@ -264,13 +249,14 @@ static struct irq_fd *find_irq_by_fd(int
+ 		i++;
+ 	}
+ 	if (irq == NULL) {
+-		printk("find_irq_by_fd doesn't have descriptor %d\n", fd);
++		printk(KERN_ERR "find_irq_by_fd doesn't have descriptor %d\n",
++		       fd);
+ 		goto out;
+ 	}
+ 	fdi = os_get_pollfd(i);
+ 	if ((fdi != -1) && (fdi != fd)) {
+-		printk("find_irq_by_fd - mismatch between active_fds and "
+-		       "pollfds, fd %d vs %d, need %d\n", irq->fd,
++		printk(KERN_ERR "find_irq_by_fd - mismatch between active_fds "
++		       "and pollfds, fd %d vs %d, need %d\n", irq->fd,
+ 		       fdi, fd);
+ 		irq = NULL;
+ 		goto out;
+@@ -306,7 +292,7 @@ void deactivate_fd(int fd, int irqnum)
+ 
+ 	spin_lock_irqsave(&irq_lock, flags);
+ 	irq = find_irq_by_fd(fd, irqnum, &i);
+-	if(irq == NULL){
++	if (irq == NULL) {
+ 		spin_unlock_irqrestore(&irq_lock, flags);
+ 		return;
+ 	}
+@@ -372,8 +358,10 @@ int um_request_irq(unsigned int irq, int
+ EXPORT_SYMBOL(um_request_irq);
+ EXPORT_SYMBOL(reactivate_fd);
+ 
+-/* hw_interrupt_type must define (startup || enable) &&
+- * (shutdown || disable) && end */
++/*
++ * hw_interrupt_type must define (startup || enable) &&
++ * (shutdown || disable) && end
++ */
+ static void dummy(unsigned int irq)
+ {
+ }
+@@ -422,7 +410,8 @@ int init_aio_irq(int irq, char *name, ir
+ 
+ 	err = os_pipe(fds, 1, 1);
+ 	if (err) {
+-		printk("init_aio_irq - os_pipe failed, err = %d\n", -err);
++		printk(KERN_ERR "init_aio_irq - os_pipe failed, err = %d\n",
++		       -err);
+ 		goto out;
+ 	}
+ 
+@@ -430,7 +419,8 @@ int init_aio_irq(int irq, char *name, ir
+ 			     IRQF_DISABLED | IRQF_SAMPLE_RANDOM, name,
+ 			     (void *) (long) fds[0]);
+ 	if (err) {
+-		printk("init_aio_irq - : um_request_irq failed, err = %d\n",
++		printk(KERN_ERR "init_aio_irq - : um_request_irq failed, "
++		       "err = %d\n",
+ 		       err);
+ 		goto out_close;
+ 	}
+@@ -501,8 +491,9 @@ unsigned long to_irq_stack(int sig, unsi
+ 	int nested;
+ 
+ 	mask = xchg(&pending_mask, 1 << sig);
+-	if(mask != 0){
+-		/* If any interrupts come in at this point, we want to
++	if (mask != 0) {
++		/*
++		 * If any interrupts come in at this point, we want to
+ 		 * make sure that their bits aren't lost by our
+ 		 * putting our bit in.  So, this loop accumulates bits
+ 		 * until xchg returns the same value that we put in.
+@@ -514,13 +505,13 @@ unsigned long to_irq_stack(int sig, unsi
+ 		do {
+ 			old |= mask;
+ 			mask = xchg(&pending_mask, old);
+-		} while(mask != old);
++		} while (mask != old);
+ 		return 1;
+ 	}
+ 
+ 	ti = current_thread_info();
+ 	nested = (ti->real_thread != NULL);
+-	if(!nested){
++	if (!nested) {
+ 		struct task_struct *task;
+ 		struct thread_info *tti;
+ 
+Index: linux-2.6.22/arch/um/kernel/physmem.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/physmem.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/physmem.c	2007-08-14 13:43:38.000000000 -0400
+@@ -75,7 +75,7 @@ void map_memory(unsigned long virt, unsi
+ 	err = os_map_memory((void *) virt, fd, offset, len, r, w, x);
+ 	if (err) {
+ 		if (err == -ENOMEM)
+-			printk("try increasing the host's "
++			printk(KERN_ERR "try increasing the host's "
+ 			       "/proc/sys/vm/max_map_count to <physical "
+ 			       "memory size>/4096\n");
+ 		panic("map_memory(0x%lx, %d, 0x%llx, %ld, %d, %d, %d) failed, "
+@@ -103,7 +103,8 @@ void __init setup_physmem(unsigned long 
+ 		exit(1);
+ 	}
+ 
+-	/* Special kludge - This page will be mapped in to userspace processes
++	/*
++	 * Special kludge - This page will be mapped in to userspace processes
+ 	 * from physmem_fd, so it needs to be written out there.
+ 	 */
+ 	os_seek_file(physmem_fd, __pa(&__syscall_stub_start));
+@@ -202,8 +203,8 @@ int setup_iomem(void)
+ 		err = os_map_memory((void *) iomem_start, region->fd, 0,
+ 				    region->size, 1, 1, 0);
+ 		if (err)
+-			printk("Mapping iomem region for driver '%s' failed, "
+-			       "errno = %d\n", region->driver, -err);
++			printk(KERN_ERR "Mapping iomem region for driver '%s' "
++			       "failed, errno = %d\n", region->driver, -err);
+ 		else {
+ 			region->virt = iomem_start;
+ 			region->phys = __pa(region->virt);
+Index: linux-2.6.22/include/asm-um/ptrace-i386.h
+===================================================================
+--- linux-2.6.22.orig/include/asm-um/ptrace-i386.h	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/include/asm-um/ptrace-i386.h	2007-08-14 13:30:08.000000000 -0400
+@@ -1,5 +1,5 @@
+ /* 
+- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+@@ -9,9 +9,8 @@
+ #define HOST_AUDIT_ARCH AUDIT_ARCH_I386
+ 
+ #include "linux/compiler.h"
+-#include "sysdep/ptrace.h"
+ #include "asm/ptrace-generic.h"
+-#include "asm/host_ldt.h"
++#include "sysdep/ptrace.h"
+ 
+ #define PT_REGS_EAX(r) UPT_EAX(&(r)->regs)
+ #define PT_REGS_EBX(r) UPT_EBX(&(r)->regs)
+@@ -40,6 +39,12 @@
+ 
+ #define user_mode(r) UPT_IS_USER(&(r)->regs)
+ 
++/*
++ * Forward declaration to avoid including sysdep/tls.h, which causes a
++ * circular include, and compilation failures.
++ */
++struct user_desc;
++
+ extern int ptrace_get_thread_area(struct task_struct *child, int idx,
+                                   struct user_desc __user *user_desc);
+ 
+Index: linux-2.6.22/arch/um/kernel/time.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/time.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/time.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,28 +1,19 @@
+ /*
+- * Copyright (C) 2000 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/kernel.h"
+-#include "linux/module.h"
+-#include "linux/unistd.h"
+-#include "linux/stddef.h"
+-#include "linux/spinlock.h"
+-#include "linux/time.h"
+-#include "linux/sched.h"
+ #include "linux/interrupt.h"
+-#include "linux/init.h"
+-#include "linux/delay.h"
+-#include "linux/hrtimer.h"
++#include "linux/jiffies.h"
++#include "linux/threads.h"
+ #include "asm/irq.h"
+ #include "asm/param.h"
+-#include "asm/current.h"
+ #include "kern_util.h"
+ #include "os.h"
+ 
+ int hz(void)
+ {
+-	return(HZ);
++	return HZ;
+ }
+ 
+ /*
+@@ -43,7 +34,7 @@ void timer_irq(struct uml_pt_regs *regs)
+ 	unsigned long long ticks = 0;
+ #ifdef CONFIG_UML_REAL_TIME_CLOCK
+ 	int c = cpu();
+-	if(prev_nsecs[c]){
++	if (prev_nsecs[c]) {
+ 		/* We've had 1 tick */
+ 		unsigned long long nsecs = os_nsecs();
+ 
+@@ -51,7 +42,7 @@ void timer_irq(struct uml_pt_regs *regs)
+ 		prev_nsecs[c] = nsecs;
+ 
+ 		/* Protect against the host clock being set backwards */
+-		if(delta[c] < 0)
++		if (delta[c] < 0)
+ 			delta[c] = 0;
+ 
+ 		ticks += (delta[c] * HZ) / BILLION;
+@@ -61,7 +52,7 @@ void timer_irq(struct uml_pt_regs *regs)
+ #else
+ 	ticks = 1;
+ #endif
+-	while(ticks > 0){
++	while (ticks > 0) {
+ 		do_IRQ(TIMER_IRQ, regs);
+ 		ticks--;
+ 	}
+@@ -112,12 +103,12 @@ static void register_timer(void)
+ 	int err;
+ 
+ 	err = request_irq(TIMER_IRQ, um_timer, IRQF_DISABLED, "timer", NULL);
+-	if(err != 0)
++	if (err != 0)
+ 		printk(KERN_ERR "register_timer : request_irq failed - "
+ 		       "errno = %d\n", -err);
+ 
+ 	err = set_interval(1);
+-	if(err != 0)
++	if (err != 0)
+ 		printk(KERN_ERR "register_timer : set_interval failed - "
+ 		       "errno = %d\n", -err);
+ }
+@@ -144,7 +135,8 @@ void do_gettimeofday(struct timeval *tv)
+ 		xtime.tv_nsec;
+ #endif
+ 	tv->tv_sec = nsecs / NSEC_PER_SEC;
+-	/* Careful about calculations here - this was originally done as
++	/*
++	 * Careful about calculations here - this was originally done as
+ 	 * (nsecs - tv->tv_sec * NSEC_PER_SEC) / NSEC_PER_USEC
+ 	 * which gave bogus (> 1000000) values.  Dunno why, suspect gcc
+ 	 * (4.0.0) miscompiled it, or there's a subtle 64/32-bit conversion
+@@ -176,7 +168,7 @@ int do_settimeofday(struct timespec *tv)
+ 
+ void timer_handler(int sig, struct uml_pt_regs *regs)
+ {
+-	if(current_thread->cpu == 0)
++	if (current_thread->cpu == 0)
+ 		timer_irq(regs);
+ 	local_irq_disable();
+ 	irq_enter();
+Index: linux-2.6.22/arch/um/kernel/syscall.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/syscall.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/syscall.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,25 +1,17 @@
+ /*
+- * Copyright (C) 2000 - 2003 Jeff Dike (jdike@addtoit.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/sched.h"
+ #include "linux/file.h"
+-#include "linux/smp_lock.h"
+-#include "linux/mm.h"
+ #include "linux/fs.h"
++#include "linux/mm.h"
++#include "linux/sched.h"
+ #include "linux/utsname.h"
+-#include "linux/msg.h"
+-#include "linux/shm.h"
+-#include "linux/sys.h"
+-#include "linux/syscalls.h"
+-#include "linux/unistd.h"
+-#include "linux/slab.h"
+-#include "linux/utime.h"
++#include "asm/current.h"
+ #include "asm/mman.h"
+ #include "asm/uaccess.h"
+-#include "kern_util.h"
+-#include "sysdep/syscalls.h"
++#include "asm/unistd.h"
+ 
+ /*  Unlocked, I don't care if this is a bit off */
+ int nsyscalls = 0;
+@@ -32,7 +24,7 @@ long sys_fork(void)
+ 	ret = do_fork(SIGCHLD, UPT_SP(&current->thread.regs.regs),
+ 		      &current->thread.regs, 0, NULL, NULL);
+ 	current->thread.forking = 0;
+-	return(ret);
++	return ret;
+ }
+ 
+ long sys_vfork(void)
+@@ -44,7 +36,7 @@ long sys_vfork(void)
+ 		      UPT_SP(&current->thread.regs.regs),
+ 		      &current->thread.regs, 0, NULL, NULL);
+ 	current->thread.forking = 0;
+-	return(ret);
++	return ret;
+ }
+ 
+ /* common code for old and new mmaps */
+@@ -90,15 +82,15 @@ long old_mmap(unsigned long addr, unsign
+  */
+ long sys_pipe(unsigned long __user * fildes)
+ {
+-        int fd[2];
+-        long error;
++	int fd[2];
++	long error;
+ 
+-        error = do_pipe(fd);
+-        if (!error) {
++	error = do_pipe(fd);
++	if (!error) {
+ 		if (copy_to_user(fildes, fd, sizeof(fd)))
+-                        error = -EFAULT;
+-        }
+-        return error;
++			error = -EFAULT;
++	}
++	return error;
+ }
+ 
+ 
+@@ -122,7 +114,7 @@ long sys_olduname(struct oldold_utsname 
+ 	if (!access_ok(VERIFY_WRITE,name,sizeof(struct oldold_utsname)))
+ 		return -EFAULT;
+ 
+-  	down_read(&uts_sem);
++	down_read(&uts_sem);
+ 
+ 	error = __copy_to_user(&name->sysname, &utsname()->sysname,
+ 			       __OLD_UTS_LEN);
+Index: linux-2.6.22/arch/um/kernel/tlb.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/tlb.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/tlb.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,19 +1,16 @@
+ /*
+- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+ #include "linux/mm.h"
+-#include "asm/page.h"
+-#include "asm/pgalloc.h"
+ #include "asm/pgtable.h"
+ #include "asm/tlbflush.h"
+ #include "as-layout.h"
+-#include "tlb.h"
+-#include "mem.h"
+ #include "mem_user.h"
+ #include "os.h"
+ #include "skas.h"
++#include "tlb.h"
+ 
+ static int add_mmap(unsigned long virt, unsigned long phys, unsigned long len,
+ 		    unsigned int prot, struct host_vm_op *ops, int *index,
+@@ -26,18 +23,18 @@ static int add_mmap(unsigned long virt, 
+ 	int fd, ret = 0;
+ 
+ 	fd = phys_mapping(phys, &offset);
+-	if(*index != -1){
++	if (*index != -1) {
+ 		last = &ops[*index];
+-		if((last->type == MMAP) &&
++		if ((last->type == MMAP) &&
+ 		   (last->u.mmap.addr + last->u.mmap.len == virt) &&
+ 		   (last->u.mmap.prot == prot) && (last->u.mmap.fd == fd) &&
+-		   (last->u.mmap.offset + last->u.mmap.len == offset)){
++		   (last->u.mmap.offset + last->u.mmap.len == offset)) {
+ 			last->u.mmap.len += len;
+ 			return 0;
+ 		}
+ 	}
+ 
+-	if(*index == last_filled){
++	if (*index == last_filled) {
+ 		ret = (*do_ops)(mmu, ops, last_filled, 0, flush);
+ 		*index = -1;
+ 	}
+@@ -62,16 +59,16 @@ static int add_munmap(unsigned long addr
+ 	struct host_vm_op *last;
+ 	int ret = 0;
+ 
+-	if(*index != -1){
++	if (*index != -1) {
+ 		last = &ops[*index];
+-		if((last->type == MUNMAP) &&
+-		   (last->u.munmap.addr + last->u.mmap.len == addr)){
++		if ((last->type == MUNMAP) &&
++		   (last->u.munmap.addr + last->u.mmap.len == addr)) {
+ 			last->u.munmap.len += len;
+ 			return 0;
+ 		}
+ 	}
+ 
+-	if(*index == last_filled){
++	if (*index == last_filled) {
+ 		ret = (*do_ops)(mmu, ops, last_filled, 0, flush);
+ 		*index = -1;
+ 	}
+@@ -92,17 +89,17 @@ static int add_mprotect(unsigned long ad
+ 	struct host_vm_op *last;
+ 	int ret = 0;
+ 
+-	if(*index != -1){
++	if (*index != -1) {
+ 		last = &ops[*index];
+-		if((last->type == MPROTECT) &&
++		if ((last->type == MPROTECT) &&
+ 		   (last->u.mprotect.addr + last->u.mprotect.len == addr) &&
+-		   (last->u.mprotect.prot == prot)){
++		   (last->u.mprotect.prot == prot)) {
+ 			last->u.mprotect.len += len;
+ 			return 0;
+ 		}
+ 	}
+ 
+-	if(*index == last_filled){
++	if (*index == last_filled) {
+ 		ret = (*do_ops)(mmu, ops, last_filled, 0, flush);
+ 		*index = -1;
+ 	}
+@@ -141,15 +138,15 @@ static inline int update_pte_range(pmd_t
+ 		}
+ 		prot = ((r ? UM_PROT_READ : 0) | (w ? UM_PROT_WRITE : 0) |
+ 			(x ? UM_PROT_EXEC : 0));
+-		if(force || pte_newpage(*pte)){
+-			if(pte_present(*pte))
++		if (force || pte_newpage(*pte)) {
++			if (pte_present(*pte))
+ 				ret = add_mmap(addr, pte_val(*pte) & PAGE_MASK,
+ 					       PAGE_SIZE, prot, ops, op_index,
+ 					       last_op, mmu, flush, do_ops);
+ 			else ret = add_munmap(addr, PAGE_SIZE, ops, op_index,
+ 					      last_op, mmu, flush, do_ops);
+ 		}
+-		else if(pte_newprot(*pte))
++		else if (pte_newprot(*pte))
+ 			ret = add_mprotect(addr, PAGE_SIZE, prot, ops, op_index,
+ 					   last_op, mmu, flush, do_ops);
+ 		*pte = pte_mkuptodate(*pte);
+@@ -172,8 +169,8 @@ static inline int update_pmd_range(pud_t
+ 	pmd = pmd_offset(pud, addr);
+ 	do {
+ 		next = pmd_addr_end(addr, end);
+-		if(!pmd_present(*pmd)){
+-			if(force || pmd_newpage(*pmd)){
++		if (!pmd_present(*pmd)) {
++			if (force || pmd_newpage(*pmd)) {
+ 				ret = add_munmap(addr, next - addr, ops,
+ 						 op_index, last_op, mmu,
+ 						 flush, do_ops);
+@@ -202,8 +199,8 @@ static inline int update_pud_range(pgd_t
+ 	pud = pud_offset(pgd, addr);
+ 	do {
+ 		next = pud_addr_end(addr, end);
+-		if(!pud_present(*pud)){
+-			if(force || pud_newpage(*pud)){
++		if (!pud_present(*pud)) {
++			if (force || pud_newpage(*pud)) {
+ 				ret = add_munmap(addr, next - addr, ops,
+ 						 op_index, last_op, mmu,
+ 						 flush, do_ops);
+@@ -233,8 +230,8 @@ void fix_range_common(struct mm_struct *
+ 	pgd = pgd_offset(mm, addr);
+ 	do {
+ 		next = pgd_addr_end(addr, end_addr);
+-		if(!pgd_present(*pgd)){
+-			if (force || pgd_newpage(*pgd)){
++		if (!pgd_present(*pgd)) {
++			if (force || pgd_newpage(*pgd)) {
+ 				ret = add_munmap(addr, next - addr, ops,
+ 						 &op_index, last_op, mmu,
+ 						 &flush, do_ops);
+@@ -246,12 +243,13 @@ void fix_range_common(struct mm_struct *
+ 					    do_ops);
+ 	} while (pgd++, addr = next, ((addr != end_addr) && !ret));
+ 
+-	if(!ret)
++	if (!ret)
+ 		ret = (*do_ops)(mmu, ops, op_index, 1, &flush);
+ 
+ 	/* This is not an else because ret is modified above */
+-	if(ret) {
+-		printk("fix_range_common: failed, killing current process\n");
++	if (ret) {
++		printk(KERN_ERR "fix_range_common: failed, killing current "
++		       "process\n");
+ 		force_sig(SIGKILL, current);
+ 	}
+ }
+@@ -267,17 +265,17 @@ int flush_tlb_kernel_range_common(unsign
+ 	int updated = 0, err;
+ 
+ 	mm = &init_mm;
+-	for(addr = start; addr < end;){
++	for (addr = start; addr < end;) {
+ 		pgd = pgd_offset(mm, addr);
+-		if(!pgd_present(*pgd)){
++		if (!pgd_present(*pgd)) {
+ 			last = ADD_ROUND(addr, PGDIR_SIZE);
+-			if(last > end)
++			if (last > end)
+ 				last = end;
+-			if(pgd_newpage(*pgd)){
++			if (pgd_newpage(*pgd)) {
+ 				updated = 1;
+ 				err = os_unmap_memory((void *) addr,
+ 						      last - addr);
+-				if(err < 0)
++				if (err < 0)
+ 					panic("munmap failed, errno = %d\n",
+ 					      -err);
+ 			}
+@@ -286,15 +284,15 @@ int flush_tlb_kernel_range_common(unsign
+ 		}
+ 
+ 		pud = pud_offset(pgd, addr);
+-		if(!pud_present(*pud)){
++		if (!pud_present(*pud)) {
+ 			last = ADD_ROUND(addr, PUD_SIZE);
+-			if(last > end)
++			if (last > end)
+ 				last = end;
+-			if(pud_newpage(*pud)){
++			if (pud_newpage(*pud)) {
+ 				updated = 1;
+ 				err = os_unmap_memory((void *) addr,
+ 						      last - addr);
+-				if(err < 0)
++				if (err < 0)
+ 					panic("munmap failed, errno = %d\n",
+ 					      -err);
+ 			}
+@@ -303,15 +301,15 @@ int flush_tlb_kernel_range_common(unsign
+ 		}
+ 
+ 		pmd = pmd_offset(pud, addr);
+-		if(!pmd_present(*pmd)){
++		if (!pmd_present(*pmd)) {
+ 			last = ADD_ROUND(addr, PMD_SIZE);
+-			if(last > end)
++			if (last > end)
+ 				last = end;
+-			if(pmd_newpage(*pmd)){
++			if (pmd_newpage(*pmd)) {
+ 				updated = 1;
+ 				err = os_unmap_memory((void *) addr,
+ 						      last - addr);
+-				if(err < 0)
++				if (err < 0)
+ 					panic("munmap failed, errno = %d\n",
+ 					      -err);
+ 			}
+@@ -320,25 +318,25 @@ int flush_tlb_kernel_range_common(unsign
+ 		}
+ 
+ 		pte = pte_offset_kernel(pmd, addr);
+-		if(!pte_present(*pte) || pte_newpage(*pte)){
++		if (!pte_present(*pte) || pte_newpage(*pte)) {
+ 			updated = 1;
+ 			err = os_unmap_memory((void *) addr,
+ 					      PAGE_SIZE);
+-			if(err < 0)
++			if (err < 0)
+ 				panic("munmap failed, errno = %d\n",
+ 				      -err);
+-			if(pte_present(*pte))
++			if (pte_present(*pte))
+ 				map_memory(addr,
+ 					   pte_val(*pte) & PAGE_MASK,
+ 					   PAGE_SIZE, 1, 1, 1);
+ 		}
+-		else if(pte_newprot(*pte)){
++		else if (pte_newprot(*pte)) {
+ 			updated = 1;
+ 			os_protect_memory((void *) addr, PAGE_SIZE, 1, 1, 1);
+ 		}
+ 		addr += PAGE_SIZE;
+ 	}
+-	return(updated);
++	return updated;
+ }
+ 
+ void flush_tlb_page(struct vm_area_struct *vma, unsigned long address)
+@@ -354,15 +352,15 @@ void flush_tlb_page(struct vm_area_struc
+ 
+ 	address &= PAGE_MASK;
+ 	pgd = pgd_offset(mm, address);
+-	if(!pgd_present(*pgd))
++	if (!pgd_present(*pgd))
+ 		goto kill;
+ 
+ 	pud = pud_offset(pgd, address);
+-	if(!pud_present(*pud))
++	if (!pud_present(*pud))
+ 		goto kill;
+ 
+ 	pmd = pmd_offset(pud, address);
+-	if(!pmd_present(*pmd))
++	if (!pmd_present(*pmd))
+ 		goto kill;
+ 
+ 	pte = pte_offset_kernel(pmd, address);
+@@ -380,8 +378,8 @@ void flush_tlb_page(struct vm_area_struc
+ 	mm_id = &mm->context.skas.id;
+ 	prot = ((r ? UM_PROT_READ : 0) | (w ? UM_PROT_WRITE : 0) |
+ 		(x ? UM_PROT_EXEC : 0));
+-	if(pte_newpage(*pte)){
+-		if(pte_present(*pte)){
++	if (pte_newpage(*pte)) {
++		if (pte_present(*pte)) {
+ 			unsigned long long offset;
+ 			int fd;
+ 
+@@ -391,10 +389,10 @@ void flush_tlb_page(struct vm_area_struc
+ 		}
+ 		else err = unmap(mm_id, address, PAGE_SIZE, 1, &flush);
+ 	}
+-	else if(pte_newprot(*pte))
++	else if (pte_newprot(*pte))
+ 		err = protect(mm_id, address, PAGE_SIZE, prot, 1, &flush);
+ 
+-	if(err)
++	if (err)
+ 		goto kill;
+ 
+ 	*pte = pte_mkuptodate(*pte);
+@@ -402,28 +400,28 @@ void flush_tlb_page(struct vm_area_struc
+ 	return;
+ 
+ kill:
+-	printk("Failed to flush page for address 0x%lx\n", address);
++	printk(KERN_ERR "Failed to flush page for address 0x%lx\n", address);
+ 	force_sig(SIGKILL, current);
+ }
+ 
+ pgd_t *pgd_offset_proc(struct mm_struct *mm, unsigned long address)
+ {
+-	return(pgd_offset(mm, address));
++	return pgd_offset(mm, address);
+ }
+ 
+ pud_t *pud_offset_proc(pgd_t *pgd, unsigned long address)
+ {
+-	return(pud_offset(pgd, address));
++	return pud_offset(pgd, address);
+ }
+ 
+ pmd_t *pmd_offset_proc(pud_t *pud, unsigned long address)
+ {
+-	return(pmd_offset(pud, address));
++	return pmd_offset(pud, address);
+ }
+ 
+ pte_t *pte_offset_proc(pmd_t *pmd, unsigned long address)
+ {
+-	return(pte_offset_kernel(pmd, address));
++	return pte_offset_kernel(pmd, address);
+ }
+ 
+ pte_t *addr_pte(struct task_struct *task, unsigned long addr)
+@@ -432,7 +430,7 @@ pte_t *addr_pte(struct task_struct *task
+ 	pud_t *pud = pud_offset(pgd, addr);
+ 	pmd_t *pmd = pmd_offset(pud, addr);
+ 
+-	return(pte_offset_map(pmd, addr));
++	return pte_offset_map(pmd, addr);
+ }
+ 
+ void flush_tlb_all(void)
+@@ -452,18 +450,18 @@ void flush_tlb_kernel_vm(void)
+ 
+ void __flush_tlb_one(unsigned long addr)
+ {
+-        flush_tlb_kernel_range_common(addr, addr + PAGE_SIZE);
++	flush_tlb_kernel_range_common(addr, addr + PAGE_SIZE);
+ }
+ 
+ static int do_ops(union mm_context *mmu, struct host_vm_op *ops, int last,
+ 		  int finished, void **flush)
+ {
+ 	struct host_vm_op *op;
+-        int i, ret = 0;
++	int i, ret = 0;
+ 
+-        for(i = 0; i <= last && !ret; i++){
+-		op = &ops[i];
+-		switch(op->type){
++	for (i = 0; i <= last && !ret; i++) {
++	op = &ops[i];
++		switch(op->type) {
+ 		case MMAP:
+ 			ret = map(&mmu->skas.id, op->u.mmap.addr,
+ 				  op->u.mmap.len, op->u.mmap.prot,
+@@ -480,7 +478,8 @@ static int do_ops(union mm_context *mmu,
+ 				      finished, flush);
+ 			break;
+ 		default:
+-			printk("Unknown op type %d in do_ops\n", op->type);
++			printk(KERN_ERR "Unknown op type %d in do_ops\n",
++			       op->type);
+ 			break;
+ 		}
+ 	}
+@@ -491,32 +490,33 @@ static int do_ops(union mm_context *mmu,
+ static void fix_range(struct mm_struct *mm, unsigned long start_addr,
+ 		      unsigned long end_addr, int force)
+ {
+-        if(!proc_mm && (end_addr > CONFIG_STUB_START))
+-                end_addr = CONFIG_STUB_START;
++	if (!proc_mm && (end_addr > CONFIG_STUB_START))
++		end_addr = CONFIG_STUB_START;
+ 
+-        fix_range_common(mm, start_addr, end_addr, force, do_ops);
++	fix_range_common(mm, start_addr, end_addr, force, do_ops);
+ }
+ 
+ void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ 		     unsigned long end)
+ {
+-        if(vma->vm_mm == NULL)
+-                flush_tlb_kernel_range_common(start, end);
+-        else fix_range(vma->vm_mm, start, end, 0);
++	if (vma->vm_mm == NULL)
++		flush_tlb_kernel_range_common(start, end);
++	else fix_range(vma->vm_mm, start, end, 0);
+ }
+ 
+ void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	unsigned long end;
+ 
+-	/* Don't bother flushing if this address space is about to be
+-         * destroyed.
+-         */
+-        if(atomic_read(&mm->mm_users) == 0)
+-                return;
++	/*
++	 * Don't bother flushing if this address space is about to be
++	 * destroyed.
++	 */
++	if (atomic_read(&mm->mm_users) == 0)
++		return;
+ 
+ 	end = proc_mm ? task_size : CONFIG_STUB_START;
+-        fix_range(mm, 0, end, 0);
++	fix_range(mm, 0, end, 0);
+ }
+ 
+ void force_flush_all(void)
+@@ -524,7 +524,7 @@ void force_flush_all(void)
+ 	struct mm_struct *mm = current->mm;
+ 	struct vm_area_struct *vma = mm->mmap;
+ 
+-	while(vma != NULL) {
++	while (vma != NULL) {
+ 		fix_range(mm, vma->vm_start, vma->vm_end, 1);
+ 		vma = vma->vm_next;
+ 	}
+Index: linux-2.6.22/arch/um/os-Linux/aio.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/aio.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/aio.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,19 +1,19 @@
+ /*
+- * Copyright (C) 2004 Jeff Dike (jdike@addtoit.com)
++ * Copyright (C) 2004 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include <stdlib.h>
+ #include <unistd.h>
++#include <sched.h>
+ #include <signal.h>
+ #include <errno.h>
+-#include <sched.h>
+-#include <sys/syscall.h>
+-#include "os.h"
++#include <sys/time.h>
++#include <asm/unistd.h>
+ #include "aio.h"
+ #include "init.h"
+-#include "user.h"
+ #include "kern_constants.h"
++#include "os.h"
++#include "user.h"
+ 
+ struct aio_thread_req {
+ 	enum aio_type type;
+@@ -27,7 +27,8 @@ struct aio_thread_req {
+ #if defined(HAVE_AIO_ABI)
+ #include <linux/aio_abi.h>
+ 
+-/* If we have the headers, we are going to build with AIO enabled.
++/*
++ * If we have the headers, we are going to build with AIO enabled.
+  * If we don't have aio in libc, we define the necessary stubs here.
+  */
+ 
+@@ -51,7 +52,8 @@ static long io_getevents(aio_context_t c
+ 
+ #endif
+ 
+-/* The AIO_MMAP cases force the mmapped page into memory here
++/*
++ * The AIO_MMAP cases force the mmapped page into memory here
+  * rather than in whatever place first touches the data.  I used
+  * to do this by touching the page, but that's delicate because
+  * gcc is prone to optimizing that away.  So, what's done here
+@@ -105,12 +107,12 @@ static int aio_thread(void *arg)
+ 
+ 	signal(SIGWINCH, SIG_IGN);
+ 
+-	while(1){
++	while (1) {
+ 		n = io_getevents(ctx, 1, 1, &event, NULL);
+-		if(n < 0){
+-			if(errno == EINTR)
++		if (n < 0) {
++			if (errno == EINTR)
+ 				continue;
+-			printk("aio_thread - io_getevents failed, "
++			printk(UM_KERN_ERR "aio_thread - io_getevents failed, "
+ 			       "errno = %d\n", errno);
+ 		}
+ 		else {
+@@ -119,9 +121,9 @@ static int aio_thread(void *arg)
+ 						.err	= event.res });
+ 			reply_fd = ((struct aio_context *) reply.data)->reply_fd;
+ 			err = write(reply_fd, &reply, sizeof(reply));
+-			if(err != sizeof(reply))
+-				printk("aio_thread - write failed, fd = %d, "
+-				       "err = %d\n", reply_fd, errno);
++			if (err != sizeof(reply))
++				printk(UM_KERN_ERR "aio_thread - write failed, "
++				       "fd = %d, err = %d\n", reply_fd, errno);
+ 		}
+ 	}
+ 	return 0;
+@@ -136,10 +138,10 @@ static int do_not_aio(struct aio_thread_
+ 	int n;
+ 
+ 	actual = lseek64(req->io_fd, req->offset, SEEK_SET);
+-	if(actual != req->offset)
++	if (actual != req->offset)
+ 		return -errno;
+ 
+-	switch(req->type){
++	switch(req->type) {
+ 	case AIO_READ:
+ 		n = read(req->io_fd, req->buf, req->len);
+ 		break;
+@@ -150,11 +152,12 @@ static int do_not_aio(struct aio_thread_
+ 		n = read(req->io_fd, &c, sizeof(c));
+ 		break;
+ 	default:
+-		printk("do_not_aio - bad request type : %d\n", req->type);
++		printk(UM_KERN_ERR "do_not_aio - bad request type : %d\n",
++		       req->type);
+ 		return -EINVAL;
+ 	}
+ 
+-	if(n < 0)
++	if (n < 0)
+ 		return -errno;
+ 	return 0;
+ }
+@@ -172,16 +175,18 @@ static int not_aio_thread(void *arg)
+ 	int err;
+ 
+ 	signal(SIGWINCH, SIG_IGN);
+-	while(1){
++	while (1) {
+ 		err = read(aio_req_fd_r, &req, sizeof(req));
+-		if(err != sizeof(req)){
+-			if(err < 0)
+-				printk("not_aio_thread - read failed, "
+-				       "fd = %d, err = %d\n", aio_req_fd_r,
++		if (err != sizeof(req)) {
++			if (err < 0)
++				printk(UM_KERN_ERR "not_aio_thread - "
++				       "read failed, fd = %d, err = %d\n",
++				       aio_req_fd_r,
+ 				       errno);
+ 			else {
+-				printk("not_aio_thread - short read, fd = %d, "
+-				       "length = %d\n", aio_req_fd_r, err);
++				printk(UM_KERN_ERR "not_aio_thread - short "
++				       "read, fd = %d, length = %d\n",
++				       aio_req_fd_r, err);
+ 			}
+ 			continue;
+ 		}
+@@ -189,9 +194,9 @@ static int not_aio_thread(void *arg)
+ 		reply = ((struct aio_thread_reply) { .data 	= req.aio,
+ 						     .err	= err });
+ 		err = write(req.aio->reply_fd, &reply, sizeof(reply));
+-		if(err != sizeof(reply))
+-			printk("not_aio_thread - write failed, fd = %d, "
+-			       "err = %d\n", req.aio->reply_fd, errno);
++		if (err != sizeof(reply))
++			printk(UM_KERN_ERR "not_aio_thread - write failed, "
++			       "fd = %d, err = %d\n", req.aio->reply_fd, errno);
+ 	}
+ 
+ 	return 0;
+@@ -202,19 +207,19 @@ static int init_aio_24(void)
+ 	int fds[2], err;
+ 
+ 	err = os_pipe(fds, 1, 1);
+-	if(err)
++	if (err)
+ 		goto out;
+ 
+ 	aio_req_fd_w = fds[0];
+ 	aio_req_fd_r = fds[1];
+ 
+ 	err = os_set_fd_block(aio_req_fd_w, 0);
+-	if(err)
++	if (err)
+ 		goto out_close_pipe;
+ 
+ 	err = run_helper_thread(not_aio_thread, NULL,
+ 				CLONE_FILES | CLONE_VM | SIGCHLD, &aio_stack);
+-	if(err < 0)
++	if (err < 0)
+ 		goto out_close_pipe;
+ 
+ 	aio_pid = err;
+@@ -227,10 +232,11 @@ out_close_pipe:
+ 	aio_req_fd_r = -1;
+ out:
+ #ifndef HAVE_AIO_ABI
+-	printk("/usr/include/linux/aio_abi.h not present during build\n");
++	printk(UM_KERN_INFO "/usr/include/linux/aio_abi.h not present during "
++	       "build\n");
+ #endif
+-	printk("2.6 host AIO support not used - falling back to I/O "
+-	       "thread\n");
++	printk(UM_KERN_INFO "2.6 host AIO support not used - falling back to "
++	       "I/O thread\n");
+ 	return 0;
+ }
+ 
+@@ -240,21 +246,21 @@ static int init_aio_26(void)
+ {
+ 	int err;
+ 
+-	if(io_setup(256, &ctx)){
++	if (io_setup(256, &ctx)) {
+ 		err = -errno;
+-		printk("aio_thread failed to initialize context, err = %d\n",
+-		       errno);
++		printk(UM_KERN_ERR "aio_thread failed to initialize context, "
++		       "err = %d\n", errno);
+ 		return err;
+ 	}
+ 
+ 	err = run_helper_thread(aio_thread, NULL,
+ 				CLONE_FILES | CLONE_VM | SIGCHLD, &aio_stack);
+-	if(err < 0)
++	if (err < 0)
+ 		return err;
+ 
+ 	aio_pid = err;
+ 
+-	printk("Using 2.6 host AIO\n");
++	printk(UM_KERN_INFO "Using 2.6 host AIO\n");
+ 	return 0;
+ }
+ 
+@@ -265,13 +271,13 @@ static int submit_aio_26(enum aio_type t
+ 	int err;
+ 
+ 	err = do_aio(ctx, type, io_fd, buf, len, offset, aio);
+-	if(err){
++	if (err) {
+ 		reply = ((struct aio_thread_reply) { .data = aio,
+ 					 .err  = err });
+ 		err = write(aio->reply_fd, &reply, sizeof(reply));
+-		if(err != sizeof(reply)){
++		if (err != sizeof(reply)) {
+ 			err = -errno;
+-			printk("submit_aio_26 - write failed, "
++			printk(UM_KERN_ERR "submit_aio_26 - write failed, "
+ 			       "fd = %d, err = %d\n", aio->reply_fd, -err);
+ 		}
+ 		else err = 0;
+@@ -319,23 +325,24 @@ static int init_aio(void)
+ {
+ 	int err;
+ 
+-	if(!aio_24){
++	if (!aio_24) {
+ 		err = init_aio_26();
+-		if(err && (errno == ENOSYS)){
+-			printk("2.6 AIO not supported on the host - "
+-			       "reverting to 2.4 AIO\n");
++		if (err && (errno == ENOSYS)) {
++			printk(UM_KERN_INFO "2.6 AIO not supported on the "
++			       "host - reverting to 2.4 AIO\n");
+ 			aio_24 = 1;
+ 		}
+ 		else return err;
+ 	}
+ 
+-	if(aio_24)
++	if (aio_24)
+ 		return init_aio_24();
+ 
+ 	return 0;
+ }
+ 
+-/* The reason for the __initcall/__uml_exitcall asymmetry is that init_aio
++/*
++ * The reason for the __initcall/__uml_exitcall asymmetry is that init_aio
+  * needs to be called when the kernel is running because it calls run_helper,
+  * which needs get_free_page.  exit_aio is a __uml_exitcall because the generic
+  * kernel does not run __exitcalls on shutdown, and can't because many of them
+@@ -366,7 +373,7 @@ static int submit_aio_24(enum aio_type t
+ 	int err;
+ 
+ 	err = write(aio_req_fd_w, &req, sizeof(req));
+-	if(err == sizeof(req))
++	if (err == sizeof(req))
+ 		err = 0;
+ 	else err = -errno;
+ 
+@@ -378,9 +385,8 @@ int submit_aio(enum aio_type type, int i
+ 	       struct aio_context *aio)
+ {
+ 	aio->reply_fd = reply_fd;
+-	if(aio_24)
++	if (aio_24)
+ 		return submit_aio_24(type, io_fd, buf, len, offset, aio);
+-	else {
++	else
+ 		return submit_aio_26(type, io_fd, buf, len, offset, aio);
+-	}
+ }
+Index: linux-2.6.22/arch/um/os-Linux/signal.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/signal.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/signal.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,24 +1,21 @@
+ /*
+  * Copyright (C) 2004 PathScale, Inc
++ * Copyright (C) 2004 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include <signal.h>
+-#include <stdio.h>
+-#include <unistd.h>
+ #include <stdlib.h>
+-#include <errno.h>
+ #include <stdarg.h>
+-#include <string.h>
+-#include <sys/mman.h>
+-#include "user.h"
+-#include "signal_kern.h"
+-#include "sysdep/sigcontext.h"
+-#include "sysdep/barrier.h"
+-#include "sigcontext.h"
++#include <errno.h>
++#include <signal.h>
++#include <strings.h>
+ #include "os.h"
++#include "sysdep/barrier.h"
++#include "sysdep/sigcontext.h"
++#include "user.h"
+ 
+-/* These are the asynchronous signals.  SIGVTALRM and SIGARLM are handled
++/*
++ * These are the asynchronous signals.  SIGVTALRM and SIGARLM are handled
+  * together under SIGVTALRM_BIT.  SIGPROF is excluded because we want to
+  * be able to profile all of UML, not just the non-critical sections.  If
+  * profiling is not thread-safe, then that is not my problem.  We can disable
+@@ -33,7 +30,8 @@
+ #define SIGALRM_BIT 2
+ #define SIGALRM_MASK (1 << SIGALRM_BIT)
+ 
+-/* These are used by both the signal handlers and
++/*
++ * These are used by both the signal handlers and
+  * block/unblock_signals.  I don't want modifications cached in a
+  * register - they must go straight to memory.
+  */
+@@ -45,7 +43,7 @@ void sig_handler(int sig, struct sigcont
+ 	int enabled;
+ 
+ 	enabled = signals_enabled;
+-	if(!enabled && (sig == SIGIO)){
++	if (!enabled && (sig == SIGIO)) {
+ 		pending |= SIGIO_MASK;
+ 		return;
+ 	}
+@@ -61,16 +59,16 @@ static void real_alarm_handler(int sig, 
+ {
+ 	struct uml_pt_regs regs;
+ 
+-	if(sig == SIGALRM)
++	if (sig == SIGALRM)
+ 		switch_timers(0);
+ 
+-	if(sc != NULL)
++	if (sc != NULL)
+ 		copy_sc(&regs, sc);
+ 	regs.is_user = 0;
+ 	unblock_signals();
+ 	timer_handler(sig, &regs);
+ 
+-	if(sig == SIGALRM)
++	if (sig == SIGALRM)
+ 		switch_timers(1);
+ }
+ 
+@@ -79,8 +77,8 @@ void alarm_handler(int sig, struct sigco
+ 	int enabled;
+ 
+ 	enabled = signals_enabled;
+-	if(!signals_enabled){
+-		if(sig == SIGVTALRM)
++	if (!signals_enabled) {
++		if (sig == SIGVTALRM)
+ 			pending |= SIGVTALRM_MASK;
+ 		else pending |= SIGALRM_MASK;
+ 
+@@ -99,7 +97,7 @@ void set_sigstack(void *sig_stack, int s
+ 				     .ss_sp	= (__ptr_t) sig_stack,
+ 				     .ss_size 	= size - sizeof(void *) });
+ 
+-	if(sigaltstack(&stack, NULL) != 0)
++	if (sigaltstack(&stack, NULL) != 0)
+ 		panic("enabling signal stack failed, errno = %d\n", errno);
+ }
+ 
+@@ -109,7 +107,7 @@ void remove_sigstack(void)
+ 				     .ss_sp	= NULL,
+ 				     .ss_size	= 0 });
+ 
+-	if(sigaltstack(&stack, NULL) != 0)
++	if (sigaltstack(&stack, NULL) != 0)
+ 		panic("disabling signal stack failed, errno = %d\n", errno);
+ }
+ 
+@@ -133,26 +131,27 @@ void handle_signal(int sig, struct sigco
+ 		 * with this interrupt.
+ 		 */
+ 		bail = to_irq_stack(sig, &pending);
+-		if(bail)
++		if (bail)
+ 			return;
+ 
+ 		nested = pending & 1;
+ 		pending &= ~1;
+ 
+-		while((sig = ffs(pending)) != 0){
++		while ((sig = ffs(pending)) != 0) {
+ 			sig--;
+ 			pending &= ~(1 << sig);
+ 			(*handlers[sig])(sig, sc);
+ 		}
+ 
+-		/* Again, pending comes back with a mask of signals
++		/*
++		 * Again, pending comes back with a mask of signals
+ 		 * that arrived while tearing down the stack.  If this
+ 		 * is non-zero, we just go back, set up the stack
+ 		 * again, and handle the new interrupts.
+ 		 */
+-		if(!nested)
++		if (!nested)
+ 			pending = from_irq_stack(nested);
+-	} while(pending);
++	} while (pending);
+ }
+ 
+ extern void hard_handler(int sig);
+@@ -170,18 +169,18 @@ void set_handler(int sig, void (*handler
+ 	sigemptyset(&action.sa_mask);
+ 
+ 	va_start(ap, flags);
+-	while((mask = va_arg(ap, int)) != -1)
++	while ((mask = va_arg(ap, int)) != -1)
+ 		sigaddset(&action.sa_mask, mask);
+ 	va_end(ap);
+ 
+ 	action.sa_flags = flags;
+ 	action.sa_restorer = NULL;
+-	if(sigaction(sig, &action, NULL) < 0)
++	if (sigaction(sig, &action, NULL) < 0)
+ 		panic("sigaction failed - errno = %d\n", errno);
+ 
+ 	sigemptyset(&sig_mask);
+ 	sigaddset(&sig_mask, sig);
+-	if(sigprocmask(SIG_UNBLOCK, &sig_mask, NULL) < 0)
++	if (sigprocmask(SIG_UNBLOCK, &sig_mask, NULL) < 0)
+ 		panic("sigprocmask failed - errno = %d\n", errno);
+ }
+ 
+@@ -192,13 +191,14 @@ int change_sig(int signal, int on)
+ 	sigemptyset(&sigset);
+ 	sigaddset(&sigset, signal);
+ 	sigprocmask(on ? SIG_UNBLOCK : SIG_BLOCK, &sigset, &old);
+-	return(!sigismember(&old, signal));
++	return !sigismember(&old, signal);
+ }
+ 
+ void block_signals(void)
+ {
+ 	signals_enabled = 0;
+-	/* This must return with signals disabled, so this barrier
++	/*
++	 * This must return with signals disabled, so this barrier
+ 	 * ensures that writes are flushed out before the return.
+ 	 * This might matter if gcc figures out how to inline this and
+ 	 * decides to shuffle this code into the caller.
+@@ -210,27 +210,31 @@ void unblock_signals(void)
+ {
+ 	int save_pending;
+ 
+-	if(signals_enabled == 1)
++	if (signals_enabled == 1)
+ 		return;
+ 
+-	/* We loop because the IRQ handler returns with interrupts off.  So,
++	/*
++	 * We loop because the IRQ handler returns with interrupts off.  So,
+ 	 * interrupts may have arrived and we need to re-enable them and
+ 	 * recheck pending.
+ 	 */
+-	while(1){
+-		/* Save and reset save_pending after enabling signals.  This
++	while(1) {
++		/*
++		 * Save and reset save_pending after enabling signals.  This
+ 		 * way, pending won't be changed while we're reading it.
+ 		 */
+ 		signals_enabled = 1;
+ 
+-		/* Setting signals_enabled and reading pending must
++		/*
++		 * Setting signals_enabled and reading pending must
+ 		 * happen in this order.
+ 		 */
+ 		mb();
+ 
+ 		save_pending = pending;
+-		if(save_pending == 0){
+-			/* This must return with signals enabled, so
++		if (save_pending == 0) {
++			/*
++			 * This must return with signals enabled, so
+ 			 * this barrier ensures that writes are
+ 			 * flushed out before the return.  This might
+ 			 * matter if gcc figures out how to inline
+@@ -243,24 +247,26 @@ void unblock_signals(void)
+ 
+ 		pending = 0;
+ 
+-		/* We have pending interrupts, so disable signals, as the
++		/*
++		 * We have pending interrupts, so disable signals, as the
+ 		 * handlers expect them off when they are called.  They will
+ 		 * be enabled again above.
+ 		 */
+ 
+ 		signals_enabled = 0;
+ 
+-		/* Deal with SIGIO first because the alarm handler might
++		/*
++		 * Deal with SIGIO first because the alarm handler might
+ 		 * schedule, leaving the pending SIGIO stranded until we come
+ 		 * back here.
+ 		 */
+-		if(save_pending & SIGIO_MASK)
++		if (save_pending & SIGIO_MASK)
+ 			sig_handler_common_skas(SIGIO, NULL);
+ 
+-		if(save_pending & SIGALRM_MASK)
++		if (save_pending & SIGALRM_MASK)
+ 			real_alarm_handler(SIGALRM, NULL);
+ 
+-		if(save_pending & SIGVTALRM_MASK)
++		if (save_pending & SIGVTALRM_MASK)
+ 			real_alarm_handler(SIGVTALRM, NULL);
+ 	}
+ }
+@@ -273,11 +279,11 @@ int get_signals(void)
+ int set_signals(int enable)
+ {
+ 	int ret;
+-	if(signals_enabled == enable)
++	if (signals_enabled == enable)
+ 		return enable;
+ 
+ 	ret = signals_enabled;
+-	if(enable)
++	if (enable)
+ 		unblock_signals();
+ 	else block_signals();
+ 
+Index: linux-2.6.22/arch/um/os-Linux/trap.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/trap.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/trap.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,13 +1,11 @@
+ /*
+- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include <stdlib.h>
+ #include <signal.h>
+-#include "kern_util.h"
+ #include "os.h"
+-#include "longjmp.h"
++#include "sysdep/ptrace.h"
+ 
+ /* Initialized from linux_main() */
+ void (*sig_info[NSIG])(int, struct uml_pt_regs *);
+Index: linux-2.6.22/arch/um/include/skas/skas.h
+===================================================================
+--- linux-2.6.22.orig/arch/um/include/skas/skas.h	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/include/skas/skas.h	2007-08-14 13:30:08.000000000 -0400
+@@ -1,12 +1,11 @@
+ /*
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+ #ifndef __SKAS_H
+ #define __SKAS_H
+ 
+-#include "mm_id.h"
+ #include "sysdep/ptrace.h"
+ 
+ extern int userspace_pid[];
+Index: linux-2.6.22/arch/um/kernel/ptrace.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/ptrace.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/ptrace.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,35 +1,27 @@
+-/* 
+- * Copyright (C) 2000 Jeff Dike (jdike@karaya.com)
++/*
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/sched.h"
+-#include "linux/mm.h"
+-#include "linux/errno.h"
+-#include "linux/smp_lock.h"
+-#include "linux/security.h"
+-#include "linux/ptrace.h"
+ #include "linux/audit.h"
++#include "linux/ptrace.h"
++#include "linux/sched.h"
++#include "asm/uaccess.h"
+ #ifdef CONFIG_PROC_MM
+-#include "linux/proc_mm.h"
++#include "proc_mm.h"
+ #endif
+-#include "asm/ptrace.h"
+-#include "asm/uaccess.h"
+-#include "kern_util.h"
+ #include "skas_ptrace.h"
+-#include "sysdep/ptrace.h"
+-#include "os.h"
+ 
+ static inline void set_singlestepping(struct task_struct *child, int on)
+ {
+-        if (on)
+-                child->ptrace |= PT_DTRACE;
+-        else
+-                child->ptrace &= ~PT_DTRACE;
+-        child->thread.singlestep_syscall = 0;
++	if (on)
++		child->ptrace |= PT_DTRACE;
++	else
++		child->ptrace &= ~PT_DTRACE;
++	child->thread.singlestep_syscall = 0;
+ 
+ #ifdef SUBARCH_SET_SINGLESTEPPING
+-        SUBARCH_SET_SINGLESTEPPING(child, on);
++	SUBARCH_SET_SINGLESTEPPING(child, on);
+ #endif
+ }
+ 
+@@ -37,8 +29,8 @@ static inline void set_singlestepping(st
+  * Called by kernel/ptrace.c when detaching..
+  */
+ void ptrace_disable(struct task_struct *child)
+-{ 
+-        set_singlestepping(child,0);
++{
++	set_singlestepping(child,0);
+ }
+ 
+ extern int peek_user(struct task_struct * child, long addr, long data);
+@@ -50,40 +42,40 @@ long arch_ptrace(struct task_struct *chi
+ 	unsigned long __user *p = (void __user *)(unsigned long)data;
+ 
+ 	switch (request) {
+-		/* when I and D space are separate, these will need to be fixed. */
+-	case PTRACE_PEEKTEXT: /* read word at location addr. */ 
++	/* read word at location addr. */
++	case PTRACE_PEEKTEXT:
+ 	case PTRACE_PEEKDATA:
+ 		ret = generic_ptrace_peekdata(child, addr, data);
+ 		break;
+ 
+ 	/* read the word at location addr in the USER area. */
+-        case PTRACE_PEEKUSR:
+-                ret = peek_user(child, addr, data);
+-                break;
++	case PTRACE_PEEKUSR:
++		ret = peek_user(child, addr, data);
++		break;
+ 
+-	/* when I and D space are separate, this will have to be fixed. */
+-	case PTRACE_POKETEXT: /* write the word at location addr. */
++	/* write the word at location addr. */
++	case PTRACE_POKETEXT:
+ 	case PTRACE_POKEDATA:
+ 		ret = generic_ptrace_pokedata(child, addr, data);
+ 		break;
+ 
+-	case PTRACE_POKEUSR: /* write the word at location addr in the USER area */
+-                ret = poke_user(child, addr, data);
+-                break;
++	/* write the word at location addr in the USER area */
++	case PTRACE_POKEUSR:
++		ret = poke_user(child, addr, data);
++		break;
+ 
+-	case PTRACE_SYSCALL: /* continue and stop at next (return from) syscall */
+-	case PTRACE_CONT: { /* restart after signal. */
++	/* continue and stop at next (return from) syscall */
++	case PTRACE_SYSCALL:
++	/* restart after signal. */
++	case PTRACE_CONT: {
+ 		ret = -EIO;
+ 		if (!valid_signal(data))
+ 			break;
+ 
+-                set_singlestepping(child, 0);
+-		if (request == PTRACE_SYSCALL) {
++		set_singlestepping(child, 0);
++		if (request == PTRACE_SYSCALL)
+ 			set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+-		}
+-		else {
+-			clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+-		}
++		else clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+ 		child->exit_code = data;
+ 		wake_up_process(child);
+ 		ret = 0;
+@@ -91,8 +83,8 @@ long arch_ptrace(struct task_struct *chi
+ 	}
+ 
+ /*
+- * make the child exit.  Best I can do is send it a sigkill. 
+- * perhaps it should be put in the status that it wants to 
++ * make the child exit.  Best I can do is send it a sigkill.
++ * perhaps it should be put in the status that it wants to
+  * exit.
+  */
+ 	case PTRACE_KILL: {
+@@ -100,7 +92,7 @@ long arch_ptrace(struct task_struct *chi
+ 		if (child->exit_state == EXIT_ZOMBIE)	/* already dead */
+ 			break;
+ 
+-                set_singlestepping(child, 0);
++		set_singlestepping(child, 0);
+ 		child->exit_code = SIGKILL;
+ 		wake_up_process(child);
+ 		break;
+@@ -111,7 +103,7 @@ long arch_ptrace(struct task_struct *chi
+ 		if (!valid_signal(data))
+ 			break;
+ 		clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+-                set_singlestepping(child, 1);
++		set_singlestepping(child, 1);
+ 		child->exit_code = data;
+ 		/* give it a chance to run. */
+ 		wake_up_process(child);
+@@ -180,13 +172,14 @@ long arch_ptrace(struct task_struct *chi
+ 		break;
+ 
+ 	case PTRACE_FAULTINFO: {
+-		/* Take the info from thread->arch->faultinfo,
++		/*
++		 * Take the info from thread->arch->faultinfo,
+ 		 * but transfer max. sizeof(struct ptrace_faultinfo).
+ 		 * On i386, ptrace_faultinfo is smaller!
+ 		 */
+ 		ret = copy_to_user(p, &child->thread.arch.faultinfo,
+ 				   sizeof(struct ptrace_faultinfo));
+-		if(ret)
++		if (ret)
+ 			break;
+ 		break;
+ 	}
+@@ -195,12 +188,13 @@ long arch_ptrace(struct task_struct *chi
+ 	case PTRACE_LDT: {
+ 		struct ptrace_ldt ldt;
+ 
+-		if(copy_from_user(&ldt, p, sizeof(ldt))){
++		if (copy_from_user(&ldt, p, sizeof(ldt))) {
+ 			ret = -EIO;
+ 			break;
+ 		}
+ 
+-		/* This one is confusing, so just punt and return -EIO for 
++		/*
++		 * This one is confusing, so just punt and return -EIO for
+ 		 * now
+ 		 */
+ 		ret = -EIO;
+@@ -212,7 +206,7 @@ long arch_ptrace(struct task_struct *chi
+ 		struct mm_struct *old = child->mm;
+ 		struct mm_struct *new = proc_mm_get_mm(data);
+ 
+-		if(IS_ERR(new)){
++		if (IS_ERR(new)) {
+ 			ret = PTR_ERR(new);
+ 			break;
+ 		}
+@@ -226,10 +220,10 @@ long arch_ptrace(struct task_struct *chi
+ 	}
+ #endif
+ #ifdef PTRACE_ARCH_PRCTL
+-        case PTRACE_ARCH_PRCTL:
+-                /* XXX Calls ptrace on the host - needs some SMP thinking */
+-                ret = arch_prctl(child, data, (void *) addr);
+-                break;
++	case PTRACE_ARCH_PRCTL:
++		/* XXX Calls ptrace on the host - needs some SMP thinking */
++		ret = arch_prctl(child, data, (void *) addr);
++		break;
+ #endif
+ 	default:
+ 		ret = ptrace_request(child, request, addr, data);
+@@ -255,7 +249,8 @@ void send_sigtrap(struct task_struct *ts
+ 	force_sig_info(SIGTRAP, &info, tsk);
+ }
+ 
+-/* XXX Check PT_DTRACE vs TIF_SINGLESTEP for singlestepping check and
++/*
++ * XXX Check PT_DTRACE vs TIF_SINGLESTEP for singlestepping check and
+  * PT_PTRACED vs TIF_SYSCALL_TRACE for syscall tracing check
+  */
+ void syscall_trace(struct uml_pt_regs *regs, int entryexit)
+@@ -272,7 +267,7 @@ void syscall_trace(struct uml_pt_regs *r
+ 					    UPT_SYSCALL_ARG3(regs),
+ 					    UPT_SYSCALL_ARG4(regs));
+ 		else audit_syscall_exit(AUDITSC_RESULT(UPT_SYSCALL_RET(regs)),
+-                                        UPT_SYSCALL_RET(regs));
++					UPT_SYSCALL_RET(regs));
+ 	}
+ 
+ 	/* Fake a debug trap */
+@@ -285,15 +280,18 @@ void syscall_trace(struct uml_pt_regs *r
+ 	if (!(current->ptrace & PT_PTRACED))
+ 		return;
+ 
+-	/* the 0x80 provides a way for the tracing parent to distinguish
+-	   between a syscall stop and SIGTRAP delivery */
++	/*
++	 * the 0x80 provides a way for the tracing parent to distinguish
++	 * between a syscall stop and SIGTRAP delivery
++	 */
+ 	tracesysgood = (current->ptrace & PT_TRACESYSGOOD);
+ 	ptrace_notify(SIGTRAP | (tracesysgood ? 0x80 : 0));
+ 
+ 	if (entryexit) /* force do_signal() --> is_syscall() */
+ 		set_thread_flag(TIF_SIGPENDING);
+ 
+-	/* this isn't the same as continuing with a signal, but it will do
++	/*
++	 * this isn't the same as continuing with a signal, but it will do
+ 	 * for normal use.  strace only continues with a signal if the
+ 	 * stopping signal is not SIGTRAP.  -brl
+ 	 */
+Index: linux-2.6.22/arch/um/kernel/signal.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/signal.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/signal.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,27 +1,16 @@
+ /*
+- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/stddef.h"
+-#include "linux/sys.h"
+-#include "linux/sched.h"
+-#include "linux/wait.h"
+-#include "linux/kernel.h"
+-#include "linux/smp_lock.h"
+ #include "linux/module.h"
+-#include "linux/slab.h"
+-#include "linux/tty.h"
+-#include "linux/binfmts.h"
+ #include "linux/ptrace.h"
++#include "linux/sched.h"
++#include "asm/siginfo.h"
+ #include "asm/signal.h"
+-#include "asm/uaccess.h"
+ #include "asm/unistd.h"
+-#include "asm/ucontext.h"
+-#include "kern_util.h"
+-#include "signal_kern.h"
+-#include "kern.h"
+ #include "frame_kern.h"
++#include "kern_util.h"
+ #include "sigcontext.h"
+ 
+ EXPORT_SYMBOL(block_signals);
+@@ -45,9 +34,9 @@ static int handle_signal(struct pt_regs 
+ 	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+ 
+ 	/* Did we come from a system call? */
+-	if(PT_REGS_SYSCALL_NR(regs) >= 0){
++	if (PT_REGS_SYSCALL_NR(regs) >= 0) {
+ 		/* If so, check system call restarting.. */
+-		switch(PT_REGS_SYSCALL_RET(regs)){
++		switch(PT_REGS_SYSCALL_RET(regs)) {
+ 		case -ERESTART_RESTARTBLOCK:
+ 		case -ERESTARTNOHAND:
+ 			PT_REGS_SYSCALL_RET(regs) = -EINTR;
+@@ -67,17 +56,17 @@ static int handle_signal(struct pt_regs 
+ 	}
+ 
+ 	sp = PT_REGS_SP(regs);
+-	if((ka->sa.sa_flags & SA_ONSTACK) && (sas_ss_flags(sp) == 0))
++	if ((ka->sa.sa_flags & SA_ONSTACK) && (sas_ss_flags(sp) == 0))
+ 		sp = current->sas_ss_sp + current->sas_ss_size;
+ 
+ #ifdef CONFIG_ARCH_HAS_SC_SIGNALS
+-	if(!(ka->sa.sa_flags & SA_SIGINFO))
++	if (!(ka->sa.sa_flags & SA_SIGINFO))
+ 		err = setup_signal_stack_sc(sp, signr, ka, regs, oldset);
+ 	else
+ #endif
+ 		err = setup_signal_stack_si(sp, signr, ka, regs, info, oldset);
+ 
+-	if(err){
++	if (err) {
+ 		spin_lock_irq(&current->sighand->siglock);
+ 		current->blocked = *oldset;
+ 		recalc_sigpending();
+@@ -87,7 +76,7 @@ static int handle_signal(struct pt_regs 
+ 		spin_lock_irq(&current->sighand->siglock);
+ 		sigorsets(&current->blocked, &current->blocked,
+ 			  &ka->sa.sa_mask);
+-		 if(!(ka->sa.sa_flags & SA_NODEFER))
++		if (!(ka->sa.sa_flags & SA_NODEFER))
+ 			sigaddset(&current->blocked, signr);
+ 		recalc_sigpending();
+ 		spin_unlock_irq(&current->sighand->siglock);
+@@ -108,14 +97,16 @@ static int kern_do_signal(struct pt_regs
+ 	else
+ 		oldset = &current->blocked;
+ 
+-	while((sig = get_signal_to_deliver(&info, &ka_copy, regs, NULL)) > 0){
++	while ((sig = get_signal_to_deliver(&info, &ka_copy, regs, NULL)) > 0) {
+ 		handled_sig = 1;
+ 		/* Whee!  Actually deliver the signal.  */
+-		if(!handle_signal(regs, sig, &ka_copy, &info, oldset)){
+-			/* a signal was successfully delivered; the saved
++		if (!handle_signal(regs, sig, &ka_copy, &info, oldset)) {
++			/*
++			 * a signal was successfully delivered; the saved
+ 			 * sigmask will have been stored in the signal frame,
+ 			 * and will be restored by sigreturn, so we can simply
+-			 * clear the TIF_RESTORE_SIGMASK flag */
++			 * clear the TIF_RESTORE_SIGMASK flag
++			 */
+ 			if (test_thread_flag(TIF_RESTORE_SIGMASK))
+ 				clear_thread_flag(TIF_RESTORE_SIGMASK);
+ 			break;
+@@ -123,9 +114,9 @@ static int kern_do_signal(struct pt_regs
+ 	}
+ 
+ 	/* Did we come from a system call? */
+-	if(!handled_sig && (PT_REGS_SYSCALL_NR(regs) >= 0)){
++	if (!handled_sig && (PT_REGS_SYSCALL_NR(regs) >= 0)) {
+ 		/* Restart the system call - no handlers present */
+-		switch(PT_REGS_SYSCALL_RET(regs)){
++		switch(PT_REGS_SYSCALL_RET(regs)) {
+ 		case -ERESTARTNOHAND:
+ 		case -ERESTARTSYS:
+ 		case -ERESTARTNOINTR:
+@@ -136,22 +127,25 @@ static int kern_do_signal(struct pt_regs
+ 			PT_REGS_ORIG_SYSCALL(regs) = __NR_restart_syscall;
+ 			PT_REGS_RESTART_SYSCALL(regs);
+ 			break;
+- 		}
++		}
+ 	}
+ 
+-	/* This closes a way to execute a system call on the host.  If
++	/*
++	 * This closes a way to execute a system call on the host.  If
+ 	 * you set a breakpoint on a system call instruction and singlestep
+ 	 * from it, the tracing thread used to PTRACE_SINGLESTEP the process
+ 	 * rather than PTRACE_SYSCALL it, allowing the system call to execute
+ 	 * on the host.  The tracing thread will check this flag and
+ 	 * PTRACE_SYSCALL if necessary.
+ 	 */
+-	if(current->ptrace & PT_DTRACE)
++	if (current->ptrace & PT_DTRACE)
+ 		current->thread.singlestep_syscall =
+ 			is_syscall(PT_REGS_IP(&current->thread.regs));
+ 
+-	/* if there's no signal to deliver, we just put the saved sigmask
+-	 * back */
++	/*
++	 * if there's no signal to deliver, we just put the saved sigmask
++	 * back
++	 */
+ 	if (!handled_sig && test_thread_flag(TIF_RESTORE_SIGMASK)) {
+ 		clear_thread_flag(TIF_RESTORE_SIGMASK);
+ 		sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
+Index: linux-2.6.22/arch/um/kernel/skas/Makefile
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/skas/Makefile	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/skas/Makefile	2007-08-14 13:30:08.000000000 -0400
+@@ -1,5 +1,5 @@
+ #
+-# Copyright (C) 2002 - 2004 Jeff Dike (jdike@addtoit.com)
++# Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+ # Licensed under the GPL
+ #
+ 
+Index: linux-2.6.22/arch/um/kernel/skas/process.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/skas/process.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/skas/process.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,36 +1,23 @@
+ /*
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/sched.h"
+-#include "linux/slab.h"
+-#include "linux/ptrace.h"
+-#include "linux/proc_fs.h"
+-#include "linux/file.h"
+-#include "linux/errno.h"
+ #include "linux/init.h"
+-#include "asm/uaccess.h"
+-#include "asm/atomic.h"
+-#include "kern_util.h"
++#include "linux/sched.h"
+ #include "as-layout.h"
+-#include "skas.h"
+ #include "os.h"
+-#include "tlb.h"
+-#include "kern.h"
+-#include "registers.h"
+-
+-extern void schedule_tail(struct task_struct *prev);
++#include "skas.h"
+ 
+ int new_mm(unsigned long stack)
+ {
+ 	int fd;
+ 
+ 	fd = os_open_file("/proc/mm", of_cloexec(of_write(OPENFLAGS())), 0);
+-	if(fd < 0)
++	if (fd < 0)
+ 		return fd;
+ 
+-	if(skas_needs_stub)
++	if (skas_needs_stub)
+ 		map_stub_pages(fd, CONFIG_STUB_CODE, CONFIG_STUB_DATA, stack);
+ 
+ 	return fd;
+@@ -62,7 +49,7 @@ int __init start_uml(void)
+ {
+ 	stack_protections((unsigned long) &cpu0_irqstack);
+ 	set_sigstack(cpu0_irqstack, THREAD_SIZE);
+-	if(proc_mm)
++	if (proc_mm)
+ 		userspace_pid[0] = start_userspace(0);
+ 
+ 	init_new_thread_signals();
+@@ -75,7 +62,7 @@ int __init start_uml(void)
+ 
+ unsigned long current_stub_stack(void)
+ {
+-	if(current->mm == NULL)
++	if (current->mm == NULL)
+ 		return 0;
+ 
+ 	return current->mm->context.skas.id.stack;
+Index: linux-2.6.22/arch/um/kernel/skas/syscall.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/skas/syscall.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/skas/syscall.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,17 +1,13 @@
+ /*
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/sys.h"
++#include "linux/kernel.h"
+ #include "linux/ptrace.h"
+-#include "asm/errno.h"
+-#include "asm/unistd.h"
+-#include "asm/ptrace.h"
+-#include "asm/current.h"
+-#include "sysdep/syscalls.h"
+ #include "kern_util.h"
+-#include "syscall.h"
++#include "sysdep/ptrace.h"
++#include "sysdep/syscalls.h"
+ 
+ void handle_syscall(struct uml_pt_regs *r)
+ {
+@@ -24,7 +20,8 @@ void handle_syscall(struct uml_pt_regs *
+ 	current->thread.nsyscalls++;
+ 	nsyscalls++;
+ 
+-	/* This should go in the declaration of syscall, but when I do that,
++	/*
++	 * This should go in the declaration of syscall, but when I do that,
+ 	 * strace -f -c bash -c 'ls ; ls' breaks, sometimes not tracing
+ 	 * children at all, sometimes hanging when bash doesn't see the first
+ 	 * ls exit.
+@@ -33,7 +30,7 @@ void handle_syscall(struct uml_pt_regs *
+ 	 * in case it's a compiler bug.
+ 	 */
+ 	syscall = UPT_SYSCALL_NR(r);
+-	if((syscall >= NR_syscalls) || (syscall < 0))
++	if ((syscall >= NR_syscalls) || (syscall < 0))
+ 		result = -ENOSYS;
+ 	else result = EXECUTE_SYSCALL(syscall, regs);
+ 
+Index: linux-2.6.22/arch/um/os-Linux/registers.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/registers.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/registers.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,13 +1,14 @@
+ /*
+  * Copyright (C) 2004 PathScale, Inc
++ * Copyright (C) 2004 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+ #include <errno.h>
+ #include <string.h>
+ #include <sys/ptrace.h>
+-#include "user.h"
+ #include "sysdep/ptrace.h"
++#include "user.h"
+ 
+ /* This is set once at boot time and not changed thereafter */
+ 
+@@ -23,7 +24,7 @@ void save_registers(int pid, struct uml_
+ 	int err;
+ 
+ 	err = ptrace(PTRACE_GETREGS, pid, 0, regs->regs);
+-	if(err < 0)
++	if (err < 0)
+ 		panic("save_registers - saving registers failed, errno = %d\n",
+ 		      errno);
+ }
+@@ -33,7 +34,7 @@ void restore_registers(int pid, struct u
+ 	int err;
+ 
+ 	err = ptrace(PTRACE_SETREGS, pid, 0, regs->regs);
+-	if(err < 0)
++	if (err < 0)
+ 		panic("restore_registers - saving registers failed, "
+ 		      "errno = %d\n", errno);
+ }
+@@ -43,7 +44,7 @@ void init_registers(int pid)
+ 	int err;
+ 
+ 	err = ptrace(PTRACE_GETREGS, pid, 0, exec_regs);
+-	if(err)
++	if (err)
+ 		panic("check_ptrace : PTRACE_GETREGS failed, errno = %d",
+ 		      errno);
+ }
+Index: linux-2.6.22/arch/um/sys-i386/fault.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-i386/fault.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/sys-i386/fault.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,5 +1,5 @@
+ /* 
+- * Copyright (C) 2002 - 2004 Jeff Dike (jdike@addtoit.com)
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+@@ -20,9 +20,9 @@ int arch_fixup(unsigned long address, st
+ 	const struct exception_table_entry *fixup;
+ 
+ 	fixup = search_exception_tables(address);
+-	if(fixup != 0){
++	if (fixup != 0) {
+ 		UPT_IP(regs) = fixup->fixup;
+-		return(1);
++		return 1;
+ 	}
 -	return(0);
--}
--
- static inline int init_new_context(struct task_struct *task, 
- 				   struct mm_struct *mm)
++	return 0;
+ }
+Index: linux-2.6.22/arch/um/sys-x86_64/fault.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-x86_64/fault.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/sys-x86_64/fault.c	2007-08-14 13:30:08.000000000 -0400
+@@ -14,14 +14,15 @@ struct exception_table_entry
+ };
+ 
+ const struct exception_table_entry *search_exception_tables(unsigned long add);
++
+ int arch_fixup(unsigned long address, struct uml_pt_regs *regs)
  {
-Index: linux-2.6.22/arch/um/os-Linux/sys-i386/Makefile
+ 	const struct exception_table_entry *fixup;
+ 
+ 	fixup = search_exception_tables(address);
+-	if(fixup != 0){
++	if (fixup != 0) {
+ 		UPT_IP(regs) = fixup->fixup;
+-		return(1);
++		return 1;
+ 	}
+-	return(0);
++	return 0;
+ }
+Index: linux-2.6.22/arch/um/kernel/skas/mmu.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/sys-i386/Makefile	2007-08-09 13:11:42.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/sys-i386/Makefile	2007-08-09 16:34:37.000000000 -0400
-@@ -3,7 +3,7 @@
- # Licensed under the GPL
- #
+--- linux-2.6.22.orig/arch/um/kernel/skas/mmu.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/skas/mmu.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,20 +1,12 @@
+-/* 
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++/*
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
  
--obj-$(CONFIG_MODE_SKAS) = registers.o signal.o tls.o
-+obj-y = registers.o signal.o tls.o
+-#include "linux/sched.h"
+-#include "linux/list.h"
+-#include "linux/spinlock.h"
+-#include "linux/slab.h"
+-#include "linux/errno.h"
+ #include "linux/mm.h"
+-#include "asm/current.h"
+-#include "asm/segment.h"
+-#include "asm/mmu.h"
++#include "linux/sched.h"
+ #include "asm/pgalloc.h"
+ #include "asm/pgtable.h"
+-#include "asm/ldt.h"
+ #include "os.h"
+ #include "skas.h"
  
- USER_OBJS := $(obj-y)
+@@ -41,10 +33,11 @@ static int init_stub_pte(struct mm_struc
+ 	if (!pte)
+ 		goto out_pte;
  
-Index: linux-2.6.22/arch/um/os-Linux/sys-x86_64/Makefile
+-	/* There's an interaction between the skas0 stub pages, stack
++	/*
++	 * There's an interaction between the skas0 stub pages, stack
+ 	 * randomization, and the BUG at the end of exit_mmap.  exit_mmap
+-         * checks that the number of page tables freed is the same as had
+-         * been allocated.  If the stack is on the last page table page,
++	 * checks that the number of page tables freed is the same as had
++	 * been allocated.  If the stack is on the last page table page,
+ 	 * then the stack pte page will be freed, and if not, it won't.  To
+ 	 * avoid having to know where the stack is, or if the process mapped
+ 	 * something at the top of its address space for some other reason,
+@@ -54,36 +47,37 @@ static int init_stub_pte(struct mm_struc
+ 	 * destroy_context_skas.
+ 	 */
+ 
+-        mm->context.skas.last_page_table = pmd_page_vaddr(*pmd);
++	mm->context.skas.last_page_table = pmd_page_vaddr(*pmd);
+ #ifdef CONFIG_3_LEVEL_PGTABLES
+-        mm->context.skas.last_pmd = (unsigned long) __va(pud_val(*pud));
++	mm->context.skas.last_pmd = (unsigned long) __va(pud_val(*pud));
+ #endif
+ 
+ 	*pte = mk_pte(virt_to_page(kernel), __pgprot(_PAGE_PRESENT));
+ 	*pte = pte_mkread(*pte);
+-	return(0);
++	return 0;
+ 
+  out_pmd:
+ 	pud_free(pud);
+  out_pte:
+ 	pmd_free(pmd);
+  out:
+-	return(-ENOMEM);
++	return -ENOMEM;
+ }
+ 
+ int init_new_context(struct task_struct *task, struct mm_struct *mm)
+ {
+- 	struct mmu_context_skas *from_mm = NULL;
++	struct mmu_context_skas *from_mm = NULL;
+ 	struct mmu_context_skas *to_mm = &mm->context.skas;
+ 	unsigned long stack = 0;
+ 	int ret = -ENOMEM;
+ 
+-	if(skas_needs_stub){
++	if (skas_needs_stub) {
+ 		stack = get_zeroed_page(GFP_KERNEL);
+-		if(stack == 0)
++		if (stack == 0)
+ 			goto out;
+ 
+-		/* This zeros the entry that pgd_alloc didn't, needed since
++		/*
++		 * This zeros the entry that pgd_alloc didn't, needed since
+ 		 * we are about to reinitialize it, and want mm.nr_ptes to
+ 		 * be accurate.
+ 		 */
+@@ -91,39 +85,39 @@ int init_new_context(struct task_struct 
+ 
+ 		ret = init_stub_pte(mm, CONFIG_STUB_CODE,
+ 				    (unsigned long) &__syscall_stub_start);
+-		if(ret)
++		if (ret)
+ 			goto out_free;
+ 
+ 		ret = init_stub_pte(mm, CONFIG_STUB_DATA, stack);
+-		if(ret)
++		if (ret)
+ 			goto out_free;
+ 
+ 		mm->nr_ptes--;
+ 	}
+ 
+ 	to_mm->id.stack = stack;
+-	if(current->mm != NULL && current->mm != &init_mm)
++	if (current->mm != NULL && current->mm != &init_mm)
+ 		from_mm = &current->mm->context.skas;
+ 
+-	if(proc_mm){
++	if (proc_mm) {
+ 		ret = new_mm(stack);
+-		if(ret < 0){
+-			printk("init_new_context_skas - new_mm failed, "
+-			       "errno = %d\n", ret);
++		if (ret < 0) {
++			printk(KERN_ERR "init_new_context_skas - "
++			       "new_mm failed, errno = %d\n", ret);
+ 			goto out_free;
+ 		}
+ 		to_mm->id.u.mm_fd = ret;
+ 	}
+ 	else {
+-		if(from_mm)
++		if (from_mm)
+ 			to_mm->id.u.pid = copy_context_skas0(stack,
+ 							     from_mm->id.u.pid);
+ 		else to_mm->id.u.pid = start_userspace(stack);
+ 	}
+ 
+ 	ret = init_new_ldt(to_mm, from_mm);
+-	if(ret < 0){
+-		printk("init_new_context_skas - init_ldt"
++	if (ret < 0) {
++		printk(KERN_ERR "init_new_context_skas - init_ldt"
+ 		       " failed, errno = %d\n", ret);
+ 		goto out_free;
+ 	}
+@@ -131,7 +125,7 @@ int init_new_context(struct task_struct 
+ 	return 0;
+ 
+  out_free:
+-	if(to_mm->id.stack != 0)
++	if (to_mm->id.stack != 0)
+ 		free_page(to_mm->id.stack);
+  out:
+ 	return ret;
+@@ -141,12 +135,12 @@ void destroy_context(struct mm_struct *m
+ {
+ 	struct mmu_context_skas *mmu = &mm->context.skas;
+ 
+-	if(proc_mm)
++	if (proc_mm)
+ 		os_close_file(mmu->id.u.mm_fd);
+ 	else
+ 		os_kill_ptraced_process(mmu->id.u.pid, 1);
+ 
+-	if(!proc_mm || !ptrace_faultinfo){
++	if (!proc_mm || !ptrace_faultinfo) {
+ 		free_page(mmu->id.stack);
+ 		pte_lock_deinit(virt_to_page(mmu->last_page_table));
+ 		pte_free_kernel((pte_t *) mmu->last_page_table);
+Index: linux-2.6.22/arch/um/os-Linux/skas/mem.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/sys-x86_64/Makefile	2007-08-09 13:25:53.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/sys-x86_64/Makefile	2007-08-09 13:25:53.000000000 -0400
-@@ -3,7 +3,7 @@
- # Licensed under the GPL
- #
+--- linux-2.6.22.orig/arch/um/os-Linux/skas/mem.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/skas/mem.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,30 +1,25 @@
+ /*
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
  
--obj-$(CONFIG_MODE_SKAS) = registers.o prctl.o signal.o
-+obj-y = registers.o prctl.o signal.o
+-#include <signal.h>
++#include <stddef.h>
++#include <unistd.h>
+ #include <errno.h>
+ #include <string.h>
+-#include <unistd.h>
+ #include <sys/mman.h>
+-#include <sys/wait.h>
+-#include <asm/unistd.h>
+-#include "mem_user.h"
+-#include "mem.h"
+-#include "skas.h"
+-#include "user.h"
++#include "init.h"
++#include "kern_constants.h"
++#include "mm_id.h"
+ #include "os.h"
+ #include "proc_mm.h"
+ #include "ptrace_user.h"
+-#include "kern_util.h"
+-#include "task.h"
+ #include "registers.h"
+-#include "uml-config.h"
++#include "skas.h"
++#include "user.h"
+ #include "sysdep/ptrace.h"
+ #include "sysdep/stub.h"
+-#include "init.h"
+-#include "kern_constants.h"
++#include "uml-config.h"
  
- USER_OBJS := $(obj-y)
+ extern unsigned long batch_syscall_stub, __syscall_stub_start;
+ 
+@@ -33,7 +28,7 @@ extern void wait_stub_done(int pid);
+ static inline unsigned long *check_init_stack(struct mm_id * mm_idp,
+ 					      unsigned long *stack)
+ {
+-	if(stack == NULL) {
++	if (stack == NULL) {
+ 		stack = (unsigned long *) mm_idp->stack + 2;
+ 		*stack = 0;
+ 	}
+@@ -67,29 +62,30 @@ static inline long do_syscall_stub(struc
+ 	unsigned long * syscall;
+ 	int err, pid = mm_idp->u.pid;
+ 
+-	if(proc_mm)
++	if (proc_mm)
+ 		/* FIXME: Need to look up userspace_pid by cpu */
+ 		pid = userspace_pid[0];
+ 
+ 	multi_count++;
+ 
+ 	n = ptrace_setregs(pid, syscall_regs);
+-	if(n < 0){
+-		printk("Registers - \n");
+-		for(i = 0; i < MAX_REG_NR; i++)
+-			printk("\t%d\t0x%lx\n", i, syscall_regs[i]);
++	if (n < 0) {
++		printk(UM_KERN_ERR "Registers - \n");
++		for (i = 0; i < MAX_REG_NR; i++)
++			printk(UM_KERN_ERR "\t%d\t0x%lx\n", i, syscall_regs[i]);
+ 		panic("do_syscall_stub : PTRACE_SETREGS failed, errno = %d\n",
+ 		      -n);
+ 	}
+ 
+ 	err = ptrace(PTRACE_CONT, pid, 0, 0);
+-	if(err)
++	if (err)
+ 		panic("Failed to continue stub, pid = %d, errno = %d\n", pid,
+ 		      errno);
+ 
+ 	wait_stub_done(pid);
+ 
+-	/* When the stub stops, we find the following values on the
++	/*
++	 * When the stub stops, we find the following values on the
+ 	 * beginning of the stack:
+ 	 * (long )return_value
+ 	 * (long )offset to failed sycall-data (0, if no error)
+@@ -99,24 +95,25 @@ static inline long do_syscall_stub(struc
+ 	if (offset) {
+ 		data = (unsigned long *)(mm_idp->stack +
+ 					 offset - UML_CONFIG_STUB_DATA);
+-		printk("do_syscall_stub : ret = %ld, offset = %ld, "
++		printk(UM_KERN_ERR "do_syscall_stub : ret = %ld, offset = %ld, "
+ 		       "data = %p\n", ret, offset, data);
+ 		syscall = (unsigned long *)((unsigned long)data + data[0]);
+-		printk("do_syscall_stub: syscall %ld failed, return value = "
+-		       "0x%lx, expected return value = 0x%lx\n",
++		printk(UM_KERN_ERR "do_syscall_stub: syscall %ld failed, "
++		       "return value = 0x%lx, expected return value = 0x%lx\n",
+ 		       syscall[0], ret, syscall[7]);
+-		printk("    syscall parameters: "
++		printk(UM_KERN_ERR "    syscall parameters: "
+ 		       "0x%lx 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx\n",
+ 		       syscall[1], syscall[2], syscall[3],
+ 		       syscall[4], syscall[5], syscall[6]);
+-		for(n = 1; n < data[0]/sizeof(long); n++) {
+-			if(n == 1)
+-				printk("    additional syscall data:");
+-			if(n % 4 == 1)
+-				printk("\n      ");
++		for (n = 1; n < data[0]/sizeof(long); n++) {
++			if (n == 1)
++				printk(UM_KERN_ERR "    additional syscall "
++				       "data:");
++			if (n % 4 == 1)
++				printk("\n" UM_KERN_ERR "      ");
+ 			printk("  0x%lx", data[n]);
+ 		}
+-		if(n > 1)
++		if (n > 1)
+ 			printk("\n");
+ 	}
+ 	else ret = 0;
+@@ -132,7 +129,7 @@ long run_syscall_stub(struct mm_id * mm_
+ {
+ 	unsigned long *stack = check_init_stack(mm_idp, *addr);
+ 
+-	if(done && *addr == NULL)
++	if (done && *addr == NULL)
+ 		single_count++;
+ 
+ 	*stack += sizeof(long);
+@@ -149,8 +146,8 @@ long run_syscall_stub(struct mm_id * mm_
+ 	*stack = 0;
+ 	multi_op_count++;
+ 
+-	if(!done && ((((unsigned long) stack) & ~UM_KERN_PAGE_MASK) <
+-		     UM_KERN_PAGE_SIZE - 10 * sizeof(long))){
++	if (!done && ((((unsigned long) stack) & ~UM_KERN_PAGE_MASK) <
++		     UM_KERN_PAGE_SIZE - 10 * sizeof(long))) {
+ 		*addr = stack;
+ 		return 0;
+ 	}
+@@ -165,14 +162,15 @@ long syscall_stub_data(struct mm_id * mm
+ 	unsigned long *stack;
+ 	int ret = 0;
+ 
+-	/* If *addr still is uninitialized, it *must* contain NULL.
++	/*
++	 * If *addr still is uninitialized, it *must* contain NULL.
+ 	 * Thus in this case do_syscall_stub correctly won't be called.
+ 	 */
+-	if((((unsigned long) *addr) & ~UM_KERN_PAGE_MASK) >=
++	if ((((unsigned long) *addr) & ~UM_KERN_PAGE_MASK) >=
+ 	   UM_KERN_PAGE_SIZE - (10 + data_count) * sizeof(long)) {
+ 		ret = do_syscall_stub(mm_idp, addr);
+ 		/* in case of error, don't overwrite data on stack */
+-		if(ret)
++		if (ret)
+ 			return ret;
+ 	}
+ 
+@@ -194,7 +192,7 @@ int map(struct mm_id * mm_idp, unsigned 
+ {
+ 	int ret;
+ 
+-	if(proc_mm){
++	if (proc_mm) {
+ 		struct proc_mm_op map;
+ 		int fd = mm_idp->u.mm_fd;
+ 
+@@ -210,9 +208,10 @@ int map(struct mm_id * mm_idp, unsigned 
+ 					   .offset= offset
+ 					 } } } );
+ 		CATCH_EINTR(ret = write(fd, &map, sizeof(map)));
+-		if(ret != sizeof(map)){
++		if (ret != sizeof(map)) {
+ 			ret = -errno;
+-			printk("map : /proc/mm map failed, err = %d\n", -ret);
++			printk(UM_KERN_ERR "map : /proc/mm map failed, "
++			       "err = %d\n", -ret);
+ 		}
+ 		else ret = 0;
+ 	}
+@@ -233,7 +232,7 @@ int unmap(struct mm_id * mm_idp, unsigne
+ {
+ 	int ret;
+ 
+-	if(proc_mm){
++	if (proc_mm) {
+ 		struct proc_mm_op unmap;
+ 		int fd = mm_idp->u.mm_fd;
+ 
+@@ -244,9 +243,10 @@ int unmap(struct mm_id * mm_idp, unsigne
+ 					     (unsigned long) addr,
+ 					     .len		= len } } } );
+ 		CATCH_EINTR(ret = write(fd, &unmap, sizeof(unmap)));
+-		if(ret != sizeof(unmap)){
++		if (ret != sizeof(unmap)) {
+ 			ret = -errno;
+-			printk("unmap - proc_mm write returned %d\n", ret);
++			printk(UM_KERN_ERR "unmap - proc_mm write returned "
++			       "%d\n", ret);
+ 		}
+ 		else ret = 0;
+ 	}
+@@ -267,7 +267,7 @@ int protect(struct mm_id * mm_idp, unsig
+ 	struct proc_mm_op protect;
+ 	int ret;
+ 
+-	if(proc_mm){
++	if (proc_mm) {
+ 		int fd = mm_idp->u.mm_fd;
+ 
+ 		protect = ((struct proc_mm_op) { .op	= MM_MPROTECT,
+@@ -279,9 +279,9 @@ int protect(struct mm_id * mm_idp, unsig
+ 					       .prot	= prot } } } );
+ 
+ 		CATCH_EINTR(ret = write(fd, &protect, sizeof(protect)));
+-		if(ret != sizeof(protect)){
++		if (ret != sizeof(protect)) {
+ 			ret = -errno;
+-			printk("protect failed, err = %d", -ret);
++			printk(UM_KERN_ERR "protect failed, err = %d", -ret);
+ 		}
+ 		else ret = 0;
+ 	}
+Index: linux-2.6.22/arch/um/os-Linux/skas/process.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/skas/process.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/skas/process.c	2007-08-14 13:43:38.000000000 -0400
+@@ -1,48 +1,38 @@
+ /*
+- * Copyright (C) 2002- 2004 Jeff Dike (jdike@addtoit.com)
++ * Copyright (C) 2002- 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+ #include <stdlib.h>
+-#include <string.h>
+ #include <unistd.h>
+-#include <errno.h>
+-#include <signal.h>
+ #include <sched.h>
+-#include "ptrace_user.h"
+-#include <sys/wait.h>
++#include <errno.h>
++#include <string.h>
+ #include <sys/mman.h>
+-#include <sys/user.h>
+-#include <sys/time.h>
+-#include <sys/syscall.h>
+-#include <asm/types.h>
+-#include "user.h"
+-#include "sysdep/ptrace.h"
+-#include "kern_util.h"
+-#include "skas.h"
+-#include "stub-data.h"
+-#include "mm_id.h"
+-#include "sysdep/sigcontext.h"
+-#include "sysdep/stub.h"
+-#include "os.h"
+-#include "proc_mm.h"
+-#include "skas_ptrace.h"
++#include <sys/ptrace.h>
++#include <sys/wait.h>
++#include <asm/unistd.h>
++#include "as-layout.h"
+ #include "chan_user.h"
+-#include "registers.h"
++#include "kern_constants.h"
+ #include "mem.h"
+-#include "uml-config.h"
++#include "os.h"
+ #include "process.h"
+-#include "longjmp.h"
+-#include "kern_constants.h"
+-#include "as-layout.h"
++#include "proc_mm.h"
++#include "ptrace_user.h"
++#include "registers.h"
++#include "skas.h"
++#include "skas_ptrace.h"
++#include "user.h"
++#include "sysdep/stub.h"
+ 
+ int is_skas_winch(int pid, int fd, void *data)
+ {
+-	if(pid != os_getpgrp())
+-		return(0);
++	if (pid != os_getpgrp())
++		return 0;
+ 
+ 	register_winch_irq(-1, fd, -1, data, 0);
+-	return(1);
++	return 1;
+ }
+ 
+ static int ptrace_dump_regs(int pid)
+@@ -50,13 +40,12 @@ static int ptrace_dump_regs(int pid)
+         unsigned long regs[MAX_REG_NR];
+         int i;
+ 
+-        if(ptrace(PTRACE_GETREGS, pid, 0, regs) < 0)
++        if (ptrace(PTRACE_GETREGS, pid, 0, regs) < 0)
+                 return -errno;
+-        else {
+-                printk("Stub registers -\n");
+-                for(i = 0; i < ARRAY_SIZE(regs); i++)
+-                        printk("\t%d - %lx\n", i, regs[i]);
+-        }
++
++	printk(UM_KERN_ERR "Stub registers -\n");
++	for (i = 0; i < ARRAY_SIZE(regs); i++)
++		printk(UM_KERN_ERR "\t%d - %lx\n", i, regs[i]);
+ 
+         return 0;
+ }
+@@ -74,27 +63,28 @@ void wait_stub_done(int pid)
+ {
+ 	int n, status, err;
+ 
+-	while(1){
++	while (1) {
+ 		CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED));
+-		if((n < 0) || !WIFSTOPPED(status))
++		if ((n < 0) || !WIFSTOPPED(status))
+ 			goto bad_wait;
+ 
+-		if(((1 << WSTOPSIG(status)) & STUB_SIG_MASK) == 0)
++		if (((1 << WSTOPSIG(status)) & STUB_SIG_MASK) == 0)
+ 			break;
+ 
+ 		err = ptrace(PTRACE_CONT, pid, 0, 0);
+-		if(err)
++		if (err)
+ 			panic("wait_stub_done : continue failed, errno = %d\n",
+ 			      errno);
+ 	}
+ 
+-	if(((1 << WSTOPSIG(status)) & STUB_DONE_MASK) != 0)
++	if (((1 << WSTOPSIG(status)) & STUB_DONE_MASK) != 0)
+ 		return;
+ 
+ bad_wait:
+ 	err = ptrace_dump_regs(pid);
+-	if(err)
+-		printk("Failed to get registers from stub, errno = %d\n", -err);
++	if (err)
++		printk(UM_KERN_ERR "Failed to get registers from stub, "
++		       "errno = %d\n", -err);
+ 	panic("wait_stub_done : failed to wait for SIGUSR1/SIGTRAP, pid = %d, "
+ 	      "n = %d, errno = %d, status = 0x%x\n", pid, n, errno, status);
+ }
+@@ -105,9 +95,9 @@ void get_skas_faultinfo(int pid, struct 
+ {
+ 	int err;
+ 
+-	if(ptrace_faultinfo){
++	if (ptrace_faultinfo) {
+ 		err = ptrace(PTRACE_FAULTINFO, pid, 0, fi);
+-		if(err)
++		if (err)
+ 			panic("get_skas_faultinfo - PTRACE_FAULTINFO failed, "
+ 			      "errno = %d\n", errno);
+ 
+@@ -119,12 +109,13 @@ void get_skas_faultinfo(int pid, struct 
+ 	}
+ 	else {
+ 		err = ptrace(PTRACE_CONT, pid, 0, SIGSEGV);
+-		if(err)
++		if (err)
+ 			panic("Failed to continue stub, pid = %d, errno = %d\n",
+ 			      pid, errno);
+ 		wait_stub_done(pid);
+ 
+-		/* faultinfo is prepared by the stub-segv-handler at start of
++		/*
++		 * faultinfo is prepared by the stub-segv-handler at start of
+ 		 * the stub stack page. We just have to copy it.
+ 		 */
+ 		memcpy(fi, (void *)current_stub_stack(), sizeof(*fi));
+@@ -137,8 +128,12 @@ static void handle_segv(int pid, struct 
+ 	segv(regs->faultinfo, 0, 1, NULL);
+ }
+ 
+-/*To use the same value of using_sysemu as the caller, ask it that value (in local_using_sysemu)*/
+-static void handle_trap(int pid, struct uml_pt_regs *regs, int local_using_sysemu)
++/*
++ * To use the same value of using_sysemu as the caller, ask it that value
++ * (in local_using_sysemu
++ */
++static void handle_trap(int pid, struct uml_pt_regs *regs,
++			int local_using_sysemu)
+ {
+ 	int err, status;
+ 
+@@ -149,22 +144,22 @@ static void handle_trap(int pid, struct 
+ 	{
+ 		err = ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_NR_OFFSET,
+ 			     __NR_getpid);
+-		if(err < 0)
+-			panic("handle_trap - nullifying syscall failed errno = %d\n",
+-			      errno);
++		if (err < 0)
++			panic("handle_trap - nullifying syscall failed, "
++			      "errno = %d\n", errno);
+ 
+ 		err = ptrace(PTRACE_SYSCALL, pid, 0, 0);
+-		if(err < 0)
+-			panic("handle_trap - continuing to end of syscall failed, "
+-			      "errno = %d\n", errno);
++		if (err < 0)
++			panic("handle_trap - continuing to end of syscall "
++			      "failed, errno = %d\n", errno);
+ 
+ 		CATCH_EINTR(err = waitpid(pid, &status, WUNTRACED));
+-		if((err < 0) || !WIFSTOPPED(status) ||
+-		   (WSTOPSIG(status) != SIGTRAP + 0x80)){
++		if ((err < 0) || !WIFSTOPPED(status) ||
++		   (WSTOPSIG(status) != SIGTRAP + 0x80)) {
+                         err = ptrace_dump_regs(pid);
+-                        if(err)
+-                                printk("Failed to get registers from process, "
+-                                       "errno = %d\n", -err);
++                        if (err)
++                                printk(UM_KERN_ERR "Failed to get registers "
++				       "from process, errno = %d\n", -err);
+ 			panic("handle_trap - failed to wait at end of syscall, "
+ 			      "errno = %d, status = %d\n", errno, status);
+                 }
+@@ -184,38 +179,39 @@ static int userspace_tramp(void *stack)
+ 
+ 	init_new_thread_signals();
+ 	err = set_interval(1);
+-	if(err)
++	if (err)
+ 		panic("userspace_tramp - setting timer failed, errno = %d\n",
+ 		      err);
+ 
+-	if(!proc_mm){
+-		/* This has a pte, but it can't be mapped in with the usual
++	if (!proc_mm) {
++		/*
++		 * This has a pte, but it can't be mapped in with the usual
+ 		 * tlb_flush mechanism because this is part of that mechanism
+ 		 */
+ 		int fd;
+-		__u64 offset;
++		unsigned long long offset;
+ 		fd = phys_mapping(to_phys(&__syscall_stub_start), &offset);
+ 		addr = mmap64((void *) UML_CONFIG_STUB_CODE, UM_KERN_PAGE_SIZE,
+ 			      PROT_EXEC, MAP_FIXED | MAP_PRIVATE, fd, offset);
+-		if(addr == MAP_FAILED){
+-			printk("mapping mmap stub failed, errno = %d\n",
+-			       errno);
++		if (addr == MAP_FAILED) {
++			printk(UM_KERN_ERR "mapping mmap stub failed, "
++			       "errno = %d\n", errno);
+ 			exit(1);
+ 		}
+ 
+-		if(stack != NULL){
++		if (stack != NULL) {
+ 			fd = phys_mapping(to_phys(stack), &offset);
+ 			addr = mmap((void *) UML_CONFIG_STUB_DATA,
+ 				    UM_KERN_PAGE_SIZE, PROT_READ | PROT_WRITE,
+ 				    MAP_FIXED | MAP_SHARED, fd, offset);
+-			if(addr == MAP_FAILED){
+-				printk("mapping segfault stack failed, "
+-				       "errno = %d\n", errno);
++			if (addr == MAP_FAILED) {
++				printk(UM_KERN_ERR "mapping segfault stack "
++				       "failed, errno = %d\n", errno);
+ 				exit(1);
+ 			}
+ 		}
+ 	}
+-	if(!ptrace_faultinfo && (stack != NULL)){
++	if (!ptrace_faultinfo && (stack != NULL)) {
+ 		struct sigaction sa;
+ 
+ 		unsigned long v = UML_CONFIG_STUB_CODE +
+@@ -232,13 +228,13 @@ static int userspace_tramp(void *stack)
+ 		sa.sa_flags = SA_ONSTACK;
+ 		sa.sa_handler = (void *) v;
+ 		sa.sa_restorer = NULL;
+-		if(sigaction(SIGSEGV, &sa, NULL) < 0)
++		if (sigaction(SIGSEGV, &sa, NULL) < 0)
+ 			panic("userspace_tramp - setting SIGSEGV handler "
+ 			      "failed - errno = %d\n", errno);
+ 	}
+ 
+ 	os_stop_process(os_getpid());
+-	return(0);
++	return 0;
+ }
+ 
+ /* Each element set once, and only accessed by a single processor anyway */
+@@ -255,35 +251,38 @@ int start_userspace(unsigned long stub_s
+ 	stack = mmap(NULL, UM_KERN_PAGE_SIZE,
+ 		     PROT_READ | PROT_WRITE | PROT_EXEC,
+ 		     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+-	if(stack == MAP_FAILED)
++	if (stack == MAP_FAILED)
+ 		panic("start_userspace : mmap failed, errno = %d", errno);
+ 	sp = (unsigned long) stack + UM_KERN_PAGE_SIZE - sizeof(void *);
+ 
+ 	flags = CLONE_FILES | SIGCHLD;
+-	if(proc_mm) flags |= CLONE_VM;
++	if (proc_mm)
++		flags |= CLONE_VM;
++
+ 	pid = clone(userspace_tramp, (void *) sp, flags, (void *) stub_stack);
+-	if(pid < 0)
++	if (pid < 0)
+ 		panic("start_userspace : clone failed, errno = %d", errno);
+ 
+ 	do {
+ 		CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED));
+-		if(n < 0)
++		if (n < 0)
+ 			panic("start_userspace : wait failed, errno = %d",
+ 			      errno);
+-	} while(WIFSTOPPED(status) && (WSTOPSIG(status) == SIGVTALRM));
++	} while (WIFSTOPPED(status) && (WSTOPSIG(status) == SIGVTALRM));
+ 
+-	if(!WIFSTOPPED(status) || (WSTOPSIG(status) != SIGSTOP))
++	if (!WIFSTOPPED(status) || (WSTOPSIG(status) != SIGSTOP))
+ 		panic("start_userspace : expected SIGSTOP, got status = %d",
+ 		      status);
+ 
+-	if (ptrace(PTRACE_OLDSETOPTIONS, pid, NULL, (void *)PTRACE_O_TRACESYSGOOD) < 0)
+-		panic("start_userspace : PTRACE_OLDSETOPTIONS failed, errno=%d\n",
+-		      errno);
++	if (ptrace(PTRACE_OLDSETOPTIONS, pid, NULL,
++		   (void *) PTRACE_O_TRACESYSGOOD) < 0)
++		panic("start_userspace : PTRACE_OLDSETOPTIONS failed, "
++		      "errno = %d\n", errno);
+ 
+-	if(munmap(stack, UM_KERN_PAGE_SIZE) < 0)
++	if (munmap(stack, UM_KERN_PAGE_SIZE) < 0)
+ 		panic("start_userspace : munmap failed, errno = %d\n", errno);
+ 
+-	return(pid);
++	return pid;
+ }
+ 
+ void userspace(struct uml_pt_regs *regs)
+@@ -292,7 +291,7 @@ void userspace(struct uml_pt_regs *regs)
+ 	/* To prevent races if using_sysemu changes under us.*/
+ 	int local_using_sysemu;
+ 
+-	while(1){
++	while (1) {
+ 		restore_registers(pid, regs);
+ 
+ 		/* Now we set local_using_sysemu to be used for one loop */
+@@ -302,13 +301,13 @@ void userspace(struct uml_pt_regs *regs)
+ 					     singlestepping(NULL));
+ 
+ 		err = ptrace(op, pid, 0, 0);
+-		if(err)
++		if (err)
+ 			panic("userspace - could not resume userspace process, "
+ 			      "pid=%d, ptrace operation = %d, errno = %d\n",
+ 			      pid, op, errno);
+ 
+ 		CATCH_EINTR(err = waitpid(pid, &status, WUNTRACED));
+-		if(err < 0)
++		if (err < 0)
+ 			panic("userspace - waitpid failed, errno = %d\n",
+ 			      errno);
+ 
+@@ -316,12 +315,14 @@ void userspace(struct uml_pt_regs *regs)
+ 		save_registers(pid, regs);
+ 		UPT_SYSCALL_NR(regs) = -1; /* Assume: It's not a syscall */
+ 
+-		if(WIFSTOPPED(status)){
++		if (WIFSTOPPED(status)) {
+ 			int sig = WSTOPSIG(status);
+-		  	switch(sig){
++		  	switch(sig) {
+ 			case SIGSEGV:
+-				if(PTRACE_FULL_FAULTINFO || !ptrace_faultinfo){
+-					get_skas_faultinfo(pid, &regs->faultinfo);
++				if (PTRACE_FULL_FAULTINFO ||
++				    !ptrace_faultinfo) {
++					get_skas_faultinfo(pid,
++							   &regs->faultinfo);
+ 					(*sig_info[SIGSEGV])(SIGSEGV, regs);
+ 				}
+ 				else handle_segv(pid, regs);
+@@ -343,14 +344,14 @@ void userspace(struct uml_pt_regs *regs)
+ 				unblock_signals();
+ 				break;
+ 			default:
+-			        printk("userspace - child stopped with signal "
+-				       "%d\n", sig);
++			        printk(UM_KERN_ERR "userspace - child stopped "
++				       "with signal %d\n", sig);
+ 			}
+ 			pid = userspace_pid[0];
+ 			interrupt_end();
+ 
+ 			/* Avoid -ERESTARTSYS handling in host */
+-			if(PT_SYSCALL_NR_OFFSET != PT_SYSCALL_RET_OFFSET)
++			if (PT_SYSCALL_NR_OFFSET != PT_SYSCALL_RET_OFFSET)
+ 				PT_SYSCALL_NR(regs->regs) = -1;
+ 		}
+ 	}
+@@ -384,7 +385,8 @@ int copy_context_skas0(unsigned long new
+ 	__u64 new_offset;
+ 	int new_fd = phys_mapping(to_phys((void *)new_stack), &new_offset);
+ 
+-	/* prepare offset and fd of child's stack as argument for parent's
++	/*
++	 * prepare offset and fd of child's stack as argument for parent's
+ 	 * and child's mmap2 calls
+ 	 */
+ 	*data = ((struct stub_data) { .offset	= MMAP_OFFSET(new_offset),
+@@ -393,28 +395,30 @@ int copy_context_skas0(unsigned long new
+ 					            { { 0, 1000000 / hz() },
+ 						      { 0, 1000000 / hz() }})});
+ 	err = ptrace_setregs(pid, thread_regs);
+-	if(err < 0)
++	if (err < 0)
+ 		panic("copy_context_skas0 : PTRACE_SETREGS failed, "
+ 		      "pid = %d, errno = %d\n", pid, -err);
+ 
+ 	/* set a well known return code for detection of child write failure */
+ 	child_data->err = 12345678;
+ 
+-	/* Wait, until parent has finished its work: read child's pid from
++	/*
++	 * Wait, until parent has finished its work: read child's pid from
+ 	 * parent's stack, and check, if bad result.
+ 	 */
+ 	err = ptrace(PTRACE_CONT, pid, 0, 0);
+-	if(err)
++	if (err)
+ 		panic("Failed to continue new process, pid = %d, "
+ 		      "errno = %d\n", pid, errno);
+ 	wait_stub_done(pid);
+ 
+ 	pid = data->err;
+-	if(pid < 0)
++	if (pid < 0)
+ 		panic("copy_context_skas0 - stub-parent reports error %d\n",
+ 		      -pid);
+ 
+-	/* Wait, until child has finished too: read child's result from
++	/*
++	 * Wait, until child has finished too: read child's result from
+ 	 * child's stack and check it.
+ 	 */
+ 	wait_stub_done(pid);
+@@ -455,15 +459,16 @@ void map_stub_pages(int fd, unsigned lon
+ 					  .offset  = code_offset
+ 	} } });
+ 	CATCH_EINTR(n = write(fd, &mmop, sizeof(mmop)));
+-	if(n != sizeof(mmop)){
++	if (n != sizeof(mmop)) {
+ 		n = errno;
+-		printk("mmap args - addr = 0x%lx, fd = %d, offset = %llx\n",
+-		       code, code_fd, (unsigned long long) code_offset);
++		printk(UM_KERN_ERR "mmap args - addr = 0x%lx, fd = %d, "
++		       "offset = %llx\n", code, code_fd,
++		       (unsigned long long) code_offset);
+ 		panic("map_stub_pages : /proc/mm map for code failed, "
+ 		      "err = %d\n", n);
+ 	}
+ 
+-	if ( stack ) {
++	if (stack) {
+ 		__u64 map_offset;
+ 		int map_fd = phys_mapping(to_phys((void *)stack), &map_offset);
+ 		mmop = ((struct proc_mm_op)
+@@ -478,7 +483,7 @@ void map_stub_pages(int fd, unsigned lon
+ 				      .offset  = map_offset
+ 		} } });
+ 		CATCH_EINTR(n = write(fd, &mmop, sizeof(mmop)));
+-		if(n != sizeof(mmop))
++		if (n != sizeof(mmop))
+ 			panic("map_stub_pages : /proc/mm map for data failed, "
+ 			      "err = %d\n", errno);
+ 	}
+@@ -498,7 +503,7 @@ void new_thread(void *stack, jmp_buf *bu
+ 
+ void switch_threads(jmp_buf *me, jmp_buf *you)
+ {
+-	if(UML_SETJMP(me) == 0)
++	if (UML_SETJMP(me) == 0)
+ 		UML_LONGJMP(you, 1);
+ }
+ 
+@@ -526,7 +531,7 @@ int start_idle_thread(void *stack, jmp_b
+ 	 * after returning to the jumper.
+ 	 */
+ 	n = setjmp(initial_jmpbuf);
+-	switch(n){
++	switch(n) {
+ 	case INIT_JMP_NEW_THREAD:
+ 		(*switch_buf)[0].JB_IP = (unsigned long) new_thread_handler;
+ 		(*switch_buf)[0].JB_SP = (unsigned long) stack +
+@@ -538,10 +543,10 @@ int start_idle_thread(void *stack, jmp_b
+ 		break;
+ 	case INIT_JMP_HALT:
+ 		kmalloc_ok = 0;
+-		return(0);
++		return 0;
+ 	case INIT_JMP_REBOOT:
+ 		kmalloc_ok = 0;
+-		return(1);
++		return 1;
+ 	default:
+ 		panic("Bad sigsetjmp return in start_idle_thread - %d\n", n);
+ 	}
+@@ -557,7 +562,7 @@ void initial_thread_cb_skas(void (*proc)
+ 	cb_back = &here;
+ 
+ 	block_signals();
+-	if(UML_SETJMP(&here) == 0)
++	if (UML_SETJMP(&here) == 0)
+ 		UML_LONGJMP(&initial_jmpbuf, INIT_JMP_CALLBACK);
+ 	unblock_signals();
+ 
+@@ -583,10 +588,10 @@ void __switch_mm(struct mm_id *mm_idp)
+ 	int err;
+ 
+ 	/* FIXME: need cpu pid in __switch_mm */
+-	if(proc_mm){
++	if (proc_mm) {
+ 		err = ptrace(PTRACE_SWITCH_MM, userspace_pid[0], 0,
+ 			     mm_idp->u.mm_fd);
+-		if(err)
++		if (err)
+ 			panic("__switch_mm - PTRACE_SWITCH_MM failed, "
+ 			      "errno = %d\n", errno);
+ 	}
+Index: linux-2.6.22/arch/um/os-Linux/skas/trap.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/skas/trap.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/skas/trap.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,19 +1,23 @@
+ /*
+- * Copyright (C) 2002 - 2003 Jeff Dike (jdike@addtoit.com)
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include <signal.h>
+-#include <errno.h>
++#if 0
+ #include "kern_util.h"
+-#include "as-layout.h"
+-#include "task.h"
+-#include "sigcontext.h"
+ #include "skas.h"
+ #include "ptrace_user.h"
+-#include "sysdep/ptrace.h"
+ #include "sysdep/ptrace_user.h"
++#endif
++
++#include <errno.h>
++#include <signal.h>
++#include "sysdep/ptrace.h"
++#include "kern_constants.h"
++#include "as-layout.h"
+ #include "os.h"
++#include "sigcontext.h"
++#include "task.h"
+ 
+ static struct uml_pt_regs ksig_regs[UM_NR_CPUS];
+ 
+@@ -24,14 +28,16 @@ void sig_handler_common_skas(int sig, vo
+ 	void (*handler)(int, struct uml_pt_regs *);
+ 	int save_user, save_errno = errno;
+ 
+-	/* This is done because to allow SIGSEGV to be delivered inside a SEGV
++	/*
++	 * This is done because to allow SIGSEGV to be delivered inside a SEGV
+ 	 * handler.  This can happen in copy_user, and if SEGV is disabled,
+ 	 * the process will die.
+ 	 * XXX Figure out why this is better than SA_NODEFER
+ 	 */
+-	if(sig == SIGSEGV) {
++	if (sig == SIGSEGV) {
+ 		change_sig(SIGSEGV, 1);
+-		/* For segfaults, we want the data from the
++		/*
++		 * For segfaults, we want the data from the
+ 		 * sigcontext.  In this case, we don't want to mangle
+ 		 * the process registers, so use a static set of
+ 		 * registers.  For other signals, the process
+@@ -44,11 +50,9 @@ void sig_handler_common_skas(int sig, vo
+ 
+ 	save_user = r->is_user;
+ 	r->is_user = 0;
+-	if ( sig == SIGFPE || sig == SIGSEGV ||
+-	     sig == SIGBUS || sig == SIGILL ||
+-	     sig == SIGTRAP ) {
++	if ((sig == SIGFPE) || (sig == SIGSEGV) || (sig == SIGBUS) ||
++	    (sig == SIGILL) || (sig == SIGTRAP))
+ 		GET_FAULTINFO_FROM_SC(r->faultinfo, sc);
+-	}
+ 
+ 	change_sig(SIGUSR1, 1);
+ 
+Index: linux-2.6.22/arch/um/sys-i386/bugs.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-i386/bugs.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/sys-i386/bugs.c	2007-08-14 13:37:39.000000000 -0400
+@@ -1,18 +1,15 @@
+ /*
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include <unistd.h>
+ #include <errno.h>
++#include <signal.h>
+ #include <string.h>
+-#include <sys/signal.h>
+-#include <asm/ldt.h>
+-#include "kern_util.h"
+-#include "user.h"
+-#include "sysdep/ptrace.h"
+-#include "task.h"
++#include "kern_constants.h"
+ #include "os.h"
++#include "task.h"
++#include "user.h"
+ 
+ #define MAXTOKEN 64
+ 
+@@ -30,18 +27,20 @@ static char token(int fd, char *buf, int
+ 	do {
+ 		n = os_read_file(fd, ptr, sizeof(*ptr));
+ 		c = *ptr++;
+-		if(n != sizeof(*ptr)){
+-			if(n == 0)
++		if (n != sizeof(*ptr)) {
++			if (n == 0)
+ 				return 0;
+-			printk("Reading /proc/cpuinfo failed, err = %d\n", -n);
+-			if(n < 0)
++			printk(UM_KERN_ERR "Reading /proc/cpuinfo failed, "
++			       "err = %d\n", -n);
++			if (n < 0)
+ 				return n;
+ 			else return -EIO;
+ 		}
+-	} while((c != '\n') && (c != stop) && (ptr < end));
++	} while ((c != '\n') && (c != stop) && (ptr < end));
+ 
+-	if(ptr == end){
+-		printk("Failed to find '%c' in /proc/cpuinfo\n", stop);
++	if (ptr == end) {
++		printk(UM_KERN_ERR "Failed to find '%c' in /proc/cpuinfo\n",
++		       stop);
+ 		return -1;
+ 	}
+ 	*(ptr - 1) = '\0';
+@@ -54,26 +53,27 @@ static int find_cpuinfo_line(int fd, cha
+ 	char c;
+ 
+ 	scratch[len - 1] = '\0';
+-	while(1){
++	while (1) {
+ 		c = token(fd, scratch, len - 1, ':');
+-		if(c <= 0)
++		if (c <= 0)
+ 			return 0;
+-		else if(c != ':'){
+-			printk("Failed to find ':' in /proc/cpuinfo\n");
++		else if (c != ':') {
++			printk(UM_KERN_ERR "Failed to find ':' in "
++			       "/proc/cpuinfo\n");
+ 			return 0;
+ 		}
+ 
+-		if(!strncmp(scratch, key, strlen(key)))
++		if (!strncmp(scratch, key, strlen(key)))
+ 			return 1;
+ 
+ 		do {
+ 			n = os_read_file(fd, &c, sizeof(c));
+-			if(n != sizeof(c)){
+-				printk("Failed to find newline in "
++			if (n != sizeof(c)) {
++				printk(UM_KERN_ERR "Failed to find newline in "
+ 				       "/proc/cpuinfo, err = %d\n", -n);
+ 				return 0;
+ 			}
+-		} while(c != '\n');
++		} while (c != '\n');
+ 	}
+ 	return 0;
+ }
+@@ -83,46 +83,50 @@ static int check_cpu_flag(char *feature,
+ 	char buf[MAXTOKEN], c;
+ 	int fd, len = ARRAY_SIZE(buf);
+ 
+-	printk("Checking for host processor %s support...", feature);
++	printk(UM_KERN_INFO "Checking for host processor %s support...",
++	       feature);
+ 	fd = os_open_file("/proc/cpuinfo", of_read(OPENFLAGS()), 0);
+-	if(fd < 0){
+-		printk("Couldn't open /proc/cpuinfo, err = %d\n", -fd);
++	if (fd < 0) {
++		printk(UM_KERN_ERR "Couldn't open /proc/cpuinfo, err = %d\n",
++		       -fd);
+ 		return 0;
+ 	}
+ 
+ 	*have_it = 0;
+-	if(!find_cpuinfo_line(fd, "flags", buf, ARRAY_SIZE(buf)))
++	if (!find_cpuinfo_line(fd, "flags", buf, ARRAY_SIZE(buf)))
+ 		goto out;
+ 
+ 	c = token(fd, buf, len - 1, ' ');
+-	if(c < 0)
++	if (c < 0)
+ 		goto out;
+-	else if(c != ' '){
+-		printk("Failed to find ' ' in /proc/cpuinfo\n");
++	else if (c != ' ') {
++		printk(UM_KERN_ERR "Failed to find ' ' in /proc/cpuinfo\n");
+ 		goto out;
+ 	}
+ 
+-	while(1){
++	while (1) {
+ 		c = token(fd, buf, len - 1, ' ');
+-		if(c < 0)
++		if (c < 0)
+ 			goto out;
+-		else if(c == '\n') break;
++		else if (c == '\n')
++			break;
+ 
+-		if(!strcmp(buf, feature)){
++		if (!strcmp(buf, feature)) {
+ 			*have_it = 1;
+ 			goto out;
+ 		}
+ 	}
+  out:
+-	if(*have_it == 0)
++	if (*have_it == 0)
+ 		printk("No\n");
+-	else if(*have_it == 1)
++	else if (*have_it == 1)
+ 		printk("Yes\n");
+ 	os_close_file(fd);
+ 	return 1;
+ }
+ 
+-#if 0 /* This doesn't work in tt mode, plus it's causing compilation problems
++#if 0 /*
++       * This doesn't work in tt mode, plus it's causing compilation problems
+        * for some people.
+        */
+ static void disable_lcall(void)
+@@ -135,8 +139,9 @@ static void disable_lcall(void)
+ 	ldt.base_addr = 0;
+ 	ldt.limit = 0;
+ 	err = modify_ldt(1, &ldt, sizeof(ldt));
+-	if(err)
+-		printk("Failed to disable lcall7 - errno = %d\n", errno);
++	if (err)
++		printk(UM_KERN_ERR "Failed to disable lcall7 - errno = %d\n",
++		       errno);
+ }
+ #endif
+ 
+@@ -151,14 +156,14 @@ void arch_check_bugs(void)
+ {
+ 	int have_it;
+ 
+-	if(os_access("/proc/cpuinfo", OS_ACC_R_OK) < 0){
+-		printk("/proc/cpuinfo not available - skipping CPU capability "
+-		       "checks\n");
++	if (os_access("/proc/cpuinfo", OS_ACC_R_OK) < 0) {
++		printk(UM_KERN_ERR "/proc/cpuinfo not available - skipping CPU "
++		       "capability checks\n");
+ 		return;
+ 	}
+-	if(check_cpu_flag("cmov", &have_it))
++	if (check_cpu_flag("cmov", &have_it))
+ 		host_has_cmov = have_it;
+-	if(check_cpu_flag("xmm", &have_it))
++	if (check_cpu_flag("xmm", &have_it))
+ 		host_has_xmm = have_it;
+ }
+ 
+@@ -166,25 +171,26 @@ int arch_handle_signal(int sig, struct u
+ {
+ 	unsigned char tmp[2];
+ 
+-	/* This is testing for a cmov (0x0f 0x4x) instruction causing a
++	/*
++	 * This is testing for a cmov (0x0f 0x4x) instruction causing a
+ 	 * SIGILL in init.
+ 	 */
+-	if((sig != SIGILL) || (TASK_PID(get_current()) != 1))
++	if ((sig != SIGILL) || (TASK_PID(get_current()) != 1))
+ 		return 0;
+ 
+ 	if (copy_from_user_proc(tmp, (void *) UPT_IP(regs), 2))
+ 		panic("SIGILL in init, could not read instructions!\n");
+-	if((tmp[0] != 0x0f) || ((tmp[1] & 0xf0) != 0x40))
++	if ((tmp[0] != 0x0f) || ((tmp[1] & 0xf0) != 0x40))
+ 		return 0;
+ 
+-	if(host_has_cmov == 0)
++	if (host_has_cmov == 0)
+ 		panic("SIGILL caused by cmov, which this processor doesn't "
+ 		      "implement, boot a filesystem compiled for older "
+ 		      "processors");
+-	else if(host_has_cmov == 1)
++	else if (host_has_cmov == 1)
+ 		panic("SIGILL caused by cmov, which this processor claims to "
+ 		      "implement");
+-	else if(host_has_cmov == -1)
++	else if (host_has_cmov == -1)
+ 		panic("SIGILL caused by cmov, couldn't tell if this processor "
+ 		      "implements it, boot a filesystem compiled for older "
+ 		      "processors");
+Index: linux-2.6.22/arch/um/sys-x86_64/tls.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-x86_64/tls.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/sys-x86_64/tls.c	2007-08-14 13:43:38.000000000 -0400
+@@ -13,5 +13,5 @@ int arch_copy_tls(struct task_struct *t)
+ 	 */
+ 	t->thread.arch.fs = t->thread.regs.regs.regs[R8 / sizeof(long)];
+ 
+-        return 0;
++	return 0;
+ }
+Index: linux-2.6.22/arch/um/os-Linux/umid.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/umid.c	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/umid.c	2007-08-14 13:30:08.000000000 -0400
+@@ -1,14 +1,19 @@
++/*
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
++ * Licensed under the GPL
++ */
++
+ #include <stdio.h>
+-#include <unistd.h>
+ #include <stdlib.h>
+-#include <string.h>
++#include <dirent.h>
+ #include <errno.h>
++#include <fcntl.h>
+ #include <signal.h>
+-#include <dirent.h>
+-#include <sys/fcntl.h>
++#include <string.h>
++#include <unistd.h>
+ #include <sys/stat.h>
+-#include <sys/param.h>
+ #include "init.h"
++#include "kern_constants.h"
+ #include "os.h"
+ #include "user.h"
+ 
+@@ -27,13 +32,13 @@ static int __init make_uml_dir(void)
+ 	char dir[512] = { '\0' };
+ 	int len, err;
+ 
+-	if(*uml_dir == '~'){
++	if (*uml_dir == '~') {
+ 		char *home = getenv("HOME");
+ 
+ 		err = -ENOENT;
+-		if(home == NULL){
+-			printk("make_uml_dir : no value in environment for "
+-			       "$HOME\n");
++		if (home == NULL) {
++			printk(UM_KERN_ERR "make_uml_dir : no value in "
++			       "environment for $HOME\n");
+ 			goto err;
+ 		}
+ 		strlcpy(dir, home, sizeof(dir));
+@@ -52,7 +57,7 @@ static int __init make_uml_dir(void)
+ 	}
+ 	strcpy(uml_dir, dir);
+ 
+-	if((mkdir(uml_dir, 0777) < 0) && (errno != EEXIST)){
++	if ((mkdir(uml_dir, 0777) < 0) && (errno != EEXIST)) {
+ 	        printf("Failed to mkdir '%s': %s\n", uml_dir, strerror(errno));
+ 		err = -errno;
+ 		goto err_free;
+@@ -69,8 +74,8 @@ err:
+ /*
+  * Unlinks the files contained in @dir and then removes @dir.
+  * Doesn't handle directory trees, so it's not like rm -rf, but almost such. We
+- * ignore ENOENT errors for anything (they happen, strangely enough - possibly due
+- * to races between multiple dying UML threads).
++ * ignore ENOENT errors for anything (they happen, strangely enough - possibly
++ * due to races between multiple dying UML threads).
+  */
+ static int remove_files_and_dir(char *dir)
+ {
+@@ -115,7 +120,8 @@ out:
+ 	return ret;
+ }
+ 
+-/* This says that there isn't already a user of the specified directory even if
++/*
++ * This says that there isn't already a user of the specified directory even if
+  * there are errors during the checking.  This is because if these errors
+  * happen, the directory is unusable by the pre-existing UML, so we might as
+  * well take it over.  This could happen either by
+@@ -133,44 +139,45 @@ static inline int is_umdir_used(char *di
+ 	int dead, fd, p, n, err;
+ 
+ 	n = snprintf(file, sizeof(file), "%s/pid", dir);
+-	if(n >= sizeof(file)){
+-		printk("is_umdir_used - pid filename too long\n");
++	if (n >= sizeof(file)) {
++		printk(UM_KERN_ERR "is_umdir_used - pid filename too long\n");
+ 		err = -E2BIG;
+ 		goto out;
+ 	}
+ 
+ 	dead = 0;
+ 	fd = open(file, O_RDONLY);
+-	if(fd < 0) {
++	if (fd < 0) {
+ 		fd = -errno;
+-		if(fd != -ENOENT){
+-			printk("is_umdir_used : couldn't open pid file '%s', "
+-			       "err = %d\n", file, -fd);
++		if (fd != -ENOENT) {
++			printk(UM_KERN_ERR "is_umdir_used : couldn't open pid "
++			       "file '%s', err = %d\n", file, -fd);
+ 		}
+ 		goto out;
+ 	}
+ 
+ 	err = 0;
+ 	n = read(fd, pid, sizeof(pid));
+-	if(n < 0){
+-		printk("is_umdir_used : couldn't read pid file '%s', "
+-		       "err = %d\n", file, errno);
++	if (n < 0) {
++		printk(UM_KERN_ERR "is_umdir_used : couldn't read pid file "
++		       "'%s', err = %d\n", file, errno);
+ 		goto out_close;
+-	} else if(n == 0){
+-		printk("is_umdir_used : couldn't read pid file '%s', "
+-		       "0-byte read\n", file);
++	} else if (n == 0) {
++		printk(UM_KERN_ERR "is_umdir_used : couldn't read pid file "
++		       "'%s', 0-byte read\n", file);
+ 		goto out_close;
+ 	}
+ 
+ 	p = strtoul(pid, &end, 0);
+-	if(end == pid){
+-		printk("is_umdir_used : couldn't parse pid file '%s', "
+-		       "errno = %d\n", file, errno);
++	if (end == pid) {
++		printk(UM_KERN_ERR "is_umdir_used : couldn't parse pid file "
++		       "'%s', errno = %d\n", file, errno);
+ 		goto out_close;
+ 	}
+ 
+-	if((kill(p, 0) == 0) || (errno != ESRCH)){
+-		printk("umid \"%s\" is already in use by pid %d\n", umid, p);
++	if ((kill(p, 0) == 0) || (errno != ESRCH)) {
++		printk(UM_KERN_ERR "umid \"%s\" is already in use by pid %d\n",
++		       umid, p);
+ 		return 1;
+ 	}
+ 
+@@ -194,8 +201,8 @@ static int umdir_take_if_dead(char *dir)
+ 
+ 	ret = remove_files_and_dir(dir);
+ 	if (ret) {
+-		printk("is_umdir_used - remove_files_and_dir failed with "
+-		       "err = %d\n", ret);
++		printk(UM_KERN_ERR "is_umdir_used - remove_files_and_dir "
++		       "failed with err = %d\n", ret);
+ 	}
+ 	return ret;
+ }
+@@ -206,27 +213,28 @@ static void __init create_pid_file(void)
+ 	char pid[sizeof("nnnnn\0")];
+ 	int fd, n;
+ 
+-	if(umid_file_name("pid", file, sizeof(file)))
++	if (umid_file_name("pid", file, sizeof(file)))
+ 		return;
+ 
+ 	fd = open(file, O_RDWR | O_CREAT | O_EXCL, 0644);
+-	if(fd < 0){
+-		printk("Open of machine pid file \"%s\" failed: %s\n",
+-		       file, strerror(errno));
++	if (fd < 0) {
++		printk(UM_KERN_ERR "Open of machine pid file \"%s\" failed: "
++		       "%s\n", file, strerror(errno));
+ 		return;
+ 	}
+ 
+ 	snprintf(pid, sizeof(pid), "%d\n", getpid());
+ 	n = write(fd, pid, strlen(pid));
+-	if(n != strlen(pid))
+-		printk("Write of pid file failed - err = %d\n", errno);
++	if (n != strlen(pid))
++		printk(UM_KERN_ERR "Write of pid file failed - err = %d\n",
++		       errno);
+ 
+ 	close(fd);
+ }
+ 
+ int __init set_umid(char *name)
+ {
+-	if(strlen(name) > UMID_LEN - 1)
++	if (strlen(name) > UMID_LEN - 1)
+ 		return -E2BIG;
+ 
+ 	strlcpy(umid, name, sizeof(umid));
+@@ -242,18 +250,18 @@ int __init make_umid(void)
+ 	int fd, err;
+ 	char tmp[256];
+ 
+-	if(umid_setup)
++	if (umid_setup)
+ 		return 0;
+ 
+ 	make_uml_dir();
+ 
+-	if(*umid == '\0'){
++	if (*umid == '\0') {
+ 		strlcpy(tmp, uml_dir, sizeof(tmp));
+ 		strlcat(tmp, "XXXXXX", sizeof(tmp));
+ 		fd = mkstemp(tmp);
+-		if(fd < 0){
+-			printk("make_umid - mkstemp(%s) failed: %s\n",
+-			       tmp, strerror(errno));
++		if (fd < 0) {
++			printk(UM_KERN_ERR "make_umid - mkstemp(%s) failed: "
++			       "%s\n", tmp, strerror(errno));
+ 			err = -errno;
+ 			goto err;
+ 		}
+@@ -262,11 +270,12 @@ int __init make_umid(void)
+ 
+ 		set_umid(&tmp[strlen(uml_dir)]);
+ 
+-		/* There's a nice tiny little race between this unlink and
++		/*
++		 * There's a nice tiny little race between this unlink and
+ 		 * the mkdir below.  It'd be nice if there were a mkstemp
+ 		 * for directories.
+ 		 */
+-		if(unlink(tmp)){
++		if (unlink(tmp)) {
+ 			err = -errno;
+ 			goto err;
+ 		}
+@@ -274,9 +283,9 @@ int __init make_umid(void)
+ 
+ 	snprintf(tmp, sizeof(tmp), "%s%s", uml_dir, umid);
+ 	err = mkdir(tmp, 0777);
+-	if(err < 0){
++	if (err < 0) {
+ 		err = -errno;
+-		if(err != -EEXIST)
++		if (err != -EEXIST)
+ 			goto err;
+ 
+ 		if (umdir_take_if_dead(tmp) < 0)
+@@ -284,9 +293,10 @@ int __init make_umid(void)
+ 
+ 		err = mkdir(tmp, 0777);
+ 	}
+-	if(err){
++	if (err) {
+ 		err = -errno;
+-		printk("Failed to create '%s' - err = %d\n", umid, -errno);
++		printk(UM_KERN_ERR "Failed to create '%s' - err = %d\n", umid,
++		       errno);
+ 		goto err;
+ 	}
+ 
+@@ -301,14 +311,15 @@ int __init make_umid(void)
+ 
+ static int __init make_umid_init(void)
+ {
+-	if(!make_umid())
++	if (!make_umid())
+ 		return 0;
+ 
+-	/* If initializing with the given umid failed, then try again with
++	/*
++	 * If initializing with the given umid failed, then try again with
+ 	 * a random one.
+ 	 */
+-	printk("Failed to initialize umid \"%s\", trying with a random umid\n",
+-	       umid);
++	printk(UM_KERN_ERR "Failed to initialize umid \"%s\", trying with a "
++	       "random umid\n", umid);
+ 	*umid = '\0';
+ 	make_umid();
+ 
+@@ -322,12 +333,12 @@ int __init umid_file_name(char *name, ch
+ 	int n, err;
+ 
+ 	err = make_umid();
+-	if(err)
++	if (err)
+ 		return err;
+ 
+ 	n = snprintf(buf, len, "%s%s/%s", uml_dir, umid, name);
+-	if(n >= len){
+-		printk("umid_file_name : buffer too short\n");
++	if (n >= len) {
++		printk(UM_KERN_ERR "umid_file_name : buffer too short\n");
+ 		return -E2BIG;
+ 	}
+ 
+@@ -341,21 +352,22 @@ char *get_umid(void)
+ 
+ static int __init set_uml_dir(char *name, int *add)
+ {
+-	if(*name == '\0'){
++	if (*name == '\0') {
+ 		printf("uml_dir can't be an empty string\n");
+ 		return 0;
+ 	}
+ 
+-	if(name[strlen(name) - 1] == '/'){
++	if (name[strlen(name) - 1] == '/') {
+ 		uml_dir = name;
+ 		return 0;
+ 	}
+ 
+ 	uml_dir = malloc(strlen(name) + 2);
+-	if(uml_dir == NULL){
++	if (uml_dir == NULL) {
+ 		printf("Failed to malloc uml_dir - error = %d\n", errno);
+ 
+-		/* Return 0 here because do_initcalls doesn't look at
++		/*
++		 * Return 0 here because do_initcalls doesn't look at
+ 		 * the return value.
+ 		 */
+ 		return 0;
+@@ -376,7 +388,7 @@ static void remove_umid_dir(void)
+ 
+ 	sprintf(dir, "%s%s", uml_dir, umid);
+ 	err = remove_files_and_dir(dir);
+-	if(err)
++	if (err)
+ 		printf("remove_umid_dir - remove_files_and_dir failed with "
+ 		       "err = %d\n", err);
+ }
+Index: linux-2.6.22/include/asm-um/ptrace-generic.h
+===================================================================
+--- linux-2.6.22.orig/include/asm-um/ptrace-generic.h	2007-08-14 13:30:08.000000000 -0400
++++ linux-2.6.22/include/asm-um/ptrace-generic.h	2007-08-14 13:30:08.000000000 -0400
+@@ -1,5 +1,5 @@
+ /* 
+- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
  
