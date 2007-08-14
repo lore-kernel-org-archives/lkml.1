@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbXHNNvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbXHNN4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758300AbXHNNvX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 09:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXHNNvO
+	id S1759000AbXHNN4t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 09:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbXHNN4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 09:51:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55069 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751026AbXHNNvM (ORCPT
+	Tue, 14 Aug 2007 09:56:39 -0400
+Received: from aa014msr.fastwebnet.it ([85.18.95.74]:37818 "EHLO
+	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752611AbXHNN4i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 09:51:12 -0400
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -
-	scripts/get_maintainer.pl
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Rene Herman <rene.herman@gmail.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Joe Perches <joe@perches.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-In-Reply-To: <20070814102033.604c8695@the-village.bc.nu>
-References: <1186984174.10249.7.camel@localhost>
-	 <200708131933.10125.m.kozlowski@tuxland.pl>
-	 <1187026955.2688.4.camel@laptopd505.fenrus.org>
-	 <1187037445.6628.98.camel@heimdal.trondhjem.org>
-	 <1187054366.2757.0.camel@laptopd505.fenrus.org>
-	 <46C10AA8.3090505@gmail.com>  <20070814102033.604c8695@the-village.bc.nu>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 14 Aug 2007 06:47:20 -0700
-Message-Id: <1187099240.3537.1.camel@laptopd505.fenrus.org>
+	Tue, 14 Aug 2007 09:56:38 -0400
+Date: Tue, 14 Aug 2007 15:47:47 +0200
+From: Paolo Ornati <ornati@fastwebnet.it>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-usb-devel@lists.sourceforge.net,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] spontaneous disconnect with "usb-storage:
+ implement autosuspend"
+Message-ID: <20070814154747.6272ccf3@localhost>
+In-Reply-To: <200708141530.28182.oliver@neukum.org>
+References: <20070814131557.5653d991@localhost>
+ <200708141530.28182.oliver@neukum.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 (2.11.6.1-1.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 14 Aug 2007 15:30:27 +0200
+Oliver Neukum <oliver@neukum.org> wrote:
 
-On Tue, 2007-08-14 at 10:20 +0100, Alan Cox wrote:
-> > MODULE_MAINTAINER() was discussed a while ago but embedding information into 
-> > the binary has the problem you can't ever change deployed systems, meaning 
-> > it lags by design. If a maintainer changes, people would still be using the 
-> > information from their old binaries, meaning a replaced maintainer might get 
-> > contacted for potentially years still (and the new one not).
+> > my USB photo-camera gets automagically disconnected before I can do
+> > anything with it ;)
+> >   
 > 
-> And as was pointed out at the time, the people whining about that were
-> talking out of the wrong equipment. The supplier of the code can no more
-> or less easily change the binary as the matching source tree once its been
-> shipped. In fact its probably easier to change the binaries as the
-> sources will be left on CD.
+> hi,
 > 
-> The only non-stale source is git-blame.
+> I need vendor:product. Please provide "lsusb".
+> Generally a bug report for a specific usb device without vendor:product
+> is a bad idea.
 
-the other angle is this: if someone becomes the new maintainer, does he
-really want to "maintain" all the really old versions of the code out
-there that predate him, or does he only want to go forward? 
-He wouldn't know anything about, say, the 2.4.21 version of the driver
-anyway... nor would it be reasonable to expect him to.
+oopss  :)
 
-I can an option where distros just set all the maintainer data to
-themselves for long lived enterprise products... since effectively they
-are the de-facto maintainers of those codebases.
+
+HP PHOTOSMART E317
+
+tux ~ # lsusb
+Bus 007 Device 001: ID 0000:0000
+Bus 006 Device 002: ID 03f0:4002 Hewlett-Packard PhotoSmart 720 / PhotoSmart 935 (storage)
+...
 
 -- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+	Paolo Ornati
+	Linux 2.6.23-rc3 on x86_64
