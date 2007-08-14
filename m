@@ -1,33 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756529AbXHNJOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbXHNJWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756529AbXHNJOY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 05:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbXHNJN7
+	id S1756675AbXHNJWi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 05:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbXHNJW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 05:13:59 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47662 "EHLO
+	Tue, 14 Aug 2007 05:22:26 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37036 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753377AbXHNJN5 (ORCPT
+	with ESMTP id S1753641AbXHNJWZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 05:13:57 -0400
-Date: Tue, 14 Aug 2007 10:20:33 +0100
+	Tue, 14 Aug 2007 05:22:25 -0400
+Date: Tue, 14 Aug 2007 10:30:13 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Joe Perches <joe@perches.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -
- scripts/get_maintainer.pl
-Message-ID: <20070814102033.604c8695@the-village.bc.nu>
-In-Reply-To: <46C10AA8.3090505@gmail.com>
-References: <1186984174.10249.7.camel@localhost>
-	<200708131933.10125.m.kozlowski@tuxland.pl>
-	<1187026955.2688.4.camel@laptopd505.fenrus.org>
-	<1187037445.6628.98.camel@heimdal.trondhjem.org>
-	<1187054366.2757.0.camel@laptopd505.fenrus.org>
-	<46C10AA8.3090505@gmail.com>
+To: "Sonic Zhang" <sonic.adi@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH again] [libata] libata driver for bf548 on chip ATAPI
+ controller.
+Message-ID: <20070814103013.6899813f@the-village.bc.nu>
+In-Reply-To: <4e5ebad50708131925k28d283f4k5057d0902ddc10ae@mail.gmail.com>
+References: <1187056118.16255.1.camel@sevens.analog.com>
+	<4e5ebad50708131925k28d283f4k5057d0902ddc10ae@mail.gmail.com>
 X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -38,18 +30,72 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> MODULE_MAINTAINER() was discussed a while ago but embedding information into 
-> the binary has the problem you can't ever change deployed systems, meaning 
-> it lags by design. If a maintainer changes, people would still be using the 
-> information from their old binaries, meaning a replaced maintainer might get 
-> contacted for potentially years still (and the new one not).
+> +/**
+> + * Register transfer timing table
+> + */
 
-And as was pointed out at the time, the people whining about that were
-talking out of the wrong equipment. The supplier of the code can no more
-or less easily change the binary as the matching source tree once its been
-shipped. In fact its probably easier to change the binaries as the
-sources will be left on CD.
+Libata has a complete set of transfer mode tables and timing functions -
+any reason for not using them ?
 
-The only non-stale source is git-blame.
 
-Alan
+> +                       /* increase tcyc - tdvs (tcyc_tdvs) until we
+> meed
+> +                        * the minimum cycle length
+> +                        */
+> +                       while ( (tdvs + tcyc_tdvs) < tcyc ) {
+> +                               tcyc_tdvs++;
+> +                       }
+
+Why not 
+
+			if ((tdvs + tcyc_tvds) < tcyc)
+				tcyc_tdvs = tcyc - tdvs;
+
+> +                       /* increase tk until we meed the minimum cycle
+> length */
+> +                       while ( (tkw+td) < n0 ) {
+> +                               tkw++;
+> +                       }
+
+
+			if (tkw + td < n0)
+				tkw = n0 - td;
+
+(and fix up brackets)
+
+>
+> +static void inline wait_complete(unsigned long base, unsigned short
+> mask)
+> +{
+> +       unsigned short status;
+> +
+> +       do {
+> +               status = ATAPI_GET_INT_STATUS(base) & mask;
+> +       } while (!status);
+
+Does this need a timeout or can a device write never get stuck ?
+
+> +static int bfin_port_start(struct ata_port *ap)
+> +{
+> +       pr_debug("in atapi port start\n");
+> +       if (ap->udma_mask != 0 || ap->mwdma_mask != 0) {
+> +               if (request_dma(CH_ATAPI_RX, "BFIN ATAPI RX DMA") >= 0)
+> {
+> +                       if (request_dma(CH_ATAPI_TX,
+> +                               "BFIN ATAPI TX DMA") >= 0) {
+> +                               return 0;
+> +                       }
+> +                       free_dma(CH_ATAPI_RX);
+> +               }
+> +               ap->udma_mask = 0;
+> +               ap->mwdma_mask = 0;
+> +               dev_err(ap->dev, "Unable to request ATAPI DMA!\n");
+> +               return -EBUSY;
+
+Is this an error case - if you clear the UDMA/MWDMA mask then DMA won't
+be needed will it so you can continue after the problem but slowly ?
+
+
+Otherwise looks sound. A lot of reset method duplication but that isn't
+your fault and something that wants more work in libata to avoid
+
