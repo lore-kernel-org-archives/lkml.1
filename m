@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933798AbXHNSdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbXHNShU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933798AbXHNSdo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 14:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760568AbXHNSdb
+	id S1754460AbXHNShU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 14:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbXHNSg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 14:33:31 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:41894 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757211AbXHNSda (ORCPT
+	Tue, 14 Aug 2007 14:36:57 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:57144 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752146AbXHNSg4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 14:33:30 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Paolo Ornati <ornati@fastwebnet.it>
-Subject: Re: [linux-usb-devel] spontaneous disconnect with "usb-storage: implement autosuspend"
-Date: Tue, 14 Aug 2007 20:33:22 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-usb-devel@lists.sourceforge.net,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20070814131557.5653d991@localhost> <200708141746.16958.oliver@neukum.org> <20070814183857.28997de1@localhost>
-In-Reply-To: <20070814183857.28997de1@localhost>
+	Tue, 14 Aug 2007 14:36:56 -0400
+X-Greylist: delayed 1772 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Aug 2007 14:36:56 EDT
+Message-ID: <46C1F55E.1020908@gmail.com>
+Date: Tue, 14 Aug 2007 20:33:02 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Joe Perches <joe@perches.com>
+CC: git@vger.kernel.org, Junio C Hamano <gitster@pobox.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch	-	scripts/get_maintainer.pl
+References: <1186984174.10249.7.camel@localhost>	 <200708131933.10125.m.kozlowski@tuxland.pl>	 <1187026955.2688.4.camel@laptopd505.fenrus.org>	 <1187037445.6628.98.camel@heimdal.trondhjem.org>	 <1187054366.2757.0.camel@laptopd505.fenrus.org>	 <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu>	 <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>	 <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost>
+In-Reply-To: <1187116082.32555.122.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708142033.23158.oliver@neukum.org>
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 14 August 2007 schrieb Paolo Ornati:
-> On Tue, 14 Aug 2007 17:46:16 +0200
-> Oliver Neukum <oliver@neukum.org> wrote:
+On 08/14/2007 08:28 PM, Joe Perches wrote:
+
+> On Tue, 2007-08-14 at 20:03 +0200, Rene Herman wrote:
+>> "git info --maintainer drivers/ide/ide-cd.c" or some such would say "Alan 
+>> Cox <alan@...>".
 > 
-> > Am Dienstag 14 August 2007 schrieb Paolo Ornati:
-> > > Hewlett-Packard PhotoSmart 720 / PhotoSmart 935 (storage)  
-> > 
-> > Please try this patch.
+> Perhaps maintainer(s), approver(s), listener(s)?
 > 
-> Tried on -rc3 but it doesn't work, dmesg attached.
+> I think something like this should be a git-goal.
+> What do the git-wranglers think?
+
+I agree. If this thing has source management, let's use it.
+
+> Until a time in the future when a system like that exists,
+> I suggest keeping MAINTAINERS up-to-date with
 > 
-> However I've found that if "hald" is running the problems doesn't
-> happen (I think it's just hidden by the fact that hald do some polling
-> on it preventing autosuspend to trigger).
+> F:	pattern
+> 
+> It'll be useful as git-set-maintainer seeds at least.
 
-Exactly. This is not reliable. It needs to be done in kernel. This patch
-should do it.
+Yes. Seeing as how it's already been useful in updating the information it 
+would be a shame to throw what you already did away. Don't underestimate how 
+fast git-wranglers can implement stuff if they agree though... :-)
 
-	Regards
-		Oliver
+>> sticking  headers on every source file isn't nice anyway --
+>> it's meta-information and the SCM can maintain it.
+> 
+> It's like looking at $CVS$ keywords.  Unsightly.
 
----
+Again agree.
 
---- a/drivers/usb/core/quirks.c	2007-08-14 17:42:22.000000000 +0200
-+++ b/drivers/usb/core/quirks.c	2007-08-14 20:30:28.000000000 +0200
-@@ -30,6 +30,8 @@
- static const struct usb_device_id usb_quirk_list[] = {
- 	/* HP 5300/5370C scanner */
- 	{ USB_DEVICE(0x03f0, 0x0701), .driver_info = USB_QUIRK_STRING_FETCH_255 },
-+	/* Hewlett-Packard PhotoSmart 720 / PhotoSmart 935 (storage) */
-+	{ USB_DEVICE(0x03f0, 0x4002), .driver_info = USB_QUIRK_NO_AUTOSUSPEND },
- 	/* Acer Peripherals Inc. (now BenQ Corp.) Prisa 640BU */
- 	{ USB_DEVICE(0x04a5, 0x207e), .driver_info = USB_QUIRK_NO_AUTOSUSPEND },
- 	/* Benq S2W 3300U */
+Rene.
+
+
