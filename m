@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933410AbXHNWOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764097AbXHNWOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933410AbXHNWOv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbXHNV5I
+	id S1764097AbXHNWOZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935871AbXHNV4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:57:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55985 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935725AbXHNV5E (ORCPT
+	Tue, 14 Aug 2007 17:56:39 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36880 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755107AbXHNV4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:57:04 -0400
-Date: Tue, 14 Aug 2007 23:56:59 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC 4/9] Atomic reclaim: Save irq flags in vmscan.c
-Message-ID: <20070814215659.GF23308@one.firstfloor.org>
-References: <20070814203329.GA22202@one.firstfloor.org> <Pine.LNX.4.64.0708141341120.31513@schroedinger.engr.sgi.com> <20070814204454.GC22202@one.firstfloor.org> <Pine.LNX.4.64.0708141414260.31693@schroedinger.engr.sgi.com> <20070814212355.GA23308@one.firstfloor.org> <Pine.LNX.4.64.0708141425000.31693@schroedinger.engr.sgi.com> <20070814212955.GC23308@one.firstfloor.org> <Pine.LNX.4.64.0708141436380.31693@schroedinger.engr.sgi.com> <20070814214430.GD23308@one.firstfloor.org> <Pine.LNX.4.64.0708141444590.32110@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708141444590.32110@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 14 Aug 2007 17:56:37 -0400
+Date: Tue, 14 Aug 2007 14:56:35 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: "Serge E. Hallyn" <serge@hallyn.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, bob.picco@hp.com,
+       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
+       akpm@linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       ckrm-tech <ckrm-tech@lists.sourceforge.net>
+Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
+In-Reply-To: <1187127685.6281.139.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
+References: <20070812152126.GA26239@linux.vnet.ibm.com> 
+ <20070813201215.GA16908@vino.hallyn.com>  <1187103831.6281.24.camel@localhost>
+  <20070814180339.GA32553@vino.hallyn.com>  <1187115224.6281.40.camel@localhost>
+  <20070814192306.GB32553@vino.hallyn.com>  <20070814204951.GA2065@vino.hallyn.com>
+  <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
+ <1187127685.6281.139.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 14, 2007 at 02:48:31PM -0700, Christoph Lameter wrote:
-> On Tue, 14 Aug 2007, Andi Kleen wrote:
+On Tue, 14 Aug 2007, Lee Schermerhorn wrote:
+
+> > Ok then you did not have a NUMA system configured. So its okay for the 
+> > dummies to ignore the stuff. CONFIG_NODES_SHIFT is a constant and does not 
+> > change. The first bit is always set.
 > 
-> > > But that still creates lots of overhead each time we take the lru lock!
-> > 
-> > A lot of overhead in what way? Setting a flag in a cache hot
-> > per CPU data variable shouldn't be more than a few cycles.
-> 
-> Could you be a bit more specific? Where do you want to place the data?
+> The first bit [node 0] is only set for the N_ONLINE [and N_POSSIBLE]
+> mask.  We could add the static init for the other masks, but since
+> non-numa platforms are going through the __build_all_zonelists, they
+> might as well set the MEMORY bits explicitly.  Or, maybe you'll
+> disagree ;-).
 
-DEFINE_PER_CPU(int, zone_flag);
+The bitmaps can be completely ignored if !NUMA.
 
-	get_cpu();	// likely already true and then not needed
-	__get_cpu(zone_flag) = 1;
-	/* wmb is implied in spin_lock I think */
-	spin_lock(&zone->lru_lock);
-	...
-	spin_unlock(&zone->lru_lock);
-	__get_cpu(zone_flag) = 0;
-	put_cpu();
+In the non NUMA case we define
 
-Interrupt handler
+static inline int node_state(int node, enum node_states state)
+{
+        return node == 0;
+}
 
-	if (!__get_cpu(zone_flag)) {
-		do things with zone locks 
-	}
+So its always true for node 0. The "bit" is set.
 
-The interrupt handler shouldn't touch zone_flag. If it wants
-to it would need to be converted to a local_t and incremented/decremented
-(should be about the same cost at least on architectures with sane
-local_t implementation) 
-		
--Andi
+We are trying to get cpusets to work with !NUMA?
+
+
+
 
