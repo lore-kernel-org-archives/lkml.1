@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934041AbXHNTeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933937AbXHNTlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934041AbXHNTeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 15:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934804AbXHNTds
+	id S933937AbXHNTlY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 15:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbXHNTlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 15:33:48 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:46144 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760367AbXHNTdq (ORCPT
+	Tue, 14 Aug 2007 15:41:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41513 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759794AbXHNTlL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 15:33:46 -0400
-Date: Tue, 14 Aug 2007 20:33:33 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Joe Perches <joe@perches.com>, Rene Herman <rene.herman@gmail.com>,
-       git@vger.kernel.org, Junio C Hamano <gitster@pobox.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
+	Tue, 14 Aug 2007 15:41:11 -0400
+Date: Tue, 14 Aug 2007 12:41:10 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: linux-mm@kvack.org, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-Message-ID: <20070814193333.GI21089@ftp.linux.org.uk>
-References: <1187026955.2688.4.camel@laptopd505.fenrus.org> <1187037445.6628.98.camel@heimdal.trondhjem.org> <1187054366.2757.0.camel@laptopd505.fenrus.org> <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu> <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost> <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost> <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+In-Reply-To: <1187119978.5337.1.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0708141233370.30435@schroedinger.engr.sgi.com>
+References: <20070814142103.204771292@sgi.com>  <1187102203.6114.2.camel@twins>
+  <Pine.LNX.4.64.0708140828060.27248@schroedinger.engr.sgi.com>
+ <1187119978.5337.1.camel@lappy>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 14, 2007 at 11:40:09AM -0700, Linus Torvalds wrote:
+On Tue, 14 Aug 2007, Peter Zijlstra wrote:
 
-> A much *better* picture than some manually maintained thing, in fact, 
-> because it tells you who really does the work, and which way patches go...
+> > Ok but that could be addressed by making sure that a certain portion of 
+> > memory is reserved for clean file backed pages.
 > 
-> (Maybe you want to add a
-> 
-> 	grep -v '\(Linus Torvalds\)\|\(Andrew Morton\)'
-> 
-> to avoid seeing the normal chain too much, but hey, we probably want to 
-> know too. Anyway - the script can certainly be tweaked, the point is 
-> really just that the git tree _already_ contains the relevant 
-> information).
+> Which gets us back to the initial problem of sizing this portion and
+> ensuring it is big enough to service the need.
 
-FWIW, I suspect that we are looking at that from the wrong POV.  If
-that's about "who ought to be Cc'd on the issues dealing with <list
-of pathnames>", why does it have to be tied to "who is maintainer for
-<pathname>"?
+Clean file backed pages dominate memory on most boxes. They can be 
+calculated by NR_FILE_PAGES - NR_FILE_DIRTY
 
-I'm not suggesting something like fs.ext2@kernel.org with something
-like majordomo allowing to add yourself to those, but something less
-extreme in that direction might be worth thinking about...  Hell,
-even simple
-$ finger fs/minix/dir.c@cc.kernel.org
-with majordomo-like interface for adding yourself to such lists
-might solve most of those problems...
+On my 2G system that is 
+
+Cached:        1731480 kB
+Dirty:             424 kB
+
+So for most load the patch as is will fix your issues. The problem arises 
+if you have extreme loads that are making the majority of pages anonymous.
+
+We could change min_free_kbytes to specify the number of free + clean 
+pages required (if we can do atomic reclaim then we do not need it 
+anymore). Then we can specify a large portion of memory for 
+min_free_kbytes. 20%? That would give you 400M on my box which would 
+certainly suffice.
+
+If the amount of clean file backed pages falls below that limit then do 
+the usual reclaim. If we write anonymous pages out to swap then they 
+can also become clean and reclaimable.
+
+
