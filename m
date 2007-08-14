@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbXHNWq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbXHNWq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbXHNWq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934351AbXHNWp5
+	id S1758394AbXHNWq4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933072AbXHNWqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 18:45:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33119 "EHLO mx1.redhat.com"
+	Tue, 14 Aug 2007 18:46:22 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4979 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934398AbXHNWpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 18:45:54 -0400
-Message-ID: <46C23078.4040109@redhat.com>
-Date: Tue, 14 Aug 2007 18:45:12 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
-       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S934657AbXHNWqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 18:46:20 -0400
+Subject: Re: [PATCH] [463/2many] MAINTAINERS - STRADIS MPEG-2 DECODER DRIVER
+From: Joe Perches <joe@perches.com>
+To: Nathan Laredo <laredo@gnu.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <246a89290708141451n742a0f0bv2e95114319252050@mail.gmail.com>
+References: <46bffc01.7c95Dz5xUUkjysHI%joe@perches.com>
+	 <246a89290708132104h4145349ah4a4a56ef852a1bb3@mail.gmail.com>
+	 <1187065967.32555.19.camel@localhost>
+	 <246a89290708141451n742a0f0bv2e95114319252050@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 14 Aug 2007 15:45:32 -0700
+Message-Id: <1187131532.32555.168.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Thu, 9 Aug 2007, Chris Snook wrote:
-> 
->> This patchset makes the behavior of atomic_read uniform by removing the
->> volatile keyword from all atomic_t and atomic64_t definitions that currently
->> have it, and instead explicitly casts the variable as volatile in
->> atomic_read().  This leaves little room for creative optimization by the
->> compiler, and is in keeping with the principles behind "volatile considered
->> harmful".
-> 
-> volatile is generally harmful even in atomic_read(). Barriers control
-> visibility and AFAICT things are fine.
+On Tue, 2007-08-14 at 14:51 -0700, Nathan Laredo wrote:
+> Just the ones that show my name at the top of the source file.
+> cs8240.h, ibmmpeg2.h, saa7121.h, saa7146*.h, stradis.c
 
-But barriers force a flush of *everything* in scope, which we generally don't 
-want.  On the other hand, we pretty much always want to flush atomic_* 
-operations.  One way or another, we should be restricting the volatile behavior 
-to the thing that needs it.  On most architectures, this patch set just moves 
-that from the declaration, where it is considered harmful, to the use, where it 
-is considered an occasional necessary evil.
+STRADIS MPEG-2 DECODER DRIVER
+P:	Nathan Laredo
+M:	laredo@gnu.org
+W:	http://www.stradis.com/
+S:	Maintained
+F:	drivers/media/video/cs8240.h
+F:	drivers/media/video/ibmmpeg2.h
+F:	drivers/media/video/saa7121.h
+F:	drivers/media/video/saa7146*.h
+F:	drivers/media/video/stradis.c
 
-See the resubmitted patchset, which also puts a cast in the atomic[64]_set 
-operations.
 
-	-- Chris
