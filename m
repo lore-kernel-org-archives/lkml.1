@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764176AbXHNWf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762867AbXHNWmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764176AbXHNWf0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXHNWfB
+	id S1762867AbXHNWmT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbXHNWl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 18:35:01 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40787 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753416AbXHNWe7 (ORCPT
+	Tue, 14 Aug 2007 18:41:59 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39338 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753453AbXHNWly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 18:34:59 -0400
-Date: Tue, 14 Aug 2007 23:42:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Tue, 14 Aug 2007 18:41:54 -0400
+Date: Tue, 14 Aug 2007 15:41:53 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
 To: Andi Kleen <andi@firstfloor.org>
-Cc: Hajime Inoue <hinoue@ccsl.carleton.ca>, linux-kernel@vger.kernel.org
-Subject: Re: System call interposition/unprotecting the table
-Message-ID: <20070814234206.76121d02@the-village.bc.nu>
-In-Reply-To: <p73zm0tnbf8.fsf@bingen.suse.de>
-References: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca>
-	<20070814000956.7c8929dd@the-village.bc.nu>
-	<46C1E5F5.9050702@ccsl.carleton.ca>
-	<p73zm0tnbf8.fsf@bingen.suse.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 4/9] Atomic reclaim: Save irq flags in vmscan.c
+In-Reply-To: <20070814222150.GI23308@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0708141540140.364@schroedinger.engr.sgi.com>
+References: <20070814212355.GA23308@one.firstfloor.org>
+ <Pine.LNX.4.64.0708141425000.31693@schroedinger.engr.sgi.com>
+ <20070814212955.GC23308@one.firstfloor.org>
+ <Pine.LNX.4.64.0708141436380.31693@schroedinger.engr.sgi.com>
+ <20070814214430.GD23308@one.firstfloor.org>
+ <Pine.LNX.4.64.0708141444590.32110@schroedinger.engr.sgi.com>
+ <20070814215659.GF23308@one.firstfloor.org>
+ <Pine.LNX.4.64.0708141504350.32420@schroedinger.engr.sgi.com>
+ <20070814221616.GG23308@one.firstfloor.org>
+ <Pine.LNX.4.64.0708141517340.32624@schroedinger.engr.sgi.com>
+ <20070814222150.GI23308@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So even with Alan's hypervisor support the whole thing would be still
-> quite holey.  The argument of raising the bar also doesn't seem very
+On Wed, 15 Aug 2007, Andi Kleen wrote:
 
-Its materially harder, especially with the hypervisor.
+> > Ok I have a vague idea on how this could but its likely that the 
+> > changes make things worse rather than better. Additional reference to a 
+> > new cacheline (per cpu but still), preempt disable. Lots of code at all
+> > call sites. Interrupt enable/disable is quite efficient in recent 
+> > processors.
+> 
+> The goal of this was not to be faster than interrupt disable,
+> but to avoid the interrupt latency impact. This might be a problem
+> when spending a lot of time inside the locks.
 
-> convincing to me, because attackers reuse code too and it's enough
-> when someone publishes such code once, then they can cut'n'paste
-> it into any exploits forever.
+Both. They need to be fast too and not complicate the kernel too much. I 
+have not seen a serious holdoff case. The biggest issue is still the 
+zone->lru lock but interrupts are always disabled for that one already.
 
-Then you fix the specific case and the game continues.
 
-> In general the .data protection is only considered a debugging
-> feature. I don't know why Fedora enables it in their production
-> kernels.
-
-That would be because we think you are wrong 8)
-
-Alan
