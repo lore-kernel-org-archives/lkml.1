@@ -1,39 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762554AbXHNWYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936810AbXHNWYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762554AbXHNWYB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761493AbXHNWVy
+	id S936810AbXHNWYv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934718AbXHNWWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 18:21:54 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39329 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936005AbXHNWVw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 18:21:52 -0400
-Date: Wed, 15 Aug 2007 00:21:50 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC 4/9] Atomic reclaim: Save irq flags in vmscan.c
-Message-ID: <20070814222150.GI23308@one.firstfloor.org>
-References: <20070814212355.GA23308@one.firstfloor.org> <Pine.LNX.4.64.0708141425000.31693@schroedinger.engr.sgi.com> <20070814212955.GC23308@one.firstfloor.org> <Pine.LNX.4.64.0708141436380.31693@schroedinger.engr.sgi.com> <20070814214430.GD23308@one.firstfloor.org> <Pine.LNX.4.64.0708141444590.32110@schroedinger.engr.sgi.com> <20070814215659.GF23308@one.firstfloor.org> <Pine.LNX.4.64.0708141504350.32420@schroedinger.engr.sgi.com> <20070814221616.GG23308@one.firstfloor.org> <Pine.LNX.4.64.0708141517340.32624@schroedinger.engr.sgi.com>
+	Tue, 14 Aug 2007 18:22:17 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:54001 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761800AbXHNWWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 18:22:14 -0400
+Date: Wed, 15 Aug 2007 02:22:03 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] w1_remove_master_device(): fix check-after-use
+Message-ID: <20070814222203.GA1844@2ka.mipt.ru>
+References: <20070814212248.GD18945@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708141517340.32624@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070814212248.GD18945@stusta.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ok I have a vague idea on how this could but its likely that the 
-> changes make things worse rather than better. Additional reference to a 
-> new cacheline (per cpu but still), preempt disable. Lots of code at all
-> call sites. Interrupt enable/disable is quite efficient in recent 
-> processors.
+Hi Adrian.
 
-The goal of this was not to be faster than interrupt disable,
-but to avoid the interrupt latency impact. This might be a problem
-when spending a lot of time inside the locks.
+On Tue, Aug 14, 2007 at 11:22:48PM +0200, Adrian Bunk (bunk@kernel.org) wrote:
+> The Coverity checker spotted that we'd have already oops'ed if "dev"
+> was NULL.
 
--Andi
+This is wrong.
+Although dev can not be null there there is no way it will crash.
+The right paranoidal solution is to setup new pointer and make it equal
+to the found device and check if it is NULL or not out of the loop.
+I will cook up a patch tomorrow, thanks for pointing to this issue.
+
+-- 
+	Evgeniy Polyakov
