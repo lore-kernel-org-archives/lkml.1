@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763291AbXHNUNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935530AbXHNUPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763291AbXHNUNI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 16:13:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbXHNUMq
+	id S935530AbXHNUPm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 16:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbXHNUP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 16:12:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42457 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756491AbXHNUMo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 16:12:44 -0400
-Date: Tue, 14 Aug 2007 13:12:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: xemul@openvz.org
-Cc: devel@openvz.org, linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       oleg@tv-sign.ru, sukadev@us.ibm.com
-Subject: Re: [PATCH 19/20] Changes to show virtual ids to user
-Message-Id: <20070814131202.73b7d559.akpm@linux-foundation.org>
-In-Reply-To: <46BC508C.mailGLJ118R5H@openvz.org>
-References: <46BC508C.mailGLJ118R5H@openvz.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 14 Aug 2007 16:15:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41854 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755488AbXHNUP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 16:15:27 -0400
+Date: Tue, 14 Aug 2007 21:12:20 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Diego Woitasen <diego@woitasen.com.ar>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove unneded lock_kernel in drivers/md/dm.c and use unlocked_ioctl.
+Message-ID: <20070814201220.GA30122@agk.fab.redhat.com>
+Mail-Followup-To: Diego Woitasen <diego@woitasen.com.ar>,
+	dm-devel@redhat.com, linux-kernel@vger.kernel.org
+References: <11858486294133-git-send-email-diego@woitasen.com.ar>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11858486294133-git-send-email-diego@woitasen.com.ar>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Aug 2007 15:48:28 +0400
-xemul@openvz.org wrote:
+On Mon, Jul 30, 2007 at 11:23:49PM -0300, Diego Woitasen wrote:
+> -static int dm_blk_ioctl(struct inode *inode, struct file *file,
+> -			unsigned int cmd, unsigned long arg)
+> +static long dm_blk_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
-> This is the largest patch in the set. Make all (I hope) the places where
-> the pid is shown to or get from user operate on the virtual pids.
-> 
-> The idea is:
->  - all in-kernel data structures must store either struct pid itself
->    or the pid's global nr, obtained with pid_nr() call;
->  - when seeking the task from kernel code with the stored id one
->    should use find_task_by_pid() call that works with global pids;
->  - when showing pid's numerical value to the user the virtual one
->    should be used, but however when one shows task's pid outside this
->    task's namespace the global one is to be used;
->  - when getting the pid from userspace one need to consider this as
->    the virtual one and use appropriate task/pid-searching functions.
-> 
-> ...
->
-> -	si.si_pid = current->pid;
-> +	si.si_pid = task_pid_vnr(current);
+> -	/* We don't really need this lock, but we do need 'inode'. */
+> -	unlock_kernel();
+> +	inode = file->f_path.dentry->d_inode;
 
-This is going to be an ongoing maintenance problem: people will sneak
-new references to current->pid into the tree and nobody will notice.
+Have the call paths that pass a NULL 'file' parameter down all been
+changed?  If not, perhaps pass the 'inode' parameter into
+unlocked_ioctl(), as happens with ioctl(), to get rid of the lock.
 
-It'd be best to rename task_struct.pid to something else to catch such
-problems and to force people to use the right accessors.  Is that feasible?
-
-Generally this is a tactic which should be used whenever things like this
-are virtualised.
+Alasdair
+-- 
+agk@redhat.com
