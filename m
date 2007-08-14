@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764102AbXHNQul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932066AbXHNQvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764102AbXHNQul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 12:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763681AbXHNQuT
+	id S932066AbXHNQvI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 12:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765643AbXHNQug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 12:50:19 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58868 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763829AbXHNQuQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 12:50:16 -0400
-X-Sasl-enc: rig2b0+Q+fTggZ6T+xVcsMfQCEt4gPnerbW3znK/yy2z 1187110214
-Date: Tue, 14 Aug 2007 13:50:11 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Len Brown <lenb@kernel.org>
-Cc: trenn@suse.de, "Brown, Len" <len.brown@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>, Zhang Rui <rui.zhang@intel.com>,
-       Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: Documentation - How to debug ACPI Problems
-Message-ID: <20070814165011.GB5325@khazad-dum.debian.net>
-References: <1181140008.28514.259.camel@queen.suse.de> <9a8748490706060759s5d8c43bdoc34334fcf56ee96@mail.gmail.com> <1181579321.28514.304.camel@queen.suse.de> <200708141140.02233.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708141140.02233.lenb@kernel.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 14 Aug 2007 12:50:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54478 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765634AbXHNQue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 12:50:34 -0400
+Subject: [GFS2/DLM] Pull request
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: torvalds@linux-foundation.org
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <1187086122.8765.838.camel@quoit>
+References: <11870848365-git-send-email-swhiteho@redhat.com>
+	 <1187086122.8765.838.camel@quoit>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Tue, 14 Aug 2007 17:44:49 +0100
+Message-Id: <1187109889.8765.854.camel@quoit>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Aug 2007, Len Brown wrote:
-> > +Thomas Renninger <trenn@suse.de>, 2007
-> > +Copyright (C) 2007 SUSE Linux GmbH
-> 
-> While it seems to be generally customary to identify the authors of Documentation
-> files, it doesn't seem to be customary for them to assert a copyright.
-> Is this really necessary?  My concern is that it could discourage contributors
-> for user or changing the text in any way they see fit.
-> 
-> can anybody offer guidance on this?
+Hi,
 
-For docs that specify a friendly license explicitly (GPL, BSD, etc), that
-should not be a problem.
+Please consider pulling the following bug fixes from the GFS2/DLM -fixes git tree,
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Steve.
+
+The following changes since commit 39d3520c92cf7a28c07229ca00cc35a1e8026c77:
+  Linus Torvalds (1):
+        Linux 2.6.23-rc3
+
+are found in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git
+
+Bob Peterson (2):
+      [GFS2] soft lockup detected in databuf_lo_before_commit
+      [GFS2] soft lockup in rgblk_search
+
+David Teigland (2):
+      [DLM] fix NULL ls usage
+      [DLM] fix basts for granted PR waiting CW
+
+Jesper Juhl (1):
+      [DLM] Fix memory leak in dlm_add_member() when dlm_node_weight() returns less than zero
+
+Patrick Caulfield (3):
+      [DLM] Clear othercon pointers when a connection is closed
+      [DLM] zero unused parts of sockaddr_storage
+      [DLM] More othercon fixes
+
+Steven Whitehouse (4):
+      [GFS2] Fix incorrect return code in rgrp.c
+      [GFS2] Fix incorrect error path in prepare_write()
+      [GFS2] Fix setting of inherit jdata attr
+      [GFS2] Revert remounting w/o acl option leaves acls enabled
+
+ fs/dlm/lock.c         |   69 +++++++++++++++++++++++++++++++++++++++----------
+ fs/dlm/lowcomms.c     |   24 +++++++++++-----
+ fs/dlm/member.c       |    4 ++-
+ fs/dlm/rcom.c         |    7 ++---
+ fs/gfs2/lops.c        |    6 +++-
+ fs/gfs2/mount.c       |   25 +++++++++--------
+ fs/gfs2/ops_address.c |    3 +-
+ fs/gfs2/ops_file.c    |   29 ++++++++++++--------
+ fs/gfs2/rgrp.c        |   16 ++++++++---
+ 9 files changed, 124 insertions(+), 59 deletions(-)
+
+
