@@ -1,92 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940985AbXHNFVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939720AbXHNF2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940985AbXHNFVa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 01:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933663AbXHNFVP
+	id S939720AbXHNF2j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 01:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbXHNF2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 01:21:15 -0400
-Received: from mga09.intel.com ([134.134.136.24]:64713 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933080AbXHNFVN convert rfc822-to-8bit (ORCPT
+	Tue, 14 Aug 2007 01:28:25 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:37398 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757324AbXHNF2X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 01:21:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,257,1183359600"; 
-   d="scan'208";a="117221249"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 14 Aug 2007 01:28:23 -0400
+Message-ID: <46C13CF4.1040202@linux.vnet.ibm.com>
+Date: Tue, 14 Aug 2007 10:56:12 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] [28/2many] MAINTAINERS - ACPI VIDEO DRIVER
-Date: Tue, 14 Aug 2007 13:21:07 +0800
-Message-ID: <823A93EED437D048963A3697DB0E35DE97EC9A@pdsmsx414.ccr.corp.intel.com>
-In-Reply-To: <200708140116.30199.lenb@kernel.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] [28/2many] MAINTAINERS - ACPI VIDEO DRIVER
-Thread-Index: AcfeMkuX5BXbDIM6Rw+nv3izzr3SCwAAB2Jg
-References: <46bff898.QBRdcCdpCAEm8W02%joe@perches.com> <200708140116.30199.lenb@kernel.org>
-From: "Zhang, Rui" <rui.zhang@intel.com>
-To: "Len Brown" <lenb@kernel.org>, <joe@perches.com>
-Cc: <torvalds@linux-foundation.org>, "Yu, Luming" <luming.yu@intel.com>,
-       <linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-       <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 14 Aug 2007 05:21:11.0789 (UTC) FILETIME=[ED8361D0:01C7DE32]
+To: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>,
+       John Berthels <jjberthels@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] PSS(proportional set size) accounting in smaps
+References: <387055231.26624@ustc.edu.cn>
+In-Reply-To: <387055231.26624@ustc.edu.cn>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Len,
-
-I can take charge of the ACPI video driver.
-
-Thanks,
-Rui
-
------Original Message-----
-From: Len Brown [mailto:lenb@kernel.org] 
-Sent: Tuesday, August 14, 2007 1:16 PM
-To: joe@perches.com; Zhang, Rui
-Cc: torvalds@linux-foundation.org; Yu, Luming;
-linux-kernel@vger.kernel.org; linux-acpi@vger.kernel.org;
-akpm@linux-foundation.org
-Subject: Re: [PATCH] [28/2many] MAINTAINERS - ACPI VIDEO DRIVER
-
-On Monday 13 August 2007 02:22, joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
+Fengguang Wu wrote:
+> The "proportional set size" (PSS) of a process is the count of pages it has in
+> memory, where each page is divided by the number of processes sharing it. So if
+> a process has 1000 pages all to itself, and 1000 shared with one other process,
+> its PSS will be 1500.
+>                - lwn.net: "ELC: How much memory are applications really using?"
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
+> The PSS proposed by Matt Mackall is a very nice metic for measuring an process's
+> memory footprint. So collect and export it via /proc/<pid>/smaps.
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index b159b00..4faf1ce 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -300,6 +300,7 @@ M:	luming.yu@intel.com
->  L:	linux-acpi@vger.kernel.org
->  W:	http://acpi.sourceforge.net/
->  S:	Supported
-> +F:	drivers/acpi/video.c
-
-Acked-by: Len Brown <len.brown@intel.com>
-
-Also, as Luming has moved onto other things, and Rui is shy
-about being in MAINTAINERS as yet...  Please update to
-
-P:	Len Brown
-M: 	len.brown@intel.com
-
-while you are there.
-
-thanks,
--Len
-
->  ADM1025 HARDWARE MONITOR DRIVER
->  P:	Jean Delvare
-> -
-> To unsubscribe from this list: send the line "unsubscribe
-linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Matt Mackall's pagemap/kpagemap and John Berthels's exmap can also do the job,
+> providing pretty much details.  But for PSS, let's do it in a simple way. 
 > 
+> Cc: Matt Mackall <mpm@selenic.com>
+> Cc: John Berthels <jjberthels@gmail.com>
+> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+
+I like the idea of moving towards PSS. I had sent some patches back in December
+last year
+
+http://marc.info/?l=linux-mm&m=116738715329816&w=4
+
+
+> ---
+>  fs/proc/task_mmu.c |   13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
+> 
+> --- linux-2.6.23-rc2-mm2.orig/fs/proc/task_mmu.c
+> +++ linux-2.6.23-rc2-mm2/fs/proc/task_mmu.c
+> @@ -319,6 +319,7 @@ const struct file_operations proc_maps_o
+>  struct mem_size_stats
+>  {
+>  	unsigned long resident;
+> +	u64 	      pss;	/* proportional set size: my share of rss */
+>  	unsigned long shared_clean;
+>  	unsigned long shared_dirty;
+>  	unsigned long private_clean;
+> @@ -341,6 +342,7 @@ static int smaps_pte_range(pmd_t *pmd, u
+>  	pte_t *pte, ptent;
+>  	spinlock_t *ptl;
+>  	struct page *page;
+> +	int mapcount;
+> 
+>  	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+>  	for (; addr != end; pte++, addr += PAGE_SIZE) {
+> @@ -357,16 +359,19 @@ static int smaps_pte_range(pmd_t *pmd, u
+>  		/* Accumulate the size in pages that have been accessed. */
+>  		if (pte_young(ptent) || PageReferenced(page))
+>  			mss->referenced += PAGE_SIZE;
+> -		if (page_mapcount(page) >= 2) {
+> +		mapcount = page_mapcount(page);
+> +		if (mapcount >= 2) {
+
+This accounting is of-course racy. Mapcount can change any moment.
+
+
+>  			if (pte_dirty(ptent))
+>  				mss->shared_dirty += PAGE_SIZE;
+>  			else
+>  				mss->shared_clean += PAGE_SIZE;
+> +			mss->pss += (PAGE_SIZE << 12) / mapcount;
+>  		} else {
+>  			if (pte_dirty(ptent))
+>  				mss->private_dirty += PAGE_SIZE;
+>  			else
+>  				mss->private_clean += PAGE_SIZE;
+> +			mss->pss += (PAGE_SIZE << 12);
+>  		}
+>  	}
+>  	pte_unmap_unlock(pte - 1, ptl);
+> @@ -395,18 +400,20 @@ static int show_smap(struct seq_file *m,
+>  	seq_printf(m,
+>  		   "Size:           %8lu kB\n"
+>  		   "Rss:            %8lu kB\n"
+> +		   "Pss:            %8lu kB\n"
+>  		   "Shared_Clean:   %8lu kB\n"
+>  		   "Shared_Dirty:   %8lu kB\n"
+>  		   "Private_Clean:  %8lu kB\n"
+>  		   "Private_Dirty:  %8lu kB\n"
+>  		   "Referenced:     %8lu kB\n",
+>  		   (vma->vm_end - vma->vm_start) >> 10,
+> -		   sarg.mss.resident >> 10,
+> +		   sarg.mss.resident      >> 10,
+> +		   (unsigned long)(mss->pss >> 22),
+>  		   sarg.mss.shared_clean  >> 10,
+>  		   sarg.mss.shared_dirty  >> 10,
+>  		   sarg.mss.private_clean >> 10,
+>  		   sarg.mss.private_dirty >> 10,
+> -		   sarg.mss.referenced >> 10);
+> +		   sarg.mss.referenced    >> 10);
+> 
+>  	return ret;
+>  }
+> 
+
+If we are reasonably sure that mapping will not change at the time
+of page_rmap_xxxxx() operations, we could handle shared accounting
+at those points and implement accurate shared accounting.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
