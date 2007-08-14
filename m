@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936975AbXHNW6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937037AbXHNW6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936975AbXHNW6M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936064AbXHNWzJ
+	id S937037AbXHNW6n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936227AbXHNW42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 18:55:09 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:53925 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934457AbXHNWzG (ORCPT
+	Tue, 14 Aug 2007 18:56:28 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53605 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935463AbXHNW4Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 18:55:06 -0400
-Subject: Re: [RFC 0/3] dm: add path uevents
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Mike Anderson <andmike@us.ibm.com>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-In-Reply-To: <20070814200544.963756967@us.ibm.com>>
-References: <20070814200544.963756967@us.ibm.com>>
-Content-Type: text/plain
-Date: Wed, 15 Aug 2007 00:58:34 +0200
-Message-Id: <1187132314.4312.47.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18WYAQRTE+ITL6X1QNs+jxtCKkdaQB3OLN2Ri0
- ULungpXtl/BUDrsoV11qeUqaFbUIYvSi/za/A3vHwDTuoUO4IY
- tt72msouWbJPjZ2/Y8iU7zripfzKPy+
+	Tue, 14 Aug 2007 18:56:24 -0400
+Date: Wed, 15 Aug 2007 04:38:54 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Christoph Lameter <clameter@sgi.com>
+cc: Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       ak@suse.de, heiko.carstens@de.ibm.com, davem@davemloft.net,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+Message-ID: <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-14 at 13:05 -0700, Mike Anderson wrote:
-> This patch series enables device mapper (dm) to send kobject uevents for
-> dm events. Currently only two new events are sent related to path state
-> changes.
 
-Sounds fine.
 
-> DM_ACTION=PATH_FAILED
-> DM_SEQNUM=1
-> DM_PATH=8:48
-> DM_PATHS=1
+On Tue, 14 Aug 2007, Christoph Lameter wrote:
 
-Oh, I have a patch pending for dmsetup to export a bunch of variables in
-the environment format with a single call, so we can use it udev
-context.
-Here is the list, just that we don't clash with names or use the same
-names where appropriate:
-  DM_NAME=
-  DM_UUID=
-  DM_STATE=
-  DM_TABLE_STATE=
-  DM_OPENCOUNT=
-  DM_MAJOR=
-  DM_MINOR=
-  DM_TARGET_COUNT=
-  DM_TARGET_TYPES=
-  DM_LAST_EVENT_NR=
+> On Thu, 9 Aug 2007, Chris Snook wrote:
+> 
+> > This patchset makes the behavior of atomic_read uniform by removing the
+> > volatile keyword from all atomic_t and atomic64_t definitions that currently
+> > have it, and instead explicitly casts the variable as volatile in
+> > atomic_read().  This leaves little room for creative optimization by the
+> > compiler, and is in keeping with the principles behind "volatile considered
+> > harmful".
+> 
+> volatile is generally harmful even in atomic_read(). Barriers control
+> visibility and AFAICT things are fine.
 
-Let me know if something should be renamed.
+Frankly, I don't see the need for this series myself either. Personal
+opinion (others may differ), but I consider "volatile" to be a sad /
+unfortunate wart in C (numerous threads on this list and on the gcc
+lists/bugzilla over the years stand testimony to this) and if we _can_
+steer clear of it, then why not -- why use this ill-defined primitive
+whose implementation has often differed over compiler versions and
+platforms? Granted, barrier() _is_ heavy-handed in that it makes the
+optimizer forget _everything_, but then somebody did post a forget()
+macro on this thread itself ...
 
-Thanks,
-Kay
-
+[ BTW, why do we want the compiler to not optimize atomic_read()'s in
+  the first place? Atomic ops guarantee atomicity, which has nothing
+  to do with "volatility" -- users that expect "volatility" from
+  atomic ops are the ones who must be fixed instead, IMHO. ]
