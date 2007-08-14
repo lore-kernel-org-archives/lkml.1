@@ -1,104 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbXHNKNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbXHNKOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbXHNKNa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 06:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbXHNKKw
+	id S1758755AbXHNKOL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 06:14:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756685AbXHNKKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 06:10:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43310 "EHLO mx1.redhat.com"
+	Tue, 14 Aug 2007 06:10:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43321 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755367AbXHNKKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 06:10:44 -0400
+	id S1755490AbXHNKKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 06:10:47 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Patrick Caulfield <pcaulfie@redhat.com>,
+Cc: David Teigland <teigland@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [DLM] More othercon fixes
-Date: Tue, 14 Aug 2007 10:47:09 +0100
-Message-Id: <11870848503463-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH] [DLM] fix basts for granted PR waiting CW
+Date: Tue, 14 Aug 2007 10:47:10 +0100
+Message-Id: <11870848521962-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
 In-Reply-To: <11870848365-git-send-email-swhiteho@redhat.com>
 References: <11870848365-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick Caulfield <pcaulfie@redhat.com>
+From: David Teigland <teigland@redhat.com>
 
-The last patch to clean out 'othercon' structures only fixed half the problem.
-The attached addresses the other situations too, and fixes bz#238490
+Fix a long standing bug where a blocking callback would be missed
+when there's a granted lock in PR mode and waiting locks in both
+PR and CW modes (and the PR lock was added to the waiting queue
+before the CW lock).  The logic simply compared the numerical values
+of the modes to determine if a blocking callback was required, but in
+the one case of PR and CW, the lower valued CW mode blocks the higher
+valued PR mode.  We just need to add a special check for this PR/CW
+case in the tests that decide when a blocking callback is needed.
 
-Signed-Off-By: Patrick Caulfield <pcaulfie@redhat.com>
+Signed-off-by: David Teigland <teigland@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
-index 631bc43..9e9d2e8 100644
---- a/fs/dlm/lowcomms.c
-+++ b/fs/dlm/lowcomms.c
-@@ -328,15 +328,24 @@ static void close_connection(struct connection *con, bool and_other)
- 	if (con->othercon && and_other) {
- 		/* Will only re-enter once. */
- 		close_connection(con->othercon, false);
--		kmem_cache_free(con_cache, con->othercon);
--		con->othercon = NULL;
- 	}
- 	if (con->rx_page) {
- 		__free_page(con->rx_page);
- 		con->rx_page = NULL;
- 	}
--	con->retries = 0;
--	mutex_unlock(&con->sock_mutex);
+diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
+index b455919..2082daf 100644
+--- a/fs/dlm/lock.c
++++ b/fs/dlm/lock.c
+@@ -1670,9 +1670,10 @@ static int can_be_granted(struct dlm_rsb *r, struct dlm_lkb *lkb, int now,
+    with a deadlk here, we'd have to generate something like grant_lock with
+    the deadlk error.) */
+ 
+-/* returns the highest requested mode of all blocked conversions */
++/* Returns the highest requested mode of all blocked conversions; sets
++   cw if there's a blocked conversion to DLM_LOCK_CW. */
+ 
+-static int grant_pending_convert(struct dlm_rsb *r, int high)
++static int grant_pending_convert(struct dlm_rsb *r, int high, int *cw)
+ {
+ 	struct dlm_lkb *lkb, *s;
+ 	int hi, demoted, quit, grant_restart, demote_restart;
+@@ -1709,6 +1710,9 @@ static int grant_pending_convert(struct dlm_rsb *r, int high)
+ 		}
+ 
+ 		hi = max_t(int, lkb->lkb_rqmode, hi);
 +
-+	/* If we are an 'othercon' then NULL the pointer to us
-+	   from the parent and tidy ourself up */
-+	if (test_bit(CF_IS_OTHERCON, &con->flags)) {
-+		struct connection *parent = __nodeid2con(con->nodeid, 0);
-+		parent->othercon = NULL;
-+		kmem_cache_free(con_cache, con);
-+	}
-+	else {
-+		/* Parent connections get reused */
-+		con->retries = 0;
-+		mutex_unlock(&con->sock_mutex);
-+	}
++		if (cw && lkb->lkb_rqmode == DLM_LOCK_CW)
++			*cw = 1;
+ 	}
+ 
+ 	if (grant_restart)
+@@ -1721,29 +1725,52 @@ static int grant_pending_convert(struct dlm_rsb *r, int high)
+ 	return max_t(int, high, hi);
  }
  
- /* We only send shutdown messages to nodes that are not part of the cluster */
-@@ -634,7 +643,7 @@ out_resched:
+-static int grant_pending_wait(struct dlm_rsb *r, int high)
++static int grant_pending_wait(struct dlm_rsb *r, int high, int *cw)
+ {
+ 	struct dlm_lkb *lkb, *s;
  
- out_close:
- 	mutex_unlock(&con->sock_mutex);
--	if (ret != -EAGAIN && !test_bit(CF_IS_OTHERCON, &con->flags)) {
-+	if (ret != -EAGAIN) {
- 		close_connection(con, false);
- 		/* Reconnect when there is something to send */
+ 	list_for_each_entry_safe(lkb, s, &r->res_waitqueue, lkb_statequeue) {
+ 		if (can_be_granted(r, lkb, 0, NULL))
+ 			grant_lock_pending(r, lkb);
+-                else
++                else {
+ 			high = max_t(int, lkb->lkb_rqmode, high);
++			if (lkb->lkb_rqmode == DLM_LOCK_CW)
++				*cw = 1;
++		}
  	}
-@@ -1125,8 +1134,6 @@ static int tcp_listen_for_all(void)
  
- 	log_print("Using TCP for communications");
+ 	return high;
+ }
  
--	set_bit(CF_IS_OTHERCON, &con->flags);
--
- 	sock = tcp_create_listen_sock(con, dlm_local_addr[0]);
- 	if (sock) {
- 		add_sock(sock, con);
-@@ -1410,7 +1417,7 @@ void dlm_lowcomms_stop(void)
- 	for (i = 0; i <= max_nodeid; i++) {
- 		con = __nodeid2con(i, 0);
- 		if (con) {
--			con->flags |= 0xFF;
-+			con->flags |= 0x0F;
- 			if (con->sock)
- 				con->sock->sk->sk_user_data = NULL;
- 		}
-@@ -1426,8 +1433,6 @@ void dlm_lowcomms_stop(void)
- 		con = __nodeid2con(i, 0);
- 		if (con) {
- 			close_connection(con, true);
--			if (con->othercon)
--				kmem_cache_free(con_cache, con->othercon);
- 			kmem_cache_free(con_cache, con);
++/* cw of 1 means there's a lock with a rqmode of DLM_LOCK_CW that's blocked
++   on either the convert or waiting queue.
++   high is the largest rqmode of all locks blocked on the convert or
++   waiting queue. */
++
++static int lock_requires_bast(struct dlm_lkb *gr, int high, int cw)
++{
++	if (gr->lkb_grmode == DLM_LOCK_PR && cw) {
++		if (gr->lkb_highbast < DLM_LOCK_EX)
++			return 1;
++		return 0;
++	}
++
++	if (gr->lkb_highbast < high &&
++	    !__dlm_compat_matrix[gr->lkb_grmode+1][high+1])
++		return 1;
++	return 0;
++}
++
+ static void grant_pending_locks(struct dlm_rsb *r)
+ {
+ 	struct dlm_lkb *lkb, *s;
+ 	int high = DLM_LOCK_IV;
++	int cw = 0;
+ 
+ 	DLM_ASSERT(is_master(r), dlm_dump_rsb(r););
+ 
+-	high = grant_pending_convert(r, high);
+-	high = grant_pending_wait(r, high);
++	high = grant_pending_convert(r, high, &cw);
++	high = grant_pending_wait(r, high, &cw);
+ 
+ 	if (high == DLM_LOCK_IV)
+ 		return;
+@@ -1751,27 +1778,41 @@ static void grant_pending_locks(struct dlm_rsb *r)
+ 	/*
+ 	 * If there are locks left on the wait/convert queue then send blocking
+ 	 * ASTs to granted locks based on the largest requested mode (high)
+-	 * found above. FIXME: highbast < high comparison not valid for PR/CW.
++	 * found above.
+ 	 */
+ 
+ 	list_for_each_entry_safe(lkb, s, &r->res_grantqueue, lkb_statequeue) {
+-		if (lkb->lkb_bastaddr && (lkb->lkb_highbast < high) &&
+-		    !__dlm_compat_matrix[lkb->lkb_grmode+1][high+1]) {
+-			queue_bast(r, lkb, high);
++		if (lkb->lkb_bastaddr && lock_requires_bast(lkb, high, cw)) {
++			if (cw && high == DLM_LOCK_PR)
++				queue_bast(r, lkb, DLM_LOCK_CW);
++			else
++				queue_bast(r, lkb, high);
+ 			lkb->lkb_highbast = high;
  		}
  	}
+ }
+ 
++static int modes_require_bast(struct dlm_lkb *gr, struct dlm_lkb *rq)
++{
++	if ((gr->lkb_grmode == DLM_LOCK_PR && rq->lkb_rqmode == DLM_LOCK_CW) ||
++	    (gr->lkb_grmode == DLM_LOCK_CW && rq->lkb_rqmode == DLM_LOCK_PR)) {
++		if (gr->lkb_highbast < DLM_LOCK_EX)
++			return 1;
++		return 0;
++	}
++
++	if (gr->lkb_highbast < rq->lkb_rqmode && !modes_compat(gr, rq))
++		return 1;
++	return 0;
++}
++
+ static void send_bast_queue(struct dlm_rsb *r, struct list_head *head,
+ 			    struct dlm_lkb *lkb)
+ {
+ 	struct dlm_lkb *gr;
+ 
+ 	list_for_each_entry(gr, head, lkb_statequeue) {
+-		if (gr->lkb_bastaddr &&
+-		    gr->lkb_highbast < lkb->lkb_rqmode &&
+-		    !modes_compat(gr, lkb)) {
++		if (gr->lkb_bastaddr && modes_require_bast(gr, lkb)) {
+ 			queue_bast(r, gr, lkb->lkb_rqmode);
+ 			gr->lkb_highbast = lkb->lkb_rqmode;
+ 		}
+@@ -2235,7 +2276,7 @@ static int do_convert(struct dlm_rsb *r, struct dlm_lkb *lkb)
+ 	   before we try again to grant this one. */
+ 
+ 	if (is_demoted(lkb)) {
+-		grant_pending_convert(r, DLM_LOCK_IV);
++		grant_pending_convert(r, DLM_LOCK_IV, NULL);
+ 		if (_can_be_granted(r, lkb, 1)) {
+ 			grant_lock(r, lkb);
+ 			queue_cast(r, lkb, 0);
 -- 
 1.5.1.2
 
