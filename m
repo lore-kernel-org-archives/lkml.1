@@ -1,123 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936661AbXHNF6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940985AbXHNF7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936661AbXHNF6d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 01:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761441AbXHNF6H
+	id S940985AbXHNF7F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 01:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S943371AbXHNF60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 01:58:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34179 "EHLO hera.kernel.org"
+	Tue, 14 Aug 2007 01:58:26 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:56927 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765594AbXHNF6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 01:58:05 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: ACPI: thermal: create "thermal.off=1" to disable ACPI thermal support
-Date: Tue, 14 Aug 2007 01:57:15 -0400
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200708121059.l7CAxB3i003857@hera.kernel.org> <20070812114948.fe7e8bec.randy.dunlap@oracle.com>
-In-Reply-To: <20070812114948.fe7e8bec.randy.dunlap@oracle.com>
+	id S942896AbXHNF6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 01:58:22 -0400
+Message-ID: <46C14479.1080206@garzik.org>
+Date: Tue, 14 Aug 2007 01:58:17 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Kyle McMartin <kyle@mcmartin.ca>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Grant Grundler <grundler@parisc-linux.org>
+Subject: Re: [RFC][PATCH] uli526x: Add suspend and resume routines (updated)
+References: <200708052114.01790.rjw@sisk.pl> <200708080024.28692.rjw@sisk.pl> <46B8F19D.6060406@garzik.org> <200708080056.41651.rjw@sisk.pl>
+In-Reply-To: <200708080056.41651.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708140157.15545.lenb@kernel.org>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 August 2007 14:49, Randy Dunlap wrote:
-> On Sun, 12 Aug 2007 10:59:11 GMT Linux Kernel Mailing List wrote:
+Rafael J. Wysocki wrote:
+> On Wednesday, 8 August 2007 00:26, Jeff Garzik wrote:
+>> Rafael J. Wysocki wrote:
+>>> On Tuesday, 7 August 2007 23:40, Jeff Garzik wrote:
+>>>> I'll let our new tulip maintainer see what he thinks about the 
+>>>> implementation.  Seems fairly sane to me, but should at least get an "it 
+>>>> works" test.
+>>> It has been tested, as stated in the changelog, and works (on my test system).
+>>
+>> Apologies, I missed this.  I'll look to our new tulip maintainer to 
+>> queue your resent patch, or at least ACK it...
 > 
-> > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=72b33ef8bb1ac7f6c5a16d23304ab25ddc73d93d
-> > Commit:     72b33ef8bb1ac7f6c5a16d23304ab25ddc73d93d
-> > Parent:     3864e8ccbba1dcdea87398ab80fdc8ae0fab7c45
-> > Author:     Len Brown <len.brown@intel.com>
-> > AuthorDate: Sun Aug 12 00:12:17 2007 -0400
-> > Committer:  Len Brown <len.brown@intel.com>
-> > CommitDate: Sun Aug 12 00:12:17 2007 -0400
-> > 
-> >     ACPI: thermal: create "thermal.off=1" to disable ACPI thermal support
-> >     
-> >     "thermal.off=1" disables all ACPI thermal support at boot time.
-> >     
-> >     CONFIG_ACPI_THERMAL=n can do this at build time.
-> >     "# rmmod thermal" can do this at run time,
-> >     as long as thermal is built as a module.
-> >     
-> >     WARNING: On some systems, disabling ACPI thermal support
-> >     will cause the system to run hotter and reduce the
-> >     lifetime of the hardware.
-> >     
-> >     Signed-off-by: Len Brown <len.brown@intel.com>
-> > ---
-> >  Documentation/kernel-parameters.txt |    3 +++
-> >  drivers/acpi/thermal.c              |    9 ++++++++-
-> >  2 files changed, 11 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> > index 5a62de1..61337d9 100644
-> > --- a/drivers/acpi/thermal.c
-> > +++ b/drivers/acpi/thermal.c
-> > @@ -78,6 +78,10 @@ static int tzp;
-> >  module_param(tzp, int, 0);
-> >  MODULE_PARM_DESC(tzp, "Thermal zone polling frequency, in 1/10 seconds.\n");
-> >  
-> > +static int off;
-> > +module_param(off, int, 0);
-> > +MODULE_PARM_DESC(off, "Set to disable ACPI thermal support.\n");
-> > +
-> >  static int acpi_thermal_add(struct acpi_device *device);
-> >  static int acpi_thermal_remove(struct acpi_device *device, int type);
-> >  static int acpi_thermal_resume(struct acpi_device *device);
+> OK
 > 
-> Hi,
+> Below is the updated version.  It's functionally equivalent to the previous one.
 > 
-> What's the purpose of the "\n" in the MODULE_PARM_DESC() string?
-> 
-> modinfo already terminates module parameter listings with a newline
-> after each parameter description.  Some people insert newlines inside
-> these strings for pretty printing (which I don't find necessary),
-> but using a newline at the end of the string only makes the
-> parameter type (that is added by modinfo) appear on a separate line,
-> which IMO is worse that having it appear at the end of the parameter
-> line.  E.g.,
-> 
-> $ modinfo -p asus_acpi.ko
-> asus_uid:UID for entries in /proc/acpi/asus.
-> 
-> asus_gid:GID for entries in /proc/acpi/asus.
-> 
-> $
-> 
-> but when the newline is omitted, it would be printed as
-> 
-> $ modinfo -p asus_acpi.ko
-> asus_uid:UID for entries in /proc/acpi/asus.
-> asus_gid:GID for entries in /proc/acpi/asus.
-> $
+> Greetings,
+> Rafael
 > 
 > 
-> or when -p is not used (but only showing the parm lines here):
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> $ modinfo asus_acpi.ko
-> parm:           asus_gid:GID for entries in /proc/acpi/asus.
->  (uint)
-> parm:           asus_uid:UID for entries in /proc/acpi/asus.
->  (uint)
-> $
+> Add suspend/resume support to the uli526x network driver (tested on x86_64,
+> with 'Ethernet controller: ALi Corporation M5263 Ethernet Controller, rev 40').
 > 
-> or if the newline is not used in the string:
+> This patch is based on the suspend/resume code in the tg3 driver.
 > 
-> $ modinfo asus_acpi.ko
-> parm:           asus_gid:GID for entries in /proc/acpi/asus. (uint)
-> parm:           asus_uid:UID for entries in /proc/acpi/asus. (uint)
-> $
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/net/tulip/uli526x.c |  109 +++++++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 103 insertions(+), 6 deletions(-)
 > 
-> where I posit that the latter is better than the former...
+> Index: linux-2.6.23-rc2/drivers/net/tulip/uli526x.c
+> ===================================================================
+> --- linux-2.6.23-rc2.orig/drivers/net/tulip/uli526x.c
+> +++ linux-2.6.23-rc2/drivers/net/tulip/uli526x.c
+> @@ -1110,19 +1110,15 @@ static void uli526x_timer(unsigned long 
+>  
+>  
+>  /*
+> - *	Dynamic reset the ULI526X board
+>   *	Stop ULI526X board
+>   *	Free Tx/Rx allocated memory
+> - *	Reset ULI526X board
+> - *	Re-initialize ULI526X board
+> + *	Init system variable
+>   */
+>  
+> -static void uli526x_dynamic_reset(struct net_device *dev)
+> +static void uli526x_reset_prepare(struct net_device *dev)
+>  {
+>  	struct uli526x_board_info *db = netdev_priv(dev);
+>  
+> -	ULI526X_DBUG(0, "uli526x_dynamic_reset()", 0);
+> -
+>  	/* Sopt MAC controller */
+>  	db->cr6_data &= ~(CR6_RXSC | CR6_TXSC);	/* Disable Tx/Rx */
+>  	update_cr6(db->cr6_data, dev->base_addr);
+> @@ -1141,6 +1137,22 @@ static void uli526x_dynamic_reset(struct
+>  	db->link_failed = 1;
+>  	db->init=1;
+>  	db->wait_reset = 0;
+> +}
+> +
+> +
+> +/*
+> + *	Dynamic reset the ULI526X board
+> + *	Stop ULI526X board
+> + *	Free Tx/Rx allocated memory
+> + *	Reset ULI526X board
+> + *	Re-initialize ULI526X board
+> + */
+> +
+> +static void uli526x_dynamic_reset(struct net_device *dev)
+> +{
+> +	ULI526X_DBUG(0, "uli526x_dynamic_reset()", 0);
+> +
+> +	uli526x_reset_prepare(dev);
+>  
+>  	/* Re-initialize ULI526X board */
+>  	uli526x_init(dev);
+> @@ -1150,6 +1162,89 @@ static void uli526x_dynamic_reset(struct
+>  }
+>  
+>  
+> +#ifdef CONFIG_PM_SLEEP
+> +
+> +/*
+> + *	Suspend the interface.
+> + */
+> +
+> +static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
+> +{
+> +	struct net_device *dev = pci_get_drvdata(pdev);
+> +	pci_power_t power_state;
+> +	int err;
+> +
+> +	ULI526X_DBUG(0, "uli526x_suspend", 0);
+> +
+> +	if (!(dev && netdev_priv(dev)))
+> +		return 0;
 
-Thanks for pointing this out, Randy.
-I agree, and have deleted the trailing newlines.
+> +static int uli526x_resume(struct pci_dev *pdev)
+> +{
+> +	struct net_device *dev = pci_get_drvdata(pdev);
+> +	struct uli526x_board_info *db = netdev_priv(dev);
+> +	int err;
+> +
+> +	ULI526X_DBUG(0, "uli526x_resume", 0);
+> +
+> +	if (!(dev && db))
+> +		return 0;
 
--Len
+
+Two comments:
+
+1) Like akpm, the CONFIG_PM_SLEEP is out of place.  All other drivers 
+use CONFIG_PM
+
+2) just remove the !dev checks, that is an impossible condition
+
