@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760070AbXHNWps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbXHNWq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760070AbXHNWps (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932423AbXHNWpd
+	id S1757441AbXHNWq3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934351AbXHNWp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 18:45:33 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39455 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932317AbXHNWpa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 18:45:30 -0400
-Date: Tue, 14 Aug 2007 15:45:28 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Chris Snook <csnook@redhat.com>
-cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: [PATCH 1/23] document preferred use of volatile with atomic_t
-In-Reply-To: <20070813110415.GA24018@shell.boston.redhat.com>
-Message-ID: <Pine.LNX.4.64.0708141544001.401@schroedinger.engr.sgi.com>
-References: <46C03885.7000109@redhat.com> <20070813110415.GA24018@shell.boston.redhat.com>
+	Tue, 14 Aug 2007 18:45:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33119 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934398AbXHNWpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 18:45:54 -0400
+Message-ID: <46C23078.4040109@redhat.com>
+Date: Tue, 14 Aug 2007 18:45:12 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Lameter <clameter@sgi.com>
+CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007, Chris Snook wrote:
+Christoph Lameter wrote:
+> On Thu, 9 Aug 2007, Chris Snook wrote:
+> 
+>> This patchset makes the behavior of atomic_read uniform by removing the
+>> volatile keyword from all atomic_t and atomic64_t definitions that currently
+>> have it, and instead explicitly casts the variable as volatile in
+>> atomic_read().  This leaves little room for creative optimization by the
+>> compiler, and is in keeping with the principles behind "volatile considered
+>> harmful".
+> 
+> volatile is generally harmful even in atomic_read(). Barriers control
+> visibility and AFAICT things are fine.
 
-> @@ -38,7 +45,7 @@
->  
->  Next, we have:
->  
-> -	#define atomic_read(v)	((v)->counter)
-> +	#define atomic_read(v)	(*(volatile int *)&(v)->counter)
->  
->  which simply reads the current value of the counter.
+But barriers force a flush of *everything* in scope, which we generally don't 
+want.  On the other hand, we pretty much always want to flush atomic_* 
+operations.  One way or another, we should be restricting the volatile behavior 
+to the thing that needs it.  On most architectures, this patch set just moves 
+that from the declaration, where it is considered harmful, to the use, where it 
+is considered an occasional necessary evil.
 
-volatile means that there is some vague notion of "read it now". But that 
-really does not exist. Instead we control visibility via barriers 
-(smp_wmb, smp_rmb). Would it not be best to not have volatile at all in 
-atomic operations and let the barriers do the work?
+See the resubmitted patchset, which also puts a cast in the atomic[64]_set 
+operations.
 
+	-- Chris
