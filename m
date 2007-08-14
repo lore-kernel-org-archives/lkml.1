@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764730AbXHNVby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765100AbXHNVcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764730AbXHNVby (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 17:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbXHNVXL
+	id S1765100AbXHNVcl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 17:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbXHNVXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:23:11 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38410 "EHLO
+	Tue, 14 Aug 2007 17:23:13 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38424 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755081AbXHNVXF (ORCPT
+	with ESMTP id S1753743AbXHNVXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:23:05 -0400
-Date: Tue, 14 Aug 2007 23:22:46 +0200
+	Tue, 14 Aug 2007 17:23:08 -0400
+Date: Tue, 14 Aug 2007 23:22:58 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: [2.6 patch] cpqhp_pushbutton_thread(): remove a pointless if()
-	check
-Message-ID: <20070814212246.GC18945@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>, bfields@fieldses.org,
+       neilb@suse.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] make fs/nfsd/nfs4callback.c:do_probe_callback() static
+Message-ID: <20070814212258.GH18945@stusta.de>
+References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted that we'd have already oops'ed if "ctrl"
-was NULL.
+On Thu, Aug 09, 2007 at 01:51:06AM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.23-rc2-mm1:
+>...
+>  git-nfsd.patch
+>...
+>  git trees
+>...
 
-Additionally, "func" had just been checked for not being NULL.
+
+do_probe_callback() can become static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
---- linux-2.6.23-rc1-mm2/drivers/pci/hotplug/cpqphp_ctrl.c.old	2007-08-08 14:00:24.000000000 +0200
-+++ linux-2.6.23-rc1-mm2/drivers/pci/hotplug/cpqphp_ctrl.c	2007-08-08 14:01:16.000000000 +0200
-@@ -1951,30 +1951,28 @@ void cpqhp_pushbutton_thread(unsigned lo
- 	if (is_slot_enabled(ctrl, hp_slot)) {
- 		p_slot->state = POWEROFF_STATE;
- 		/* power Down board */
- 		func = cpqhp_slot_find(p_slot->bus, p_slot->device, 0);
- 		dbg("In power_down_board, func = %p, ctrl = %p\n", func, ctrl);
- 		if (!func) {
- 			dbg("Error! func NULL in %s\n", __FUNCTION__);
- 			return ;
- 		}
+8177c6f652deb91fcb43c8ca86f7703a61468ba9 
+diff --git a/fs/nfsd/nfs4callback.c b/fs/nfsd/nfs4callback.c
+index afdf66b..c17a520 100644
+--- a/fs/nfsd/nfs4callback.c
++++ b/fs/nfsd/nfs4callback.c
+@@ -369,7 +369,7 @@ nfsd4_lookupcred(struct nfs4_client *clp, int taskflags)
+ /* Reference counting, callback cleanup, etc., all look racy as heck.
+  * And why is cb_set an atomic? */
  
--		if (func != NULL && ctrl != NULL) {
--			if (cpqhp_process_SS(ctrl, func) != 0) {
--				amber_LED_on (ctrl, hp_slot);
--				green_LED_on (ctrl, hp_slot);
--				
--				set_SOGO(ctrl);
-+		if (cpqhp_process_SS(ctrl, func) != 0) {
-+			amber_LED_on (ctrl, hp_slot);
-+			green_LED_on (ctrl, hp_slot);
-+			
-+			set_SOGO(ctrl);
- 
--				/* Wait for SOBS to be unset */
--				wait_for_ctrl_irq (ctrl);
--			}
-+			/* Wait for SOBS to be unset */
-+			wait_for_ctrl_irq (ctrl);
- 		}
- 
- 		p_slot->state = STATIC_STATE;
- 	} else {
- 		p_slot->state = POWERON_STATE;
- 		/* slot is off */
- 
- 		func = cpqhp_slot_find(p_slot->bus, p_slot->device, 0);
- 		dbg("In add_board, func = %p, ctrl = %p\n", func, ctrl);
- 		if (!func) {
+-int do_probe_callback(void *data)
++static int do_probe_callback(void *data)
+ {
+ 	struct nfs4_client *clp = data;
+ 	struct nfs4_callback *cb = &clp->cl_callback;
 
