@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932315AbXHNRkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932533AbXHNRlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932315AbXHNRkh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 13:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763078AbXHNRkM
+	id S932533AbXHNRlY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 13:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762985AbXHNRkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 13:40:12 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:60352 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762947AbXHNRkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 13:40:09 -0400
-Date: Tue, 14 Aug 2007 21:40:03 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Mirroring to any number of devices.
-Message-ID: <20070814174003.GA31716@2ka.mipt.ru>
-References: <20070814162918.GA30330@2ka.mipt.ru> <Pine.LNX.4.64.0708141919230.10912@fbirervta.pbzchgretzou.qr>
+	Tue, 14 Aug 2007 13:40:53 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48840 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763078AbXHNRkw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 13:40:52 -0400
+Date: Tue, 14 Aug 2007 18:48:16 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Hajime Inoue <hinoue@ccsl.carleton.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: System call interposition/unprotecting the table
+Message-ID: <20070814184816.12a8a94c@the-village.bc.nu>
+In-Reply-To: <46C1E5F5.9050702@ccsl.carleton.ca>
+References: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca>
+	<20070814000956.7c8929dd@the-village.bc.nu>
+	<46C1E5F5.9050702@ccsl.carleton.ca>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708141919230.10912@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 14, 2007 at 07:20:49PM +0200, Jan Engelhardt (jengelh@computergmbh.de) wrote:
-> >I'm pleased to announce second release of the distributed storage
-> >subsystem, which allows to form a storage on top of remote and local
-> >nodes, which in turn can be exported to another storage as a node to
-> >form tree-like storages.
-> 
-> I'll be quick: what is it good for, are there any users, and what could
-> it have to do with DRBD and all the other distribution storage talk
-> that has come up lately (namely NBD w/Raid1)?
+> Just protecting the table does not stop rootkits.  A highly referenced
+> phrack article explains how to bypass the table.  
 
-It has number of advantages, outlined in the first release and on the
-project homepage, namely:
-* non-blocking processing without busy loops (compared to iSCSI and NBD)
-* small, plugable architecture
-* failover recovery (reconnect to remote target)
-* autoconfiguration
-* no additional allocatins (not including network  part) - at least two 
-	in device mapper for fast path
-* very simple - try to compare with iSCSI
-* works with different network protocols
-* storage can be formed on top of remote nodes and be exported 
-	simultaneously (iSCSI is peer-to-peer only, NBD
-	requires device mapper, is synchronous and wants special
-	userspace thread)
+But most people are not capable of fllowing that article - or they
+wouldn't be asking here whatever their intention.
 
-Compared to DRBD, which is a mirroring of the local requests to remote
-node, and raid on top of NBD, DST supports multiple remote nodes, it allows 
-to remove any of them and then turn it back into the storage without
-breaking the dataflow, dst core will reconnect automatically to the
-failed remote nodes, it allows to work with detouched devices just like 
-with usual filesystems (in case it was not formed as a part of linear 
-storage, since in that case meta information is spreaded between nodes).
-It does not require special processes on behalf of network connection,
-everything will be performed automatically on behalf of DST core
-workers, it allows to export new device, created on top of mirror or
-linear combination of the others, which in turn can be formed on top of
-another and so on...
+> Why isn't the rest of the kernel code protected along with the table?
 
-This was designed to allow to create a distributed storage with
-completely transparent failover recovery, with ability to detouch remote
-nodes from mirror array to became standalone realtime backups (or
-snapshots) and turn it back into the storage without stopping main 
-device node.
+Thats in progress actually and hopefully then in the hypervisor case
+implementing irrevocably read-only pages.
 
--- 
-	Evgeniy Polyakov
+> Finally, system call interposition is used in several interesting
+> systems, most notably, systrace.  It's unclear to me how one would
+> implement something like systrace without modifying the table or doing
+> other rootkit-like antics.
+
+Always wrongly. You can't be sure the table format will not change, you
+can't reliably restore the table and its virtually impossible to do any
+kind of trace reliably this way as you end up with two copies of the data
+from user space which may vary (and leads to bad problems - see BSD
+recently).
+
