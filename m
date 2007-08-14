@@ -1,59 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934931AbXHNBX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937113AbXHNBeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934931AbXHNBX2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 21:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762895AbXHNBXQ
+	id S937113AbXHNBeK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 21:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761274AbXHNBd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 21:23:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60070 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762542AbXHNBXP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 21:23:15 -0400
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -
-	scripts/get_maintainer.pl
-From: Arjan van de Ven <arjan@infradead.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, Joe Perches <joe@perches.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <1187037445.6628.98.camel@heimdal.trondhjem.org>
-References: <1186984174.10249.7.camel@localhost>
-	 <200708131933.10125.m.kozlowski@tuxland.pl>
-	 <1187026955.2688.4.camel@laptopd505.fenrus.org>
-	 <1187037445.6628.98.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Mon, 13 Aug 2007 18:19:26 -0700
-Message-Id: <1187054366.2757.0.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 (2.11.6.1-1.fc8) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 13 Aug 2007 21:33:57 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:46619 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1757566AbXHNBd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 21:33:56 -0400
+Message-ID: <387055231.26624@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Tue, 14 Aug 2007 09:33:50 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Matt Mackall <mpm@selenic.com>, John Berthels <jjberthels@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] PSS(proportional set size) accounting in smaps
+Message-ID: <20070814013350.GA9182@mail.ustc.edu.cn>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Matt Mackall <mpm@selenic.com>,
+	John Berthels <jjberthels@gmail.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The "proportional set size" (PSS) of a process is the count of pages it has in
+memory, where each page is divided by the number of processes sharing it. So if
+a process has 1000 pages all to itself, and 1000 shared with one other process,
+its PSS will be 1500.
+               - lwn.net: "ELC: How much memory are applications really using?"
 
-On Mon, 2007-08-13 at 16:37 -0400, Trond Myklebust wrote:
-> On Mon, 2007-08-13 at 10:42 -0700, Arjan van de Ven wrote:
-> > The maintainer info should be in the source file itself! That's the only
-> > reasonable way to keep it updated; now I'm all for having it machine
-> > parsable so that tools can use it, but it still really should be in the
-> > code itself, not in some central file that will always just go out of
-> > data, and will be a huge source of needless patch conflicts.
-> 
-> If the problem is to do with people failing to update the MAINTAINERS
-> file, why would moving the same data into 20 or 30 source files motivate
-> them to keep it up to date? As far as I can see, that would just serve
-> to multiply the amount of stale data...
+The PSS proposed by Matt Mackall is a very nice metic for measuring an process's
+memory footprint. So collect and export it via /proc/<pid>/smaps.
 
-if each .c file has a MODULE_MAINTAINER() tag... 
+Matt Mackall's pagemap/kpagemap and John Berthels's exmap can also do the job,
+providing pretty much details.  But for PSS, let's do it in a simple way. 
 
-people tend to update .c files a lot better than way off-the-side other
-files.
+Cc: Matt Mackall <mpm@selenic.com>
+Cc: John Berthels <jjberthels@gmail.com>
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ fs/proc/task_mmu.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+--- linux-2.6.23-rc2-mm2.orig/fs/proc/task_mmu.c
++++ linux-2.6.23-rc2-mm2/fs/proc/task_mmu.c
+@@ -319,6 +319,7 @@ const struct file_operations proc_maps_o
+ struct mem_size_stats
+ {
+ 	unsigned long resident;
++	u64 	      pss;	/* proportional set size: my share of rss */
+ 	unsigned long shared_clean;
+ 	unsigned long shared_dirty;
+ 	unsigned long private_clean;
+@@ -341,6 +342,7 @@ static int smaps_pte_range(pmd_t *pmd, u
+ 	pte_t *pte, ptent;
+ 	spinlock_t *ptl;
+ 	struct page *page;
++	int mapcount;
+ 
+ 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+ 	for (; addr != end; pte++, addr += PAGE_SIZE) {
+@@ -357,16 +359,19 @@ static int smaps_pte_range(pmd_t *pmd, u
+ 		/* Accumulate the size in pages that have been accessed. */
+ 		if (pte_young(ptent) || PageReferenced(page))
+ 			mss->referenced += PAGE_SIZE;
+-		if (page_mapcount(page) >= 2) {
++		mapcount = page_mapcount(page);
++		if (mapcount >= 2) {
+ 			if (pte_dirty(ptent))
+ 				mss->shared_dirty += PAGE_SIZE;
+ 			else
+ 				mss->shared_clean += PAGE_SIZE;
++			mss->pss += (PAGE_SIZE << 12) / mapcount;
+ 		} else {
+ 			if (pte_dirty(ptent))
+ 				mss->private_dirty += PAGE_SIZE;
+ 			else
+ 				mss->private_clean += PAGE_SIZE;
++			mss->pss += (PAGE_SIZE << 12);
+ 		}
+ 	}
+ 	pte_unmap_unlock(pte - 1, ptl);
+@@ -395,18 +400,20 @@ static int show_smap(struct seq_file *m,
+ 	seq_printf(m,
+ 		   "Size:           %8lu kB\n"
+ 		   "Rss:            %8lu kB\n"
++		   "Pss:            %8lu kB\n"
+ 		   "Shared_Clean:   %8lu kB\n"
+ 		   "Shared_Dirty:   %8lu kB\n"
+ 		   "Private_Clean:  %8lu kB\n"
+ 		   "Private_Dirty:  %8lu kB\n"
+ 		   "Referenced:     %8lu kB\n",
+ 		   (vma->vm_end - vma->vm_start) >> 10,
+-		   sarg.mss.resident >> 10,
++		   sarg.mss.resident      >> 10,
++		   (unsigned long)(mss->pss >> 22),
+ 		   sarg.mss.shared_clean  >> 10,
+ 		   sarg.mss.shared_dirty  >> 10,
+ 		   sarg.mss.private_clean >> 10,
+ 		   sarg.mss.private_dirty >> 10,
+-		   sarg.mss.referenced >> 10);
++		   sarg.mss.referenced    >> 10);
+ 
+ 	return ret;
+ }
 
