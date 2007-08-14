@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765028AbXHNQVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764836AbXHNQZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765028AbXHNQVY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 12:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762501AbXHNQVQ
+	id S1764836AbXHNQZA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 12:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762027AbXHNQYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 12:21:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60827 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761684AbXHNQVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 12:21:14 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Norbert Preining <preining@logic.at>
-Subject: Re: [Fwd: Re: 2.6.23-rc3 regression and bisection query]
-Date: Tue, 14 Aug 2007 12:18:18 -0400
-User-Agent: KMail/1.9.5
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Sergey Dolgov <solkaa@gmail.com>, Hugh Dickins <hugh@veritas.com>,
-       Len Brown <len.brown@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Henrique de Moraes Holshuh <hmh@hmh.eng.br>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Tue, 14 Aug 2007 12:24:51 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:35316 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757039AbXHNQYu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 12:24:50 -0400
+Date: Tue, 14 Aug 2007 18:24:53 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0708131905280.13982@blonde.wat.veritas.com> <46C0D35B.5030104@suse.de> <20070814070917.GA21301@gamma.logic.tuwien.ac.at>
-In-Reply-To: <20070814070917.GA21301@gamma.logic.tuwien.ac.at>
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Message-ID: <20070814162453.GA14532@aepfle.de>
+References: <1175610345.2665.15.camel@shinybook.infradead.org> <17938.57292.870224.132415@cargo.ozlabs.ibm.com> <20070814114931.GA13319@aepfle.de> <1187092392.3707.74.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200708141218.18697.lenb@kernel.org>
+In-Reply-To: <1187092392.3707.74.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 14 August 2007 03:09, Norbert Preining wrote:
+On Tue, Aug 14, David Woodhouse wrote:
 
-> But there is still the strange thing that
-> 	ACPI: Battery Slot [BAT1] (battery absent)
-> is present in the dmesg, while 
-> 	$ acpi
-> 	     Battery 1: charging, 46%, 00:00:49 until charged
+> On Tue, 2007-08-14 at 13:49 +0200, Olaf Hering wrote:
+> > On Wed, Apr 04, Paul Mackerras wrote:
+> > 
+> > > David Woodhouse writes:
+> > > 
+> > > > There are proper device numbers registered for pmac_zilog now. Use them.
+> > 
+> > Which numbers?
+> 
+> shinybook /shiny/git/mtd-utils $ ls -l /dev/ttyPZ*
+> crw-rw---- 1 root uucp 204, 192 2007-08-13 11:48 /dev/ttyPZ0
+> crw-rw---- 1 root uucp 204, 193 2007-08-13 11:48 /dev/ttyPZ1
 
-Does the system support more than 1 battery?
-Can you show the full dmesg and the full contents of /proc/acpi/battery/*/*?
-
-thanks,
--Len
+I dont see 204:192 in devices.txt
