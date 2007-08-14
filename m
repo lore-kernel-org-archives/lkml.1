@@ -1,59 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934473AbXHNS4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934526AbXHNS51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934473AbXHNS4Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 14:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757820AbXHNSz7
+	id S934526AbXHNS51 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 14:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761525AbXHNS47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 14:55:59 -0400
-Received: from ns1.suse.de ([195.135.220.2]:50872 "EHLO mx1.suse.de"
+	Tue, 14 Aug 2007 14:56:59 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:35387 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932626AbXHNSz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 14:55:57 -0400
-To: Hajime Inoue <hinoue@ccsl.carleton.ca>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: System call interposition/unprotecting the table
-References: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca>
-	<20070814000956.7c8929dd@the-village.bc.nu>
-	<46C1E5F5.9050702@ccsl.carleton.ca>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 14 Aug 2007 21:50:03 +0200
-In-Reply-To: <46C1E5F5.9050702@ccsl.carleton.ca>
-Message-ID: <p73zm0tnbf8.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
+	id S1752176AbXHNS45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 14:56:57 -0400
+Date: Tue, 14 Aug 2007 22:56:05 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk-manpages@gmx.net>,
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH 4/4] signalfd: make it group-wide, fix posix-timers scheduling
+Message-ID: <20070814185605.GA136@tv-sign.ru>
+References: <20070812170533.GA4305@tv-sign.ru> <20070813191407.GA816@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070813191407.GA816@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hajime Inoue <hinoue@ccsl.carleton.ca> writes:
+On 08/13, Oleg Nesterov wrote:
+>
+> Sorry, the patch is not complete. I forgot about signalfd_poll() and somehow I
+> forgot to actually tweak de_thread(). I'll send a new one tomorrow.
+> 
+> Something should be done for 2.6.23, imho.
 
-> Just protecting the table does not stop rootkits.  A highly referenced
-> phrack article explains how to bypass the table. 
+Slightly tested. This all needs furher cleanups (for example,
+__exit_signal()->signalfd_detach_locked() is not needed unless we are
+group_leader), but this code be done later.
 
-During .23-pre for some time the kernel text was protected too (that
-would have likely stopped that particular attack), but it was
-removed because it caused too many problems.
 
-Ultimatively it is useless for security anyways because the page
-tables cannot be protected (because there are valid reasons to change
-them). If they're not protected any protection can be undone by
-changing them or simply creating an alias mapping. Also the Linux
-kernel has function pointers in read-write data structures which could
-also be used to inject code.
 
-So even with Alan's hypervisor support the whole thing would be still
-quite holey.  The argument of raising the bar also doesn't seem very
-convincing to me, because attackers reuse code too and it's enough
-when someone publishes such code once, then they can cut'n'paste
-it into any exploits forever.
+[PATCH 4/4] signalfd: make it group-wide, fix posix-timers scheduling
 
-In general the .data protection is only considered a debugging
-feature. I don't know why Fedora enables it in their production
-kernels.
+With this patch any thread can dequeue its own private signals via signalfd,
+even if it was created by another sub-thread.
 
-BTW I tested your test case and it works for me on 2.6.23rc3 with
-DEBUG_RODATA enabled on i386/PAE. Without DEBUG_RODATA it BUGs, 
-but that's because the c_p_a interface is somewhat clumpsy
-and expects balanced changes.
+To do so, we use "current" instead of ctx->tsk if the caller is from the same
+thread group. This also fixes the scheduling of posix timers broken by the
+previous patch.
 
--Andi
+If the caller doesn't belong to this thread group, we can't handle __SI_TIMER
+case properly anyway. Perhaps we should forbid the cross-process signalfd usage
+and convert ctx->tsk to ctx->sighand.
+
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- t/fs/signalfd.c~4_GROUP	2007-08-09 19:59:27.000000000 +0400
++++ t/fs/signalfd.c	2007-08-14 21:26:31.000000000 +0400
+@@ -56,12 +56,18 @@ static int signalfd_lock(struct signalfd
+ 		sighand = lock_task_sighand(lk->tsk, &lk->flags);
+ 	rcu_read_unlock();
+ 
+-	if (sighand && !ctx->tsk) {
++	if (!sighand)
++		return 0;
++
++	if (!ctx->tsk) {
+ 		unlock_task_sighand(lk->tsk, &lk->flags);
+-		sighand = NULL;
++		return 0;
+ 	}
+ 
+-	return sighand != NULL;
++	if (lk->tsk->tgid == current->tgid)
++		lk->tsk = current;
++
++	return 1;
+ }
+ 
+ static void signalfd_unlock(struct signalfd_lockctx *lk)
+@@ -331,7 +337,7 @@ asmlinkage long sys_signalfd(int ufd, si
+ 
+ 		init_waitqueue_head(&ctx->wqh);
+ 		ctx->sigmask = sigmask;
+-		ctx->tsk = current;
++		ctx->tsk = current->group_leader;
+ 
+ 		sighand = current->sighand;
+ 		/*
+--- t/fs/exec.c~4_GROUP	2007-07-28 16:58:16.000000000 +0400
++++ t/fs/exec.c	2007-08-13 21:05:34.000000000 +0400
+@@ -780,18 +780,12 @@ static int de_thread(struct task_struct 
+ 	int count;
+ 
+ 	/*
+-	 * Tell all the sighand listeners that this sighand has
+-	 * been detached. The signalfd_detach() function grabs the
+-	 * sighand lock, if signal listeners are present on the sighand.
+-	 */
+-	signalfd_detach(tsk);
+-
+-	/*
+ 	 * If we don't share sighandlers, then we aren't sharing anything
+ 	 * and we can just re-use it all.
+ 	 */
+ 	if (atomic_read(&oldsighand->count) <= 1) {
+ 		BUG_ON(atomic_read(&sig->count) != 1);
++		signalfd_detach(tsk);
+ 		exit_itimers(sig);
+ 		return 0;
+ 	}
+@@ -930,6 +924,7 @@ static int de_thread(struct task_struct 
+ 	sig->flags = 0;
+ 
+ no_thread_group:
++	signalfd_detach(tsk);
+ 	exit_itimers(sig);
+ 	if (leader)
+ 		release_task(leader);
+
