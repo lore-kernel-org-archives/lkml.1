@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765499AbXHNFmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S942373AbXHNFnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765499AbXHNFmt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 01:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S941349AbXHNFlr
+	id S942373AbXHNFnx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 01:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932136AbXHNFmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 01:41:47 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46711 "EHLO mail.dvmed.net"
+	Tue, 14 Aug 2007 01:42:55 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46727 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S941308AbXHNFlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 01:41:44 -0400
-Message-ID: <46C14096.3020905@garzik.org>
-Date: Tue, 14 Aug 2007 01:41:42 -0400
+	id S941225AbXHNFmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 01:42:53 -0400
+Message-ID: <46C140DB.7030909@garzik.org>
+Date: Tue, 14 Aug 2007 01:42:51 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
 To: Divy Le Ray <divy@chelsio.com>
 CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Subject: Re: [PATCH 2/13] cxgb3 - Update rx coalescing length
-References: <20070811062939.8040.31490.stgit@speedy5>
-In-Reply-To: <20070811062939.8040.31490.stgit@speedy5>
+Subject: Re: [PATCH 3/13] cxgb3 - SGE doorbell overflow warning
+References: <20070811062944.8058.38057.stgit@speedy5>
+In-Reply-To: <20070811062944.8058.38057.stgit@speedy5>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
@@ -31,25 +31,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Divy Le Ray wrote:
 > From: Divy Le Ray <divy@chelsio.com>
 > 
-> Set max Rx coalescing length to 12288
+> Log doorbell Fifo overflow
 > 
 > Signed-off-by: Divy Le Ray <divy@chelsio.com>
 > ---
 > 
->  drivers/net/cxgb3/common.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/cxgb3/common.h b/drivers/net/cxgb3/common.h
-> index c46c249..55922ed 100644
-> --- a/drivers/net/cxgb3/common.h
-> +++ b/drivers/net/cxgb3/common.h
-> @@ -104,7 +104,7 @@ enum {
->  	PROTO_SRAM_LINES = 128, /* size of TP sram */
->  };
->  
-> -#define MAX_RX_COALESCING_LEN 16224U
-> +#define MAX_RX_COALESCING_LEN 12288U
+>  drivers/net/cxgb3/regs.h |    8 ++++++++
+>  drivers/net/cxgb3/sge.c  |    4 ++++
+>  2 files changed, 12 insertions(+), 0 deletions(-)
 
-neither the patch nor description explains -why-
+ACK, but not applied since patch #2 was not applied
 
 
