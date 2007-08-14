@@ -1,130 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933997AbXHNUeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbXHNUfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933997AbXHNUeV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 16:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762276AbXHNUd7
+	id S933106AbXHNUfc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 16:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758765AbXHNUfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 16:33:59 -0400
-Received: from mga02.intel.com ([134.134.136.20]:63769 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762068AbXHNUdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 16:33:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,261,1183359600"; 
-   d="scan'208";a="278863482"
-From: Shannon Nelson <shannon.nelson@intel.com>
-Subject: [PATCH] IOAT: Fix ioatdma descriptor cache miss
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, shannon.nelson@intel.com
-Date: Tue, 14 Aug 2007 13:33:26 -0700
-Message-ID: <20070814203326.3826.78102.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Aug 2007 16:35:00 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39718 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758706AbXHNUe6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 16:34:58 -0400
+Date: Tue, 14 Aug 2007 22:34:57 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Christoph Lameter <clameter@sgi.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC 4/9] Atomic reclaim: Save irq flags in vmscan.c
+Message-ID: <20070814203457.GB22202@one.firstfloor.org>
+References: <20070814153021.446917377@sgi.com> <20070814153501.766137366@sgi.com> <p73vebhnauo.fsf@bingen.suse.de> <Pine.LNX.4.64.0708141209270.29498@schroedinger.engr.sgi.com> <1187121951.5337.4.camel@lappy>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1187121951.5337.4.camel@lappy>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The layout for struct ioat_desc_sw is non-optimal and causes an extra
-cache hit for every descriptor processed.  By tightening up the struct
-layout and removing one item, we pull in the fields that get used in
-the speedpath and get a little better performance.
+> A much simpler approach to this seems to use threaded interrupts like
+> -rt does.
 
+Then the interrupt could potentially stay blocked for very long
+waiting for process context to finish its work. Also not good.
+Essentially it would be equivalent to cli/sti for interrupts
+that need to free memory.
 
-Before:
--------
-struct ioat_desc_sw {
-	struct ioat_dma_descriptor * hw;                 /*     0     8 */
-	struct list_head           node;                 /*     8    16 */
-	int                        tx_cnt;               /*    24     4 */
-
-	/* XXX 4 bytes hole, try to pack */
-
-	dma_addr_t                 src;                  /*    32     8 */
-	__u32                      src_len;              /*    40     4 */
-
-	/* XXX 4 bytes hole, try to pack */
-
-	dma_addr_t                 dst;                  /*    48     8 */
-	__u32                      dst_len;              /*    56     4 */
-
-	/* XXX 4 bytes hole, try to pack */
-
-	/* --- cacheline 1 boundary (64 bytes) --- */
-	struct dma_async_tx_descriptor async_tx;         /*    64   144 */
-	/* --- cacheline 3 boundary (192 bytes) was 16 bytes ago --- */
-
-	/* size: 208, cachelines: 4 */
-	/* sum members: 196, holes: 3, sum holes: 12 */
-	/* last cacheline: 16 bytes */
-};	/* definitions: 1 */
-
-
-After:
-------
-
-struct ioat_desc_sw {
-	struct ioat_dma_descriptor * hw;                 /*     0     8 */
-	struct list_head           node;                 /*     8    16 */
-	int                        tx_cnt;               /*    24     4 */
-	__u32                      len;                  /*    28     4 */
-	dma_addr_t                 src;                  /*    32     8 */
-	dma_addr_t                 dst;                  /*    40     8 */
-	struct dma_async_tx_descriptor async_tx;         /*    48   144 */
-	/* --- cacheline 3 boundary (192 bytes) --- */
-
-	/* size: 192, cachelines: 3 */
-};	/* definitions: 1 */
-
-
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
----
-
- drivers/dma/ioatdma.c |    7 +++----
- drivers/dma/ioatdma.h |    3 +--
- 2 files changed, 4 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/dma/ioatdma.c b/drivers/dma/ioatdma.c
-index 5fbe56b..2d1f178 100644
---- a/drivers/dma/ioatdma.c
-+++ b/drivers/dma/ioatdma.c
-@@ -347,8 +347,7 @@ ioat_dma_prep_memcpy(struct dma_chan *chan, size_t len, int int_en)
- 	new->async_tx.ack = 0; /* client is in control of this ack */
- 	new->async_tx.cookie = -EBUSY;
- 
--	pci_unmap_len_set(new, src_len, orig_len);
--	pci_unmap_len_set(new, dst_len, orig_len);
-+	pci_unmap_len_set(new, len, orig_len);
- 	spin_unlock_bh(&ioat_chan->desc_lock);
- 
- 	return new ? &new->async_tx : NULL;
-@@ -423,11 +422,11 @@ static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *chan)
- 			*/
- 			pci_unmap_page(chan->device->pdev,
- 					pci_unmap_addr(desc, dst),
--					pci_unmap_len(desc, dst_len),
-+					pci_unmap_len(desc, len),
- 					PCI_DMA_FROMDEVICE);
- 			pci_unmap_page(chan->device->pdev,
- 					pci_unmap_addr(desc, src),
--					pci_unmap_len(desc, src_len),
-+					pci_unmap_len(desc, len),
- 					PCI_DMA_TODEVICE);
- 		}
- 
-diff --git a/drivers/dma/ioatdma.h b/drivers/dma/ioatdma.h
-index d372647..bf4dad7 100644
---- a/drivers/dma/ioatdma.h
-+++ b/drivers/dma/ioatdma.h
-@@ -111,10 +111,9 @@ struct ioat_desc_sw {
- 	struct ioat_dma_descriptor *hw;
- 	struct list_head node;
- 	int tx_cnt;
-+	DECLARE_PCI_UNMAP_LEN(len)
- 	DECLARE_PCI_UNMAP_ADDR(src)
--	DECLARE_PCI_UNMAP_LEN(src_len)
- 	DECLARE_PCI_UNMAP_ADDR(dst)
--	DECLARE_PCI_UNMAP_LEN(dst_len)
- 	struct dma_async_tx_descriptor async_tx;
- };
- 
+-Andi
