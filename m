@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759590AbXHNVvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935551AbXHNVwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759590AbXHNVvn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 17:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761017AbXHNV1z
+	id S935551AbXHNVwZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 17:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762184AbXHNV2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:27:55 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:45877 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760775AbXHNV1d (ORCPT
+	Tue, 14 Aug 2007 17:28:39 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35381 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762005AbXHNV2i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:27:33 -0400
-Date: Tue, 14 Aug 2007 23:27:24 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] mm/: remove unused exports
-Message-ID: <20070814212724.GE18945@stusta.de>
+	Tue, 14 Aug 2007 17:28:38 -0400
+Date: Tue, 14 Aug 2007 14:28:34 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Serge E. Hallyn" <serge@hallyn.com>
+cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, bob.picco@hp.com,
+       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
+       akpm@linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       ckrm-tech <ckrm-tech@lists.sourceforge.net>
+Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
+In-Reply-To: <20070814204951.GA2065@vino.hallyn.com>
+Message-ID: <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
+References: <20070812152126.GA26239@linux.vnet.ibm.com>
+ <20070813201215.GA16908@vino.hallyn.com> <1187103831.6281.24.camel@localhost>
+ <20070814180339.GA32553@vino.hallyn.com> <1187115224.6281.40.camel@localhost>
+ <20070814192306.GB32553@vino.hallyn.com> <20070814204951.GA2065@vino.hallyn.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the following unused EXPORT_SYMBOL's:
-- migrate.c: migrate_page
-- mmap.c: get_unmapped_area
-- nommu.c: get_unmapped_area
+On Tue, 14 Aug 2007, Serge E. Hallyn wrote:
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> CONFIG_NODES_SHIFT was unset, so MAX_NUMNODES=1, so
+> node_state() and node_set_state() are dummies.
 
----
-
-This patch has been sent on:
-- 29 Jul 2007
-- 13 Jul 2007
-
- mm/migrate.c |    1 -
- mm/mmap.c    |    2 --
- mm/nommu.c   |    2 --
- 3 files changed, 5 deletions(-)
-
---- linux-2.6.22-rc6-mm1/mm/migrate.c.old	2007-07-12 03:15:05.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/mm/migrate.c	2007-07-12 03:15:15.000000000 +0200
-@@ -426,7 +426,6 @@
- 	migrate_page_copy(newpage, page);
- 	return 0;
- }
--EXPORT_SYMBOL(migrate_page);
- 
- #ifdef CONFIG_BLOCK
- /*
---- linux-2.6.22-rc6-mm1/mm/mmap.c.old	2007-07-12 03:20:19.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/mm/mmap.c	2007-07-12 03:20:33.000000000 +0200
-@@ -1408,8 +1408,6 @@
- 	return addr;
- }
- 
--EXPORT_SYMBOL(get_unmapped_area);
--
- /* Look up the first VMA which satisfies  addr < vm_end,  NULL if none. */
- struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr)
- {
---- linux-2.6.22-rc6-mm1/mm/nommu.c.old	2007-07-12 03:20:41.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/mm/nommu.c	2007-07-12 03:20:57.000000000 +0200
-@@ -1232,3 +1232,2 @@
- }
--EXPORT_SYMBOL(get_unmapped_area);
-
-
+Ok then you did not have a NUMA system configured. So its okay for the 
+dummies to ignore the stuff. CONFIG_NODES_SHIFT is a constant and does not 
+change. The first bit is always set.
 
