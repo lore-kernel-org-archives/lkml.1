@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761703AbXHNO3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762024AbXHNOdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761703AbXHNO3X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 10:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756952AbXHNO3F
+	id S1762024AbXHNOdT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 10:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757850AbXHNOdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 10:29:05 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42008 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751123AbXHNO3C (ORCPT
+	Tue, 14 Aug 2007 10:33:09 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36389 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756856AbXHNOdH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 10:29:02 -0400
-Date: Tue, 14 Aug 2007 16:28:53 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Rene Herman <rene.herman@gmail.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Joe Perches <joe@perches.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -
-	scripts/get_maintainer.pl
-Message-ID: <20070814142853.GQ18945@stusta.de>
-References: <1186984174.10249.7.camel@localhost> <200708131933.10125.m.kozlowski@tuxland.pl> <1187026955.2688.4.camel@laptopd505.fenrus.org> <1187037445.6628.98.camel@heimdal.trondhjem.org> <1187054366.2757.0.camel@laptopd505.fenrus.org> <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu> <1187099240.3537.1.camel@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1187099240.3537.1.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 14 Aug 2007 10:33:07 -0400
+Message-Id: <20070814143303.187548996@sgi.com>
+References: <20070814142103.204771292@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 14 Aug 2007 07:21:05 -0700
+From: Christoph Lameter <clameter@sgi.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Cc: dkegel@google.com
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: David Miller <davem@davemloft.net>
+Cc: Nick Piggin <npiggin@suse.de>
+Subject: [RFC 2/3] Use NOMEMALLOC reclaim to allow reclaim if PF_MEMALLOC is set
+Content-Disposition: inline; filename=reclaim_nomemalloc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 14, 2007 at 06:47:20AM -0700, Arjan van de Ven wrote:
-> 
-> On Tue, 2007-08-14 at 10:20 +0100, Alan Cox wrote:
-> > > MODULE_MAINTAINER() was discussed a while ago but embedding information into 
-> > > the binary has the problem you can't ever change deployed systems, meaning 
-> > > it lags by design. If a maintainer changes, people would still be using the 
-> > > information from their old binaries, meaning a replaced maintainer might get 
-> > > contacted for potentially years still (and the new one not).
-> > 
-> > And as was pointed out at the time, the people whining about that were
-> > talking out of the wrong equipment. The supplier of the code can no more
-> > or less easily change the binary as the matching source tree once its been
-> > shipped. In fact its probably easier to change the binaries as the
-> > sources will be left on CD.
-> > 
-> > The only non-stale source is git-blame.
-> 
-> the other angle is this: if someone becomes the new maintainer, does he
-> really want to "maintain" all the really old versions of the code out
-> there that predate him, or does he only want to go forward? 
->...
+If we exhaust the reserves in the page allocator when PF_MEMALLOC is set
+then no longer give up but call into reclaim with PF_MEMALLOC set.
 
-What about cases like maintainers using company email addresses and 
-changing company?
+This is in essence a recursive call back into page reclaim with another
+page flag (__GFP_NOMEMALLOC) set. The recursion is bounded since potential
+allocations with __PF_NOMEMALLOC set will not enter that branch again.
 
-E.g. Jens is still block layer maintainer but the @suse address he used 
-for years suddenly no longer existed after he left Suse.
+This means that allocation under PF_MEMALLOC will no longer run out of
+memory. Allocations under PF_MEMALLOC will do a limited form of reclaim
+instead.
 
-cu
-Adrian
+The reclaim is of particular important to stacked filesystems that may
+do a lot of allocations in the write path. Reclaim will be working
+as long as there are clean file backed pages to reclaim.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ mm/page_alloc.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c	2007-08-13 23:50:01.000000000 -0700
++++ linux-2.6/mm/page_alloc.c	2007-08-13 23:58:43.000000000 -0700
+@@ -1306,6 +1306,17 @@ nofail_alloc:
+ 				zonelist, ALLOC_NO_WATERMARKS);
+ 			if (page)
+ 				goto got_pg;
++			/*
++			 * If we are already in reclaim then the environment
++			 * is already setup. We can simply call
++			 * try_to_get_free_pages(). Just make sure that
++			 * we do not allocate anything.
++			 */
++			if (p->flags & PF_MEMALLOC && wait &&
++				try_to_free_pages(zonelist->zones, order,
++						gfp_mask | __GFP_NOMEMALLOC))
++				goto restart;
++
+ 			if (gfp_mask & __GFP_NOFAIL) {
+ 				congestion_wait(WRITE, HZ/50);
+ 				goto nofail_alloc;
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
