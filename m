@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934388AbXHNSza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934473AbXHNS4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934388AbXHNSza (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 14:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933245AbXHNSzE
+	id S934473AbXHNS4Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 14:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757820AbXHNSz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 14:55:04 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4827 "EHLO perches.com"
+	Tue, 14 Aug 2007 14:55:59 -0400
+Received: from ns1.suse.de ([195.135.220.2]:50872 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764558AbXHNSzC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 14:55:02 -0400
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -
-	scripts/get_maintainer.pl
-From: Joe Perches <joe@perches.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Rene Herman <rene.herman@gmail.com>, git@vger.kernel.org,
-       Junio C Hamano <gitster@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>
-References: <1186984174.10249.7.camel@localhost>
-	 <200708131933.10125.m.kozlowski@tuxland.pl>
-	 <1187026955.2688.4.camel@laptopd505.fenrus.org>
-	 <1187037445.6628.98.camel@heimdal.trondhjem.org>
-	 <1187054366.2757.0.camel@laptopd505.fenrus.org>
-	 <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu>
-	 <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>
-	 <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost>
-	 <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 14 Aug 2007 11:54:48 -0700
-Message-Id: <1187117688.32555.149.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	id S932626AbXHNSz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 14:55:57 -0400
+To: Hajime Inoue <hinoue@ccsl.carleton.ca>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: System call interposition/unprotecting the table
+References: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca>
+	<20070814000956.7c8929dd@the-village.bc.nu>
+	<46C1E5F5.9050702@ccsl.carleton.ca>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 14 Aug 2007 21:50:03 +0200
+In-Reply-To: <46C1E5F5.9050702@ccsl.carleton.ca>
+Message-ID: <p73zm0tnbf8.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-14 at 11:40 -0700, Linus Torvalds wrote:
-> Anyway - the script can certainly be tweaked, the point is 
-> really just that the git tree _already_ contains the relevant 
-> information).
+Hajime Inoue <hinoue@ccsl.carleton.ca> writes:
 
-I believe it's not specific enough.
-Things like email lists would never show up.
+> Just protecting the table does not stop rootkits.  A highly referenced
+> phrack article explains how to bypass the table. 
 
+During .23-pre for some time the kernel text was protected too (that
+would have likely stopped that particular attack), but it was
+removed because it caused too many problems.
+
+Ultimatively it is useless for security anyways because the page
+tables cannot be protected (because there are valid reasons to change
+them). If they're not protected any protection can be undone by
+changing them or simply creating an alias mapping. Also the Linux
+kernel has function pointers in read-write data structures which could
+also be used to inject code.
+
+So even with Alan's hypervisor support the whole thing would be still
+quite holey.  The argument of raising the bar also doesn't seem very
+convincing to me, because attackers reuse code too and it's enough
+when someone publishes such code once, then they can cut'n'paste
+it into any exploits forever.
+
+In general the .data protection is only considered a debugging
+feature. I don't know why Fedora enables it in their production
+kernels.
+
+BTW I tested your test case and it works for me on 2.6.23rc3 with
+DEBUG_RODATA enabled on i386/PAE. Without DEBUG_RODATA it BUGs, 
+but that's because the c_p_a interface is somewhat clumpsy
+and expects balanced changes.
+
+-Andi
