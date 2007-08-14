@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758308AbXHNV22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762606AbXHNV2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758308AbXHNV22 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 17:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756520AbXHNVW7
+	id S1762606AbXHNV2o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 17:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbXHNVXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:22:59 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38406 "EHLO
+	Tue, 14 Aug 2007 17:23:01 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38413 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752095AbXHNVWs (ORCPT
+	with ESMTP id S1755636AbXHNVW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:22:48 -0400
-Date: Tue, 14 Aug 2007 23:22:39 +0200
+	Tue, 14 Aug 2007 17:22:57 -0400
+Date: Tue, 14 Aug 2007 23:22:48 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] drivers/char/n_hdlc.c: fix check-after-use
-Message-ID: <20070814212239.GZ18945@stusta.de>
+To: johnpol@2ka.mipt.ru
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] w1_remove_master_device(): fix check-after-use
+Message-ID: <20070814212248.GD18945@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,41 +23,34 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted that we'd have already oops'ed if "tty"
+The Coverity checker spotted that we'd have already oops'ed if "dev"
 was NULL.
-
-Since "tty" can't be NULL when we reach this line of code this patch 
-removes the NULL check.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
---- linux-2.6.23-rc1-mm2/drivers/char/n_hdlc.c.old	2007-08-08 06:11:02.000000000 +0200
-+++ linux-2.6.23-rc1-mm2/drivers/char/n_hdlc.c	2007-08-08 06:11:15.000000000 +0200
-@@ -220,25 +220,25 @@
- static void n_hdlc_release(struct n_hdlc *n_hdlc)
+--- linux-2.6.23-rc1-mm2/drivers/w1/w1_int.c.old	2007-08-08 14:38:50.000000000 +0200
++++ linux-2.6.23-rc1-mm2/drivers/w1/w1_int.c	2007-08-08 14:38:58.000000000 +0200
+@@ -171,22 +171,17 @@
+ void w1_remove_master_device(struct w1_bus_master *bm)
  {
- 	struct tty_struct *tty = n_hdlc2tty (n_hdlc);
- 	struct n_hdlc_buf *buf;
- 	
- 	if (debuglevel >= DEBUG_LEVEL_INFO)	
- 		printk("%s(%d)n_hdlc_release() called\n",__FILE__,__LINE__);
- 		
- 	/* Ensure that the n_hdlcd process is not hanging on select()/poll() */
- 	wake_up_interruptible (&tty->read_wait);
- 	wake_up_interruptible (&tty->write_wait);
+ 	struct w1_master *dev = NULL;
  
--	if (tty != NULL && tty->disc_data == n_hdlc)
-+	if (tty->disc_data == n_hdlc)
- 		tty->disc_data = NULL;	/* Break the tty->n_hdlc link */
+ 	list_for_each_entry(dev, &w1_masters, w1_master_entry) {
+ 		if (!dev->initialized)
+ 			continue;
  
- 	/* Release transmit and receive buffers */
- 	for(;;) {
- 		buf = n_hdlc_buf_get(&n_hdlc->rx_free_buf_list);
- 		if (buf) {
- 			kfree(buf);
- 		} else
+ 		if (dev->bus_master->data == bm->data)
  			break;
  	}
- 	for(;;) {
- 		buf = n_hdlc_buf_get(&n_hdlc->tx_free_buf_list);
+ 
+-	if (!dev) {
+-		printk(KERN_ERR "Device doesn't exist.\n");
+-		return;
+-	}
+-
+ 	__w1_remove_master_device(dev);
+ }
+ 
+ EXPORT_SYMBOL(w1_add_master_device);
+ EXPORT_SYMBOL(w1_remove_master_device);
