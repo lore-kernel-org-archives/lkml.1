@@ -1,33 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937153AbXHNXAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935103AbXHNXFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937153AbXHNXAx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 19:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936923AbXHNXAW
+	id S935103AbXHNXFd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 19:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbXHNXFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 19:00:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53666 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937018AbXHNXAT (ORCPT
+	Tue, 14 Aug 2007 19:05:18 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:10221 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752060AbXHNXFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 19:00:19 -0400
-Date: Wed, 15 Aug 2007 04:43:02 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Tim Bird <tim.bird@am.sony.com>
-cc: linux kernel <linux-kernel@vger.kernel.org>
+	Tue, 14 Aug 2007 19:05:16 -0400
+Date: Tue, 14 Aug 2007 17:05:04 -0600
+From: Robert Hancock <hancockr@shaw.ca>
 Subject: Re: kfree(0) - ok?
-In-Reply-To: <46C233CB.9000602@am.sony.com>
-Message-ID: <alpine.LFD.0.999.0708150442010.6482@enigma.security.iitk.ac.in>
-References: <46C233CB.9000602@am.sony.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+In-reply-to: <fa.oMJ6o9vN0dnAoFR83/o4hg1EptE@ifi.uio.no>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>
+Message-id: <46C23520.2070805@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.oMJ6o9vN0dnAoFR83/o4hg1EptE@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 14 Aug 2007, Tim Bird wrote:
-
+Tim Bird wrote:
 > Hi all,
 > 
 > I have a quick question.
@@ -37,6 +35,15 @@ On Tue, 14 Aug 2007, Tim Bird wrote:
 > with Linux 2.6.22, I've found a large number of kfrees of
 > NULL pointers.
 > 
-> Is this considered OK?
+> Is this considered OK?  Or should I examine the offenders
+> to see if something is coded badly?
 
-kfree(NULL) is allowed -- for programmers' convenience.
+It's perfectly correct to do it - though, if it's done very frequently 
+in certain cases, it might be more efficient to check for null before 
+the kfree, to avoid the function call overhead into kfree..
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
