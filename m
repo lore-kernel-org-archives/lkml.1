@@ -1,36 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762407AbXHNXV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764363AbXHNXWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762407AbXHNXV2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 19:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbXHNXVL
+	id S1764363AbXHNXWZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 19:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbXHNXWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 19:21:11 -0400
-Received: from adsl-67-117-79-109.dsl.sntc01.pacbell.net ([67.117.79.109]:2633
-	"EHLO aurum.uhlenkott.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753008AbXHNXVK (ORCPT
+	Tue, 14 Aug 2007 19:22:13 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:29167 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754232AbXHNXWL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 19:21:10 -0400
-Date: Tue, 14 Aug 2007 16:21:07 -0700
-From: Jason Uhlenkott <jasonuhl@jasonuhl.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kfree(0) - ok?
-Message-ID: <20070814232107.GA4265@aurum.uhlenkott.net>
-References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 14 Aug 2007 19:22:11 -0400
+Message-ID: <46C2391D.1060608@chelsio.com>
+Date: Tue, 14 Aug 2007 16:22:05 -0700
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Steve Wise <swise@opengridcomputing.com>
+Subject: Re: [PATCH 2/13] cxgb3 - Update rx coalescing length
+References: <20070811062939.8040.31490.stgit@speedy5> <46C14096.3020905@garzik.org>
+In-Reply-To: <46C14096.3020905@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1187132149.2618.2.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.9i
+X-OriginalArrivalTime: 14 Aug 2007 23:20:48.0685 (UTC) FILETIME=[BF8D4DD0:01C7DEC9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 14, 2007 at 15:55:48 -0700, Arjan van de Ven wrote:
-> NULL is not 0 though.
+Jeff Garzik wrote:
+>
+> Divy Le Ray wrote:
+> > From: Divy Le Ray <divy@chelsio.com>
+> >
+> > Set max Rx coalescing length to 12288
+> >
+> > Signed-off-by: Divy Le Ray <divy@chelsio.com>
+> > ---
+> >
+> >  drivers/net/cxgb3/common.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> >
+> > diff --git a/drivers/net/cxgb3/common.h b/drivers/net/cxgb3/common.h
+> > index c46c249..55922ed 100644
+> > --- a/drivers/net/cxgb3/common.h
+> > +++ b/drivers/net/cxgb3/common.h
+> > @@ -104,7 +104,7 @@ enum {
+> >       PROTO_SRAM_LINES = 128, /* size of TP sram */
+> >  };
+> > 
+> > -#define MAX_RX_COALESCING_LEN 16224U
+> > +#define MAX_RX_COALESCING_LEN 12288U
+>
+> neither the patch nor description explains -why-
+>
 
-It is.  Its representation isn't guaranteed to be all-bits-zero, but
-the constant value 0 when used in pointer context is always a null
-pointer (and in fact the standard requires that NULL be #defined as 0
-or a cast thereof).
+We're seeing back pressure from PCIe with large bursts, this patch 
+allows to cut down on the burst size.
+
+Divy
+
