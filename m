@@ -1,119 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935944AbXHNV45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935923AbXHNV5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935944AbXHNV45 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 17:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932208AbXHNViB
+	id S935923AbXHNV5j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 17:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756986AbXHNViU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:38:01 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:53515 "EHLO atlrel8.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933552AbXHNVh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:37:58 -0400
-Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, clameter@sgi.com,
-       bob.picco@hp.com, nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
-       mel@skynet.ie, akpm@linux-foundation.org,
-       Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       ckrm-tech <ckrm-tech@lists.sourceforge.net>
-In-Reply-To: <20070814204951.GA2065@vino.hallyn.com>
-References: <20070812152126.GA26239@linux.vnet.ibm.com>
-	 <20070813201215.GA16908@vino.hallyn.com>
-	 <1187103831.6281.24.camel@localhost>
-	 <20070814180339.GA32553@vino.hallyn.com>
-	 <1187115224.6281.40.camel@localhost>
-	 <20070814192306.GB32553@vino.hallyn.com>
-	 <20070814204951.GA2065@vino.hallyn.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 14 Aug 2007 17:37:12 -0400
-Message-Id: <1187127432.6281.135.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Tue, 14 Aug 2007 17:38:20 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:37650 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933839AbXHNViR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 17:38:17 -0400
+In-Reply-To: <20070814212858.GB23308@one.firstfloor.org>
+References: <20070814183119.GC17694@angus.ind.WPI.EDU> <p73r6m5n90l.fsf@bingen.suse.de> <78642229-39DD-4956-9385-5A3F960BFEEF@mit.edu> <20070814212858.GB23308@one.firstfloor.org>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <07759638-DE7C-4341-A642-D611A897614F@MIT.EDU>
+Cc: cra@WPI.EDU, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+From: William Cattey <wdc@MIT.EDU>
+Subject: Re: vm86.c audit_syscall_exit() call trashes registers
+Date: Tue, 14 Aug 2007 17:37:33 -0400
+To: Andi Kleen <andi@firstfloor.org>
+X-Mailer: Apple Mail (2.752.3)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-14 at 15:49 -0500, Serge E. Hallyn wrote:
-<snip>
-> 
-> Here is a patch which fixes the bug on my system.  As noted in
-> the patch description, there are other calls to node_set_state() in
-> mm/page_alloc.c which might also need to be switched to node_set(),
-> if this is deemed the right solution.
+The system was otherwise completely idle.  The only active task was  
+starting the X server.
 
-Here's an update to that patch to handle the other 2 places I found
-where node_set_state() would be a no-op when MAX_NUMNODES == 1.
+The failure is 100% reproducible on my test system.
 
-I'm continuing to look at uses of node_online_map throughout the kernel.
-I'll look at current usage of the node state wrappers as well.  However,
-you probably want to fix these other 2 places as well, or you might run
-into other issues with empty 'NORMAL_MEMORY and 'CPU node state masks...
+We have not run a lot of different kernels per se.  We ran 2.6.9, and  
+it was fine.  When we ran RHEL 5, it came with 2.6.18.  All we really  
+did was rebuild 2.6.18 with that chunk of code removed, and the  
+problem went away.  Mind you, when that chunk of code was removed,  
+there were a ton of errors about multiply freed audit blocks.  But at  
+least the X server EDID transfer was successful.
 
-Lee
+As far as enabling/disabling the audit functionality:  I'm clueless  
+about it. I think RHEL turned it on by default, but I don't know how  
+to turn it on or off myself.
 
-[PATCH 1/1] memoryless: actually set node_states[N_HIGH_MEMORY] - v2
+I will also note that the small stand-alone utility read_edid never  
+failed.  It was only when vm86 was called from inside of the X  
+server.  So perhaps there's a race condition with memory not being  
+where it's expected to be when a large app calls out to real mode?
 
-v1 -> v2"
-+  switch to node_set() to initialize N_NORMAL_MEMORY and N_CPU
-   node_states[] as well.
+-Bill
 
-If CONFIG_NODES_SHIFT is unset, then MAX_NUMNODES=1, and
-node_set_state() does nothing.  This means that __build_all_zonelists()
-does not actually set node_states[N_HIGH_MEMORY].  cpusets needs
- node_states[N_HIGH_MEMORY] to be correctly set, or it will raise a
-bug when a new cpuset is created.
+----
 
-Switch to using node_set() in __build_all_zonelists() to
-make sure it is actually set.
+William Cattey
+Linux Platform Coordinator
+MIT Information Services & Technology
 
-Note there are other calls to node_set_state() in mm/page_alloc.c,
-which perhaps should also be modified.  Since this area is completely
-foreign to me I thought I'd first make sure this is the right approach.
+W92-176, 617-253-0140, wdc@mit.edu
+http://web.mit.edu/wdc/www/
 
-	addressed in v2 --lts
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+On Aug 14, 2007, at 5:28 PM, Andi Kleen wrote:
 
- mm/page_alloc.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-Index: Linux/mm/page_alloc.c
-===================================================================
---- Linux.orig/mm/page_alloc.c	2007-08-14 16:48:28.000000000 -0400
-+++ Linux/mm/page_alloc.c	2007-08-14 16:57:24.000000000 -0400
-@@ -2425,7 +2425,8 @@ static void check_for_regular_memory(pg_
- 	for (zone_type = 0; zone_type <= ZONE_NORMAL; zone_type++) {
- 		struct zone *zone = &pgdat->node_zones[zone_type];
- 		if (zone->present_pages)
--			node_set_state(zone_to_nid(zone), N_NORMAL_MEMORY);
-+			node_set(zone_to_nid(zone),
-+					node_states[N_NORMAL_MEMORY]);
- 	}
- #endif
- }
-@@ -2443,7 +2444,7 @@ static int __build_all_zonelists(void *d
- 
- 		/* Any memory on that node */
- 		if (pgdat->node_present_pages)
--			node_set_state(nid, N_HIGH_MEMORY);
-+			node_set(nid, node_states[N_HIGH_MEMORY]);
- 		check_for_regular_memory(pgdat);
- 	}
- 	return 0;
-@@ -2793,7 +2794,7 @@ static int __cpuinit process_zones(int c
- 			 	(zone->present_pages / percpu_pagelist_fraction));
- 	}
- 
--	node_set_state(node, N_CPU);
-+	node_set(node, node_states[N_CPU]);
- 	return 0;
- bad:
- 	for_each_zone(dzone) {
-
+> On Tue, Aug 14, 2007 at 04:52:54PM -0400, William Cattey wrote:
+>> The corruption originally looked like a race condition.
+>>
+>> Sometimes the EDID buffer would be all zeros.
+>> Sometimes it would contain partial data, and then the rest of the
+>> buffer filled with zeros.
+>> The amount of data transferred into the buffer before going to all
+>> zeros is non-deterministic.
+>>
+>> When we put a known value in each byte of the buffer before making
+>> the vm86 call, the known data would always be overwritten either with
+>> EDID data or zeros.
+>
+> Hmm, that might be consistent with something going wrong with  
+> sleeping.
+> Was the system under high load? Perhaps something else can thrash
+> some real mode state when you sleep. On the other hand vm86 in user
+> mode can schedule anyways, so it might have already happened.
+>
+> But I think the mutex was actually added post 2.6.16 so if you saw
+> it in 2.6.16 already it might have been something else.
+>
+> Also when audit is not enabled (did you have it enabled?) the audit
+> function doesn't do very much?
+>
+> If you can reliably reproduce it one way might be to comment
+> out more and more of the audit code until you find who causes
+> the corruption (that might cause some corrupted audit data,
+> but that should be fine for testing)
+>
+> -Andi
 
