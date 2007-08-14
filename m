@@ -1,77 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759777AbXHNCJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940419AbXHNCJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759777AbXHNCJH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Aug 2007 22:09:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764676AbXHNCIN
+	id S940419AbXHNCJm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Aug 2007 22:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940815AbXHNCIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Aug 2007 22:08:13 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:48849 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764623AbXHNCIL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Aug 2007 22:08:11 -0400
-Message-ID: <46C10D9D.2090308@gmail.com>
-Date: Tue, 14 Aug 2007 04:04:13 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Joe Perches <joe@perches.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -	scripts/get_maintainer.pl
-References: <1186984174.10249.7.camel@localhost>	 <200708131933.10125.m.kozlowski@tuxland.pl>	 <1187026955.2688.4.camel@laptopd505.fenrus.org>	 <1187037445.6628.98.camel@heimdal.trondhjem.org> <1187054366.2757.0.camel@laptopd505.fenrus.org> <46C10AA8.3090505@gmail.com>
-In-Reply-To: <46C10AA8.3090505@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Mon, 13 Aug 2007 22:08:36 -0400
+Received: from mx2.suse.de ([195.135.220.15]:54414 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S940738AbXHNCId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Aug 2007 22:08:33 -0400
+Date: Tue, 14 Aug 2007 04:08:30 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Joachim Deguara <joachim.deguara@amd.com>,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
+       Eric Whitney <eric.whitney@hp.com>
+Subject: Re: [patch][rfc] 2.6.23-rc1 mm: NUMA replicated pagecache
+Message-ID: <20070814020830.GB24542@wotan.suse.de>
+References: <20070727084252.GA9347@wotan.suse.de> <1186604723.5055.47.camel@localhost> <1186780099.5246.6.camel@localhost> <20070813074351.GA15609@wotan.suse.de> <1187013901.5592.24.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1187013901.5592.24.camel@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/14/2007 03:51 AM, Rene Herman wrote:
+On Mon, Aug 13, 2007 at 10:05:01AM -0400, Lee Schermerhorn wrote:
+> On Mon, 2007-08-13 at 09:43 +0200, Nick Piggin wrote:
+> > 
+> > Replication may be putting more stress on some locks. It will cause more
+> > tlb flushing that can not be batched well, which could cause the call_lock
+> > to get hotter. Then i_mmap_lock is held over tlb flushing, so it will
+> > inherit the latency from call_lock. (If this is the case, we could
+> > potentially extend the tlb flushing API slightly to cope better with
+> > unmapping of pages from multiple mm's, but that comes way down the track
+> > when/if replication proves itself!).
+> > 
+> > tlb flushing AFAIKS should not do the IPI unless it is deadling with a
+> > multithreaded mm... does usex use threads?
+> 
+> Yes.  Apparently, there are some tests, perhaps some of the /usr/bin
+> apps that get run repeatedly, that are multi-threaded.  This job mix
+> caught a number of races in my auto-migration patches when
+> multi-threaded tasks race in the page fault paths.
+> 
+> More below...
 
-> MODULE_MAINTAINER() was discussed a while ago but embedding information 
-> into the binary has the problem you can't ever change deployed systems, 
-> meaning it lags by design. If a maintainer changes, people would still 
-> be using the information from their old binaries, meaning a replaced 
-> maintainer might get contacted for potentially years still (and the new 
-> one not).
-> 
-> (you could avoid that by placing not a name/address in the maintainer 
-> tag but a pointer to somewhere else but at that point this gets to be 
-> about solving something else).
-> 
-> Keeping it in the source alone is fine. C files could just embed their 
-> MAINTAINERS entry as a header:
-> 
-> /*
->  * P: Maintainer
->  * M: Mail patches to
->  * L: Mailing list that is relevant to this area
->  * W: Web-page with status/info
->  * T: SCM tree type and location.  Type is one of: git, hg, quilt.
->  * S: Status, one of the following:
->  */
-> 
-> And probably adding fields:
-> 
->  * I: Info/Summary (for index files and the like)
->  * A: Author
->  * G: License
-> 
-> and such. Yes, while we're at it, we can pick better letters or full 
-> word tags ;-)
+Hmm, come to think of it: I'm a bit mistaken. The replica zaps will often
+to be coming from _other_ CPUs, so they will require an IPI regardless of
+whether they are threaded or not.
 
-Okay, and if a single "maintenance unit" consists of many files, this gets 
-to be too much yes. But they _could_ just grow a header pointing back to the 
-MINTAINERS file/database;
+The generic ia64 tlb flushing code also does a really bad job at flushing one
+'mm' from another: it uses the single-threaded smp_call_function and broadcasts
+IPIs (and TLB invalidates) to ALL CPUs, regardless of the cpu_vm_mask of the
+target process. So you have a multiplicative problem with call_lock.
 
-/*
-  * MAINTAINERS: 3C359 NETWORK DRIVER
-  */
+I think this path could be significantly optimised... but it's a bit nasty
+to be playing around with the TLB flushing code while trying to test
+something else :P
 
-Thst should keep things minimal enough to keep them updated, no?
+Can we make a simple change to smp_flush_tlb_all to do
+smp_flush_tlb_cpumask(cpu_online_map), rather than on_each_cpu()? At least
+then it will use the direct IPI vector and avoid call_lock.
 
-Rene.
+
+> > Ah, so it does eventually die? Any hints of why?
+> 
+> No, doesn't die--as in panic.  I was just commenting that I'd leave it
+> running ...  However [:-(], it DID hang again.  The test window said
+> that the tests ran for 62h:28m before the screen stopped updating.  In
+> another window, I was running a script to snap the replication and #
+> file pages vmstats, along with a timestamp, every 10 minutes.  That
+> stopped reporting stats at about 7:30am on Saturday--about 14h:30m into
+> the test.  It still wrote the timestamps [date command] until around 7am
+> this morning [Monday]--or ~62 hours into test.
+> 
+> So, I do have ~14 hours of replication stats that I can send you or plot
+> up...
+
+If you think it could be useful, sure.
+
+ 
+> Re: the hang:  again, console was scrolling soft lockups continuously.
+> Checking the messages file, I see hangs in copy_process(),
+> smp_call_function [as in prev test], vma_link [from mmap], ...
+
+I don't suppose it should hang even if it is encountering 10s delays on
+call_lock.... but I wonder how it would go with the tlb flush change.
+With luck, it would add more concurrency and make it hang _faster_ ;)
+
+
+> > Yeah I guess it can be a little misleading: as time approaches infinity,
+> > zaps will probably approach replications. But that doesn't tell you how
+> > long a replica stayed around and usefully fed CPUs with local memory...
+> 
+> May be able to capture that info with a more invasive patch -- e.g., add
+> a timestamp to the page struct.  I'll think about it.
+
+Yeah that actually could be a good approach. You could make a histogram
+of lifetimes which would be a decent metric to start tuning with. Ideally
+you'd also want to record some context of what caused the zap and the status
+of the file, but it may be difficult to get a good S/N on those metrics.
+
+ 
+> And, I'll keep you posted.  Not sure how much time I'll be able to
+> dedicate to this patch stream.  Got a few others I need to get back
+> to...
+
+Thanks, I appreciate it. I'm pretty much in the same boat, just spending a
+bit of time on it here and there.
+
+Thanks,
+Nick
