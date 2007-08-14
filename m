@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935530AbXHNUPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935403AbXHNUTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935530AbXHNUPm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 16:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbXHNUP2
+	id S935403AbXHNUTp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 16:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757491AbXHNUTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 16:15:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41854 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755488AbXHNUP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 16:15:27 -0400
-Date: Tue, 14 Aug 2007 21:12:20 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Diego Woitasen <diego@woitasen.com.ar>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove unneded lock_kernel in drivers/md/dm.c and use unlocked_ioctl.
-Message-ID: <20070814201220.GA30122@agk.fab.redhat.com>
-Mail-Followup-To: Diego Woitasen <diego@woitasen.com.ar>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org
-References: <11858486294133-git-send-email-diego@woitasen.com.ar>
+	Tue, 14 Aug 2007 16:19:35 -0400
+Received: from mail-in-08.arcor-online.net ([151.189.21.48]:55698 "EHLO
+	mail-in-08.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757234AbXHNUTe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 16:19:34 -0400
+Date: Tue, 14 Aug 2007 22:19:28 +0200
+From: Andreas Radke <a.radke@arcor.de>
+To: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org
+Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Jeff Garzik" <jgarzik@pobox.com>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>
+Subject: Re: sata drive loosing connection/resetting port
+Message-ID: <20070814221928.243949b6@workstation64.home>
+In-Reply-To: <46C180D8.9060005@gmail.com>
+References: <20070813220241.3f4b8df5@workstation64.home>
+	<6bffcb0e0708131311k51238bb0l63eeb2fce53e3481@mail.gmail.com>
+	<46C180D8.9060005@gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <11858486294133-git-send-email-diego@woitasen.com.ar>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 30, 2007 at 11:23:49PM -0300, Diego Woitasen wrote:
-> -static int dm_blk_ioctl(struct inode *inode, struct file *file,
-> -			unsigned int cmd, unsigned long arg)
-> +static long dm_blk_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+Am Tue, 14 Aug 2007 19:15:52 +0900
+schrieb Tejun Heo <htejun@gmail.com>:
 
-> -	/* We don't really need this lock, but we do need 'inode'. */
-> -	unlock_kernel();
-> +	inode = file->f_path.dentry->d_inode;
+> Most likely a hardware issue.
+> 
+> * Please try a different harddrive/cable and connect to a different
+> port.
+> 
+> * Get a different power supply and see whether that changes anything.
+> 
 
-Have the call paths that pass a NULL 'file' parameter down all been
-changed?  If not, perhaps pass the 'inode' parameter into
-unlocked_ioctl(), as happens with ioctl(), to get rid of the lock.
+already tried different ports, several SATA cables on that mainboard and
+psu works well. the Samsung drive works well no matter where
+connected. never had any issues with the Raptor drive when it was
+connected to the "old" Intel P965 board before. what's the difference
+form ICH8 to ICH9R? any changes in how the driver works?
 
-Alasdair
--- 
-agk@redhat.com
+i confirmed, that the issues still resist in kernel 2.6.23rc3 and also
+when using controller in "ide" mode together with ata_piix modul.
+
+but on thing that is really weird: i used our installer iso to boot
+with 2.6.22 kernel and even after several hours the error did not
+appear! can you explain that? so it only happens when filesystems are
+mounted (also / partition is on that drive). 
+
+any idea?
+
+Andreas
