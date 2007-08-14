@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765099AbXHNXnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbXHNXzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765099AbXHNXnW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 19:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755674AbXHNXnM
+	id S1759473AbXHNXzX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 19:55:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXHNXzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 19:43:12 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60856 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750874AbXHNXnL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 19:43:11 -0400
-Date: Wed, 15 Aug 2007 01:43:01 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, chrisw@sous-sol.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] unexport cap_inode_killpriv
-Message-ID: <20070814234301.GG18945@stusta.de>
-References: <20070809224254.11f42716.akpm@linux-foundation.org> <20070814212613.GY18945@stusta.de> <20070814213502.GA14497@sergelap.austin.ibm.com>
+	Tue, 14 Aug 2007 19:55:00 -0400
+Received: from styx.suse.cz ([82.119.242.94]:48818 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754073AbXHNXy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 19:54:59 -0400
+Date: Wed, 15 Aug 2007 01:51:09 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: joe@perches.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [217/2many] MAINTAINERS - HID CORE LAYER
+In-Reply-To: <46bffa13.u2UP+i4L1tdJi0Sf%joe@perches.com>
+Message-ID: <Pine.LNX.4.64.0708150148190.29843@jikos.suse.cz>
+References: <46bffa13.u2UP+i4L1tdJi0Sf%joe@perches.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070814213502.GA14497@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 14, 2007 at 04:35:02PM -0500, Serge E. Hallyn wrote:
-> Quoting Adrian Bunk (bunk@kernel.org):
-> > On Thu, Aug 09, 2007 at 10:42:54PM -0700, Andrew Morton wrote:
-> > >...
-> > > Changes since 2.6.23-rc1-mm2:
-> > >...
-> > > +file-capabilities-clear-fcaps-on-inode-change.patch
-> > > 
-> > >  file caps update
-> > >...
-> > 
-> > This patch removes the unused EXPORT_SYMBOL(cap_inode_killpriv).
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
-> 
-> > ---
-> > 68ca3bcc4918d0b84a97318f60fb74c4600d9f6b 
-> > diff --git a/security/commoncap.c b/security/commoncap.c
-> > index 7816cdc..9ec5890 100644
-> > --- a/security/commoncap.c
-> > +++ b/security/commoncap.c
-> > @@ -543,7 +543,6 @@ EXPORT_SYMBOL(cap_bprm_apply_creds);
-> >  EXPORT_SYMBOL(cap_bprm_secureexec);
-> >  EXPORT_SYMBOL(cap_inode_setxattr);
-> >  EXPORT_SYMBOL(cap_inode_removexattr);
-> > -EXPORT_SYMBOL(cap_inode_killpriv);
-> >  EXPORT_SYMBOL(cap_task_post_setuid);
-> >  EXPORT_SYMBOL(cap_task_kill);
-> >  EXPORT_SYMBOL(cap_task_setscheduler);
-> 
-> Ah yes, bc LSMs can't be modules any more.  But then, why still export
-> cap_task_setscheduler, for instance?
+On Sun, 12 Aug 2007, joe@perches.com wrote:
 
-Look at my next patch.  :-)
+> Add file pattern to MAINTAINER entry
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index bdbf999..4a8770c 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2071,6 +2071,8 @@ M:	jkosina@suse.cz
+>  L:	linux-input@atrey.karlin.mff.cuni.cz
+>  T:	git kernel.org:/pub/scm/linux/kernel/git/jikos/hid.git
+>  S:	Maintained
+> +F:	drivers/hid/
+> +F:	include/linux/hid*
+>  
+>  HIGH-RESOLUTION TIMERS, CLOCKEVENTS, DYNTICKS
+>  P:	Thomas Gleixner
+> 
 
-> -serge
+If this is ever going to be merged, you can add
 
-cu
-Adrian
+	Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Jiri Kosina
+SUSE Labs
