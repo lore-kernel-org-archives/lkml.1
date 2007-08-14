@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936319AbXHNWCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936060AbXHNWDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936319AbXHNWCT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 18:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934768AbXHNVlE
+	id S936060AbXHNWDD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 18:03:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934917AbXHNVlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:41:04 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:42229 "EHLO
+	Tue, 14 Aug 2007 17:41:07 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:42224 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934756AbXHNVkx (ORCPT
+	with ESMTP id S934680AbXHNVkp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:40:53 -0400
-Date: Tue, 14 Aug 2007 17:40:26 -0400
+	Tue, 14 Aug 2007 17:40:45 -0400
+Date: Tue, 14 Aug 2007 17:40:19 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 13/14] UML - Remove os_* usage from userspace files
-Message-ID: <20070814214026.GA17554@c2.user-mode-linux.org>
+Subject: [PATCH 5/14] UML - Style fixes pass 2
+Message-ID: <20070814214019.GA17300@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,789 +24,813 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes some userspace files which were calling libc through
-the os_* wrappers.
+Formatting changes in the files which have been changed in the course
+of removing CHOOSE_MODE.  These include:
+	copyright updates
+	header file trimming
+	style fixes
+	adding severity to printks
 
-It turns out that there was only one user of os_new_tty_pgrp, so it
-can be deleted.
-
-There are also some style and whitespace fixes in here.
+These changes should be entirely non-functional.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- arch/um/drivers/chan_user.c            |   37 ++++----
- arch/um/drivers/harddog_user.c         |   54 +++++------
- arch/um/include/mconsole.h             |   13 --
- arch/um/include/os.h                   |    1 
- arch/um/include/sysdep-i386/ptrace.h   |    3 
- arch/um/include/sysdep-x86_64/ptrace.h |  152 ++++++++++++++++-----------------
- arch/um/kernel/skas/uaccess.c          |  134 +++++++++++++----------------
- arch/um/os-Linux/file.c                |   11 --
- 8 files changed, 186 insertions(+), 219 deletions(-)
+ arch/um/drivers/mconsole_kern.c |  250 ++++++++++++++++++++--------------------
+ arch/um/include/um_mmu.h        |    2 
+ arch/um/include/um_uaccess.h    |   15 --
+ arch/um/kernel/ksyms.c          |   17 --
+ include/asm-um/a.out.h          |    5 
+ include/asm-um/tlbflush.h       |    8 -
+ 6 files changed, 145 insertions(+), 152 deletions(-)
 
-Index: linux-2.6.22/arch/um/drivers/chan_user.c
+Index: linux-2.6.22/arch/um/drivers/mconsole_kern.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/drivers/chan_user.c	2007-08-13 13:44:23.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/chan_user.c	2007-08-13 13:45:03.000000000 -0400
-@@ -134,12 +134,12 @@ static int winch_thread(void *arg)
- 	struct winch_data *data = arg;
- 	sigset_t sigs;
- 	int pty_fd, pipe_fd;
--	int count, err;
-+	int count;
- 	char c = 1;
- 
- 	pty_fd = data->pty_fd;
- 	pipe_fd = data->pipe_fd;
--	count = os_write_file(pipe_fd, &c, sizeof(c));
-+	count = write(pipe_fd, &c, sizeof(c));
- 	if (count != sizeof(c))
- 		printk(UM_KERN_ERR "winch_thread : failed to write "
- 		       "synchronization byte, err = %d\n", -count);
-@@ -167,10 +167,15 @@ static int winch_thread(void *arg)
- 		exit(1);
- 	}
- 
--	err = os_new_tty_pgrp(pty_fd, os_getpid());
--	if (err < 0) {
--		printk(UM_KERN_ERR "winch_thread : new_tty_pgrp failed on "
--		       "fd %d err = %d\n", pty_fd, -err);
-+	if(ioctl(pty_fd, TIOCSCTTY, 0) < 0){
-+		printk(UM_KERN_ERR "winch_thread : TIOCSCTTY failed on "
-+		       "fd %d err = %d\n", pty_fd, errno);
-+		exit(1);
-+	}
-+
-+	if(tcsetpgrp(pty_fd, os_getpid()) < 0){
-+		printk(UM_KERN_ERR "winch_thread : tcsetpgrp failed on "
-+		       "fd %d err = %d\n", pty_fd, errno);
- 		exit(1);
- 	}
- 
-@@ -180,10 +185,10 @@ static int winch_thread(void *arg)
- 	 * kernel semaphores. We don't use SysV semaphores because they are
- 	 * persistent.
- 	 */
--	count = os_read_file(pipe_fd, &c, sizeof(c));
-+	count = read(pipe_fd, &c, sizeof(c));
- 	if (count != sizeof(c))
- 		printk(UM_KERN_ERR "winch_thread : failed to read "
--		       "synchronization byte, err = %d\n", -count);
-+		       "synchronization byte, err = %d\n", errno);
- 
- 	while(1) {
- 		/*
-@@ -192,10 +197,10 @@ static int winch_thread(void *arg)
- 		 */
- 		sigsuspend(&sigs);
- 
--		count = os_write_file(pipe_fd, &c, sizeof(c));
-+		count = write(pipe_fd, &c, sizeof(c));
- 		if (count != sizeof(c))
- 			printk(UM_KERN_ERR "winch_thread : write failed, "
--			       "err = %d\n", -count);
-+			       "err = %d\n", errno);
- 	}
- }
- 
-@@ -229,11 +234,11 @@ static int winch_tramp(int fd, struct tt
- 	}
- 
- 	*fd_out = fds[0];
--	n = os_read_file(fds[0], &c, sizeof(c));
-+	n = read(fds[0], &c, sizeof(c));
- 	if (n != sizeof(c)) {
- 		printk(UM_KERN_ERR "winch_tramp : failed to read "
- 		       "synchronization byte\n");
--		printk(UM_KERN_ERR "read failed, err = %d\n", -n);
-+		printk(UM_KERN_ERR "read failed, err = %d\n", errno);
- 		printk(UM_KERN_ERR "fd %d will not support SIGWINCH\n", fd);
- 		err = -EINVAL;
- 		goto out_close;
-@@ -248,8 +253,8 @@ static int winch_tramp(int fd, struct tt
- 	return err;
- 
-  out_close:
--	os_close_file(fds[1]);
--	os_close_file(fds[0]);
-+	close(fds[1]);
-+	close(fds[0]);
-  out:
- 	return err;
- }
-@@ -271,9 +276,9 @@ void register_winch(int fd, struct tty_s
- 
- 		register_winch_irq(thread_fd, fd, thread, tty, stack);
- 
--		count = os_write_file(thread_fd, &c, sizeof(c));
-+		count = write(thread_fd, &c, sizeof(c));
- 		if (count != sizeof(c))
- 			printk(UM_KERN_ERR "register_winch : failed to write "
--			       "synchronization byte, err = %d\n", -count);
-+			       "synchronization byte, err = %d\n", errno);
- 	}
- }
-Index: linux-2.6.22/arch/um/include/os.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/os.h	2007-08-13 13:44:53.000000000 -0400
-+++ linux-2.6.22/arch/um/include/os.h	2007-08-13 13:45:03.000000000 -0400
-@@ -132,7 +132,6 @@ extern void os_print_error(int error, co
- extern int os_get_exec_close(int fd, int *close_on_exec);
- extern int os_set_exec_close(int fd, int close_on_exec);
- extern int os_ioctl_generic(int fd, unsigned int cmd, unsigned long arg);
--extern int os_new_tty_pgrp(int fd, int pid);
- extern int os_get_ifname(int fd, char *namebuf);
- extern int os_set_slip(int fd);
- extern int os_set_owner(int fd, int pid);
-Index: linux-2.6.22/arch/um/os-Linux/file.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/file.c	2007-08-13 13:44:23.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/file.c	2007-08-13 13:45:03.000000000 -0400
-@@ -101,17 +101,6 @@ int os_ioctl_generic(int fd, unsigned in
- 	return err;
- }
- 
--int os_new_tty_pgrp(int fd, int pid)
--{
--	if(ioctl(fd, TIOCSCTTY, 0) < 0)
--		return -errno;
--
--	if(tcsetpgrp(fd, pid) < 0)
--		return -errno;
--
--	return 0;
--}
--
- /* FIXME: ensure namebuf in os_get_if_name is big enough */
- int os_get_ifname(int fd, char* namebuf)
- {
-Index: linux-2.6.22/arch/um/drivers/harddog_user.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/harddog_user.c	2007-08-13 13:44:23.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/harddog_user.c	2007-08-13 13:45:03.000000000 -0400
-@@ -1,14 +1,13 @@
+--- linux-2.6.22.orig/arch/um/drivers/mconsole_kern.c	2007-08-14 13:28:19.000000000 -0400
++++ linux-2.6.22/arch/um/drivers/mconsole_kern.c	2007-08-14 13:29:20.000000000 -0400
+@@ -1,43 +1,35 @@
  /*
+  * Copyright (C) 2001 Lennert Buytenhek (buytenh@gnu.org)
+- * Copyright (C) 2001 - 2003 Jeff Dike (jdike@addtoit.com)
++ * Copyright (C) 2001 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+-#include "linux/kernel.h"
+-#include "linux/slab.h"
+-#include "linux/init.h"
+-#include "linux/notifier.h"
+-#include "linux/reboot.h"
+-#include "linux/utsname.h"
++#include "linux/console.h"
+ #include "linux/ctype.h"
+ #include "linux/interrupt.h"
+-#include "linux/sysrq.h"
+-#include "linux/workqueue.h"
++#include "linux/list.h"
++#include "linux/mm.h"
+ #include "linux/module.h"
+-#include "linux/file.h"
+-#include "linux/fs.h"
+-#include "linux/namei.h"
++#include "linux/notifier.h"
++#include "linux/reboot.h"
+ #include "linux/proc_fs.h"
++#include "linux/slab.h"
+ #include "linux/syscalls.h"
+-#include "linux/list.h"
+-#include "linux/mm.h"
+-#include "linux/console.h"
+-#include "asm/irq.h"
++#include "linux/utsname.h"
++#include "linux/workqueue.h"
+ #include "asm/uaccess.h"
++#include "init.h"
++#include "irq_kern.h"
++#include "irq_user.h"
+ #include "kern_util.h"
+-#include "kern.h"
+ #include "mconsole.h"
+ #include "mconsole_kern.h"
+-#include "irq_user.h"
+-#include "init.h"
+ #include "os.h"
+-#include "irq_kern.h"
+ 
+ static int do_unlink_socket(struct notifier_block *notifier,
+ 			    unsigned long what, void *data)
+ {
+-	return(mconsole_unlink_socket());
++	return mconsole_unlink_socket();
+ }
+ 
+ 
+@@ -58,10 +50,9 @@ static void mc_work_proc(struct work_str
+ 	struct mconsole_entry *req;
+ 	unsigned long flags;
+ 
+-	while(!list_empty(&mc_requests)){
++	while (!list_empty(&mc_requests)) {
+ 		local_irq_save(flags);
+-		req = list_entry(mc_requests.next, struct mconsole_entry,
+-				 list);
++		req = list_entry(mc_requests.next, struct mconsole_entry, list);
+ 		list_del(&req->list);
+ 		local_irq_restore(flags);
+ 		req->request.cmd->handler(&req->request);
+@@ -79,12 +70,12 @@ static irqreturn_t mconsole_interrupt(in
+ 	static struct mc_request req;	/* that's OK */
+ 
+ 	fd = (long) dev_id;
+-	while (mconsole_get_request(fd, &req)){
+-		if(req.cmd->context == MCONSOLE_INTR)
++	while (mconsole_get_request(fd, &req)) {
++		if (req.cmd->context == MCONSOLE_INTR)
+ 			(*req.cmd->handler)(&req);
+ 		else {
+ 			new = kmalloc(sizeof(*new), GFP_NOWAIT);
+-			if(new == NULL)
++			if (new == NULL)
+ 				mconsole_reply(&req, "Out of memory", 1, 0);
+ 			else {
+ 				new->request = req;
+@@ -93,10 +84,10 @@ static irqreturn_t mconsole_interrupt(in
+ 			}
+ 		}
+ 	}
+-	if(!list_empty(&mc_requests))
++	if (!list_empty(&mc_requests))
+ 		schedule_work(&mconsole_work);
+ 	reactivate_fd(fd, MCONSOLE_IRQ);
+-	return(IRQ_HANDLED);
++	return IRQ_HANDLED;
+ }
+ 
+ void mconsole_version(struct mc_request *req)
+@@ -104,8 +95,8 @@ void mconsole_version(struct mc_request 
+ 	char version[256];
+ 
+ 	sprintf(version, "%s %s %s %s %s", utsname()->sysname,
+-		utsname()->nodename, utsname()->release,
+-		utsname()->version, utsname()->machine);
++		utsname()->nodename, utsname()->release, utsname()->version,
++		utsname()->machine);
+ 	mconsole_reply(req, version, 0, 0);
+ }
+ 
+@@ -117,7 +108,7 @@ void mconsole_log(struct mc_request *req
+ 	ptr += strlen("log ");
+ 
+ 	len = req->len - (ptr - req->request.data);
+-	printk("%.*s", len, ptr);
++	printk(KERN_WARNING "%.*s", len, ptr);
+ 	mconsole_reply(req, "", 0, 0);
+ }
+ 
+@@ -136,17 +127,17 @@ void mconsole_proc(struct mc_request *re
+ 	char *ptr = req->request.data, *buf;
+ 
+ 	ptr += strlen("proc");
+-	while(isspace(*ptr)) ptr++;
++	while (isspace(*ptr)) ptr++;
+ 
+ 	proc = get_fs_type("proc");
+-	if(proc == NULL){
++	if (proc == NULL) {
+ 		mconsole_reply(req, "procfs not registered", 1, 0);
+ 		goto out;
+ 	}
+ 
+ 	super = (*proc->get_sb)(proc, 0, NULL, NULL);
+ 	put_filesystem(proc);
+-	if(super == NULL){
++	if (super == NULL) {
+ 		mconsole_reply(req, "Failed to get procfs superblock", 1, 0);
+ 		goto out;
+ 	}
+@@ -161,29 +152,29 @@ void mconsole_proc(struct mc_request *re
+ 	 * if commenting out these two calls + the below read cycle. To
+ 	 * make UML crash again, it was enough to readd either one.*/
+ 	err = link_path_walk(ptr, &nd);
+-	if(err){
++	if (err) {
+ 		mconsole_reply(req, "Failed to look up file", 1, 0);
+ 		goto out_kill;
+ 	}
+ 
+ 	file = dentry_open(nd.dentry, nd.mnt, O_RDONLY);
+-	if(IS_ERR(file)){
++	if (IS_ERR(file)) {
+ 		mconsole_reply(req, "Failed to open file", 1, 0);
+ 		goto out_kill;
+ 	}
+ 	/*END*/
+ 
+ 	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+-	if(buf == NULL){
++	if (buf == NULL) {
+ 		mconsole_reply(req, "Failed to allocate buffer", 1, 0);
+ 		goto out_fput;
+ 	}
+ 
+-	if((file->f_op != NULL) && (file->f_op->read != NULL)){
++	if ((file->f_op != NULL) && (file->f_op->read != NULL)) {
+ 		do {
+ 			n = (*file->f_op->read)(file, buf, PAGE_SIZE - 1,
+ 						&file->f_pos);
+-			if(n >= 0){
++			if (n >= 0) {
+ 				buf[n] = '\0';
+ 				mconsole_reply(req, buf, 0, (n > 0));
+ 			}
+@@ -192,7 +183,7 @@ void mconsole_proc(struct mc_request *re
+ 					       1, 0);
+ 				goto out_free;
+ 			}
+-		} while(n > 0);
++		} while (n > 0);
+ 	}
+ 	else mconsole_reply(req, "", 0, 0);
+ 
+@@ -216,18 +207,19 @@ void mconsole_proc(struct mc_request *re
+ 	char *ptr = req->request.data;
+ 
+ 	ptr += strlen("proc");
+-	while(isspace(*ptr)) ptr++;
++	while (isspace(*ptr))
++		ptr++;
+ 	snprintf(path, sizeof(path), "/proc/%s", ptr);
+ 
+ 	fd = sys_open(path, 0, 0);
+ 	if (fd < 0) {
+ 		mconsole_reply(req, "Failed to open file", 1, 0);
+-		printk("open %s: %d\n",path,fd);
++		printk(KERN_ERR "open %s: %d\n",path,fd);
+ 		goto out;
+ 	}
+ 
+ 	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+-	if(buf == NULL){
++	if (buf == NULL) {
+ 		mconsole_reply(req, "Failed to allocate buffer", 1, 0);
+ 		goto out_close;
+ 	}
+@@ -238,7 +230,7 @@ void mconsole_proc(struct mc_request *re
+ 			mconsole_reply(req, "Read of file failed", 1, 0);
+ 			goto out_free;
+ 		}
+-		/*Begin the file content on his own line.*/
++		/* Begin the file content on his own line. */
+ 		if (first_chunk) {
+ 			mconsole_reply(req, "\n", 0, 1);
+ 			first_chunk = 0;
+@@ -350,12 +342,12 @@ static struct mc_device *mconsole_find_d
+ 	struct list_head *ele;
+ 	struct mc_device *dev;
+ 
+-	list_for_each(ele, &mconsole_devices){
++	list_for_each(ele, &mconsole_devices) {
+ 		dev = list_entry(ele, struct mc_device, list);
+-		if(!strncmp(name, dev->name, strlen(dev->name)))
+-			return(dev);
++		if (!strncmp(name, dev->name, strlen(dev->name)))
++			return dev;
+ 	}
+-	return(NULL);
++	return NULL;
+ }
+ 
+ #define UNPLUGGED_PER_PAGE \
+@@ -377,15 +369,15 @@ static int mem_config(char *str, char **
+ 	int err = -EINVAL, i, add;
+ 	char *ret;
+ 
+-	if(str[0] != '='){
++	if (str[0] != '=') {
+ 		*error_out = "Expected '=' after 'mem'";
+ 		goto out;
+ 	}
+ 
+ 	str++;
+-	if(str[0] == '-')
++	if (str[0] == '-')
+ 		add = 0;
+-	else if(str[0] == '+'){
++	else if (str[0] == '+') {
+ 		add = 1;
+ 	}
+ 	else {
+@@ -395,7 +387,7 @@ static int mem_config(char *str, char **
+ 
+ 	str++;
+ 	diff = memparse(str, &ret);
+-	if(*ret != '\0'){
++	if (*ret != '\0') {
+ 		*error_out = "Failed to parse memory increment";
+ 		goto out;
+ 	}
+@@ -403,17 +395,17 @@ static int mem_config(char *str, char **
+ 	diff /= PAGE_SIZE;
+ 
+ 	down(&plug_mem_mutex);
+-	for(i = 0; i < diff; i++){
++	for (i = 0; i < diff; i++) {
+ 		struct unplugged_pages *unplugged;
+ 		void *addr;
+ 
+-		if(add){
+-			if(list_empty(&unplugged_pages))
++		if (add) {
++			if (list_empty(&unplugged_pages))
+ 				break;
+ 
+ 			unplugged = list_entry(unplugged_pages.next,
+ 					       struct unplugged_pages, list);
+-			if(unplug_index > 0)
++			if (unplug_index > 0)
+ 				addr = unplugged->pages[--unplug_index];
+ 			else {
+ 				list_del(&unplugged->list);
+@@ -428,11 +420,11 @@ static int mem_config(char *str, char **
+ 			struct page *page;
+ 
+ 			page = alloc_page(GFP_ATOMIC);
+-			if(page == NULL)
++			if (page == NULL)
+ 				break;
+ 
+ 			unplugged = page_address(page);
+-			if(unplug_index == UNPLUGGED_PER_PAGE){
++			if (unplug_index == UNPLUGGED_PER_PAGE) {
+ 				list_add(&unplugged->list, &unplugged_pages);
+ 				unplug_index = 0;
+ 			}
+@@ -444,9 +436,9 @@ static int mem_config(char *str, char **
+ 						       struct unplugged_pages,
+ 						       list);
+ 				err = os_drop_memory(addr, PAGE_SIZE);
+-				if(err){
+-					printk("Failed to release memory - "
+-					       "errno = %d\n", err);
++				if (err) {
++					printk(KERN_ERR "Failed to release "
++					       "memory - errno = %d\n", err);
+ 					*error_out = "Failed to release memory";
+ 					goto out_unlock;
+ 				}
+@@ -500,10 +492,10 @@ static struct mc_device mem_mc = {
+ 
+ static int __init mem_mc_init(void)
+ {
+-	if(can_drop_memory())
++	if (can_drop_memory())
+ 		mconsole_register_dev(&mem_mc);
+-	else printk("Can't release memory to the host - memory hotplug won't "
+-		    "be supported\n");
++	else printk(KERN_ERR "Can't release memory to the host - memory "
++		    "hotplug won't be supported\n");
+ 	return 0;
+ }
+ 
+@@ -518,7 +510,7 @@ static void mconsole_get_config(int (*ge
+ 	char default_buf[CONFIG_BUF_SIZE], *error, *buf;
+ 	int n, size;
+ 
+-	if(get_config == NULL){
++	if (get_config == NULL) {
+ 		mconsole_reply(req, "No get_config routine defined", 1, 0);
+ 		return;
+ 	}
+@@ -527,30 +519,30 @@ static void mconsole_get_config(int (*ge
+ 	size = ARRAY_SIZE(default_buf);
+ 	buf = default_buf;
+ 
+-	while(1){
++	while (1) {
+ 		n = (*get_config)(name, buf, size, &error);
+-		if(error != NULL){
++		if (error != NULL) {
+ 			mconsole_reply(req, error, 1, 0);
+ 			goto out;
+ 		}
+ 
+-		if(n <= size){
++		if (n <= size) {
+ 			mconsole_reply(req, buf, 0, 0);
+ 			goto out;
+ 		}
+ 
+-		if(buf != default_buf)
++		if (buf != default_buf)
+ 			kfree(buf);
+ 
+ 		size = n;
+ 		buf = kmalloc(size, GFP_KERNEL);
+-		if(buf == NULL){
++		if (buf == NULL) {
+ 			mconsole_reply(req, "Failed to allocate buffer", 1, 0);
+ 			return;
+ 		}
+ 	}
+  out:
+-	if(buf != default_buf)
++	if (buf != default_buf)
+ 		kfree(buf);
+ }
+ 
+@@ -561,19 +553,20 @@ void mconsole_config(struct mc_request *
+ 	int err;
+ 
+ 	ptr += strlen("config");
+-	while(isspace(*ptr)) ptr++;
++	while (isspace(*ptr))
++		ptr++;
+ 	dev = mconsole_find_dev(ptr);
+-	if(dev == NULL){
++	if (dev == NULL) {
+ 		mconsole_reply(req, "Bad configuration option", 1, 0);
+ 		return;
+ 	}
+ 
+ 	name = &ptr[strlen(dev->name)];
+ 	ptr = name;
+-	while((*ptr != '=') && (*ptr != '\0'))
++	while ((*ptr != '=') && (*ptr != '\0'))
+ 		ptr++;
+ 
+-	if(*ptr == '='){
++	if (*ptr == '=') {
+ 		err = (*dev->config)(name, &error_string);
+ 		mconsole_reply(req, error_string, err, 0);
+ 	}
+@@ -588,9 +581,9 @@ void mconsole_remove(struct mc_request *
+ 	int err, start, end, n;
+ 
+ 	ptr += strlen("remove");
+-	while(isspace(*ptr)) ptr++;
++	while (isspace(*ptr)) ptr++;
+ 	dev = mconsole_find_dev(ptr);
+-	if(dev == NULL){
++	if (dev == NULL) {
+ 		mconsole_reply(req, "Bad remove option", 1, 0);
+ 		return;
+ 	}
+@@ -599,11 +592,11 @@ void mconsole_remove(struct mc_request *
+ 
+ 	err = 1;
+ 	n = (*dev->id)(&ptr, &start, &end);
+-	if(n < 0){
++	if (n < 0) {
+ 		err_msg = "Couldn't parse device number";
+ 		goto out;
+ 	}
+-	else if((n < start) || (n > end)){
++	else if ((n < start) || (n > end)) {
+ 		sprintf(error, "Invalid device number - must be between "
+ 			"%d and %d", start, end);
+ 		err_msg = error;
+@@ -612,16 +605,16 @@ void mconsole_remove(struct mc_request *
+ 
+ 	err_msg = NULL;
+ 	err = (*dev->remove)(n, &err_msg);
+-	switch(err){
++	switch(err) {
+ 	case 0:
+ 		err_msg = "";
+ 		break;
+ 	case -ENODEV:
+-		if(err_msg == NULL)
++		if (err_msg == NULL)
+ 			err_msg = "Device doesn't exist";
+ 		break;
+ 	case -EBUSY:
+-		if(err_msg == NULL)
++		if (err_msg == NULL)
+ 			err_msg = "Device is currently open";
+ 		break;
+ 	default:
+@@ -647,19 +640,19 @@ static void console_write(struct console
+ 	struct list_head *ele;
+ 	int n;
+ 
+-	if(list_empty(&clients))
++	if (list_empty(&clients))
+ 		return;
+ 
+-	while(1){
++	while (1) {
+ 		n = min((size_t) len, ARRAY_SIZE(console_buf) - console_index);
+ 		strncpy(&console_buf[console_index], string, n);
+ 		console_index += n;
+ 		string += n;
+ 		len -= n;
+-		if(len == 0)
++		if (len == 0)
+ 			return;
+ 
+-		list_for_each(ele, &clients){
++		list_for_each(ele, &clients) {
+ 			struct mconsole_output *entry;
+ 
+ 			entry = list_entry(ele, struct mconsole_output, list);
+@@ -717,12 +710,13 @@ void mconsole_sysrq(struct mc_request *r
+ 	char *ptr = req->request.data;
+ 
+ 	ptr += strlen("sysrq");
+-	while(isspace(*ptr)) ptr++;
++	while (isspace(*ptr)) ptr++;
+ 
+-	/* With 'b', the system will shut down without a chance to reply,
++	/*
++	 * With 'b', the system will shut down without a chance to reply,
+ 	 * so in this case, we reply first.
+ 	 */
+-	if(*ptr == 'b')
++	if (*ptr == 'b')
+ 		mconsole_reply(req, "", 0, 0);
+ 
+ 	with_console(req, sysrq_proc, ptr);
+@@ -742,7 +736,8 @@ static void stack_proc(void *arg)
+ 	switch_to(from, to, from);
+ }
+ 
+-/* Mconsole stack trace
++/*
++ * Mconsole stack trace
+  *  Added by Allan Graves, Jeff Dike
+  *  Dumps a stacks registers to the linux console.
+  *  Usage stack <pid>.
+@@ -754,17 +749,21 @@ void mconsole_stack(struct mc_request *r
+ 	struct task_struct *from = NULL;
+ 	struct task_struct *to = NULL;
+ 
+-	/* Would be nice:
++	/*
++	 * Would be nice:
+ 	 * 1) Send showregs output to mconsole.
+ 	 * 2) Add a way to stack dump all pids.
+ 	 */
+ 
+ 	ptr += strlen("stack");
+-	while(isspace(*ptr)) ptr++;
++	while (isspace(*ptr))
++		ptr++;
+ 
+-	/* Should really check for multiple pids or reject bad args here */
++	/*
++	 * Should really check for multiple pids or reject bad args here
++	 */
+ 	/* What do the arguments in mconsole_reply mean? */
+-	if(sscanf(ptr, "%d", &pid_requested) == 0){
++	if (sscanf(ptr, "%d", &pid_requested) == 0) {
+ 		mconsole_reply(req, "Please specify a pid", 1, 0);
+ 		return;
+ 	}
+@@ -772,14 +771,15 @@ void mconsole_stack(struct mc_request *r
+ 	from = current;
+ 
+ 	to = find_task_by_pid(pid_requested);
+-	if((to == NULL) || (pid_requested == 0)) {
++	if ((to == NULL) || (pid_requested == 0)) {
+ 		mconsole_reply(req, "Couldn't find that pid", 1, 0);
+ 		return;
+ 	}
+ 	with_console(req, stack_proc, to);
+ }
+ 
+-/* Changed by mconsole_setup, which is __setup, and called before SMP is
++/*
++ * Changed by mconsole_setup, which is __setup, and called before SMP is
+  * active.
+  */
+ static char *notify_socket = NULL;
+@@ -791,13 +791,14 @@ static int __init mconsole_init(void)
+ 	int err;
+ 	char file[256];
+ 
+-	if(umid_file_name("mconsole", file, sizeof(file))) return(-1);
++	if (umid_file_name("mconsole", file, sizeof(file)))
++		return -1;
+ 	snprintf(mconsole_socket_name, sizeof(file), "%s", file);
+ 
+ 	sock = os_create_unix_socket(file, sizeof(file), 1);
+-	if (sock < 0){
+-		printk("Failed to initialize management console\n");
+-		return(1);
++	if (sock < 0) {
++		printk(KERN_ERR "Failed to initialize management console\n");
++		return 1;
+ 	}
+ 
+ 	register_reboot_notifier(&reboot_notifier);
+@@ -805,14 +806,14 @@ static int __init mconsole_init(void)
+ 	err = um_request_irq(MCONSOLE_IRQ, sock, IRQ_READ, mconsole_interrupt,
+ 			     IRQF_DISABLED | IRQF_SHARED | IRQF_SAMPLE_RANDOM,
+ 			     "mconsole", (void *)sock);
+-	if (err){
+-		printk("Failed to get IRQ for management console\n");
+-		return(1);
++	if (err) {
++		printk(KERN_ERR "Failed to get IRQ for management console\n");
++		return 1;
+ 	}
+ 
+-	if(notify_socket != NULL){
++	if (notify_socket != NULL) {
+ 		notify_socket = kstrdup(notify_socket, GFP_KERNEL);
+-		if(notify_socket != NULL)
++		if (notify_socket != NULL)
+ 			mconsole_notify(notify_socket, MCONSOLE_SOCKET,
+ 					mconsole_socket_name,
+ 					strlen(mconsole_socket_name) + 1);
+@@ -820,9 +821,9 @@ static int __init mconsole_init(void)
+ 			    "string\n");
+ 	}
+ 
+-	printk("mconsole (version %d) initialized on %s\n",
++	printk(KERN_INFO "mconsole (version %d) initialized on %s\n",
+ 	       MCONSOLE_VERSION, mconsole_socket_name);
+-	return(0);
++	return 0;
+ }
+ 
+ __initcall(mconsole_init);
+@@ -833,10 +834,10 @@ static int write_proc_mconsole(struct fi
+ 	char *buf;
+ 
+ 	buf = kmalloc(count + 1, GFP_KERNEL);
+-	if(buf == NULL)
+-		return(-ENOMEM);
++	if (buf == NULL)
++		return -ENOMEM;
+ 
+-	if(copy_from_user(buf, buffer, count)){
++	if (copy_from_user(buf, buffer, count)) {
+ 		count = -EFAULT;
+ 		goto out;
+ 	}
+@@ -846,24 +847,26 @@ static int write_proc_mconsole(struct fi
+ 	mconsole_notify(notify_socket, MCONSOLE_USER_NOTIFY, buf, count);
+  out:
+ 	kfree(buf);
+-	return(count);
++	return count;
+ }
+ 
+ static int create_proc_mconsole(void)
+ {
+ 	struct proc_dir_entry *ent;
+ 
+-	if(notify_socket == NULL) return(0);
++	if (notify_socket == NULL)
++		return 0;
+ 
+ 	ent = create_proc_entry("mconsole", S_IFREG | 0200, NULL);
+-	if(ent == NULL){
+-		printk(KERN_INFO "create_proc_mconsole : create_proc_entry failed\n");
+-		return(0);
++	if (ent == NULL) {
++		printk(KERN_INFO "create_proc_mconsole : create_proc_entry "
++		       "failed\n");
++		return 0;
+ 	}
+ 
+ 	ent->read_proc = NULL;
+ 	ent->write_proc = write_proc_mconsole;
+-	return(0);
++	return 0;
+ }
+ 
+ static DEFINE_SPINLOCK(notify_spinlock);
+@@ -884,12 +887,12 @@ __initcall(create_proc_mconsole);
+ 
+ static int mconsole_setup(char *str)
+ {
+-	if(!strncmp(str, NOTIFY, strlen(NOTIFY))){
++	if (!strncmp(str, NOTIFY, strlen(NOTIFY))) {
+ 		str += strlen(NOTIFY);
+ 		notify_socket = str;
+ 	}
+ 	else printk(KERN_ERR "mconsole_setup : Unknown option - '%s'\n", str);
+-	return(1);
++	return 1;
+ }
+ 
+ __setup("mconsole", mconsole_setup);
+@@ -907,11 +910,12 @@ static int notify_panic(struct notifier_
+ {
+ 	char *message = ptr;
+ 
+-	if(notify_socket == NULL) return(0);
++	if (notify_socket == NULL)
++		return 0;
+ 
+ 	mconsole_notify(notify_socket, MCONSOLE_PANIC, message,
+ 			strlen(message) + 1);
+-	return(0);
++	return 0;
+ }
+ 
+ static struct notifier_block panic_exit_notifier = {
+@@ -924,14 +928,14 @@ static int add_notifier(void)
+ {
+ 	atomic_notifier_chain_register(&panic_notifier_list,
+ 			&panic_exit_notifier);
+-	return(0);
++	return 0;
+ }
+ 
+ __initcall(add_notifier);
+ 
+ char *mconsole_notify_socket(void)
+ {
+-	return(notify_socket);
++	return notify_socket;
+ }
+ 
+ EXPORT_SYMBOL(mconsole_notify_socket);
+Index: linux-2.6.22/arch/um/kernel/ksyms.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/ksyms.c	2007-08-14 13:28:19.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/ksyms.c	2007-08-14 13:29:20.000000000 -0400
+@@ -1,22 +1,15 @@
+ /* 
+- * Copyright (C) 2001 - 2004 Jeff Dike (jdike@addtoit.com)
++ * Copyright (C) 2001 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+ #include "linux/module.h"
+-#include "linux/string.h"
+-#include "linux/smp_lock.h"
+-#include "linux/spinlock.h"
+-#include "linux/highmem.h"
+-#include "asm/current.h"
+-#include "asm/processor.h"
+-#include "asm/unistd.h"
+-#include "asm/pgalloc.h"
+-#include "asm/pgtable.h"
+-#include "asm/page.h"
++#include "linux/syscalls.h"
++#include "asm/a.out.h"
+ #include "asm/tlbflush.h"
+-#include "kern_util.h"
++#include "asm/uaccess.h"
+ #include "as-layout.h"
++#include "kern_util.h"
+ #include "mem_user.h"
+ #include "os.h"
+ 
+Index: linux-2.6.22/include/asm-um/a.out.h
+===================================================================
+--- linux-2.6.22.orig/include/asm-um/a.out.h	2007-08-14 13:28:19.000000000 -0400
++++ linux-2.6.22/include/asm-um/a.out.h	2007-08-14 13:29:20.000000000 -0400
+@@ -1,3 +1,8 @@
++/*
++ * Copyright (C) 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
++ * Licensed under the GPL
++ */
++
+ #ifndef __UM_A_OUT_H
+ #define __UM_A_OUT_H
+ 
+Index: linux-2.6.22/include/asm-um/tlbflush.h
+===================================================================
+--- linux-2.6.22.orig/include/asm-um/tlbflush.h	2007-08-14 13:28:19.000000000 -0400
++++ linux-2.6.22/include/asm-um/tlbflush.h	2007-08-14 13:29:20.000000000 -0400
+@@ -1,5 +1,5 @@
+-/* 
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++/*
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+@@ -30,7 +30,9 @@ extern void flush_tlb_page_skas(struct v
+ static inline void flush_tlb_page(struct vm_area_struct *vma,
+ 				  unsigned long address)
+ {
+-	flush_tlb_page_skas(vma, address & PAGE_MASK);
++	address &= PAGE_MASK;
++
++	flush_tlb_page_skas(vma, address);
+ }
+ 
+ extern void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
+Index: linux-2.6.22/arch/um/include/um_mmu.h
+===================================================================
+--- linux-2.6.22.orig/arch/um/include/um_mmu.h	2007-08-14 13:28:19.000000000 -0400
++++ linux-2.6.22/arch/um/include/um_mmu.h	2007-08-14 13:29:20.000000000 -0400
+@@ -1,5 +1,5 @@
+ /* 
 - * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
 + * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
   * Licensed under the GPL
   */
  
- #include <stdio.h>
- #include <unistd.h>
- #include <errno.h>
--#include "user.h"
--#include "mconsole.h"
- #include "os.h"
-+#include "user.h"
- 
- struct dog_data {
- 	int stdin;
-@@ -23,10 +22,10 @@ static void pre_exec(void *d)
- 	dup2(data->stdin, 0);
- 	dup2(data->stdout, 1);
- 	dup2(data->stdout, 2);
--	os_close_file(data->stdin);
--	os_close_file(data->stdout);
--	os_close_file(data->close_me[0]);
--	os_close_file(data->close_me[1]);
-+	close(data->stdin);
-+	close(data->stdout);
-+	close(data->close_me[0]);
-+	close(data->close_me[1]);
- }
- 
- int start_watchdog(int *in_fd_ret, int *out_fd_ret, char *sock)
-@@ -40,13 +39,13 @@ int start_watchdog(int *in_fd_ret, int *
- 	char **args = NULL;
- 
- 	err = os_pipe(in_fds, 1, 0);
--	if(err < 0){
-+	if (err < 0) {
- 		printk("harddog_open - os_pipe failed, err = %d\n", -err);
- 		goto out;
- 	}
- 
- 	err = os_pipe(out_fds, 1, 0);
--	if(err < 0){
-+	if (err < 0) {
- 		printk("harddog_open - os_pipe failed, err = %d\n", -err);
- 		goto out_close_in;
- 	}
-@@ -56,7 +55,7 @@ int start_watchdog(int *in_fd_ret, int *
- 	data.close_me[0] = out_fds[1];
- 	data.close_me[1] = in_fds[0];
- 
--	if(sock != NULL){
-+	if (sock != NULL) {
- 		mconsole_args[2] = sock;
- 		args = mconsole_args;
- 	}
-@@ -68,25 +67,25 @@ int start_watchdog(int *in_fd_ret, int *
- 
- 	pid = run_helper(pre_exec, &data, args);
- 
--	os_close_file(out_fds[0]);
--	os_close_file(in_fds[1]);
-+	close(out_fds[0]);
-+	close(in_fds[1]);
- 
--	if(pid < 0){
-+	if (pid < 0) {
- 		err = -pid;
- 		printk("harddog_open - run_helper failed, errno = %d\n", -err);
- 		goto out_close_out;
- 	}
- 
--	n = os_read_file(in_fds[0], &c, sizeof(c));
--	if(n == 0){
-+	n = read(in_fds[0], &c, sizeof(c));
-+	if (n == 0) {
- 		printk("harddog_open - EOF on watchdog pipe\n");
- 		helper_wait(pid);
- 		err = -EIO;
- 		goto out_close_out;
- 	}
--	else if(n < 0){
-+	else if (n < 0) {
- 		printk("harddog_open - read of watchdog pipe failed, "
--		       "err = %d\n", -n);
-+		       "err = %d\n", errno);
- 		helper_wait(pid);
- 		err = n;
- 		goto out_close_out;
-@@ -96,19 +95,19 @@ int start_watchdog(int *in_fd_ret, int *
- 	return 0;
- 
-  out_close_in:
--	os_close_file(in_fds[0]);
--	os_close_file(in_fds[1]);
-+	close(in_fds[0]);
-+	close(in_fds[1]);
-  out_close_out:
--	os_close_file(out_fds[0]);
--	os_close_file(out_fds[1]);
-+	close(out_fds[0]);
-+	close(out_fds[1]);
-  out:
- 	return err;
- }
- 
- void stop_watchdog(int in_fd, int out_fd)
- {
--	os_close_file(in_fd);
--	os_close_file(out_fd);
-+	close(in_fd);
-+	close(out_fd);
- }
- 
- int ping_watchdog(int fd)
-@@ -116,10 +115,11 @@ int ping_watchdog(int fd)
- 	int n;
- 	char c = '\n';
- 
--	n = os_write_file(fd, &c, sizeof(c));
--	if(n != sizeof(c)){
--		printk("ping_watchdog - write failed, err = %d\n", -n);
--		if(n < 0)
-+	n = write(fd, &c, sizeof(c));
-+	if (n != sizeof(c)) {
-+		printk("ping_watchdog - write failed, ret = %d, err = %d\n",
-+		       n, errno);
-+		if (n < 0)
- 			return n;
- 		return -EIO;
- 	}
-Index: linux-2.6.22/arch/um/include/mconsole.h
+Index: linux-2.6.22/arch/um/include/um_uaccess.h
 ===================================================================
---- linux-2.6.22.orig/arch/um/include/mconsole.h	2007-08-13 13:44:23.000000000 -0400
-+++ linux-2.6.22/arch/um/include/mconsole.h	2007-08-13 13:45:03.000000000 -0400
-@@ -1,6 +1,6 @@
- /*
-  * Copyright (C) 2001 Lennert Buytenhek (buytenh@gnu.org)
-- * Copyright (C) 2001, 2002 Jeff Dike (jdike@karaya.com)
-+ * Copyright (C) 2001 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-  * Licensed under the GPL
-  */
- 
-@@ -96,14 +96,3 @@ extern void lock_notify(void);
- extern void unlock_notify(void);
- 
- #endif
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/include/sysdep-i386/ptrace.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/sysdep-i386/ptrace.h	2007-08-13 13:45:02.000000000 -0400
-+++ linux-2.6.22/arch/um/include/sysdep-i386/ptrace.h	2007-08-13 13:45:03.000000000 -0400
-@@ -1,4 +1,4 @@
--/* 
-+/*
-  * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-  * Licensed under the GPL
-  */
-@@ -130,7 +130,6 @@ struct syscall_args {
- 		} \
- 	        val; \
- 	})
--	
- 
- #define UPT_SET(regs, reg, val) \
- 	do { \
-Index: linux-2.6.22/arch/um/include/sysdep-x86_64/ptrace.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/sysdep-x86_64/ptrace.h	2007-08-13 13:45:02.000000000 -0400
-+++ linux-2.6.22/arch/um/include/sysdep-x86_64/ptrace.h	2007-08-13 13:45:03.000000000 -0400
-@@ -143,87 +143,87 @@ struct syscall_args {
- };
- 
- #define SYSCALL_ARGS(r) ((struct syscall_args) \
--                        { .args = { UPT_SYSCALL_ARG1(r), \
--                                    UPT_SYSCALL_ARG2(r), \
-- 			            UPT_SYSCALL_ARG3(r), \
--                                    UPT_SYSCALL_ARG4(r), \
--		                    UPT_SYSCALL_ARG5(r), \
--                                    UPT_SYSCALL_ARG6(r) } } )
-+			 { .args = { UPT_SYSCALL_ARG1(r),	 \
-+				     UPT_SYSCALL_ARG2(r),	 \
-+				     UPT_SYSCALL_ARG3(r),	 \
-+				     UPT_SYSCALL_ARG4(r),	 \
-+				     UPT_SYSCALL_ARG5(r),	 \
-+				     UPT_SYSCALL_ARG6(r) } } )
- 
- #define UPT_REG(regs, reg) \
--        ({      unsigned long val; \
--                switch(reg){ \
--		case R8: val = UPT_R8(regs); break; \
--		case R9: val = UPT_R9(regs); break; \
--		case R10: val = UPT_R10(regs); break; \
--		case R11: val = UPT_R11(regs); break; \
--		case R12: val = UPT_R12(regs); break; \
--		case R13: val = UPT_R13(regs); break; \
--		case R14: val = UPT_R14(regs); break; \
--		case R15: val = UPT_R15(regs); break; \
--                case RIP: val = UPT_IP(regs); break; \
--                case RSP: val = UPT_SP(regs); break; \
--                case RAX: val = UPT_RAX(regs); break; \
--                case RBX: val = UPT_RBX(regs); break; \
--                case RCX: val = UPT_RCX(regs); break; \
--                case RDX: val = UPT_RDX(regs); break; \
--                case RSI: val = UPT_RSI(regs); break; \
--                case RDI: val = UPT_RDI(regs); break; \
--                case RBP: val = UPT_RBP(regs); break; \
--                case ORIG_RAX: val = UPT_ORIG_RAX(regs); break; \
--                case CS: val = UPT_CS(regs); break; \
--                case SS: val = UPT_SS(regs); break; \
--		case FS_BASE: val = UPT_FS_BASE(regs); break; \
--                case GS_BASE: val = UPT_GS_BASE(regs); break; \
--                case DS: val = UPT_DS(regs); break; \
--                case ES: val = UPT_ES(regs); break; \
--                case FS : val = UPT_FS (regs); break; \
--		case GS: val = UPT_GS(regs); break;	    \
--                case EFLAGS: val = UPT_EFLAGS(regs); break; \
--                default :  \
--                        panic("Bad register in UPT_REG : %d\n", reg);  \
--                        val = -1; \
--                } \
--                val; \
--        })
-+	({      unsigned long val;		\
-+		switch(reg){						\
-+		case R8: val = UPT_R8(regs); break;			\
-+		case R9: val = UPT_R9(regs); break;			\
-+		case R10: val = UPT_R10(regs); break;			\
-+		case R11: val = UPT_R11(regs); break;			\
-+		case R12: val = UPT_R12(regs); break;			\
-+		case R13: val = UPT_R13(regs); break;			\
-+		case R14: val = UPT_R14(regs); break;			\
-+		case R15: val = UPT_R15(regs); break;			\
-+		case RIP: val = UPT_IP(regs); break;			\
-+		case RSP: val = UPT_SP(regs); break;			\
-+		case RAX: val = UPT_RAX(regs); break;			\
-+		case RBX: val = UPT_RBX(regs); break;			\
-+		case RCX: val = UPT_RCX(regs); break;			\
-+		case RDX: val = UPT_RDX(regs); break;			\
-+		case RSI: val = UPT_RSI(regs); break;			\
-+		case RDI: val = UPT_RDI(regs); break;			\
-+		case RBP: val = UPT_RBP(regs); break;			\
-+		case ORIG_RAX: val = UPT_ORIG_RAX(regs); break;		\
-+		case CS: val = UPT_CS(regs); break;			\
-+		case SS: val = UPT_SS(regs); break;			\
-+		case FS_BASE: val = UPT_FS_BASE(regs); break;		\
-+		case GS_BASE: val = UPT_GS_BASE(regs); break;		\
-+		case DS: val = UPT_DS(regs); break;			\
-+		case ES: val = UPT_ES(regs); break;			\
-+		case FS : val = UPT_FS (regs); break;			\
-+		case GS: val = UPT_GS(regs); break;			\
-+		case EFLAGS: val = UPT_EFLAGS(regs); break;		\
-+		default :						\
-+			panic("Bad register in UPT_REG : %d\n", reg);	\
-+			val = -1;					\
-+		}							\
-+		val;							\
-+	})
- 
- 
- #define UPT_SET(regs, reg, val) \
--        ({      unsigned long __upt_val = val; \
--                switch(reg){ \
--                case R8: UPT_R8(regs) = __upt_val; break; \
--                case R9: UPT_R9(regs) = __upt_val; break; \
--                case R10: UPT_R10(regs) = __upt_val; break; \
--                case R11: UPT_R11(regs) = __upt_val; break; \
--                case R12: UPT_R12(regs) = __upt_val; break; \
--                case R13: UPT_R13(regs) = __upt_val; break; \
--                case R14: UPT_R14(regs) = __upt_val; break; \
--                case R15: UPT_R15(regs) = __upt_val; break; \
--                case RIP: UPT_IP(regs) = __upt_val; break; \
--                case RSP: UPT_SP(regs) = __upt_val; break; \
--                case RAX: UPT_RAX(regs) = __upt_val; break; \
--                case RBX: UPT_RBX(regs) = __upt_val; break; \
--                case RCX: UPT_RCX(regs) = __upt_val; break; \
--                case RDX: UPT_RDX(regs) = __upt_val; break; \
--                case RSI: UPT_RSI(regs) = __upt_val; break; \
--                case RDI: UPT_RDI(regs) = __upt_val; break; \
--                case RBP: UPT_RBP(regs) = __upt_val; break; \
--                case ORIG_RAX: UPT_ORIG_RAX(regs) = __upt_val; break; \
--                case CS: UPT_CS(regs) = __upt_val; break; \
--                case SS: UPT_SS(regs) = __upt_val; break; \
--                case FS_BASE: UPT_FS_BASE(regs) = __upt_val; break; \
--                case GS_BASE: UPT_GS_BASE(regs) = __upt_val; break; \
--                case DS: UPT_DS(regs) = __upt_val; break; \
--                case ES: UPT_ES(regs) = __upt_val; break; \
--                case FS: UPT_FS(regs) = __upt_val; break; \
--                case GS: UPT_GS(regs) = __upt_val; break; \
--                case EFLAGS: UPT_EFLAGS(regs) = __upt_val; break; \
--                default :  \
--                        panic("Bad register in UPT_SET : %d\n", reg);  \
--			break; \
--                } \
--                __upt_val; \
--        })
-+	({      unsigned long __upt_val = val;	\
-+		switch(reg){						\
-+		case R8: UPT_R8(regs) = __upt_val; break;		\
-+		case R9: UPT_R9(regs) = __upt_val; break;		\
-+		case R10: UPT_R10(regs) = __upt_val; break;		\
-+		case R11: UPT_R11(regs) = __upt_val; break;		\
-+		case R12: UPT_R12(regs) = __upt_val; break;		\
-+		case R13: UPT_R13(regs) = __upt_val; break;		\
-+		case R14: UPT_R14(regs) = __upt_val; break;		\
-+		case R15: UPT_R15(regs) = __upt_val; break;		\
-+		case RIP: UPT_IP(regs) = __upt_val; break;		\
-+		case RSP: UPT_SP(regs) = __upt_val; break;		\
-+		case RAX: UPT_RAX(regs) = __upt_val; break;		\
-+		case RBX: UPT_RBX(regs) = __upt_val; break;		\
-+		case RCX: UPT_RCX(regs) = __upt_val; break;		\
-+		case RDX: UPT_RDX(regs) = __upt_val; break;		\
-+		case RSI: UPT_RSI(regs) = __upt_val; break;		\
-+		case RDI: UPT_RDI(regs) = __upt_val; break;		\
-+		case RBP: UPT_RBP(regs) = __upt_val; break;		\
-+		case ORIG_RAX: UPT_ORIG_RAX(regs) = __upt_val; break;	\
-+		case CS: UPT_CS(regs) = __upt_val; break;		\
-+		case SS: UPT_SS(regs) = __upt_val; break;		\
-+		case FS_BASE: UPT_FS_BASE(regs) = __upt_val; break;	\
-+		case GS_BASE: UPT_GS_BASE(regs) = __upt_val; break;	\
-+		case DS: UPT_DS(regs) = __upt_val; break;		\
-+		case ES: UPT_ES(regs) = __upt_val; break;		\
-+		case FS: UPT_FS(regs) = __upt_val; break;		\
-+		case GS: UPT_GS(regs) = __upt_val; break;		\
-+		case EFLAGS: UPT_EFLAGS(regs) = __upt_val; break;	\
-+		default :						\
-+			panic("Bad register in UPT_SET : %d\n", reg);	\
-+			break;						\
-+		}							\
-+		__upt_val;						\
-+	})
- 
- #define UPT_SET_SYSCALL_RETURN(r, res) \
- 	REGS_SET_SYSCALL_RETURN((r)->regs, (res))
-Index: linux-2.6.22/arch/um/kernel/skas/uaccess.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/skas/uaccess.c	2007-08-13 13:44:23.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/skas/uaccess.c	2007-08-13 13:45:03.000000000 -0400
-@@ -1,18 +1,14 @@
- /*
-- * Copyright (C) 2002 - 2003 Jeff Dike (jdike@addtoit.com)
+--- linux-2.6.22.orig/arch/um/include/um_uaccess.h	2007-08-14 13:28:19.000000000 -0400
++++ linux-2.6.22/arch/um/include/um_uaccess.h	2007-08-14 13:29:20.000000000 -0400
+@@ -1,5 +1,5 @@
+ /* 
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
 + * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
   * Licensed under the GPL
   */
  
--#include "linux/compiler.h"
--#include "linux/stddef.h"
--#include "linux/kernel.h"
--#include "linux/string.h"
--#include "linux/fs.h"
--#include "linux/hardirq.h"
-+#include "linux/err.h"
- #include "linux/highmem.h"
-+#include "linux/mm.h"
-+#include "asm/current.h"
- #include "asm/page.h"
- #include "asm/pgtable.h"
--#include "asm/uaccess.h"
- #include "kern_util.h"
- #include "os.h"
+@@ -10,7 +10,7 @@
  
-@@ -27,16 +23,16 @@ static unsigned long maybe_map(unsigned 
- 	void *phys = um_virt_to_phys(current, virt, &pte);
- 	int dummy_code;
+ #define __under_task_size(addr, size) \
+ 	(((unsigned long) (addr) < TASK_SIZE) && \
+-         (((unsigned long) (addr) + (size)) < TASK_SIZE))
++	 (((unsigned long) (addr) + (size)) < TASK_SIZE))
  
--	if(IS_ERR(phys) || (is_write && !pte_write(pte))){
-+	if (IS_ERR(phys) || (is_write && !pte_write(pte))) {
- 		err = handle_page_fault(virt, 0, is_write, 1, &dummy_code);
--		if(err)
--			return(-1UL);
-+		if (err)
-+			return -1UL;
- 		phys = um_virt_to_phys(current, virt, NULL);
- 	}
--        if(IS_ERR(phys))
--                phys = (void *) -1;
-+	if (IS_ERR(phys))
-+		phys = (void *) -1;
+ #define __access_ok_vsyscall(type, addr, size) \
+ 	 ((type == VERIFY_READ) && \
+@@ -90,14 +90,3 @@ extern int clear_user(void __user *mem, 
+ extern int strnlen_user(const void __user *str, int len);
  
--	return((unsigned long) phys);
-+	return (unsigned long) phys;
- }
- 
- static int do_op_one_page(unsigned long addr, int len, int is_write,
-@@ -46,17 +42,18 @@ static int do_op_one_page(unsigned long 
- 	int n;
- 
- 	addr = maybe_map(addr, is_write);
--	if(addr == -1UL)
--		return(-1);
-+	if (addr == -1UL)
-+		return -1;
- 
- 	page = phys_to_page(addr);
--	addr = (unsigned long) kmap_atomic(page, KM_UML_USERCOPY) + (addr & ~PAGE_MASK);
-+	addr = (unsigned long) kmap_atomic(page, KM_UML_USERCOPY) +
-+		(addr & ~PAGE_MASK);
- 
- 	n = (*op)(addr, len, arg);
- 
- 	kunmap_atomic(page, KM_UML_USERCOPY);
- 
--	return(n);
-+	return n;
- }
- 
- static void do_buffer_op(void *jmpbuf, void *arg_ptr)
-@@ -81,21 +78,21 @@ static void do_buffer_op(void *jmpbuf, v
- 
- 	current->thread.fault_catcher = jmpbuf;
- 	n = do_op_one_page(addr, size, is_write, op, arg);
--	if(n != 0){
-+	if (n != 0) {
- 		*res = (n < 0 ? remain : 0);
- 		goto out;
- 	}
- 
- 	addr += size;
- 	remain -= size;
--	if(remain == 0){
-+	if (remain == 0) {
- 		*res = 0;
- 		goto out;
- 	}
- 
--	while(addr < ((addr + remain) & PAGE_MASK)){
-+	while(addr < ((addr + remain) & PAGE_MASK)) {
- 		n = do_op_one_page(addr, PAGE_SIZE, is_write, op, arg);
--		if(n != 0){
-+		if (n != 0) {
- 			*res = (n < 0 ? remain : 0);
- 			goto out;
- 		}
-@@ -103,13 +100,13 @@ static void do_buffer_op(void *jmpbuf, v
- 		addr += PAGE_SIZE;
- 		remain -= PAGE_SIZE;
- 	}
--	if(remain == 0){
-+	if (remain == 0) {
- 		*res = 0;
- 		goto out;
- 	}
- 
- 	n = do_op_one_page(addr, remain, is_write, op, arg);
--	if(n != 0)
-+	if (n != 0)
- 		*res = (n < 0 ? remain : 0);
- 	else *res = 0;
-  out:
-@@ -124,10 +121,10 @@ static int buffer_op(unsigned long addr,
- 
- 	faulted = setjmp_wrapper(do_buffer_op, addr, len, is_write, op, arg,
- 				 &res);
--	if(!faulted)
--		return(res);
-+	if (!faulted)
-+		return res;
- 
--	return(addr + len - (unsigned long) current->thread.fault_addr);
-+	return addr + len - (unsigned long) current->thread.fault_addr;
- }
- 
- static int copy_chunk_from_user(unsigned long from, int len, void *arg)
-@@ -136,19 +133,19 @@ static int copy_chunk_from_user(unsigned
- 
- 	memcpy((void *) to, (void *) from, len);
- 	*to_ptr += len;
--	return(0);
-+	return 0;
- }
- 
- int copy_from_user(void *to, const void __user *from, int n)
- {
--	if(segment_eq(get_fs(), KERNEL_DS)){
-+	if (segment_eq(get_fs(), KERNEL_DS)) {
- 		memcpy(to, (__force void*)from, n);
--		return(0);
-+		return 0;
- 	}
- 
--	return(access_ok(VERIFY_READ, from, n) ?
-+	return access_ok(VERIFY_READ, from, n) ?
- 	       buffer_op((unsigned long) from, n, 0, copy_chunk_from_user, &to):
--	       n);
-+	       n;
- }
- 
- static int copy_chunk_to_user(unsigned long to, int len, void *arg)
-@@ -157,19 +154,19 @@ static int copy_chunk_to_user(unsigned l
- 
- 	memcpy((void *) to, (void *) from, len);
- 	*from_ptr += len;
--	return(0);
-+	return 0;
- }
- 
- int copy_to_user(void __user *to, const void *from, int n)
- {
--	if(segment_eq(get_fs(), KERNEL_DS)){
--		memcpy((__force void*)to, from, n);
--		return(0);
-+	if (segment_eq(get_fs(), KERNEL_DS)) {
-+		memcpy((__force void *) to, from, n);
-+		return 0;
- 	}
- 
--	return(access_ok(VERIFY_WRITE, to, n) ?
-+	return access_ok(VERIFY_WRITE, to, n) ?
- 	       buffer_op((unsigned long) to, n, 1, copy_chunk_to_user, &from) :
--	       n);
-+	       n;
- }
- 
- static int strncpy_chunk_from_user(unsigned long from, int len, void *arg)
-@@ -181,9 +178,9 @@ static int strncpy_chunk_from_user(unsig
- 	n = strnlen(to, len);
- 	*to_ptr += n;
- 
--	if(n < len)
--	        return(1);
--	return(0);
-+	if (n < len)
-+	        return 1;
-+	return 0;
- }
- 
- int strncpy_from_user(char *dst, const char __user *src, int count)
-@@ -191,41 +188,41 @@ int strncpy_from_user(char *dst, const c
- 	int n;
- 	char *ptr = dst;
- 
--	if(segment_eq(get_fs(), KERNEL_DS)){
--		strncpy(dst, (__force void*)src, count);
--		return(strnlen(dst, count));
-+	if (segment_eq(get_fs(), KERNEL_DS)) {
-+		strncpy(dst, (__force void *) src, count);
-+		return strnlen(dst, count);
- 	}
- 
--	if(!access_ok(VERIFY_READ, src, 1))
--		return(-EFAULT);
-+	if (!access_ok(VERIFY_READ, src, 1))
-+		return -EFAULT;
- 
- 	n = buffer_op((unsigned long) src, count, 0, strncpy_chunk_from_user,
- 		      &ptr);
--	if(n != 0)
--		return(-EFAULT);
--	return(strnlen(dst, count));
-+	if (n != 0)
-+		return -EFAULT;
-+	return strnlen(dst, count);
- }
- 
- static int clear_chunk(unsigned long addr, int len, void *unused)
- {
- 	memset((void *) addr, 0, len);
--	return(0);
-+	return 0;
- }
- 
- int __clear_user(void __user *mem, int len)
- {
--	return(buffer_op((unsigned long) mem, len, 1, clear_chunk, NULL));
-+	return buffer_op((unsigned long) mem, len, 1, clear_chunk, NULL);
- }
- 
- int clear_user(void __user *mem, int len)
- {
--	if(segment_eq(get_fs(), KERNEL_DS)){
-+	if (segment_eq(get_fs(), KERNEL_DS)) {
- 		memset((__force void*)mem, 0, len);
--		return(0);
-+		return 0;
- 	}
- 
--	return(access_ok(VERIFY_WRITE, mem, len) ?
--	       buffer_op((unsigned long) mem, len, 1, clear_chunk, NULL) : len);
-+	return access_ok(VERIFY_WRITE, mem, len) ?
-+	       buffer_op((unsigned long) mem, len, 1, clear_chunk, NULL) : len;
- }
- 
- static int strnlen_chunk(unsigned long str, int len, void *arg)
-@@ -235,31 +232,20 @@ static int strnlen_chunk(unsigned long s
- 	n = strnlen((void *) str, len);
- 	*len_ptr += n;
- 
--	if(n < len)
--		return(1);
--	return(0);
-+	if (n < len)
-+		return 1;
-+	return 0;
- }
- 
- int strnlen_user(const void __user *str, int len)
- {
- 	int count = 0, n;
- 
--	if(segment_eq(get_fs(), KERNEL_DS))
--		return(strnlen((__force char*)str, len) + 1);
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return strnlen((__force char*)str, len) + 1;
- 
- 	n = buffer_op((unsigned long) str, len, 0, strnlen_chunk, &count);
--	if(n == 0)
--		return(count + 1);
--	return(-EFAULT);
-+	if (n == 0)
-+		return count + 1;
-+	return -EFAULT;
- }
+ #endif
 -
 -/*
 - * Overrides for Emacs so that we follow Linus's tabbing style.
