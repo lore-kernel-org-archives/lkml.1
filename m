@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbXHNKMD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758371AbXHNKMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757366AbXHNKMD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 06:12:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbXHNKKv
+	id S1758371AbXHNKMt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 06:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbXHNKKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 14 Aug 2007 06:10:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43280 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([66.187.233.31]:43300 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755335AbXHNKKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 06:10:41 -0400
+	id S1755409AbXHNKKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 06:10:44 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Patrick Caulfield <pcaulfie@redhat.com>,
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, David Teigland <teigland@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [DLM] zero unused parts of sockaddr_storage
-Date: Tue, 14 Aug 2007 10:47:07 +0100
-Message-Id: <11870848451980-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH] [DLM] Fix memory leak in dlm_add_member() when dlm_node_weight() returns less than zero
+Date: Tue, 14 Aug 2007 10:47:08 +0100
+Message-Id: <11870848472401-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
 In-Reply-To: <11870848365-git-send-email-swhiteho@redhat.com>
 References: <11870848365-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick Caulfield <pcaulfie@redhat.com>
+From: Jesper Juhl <jesper.juhl@gmail.com>
 
-When we build a sockaddr_storage for an IP address, clear the unused parts as
-they could be used for node comparisons.
+There's a memory leak in fs/dlm/member.c::dlm_add_member().
 
-I have seen this occasionally make sctp connections fail.
+If "dlm_node_weight(ls->ls_name, nodeid)" returns < 0, then
+we'll return without freeing the memory allocated to the (at
+that point yet unused) 'memb'.
+This patch frees the allocated memory in that case and thus
+avoids the leak.
 
-Signed-Off-By: Patrick Caulfield <pcaulfie@redhat.com>
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+Signed-off-by: David Teigland <teigland@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
-index d15fd5f..631bc43 100644
---- a/fs/dlm/lowcomms.c
-+++ b/fs/dlm/lowcomms.c
-@@ -313,6 +313,7 @@ static void make_sockaddr(struct sockaddr_storage *saddr, uint16_t port,
- 		in6_addr->sin6_port = cpu_to_be16(port);
- 		*addr_len = sizeof(struct sockaddr_in6);
- 	}
-+	memset((char *)saddr + *addr_len, 0, sizeof(struct sockaddr_storage) - *addr_len);
- }
+diff --git a/fs/dlm/member.c b/fs/dlm/member.c
+index 073599d..d099775 100644
+--- a/fs/dlm/member.c
++++ b/fs/dlm/member.c
+@@ -56,8 +56,10 @@ static int dlm_add_member(struct dlm_ls *ls, int nodeid)
+ 		return -ENOMEM;
  
- /* Close a remote connection and tidy up */
+ 	w = dlm_node_weight(ls->ls_name, nodeid);
+-	if (w < 0)
++	if (w < 0) {
++		kfree(memb);
+ 		return w;
++	}
+ 
+ 	memb->nodeid = nodeid;
+ 	memb->weight = w;
 -- 
 1.5.1.2
 
