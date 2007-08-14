@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752284AbXHNHJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbXHNHJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752284AbXHNHJU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 03:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbXHNHJD
+	id S1752923AbXHNHJq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 03:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbXHNHJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 03:09:03 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:48635 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbXHNHJA (ORCPT
+	Tue, 14 Aug 2007 03:09:31 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:52760 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751072AbXHNHJ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 03:09:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PiLFd0n8QsvKckspfmVDNrt7RHm3S4Vp1A28agtBKCmgqP11ySkMZAjWSCmz8YAehG2w9GBJe1sRYK3YJI5EBMgtSIPoiHsB/6k1zCwY340ocJVEiGDfQgJHO5vuUZCwyeYHAMAi8t5spFdmcRGFpJC9F27gbb8wIFVdDXgcvYQ=
-Message-ID: <4bacf17f0708140008v657f5d5bqec17fcea67a6f69c@mail.gmail.com>
-Date: Tue, 14 Aug 2007 09:08:59 +0200
-From: "=?ISO-8859-2?Q?Marcin_=A6lusarz?=" <marcin.slusarz@gmail.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [patch 0/3] [patch 0/3] genirq: Suppress resend of level interrupts
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Stable Team" <stable@kernel.org>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>,
-       "Jarek Poplawski" <jarkao2@o2.pl>
-In-Reply-To: <20070812152213.551812576@inhelltoy.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Aug 2007 03:09:29 -0400
+Date: Tue, 14 Aug 2007 09:09:17 +0200
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: Sergey Dolgov <solkaa@gmail.com>, Hugh Dickins <hugh@veritas.com>,
+       Len Brown <len.brown@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Henrique de Moraes Holshuh <hmh@hmh.eng.br>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Fwd: Re: 2.6.23-rc3 regression and bisection query]
+Message-ID: <20070814070917.GA21301@gamma.logic.tuwien.ac.at>
+References: <Pine.LNX.4.64.0708131905280.13982@blonde.wat.veritas.com> <20070813212204.GA2645@slk.laptop> <46C0D6DB.7090703@suse.de> <46C0D35B.5030104@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070812152213.551812576@inhelltoy.tec.linutronix.de>
+In-Reply-To: <46C0D6DB.7090703@suse.de> <46C0D35B.5030104@suse.de>
+User-Agent: Mutt/1.3.28i
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/8/12, Thomas Gleixner <tglx@linutronix.de>:
-> The delayed irq disable functionality introduced a bug due to
-> retriggering level type interrupts in case of the delayed disable. The
-> resulting problem was discussed and debugged here:
-> http://marc.info/?l=linux-kernel&m=118202978609968&w=2
->
-> The resend of a level type interrupt is unnessecary and adds extra
-> noise to the system. Level type interrupts are resent by hardware when
-> they are still active at irq_enable(). The hard-/soft-ware resend is
-> only useful for edge type interrupts.
->
-> The following patch series addresses the problem and fixes an
-> unnoticed mismerge which affects the same area as well.
->
->         tglx
->
-Works fine for me (tested on 2.6.22.1). I uploaded 6 GB of data and my
-network card didn't time out. (it usually did after 1-100 MB)
-Is this the final version?
+Hi Alexey,
 
-Regards,
-Marcin Slusarz
+On Die, 14 Aug 2007, Alexey Starikovskiy wrote:
+> ACPI: EC: Fix regression
+> Undelete call to register query methods. 
+
+I am now using a kernel with only this patch (reapplied ec/battery which
+you sent me).
+
+On Die, 14 Aug 2007, Alexey Starikovskiy wrote:
+>     cat /proc/acpi/battery/C1BE/state
+> 
+> does not change after this file has been read for the the first time;
+
+This does not occur with this patch.
+
+But there is still the strange thing that
+	ACPI: Battery Slot [BAT1] (battery absent)
+is present in the dmesg, while 
+	$ acpi
+	     Battery 1: charging, 46%, 00:00:49 until charged
+
+But this seems to be a minor issue. Thanks a lot.
+
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+DUNBAR (n.)
+A highly specialised fiscal term used solely by turnstile
+operatives at Regnet's Part zoo. It refers to the variable amount of
+increase in the variable gate takings on a Sunday afternoon, caused by
+persons going to the zoo because they are in love and believe that the
+feeling of romance will be somehow enhanced by the smell of panther
+sweat and rank incontinence in the reptile house.
+			--- Douglas Adams, The Meaning of Liff
