@@ -1,227 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbXHNRvD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbXHNRz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932403AbXHNRvD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 13:51:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbXHNRux
+	id S932310AbXHNRz2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 13:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbXHNRzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 13:50:53 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:45215 "EHLO mx.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753076AbXHNRuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 13:50:52 -0400
-Date: Tue, 14 Aug 2007 19:50:47 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, WU Fengguang <wfg@mail.ustc.edu.cn>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@redhat.com>
-Subject: Re: [PATCH] fix NULL pointer dereference in __vm_enough_memory()
-Message-ID: <20070814175047.GA3024@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	WU Fengguang <wfg@mail.ustc.edu.cn>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	James Morris <jmorris@redhat.com>
-References: <20070812141905.4ee423b9@the-village.bc.nu> <386927758.14086@ustc.edu.cn> <20070812161744.200d4252@the-village.bc.nu> <386990734.21206@ustc.edu.cn> <20070813140106.23b93ff5@the-village.bc.nu> <20070813220142.99e46091.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-In-Reply-To: <20070813220142.99e46091.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 14 Aug 2007 13:55:09 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:47339 "EHLO jazzhorn.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758026AbXHNRzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 13:55:05 -0400
+Subject: Re: [PATCH 00/16] Permit filesystem local caching [try #3]
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: casey@schaufler-ca.com
+Cc: David Howells <dhowells@redhat.com>, torvalds@osdl.org, akpm@osdl.org,
+       steved@redhat.com, trond.myklebust@fys.uio.no,
+       linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <462850.65153.qm@web36605.mail.mud.yahoo.com>
+References: <462850.65153.qm@web36605.mail.mud.yahoo.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 14 Aug 2007 13:50:47 -0400
+Message-Id: <1187113847.26008.234.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-
-> erp, we have major version skew between 2.6.23-rc1-mm1 and 2.6.23-rc3 here, sorry.
+On Mon, 2007-08-13 at 14:44 -0700, Casey Schaufler wrote:
+> --- David Howells <dhowells@redhat.com> wrote:
 > 
-> Could I ask for a redone patch against mainline?
+> > Casey Schaufler <casey@schaufler-ca.com> wrote:
+> > 
+> > > The specification of your push interface that the push operation
+> > > not affect how others access the process is OK for SELinux, but
+> > > not for any other MAC scheme that I've dealt with, and I think
+> > > that's most of them. Nuts. Smack, for example, uses exactly one
+> > > label on the process for all purposes.
+> > 
+> > It's a fairly important concept.  The victimisation security context on a
+> > process must not change, even if the kernel overrides the security context
+> > that that process acts as so that it can transparently do work on its behalf.
+> > 
+> > IMO, the right way to do this is to pass the security context directly to
+> > vfs_mkdir() and co.
+> > 
+> > > Are you concerned about accesses other than signals? Signals
+> > > could be staitforward to deal with in a pushed situation, but
+> > > I'd hesitate to say that the solution would generalize without
+> > > additional thought.
+> > 
+> > There's also /proc and ptrace() for example.  ps -z must not show the
+> > overridden state.
+> > 
+> > > > > >   (5) int security_xfrm_to_kernel_context(void *from, void **_to);
+> > > > > 
+> > > > > Woof. What are you transforming from? 
+> > > > 
+> > > > In CacheFiles case, the cachefilesd daemon's security label into the
+> > label
+> > > > the cache driver acts as on behalf of other processes.
+> > > 
+> > > I'm not sure I understand what this is doing.
+> > 
+> > CacheFiles consists of two parts: the kernel module which creates things in
+> > the cache and does accesses into the cache on behalf of processes that access
+> > cached filesystems, and the userspace daemon that builds cull tables and
+> > deletes things.
+> > 
+> > The reason there are two security labels is that the daemon's label gives it
+> > just enough rights to be able to do its job.  More or less all it can do is
+> > lookup, opendir, readdir, stat, rmdir, unlink and open the chardev for
+> > talking
+> > to the kernel module.  This means that the daemon can't, for example, be made
+> > to read or modify cache storage objects.
+> > 
+> > Thus means, however, that the daemon's label isn't sufficient for the kernel
+> > module to do its job.  But since there's no way for the kernel module to
+> > directly get a label (and indeed it doesn't know the label it needs), a
+> > transformation has to be applied that turns the process label used by the
+> > daemon into a process label that the kernel, and only the kernel, can use.
+> > 
+> > The kernel's label gives it, amongst other things, the additional rights to
+> > do
+> > mkdir, creat, open, read, write, setxattr, getxattr, rename - things the
+> > daemon isn't allowed to do.
+> 
+> With Smack you can leave the label alone, raise CAP_MAC_OVERRIDE,
+> do your business of setting the label correctly, and then drop
+> the capability. No new hooks required.
 
-Since I'm seeing this problem on 2.6.23-rc3, I tried adapting it.
-I'm running it now and the NULL pointer messages are gone.
-
-Index: linux-2.6.23-rc3/include/linux/mm.h
-===================================================================
---- linux-2.6.23-rc3.orig/include/linux/mm.h	2007-08-14 18:33:09.000000000 +0200
-+++ linux-2.6.23-rc3/include/linux/mm.h	2007-08-14 19:31:59.000000000 +0200
-@@ -1042,7 +1042,7 @@
- }
- 
- /* mmap.c */
--extern int __vm_enough_memory(long pages, int cap_sys_admin);
-+extern int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin);
- extern void vma_adjust(struct vm_area_struct *vma, unsigned long start,
- 	unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert);
- extern struct vm_area_struct *vma_merge(struct mm_struct *,
-Index: linux-2.6.23-rc3/include/linux/security.h
-===================================================================
---- linux-2.6.23-rc3.orig/include/linux/security.h	2007-08-14 18:33:10.000000000 +0200
-+++ linux-2.6.23-rc3/include/linux/security.h	2007-08-14 19:38:24.000000000 +0200
-@@ -54,7 +54,7 @@
- extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
- extern void cap_task_reparent_to_init (struct task_struct *p);
- extern int cap_syslog (int type);
--extern int cap_vm_enough_memory (long pages);
-+extern int cap_vm_enough_memory (struct mm_struct *mm, long pages);
- 
- struct msghdr;
- struct sk_buff;
-@@ -1125,6 +1125,7 @@
-  *	Return 0 if permission is granted.
-  * @vm_enough_memory:
-  *	Check permissions for allocating a new virtual mapping.
-+ *	@mm contains the mm struct it is being added to.
-  *      @pages contains the number of pages.
-  *	Return 0 if permission is granted.
-  *
-@@ -1169,7 +1170,7 @@
- 	int (*quota_on) (struct dentry * dentry);
- 	int (*syslog) (int type);
- 	int (*settime) (struct timespec *ts, struct timezone *tz);
--	int (*vm_enough_memory) (long pages);
-+	int (*vm_enough_memory) (struct mm_struct *mm, long pages);
- 
- 	int (*bprm_alloc_security) (struct linux_binprm * bprm);
- 	void (*bprm_free_security) (struct linux_binprm * bprm);
-@@ -1469,10 +1470,14 @@
- 	return security_ops->settime(ts, tz);
- }
- 
--
- static inline int security_vm_enough_memory(long pages)
- {
--	return security_ops->vm_enough_memory(pages);
-+	return security_ops->vm_enough_memory(current->mm, pages);
-+}
-+
-+static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
-+{
-+	return security_ops->vm_enough_memory(mm, pages);
- }
- 
- static inline int security_bprm_alloc (struct linux_binprm *bprm)
-@@ -2219,7 +2224,12 @@
- 
- static inline int security_vm_enough_memory(long pages)
- {
--	return cap_vm_enough_memory(pages);
-+	return cap_vm_enough_memory(current->mm, pages);
-+}
-+
-+static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
-+{
-+	return cap_vm_enough_memory(mm, pages);
- }
- 
- static inline int security_bprm_alloc (struct linux_binprm *bprm)
-Index: linux-2.6.23-rc3/mm/mmap.c
-===================================================================
---- linux-2.6.23-rc3.orig/mm/mmap.c	2007-08-14 18:33:11.000000000 +0200
-+++ linux-2.6.23-rc3/mm/mmap.c	2007-08-14 19:31:59.000000000 +0200
-@@ -93,7 +93,7 @@
-  * Note this is a helper function intended to be used by LSMs which
-  * wish to use this logic.
-  */
--int __vm_enough_memory(long pages, int cap_sys_admin)
-+int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
- {
- 	unsigned long free, allowed;
- 
-@@ -166,7 +166,7 @@
- 
- 	/* Don't let a single process grow too big:
- 	   leave 3% of the size of this process for other processes */
--	allowed -= current->mm->total_vm / 32;
-+	allowed -= mm->total_vm / 32;
- 
- 	/*
- 	 * cast `allowed' as a signed long because vm_committed_space
-@@ -2077,7 +2077,7 @@
- 	if (__vma && __vma->vm_start < vma->vm_end)
- 		return -ENOMEM;
- 	if ((vma->vm_flags & VM_ACCOUNT) &&
--	     security_vm_enough_memory(vma_pages(vma)))
-+	     security_vm_enough_memory_mm(mm, vma_pages(vma)))
- 		return -ENOMEM;
- 	vma_link(mm, vma, prev, rb_link, rb_parent);
- 	return 0;
-Index: linux-2.6.23-rc3/mm/nommu.c
-===================================================================
---- linux-2.6.23-rc3.orig/mm/nommu.c	2007-08-14 18:33:12.000000000 +0200
-+++ linux-2.6.23-rc3/mm/nommu.c	2007-08-14 19:31:59.000000000 +0200
-@@ -1270,7 +1270,7 @@
-  * Note this is a helper function intended to be used by LSMs which
-  * wish to use this logic.
-  */
--int __vm_enough_memory(long pages, int cap_sys_admin)
-+int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
- {
- 	unsigned long free, allowed;
- 
-Index: linux-2.6.23-rc3/security/commoncap.c
-===================================================================
---- linux-2.6.23-rc3.orig/security/commoncap.c	2007-08-14 18:33:13.000000000 +0200
-+++ linux-2.6.23-rc3/security/commoncap.c	2007-08-14 19:31:59.000000000 +0200
-@@ -315,13 +315,13 @@
- 	return 0;
- }
- 
--int cap_vm_enough_memory(long pages)
-+int cap_vm_enough_memory(struct mm_struct *mm, long pages)
- {
- 	int cap_sys_admin = 0;
- 
- 	if (cap_capable(current, CAP_SYS_ADMIN) == 0)
- 		cap_sys_admin = 1;
--	return __vm_enough_memory(pages, cap_sys_admin);
-+	return __vm_enough_memory(mm, pages, cap_sys_admin);
- }
- 
- EXPORT_SYMBOL(cap_capable);
-Index: linux-2.6.23-rc3/security/dummy.c
-===================================================================
---- linux-2.6.23-rc3.orig/security/dummy.c	2007-08-14 18:33:13.000000000 +0200
-+++ linux-2.6.23-rc3/security/dummy.c	2007-08-14 19:31:59.000000000 +0200
-@@ -108,13 +108,13 @@
- 	return 0;
- }
- 
--static int dummy_vm_enough_memory(long pages)
-+static int dummy_vm_enough_memory(struct mm_struct *mm, long pages)
- {
- 	int cap_sys_admin = 0;
- 
- 	if (dummy_capable(current, CAP_SYS_ADMIN) == 0)
- 		cap_sys_admin = 1;
--	return __vm_enough_memory(pages, cap_sys_admin);
-+	return __vm_enough_memory(mm, pages, cap_sys_admin);
- }
- 
- static int dummy_bprm_alloc_security (struct linux_binprm *bprm)
-Index: linux-2.6.23-rc3/security/selinux/hooks.c
-===================================================================
---- linux-2.6.23-rc3.orig/security/selinux/hooks.c	2007-08-14 18:33:13.000000000 +0200
-+++ linux-2.6.23-rc3/security/selinux/hooks.c	2007-08-14 19:31:59.000000000 +0200
-@@ -1584,7 +1584,7 @@
-  * Do not audit the selinux permission check, as this is applied to all
-  * processes that allocate mappings.
-  */
--static int selinux_vm_enough_memory(long pages)
-+static int selinux_vm_enough_memory(struct mm_struct *mm, long pages)
- {
- 	int rc, cap_sys_admin = 0;
- 	struct task_security_struct *tsec = current->security;
-@@ -1600,7 +1600,7 @@
- 	if (rc == 0)
- 		cap_sys_admin = 1;
- 
--	return __vm_enough_memory(pages, cap_sys_admin);
-+	return __vm_enough_memory(mm, pages, cap_sys_admin);
- }
- 
- /* binprm security operations */
+Except that CAP_MAC_OVERRIDE doesn't exist upstream, and if it did, it
+would represent Smack-specific logic in the core kernel (when you're
+complaining about SELinux-specific logic there).  So even that would
+have to be encapsulated within a hook.
 
 -- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+Stephen Smalley
+National Security Agency
+
