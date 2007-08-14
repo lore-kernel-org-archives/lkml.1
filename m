@@ -1,67 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935993AbXHNX3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936584AbXHNXae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935993AbXHNX3k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 19:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936102AbXHNX2k
+	id S936584AbXHNXae (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 19:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934755AbXHNXaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 19:28:40 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:59283 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936067AbXHNX2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 19:28:38 -0400
-Date: Tue, 14 Aug 2007 16:28:35 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Chris Snook <csnook@redhat.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: [PATCH 1/23] document preferred use of volatile with atomic_t
-Message-ID: <20070814232835.GH8243@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <46C03885.7000109@redhat.com> <20070813110415.GA24018@shell.boston.redhat.com> <Pine.LNX.4.64.0708141544001.401@schroedinger.engr.sgi.com> <46C2325C.8040900@redhat.com> <Pine.LNX.4.64.0708141555300.579@schroedinger.engr.sgi.com>
+	Tue, 14 Aug 2007 19:30:01 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57467 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754114AbXHNX37 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 19:29:59 -0400
+Date: Wed, 15 Aug 2007 05:12:41 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: kfree(0) - ok?
+In-Reply-To: <1187132149.2618.2.camel@laptopd505.fenrus.org>
+Message-ID: <alpine.LFD.0.999.0708150454480.6482@enigma.security.iitk.ac.in>
+References: <46C233CB.9000602@am.sony.com>
+ <1187132149.2618.2.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708141555300.579@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 14, 2007 at 03:56:51PM -0700, Christoph Lameter wrote:
-> On Tue, 14 Aug 2007, Chris Snook wrote:
-> 
-> > > volatile means that there is some vague notion of "read it now". But that
-> > > really does not exist. Instead we control visibility via barriers (smp_wmb,
-> > > smp_rmb). Would it not be best to not have volatile at all in atomic
-> > > operations and let the barriers do the work?
-> > 
-> > From my reply in the other thread...
-> > 
-> > But barriers force a flush of *everything* in scope, which we generally don't
-> > want.  On the other hand, we pretty much always want to flush atomic_*
-> > operations.  One way or another, we should be restricting the volatile
-> > behavior to the thing that needs it.  On most architectures, this patch set
-> > just moves that from the declaration, where it is considered harmful, to the
-> > use, where it is considered an occasional necessary evil.
-> > 
-> > If you really, *really* distrust the compiler that much, you shouldn't be
-> > using barrier, since that uses volatile under the hood too.  You should just
-> > go ahead and implement the atomic operations in assembler, like Segher
-> > Boessenkool did for powerpc in response to my previous patchset.
-> 
-> >From my reply on the other thread:
-> 
-> Maybe we need two read functions? One volatile, one not?
-> 
-> The atomic_read()s that I have in slub really do not care about when the 
-> variables are read. And if volatile creates overhead then I rather not have it.
 
 
-The overhead due to volatile access is -way- small.  Not like barrier(),
-which can flush out a fair fraction of the machine registers.
+On Tue, 14 Aug 2007, Arjan van de Ven wrote:
 
-						Thanx, Paul
+> 
+> On Tue, 2007-08-14 at 15:59 -0700, Tim Bird wrote:
+> > Hi all,
+> > 
+> > I have a quick question.
+> > 
+> > I'm trying to resurrect a patch from the Linux-tiny patch suite,
+> > to do accounting of kmalloc memory allocations.  In testing it
+> > with Linux 2.6.22, I've found a large number of kfrees of
+> > NULL pointers.
+> > 
+> > Is this considered OK?  Or should I examine the offenders
+> > to see if something is coded badly?
+> 
+> kfree(NULL) is explicitly ok and it saves code size to not check
+> anywhere
+
+But that doesn't come free of cost, does it, seeing we've now pushed
+the conditional inside kfree() itself. kfree() isn't inlined so we do
+save on space but lose out on the extra time overhead for the common
+case. Speaking of which ...
+
+[PATCH] {slub, slob}: use unlikely() for kfree(ZERO_OR_NULL_PTR) check
+
+Considering kfree(NULL) would normally occur only in error paths and
+kfree(ZERO_SIZE_PTR) is uncommon as well, so let's use unlikely() for
+the condition check in SLUB's and SLOB's kfree() to optimize for the
+common case. SLAB has this already.
+
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
+
+---
+
+ mm/slob.c |    2 +-
+ mm/slub.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/mm/slob.c b/mm/slob.c
+index ec33fcd..37a8b9a 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -466,7 +466,7 @@ void kfree(const void *block)
+ {
+ 	struct slob_page *sp;
+ 
+-	if (ZERO_OR_NULL_PTR(block))
++	if (unlikely(ZERO_OR_NULL_PTR(block)))
+ 		return;
+ 
+ 	sp = (struct slob_page *)virt_to_page(block);
+diff --git a/mm/slub.c b/mm/slub.c
+index 69d02e3..3788537 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2467,7 +2467,7 @@ void kfree(const void *x)
+ 	 * this comparison would be true for all "negative" pointers
+ 	 * (which would cover the whole upper half of the address space).
+ 	 */
+-	if (ZERO_OR_NULL_PTR(x))
++	if (unlikely(ZERO_OR_NULL_PTR(x)))
+ 		return;
+ 
+ 	page = virt_to_head_page(x);
