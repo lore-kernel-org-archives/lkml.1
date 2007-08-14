@@ -1,61 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933602AbXHNSaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933749AbXHNSag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933602AbXHNSaH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 14:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbXHNS3z
+	id S933749AbXHNSag (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 14:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933608AbXHNSaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 14:29:55 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:45737 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755567AbXHNS3y (ORCPT
+	Tue, 14 Aug 2007 14:30:07 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:22913 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933563AbXHNSaF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 14:29:54 -0400
-Message-ID: <46C1F3A7.3090007@gmail.com>
-Date: Tue, 14 Aug 2007 20:25:43 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 14 Aug 2007 14:30:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mN5LOcj7+kTAh3yzlp3SiZUNNC6jkp6nh5sTGNhpPcM2IJyCflZ38ilG4FtW3j20/ibzxTV8mC65pVxkBCGG6ne7wtoyF5aGVvfkWKr55A+3DzqW9tyc8PP7h81ioFPrZWnpvmOAoXyrdAjacVWuCHsfzAfiPr9rhe5+fHi6JvI=
+Message-ID: <af57f1ac0708141130v729fa636k3150673809ec20a8@mail.gmail.com>
+Date: Tue, 14 Aug 2007 22:30:01 +0400
+From: "oleg 123" <123.oleg@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: linux kernel 2.6.18-20 bug: rcu_read_unlock in __sock_create
+In-Reply-To: <af57f1ac0708141125w190a6505r1159c29a689eec01@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Joe Perches <joe@perches.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka Software Suspend,
- aka swsusp):
-References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>  <200708132338.25925.rjw@sisk.pl> <20070814070528.GA2903@elf.ucw.cz>  <200708141937.06676.rjw@sisk.pl> <1187114231.32555.105.camel@localhost> <alpine.LFD.0.999.0708141112110.30176@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0708141112110.30176@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Disposition: inline
+References: <af57f1ac0708141125w190a6505r1159c29a689eec01@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/14/2007 08:15 PM, Linus Torvalds wrote:
+Hello
+There is a bug in __sock_create() function (net/socket.c).
+If an error occur in LSM hook security_socket_post_create, then unneeded
+rcu_read_unlock() is made in __sock_create.
 
-> Quite frankly, I think the MAINTAINERS file gets a whole lot uglier this 
-> way.
-> 
-> There's also a rather fundamental issue: this will likely make people 
-> touch the MAINTAINERS file *more*, and from a maintenance standpoint, that 
-> is exactly the wrong thing to have (one central file that everybody 
-> touches). It just tends to generate unnecessary merge conflicts etc. 
-> 
-> (We used to have that issue with the central configuration file, for 
-> example).
-> 
-> So the more I look at these things, the more convinced I am that this is 
-> not the right thing to do. These things should *not* be in one huge file, 
-> and I'd much much rather have the maintainership information be carried 
-> along with the subsystem itself, or the files it contains.
-> 
-> In other words, it would be much better to just have per-file markers, 
-> along with some per-subdirectory stuff or similar.
-
-Joe just now convinced me that rather than the per-file markers, the marker 
-is meta-information that could just be stored in GIT, with the MAINTAINERS 
-file turning into something generated.
-
-git info --maintainer and such (for many possible kinds of --flags) would 
-throw out the information.
-
-Rene.
+I wish to be personally CC'ed the answers/comments posted
