@@ -1,99 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934981AbXHNVnC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935242AbXHNVoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934981AbXHNVnC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 17:43:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757243AbXHNVZt
+	id S935242AbXHNVoX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 17:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757997AbXHNV0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:25:49 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:45833 "EHLO
+	Tue, 14 Aug 2007 17:26:14 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:45837 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757597AbXHNVZp (ORCPT
+	with ESMTP id S1758108AbXHNV0M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:25:45 -0400
-Date: Tue, 14 Aug 2007 23:25:36 +0200
+	Tue, 14 Aug 2007 17:26:12 -0400
+Date: Tue, 14 Aug 2007 23:25:56 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: pazke@donpac.ru
-Cc: linux-visws-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] i386 visws: "extern inline" -> "static inline"
-Message-ID: <20070814212536.GU18945@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       Valerie Henson <val_henson@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: [-mm patch] remove fs/ext2/balloc.c:reserve_blocks()
+Message-ID: <20070814212556.GV18945@stusta.de>
+References: <20070809224254.11f42716.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20070809224254.11f42716.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"extern inline" will have different semantics with gcc 4.3.
+reserve_blocks() is no longer used.
+
+Spotted by the GNU C compiler.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- include/asm-i386/mach-visws/cobalt.h  |    8 ++++----
- include/asm-i386/mach-visws/lithium.h |    8 ++++----
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ fs/ext2/balloc.c |   35 -----------------------------------
+ 1 file changed, 35 deletions(-)
 
-e12d2e797af72524f53a0ef3a7dd3cf91f58c542 
-diff --git a/include/asm-i386/mach-visws/cobalt.h b/include/asm-i386/mach-visws/cobalt.h
-index 33c3622..9952588 100644
---- a/include/asm-i386/mach-visws/cobalt.h
-+++ b/include/asm-i386/mach-visws/cobalt.h
-@@ -94,22 +94,22 @@
- #define	CO_IRQ_8259	CO_IRQ(CO_APIC_8259)
- 
- #ifdef CONFIG_X86_VISWS_APIC
--extern __inline void co_cpu_write(unsigned long reg, unsigned long v)
-+static inline void co_cpu_write(unsigned long reg, unsigned long v)
- {
- 	*((volatile unsigned long *)(CO_CPU_VADDR+reg))=v;
+4b64502ecee91af41888261d7392688c9283792f 
+diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
+index 1c57a3f..b63f6a4 100644
+--- a/fs/ext2/balloc.c
++++ b/fs/ext2/balloc.c
+@@ -133,41 +133,6 @@ error_out:
+ 	return NULL;
  }
  
--extern __inline unsigned long co_cpu_read(unsigned long reg)
-+static inline unsigned long co_cpu_read(unsigned long reg)
+-/*
+- * Set sb->s_dirt here because the superblock was "logically" altered.  We
+- * need to recalculate its free blocks count and flush it out.
+- */
+-static int reserve_blocks(struct super_block *sb, int count)
+-{
+-	struct ext2_sb_info *sbi = EXT2_SB(sb);
+-	struct ext2_super_block *es = sbi->s_es;
+-	unsigned free_blocks;
+-	unsigned root_blocks;
+-
+-	free_blocks = percpu_counter_read_positive(&sbi->s_freeblocks_counter);
+-	root_blocks = le32_to_cpu(es->s_r_blocks_count);
+-
+-	if (free_blocks < count)
+-		count = free_blocks;
+-
+-	if (free_blocks < root_blocks + count && !capable(CAP_SYS_RESOURCE) &&
+-	    sbi->s_resuid != current->fsuid &&
+-	    (sbi->s_resgid == 0 || !in_group_p (sbi->s_resgid))) {
+-		/*
+-		 * We are too close to reserve and we are not privileged.
+-		 * Can we allocate anything at all?
+-		 */
+-		if (free_blocks > root_blocks)
+-			count = free_blocks - root_blocks;
+-		else
+-			return 0;
+-	}
+-
+-	percpu_counter_mod(&sbi->s_freeblocks_counter, -count);
+-	sb->s_dirt = 1;
+-	return count;
+-}
+-
+ static void release_blocks(struct super_block *sb, int count)
  {
- 	return *((volatile unsigned long *)(CO_CPU_VADDR+reg));
- }            
-              
--extern __inline void co_apic_write(unsigned long reg, unsigned long v)
-+static inline void co_apic_write(unsigned long reg, unsigned long v)
- {
- 	*((volatile unsigned long *)(CO_APIC_VADDR+reg))=v;
- }            
-              
--extern __inline unsigned long co_apic_read(unsigned long reg)
-+static inline unsigned long co_apic_read(unsigned long reg)
- {
- 	return *((volatile unsigned long *)(CO_APIC_VADDR+reg));
- }
-diff --git a/include/asm-i386/mach-visws/lithium.h b/include/asm-i386/mach-visws/lithium.h
-index d443e68..dfcd4f0 100644
---- a/include/asm-i386/mach-visws/lithium.h
-+++ b/include/asm-i386/mach-visws/lithium.h
-@@ -29,22 +29,22 @@
- #define	LI_INTD		0x0080
- 
- /* More special purpose macros... */
--extern __inline void li_pcia_write16(unsigned long reg, unsigned short v)
-+static inline void li_pcia_write16(unsigned long reg, unsigned short v)
- {
- 	*((volatile unsigned short *)(LI_PCIA_VADDR+reg))=v;
- }
- 
--extern __inline unsigned short li_pcia_read16(unsigned long reg)
-+static inline unsigned short li_pcia_read16(unsigned long reg)
- {
- 	 return *((volatile unsigned short *)(LI_PCIA_VADDR+reg));
- }
- 
--extern __inline void li_pcib_write16(unsigned long reg, unsigned short v)
-+static inline void li_pcib_write16(unsigned long reg, unsigned short v)
- {
- 	*((volatile unsigned short *)(LI_PCIB_VADDR+reg))=v;
- }
- 
--extern __inline unsigned short li_pcib_read16(unsigned long reg)
-+static inline unsigned short li_pcib_read16(unsigned long reg)
- {
- 	return *((volatile unsigned short *)(LI_PCIB_VADDR+reg));
- }
+ 	if (count) {
 
