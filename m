@@ -1,127 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934930AbXHNTYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934783AbXHNT1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934930AbXHNTYK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 15:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934843AbXHNTXW
+	id S934783AbXHNT1U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 15:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757864AbXHNT1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 15:23:22 -0400
-Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:24564 "HELO
-	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S934832AbXHNTXR (ORCPT
+	Tue, 14 Aug 2007 15:27:08 -0400
+Received: from elasmtp-mealy.atl.sa.earthlink.net ([209.86.89.69]:54883 "EHLO
+	elasmtp-mealy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758100AbXHNT1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 15:23:17 -0400
-X-YMail-OSG: y4EoydkVM1l_.Qg6kVtpphWhlVIMEZHenDTIMQ18Yw4aOWzhm5EyRTzcb4msuD0W.jRGaSstvQ--
-Date: Tue, 14 Aug 2007 14:23:06 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, clameter@sgi.com,
-       bob.picco@hp.com, nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
-       mel@skynet.ie, akpm@linux-foundation.org,
-       Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       ckrm-tech <ckrm-tech@lists.sourceforge.net>
-Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
-Message-ID: <20070814192306.GB32553@vino.hallyn.com>
-References: <20070812152126.GA26239@linux.vnet.ibm.com> <20070813201215.GA16908@vino.hallyn.com> <1187103831.6281.24.camel@localhost> <20070814180339.GA32553@vino.hallyn.com> <1187115224.6281.40.camel@localhost>
+	Tue, 14 Aug 2007 15:27:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=Nqh2w42uZ8G96HASXFj0xcVLo595tJ1uP2sMnemRAOh2tH5sNkLl9CgSxphnN393;
+  h=Received:Message-ID:Reply-To:From:To:Cc:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE:X-ELNK-Trace:X-Originating-IP;
+Message-ID: <000501c7dea9$3bfca1c0$6501a8c0@earthlink.net>
+Reply-To: "Mitchell Erblich" <erblichs@earthlink.net>
+From: "Mitchell Erblich" <erblichs@earthlink.net>
+To: "\"Linux Kernel Mailing List\"" <linux-kernel@vger.kernel.org>
+Cc: "\"Ingo Molnar\"" <mingo@elte.hu>,
+       "\"\\\"Dmitry Adamushko\\\"\"" <dmitry.adamushko@gmail.com>
+Subject: QUESTION: RT & SCHED & fork: ?MISSING EQUIV of task_new_fair for RT tasks.
+Date: Tue, 14 Aug 2007 12:28:02 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187115224.6281.40.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1106
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1106
+X-ELNK-Trace: 074f60c55517ea841aa676d7e74259b7b3291a7d08dfec79730e926b7c02cb502fba3827aea6b507350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 68.164.86.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Lee Schermerhorn (Lee.Schermerhorn@hp.com):
-> On Tue, 2007-08-14 at 13:03 -0500, Serge E. Hallyn wrote:
-> > Quoting Lee Schermerhorn (Lee.Schermerhorn@hp.com):
-> > > On Mon, 2007-08-13 at 15:12 -0500, Serge E. Hallyn wrote:
-> > > > Quoting Dhaval Giani (dhaval@linux.vnet.ibm.com):
-> > > > > Hi,
-> > > > > 
-> > > > > On mounting cpusets using containers, I have been hitting the following
-> > > > > bug.
-> > > > > 
-> > > > > 
-> > > > > -----------[ cut here ]------------
-> > > > > kernel BUG at kernel/cpuset.c:331!
-> > > <snip>
-> > > > > CONFIG_HIGHMEM=y
-> > > > > CONFIG_X86_PAE=y
-> > > > > # CONFIG_NUMA is not set
-> > > > > CONFIG_ARCH_POPULATES_NODE_MAP=y
-> > > > > CONFIG_SELECT_MEMORY_MODEL=y
-> > > > > CONFIG_FLATMEM_MANUAL=y
-> > > > > # CONFIG_DISCONTIGMEM_MANUAL is not set
-> > > > > # CONFIG_SPARSEMEM_MANUAL is not set
-> > > > > CONFIG_FLATMEM=y
-> > > > > CONFIG_FLAT_NODE_MEM_MAP=y
-> > > > > # CONFIG_SPARSEMEM_STATIC is not set
-> > > > > CONFIG_SPLIT_PTLOCK_CPUS=4
-> > > > > CONFIG_RESOURCES_64BIT=y
-> > > > > CONFIG_ZONE_DMA_FLAG=1
-> > > <snip>
-> > > > 
-> > > > Yeah, I'm seeing the same thing.  Oddly, my node_states[N_NORMAL_MEMORY]
-> > > > and node_states[N_HIGH_MEMORY] are empty, while node_states[N_ONLINE]
-> > > > contains my single cpu (on i386 kvm image).
-> > > > 
-> > > > -serge
-> > > 
-> > > Yes, you'll definitely hit that BUG if the N_HIGH_MEMORY mask is empty.
-> > > So far, I can't see how this could be, tho'.  __build_all_zonelists()
-> > > should be called for non-NUMA as well as NUMA.  It iterates over "all
-> > 
-> > Yup, and it is, and some debug statements insist that
-> > node_set_state(nid, N_HIGH_MEMORY) is being called for cpu 0,
-> > and the state is in fact being correctly set.
-> > 
-> > So it must get cleared later...
-> 
-> OK.  That helps.  I'll see what I can find...
+Group, Ingo Molnar, etc,
 
-Well apparently I lied?  I don't think it's getting cleared in node_states.
-I'm doing:
+Why does the rt sched_class contain fewer elements than fair?
+missing is the RT for .task_new.
 
-static void guarantee_online_mems(const struct cpuset *cs, nodemask_t *pmask)
-{
-        int nid=0;
-        printk(KERN_NOTICE "%s: at top, node %d is %d\n",
-                __FUNCTION__, nid, node_state(nid, N_HIGH_MEMORY));
-        while (cs && !nodes_intersects(cs->mems_allowed,
-                                        node_states[N_HIGH_MEMORY])) {
-                printk(KERN_NOTICE "%s: in loop\n", __FUNCTION__);
-                cs = cs->parent;
-        }
-        if (cs) {
-                printk(KERN_NOTICE "%s: cs was true\n", __FUNCTION__);
-                nodes_and(*pmask, cs->mems_allowed,
-                                        node_states[N_HIGH_MEMORY]);
-        }
-        else
-        {
-                printk(KERN_NOTICE "%s: cs was false\n", __FUNCTION__);
-                *pmask = node_states[N_HIGH_MEMORY];
-        }
-        printk(KERN_NOTICE "%s: at bottom, node %d is %d\n",
-                __FUNCTION__, nid, node_state(nid, N_HIGH_MEMORY));
-        printk(KERN_NOTICE "%s: at bottom, in pmask node %d is %d\n",
-                __FUNCTION__, nid, node_isset(nid, *pmask));
-        BUG_ON(!nodes_intersects(*pmask, node_states[N_HIGH_MEMORY]));
-}
+called by do_fork(): fork.c , which calls wake_up_new_task() via
+if (!(clone_flags & CLONE_STOPPED))
+      wake_up_new_task(p, clone_flags);
 
-and getting:
+which is in sched.c and calls
+if (!p->sched_class->task_new ||
 
-guarantee_online_mems: in loop
-guarantee_online_mems: cs was false
-guarantee_online_mems: at bottom, node 0 is 1
-guarantee_online_mems: at bottom, in pmask node 0 is 0
+       and
+ p->sched_class->task_new(rq, p, now);
 
 
-So I'm guess that
-	*pmask = node_states[N_HIGH_MEMORY];
-isn't doing what it was intended to do?  That or I've got node_state()
-wrong...
+sched_rt.c:
+static struct sched_class rt_sched_class __read_mostly = {
+217         .enqueue_task           = enqueue_task_rt,
+218         .dequeue_task           = dequeue_task_rt,
+219         .yield_task             = yield_task_rt,
+220 
+221         .check_preempt_curr     = check_preempt_curr_rt,
+222 
+223         .pick_next_task         = pick_next_task_rt,
+224         .put_prev_task          = put_prev_task_rt,
+225 
+226         .load_balance           = load_balance_rt,
+227 
+228         .task_tick              = task_tick_rt,
+229 };
 
--serge
+
+sched_fair.c:
+struct sched_class fair_sched_class __read_mostly = {
+1075         .enqueue_task           = enqueue_task_fair,
+1076         .dequeue_task           = dequeue_task_fair,
+1077         .yield_task             = yield_task_fair,
+1078 
+1079         .check_preempt_curr     = check_preempt_curr_fair,
+1080 
+1081         .pick_next_task         = pick_next_task_fair,
+1082         .put_prev_task          = put_prev_task_fair,
+1083 
+1084         .load_balance           = load_balance_fair,
+1085 
+1086         .set_curr_task          = set_curr_task_fair,
+1087         .task_tick              = task_tick_fair,
+1088         .task_new               = task_new_fair,
+1089 };
+1090 
+
+The missing rt equivalent item is:
+/*
+1014  * Share the fairness runtime between parent and child, thus the
+1015  * total amount of pressure for CPU stays equal - new tasks
+1016  * get a chance to run but frequent forkers are not allowed to
+1017  * monopolize the CPU. Note: the parent runqueue is locked,
+1018  * the child is not running yet.
+1019  */
+1020 static void task_new_fair(struct rq *rq, struct task_struct *p)
+1021 {
+
+Mitchell Erblich
+
