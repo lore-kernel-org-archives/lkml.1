@@ -1,98 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbXHNHDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752284AbXHNHJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751877AbXHNHDt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 03:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796AbXHNHDg
+	id S1752284AbXHNHJU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 03:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbXHNHJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 03:03:36 -0400
-Received: from mga09.intel.com ([134.134.136.24]:33565 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747AbXHNHDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 03:03:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,258,1183359600"; 
-   d="scan'208";a="117252410"
-Date: Mon, 13 Aug 2007 23:56:57 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, lethal@linux-sh.org,
-       penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch] slab: revert "slab: fix alien cache handling"
-Message-ID: <20070814065657.GF10033@linux-os.sc.intel.com>
-References: <20070813175824.GB12874@linux-os.sc.intel.com> <Pine.LNX.4.64.0708131349100.27728@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 14 Aug 2007 03:09:03 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:48635 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750920AbXHNHJA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 03:09:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PiLFd0n8QsvKckspfmVDNrt7RHm3S4Vp1A28agtBKCmgqP11ySkMZAjWSCmz8YAehG2w9GBJe1sRYK3YJI5EBMgtSIPoiHsB/6k1zCwY340ocJVEiGDfQgJHO5vuUZCwyeYHAMAi8t5spFdmcRGFpJC9F27gbb8wIFVdDXgcvYQ=
+Message-ID: <4bacf17f0708140008v657f5d5bqec17fcea67a6f69c@mail.gmail.com>
+Date: Tue, 14 Aug 2007 09:08:59 +0200
+From: "=?ISO-8859-2?Q?Marcin_=A6lusarz?=" <marcin.slusarz@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [patch 0/3] [patch 0/3] genirq: Suppress resend of level interrupts
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Stable Team" <stable@kernel.org>,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>,
+       "Jarek Poplawski" <jarkao2@o2.pl>
+In-Reply-To: <20070812152213.551812576@inhelltoy.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708131349100.27728@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.1i
+References: <20070812152213.551812576@inhelltoy.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 01:58:48PM -0700, Christoph Lameter wrote:
-> On Mon, 13 Aug 2007, Siddha, Suresh B wrote:
-> 
-> > Can we revert git commit 3cdc0ed0cea50ea08dd146c1bbc82b1bcc2e1b80 ?
-> 
-> Only if you find another way to fix the bug that is addressed there.
+2007/8/12, Thomas Gleixner <tglx@linutronix.de>:
+> The delayed irq disable functionality introduced a bug due to
+> retriggering level type interrupts in case of the delayed disable. The
+> resulting problem was discussed and debugged here:
+> http://marc.info/?l=linux-kernel&m=118202978609968&w=2
+>
+> The resend of a level type interrupt is unnessecary and adds extra
+> noise to the system. Level type interrupts are resent by hardware when
+> they are still active at irq_enable(). The hard-/soft-ware resend is
+> only useful for edge type interrupts.
+>
+> The following patch series addresses the problem and fixes an
+> unnoticed mismerge which affects the same area as well.
+>
+>         tglx
+>
+Works fine for me (tested on 2.6.22.1). I uploaded 6 GB of data and my
+network card didn't time out. (it usually did after 1-100 MB)
+Is this the final version?
 
-Does the appended version fix both the issues? Name alien in cache_free_alien
-is confusing, as the function does two things. free through alien caches
-or direct remote free..
-
-thanks,
-suresh
----
-
-Skip calling cache_free_alien() when the platform is not numa capable.
-This will avoid cache misses that happen while accessing slabp (which
-is per page memory  reference) to get nodeid. Instead use a global
-variable to skip the call, which is mostly likely to be present in the
-cache.
-
-This gives a 0.8% performance boost with the database oltp workload
-on a quad-core SMP platform and by any means the number is not small :)
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
-
-diff --git a/mm/slab.c b/mm/slab.c
-index a684778..6f6abef 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -883,6 +883,7 @@ static void __slab_error(const char *function, struct kmem_cache *cachep,
-   */
- 
- static int use_alien_caches __read_mostly = 1;
-+static int numa_platform __read_mostly = 1;
- static int __init noaliencache_setup(char *s)
- {
- 	use_alien_caches = 0;
-@@ -1399,8 +1400,10 @@ void __init kmem_cache_init(void)
- 	int order;
- 	int node;
- 
--	if (num_possible_nodes() == 1)
-+	if (num_possible_nodes() == 1) {
- 		use_alien_caches = 0;
-+		numa_platform = 0;
-+	}
- 
- 	for (i = 0; i < NUM_INIT_LISTS; i++) {
- 		kmem_list3_init(&initkmem_list3[i]);
-@@ -3558,7 +3561,14 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
- 	check_irq_off();
- 	objp = cache_free_debugcheck(cachep, objp, __builtin_return_address(0));
- 
--	if (cache_free_alien(cachep, objp))
-+	/*
-+	 * Skip calling cache_free_alien() when the platform is not numa.
-+	 * This will avoid cache misses that happen while accessing slabp (which
-+	 * is per page memory  reference) to get nodeid. Instead use a global
-+	 * variable to skip the call, which is mostly likely to be present in
-+	 * the cache.
-+	 */
-+	if (numa_platform && cache_free_alien(cachep, objp))
- 		return;
- 
- 	if (likely(ac->avail < ac->limit)) {
+Regards,
+Marcin Slusarz
