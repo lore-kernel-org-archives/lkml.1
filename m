@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935705AbXHNVzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935859AbXHNV43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935705AbXHNVzy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 17:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765746AbXHNVfH
+	id S935859AbXHNV43 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 17:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbXHNVhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 17:35:07 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:58641 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932723AbXHNVfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 17:35:04 -0400
-Date: Tue, 14 Aug 2007 16:35:02 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, James Morris <jmorris@namei.org>,
-       chrisw@sous-sol.org, linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] unexport cap_inode_killpriv
-Message-ID: <20070814213502.GA14497@sergelap.austin.ibm.com>
-References: <20070809224254.11f42716.akpm@linux-foundation.org> <20070814212613.GY18945@stusta.de>
+	Tue, 14 Aug 2007 17:37:32 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35869 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932808AbXHNVha (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 17:37:30 -0400
+Date: Tue, 14 Aug 2007 14:37:27 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 4/9] Atomic reclaim: Save irq flags in vmscan.c
+In-Reply-To: <20070814212955.GC23308@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0708141436380.31693@schroedinger.engr.sgi.com>
+References: <20070814153021.446917377@sgi.com> <20070814153501.766137366@sgi.com>
+ <p73vebhnauo.fsf@bingen.suse.de> <Pine.LNX.4.64.0708141209270.29498@schroedinger.engr.sgi.com>
+ <20070814203329.GA22202@one.firstfloor.org>
+ <Pine.LNX.4.64.0708141341120.31513@schroedinger.engr.sgi.com>
+ <20070814204454.GC22202@one.firstfloor.org>
+ <Pine.LNX.4.64.0708141414260.31693@schroedinger.engr.sgi.com>
+ <20070814212355.GA23308@one.firstfloor.org>
+ <Pine.LNX.4.64.0708141425000.31693@schroedinger.engr.sgi.com>
+ <20070814212955.GC23308@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070814212613.GY18945@stusta.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Adrian Bunk (bunk@kernel.org):
-> On Thu, Aug 09, 2007 at 10:42:54PM -0700, Andrew Morton wrote:
-> >...
-> > Changes since 2.6.23-rc1-mm2:
-> >...
-> > +file-capabilities-clear-fcaps-on-inode-change.patch
-> > 
-> >  file caps update
-> >...
+On Tue, 14 Aug 2007, Andi Kleen wrote:
+
+> > We already have such a flag in the zone structure
 > 
-> This patch removes the unused EXPORT_SYMBOL(cap_inode_killpriv).
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> Zone structure is not strictly CPU local so it's broader
+> than needed. But it might work.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+We could convert this into a per cpu array?
 
-> ---
-> 68ca3bcc4918d0b84a97318f60fb74c4600d9f6b 
-> diff --git a/security/commoncap.c b/security/commoncap.c
-> index 7816cdc..9ec5890 100644
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -543,7 +543,6 @@ EXPORT_SYMBOL(cap_bprm_apply_creds);
->  EXPORT_SYMBOL(cap_bprm_secureexec);
->  EXPORT_SYMBOL(cap_inode_setxattr);
->  EXPORT_SYMBOL(cap_inode_removexattr);
-> -EXPORT_SYMBOL(cap_inode_killpriv);
->  EXPORT_SYMBOL(cap_task_post_setuid);
->  EXPORT_SYMBOL(cap_task_kill);
->  EXPORT_SYMBOL(cap_task_setscheduler);
+But that still creates lots of overhead each time we take the lru lock!
 
-Ah yes, bc LSMs can't be modules any more.  But then, why still export
-cap_task_setscheduler, for instance?
-
--serge
