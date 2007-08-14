@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762453AbXHNQNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761123AbXHNQNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762453AbXHNQNE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 12:13:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbXHNQMy
+	id S1761123AbXHNQNt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 12:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763012AbXHNQNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 12:12:54 -0400
-Received: from smtp121.sbc.mail.re3.yahoo.com ([66.196.96.94]:44185 "HELO
-	smtp121.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750814AbXHNQMy (ORCPT
+	Tue, 14 Aug 2007 12:13:40 -0400
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:44094 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760342AbXHNQNj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 12:12:54 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=pD35zGi7A+YAMf+DKfpezLhnt6FN9qMZbIzQyoR0DlFw7XqB+rTv/DaseSIHjUeL4avjTWmHZwkVPTW36s8sJAncUFaEupmv5s6c6vuUrrkq179tRHEheu1aL7pQP6D3iWlXrV7NaXzVf+JjqkOvzLY6PhPcDcCInk79QxdQ+MU=  ;
-X-YMail-OSG: EMtirXMVM1nAh2riFIGFMAmQEY0oqECBNhMtBRN8OJjcjoYAsmmPbb7JRQvwtEzta7eyrYf_Ig--
-Date: Tue, 14 Aug 2007 09:12:51 -0700
-From: David Brownell <david-b@pacbell.net>
-To: webmaster@dragonslave.de
-Subject: Re: EHCI Regression in 2.6.23-rc2
-Cc: Stuart_Hayes@dell.com, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, jikos@jikos.cz, greg@kroah.com
-References: <200708101045.57166.dex@dragonslave.de>
- <200708141146.43215.webmaster@dragonslave.de>
- <20070814154237.DF0FB2350CA@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <200708141757.24787.webmaster@dragonslave.de>
-In-Reply-To: <200708141757.24787.webmaster@dragonslave.de>
+	Tue, 14 Aug 2007 12:13:39 -0400
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [patch 00/12] 2.6.22-stable review
+Date: Tue, 14 Aug 2007 18:13:34 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+References: <20070814072813.GA15025@kroah.com>
+In-Reply-To: <20070814072813.GA15025@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart12119426.S2RkTWcCxE";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070814161251.1E91923513A@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Message-Id: <200708141813.34951.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I think 8237 was about where they forked off the the VT6212 as
-> > their first discrete EHCI (for addon cards) claiming EHCI 1.0
-> > conformance.  Too bad they didn't recycle all the VT6202 chips
-> > in their inventory at that time...
->
-> No hardware producer would have done that ;)
+--nextPart12119426.S2RkTWcCxE
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-As I said:  too bad.  ;)
+Am Dienstag 14 August 2007 schrieb Greg KH:
+> This is the start of the stable review cycle for the 2.6.22.3 release.
 
+You missed this one: http://lkml.org/lkml/2007/8/10/296
 
-> > Now ... are you reporting that this worked with Stuart's patch?
-> > Or that it didn't?  Or that you couldn't say?
->
-> As I started this thread because Stuart's patch freezes my whole system (at 
-> least my bitsect did blame him), I therefore report that it doesnt work for 
-> me.
+The buggy patch was introduced in 2.6.22.2, so it wouldn't be bad to fix=20
+in .3...
 
-The original patch, yes.  ISTR seeing an update come around though.
-Maybe I was imagining things.
+bye,
+=2D-=20
+(=B0=3D                 =3D=B0)
+//\ Prakash Punnoor /\\
+V_/                 \_V
 
+--nextPart12119426.S2RkTWcCxE
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.5 (GNU/Linux)
+
+iD8DBQBGwdSuxU2n/+9+t5gRAlOSAJ9V++dpRdLxWGNJ0oadWhbpLBmDYQCgu4Cn
+JrhtcneJQBs1YT6DiGSEqAE=
+=cZFj
+-----END PGP SIGNATURE-----
+
+--nextPart12119426.S2RkTWcCxE--
