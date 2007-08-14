@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbXHNHbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbXHNHqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752528AbXHNHbZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 03:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbXHNHbN
+	id S1752661AbXHNHqM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 03:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbXHNHp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 03:31:13 -0400
-Received: from naig.caltech.edu ([131.215.239.125]:49150 "EHLO
-	naig.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750714AbXHNHbM (ORCPT
+	Tue, 14 Aug 2007 03:45:57 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:55341 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbXHNHp4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 03:31:12 -0400
-Message-Id: <200708140731.l7E7V1Uq012216@naig.caltech.edu>
-X-Mailer: QUALCOMM Windows Eudora Version 7.1.0.9
-Date: Tue, 14 Aug 2007 01:30:57 -0600
-To: mlist-linux-kernel@nntp-server.caltech.edu
-From: "Joenaur Quevada" <Quevada@wendyboucher.com>
-Subject: Therefore, color is not really an actual part of things I happen to see.
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+	Tue, 14 Aug 2007 03:45:56 -0400
+Date: Tue, 14 Aug 2007 00:28:13 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/12] 2.6.22-stable review
+Message-ID: <20070814072813.GA15025@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H*u g'e N'e-w-s To Impa.ct C_Y+T V 
+This is the start of the stable review cycle for the 2.6.22.3 release.
+There are 12 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-Chi*na YouT_V C.o*r.p-. 
-Symbol : C*Y*T*V 
+Responses should be made by Wed, August 15 00:00:00 UTC.  Anything
+received after that time might be too late.
 
+thanks,
 
-
-
-We h+a_v*e alr+eady s+e_e+n CYTV_'s ma rket impa-ct b efore cli*mbi.ng to o,v*e-r $*2.00 w+i t-h n'e_w*s,. 
-Pr.ess R*elease: 
-
-C hina You_TV's CnBo.o W-e,b S,i.t'e Ran,ks N-o..*1 on M,_icrosoft L*i v+e Sear_ch Engi ne 
-Cn.Boo Traffi c I ncr*eases 4*9 % O_v*e-r T*w.o Mon-ths 
-
-
-R+e+a-d t+h'e new+s, t*hink abou't t'h.e i mpact, and
-
-j*u m_p on t,h_i s fir+st th'ing To+mo,rrow mo rn.ing!  $0.4_2 is a g_i,f*t at t,h+i's price*...... 
-
-
-Do y_o u*r homewor. k a'n+d watc'h t'h i's tra de M+onday mornin-g. 
-
-Howe'v*er, in h+i+s pres ent p,os,ition he w+a.s i.nv,isible. 
-
-Conve_rt.s a URL-en,cod+ed stri,ng i*n t_o a de.coded arra y of b,ytes, usi_ng t'h_e sp*e*cified d'eco,ding method+. 
-N o,, it is g-o+n*e'. 
-T*empo e b-e'n di morir'e, et o tar'dato p'i'u ch-'i' n_o.n vo,rrei. 
-
-Th-ere w.e_r-e no Trol-*locs t,here. 
-
-
-
+greg k-h
