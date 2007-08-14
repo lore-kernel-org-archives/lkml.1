@@ -1,38 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbXHNJoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbXHNJq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757136AbXHNJoL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 05:44:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbXHNJnv
+	id S1757281AbXHNJq0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 05:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbXHNJqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 05:43:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33848 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752603AbXHNJnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 05:43:49 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070813111559.GG24018@shell.boston.redhat.com>
-References: <20070813111559.GG24018@shell.boston.redhat.com> <46C03885.7000109@redhat.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: dhowells@redhat.com, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: [PATCH 7/23] make atomic_read() and atomic_set() behavior consistent on frv
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Tue, 14 Aug 2007 10:42:31 +0100
-Message-ID: <1205.1187084551@redhat.com>
+	Tue, 14 Aug 2007 05:46:07 -0400
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:3786 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754181AbXHNJqF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 05:46:05 -0400
+Message-ID: <46C179D6.1010901@imap.cc>
+Date: Tue, 14 Aug 2007 11:45:58 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Zan Lynx <zlynx@acm.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: How to make -mm a more viable testbed
+References: <200708130808.46989.a1426z@gawab.com> <1187037607.7855.21.camel@localhost>
+In-Reply-To: <1187037607.7855.21.camel@localhost>
+X-Enigmail-Version: 0.95.1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig95BF4DAEDF03640B26514A25"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook <csnook@redhat.com> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig95BF4DAEDF03640B26514A25
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-> Use volatile consistently in atomic.h on frv.
+Zan Lynx schrieb:
+> I thought most people running -mm were running klive, which shou
+> ld tell kernel versions, uptime and other things.  I run it, anyway.
+>=20
+> http://klive.cpushare.com/
 
-Acked-By: David Howells <dhowells@redhat.com>
+I don't, even though I try to at least build and boot each -mm release
+once. Should I? Perhaps I should.
+
+(downloading ... running ... failing ... installing python-twisted ... ru=
+nning ...)
+
+Ok, now I do.
+
+HTH
+T.
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig95BF4DAEDF03640B26514A25
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGwXnWMdB4Whm86/kRAgYrAJ0QlZOJa2veMumDVdXE7aZSGf7z6ACcCY9f
+b5HI9VmtwkgtlWotJS65f1Y=
+=9/8G
+-----END PGP SIGNATURE-----
+
+--------------enig95BF4DAEDF03640B26514A25--
