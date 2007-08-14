@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759489AbXHNL1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758350AbXHNLbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759489AbXHNL1T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 07:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757159AbXHNL1E
+	id S1758350AbXHNLbe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 07:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbXHNLbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 07:27:04 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42767 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754183AbXHNL1B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 07:27:01 -0400
-Date: Tue, 14 Aug 2007 12:34:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Avi Kivity <avi@argo.co.il>
-Cc: hinoue@ccsl.carleton.ca, linux-kernel@vger.kernel.org
-Subject: Re: System call interposition/unprotecting the table
-Message-ID: <20070814123425.4f61b42f@the-village.bc.nu>
-In-Reply-To: <46C139BD.1030607@argo.co.il>
-References: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca>
-	<20070814000956.7c8929dd@the-village.bc.nu>
-	<46C139BD.1030607@argo.co.il>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 14 Aug 2007 07:31:21 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:56841 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754293AbXHNLbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 07:31:19 -0400
+Date: Tue, 14 Aug 2007 15:30:42 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Block device throttling [Re: Distributed storage.]
+Message-ID: <20070814113039.GA20780@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708130604.07154.phillips@phunq.net> <20070814084625.GA20265@2ka.mipt.ru> <200708140413.12530.phillips@phunq.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708140413.12530.phillips@phunq.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Aug 2007 08:12:29 +0300
-Avi Kivity <avi@argo.co.il> wrote:
-
-> Alan Cox wrote:
-> > This is to protect it from being changed by an attacker or someone trying
-> > to do strange and bogus things to the kernel.
-> >   
+On Tue, Aug 14, 2007 at 04:13:10AM -0700, Daniel Phillips (phillips@phunq.net) wrote:
+> On Tuesday 14 August 2007 01:46, Evgeniy Polyakov wrote:
+> > On Mon, Aug 13, 2007 at 06:04:06AM -0700, Daniel Phillips 
+> (phillips@phunq.net) wrote:
+> > > Perhaps you never worried about the resources that the device
+> > > mapper mapping function allocates to handle each bio and so did not
+> > > consider this hole significant.  These resources can be
+> > > significant, as is the case with ddsnap.  It is essential to close
+> > > that window through with the virtual device's queue limit may be
+> > > violated.  Not doing so will allow deadlock.
+> >
+> > This is not a bug, this is special kind of calculation - total limit
+> > is number of physical devices multiplied by theirs limits. It was
+> > done _on purpose_ to allow different device to have different limits
+> > (for example in distributed storage project it is possible to have
+> > both remote and local node in the same device, but local device
+> > should not have _any_ limit at all, but network one should).
+> >
+> > Virtual device essentially has _no_ limit. And that as done on
+> > purpose.
 > 
-> Someone who apparently hasn't heard of vmap(), etc.
+> And it will not solve the deadlock problem in general.  (Maybe it works 
+> for your virtual device, but I wonder...)  If the virtual device 
+> allocates memory during generic_make_request then the memory needs to 
+> be throttled.
+
+Daniel, if device process bio by itself, it has a limit and thus it will
+wait in generic_make_request(), if it queues it to different device,
+then the same logic applies there. If virutal device does not process
+bio, its limit will always be recharged to underlying devices, and
+overall limit is equal to number of physical device (or devices which do
+process bio) multiplied by theirs limits. This does _work_ and I showed
+example how limits are processed and who and where will sleep. This
+solution is not narrow fix, please check my examples I showed before.
+
+> Regards,
 > 
-> It's a debug aid at best.
+> Daniel
 
-You assume the average attacker is smart. Fortunately this isn't true,
-although some certainly are. For guests however we can push this further
-as a hypervisor can implement 'irrevocably read only' pages for a guest.
-Something we don't currently do but should.
-
-Alan
+-- 
+	Evgeniy Polyakov
