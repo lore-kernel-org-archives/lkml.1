@@ -1,67 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706AbXHNIBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbXHNIB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755706AbXHNIBZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 04:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbXHNIBJ
+	id S1753918AbXHNIB6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 04:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbXHNIBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 04:01:09 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:33135 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752098AbXHNIBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 04:01:07 -0400
-Date: Tue, 14 Aug 2007 10:01:52 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Stable Team <stable@kernel.org>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>
-Subject: Re: [patch 3/3] genirq: mark io_apic level interrupts to avoid resend
-Message-ID: <20070814080152.GB1702@ff.dom.local>
-References: <20070812152213.551812576@inhelltoy.tec.linutronix.de> <20070812152303.177006193@inhelltoy.tec.linutronix.de> <20070813112821.GA2863@ff.dom.local> <1187006835.12828.112.camel@chaos> <20070813135311.GB4026@ff.dom.local> <1187032057.5330.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 14 Aug 2007 04:01:18 -0400
+Received: from smtp107.sbc.mail.re2.yahoo.com ([68.142.229.98]:39206 "HELO
+	smtp107.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754064AbXHNIBQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 04:01:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ZnVKTxFBLJstpxLSVKIVWwaZrYZmoDSujV/XfgP94H450IJ98ULs+L9WLxKP0m/W/3lvZ9GhrQ9AA85FYjydNUXCrrq25lJzvLrYQg3FuvNRYc3qfa2FX2tjh4uXQGGlSD59AZv1bVH37TI/VJ1CMDdX7Gb40X4FhA3w4PmUq8g=  ;
+X-YMail-OSG: ieP.lQoVM1nE1LTxgKpNHcB2jXq4zazz._qw0LW404SkgUkUvwxLZ0glJDT72uzzrRme1cRF0Q--
+From: David Brownell <david-b@pacbell.net>
+To: webmaster@dragonslave.de
+Subject: Re: EHCI Regression in 2.6.23-rc2
+Date: Tue, 14 Aug 2007 01:01:19 -0700
+User-Agent: KMail/1.9.6
+Cc: Stuart_Hayes@dell.com, greg@kroah.com, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net, jikos@jikos.cz
+References: <200708101045.57166.dex@dragonslave.de> <200708131516.18675.david-b@pacbell.net> <200708140843.42196.webmaster@dragonslave.de>
+In-Reply-To: <200708140843.42196.webmaster@dragonslave.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <1187032057.5330.17.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200708140101.19651.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 02:07:37PM -0500, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-08-13 at 15:53 +0200, Jarek Poplawski wrote:
-> > 
-> > I've thought e.g. about "fasteoi" for this "Virtual Wire" timer for
-> > i386: I hope it's OK, but since is it any problem to add some comment
-> > here, why it's OK with resending here (with POWERPC it's easier to
-> > think it's something special, but here we have to similar things in
-> > the same file)?
+On Monday 13 August 2007, Daniel Exner wrote:
+> David Brownell wrote:
+> > On Monday 13 August 2007, Stuart_Hayes@dell.com wrote:
+> > > With the VIA controller I have,
+> >
+> > Which kind is that?  The VT6202 is buggy as all get-out, and
+> > they sold a *LOT* of those discrete chips for use in add-on PCI
+> > cards.  We generally warn people away from those.  A more current
+> > version is the VT6212, which was much more usable.  (If it says
+> > EHCI 0.95, it's a VT6202... their EHCI 1.0 chips were much better.)
+>
+> Where exactly should I search for this? Neither lspci nor lsusb showed any 
+> hint on the EHCI rev. the chip conforms to..
 
-Sorry! Of course, there is something about edge in a lapic_chip
-declaration, so this (plus some knowledge of the subject) should be
-enough, but I was a little surprised that x86_64 uses handle_edge_irq
-for probably(?) the same thing.
+The driver logs that information as it starts; on this sytem:
 
-> 
-> To be totally fair, there shouldn't be a problem with spurrious
-> re-sends, I'm not sure what problems some chipsets are having there,
-> though it may be related to the method used for re-sending. On ppc, we
-> use the soft method I think everywhere anyway.
+ ehci_hcd 0000:00:02.2: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
 
-IMHO, this method is very doubtful if the whole system isn't adapted
-for this: e.g. in networking code softirqs are blocked very often, so
-such resended irq could be really late.
+vs "EHCI 0.95".
 
-> 
-> I use re-sending on cell with fasteoi for the on-die top-level PIC
-> because while it does have a HW priority handling, it also doesn't have
-> a HW mask. Thus I just "drop" IRQs that are masked and resend (it's edge
-> messages).
+ 
+> [..]
+> > > Perhaps for now the best thing would just be to bypass the EHCI CPU
+> > > frequency notifier code (i.e., my patch) for VIA EHCI controllers, since
+> > > they are broken.  Would a hard-coded blacklist (just an "if
+> > > (manufacturer==VIA)..." type thing) be OK?
+> >
+> > Yes ... although if you don't need to blacklist their EHCI 1.0 chips
+> > don't do it.  (Any VIA EHCI integrated into a southbridge is going
+> > to follow spec rev 1.0 pretty well, modulo idiosyncratic timings.)
+>  
+> I guess its needed to blacklist even the ECHI 1.0 chips, since my problem is
+> with exactly one of those ;)
 
-So, if I got this right, it looks a bit easier, since you can resend with
-the same type as not masked ones (fasteoi-edge?!), I guess.
+Something doesn't add up then ... above you ask where to find that info,
+but here you say you already got it from somwhere ... ?
 
-Regards,
-Jarek P.
+
+> I'm not really into USB protocol specs, but perhaps its possible to test 
+> wether the problem Stuarts patch addressed can actually happen on VIA EHCI 
+> chips? Perhaps those guys solved the problem in Hard/Firmware..
+
+Theoretically possible, and I've certainly seen hardware made to do
+stranger things than that.
+
+
+> > > I've also acquired a card with an NEC EHCI controller on it, which I'm
+> > > going to look at while I'm into it...
+> >
+> > Another case where there are a lot of add-on "EHCI 0.95" cards; but
+> > in this case the quirks were less significant.
+>
+> Some guy donated me a PCMCIA card with one of those, cause it'll wont work in 
+> his Windows only Notebook :)
+
+A NEC 0.95 ??  Should be fine with Linux.  Assuming no bugs have
+crept in.
+
+- Dave
+
+
+
