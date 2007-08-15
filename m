@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934012AbXHORni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbXHORp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934012AbXHORni (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:43:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760750AbXHORna
+	id S932806AbXHORp0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbXHORpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:43:30 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50916 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751154AbXHORn3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:43:29 -0400
-Date: Wed, 15 Aug 2007 12:43:26 -0500
-To: akpm@linux-foundation.org
-Cc: npiggin@suse.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] calculation of pgoff in do_linear_fault() uses mixed 
- units
-Message-ID: <46C33B3E.mailxBSH11HDLW@aqua.americas.sgi.com>
-User-Agent: nail 11.4 8/29/04
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 15 Aug 2007 13:45:00 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1762 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754142AbXHORo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:44:59 -0400
+Subject: Re: [PATCH] [261/2many] MAINTAINERS - IOC3 DRIVER
+From: Joe Perches <joe@perches.com>
+To: Pat Gefre <pfg@americas.sgi.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.SGI.3.96.1070815090732.63602A-100000@fsgi900.americas.sgi.com>
+References: <Pine.SGI.3.96.1070815090732.63602A-100000@fsgi900.americas.sgi.com>
+Content-Type: text/plain
+Date: Wed, 15 Aug 2007 10:31:35 -0700
+Message-Id: <1187199095.7443.25.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-From: dcn@sgi.com (Dean Nelson)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The calculation of pgoff in do_linear_fault() should use PAGE_SHIFT and not
-PAGE_CACHE_SHIFT since vma->vm_pgoff is in units of PAGE_SIZE and not
-PAGE_CACHE_SIZE. At the moment linux/pagemap.h has PAGE_CACHE_SHIFT defined
-as PAGE_SHIFT, but should that ever change this calculation would break.
+On Wed, 2007-08-15 at 09:08 -0500, Pat Gefre wrote:
+> On Tue, 14 Aug 2007, Joe Perches wrote:
+> + On Mon, 2007-08-13 at 11:19 +0100, Ralf Baechle wrote:
+> + > I suggest to add a separate
+> + > MAINTAINERS entry for ioc3_serial with Patrick Gefre <pfg@sgi.com> as the
+> + > maintainer.
+> + Patrick? Is that what you want?
+> Yeah that's fine. I'm the most likely person for this.
 
-Signed-off-by: Dean Nelson <dcn@sgi.com>
+IOC3 DRIVER
+P:	Ralf Baechle
+M:	ralf@linux-mips.org
+L:	linux-mips@linux-mips.org
+S:	Maintained
+F:	drivers/net/ioc3-eth.c
+
+IOC3 SERIAL DRIVER
+P:	Pat Gefre
+M:	pfg@sgi.com
+L:	linux-mips@linux-mips.org
+S:	Maintained
+F:	drivers/serial/ioc3_serial.c
 
 
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2007-08-14 06:42:18.322378070 -0500
-+++ linux-2.6/mm/memory.c	2007-08-15 12:30:51.621604739 -0500
-@@ -2465,7 +2465,7 @@
- 		int write_access, pte_t orig_pte)
- {
- 	pgoff_t pgoff = (((address & PAGE_MASK)
--			- vma->vm_start) >> PAGE_CACHE_SHIFT) + vma->vm_pgoff;
-+			- vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
- 	unsigned int flags = (write_access ? FAULT_FLAG_WRITE : 0);
- 
- 	return __do_fault(mm, vma, address, page_table, pmd, pgoff,
+
