@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbXHOHEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbXHOHIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758875AbXHOHEU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 03:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbXHOHEM
+	id S1758977AbXHOHIX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 03:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXHOHIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 03:04:12 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:47834 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753716AbXHOHEK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 03:04:10 -0400
-Date: Wed, 15 Aug 2007 09:04:07 +0200
-From: Sebastian Siewior <sebastian@breakpoint.cc>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] i386: use asm() like the other atomic operations
-	already do.
-Message-ID: <20070815070407.GA28936@Chamillionaire.breakpoint.cc>
-References: <20070814223845.518697567@breakpoint.cc> <20070814224337.547449183@breakpoint.cc> <20070815002034.GW3406@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070815002034.GW3406@bingen.suse.de>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 15 Aug 2007 03:08:16 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50501 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752261AbXHOHIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 03:08:14 -0400
+Date: Wed, 15 Aug 2007 17:08:07 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] allow disabling DNOTIFY without EMBEDDED
+Message-Id: <20070815170807.aacdf871.sfr@canb.auug.org.au>
+In-Reply-To: <20070814212712.GC18945@stusta.de>
+References: <20070814212712.GC18945@stusta.de>
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__15_Aug_2007_17_08_07_+1000_c5UGL7tP/yPuLsLe"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen | 2007-08-15 02:20:35 [+0200]:
+--Signature=_Wed__15_Aug_2007_17_08_07_+1000_c5UGL7tP/yPuLsLe
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->> My config with march=pentium-m and gcc (GCC) 4.1.2 (Gentoo 4.1.2):
->>   text    data     bss     dec     hex filename
->> 3434150  249176  176128 3859454  3ae3fe atomic_normal/vmlinux
->> 3435308  249176  176128 3860612  3ae884 atomic_inlineasm/vmlinux
+On Tue, 14 Aug 2007 23:27:12 +0200 Adrian Bunk <bunk@kernel.org> wrote:
 >
->What is the difference between atomic_normal and atomic_inlineasm? 
-atomic normal is Linus' tree, commit 28e8351. Inline asm is with this
-patch. I wrote this in 0/2 (you want this here as well?).
+> This patch allows disabling DNOTIFY with CONFIG_EMBEDDED=3Dn.
+>=20
+> I'm currently running a kernel with dnotify disabled and I haven't run=20
+> into any problem. Is there any popular application left that breaks=20
+> without dnotify support in the kernel?
+>=20
+> Note that this patch does not remove dnotify support, it still defaults
+> to "y", and the help text recommends enabling it.
+>=20
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
->
->>  /**
->>   * atomic_read - read atomic variable
->>   * @v: pointer of type atomic_t
->> - * 
->> + *
->
->Please don't change white space in patches
-I fixed white space errors. SubmitChecklist:24 says I should not
-introduce any new ones so fixing existig sounds like the right thing to
-do.
-No white space fixing in future?
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
->
->>   * Atomically reads the value of @v.
->> - */ 
->> -#define atomic_read(v)		((v)->counter)
->> + */
->> +static __inline__ int atomic_read(const atomic_t *v)
->> +{
->> +	int t;
->> +
->> +	__asm__ __volatile__(
->
->And don't use __*__ in new code
-Okey.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
->
->-Andi
+--Signature=_Wed__15_Aug_2007_17_08_07_+1000_c5UGL7tP/yPuLsLe
+Content-Type: application/pgp-signature
 
-Sebastian
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGwqZcTgG2atn1QN8RAu0kAJ9/kW388S+cOU34iKPwe1qfumbxyACgmjup
+Vd1mEcBh719OpbTUF5j00Q4=
+=v/It
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__15_Aug_2007_17_08_07_+1000_c5UGL7tP/yPuLsLe--
