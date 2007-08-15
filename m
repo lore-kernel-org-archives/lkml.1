@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758487AbXHOJjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbXHOJoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758487AbXHOJjx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 05:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXHOJjm
+	id S1759339AbXHOJoM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 05:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755202AbXHOJn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 05:39:42 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:37545 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750791AbXHOJjl (ORCPT
+	Wed, 15 Aug 2007 05:43:58 -0400
+Received: from adsl-67-117-79-109.dsl.sntc01.pacbell.net ([67.117.79.109]:2951
+	"EHLO aurum.uhlenkott.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754821AbXHOJn5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 05:39:41 -0400
-Message-ID: <46C2C9DC.9030307@s5r6.in-berlin.de>
-Date: Wed, 15 Aug 2007 11:39:40 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Junio C Hamano <gitster@pobox.com>, Rene Herman <rene.herman@gmail.com>,
-       git@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -	scripts/get_maintainer.pl
-References: <1186984174.10249.7.camel@localhost>	 <200708131933.10125.m.kozlowski@tuxland.pl>	 <1187026955.2688.4.camel@laptopd505.fenrus.org>	 <1187037445.6628.98.camel@heimdal.trondhjem.org>	 <1187054366.2757.0.camel@laptopd505.fenrus.org>	 <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu>	 <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>	 <7vwsvx8twx.fsf@assigned-by-dhcp.cox.net> <1187143925.32555.208.camel@localhost>
-In-Reply-To: <1187143925.32555.208.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 15 Aug 2007 05:43:57 -0400
+Date: Wed, 15 Aug 2007 02:43:56 -0700
+From: Jason Uhlenkott <jasonuhl@jasonuhl.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Rene Herman <rene.herman@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kfree(0) - ok?
+Message-ID: <20070815094356.GA18253@aurum.uhlenkott.net>
+References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org> <20070814232107.GA4265@aurum.uhlenkott.net> <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr> <46C2BB60.6010909@gmail.com> <Pine.LNX.4.64.0708151113410.19270@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708151113410.19270@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Tue, 2007-08-14 at 18:31 -0700, Junio C Hamano wrote:
->>    On the other hand, git-send-email _is_ all about sending it
->>    out, and it needs to know who your patch should reach.  I
->>    think it makes sense to have one script that,
-[...]
-
-> Yes please.
+On Wed, Aug 15, 2007 at 11:20:33 +0200, Jan Engelhardt wrote:
 > 
-> The LK MAINTAINERS file is ugly.
+> On Aug 15 2007 10:37, Rene Herman wrote:
+> > On 08/15/2007 09:28 AM, Jan Engelhardt wrote:
+> >> On Aug 14 2007 16:21, Jason Uhlenkott wrote:
+> >
+> >> > On Tue, Aug 14, 2007 at 15:55:48 -0700, Arjan van de Ven wrote:
+> >> > > NULL is not 0 though.
+> >> > It is.  Its representation isn't guaranteed to be all-bits-zero,
+> >> 
+> >> C guarantees that.
+> >
+> > C guarantees what? If you're disagreeing with Jason -- he's right.
 > 
-> Might there be a git portable way to "find"?
+> http://coding.derkeiler.com/Archive/C_CPP/comp.lang.c/2003-11/1808.html
 
-Note, maintainer contacts
-  - should be available to patch submitters and
-  - must be available to *problem reporters*
-without having to have git and a .git repo.
--- 
-Stefan Richter
--=====-=-=== =--- -====
-http://arcgraph.de/sr/
+That's about representation of integers types.  Pointer types are
+another matter.
+
+C99 sections 6.2.5 and 6.2.6 cover this.
+
+This is all just academic language lawyering, of course.  Any machine
+on which a pointer isn't NULL after being memset to 0 has serious
+quality of implementation issues.
