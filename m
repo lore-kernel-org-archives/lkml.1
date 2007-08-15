@@ -1,139 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933586AbXHOQgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933399AbXHOQid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933586AbXHOQgz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 12:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761559AbXHOQgl
+	id S933399AbXHOQid (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 12:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761021AbXHOQiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 12:36:41 -0400
-Received: from web52503.mail.re2.yahoo.com ([206.190.48.186]:31969 "HELO
-	web52503.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761538AbXHOQgj (ORCPT
+	Wed, 15 Aug 2007 12:38:20 -0400
+Received: from web90403.mail.mud.yahoo.com ([216.252.100.155]:38287 "HELO
+	web90403.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759180AbXHOQiT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 12:36:39 -0400
+	Wed, 15 Aug 2007 12:38:19 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=ycNaP8cCJyO3xNTDuqjcLMbDQW3VpabU5vGD1N4jcmmZQ+u60/iW3G9wnKOzVpfp8a+BBOqRNu3OJWZTpbelF+nQkpBwec2aUVZuRtKzUnRCzSiovqO+42aTyB6RkzIubB/5Zd63ShiVN7x52lCMOeWiRz7bK2j0d+TO433Z0RI=;
-X-YMail-OSG: GFd3R1cVM1lkkLqYK.Ayzddo5U5dVyidoLRZA3fjbcfxDAem65KhsNtWt.balgCwMKv95Y0jawsrpk3SK3X0pSEdW9esnl_KSVelyjh1WNlB8hbp.1M-
-Date: Wed, 15 Aug 2007 09:36:38 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: Thinking outside the box on file systems
-To: Michael Tharp <gxti@partiallystapled.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>
-Cc: alan <alan@clueserver.org>, Marc Perkel <mperkel@yahoo.com>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-In-Reply-To: <46C31859.6030306@partiallystapled.com>
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=kTlZT4nnFRIf6claZV6nevmxhFrQEbe5VlpGYTVlofGJ0UmgTKoWzIMPlB5SRZK6H2HrJhPWONk0MUX22ZPweNcQy3jNFr2OhM+40GsSOPFB+lTCSmKvG610r7x326uA+9s8fOmozBN+U/JzHb16s9IOpUv6FGd+K/jdn+12ido=;
+X-YMail-OSG: sKKfTQ8VM1kqfaNd7r.bKPguL4ILk4Aa8DbVOmUJSGq6MJPHYD4ZpN3oxLtUcerFfI_iy8HFFH5kod5H7E4qkiRyx9fjWdRtrZm3yjjoWRmqFUZOzj_7asB8CY4FSg--
+Date: Wed, 15 Aug 2007 09:38:18 -0700 (PDT)
+From: James Corey <ploversegg@yahoo.com>
+Subject: 2.6.23-rc3 and SKY2 driver issue
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <184413.25590.qm@web52503.mail.re2.yahoo.com>
+Message-ID: <663186.13204.qm@web90403.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- Michael Tharp <gxti@partiallystapled.com> wrote:
+I tried running a D-link gig card on kernel 2.6.21.1
+and it came up fine, but when I did a sftp of 
+an linux dvd ISO to it, the interface would lock 
+up hard with the error
 
-> Kyle Moffett wrote:
-> > Basically any newly-created item in such a
-> directory will get the
-> > permissions described by the "default:" entries in
-> the ACL, and
-> > subdirectories will get a copy of said "default:"
-> entries.
-> 
-> This would work well, although I would give write
-> permissions to a group
-> so the entire dir wouldn't need to be re-ACLed when
-> a user is added. I
-> may give this a shot; I've been avoiding ACLs
-> because they have always
-> sounded incomplete/not useful, but the inheritance
-> aspect sounds rather
-> nice.
+eth1: hw csum failure.
 
-Michael, my idea in this model is that there will be
-no permissions stored in files. So you would not have
-to re-ACL anything. 
-
-What I'm thinking is there would be a new permission
-system that is completely different.
-
-It might be something like this. I am loged in as
-mperkel. I get all the rights of mperkel and all other
-objects like groups or management lists that I am a
-member of. Once the system has a full list of my
-rights it starts to compare the file name I'm trying
-to access to the rights I have by testing each section
-of the name. So if the file is
-/home/mperkel/files/myfile then the test would be:
-
-/home/mperkel/files/myfile - nothing
-/home/mperkel/files - nothing
-/home/mperkel - match - mperkel granted tree
-permission
-
-Rights tests would be based on trees so if you hit a
-tree permission they you can access anything in the
-tree unless you have hit a deny in the branches. All
-of this is based on the text strings in the file name
-with the "/" separator for the tests. 
-
-The correct way of thinking of this is applying
-permissions to name strings. Directories will become
-artificial constructs. For example, one might grant
-permissions for files:
-
-/etc/*.conf - read only
-/etc - deny
-
-In this example the user would be able to read any
-file in the /etc directory that ended in *.conf but no
-other files. If the object listed the /etc directory
-it would only show the *.conf files and no other file
-would appear to exist.
-
-The important point here is that directories don't
-really exist. Imagine that every file has an internal
-number that is linked to the blocks that contain that
-file. Then there are file names that link to that
-number directly. Then there is a permission system
-that compares the name you are requesting to a
-permission algorithm that determines what you are
-allowed to do to the name that you are requesting.
-
-For example, you want to list all file names /etc/*.
-Each name is fetched and your permissions are compared
-to each item and you get a list of names that you have
-some permission to access. If you have no permission
-to a name that exists then you don't see the name.
-Thus, suppose you have this permission
-
-/etc/pass* - deny
-
-Then you will not only be denied access to the
-/etc/passwd file, you wouldn't even be able to tell if
-it exists.
-
-The root user for compatibility would have permissions
-to everything. It would be like a super manager.
-Managers would be objects that have limited ability to
-alter the permissions for other users or objects that
-they manage.
-
-I'm also thinking there would be a "kernel" user which
-would be a level above the root user where the kernel
-would have access to files that even the root user
-can't see (unless debug modes are set) so that some
-files can be system only or readable by root but
-writable by kernel.
+Call Trace:
+ <IRQ>  [<ffffffff804d3e31>]
+__skb_checksum_complete_head+0x46/0x5f
+ [<ffffffff804d3e56>] __skb_checksum_complete+0xc/0x11
+ [<ffffffff805046c7>] tcp_v4_rcv+0x157/0x810
+ [<ffffffff804d8a6f>] dev_queue_xmit+0x237/0x260
+ [<ffffffff80229990>] find_busiest_group+0x252/0x684
+ [<ffffffff804ead50>] ip_local_deliver+0xca/0x14c
+ [<ffffffff804eb24a>] ip_rcv+0x478/0x4ba
+ [<ffffffff803ec7d3>] sky2_poll+0x6f9/0x9b9
+ [<ffffffff8022bd5d>]
+run_rebalance_domains+0x13e/0x408
+ [<ffffffff804d877a>] net_rx_action+0xa8/0x166
+ [<ffffffff80235d62>] __do_softirq+0x55/0xc3
+ [<ffffffff8020a4ec>] call_softirq+0x1c/0x28
+ [<ffffffff8020b611>] do_softirq+0x2c/0x7d
+ [<ffffffff8020b8cf>] do_IRQ+0x13e/0x15f
+ [<ffffffff802086ce>] mwait_idle+0x0/0x46
+ [<ffffffff80209871>] ret_from_intr+0x0/0xa
+ <EOI>  [<ffffffff80208710>] mwait_idle+0x42/0x46
+ [<ffffffff80208666>] cpu_idle+0x8c/0xaf
+ [<ffffffff8078174e>] start_kernel+0x2ac/0x2b8
+ [<ffffffff80781140>] _sinittext+0x140/0x144
 
 
-Marc Perkel
-Junk Email Filter dot com
-http://www.junkemailfilter.com
+So I tried running the latest snapshot 2.6.23-rc3 
+and the almost the same thing happens. Only 
+difference is that now the entire box locks up. 
+The error is almost the same
+
+eth1: hw csum failure.
+
+Call Trace:
+ <IRQ>  [<ffffffff804779b6>]
+__skb_checksum_complete_head+0x43/0x56
+ [<ffffffff804779d5>] __skb_checksum_complete+0xc/0x11
+ [<ffffffff804a989d>] tcp_v4_rcv+0x14e/0x801
+ [<ffffffff8048ff84>] ip_local_deliver+0xca/0x14c
+ [<ffffffff80490472>] ip_rcv+0x46c/0x4ae
+ [<ffffffff880060f9>] :sky2:sky2_poll+0x72b/0x9c7
+ [<ffffffff8047c934>] net_rx_action+0xa8/0x166
+ [<ffffffff80235ced>] __do_softirq+0x55/0xc4
+ [<ffffffff8020c5cc>] call_softirq+0x1c/0x28
+ [<ffffffff8020d6fd>] do_softirq+0x2c/0x7d
+ [<ffffffff8020d9bb>] do_IRQ+0x13e/0x15f
+ [<ffffffff8020a780>] mwait_idle+0x0/0x48
+ [<ffffffff8020b951>] ret_from_intr+0x0/0xa
+ <EOI>  [<ffffffff880063e7>]
+:sky2:sky2_xmit_frame+0x0/0x41d
+ [<ffffffff8020a7c2>] mwait_idle+0x42/0x48
+ [<ffffffff8020a718>] cpu_idle+0xbd/0xe0
+ [<ffffffff80704a5a>] start_kernel+0x2ac/0x2b8
+ [<ffffffff80704140>] _sinittext+0x140/0x144
+
+
+I see that the new kernel includes some sort of 
+SKY2 DEBUG stuff. I would be happy to rerun 
+the test with that turned on, given some minor 
+direction.
+
+
 
 
       ____________________________________________________________________________________
-Park yourself in front of a world of choices in alternative vehicles. Visit the Yahoo! Auto Green Center.
-http://autos.yahoo.com/green_center/ 
+Shape Yahoo! in your own image.  Join our Network Research Panel today!   http://surveylink.yahoo.com/gmrs/yahoo_panel_invite.asp?a=7 
+
+
