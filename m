@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763619AbXHOIxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765128AbXHOI4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763619AbXHOIxa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 04:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbXHOIxP
+	id S1765128AbXHOI4E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 04:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757881AbXHOIzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 04:53:15 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:59730 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1753543AbXHOIxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 04:53:13 -0400
-Message-ID: <387167988.30158@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Wed, 15 Aug 2007 16:53:08 +0800
-From: WU Fengguang <wfg@mail.ustc.edu.cn>
-To: Andy Isaacson <adi@hexapodia.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
-Message-ID: <20070815085308.GA18959@mail.ustc.edu.cn>
-References: <46BEF5C0.3080902@linux.vnet.ibm.com> <20070812120902.GA9972@mail.ustc.edu.cn> <20070812122746.GA10109@mail.ustc.edu.cn> <20070814171058.GA14093@hexapodia.org>
+	Wed, 15 Aug 2007 04:55:52 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:34146 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753616AbXHOIzu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 04:55:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZQQVpGXN2Y/dUW4N8a/OBc0gtBlHmQvmwaHcMSG9lyV/eqISXTwZCJUDmvPmy6BRTLg5Q8N8/t/k/gt+s2ZAlq4IN9fuPzlTsN1OHQu+h2XxyMcRTu5Drp/r7VWZc5wlE3h6W+HLFGRtk0U2t6NirOUDTjD5GoKSeJNftILxLGk=
+Message-ID: <4e5ebad50708150155s5cd75a5bt813742b5a02d56d@mail.gmail.com>
+Date: Wed, 15 Aug 2007 16:55:48 +0800
+From: "Sonic Zhang" <sonic.adi@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH again] [libata] libata driver for bf548 on chip ATAPI controller.
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070814103013.6899813f@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070814171058.GA14093@hexapodia.org>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <1187056118.16255.1.camel@sevens.analog.com>
+	 <4e5ebad50708131925k28d283f4k5057d0902ddc10ae@mail.gmail.com>
+	 <20070814103013.6899813f@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 14, 2007 at 10:10:58AM -0700, Andy Isaacson wrote:
-> On Sun, Aug 12, 2007 at 08:27:46PM +0800, WU Fengguang wrote:
-> > On Sun, Aug 12, 2007 at 05:27:52PM +0530, Balbir Singh wrote:
-> > > For some reason my mailer keeps removing you from the cc.
-> > 
-> > Or maybe it's my SMTP server's problem. Email systems are complex.
-> 
-> It's the Mail-Followup-To header you include in your emails:
-> 
-> > Mail-Followup-To: Balbir Singh <balbir@linux.vnet.ibm.com>,
-> >        Andrew Morton <akpm@linux-foundation.org>,
-> >        linux-kernel <linux-kernel@vger.kernel.org>
-> 
-> The mail clients are just doing what you asked.  Perhaps you need to
-> turn off followup_to (and turn on edit_headers).
-> 
-> Mutt has "set honor_followup_to=ask-yes" to fix this in 1.5 (though it's
-> broken in "1.4.2.2i"); I don't know if the GUI clients have such a
-> switch.
+On 8/14/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > +/**
+> > + * Register transfer timing table
+> > + */
+>
+> Libata has a complete set of transfer mode tables and timing functions -
+> any reason for not using them ?
+>
 
-Thank you for the tip, it does the trick!
+After a bit investigation, I find the timing paramters difined in
+struct ata_timing are different from that in hardware manual of BF548.
 
-Andrew: I just realized that a false muttrc was "corrected". What a fool!
+struct ata_timing {
+        unsigned short mode;            /* ATA mode */
+        unsigned short setup;           /* t1 */
+        unsigned short act8b;           /* t2 for 8-bit I/O */
+        unsigned short rec8b;           /* t2i for 8-bit I/O */
+        unsigned short cyc8b;           /* t0 for 8-bit I/O */
+        unsigned short active;          /* t2 or tD */
+        unsigned short recover;         /* t2i or tK */
+        unsigned short cycle;           /* t0 */
+        unsigned short udma;            /* t2CYCTYP/2 */
+};
 
+
+BF548 PIO timing registers:
+        u8 teoc_reg;
+        u8 t2_reg;
+
+        u4 t4_reg;
+        u8 t2_pio;
+        u4 t1_reg;
+
+        u8 teoc_pio;
+
+BF548 UDMA timing registers:
+        u8 tenv;
+        u8 tack;
+
+        u8 tcyc_tdvs;
+        u8 tdvs;
+
+        u8 tmli;
+        u8 tss;
+
+        u8 trp;
+        u8 tzah;
+
+I can't find a simple way to configure bf548 registers with the ata_timing data.
