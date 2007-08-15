@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964967AbXHOXmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965227AbXHOXmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964967AbXHOXmI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 19:42:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964909AbXHOXld
+	id S965227AbXHOXmw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 19:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964990AbXHOXmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 19:41:33 -0400
-Received: from straum.hexapodia.org ([64.81.70.185]:48456 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964867AbXHOXlb (ORCPT
+	Wed, 15 Aug 2007 19:42:19 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4903 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964981AbXHOXmQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 19:41:31 -0400
-Date: Wed, 15 Aug 2007 16:41:31 -0700
-From: Andy Isaacson <adi@hexapodia.org>
-To: gshan <gshan@alcatel-lucent.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: do_coredump and O_NOFOLLOW
-Message-ID: <20070815234130.GA17593@hexapodia.org>
-References: <46C290F6.2090309@alcatel-lucent.com>
+	Wed, 15 Aug 2007 19:42:16 -0400
+Date: Thu, 16 Aug 2007 07:41:46 +0800
+From: Herbert Xu <herbert.xu@redhat.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: David Howells <dhowells@redhat.com>, Satyam Sharma <satyam@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070815234146.GB28775@gondor.apana.org.au>
+References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com> <4413.1187201997@redhat.com> <20070815184520.GG9645@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46C290F6.2090309@alcatel-lucent.com>
-User-Agent: Mutt/1.4.2.2i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+In-Reply-To: <20070815184520.GG9645@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 01:36:54PM +0800, gshan wrote:
-> I found that O_NOFOLLOW is used for opened core file in Linux 2.6.10. 
-> This means the core file couldn't be a symbolic link. However, I want to 
-> use symbolic link for core file
+On Wed, Aug 15, 2007 at 11:45:20AM -0700, Paul E. McKenney wrote:
+> On Wed, Aug 15, 2007 at 07:19:57PM +0100, David Howells wrote:
+> > Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> > 
+> > > Let's turn this around.  Can you give a single example where
+> > > the volatile semantics is needed in a legitimate way?
+> > 
+> > Accessing H/W registers?  But apart from that...
+> 
+> Communicating between process context and interrupt/NMI handlers using
+> per-CPU variables.
 
-I would recommend that you use
-# sysctl -w kernel.core_pattern=/tmp/core.%e.%p
-instead.  See Documentation/sysctl/kernel.txt for details.
+Remeber we're talking about atomic_read/atomic_set.  Please
+cite the actual file/function name you have in mind.
 
--andy
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
