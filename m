@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932879AbXHOPdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbXHOPgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932879AbXHOPdd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 11:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760055AbXHOPdZ
+	id S932275AbXHOPgk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 11:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762844AbXHOPg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 11:33:25 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38246 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1760697AbXHOPdY (ORCPT
+	Wed, 15 Aug 2007 11:36:28 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4173 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760055AbXHOPg1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 11:33:24 -0400
-Date: Wed, 15 Aug 2007 11:33:22 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tejun Heo <htejun@gmail.com>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Florin Iucha <florin@iucha.net>, Greg KH <gregkh@suse.de>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
- v2.6.23-rc3-50-g28e8351
-In-Reply-To: <46C313B3.4030700@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0708151128530.3895-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 15 Aug 2007 11:36:27 -0400
+Date: Wed, 15 Aug 2007 23:33:36 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Satyam Sharma <satyam@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070815153335.GA23593@gondor.apana.org.au>
+References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070815142516.GB9645@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Aug 2007, Tejun Heo wrote:
-
-> Alan Stern wrote:
-> > I think we can simply remove the error message.  There's no obvious 
-> > reason why sysfs_remove_bin_file() should complain about attempts to 
-> > remove a nonexistent file; sysfs_remove_file() doesn't.
-> > 
-> > This patch will get rid of the annoying error messages.  It won't do 
-> > anything about your keyboard's tendency to spontaneously stop working, 
-> > alas.
+On Wed, Aug 15, 2007 at 07:25:16AM -0700, Paul E. McKenney wrote:
 > 
-> Agreed but I think sysfs_remove_bin_file() should relay the return value
-> from sysfs_has_and_remove() to the caller.
+> Do we really need another set of APIs?  Can you give even one example
+> where the pre-existing volatile semantics are causing enough of a problem
+> to justify adding yet more atomic_*() APIs?
 
-Perhaps.  But none of
+Let's turn this around.  Can you give a single example where
+the volatile semantics is needed in a legitimate way?
 
-	sysfs_remove_one()
-	sysfs_remove_subdir()
-	sysfs_remove_dir()
-	sysfs_remove_file()
-	sysfs_remove_file_from_group()
-	sysfs_remove_group()
-	sysfs_remove_link()
-
-return a value.  Why should sysfs_remove_bin_file() be different?  And 
-what callers would pay attention to the return value?
-
-Alan Stern
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
