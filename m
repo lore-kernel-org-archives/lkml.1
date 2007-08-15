@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935420AbXHOSLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935259AbXHOSPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935420AbXHOSLS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 14:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765305AbXHOSK5
+	id S935259AbXHOSPA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 14:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758313AbXHOSOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 14:10:57 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41264 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753697AbXHOSK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 14:10:56 -0400
-Date: Wed, 15 Aug 2007 11:09:29 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, mingo@elte.hu, jeremy@goop.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       lguest@ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
-       kiran@scalemp.com, shai@scalemp.com
-Subject: Re: [PATCH 3/25][V3] irq_flags / halt routines
-Message-ID: <20070815180929.GX3672@sequoia.sous-sol.org>
-References: <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <20070815135554.GE3406@bingen.suse.de> <5d6222a80708150718v14f26343q7467385e7919fa76@mail.gmail.com> <20070815154243.GH3406@bingen.suse.de> <46C31736.2050001@redhat.com> <20070815163640.GJ3406@bingen.suse.de> <46C3283B.5090804@redhat.com> <20070815164729.GU3672@sequoia.sous-sol.org> <46C3312D.40106@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46C3312D.40106@redhat.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Wed, 15 Aug 2007 14:14:49 -0400
+Received: from smtpout.mac.com ([17.250.248.171]:57672 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753131AbXHOSOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 14:14:48 -0400
+In-Reply-To: <824590.88264.qm@web52508.mail.re2.yahoo.com>
+References: <824590.88264.qm@web52508.mail.re2.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A699C8AE-6C16-46FA-9C55-EFA4FA1718ED@mac.com>
+Cc: Phillip Susi <psusi@cfl.rr.com>, Michael Tharp <gxti@partiallystapled.com>,
+       alan <alan@clueserver.org>, LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Thinking outside the box on file systems
+Date: Wed, 15 Aug 2007 14:14:27 -0400
+To: Marc Perkel <mperkel@yahoo.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Glauber de Oliveira Costa (gcosta@redhat.com) wrote:
-> Only caveat, is that it has to be done before smp gets in the game, and 
-> with interrupts disabled. (which makes the function in vsmp.c not eligible).
-> 
-> My current option is to force VSMP to use PARAVIRT, as said before, and 
-> then fill paravirt_arch_setup, which is currently unused, with code to 
-> replace the needed paravirt_ops.fn.
-> 
-> I don't know if there is any method to dynamically determine (at this 
-> point) that we are in a vsmp arch, and if there are not, it will have to 
-> get ifdefs anyway. But at least, they are far more local.
+On Aug 15, 2007, at 14:05:23, Marc Perkel wrote:
+> In this new system setfacl, chmod, chown, and chgrp all go away  
+> except inside of an emulation layer. File and directories no longer  
+> have permissions. People have permission to naming patterns. So if  
+> you put a file into a tree or move a tree then those who have  
+> permissions to the tree have access to the files.
+>
+> It eliminates the step of having to apply permission after moving  
+> files into a tree. You don't have to change file permissions  
+> because files no longer have permissions.
 
-between __cacheline_aligned_in_smp and other compile time bits based on
-VSMP specific INTERNODE_CACHE, etc. I think compile time the way to go.
+And I'm trying to tell you that unless you have some magic new  
+algorithm that turns NP-complete problems into O(log(N)) problems,  
+your idea won't work.  You can't just say "I just do one little thing  
+(mv) and the entire rest of the computer automagically changes to  
+match", because that would imply a single unscalable global kernel  
+lock.  "Pattern"-matching is either NP-complete or high-polynomial- 
+order, depending on how its implemented, and if you want to do a  
+recursive-chmod during a directory move then you're going to have  
+race-conditions out the ass.  If you have code or solid math to back  
+up your postings then please do so, but otherwise you're just wasting  
+time and bandwidth.
 
-> I am okay with both, but after all the explanation, I don't think that 
-> adding a new pvops is a bad idea. It would make things less cumbersome 
-> in this case. Also, hacks like this save_fl may require changes to the 
-> hypervisor, right? I don't even know where such hypervisor is, and how 
-> easy it is to replace it (it may be deeply hidden in firmware)
+Cheers,
+Kyle Moffett
 
-No hypervisor change needed.  Just the pv backend needs to return 0 or
-X86_EFLAGS_IF for save_flags (and similar translation on restore_flags).
-Xen uses a simple shared memory flag and does something which you could
-roughly translate into this:
-
-	xen_save_flags()
-	if (xen_vcpu_interrupts_enabled)
-		return X86_EFLAGS_IF;
-	else
-		return 0;
-
-This doesn't require any hypervisor changes.  Similarly, VSMP could do
-something along the lines of:
-
-	vsmp_save_flags()
-	flags = native_save_flags();
-	if (flags & X86_EFLAGS_IF) || (flags & X86_EFLAGS_AC)
-		return X86_EFLAGS_IF;
-	else
-		return 0;
-
-> A question raises here: Would vsmp turn paravirt_enabled to 1 ?
-
-Probably not.  It's mostly native and I'm not sure it would want the
-bits disabled from if (paravirt_enabled()) tests.
