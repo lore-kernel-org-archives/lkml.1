@@ -1,63 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933970AbXHORdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934584AbXHORea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933970AbXHORdq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761864AbXHORdc
+	id S934584AbXHORea (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760355AbXHOReP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:33:32 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34329 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762277AbXHORda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:33:30 -0400
-Date: Wed, 15 Aug 2007 10:33:26 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070815173326.GF9645@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com> <20070815153335.GA23593@gondor.apana.org.au> <20070815160830.GC9645@linux.vnet.ibm.com> <alpine.LFD.0.999.0708152244310.16414@enigma.security.iitk.ac.in>
+	Wed, 15 Aug 2007 13:34:15 -0400
+Received: from web52506.mail.re2.yahoo.com ([206.190.48.189]:33603 "HELO
+	web52506.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1763134AbXHOReN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:34:13 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=tpkSDtaxx3hnIh8p+p+iAEVF8tBPHSkd+fDg1PLWbXQeLtpAkli7G1t4n3q6wn1RVOOZqrnUcotfWqiVK9OOYdbGYldMNTAFR0gKnhpF5oG3BJPbEcXC45q7/NSXnUrv8iTYUDBi4+UGXhVJYeOMiNr8HQUaw4AddEw19O6v578=;
+X-YMail-OSG: 5fOBESIVM1nL8D5fC6ZyvQQGrh3j_6fhkYUIfFzAiXGCjNKap2_19ImEDLAlLoVgdi1euHh08IFLLT1f9Jh77ca0SZY5jVMJGGif32x8vWgJDnr_jlofp4xUvYkDwrdqYIc3Iqlxl_T4MJuHH9zfbPmhpQ--
+Date: Wed, 15 Aug 2007 10:34:11 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: Thinking outside the box on file systems
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Valdis.Kletnieks@vt.edu, Michael Tharp <gxti@partiallystapled.com>,
+       alan <alan@clueserver.org>, LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+In-Reply-To: <A631EFDE-354D-498E-980E-2B785517AC51@mac.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708152244310.16414@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <922139.21476.qm@web52506.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 10:48:28PM +0530, Satyam Sharma wrote:
-> On Wed, 15 Aug 2007, Paul E. McKenney wrote:
-> > On Wed, Aug 15, 2007 at 11:33:36PM +0800, Herbert Xu wrote:
-> > > On Wed, Aug 15, 2007 at 07:25:16AM -0700, Paul E. McKenney wrote:
-> > > > 
-> > > > Do we really need another set of APIs?  Can you give even one example
-> > > > where the pre-existing volatile semantics are causing enough of a problem
-> > > > to justify adding yet more atomic_*() APIs?
-> > > 
-> > > Let's turn this around.  Can you give a single example where
-> > > the volatile semantics is needed in a legitimate way?
-> > 
-> > Sorry, but you are the one advocating for the change.
+
+--- Kyle Moffett <mrmacman_g4@mac.com> wrote:
+
+> On Aug 15, 2007, at 13:09:31, Marc Perkel wrote:
+> > The idea is that people have permissions - not
+> files.  By people I  
+> > mean users, groups, managers, applications
+> > etc. One might even specify that there are no
+> permission  
+> > restrictions at all. Part of the process would be
+> that the kernel  
+> > load what code it will use for the permission
+> system. It might even  
+> > be a little perl script you write.
+> >
+> > Also - you aren't even giving permission to access
+> files. It's  
+> > permission to access name patterns. One could
+> apply REGEX masks to  
+> > names to determine permissions. So if you have
+> permission to the  
+> > name you have permission to the file.
 > 
-> Not for i386 and x86_64 -- those have atomic ops without any "volatile"
-> semantics (currently as per existing definitions).
+> Please excuse me, I'm going to go stand over in the
+> corner for a minute.
+> 
+> *hahahahahaa hahahahahaaa hahaa hoo hee snicker
+> sniff*
+> 
+> *wanders back into the conversation*
+> 
+> Sorry about that, pardon me.
+> 
+> I suspect you will find it somewhat hard to convince
+> *anybody* on  
+> this list to put either a regex engine or a Perl
+> interpreter into the  
+> kernel.  I doubt you could even get a simple
+> shell-style pattern  
+> matcher in.  First of all, both of the former chew
+> up enormous gobs  
+> of stack space *AND* they're NP-complete.  You just
+> can't do such  
+> matching even in polynomial time, let alone
+> something that scales  
+> appropriately for an OS kernel like, say, O(log(n)).
+> 
+> Cheers,
+> Kyle Moffett
+> 
 
-I claim unit volumes with arm, and the majority of the architectures, but
-I cannot deny the popularity of i386 and x86_64 with many developers.  ;-)
 
-However, I am not aware of code in the kernel that would benefit
-from the compiler coalescing multiple atomic_set() and atomic_read()
-invocations, thus I don't see the downside to volatility in this case.
-Are there some performance-critical code fragments that I am missing?
+Keep in mind that this is about thinking outside the
+box. Don't let new ideas scare you.
 
-						Thanx, Paul
+I'm not suggesting that the kernel contain perl. I'm
+saying that you can let the kernel call a perl program
+in user space to control part of the permission
+system. There are examples of this in FUSE. What I'm
+suggesting would be very FUSE friendly.
+
+
+Marc Perkel
+Junk Email Filter dot com
+http://www.junkemailfilter.com
+
+
+       
+____________________________________________________________________________________
+Got a little couch potato? 
+Check out fun summer activities for kids.
+http://search.yahoo.com/search?fr=oni_on_mail&p=summer+activities+for+kids&cs=bz 
