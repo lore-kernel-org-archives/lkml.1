@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935360AbXHOSRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934565AbXHOSYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935360AbXHOSRS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 14:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933032AbXHOSRC
+	id S934565AbXHOSYy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 14:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760641AbXHOSYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 14:17:02 -0400
-Received: from wa-out-0708.google.com ([209.85.146.249]:45106 "EHLO
-	wa-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932980AbXHOSRA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 14:17:00 -0400
-X-IP: 90.157.192.193
-From: david.balazic@hermes-softlab.com
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: per device dirty throttling -v8
-Date: Wed, 15 Aug 2007 11:16:52 -0700
-Message-ID: <1187201812.396804.76130@k79g2000hse.googlegroups.com>
-In-Reply-To: <fa.uq0BQtrgp66a08hpsF+vrqXUNC4@ifi.uio.no>
-References: <alpine.LFD.0.999.0708041246530.5037@woody.linux-foundation.org>
-   <fa.7rstQpXif2z9y2n2HD+qxLFnueg@ifi.uio.no>
-   <fa.6VOZrceT65Vh8CIRIta0zSg2V38@ifi.uio.no>
-   <fa.xcZCTa5cHDOhrcyXZ2gZbzbu7g0@ifi.uio.no>
-   <fa.JjZwG90x+07YaOx8h5VLN+9AL/8@ifi.uio.no>
-   <fa.V9U4mAEXVjNqblhzu7GRmxif7Uw@ifi.uio.no>
-   <fa.uq0BQtrgp66a08hpsF+vrqXUNC4@ifi.uio.no>
-User-Agent: G2/1.0
-X-HTTP-UserAgent: Mozilla/5.0 (Windows; U; Windows NT 5.2; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6,gzip(gfe),gzip(gfe)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 15 Aug 2007 14:24:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55032 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752056AbXHOSYe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 14:24:34 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070815153335.GA23593@gondor.apana.org.au>
+References: <20070815153335.GA23593@gondor.apana.org.au> <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com> 
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: dhowells@redhat.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Satyam Sharma <satyam@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Wed, 15 Aug 2007 19:19:57 +0100
+Message-ID: <4413.1187201997@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 4, 10:15 pm, Arjan van de Ven <ar...@infradead.org> wrote:
-> On Sat, 2007-08-04 at 12:47 -0700, Linus Torvalds wrote:
->
-> > On Sat, 4 Aug 2007, Jörn Engel wrote:
->
-> > > Given the choice between only "atime" and "noatime" I'd agree with you.
-> > > Heck, I use it myself.  But "relatime" seems to combine the best of both
-> > > worlds.  It currently just suffers from mount not supporting it in any
-> > > relevant distro.
->
-> > Well, we could make it the default for the kernel (possibly under a
-> > "fast-atime" config option), and then people can add "atime" or "noatime"
-> > as they wish, since mount has supported _those_ options for a long time.
->
-> there is another trick possible (more involved though, Al will have to
-> jump in on that one I suspect): Have 2 types of "dirty inode" states;
-> one is the current dirty state (meaning the full range of ext3
-> transactions etc) and "lighter" state of "atime-dirty"; which will not
-> do the background syncs or journal transactions (so if your machine
-> crashes, you lose the atime update) but it does keep atime for most
-> normal cases and keeps it standard compliant "except after a crash".
+Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
-Am I one of the few that thinks this would be a win-win solution ? :-(
-I guess it requires a lot more coding than relatime.
+> Let's turn this around.  Can you give a single example where
+> the volatile semantics is needed in a legitimate way?
 
-Regards,
-David Balažic
+Accessing H/W registers?  But apart from that...
 
+David
