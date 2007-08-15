@@ -1,219 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934458AbXHORqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934477AbXHORvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934458AbXHORqd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbXHORqI
+	id S934477AbXHORvT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758738AbXHORvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:46:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35720 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755535AbXHORqG (ORCPT
+	Wed, 15 Aug 2007 13:51:06 -0400
+Received: from web52502.mail.re2.yahoo.com ([206.190.48.185]:31512 "HELO
+	web52502.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758532AbXHORvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:46:06 -0400
-Date: Wed, 15 Aug 2007 23:25:05 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <20070815142516.GB9645@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.0.999.0708152048270.16414@enigma.security.iitk.ac.in>
-References: <20070809131423.GA9927@shell.boston.redhat.com>
- <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
- <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
- <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
- <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in>
- <20070815142516.GB9645@linux.vnet.ibm.com>
+	Wed, 15 Aug 2007 13:51:04 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=e8K1gj4nu84dOso6FpIiXxWJiMdC4Y/h1l5eO+GbgaR3xNhrxwLFMBFZ0EMUtvoRn0moXQxDMg5wzNJIreQHdsuX6vvk5BXhT9rm35YF26TM+9HgpSNNcNUkvHWw1PdyTMeK9twTrYabxNLGtsKIlIz475/w906M9eoezbqbGMk=;
+X-YMail-OSG: oUe8PUkVM1ms7Qr3ZHbTs57yGUe3OXCAgKrLMlQ101BVTCcmZNyu1aVdTiT5OScG3aVfamcnAYhJ3xjny9tE0Y1YPTSbswvbZJbwiCATGpTpU3wJwoKYn.J57idvZkR5PKUfHsRQU8ej.C8p.6fhCHx.ZA--
+Date: Wed, 15 Aug 2007 10:51:02 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: Thinking outside the box on file systems
+To: Michael Tharp <gxti@partiallystapled.com>
+Cc: alan <alan@clueserver.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <46C33835.90703@partiallystapled.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <121831.55601.qm@web52502.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
 
+--- Michael Tharp <gxti@partiallystapled.com> wrote:
 
-On Wed, 15 Aug 2007, Paul E. McKenney wrote:
-
-> On Wed, Aug 15, 2007 at 07:17:29PM +0530, Satyam Sharma wrote:
-> > [...]
-> > No, I'd actually prefer something like what Christoph Lameter suggested,
-> > i.e. users (such as above) who want "volatile"-like behaviour from atomic
-> > ops can use alternative functions. How about something like:
-> > 
-> > #define atomic_read_volatile(v)			\
-> > 	({					\
-> > 		forget(&(v)->counter);		\
-> > 		((v)->counter);			\
-> > 	})
+> Marc Perkel wrote:
+> > That not a problem - it's a feature. In such a
+> > situation the person would get a general file
+> creation
+> > error.
 > 
-> Wouldn't the above "forget" the value, throw it away, then forget
-> that it forgot it, giving non-volatile semantics?
+> Feature or not, it's still vulnerable to probing by
+> malicious users. If
+> there are create permissions on the directory, the
+> invisibility is not
+> perfect.
 
-Nope, I don't think so. I wrote the following trivial testcases:
-[ See especially tp4.c and tp4.s (last example). ]
+In a real world situation I would think that users
+probing for invisible files is more secure that users
+knowing the names of files that they have no access
+to. 
 
-==============================================================================
-$ cat tp1.c # Using volatile access casts
-
-#define atomic_read(a)	(*(volatile int *)&a)
-
-int a;
-
-void func(void)
-{
-	a = 0;
-	while (atomic_read(a))
-		;
-}
-==============================================================================
-$ gcc -Os -S tp1.c; cat tp1.s
-
-func:
-	pushl	%ebp
-	movl	%esp, %ebp
-	movl	$0, a
-.L2:
-	movl	a, %eax
-	testl	%eax, %eax
-	jne	.L2
-	popl	%ebp
-	ret
-==============================================================================
-$ cat tp2.c # Using nothing; gcc will optimize the whole loop away
-
-#define forget(x)
-
-#define atomic_read(a)		\
-	({			\
-		forget(&(a));	\
-		(a);		\
-	})
-
-int a;
-
-void func(void)
-{
-	a = 0;
-	while (atomic_read(a))
-		;
-}
-==============================================================================
-$ gcc -Os -S tp2.c; cat tp2.s
-
-func:
-	pushl	%ebp
-	movl	%esp, %ebp
-	popl	%ebp
-	movl	$0, a
-	ret
-==============================================================================
-$ cat tp3.c # Using a full memory clobber barrier
-
-#define forget(x)	asm volatile ("":::"memory")
-
-#define atomic_read(a)		\
-	({			\
-		forget(&(a));	\
-		(a);		\
-	})
-
-int a;
-
-void func(void)
-{
-	a = 0;
-	while (atomic_read(a))
-		;
-}
-==============================================================================
-$ gcc -Os -S tp3.c; cat tp3.s
-
-func:
-	pushl	%ebp
-	movl	%esp, %ebp
-	movl	$0, a
-.L2:
-	cmpl	$0, a
-	jne	.L2
-	popl	%ebp
-	ret
-==============================================================================
-$ cat tp4.c # Using a forget(var) macro
-
-#define forget(a)	__asm__ __volatile__ ("" :"=m" (a) :"m" (a))
-
-#define atomic_read(a)		\
-	({			\
-		forget(a);	\
-		(a);		\
-	})
-
-int a;
-
-void func(void)
-{
-	a = 0;
-	while (atomic_read(a))
-		;
-}
-==============================================================================
-$ gcc -Os -S tp4.c; cat tp4.s
-
-func:
-	pushl	%ebp
-	movl	%esp, %ebp
-	movl	$0, a
-.L2:
-	cmpl	$0, a
-	jne	.L2
-	popl	%ebp
-	ret
-==============================================================================
-
-
-Possibly these were too trivial to expose any potential problems that you
-may have been referring to, so would be helpful if you could write a more
-concrete example / sample code.
-
-
-> > Or possibly, implement these "volatile" atomic ops variants in inline asm
-> > like the patch that Sebastian Siewior has submitted on another thread just
-> > a while back.
 > 
-> Given that you are advocating a change (please keep in mind that
-> atomic_read() and atomic_set() had volatile semantics on almost all
-> platforms), care to give some example where these historical volatile
-> semantics are causing a problem?
-> [...]
-> Can you give even one example
-> where the pre-existing volatile semantics are causing enough of a problem
-> to justify adding yet more atomic_*() APIs?
-
-Will take this to the other sub-thread ...
-
-
-> > Of course, if we find there are more callers in the kernel who want the
-> > volatility behaviour than those who don't care, we can re-define the
-> > existing ops to such variants, and re-name the existing definitions to
-> > somethine else, say "atomic_read_nonvolatile" for all I care.
+> > Although it isn't likely people would structure
+> > files with invisible files in directories that the
+> > user has create permissions [...]
 > 
-> Do we really need another set of APIs?
+> ... /tmp ...
 
-Well, if there's one set of users who do care about volatile behaviour,
-and another set that doesn't, it only sounds correct to provide both
-those APIs, instead of forcing one behaviour on all users.
+You're still thinking inside the box. Let's take the
+tmp directory for example. /tmp wpuld probably g away
+in favor of persomal /tmp directories. As we all know,
+/tmp is the source of a lot of vulnerabilities.
+
+One might put a name translation mask on the /tmp name
+in the file name translation system. For example:
+
+/tmp -> my /tmp
+
+Thus files written to /tmp would become /mperkel/tmp
+and users wouldn't be able to see other users /tmp
+files or have any name conflicts.
+
+Let me explain about the concept of thinking outside
+the box. If you run into a problem you figure out a
+new solution. It's about finding ways to make things
+work rather than finding ways to make things not work.
+
+So - we are not only talking about a name permission
+system but a file name translation system. Thus a
+user's view of the file system might not be the same
+for all users. In fact, let's say that mperkel is a
+Windows user and is just attacking to Linus as a file
+system. Because mperkel is in the windows group the
+file system appears as h:\home\mperkel on a native
+Linux level and mounts are drive letters. It would use
+a Windows name translation mask program that would be
+part of the permission/naming system.
 
 
-Thanks,
-Satyam
+
+
+Marc Perkel
+Junk Email Filter dot com
+http://www.junkemailfilter.com
+
+
+       
+____________________________________________________________________________________
+Sick sense of humor? Visit Yahoo! TV's 
+Comedy with an Edge to see what's on, when. 
+http://tv.yahoo.com/collections/222
