@@ -1,56 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762682AbXHONod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762324AbXHONqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762682AbXHONod (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 09:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXHONnv
+	id S1762324AbXHONqT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 09:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757715AbXHONqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 09:43:51 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:57749 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757530AbXHONns (ORCPT
+	Wed, 15 Aug 2007 09:46:01 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:34314 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754245AbXHONqA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 09:43:48 -0400
-Message-ID: <46C30220.6060007@gmail.com>
-Date: Wed, 15 Aug 2007 15:39:44 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
+	Wed, 15 Aug 2007 09:46:00 -0400
+Date: Wed, 15 Aug 2007 15:45:55 +0200
+From: Sebastian Siewior <sebastian@breakpoint.cc>
 To: Satyam Sharma <satyam@infradead.org>
-CC: Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Joe Perches <joe@perches.com>, git@vger.kernel.org,
-       Junio C Hamano <gitster@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, Andi Kleen <ak@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-References: <1187026955.2688.4.camel@laptopd505.fenrus.org> <1187037445.6628.98.camel@heimdal.trondhjem.org> <1187054366.2757.0.camel@laptopd505.fenrus.org> <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu> <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost> <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost> <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org> <20070814193333.GI21089@ftp.linux.org.uk> <46C2548D.80605@gmail.com> <alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Subject: Re: [patch 1/2] i386: use asm() like the other atomic operations
+	already do.
+Message-ID: <20070815134555.GA29761@Chamillionaire.breakpoint.cc>
+References: <E1ILEQ8-0005H5-00@gondolin.me.apana.org.au> <alpine.LFD.0.999.0708151809420.16414@enigma.security.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0708151809420.16414@enigma.security.iitk.ac.in>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/15/2007 03:33 PM, Satyam Sharma wrote:
+* Satyam Sharma | 2007-08-15 18:32:10 [+0530]:
 
-[ git info --maintainer ]
+>On Wed, 15 Aug 2007, Herbert Xu wrote:
+>
+>> Andi Kleen <ak@suse.de> wrote:
+>> >> My config with march=pentium-m and gcc (GCC) 4.1.2 (Gentoo 4.1.2):
+>> >>   text    data     bss     dec     hex filename
+>> >> 3434150  249176  176128 3859454  3ae3fe atomic_normal/vmlinux
+>> >> 3435308  249176  176128 3860612  3ae884 atomic_inlineasm/vmlinux
+>> > 
+>> > What is the difference between atomic_normal and atomic_inlineasm? 
+>> 
+>> The inline asm stops certain optimisations from occuring.
+>
+>Yup, the "__volatile__" after "__asm__" shouldn't be required. The
+>previous definitions allowed the compiler to optimize certain atomic
+>ops away, and considering we haven't seen any bugs due to the past
+>behaviour anyway, changing it like this sounds unnecessary.
+>
+>The second behavioral change that comes about here is the force-
+>constraining of v->counter to memory in the extended asm's constraint
+>sets. But that's required to give "volatility"-like behaviour, which
+>I suspect is the goal of this patch.
+exactly.
 
-> I'd really _love_ a tool that does all that what you've proposed above!
-> 
-> But why does it have to be "git-info" or anything in the git(7) suite for
-> that matter? This sounds like a job for a different specialised tool, 
-> along with ".metatags" kind of files dispersed in the source tree.
+>Sebastian, could you look at the kernel images in detail and see why,
+>how and what in the text expanded by 1158 bytes with these changes?
+Wow, easy. "normal" is Linus' git. It has no volatile or anything. I
+suspect the compiler to "optimize" some of the reads and sets away
+(which remain after my patch is applied).
+Anyway, I tried to find out the source of this and it is not that easy.
+If the text is getting bigger, all references to the data section are
+changed and I can't simply diff. Than I searched for two "equal" .o
+files which differ in size. This was not better because gcc reorganized
+the whole .o file and the functions that were at the beginning in the
+first file, were at a different position in the second one.
+For those who have plenty of time in their hands, I posted the four
+kernels [1] and my four O= folders [2]. 
+Once I have some time, I try to diff the specific function within the .o
+file which used the atomic_{read|set} operation.
 
-To automatically move (and delete) the meta-data alongside the files 
-themselves is a reason.
+>> I'm still unconvinced why we need this because nobody has
+>> brought up any examples of kernel code that legitimately
+>> need this.
+>
+>Me too, but I do find these more palatable than the variants using
+>"volatile", I admit.
+Yes. The inline asm is even smaller than the volatile ones, what sounds
+like better optimization by the gcc (and it does exactly what volatile
+was used for).
 
-More generally -- shouldn't it? This is about source management (well, maybe 
-more about project management, but...) and the source code management tool 
-looks to be the right place for that. The different parts of git are 
-somewhat/fairly stand-alone as is, no?
+[1] http://download.breakpoint.cc/kernel_builds_vmlinux.tbz2 8.3 MiB
+[2] http://download.breakpoint.cc/kernel_builds.tbz2 117 MiB
+>
+>Satyam
 
-Rene.
+Sebastian
