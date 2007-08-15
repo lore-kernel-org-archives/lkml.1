@@ -1,138 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964824AbXHOUpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934764AbXHOUtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964824AbXHOUpB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 16:45:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbXHOUox
+	id S934764AbXHOUtX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 16:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114AbXHOUtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 16:44:53 -0400
-Received: from web52506.mail.re2.yahoo.com ([206.190.48.189]:39592 "HELO
-	web52506.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751328AbXHOUow (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 16:44:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=dwGP4xgMSeldjkCckHO1fAqVdmT+lbiBlZlYD2uzNrQBl7XFG0xz/dg5+/ljUiDNRPL3qgSe/zSEcdlm46P6tcM9kjd6jW/OT2FiE4QVvsWkeUtXAmxYZ5cW6ex/N1kQQfy/V7JDKqWwhM2qyE5vA6GEZUa7feQ3Jclnj/rLN1A=;
-X-YMail-OSG: Uzf.ClwVM1k9k3PrWTryJIqgdMdhGs0AtQymFSU6JATrciX7QCoMHX3etAW7UPXEHXGZsne9RIAt0DDcMwai2fqZMdC009INiBn0nDiqRK2dRnYYZSxYk5Yn8tSt0gE9vLKvyp04DSmqEdu4VkekAQ0j
-Date: Wed, 15 Aug 2007 13:44:50 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: Thinking outside the box on file systems
-To: Kyle Moffett <mrmacman_g4@mac.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Marc Perkel <mperkel@yahoo.com>, Michael Tharp <gxti@partiallystapled.com>,
-       alan <alan@clueserver.org>, LKML Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <7B9C0CB2-7CE6-49E4-8F28-BBA96B1821B6@mac.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <126267.7876.qm@web52506.mail.re2.yahoo.com>
+	Wed, 15 Aug 2007 16:49:01 -0400
+Received: from gate.crashing.org ([63.228.1.57]:32975 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753959AbXHOUtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 16:49:00 -0400
+In-Reply-To: <alpine.LFD.0.999.0708160118330.16414@enigma.security.iitk.ac.in>
+References: <46C2350A.1010807@redhat.com> <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <20070815081841.GA16551@osiris.boeblingen.de.ibm.com> <46C30540.2070603@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in> <20070815145207.GA23106@gondor.apana.org.au> <46C3253F.5090707@s5r6.in-berlin.de> <20070815162722.GD9645@linux.vnet.ibm.com> <d4406222873856f472b9173a14a19aa2@kernel.crashing.org> <20070815185724.GH9645@linux.vnet.ibm.com> <alpine.LFD.0.999.0708160118330.16414@enigma.security.iitk.ac.in>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <2d2eeab6276cab2e6cc5830d36a43b98@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
+       netdev@vger.kernel.org, cfriesen@nortel.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Wed, 15 Aug 2007 22:47:07 +0200
+To: Satyam Sharma <satyam@infradead.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> What you probably mean is that the compiler has to assume any code
+>>> it cannot currently see can do anything (insofar as allowed by the
+>>> relevant standards etc.)
+>
+> I think this was just terminology confusion here again. Isn't "any code
+> that it cannot currently see" the same as "another compilation unit",
 
---- Kyle Moffett <mrmacman_g4@mac.com> wrote:
+It is not; try  gcc -combine  or the upcoming link-time optimisation
+stuff, for example.
 
-> On Aug 15, 2007, at 15:26:07, Lennart Sorensen
-> wrote:
-> > On Wed, Aug 15, 2007 at 10:59:12AM -0700, Marc
-> Perkel wrote:
-> >> When one thinks outside the box one has to think
-> about evolving  
-> >> beyond what you are used to. When I moved
-> >> beyond DOS I have to give up the idea of 8.3 file
-> names. The idea  
-> >> here is to come up with a model that can emulate
-> the existing  
-> >> system for backwards compatibility.
-> >
-> > But moving beyond 8.3 didn't prevent you from
-> still using 8.3 names  
-> > if you wanted too.  Longer file names are just an
-> extension of  
-> > shorter ones.
-> 
-> As another example, take a look at "git", the SCM we
-> use for the  
-> kernel, as contrasted with the older CVS.  You can
-> import your  
-> complete CVS history into it without data loss, and
-> then you can even  
-> continue to use it the exact same way you used to
-> use CVS, with some  
-> slight differences in command-line syntax.  Once you
-> are ready to  
-> move further, though, you can create multiple local
-> branches to have  
-> your co-workers pull from to test changes.  You
-> discover that merging  
-> branches is much easier in git than in CVS.  Your
-> company starts to  
-> use a more distributed development model, they
-> implement a policy  
-> telling developers to break up their changes into
-> smaller pieces and  
-> write better change-logs.  Somebody suddenly
-> discovers the ability to  
-> "sign" a particular release version with a private
-> key, and you start  
-> doing that as part of your release management to
-> ensure that the  
-> codebase marked with a client tag is the exact same
-> one you actually  
-> shipped to that client.
-> 
-> On a fundamental level, GIT is a completely
-> different paradigm from  
-> CVS.  Its internal operations are entirely
-> differently organized, it  
-> uses different algorithms and different storage
-> formats.  The end  
-> result of that is that it's literally orders of
-> magnitude faster on  
-> large codebases.  But to the USER it can be used
-> exactly the same;  
-> you could even write a little CVS-to-GIT wrapper
-> which imported your  
-> CVS into a git repo and then let you operate on it
-> using "gcvs"  
-> commands the same way you would have operated on
-> real CVS repositories.
-> 
-> Just some food for thought
-> 
-> Cheers,
-> Kyle Moffett
-> 
+> and wouldn't the "compilation unit" itself expand if we ask gcc to
+> compile more than one unit at once? Or is there some more specific
+> "definition" for "compilation unit" (in gcc lingo, possibly?)
+
+"compilation unit" is a C standard term.  It typically boils down
+to "single .c file".
 
 
-Yes - that's a good example. Git is far more powerful
-and a different paradigm for CVS. Someone had to think
-outside the box and come up with a new way of looking
-at things. I'm trying to do something like that with
-this idea.
+Segher
 
-To me it make more sense to get rid of file
-permissions and look at people permissions. It reminds
-me of a story a friend of mine told about her 4 year
-old son.
-
-The story was that they were driving down the road
-when they saw a wheel come off a truck. The son said,
-"look mommy, that wheel lost it's truck."
-
-To me files are like the wheel. Rather than having the
-file know all it's owners it makes more sense for the
-owners to know it's files.
-
-
-Marc Perkel
-Junk Email Filter dot com
-http://www.junkemailfilter.com
-
-
-       
-____________________________________________________________________________________
-Got a little couch potato? 
-Check out fun summer activities for kids.
-http://search.yahoo.com/search?fr=oni_on_mail&p=summer+activities+for+kids&cs=bz 
