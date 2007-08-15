@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760049AbXHOMyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761918AbXHOMzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760049AbXHOMyy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 08:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761115AbXHOMwq
+	id S1761918AbXHOMzp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 08:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760823AbXHOMxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 08:52:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55279 "EHLO mx1.redhat.com"
+	Wed, 15 Aug 2007 08:53:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55444 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761032AbXHOMwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 08:52:43 -0400
+	id S1760573AbXHOMxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 08:53:05 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
@@ -17,261 +17,525 @@ Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
        lguest@ozlabs.org, glommer@gmail.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 11/25][V3] native versions for set pagetables
-Date: Wed, 15 Aug 2007 09:49:31 -0300
-Message-Id: <11871823042011-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 12/25][V3] turn msr.h functions into native versions
+Date: Wed, 15 Aug 2007 09:49:32 -0300
+Message-Id: <11871823151789-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11871822951747-git-send-email-gcosta@redhat.com>
-References: <11871821854176-git-send-email-gcosta@redhat.com> <1187182197314-git-send-email-gcosta@redhat.com> <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <11871822244170-git-send-email-gcosta@redhat.com> <11871822342754-git-send-email-gcosta@redhat.com> <11871822421713-git-send-email-gcosta@redhat.com> <1187182253740-git-send-email-gcosta@redhat.com> <1187182268408-git-send-email-gcosta@redhat.com> <1187182282913-git-send-email-gcosta@redhat.com> <11871822951747-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11871823042011-git-send-email-gcosta@redhat.com>
+References: <11871821854176-git-send-email-gcosta@redhat.com> <1187182197314-git-send-email-gcosta@redhat.com> <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <11871822244170-git-send-email-gcosta@redhat.com> <11871822342754-git-send-email-gcosta@redhat.com> <11871822421713-git-send-email-gcosta@redhat.com> <1187182253740-git-send-email-gcosta@redhat.com> <1187182268408-git-send-email-gcosta@redhat.com> <1187182282913-git-send-email-gcosta@redhat.com> <11871822951747-git-send-email-gcosta@redhat.com> <11871823042011-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch turns the set_p{te,md,ud,gd} functions into their
-native_ versions. There is no need to patch any caller.
+This patch turns makes the basic operations in msr.h out of native
+ones. Those operations are: rdmsr, wrmsr, rdtsc, rdtscp, rdpmc, and
+cpuid. After they are turned into functions, some call sites need
+casts, and so we provide them.
 
-Also, it adds pte_update() and pte_update_defer() calls whenever
-we modify a page table entry. This last part was coded to match
-i386 as close as possible.
+There is also a fixup needed in the functions located in the vsyscall
+area, as they cannot call any of them anymore (otherwise, the call
+would go through a kernel address, invalid in userspace mapping).
 
-Pieces of the header are moved to below the #ifdef CONFIG_PARAVIRT
-site, as they are users of the newly defined set_* macros.
+The solution is to call the now-provided native_ versions instead.
+
+[  updates from v1
+   * Call read_tscp rdtscp, to match instruction name
+   * Avoid duplication of code in get_cycles_sync
+   * Get rid of rdtsc(), since it is used nowhere else
+   All three suggested by Andi Kleen
+]
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/asm-x86_64/pgtable.h |  152 ++++++++++++++++++++++++-----------------
- 1 files changed, 89 insertions(+), 63 deletions(-)
+ arch/x86_64/ia32/syscall32.c  |    2 +-
+ arch/x86_64/kernel/setup64.c  |    6 +-
+ arch/x86_64/kernel/tsc.c      |   24 ++++-
+ arch/x86_64/kernel/vsyscall.c |    4 +-
+ arch/x86_64/vdso/vgetcpu.c    |    4 +-
+ include/asm-i386/tsc.h        |   12 ++-
+ include/asm-x86_64/msr.h      |  277 +++++++++++++++++++++++++----------------
+ 7 files changed, 211 insertions(+), 118 deletions(-)
 
-diff --git a/include/asm-x86_64/pgtable.h b/include/asm-x86_64/pgtable.h
-index c9d8764..dd572a2 100644
---- a/include/asm-x86_64/pgtable.h
-+++ b/include/asm-x86_64/pgtable.h
-@@ -57,55 +57,77 @@ extern unsigned long empty_zero_page[PAGE_SIZE/sizeof(unsigned long)];
-  */
- #define PTRS_PER_PTE	512
+diff --git a/arch/x86_64/ia32/syscall32.c b/arch/x86_64/ia32/syscall32.c
+index 15013ba..dd1b4a3 100644
+--- a/arch/x86_64/ia32/syscall32.c
++++ b/arch/x86_64/ia32/syscall32.c
+@@ -79,5 +79,5 @@ void syscall32_cpu_init(void)
+ 	checking_wrmsrl(MSR_IA32_SYSENTER_ESP, 0ULL);
+ 	checking_wrmsrl(MSR_IA32_SYSENTER_EIP, (u64)ia32_sysenter_target);
  
--#ifndef __ASSEMBLY__
+-	wrmsrl(MSR_CSTAR, ia32_cstar_target);
++	wrmsrl(MSR_CSTAR, (u64)ia32_cstar_target);
+ }
+diff --git a/arch/x86_64/kernel/setup64.c b/arch/x86_64/kernel/setup64.c
+index 1200aaa..395cf02 100644
+--- a/arch/x86_64/kernel/setup64.c
++++ b/arch/x86_64/kernel/setup64.c
+@@ -122,7 +122,7 @@ void pda_init(int cpu)
+ 	asm volatile("movl %0,%%fs ; movl %0,%%gs" :: "r" (0)); 
+ 	/* Memory clobbers used to order PDA accessed */
+ 	mb();
+-	wrmsrl(MSR_GS_BASE, pda);
++	wrmsrl(MSR_GS_BASE, (u64)pda);
+ 	mb();
+ 
+ 	pda->cpunumber = cpu; 
+@@ -161,8 +161,8 @@ void syscall_init(void)
+ 	 * but only a 32bit target. LSTAR sets the 64bit rip. 	 
+ 	 */ 
+ 	wrmsrl(MSR_STAR,  ((u64)__USER32_CS)<<48  | ((u64)__KERNEL_CS)<<32); 
+-	wrmsrl(MSR_LSTAR, system_call); 
+-	wrmsrl(MSR_CSTAR, ignore_sysret);
++	wrmsrl(MSR_LSTAR, (u64)system_call);
++	wrmsrl(MSR_CSTAR, (u64)ignore_sysret);
+ 
+ #ifdef CONFIG_IA32_EMULATION   		
+ 	syscall32_cpu_init ();
+diff --git a/arch/x86_64/kernel/tsc.c b/arch/x86_64/kernel/tsc.c
+index 2a59bde..2a5fbc9 100644
+--- a/arch/x86_64/kernel/tsc.c
++++ b/arch/x86_64/kernel/tsc.c
+@@ -9,6 +9,28 @@
+ 
+ #include <asm/timex.h>
+ 
++#ifdef CONFIG_PARAVIRT
++/*
++ * When paravirt is on, some functionalities are executed through function
++ * pointers in the paravirt_ops structure, for both the host and guest.
++ * These function pointers exist inside the kernel and can not
++ * be accessed by user space. To avoid this, we make a copy of the
++ * get_cycles_sync (called in kernel) but force the use of native_read_tsc.
++ * For the host, it will simply do the native rdtsc. The guest
++ * should set up it's own clock and vread
++ */
++static __always_inline long long vget_cycles_sync(void)
++{
++	unsigned long long ret;
++	ret =__get_cycles_sync();
++	if (!ret)
++		ret = native_read_tsc();
++	return ret;
++}
++#else
++# define vget_cycles_sync() get_cycles_sync()
++#endif
++
+ static int notsc __initdata = 0;
+ 
+ unsigned int cpu_khz;		/* TSC clocks / usec, not used here */
+@@ -165,7 +187,7 @@ static cycle_t read_tsc(void)
+ 
+ static cycle_t __vsyscall_fn vread_tsc(void)
+ {
+-	cycle_t ret = (cycle_t)get_cycles_sync();
++	cycle_t ret = (cycle_t)vget_cycles_sync();
+ 	return ret;
+ }
+ 
+diff --git a/arch/x86_64/kernel/vsyscall.c b/arch/x86_64/kernel/vsyscall.c
+index 06c3494..757874e 100644
+--- a/arch/x86_64/kernel/vsyscall.c
++++ b/arch/x86_64/kernel/vsyscall.c
+@@ -184,7 +184,7 @@ time_t __vsyscall(1) vtime(time_t *t)
+ long __vsyscall(2)
+ vgetcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
+ {
+-	unsigned int dummy, p;
++	unsigned int p;
+ 	unsigned long j = 0;
+ 
+ 	/* Fast cache - only recompute value once per jiffies and avoid
+@@ -199,7 +199,7 @@ vgetcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
+ 		p = tcache->blob[1];
+ 	} else if (__vgetcpu_mode == VGETCPU_RDTSCP) {
+ 		/* Load per CPU data from RDTSCP */
+-		rdtscp(dummy, dummy, p);
++		native_rdtscp(&p);
+ 	} else {
+ 		/* Load per CPU data from GDT */
+ 		asm("lsl %1,%0" : "=r" (p) : "r" (__PER_CPU_SEG));
+diff --git a/arch/x86_64/vdso/vgetcpu.c b/arch/x86_64/vdso/vgetcpu.c
+index 91f6e85..1f38f61 100644
+--- a/arch/x86_64/vdso/vgetcpu.c
++++ b/arch/x86_64/vdso/vgetcpu.c
+@@ -15,7 +15,7 @@
+ 
+ long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
+ {
+-	unsigned int dummy, p;
++	unsigned int p;
+ 	unsigned long j = 0;
+ 
+ 	/* Fast cache - only recompute value once per jiffies and avoid
+@@ -30,7 +30,7 @@ long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
+ 		p = tcache->blob[1];
+ 	} else if (*vdso_vgetcpu_mode == VGETCPU_RDTSCP) {
+ 		/* Load per CPU data from RDTSCP */
+-		rdtscp(dummy, dummy, p);
++		native_rdtscp(&p);
+ 	} else {
+ 		/* Load per CPU data from GDT */
+ 		asm("lsl %1,%0" : "=r" (p) : "r" (__PER_CPU_SEG));
+diff --git a/include/asm-i386/tsc.h b/include/asm-i386/tsc.h
+index a4d8066..a1f213e 100644
+--- a/include/asm-i386/tsc.h
++++ b/include/asm-i386/tsc.h
+@@ -32,7 +32,7 @@ static inline cycles_t get_cycles(void)
+ }
+ 
+ /* Like get_cycles, but make sure the CPU is synchronized. */
+-static __always_inline cycles_t get_cycles_sync(void)
++static __always_inline cycles_t __get_cycles_sync(void)
+ {
+ 	unsigned long long ret;
+ 	unsigned eax, edx;
+@@ -54,8 +54,16 @@ static __always_inline cycles_t get_cycles_sync(void)
+ 	 */
+ 	alternative_io("cpuid", ASM_NOP2, X86_FEATURE_SYNC_RDTSC,
+ 			  "=a" (eax), "0" (1) : "ebx","ecx","edx","memory");
+-	rdtscll(ret);
+ 
++	return 0;
++}
++
++static __always_inline cycles_t get_cycles_sync(void)
++{
++	unsigned long long ret;
++	ret = __get_cycles_sync();
++	if (!ret)
++		rdtscll(ret);
+ 	return ret;
+ }
+ 
+diff --git a/include/asm-x86_64/msr.h b/include/asm-x86_64/msr.h
+index d5c55b8..3176d30 100644
+--- a/include/asm-x86_64/msr.h
++++ b/include/asm-x86_64/msr.h
+@@ -10,110 +10,186 @@
+  * Note: the rd* operations modify the parameters directly (without using
+  * pointer indirection), this allows gcc to optimize better
+  */
++static inline unsigned long native_read_msr(unsigned int msr)
++{
++	unsigned long a, d;
++	asm volatile("rdmsr" : "=a" (a), "=d" (d) : "c" (msr));
++	return a | (d << 32);
++}
++
++static inline unsigned long native_read_msr_safe(unsigned int msr, int *err)
++{
++	unsigned long a, d;
++	asm volatile (  "1: rdmsr; xorl %0, %0\n"
++			"2:\n"
++			".section .fixup,\"ax\"\n"
++			"3:       movl %4,%0\n"
++			" jmp 2b\n"
++			".previous\n"
++			".section __ex_table,\"a\"\n"
++			" .align 8\n"
++			" .quad 1b,3b\n"
++			".previous":"=&bDS" (*err), "=a"((a)), "=d"((d))
++			:"c"(msr), "i"(-EIO), "0"(0));
++	return a | (d << 32);
++}
+ 
+-#define rdmsr(msr,val1,val2) \
+-       __asm__ __volatile__("rdmsr" \
+-			    : "=a" (val1), "=d" (val2) \
+-			    : "c" (msr))
++static inline unsigned long native_write_msr(unsigned int msr,
++					     unsigned long val)
++{
++	asm volatile(	"wrmsr"
++			: /* no outputs */
++			: "c" (msr), "a" ((u32)val), "d" ((u32)(val>>32)));
++	return 0;
++}
++
++/* wrmsr with exception handling */
++static inline long native_write_msr_safe(unsigned int msr, unsigned long val)
++{
++	unsigned long ret;
++	asm volatile("2: wrmsr ; xorq %0,%0\n"
++		     "1:\n\t"
++		     ".section .fixup,\"ax\"\n\t"
++		     "3:  movq %4,%0 ; jmp 1b\n\t"
++		     ".previous\n\t"
++		     ".section __ex_table,\"a\"\n"
++		     "   .align 8\n\t"
++		     "   .quad 	2b,3b\n\t"
++		     ".previous"
++		     : "=r" (ret)
++		     : "c" (msr), "a" ((u32)val), "d" ((u32)(val>>32)),
++		       "i" (-EFAULT));
++	return ret;
++}
+ 
++static inline unsigned long native_read_tsc(void)
++{
++	unsigned long low, high;
++	asm volatile("rdtsc" : "=a" (low), "=d" (high));
++	return low | (high << 32);
++}
+ 
+-#define rdmsrl(msr,val) do { unsigned long a__,b__; \
+-       __asm__ __volatile__("rdmsr" \
+-			    : "=a" (a__), "=d" (b__) \
+-			    : "c" (msr)); \
+-       val = a__ | (b__<<32); \
+-} while(0)
++static inline unsigned long native_read_pmc(int counter)
++{
++	unsigned long low, high;
++	asm volatile ("rdpmc"
++		      : "=a" (low), "=d" (high)
++		      : "c" (counter));
+ 
+-#define wrmsr(msr,val1,val2) \
+-     __asm__ __volatile__("wrmsr" \
+-			  : /* no outputs */ \
+-			  : "c" (msr), "a" (val1), "d" (val2))
++	return low | (high << 32);
++}
+ 
+-#define wrmsrl(msr,val) wrmsr(msr,(__u32)((__u64)(val)),((__u64)(val))>>32) 
++static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
++				unsigned int *ecx, unsigned int *edx)
++{
++	asm volatile ("cpuid"
++		      : "=a" (*eax),
++			"=b" (*ebx),
++			"=c" (*ecx),
++			"=d" (*edx)
++		      : "0" (*eax), "2" (*ecx));
++}
+ 
+-/* wrmsr with exception handling */
+-#define wrmsr_safe(msr,a,b) ({ int ret__;			\
+-	asm volatile("2: wrmsr ; xorl %0,%0\n"			\
+-		     "1:\n\t"					\
+-		     ".section .fixup,\"ax\"\n\t"		\
+-		     "3:  movl %4,%0 ; jmp 1b\n\t"		\
+-		     ".previous\n\t"				\
+- 		     ".section __ex_table,\"a\"\n"		\
+-		     "   .align 8\n\t"				\
+-		     "   .quad 	2b,3b\n\t"			\
+-		     ".previous"				\
+-		     : "=a" (ret__)				\
+-		     : "c" (msr), "0" (a), "d" (b), "i" (-EFAULT)); \
+-	ret__; })
+-
+-#define checking_wrmsrl(msr,val) wrmsr_safe(msr,(u32)(val),(u32)((val)>>32))
+-
+-#define rdmsr_safe(msr,a,b) \
+-	({ int ret__;						\
+-	  asm volatile ("1:       rdmsr\n"			\
+-                      "2:\n"					\
+-                      ".section .fixup,\"ax\"\n"		\
+-                      "3:       movl %4,%0\n"			\
+-                      " jmp 2b\n"				\
+-                      ".previous\n"				\
+-                      ".section __ex_table,\"a\"\n"		\
+-                      " .align 8\n"				\
+-                      " .quad 1b,3b\n"				\
+-                      ".previous":"=&bDS" (ret__), "=a"(*(a)), "=d"(*(b))\
+-                      :"c"(msr), "i"(-EIO), "0"(0));		\
+-	  ret__; })		
+-
+-#define rdtsc(low,high) \
+-     __asm__ __volatile__("rdtsc" : "=a" (low), "=d" (high))
+-
+-#define rdtscl(low) \
+-     __asm__ __volatile__ ("rdtsc" : "=a" (low) : : "edx")
+-
+-#define rdtscp(low,high,aux) \
+-     asm volatile (".byte 0x0f,0x01,0xf9" : "=a" (low), "=d" (high), "=c" (aux))
+-
+-#define rdtscll(val) do { \
+-     unsigned int __a,__d; \
+-     asm volatile("rdtsc" : "=a" (__a), "=d" (__d)); \
+-     (val) = ((unsigned long)__a) | (((unsigned long)__d)<<32); \
+-} while(0)
+-
+-#define rdtscpll(val, aux) do { \
+-     unsigned long __a, __d; \
+-     asm volatile (".byte 0x0f,0x01,0xf9" : "=a" (__a), "=d" (__d), "=c" (aux)); \
+-     (val) = (__d << 32) | __a; \
++static inline unsigned long native_rdtscp(int *aux)
++{
++	unsigned long low, high;
++	asm volatile (".byte 0x0f,0x01,0xf9"
++			: "=a" (low), "=d" (high), "=c" (*aux));
++	return low | (high >> 32);
++}
++
 +#ifdef CONFIG_PARAVIRT
 +#include <asm/paravirt.h>
 +#else
- 
--#define pte_ERROR(e) \
--	printk("%s:%d: bad pte %p(%016lx).\n", __FILE__, __LINE__, &(e), pte_val(e))
--#define pmd_ERROR(e) \
--	printk("%s:%d: bad pmd %p(%016lx).\n", __FILE__, __LINE__, &(e), pmd_val(e))
--#define pud_ERROR(e) \
--	printk("%s:%d: bad pud %p(%016lx).\n", __FILE__, __LINE__, &(e), pud_val(e))
--#define pgd_ERROR(e) \
--	printk("%s:%d: bad pgd %p(%016lx).\n", __FILE__, __LINE__, &(e), pgd_val(e))
-+#define set_pte native_set_pte
-+#define set_pte_at(mm,addr,ptep,pteval) set_pte(ptep,pteval)
-+#define set_pmd native_set_pmd
-+#define set_pud native_set_pud
-+#define set_pgd native_set_pgd
-+#define pte_clear(mm,addr,xp)	do { set_pte_at(mm, addr, xp, __pte(0)); } while (0)
-+#define pmd_clear(xp)	do { set_pmd(xp, __pmd(0)); } while (0)
-+#define pud_clear native_pud_clear
-+#define pgd_clear native_pgd_clear
-+#define pte_update(mm, addr, ptep)              do { } while (0)
-+#define pte_update_defer(mm, addr, ptep)        do { } while (0)
- 
--#define pgd_none(x)	(!pgd_val(x))
--#define pud_none(x)	(!pud_val(x))
++#define read_msr(msr)			native_read_msr(msr)
++#define read_msr_safe(msr, err)		native_read_msr_safe(msr, err)
++#define write_msr(msr, val) 		native_write_msr(msr, val)
++#define write_msr_safe(msr, val)	native_write_msr_safe(msr, val)
++#define read_tsc_reg()			native_read_tsc()
++#define __rdtscp(aux)			native_rdtscp(aux)
++#define read_pmc(counter)		native_read_pmc(counter)
++#define __cpuid				native_cpuid
 +#endif
 +
-+#ifndef __ASSEMBLY__
- 
--static inline void set_pte(pte_t *dst, pte_t val)
-+static inline void native_set_pte(pte_t *dst, pte_t val)
- {
--	pte_val(*dst) = pte_val(val);
-+	dst->pte = pte_val(val);
- } 
--#define set_pte_at(mm,addr,ptep,pteval) set_pte(ptep,pteval)
- 
--static inline void set_pmd(pmd_t *dst, pmd_t val)
++#define rdmsr(msr, low, high) 			\
++do {						\
++	unsigned long __val = read_msr(msr); 	\
++	low = (u32)__val;			\
++	high = (u32)(__val >> 32);		\
++} while (0)
 +
-+static inline void native_set_pmd(pmd_t *dst, pmd_t val)
- {
--        pmd_val(*dst) = pmd_val(val); 
-+	dst->pmd = pmd_val(val);
- } 
++#define rdmsrl(msr, val)		(val) = read_msr(msr)
++
++#define rdmsr_safe(msr, a, d)					\
++({								\
++	int __ret;						\
++	unsigned long __val = read_msr_safe(msr, &__ret);	\
++	(*a) = (u32)(__val);					\
++	(*d) = (u32)(__val >> 32);				\
++	__ret;							\
++})
++
++#define wrmsr(msr, val1, val2)				\
++do {							\
++	unsigned long __val;				\
++	__val = (unsigned long)val2 << 32;		\
++	__val |= val1;					\
++	write_msr(msr, __val);				\
+ } while (0)
  
--static inline void set_pud(pud_t *dst, pud_t val)
-+static inline void native_set_pud(pud_t *dst, pud_t val)
+-#define write_tsc(val1,val2) wrmsr(0x10, val1, val2)
++#define wrmsrl(msr, val) write_msr(msr, val)
++
++#define wrmsr_safe(msr, a, d) \
++	write_msr_safe(msr, a | ( ((u64)d) << 32))
++
++#define checking_wrmsrl(msr, val) wrmsr_safe(msr, (u32)(val),(u32)((val)>>32))
++
++#define write_tsc(val1, val2) wrmsr(0x10, val1, val2)
+ 
+ #define write_rdtscp_aux(val) wrmsr(0xc0000103, val, 0)
+ 
+-#define rdpmc(counter,low,high) \
+-     __asm__ __volatile__("rdpmc" \
+-			  : "=a" (low), "=d" (high) \
+-			  : "c" (counter))
++#define rdtscl(low) 	(low) = (u32)read_tsc_reg()
++
++#define rdtscll(val)	(val) = read_tsc_reg()
++
++#define rdtscp(low, high, aux)				\
++do {							\
++	int __aux;					\
++	unsigned long __val = __rdtscp(&__aux);	\
++	(low) = (u32)__val;				\
++	(high) = (u32)(__val >> 32);			\
++	(aux) = __aux;					\
++} while (0)
++
++#define rdtscpll(val, aux)				\
++do {							\
++	unsigned long __aux; 				\
++	val = __rdtscp(&__aux);				\
++	(aux) = __aux;					\
++} while (0)
++
++#define rdpmc(counter, low, high)			\
++do {							\
++	unsigned long __val = read_pmc(counter);	\
++	(low) = (u32)(__val);				\
++	(high) = (u32)(__val >> 32);			\
++} while (0)
+ 
+ static inline void cpuid(int op, unsigned int *eax, unsigned int *ebx,
+ 			 unsigned int *ecx, unsigned int *edx)
  {
--	pud_val(*dst) = pud_val(val);
-+	dst->pud = pud_val(val);
+-	__asm__("cpuid"
+-		: "=a" (*eax),
+-		  "=b" (*ebx),
+-		  "=c" (*ecx),
+-		  "=d" (*edx)
+-		: "0" (op));
++	*eax = op;
++	*ecx = 0;
++	__cpuid(eax, ebx, ecx, edx);
  }
  
--static inline void pud_clear (pud_t *pud)
-+static inline void native_set_pgd(pgd_t *dst, pgd_t val)
+ /* Some CPUID calls want 'count' to be placed in ecx */
+ static inline void cpuid_count(int op, int count, int *eax, int *ebx, int *ecx,
+ 	       	int *edx)
  {
--	set_pud(pud, __pud(0));
-+	dst->pgd = pgd_val(val);
- }
--
--static inline void set_pgd(pgd_t *dst, pgd_t val)
-+static inline void native_pud_clear (pud_t *pud)
- {
--	pgd_val(*dst) = pgd_val(val); 
--} 
-+	set_pud(pud, __pud(0));
-+}
- 
--static inline void pgd_clear (pgd_t * pgd)
-+static inline void native_pgd_clear (pgd_t * pgd)
- {
- 	set_pgd(pgd, __pgd(0));
- }
- 
--#define ptep_get_and_clear(mm,addr,xp)	__pte(xchg(&(xp)->pte, 0))
-+#define pte_ERROR(e) \
-+	printk("%s:%d: bad pte %p(%016lx).\n", __FILE__, __LINE__, &(e), pte_val(e))
-+#define pmd_ERROR(e) \
-+	printk("%s:%d: bad pmd %p(%016lx).\n", __FILE__, __LINE__, &(e), pmd_val(e))
-+#define pud_ERROR(e) \
-+	printk("%s:%d: bad pud %p(%016lx).\n", __FILE__, __LINE__, &(e), pud_val(e))
-+#define pgd_ERROR(e) \
-+	printk("%s:%d: bad pgd %p(%016lx).\n", __FILE__, __LINE__, &(e), pgd_val(e))
-+
-+#define pgd_none(x)	(!pgd_val(x))
-+#define pud_none(x)	(!pud_val(x))
- 
- struct mm_struct;
- 
-+static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
-+{
-+	pte_t pte = __pte(xchg(&ptep->pte, 0));
-+	pte_update(mm, addr, ptep);
-+	return pte;
-+}
-+
- static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm, unsigned long addr, pte_t *ptep, int full)
- {
- 	pte_t pte;
-@@ -245,7 +267,6 @@ static inline unsigned long pmd_bad(pmd_t pmd)
- 
- #define pte_none(x)	(!pte_val(x))
- #define pte_present(x)	(pte_val(x) & (_PAGE_PRESENT | _PAGE_PROTNONE))
--#define pte_clear(mm,addr,xp)	do { set_pte_at(mm, addr, xp, __pte(0)); } while (0)
- 
- #define pages_to_mb(x) ((x) >> (20-PAGE_SHIFT))	/* FIXME: is this
- 						   right? */
-@@ -254,11 +275,11 @@ static inline unsigned long pmd_bad(pmd_t pmd)
- 
- static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
- {
--	pte_t pte;
--	pte_val(pte) = (page_nr << PAGE_SHIFT);
--	pte_val(pte) |= pgprot_val(pgprot);
--	pte_val(pte) &= __supported_pte_mask;
--	return pte;
-+	unsigned long pte;
-+	pte = (page_nr << PAGE_SHIFT);
-+	pte |= pgprot_val(pgprot);
-+	pte &= __supported_pte_mask;
-+	return __pte(pte);
+-	__asm__("cpuid"
+-		: "=a" (*eax),
+-		  "=b" (*ebx),
+-		  "=c" (*ecx),
+-		  "=d" (*edx)
+-		: "0" (op), "c" (count));
++	*eax = op;
++	*ecx = count;
++	__cpuid(eax, ebx, ecx, edx);
  }
  
  /*
-@@ -282,30 +303,6 @@ static inline pte_t pte_mkwrite(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) |
- static inline pte_t pte_mkhuge(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_PSE)); return pte; }
- static inline pte_t pte_clrhuge(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_PSE)); return pte; }
- 
--struct vm_area_struct;
+@@ -121,42 +197,29 @@ static inline void cpuid_count(int op, int count, int *eax, int *ebx, int *ecx,
+  */
+ static inline unsigned int cpuid_eax(unsigned int op)
+ {
+-	unsigned int eax;
 -
--static inline int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr, pte_t *ptep)
--{
--	if (!pte_young(*ptep))
--		return 0;
--	return test_and_clear_bit(_PAGE_BIT_ACCESSED, &ptep->pte);
--}
+-	__asm__("cpuid"
+-		: "=a" (eax)
+-		: "0" (op)
+-		: "bx", "cx", "dx");
++	unsigned int eax, ebx, ecx, edx;
++	cpuid(op, &eax, &ebx, &ecx, &edx);
+ 	return eax;
+ }
++
+ static inline unsigned int cpuid_ebx(unsigned int op)
+ {
+-	unsigned int eax, ebx;
 -
--static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
--{
--	clear_bit(_PAGE_BIT_RW, &ptep->pte);
--}
+-	__asm__("cpuid"
+-		: "=a" (eax), "=b" (ebx)
+-		: "0" (op)
+-		: "cx", "dx" );
++	unsigned int eax, ebx, ecx, edx;
++	cpuid(op, &eax, &ebx, &ecx, &edx);
+ 	return ebx;
+ }
++
+ static inline unsigned int cpuid_ecx(unsigned int op)
+ {
+-	unsigned int eax, ecx;
 -
--/*
-- * Macro to mark a page protection value as "uncacheable".
-- */
--#define pgprot_noncached(prot)	(__pgprot(pgprot_val(prot) | _PAGE_PCD | _PAGE_PWT))
+-	__asm__("cpuid"
+-		: "=a" (eax), "=c" (ecx)
+-		: "0" (op)
+-		: "bx", "dx" );
++	unsigned int eax, ebx, ecx, edx;
++	cpuid(op, &eax, &ebx, &ecx, &edx);
+ 	return ecx;
+ }
++
+ static inline unsigned int cpuid_edx(unsigned int op)
+ {
+-	unsigned int eax, edx;
 -
--static inline int pmd_large(pmd_t pte) { 
--	return (pmd_val(pte) & __LARGE_PTE) == __LARGE_PTE; 
--} 	
--
--
- /*
-  * Conversion functions: convert a page and protection to a page entry,
-  * and a page entry and page directory to the page they refer to.
-@@ -339,7 +336,6 @@ static inline int pmd_large(pmd_t pte) {
- 			pmd_index(address))
- #define pmd_none(x)	(!pmd_val(x))
- #define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
--#define pmd_clear(xp)	do { set_pmd(xp, __pmd(0)); } while (0)
- #define pfn_pmd(nr,prot) (__pmd(((nr) << PAGE_SHIFT) | pgprot_val(prot)))
- #define pmd_pfn(x)  ((pmd_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
- 
-@@ -352,14 +348,43 @@ static inline int pmd_large(pmd_t pte) {
- /* page, protection -> pte */
- #define mk_pte(page, pgprot)	pfn_pte(page_to_pfn(page), (pgprot))
- #define mk_pte_huge(entry) (pte_val(entry) |= _PAGE_PRESENT | _PAGE_PSE)
-- 
-+
-+struct vm_area_struct;
-+
-+#include <linux/mm.h>
-+static inline int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr, pte_t *ptep)
-+{
-+	int ret = 0;
-+	if (!pte_young(*ptep))
-+		return 0;
-+	ret = test_and_clear_bit(_PAGE_BIT_ACCESSED, &ptep->pte);
-+	pte_update(vma->vm_mm, addr, ptep);
-+	return ret;
-+}
-+
-+static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
-+{
-+	clear_bit(_PAGE_BIT_RW, &ptep->pte);
-+	pte_update(mm, addr, ptep);
-+}
-+
-+/*
-+ * Macro to mark a page protection value as "uncacheable".
-+ */
-+#define pgprot_noncached(prot)	(__pgprot(pgprot_val(prot) | _PAGE_PCD | _PAGE_PWT))
-+
-+static inline int pmd_large(pmd_t pte) {
-+	return (pmd_val(pte) & __LARGE_PTE) == __LARGE_PTE;
-+}
-+
- /* Change flags of a PTE */
--static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
-+static inline pte_t pte_modify(pte_t pte_old, pgprot_t newprot)
- { 
--	pte_val(pte) &= _PAGE_CHG_MASK;
--	pte_val(pte) |= pgprot_val(newprot);
--	pte_val(pte) &= __supported_pte_mask;
--       return pte; 
-+	unsigned long pte = pte_val(pte_old);
-+	pte &= _PAGE_CHG_MASK;
-+	pte |= pgprot_val(newprot);
-+	pte &= __supported_pte_mask;
-+	return __pte(pte);
+-	__asm__("cpuid"
+-		: "=a" (eax), "=d" (edx)
+-		: "0" (op)
+-		: "bx", "cx");
++	unsigned int eax, ebx, ecx, edx;
++	cpuid(op, &eax, &ebx, &ecx, &edx);
+ 	return edx;
  }
  
- #define pte_index(address) \
-@@ -386,6 +411,7 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
- 	int __changed = !pte_same(*(__ptep), __entry);			  \
- 	if (__changed && __dirty) {					  \
- 		set_pte(__ptep, __entry);			  	  \
-+		pte_update_defer((__vma)->vm_mm, (__address), (__ptep));  \
- 		flush_tlb_page(__vma, __address);		  	  \
- 	}								  \
- 	__changed;							  \
 -- 
 1.4.4.2
 
