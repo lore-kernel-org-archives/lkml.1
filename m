@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965168AbXHOXx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030237AbXHOX6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965168AbXHOXx7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 19:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935416AbXHOXxl
+	id S1030237AbXHOX6h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 19:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbXHOX62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 19:53:41 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:57683 "EHLO e2.ny.us.ibm.com"
+	Wed, 15 Aug 2007 19:58:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56710 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762660AbXHOXxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 19:53:39 -0400
-Date: Wed, 15 Aug 2007 16:53:35 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Herbert Xu <herbert.xu@redhat.com>
-Cc: David Howells <dhowells@redhat.com>, Satyam Sharma <satyam@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070815235335.GU9645@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com> <4413.1187201997@redhat.com> <20070815184520.GG9645@linux.vnet.ibm.com> <20070815234146.GB28775@gondor.apana.org.au>
+	id S1754012AbXHOX61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 19:58:27 -0400
+Date: Wed, 15 Aug 2007 19:58:25 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: rolandd@cisco.com
+Subject: drivers/infiniband/mlx/mad.c misplaced ;
+Message-ID: <20070815235825.GB17004@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, rolandd@cisco.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070815234146.GB28775@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 07:41:46AM +0800, Herbert Xu wrote:
-> On Wed, Aug 15, 2007 at 11:45:20AM -0700, Paul E. McKenney wrote:
-> > On Wed, Aug 15, 2007 at 07:19:57PM +0100, David Howells wrote:
-> > > Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> > > 
-> > > > Let's turn this around.  Can you give a single example where
-> > > > the volatile semantics is needed in a legitimate way?
-> > > 
-> > > Accessing H/W registers?  But apart from that...
-> > 
-> > Communicating between process context and interrupt/NMI handlers using
-> > per-CPU variables.
-> 
-> Remeber we're talking about atomic_read/atomic_set.  Please
-> cite the actual file/function name you have in mind.
+Signed-off-by: Dave Jones <davej@redhat.com>
 
-Yep, we are indeed talking about atomic_read()/atomic_set().
+diff --git a/drivers/infiniband/hw/mlx4/mad.c b/drivers/infiniband/hw/mlx4/mad.c
+index 3330917..0ed02b7 100644
+--- a/drivers/infiniband/hw/mlx4/mad.c
++++ b/drivers/infiniband/hw/mlx4/mad.c
+@@ -109,7 +109,7 @@ int mlx4_MAD_IFC(struct mlx4_ib_dev *dev, int ignore_mkey, int ignore_bkey,
+ 			   in_modifier, op_modifier,
+ 			   MLX4_CMD_MAD_IFC, MLX4_CMD_TIME_CLASS_C);
+ 
+-	if (!err);
++	if (!err)
+ 		memcpy(response_mad, outmailbox->buf, 256);
+ 
+ 	mlx4_free_cmd_mailbox(dev->dev, inmailbox);
 
-We have been through this issue already in this thread.
-
-							Thanx, Paul
+-- 
+http://www.codemonkey.org.uk
