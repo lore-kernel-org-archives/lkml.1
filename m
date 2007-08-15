@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936820AbXHOVVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932846AbXHOVby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936820AbXHOVVW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 17:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933362AbXHOVVM
+	id S932846AbXHOVby (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 17:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbXHOVbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 17:21:12 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:32938 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760057AbXHOVVL (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 17:21:11 -0400
-To: Marc Perkel <mperkel@yahoo.com>
-cc: Phillip Susi <psusi@cfl.rr.com>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       valdis@turing-police.cc.vt.edu
-Subject: Re: Thinking outside the box on file systems
-In-reply-to: Your message of "Wed, 15 Aug 2007 13:50:17 PDT."
-             <920558.27414.qm@web52504.mail.re2.yahoo.com>
-From: Valdis.Kletnieks@vt.edu
-References: <920558.27414.qm@web52504.mail.re2.yahoo.com>
-Date: Wed, 15 Aug 2007 17:20:37 -0400
-Message-ID: <21905.1187212837@turing-police.cc.vt.edu>
+	Wed, 15 Aug 2007 17:31:43 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:40970 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751897AbXHOVbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 17:31:42 -0400
+Message-ID: <46C370BC.40302@us.ibm.com>
+Date: Wed, 15 Aug 2007 14:31:40 -0700
+From: David Wilder <dwilder@us.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: martin.schwidefsky@de.ibm.com
+Subject: [patch] s390 kprobe fix instruction length calculation
+Content-Type: multipart/mixed;
+ boundary="------------040406030402030906060201"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Aug 2007 13:50:17 PDT, Marc Perkel said:
-> I don't see it as being any worse that what we have
-> now. To open a file you have to start at the bottom
-> and open each directory and evaluate the permissions
-> on the way to the file. In my system you have to look
-> up the permission of the string at each "/" separator.
-> Seems to me that every system would have these same
-> steps.
+This is a multi-part message in MIME format.
+--------------040406030402030906060201
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-No - you need to look at the *whole* string - that's the
-whole *point* of your system, remember?
+Placing a kprobe on "bc" instruction (s390/s390x) can cause an oops.
+The instruction length is encoded into the first two bits of the s390 
+instruction.  Kprobe is incorrectly computing the instruction length.
+The instruction length is used for determining what type of "fix-up" is 
+needed for conditional branch instruction.  The problem can bee seen by 
+placing a kprobe on a  "bc" instruction that will not branch.   The 
+results is that  Kprobe incorrectly computes the  new instruction 
+pointer (psw.addr) after single stepping the instruction.   The problem 
+is corrected with this patch.
 
-Just a few msgs back, you gave a nice example of
-having a file with \ in the name rather than / because
-it came from a Windows user. So you *do* need to check *every*
-pattern against the filename, because it *could* match.
-In a system with several hundred thousand or more patterns,
-that could be painful.
 
-Also, you need to figure out how to deal with all the various
-silly corner cases that people will end up trying to do.
 
-Consider the rules:
 
-peter '*a*' can create
-peter '*b*' cannot create
+--------------040406030402030906060201
+Content-Type: text/x-patch;
+ name="s390_kprobes_ilen.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="s390_kprobes_ilen.patch"
 
-Peter tries to create 'foo-ab-bar' - is he allowed to or not?
+ arch/s390/kernel/kprobes.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-For an exersize, either write a program or do by hand:
+diff --git a/arch/s390/kernel/kprobes.c b/arch/s390/kernel/kprobes.c
+index 358d2bb..e40373d 100644
+--- a/arch/s390/kernel/kprobes.c
++++ b/arch/s390/kernel/kprobes.c
+@@ -85,7 +85,7 @@ void __kprobes get_instruction_type(struct arch_specific_insn *ainsn)
+ 	ainsn->reg = (*ainsn->insn & 0xf0) >> 4;
+ 
+ 	/* save the instruction length (pop 5-5) in bytes */
+-	switch (*(__u8 *) (ainsn->insn) >> 4) {
++	switch (*(__u8 *) (ainsn->insn) >> 6) {
+ 	case 0:
+ 		ainsn->ilen = 2;
+ 		break;
 
-Create a list of patterns that correctly express the ownership
-and permissions of *every* file on your current Linux box.
-
-Then repeat on a large box with multiple users and a few Oracle
-databases or webservers.
-
-Then write a small tool, that given that list, a username,
-a filename, and the operation (read, write, open, unlink, etc),
-says "Yes or No".
-
-Then run 'strace /bin/ls' in a large directory, take all the
-filenames listed in the strace output, and see if your tool can
-answer "yes or no" fast enough to make 'ls' feasible.
-
-Come back when you get that part done, and we'll discuss how it
-would have to work in the kernel.
+--------------040406030402030906060201--
