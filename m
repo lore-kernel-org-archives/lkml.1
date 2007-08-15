@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935253AbXHOTUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935591AbXHOT0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935253AbXHOTUb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 15:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXHOTUU
+	id S935591AbXHOT0X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 15:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758500AbXHOT0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 15:20:20 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:48630 "EHLO
+	Wed, 15 Aug 2007 15:26:09 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:57168 "EHLO
 	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752624AbXHOTUT (ORCPT
+	by vger.kernel.org with ESMTP id S1758712AbXHOT0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 15:20:19 -0400
-Date: Wed, 15 Aug 2007 15:20:17 -0400
+	Wed, 15 Aug 2007 15:26:08 -0400
+Date: Wed, 15 Aug 2007 15:26:07 -0400
 To: Marc Perkel <mperkel@yahoo.com>
-Cc: Valdis.Kletnieks@vt.edu, Kyle Moffett <mrmacman_g4@mac.com>,
+Cc: Kyle Moffett <mrmacman_g4@mac.com>,
        Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
        LKML Kernel <linux-kernel@vger.kernel.org>
 Subject: Re: Thinking outside the box on file systems
-Message-ID: <20070815192017.GD9410@csclub.uwaterloo.ca>
-References: <19705.1187197065@turing-police.cc.vt.edu> <763705.7247.qm@web52512.mail.re2.yahoo.com>
+Message-ID: <20070815192607.GE9410@csclub.uwaterloo.ca>
+References: <F38DAAD2-D984-4704-94AC-5FB963C4373C@mac.com> <631385.29200.qm@web52512.mail.re2.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <763705.7247.qm@web52512.mail.re2.yahoo.com>
+In-Reply-To: <631385.29200.qm@web52512.mail.re2.yahoo.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 10:09:31AM -0700, Marc Perkel wrote:
-> Yep - way outside the box - and thus the title of the
-> thread.
-> 
-> The idea is that people have permissions - not files.
-> By people I mean users, groups, managers, applications
-> etc. One might even specify that there are no
-> permission restrictions at all. Part of the process
-> would be that the kernel load what code it will use
-> for the permission system. It might even be a little
-> perl script you write.
-> 
-> 
-> Also - you aren't even giving permission to access
-> files. It's permission to access name patterns. One
-> could apply REGEX masks to names to determine
-> permissions. So if you have permission to the name you
-> have permission to the file.
+On Wed, Aug 15, 2007 at 10:59:12AM -0700, Marc Perkel wrote:
+> When one thinks outside the box one has to think about
+> evolving beyond what you are used to. When I moved
+> beyond DOS I have to give up the idea of 8.3 file
+> names. The idea here is to come up with a model that
+> can emulate the existing system for backwards
+> compatibility.
 
-So if I have permission to access /foo/*x but no permission to access
-/foo/*y, do I have permission to rename /foo/123x to /foo/123y and if I
-do so, do I loose access to my file?  Can I move it back?
+But moving beyond 8.3 didn't prevent you from still using 8.3 names if
+you wanted too.  Longer file names are just an extension of shorter
+ones.
 
-> Hard links would be multiple names pointing to the
-> same file. Simlinks would be name aliases.
+> The concept behind my model is to create a new layer
+> where you can do ANYTHING with file names and
+> permissions and create models that emulate Linux, DOS,
+> Windows, Mac, or anything else you can dream of. Then
+> you can create a Linux/Windows/Mac template to emulate
+> what you are used to.
 
-I think I prefer to keep my files inside the box.  That way I won't need
-to get a bucket. :)
+I am not even sure your idea could represent everything that is
+currently possible with Posix ACLs and the standard unix permisions,
+never mind SELinux.  I am also almost entirely convinced that your idea
+would be amazingly slow and inefficient and a serious pain to use.  And
+of course nothing seems to ever suceed without backwards compatibility
+to support legacy programs until new ones take over, unless it is in
+fact an entirely new concept for a new field and isn't trying to replace
+some existing working system.
 
 --
 Len Sorensen
