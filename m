@@ -1,71 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935209AbXHOS5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765953AbXHOTHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935209AbXHOS5x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 14:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933399AbXHOS5b
+	id S1765953AbXHOTHj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 15:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbXHOTH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 14:57:31 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:57105 "EHLO e1.ny.us.ibm.com"
+	Wed, 15 Aug 2007 15:07:28 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:41108 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933392AbXHOS52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 14:57:28 -0400
-Date: Wed, 15 Aug 2007 11:57:24 -0700
+	id S1754102AbXHOTH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 15:07:26 -0400
+Date: Wed, 15 Aug 2007 12:07:22 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Satyam Sharma <satyam@infradead.org>,
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       rpjday@mindspring.com, netdev@vger.kernel.org, ak@suse.de,
-       cfriesen@nortel.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org,
+       Herbert Xu <herbert@gondor.apana.org.au>
 Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070815185724.GH9645@linux.vnet.ibm.com>
+Message-ID: <20070815190722.GI9645@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <46C2350A.1010807@redhat.com> <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <20070815081841.GA16551@osiris.boeblingen.de.ibm.com> <46C30540.2070603@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in> <20070815145207.GA23106@gondor.apana.org.au> <46C3253F.5090707@s5r6.in-berlin.de> <20070815162722.GD9645@linux.vnet.ibm.com> <d4406222873856f472b9173a14a19aa2@kernel.crashing.org>
+References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com> <alpine.LFD.0.999.0708152048270.16414@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d4406222873856f472b9173a14a19aa2@kernel.crashing.org>
+In-Reply-To: <alpine.LFD.0.999.0708152048270.16414@enigma.security.iitk.ac.in>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 08:31:25PM +0200, Segher Boessenkool wrote:
-> >>How does the compiler know that msleep() has got barrier()s?
-> >
-> >Because msleep_interruptible() is in a separate compilation unit,
-> >the compiler has to assume that it might modify any arbitrary global.
+On Wed, Aug 15, 2007 at 11:25:05PM +0530, Satyam Sharma wrote:
+> Hi Paul,
+> On Wed, 15 Aug 2007, Paul E. McKenney wrote:
 > 
-> No; compilation units have nothing to do with it, GCC can optimise
-> across compilation unit boundaries just fine, if you tell it to
-> compile more than one compilation unit at once.
-
-Last I checked, the Linux kernel build system did compile each .c file
-as a separate compilation unit.
-
-> What you probably mean is that the compiler has to assume any code
-> it cannot currently see can do anything (insofar as allowed by the
-> relevant standards etc.)
-
-Indeed.
-
-> >In many cases, the compiler also has to assume that 
-> >msleep_interruptible()
-> >might call back into a function in the current compilation unit, thus
-> >possibly modifying global static variables.
+> > On Wed, Aug 15, 2007 at 07:17:29PM +0530, Satyam Sharma wrote:
+> > > [...]
+> > > No, I'd actually prefer something like what Christoph Lameter suggested,
+> > > i.e. users (such as above) who want "volatile"-like behaviour from atomic
+> > > ops can use alternative functions. How about something like:
+> > > 
+> > > #define atomic_read_volatile(v)			\
+> > > 	({					\
+> > > 		forget(&(v)->counter);		\
+> > > 		((v)->counter);			\
+> > > 	})
+> > 
+> > Wouldn't the above "forget" the value, throw it away, then forget
+> > that it forgot it, giving non-volatile semantics?
 > 
-> It most often is smart enough to see what compilation-unit-local
-> variables might be modified that way, though :-)
+> Nope, I don't think so. I wrote the following trivial testcases:
+> [ See especially tp4.c and tp4.s (last example). ]
 
-Yep.  For example, if it knows the current value of a given such local
-variable, and if all code paths that would change some other variable
-cannot be reached given that current value of the first variable.
-At least given that gcc doesn't know about multiple threads of execution!
+Right.  I should have said "wouldn't the compiler be within its rights
+to forget the value, throw it away, then forget that it forgot it".
+The value coming out of the #define above is an unadorned ((v)->counter),
+which has no volatile semantics.
+
+> ==============================================================================
+> $ cat tp1.c # Using volatile access casts
+> 
+> #define atomic_read(a)	(*(volatile int *)&a)
+> 
+> int a;
+> 
+> void func(void)
+> {
+> 	a = 0;
+> 	while (atomic_read(a))
+> 		;
+> }
+> ==============================================================================
+> $ gcc -Os -S tp1.c; cat tp1.s
+> 
+> func:
+> 	pushl	%ebp
+> 	movl	%esp, %ebp
+> 	movl	$0, a
+> .L2:
+> 	movl	a, %eax
+> 	testl	%eax, %eax
+> 	jne	.L2
+> 	popl	%ebp
+> 	ret
+> ==============================================================================
+> $ cat tp2.c # Using nothing; gcc will optimize the whole loop away
+> 
+> #define forget(x)
+> 
+> #define atomic_read(a)		\
+> 	({			\
+> 		forget(&(a));	\
+> 		(a);		\
+> 	})
+> 
+> int a;
+> 
+> void func(void)
+> {
+> 	a = 0;
+> 	while (atomic_read(a))
+> 		;
+> }
+> ==============================================================================
+> $ gcc -Os -S tp2.c; cat tp2.s
+> 
+> func:
+> 	pushl	%ebp
+> 	movl	%esp, %ebp
+> 	popl	%ebp
+> 	movl	$0, a
+> 	ret
+> ==============================================================================
+> $ cat tp3.c # Using a full memory clobber barrier
+> 
+> #define forget(x)	asm volatile ("":::"memory")
+> 
+> #define atomic_read(a)		\
+> 	({			\
+> 		forget(&(a));	\
+> 		(a);		\
+> 	})
+> 
+> int a;
+> 
+> void func(void)
+> {
+> 	a = 0;
+> 	while (atomic_read(a))
+> 		;
+> }
+> ==============================================================================
+> $ gcc -Os -S tp3.c; cat tp3.s
+> 
+> func:
+> 	pushl	%ebp
+> 	movl	%esp, %ebp
+> 	movl	$0, a
+> .L2:
+> 	cmpl	$0, a
+> 	jne	.L2
+> 	popl	%ebp
+> 	ret
+> ==============================================================================
+> $ cat tp4.c # Using a forget(var) macro
+> 
+> #define forget(a)	__asm__ __volatile__ ("" :"=m" (a) :"m" (a))
+> 
+> #define atomic_read(a)		\
+> 	({			\
+> 		forget(a);	\
+> 		(a);		\
+> 	})
+> 
+> int a;
+> 
+> void func(void)
+> {
+> 	a = 0;
+> 	while (atomic_read(a))
+> 		;
+> }
+> ==============================================================================
+> $ gcc -Os -S tp4.c; cat tp4.s
+> 
+> func:
+> 	pushl	%ebp
+> 	movl	%esp, %ebp
+> 	movl	$0, a
+> .L2:
+> 	cmpl	$0, a
+> 	jne	.L2
+> 	popl	%ebp
+> 	ret
+> ==============================================================================
+> 
+> Possibly these were too trivial to expose any potential problems that you
+> may have been referring to, so would be helpful if you could write a more
+> concrete example / sample code.
+
+The trick is to have a sufficiently complicated expression to force
+the compiler to run out of registers.  If the value is non-volatile,
+it will refetch it (and expect it not to have changed, possibly being
+disappointed by an interrupt handler running on that same CPU).
+
+> > > Or possibly, implement these "volatile" atomic ops variants in inline asm
+> > > like the patch that Sebastian Siewior has submitted on another thread just
+> > > a while back.
+> > 
+> > Given that you are advocating a change (please keep in mind that
+> > atomic_read() and atomic_set() had volatile semantics on almost all
+> > platforms), care to give some example where these historical volatile
+> > semantics are causing a problem?
+> > [...]
+> > Can you give even one example
+> > where the pre-existing volatile semantics are causing enough of a problem
+> > to justify adding yet more atomic_*() APIs?
+> 
+> Will take this to the other sub-thread ...
+
+OK.
+
+> > > Of course, if we find there are more callers in the kernel who want the
+> > > volatility behaviour than those who don't care, we can re-define the
+> > > existing ops to such variants, and re-name the existing definitions to
+> > > somethine else, say "atomic_read_nonvolatile" for all I care.
+> > 
+> > Do we really need another set of APIs?
+> 
+> Well, if there's one set of users who do care about volatile behaviour,
+> and another set that doesn't, it only sounds correct to provide both
+> those APIs, instead of forcing one behaviour on all users.
+
+Well, if the second set doesn't care, they should be OK with the volatile
+behavior in this case.
 
 							Thanx, Paul
