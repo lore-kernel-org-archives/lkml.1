@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759347AbXHOMXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbXHOM3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759347AbXHOMXK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 08:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbXHOMWz
+	id S1757476AbXHOM3r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 08:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbXHOM3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 08:22:55 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:44393 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755155AbXHOMWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 08:22:54 -0400
-Date: Wed, 15 Aug 2007 14:22:53 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dkegel@google.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-Message-ID: <20070815122253.GA15268@wotan.suse.de>
-References: <20070814142103.204771292@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070814142103.204771292@sgi.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 15 Aug 2007 08:29:37 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:52388 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752323AbXHOM3g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 08:29:36 -0400
+Message-ID: <46C2F19A.30003@anagramm.de>
+Date: Wed, 15 Aug 2007 14:29:14 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: patches@x86-64.org, linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: [PATCH] [3/4] x86_64: Change PMDS invocation to single macro
+References: <20070815240.194452000@suse.de> <20070815004036.6BBCF14DC8@wotan.suse.de>
+In-Reply-To: <20070815004036.6BBCF14DC8@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+CmMFJ+jf2IjEPcu2EnxBHg5BowIv2QucIgf3
+ tYw9De4je5AE4WvfTzzPHOIAdu5oLzBgjcr2GwSrLJDCo06KAd
+ 9jLJknKrynU+MIIjbAI4g==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 14, 2007 at 07:21:03AM -0700, Christoph Lameter wrote:
-> The following patchset implements recursive reclaim. Recursive reclaim
-> is necessary if we run out of memory in the writeout patch from reclaim.
+Andi Kleen schrieb:
+> Very old binutils (2.12.90...) seem to have trouble with newlines
+> in assembler macro invocation. They put them into the resulting
+> argument expansion. In this case this lead to a parse error because
+> a .rept expression ended up spread over multiple lines. Change the PMDS() 
+> invocation to a single line.
 > 
-> This is f.e. important for stacked filesystems or anything that does
-> complicated processing in the writeout path.
-
-Filesystems (most of them) that require compilcated allocations at
-writeout time suck. That said, especially with network ones, it
-seems like making them preallocate or reserve required memory isn't
-progressing very smoothly. I think these patchsets are definitely
-worth considering as an alternative. 
-
-No substantial comments though. I've been sick all week.
-
- 
-
-> Recursive reclaim works because it limits itself to only reclaim pages
-> that do not require writeout. It will only remove clean pages from the LRU.
-> The dirty throttling of the VM during regular reclaim insures that the amount
-> of dirty pages is limited. If recursive reclaim causes too many clean pages
-> to be removed then regular reclaim will throttle all processes until the
-> dirty ratio is restored. This means that the amount of memory that can
-> be reclaimed via recursive reclaim is limited to clean memory. The default
-> ratio is 10%. This means that recursive reclaim can reclaim 90% of memory
-> before failing. Reclaiming excessive amounts of clean pages may have a
-> significant performance impact because this means that executable pages
-> will be removed. However, it ensures that we will no longer fail in the
-> writeout path.
+> Signed-off-by: Andi Kleen <ak@suse.de>
 > 
-> A patch is included to test this functionality. The test involved allocating
-> 12 Megabytes from the reclaim paths when __PF_MEMALLOC is set. This is enough
-> to exhaust the reserves.
-> 
-> -- 
+> Index: linux/arch/x86_64/kernel/head.S
+> ===================================================================
+> --- linux.orig/arch/x86_64/kernel/head.S
+> +++ linux/arch/x86_64/kernel/head.S
+> @@ -345,8 +345,7 @@ NEXT_PAGE(level2_kernel_pgt)
+>  	/* 40MB kernel mapping. The kernel code cannot be bigger than that.
+>  	   When you change this change KERNEL_TEXT_SIZE in page.h too. */
+>  	/* (2^48-(2*1024*1024*1024)-((2^39)*511)-((2^30)*510)) = 0 */
+> -	PMDS(0x0000000000000000, __PAGE_KERNEL_LARGE_EXEC|_PAGE_GLOBAL,
+> -		KERNEL_TEXT_SIZE/PMD_SIZE)
+> +	PMDS(0x0000000000000000, __PAGE_KERNEL_LARGE_EXEC|_PAGE_GLOBAL, KERNEL_TEXT_SIZE/PMD_SIZE)
+
+Can you please add a comment, that this line must stay in a single line
+for the above reason? I would expect that the next who does some code
+clean up will break it again.
+
+>  	/* Module mapping starts here */
+>  	.fill	(PTRS_PER_PMD - (KERNEL_TEXT_SIZE/PMD_SIZE)),8,0
+
+Regards,
+-- 
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm-technology.com
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
