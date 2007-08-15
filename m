@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764932AbXHOTiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbXHOTnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764932AbXHOTiM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 15:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935673AbXHOThu
+	id S1756153AbXHOTnN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 15:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbXHOTmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 15:37:50 -0400
-Received: from khc.piap.pl ([195.187.100.11]:38834 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935634AbXHOTht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 15:37:49 -0400
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Joe Perches <joe@perches.com>, Rene Herman <rene.herman@gmail.com>,
-       git@vger.kernel.org, Junio C Hamano <gitster@pobox.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-References: <1187026955.2688.4.camel@laptopd505.fenrus.org>
-	<1187037445.6628.98.camel@heimdal.trondhjem.org>
-	<1187054366.2757.0.camel@laptopd505.fenrus.org>
-	<46C10AA8.3090505@gmail.com>
-	<20070814102033.604c8695@the-village.bc.nu>
-	<46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>
-	<46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost>
-	<alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>
-	<20070814193333.GI21089@ftp.linux.org.uk>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 15 Aug 2007 21:37:45 +0200
-In-Reply-To: <20070814193333.GI21089@ftp.linux.org.uk> (Al Viro's message of "Tue, 14 Aug 2007 20:33:33 +0100")
-Message-ID: <m3fy2kk2ra.fsf@maximus.localdomain>
+	Wed, 15 Aug 2007 15:42:50 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49290 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752048AbXHOTms (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 15:42:48 -0400
+Date: Thu, 16 Aug 2007 01:24:42 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Segher Boessenkool <segher@kernel.crashing.org>, horms@verge.net.au,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       rpjday@mindspring.com, netdev@vger.kernel.org, ak@suse.de,
+       cfriesen@nortel.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <20070815185724.GH9645@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.0.999.0708160118330.16414@enigma.security.iitk.ac.in>
+References: <46C2350A.1010807@redhat.com> <E1ILCgh-00052A-00@gondolin.me.apana.org.au>
+ <20070815081841.GA16551@osiris.boeblingen.de.ibm.com> <46C30540.2070603@s5r6.in-berlin.de>
+ <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in>
+ <20070815145207.GA23106@gondor.apana.org.au> <46C3253F.5090707@s5r6.in-berlin.de>
+ <20070815162722.GD9645@linux.vnet.ibm.com> <d4406222873856f472b9173a14a19aa2@kernel.crashing.org>
+ <20070815185724.GH9645@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro <viro@ftp.linux.org.uk> writes:
+[ The Cc: list scares me. Should probably trim it. ]
 
-> I'm not suggesting something like fs.ext2@kernel.org with something
-> like majordomo allowing to add yourself to those,
 
-Why not
+On Wed, 15 Aug 2007, Paul E. McKenney wrote:
 
-> but something less
-> extreme in that direction might be worth thinking about...  Hell,
-> even simple
-> $ finger fs/minix/dir.c@cc.kernel.org
-> with majordomo-like interface for adding yourself to such lists
-> might solve most of those problems...
+> On Wed, Aug 15, 2007 at 08:31:25PM +0200, Segher Boessenkool wrote:
+> > >>How does the compiler know that msleep() has got barrier()s?
+> > >
+> > >Because msleep_interruptible() is in a separate compilation unit,
+> > >the compiler has to assume that it might modify any arbitrary global.
+> > 
+> > No; compilation units have nothing to do with it, GCC can optimise
+> > across compilation unit boundaries just fine, if you tell it to
+> > compile more than one compilation unit at once.
+> 
+> Last I checked, the Linux kernel build system did compile each .c file
+> as a separate compilation unit.
+> 
+> > What you probably mean is that the compiler has to assume any code
+> > it cannot currently see can do anything (insofar as allowed by the
+> > relevant standards etc.)
 
-I think so.
-
-And you would be able to add yourself even if you're merely
-interested in something, not a maintainer.
-
-However I think the mailing lists could do better. Duplicate
-suppression, among other things.
-
-And they could eventually supersede the subsystem mailing lists
-we use today. Just use net@kernel.org or drivers.net@kernel.org.
--- 
-Krzysztof Halasa
+I think this was just terminology confusion here again. Isn't "any code
+that it cannot currently see" the same as "another compilation unit",
+and wouldn't the "compilation unit" itself expand if we ask gcc to
+compile more than one unit at once? Or is there some more specific
+"definition" for "compilation unit" (in gcc lingo, possibly?)
