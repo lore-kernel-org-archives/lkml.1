@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932212AbXHOOuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765339AbXHOOuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932212AbXHOOuB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 10:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758349AbXHOOtq
+	id S1765339AbXHOOuk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 10:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762539AbXHOOuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 10:49:46 -0400
-Received: from mail.suse.de ([195.135.220.2]:43076 "EHLO mx1.suse.de"
+	Wed, 15 Aug 2007 10:50:12 -0400
+Received: from iucha.net ([209.98.146.184]:34844 "EHLO mail.iucha.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761034AbXHOOtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 10:49:46 -0400
-Date: Wed, 15 Aug 2007 17:43:51 +0200
-From: Andi Kleen <ak@suse.de>
-To: Glauber de Oliveira Costa <glommer@gmail.com>
-Cc: Andi Kleen <ak@suse.de>, Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
-       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 21/25][V3] export cpu_gdt_descr
-Message-ID: <20070815154351.GI3406@bingen.suse.de>
-References: <11871823373106-git-send-email-gcosta@redhat.com> <11871823673236-git-send-email-gcosta@redhat.com> <11871823782610-git-send-email-gcosta@redhat.com> <11871823892519-git-send-email-gcosta@redhat.com> <11871823991803-git-send-email-gcosta@redhat.com> <11871824081337-git-send-email-!gcosta@redhat.com> <11871824192375-git-send-email-gcosta@redhat.com> <11871824292046-git-send-email-gcosta@redhat.com> <20070815140339.GG3406@bingen.suse.de> <5d6222a80708150725i45a064bfqfd43139338287988@mail.gmail.com>
+	id S932231AbXHOOuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 10:50:07 -0400
+Date: Wed, 15 Aug 2007 09:50:06 -0500
+From: Florin Iucha <florin@iucha.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Tejun Heo <htejun@gmail.com>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
+	v2.6.23-rc3-50-g28e8351
+Message-ID: <20070815145005.GB7124@iucha.net>
+References: <20070815133147.GA7124@iucha.net> <Pine.LNX.4.44L0.0708151033270.3895-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="1LKvkjL3sHcu1TtY"
 Content-Disposition: inline
-In-Reply-To: <5d6222a80708150725i45a064bfqfd43139338287988@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.0708151033270.3895-100000@iolanthe.rowland.org>
+X-GPG-Key: http://iucha.net/florin_iucha.gpg
+X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 11:25:43AM -0300, Glauber de Oliveira Costa wrote:
-> On 8/15/07, Andi Kleen <ak@suse.de> wrote:
-> > > +#ifdef CONFIG_PARAVIRT
-> > > +extern unsigned long *cpu_gdt_descr;
-> >
-> > No externs in .c files
-> >
-> > Normally they should be where the variable is defined
-> > anyways.
-> Given that this  variable is defined in head.S, what do you propose?
 
-Move it to C code first.
+--1LKvkjL3sHcu1TtY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--Andi
+On Wed, Aug 15, 2007 at 10:38:54AM -0400, Alan Stern wrote:
+> This patch will get rid of the annoying error messages.  It won't do=20
+> anything about your keyboard's tendency to spontaneously stop working,=20
+> alas.
+
+My keyboard works fine for days, with kernels up to and including
+2.6.23-rc2 . I have booted into 2.6.23-rc3-$whatever this morning, and
+after 10-15 minutes the keyboard stopped working.  The mice which were
+plugged in the keyboard's built-in hub were fine though.
+
+The first time it happened, I removed the keyboard and got the oops
+that started this thread.  The second time, I just logged-in remotely
+and rebooted, and the reboot process stopped at "KILLING all
+processes" step.  I simply reset the box and rebooted into 2.6.23-rc2
+and it is fine since (over an hour ago).
+
+Regards,
+florin
+
+--=20
+Bruce Schneier expects the Spanish Inquisition.
+      http://geekz.co.uk/schneierfacts/fact/163
+
+--1LKvkjL3sHcu1TtY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGwxKdND0rFCN2b1sRArHlAJ9/mo8hcA+2nhOjOqZRb4zcZjPw5ACeMR9A
+QHqX6FAvnLDkklDZ2IT83zU=
+=eP9A
+-----END PGP SIGNATURE-----
+
+--1LKvkjL3sHcu1TtY--
