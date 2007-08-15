@@ -1,84 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765045AbXHOUh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935035AbXHOUig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765045AbXHOUh3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 16:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXHOUg7
+	id S935035AbXHOUig (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 16:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbXHOUiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 16:36:59 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33953 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753973AbXHOUg6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 16:36:58 -0400
-Date: Wed, 15 Aug 2007 13:36:51 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: "Serge E. Hallyn" <serge@hallyn.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, bob.picco@hp.com,
-       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
-       akpm@linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       ckrm-tech <ckrm-tech@lists.sourceforge.net>
-Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
-In-Reply-To: <1187185392.5422.13.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0708151333230.7628@schroedinger.engr.sgi.com>
-References: <20070812152126.GA26239@linux.vnet.ibm.com> 
- <20070813201215.GA16908@vino.hallyn.com>  <1187103831.6281.24.camel@localhost>
-  <20070814180339.GA32553@vino.hallyn.com>  <1187115224.6281.40.camel@localhost>
-  <20070814192306.GB32553@vino.hallyn.com>  <20070814204951.GA2065@vino.hallyn.com>
-  <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com> 
- <1187127685.6281.139.camel@localhost>  <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
- <1187185392.5422.13.camel@localhost>
+	Wed, 15 Aug 2007 16:38:25 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:6159 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753650AbXHOUiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 16:38:23 -0400
+Message-ID: <46C3644C.9020102@cfl.rr.com>
+Date: Wed, 15 Aug 2007 16:38:36 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kyle Moffett <mrmacman_g4@mac.com>
+CC: Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
+       Marc Perkel <mperkel@yahoo.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: Thinking outside the box on file systems
+References: <106259.96671.qm@web52501.mail.re2.yahoo.com> <Pine.LNX.4.64.0708141546510.22494@blackbox.fnordora.org> <46C2F96D.5030908@partiallystapled.com> <20070815133021.GB9412@csclub.uwaterloo.ca> <ECFEFFF7-0210-4D16-B508-5284FCE58B28@mac.com> <46C33934.7060802@cfl.rr.com> <DE34FF90-3143-4978-BBC5-3CF74B8C3C07@mac.com>
+In-Reply-To: <DE34FF90-3143-4978-BBC5-3CF74B8C3C07@mac.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Aug 2007 20:38:36.0299 (UTC) FILETIME=[4102CDB0:01C7DF7C]
+X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1021-15364.001
+X-TM-AS-Result: No--15.542300-5.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Aug 2007, Lee Schermerhorn wrote:
+Kyle Moffett wrote:
+> We've *always* had to do this; that's what "chmod -R" or "setfacl -R" 
+> are for :-D.  The major problem is that the locking and lookup overhead 
+> gets really significant if you have to look at the entire directory tree 
+> in order to determine the permissions for one single object.  I 
+> definitely agree that we need better GUIs for managing file permissions, 
+> but I don't see how you could modify the kernel in this case to do what 
+> you want.
 
-> > So its always true for node 0. The "bit" is set.
+I am well aware of that, I'm simply saying that sucks.  Doing a 
+recursive chmod or setfacl on a large directory tree is slow as all hell.
+
+> So what would you have happen when you move another directory into that 
+> directory?  Should it retain its permissions?  If they change based on 
+> the new directory then do you recurse into each subdirectory?  Such 
+> recursing to modify permissions also has significant performance 
+> implications.  What about if the file is hardlinked elsewhere; do those 
+> permissions change?
+
+Simple... the file retains any acl it already had, AND the acl of the 
+new directory now applies.  Most likely the moved file had no acl and 
+was just inheriting its effective acl from its old parent directory. 
+The end result is that people who used to have access to the file by 
+virtue of it being in their directory no longer do, and the people who 
+are supposed to have access to all files in the new directory get access 
+to this one.
+
+As for hard links, your access would depend on which name you use to 
+access the file.  The file itself may still have an acl that grants or 
+denies access to people no matter what name they use, but if it allows 
+inheritance, then which name you access it by will modify the effective 
+acl that it gets.
+
+As for performance implications, I hardly think it is worrisome.  Each 
+directory in the path has to be looked up anyhow so you already have 
+their acls, so when you finally reach the file, you just have to take 
+the union of the acls encountered on the way.  Should only be a few cpu 
+cycles.
+
+> There's also the question of what to do about namespaces and bind 
+> mounts.  If I run "mount --bind /foo /home/foo", then do I get different 
+> file permissions depending on what path I access the file by?  What if I 
+> then run chroot("/foo"), do I get different file permissions then?  What 
+> if I have two namespaces, each with their own root filesystem (say 
+> "root1" and "root2"), and I mount the other namespace's root filesystem 
+> in a subdir of each:
+>   NS1:  mount /dev/root2 /otherns
+>   NS2:  mount /dev/root1 /otherns
 > 
-> The issue is with the N_*_MEMORY masks.  They don't get initialized
-> properly because node_set_state() is a no-op if !NUMA.  So, where we
-> look for intersections with or where we AND with the N_*_MEMORY masks we
-> get the empty set.
-
-That is intentional. Memory is always present if you are on !NUMA. You can 
-simply use a default nodemask where only node 0 is set. That is what the 
-fallback provides. Maybe it does not provide the right thing for cpusets?
-
-> > We are trying to get cpusets to work with !NUMA?
+> Now I have the following paths to the same file, do these get different 
+> permissions or the same?
+>   NS1:/foo == NS2:/otherns/foo
+>   NS2:/bar == NS1:/otherns/bar
 > 
-> Well, yes.  In Serge's case, he's trying to use cpusets with !NUMA.
-> He'll have to comment on the reasons for that.  Looking at all of the
-> #ifdefs and init/Kconfig, CPUSET does not depend on NUMA--only SMP and
-> CONTAINERS [altho' methinks CPUSET should select CONTAINERS rather than
-> depend on it...].  So, you can use cpusets to partition of cpus in
-> non-NUMA configs.
+> If you answered that they get different permissions, then how do you 
+> handle the massive locking performance penalty due to the extra 
+> lookups?  If you answered "same permissions", then how do you explain 
+> the obvious discrepancy to the admin?
 
-Looks like we need to fix cpuset nodemasks for the !NUMA case then?
-It cannot expect to find valid nodemasks if !NUMA.
+Good question.  I would say the bind mount should have a flag to 
+specify.  That way the admin can choose where it should inherit from.  I 
+also don't see where this locking penalty is.
 
-> In the more general case, tho', I'm looking at all uses of the
-> node_online_map and for_each_online_node, for instances where they
-> should be replaced with one of the *_MEMORY masks.  IMO, generic code
-> that is compiled independent of any CONFIG option, like NUMA,  should
-> just work, independent of the config.  Currently, as Serge has shown,
+> The idea is nice, but as soon as you add multiple namespaces, chroots, 
+> or bind mounts the concept breaks down.  For security-sensitive things 
+> like file permissions, you really do want determinate behavior 
+> regardless of the path used to access the data.
 
-AFAIK this works except for cpusets.
+How does it break down?  Chroots have absolutely no impact at all, and 
+the bind mounts/namespaces can be handled as I mentioned above.  If you 
+really want to be sure of the effective permissions on the file, then 
+you simply flag it to not inherit from its parent or use an inherited 
+rights mask to block the specific inherited permissions you want.
 
-> this is not the case.  So, I think we should fix the *_MEMORY maps to be
-> correctly populated in both the NUMA and !NUMA cases.  A couple of
-> options:
-
-There is no point in having a variable if you know the results because of 
-!NUMA. That is the way nodemask.h has always operated.
-
-> Thoughts?
-
-Lets get either rid of the definitions for the nodemasks in the !NUMA 
-case or fix their contents to have the right constant value expected in 
-cpusets.
 
