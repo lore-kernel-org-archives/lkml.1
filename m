@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933642AbXHORZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934405AbXHOR0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933642AbXHORZi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbXHORZa
+	id S934405AbXHOR0y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760625AbXHOR0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:25:30 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34161 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752491AbXHORZa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:25:30 -0400
-Message-ID: <46C33700.1060605@zytor.com>
-Date: Wed, 15 Aug 2007 10:25:20 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Guy Streeter <guy.streeter@gmail.com>
-CC: James Pearson <james-p@moving-picture.com>, linux-kernel@vger.kernel.org
-Subject: Re: 4096 byte limit to /proc/PID/environ ?
-References: <4474B7DB.8000304@moving-picture.com>	 <200605242029.k4OKTn9C031700@terminus.zytor.com>	 <447EF58C.6000605@moving-picture.com> <52dd17640708150954q798d137cn1b07739785917c5b@mail.gmail.com>
-In-Reply-To: <52dd17640708150954q798d137cn1b07739785917c5b@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 15 Aug 2007 13:26:45 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1725 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760439AbXHOR0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:26:44 -0400
+Subject: Re: [PATCH] [134/2many] MAINTAINERS - CORETEMP HARDWARE MONITORING
+	DRIVER
+From: Joe Perches <joe@perches.com>
+To: Rudolf Marek <r.marek@assembler.cz>
+Cc: torvalds@linux-foundation.org, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <46C332D6.1060907@assembler.cz>
+References: <46bff960.WIP0LRYr3U/rYI1a%joe@perches.com>
+	 <46C332D6.1060907@assembler.cz>
+Content-Type: text/plain
+Date: Wed, 15 Aug 2007 10:12:29 -0700
+Message-Id: <1187197949.7443.9.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guy Streeter wrote:
-> On 6/1/06, James Pearson <james-p@moving-picture.com> wrote:
->> H. Peter Anvin wrote:
->>> I think this is the wrong approach.
->>>
->>> Many of these should probably be converted to seq_file, but in the
->>> particular case of environ, the right approach is to observe the fact
->>> that reading environ is just like reading /proc/PID/mem, except:
->>>
->>>  a. the access restrictions are less strict, and
->>>  b. there is a range restriction, which needs to be enforced, and
->>>  c. there is an offset.
->>>
->>> Pretty much, take the guts from /proc/PID/mem and generalize it
->>> slightly, and you have the code that can run either /proc/PID/mem or
->>> /proc/PID/environ.
->> The following patch is based on the /proc/PID/mem code appears to work fine.
->>
-> 
-> This thread has gone stale. The PAGE_SIZE limit still exists. Is this
-> solution acceptable?
-> 
+On Wed, 2007-08-15 at 19:07 +0200, Rudolf Marek wrote:
+> There is documentation file too. Documentation/hwmon/coretemp
 
-Can we avoid the code duplication?
+Thanks.  I've now got:
 
-	-hpa
+CORETEMP HARDWARE MONITORING DRIVER
+P:	Rudolf Marek
+M:	r.marek@assembler.cz
+L:	lm-sensors@lm-sensors.org
+S:	Maintained
+F:	Documentation/hwmon/coretemp
+F:	drivers/hwmon/coretemp.c
+
+cheers,  Joe
+
