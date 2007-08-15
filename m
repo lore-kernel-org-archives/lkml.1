@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936315AbXHOT7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936375AbXHOUAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936315AbXHOT7z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 15:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936149AbXHOT7W
+	id S936375AbXHOUAs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 16:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932988AbXHOT7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 15:59:22 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:32798 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936137AbXHOT7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 15:59:19 -0400
-Date: Wed, 15 Aug 2007 12:59:15 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
-Message-ID: <20070815195915.GL9645@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <46BCC26B.6080600@redhat.com> <46BB46B2.60808@redhat.com> <20070809134150.GA14890@shell.boston.redhat.com> <2708.1186737826@redhat.com> <7680.1186822071@redhat.com> <46BFFDBD.6080804@redhat.com> <46C140DD.3060509@yahoo.com.au> <2cbda24e96a49c3ab7cf7039c515f9fc@kernel.crashing.org> <20070815191829.GJ9645@linux.vnet.ibm.com> <369924c4b3132a4b06258b7ac81b1006@kernel.crashing.org>
+	Wed, 15 Aug 2007 15:59:38 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59661 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S936207AbXHOT7h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 15:59:37 -0400
+Date: Wed, 15 Aug 2007 12:59:32 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <ak@suse.de>
+cc: Ralf Baechle <ralf@linux-mips.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Mel Gorman <mel@skynet.ie>, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-mips@linux-mips.org
+Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones
+ pointer
+In-Reply-To: <20070815125920.GD3406@bingen.suse.de>
+Message-ID: <Pine.LNX.4.64.0708151259230.7326@schroedinger.engr.sgi.com>
+References: <20070813225841.GG3406@bingen.suse.de>
+ <Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com>
+ <20070813230801.GH3406@bingen.suse.de> <Pine.LNX.4.64.0708131536340.29946@schroedinger.engr.sgi.com>
+ <20070813234322.GJ3406@bingen.suse.de> <Pine.LNX.4.64.0708131553050.30626@schroedinger.engr.sgi.com>
+ <20070814000041.GL3406@bingen.suse.de> <20070814002223.2d8d42c5@the-village.bc.nu>
+ <20070814001441.GN3406@bingen.suse.de> <20070815113749.GA5862@linux-mips.org>
+ <20070815125920.GD3406@bingen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <369924c4b3132a4b06258b7ac81b1006@kernel.crashing.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 09:46:55PM +0200, Segher Boessenkool wrote:
-> >>>Well if there is only one memory location involved, then smp_rmb()
-> >>>isn't
-> >>>going to really do anything anyway, so it would be incorrect to use 
-> >>>it.
-> >>
-> >>rmb() orders *any* two reads; that includes two reads from the same
-> >>location.
-> >
-> >If the two reads are to the same location, all CPUs I am aware of
-> >will maintain the ordering without need for a memory barrier.
-> 
-> That's true of course, although there is no real guarantee for that.
+On Wed, 15 Aug 2007, Andi Kleen wrote:
 
-A CPU that did not provide this property ("cache coherence") would be
-most emphatically reviled.  So we are pretty safe assuming that CPUs
-will provide it.
+> BTW I suspect this is true for some other GFP_DMA usages too.
+> Some driver writers seem to confuse it with the PCI DMA
+> APIs or believe it is always needed for them.
 
-						Thanx, Paul
+See especially ARM.
+
