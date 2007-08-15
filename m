@@ -1,117 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934822AbXHORwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934889AbXHORxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934822AbXHORwe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755681AbXHORw0
+	id S934889AbXHORxk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760750AbXHORx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:52:26 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:1247 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755263AbXHORwZ convert rfc822-to-8bit (ORCPT
+	Wed, 15 Aug 2007 13:53:28 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50615 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753774AbXHORxZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:52:25 -0400
-X-Greylist: delayed 1800 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Aug 2007 13:52:25 EDT
+	Wed, 15 Aug 2007 13:53:25 -0400
+Date: Wed, 15 Aug 2007 23:35:45 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <20070815173326.GF9645@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.0.999.0708152325270.16414@enigma.security.iitk.ac.in>
+References: <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+ <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in>
+ <20070815142516.GB9645@linux.vnet.ibm.com> <20070815153335.GA23593@gondor.apana.org.au>
+ <20070815160830.GC9645@linux.vnet.ibm.com>
+ <alpine.LFD.0.999.0708152244310.16414@enigma.security.iitk.ac.in>
+ <20070815173326.GF9645@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 15 Aug 2007 17:22:21.0970 (UTC) FILETIME=[D6F6C720:01C7DF60]
-Content-class: urn:content-classes:message
-Subject: USB Keyboard
-Date: Wed, 15 Aug 2007 13:22:21 -0400
-Message-ID: <Pine.LNX.4.61.0708151320380.8581@chaos.analogic.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: USB Keyboard
-Thread-Index: AcffYNb+ef9oY1MmR5y50naUBxdOKg==
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Linux kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hello all,
 
-I have been using linux-2.6.16.24 for development.
-However, when I boot a sustem that uses a Dell USB
-keyboard with a hub built into a Dell monitor, there
-are continuous keyboard disconnect messages until
-I exercise ^S/^Q. Then, everything is fine. I
-thought maybe there was a bug that had been fixed
-in later versions so I built and installed Linux-2.6.22.1.
-The required usbhid.ko doesn't build, even though it
-is enabled in ".config."
+On Wed, 15 Aug 2007, Paul E. McKenney wrote:
 
-CONFIG_USB_DABUSB=m
-# USB devices
-CONFIG_SND_USB_AUDIO=m
-CONFIG_SND_USB_USX2Y=m
-# CONFIG_SND_USB_CAIAQ is not set
-# USB Input Devices
-CONFIG_USB_HID=m
-# CONFIG_USB_HIDINPUT_POWERBOOK is not set
-CONFIG_USB_HIDDEV=y
-# USB HID Boot Protocol drivers
-CONFIG_USB_KBD=m
-CONFIG_USB_MOUSE=m
-# USB support
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_USB=y
-# CONFIG_USB_DEBUG is not set
-# Miscellaneous USB options
-CONFIG_USB_DEVICEFS=y
-CONFIG_USB_DEVICE_CLASS=y
-# CONFIG_USB_DYNAMIC_MINORS is not set
-# CONFIG_USB_SUSPEND is not set
-# CONFIG_USB_OTG is not set
-# USB Host Controller Drivers
-CONFIG_USB_EHCI_HCD=m
-CONFIG_USB_EHCI_SPLIT_ISO=y
-CONFIG_USB_EHCI_ROOT_HUB_TT=y
-# CONFIG_USB_EHCI_TT_NEWSCHED is not set
-# CONFIG_USB_EHCI_BIG_ENDIAN_MMIO is not set
-CONFIG_USB_ISP116X_HCD=m
-CONFIG_USB_OHCI_HCD=m
-# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
-# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
-CONFIG_USB_OHCI_LITTLE_ENDIAN=y
-CONFIG_USB_UHCI_HCD=m
-CONFIG_USB_SL811_HCD=m
-CONFIG_USB_SL811_CS=m
-# USB Device Class drivers
-CONFIG_USB_ACM=m
-CONFIG_USB_PRINTER=m
+> On Wed, Aug 15, 2007 at 10:48:28PM +0530, Satyam Sharma wrote:
+> > [...]
+> > Not for i386 and x86_64 -- those have atomic ops without any "volatile"
+> > semantics (currently as per existing definitions).
+> 
+> I claim unit volumes with arm, and the majority of the architectures, but
+> I cannot deny the popularity of i386 and x86_64 with many developers.  ;-)
 
-Also, the following errors occur when building the kernel:
-
-   CHK     include/linux/version.h
-   CHK     include/linux/utsrelease.h
-   CALL    scripts/checksyscalls.sh
-   CHK     include/linux/compile.h
-   MODPOST vmlinux
-WARNING: arch/i386/kernel/built-in.o(.text+0xfca1): Section mismatch: reference to .init.data:trampoline_end (between 'setup_trampoline' and 'cpu_coregroup_map')
-WARNING: arch/i386/kernel/built-in.o(.text+0xfca9): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
-WARNING: arch/i386/kernel/built-in.o(.text+0xfcb3): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
-WARNING: arch/i386/kernel/built-in.o(.exit.text+0x26): Section mismatch: reference to .init.text: (between 'cache_remove_dev' and 'ffh_cstate_exit')
-WARNING: arch/i386/kernel/built-in.o(.data+0xe20): Section mismatch: reference to .init.text: (between 'thermal_throttle_cpu_notifier' and 'mtrr_mutex')
-WARNING: kernel/built-in.o(.text+0x1b582): Section mismatch: reference to .init.text: (between 'kthreadd' and 'init_waitqueue_head')
-Kernel: arch/i386/boot/bzImage is ready  (#1)
-   Building modules, stage 2.
-   MODPOST 1258 modules
-WARNING: drivers/net/sis900.o(.text+0x4b8): Section mismatch: reference to .init.text:sis900_mii_probe (between 'sis900_probe' and 'sis900_default_phy')
-WARNING: drivers/net/sunhme.o(.text+0x2f49): Section mismatch: reference to .init.text: (between 'happy_meal_pci_probe' and 'happy_meal_pci_remove')
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+Hmm, does arm really need that "volatile int counter;"? Hopefully RMK will
+take a patch removing that "volatile" ... ;-)
 
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+> However, I am not aware of code in the kernel that would benefit
+> from the compiler coalescing multiple atomic_set() and atomic_read()
+> invocations, thus I don't see the downside to volatility in this case.
+> Are there some performance-critical code fragments that I am missing?
 
-Thank you.
+I don't know, and yes, code with multiple atomic_set's and atomic_read's
+getting optimized or coalesced does sound strange to start with. Anyway,
+I'm not against "volatile semantics" per se. As replied elsewhere, I do
+appreciate the motivation behind this series (to _avoid_ gotchas, not to
+fix existing ones). Just that I'd like to avoid using "volatile", for
+aforementioned reasons, especially given that there are perfectly
+reasonable alternatives to achieve the same desired behaviour.
+
+
+Satyam
