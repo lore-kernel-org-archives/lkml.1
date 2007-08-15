@@ -1,57 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764413AbXHPHRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765329AbXHPHSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764413AbXHPHRw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 03:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754993AbXHPHRn
+	id S1765329AbXHPHSs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 03:18:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbXHPHSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 03:17:43 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:10023 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753364AbXHPHRl (ORCPT
+	Thu, 16 Aug 2007 03:18:39 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:55923 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754993AbXHPHSi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 03:17:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=QYXWyr3geBsqtEl4QDFAFd349AM/aYcRJJ9Jrz4zJcw0HVeTrbg3m/xpXNtztdd3zfkZb6pABz5iG/I8432OAiQrnppwqo5gC56PmeNl6Tf3MNWk0lTkWvrtEebbiL23JfmXrvNiGl/TjB7Zucj2/DB/GPdVPvLg/gOaoWpnrA4=
-Message-ID: <46C3FA03.9060304@gmail.com>
-Date: Thu, 16 Aug 2007 11:17:23 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: Re: [v4l-dvb-maintainer] [2.6 patch] dvb/bt8xx: "extern inline" ->
- "static inline"
-References: <20070814212530.GS18945@stusta.de>
-In-Reply-To: <20070814212530.GS18945@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Aug 2007 03:18:38 -0400
+Message-Id: <20070815205708.687507636@breakpoint.cc>
+References: <20070815205430.512612422@breakpoint.cc>
+User-Agent: quilt/0.46-1
+Date: Wed, 15 Aug 2007 22:54:32 +0200
+From: Sebastian Siewior <sebastian@breakpoint.cc>
+To: linux-kernel@vger.kernel.org
+Cc: Andi Kleen <ak@suse.de>, Chris Snook <csnook@redhat.com>
+Subject: [patch 2/2] x86_64: use asm() like the other atomic operations already do.
+Content-Disposition: inline; filename=atomic_x86_64.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> "extern inline" will have different semantics with gcc 4.3.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 6ffbe5b19606cd8756be4d04e0902de69e447c85 
-> diff --git a/drivers/media/dvb/bt8xx/bt878.h b/drivers/media/dvb/bt8xx/bt878.h
-> index f685bc1..1c8e336 100644
-> --- a/drivers/media/dvb/bt8xx/bt878.h
-> +++ b/drivers/media/dvb/bt8xx/bt878.h
-> @@ -149,7 +149,7 @@ void bt878_start(struct bt878 *bt, u32 controlreg, u32 op_sync_orin,
->  void bt878_stop(struct bt878 *bt);
->  
->  #if defined(__powerpc__)	/* big-endian */
-> -extern __inline__ void io_st_le32(volatile unsigned __iomem *addr, unsigned val)
-> +static inline void io_st_le32(volatile unsigned __iomem *addr, unsigned val)
->  {
->  	__asm__ __volatile__("stwbrx %1,0,%2":"=m"(*addr):"r"(val),
->  			     "r"(addr));
-> 
-> 
+As Segher pointed out, inline asm is better than the volatile casting all over
+the place. From the PowerPC patch description:
+ Also use inline functions instead of macros; this actually
+ improves code generation (some code becomes a little smaller,
+ probably because of improved alias information -- just a few
+ hundred bytes total on a default kernel build, nothing shocking).
 
-Signed-off-by: Manu Abraham <manu@linuxtv.org>
+My config with march=k8 and gcc (GCC) 4.1.2 (Gentoo 4.1.2):
+  text    data     bss     dec     hex filename
+  4002473  385936  474440 4862849  4a3381 atomic_normal/vmlinux
+  4002587  385936  474440 4862963  4a33f3 atomic_inlineasm/vmlinux
+  4003911  385936  474440 4864287  4a391f atomic_volatile/vmlinux
+  4003959  385936  474440 4864335  4a394f atomic_volatile_inline/vmlinux
+
+Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Chris Snook <csnook@redhat.com>
+--- a/include/asm-x86_64/atomic.h
++++ b/include/asm-x86_64/atomic.h
+@@ -32,7 +32,16 @@ typedef struct { int counter; } atomic_t
+  * 
+  * Atomically reads the value of @v.
+  */ 
+-#define atomic_read(v)		((v)->counter)
++static inline int atomic_read(const atomic_t *v)
++{
++	int t;
++
++	asm volatile(
++			"movl %1, %0"
++			: "=r"(t)
++			: "m"(v->counter));
++	return t;
++}
+ 
+ /**
+  * atomic_set - set atomic variable
+@@ -41,7 +50,13 @@ typedef struct { int counter; } atomic_t
+  * 
+  * Atomically sets the value of @v to @i.
+  */ 
+-#define atomic_set(v,i)		(((v)->counter) = (i))
++static inline void atomic_set(atomic_t *v, int i)
++{
++	asm volatile(
++			"movl %1, %0"
++			: "=m"(v->counter)
++			: "ir"(i));
++}
+ 
+ /**
+  * atomic_add - add integer to atomic variable
+@@ -206,7 +221,7 @@ static __inline__ int atomic_sub_return(
+ 
+ /* An 64bit atomic type */
+ 
+-typedef struct { volatile long counter; } atomic64_t;
++typedef struct { long counter; } atomic64_t;
+ 
+ #define ATOMIC64_INIT(i)	{ (i) }
+ 
+@@ -217,7 +232,16 @@ typedef struct { volatile long counter; 
+  * Atomically reads the value of @v.
+  * Doesn't imply a read memory barrier.
+  */
+-#define atomic64_read(v)		((v)->counter)
++static inline long atomic64_read(const atomic64_t *v)
++{
++	long t;
++
++	asm volatile(
++			"movq %1, %0"
++			: "=r"(t)
++			: "m"(v->counter));
++	return t;
++}
+ 
+ /**
+  * atomic64_set - set atomic64 variable
+@@ -226,7 +250,13 @@ typedef struct { volatile long counter; 
+  *
+  * Atomically sets the value of @v to @i.
+  */
+-#define atomic64_set(v,i)		(((v)->counter) = (i))
++static inline void atomic64_set(atomic64_t *v, long i)
++{
++	asm volatile(
++			"movq %1, %0"
++			: "=m"(v->counter)
++			: "ir"(i));
++}
+ 
+ /**
+  * atomic64_add - add integer to atomic64 variable
+
+-- 
 
