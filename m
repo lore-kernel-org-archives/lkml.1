@@ -1,72 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765019AbXHOQWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765570AbXHOQXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765019AbXHOQWG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 12:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759343AbXHOQVw
+	id S1765570AbXHOQXg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 12:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759843AbXHOQX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 12:21:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39581 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759314AbXHOQVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 12:21:50 -0400
-Message-ID: <46C3283B.5090804@redhat.com>
-Date: Wed, 15 Aug 2007 13:22:19 -0300
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Wed, 15 Aug 2007 12:23:26 -0400
+Received: from web36610.mail.mud.yahoo.com ([209.191.85.27]:46514 "HELO
+	web36610.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756986AbXHOQXY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 12:23:24 -0400
+X-YMail-OSG: aB.oB84VM1nfTclOVuaHkwpkPVOKaialHf3n9DaU9tYo.By7wRurkjVWKMzbCxL_PQ--
+X-RocketYMMF: rancidfat
+Date: Wed, 15 Aug 2007 09:23:22 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: Adding a security parameter to VFS functions
+To: David Howells <dhowells@redhat.com>, torvalds@osdl.org,
+       viro@ftp.linux.org.uk
+Cc: dhowells@redhat.com, sds@tycho.nsa.gov, casey@schaufler-ca.com,
+       linux-fsdevel@vger.kernel.org, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <29015.1187178055@redhat.com>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Glauber de Oliveira Costa <glommer@gmail.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
-       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       Steven Rostedt <rostedt@goodmis.org>, kiran@scalemp.com,
-       shai@scalemp.com
-Subject: Re: [PATCH 3/25][V3] irq_flags / halt routines
-References: <11871821854176-git-send-email-gcosta@redhat.com> <1187182197314-git-send-email-gcosta@redhat.com> <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <20070815135554.GE3406@bingen.suse.de> <5d6222a80708150718v14f26343q7467385e7919fa76@mail.gmail.com> <20070815154243.GH3406@bingen.suse.de> <46C31736.2050001@redhat.com> <20070815163640.GJ3406@bingen.suse.de>
-In-Reply-To: <20070815163640.GJ3406@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <45343.31878.qm@web36610.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen escreveu:
-> On Wed, Aug 15, 2007 at 12:09:42PM -0300, Glauber de Oliveira Costa wrote:
->> Again, this is the code of such function:
->>
->> static inline int raw_irqs_disabled_flags(unsigned long flags)
->> {
->>         return !(flags & X86_EFLAGS_IF);
->> }
->> so all it is doing is getting a parameter (flags), and bitmasking it. It 
->> is not talking to any hypervisor. I can't see your point. Unless you are
->> arguing that it _should_ be talking to a hypervisor. Is that your point?
+
+--- David Howells <dhowells@redhat.com> wrote:
+
 > 
-> vSMP is a hypervisor based architecture. For some reason that is not
-> 100% clear to me, but Kiran or Shai can probably explain, it needs this 
-> additional bit in EFLAGS when interrupts are disabled. That gives
-> it some hints and then it goes somehow faster. That is clearly
-> paravirtualization.
+> Hi Linus, Al,
 > 
-> Since paravirtops is designed to handle such hooks cleanly I request
-> that you move vSMP over to it or work with the vSMP maintainers to 
-> do that. Otherwise we have two different ways to do paravirtualization 
-> which is wrong.
+> Would you object greatly to functions like vfs_mkdir() gaining a security
+> parameter?
+
+Could you describe how this compares to the proposal that the
+AppArmor developers suggested recently? I expect that we can 
+reduce the amount of discussion required, and maybe avoid some
+confusion if you could do that.
+
+Thank you.
+
+> What I'm thinking of is this:
+> 
+> 	int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode,
+> 		      struct security *security)
+> 
+> Where the security context is the state of the context at the time the call
+> was issued:
+> 
+> 	struct security {
+> 		uid_t			fsuid;
+> 		git_t			fsgid;
+> 		struct group_info	*group_info;
+> 		void			*security;
+> 		struct key		*session_keyring;
+> 		struct key		*process_keyring;
+> 		struct key		*thread_keyring;
+> 
+> And perhaps:
+> 
+> 		struct audit_context	*audit_context;
+> 		seccomp_t		seccomp;
+> 	};
+> 
+> This would, for the most part, be a temporary affair, being set up by such as
+> sys_mkdir()/sys_mkdirat() from data held in task_struct.
+> 
+> This information would then be passed into the filesystem and LSM layers so
+> that files, directories, etc. can be created, opened, deleted, or otherwise
+> mangled based on these security items, rather than the one in whichever
+> task_struct is current.
+> 
+> 
+> The reason for doing this would be to support an act-as interface, so that
+> services such as nfsd and cachefiles could act with different security
+> details
+> to the ones attached to the task.  This would have a couple of potential
+> benefits:
+> 
+>  (1) nfsd threads don't have to keep changing their security contexts.
+> 
+>  (2) cachefiles can act on behalf of a process without changing its security
+>      context.
+> 
+> 
+> Note that I/O operations such as read, write and ioctl would *not* be passed
+> this data as the file struct should contain the relevant security
+> information.
+> Similarly, page I/O operations would also not need alteration as the VMA
+> covering the region points to a file struct, which holds the appropriate
+> security.
+> 
+> David
+> 
+> 
 > 
 
-Thanks for the explanation, Andi. I understand it much better now, and 
-agree with you.
 
-As alternatives what we have now, we can either keep the paravirt_ops as 
-it is now for the native case, just hooking the vsmp functions in place 
-of the normal one, (there are just three ops anyway), refill the 
-paravirt_ops entirely in somewhere like vsmp.c, or similar (or maybe 
-even assigning paravirt_ops.fn = vsmp_fn on the fly, but early enough).
-
-Maybe we could even make VSMP depend on PARAVIRT, to make it sure it is 
-completely a paravirt client.
-
-But as you could see, my knowledge of vsmp does not go that far, and I 
-would really like to have input from the vsmp guys prior to touch 
-anything here.
-
+Casey Schaufler
+casey@schaufler-ca.com
