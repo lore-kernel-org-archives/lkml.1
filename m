@@ -1,120 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935827AbXHOT2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935615AbXHOTfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935827AbXHOT2P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 15:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760882AbXHOT1x
+	id S935615AbXHOTfg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 15:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758382AbXHOTf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 15:27:53 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59816 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754456AbXHOT1w (ORCPT
+	Wed, 15 Aug 2007 15:35:26 -0400
+Received: from mu-out-0910.google.com ([209.85.134.191]:4901 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754668AbXHOTfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 15:27:52 -0400
-Date: Thu, 16 Aug 2007 01:10:15 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Segher Boessenkool <segher@kernel.crashing.org>
-cc: Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
-       horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <9350e9fab505c92af8d5e1f3441d6ad2@kernel.crashing.org>
-Message-ID: <alpine.LFD.0.999.0708160102550.16414@enigma.security.iitk.ac.in>
-References: <20070809131423.GA9927@shell.boston.redhat.com>
- <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
- <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
- <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
- <9350e9fab505c92af8d5e1f3441d6ad2@kernel.crashing.org>
+	Wed, 15 Aug 2007 15:35:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=XtnAVt1yck0OqLmT2Wpow6K8OnZW0ECkrHUTObAQiiUP5mD3wj1dhi7dyX8dU03QXOj9hOKS6lunadkdaD6ZBJYNv1243A4GEzMxRoDyLIBpUwDn3DLYcj7jCbnl4F+bq6U9Dqu3cIICTXKv/2KtzkE7STTTrFoefclc/U7VV/0=
+Message-ID: <46C355AC.3040604@gmail.com>
+Date: Wed, 15 Aug 2007 21:36:12 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: postfail@hushmail.com
+CC: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1 of 5 ] /drivers/char ioremap balancing/ returncode check
+References: <20070815043503.535662281F@mailserver9.hushmail.com>
+In-Reply-To: <20070815043503.535662281F@mailserver9.hushmail.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Scott Thompson napsal(a):
+> On Mon, 13 Aug 2007 16:17:29 -0400 Jiri Slaby <jirislaby@gmail.com> 
+> wrote:
+>>> diff --git a/drivers/char/sx.c b/drivers/char/sx.c
+>>> index 85a2328..30829ed 100644
+>>> --- a/drivers/char/sx.c
+>>> +++ b/drivers/char/sx.c
+>>> @@ -2627,6 +2627,12 @@ static void __devinit fix_sx_pci(struct 
+>>> pci_dev *pdev, struct sx_board *board)
+>>>  	pci_read_config_dword(pdev, PCI_BASE_ADDRESS_0, &hwbase);
+>>>  	hwbase &= PCI_BASE_ADDRESS_MEM_MASK;
+>>>  	rebase = ioremap(hwbase, 0x80);
+>>> +	if (!rebase) {
+>>> +		printk(KERN_DEBUG 
+>>> +			"sx:ioremap fail, unable to perform cntrl reg fix\n");
+>>> +		return;
+>>> +	}
+>>> +		
+>> 1) this should be pci_iomap(pdev, 0, 0x80)
+> The ioremap call was there before my patch and I'm just trying to 
+> audit ioremap calls to make sure that they are cleaned up and have 
+> their return codes checked.   If you want me to take care of that 
+> "while I'm in the neighborhood", let me know, but trying to avoid 
+> too much scope creep on my audit to increase chances it actually 
+> gets included...
 
+Yup, while you are at it, make yet another patch, which will convert this to
+pci_iomap/unmap.
 
-On Wed, 15 Aug 2007, Segher Boessenkool wrote:
-
-> > "Volatile behaviour" itself isn't consistently defined (at least
-> > definitely not consistently implemented in various gcc versions across
-> > platforms),
 > 
-> It should be consistent across platforms; if not, file a bug please.
+>> 2) KERN_DEBUG is inappropriate and wrap the string in the middle 
+>> and not in the
+>> beginning
 > 
-> > but it is /expected/ to mean something like: "ensure that
-> > every such access actually goes all the way to memory, and is not
-> > re-ordered w.r.t. to other accesses, as far as the compiler can take
-                              ^
-                              (volatile)
+> Agree on the wordwrap, several artifacts were created on this 
+> patchset and this whole thing will be resubmitted through a 
+> different mail client. 
 
-(or, alternatively, "other accesses to the same volatile object" ...)
+Aha. Anyways, if it's more that 80 columns in width, split it into more lines.
 
-> > care of these". The last "as far as compiler can take care" disclaimer
-> > comes about due to CPUs doing their own re-ordering nowadays.
-> 
-> You can *expect* whatever you want, but this isn't in line with
-> reality at all.
-> 
-> volatile _does not_ prevent reordering wrt other accesses.
-> [...]
-> What volatile does are a) never optimise away a read (or write)
-> to the object, since the data can change in ways the compiler
-> cannot see; and b) never move stores to the object across a
-> sequence point.  This does not mean other accesses cannot be
-> reordered wrt the volatile access.
-> 
-> If the abstract machine would do an access to a volatile-
-> qualified object, the generated machine code will do that
-> access too.  But, for example, it can still be optimised
-> away by the compiler, if it can prove it is allowed to.
+> As for KERN_DEBUG, KERN_DEBUG is used in the function following 
+> this call as notification that this workaround was required.  When 
+> I audit code as I am here I generally try to blend the patch in 
+> with the style and conventions of the code around it.  If 
+> KERN_DEBUG is inappropriate on the subsequent call, both values 
+> should be changed.  
 
-As (now) indicated above, I had meant multiple volatile accesses to
-the same object, obviously.
+Only a string, where you warn an user, that something went wrong and this and
+over that won't work... KERN_DEBUG messages are usually NOT logged. I suggest
+KERN_ERR for mapping failure and KERN_INFO for the message about the workaround
+is being used.
 
-BTW:
-
-#define atomic_read(a)	(*(volatile int *)&(a))
-#define atomic_set(a,i)	(*(volatile int *)&(a) = (i))
-
-int a;
-
-void func(void)
-{
-	int b;
-
-	b = atomic_read(a);
-	atomic_set(a, 20);
-	b = atomic_read(a);
-}
-
-gives:
-
-func:
-	pushl	%ebp
-	movl	a, %eax
-	movl	%esp, %ebp
-	movl	$20, a
-	movl	a, %eax
-	popl	%ebp
-	ret
-
-so the first atomic_read() wasn't optimized away.
-
-
-> volatile _does not_ make accesses go all the way to memory.
-> [...]
-> If you want stuff to go all the way to memory, you need some
-> architecture-specific flush sequence; to make a store globally
-> visible before another store, you need mb(); before some following
-> read, you need mb(); to prevent reordering you need a barrier.
-
-Sure, which explains the "as far as the compiler can take care" bit.
-Poor phrase / choice of words, probably.
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
