@@ -1,103 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935794AbXHOStt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935728AbXHOSxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935794AbXHOStt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 14:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760519AbXHOStg
+	id S935728AbXHOSxS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 14:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbXHOSw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 14:49:36 -0400
-Received: from belushi.uits.indiana.edu ([129.79.1.188]:47177 "EHLO
-	belushi.uits.indiana.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760574AbXHOStf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 14:49:35 -0400
-X-Greylist: delayed 1580 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Aug 2007 14:49:34 EDT
-Subject: Re: Thinking outside the box on file systems
-From: Brian Wheeler <bdwheele@indiana.edu>
-To: mperkel@yahoo.com
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Wed, 15 Aug 2007 14:23:12 -0400
-Message-Id: <1187202192.30730.25.camel@wombat.dlib.indiana.edu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Wed, 15 Aug 2007 14:52:57 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42428 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754477AbXHOSwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 14:52:55 -0400
+In-Reply-To: <46C140DD.3060509@yahoo.com.au>
+References: <46BCC26B.6080600@redhat.com> <46BB46B2.60808@redhat.com> <20070809134150.GA14890@shell.boston.redhat.com> <2708.1186737826@redhat.com> <7680.1186822071@redhat.com> <46BFFDBD.6080804@redhat.com> <46C140DD.3060509@yahoo.com.au>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <2cbda24e96a49c3ab7cf7039c515f9fc@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: heiko.carstens@de.ibm.com, horms@verge.net.au,
+       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
+       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, jesper.juhl@gmail.com,
+       linux-arch@vger.kernel.org, zlynx@acm.org, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>, davem@davemloft.net,
+       wensong@linux-vs.org, wjiang@resilience.com,
+       David Howells <dhowells@redhat.com>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
+Date: Wed, 15 Aug 2007 20:51:58 +0200
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-HI
+> Well if there is only one memory location involved, then smp_rmb() 
+> isn't
+> going to really do anything anyway, so it would be incorrect to use it.
 
-While I find your ideas intriguing, I'd like to offer a friendly
-suggestion:  You're never going to convince anyone on LKML unless you do
-the following things:
-	* Describe your idea in detail, including algorithms, pseudo code,
-pictures, or whatever.  Vague hand-wavey stuff won't do it.
-	* Don't accuse others of being close minded (i.e. "not thinking outside
-the box").  Explain why their assertions may not be correct according to
-your proposal.
-	* Accept that others have far more experience, no matter how
-experienced you are.
-	* Remember that the current assumptions can't just break when the idea
-is implemented:  backwards compatibility is important.
+rmb() orders *any* two reads; that includes two reads from the same
+location.
 
-Also, be prepared to have your idea shot down.  Very few ideas make it
-into the kernel, and those only get there after months of hashing out
-the details.
+> Consider that smp_rmb basically will do anything from flushing the
+> pipeline to invalidating loads speculatively executed out of order. 
+> AFAIK
+> it will not control the visibility of stores coming from other CPUs 
+> (that
+> is up to the cache coherency).
 
-Brian
-
---- Kyle Moffett <mrmacman_g4@mac.com> wrote:
-
-> On Aug 15, 2007, at 13:19:16, Marc Perkel wrote:
-> > One of the problems with the Unix/Linux world is
-> that your minds  
-> > are locked into this one model. In order to do it
-> right it requires  
-> > the mental discipline to break out of that.
-> 
-> The major thing that you are missing is that this
-> "one model" has  
-> been very heavily tested over the years.  People
-> understand it, know  
-> how to use it and write software for it, and grok
-> its limitations.   
-> There's also a vast amount of *existing* code that
-> you can't just  
-> "deprecate" overnight; the world just doesn't work
-> that way.  The  
-> real way to get there (IE: a new model) from here
-> (IE: the old model)  
-> is the way all Linux development is done with a lot
-> of sensible easy- 
-> to-understand changes and refactorings.
-> 
-> With that said, if you actually want to sit down and
-> start writing  
-> *code* for your model, go ahead.  If it turns out to
-> be better than  
-> our existing model then I owe you a bottle of your
-> favorite beverage.
-> 
-> Cheers,
-> Kyle Moffett
-> 
+The writer side should typically use wmb() whenever the reader side
+uses rmb(), sure.
 
 
-When one thinks outside the box one has to think about
-evolving beyond what you are used to. When I moved
-beyond DOS I have to give up the idea of 8.3 file
-names. The idea here is to come up with a model that
-can emulate the existing system for backwards
-compatibility.
-
-The concept behind my model is to create a new layer
-where you can do ANYTHING with file names and
-permissions and create models that emulate Linux, DOS,
-Windows, Mac, or anything else you can dream of. Then
-you can create a Linux/Windows/Mac template to emulate
-what you are used to.
-
-
-Marc Perkel
-Junk Email Filter dot com
-http://www.junkemailfilter.com
+Segher
 
