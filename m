@@ -1,60 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934022AbXHORIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764907AbXHORJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934022AbXHORIk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760020AbXHORIc
+	id S1764907AbXHORJm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbXHORJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:08:32 -0400
-Received: from smtp121.sbc.mail.re3.yahoo.com ([66.196.96.94]:44376 "HELO
-	smtp121.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754917AbXHORIb (ORCPT
+	Wed, 15 Aug 2007 13:09:33 -0400
+Received: from web52512.mail.re2.yahoo.com ([206.190.48.195]:24496 "HELO
+	web52512.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751962AbXHORJc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:08:31 -0400
-X-YMail-OSG: 7wzXtHQVM1mF4ApDoVT5Sja28Xd0Wbo7XyjFp.gvbfgF09DMcnnexRjyVv1x6fktiBFL1SPEUw--
-Date: Wed, 15 Aug 2007 12:08:26 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Christoph Lameter <clameter@sgi.com>, bob.picco@hp.com, nacc@us.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
-       akpm@linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       ckrm-tech <ckrm-tech@lists.sourceforge.net>
-Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
-Message-ID: <20070815170826.GA13286@vino.hallyn.com>
-References: <20070814192306.GB32553@vino.hallyn.com> <20070814204951.GA2065@vino.hallyn.com> <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com> <1187127685.6281.139.camel@localhost> <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com> <1187185392.5422.13.camel@localhost> <20070815143125.GA11582@vino.hallyn.com> <1187195028.5422.30.camel@localhost> <20070815163142.GA12850@vino.hallyn.com> <20070815165234.GC1179@linux.vnet.ibm.com>
+	Wed, 15 Aug 2007 13:09:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=3Tb370GwmKCmHUFIAGK4BFVU0ram2obcRRr8n9Wv3F0BknURbzsuzQ6QGZba8zCjDY60QLVGjrlyr3zJ9VZo0+aaQCtAS7noOgIWmvXVY9pjVD2AscoBdJfd7T9djvfUNaGx6JDfwnCduaRXLYztDsiUnaO2trFvv3+YUP8pTgU=;
+X-YMail-OSG: Vblo5xsVM1lmcXeMRzx8Xr9LOSO4xYQNFKWFIVa9rLfh17EuVKIyCyKx529DnF34XBW8Kcs0mAgzA2HdLsQ8CBncQIQkd.fe9wdZqnluCzXZX31PsBwljxy0McUvbg--
+Date: Wed, 15 Aug 2007 10:09:31 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: Thinking outside the box on file systems
+To: Valdis.Kletnieks@vt.edu
+Cc: Kyle Moffett <mrmacman_g4@mac.com>,
+       Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+In-Reply-To: <19705.1187197065@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070815165234.GC1179@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <763705.7247.qm@web52512.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dhaval Giani (dhaval@linux.vnet.ibm.com):
-> Hi,
+
+--- Valdis.Kletnieks@vt.edu wrote:
+
+> On Wed, 15 Aug 2007 09:02:41 PDT, Marc Perkel said:
 > 
-> On Wed, Aug 15, 2007 at 11:31:42AM -0500, Serge E. Hallyn wrote:
-> > Quoting Lee Schermerhorn (Lee.Schermerhorn@hp.com):
-> > > On Wed, 2007-08-15 at 09:31 -0500, Serge E. Hallyn wrote:
-> > > > Quoting Lee Schermerhorn (Lee.Schermerhorn@hp.com):
-> > > > > On Tue, 2007-08-14 at 14:56 -0700, Christoph Lameter wrote:
-> > > > > > On Tue, 14 Aug 2007, Lee Schermerhorn wrote:
-> > > > > > 
-> > Ok, I'll try this soon as I have a chance.  To be honest when I first
-> > looked at this and saw that node_states[] was only being initialized
-> > for the first two entries this was my first instinct, except I had
-> > no idea what the right way to initilaize it was :)  Cause I am
-> > completely numa-challenged.
-> >
+> > Kyle, thinking further outside the box, files
+> would no
+> > longer have owners or permissions. Nor would
+> > directories. People, groups, managers, and other
+> > objects with have permissions.
 > 
-> I just tried it out and it is not triggering the bug. So i guess it
-> works :).
+> You gotta think *way* out of the box to come up with
+> a system where a "file"
+> isn't an object that can have some sort of ACL or
+> permissions on it.
+> 
 
-Great, thanks for checking.
 
-I vote let's go with Lee's patch, then.
+Yep - way outside the box - and thus the title of the
+thread.
 
--serge
+The idea is that people have permissions - not files.
+By people I mean users, groups, managers, applications
+etc. One might even specify that there are no
+permission restrictions at all. Part of the process
+would be that the kernel load what code it will use
+for the permission system. It might even be a little
+perl script you write.
+
+
+Also - you aren't even giving permission to access
+files. It's permission to access name patterns. One
+could apply REGEX masks to names to determine
+permissions. So if you have permission to the name you
+have permission to the file.
+
+Hard links would be multiple names pointing to the
+same file. Simlinks would be name aliases.
+
+
+
+Marc Perkel
+Junk Email Filter dot com
+http://www.junkemailfilter.com
+
+
+       
+____________________________________________________________________________________
+Moody friends. Drama queens. Your life? Nope! - their life, your story. Play Sims Stories at Yahoo! Games.
+http://sims.yahoo.com/  
