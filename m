@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbXHOMEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbXHOMF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbXHOMEQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 08:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbXHOMEA
+	id S1759476AbXHOMF2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 08:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbXHOMFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 08:04:00 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:60463 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751005AbXHOMD7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 08:03:59 -0400
-X-Greylist: delayed 1581 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Aug 2007 08:03:59 EDT
-Date: Wed, 15 Aug 2007 13:37:37 +0200
-From: Jan Kara <jack@suse.cz>
-To: Josef Bacik <jbacik@redhat.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix panic in jbd by adding locks
-Message-ID: <20070815113737.GC7642@atrey.karlin.mff.cuni.cz>
-References: <20070814152255.GB24127@dhcp-243-37.rdu.redhat.com>
+	Wed, 15 Aug 2007 08:05:17 -0400
+Received: from mx2.suse.de ([195.135.220.15]:42923 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752906AbXHOMFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 08:05:16 -0400
+Date: Wed, 15 Aug 2007 14:59:20 +0200
+From: Andi Kleen <ak@suse.de>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Andi Kleen <ak@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
+       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-mips@linux-mips.org
+Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones pointer
+Message-ID: <20070815125920.GD3406@bingen.suse.de>
+References: <20070813225841.GG3406@bingen.suse.de> <Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com> <20070813230801.GH3406@bingen.suse.de> <Pine.LNX.4.64.0708131536340.29946@schroedinger.engr.sgi.com> <20070813234322.GJ3406@bingen.suse.de> <Pine.LNX.4.64.0708131553050.30626@schroedinger.engr.sgi.com> <20070814000041.GL3406@bingen.suse.de> <20070814002223.2d8d42c5@the-village.bc.nu> <20070814001441.GN3406@bingen.suse.de> <20070815113749.GA5862@linux-mips.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070814152255.GB24127@dhcp-243-37.rdu.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070815113749.GA5862@linux-mips.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+On Wed, Aug 15, 2007 at 12:37:49PM +0100, Ralf Baechle wrote:
+> On Tue, Aug 14, 2007 at 02:14:41AM +0200, Andi Kleen wrote:
+> 
+> > meth is only used on SGI O2s which are not that slow and unlikely
+> > to work in tree anyways.
+> 
+> O2 doesn't enable CONFIG_ZONE_DMA so there is no point in using GFP_DMA in
+> an O2-specific device driver.  Will send out patch in separate mail.
 
-> It is possible to panic the box by a race condition that exists in the
-> journalling code where we do not take the j_revoke_lock when traversing the
-> journal's revoked record list.  This patch has been tested and we haven't seen
-> the issue yet, its a rather straightforward and correct (at least I think so :)
-> fix.  Thank you,
-  In principle, the patch looks fine. The only thing I'm wondering about
-is how that panic can happen... Journal write_revoke_records() is called
-from journal_commit_transaction() when revoke table for the committing
-transaction shouldn't see any further changes. So maybe the patch is
-masking a different problem.
-  Do you have a way of reproducing the problem? Any stack trace
-available?
+Great.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+BTW I suspect this is true for some other GFP_DMA usages too.
+Some driver writers seem to confuse it with the PCI DMA
+APIs or believe it is always needed for them.
+
+-Andi
