@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765868AbXHOOt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932212AbXHOOuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765868AbXHOOt3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 10:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761034AbXHOOtS
+	id S932212AbXHOOuB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 10:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758349AbXHOOtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 10:49:18 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:36022 "EHLO twin.jikos.cz"
+	Wed, 15 Aug 2007 10:49:46 -0400
+Received: from mail.suse.de ([195.135.220.2]:43076 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761819AbXHOOtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 10:49:17 -0400
-Date: Wed, 15 Aug 2007 16:49:02 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Florin Iucha <florin@iucha.net>
-cc: linux-usb-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
- v2.6.23-rc3-50-g28e8351
-In-Reply-To: <20070815133147.GA7124@iucha.net>
-Message-ID: <Pine.LNX.4.64.0708151647540.2460@twin.jikos.cz>
-References: <20070815133147.GA7124@iucha.net>
+	id S1761034AbXHOOtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 10:49:46 -0400
+Date: Wed, 15 Aug 2007 17:43:51 +0200
+From: Andi Kleen <ak@suse.de>
+To: Glauber de Oliveira Costa <glommer@gmail.com>
+Cc: Andi Kleen <ak@suse.de>, Glauber de Oliveira Costa <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
+       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 21/25][V3] export cpu_gdt_descr
+Message-ID: <20070815154351.GI3406@bingen.suse.de>
+References: <11871823373106-git-send-email-gcosta@redhat.com> <11871823673236-git-send-email-gcosta@redhat.com> <11871823782610-git-send-email-gcosta@redhat.com> <11871823892519-git-send-email-gcosta@redhat.com> <11871823991803-git-send-email-gcosta@redhat.com> <11871824081337-git-send-email-!gcosta@redhat.com> <11871824192375-git-send-email-gcosta@redhat.com> <11871824292046-git-send-email-gcosta@redhat.com> <20070815140339.GG3406@bingen.suse.de> <5d6222a80708150725i45a064bfqfd43139338287988@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5d6222a80708150725i45a064bfqfd43139338287988@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Aug 2007, Florin Iucha wrote:
+On Wed, Aug 15, 2007 at 11:25:43AM -0300, Glauber de Oliveira Costa wrote:
+> On 8/15/07, Andi Kleen <ak@suse.de> wrote:
+> > > +#ifdef CONFIG_PARAVIRT
+> > > +extern unsigned long *cpu_gdt_descr;
+> >
+> > No externs in .c files
+> >
+> > Normally they should be where the variable is defined
+> > anyways.
+> Given that this  variable is defined in head.S, what do you propose?
 
-> Today my USB keyboard stopped working in the middle of composing and
-> e-mail.  I unplugged it and plugged it back, with no success.  I
-> logged in remotely and found this lovely message:
+Move it to C code first.
 
-The error message seems unrelated to your keyboard becoming dead.
-
-> I am testing each rcX kernel, and I did not see this problem so far. 
-> Smells like a new regression.
-
-Is that reproducible, or did it happen just once? Any error message 
-present in log prior to that sysfs dump please?
-
-Thanks,
-
--- 
-Jiri Kosina
+-Andi
