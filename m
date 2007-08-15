@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934335AbXHORDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933874AbXHORGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934335AbXHORDc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:03:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934113AbXHORCs
+	id S933874AbXHORGV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760424AbXHORGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:02:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54294 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934193AbXHORCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:02:47 -0400
-Message-ID: <46C3319F.4050809@redhat.com>
-Date: Wed, 15 Aug 2007 13:02:23 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
+	Wed, 15 Aug 2007 13:06:01 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60392 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759535AbXHORF7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:05:59 -0400
+Date: Wed, 15 Aug 2007 22:48:28 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <20070815160830.GC9645@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.0.999.0708152244310.16414@enigma.security.iitk.ac.in>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+ <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in>
+ <20070815142516.GB9645@linux.vnet.ibm.com> <20070815153335.GA23593@gondor.apana.org.au>
+ <20070815160830.GC9645@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Andi Kleen <ak@suse.de>, sebastian@breakpoint.cc,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] i386: use asm() like the other atomic operations
- already do.
-References: <E1ILEQ8-0005H5-00@gondolin.me.apana.org.au>
-In-Reply-To: <E1ILEQ8-0005H5-00@gondolin.me.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> Andi Kleen <ak@suse.de> wrote:
->>> My config with march=pentium-m and gcc (GCC) 4.1.2 (Gentoo 4.1.2):
->>>   text    data     bss     dec     hex filename
->>> 3434150  249176  176128 3859454  3ae3fe atomic_normal/vmlinux
->>> 3435308  249176  176128 3860612  3ae884 atomic_inlineasm/vmlinux
->> What is the difference between atomic_normal and atomic_inlineasm? 
-> 
-> The inline asm stops certain optimisations from occuring.
-> 
-> I'm still unconvinced why we need this because nobody has
-> brought up any examples of kernel code that legitimately
-> need this.
 
-There's plenty of kernel code that *wants* this though.  If we can 
-reduce the need for register-clobbering barriers, shrink our binaries, 
-shrink our code, improve performance, and avoid heisenbugs, I think it's 
-a win, whether or not we *need* it.
 
-	-- Chris
+On Wed, 15 Aug 2007, Paul E. McKenney wrote:
+
+> On Wed, Aug 15, 2007 at 11:33:36PM +0800, Herbert Xu wrote:
+> > On Wed, Aug 15, 2007 at 07:25:16AM -0700, Paul E. McKenney wrote:
+> > > 
+> > > Do we really need another set of APIs?  Can you give even one example
+> > > where the pre-existing volatile semantics are causing enough of a problem
+> > > to justify adding yet more atomic_*() APIs?
+> > 
+> > Let's turn this around.  Can you give a single example where
+> > the volatile semantics is needed in a legitimate way?
+> 
+> Sorry, but you are the one advocating for the change.
+
+Not for i386 and x86_64 -- those have atomic ops without any "volatile"
+semantics (currently as per existing definitions).
