@@ -1,1467 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765497AbXHONDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765465AbXHONDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765497AbXHONDU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 09:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761910AbXHOM4E
+	id S1765465AbXHONDz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 09:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764095AbXHOM7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 08:56:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56666 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761568AbXHOMz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 08:55:57 -0400
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
-       mingo@elte.hu, chrisw@sous-sol.org, jeremy@goop.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       lguest@ozlabs.org, glommer@gmail.com,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 25/25][V3] add paravirtualization support for x86_64
-Date: Wed, 15 Aug 2007 09:49:45 -0300
-Message-Id: <11871824653909-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <1187182455530-git-send-email-gcosta@redhat.com>
-References: <11871821854176-git-send-email-gcosta@redhat.com> <1187182197314-git-send-email-gcosta@redhat.com> <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <11871822244170-git-send-email-gcosta@redhat.com> <11871822342754-git-send-email-gcosta@redhat.com> <11871822421713-git-send-email-gcosta@redhat.com> <1187182253740-git-send-email-gcosta@redhat.com> <1187182268408-git-send-email-gcosta@redhat.com> <1187182282913-git-send-email-gcosta@redhat.com> <11871822951747-git-send-email-gcosta@redhat.com> <11871823042011-git-send-email-gcosta@redhat.com> <11871823151789-git-send-email-gcosta@redhat.com> <11871823273810-git-send-email-gcosta@redhat.com> <11871823373106-git-send-email-gcosta@redhat.com> <11871823673236-git-send-email-gcosta@redhat.com> <11871823782610-git-send-email-gcosta@redhat.com> <11871823892519-git-send-email-gcosta@redhat.com> <11871823991803-git-send-email-gcosta@redhat.com> <11871824081337-git-send-email-!
- gcosta@redhat.com> <11871824192375-git-send-email-gcosta@redhat.com> <11871824292046-git-send-email-gcosta@redhat.com> <1187182438167-git-send-email-gcosta@redhat.com> <1187182447280-git-send-email-gcosta@redhat.com> <1187182455530-git-send-email-gcosta@redhat.com>
+	Wed, 15 Aug 2007 08:59:55 -0400
+Received: from mailhub.linpro.no ([213.236.139.167]:35125 "EHLO
+	mailhub.linpro.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764109AbXHOM7w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 08:59:52 -0400
+Message-ID: <46C2F8C4.1030607@linpro.no>
+Date: Wed, 15 Aug 2007 14:59:48 +0200
+From: Tore Anderson <tore@linpro.no>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, James.Smart@Emulex.Com
+Subject: Re: Linux 2.6.23-rc3
+References: <alpine.LFD.0.999.0708122143240.30176@woody.linux-foundation.org> <46C1717E.3030908@linpro.no> <20070814112429.GL16277@parisc-linux.org> <46C1F4F0.8010709@linpro.no>
+In-Reply-To: <46C1F4F0.8010709@linpro.no>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/mixed;
+ boundary="------------080500040202060100040007"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is finally, the patch we were all looking for. This
-patch adds a paravirt.h header with the definition of paravirt_ops
-struct. Also, it defines a bunch of inline functions that will
-replace, or hook, the other calls. Every one of those functions
-adds an entry in the parainstructions section (see vmlinux.lds.S).
-Those entries can then be used to runtime-patch the paravirt_ops
-functions.
+This is a multi-part message in MIME format.
+--------------080500040202060100040007
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-paravirt.c contains implementations of paravirt functions that
-are used natively, such as the native_patch. It also fill the
-paravirt_ops structure with the whole lot of functions that
-were (re)defined throughout this patch set.
+* Tore Anderson
 
-There are also changes in asm-offsets.c. paravirt.h needs it
-to find out the offsets into the structure of functions
-such as irq_enable, used in assembly files.
+>  I can confirm that this patch solves my problem without any side
+> effects (as far as I can tell).
 
-[  updates from v1
-   * make PARAVIRT hidden in Kconfig (Andi Kleen)
-   * cleanups in paravirt.h (Andi Kleen)
-   * modifications needed to accomodate other parts of the
-   patch that changed, such as getting rid of ebda_info
-   * put the integers at struct paravirt_ops at the end
-   (Jeremy)
-]
+  I'm sorry I have to retract this statement.  When I did some changes
+ on my storage array, it generated RSCNs and therefore I/O briefly
+ failed, causing timeouts and path failovers.
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- arch/x86_64/Kconfig              |   11 +
- arch/x86_64/kernel/Makefile      |    1 +
- arch/x86_64/kernel/asm-offsets.c |   14 +
- arch/x86_64/kernel/paravirt.c    |  410 +++++++++++++++++
- arch/x86_64/kernel/vmlinux.lds.S |    6 +
- include/asm-x86_64/paravirt.h    |  893 ++++++++++++++++++++++++++++++++++++++
- 6 files changed, 1335 insertions(+), 0 deletions(-)
+  I've attached the log of the event from the host running the patched
+ kernel, and you'll see the -EEXIST message and call trace near the end.
 
-diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
-index ffa0364..00b2fc9 100644
---- a/arch/x86_64/Kconfig
-+++ b/arch/x86_64/Kconfig
-@@ -373,6 +373,17 @@ config NODES_SHIFT
- 
- # Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
- 
-+config PARAVIRT
-+       bool
-+       depends on EXPERIMENTAL
-+       help
-+         Paravirtualization is a way of running multiple instances of
-+         Linux on the same machine, under a hypervisor.  This option
-+         changes the kernel so it can modify itself when it is run
-+         under a hypervisor, improving performance significantly.
-+         However, when run without a hypervisor the kernel is
-+         theoretically slower.  If in doubt, say N.
-+
- config X86_64_ACPI_NUMA
-        bool "ACPI NUMA detection"
-        depends on NUMA
-diff --git a/arch/x86_64/kernel/Makefile b/arch/x86_64/kernel/Makefile
-index ff5d8c9..120467f 100644
---- a/arch/x86_64/kernel/Makefile
-+++ b/arch/x86_64/kernel/Makefile
-@@ -38,6 +38,7 @@ obj-$(CONFIG_X86_VSMP)		+= vsmp.o
- obj-$(CONFIG_K8_NB)		+= k8.o
- obj-$(CONFIG_AUDIT)		+= audit.o
- 
-+obj-$(CONFIG_PARAVIRT)		+= paravirt.o
- obj-$(CONFIG_MODULES)		+= module.o
- obj-$(CONFIG_PCI)		+= early-quirks.o
- 
-diff --git a/arch/x86_64/kernel/asm-offsets.c b/arch/x86_64/kernel/asm-offsets.c
-index 778953b..f5eff70 100644
---- a/arch/x86_64/kernel/asm-offsets.c
-+++ b/arch/x86_64/kernel/asm-offsets.c
-@@ -15,6 +15,9 @@
- #include <asm/segment.h>
- #include <asm/thread_info.h>
- #include <asm/ia32.h>
-+#ifdef CONFIG_PARAVIRT
-+#include <asm/paravirt.h>
-+#endif
- 
- #define DEFINE(sym, val) \
-         asm volatile("\n->" #sym " %0 " #val : : "i" (val))
-@@ -72,6 +75,17 @@ int main(void)
- 	       offsetof (struct rt_sigframe32, uc.uc_mcontext));
- 	BLANK();
- #endif
-+#ifdef CONFIG_PARAVIRT
-+#define ENTRY(entry) DEFINE(PARAVIRT_ ## entry, offsetof(struct paravirt_ops, entry))
-+	ENTRY(paravirt_enabled);
-+	ENTRY(irq_disable);
-+	ENTRY(irq_enable);
-+	ENTRY(syscall_return);
-+	ENTRY(iret);
-+	ENTRY(read_cr2);
-+	ENTRY(swapgs);
-+	BLANK();
-+#endif
- 	DEFINE(pbe_address, offsetof(struct pbe, address));
- 	DEFINE(pbe_orig_address, offsetof(struct pbe, orig_address));
- 	DEFINE(pbe_next, offsetof(struct pbe, next));
-diff --git a/arch/x86_64/kernel/paravirt.c b/arch/x86_64/kernel/paravirt.c
-new file mode 100644
-index 0000000..dcd9919
---- /dev/null
-+++ b/arch/x86_64/kernel/paravirt.c
-@@ -0,0 +1,410 @@
-+/*  Paravirtualization interfaces
-+    Copyright (C) 2007 Glauber de Oliveira Costa and Steven Rostedt,
-+    Red Hat Inc.
-+    Based on i386 work by Rusty Russell.
-+
-+    This program is free software; you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation; either version 2 of the License, or
-+    (at your option) any later version.
-+
-+    This program is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with this program; if not, write to the Free Software
-+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+*/
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+#include <linux/efi.h>
-+#include <linux/bcd.h>
-+#include <linux/start_kernel.h>
-+
-+#include <asm/bug.h>
-+#include <asm/paravirt.h>
-+#include <asm/desc.h>
-+#include <asm/setup.h>
-+#include <asm/irq.h>
-+#include <asm/fixmap.h>
-+#include <asm/apic.h>
-+#include <asm/msr.h>
-+#include <asm/page.h>
-+#include <asm/pgtable.h>
-+#include <asm/e820.h>
-+#include <asm/tlbflush.h>
-+#include <asm/proto.h>
-+#include <asm/time.h>
-+#include <asm/asm-offsets.h>
-+#include <asm/smp.h>
-+#include <asm/irqflags.h>
-+
-+/* nop stub */
-+void _paravirt_nop(void)
-+{
-+}
-+
-+/* natively, we do normal setup, but we still need to return something */
-+static int native_arch_setup(void)
-+{
-+	return 0;
-+}
-+
-+static void __init default_banner(void)
-+{
-+	printk(KERN_INFO "Booting paravirtualized kernel on %s\n",
-+	       paravirt_ops.name);
-+}
-+
-+void memory_setup(void)
-+{
-+	paravirt_ops.memory_setup();
-+}
-+
-+void syscall_init(void)
-+{
-+	paravirt_ops.syscall_init();
-+}
-+
-+void flush_tlb_others(cpumask_t cpus, struct mm_struct *mm, unsigned long va)
-+{
-+	paravirt_ops.flush_tlb_others(cpus, mm, va);
-+}
-+
-+/* Simple instruction patching code. */
-+#define DEF_NATIVE(name, code)					\
-+	extern const char start_##name[], end_##name[];		\
-+	asm("start_" #name ": " code "; end_" #name ":")
-+
-+DEF_NATIVE(irq_disable, "cli");
-+DEF_NATIVE(irq_enable, "sti");
-+DEF_NATIVE(restore_fl, "pushq %rdi; popfq");
-+DEF_NATIVE(save_fl, "pushfq; popq %rax");
-+DEF_NATIVE(iret, "iretq");
-+DEF_NATIVE(read_cr2, "movq %cr2, %rax");
-+DEF_NATIVE(read_cr3, "movq %cr3, %rax");
-+DEF_NATIVE(write_cr3, "movq %rdi, %cr3");
-+DEF_NATIVE(flush_tlb_single, "invlpg (%rdi)");
-+DEF_NATIVE(clts, "clts");
-+DEF_NATIVE(wbinvd, "wbinvd");
-+
-+/* the three commands give us more control to how to return from a syscall */
-+DEF_NATIVE(syscall_return, "movq %gs:" __stringify(pda_oldrsp) ", %rsp; swapgs; sysretq;");
-+DEF_NATIVE(swapgs, "swapgs");
-+
-+DEF_NATIVE(ud2a, "ud2a");
-+
-+static unsigned native_patch(u8 type, u16 clobbers, void *insns, unsigned len)
-+{
-+	const unsigned char *start, *end;
-+	unsigned ret;
-+
-+	switch(type) {
-+#define SITE(x)	case PARAVIRT_PATCH(x):	start = start_##x; end = end_##x; goto patch_site
-+		SITE(irq_disable);
-+		SITE(irq_enable);
-+		SITE(restore_fl);
-+		SITE(save_fl);
-+		SITE(iret);
-+		SITE(syscall_return);
-+		SITE(swapgs);
-+		SITE(read_cr2);
-+		SITE(read_cr3);
-+		SITE(write_cr3);
-+		SITE(clts);
-+		SITE(flush_tlb_single);
-+		SITE(wbinvd);
-+#undef SITE
-+
-+	patch_site:
-+		ret = paravirt_patch_insns(insns, len, start, end);
-+		break;
-+
-+	default:
-+		ret = paravirt_patch_default(type, clobbers, insns, len);
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
-+unsigned paravirt_patch_nop(void)
-+{
-+	return 0;
-+}
-+
-+unsigned paravirt_patch_ignore(unsigned len)
-+{
-+	return len;
-+}
-+
-+unsigned paravirt_patch_call(void *target, u16 tgt_clobbers,
-+			     void *site, u16 site_clobbers,
-+			     unsigned len)
-+{
-+	unsigned char *call = site;
-+	unsigned long delta = (unsigned long)target - (unsigned long)(call+5);
-+
-+	if (tgt_clobbers & ~site_clobbers)
-+		return len;	/* target would clobber too much for this site */
-+	if (len < 5)
-+		return len;	/* call too long for patch site */
-+
-+	*call++ = 0xe8;		/* call */
-+	*(unsigned int *)call = delta;
-+
-+	return 5;
-+}
-+
-+unsigned paravirt_patch_jmp(void *target, void *site, unsigned len)
-+{
-+	unsigned char *jmp = site;
-+	unsigned long delta = (unsigned long)target - (unsigned long)(jmp+5);
-+
-+	if (len < 5)
-+		return len;	/* call too long for patch site */
-+
-+	*jmp++ = 0xe9;		/* jmp */
-+	*(unsigned int *)jmp = delta;
-+
-+	return 5;
-+}
-+
-+unsigned paravirt_patch_default(u8 type, u16 clobbers, void *site, unsigned len)
-+{
-+	void *opfunc = *((void **)&paravirt_ops + type);
-+	unsigned ret;
-+
-+	if (opfunc == NULL)
-+		/* If there's no function, patch it with a ud2a (BUG) */
-+		ret = paravirt_patch_insns(site, len, start_ud2a, end_ud2a);
-+	else if (opfunc == paravirt_nop)
-+		/* If the operation is a nop, then nop the callsite */
-+		ret = paravirt_patch_nop();
-+	else if (type == PARAVIRT_PATCH(iret) ||
-+		 type == PARAVIRT_PATCH(syscall_return))
-+		/* If operation requires a jmp, then jmp */
-+		ret = paravirt_patch_jmp(opfunc, site, len);
-+	else
-+		/* Otherwise call the function; assume target could
-+		   clobber any caller-save reg */
-+		ret = paravirt_patch_call(opfunc, CLBR_ANY,
-+						  site, clobbers, len);
-+
-+	return ret;
-+}
-+
-+unsigned paravirt_patch_insns(void *site, unsigned len,
-+			      const char *start, const char *end)
-+{
-+	unsigned insn_len = end - start;
-+
-+	if (insn_len > len || start == NULL)
-+		insn_len = len;
-+	else
-+		memcpy(site, start, insn_len);
-+
-+	return insn_len;
-+}
-+
-+void init_IRQ(void)
-+{
-+	paravirt_ops.init_IRQ();
-+}
-+
-+static unsigned long native_save_fl(void)
-+{
-+	unsigned long f;
-+	asm volatile("pushfq ; popq %0":"=g" (f): /* no input */);
-+	return f;
-+}
-+
-+static void native_restore_fl(unsigned long f)
-+{
-+	asm volatile("pushq %0 ; popfq": /* no output */
-+			     :"g" (f)
-+			     :"memory", "cc");
-+}
-+
-+static void native_irq_disable(void)
-+{
-+	asm volatile("cli": : :"memory");
-+}
-+
-+static void native_irq_enable(void)
-+{
-+	asm volatile("sti": : :"memory");
-+}
-+
-+static inline void native_write_dt_entry(void *dt, int entry, u32 entry_low, u32 entry_high)
-+{
-+	u32 *lp = (u32 *)((char *)dt + entry*8);
-+	lp[0] = entry_low;
-+	lp[1] = entry_high;
-+}
-+
-+static void native_io_delay(void)
-+{
-+	asm volatile("outb %al,$0x80");
-+}
-+
-+pte_t native_make_pte(unsigned long pte)
-+{
-+	return (pte_t){ pte };
-+}
-+
-+pud_t native_make_pud(unsigned long pud)
-+{
-+	return (pud_t){ pud };
-+}
-+
-+pmd_t native_make_pmd(unsigned long pmd)
-+{
-+	return (pmd_t){ pmd };
-+}
-+
-+pgd_t native_make_pgd(unsigned long pgd)
-+{
-+	return (pgd_t){ pgd };
-+}
-+
-+void native_set_pte_at(struct mm_struct *mm, u64 addr, pte_t *ptep,
-+				pte_t pteval)
-+{
-+	native_set_pte(ptep,pteval);
-+}
-+
-+void native_pte_clear(struct mm_struct *mm, u64 addr, pte_t *ptep)
-+{
-+	native_set_pte_at(mm,addr,ptep,__pte(0));
-+}
-+
-+void native_pmd_clear(pmd_t *pmd)
-+{
-+	native_set_pmd(pmd,__pmd(0));
-+}
-+
-+void native_swapgs(void)
-+{
-+	asm volatile ("swapgs" :: :"memory" );
-+}
-+
-+/* These are in entry.S */
-+extern void do_iretq(void);
-+extern void native_syscall_return(void);
-+
-+static int __init print_banner(void)
-+{
-+	paravirt_ops.banner();
-+	return 0;
-+}
-+core_initcall(print_banner);
-+
-+struct paravirt_ops paravirt_ops = {
-+	.name = "bare hardware",
-+	.mem_type = "BIOS-e820",
-+
-+	.patch = native_patch,
-+	.banner = default_banner,
-+	.arch_setup = native_arch_setup,
-+	.memory_setup = setup_memory_region,
-+	.syscall_init = x86_64_syscall_init,
-+	.get_wallclock = do_get_cmos_time,
-+	.set_wallclock = do_set_rtc_mmss,
-+	.time_init = time_init_hook,
-+	.init_IRQ = native_init_IRQ,
-+
-+	.cpuid = native_cpuid,
-+	.get_debugreg = native_get_debugreg,
-+	.set_debugreg = native_set_debugreg,
-+	.clts = native_clts,
-+	.read_cr0 = native_read_cr0,
-+	.write_cr0 = native_write_cr0,
-+	.read_cr2 = native_read_cr2,
-+	.write_cr2 = native_write_cr2,
-+	.read_cr3 = native_read_cr3,
-+	.write_cr3 = native_write_cr3,
-+	.read_cr4 = native_read_cr4,
-+	.write_cr4 = native_write_cr4,
-+	.save_fl = native_save_fl,
-+	.restore_fl = native_restore_fl,
-+	.irq_disable = native_irq_disable,
-+	.irq_enable = native_irq_enable,
-+	.safe_halt = native_raw_safe_halt,
-+	.halt = native_halt,
-+	.wbinvd = native_wbinvd,
-+	.read_msr = native_read_msr_safe,
-+	.write_msr = native_write_msr_safe,
-+	.read_tsc = native_read_tsc,
-+	.rdtscp = native_rdtscp,
-+	.read_pmc = native_read_pmc,
-+	.load_tr_desc = native_load_tr_desc,
-+	.set_ldt = native_set_ldt,
-+	.load_gdt = native_load_gdt,
-+	.load_idt = native_load_idt,
-+	.store_gdt = native_store_gdt,
-+	.store_idt = native_store_idt,
-+	.store_tr = native_store_tr,
-+	.load_tls = native_load_tls,
-+	.write_ldt_entry = native_write_ldt_entry,
-+	.write_gdt_entry = native_write_gdt_entry,
-+	.write_idt_entry = native_write_idt_entry,
-+	.load_rsp0 = native_load_rsp0,
-+
-+	.io_delay = native_io_delay,
-+
-+#ifdef CONFIG_X86_LOCAL_APIC
-+	.apic_write = native_apic_write,
-+	.apic_read = native_apic_read,
-+	.setup_boot_clock = setup_boot_APIC_clock,
-+	.setup_secondary_clock = setup_secondary_APIC_clock,
-+	.startup_ipi_hook = paravirt_nop,
-+#endif
-+	.set_lazy_mode = paravirt_nop,
-+
-+	.flush_tlb_user = native_flush_tlb,
-+	.flush_tlb_kernel = native_flush_tlb_all,
-+	.flush_tlb_single = native_flush_tlb_one,
-+	.flush_tlb_others = native_flush_tlb_others,
-+
-+	.release_pgd = paravirt_nop,
-+
-+	.set_pte = native_set_pte,
-+	.set_pte_at = native_set_pte_at,
-+	.set_pmd = native_set_pmd,
-+	.set_pud = native_set_pud,
-+	.set_pgd = native_set_pgd,
-+
-+	.pte_update = paravirt_nop,
-+	.pte_update_defer = paravirt_nop,
-+
-+	.pte_clear = native_pte_clear,
-+	.pmd_clear = native_pmd_clear,
-+	.pud_clear = native_pud_clear,
-+	.pgd_clear = native_pgd_clear,
-+
-+	.pte_val = native_pte_val,
-+	.pud_val = native_pud_val,
-+	.pmd_val = native_pmd_val,
-+	.pgd_val = native_pgd_val,
-+
-+	.make_pte = native_make_pte,
-+	.make_pmd = native_make_pmd,
-+	.make_pud = native_make_pud,
-+	.make_pgd = native_make_pgd,
-+
-+	.swapgs = native_swapgs,
-+	.syscall_return = native_syscall_return,
-+	.iret = do_iretq,
-+
-+	.dup_mmap = paravirt_nop,
-+	.exit_mmap = paravirt_nop,
-+	.activate_mm = paravirt_nop,
-+
-+	.kernel_rpl = 0,
-+	.paravirt_enabled = 0,
-+};
-+
-+EXPORT_SYMBOL(paravirt_ops);
-diff --git a/arch/x86_64/kernel/vmlinux.lds.S b/arch/x86_64/kernel/vmlinux.lds.S
-index ba8ea97..c3fce85 100644
---- a/arch/x86_64/kernel/vmlinux.lds.S
-+++ b/arch/x86_64/kernel/vmlinux.lds.S
-@@ -185,6 +185,12 @@ SECTIONS
-   .altinstr_replacement : AT(ADDR(.altinstr_replacement) - LOAD_OFFSET) {
- 	*(.altinstr_replacement)
-   }
-+  . = ALIGN(8);
-+  .parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
-+  __parainstructions = .;
-+	*(.parainstructions)
-+  __parainstructions_end = .;
-+  }
-   /* .exit.text is discard at runtime, not link time, to deal with references
-      from .altinstructions and .eh_frame */
-   .exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) { *(.exit.text) }
-diff --git a/include/asm-x86_64/paravirt.h b/include/asm-x86_64/paravirt.h
-new file mode 100644
-index 0000000..c194a01
---- /dev/null
-+++ b/include/asm-x86_64/paravirt.h
-@@ -0,0 +1,893 @@
-+#ifndef __ASM_PARAVIRT_H
-+#define __ASM_PARAVIRT_H
-+
-+#ifdef CONFIG_PARAVIRT
-+/* Various instructions on x86 need to be replaced for
-+ * para-virtualization: those hooks are defined here. */
-+#include <linux/linkage.h>
-+#include <linux/stringify.h>
-+#include <asm/desc_defs.h>
-+#include <asm/page.h>
-+#include <asm/types.h>
-+#include <asm/pda.h>
-+
-+/* Bitmask of what can be clobbered: usually at least rax. */
-+#define CLBR_NONE 0x000
-+#define CLBR_RAX  0x001
-+#define CLBR_RDI  0x002
-+#define CLBR_RSI  0x004
-+#define CLBR_RCX  0x008
-+#define CLBR_RDX  0x010
-+#define CLBR_R8	  0x020
-+#define CLBR_R9	  0x040
-+#define CLBR_R10  0x080
-+#define CLBR_R11  0x100
-+#define CLBR_ANY  0xfff
-+
-+
-+#ifndef __ASSEMBLY__
-+#include <linux/cpumask.h>
-+#include <linux/types.h>
-+
-+void _paravirt_nop(void);
-+#define paravirt_nop    ((void *)_paravirt_nop)
-+
-+/* Lazy mode for batching updates / context switch */
-+enum paravirt_lazy_mode {
-+        PARAVIRT_LAZY_NONE = 0,
-+        PARAVIRT_LAZY_MMU = 1,
-+        PARAVIRT_LAZY_CPU = 2,
-+        PARAVIRT_LAZY_FLUSH = 3,
-+};
-+
-+struct thread_struct;
-+struct desc_struct;
-+struct desc_ptr;
-+struct tss_struct;
-+struct mm_struct;
-+
-+struct paravirt_ops
-+{
-+	const char *name;
-+	char *mem_type;
-+
-+	/*
-+	 * Patch may replace one of the defined code sequences with arbitrary
-+	 * code, subject to the same register constraints.  This generally
-+	 * means the code is not free to clobber any registers other than RAX.
-+	 * The patch function should return the number of bytes of code
-+	 * generated, as we nop pad the rest in generic code.
-+	 */
-+	unsigned (*patch)(u8 type, u16 clobber, void *firstinsn, unsigned len);
-+
-+	int (*arch_setup)(void);
-+	void (*memory_setup)(void);
-+	void (*init_IRQ)(void);
-+	void (*time_init)(void);
-+
-+	/* entry point for our hypervisor syscall handler */
-+	void (*syscall_init)(void);
-+
-+	void (*banner)(void);
-+
-+	unsigned long (*get_wallclock)(void);
-+	int (*set_wallclock)(unsigned long);
-+
-+	/* cpuid emulation, mostly so that caps bits can be disabled */
-+	void (*cpuid)(unsigned int *eax, unsigned int *ebx,
-+		      unsigned int *ecx, unsigned int *edx);
-+
-+	unsigned long (*get_debugreg)(int regno);
-+	void (*set_debugreg)(unsigned long value, int regno);
-+
-+	void (*clts)(void);
-+
-+	unsigned long (*read_cr0)(void);
-+	void (*write_cr0)(unsigned long);
-+
-+	unsigned long (*read_cr2)(void);
-+	void (*write_cr2)(unsigned long);
-+
-+	unsigned long (*read_cr3)(void);
-+	void (*write_cr3)(unsigned long);
-+
-+	unsigned long (*read_cr4)(void);
-+	void (*write_cr4)(unsigned long);
-+
-+	/*
-+	* Get/set interrupt state.  save_fl and restore_fl are only
-+	* expected to use X86_EFLAGS_IF; all other bits
-+	* returned from save_fl are undefined, and may be ignored by
-+	* restore_fl.
-+	*/
-+	unsigned long (*save_fl)(void);
-+	void (*restore_fl)(unsigned long);
-+	void (*irq_disable)(void);
-+	void (*irq_enable)(void);
-+	void (*safe_halt)(void);
-+	void (*halt)(void);
-+
-+	void (*wbinvd)(void);
-+
-+	/* err = 0/-EFAULT.  wrmsr returns 0/-EFAULT. */
-+	unsigned long (*read_msr)(unsigned int msr, int *err);
-+	long (*write_msr)(unsigned int msr, unsigned long val);
-+
-+	unsigned long (*read_tsc)(void);
-+	unsigned long (*rdtscp)(int *aux);
-+	unsigned long (*read_pmc)(int counter);
-+
-+	void (*load_tr_desc)(void);
-+	void (*load_gdt)(const struct desc_ptr *);
-+	void (*load_idt)(const struct desc_ptr *);
-+	void (*store_gdt)(struct desc_ptr *);
-+	void (*store_idt)(struct desc_ptr *);
-+	void (*set_ldt)(const void *desc, unsigned entries);
-+	unsigned long (*store_tr)(void);
-+	void (*load_tls)(struct thread_struct *t, unsigned int cpu);
-+	void (*write_ldt_entry)(struct desc_struct *,
-+				int entrynum, u32 low, u32 high);
-+	void (*write_gdt_entry)(void *ptr, void *entry, unsigned type,
-+					 unsigned size);
-+	void (*write_idt_entry)(void *adr, struct gate_struct *s);
-+
-+	void (*load_rsp0)(struct tss_struct *tss,
-+				   struct thread_struct *thread);
-+
-+	void (*io_delay)(void);
-+
-+	/*
-+	* Hooks for intercepting the creation/use/destruction of an
-+	* mm_struct.
-+	*/
-+	void (*activate_mm)(struct mm_struct *prev,
-+				     struct mm_struct *next);
-+	void (*dup_mmap)(struct mm_struct *oldmm,
-+				  struct mm_struct *mm);
-+	void (*exit_mmap)(struct mm_struct *mm);
-+
-+#ifdef CONFIG_X86_LOCAL_APIC
-+	void (*apic_write)(unsigned long reg, unsigned int v);
-+	unsigned int (*apic_read)(unsigned long reg);
-+	void (*setup_boot_clock)(void);
-+	void (*setup_secondary_clock)(void);
-+
-+	void (*startup_ipi_hook)(int phys_apicid,
-+				 unsigned long start_rip,
-+				 unsigned long start_rsp);
-+
-+#endif
-+
-+	void (*flush_tlb_user)(void);
-+	void (*flush_tlb_kernel)(void);
-+	void (*flush_tlb_single)(unsigned long addr);
-+	void (*flush_tlb_others)(cpumask_t cpus, struct mm_struct *mm,
-+				 unsigned long va);
-+
-+	void (*release_pgd)(pgd_t *pgd);
-+
-+	void (*set_pte)(pte_t *ptep, pte_t pteval);
-+	void (*set_pte_at)(struct mm_struct *mm, u64 addr, pte_t *ptep, pte_t pteval);
-+	void (*set_pmd)(pmd_t *pmdp, pmd_t pmdval);
-+	void (*set_pud)(pud_t *pudp, pud_t pudval);
-+	void (*set_pgd)(pgd_t *pgdp, pgd_t pgdval);
-+
-+	void (*pte_update)(struct mm_struct *mm, u64 addr, pte_t *ptep);
-+	void (*pte_update_defer)(struct mm_struct *mm, u64 addr, pte_t *ptep);
-+
-+	void (*pte_clear)(struct mm_struct *mm, u64 addr, pte_t *ptep);
-+	void (*pmd_clear)(pmd_t *pmdp);
-+	void (*pud_clear)(pud_t *pudp);
-+	void (*pgd_clear)(pgd_t *pgdp);
-+
-+	unsigned long (*pte_val)(pte_t);
-+	unsigned long (*pud_val)(pud_t);
-+	unsigned long (*pmd_val)(pmd_t);
-+	unsigned long (*pgd_val)(pgd_t);
-+
-+	pte_t (*make_pte)(unsigned long pte);
-+	pud_t (*make_pud)(unsigned long pud);
-+	pmd_t (*make_pmd)(unsigned long pmd);
-+	pgd_t (*make_pgd)(unsigned long pgd);
-+
-+	void (*swapgs)(void);
-+	void (*set_lazy_mode)(int mode);
-+
-+	/* These two are jmp to, not actually called. */
-+	void (*syscall_return)(void);
-+	void (*iret)(void);
-+/*
-+ * integers must be use with care here. They can break the PARAVIRT_PATCH(x)
-+ * macro, that divides the offset in the structure by 8, to get a number
-+ * associated with the hook. Although x86_64 64-bit pointers are aligned, it
-+ * can be broken in the future by some gcc data attributes, or something
-+ * alike. We'd better be robust. Dividing by four would be a solution, but
-+ * it would limit the future growth of the structure if needed.
-+ *
-+ * So we put them here at the end, and no one gets hurt
-+ */
-+	unsigned int kernel_rpl;
-+	int paravirt_enabled;
-+
-+};
-+
-+extern struct paravirt_ops paravirt_ops;
-+
-+/*
-+ * This generates an indirect call based on the operation type number.
-+ * The type number, computed in PARAVIRT_PATCH, is derived from the
-+ * offset into the paravirt_ops structure, and can therefore be freely
-+ * converted back into a structure offset. It induces a limitation in
-+ * what can go in the paravirt_ops structure. For further information,
-+ * see comments in the top of the struct
-+ */
-+#define PARAVIRT_PATCH(x)					\
-+	(offsetof(struct paravirt_ops, x) / sizeof(void *))
-+
-+#define paravirt_type(type)					\
-+	[paravirt_typenum] "i" (PARAVIRT_PATCH(type))
-+#define paravirt_clobber(clobber)		\
-+	[paravirt_clobber] "i" (clobber)
-+
-+/*
-+ * Generate some code, and mark it as patchable by the
-+ * apply_paravirt() alternate instruction patcher.
-+ */
-+#define _paravirt_alt(insn_string, type, clobber)	\
-+	"771:\n\t" insn_string "\n" "772:\n"		\
-+	".pushsection .parainstructions,\"a\"\n"	\
-+	".align 8\n"	 				\
-+	"  .quad 771b\n"				\
-+	"  .byte " type "\n"				\
-+	"  .byte 772b-771b\n"				\
-+	"  .long " clobber "\n"			\
-+	".popsection\n"
-+
-+/* Generate patchable code, with the default asm parameters. */
-+#define paravirt_alt(insn_string)					\
-+	_paravirt_alt(insn_string, "%c[paravirt_typenum]", "%c[paravirt_clobber]")
-+
-+unsigned paravirt_patch_nop(void);
-+unsigned paravirt_patch_ignore(unsigned len);
-+unsigned paravirt_patch_call(void *target, u16 tgt_clobbers,
-+			     void *site, u16 site_clobbers,
-+			     unsigned len);
-+unsigned paravirt_patch_jmp(void *target, void *site, unsigned len);
-+unsigned paravirt_patch_default(u8 type, u16 clobbers, void *site, unsigned len);
-+unsigned paravirt_patch_copy_reg(void *site, unsigned len);
-+unsigned paravirt_patch_store_reg(void *site, unsigned len);
-+unsigned paravirt_patch_insns(void *site, unsigned len,
-+			      const char *start, const char *end);
-+/*
-+ * This generates an indirect call based on the operation type number.
-+ * The type number, computed in PARAVIRT_PATCH, is derived from the
-+ * offset into the paravirt_ops structure, and can therefore be freely
-+ * converted back into a structure offset.
-+ */
-+#define PARAVIRT_CALL	"call *(paravirt_ops+%c[paravirt_typenum]*8);"
-+
-+/*
-+ * These macros are intended to wrap calls into a paravirt_ops
-+ * operation, so that they can be later identified and patched at
-+ * runtime.
-+ *
-+ * Normally, a call to a pv_op function is a simple indirect call:
-+ * (paravirt_ops.operations)(args...).
-+ *
-+ * Unfortunately, this is a relatively slow operation for modern CPUs,
-+ * because it cannot necessarily determine what the destination
-+ * address is.  In this case, the address is a runtime constant, so at
-+ * the very least we can patch the call to be a simple direct call, or
-+ * ideally, patch an inline implementation into the callsite.  (Direct
-+ * calls are essentially free, because the call and return addresses
-+ * are completely predictable.)
-+ *
-+ * All caller-save registers are expected expected to be modified
-+ * (either clobbered or used for return values). They are the return
-+ * value (rax), the arguments potentially used by the functions, (rdi, rsi,
-+ * rdx, rcx), and the others caller-saved (r8-r11)
-+ *
-+ * The call instruction itself is marked by placing its start address
-+ * and size into the .parainstructions section, so that
-+ * apply_paravirt() in arch/i386/kernel/alternative.c can do the
-+ * appropriate patching under the control of the backend paravirt_ops
-+ * implementation.
-+ *
-+ * Unfortunately there's no way to get gcc to generate the args setup
-+ * for the call, and then allow the call itself to be generated by an
-+ * inline asm.  Because of this, we must do the complete arg setup and
-+ * return value handling from within these macros.  This is fairly
-+ * cumbersome.
-+ *
-+ * There are 5 sets of PVOP_* macros for dealing with 0-4 arguments.
-+ * It could be extended to more arguments, but there would be little
-+ * to be gained from that.  For each number of arguments, there are
-+ * the two VCALL and CALL variants for void and non-void functions.
-+ * Small structures are passed and returned in registers.  The macro
-+ * calling convention can't directly deal with this, so the wrapper
-+ * functions must do this.
-+ *
-+ * These PVOP_* macros are only defined within this header.  This
-+ * means that all uses must be wrapped in inline functions.  This also
-+ * makes sure the incoming and outgoing types are always correct.
-+*/
-+#define CALL_CLOBBERS  "r8", "r9", "r10", "r11"
-+
-+#define __PVOP_CALL(rettype, op, pre, post, ...)			\
-+	({								\
-+		rettype __ret;						\
-+		unsigned long __rax, __rdi, __rsi, __rdx, __rcx;	\
-+		asm volatile(pre					\
-+			     paravirt_alt(PARAVIRT_CALL)		\
-+			     post					\
-+			     : "=a" (__rax), "=D" (__rdi),		\
-+			       "=S" (__rsi), "=d" (__rdx),		\
-+			       "=c" (__rcx)				\
-+			     : paravirt_type(op),			\
-+			       paravirt_clobber(CLBR_ANY),		\
-+			       ##__VA_ARGS__				\
-+			     : "memory", CALL_CLOBBERS, "cc");		\
-+		__ret = (rettype)__rax;					\
-+	})
-+
-+#define __PVOP_VCALL(op, pre, post, ...)				\
-+	({								\
-+		unsigned long __rax, __rdi, __rsi, __rdx, __rcx;	\
-+		asm volatile(pre					\
-+			     paravirt_alt(PARAVIRT_CALL)		\
-+			     post					\
-+			     : "=a" (__rax), "=D" (__rdi),		\
-+			       "=S" (__rsi), "=d" (__rdx),		\
-+			       "=c" (__rcx)				\
-+			     : paravirt_type(op),			\
-+			       paravirt_clobber(CLBR_ANY),		\
-+			       ##__VA_ARGS__				\
-+			     : "memory", CALL_CLOBBERS, "cc");	\
-+	})
-+
-+#define PVOP_CALL0(rettype, op)                                         \
-+        __PVOP_CALL(rettype, op, "", "")
-+#define PVOP_VCALL0(op)                                                 \
-+        __PVOP_VCALL(op, "", "")
-+
-+#define PVOP_CALL1(rettype, op, arg1)                                   \
-+        __PVOP_CALL(rettype, op, "", "", "D" ((u64)(arg1)))
-+#define PVOP_VCALL1(op, arg1)                                           \
-+        __PVOP_VCALL(op, "", "", "D" ((u64)(arg1)))
-+
-+#define PVOP_CALL2(rettype, op, arg1, arg2)                             \
-+        __PVOP_CALL(rettype, op, "", "", "D" ((u64)(arg1)), "S" ((u64)(arg2)))
-+#define PVOP_VCALL2(op, arg1, arg2)                                     \
-+        __PVOP_VCALL(op, "", "", "D" ((u64)(arg1)), "S" ((u64)(arg2)))
-+
-+#define PVOP_CALL3(rettype, op, arg1, arg2, arg3)                       \
-+        __PVOP_CALL(rettype, op, "", "", "D" ((u64)(arg1)),             \
-+                    "S"((u64)(arg2)), "d"((u64)(arg3)))
-+#define PVOP_VCALL3(op, arg1, arg2, arg3)                               \
-+        __PVOP_VCALL(op, "", "", "D" ((u64)(arg1)), "S"((u64)(arg2)),   \
-+                     "d"((u64)(arg3)))
-+
-+#define PVOP_CALL4(rettype, op, arg1, arg2, arg3, arg4)                 \
-+        __PVOP_CALL(rettype, op, "", "", "D" ((u64)(arg1)),             \
-+                    "S"((u64)(arg2)), "d"((u64)(arg3)), "c" ((u64)(arg4)))
-+#define PVOP_VCALL4(op, arg1, arg2, arg3, arg4)                         \
-+        __PVOP_VCALL(op, "", "", "D" ((u64)(arg1)), "S"((u64)(arg2)),   \
-+                     "d"((u64)(arg3)), "c"((u64)(arg4)))
-+
-+#define paravirt_arch_setup()	paravirt_ops.arch_setup()
-+
-+#define get_kernel_rpl	(paravirt_ops.kernel_rpl)
-+
-+static inline int paravirt_enabled(void)
-+{
-+	return paravirt_ops.paravirt_enabled;
-+}
-+
-+static inline void load_rsp0(struct tss_struct *tss,
-+				struct thread_struct *thread)
-+{
-+	PVOP_VCALL2(load_rsp0, tss,thread);
-+}
-+
-+static inline void clts(void)
-+{
-+	PVOP_VCALL0(clts);
-+}
-+
-+static inline unsigned long read_cr0(void)
-+{
-+	return PVOP_CALL0(unsigned long, read_cr0);
-+}
-+
-+static inline void write_cr0(unsigned long x)
-+{
-+	PVOP_VCALL1(write_cr0, x);
-+}
-+
-+static inline unsigned long read_cr2(void)
-+{
-+	return PVOP_CALL0(unsigned long, read_cr2);
-+}
-+
-+static inline void write_cr2(unsigned long x)
-+{
-+	PVOP_VCALL1(write_cr2, x);
-+}
-+
-+static inline unsigned long read_cr3(void)
-+{
-+	return PVOP_CALL0(unsigned long, read_cr3);
-+}
-+static inline void write_cr3(unsigned long x)
-+{
-+	PVOP_VCALL1(write_cr3, x);
-+}
-+
-+static inline unsigned long read_cr4(void)
-+{
-+	return PVOP_CALL0(unsigned long, read_cr4);
-+}
-+static inline void write_cr4(unsigned long x)
-+{
-+	PVOP_VCALL1(write_cr4, x);
-+}
-+
-+static inline void wbinvd(void)
-+{
-+	PVOP_VCALL0(wbinvd);
-+}
-+
-+#define get_debugreg(var, reg) var = paravirt_ops.get_debugreg(reg)
-+#define set_debugreg(val, reg) paravirt_ops.set_debugreg(reg, val)
-+
-+
-+static inline void raw_safe_halt(void)
-+{
-+	PVOP_VCALL0(safe_halt);
-+}
-+
-+static inline void halt(void)
-+{
-+	PVOP_VCALL0(safe_halt);
-+}
-+
-+static inline unsigned long get_wallclock(void)
-+{
-+	return PVOP_CALL0(unsigned long, get_wallclock);
-+}
-+
-+static inline int set_wallclock(unsigned long nowtime)
-+{
-+	return PVOP_CALL1(int, set_wallclock, nowtime);
-+}
-+
-+static inline void do_time_init(void)
-+{
-+	PVOP_VCALL0(time_init);
-+}
-+
-+/* The paravirtualized CPUID instruction. */
-+static inline void __cpuid(unsigned int *eax, unsigned int *ebx,
-+			   unsigned int *ecx, unsigned int *edx)
-+{
-+	PVOP_VCALL4(cpuid, eax, ebx, ecx, edx);
-+}
-+
-+
-+static inline unsigned long read_msr(unsigned int msr)
-+{
-+	int err;
-+	return PVOP_CALL2(unsigned long, read_msr, msr, &err);
-+}
-+
-+static inline unsigned long write_msr(unsigned int msr, unsigned long val)
-+{
-+	return PVOP_CALL2(unsigned long, write_msr, msr, val);
-+}
-+
-+static inline unsigned long read_msr_safe(unsigned int msr, int *err)
-+{
-+	return PVOP_CALL2(unsigned long, read_msr, msr, err);
-+}
-+
-+static inline unsigned int write_msr_safe(unsigned int msr, unsigned long val)
-+{
-+	return PVOP_CALL2(unsigned long, write_msr, msr, val);
-+}
-+
-+static inline unsigned long read_pmc(int counter)
-+{
-+	return PVOP_CALL1(unsigned long, read_pmc, counter);
-+}
-+
-+static inline unsigned long read_tsc_reg(void)
-+{
-+	return PVOP_CALL0(unsigned long, read_tsc);
-+}
-+static inline unsigned long __rdtscp(int *aux)
-+{
-+	return PVOP_CALL1(unsigned long, rdtscp, aux);
-+}
-+
-+static inline void load_TR_desc(void)
-+{
-+	PVOP_VCALL0(load_tr_desc);
-+}
-+
-+static inline void load_gdt(const struct desc_ptr *dtr)
-+{
-+	PVOP_VCALL1(load_gdt, dtr);
-+}
-+
-+static inline void load_idt(const struct desc_ptr *dtr)
-+{
-+	PVOP_VCALL1(load_idt, dtr);
-+}
-+
-+static inline void set_ldt(void *addr, unsigned entries)
-+{
-+	PVOP_VCALL2(set_ldt, addr, entries);
-+}
-+
-+static inline void store_gdt(struct desc_ptr *dtr)
-+{
-+	PVOP_VCALL1(store_gdt, dtr);
-+}
-+
-+static inline void store_idt(struct desc_ptr *dtr)
-+{
-+	PVOP_VCALL1(store_idt, dtr);
-+}
-+
-+static inline unsigned long paravirt_store_tr(void)
-+{
-+	return PVOP_CALL0(unsigned long, store_tr);
-+}
-+
-+#define store_tr(tr) 	(tr) = paravirt_store_tr();
-+
-+static inline void load_TLS(struct thread_struct *t, unsigned int cpu)
-+{
-+	PVOP_VCALL2(load_tls, t,cpu);
-+}
-+
-+static inline void write_ldt_entry(struct desc_struct *desc,
-+				  int num, u32 entry1, u32 entry2)
-+{
-+	PVOP_VCALL4(write_ldt_entry, desc, num, entry1, entry2);
-+}
-+
-+static inline void write_gdt_entry(void *ptr, void *entry,
-+				   unsigned type, unsigned size)
-+{
-+	PVOP_VCALL4(write_gdt_entry, ptr, entry, type, size);
-+}
-+
-+static inline void write_idt_entry(void *adr, struct gate_struct *s)
-+{
-+	PVOP_VCALL2(write_idt_entry, adr, s);
-+}
-+
-+static inline pte_t __pte(unsigned long pte)
-+{
-+	return (pte_t) {PVOP_CALL1(unsigned long, make_pte, pte)};
-+}
-+static inline unsigned long pte_val(pte_t pte)
-+{
-+	return PVOP_CALL1(unsigned long, pte_val, pte.pte);
-+}
-+
-+static inline pgd_t __pgd(unsigned long pgd)
-+{
-+	return (pgd_t) {PVOP_CALL1(unsigned long, make_pgd, pgd)};
-+}
-+static inline unsigned long pgd_val(pgd_t pgd)
-+{
-+	return PVOP_CALL1(unsigned long, pgd_val, pgd.pgd);
-+}
-+
-+static inline pud_t __pud(unsigned long pud)
-+{
-+	return (pud_t) {PVOP_CALL1(unsigned long, make_pud, pud)};
-+}
-+static inline unsigned long pud_val(pud_t pud)
-+{
-+	return PVOP_CALL1(unsigned long, pud_val, pud.pud);
-+}
-+
-+static inline pmd_t __pmd(unsigned long pmd)
-+{
-+	return (pmd_t) {PVOP_CALL1(unsigned long, make_pmd, pmd)};
-+}
-+static inline unsigned long pmd_val(pmd_t pmd)
-+{
-+	return PVOP_CALL1(unsigned long, pmd_val, pmd.pmd);
-+}
-+
-+#ifdef CONFIG_X86_LOCAL_APIC
-+/*
-+ * Basic functions accessing APICs.
-+ */
-+static inline void apic_write(unsigned long reg, unsigned long v)
-+{
-+	PVOP_VCALL2(apic_write, reg,v);
-+}
-+
-+static inline unsigned int apic_read(unsigned long reg)
-+{
-+	return PVOP_CALL1(unsigned long, apic_read, reg);
-+}
-+
-+static inline void setup_boot_clock(void)
-+{
-+	PVOP_VCALL0(setup_boot_clock);
-+}
-+
-+static inline void setup_secondary_clock(void)
-+{
-+	PVOP_VCALL0(setup_secondary_clock);
-+}
-+
-+static inline void startup_ipi_hook(int phys_apicid, unsigned long start_rip,
-+					unsigned long init_rsp)
-+{
-+	PVOP_VCALL3(startup_ipi_hook, phys_apicid, start_rip, init_rsp);
-+}
-+
-+#endif
-+
-+void native_nop(void);
-+
-+static inline void paravirt_activate_mm(struct mm_struct *prev,
-+					struct mm_struct *next)
-+{
-+	PVOP_VCALL2(activate_mm, prev, next);
-+}
-+
-+static inline void arch_dup_mmap(struct mm_struct *oldmm,
-+				 struct mm_struct *mm)
-+{
-+	PVOP_VCALL2(dup_mmap, oldmm, mm);
-+}
-+
-+static inline void arch_exit_mmap(struct mm_struct *mm)
-+{
-+	PVOP_VCALL1(exit_mmap, mm);
-+}
-+
-+static inline void __flush_tlb(void)
-+{
-+	PVOP_VCALL0(flush_tlb_user);
-+}
-+static inline void __flush_tlb_all(void)
-+{
-+	PVOP_VCALL0(flush_tlb_kernel);
-+}
-+static inline void __flush_tlb_one(unsigned long addr)
-+{
-+	PVOP_VCALL1(flush_tlb_single, addr);
-+}
-+
-+
-+static inline void paravirt_release_pgd(pgd_t *pgd)
-+{
-+	PVOP_VCALL1(release_pgd, pgd);
-+}
-+
-+static inline void set_pte(pte_t *ptep, pte_t pteval)
-+{
-+	PVOP_VCALL2(set_pte, ptep, pteval.pte);
-+}
-+
-+static inline void set_pte_at(struct mm_struct *mm, u64 addr, pte_t *ptep, pte_t pteval)
-+{
-+	PVOP_VCALL4(set_pte_at, mm, addr, ptep, pteval.pte);
-+}
-+
-+static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
-+{
-+	PVOP_VCALL2(set_pmd, pmdp, pmdval.pmd);
-+}
-+
-+static inline void pte_update(struct mm_struct *mm, u32 addr, pte_t *ptep)
-+{
-+	PVOP_VCALL3(pte_update, mm, addr, ptep);
-+}
-+
-+static inline void pte_update_defer(struct mm_struct *mm, u32 addr, pte_t *ptep)
-+{
-+	PVOP_VCALL3(pte_update_defer, mm, addr, ptep);
-+}
-+
-+
-+static inline void set_pgd(pgd_t *pgdp, pgd_t pgdval)
-+{
-+	PVOP_VCALL2(set_pgd, pgdp, pgdval.pgd);
-+}
-+
-+static inline void set_pud(pud_t *pudp, pud_t pudval)
-+{
-+	PVOP_VCALL2(set_pud, pudp, pudval.pud);
-+}
-+
-+static inline void pte_clear(struct mm_struct *mm,
-+			     unsigned long addr, pte_t *ptep)
-+{
-+	PVOP_VCALL3(pte_clear, mm, addr, ptep);
-+}
-+
-+static inline void pmd_clear(pmd_t *pmdp)
-+{
-+	PVOP_VCALL1(pmd_clear, pmdp);
-+}
-+
-+static inline void pud_clear(pud_t *pudp)
-+{
-+	PVOP_VCALL1(pud_clear, pudp);
-+}
-+
-+static inline void pgd_clear(pgd_t *pgdp)
-+{
-+	PVOP_VCALL1(pgd_clear, pgdp);
-+}
-+
-+#define  __HAVE_ARCH_ENTER_LAZY_CPU_MODE
-+#define arch_enter_lazy_cpu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_CPU)
-+#define arch_leave_lazy_cpu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_NONE)
-+
-+#define  __HAVE_ARCH_ENTER_LAZY_MMU_MODE
-+#define arch_enter_lazy_mmu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_MMU)
-+#define arch_leave_lazy_mmu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_NONE)
-+
-+/* These functions tends to be very simple. So, if they touch any register,
-+ * the calle-saved ones may already fulfill their needs, and hopefully we
-+ * have no need to save any. */
-+static inline unsigned long __raw_local_save_flags(void)
-+{
-+	unsigned long f;
-+
-+	asm volatile (paravirt_alt(PARAVIRT_CALL)
-+			: "=a"(f)
-+			: paravirt_type(save_fl),
-+			  paravirt_clobber(CLBR_RAX)
-+			: "memory", "cc");
-+	return f;
-+}
-+
-+static inline void raw_local_irq_restore(unsigned long f)
-+{
-+	asm volatile(paravirt_alt(PARAVIRT_CALL)
-+			:
-+			: "D" (f),
-+			  paravirt_type(restore_fl),
-+			  paravirt_clobber(CLBR_RAX)
-+			: "memory", "rax", "cc");
-+}
-+
-+static inline void raw_local_irq_disable(void)
-+{
-+	asm volatile (paravirt_alt(PARAVIRT_CALL)
-+			:
-+			: paravirt_type(irq_disable),
-+			  paravirt_clobber(CLBR_RAX)
-+			: "memory", "rax", "cc");
-+}
-+
-+static inline void raw_local_irq_enable(void)
-+{
-+	asm volatile (paravirt_alt(PARAVIRT_CALL)
-+			:
-+			: paravirt_type(irq_enable),
-+			  paravirt_clobber(CLBR_RAX)
-+			: "memory", "rax", "cc");
-+}
-+
-+/* These all sit in the .parainstructions section to tell us what to patch. */
-+struct paravirt_patch_site {
-+        u8 *instr;              /* original instructions */
-+        u8 instrtype;           /* type of this instruction */
-+        u8 len;                 /* length of original instruction */
-+        u32 clobbers;           /* what registers you may clobber */
-+} __attribute__((aligned(8)));
-+
-+extern struct paravirt_patch_site __parainstructions[],
-+	__parainstructions_end[];
-+
-+#define CLI_STRING _paravirt_alt("call *paravirt_ops+%c[paravirt_cli_type];",	\
-+			"%c[paravirt_cli_type]", "%c[paravirt_clobber]")
-+
-+#define STI_STRING _paravirt_alt("call *paravirt_ops+%c[paravirt_sti_type];",	\
-+			"%c[paravirt_sti_type]", "%c[paravirt_clobber]")
-+
-+/* XXX: Should we clobber more? */
-+#define CLI_STI_CLOBBERS , "rax"
-+#define CLI_STI_INPUT_ARGS \
-+	, [paravirt_cli_type] "i" (PARAVIRT_PATCH(irq_disable)),		\
-+	[paravirt_sti_type] "i" (PARAVIRT_PATCH(irq_enable)),		\
-+	paravirt_clobber(CLBR_RAX)
-+
-+#else  /* __ASSEMBLY__ */
-+
-+/* Make sure as little as possible of this mess escapes. */
-+#undef PARAVIRT_CALL
-+#undef __PVOP_CALL
-+#undef __PVOP_VCALL
-+#undef PVOP_VCALL0
-+#undef PVOP_CALL0
-+#undef PVOP_VCALL1
-+#undef PVOP_CALL1
-+#undef PVOP_VCALL2
-+#undef PVOP_CALL2
-+#undef PVOP_VCALL3
-+#undef PVOP_CALL3
-+#undef PVOP_VCALL4
-+#undef PVOP_CALL4
-+
-+#define PARA_PATCH(off)	((off) / 8)
-+
-+#define PARA_SITE(ptype, clobbers, ops)		\
-+771:;						\
-+	ops;					\
-+772:;						\
-+	.pushsection .parainstructions,"a";	\
-+	.align 8;				\
-+	 .quad 771b;				\
-+	 .byte ptype;				\
-+	 .byte 772b-771b;			\
-+	 .long clobbers;			\
-+	.popsection
-+
-+/*
-+ * For DISABLE/ENABLE_INTERRUPTS and SWAPGS
-+ * we'll save some regs, but the callee needs to be careful
-+ * not to touch others. We'll save the normal rax, rdi,
-+ * rcx and rdx, but that's it!
-+ */
-+#define DISABLE_INTERRUPTS(clobbers)					\
-+	PARA_SITE(PARA_PATCH(PARAVIRT_irq_disable), clobbers,		\
-+		  pushq %rax; pushq %rdi; pushq %rcx; pushq %rdx;	\
-+		  call *paravirt_ops+PARAVIRT_irq_disable;		\
-+		  popq %rdx; popq %rcx; popq %rdi; popq %rax;	\
-+		);
-+
-+#define ENABLE_INTERRUPTS(clobbers)					\
-+	PARA_SITE(PARA_PATCH(PARAVIRT_irq_enable), clobbers,		\
-+		  pushq %rax; pushq %rdi; pushq %rcx; pushq %rdx;	\
-+		  call *%cs:paravirt_ops+PARAVIRT_irq_enable;		\
-+		  popq %rdx; popq %rcx; popq %rdi; popq %rax;		\
-+		);
-+
-+#define SWAPGS								\
-+	PARA_SITE(PARA_PATCH(PARAVIRT_swapgs), CLBR_NONE,		\
-+		  pushq %rax; pushq %rdi; pushq %rcx; pushq %rdx;	\
-+		  call *paravirt_ops+PARAVIRT_swapgs;			\
-+		  popq %rdx; popq %rcx; popq %rdi; popq %rax;		\
-+		);
-+
-+/*
-+ * SYSRETQ and INTERRUPT_RETURN don't return, and we jump to a function.
-+ * So it is all up to the callee to make sure that the registers
-+ * are preserved.
-+ */
-+#define SYSCALL_RETURN						\
-+	PARA_SITE(PARA_PATCH(PARAVIRT_syscall_return), CLBR_ANY,	\
-+		  jmp *%cs:paravirt_ops+PARAVIRT_syscall_return)
-+
-+#define INTERRUPT_RETURN				\
-+	PARA_SITE(PARA_PATCH(PARAVIRT_iret), CLBR_NONE,	\
-+		  jmp *%cs:paravirt_ops+PARAVIRT_iret)
-+
-+
-+/* this is needed in early_idt_handler */
-+#define GET_CR2_INTO_RCX 				  \
-+	call *paravirt_ops+PARAVIRT_read_cr2; 		  \
-+	movq %rax, %rcx; 				  \
-+	xorq %rax, %rax;				  \
-+
-+#endif	/* __ASSEMBLY__ */
-+
-+#else
-+#  error "You should not include paravirt headers without paravirt support"
-+#endif /* CONFIG_PARAVIRT */
-+
-+#endif	/* __ASM_PARAVIRT_H */
+  I'm sorry that I can't reproduce this much, because the RSCNs affect
+ all hosts connected to the SAN, including a number of production
+ systems which I can't touch more than necessary - unless if you know of
+ any way to make the HBA drivers (qla2xxx/lpfc) to ignore all RSCN
+ updates so that I/O is unaffected by them (I'd be forever grateful,
+ too).
+
+Regards
 -- 
-1.4.4.2
+Tore Anderson
 
+--------------080500040202060100040007
+Content-Type: text/plain;
+ name="log.txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="log.txt"
+
+a2VybmVsOiBbNjQxNjMuNDg2MDk1XSAgcnBvcnQtMzowLTI6IGJsb2NrZWQgRkMgcmVtb3Rl
+IHBvcnQgdGltZSBvdXQ6IHJlbW92aW5nIHRhcmdldCBhbmQgc2F2aW5nIGJpbmRpbmcKa2Vy
+bmVsOiBbNjQxNjMuNDg2NDYxXSBzZCAzOjA6MDowOiBbc2RjXSBTeW5jaHJvbml6aW5nIFND
+U0kgY2FjaGUKa2VybmVsOiBbNjQxNjMuNDg2Njc5XSBkZXZpY2UtbWFwcGVyOiBtdWx0aXBh
+dGggcmRhYzogdXNpbmcgUkRBQyBjb21tYW5kIHdpdGggdGltZW91dCA2MDAwCm11bHRpcGF0
+aGQ6IHNkYzogcmVtb3ZlIHBhdGggKHVldmVudCkKbXVsdGlwYXRoZDogd3d3OiBsb2FkIHRh
+YmxlIFswIDUyNDI4ODAwIG11bHRpcGF0aCAwIDEgcmRhYyAyIDIgcm91bmQtcm9iaW4gMCAx
+IDEgODoxMjggMTAwMCByb3VuZC1yb2JpbiAwIDIgMSA4OjY0IDEwMDAgODo5NiAxMDAwXQpr
+ZXJuZWw6IFs2NDE2My40ODcwNDhdIHNkIDM6MDowOjA6IFtzZGNdIFJlc3VsdDogaG9zdGJ5
+dGU9RElEX05PX0NPTk5FQ1QgZHJpdmVyYnl0ZT1EUklWRVJfT0ssU1VHR0VTVF9PSwprZXJu
+ZWw6IFs2NDE2My40ODcxOTVdIHNkIDM6MDowOjE6IFtzZGRdIFN5bmNocm9uaXppbmcgU0NT
+SSBjYWNoZQprZXJuZWw6IFs2NDE2My40ODcyODNdIGRldmljZS1tYXBwZXI6IG11bHRpcGF0
+aCByZGFjOiB1c2luZyBSREFDIGNvbW1hbmQgd2l0aCB0aW1lb3V0IDYwMDAKbXVsdGlwYXRo
+ZDogc2RkOiByZW1vdmUgcGF0aCAodWV2ZW50KQptdWx0aXBhdGhkOiBteXNxbDogbG9hZCB0
+YWJsZSBbMCA0MTk0MzA0MCBtdWx0aXBhdGggMCAxIHJkYWMgMiAyIHJvdW5kLXJvYmluIDAg
+MSAxIDg6MTQ0IDEwMDAgcm91bmQtcm9iaW4gMCAyIDEgODo4MCAxMDAwIDg6MTEyIDEwMDBd
+Cmtlcm5lbDogWzY0MTYzLjQ4NzUzOV0gc2QgMzowOjA6MTogW3NkZF0gUmVzdWx0OiBob3N0
+Ynl0ZT1ESURfTk9fQ09OTkVDVCBkcml2ZXJieXRlPURSSVZFUl9PSyxTVUdHRVNUX09LCmtl
+cm5lbDogWzY0MTY1LjQ5MjMwMV0gIHJwb3J0LTM6MC0zOiBibG9ja2VkIEZDIHJlbW90ZSBw
+b3J0IHRpbWUgb3V0OiByZW1vdmluZyB0YXJnZXQgYW5kIHNhdmluZyBiaW5kaW5nCmtlcm5l
+bDogWzY0MTY1LjQ5MjQ4Nl0gZGV2aWNlLW1hcHBlcjogbXVsdGlwYXRoOiBGYWlsaW5nIHBh
+dGggODo2NC4Ka2VybmVsOiBbNjQxNjUuNDkyNjg2XSBzZCAzOjA6MTowOiBbc2RlXSBTeW5j
+aHJvbml6aW5nIFNDU0kgY2FjaGUKa2VybmVsOiBbNjQxNjUuNDkzMDI4XSBkZXZpY2UtbWFw
+cGVyOiBtdWx0aXBhdGggcmRhYzogdXNpbmcgUkRBQyBjb21tYW5kIHdpdGggdGltZW91dCA2
+MDAwCm11bHRpcGF0aGQ6IDg6NjQ6IG1hcmsgYXMgZmFpbGVkCm11bHRpcGF0aGQ6IHd3dzog
+cmVtYWluaW5nIGFjdGl2ZSBwYXRoczogMgptdWx0aXBhdGhkOiBzZGU6IHJlbW92ZSBwYXRo
+ICh1ZXZlbnQpCmtlcm5lbDogWzY0MTY1LjQ5MzI1MV0gc2QgMzowOjE6MDogW3NkZV0gUmVz
+dWx0OiBob3N0Ynl0ZT1ESURfTk9fQ09OTkVDVCBkcml2ZXJieXRlPURSSVZFUl9PSyxTVUdH
+RVNUX09LCmtlcm5lbDogWzY0MTY1LjQ5MzM4OF0gc2QgMzowOjE6MTogW3NkZl0gU3luY2hy
+b25pemluZyBTQ1NJIGNhY2hlCmtlcm5lbDogWzY0MTY1LjQ5MzQyMF0gc2QgMzowOjE6MTog
+W3NkZl0gUmVzdWx0OiBob3N0Ynl0ZT1ESURfTk9fQ09OTkVDVCBkcml2ZXJieXRlPURSSVZF
+Ul9PSyxTVUdHRVNUX09LCmtlcm5lbDogWzY0MTY1LjU4NzAwNl0gZGV2aWNlLW1hcHBlcjog
+bXVsdGlwYXRoIHJkYWM6IHF1ZXVlaW5nIE1PREVfU0VMRUNUIGNvbW1hbmQgb24gODoxMjgK
+a2VybmVsOiBbNjQxODIuNDUzMzY2XSBzY3NpIDM6MDowOjA6IERpcmVjdC1BY2Nlc3MgICAg
+IFNVTiAgICAgIENTTTIwMF9SICAgICAgICAgMDYxOSBQUTogMCBBTlNJOiA1Cmtlcm5lbDog
+WzY0MTgyLjQ2MDk2MF0gc2QgMzowOjA6MDogW3NkY10gNTI0Mjg4MDAgNTEyLWJ5dGUgaGFy
+ZHdhcmUgc2VjdG9ycyAoMjY4NDQgTUIpCmtlcm5lbDogWzY0MTgyLjQ2MTEwOV0gc2QgMzow
+OjA6MDogW3NkY10gV3JpdGUgUHJvdGVjdCBpcyBvZmYKa2VybmVsOiBbNjQxODIuNDYxMTEy
+XSBzZCAzOjA6MDowOiBbc2RjXSBNb2RlIFNlbnNlOiA3NyAwMCAxMCAwOAprZXJuZWw6IFs2
+NDE4Mi40NjE0NjddIHNkIDM6MDowOjA6IFtzZGNdIFdyaXRlIGNhY2hlOiBlbmFibGVkLCBy
+ZWFkIGNhY2hlOiBlbmFibGVkLCBzdXBwb3J0cyBEUE8gYW5kIEZVQQprZXJuZWw6IFs2NDE4
+Mi40NjIzMzJdIHNkIDM6MDowOjA6IFtzZGNdIDUyNDI4ODAwIDUxMi1ieXRlIGhhcmR3YXJl
+IHNlY3RvcnMgKDI2ODQ0IE1CKQprZXJuZWw6IFs2NDE4Mi40NjI2MzVdIHNkIDM6MDowOjA6
+IFtzZGNdIFdyaXRlIFByb3RlY3QgaXMgb2ZmCmtlcm5lbDogWzY0MTgyLjQ2MjY0MF0gc2Qg
+MzowOjA6MDogW3NkY10gTW9kZSBTZW5zZTogNzcgMDAgMTAgMDgKa2VybmVsOiBbNjQxODIu
+NDYyOTQ0XSBzZCAzOjA6MDowOiBbc2RjXSBXcml0ZSBjYWNoZTogZW5hYmxlZCwgcmVhZCBj
+YWNoZTogZW5hYmxlZCwgc3VwcG9ydHMgRFBPIGFuZCBGVUEKa2VybmVsOiBbNjQxODIuNDYy
+OTUwXSAgc2RjOmVuZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRldiBzZGMsIHNlY3RvciAwCmtl
+cm5lbDogWzY0MTgyLjk2NzM0NF0gcHJpbnRrOiAxNCBtZXNzYWdlcyBzdXBwcmVzc2VkLgpr
+ZXJuZWw6IFs2NDE4Mi45NjczNDhdIEJ1ZmZlciBJL08gZXJyb3Igb24gZGV2aWNlIHNkYywg
+bG9naWNhbCBibG9jayAwCmtlcm5lbDogWzY0MTgzLjQ2NjIyMV0gZW5kX3JlcXVlc3Q6IEkv
+TyBlcnJvciwgZGV2IHNkYywgc2VjdG9yIDAKa2VybmVsOiBbNjQxODMuNDY2MjMyXSBCdWZm
+ZXIgSS9PIGVycm9yIG9uIGRldmljZSBzZGMsIGxvZ2ljYWwgYmxvY2sgMAprZXJuZWw6IFs2
+NDE4My45ODIwODNdIGVuZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRldiBzZGMsIHNlY3RvciAw
+Cmtlcm5lbDogWzY0MTgzLjk4MjA5Nl0gQnVmZmVyIEkvTyBlcnJvciBvbiBkZXZpY2Ugc2Rj
+LCBsb2dpY2FsIGJsb2NrIDAKa2VybmVsOiBbNjQxODQuNDk3MjM3XSBlbmRfcmVxdWVzdDog
+SS9PIGVycm9yLCBkZXYgc2RjLCBzZWN0b3IgMAprZXJuZWw6IFs2NDE4NC40OTcyNDhdIEJ1
+ZmZlciBJL08gZXJyb3Igb24gZGV2aWNlIHNkYywgbG9naWNhbCBibG9jayAwCmtlcm5lbDog
+WzY0MTg1LjAwNDA4Nl0gZW5kX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkYywgc2VjdG9y
+IDAKa2VybmVsOiBbNjQxODUuMDA0MDk2XSBCdWZmZXIgSS9PIGVycm9yIG9uIGRldmljZSBz
+ZGMsIGxvZ2ljYWwgYmxvY2sgMAprZXJuZWw6IFs2NDE4NS4wMDQxMzldIGxkbV92YWxpZGF0
+ZV9wYXJ0aXRpb25fdGFibGUoKTogRGlzayByZWFkIGZhaWxlZC4Ka2VybmVsOiBbNjQxODUu
+NTA0MTU4XSBlbmRfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgc2RjLCBzZWN0b3IgMAprZXJu
+ZWw6IFs2NDE4NS41MDQxNzBdIEJ1ZmZlciBJL08gZXJyb3Igb24gZGV2aWNlIHNkYywgbG9n
+aWNhbCBibG9jayAwCmtlcm5lbDogWzY0MTg2LjAwMzEzOF0gZW5kX3JlcXVlc3Q6IEkvTyBl
+cnJvciwgZGV2IHNkYywgc2VjdG9yIDAKa2VybmVsOiBbNjQxODYuMDAzMTQ3XSBCdWZmZXIg
+SS9PIGVycm9yIG9uIGRldmljZSBzZGMsIGxvZ2ljYWwgYmxvY2sgMAprZXJuZWw6IFs2NDE4
+Ni41MDE5NzhdIGVuZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRldiBzZGMsIHNlY3RvciAwCmtl
+cm5lbDogWzY0MTg2LjUwMTk4N10gQnVmZmVyIEkvTyBlcnJvciBvbiBkZXZpY2Ugc2RjLCBs
+b2dpY2FsIGJsb2NrIDAKa2VybmVsOiBbNjQxODcuMDAxMDIyXSBlbmRfcmVxdWVzdDogSS9P
+IGVycm9yLCBkZXYgc2RjLCBzZWN0b3IgMAprZXJuZWw6IFs2NDE4Ny4wMDEwMzVdIEJ1ZmZl
+ciBJL08gZXJyb3Igb24gZGV2aWNlIHNkYywgbG9naWNhbCBibG9jayAwCmtlcm5lbDogWzY0
+MTg3LjAwMTEwNF0gRGV2IHNkYzogdW5hYmxlIHRvIHJlYWQgUkRCIGJsb2NrIDAKa2VybmVs
+OiBbNjQxODcuNTAwNjI4XSBlbmRfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgc2RjLCBzZWN0
+b3IgMAprZXJuZWw6IFs2NDE4Ny41MDA2NDBdIEJ1ZmZlciBJL08gZXJyb3Igb24gZGV2aWNl
+IHNkYywgbG9naWNhbCBibG9jayAwCmtlcm5lbDogWzY0MTg4LjAwMzY4OF0gZW5kX3JlcXVl
+c3Q6IEkvTyBlcnJvciwgZGV2IHNkYywgc2VjdG9yIDAKa2VybmVsOiBbNjQxODguMDAzNjk4
+XSBCdWZmZXIgSS9PIGVycm9yIG9uIGRldmljZSBzZGMsIGxvZ2ljYWwgYmxvY2sgMAprZXJu
+ZWw6IFs2NDE4OC41MDI2NThdIGVuZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRldiBzZGMsIHNl
+Y3RvciAyNAprZXJuZWw6IFs2NDE4OS4wMDIwOTNdIGVuZF9yZXF1ZXN0OiBJL08gZXJyb3Is
+IGRldiBzZGMsIHNlY3RvciAyNAprZXJuZWw6IFs2NDE4OS41MDA5MzNdIGVuZF9yZXF1ZXN0
+OiBJL08gZXJyb3IsIGRldiBzZGMsIHNlY3RvciAwCmtlcm5lbDogWzY0MTkwLjAxMjU1MV0g
+ZW5kX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkYywgc2VjdG9yIDAKa2VybmVsOiBbNjQx
+OTAuMDEyNjE5XSAgdW5hYmxlIHRvIHJlYWQgcGFydGl0aW9uIHRhYmxlCmtlcm5lbDogWzY0
+MTkwLjAxMjc0MF0gc2QgMzowOjA6MDogW3NkY10gQXR0YWNoZWQgU0NTSSBkaXNrCmtlcm5l
+bDogWzY0MTkwLjAxMjg1Nl0gc2QgMzowOjA6MDogQXR0YWNoZWQgc2NzaSBnZW5lcmljIHNn
+MiB0eXBlIDAKa2VybmVsOiBbNjQxOTAuMDIxMTE4XSBzY3NpIDM6MDowOjE6IERpcmVjdC1B
+Y2Nlc3MgICAgIFNVTiAgICAgIENTTTIwMF9SICAgICAgICAgMDYxOSBQUTogMCBBTlNJOiA1
+Cmtlcm5lbDogWzY0MTkwLjAyMjE4MF0gc2QgMzowOjA6MTogW3NkZF0gNDE5NDMwNDAgNTEy
+LWJ5dGUgaGFyZHdhcmUgc2VjdG9ycyAoMjE0NzUgTUIpCmtlcm5lbDogWzY0MTkwLjAyMjMz
+Nl0gc2QgMzowOjA6MTogW3NkZF0gV3JpdGUgUHJvdGVjdCBpcyBvZmYKa2VybmVsOiBbNjQx
+OTAuMDIyMzQ1XSBzZCAzOjA6MDoxOiBbc2RkXSBNb2RlIFNlbnNlOiA3NyAwMCAxMCAwOApr
+ZXJuZWw6IFs2NDE5MC4wMjI3NjFdIHNkIDM6MDowOjE6IFtzZGRdIFdyaXRlIGNhY2hlOiBl
+bmFibGVkLCByZWFkIGNhY2hlOiBlbmFibGVkLCBzdXBwb3J0cyBEUE8gYW5kIEZVQQprZXJu
+ZWw6IFs2NDE5MC4wMjQwMzFdIHNkIDM6MDowOjE6IFtzZGRdIDQxOTQzMDQwIDUxMi1ieXRl
+IGhhcmR3YXJlIHNlY3RvcnMgKDIxNDc1IE1CKQprZXJuZWw6IFs2NDE5MC4wMjQxOTBdIHNk
+IDM6MDowOjE6IFtzZGRdIFdyaXRlIFByb3RlY3QgaXMgb2ZmCmtlcm5lbDogWzY0MTkwLjAy
+NDE5NV0gc2QgMzowOjA6MTogW3NkZF0gTW9kZSBTZW5zZTogNzcgMDAgMTAgMDgKa2VybmVs
+OiBbNjQxOTAuMDI0Nzg5XSBzZCAzOjA6MDoxOiBbc2RkXSBXcml0ZSBjYWNoZTogZW5hYmxl
+ZCwgcmVhZCBjYWNoZTogZW5hYmxlZCwgc3VwcG9ydHMgRFBPIGFuZCBGVUEKa2VybmVsOiBb
+NjQxOTAuMDI0Nzk1XSAgc2RkOmVuZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRldiBzZGQsIHNl
+Y3RvciAwCmtlcm5lbDogWzY0MTkxLjAyNzY5OV0gZW5kX3JlcXVlc3Q6IEkvTyBlcnJvciwg
+ZGV2IHNkZCwgc2VjdG9yIDAKa2VybmVsOiBbNjQxOTEuNTI4NDQ5XSBlbmRfcmVxdWVzdDog
+SS9PIGVycm9yLCBkZXYgc2RkLCBzZWN0b3IgMAprZXJuZWw6IFs2NDE5Mi4wMjkxNDddIGVu
+ZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRldiBzZGQsIHNlY3RvciAwCmtlcm5lbDogWzY0MTky
+LjUyODE3NV0gZW5kX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkZCwgc2VjdG9yIDAKa2Vy
+bmVsOiBbNjQxOTIuNTI4MjE2XSBsZG1fdmFsaWRhdGVfcGFydGl0aW9uX3RhYmxlKCk6IERp
+c2sgcmVhZCBmYWlsZWQuCmtlcm5lbDogWzY0MTkzLjAyNzc4N10gZW5kX3JlcXVlc3Q6IEkv
+TyBlcnJvciwgZGV2IHNkZCwgc2VjdG9yIDAKa2VybmVsOiBbNjQxOTMuMDI3ODAwXSBwcmlu
+dGs6IDkgbWVzc2FnZXMgc3VwcHJlc3NlZC4Ka2VybmVsOiBbNjQxOTMuMDI3ODAyXSBCdWZm
+ZXIgSS9PIGVycm9yIG9uIGRldmljZSBzZGQsIGxvZ2ljYWwgYmxvY2sgMAprZXJuZWw6IFs2
+NDE5My41MjY2MzVdIGVuZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRldiBzZGQsIHNlY3RvciAw
+Cmtlcm5lbDogWzY0MTk0LjAyNTYzNF0gZW5kX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNk
+ZCwgc2VjdG9yIDAKa2VybmVsOiBbNjQxOTQuNTI1NDI2XSBlbmRfcmVxdWVzdDogSS9PIGVy
+cm9yLCBkZXYgc2RkLCBzZWN0b3IgMAprZXJuZWw6IFs2NDE5NC41MjU0NzVdIERldiBzZGQ6
+IHVuYWJsZSB0byByZWFkIFJEQiBibG9jayAwCmtlcm5lbDogWzY0MTk1LjAyNDIzOF0gZW5k
+X3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkZCwgc2VjdG9yIDAKa2VybmVsOiBbNjQxOTUu
+NTIzNDA3XSBlbmRfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgc2RkLCBzZWN0b3IgMAprZXJu
+ZWw6IFs2NDE5Ni4wMjk1NTVdIGVuZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRldiBzZGQsIHNl
+Y3RvciAyNAprZXJuZWw6IFs2NDE5Ni41Mjg0OTRdIGVuZF9yZXF1ZXN0OiBJL08gZXJyb3Is
+IGRldiBzZGQsIHNlY3RvciAyNAprZXJuZWw6IFs2NDE5Ny4wMjczMzJdIGVuZF9yZXF1ZXN0
+OiBJL08gZXJyb3IsIGRldiBzZGQsIHNlY3RvciAwCmtlcm5lbDogWzY0MTk3LjUyOTMwOF0g
+ZW5kX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkZCwgc2VjdG9yIDAKa2VybmVsOiBbNjQx
+OTcuNTI5MzQ1XSAgdW5hYmxlIHRvIHJlYWQgcGFydGl0aW9uIHRhYmxlCmtlcm5lbDogWzY0
+MTk3LjUyOTQ0N10gc2QgMzowOjA6MTogW3NkZF0gQXR0YWNoZWQgU0NTSSBkaXNrCmtlcm5l
+bDogWzY0MTk3LjUyOTUwOF0gc2QgMzowOjA6MTogQXR0YWNoZWQgc2NzaSBnZW5lcmljIHNn
+MyB0eXBlIDAKa2VybmVsOiBbNjQxOTcuNTMxNjk3XSBzY3NpIDM6MDoxOjA6IERpcmVjdC1B
+Y2Nlc3MgICAgIFNVTiAgICAgIENTTTIwMF9SICAgICAgICAgMDYxOSBQUTogMCBBTlNJOiA1
+Cmtlcm5lbDogWzY0MTk3LjUzMzA0M10gc2QgMzowOjE6MDogW3Nka10gNTI0Mjg4MDAgNTEy
+LWJ5dGUgaGFyZHdhcmUgc2VjdG9ycyAoMjY4NDQgTUIpCmtlcm5lbDogWzY0MTk3LjUzMzIx
+MV0gc2QgMzowOjE6MDogW3Nka10gV3JpdGUgUHJvdGVjdCBpcyBvZmYKa2VybmVsOiBbNjQx
+OTcuNTMzMjEzXSBzZCAzOjA6MTowOiBbc2RrXSBNb2RlIFNlbnNlOiA3NyAwMCAxMCAwOApr
+ZXJuZWw6IFs2NDE5Ny41MzM0ODFdIHNkIDM6MDoxOjA6IFtzZGtdIFdyaXRlIGNhY2hlOiBl
+bmFibGVkLCByZWFkIGNhY2hlOiBlbmFibGVkLCBzdXBwb3J0cyBEUE8gYW5kIEZVQQprZXJu
+ZWw6IFs2NDE5Ny41MzQzNDldIHNkIDM6MDoxOjA6IFtzZGtdIDUyNDI4ODAwIDUxMi1ieXRl
+IGhhcmR3YXJlIHNlY3RvcnMgKDI2ODQ0IE1CKQprZXJuZWw6IFs2NDE5Ny41MzQ0OTNdIHNk
+IDM6MDoxOjA6IFtzZGtdIFdyaXRlIFByb3RlY3QgaXMgb2ZmCmtlcm5lbDogWzY0MTk3LjUz
+NDQ5Nl0gc2QgMzowOjE6MDogW3Nka10gTW9kZSBTZW5zZTogNzcgMDAgMTAgMDgKa2VybmVs
+OiBbNjQxOTcuNTM0NzQwXSBzZCAzOjA6MTowOiBbc2RrXSBXcml0ZSBjYWNoZTogZW5hYmxl
+ZCwgcmVhZCBjYWNoZTogZW5hYmxlZCwgc3VwcG9ydHMgRFBPIGFuZCBGVUEKa2VybmVsOiBb
+NjQxOTcuNTM0NzQzXSAgc2RrOiB1bmtub3duIHBhcnRpdGlvbiB0YWJsZQprZXJuZWw6IFs2
+NDE5Ny41MzUyMjNdIHNkIDM6MDoxOjA6IFtzZGtdIEF0dGFjaGVkIFNDU0kgZGlzawprZXJu
+ZWw6IFs2NDE5Ny41MzUyNzNdIHNkIDM6MDoxOjA6IEF0dGFjaGVkIHNjc2kgZ2VuZXJpYyBz
+ZzQgdHlwZSAwCmtlcm5lbDogWzY0MTk3LjU0MDc2Ml0gc2NzaSAzOjA6MTowOiBEaXJlY3Qt
+QWNjZXNzICAgICBTVU4gICAgICBDU00yMDBfUiAgICAgICAgIDA2MTkgUFE6IDAgQU5TSTog
+NQprZXJuZWw6IFs2NDE5Ny41NDA3NzldIGtvYmplY3RfYWRkIGZhaWxlZCBmb3IgMzowOjE6
+MCB3aXRoIC1FRVhJU1QsIGRvbid0IHRyeSB0byByZWdpc3RlciB0aGluZ3Mgd2l0aCB0aGUg
+c2FtZSBuYW1lIGluIHRoZSBzYW1lIGRpcmVjdG9yeS4Ka2VybmVsOiBbNjQxOTcuNTQwODMz
+XSAKa2VybmVsOiBbNjQxOTcuNTQwODMzXSBDYWxsIFRyYWNlOgprZXJuZWw6IFs2NDE5Ny41
+NDA4NTJdICBba29iamVjdF9zaGFkb3dfYWRkKzQwMi81MTJdIGtvYmplY3Rfc2hhZG93X2Fk
+ZCsweDE5Mi8weDIwMAprZXJuZWw6IFs2NDE5Ny41NDA4NTddICBbZGV2aWNlX2FkZCsyMDQv
+MTU2OF0gZGV2aWNlX2FkZCsweGNjLzB4NjIwCmtlcm5lbDogWzY0MTk3LjU0MDg3OF0gIFtf
+ZW5kKzEyNzE1MjQwNS8yMTI5NzcxOTIwXSA6c2NzaV9tb2Q6c2NzaV9zeXNmc19hZGRfc2Rl
+disweDU1LzB4MjkwCmtlcm5lbDogWzY0MTk3LjU0MDg4OF0gIFtfZW5kKzEyNzE0MjczNS8y
+MTI5NzcxOTIwXSA6c2NzaV9tb2Q6c2NzaV9wcm9iZV9hbmRfYWRkX2x1bisweDM1Zi8weGM4
+MAprZXJuZWw6IFs2NDE5Ny41NDA5MDFdICBbX2VuZCsxMjcxMzU1NzMvMjEyOTc3MTkyMF0g
+OnNjc2lfbW9kOnNjc2lfZXhlY3V0ZV9yZXErMHhiNS8weGUwCmtlcm5lbDogWzY0MTk3LjU0
+MDkxMl0gIFtfZW5kKzEyNzE0NjY5My8yMTI5NzcxOTIwXSA6c2NzaV9tb2Q6X19zY3NpX3Nj
+YW5fdGFyZ2V0KzB4NjU1LzB4NmQwCmtlcm5lbDogWzY0MTk3LjU0MDkyNF0gIFtfZW5kKzEy
+NzE0ODI4Ni8yMTI5NzcxOTIwXSA6c2NzaV9tb2Q6c2NzaV9zY2FuX3RhcmdldCsweGZlLzB4
+MTAwCmtlcm5lbDogWzY0MTk3LjU0MDkzNl0gIFtfZW5kKzEyNzc4MDAxOS8yMTI5NzcxOTIw
+XSA6c2NzaV90cmFuc3BvcnRfZmM6ZmNfc2NzaV9zY2FuX3Jwb3J0KzB4NzMvMHhhMAprZXJu
+ZWw6IFs2NDE5Ny41NDA5NDFdICBbX2VuZCsxMjc3Nzk5MDQvMjEyOTc3MTkyMF0gOnNjc2lf
+dHJhbnNwb3J0X2ZjOmZjX3Njc2lfc2Nhbl9ycG9ydCsweDAvMHhhMAprZXJuZWw6IFs2NDE5
+Ny41NDA5NDVdICBbcnVuX3dvcmtxdWV1ZSsxMDcvMjg4XSBydW5fd29ya3F1ZXVlKzB4NmIv
+MHgxMjAKa2VybmVsOiBbNjQxOTcuNTQwOTQ3XSAgW3dvcmtlcl90aHJlYWQrMC8zMDRdIHdv
+cmtlcl90aHJlYWQrMHgwLzB4MTMwCmtlcm5lbDogWzY0MTk3LjU0MDk0OV0gIFt3b3JrZXJf
+dGhyZWFkKzE5Ny8zMDRdIHdvcmtlcl90aHJlYWQrMHhjNS8weDEzMAprZXJuZWw6IFs2NDE5
+Ny41NDA5NTNdICBbYXV0b3JlbW92ZV93YWtlX2Z1bmN0aW9uKzAvNDhdIGF1dG9yZW1vdmVf
+d2FrZV9mdW5jdGlvbisweDAvMHgzMAprZXJuZWw6IFs2NDE5Ny41NDA5NTVdICBbd29ya2Vy
+X3RocmVhZCswLzMwNF0gd29ya2VyX3RocmVhZCsweDAvMHgxMzAKa2VybmVsOiBbNjQxOTcu
+NTQwOTU3XSAgW3dvcmtlcl90aHJlYWQrMC8zMDRdIHdvcmtlcl90aHJlYWQrMHgwLzB4MTMw
+Cmtlcm5lbDogWzY0MTk3LjU0MDk1OV0gIFtrdGhyZWFkKzEzNC8xNDRdIGt0aHJlYWQrMHg4
+Ni8weDkwCmtlcm5lbDogWzY0MTk3LjU0MDk2Ml0gIFtjaGlsZF9yaXArMTAvMThdIGNoaWxk
+X3JpcCsweGEvMHgxMgprZXJuZWw6IFs2NDE5Ny41NDA5NjZdICBba3RocmVhZCswLzE0NF0g
+a3RocmVhZCsweDAvMHg5MAprZXJuZWw6IFs2NDE5Ny41NDA5NjhdICBbY2hpbGRfcmlwKzAv
+MThdIGNoaWxkX3JpcCsweDAvMHgxMgprZXJuZWw6IFs2NDE5Ny41NDA5NjldIAprZXJuZWw6
+IFs2NDE5Ny41NDA5NzBdIGVycm9yIDEKa2VybmVsOiBbNjQxOTcuNTQwOTc5XSBzY3NpIDM6
+MDoxOjA6IFVuZXhwZWN0ZWQgcmVzcG9uc2UgZnJvbSBsdW4gMCB3aGlsZSBzY2FubmluZywg
+c2NhbiBhYm9ydGVkCmtlcm5lbDogWzY0MjI5LjI4MjQyOV0gZGV2aWNlLW1hcHBlcjogbXVs
+dGlwYXRoOiBGYWlsaW5nIHBhdGggODoxMjguCm11bHRpcGF0aGQ6IHd3dzogbG9hZCB0YWJs
+ZSBbMCA1MjQyODgwMCBtdWx0aXBhdGggMCAxIHJkYWMgMiAyIHJvdW5kLXJvYmluIDAgMSAx
+IDg6MTI4IDEwMDAgcm91bmQtcm9iaW4gMCAxIDEgODo5NiAxMDAwXQptdWx0aXBhdGhkOiBz
+ZGY6IHJlbW92ZSBwYXRoICh1ZXZlbnQpCm11bHRpcGF0aGQ6IG15c3FsOiBsb2FkIHRhYmxl
+IFswIDQxOTQzMDQwIG11bHRpcGF0aCAwIDEgcmRhYyAyIDIgcm91bmQtcm9iaW4gMCAxIDEg
+ODoxNDQgMTAwMCByb3VuZC1yb2JpbiAwIDEgMSA4OjExMiAxMDAwXQptdWx0aXBhdGhkOiBz
+ZGM6IGFkZCBwYXRoICh1ZXZlbnQpCmtlcm5lbDogWzY0MjI5LjI5MTAxN10gZGV2aWNlLW1h
+cHBlcjogbXVsdGlwYXRoIHJkYWM6IHVzaW5nIFJEQUMgY29tbWFuZCB3aXRoIHRpbWVvdXQg
+NjAwMAptdWx0aXBhdGhkOiB3d3c6IGxvYWQgdGFibGUgWzAgNTI0Mjg4MDAgbXVsdGlwYXRo
+IDAgMSByZGFjIDIgMiByb3VuZC1yb2JpbiAwIDIgMSA4OjEyOCAxMDAwIDg6MzIgMTAwMCBy
+b3VuZC1yb2JpbiAwIDEgMSA4Ojk2IDEwMDBdCmtlcm5lbDogWzY0MjI5LjYwOTY2N10gZGV2
+aWNlLW1hcHBlcjogbXVsdGlwYXRoIHJkYWM6IHVzaW5nIFJEQUMgY29tbWFuZCB3aXRoIHRp
+bWVvdXQgNjAwMAptdWx0aXBhdGhkOiBzZGQ6IGFkZCBwYXRoICh1ZXZlbnQpCmtlcm5lbDog
+WzY0MjMxLjQyMzAzOV0gZGV2aWNlLW1hcHBlcjogbXVsdGlwYXRoIHJkYWM6IHVzaW5nIFJE
+QUMgY29tbWFuZCB3aXRoIHRpbWVvdXQgNjAwMAptdWx0aXBhdGhkOiBteXNxbDogbG9hZCB0
+YWJsZSBbMCA0MTk0MzA0MCBtdWx0aXBhdGggMCAxIHJkYWMgMiAyIHJvdW5kLXJvYmluIDAg
+MiAxIDg6MTQ0IDEwMDAgODo0OCAxMDAwIHJvdW5kLXJvYmluIDAgMSAxIDg6MTEyIDEwMDBd
+Cm11bHRpcGF0aGQ6IHNkazogYWRkIHBhdGggKHVldmVudCkKa2VybmVsOiBbNjQyMzEuNzEx
+NzMxXSBkZXZpY2UtbWFwcGVyOiBtdWx0aXBhdGggcmRhYzogdXNpbmcgUkRBQyBjb21tYW5k
+IHdpdGggdGltZW91dCA2MDAwCm11bHRpcGF0aGQ6IHd3dzogbG9hZCB0YWJsZSBbMCA1MjQy
+ODgwMCBtdWx0aXBhdGggMCAxIHJkYWMgMiAyIHJvdW5kLXJvYmluIDAgMiAxIDg6MTI4IDEw
+MDAgODozMiAxMDAwIHJvdW5kLXJvYmluIDAgMiAxIDg6OTYgMTAwMCA4OjE2MCAxMDAK
+--------------080500040202060100040007--
