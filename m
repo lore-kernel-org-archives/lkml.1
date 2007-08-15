@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbXHOHIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759647AbXHOHJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758977AbXHOHIX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 03:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXHOHIQ
+	id S1759647AbXHOHJf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 03:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbXHOHJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 03:08:16 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50501 "EHLO smtps.tip.net.au"
+	Wed, 15 Aug 2007 03:09:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43365 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752261AbXHOHIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 03:08:14 -0400
-Date: Wed, 15 Aug 2007 17:08:07 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] allow disabling DNOTIFY without EMBEDDED
-Message-Id: <20070815170807.aacdf871.sfr@canb.auug.org.au>
-In-Reply-To: <20070814212712.GC18945@stusta.de>
-References: <20070814212712.GC18945@stusta.de>
-X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__15_Aug_2007_17_08_07_+1000_c5UGL7tP/yPuLsLe"
+	id S1752595AbXHOHJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 03:09:23 -0400
+Message-ID: <46C2A69F.6020004@garzik.org>
+Date: Wed, 15 Aug 2007 03:09:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: akpm@osdl.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] libata: Correct IORDY handling
+References: <20070731140148.4cb780de@the-village.bc.nu>
+In-Reply-To: <20070731140148.4cb780de@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__15_Aug_2007_17_08_07_+1000_c5UGL7tP/yPuLsLe
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Alan Cox wrote:
+> Debugging a report of a problem with an ancient solid state disk showed
+> up some problems in the IORDY handling
+> 
+> 1.	We check the wrong bit to see if the device has IORDY
+> 2.	Even then some ancient creaking piles of crap don't support
+> 	SETXFER at all.
+> 
+> I think this should go via -mm for a bit. The cases it fixes are obscure
+> and the risk of side effects is slight but possible. This also moves us
+> slightly closer to supporting original MFM/RLL disks with libata but
+> before Jeff panics I have no plans to do that....
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
 
-On Tue, 14 Aug 2007 23:27:12 +0200 Adrian Bunk <bunk@kernel.org> wrote:
->
-> This patch allows disabling DNOTIFY with CONFIG_EMBEDDED=3Dn.
->=20
-> I'm currently running a kernel with dnotify disabled and I haven't run=20
-> into any problem. Is there any popular application left that breaks=20
-> without dnotify support in the kernel?
->=20
-> Note that this patch does not remove dnotify support, it still defaults
-> to "y", and the help text recommends enabling it.
->=20
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+applied
 
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__15_Aug_2007_17_08_07_+1000_c5UGL7tP/yPuLsLe
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGwqZcTgG2atn1QN8RAu0kAJ9/kW388S+cOU34iKPwe1qfumbxyACgmjup
-Vd1mEcBh719OpbTUF5j00Q4=
-=v/It
------END PGP SIGNATURE-----
-
---Signature=_Wed__15_Aug_2007_17_08_07_+1000_c5UGL7tP/yPuLsLe--
