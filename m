@@ -1,59 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935591AbXHOT0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935827AbXHOT2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935591AbXHOT0X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 15:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758500AbXHOT0J
+	id S935827AbXHOT2P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 15:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760882AbXHOT1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 15:26:09 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:57168 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758712AbXHOT0I (ORCPT
+	Wed, 15 Aug 2007 15:27:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59816 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754456AbXHOT1w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 15:26:08 -0400
-Date: Wed, 15 Aug 2007 15:26:07 -0400
-To: Marc Perkel <mperkel@yahoo.com>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>,
-       Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
-       LKML Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Thinking outside the box on file systems
-Message-ID: <20070815192607.GE9410@csclub.uwaterloo.ca>
-References: <F38DAAD2-D984-4704-94AC-5FB963C4373C@mac.com> <631385.29200.qm@web52512.mail.re2.yahoo.com>
+	Wed, 15 Aug 2007 15:27:52 -0400
+Date: Thu, 16 Aug 2007 01:10:15 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Segher Boessenkool <segher@kernel.crashing.org>
+cc: Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <9350e9fab505c92af8d5e1f3441d6ad2@kernel.crashing.org>
+Message-ID: <alpine.LFD.0.999.0708160102550.16414@enigma.security.iitk.ac.in>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+ <9350e9fab505c92af8d5e1f3441d6ad2@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <631385.29200.qm@web52512.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 10:59:12AM -0700, Marc Perkel wrote:
-> When one thinks outside the box one has to think about
-> evolving beyond what you are used to. When I moved
-> beyond DOS I have to give up the idea of 8.3 file
-> names. The idea here is to come up with a model that
-> can emulate the existing system for backwards
-> compatibility.
 
-But moving beyond 8.3 didn't prevent you from still using 8.3 names if
-you wanted too.  Longer file names are just an extension of shorter
-ones.
 
-> The concept behind my model is to create a new layer
-> where you can do ANYTHING with file names and
-> permissions and create models that emulate Linux, DOS,
-> Windows, Mac, or anything else you can dream of. Then
-> you can create a Linux/Windows/Mac template to emulate
-> what you are used to.
+On Wed, 15 Aug 2007, Segher Boessenkool wrote:
 
-I am not even sure your idea could represent everything that is
-currently possible with Posix ACLs and the standard unix permisions,
-never mind SELinux.  I am also almost entirely convinced that your idea
-would be amazingly slow and inefficient and a serious pain to use.  And
-of course nothing seems to ever suceed without backwards compatibility
-to support legacy programs until new ones take over, unless it is in
-fact an entirely new concept for a new field and isn't trying to replace
-some existing working system.
+> > "Volatile behaviour" itself isn't consistently defined (at least
+> > definitely not consistently implemented in various gcc versions across
+> > platforms),
+> 
+> It should be consistent across platforms; if not, file a bug please.
+> 
+> > but it is /expected/ to mean something like: "ensure that
+> > every such access actually goes all the way to memory, and is not
+> > re-ordered w.r.t. to other accesses, as far as the compiler can take
+                              ^
+                              (volatile)
 
---
-Len Sorensen
+(or, alternatively, "other accesses to the same volatile object" ...)
+
+> > care of these". The last "as far as compiler can take care" disclaimer
+> > comes about due to CPUs doing their own re-ordering nowadays.
+> 
+> You can *expect* whatever you want, but this isn't in line with
+> reality at all.
+> 
+> volatile _does not_ prevent reordering wrt other accesses.
+> [...]
+> What volatile does are a) never optimise away a read (or write)
+> to the object, since the data can change in ways the compiler
+> cannot see; and b) never move stores to the object across a
+> sequence point.  This does not mean other accesses cannot be
+> reordered wrt the volatile access.
+> 
+> If the abstract machine would do an access to a volatile-
+> qualified object, the generated machine code will do that
+> access too.  But, for example, it can still be optimised
+> away by the compiler, if it can prove it is allowed to.
+
+As (now) indicated above, I had meant multiple volatile accesses to
+the same object, obviously.
+
+BTW:
+
+#define atomic_read(a)	(*(volatile int *)&(a))
+#define atomic_set(a,i)	(*(volatile int *)&(a) = (i))
+
+int a;
+
+void func(void)
+{
+	int b;
+
+	b = atomic_read(a);
+	atomic_set(a, 20);
+	b = atomic_read(a);
+}
+
+gives:
+
+func:
+	pushl	%ebp
+	movl	a, %eax
+	movl	%esp, %ebp
+	movl	$20, a
+	movl	a, %eax
+	popl	%ebp
+	ret
+
+so the first atomic_read() wasn't optimized away.
+
+
+> volatile _does not_ make accesses go all the way to memory.
+> [...]
+> If you want stuff to go all the way to memory, you need some
+> architecture-specific flush sequence; to make a store globally
+> visible before another store, you need mb(); before some following
+> read, you need mb(); to prevent reordering you need a barrier.
+
+Sure, which explains the "as far as the compiler can take care" bit.
+Poor phrase / choice of words, probably.
