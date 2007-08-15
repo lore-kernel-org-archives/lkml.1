@@ -1,52 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbXHOPgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765809AbXHOPkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932275AbXHOPgk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 11:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762844AbXHOPg2
+	id S1765809AbXHOPkZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 11:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761156AbXHOPkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 11:36:28 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:4173 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760055AbXHOPg1 (ORCPT
+	Wed, 15 Aug 2007 11:40:07 -0400
+Received: from emulex.emulex.com ([138.239.112.1]:51522 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757170AbXHOPkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 11:36:27 -0400
-Date: Wed, 15 Aug 2007 23:33:36 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Satyam Sharma <satyam@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070815153335.GA23593@gondor.apana.org.au>
-References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com>
+	Wed, 15 Aug 2007 11:40:04 -0400
+Subject: [PATCH] make attribute_container_unregister() unconditionally wait
+	for list empty
+From: James Smart <James.Smart@Emulex.Com>
+Reply-To: James.Smart@Emulex.Com
+To: james.bottomely@steeleye.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Emulex Corporation
+Date: Wed, 15 Aug 2007 11:40:00 -0400
+Message-Id: <1187192400.3142.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070815142516.GB9645@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Aug 2007 15:40:00.0085 (UTC) FILETIME=[8A1D8050:01C7DF52]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 07:25:16AM -0700, Paul E. McKenney wrote:
+James,
+
+>> > > Isn't a better way to handle it simply to give
+>> > > transport_container_unregister() the semantics everyone is expecting
+>> > > (i.e. to wait for everything to be tidied up and gone)?  That way none
+>> > > of the transport classes needs updating, and we don't have to handle the
+>> > > rather nasty release and unload races.
 > 
-> Do we really need another set of APIs?  Can you give even one example
-> where the pre-existing volatile semantics are causing enough of a problem
-> to justify adding yet more atomic_*() APIs?
+> I was thinking of a wait_event driven system checking for 
+> list_empty(cont->containers.k_list)
 
-Let's turn this around.  Can you give a single example where
-the volatile semantics is needed in a legitimate way?
+I hope this is more in line with what you were thinking.....
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+-- james s
+
+
+Signed-off-by: James Smart <James.Smart@emulex.com>
+
+
+diff -upNr a/drivers/base/attribute_container.c b/drivers/base/attribute_container.c
+--- a/drivers/base/attribute_container.c	2007-08-16 02:59:50.000000000 -0400
++++ b/drivers/base/attribute_container.c	2007-08-17 05:02:03.000000000 -0400
+@@ -19,6 +19,7 @@
+ #include <linux/list.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/sched.h>
+ 
+ #include "base.h"
+ 
+@@ -75,6 +76,8 @@ int
+ attribute_container_register(struct attribute_container *cont)
+ {
+ 	INIT_LIST_HEAD(&cont->node);
++	init_waitqueue_head(&cont->cont_wait);
++	cont->flags &= ~ATTRIBUTE_CONTAINER_EVENT_PENDING;
+ 	klist_init(&cont->containers,internal_container_klist_get,
+ 		   internal_container_klist_put);
+ 		
+@@ -89,23 +92,26 @@ EXPORT_SYMBOL_GPL(attribute_container_re
+ /**
+  * attribute_container_unregister - remove a container registration
+  *
++ * Semantics have now changed - we never return until the list goes empty
++ * 
+  * @cont: previously registered container to remove
+  */
+ int
+ attribute_container_unregister(struct attribute_container *cont)
+ {
+-	int retval = -EBUSY;
+ 	mutex_lock(&attribute_container_mutex);
+ 	spin_lock(&cont->containers.k_lock);
+-	if (!list_empty(&cont->containers.k_list))
+-		goto out;
+-	retval = 0;
+-	list_del(&cont->node);
+- out:
++	if (!list_empty(&cont->containers.k_list)) 
++		cont->flags |= ATTRIBUTE_CONTAINER_EVENT_PENDING;
+ 	spin_unlock(&cont->containers.k_lock);
+ 	mutex_unlock(&attribute_container_mutex);
+-	return retval;
+-		
++	wait_event(cont->cont_wait,
++			 !(cont->flags & ATTRIBUTE_CONTAINER_EVENT_PENDING));
++	mutex_lock(&attribute_container_mutex);
++	list_del(&cont->node);
++	mutex_unlock(&attribute_container_mutex);
++
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(attribute_container_unregister);
+ 
+@@ -234,6 +240,15 @@ attribute_container_remove_device(struct
+ 				class_device_unregister(&ic->classdev);
+ 			}
+ 		}
++
++		if (cont->flags & ATTRIBUTE_CONTAINER_EVENT_PENDING) {
++			spin_lock(&cont->containers.k_lock);
++			if (list_empty(&cont->containers.k_list)) 
++				cont->flags &= 
++					~ATTRIBUTE_CONTAINER_EVENT_PENDING;
++			spin_unlock(&cont->containers.k_lock);
++			wake_up(&cont->cont_wait);
++		}
+ 	}
+ 	mutex_unlock(&attribute_container_mutex);
+ }
+diff -upNr a/include/linux/attribute_container.h b/include/linux/attribute_container.h
+--- a/include/linux/attribute_container.h	2007-08-16 03:00:10.000000000 -0400
++++ b/include/linux/attribute_container.h	2007-08-17 03:46:01.000000000 -0400
+@@ -20,7 +20,9 @@ struct attribute_container {
+ 	struct class_device_attribute **attrs;
+ 	int (*match)(struct attribute_container *, struct device *);
+ #define	ATTRIBUTE_CONTAINER_NO_CLASSDEVS	0x01
++#define	ATTRIBUTE_CONTAINER_EVENT_PENDING	0x02
+ 	unsigned long		flags;
++	wait_queue_head_t       cont_wait;
+ };
+ 
+ static inline int
+
+
+
