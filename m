@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933187AbXHOQas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933055AbXHOQbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933187AbXHOQas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 12:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760066AbXHOQaA
+	id S933055AbXHOQbe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 12:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933180AbXHOQaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 12:30:00 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45541 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758026AbXHOQ36 (ORCPT
+	Wed, 15 Aug 2007 12:30:46 -0400
+Received: from web36611.mail.mud.yahoo.com ([209.191.85.28]:38195 "HELO
+	web36611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933166AbXHOQao (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 12:29:58 -0400
-Date: Wed, 15 Aug 2007 09:29:54 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: clameter@sgi.com, serge@hallyn.com, dhaval@linux.vnet.ibm.com,
-       bob.picco@hp.com, nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
-       mel@skynet.ie, akpm@linux-foundation.org, balbir@in.ibm.com,
-       vatsa@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       ckrm-tech@lists.sourceforge.net
-Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
-Message-Id: <20070815092954.bfe7e86d.pj@sgi.com>
-In-Reply-To: <1187185392.5422.13.camel@localhost>
-References: <20070812152126.GA26239@linux.vnet.ibm.com>
-	<20070813201215.GA16908@vino.hallyn.com>
-	<1187103831.6281.24.camel@localhost>
-	<20070814180339.GA32553@vino.hallyn.com>
-	<1187115224.6281.40.camel@localhost>
-	<20070814192306.GB32553@vino.hallyn.com>
-	<20070814204951.GA2065@vino.hallyn.com>
-	<Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
-	<1187127685.6281.139.camel@localhost>
-	<Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
-	<1187185392.5422.13.camel@localhost>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
+	Wed, 15 Aug 2007 12:30:44 -0400
+X-YMail-OSG: pAJlxpEVM1ng9Qb0IC7alYni1XFI.LGrybYuBDzwtabBdz60DTOcqbOJSkd5_XT1fTVrCKPoZw--
+X-RocketYMMF: rancidfat
+Date: Wed, 15 Aug 2007 09:30:42 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH 00/16] Permit filesystem local caching [try #3]
+To: Stephen Smalley <sds@tycho.nsa.gov>, casey@schaufler-ca.com
+Cc: David Howells <dhowells@redhat.com>, torvalds@osdl.org, akpm@osdl.org,
+       steved@redhat.com, trond.myklebust@fys.uio.no,
+       linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <1187113368.26008.226.camel@moss-spartans.epoch.ncsc.mil>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <18318.47287.qm@web36611.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee wrote:
-> [altho' methinks CPUSET should select CONTAINERS rather than
-> depend on it...]
 
-Good point -- what do you think, Paul Menage?
+--- Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+> On Tue, 2007-08-14 at 08:53 -0700, Casey Schaufler wrote:
+> > --- David Howells <dhowells@redhat.com> wrote:
+> > 
+> > > Casey Schaufler <casey@schaufler-ca.com> wrote:
+> > > 
+> > > > With Smack you can leave the label alone, raise CAP_MAC_OVERRIDE,
+> > > > do your business of setting the label correctly, and then drop
+> > > > the capability. No new hooks required.
+> > > 
+> > > That sounds like a contradiction.  How can you both leave it alone and
+> set
+> > > it?
+> > 
+> > Whoops, sorry. You leave the process label alone and explicitly
+> > set the file label using the xattr interfaces.
+> 
+> xattr interfaces don't help with the initial labeling of the file when
+> it is created.
+
+That's true. The deamon needs to run with an appropriate label.
+I don't believe that this is situation with a really simple solution
+because the activity being performed is unusual. 
+ 
+> -- 
+> Stephen Smalley
+> National Security Agency
+> 
+> 
+> --
+> This message was distributed to subscribers of the selinux mailing list.
+> If you no longer wish to subscribe, send mail to majordomo@tycho.nsa.gov with
+> the words "unsubscribe selinux" without quotes as the message.
+> 
+> 
+> 
+
+
+Casey Schaufler
+casey@schaufler-ca.com
