@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932448AbXHOPa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932790AbXHOPbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932448AbXHOPa2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 11:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760963AbXHOPaS
+	id S932790AbXHOPbo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 11:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762285AbXHOPbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 11:30:18 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:59709 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756775AbXHOPaQ (ORCPT
+	Wed, 15 Aug 2007 11:31:32 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:1980 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760963AbXHOPba (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 11:30:16 -0400
+	Wed, 15 Aug 2007 11:31:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=R4ImZCi8ldLlqYfsBPmJYW6XdwokUPwT43tlnO5glaEOOdho/t0eLYJBIJhfLVfPuobxVj08F6pjaGWxiIvROqSdNybV1LvBCkCYflLJplfCibHgY1ylPoq/FP7qM5jDpEBifq18bp8Q4FfPf0noBTSttR+tHc9tag7p6m435rw=
-Message-ID: <46C31BFB.6040702@gmail.com>
-Date: Thu, 16 Aug 2007 00:30:03 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=C2Qvcw8cWMt9/x8Wi4fojqleR6pWkpgGnYNG5y2ievfhUHkGLuOhOvFr740QNS9SIUlwPB+6xuDXj49L6mzMMlT4LSp1q5kc6xLo1y3KAKR7ZlMSAL41YLLb6pfP5jmpe6KR/2sgiJGB09Cxjgh033+t4EWhRmmlOVjGhxvSfnU=
+Message-ID: <2c0942db0708150831k3bdf941u540b74b6b351920f@mail.gmail.com>
+Date: Wed, 15 Aug 2007 08:31:28 -0700
+From: "Ray Lee" <ray@madrabbit.org>
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Joe Perches" <joe@perches.com>, "Rene Herman" <rene.herman@gmail.com>,
+       git@vger.kernel.org, "Junio C Hamano" <gitster@pobox.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Trond Myklebust" <trond.myklebust@fys.uio.no>,
+       "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46C2C762.7080205@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-CC: Alan Stern <stern@rowland.harvard.edu>, Florin Iucha <florin@iucha.net>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       "Randy. Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux v2.6.23-rc3-50-g28e8351
-References: <Pine.LNX.4.44L0.0708151033270.3895-100000@iolanthe.rowland.org>	<46C313B3.4030700@gmail.com> <20070815172133.4f2eeda8@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070815172133.4f2eeda8@gondolin.boeblingen.de.ibm.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1186984174.10249.7.camel@localhost>
+	 <1187054366.2757.0.camel@laptopd505.fenrus.org>
+	 <46C10AA8.3090505@gmail.com>
+	 <20070814102033.604c8695@the-village.bc.nu>
+	 <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>
+	 <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost>
+	 <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>
+	 <46C2C762.7080205@s5r6.in-berlin.de>
+X-Google-Sender-Auth: ec80dad91ca477c9
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck wrote:
-> On Wed, 15 Aug 2007 23:54:43 +0900,
-> Tejun Heo <htejun@gmail.com> wrote:
-> 
->> Alan Stern wrote:
->>> I think we can simply remove the error message.  There's no obvious 
->>> reason why sysfs_remove_bin_file() should complain about attempts to 
->>> remove a nonexistent file; sysfs_remove_file() doesn't.
->>>
->>> This patch will get rid of the annoying error messages.  It won't do 
->>> anything about your keyboard's tendency to spontaneously stop working, 
->>> alas.
->> Agreed but I think sysfs_remove_bin_file() should relay the return value
->> from sysfs_has_and_remove() to the caller.
-> 
-> Three comments:
-> 
-> - Randy made sysfs_remove_bin_file() return void in commit
-> 995982ca79d9262869513948ec7c540f32035491.
-> 
-> - For symmetry reasons, sysfs_remove_file() should then also pass the
-> return value on.
-> 
-> - I'm not sure who wants to care whether they removed an existing or
-> non-existing file. But maybe I'm just unimaginative.
+On 8/15/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+> Linus Torvalds wrote:
+> >       #!/bin/sh
+> >       git log --since=6.months.ago -- "$@" |
+> >               grep -i '^    [-a-z]*by:.*@' |
+> >               sort | uniq -c |
+> >               sort -r -n | head
+> >
+> > and it gives you a rather good picture of who is involved with a
+> > particular subdirectory or file.
+>
+> No, it doesn't.  The subscribers of <subsystem-devel@somewhere.org> are
+> not listed in patch logs.
 
-Hmmm... Well, failure information is lost there, so I was a bit worried.
- It probably doesn't really matter and can be easily changed later if
-needed.  If sysfs_remove_file() returns void, I have no objection.
-
-Thanks.
-
--- 
-tejun
+Then maybe they should be added into the patch logs. A CC: line isn't
+that big of a deal, and also shows who got notified.
