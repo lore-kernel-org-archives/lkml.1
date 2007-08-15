@@ -1,106 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbXHONn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762682AbXHONod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762079AbXHONn5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 09:43:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756771AbXHONnp
+	id S1762682AbXHONod (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 09:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXHONnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 09:43:45 -0400
-Received: from tayrelbas01.tay.hp.com ([161.114.80.244]:43281 "EHLO
-	tayrelbas01.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757200AbXHONnn (ORCPT
+	Wed, 15 Aug 2007 09:43:51 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:57749 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757530AbXHONns (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 09:43:43 -0400
-Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, bob.picco@hp.com,
-       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
-       akpm@linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       ckrm-tech <ckrm-tech@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
-References: <20070812152126.GA26239@linux.vnet.ibm.com>
-	 <20070813201215.GA16908@vino.hallyn.com>
-	 <1187103831.6281.24.camel@localhost>
-	 <20070814180339.GA32553@vino.hallyn.com>
-	 <1187115224.6281.40.camel@localhost>
-	 <20070814192306.GB32553@vino.hallyn.com>
-	 <20070814204951.GA2065@vino.hallyn.com>
-	 <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
-	 <1187127685.6281.139.camel@localhost>
-	 <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Wed, 15 Aug 2007 09:43:11 -0400
-Message-Id: <1187185392.5422.13.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Wed, 15 Aug 2007 09:43:48 -0400
+Message-ID: <46C30220.6060007@gmail.com>
+Date: Wed, 15 Aug 2007 15:39:44 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Satyam Sharma <satyam@infradead.org>
+CC: Al Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Joe Perches <joe@perches.com>, git@vger.kernel.org,
+       Junio C Hamano <gitster@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
+References: <1187026955.2688.4.camel@laptopd505.fenrus.org> <1187037445.6628.98.camel@heimdal.trondhjem.org> <1187054366.2757.0.camel@laptopd505.fenrus.org> <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu> <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost> <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost> <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org> <20070814193333.GI21089@ftp.linux.org.uk> <46C2548D.80605@gmail.com> <alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-14 at 14:56 -0700, Christoph Lameter wrote:
-> On Tue, 14 Aug 2007, Lee Schermerhorn wrote:
+On 08/15/2007 03:33 PM, Satyam Sharma wrote:
+
+[ git info --maintainer ]
+
+> I'd really _love_ a tool that does all that what you've proposed above!
 > 
-> > > Ok then you did not have a NUMA system configured. So its okay for the 
-> > > dummies to ignore the stuff. CONFIG_NODES_SHIFT is a constant and does not 
-> > > change. The first bit is always set.
-> > 
-> > The first bit [node 0] is only set for the N_ONLINE [and N_POSSIBLE]
-> > mask.  We could add the static init for the other masks, but since
-> > non-numa platforms are going through the __build_all_zonelists, they
-> > might as well set the MEMORY bits explicitly.  Or, maybe you'll
-> > disagree ;-).
-> 
-> The bitmaps can be completely ignored if !NUMA.
-> 
-> In the non NUMA case we define
-> 
-> static inline int node_state(int node, enum node_states state)
-> {
->         return node == 0;
-> }
-> 
-> So its always true for node 0. The "bit" is set.
+> But why does it have to be "git-info" or anything in the git(7) suite for
+> that matter? This sounds like a job for a different specialised tool, 
+> along with ".metatags" kind of files dispersed in the source tree.
 
-The issue is with the N_*_MEMORY masks.  They don't get initialized
-properly because node_set_state() is a no-op if !NUMA.  So, where we
-look for intersections with or where we AND with the N_*_MEMORY masks we
-get the empty set.
+To automatically move (and delete) the meta-data alongside the files 
+themselves is a reason.
 
-> 
-> We are trying to get cpusets to work with !NUMA?
+More generally -- shouldn't it? This is about source management (well, maybe 
+more about project management, but...) and the source code management tool 
+looks to be the right place for that. The different parts of git are 
+somewhat/fairly stand-alone as is, no?
 
-
-Well, yes.  In Serge's case, he's trying to use cpusets with !NUMA.
-He'll have to comment on the reasons for that.  Looking at all of the
-#ifdefs and init/Kconfig, CPUSET does not depend on NUMA--only SMP and
-CONTAINERS [altho' methinks CPUSET should select CONTAINERS rather than
-depend on it...].  So, you can use cpusets to partition of cpus in
-non-NUMA configs.
-
-In the more general case, tho', I'm looking at all uses of the
-node_online_map and for_each_online_node, for instances where they
-should be replaced with one of the *_MEMORY masks.  IMO, generic code
-that is compiled independent of any CONFIG option, like NUMA,  should
-just work, independent of the config.  Currently, as Serge has shown,
-this is not the case.  So, I think we should fix the *_MEMORY maps to be
-correctly populated in both the NUMA and !NUMA cases.  A couple of
-options:
-
-1) just use node_set() when populating the masks,
-
-2) initialize all masks to include at least cpu/node 0 in the !NUMA
-case.
-
-Serge chose #1 to fix his problem.  I followed his lead to fix the other
-2 places where node_set_state() was being used to initialize the NORMAL
-memory node mask and the CPU node mask.  This will add a few unnecessary
-instructions to !NUMA configs, so we could change to #2.
-
-Thoughts?
-
-Lee
-
+Rene.
