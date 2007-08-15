@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937226AbXHOWoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934606AbXHOWox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937226AbXHOWoL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 18:44:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936999AbXHOWnP
+	id S934606AbXHOWox (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 18:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937088AbXHOWnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 18:43:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35548 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S936724AbXHOWnM (ORCPT
+	Wed, 15 Aug 2007 18:43:23 -0400
+Received: from web50111.mail.re2.yahoo.com ([206.190.39.137]:37822 "HELO
+	web50111.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S936636AbXHOWnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 18:43:12 -0400
-Date: Wed, 15 Aug 2007 15:42:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org, Aaron Durbin <adurbin@google.com>
-Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
-Message-Id: <20070815154245.500c572c.akpm@linux-foundation.org>
-In-Reply-To: <1186990219.22431.37.camel@caritas-dev.intel.com>
-References: <1186990219.22431.37.camel@caritas-dev.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
+	Wed, 15 Aug 2007 18:43:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=2K77OGk6WsS/6acGFjL+xSlOW1tYED0p7MJfWolZaFiumNJ8e2QkhDKcIMHRTnlwQNBGUwPE8ifW3Xfk+wQWEbtroVDowGppqVPzgG2Cy6tmWdrP5FS0witMoyM5Ll7mBy8ujDZDyhn/qGL3F9klTe17pAcg0yFDzmZKgtpa1wg=;
+X-YMail-OSG: gR0FKEcVM1ni5sAcRcrenv8IThJNixXATpQi2sr397dStMOVsNZbwgPBxurYEAhwMwgkedmUovshqy1E6bcd5CBqUbXh9JQd1RtkhCt911p3TMMJdk.9BPxMJKi1FG_UYhLNMar_5l3FgMY-
+Date: Wed, 15 Aug 2007 15:36:39 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Reply-To: dougthompson@xmission.com
+Subject: Re: [PATCH] [175/2many] MAINTAINERS - EDAC-I5000
+To: joe@perches.com, linux-kernel@vger.kernel.org, dougthompson@xmission.com,
+       bluesmoke-devel@lists.sourceforge.net, akpm@linux-foundation.org
+In-Reply-To: <46bff9b3.1QuIhv0X2zL8aBq8%joe@perches.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <557193.9283.qm@web50111.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Aug 2007 15:30:19 +0800
-"Huang, Ying" <ying.huang@intel.com> wrote:
 
-> Following sets of patches add EFI/UEFI (Unified Extensible Firmware
-> Interface) runtime services support to x86_64 architecture.
+--- joe@perches.com wrote:
 
-I had to rework these a bit due to clashes with
-x86_64-add-acpi-reboot-option.patch.  Please check carefully that
-everything landed OK.
+> Add file pattern to MAINTAINER entry
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index c26b346..c2ef686 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -1705,6 +1705,7 @@ M:	dougthompson@xmission.com
+>  L:	bluesmoke-devel@lists.sourceforge.net
+>  W:	bluesmoke.sourceforge.net
+>  S:	Maintained
+> +F:	drivers/edac/i5000_edac.c
+>  
+>  EDAC-I82975X
+>  P:	Ranganathan Desikan
+> 
 
-
+Acked-by: Doug Thompson <dougthompson@xmission.com>
 
