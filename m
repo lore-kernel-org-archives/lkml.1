@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935019AbXHNX12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760424AbXHNX2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935019AbXHNX12 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 19:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764206AbXHNX0g
+	id S1760424AbXHNX2O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 19:28:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933729AbXHNX0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 19:26:36 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:49320 "EHLO e3.ny.us.ibm.com"
+	Tue, 14 Aug 2007 19:26:37 -0400
+Received: from ns2.suse.de ([195.135.220.15]:50883 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760635AbXHNX03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 19:26:29 -0400
-Date: Tue, 14 Aug 2007 16:26:22 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       ak@suse.de, heiko.carstens@de.ibm.com, davem@davemloft.net,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070814232622.GG8243@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+	id S1765924AbXHNX0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Aug 2007 19:26:32 -0400
+Date: Wed, 15 Aug 2007 02:20:35 +0200
+From: Andi Kleen <ak@suse.de>
+To: Sebastian Siewior <sebastian@breakpoint.cc>
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
+Subject: Re: [patch 1/2] i386: use asm() like the other atomic operations already do.
+Message-ID: <20070815002034.GW3406@bingen.suse.de>
+References: <20070814223845.518697567@breakpoint.cc> <20070814224337.547449183@breakpoint.cc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070814224337.547449183@breakpoint.cc>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 04:38:54AM +0530, Satyam Sharma wrote:
-> 
-> 
-> On Tue, 14 Aug 2007, Christoph Lameter wrote:
-> 
-> > On Thu, 9 Aug 2007, Chris Snook wrote:
-> > 
-> > > This patchset makes the behavior of atomic_read uniform by removing the
-> > > volatile keyword from all atomic_t and atomic64_t definitions that currently
-> > > have it, and instead explicitly casts the variable as volatile in
-> > > atomic_read().  This leaves little room for creative optimization by the
-> > > compiler, and is in keeping with the principles behind "volatile considered
-> > > harmful".
-> > 
-> > volatile is generally harmful even in atomic_read(). Barriers control
-> > visibility and AFAICT things are fine.
-> 
-> Frankly, I don't see the need for this series myself either. Personal
-> opinion (others may differ), but I consider "volatile" to be a sad /
-> unfortunate wart in C (numerous threads on this list and on the gcc
-> lists/bugzilla over the years stand testimony to this) and if we _can_
-> steer clear of it, then why not -- why use this ill-defined primitive
-> whose implementation has often differed over compiler versions and
-> platforms? Granted, barrier() _is_ heavy-handed in that it makes the
-> optimizer forget _everything_, but then somebody did post a forget()
-> macro on this thread itself ...
-> 
-> [ BTW, why do we want the compiler to not optimize atomic_read()'s in
->   the first place? Atomic ops guarantee atomicity, which has nothing
->   to do with "volatility" -- users that expect "volatility" from
->   atomic ops are the ones who must be fixed instead, IMHO. ]
+> My config with march=pentium-m and gcc (GCC) 4.1.2 (Gentoo 4.1.2):
+>   text    data     bss     dec     hex filename
+> 3434150  249176  176128 3859454  3ae3fe atomic_normal/vmlinux
+> 3435308  249176  176128 3860612  3ae884 atomic_inlineasm/vmlinux
 
-Interactions between mainline code and interrupt/NMI handlers on the same
-CPU (for example, when both are using per-CPU variables.  See examples
-previously posted in this thread, or look at the rcu_read_lock() and
-rcu_read_unlock() implementations in http://lkml.org/lkml/2007/8/7/280.
+What is the difference between atomic_normal and atomic_inlineasm? 
 
-						Thanx, Paul
+>  /**
+>   * atomic_read - read atomic variable
+>   * @v: pointer of type atomic_t
+> - * 
+> + *
+
+Please don't change white space in patches
+
+>   * Atomically reads the value of @v.
+> - */ 
+> -#define atomic_read(v)		((v)->counter)
+> + */
+> +static __inline__ int atomic_read(const atomic_t *v)
+> +{
+> +	int t;
+> +
+> +	__asm__ __volatile__(
+
+And don't use __*__ in new code
+
+-Andi
