@@ -1,104 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758003AbXHOHCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbXHOHEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758003AbXHOHCu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 03:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXHOHCk
+	id S1758875AbXHOHEU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 03:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbXHOHEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 03:02:40 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:34606 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752928AbXHOHCi (ORCPT
+	Wed, 15 Aug 2007 03:04:12 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:47834 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753716AbXHOHEK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 03:02:38 -0400
-Message-ID: <46C2A505.7040008@linux.vnet.ibm.com>
-Date: Wed, 15 Aug 2007 12:32:29 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Wed, 15 Aug 2007 03:04:10 -0400
+Date: Wed, 15 Aug 2007 09:04:07 +0200
+From: Sebastian Siewior <sebastian@breakpoint.cc>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] i386: use asm() like the other atomic operations
+	already do.
+Message-ID: <20070815070407.GA28936@Chamillionaire.breakpoint.cc>
+References: <20070814223845.518697567@breakpoint.cc> <20070814224337.547449183@breakpoint.cc> <20070815002034.GW3406@bingen.suse.de>
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-CC: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH] Documentation: fix getdelays.c example -l option and
- segv
-References: <18240.1186734285@neuling.org>
-In-Reply-To: <18240.1186734285@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070815002034.GW3406@bingen.suse.de>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Neuling wrote:
-> Fix a couple of minor issues with the getdelays.c example code. 
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
->  Documentation/accounting/getdelays.c |   21 +++++++++++----------
->  1 file changed, 11 insertions(+), 10 deletions(-)
-> 
-> Index: linux-2.6-ozlabs/Documentation/accounting/getdelays.c
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/Documentation/accounting/getdelays.c
-> +++ linux-2.6-ozlabs/Documentation/accounting/getdelays.c
-> @@ -196,7 +196,7 @@ void print_delayacct(struct taskstats *t
->  	       "IO    %15s%15s\n"
->  	       "      %15llu%15llu\n"
->  	       "MEM   %15s%15s\n"
-> -	       "      %15llu%15llu\n"
-> +	       "      %15llu%15llu\n",
+* Andi Kleen | 2007-08-15 02:20:35 [+0200]:
 
-This change looks good!
+>> My config with march=pentium-m and gcc (GCC) 4.1.2 (Gentoo 4.1.2):
+>>   text    data     bss     dec     hex filename
+>> 3434150  249176  176128 3859454  3ae3fe atomic_normal/vmlinux
+>> 3435308  249176  176128 3860612  3ae884 atomic_inlineasm/vmlinux
+>
+>What is the difference between atomic_normal and atomic_inlineasm? 
+atomic normal is Linus' tree, commit 28e8351. Inline asm is with this
+patch. I wrote this in 0/2 (you want this here as well?).
 
->  	       "count", "real total", "virtual total", "delay total",
->  	       t->cpu_count, t->cpu_run_real_total, t->cpu_run_virtual_total,
->  	       t->cpu_delay_total,
-> @@ -335,17 +335,17 @@ int main(int argc, char *argv[])
->  		}
->  	}
-> 
-> -	if (tid) {
-> -		rc = send_cmd(nl_sd, id, mypid, TASKSTATS_CMD_GET,
-> -			      cmd_type, &tid, sizeof(__u32));
-> -		PRINTF("Sent pid/tgid, retval %d\n", rc);
-> -		if (rc < 0) {
-> -			fprintf(stderr, "error sending tid/tgid cmd\n");
-> -			goto done;
-> +	do {
-> +		if (tid) {
-> +			rc = send_cmd(nl_sd, id, mypid, TASKSTATS_CMD_GET,
-> +				      cmd_type, &tid, sizeof(__u32));
-> +			PRINTF("Sent pid/tgid, retval %d\n", rc);
-> +			if (rc < 0) {
-> +				fprintf(stderr, "error sending tid/tgid cmd\n");
-> +				goto done;
-> +			}
->  		}
-> -	}
-> 
-> -	do {
->  		int i;
-> 
->  		rep_len = recv(nl_sd, &msg, sizeof(msg), 0);
-> @@ -430,6 +430,7 @@ int main(int argc, char *argv[])
->  			}
->  			na = (struct nlattr *) (GENLMSG_DATA(&msg) + len);
->  		}
-> +		sleep(2);
+>
+>>  /**
+>>   * atomic_read - read atomic variable
+>>   * @v: pointer of type atomic_t
+>> - * 
+>> + *
+>
+>Please don't change white space in patches
+I fixed white space errors. SubmitChecklist:24 says I should not
+introduce any new ones so fixing existig sounds like the right thing to
+do.
+No white space fixing in future?
 
-Is this really required? a sleep() in the code. Why do we do multiple send_cmd()'s
-in the do loop? I'll test and get back.
+>
+>>   * Atomically reads the value of @v.
+>> - */ 
+>> -#define atomic_read(v)		((v)->counter)
+>> + */
+>> +static __inline__ int atomic_read(const atomic_t *v)
+>> +{
+>> +	int t;
+>> +
+>> +	__asm__ __volatile__(
+>
+>And don't use __*__ in new code
+Okey.
 
->  	} while (loop);
->  done:
->  	if (maskset) {
-> 
-> 
-> 
-> 
+>
+>-Andi
 
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Sebastian
