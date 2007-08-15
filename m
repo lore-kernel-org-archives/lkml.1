@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761918AbXHOMzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762595AbXHOM4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761918AbXHOMzp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 08:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760823AbXHOMxJ
+	id S1762595AbXHOM4Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 08:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761438AbXHOMxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 08:53:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55444 "EHLO mx1.redhat.com"
+	Wed, 15 Aug 2007 08:53:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55568 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760573AbXHOMxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 08:53:05 -0400
+	id S1761055AbXHOMxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 08:53:19 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
@@ -17,525 +17,404 @@ Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
        lguest@ozlabs.org, glommer@gmail.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 12/25][V3] turn msr.h functions into native versions
-Date: Wed, 15 Aug 2007 09:49:32 -0300
-Message-Id: <11871823151789-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 13/25][V3] add native functions for descriptors handling
+Date: Wed, 15 Aug 2007 09:49:33 -0300
+Message-Id: <11871823273810-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11871823042011-git-send-email-gcosta@redhat.com>
-References: <11871821854176-git-send-email-gcosta@redhat.com> <1187182197314-git-send-email-gcosta@redhat.com> <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <11871822244170-git-send-email-gcosta@redhat.com> <11871822342754-git-send-email-gcosta@redhat.com> <11871822421713-git-send-email-gcosta@redhat.com> <1187182253740-git-send-email-gcosta@redhat.com> <1187182268408-git-send-email-gcosta@redhat.com> <1187182282913-git-send-email-gcosta@redhat.com> <11871822951747-git-send-email-gcosta@redhat.com> <11871823042011-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11871823151789-git-send-email-gcosta@redhat.com>
+References: <11871821854176-git-send-email-gcosta@redhat.com> <1187182197314-git-send-email-gcosta@redhat.com> <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <11871822244170-git-send-email-gcosta@redhat.com> <11871822342754-git-send-email-gcosta@redhat.com> <11871822421713-git-send-email-gcosta@redhat.com> <1187182253740-git-send-email-gcosta@redhat.com> <1187182268408-git-send-email-gcosta@redhat.com> <1187182282913-git-send-email-gcosta@redhat.com> <11871822951747-git-send-email-gcosta@redhat.com> <11871823042011-git-send-email-gcosta@redhat.com> <11871823151789-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch turns makes the basic operations in msr.h out of native
-ones. Those operations are: rdmsr, wrmsr, rdtsc, rdtscp, rdpmc, and
-cpuid. After they are turned into functions, some call sites need
-casts, and so we provide them.
+This patch turns the basic descriptor handling into native_
+functions. It is basically write_idt, load_idt, write_gdt,
+load_gdt, set_ldt, store_tr, load_tls, and the ones
+for updating a single entry.
 
-There is also a fixup needed in the functions located in the vsyscall
-area, as they cannot call any of them anymore (otherwise, the call
-would go through a kernel address, invalid in userspace mapping).
-
-The solution is to call the now-provided native_ versions instead.
-
-[  updates from v1
-   * Call read_tscp rdtscp, to match instruction name
-   * Avoid duplication of code in get_cycles_sync
-   * Get rid of rdtsc(), since it is used nowhere else
-   All three suggested by Andi Kleen
-]
+In the process of doing that, we change the definition of
+load_LDT_nolock, and caller sites have to be patched. We
+also patch call sites that now needs a typecast.
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- arch/x86_64/ia32/syscall32.c  |    2 +-
- arch/x86_64/kernel/setup64.c  |    6 +-
- arch/x86_64/kernel/tsc.c      |   24 ++++-
- arch/x86_64/kernel/vsyscall.c |    4 +-
- arch/x86_64/vdso/vgetcpu.c    |    4 +-
- include/asm-i386/tsc.h        |   12 ++-
- include/asm-x86_64/msr.h      |  277 +++++++++++++++++++++++++----------------
- 7 files changed, 211 insertions(+), 118 deletions(-)
+ arch/x86_64/kernel/head64.c      |    2 +-
+ arch/x86_64/kernel/ldt.c         |    6 +-
+ arch/x86_64/kernel/reboot.c      |    3 +-
+ arch/x86_64/kernel/setup64.c     |    4 +-
+ arch/x86_64/kernel/suspend.c     |   11 ++-
+ include/asm-x86_64/desc.h        |  183 +++++++++++++++++++++++++++----------
+ include/asm-x86_64/mmu_context.h |    4 +-
+ 7 files changed, 148 insertions(+), 65 deletions(-)
 
-diff --git a/arch/x86_64/ia32/syscall32.c b/arch/x86_64/ia32/syscall32.c
-index 15013ba..dd1b4a3 100644
---- a/arch/x86_64/ia32/syscall32.c
-+++ b/arch/x86_64/ia32/syscall32.c
-@@ -79,5 +79,5 @@ void syscall32_cpu_init(void)
- 	checking_wrmsrl(MSR_IA32_SYSENTER_ESP, 0ULL);
- 	checking_wrmsrl(MSR_IA32_SYSENTER_EIP, (u64)ia32_sysenter_target);
+diff --git a/arch/x86_64/kernel/head64.c b/arch/x86_64/kernel/head64.c
+index 6c34bdd..a0d05d7 100644
+--- a/arch/x86_64/kernel/head64.c
++++ b/arch/x86_64/kernel/head64.c
+@@ -70,7 +70,7 @@ void __init x86_64_start_kernel(char * real_mode_data)
  
--	wrmsrl(MSR_CSTAR, ia32_cstar_target);
-+	wrmsrl(MSR_CSTAR, (u64)ia32_cstar_target);
- }
+ 	for (i = 0; i < IDT_ENTRIES; i++)
+ 		set_intr_gate(i, early_idt_handler);
+-	asm volatile("lidt %0" :: "m" (idt_descr));
++	load_idt(&idt_descr);
+ 
+ 	early_printk("Kernel alive\n");
+ 
+diff --git a/arch/x86_64/kernel/ldt.c b/arch/x86_64/kernel/ldt.c
+index bc9ffd5..8e6fcc1 100644
+--- a/arch/x86_64/kernel/ldt.c
++++ b/arch/x86_64/kernel/ldt.c
+@@ -173,7 +173,7 @@ static int write_ldt(void __user * ptr, unsigned long bytecount, int oldmode)
+ {
+ 	struct task_struct *me = current;
+ 	struct mm_struct * mm = me->mm;
+-	__u32 entry_1, entry_2, *lp;
++	__u32 entry_1, entry_2;
+ 	int error;
+ 	struct user_desc ldt_info;
+ 
+@@ -202,7 +202,6 @@ static int write_ldt(void __user * ptr, unsigned long bytecount, int oldmode)
+ 			goto out_unlock;
+ 	}
+ 
+-	lp = (__u32 *) ((ldt_info.entry_number << 3) + (char *) mm->context.ldt);
+ 
+    	/* Allow LDTs to be cleared by the user. */
+    	if (ldt_info.base_addr == 0 && ldt_info.limit == 0) {
+@@ -220,8 +219,7 @@ static int write_ldt(void __user * ptr, unsigned long bytecount, int oldmode)
+ 
+ 	/* Install the new entry ...  */
+ install:
+-	*lp	= entry_1;
+-	*(lp+1)	= entry_2;
++	write_ldt_entry(mm->context.ldt, ldt_info.entry_number, entry_1, entry_2);
+ 	error = 0;
+ 
+ out_unlock:
+diff --git a/arch/x86_64/kernel/reboot.c b/arch/x86_64/kernel/reboot.c
+index 368db2b..ebc242c 100644
+--- a/arch/x86_64/kernel/reboot.c
++++ b/arch/x86_64/kernel/reboot.c
+@@ -11,6 +11,7 @@
+ #include <linux/sched.h>
+ #include <asm/io.h>
+ #include <asm/delay.h>
++#include <asm/desc.h>
+ #include <asm/hw_irq.h>
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+@@ -136,7 +137,7 @@ void machine_emergency_restart(void)
+ 		}
+ 
+ 		case BOOT_TRIPLE: 
+-			__asm__ __volatile__("lidt (%0)": :"r" (&no_idt));
++			load_idt((struct desc_ptr *)&no_idt);
+ 			__asm__ __volatile__("int3");
+ 
+ 			reboot_type = BOOT_KBD;
 diff --git a/arch/x86_64/kernel/setup64.c b/arch/x86_64/kernel/setup64.c
-index 1200aaa..395cf02 100644
+index 395cf02..49f7342 100644
 --- a/arch/x86_64/kernel/setup64.c
 +++ b/arch/x86_64/kernel/setup64.c
-@@ -122,7 +122,7 @@ void pda_init(int cpu)
- 	asm volatile("movl %0,%%fs ; movl %0,%%gs" :: "r" (0)); 
- 	/* Memory clobbers used to order PDA accessed */
- 	mb();
--	wrmsrl(MSR_GS_BASE, pda);
-+	wrmsrl(MSR_GS_BASE, (u64)pda);
- 	mb();
+@@ -224,8 +224,8 @@ void __cpuinit cpu_init (void)
+  		memcpy(cpu_gdt(cpu), cpu_gdt_table, GDT_SIZE);
  
- 	pda->cpunumber = cpu; 
-@@ -161,8 +161,8 @@ void syscall_init(void)
- 	 * but only a 32bit target. LSTAR sets the 64bit rip. 	 
- 	 */ 
- 	wrmsrl(MSR_STAR,  ((u64)__USER32_CS)<<48  | ((u64)__KERNEL_CS)<<32); 
--	wrmsrl(MSR_LSTAR, system_call); 
--	wrmsrl(MSR_CSTAR, ignore_sysret);
-+	wrmsrl(MSR_LSTAR, (u64)system_call);
-+	wrmsrl(MSR_CSTAR, (u64)ignore_sysret);
+ 	cpu_gdt_descr[cpu].size = GDT_SIZE;
+-	asm volatile("lgdt %0" :: "m" (cpu_gdt_descr[cpu]));
+-	asm volatile("lidt %0" :: "m" (idt_descr));
++	load_gdt(&cpu_gdt_descr[cpu]);
++	load_idt(&idt_descr);
  
- #ifdef CONFIG_IA32_EMULATION   		
- 	syscall32_cpu_init ();
-diff --git a/arch/x86_64/kernel/tsc.c b/arch/x86_64/kernel/tsc.c
-index 2a59bde..2a5fbc9 100644
---- a/arch/x86_64/kernel/tsc.c
-+++ b/arch/x86_64/kernel/tsc.c
-@@ -9,6 +9,28 @@
+ 	memset(me->thread.tls_array, 0, GDT_ENTRY_TLS_ENTRIES * 8);
+ 	syscall_init();
+diff --git a/arch/x86_64/kernel/suspend.c b/arch/x86_64/kernel/suspend.c
+index 573c0a6..24055b6 100644
+--- a/arch/x86_64/kernel/suspend.c
++++ b/arch/x86_64/kernel/suspend.c
+@@ -32,9 +32,9 @@ void __save_processor_state(struct saved_context *ctxt)
+ 	/*
+ 	 * descriptor tables
+ 	 */
+-	asm volatile ("sgdt %0" : "=m" (ctxt->gdt_limit));
+-	asm volatile ("sidt %0" : "=m" (ctxt->idt_limit));
+-	asm volatile ("str %0"  : "=m" (ctxt->tr));
++	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
++	store_idt((struct desc_ptr *)&ctxt->idt_limit);
++	store_tr(ctxt->tr);
  
- #include <asm/timex.h>
+ 	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
+ 	/*
+@@ -91,8 +91,9 @@ void __restore_processor_state(struct saved_context *ctxt)
+ 	 * now restore the descriptor tables to their proper values
+ 	 * ltr is done i fix_processor_context().
+ 	 */
+-	asm volatile ("lgdt %0" :: "m" (ctxt->gdt_limit));
+-	asm volatile ("lidt %0" :: "m" (ctxt->idt_limit));
++	load_gdt((struct desc_ptr *)&ctxt->gdt_limit);
++	load_idt((struct desc_ptr *)&ctxt->idt_limit);
++
  
-+#ifdef CONFIG_PARAVIRT
-+/*
-+ * When paravirt is on, some functionalities are executed through function
-+ * pointers in the paravirt_ops structure, for both the host and guest.
-+ * These function pointers exist inside the kernel and can not
-+ * be accessed by user space. To avoid this, we make a copy of the
-+ * get_cycles_sync (called in kernel) but force the use of native_read_tsc.
-+ * For the host, it will simply do the native rdtsc. The guest
-+ * should set up it's own clock and vread
-+ */
-+static __always_inline long long vget_cycles_sync(void)
+ 	/*
+ 	 * segment registers
+diff --git a/include/asm-x86_64/desc.h b/include/asm-x86_64/desc.h
+index ac991b5..5710e52 100644
+--- a/include/asm-x86_64/desc.h
++++ b/include/asm-x86_64/desc.h
+@@ -16,9 +16,17 @@
+ 
+ extern struct desc_struct cpu_gdt_table[GDT_ENTRIES];
+ 
+-#define load_TR_desc() asm volatile("ltr %w0"::"r" (GDT_ENTRY_TSS*8))
+-#define load_LDT_desc() asm volatile("lldt %w0"::"r" (GDT_ENTRY_LDT*8))
+-#define clear_LDT()  asm volatile("lldt %w0"::"r" (0))
++static inline void native_load_tr_desc(void)
 +{
-+	unsigned long long ret;
-+	ret =__get_cycles_sync();
-+	if (!ret)
-+		ret = native_read_tsc();
-+	return ret;
++	asm volatile("ltr %w0"::"r" (GDT_ENTRY_TSS*8));
 +}
-+#else
-+# define vget_cycles_sync() get_cycles_sync()
++
++static inline unsigned long native_store_tr(void)
++{
++       unsigned long tr;
++       asm volatile ("str %w0":"=r" (tr));
++       return tr;
++}
+ 
+ /*
+  * This is the ldt that every process will get unless we need
+@@ -31,44 +39,55 @@ extern struct desc_ptr cpu_gdt_descr[];
+ /* the cpu gdt accessor */
+ #define cpu_gdt(_cpu) ((struct desc_struct *)cpu_gdt_descr[_cpu].address)
+ 
+-static inline void _set_gate(void *adr, unsigned type, unsigned long func, unsigned dpl, unsigned ist)  
++static inline void native_load_gdt(const struct desc_ptr *ptr)
+ {
+-	struct gate_struct s; 	
+-	s.offset_low = PTR_LOW(func); 
+-	s.segment = __KERNEL_CS;
+-	s.ist = ist; 
+-	s.p = 1;
+-	s.dpl = dpl; 
+-	s.zero0 = 0;
+-	s.zero1 = 0; 
+-	s.type = type; 
+-	s.offset_middle = PTR_MIDDLE(func); 
+-	s.offset_high = PTR_HIGH(func); 
+-	/* does not need to be atomic because it is only done once at setup time */ 
+-	memcpy(adr, &s, 16); 
+-} 
++	asm volatile("lgdt %w0"::"m" (*ptr));
++}
+ 
+-static inline void set_intr_gate(int nr, void *func) 
+-{ 
+-	BUG_ON((unsigned)nr > 0xFF);
+-	_set_gate(&idt_table[nr], GATE_INTERRUPT, (unsigned long) func, 0, 0); 
+-} 
++static inline void native_store_gdt(struct desc_ptr *ptr)
++{
++       asm ("sgdt %w0":"=m" (*ptr));
++}
+ 
+-static inline void set_intr_gate_ist(int nr, void *func, unsigned ist) 
+-{ 
+-	BUG_ON((unsigned)nr > 0xFF);
+-	_set_gate(&idt_table[nr], GATE_INTERRUPT, (unsigned long) func, 0, ist); 
+-} 
++static inline void native_write_idt_entry(void *adr, struct gate_struct *s)
++{
++	/* does not need to be atomic because
++	 * it is only done once at setup time */
++	memcpy(adr, s, 16);
++}
+ 
+-static inline void set_system_gate(int nr, void *func) 
+-{ 
+-	BUG_ON((unsigned)nr > 0xFF);
+-	_set_gate(&idt_table[nr], GATE_INTERRUPT, (unsigned long) func, 3, 0); 
+-} 
++static inline void native_write_gdt_entry(void *ptr, void *entry,
++						unsigned type, unsigned size)
++{
++	memcpy(ptr, entry, size);
++}
+ 
+-static inline void set_system_gate_ist(int nr, void *func, unsigned ist)
++/*
++ * This one unfortunately can't go with the others, in below, because it has
++ * an user anxious for its definition: set_tssldt_descriptor
++ */
++#ifndef CONFIG_PARAVIRT
++#define write_gdt_entry(_ptr, _e, _type, _size) \
++		native_write_gdt_entry((_ptr),(_e), (_type), (_size))
 +#endif
 +
- static int notsc __initdata = 0;
- 
- unsigned int cpu_khz;		/* TSC clocks / usec, not used here */
-@@ -165,7 +187,7 @@ static cycle_t read_tsc(void)
- 
- static cycle_t __vsyscall_fn vread_tsc(void)
++static inline void native_write_ldt_entry(struct desc_struct *ldt,
++					int entrynum, u32 entry_1, u32 entry_2)
  {
--	cycle_t ret = (cycle_t)get_cycles_sync();
-+	cycle_t ret = (cycle_t)vget_cycles_sync();
- 	return ret;
- }
- 
-diff --git a/arch/x86_64/kernel/vsyscall.c b/arch/x86_64/kernel/vsyscall.c
-index 06c3494..757874e 100644
---- a/arch/x86_64/kernel/vsyscall.c
-+++ b/arch/x86_64/kernel/vsyscall.c
-@@ -184,7 +184,7 @@ time_t __vsyscall(1) vtime(time_t *t)
- long __vsyscall(2)
- vgetcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
- {
--	unsigned int dummy, p;
-+	unsigned int p;
- 	unsigned long j = 0;
- 
- 	/* Fast cache - only recompute value once per jiffies and avoid
-@@ -199,7 +199,7 @@ vgetcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
- 		p = tcache->blob[1];
- 	} else if (__vgetcpu_mode == VGETCPU_RDTSCP) {
- 		/* Load per CPU data from RDTSCP */
--		rdtscp(dummy, dummy, p);
-+		native_rdtscp(&p);
- 	} else {
- 		/* Load per CPU data from GDT */
- 		asm("lsl %1,%0" : "=r" (p) : "r" (__PER_CPU_SEG));
-diff --git a/arch/x86_64/vdso/vgetcpu.c b/arch/x86_64/vdso/vgetcpu.c
-index 91f6e85..1f38f61 100644
---- a/arch/x86_64/vdso/vgetcpu.c
-+++ b/arch/x86_64/vdso/vgetcpu.c
-@@ -15,7 +15,7 @@
- 
- long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
- {
--	unsigned int dummy, p;
-+	unsigned int p;
- 	unsigned long j = 0;
- 
- 	/* Fast cache - only recompute value once per jiffies and avoid
-@@ -30,7 +30,7 @@ long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
- 		p = tcache->blob[1];
- 	} else if (*vdso_vgetcpu_mode == VGETCPU_RDTSCP) {
- 		/* Load per CPU data from RDTSCP */
--		rdtscp(dummy, dummy, p);
-+		native_rdtscp(&p);
- 	} else {
- 		/* Load per CPU data from GDT */
- 		asm("lsl %1,%0" : "=r" (p) : "r" (__PER_CPU_SEG));
-diff --git a/include/asm-i386/tsc.h b/include/asm-i386/tsc.h
-index a4d8066..a1f213e 100644
---- a/include/asm-i386/tsc.h
-+++ b/include/asm-i386/tsc.h
-@@ -32,7 +32,7 @@ static inline cycles_t get_cycles(void)
- }
- 
- /* Like get_cycles, but make sure the CPU is synchronized. */
--static __always_inline cycles_t get_cycles_sync(void)
-+static __always_inline cycles_t __get_cycles_sync(void)
- {
- 	unsigned long long ret;
- 	unsigned eax, edx;
-@@ -54,8 +54,16 @@ static __always_inline cycles_t get_cycles_sync(void)
- 	 */
- 	alternative_io("cpuid", ASM_NOP2, X86_FEATURE_SYNC_RDTSC,
- 			  "=a" (eax), "0" (1) : "ebx","ecx","edx","memory");
--	rdtscll(ret);
- 
-+	return 0;
+-	_set_gate(&idt_table[nr], GATE_INTERRUPT, (unsigned long) func, 3, ist);
++	__u32 *lp;
++	lp = (__u32 *) ((entrynum << 3) + (char *) ldt);
++	*lp	= entry_1;
++	*(lp+1)	= entry_2;
 +}
 +
-+static __always_inline cycles_t get_cycles_sync(void)
++static inline void native_load_idt(const struct desc_ptr *ptr)
 +{
-+	unsigned long long ret;
-+	ret = __get_cycles_sync();
-+	if (!ret)
-+		rdtscll(ret);
- 	return ret;
++	asm volatile("lidt %w0"::"m" (*ptr));
++}
++
++static inline void native_store_idt(struct desc_ptr *dtr)
++{
++       asm ("sidt %w0":"=m" (*dtr));
  }
  
-diff --git a/include/asm-x86_64/msr.h b/include/asm-x86_64/msr.h
-index d5c55b8..3176d30 100644
---- a/include/asm-x86_64/msr.h
-+++ b/include/asm-x86_64/msr.h
-@@ -10,110 +10,186 @@
-  * Note: the rd* operations modify the parameters directly (without using
-  * pointer indirection), this allows gcc to optimize better
-  */
-+static inline unsigned long native_read_msr(unsigned int msr)
+ static inline void set_tssldt_descriptor(void *ptr, unsigned long tss, unsigned type, 
+@@ -84,7 +103,7 @@ static inline void set_tssldt_descriptor(void *ptr, unsigned long tss, unsigned
+ 	d.limit1 = (size >> 16) & 0xF;
+ 	d.base2 = (PTR_MIDDLE(tss) >> 8) & 0xFF; 
+ 	d.base3 = PTR_HIGH(tss); 
+-	memcpy(ptr, &d, 16); 
++	write_gdt_entry(ptr, &d, type, 16);
+ }
+ 
+ static inline void set_tss_desc(unsigned cpu, void *addr)
+@@ -135,7 +154,7 @@ static inline void set_ldt_desc(unsigned cpu, void *addr, int size)
+ 	(info)->useable		== 0	&& \
+ 	(info)->lm		== 0)
+ 
+-static inline void load_TLS(struct thread_struct *t, unsigned int cpu)
++static inline void native_load_tls(struct thread_struct *t, unsigned int cpu)
+ {
+ 	unsigned int i;
+ 	u64 *gdt = (u64 *)(cpu_gdt(cpu) + GDT_ENTRY_TLS_MIN);
+@@ -143,28 +162,92 @@ static inline void load_TLS(struct thread_struct *t, unsigned int cpu)
+ 	for (i = 0; i < GDT_ENTRY_TLS_ENTRIES; i++)
+ 		gdt[i] = t->tls_array[i];
+ } 
++static inline void native_set_ldt(const void *addr,
++				  unsigned int entries)
 +{
-+	unsigned long a, d;
-+	asm volatile("rdmsr" : "=a" (a), "=d" (d) : "c" (msr));
-+	return a | (d << 32);
-+}
++	if (likely(entries == 0))
++		__asm__ __volatile__ ("lldt %w0" :: "r" (0));
++	else {
++		unsigned cpu = smp_processor_id();
 +
-+static inline unsigned long native_read_msr_safe(unsigned int msr, int *err)
-+{
-+	unsigned long a, d;
-+	asm volatile (  "1: rdmsr; xorl %0, %0\n"
-+			"2:\n"
-+			".section .fixup,\"ax\"\n"
-+			"3:       movl %4,%0\n"
-+			" jmp 2b\n"
-+			".previous\n"
-+			".section __ex_table,\"a\"\n"
-+			" .align 8\n"
-+			" .quad 1b,3b\n"
-+			".previous":"=&bDS" (*err), "=a"((a)), "=d"((d))
-+			:"c"(msr), "i"(-EIO), "0"(0));
-+	return a | (d << 32);
-+}
- 
--#define rdmsr(msr,val1,val2) \
--       __asm__ __volatile__("rdmsr" \
--			    : "=a" (val1), "=d" (val2) \
--			    : "c" (msr))
-+static inline unsigned long native_write_msr(unsigned int msr,
-+					     unsigned long val)
-+{
-+	asm volatile(	"wrmsr"
-+			: /* no outputs */
-+			: "c" (msr), "a" ((u32)val), "d" ((u32)(val>>32)));
-+	return 0;
-+}
-+
-+/* wrmsr with exception handling */
-+static inline long native_write_msr_safe(unsigned int msr, unsigned long val)
-+{
-+	unsigned long ret;
-+	asm volatile("2: wrmsr ; xorq %0,%0\n"
-+		     "1:\n\t"
-+		     ".section .fixup,\"ax\"\n\t"
-+		     "3:  movq %4,%0 ; jmp 1b\n\t"
-+		     ".previous\n\t"
-+		     ".section __ex_table,\"a\"\n"
-+		     "   .align 8\n\t"
-+		     "   .quad 	2b,3b\n\t"
-+		     ".previous"
-+		     : "=r" (ret)
-+		     : "c" (msr), "a" ((u32)val), "d" ((u32)(val>>32)),
-+		       "i" (-EFAULT));
-+	return ret;
-+}
- 
-+static inline unsigned long native_read_tsc(void)
-+{
-+	unsigned long low, high;
-+	asm volatile("rdtsc" : "=a" (low), "=d" (high));
-+	return low | (high << 32);
-+}
- 
--#define rdmsrl(msr,val) do { unsigned long a__,b__; \
--       __asm__ __volatile__("rdmsr" \
--			    : "=a" (a__), "=d" (b__) \
--			    : "c" (msr)); \
--       val = a__ | (b__<<32); \
--} while(0)
-+static inline unsigned long native_read_pmc(int counter)
-+{
-+	unsigned long low, high;
-+	asm volatile ("rdpmc"
-+		      : "=a" (low), "=d" (high)
-+		      : "c" (counter));
- 
--#define wrmsr(msr,val1,val2) \
--     __asm__ __volatile__("wrmsr" \
--			  : /* no outputs */ \
--			  : "c" (msr), "a" (val1), "d" (val2))
-+	return low | (high << 32);
-+}
- 
--#define wrmsrl(msr,val) wrmsr(msr,(__u32)((__u64)(val)),((__u64)(val))>>32) 
-+static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
-+				unsigned int *ecx, unsigned int *edx)
-+{
-+	asm volatile ("cpuid"
-+		      : "=a" (*eax),
-+			"=b" (*ebx),
-+			"=c" (*ecx),
-+			"=d" (*edx)
-+		      : "0" (*eax), "2" (*ecx));
-+}
- 
--/* wrmsr with exception handling */
--#define wrmsr_safe(msr,a,b) ({ int ret__;			\
--	asm volatile("2: wrmsr ; xorl %0,%0\n"			\
--		     "1:\n\t"					\
--		     ".section .fixup,\"ax\"\n\t"		\
--		     "3:  movl %4,%0 ; jmp 1b\n\t"		\
--		     ".previous\n\t"				\
-- 		     ".section __ex_table,\"a\"\n"		\
--		     "   .align 8\n\t"				\
--		     "   .quad 	2b,3b\n\t"			\
--		     ".previous"				\
--		     : "=a" (ret__)				\
--		     : "c" (msr), "0" (a), "d" (b), "i" (-EFAULT)); \
--	ret__; })
--
--#define checking_wrmsrl(msr,val) wrmsr_safe(msr,(u32)(val),(u32)((val)>>32))
--
--#define rdmsr_safe(msr,a,b) \
--	({ int ret__;						\
--	  asm volatile ("1:       rdmsr\n"			\
--                      "2:\n"					\
--                      ".section .fixup,\"ax\"\n"		\
--                      "3:       movl %4,%0\n"			\
--                      " jmp 2b\n"				\
--                      ".previous\n"				\
--                      ".section __ex_table,\"a\"\n"		\
--                      " .align 8\n"				\
--                      " .quad 1b,3b\n"				\
--                      ".previous":"=&bDS" (ret__), "=a"(*(a)), "=d"(*(b))\
--                      :"c"(msr), "i"(-EIO), "0"(0));		\
--	  ret__; })		
--
--#define rdtsc(low,high) \
--     __asm__ __volatile__("rdtsc" : "=a" (low), "=d" (high))
--
--#define rdtscl(low) \
--     __asm__ __volatile__ ("rdtsc" : "=a" (low) : : "edx")
--
--#define rdtscp(low,high,aux) \
--     asm volatile (".byte 0x0f,0x01,0xf9" : "=a" (low), "=d" (high), "=c" (aux))
--
--#define rdtscll(val) do { \
--     unsigned int __a,__d; \
--     asm volatile("rdtsc" : "=a" (__a), "=d" (__d)); \
--     (val) = ((unsigned long)__a) | (((unsigned long)__d)<<32); \
--} while(0)
--
--#define rdtscpll(val, aux) do { \
--     unsigned long __a, __d; \
--     asm volatile (".byte 0x0f,0x01,0xf9" : "=a" (__a), "=d" (__d), "=c" (aux)); \
--     (val) = (__d << 32) | __a; \
-+static inline unsigned long native_rdtscp(int *aux)
-+{
-+	unsigned long low, high;
-+	asm volatile (".byte 0x0f,0x01,0xf9"
-+			: "=a" (low), "=d" (high), "=c" (*aux));
-+	return low | (high >> 32);
++		set_tssldt_descriptor(&cpu_gdt(cpu)[GDT_ENTRY_LDT],
++					(unsigned long)addr, DESC_LDT,
++					entries * 8 - 1);
++		__asm__ __volatile__ ("lldt %w0"::"r" (GDT_ENTRY_LDT*8));
++	}
 +}
 +
 +#ifdef CONFIG_PARAVIRT
 +#include <asm/paravirt.h>
 +#else
-+#define read_msr(msr)			native_read_msr(msr)
-+#define read_msr_safe(msr, err)		native_read_msr_safe(msr, err)
-+#define write_msr(msr, val) 		native_write_msr(msr, val)
-+#define write_msr_safe(msr, val)	native_write_msr_safe(msr, val)
-+#define read_tsc_reg()			native_read_tsc()
-+#define __rdtscp(aux)			native_rdtscp(aux)
-+#define read_pmc(counter)		native_read_pmc(counter)
-+#define __cpuid				native_cpuid
++#define load_TR_desc()	native_load_tr_desc()
++#define load_gdt(ptr)	native_load_gdt(ptr)
++#define load_idt(ptr)	native_load_idt(ptr)
++#define load_TLS(t, cpu) native_load_tls(t, cpu)
++#define set_ldt(addr, entries)	native_set_ldt(addr, entries)
++#define store_tr(tr) (tr) = native_store_tr()
++#define store_gdt(ptr)	native_store_gdt(ptr)
++#define store_idt(ptr)	native_store_idt(ptr)
++
++#define write_idt_entry(_adr, _s) native_write_idt_entry((_adr),(_s))
++#define write_ldt_entry(_ldt, _number, _entry1, _entry2) \
++		native_write_ldt_entry((_ldt), (_number), (_entry1), (_entry2))
 +#endif
 +
-+#define rdmsr(msr, low, high) 			\
-+do {						\
-+	unsigned long __val = read_msr(msr); 	\
-+	low = (u32)__val;			\
-+	high = (u32)(__val >> 32);		\
-+} while (0)
++static inline void _set_gate(void *adr, unsigned type, unsigned long func, unsigned dpl, unsigned ist)
++{
++	struct gate_struct s;
++	s.offset_low = PTR_LOW(func);
++	s.segment = __KERNEL_CS;
++	s.ist = ist;
++	s.p = 1;
++	s.dpl = dpl;
++	s.zero0 = 0;
++	s.zero1 = 0;
++	s.type = type;
++	s.offset_middle = PTR_MIDDLE(func);
++	s.offset_high = PTR_HIGH(func);
++	write_idt_entry(adr, &s);
++}
 +
-+#define rdmsrl(msr, val)		(val) = read_msr(msr)
++static inline void set_intr_gate(int nr, void *func)
++{
++	BUG_ON((unsigned)nr > 0xFF);
++	_set_gate(&idt_table[nr], GATE_INTERRUPT, (unsigned long) func, 0, 0);
++}
 +
-+#define rdmsr_safe(msr, a, d)					\
-+({								\
-+	int __ret;						\
-+	unsigned long __val = read_msr_safe(msr, &__ret);	\
-+	(*a) = (u32)(__val);					\
-+	(*d) = (u32)(__val >> 32);				\
-+	__ret;							\
-+})
++static inline void set_intr_gate_ist(int nr, void *func, unsigned ist)
++{
++	BUG_ON((unsigned)nr > 0xFF);
++	_set_gate(&idt_table[nr], GATE_INTERRUPT, (unsigned long) func, 0, ist);
++}
 +
-+#define wrmsr(msr, val1, val2)				\
-+do {							\
-+	unsigned long __val;				\
-+	__val = (unsigned long)val2 << 32;		\
-+	__val |= val1;					\
-+	write_msr(msr, __val);				\
- } while (0)
- 
--#define write_tsc(val1,val2) wrmsr(0x10, val1, val2)
-+#define wrmsrl(msr, val) write_msr(msr, val)
++static inline void set_system_gate(int nr, void *func)
++{
++	BUG_ON((unsigned)nr > 0xFF);
++	_set_gate(&idt_table[nr], GATE_INTERRUPT, (unsigned long) func, 3, 0);
++}
 +
-+#define wrmsr_safe(msr, a, d) \
-+	write_msr_safe(msr, a | ( ((u64)d) << 32))
++static inline void set_system_gate_ist(int nr, void *func, unsigned ist)
++{
++	_set_gate(&idt_table[nr], GATE_INTERRUPT, (unsigned long) func, 3, ist);
++}
 +
-+#define checking_wrmsrl(msr, val) wrmsr_safe(msr, (u32)(val),(u32)((val)>>32))
-+
-+#define write_tsc(val1, val2) wrmsr(0x10, val1, val2)
- 
- #define write_rdtscp_aux(val) wrmsr(0xc0000103, val, 0)
- 
--#define rdpmc(counter,low,high) \
--     __asm__ __volatile__("rdpmc" \
--			  : "=a" (low), "=d" (high) \
--			  : "c" (counter))
-+#define rdtscl(low) 	(low) = (u32)read_tsc_reg()
-+
-+#define rdtscll(val)	(val) = read_tsc_reg()
-+
-+#define rdtscp(low, high, aux)				\
-+do {							\
-+	int __aux;					\
-+	unsigned long __val = __rdtscp(&__aux);	\
-+	(low) = (u32)__val;				\
-+	(high) = (u32)(__val >> 32);			\
-+	(aux) = __aux;					\
-+} while (0)
-+
-+#define rdtscpll(val, aux)				\
-+do {							\
-+	unsigned long __aux; 				\
-+	val = __rdtscp(&__aux);				\
-+	(aux) = __aux;					\
-+} while (0)
-+
-+#define rdpmc(counter, low, high)			\
-+do {							\
-+	unsigned long __val = read_pmc(counter);	\
-+	(low) = (u32)(__val);				\
-+	(high) = (u32)(__val >> 32);			\
-+} while (0)
- 
- static inline void cpuid(int op, unsigned int *eax, unsigned int *ebx,
- 			 unsigned int *ecx, unsigned int *edx)
- {
--	__asm__("cpuid"
--		: "=a" (*eax),
--		  "=b" (*ebx),
--		  "=c" (*ecx),
--		  "=d" (*edx)
--		: "0" (op));
-+	*eax = op;
-+	*ecx = 0;
-+	__cpuid(eax, ebx, ecx, edx);
- }
- 
- /* Some CPUID calls want 'count' to be placed in ecx */
- static inline void cpuid_count(int op, int count, int *eax, int *ebx, int *ecx,
- 	       	int *edx)
- {
--	__asm__("cpuid"
--		: "=a" (*eax),
--		  "=b" (*ebx),
--		  "=c" (*ecx),
--		  "=d" (*edx)
--		: "0" (op), "c" (count));
-+	*eax = op;
-+	*ecx = count;
-+	__cpuid(eax, ebx, ecx, edx);
- }
++#define clear_LDT()  set_ldt(NULL,0)
  
  /*
-@@ -121,42 +197,29 @@ static inline void cpuid_count(int op, int count, int *eax, int *ebx, int *ecx,
+  * load one particular LDT into the current CPU
   */
- static inline unsigned int cpuid_eax(unsigned int op)
+-static inline void load_LDT_nolock (mm_context_t *pc, int cpu)
++static inline void load_LDT_nolock (mm_context_t *pc)
  {
--	unsigned int eax;
+-	int count = pc->size;
 -
--	__asm__("cpuid"
--		: "=a" (eax)
--		: "0" (op)
--		: "bx", "cx", "dx");
-+	unsigned int eax, ebx, ecx, edx;
-+	cpuid(op, &eax, &ebx, &ecx, &edx);
- 	return eax;
- }
-+
- static inline unsigned int cpuid_ebx(unsigned int op)
- {
--	unsigned int eax, ebx;
--
--	__asm__("cpuid"
--		: "=a" (eax), "=b" (ebx)
--		: "0" (op)
--		: "cx", "dx" );
-+	unsigned int eax, ebx, ecx, edx;
-+	cpuid(op, &eax, &ebx, &ecx, &edx);
- 	return ebx;
- }
-+
- static inline unsigned int cpuid_ecx(unsigned int op)
- {
--	unsigned int eax, ecx;
--
--	__asm__("cpuid"
--		: "=a" (eax), "=c" (ecx)
--		: "0" (op)
--		: "bx", "dx" );
-+	unsigned int eax, ebx, ecx, edx;
-+	cpuid(op, &eax, &ebx, &ecx, &edx);
- 	return ecx;
- }
-+
- static inline unsigned int cpuid_edx(unsigned int op)
- {
--	unsigned int eax, edx;
--
--	__asm__("cpuid"
--		: "=a" (eax), "=d" (edx)
--		: "0" (op)
--		: "bx", "cx");
-+	unsigned int eax, ebx, ecx, edx;
-+	cpuid(op, &eax, &ebx, &ecx, &edx);
- 	return edx;
+-	if (likely(!count)) {
+-		clear_LDT();
+-		return;
+-	}
+-		
+-	set_ldt_desc(cpu, pc->ldt, count);
+-	load_LDT_desc();
++	set_ldt(pc->ldt, pc->size);
  }
  
+ static inline void load_LDT(mm_context_t *pc)
+ {
+-	int cpu = get_cpu();
+-	load_LDT_nolock(pc, cpu);
+-	put_cpu();
++	preempt_disable();
++	load_LDT_nolock(pc);
++	preempt_enable();
+ }
+ 
+ extern struct desc_ptr idt_descr;
+diff --git a/include/asm-x86_64/mmu_context.h b/include/asm-x86_64/mmu_context.h
+index 0cce83a..c8cdc1e 100644
+--- a/include/asm-x86_64/mmu_context.h
++++ b/include/asm-x86_64/mmu_context.h
+@@ -43,7 +43,7 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+ 		load_cr3(next->pgd);
+ 
+ 		if (unlikely(next->context.ldt != prev->context.ldt)) 
+-			load_LDT_nolock(&next->context, cpu);
++			load_LDT_nolock(&next->context);
+ 	}
+ #ifdef CONFIG_SMP
+ 	else {
+@@ -56,7 +56,7 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+ 			 * to make sure to use no freed page tables.
+ 			 */
+ 			load_cr3(next->pgd);
+-			load_LDT_nolock(&next->context, cpu);
++			load_LDT_nolock(&next->context);
+ 		}
+ 	}
+ #endif
 -- 
 1.4.4.2
 
