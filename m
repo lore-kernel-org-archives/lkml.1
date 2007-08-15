@@ -1,49 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934699AbXHOTs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935936AbXHOTt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934699AbXHOTs1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 15:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbXHOTsU
+	id S935936AbXHOTt0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 15:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755265AbXHOTtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 15:48:20 -0400
-Received: from gate.crashing.org ([63.228.1.57]:35883 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750932AbXHOTsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 15:48:18 -0400
-In-Reply-To: <20070815191829.GJ9645@linux.vnet.ibm.com>
-References: <46BCC26B.6080600@redhat.com> <46BB46B2.60808@redhat.com> <20070809134150.GA14890@shell.boston.redhat.com> <2708.1186737826@redhat.com> <7680.1186822071@redhat.com> <46BFFDBD.6080804@redhat.com> <46C140DD.3060509@yahoo.com.au> <2cbda24e96a49c3ab7cf7039c515f9fc@kernel.crashing.org> <20070815191829.GJ9645@linux.vnet.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <369924c4b3132a4b06258b7ac81b1006@kernel.crashing.org>
+	Wed, 15 Aug 2007 15:49:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:50296 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754149AbXHOTtP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 15:49:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ustAGtiv+lHVs3XqvmFar3pZ9rB49CgAs5/AvN4zlJUHBeeEpZaDM1x1XCZiUzPMEnisT3Ws0/AMi/xT1/vgIbJETDLqgX6fSodVqC7EWS8LSom6FDwO6P9qzYcyifCeFwmTgq3yDD5d/ANnUs7sb4QDP7tgr3v5NglUY8hmKn0=
+Message-ID: <d9def9db0708151249s6cbd7e51haf94c53efb539dc0@mail.gmail.com>
+Date: Wed, 15 Aug 2007 21:49:13 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: [PATCH] Fix a memory leak in em28xx_usb_probe()
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Luca Risolia" <luca.risolia@studio.unibo.it>,
+       "Ludovico Cavedon" <cavedon@sssup.it>,
+       "Mauro Carvalho Chehab" <mchehab@infradead.org>,
+       "Sascha Sommer" <saschasommer@freenet.de>,
+       "Greg Kroah-Hartman" <greg@kroah.com>
+In-Reply-To: <200708092302.36705.jesper.juhl@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Cc: heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com,
-       David Howells <dhowells@redhat.com>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
-Date: Wed, 15 Aug 2007 21:46:55 +0200
-To: paulmck@linux.vnet.ibm.com
-X-Mailer: Apple Mail (2.623)
+Content-Disposition: inline
+References: <200708092302.36705.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Well if there is only one memory location involved, then smp_rmb()
->>> isn't
->>> going to really do anything anyway, so it would be incorrect to use 
->>> it.
->>
->> rmb() orders *any* two reads; that includes two reads from the same
->> location.
+Hi Jesper,
+
+On 8/9/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
+> EHLO,
 >
-> If the two reads are to the same location, all CPUs I am aware of
-> will maintain the ordering without need for a memory barrier.
+> If, in em28xx_usb_probe() the memory allocation
+> 	dev->alt_max_pkt_size = kmalloc(32*
+> 						dev->num_alt,GFP_KERNEL);
+> fails, then we'll bail out and return -ENOMEM.
+> The problem is that in that case we don't free the storage allocated
+> to 'dev', thus causing a memory leak.
+>
+> This patch fixes the leak by freeing 'dev' before we return -ENOMEM.
+> This fixes Coverity bug #647.
+>
+>
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-That's true of course, although there is no real guarantee for that.
+Acked-by: Markus Rechberger <mrechberger@gmail.com>
+
+thanks,
+Markus
+
+> ---
+>
+>  drivers/media/video/em28xx/em28xx-video.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/media/video/em28xx/em28xx-video.c
+> b/drivers/media/video/em28xx/em28xx-video.c
+> index 2c7b158..40307f3 100644
+> --- a/drivers/media/video/em28xx/em28xx-video.c
+> +++ b/drivers/media/video/em28xx/em28xx-video.c
+> @@ -1772,6 +1772,7 @@ static int em28xx_usb_probe(struct usb_interface
+> *interface,
+>  	if (dev->alt_max_pkt_size == NULL) {
+>  		em28xx_errdev("out of memory!\n");
+>  		em28xx_devused&=~(1<<nr);
+> +		kfree(dev);
+>  		return -ENOMEM;
+>  	}
+>
+>
+>
+>
+>
 
 
-Segher
-
+-- 
+Markus Rechberger
