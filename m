@@ -1,74 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935261AbXHOUST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933596AbXHOUU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935261AbXHOUST (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 16:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765444AbXHOURy
+	id S933596AbXHOUU2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 16:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbXHOUUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 16:17:54 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:45557 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756697AbXHOURw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 16:17:52 -0400
-Date: Wed, 15 Aug 2007 13:17:48 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>, horms@verge.net.au,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       rpjday@mindspring.com, netdev@vger.kernel.org, ak@suse.de,
-       cfriesen@nortel.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070815201748.GN9645@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <20070815081841.GA16551@osiris.boeblingen.de.ibm.com> <46C30540.2070603@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in> <20070815145207.GA23106@gondor.apana.org.au> <46C3253F.5090707@s5r6.in-berlin.de> <20070815162722.GD9645@linux.vnet.ibm.com> <d4406222873856f472b9173a14a19aa2@kernel.crashing.org> <20070815185724.GH9645@linux.vnet.ibm.com> <alpine.LFD.0.999.0708160118330.16414@enigma.security.iitk.ac.in>
+	Wed, 15 Aug 2007 16:20:11 -0400
+Received: from web52512.mail.re2.yahoo.com ([206.190.48.195]:30178 "HELO
+	web52512.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750860AbXHOUUJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 16:20:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=YAJkEDELL5PE5rSs/SBGWL/dukaOWy9lly7LiAZhvaO18axGHgzd3Zdj7B8rgMJEqQHCh2b/FJDbgqxydLDqn98u7ElA2wIULnFnLo4HXSpJKrec9ZC6LmDN7f+XlJw35mepFz598uqHsZwYH/w1uj3P8o8BDe4BomftS1HnDvU=;
+X-YMail-OSG: BhCHPHsVM1nFs5CAzpEs8bD72eDOHxSM3JKk5uMOoFDQZetq8gG6nEJpaeI_0UHDog--
+Date: Wed, 15 Aug 2007 13:20:07 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: Thinking outside the box on file systems
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Phillip Susi <psusi@cfl.rr.com>, Michael Tharp <gxti@partiallystapled.com>,
+       alan <alan@clueserver.org>, LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+In-Reply-To: <A699C8AE-6C16-46FA-9C55-EFA4FA1718ED@mac.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708160118330.16414@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <633206.92836.qm@web52512.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 01:24:42AM +0530, Satyam Sharma wrote:
-> [ The Cc: list scares me. Should probably trim it. ]
 
-Trim away!  ;-)
+--- Kyle Moffett <mrmacman_g4@mac.com> wrote:
 
-> On Wed, 15 Aug 2007, Paul E. McKenney wrote:
+> On Aug 15, 2007, at 14:05:23, Marc Perkel wrote:
+> > In this new system setfacl, chmod, chown, and
+> chgrp all go away  
+> > except inside of an emulation layer. File and
+> directories no longer  
+> > have permissions. People have permission to naming
+> patterns. So if  
+> > you put a file into a tree or move a tree then
+> those who have  
+> > permissions to the tree have access to the files.
+> >
+> > It eliminates the step of having to apply
+> permission after moving  
+> > files into a tree. You don't have to change file
+> permissions  
+> > because files no longer have permissions.
 > 
-> > On Wed, Aug 15, 2007 at 08:31:25PM +0200, Segher Boessenkool wrote:
-> > > >>How does the compiler know that msleep() has got barrier()s?
-> > > >
-> > > >Because msleep_interruptible() is in a separate compilation unit,
-> > > >the compiler has to assume that it might modify any arbitrary global.
-> > > 
-> > > No; compilation units have nothing to do with it, GCC can optimise
-> > > across compilation unit boundaries just fine, if you tell it to
-> > > compile more than one compilation unit at once.
-> > 
-> > Last I checked, the Linux kernel build system did compile each .c file
-> > as a separate compilation unit.
-> > 
-> > > What you probably mean is that the compiler has to assume any code
-> > > it cannot currently see can do anything (insofar as allowed by the
-> > > relevant standards etc.)
+> And I'm trying to tell you that unless you have some
+> magic new  
+> algorithm that turns NP-complete problems into
+> O(log(N)) problems,  
+> your idea won't work.  You can't just say "I just do
+> one little thing  
+> (mv) and the entire rest of the computer
+> automagically changes to  
+> match", because that would imply a single unscalable
+> global kernel  
+> lock.  "Pattern"-matching is either NP-complete or
+> high-polynomial- 
+> order, depending on how its implemented, and if you
+> want to do a  
+> recursive-chmod during a directory move then you're
+> going to have  
+> race-conditions out the ass.  If you have code or
+> solid math to back  
+> up your postings then please do so, but otherwise
+> you're just wasting  
+> time and bandwidth.
 > 
-> I think this was just terminology confusion here again. Isn't "any code
-> that it cannot currently see" the same as "another compilation unit",
-> and wouldn't the "compilation unit" itself expand if we ask gcc to
-> compile more than one unit at once? Or is there some more specific
-> "definition" for "compilation unit" (in gcc lingo, possibly?)
+> 
 
-This is indeed my understanding -- "compilation unit" is whatever the
-compiler looks at in one go.  I have heard the word "module" used for
-the minimal compilation unit covering a single .c file and everything
-that it #includes, but there might be a better name for this.
 
-							Thanx, Paul
+Kyle - you are still missing the point. chmod goes
+away. File permissions goes away. Directories as you
+know them goes away. 
+
+
+
+Marc Perkel
+Junk Email Filter dot com
+http://www.junkemailfilter.com
+
+
+       
+____________________________________________________________________________________
+Got a little couch potato? 
+Check out fun summer activities for kids.
+http://search.yahoo.com/search?fr=oni_on_mail&p=summer+activities+for+kids&cs=bz 
