@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764942AbXHOIqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763619AbXHOIxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764942AbXHOIqu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 04:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbXHOIqd
+	id S1763619AbXHOIxa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 04:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbXHOIxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 04:46:33 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:54367 "HELO ustc.edu.cn"
+	Wed, 15 Aug 2007 04:53:15 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:59730 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752467AbXHOIqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 04:46:31 -0400
-Message-ID: <387167585.28892@ustc.edu.cn>
+	id S1753543AbXHOIxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 04:53:13 -0400
+Message-ID: <387167988.30158@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Wed, 15 Aug 2007 16:46:25 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Randy Dunlap <rddunlap@osdl.org>, Martin Bligh <mbligh@google.com>
-Subject: Re: [patch 2/2] Sort module list by pointer address to get
-	coherent sleepable seq_file iterators
-Message-ID: <20070815084625.GA18892@mail.ustc.edu.cn>
-References: <20070812150844.305211039@polymtl.ca> <20070812151039.996081605@polymtl.ca> <20070815033945.GA13134@mail.ustc.edu.cn> <20070815041845.GJ21089@ftp.linux.org.uk> <20070815063741.GB5175@mail.ustc.edu.cn> <20070815065301.GK21089@ftp.linux.org.uk>
+Date: Wed, 15 Aug 2007 16:53:08 +0800
+From: WU Fengguang <wfg@mail.ustc.edu.cn>
+To: Andy Isaacson <adi@hexapodia.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [BUGFIX] NULL pointer dereference in __vm_enough_memory()
+Message-ID: <20070815085308.GA18959@mail.ustc.edu.cn>
+References: <46BEF5C0.3080902@linux.vnet.ibm.com> <20070812120902.GA9972@mail.ustc.edu.cn> <20070812122746.GA10109@mail.ustc.edu.cn> <20070814171058.GA14093@hexapodia.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070815065301.GK21089@ftp.linux.org.uk>
+In-Reply-To: <20070814171058.GA14093@hexapodia.org>
 X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro,
+On Tue, Aug 14, 2007 at 10:10:58AM -0700, Andy Isaacson wrote:
+> On Sun, Aug 12, 2007 at 08:27:46PM +0800, WU Fengguang wrote:
+> > On Sun, Aug 12, 2007 at 05:27:52PM +0530, Balbir Singh wrote:
+> > > For some reason my mailer keeps removing you from the cc.
+> > 
+> > Or maybe it's my SMTP server's problem. Email systems are complex.
+> 
+> It's the Mail-Followup-To header you include in your emails:
+> 
+> > Mail-Followup-To: Balbir Singh <balbir@linux.vnet.ibm.com>,
+> >        Andrew Morton <akpm@linux-foundation.org>,
+> >        linux-kernel <linux-kernel@vger.kernel.org>
+> 
+> The mail clients are just doing what you asked.  Perhaps you need to
+> turn off followup_to (and turn on edit_headers).
+> 
+> Mutt has "set honor_followup_to=ask-yes" to fix this in 1.5 (though it's
+> broken in "1.4.2.2i"); I don't know if the GUI clients have such a
+> switch.
 
-Does this sounds like a good fix?
-===
+Thank you for the tip, it does the trick!
 
-seq_file version fixes
-
-- f_version is 'unsigned long', it's pointless to do more than that.
-- m->version should not be reset when we are bumping up the buf size.
-
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
----
- fs/seq_file.c            |    1 -
- include/linux/seq_file.h |    2 +-
- 2 files changed, 1 insertion(+), 2 deletions(-)
-
---- linux-2.6.23-rc3.orig/include/linux/seq_file.h
-+++ linux-2.6.23-rc3/include/linux/seq_file.h
-@@ -18,7 +18,7 @@ struct seq_file {
- 	size_t from;
- 	size_t count;
- 	loff_t index;
--	loff_t version;
-+	unsigned long version;
- 	struct mutex lock;
- 	const struct seq_operations *op;
- 	void *private;
---- linux-2.6.23-rc3.orig/fs/seq_file.c
-+++ linux-2.6.23-rc3/fs/seq_file.c
-@@ -134,7 +134,6 @@ ssize_t seq_read(struct file *file, char
- 		if (!m->buf)
- 			goto Enomem;
- 		m->count = 0;
--		m->version = 0;
- 	}
- 	m->op->stop(m, p);
- 	m->count = 0;
+Andrew: I just realized that a false muttrc was "corrected". What a fool!
 
