@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764951AbXHOQxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932859AbXHOQyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764951AbXHOQxa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 12:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbXHOQxV
+	id S932859AbXHOQyI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 12:54:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbXHOQxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 12:53:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50941 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756716AbXHOQxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 12:53:19 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <45343.31878.qm@web36610.mail.mud.yahoo.com>
-References: <45343.31878.qm@web36610.mail.mud.yahoo.com>
-To: casey@schaufler-ca.com
-Cc: dhowells@redhat.com, torvalds@osdl.org, viro@ftp.linux.org.uk,
-       sds@tycho.nsa.gov, linux-fsdevel@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Re: Adding a security parameter to VFS functions
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Wed, 15 Aug 2007 17:52:17 +0100
-Message-ID: <2945.1187196737@redhat.com>
+	Wed, 15 Aug 2007 12:53:47 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:39378 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762203AbXHOQxo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 12:53:44 -0400
+From: Markus <lists4me@web.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [1/4] 2.6.23-rc3: known regressions
+Date: Wed, 15 Aug 2007 18:53:34 +0200
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, Jan Dittmer <jdi@l4x.org>,
+       Christian Zankel <chris@zankel.net>, linux-alpha@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Thomas Voegtle <tv@lio96.de>
+References: <46C09BEA.7010007@googlemail.com>
+In-Reply-To: <46C09BEA.7010007@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708151853.35643.lists4me@web.de>
+X-Provags-ID: V01U2FsdGVkX1/3Yz1cffiexIRsJCayaZqzUONScVBIThiJ07M7
+	z/zBu6H/YpSTVGaaxQHV2FoD4AEkd8EYq1O3anTNJRc5jcdmFl
+	8IZCK6QxI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler <casey@schaufler-ca.com> wrote:
+> Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO 
+error: client killed"
+> References      : http://lkml.org/lkml/2007/7/22/86
+> Last known good : ?
+> Submitter       : Markus <lists4me@web.de>
+> Caused-By       : ?
+> Handled-By      : Ingo Molnar <mingo@elte.hu>
+> Status          : problem is being debugged
+Last working kernel was the 2.6.22 without cfs. With the patch applied 
+it shows the same problem (And so it does with the 2.6.23 as cfs was 
+merged). And its caused by the cfs(-patch).
 
-> 
-> Could you describe how this compares to the proposal that the
-> AppArmor developers suggested recently? I expect that we can 
-> reduce the amount of discussion required, and maybe avoid some
-> confusion if you could do that.
+And the real problem is not just restricted to konqueror. Its just 
+easier to reproduce. (So the original mails started at 
+http://lkml.org/lkml/2007/7/14/60 )
 
-I don't know what that is.
-
-David
+   Markus
