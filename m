@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762673AbXHOQIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764281AbXHOQJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762673AbXHOQIt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 12:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757060AbXHOQIg
+	id S1764281AbXHOQJX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 12:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbXHOQJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 12:08:36 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:34204 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756698AbXHOQIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 12:08:35 -0400
-Date: Wed, 15 Aug 2007 09:08:30 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Satyam Sharma <satyam@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070815160830.GC9645@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com> <20070815153335.GA23593@gondor.apana.org.au>
+	Wed, 15 Aug 2007 12:09:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58353 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763408AbXHOQJD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 12:09:03 -0400
+Message-ID: <46C32366.2040900@zytor.com>
+Date: Wed, 15 Aug 2007 09:01:42 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070815153335.GA23593@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Rene Herman <rene.herman@gmail.com>,
+       Jason Uhlenkott <jasonuhl@jasonuhl.org>,
+       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kfree(0) - ok?
+References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org> <20070814232107.GA4265@aurum.uhlenkott.net> <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr> <46C2BB60.6010909@gmail.com> <Pine.LNX.4.64.0708151113410.19270@fbirervta.pbzchgretzou.qr> <46C2CE42.4010303@gmail.com> <Pine.LNX.4.64.0708151217120.5639@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0708151217120.5639@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 11:33:36PM +0800, Herbert Xu wrote:
-> On Wed, Aug 15, 2007 at 07:25:16AM -0700, Paul E. McKenney wrote:
-> > 
-> > Do we really need another set of APIs?  Can you give even one example
-> > where the pre-existing volatile semantics are causing enough of a problem
-> > to justify adding yet more atomic_*() APIs?
+Jan Engelhardt wrote:
+> 0 is all-bits-zero.
+> NULL is 0. ("It is.", above)
 > 
-> Let's turn this around.  Can you give a single example where
-> the volatile semantics is needed in a legitimate way?
+> Transitively, this would make NULL all-bits-zero.
+> I might have missed something, though, perhaps that the cast to void* makes it
+> intransitive.
 
-Sorry, but you are the one advocating for the change.
+It does -- a cast from integer to pointer isn't required to be a bitwise
+noop.  Machines on which NULL isn't bitwise zero do exist, and the C
+standard allows them.  What is almost certainly more common than "all
+bits zero is not a NULL pointer" is "any NULL pointer is not necessarily
+all bits zero"; there are quite a few machines on which there are
+nonzero bitpatterns that are still valid NULL pointers, but an all-zero
+memset() will still produce NULL pointers.
 
-Nice try, though!  ;-)
+However, the particular supersets of the C standard that gcc provides
+and which the kernel are written in (the latter being a proper subset of
+the former) does not.
 
-						Thanx, Paul
+	-hpa
