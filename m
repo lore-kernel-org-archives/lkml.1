@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965248AbXHOXo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965297AbXHOXqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965248AbXHOXo5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 19:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964919AbXHOXor
+	id S965297AbXHOXqF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 19:46:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964913AbXHOXpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 19:44:47 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:4950 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964917AbXHOXoq (ORCPT
+	Wed, 15 Aug 2007 19:45:53 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56042 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762162AbXHOXpw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 19:44:46 -0400
-Date: Thu, 16 Aug 2007 07:44:34 +0800
-From: Herbert Xu <herbert.xu@redhat.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: Andi Kleen <ak@suse.de>, sebastian@breakpoint.cc,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] i386: use asm() like the other atomic operations already do.
-Message-ID: <20070815234434.GC28775@gondor.apana.org.au>
-References: <E1ILEQ8-0005H5-00@gondolin.me.apana.org.au> <46C3319F.4050809@redhat.com>
+	Wed, 15 Aug 2007 19:45:52 -0400
+Date: Thu, 16 Aug 2007 00:51:51 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "David P. Reed" <dpreed@reed.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: RFC: do get_rtc_time() correctly
+Message-ID: <20070816005151.56176a04@the-village.bc.nu>
+In-Reply-To: <46C35284.1080003@reed.com>
+References: <46C35284.1080003@reed.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46C3319F.4050809@redhat.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 01:02:23PM -0400, Chris Snook wrote:
-> Herbert Xu wrote:
-> >Andi Kleen <ak@suse.de> wrote:
-> >>>My config with march=pentium-m and gcc (GCC) 4.1.2 (Gentoo 4.1.2):
-> >>>  text    data     bss     dec     hex filename
-> >>>3434150  249176  176128 3859454  3ae3fe atomic_normal/vmlinux
-> >>>3435308  249176  176128 3860612  3ae884 atomic_inlineasm/vmlinux
-> >>What is the difference between atomic_normal and atomic_inlineasm? 
-> >
-> >The inline asm stops certain optimisations from occuring.
-> >
-> >I'm still unconvinced why we need this because nobody has
-> >brought up any examples of kernel code that legitimately
-> >need this.
-> 
-> There's plenty of kernel code that *wants* this though.  If we can 
+> So the proper way to read the RTC contents is to read the UIP flag, and 
+> if zero, read all the RTC registers with interrupts masked completely, 
+> so all reads happen in the 224 usec window.  (NMI can still be a 
+> problem, but you can have NMI's set a flag that forces a retry).
 
-You keep saying this yet everytime I ask for an example I
-get nothing.
+SMM/SMI is more likely to be what bumps you 224usec or more.
 
-> reduce the need for register-clobbering barriers, shrink our binaries, 
-> shrink our code, improve performance, and avoid heisenbugs, I think it's 
-> a win, whether or not we *need* it.
+> I'm happy to code and test a patch.   Rather than just submit a patch, I 
+> thought I'd request others' comments on this, since it affects so many 
+> architectures.  cc me, if you will, as I don't subscribe to LKML, just 
+> check it periodically.
 
-Hmm, you're increasing our binary size and probably killing
-performance.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Go for it. The other architectures generally inherit it by inheriting
+similar bridge chips or in more modern times the RTC macrocell. It should
+also be possible to debug by putting in an optional sanity check
+initially which checks the read made sense compared to a few more
