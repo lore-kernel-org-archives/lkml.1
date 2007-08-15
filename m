@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936015AbXHOUgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765045AbXHOUh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936015AbXHOUgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 16:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXHOUgf
+	id S1765045AbXHOUh3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 16:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXHOUg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 16:36:35 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38916 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751658AbXHOUgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 16:36:33 -0400
-In-Reply-To: <20070815162722.GD9645@linux.vnet.ibm.com>
-References: <46C2350A.1010807@redhat.com> <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <20070815081841.GA16551@osiris.boeblingen.de.ibm.com> <46C30540.2070603@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in> <20070815145207.GA23106@gondor.apana.org.au> <46C3253F.5090707@s5r6.in-berlin.de> <20070815162722.GD9645@linux.vnet.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d4406222873856f472b9173a14a19aa2@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Satyam Sharma <satyam@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       rpjday@mindspring.com, netdev@vger.kernel.org, ak@suse.de,
-       cfriesen@nortel.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Wed, 15 Aug 2007 20:31:25 +0200
-To: paulmck@linux.vnet.ibm.com
-X-Mailer: Apple Mail (2.623)
+	Wed, 15 Aug 2007 16:36:59 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33953 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753973AbXHOUg6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 16:36:58 -0400
+Date: Wed, 15 Aug 2007 13:36:51 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: "Serge E. Hallyn" <serge@hallyn.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, bob.picco@hp.com,
+       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
+       akpm@linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       ckrm-tech <ckrm-tech@lists.sourceforge.net>
+Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
+In-Reply-To: <1187185392.5422.13.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0708151333230.7628@schroedinger.engr.sgi.com>
+References: <20070812152126.GA26239@linux.vnet.ibm.com> 
+ <20070813201215.GA16908@vino.hallyn.com>  <1187103831.6281.24.camel@localhost>
+  <20070814180339.GA32553@vino.hallyn.com>  <1187115224.6281.40.camel@localhost>
+  <20070814192306.GB32553@vino.hallyn.com>  <20070814204951.GA2065@vino.hallyn.com>
+  <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com> 
+ <1187127685.6281.139.camel@localhost>  <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
+ <1187185392.5422.13.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> How does the compiler know that msleep() has got barrier()s?
->
-> Because msleep_interruptible() is in a separate compilation unit,
-> the compiler has to assume that it might modify any arbitrary global.
+On Wed, 15 Aug 2007, Lee Schermerhorn wrote:
 
-No; compilation units have nothing to do with it, GCC can optimise
-across compilation unit boundaries just fine, if you tell it to
-compile more than one compilation unit at once.
+> > So its always true for node 0. The "bit" is set.
+> 
+> The issue is with the N_*_MEMORY masks.  They don't get initialized
+> properly because node_set_state() is a no-op if !NUMA.  So, where we
+> look for intersections with or where we AND with the N_*_MEMORY masks we
+> get the empty set.
 
-What you probably mean is that the compiler has to assume any code
-it cannot currently see can do anything (insofar as allowed by the
-relevant standards etc.)
+That is intentional. Memory is always present if you are on !NUMA. You can 
+simply use a default nodemask where only node 0 is set. That is what the 
+fallback provides. Maybe it does not provide the right thing for cpusets?
 
-> In many cases, the compiler also has to assume that 
-> msleep_interruptible()
-> might call back into a function in the current compilation unit, thus
-> possibly modifying global static variables.
+> > We are trying to get cpusets to work with !NUMA?
+> 
+> Well, yes.  In Serge's case, he's trying to use cpusets with !NUMA.
+> He'll have to comment on the reasons for that.  Looking at all of the
+> #ifdefs and init/Kconfig, CPUSET does not depend on NUMA--only SMP and
+> CONTAINERS [altho' methinks CPUSET should select CONTAINERS rather than
+> depend on it...].  So, you can use cpusets to partition of cpus in
+> non-NUMA configs.
 
-It most often is smart enough to see what compilation-unit-local
-variables might be modified that way, though :-)
+Looks like we need to fix cpuset nodemasks for the !NUMA case then?
+It cannot expect to find valid nodemasks if !NUMA.
 
+> In the more general case, tho', I'm looking at all uses of the
+> node_online_map and for_each_online_node, for instances where they
+> should be replaced with one of the *_MEMORY masks.  IMO, generic code
+> that is compiled independent of any CONFIG option, like NUMA,  should
+> just work, independent of the config.  Currently, as Serge has shown,
 
-Segher
+AFAIK this works except for cpusets.
+
+> this is not the case.  So, I think we should fix the *_MEMORY maps to be
+> correctly populated in both the NUMA and !NUMA cases.  A couple of
+> options:
+
+There is no point in having a variable if you know the results because of 
+!NUMA. That is the way nodemask.h has always operated.
+
+> Thoughts?
+
+Lets get either rid of the definitions for the nodemasks in the !NUMA 
+case or fix their contents to have the right constant value expected in 
+cpusets.
 
