@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbXHOETE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbXHOEfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbXHOETE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 00:19:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750776AbXHOESw
+	id S1753573AbXHOEfV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 00:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbXHOEfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 00:18:52 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55488 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750760AbXHOESv (ORCPT
+	Wed, 15 Aug 2007 00:35:09 -0400
+Received: from smtp3.hushmail.com ([65.39.178.135]:64728 "EHLO
+	smtp3.hushmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbXHOEfH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 00:18:51 -0400
-Date: Wed, 15 Aug 2007 05:18:45 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Randy Dunlap <rddunlap@osdl.org>, Martin Bligh <mbligh@google.com>
-Subject: Re: [patch 2/2] Sort module list by pointer address to get coherent sleepable seq_file iterators
-Message-ID: <20070815041845.GJ21089@ftp.linux.org.uk>
-References: <20070812150844.305211039@polymtl.ca> <20070812151039.996081605@polymtl.ca> <20070815033945.GA13134@mail.ustc.edu.cn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070815033945.GA13134@mail.ustc.edu.cn>
-User-Agent: Mutt/1.4.1i
+	Wed, 15 Aug 2007 00:35:07 -0400
+Date: Wed, 15 Aug 2007 00:35:01 -0400
+To: <jirislaby@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>
+Subject: Re: [PATCH 1 of 5 ] /drivers/char ioremap balancing/ returncode check
+Reply-to: postfail@hushmail.com
+From: "Scott Thompson" <postfail@hushmail.com>
+Content-type: text/plain; charset="UTF-8"
+Message-Id: <20070815043503.535662281F@mailserver9.hushmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 11:39:45AM +0800, Fengguang Wu wrote:
-> On Sun, Aug 12, 2007 at 11:08:46AM -0400, Mathieu Desnoyers wrote:
-> >  
-> >  static void *m_next(struct seq_file *m, void *p, loff_t *pos)
-> >  {
-> > -	return seq_list_next(p, &modules, pos);
-> > +	return seq_sorted_list_next(p, &modules, &m->private);
-> >  }
-> 
-> In theory it is not safe to use something other than the passed in
-> *pos as an position indicator. Because seq_file do not always call
-> ->next() to advance to the next item. Look at seq_file.c, it sometimes
-> increase the pos/index directly! Which also prevents pos to skip
-> forward, which is preferred in your case.
-> 
-> The attached patch tries to fix it.
-> 
-> The seq_file.c is so twisted!
-> 
-> Fengguang
-> ===
-> 
-> seqfile: remove seq_file's assumption about iterators
-> 
-> The seq_file implementation has some hardcoded index++/pos++ lines,
-> which assumes iterators to be *continuous* integers.
+On Mon, 13 Aug 2007 16:17:29 -0400 Jiri Slaby <jirislaby@gmail.com> 
+wrote:
+>> diff --git a/drivers/char/sx.c b/drivers/char/sx.c
+>> index 85a2328..30829ed 100644
+>> --- a/drivers/char/sx.c
+>> +++ b/drivers/char/sx.c
+>> @@ -2627,6 +2627,12 @@ static void __devinit fix_sx_pci(struct 
+>> pci_dev *pdev, struct sx_board *board)
+>>  	pci_read_config_dword(pdev, PCI_BASE_ADDRESS_0, &hwbase);
+>>  	hwbase &= PCI_BASE_ADDRESS_MEM_MASK;
+>>  	rebase = ioremap(hwbase, 0x80);
+>> +	if (!rebase) {
+>> +		printk(KERN_DEBUG 
+>> +			"sx:ioremap fail, unable to perform cntrl reg fix\n");
+>> +		return;
+>> +	}
+>> +		
+>
+>1) this should be pci_iomap(pdev, 0, 0x80)
+The ioremap call was there before my patch and I'm just trying to 
+audit ioremap calls to make sure that they are cleaned up and have 
+their return codes checked.   If you want me to take care of that 
+"while I'm in the neighborhood", let me know, but trying to avoid 
+too much scope creep on my audit to increase chances it actually 
+gets included...
 
-What the fuck?  It assumes no such thing and a lot of iterators are
-nothing like integers.  What are you talking about?
+>2) KERN_DEBUG is inappropriate and wrap the string in the middle 
+>and not in the
+>beginning
+
+Agree on the wordwrap, several artifacts were created on this 
+patchset and this whole thing will be resubmitted through a 
+different mail client. 
+As for KERN_DEBUG, KERN_DEBUG is used in the function following 
+this call as notification that this workaround was required.  When 
+I audit code as I am here I generally try to blend the patch in 
+with the style and conventions of the code around it.  If 
+KERN_DEBUG is inappropriate on the subsequent call, both values 
+should be changed.  
+
+Let me know your preferences on these issues and I will include in 
+the next pass.  Thanks for your comments and review...
+
+---------------------------------------
+Scott Thompson / postfail@hushmail.com
+---------------------------------------
+
