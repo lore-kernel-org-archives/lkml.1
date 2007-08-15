@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764988AbXHOJUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759464AbXHOJ3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764988AbXHOJUq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 05:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbXHOJUg
+	id S1759464AbXHOJ3U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 05:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbXHOJ3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 05:20:36 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:33466 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760893AbXHOJUf (ORCPT
+	Wed, 15 Aug 2007 05:29:09 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:37499 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751866AbXHOJ3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 05:20:35 -0400
-Date: Wed, 15 Aug 2007 11:20:33 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Rene Herman <rene.herman@gmail.com>
-cc: Jason Uhlenkott <jasonuhl@jasonuhl.org>,
-       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kfree(0) - ok?
-In-Reply-To: <46C2BB60.6010909@gmail.com>
-Message-ID: <Pine.LNX.4.64.0708151113410.19270@fbirervta.pbzchgretzou.qr>
-References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org>
- <20070814232107.GA4265@aurum.uhlenkott.net>
- <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr>
- <46C2BB60.6010909@gmail.com>
+	Wed, 15 Aug 2007 05:29:07 -0400
+Message-ID: <46C2C762.7080205@s5r6.in-berlin.de>
+Date: Wed, 15 Aug 2007 11:29:06 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Joe Perches <joe@perches.com>, Rene Herman <rene.herman@gmail.com>,
+       git@vger.kernel.org, Junio C Hamano <gitster@pobox.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
+References: <1186984174.10249.7.camel@localhost>  <200708131933.10125.m.kozlowski@tuxland.pl>  <1187026955.2688.4.camel@laptopd505.fenrus.org>  <1187037445.6628.98.camel@heimdal.trondhjem.org>  <1187054366.2757.0.camel@laptopd505.fenrus.org>  <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu>  <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>  <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost> <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> 	#!/bin/sh
+> 	git log --since=6.months.ago -- "$@" |
+> 		grep -i '^    [-a-z]*by:.*@' |
+> 		sort | uniq -c |
+> 		sort -r -n | head
+> 
+> and it gives you a rather good picture of who is involved with a 
+> particular subdirectory or file.
 
-On Aug 15 2007 10:37, Rene Herman wrote:
-> On 08/15/2007 09:28 AM, Jan Engelhardt wrote:
->> On Aug 14 2007 16:21, Jason Uhlenkott wrote:
->
->> > On Tue, Aug 14, 2007 at 15:55:48 -0700, Arjan van de Ven wrote:
->> > > NULL is not 0 though.
->> > It is.  Its representation isn't guaranteed to be all-bits-zero,
->> 
->> C guarantees that.
->
-> C guarantees what? If you're disagreeing with Jason -- he's right.
-
-http://coding.derkeiler.com/Archive/C_CPP/comp.lang.c/2003-11/1808.html
-
->> > but the constant value 0 when used in pointer context is always a
->> > null pointer (and in fact the standard requires that NULL be
->> > #defined as 0 or a cast thereof).
-
-
-	Jan
+No, it doesn't.  The subscribers of <subsystem-devel@somewhere.org> are
+not listed in patch logs.
 -- 
+Stefan Richter
+-=====-=-=== =--- -====
+http://arcgraph.de/sr/
