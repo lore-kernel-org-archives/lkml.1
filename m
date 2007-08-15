@@ -1,46 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761914AbXHOQsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764951AbXHOQxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761914AbXHOQsn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 12:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbXHOQse
+	id S1764951AbXHOQxa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 12:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbXHOQxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 12:48:34 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:56495 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753764AbXHOQsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 12:48:33 -0400
-Date: Wed, 15 Aug 2007 09:47:29 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-Cc: Andi Kleen <ak@suse.de>, Glauber de Oliveira Costa <glommer@gmail.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
-       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       Steven Rostedt <rostedt@goodmis.org>, kiran@scalemp.com,
-       shai@scalemp.com
-Subject: Re: [PATCH 3/25][V3] irq_flags / halt routines
-Message-ID: <20070815164729.GU3672@sequoia.sous-sol.org>
-References: <11871821854176-git-send-email-gcosta@redhat.com> <1187182197314-git-send-email-gcosta@redhat.com> <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <20070815135554.GE3406@bingen.suse.de> <5d6222a80708150718v14f26343q7467385e7919fa76@mail.gmail.com> <20070815154243.GH3406@bingen.suse.de> <46C31736.2050001@redhat.com> <20070815163640.GJ3406@bingen.suse.de> <46C3283B.5090804@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46C3283B.5090804@redhat.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Wed, 15 Aug 2007 12:53:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50941 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756716AbXHOQxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 12:53:19 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <45343.31878.qm@web36610.mail.mud.yahoo.com>
+References: <45343.31878.qm@web36610.mail.mud.yahoo.com>
+To: casey@schaufler-ca.com
+Cc: dhowells@redhat.com, torvalds@osdl.org, viro@ftp.linux.org.uk,
+       sds@tycho.nsa.gov, linux-fsdevel@vger.kernel.org, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+Subject: Re: Adding a security parameter to VFS functions
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Wed, 15 Aug 2007 17:52:17 +0100
+Message-ID: <2945.1187196737@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Glauber de Oliveira Costa (gcosta@redhat.com) wrote:
-> As alternatives what we have now, we can either keep the paravirt_ops as 
-> it is now for the native case, just hooking the vsmp functions in place 
-> of the normal one, (there are just three ops anyway), refill the 
-> paravirt_ops entirely in somewhere like vsmp.c, or similar (or maybe 
-> even assigning paravirt_ops.fn = vsmp_fn on the fly, but early enough).
+Casey Schaufler <casey@schaufler-ca.com> wrote:
 
-This is the best (just override pvops.fn for the few needed for VSMP).
-The irq_disabled_flags() is the only problem.  For i386 we dropped it
-(disabled_flags) as a pvop and forced the backend to provide a flags
-(via save_flags) that conforms to IF only.
+> 
+> Could you describe how this compares to the proposal that the
+> AppArmor developers suggested recently? I expect that we can 
+> reduce the amount of discussion required, and maybe avoid some
+> confusion if you could do that.
 
-thanks,
--chris
+I don't know what that is.
+
+David
