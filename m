@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933726AbXHORO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934080AbXHORQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933726AbXHORO3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbXHOROV
+	id S934080AbXHORQS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbXHORQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:14:21 -0400
-Received: from ms.trustica.cz ([82.208.32.68]:59134 "EHLO ms.trustica.cz"
+	Wed, 15 Aug 2007 13:16:06 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1716 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753425AbXHOROU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:14:20 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Aug 2007 13:14:19 EDT
-Message-ID: <46C332D6.1060907@assembler.cz>
-Date: Wed, 15 Aug 2007 19:07:34 +0200
-From: Rudolf Marek <r.marek@assembler.cz>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070621)
-MIME-Version: 1.0
-To: joe@perches.com
-CC: torvalds@linux-foundation.org, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] [134/2many] MAINTAINERS - CORETEMP HARDWARE MONITORING
- DRIVER
-References: <46bff960.WIP0LRYr3U/rYI1a%joe@perches.com>
-In-Reply-To: <46bff960.WIP0LRYr3U/rYI1a%joe@perches.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755506AbXHORQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:16:05 -0400
+Subject: Re: [PATCH] [525/2many] MAINTAINERS - USER-MODE LINUX
+From: Joe Perches <joe@perches.com>
+To: Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070815143622.GC5376@c2.user-mode-linux.org>
+References: <46bffc8f.k8F7SBEYGP7ozPij%joe@perches.com>
+	 <20070815143622.GC5376@c2.user-mode-linux.org>
+Content-Type: text/plain
+Date: Wed, 15 Aug 2007 10:15:55 -0700
+Message-Id: <1187198155.7443.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Wed, 2007-08-15 at 10:36 -0400, Jeff Dike wrote:
+> Looks fine, but add
+> F:	fs/hostfs/
+> F:	fs/hppfs/
 
-Hi,
+Thanks, I've now got:
 
-There is documentation file too. Documentation/hwmon/coretemp
+USER-MODE LINUX
+P:	Jeff Dike
+M:	jdike@karaya.com
+L:	user-mode-linux-devel@lists.sourceforge.net
+L:	user-mode-linux-user@lists.sourceforge.net
+W:	http://user-mode-linux.sourceforge.net
+S:	Maintained
+F:	Documentation/uml/UserModeLinux-HOWTO.txt
+F:	arch/um/
+F:	include/asm-um/
+F:	fs/hostfs/
+F:	fs/hppfs/
 
-Rudolf
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iD8DBQFGwzLV3J9wPJqZRNURAgdmAJ9az/Zm2rq1k+sxwivhSnLMj4pfbwCgy+LI
-5kU9ohmTljh3FNnEGTImodI=
-=d5Rg
------END PGP SIGNATURE-----
