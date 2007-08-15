@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764951AbXHOImd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764625AbXHOIpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764951AbXHOImd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 04:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758935AbXHOIl4
+	id S1764625AbXHOIpS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 04:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbXHOIo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 04:41:56 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37397 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757970AbXHOIlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 04:41:53 -0400
-Date: Wed, 15 Aug 2007 08:41:48 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.35.1
-Message-ID: <20070815084148.GA16893@hera.kernel.org>
+	Wed, 15 Aug 2007 04:44:57 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:60318 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756106AbXHOIoz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 04:44:55 -0400
+To: svaidy@linux.vnet.ibm.com
+Cc: a.p.zijlstra@chello.nl, dhaval@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, ebiederm@xmission.com,
+       containers@lists.osdl.org, akpm@linux-foundation.org, xemul@openvz.org,
+       menage@google.com, balbir@linux.vnet.ibm.com
+Subject: Re: [-mm PATCH 4/9] Memory controller memory accounting (v4)
+In-Reply-To: Your message of "Tue, 31 Jul 2007 18:14:26 +0530"
+	<46AF2EAA.2080703@linux.vnet.ibm.com>
+References: <46AF2EAA.2080703@linux.vnet.ibm.com>
+X-Mailer: Cue version 0.8 (070404-1613/takashi)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20070815084454.09B061BF982@siro.lan>
+Date: Wed, 15 Aug 2007 17:44:53 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've just released Linux 2.4.35.1.
+> YAMAMOTO Takashi wrote:
+> >> +	lock_meta_page(page);
+> >> +	/*
+> >> +	 * Check if somebody else beat us to allocating the meta_page
+> >> +	 */
+> >> +	race_mp = page_get_meta_page(page);
+> >> +	if (race_mp) {
+> >> +		kfree(mp);
+> >> +		mp = race_mp;
+> >> +		atomic_inc(&mp->ref_cnt);
+> >> +		res_counter_uncharge(&mem->res, 1);
+> >> +		goto done;
+> >> +	}
+> > 
+> > i think you need css_put here.
+> 
+> Thats correct. We do need css_put in this path.
+> 
+> Thanks,
+> Vaidy
 
-This version includes some minor build fixes for people using GCC 4.x.
-It now successfully builds with 4.2.
+v5 still seems to have the problem.
 
-Please also note the security update : CVE-2007-3848. Limited impact, but
-really depends on the setuid binaries provided by your distribution.
-
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/patch-2.4.35.1.bz2
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.35.1
-
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.35.y.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.35.y.git
-
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/stable/linux-v2.4.35.y.git
-
-Willy
---
-
-Summary of changes from v2.4.35 to v2.4.35.1
-============================================
-
-Marc Haisenko (1):
-      b44: fix force mac address before ifconfig up
-
-Willy Tarreau (9):
-      build fix for lvm with gcc 4
-      fix wdt83627 build breakage with gcc 4.x
-      wdt83627: fix wdt_init() return code
-      module fdomain_cs requires fdomain_setup()
-      do not use gcc's builtin strpbrk
-      fix incorrect use of -fno-unit-at-a-time on GCC >= 4
-      second build fix for some rare buggy versions of GCC 4
-      CVE-2007-3848 Privilege escalation via PR_SET_PDEATHSIG
-      Change VERSION to 2.4.35.1
-
+YAMAMOTO Takashi
