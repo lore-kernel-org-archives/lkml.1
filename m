@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937404AbXHOWqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964876AbXHOWsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937404AbXHOWqz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 18:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937194AbXHOWpM
+	id S964876AbXHOWsw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 18:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937358AbXHOWqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 18:45:12 -0400
-Received: from web50111.mail.re2.yahoo.com ([206.190.39.137]:40031 "HELO
-	web50111.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S937211AbXHOWpJ (ORCPT
+	Wed, 15 Aug 2007 18:46:36 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:45171 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937356AbXHOWqe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 18:45:09 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=jKjN9358ODV9vRNPvLjHFTo/wY4xtYC1Y34FTfd/vdvU7x4nUZlFUhLHCiQA++NQNH7O0lZ0jj6rmRkG6lDhqNbvQAicn+nWsqeUqcvWHPwqFqZCTn4rY7N53/y14qNzNMdTSgJMElBmnJ8+I/SIH5uZNBtI2bfMa8Tn/r9HLmk=;
-X-YMail-OSG: azzCboIVM1lmIk1_MbqOu0fxUSoXuYycI.MrLpJJXFkzFeUjbqlFZ71qRmn4jlU29JOWErWBg.HfgvOt6UdBT5_3.X_87uMqPWRwuqaepVvjfD6bjt4-
-Date: Wed, 15 Aug 2007 15:38:28 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Reply-To: dougthompson@xmission.com
-Subject: Re: [PATCH] [171/2many] MAINTAINERS - EDAC-CORE
-To: joe@perches.com, linux-kernel@vger.kernel.org,
-       bluesmoke-devel@lists.sourceforge.net, akpm@linux-foundation.org
-In-Reply-To: <46bff9ac.WLlw8+K3hdwRL7yr%joe@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <524594.10224.qm@web50111.mail.re2.yahoo.com>
+	Wed, 15 Aug 2007 18:46:34 -0400
+Subject: [PATCH] Use num_possible_cpus() instead of NR_CPUS for timer
+	distribution
+From: john stultz <johnstul@us.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 15 Aug 2007 15:46:17 -0700
+Message-Id: <1187217977.6062.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew requested this fixup awhile back, and I just now got to it
+(apologies for being slow).
 
---- joe@perches.com wrote:
+To avoid lock contention, we distribute the sched_timer calls across the
+cpus so they do not trigger at the same instant. However, I used
+NR_CPUS, which can cause needless grouping on small smp systems
+depending on your kernel config. This patch converts to using
+num_possible_cpus() so we spread it as evenly as possible on every
+machine.
 
-> Add file pattern to MAINTAINER entry
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index d4325c7..78e5b0c 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -1662,6 +1662,9 @@ M:	dougthompson@xmission.com
->  L:	bluesmoke-devel@lists.sourceforge.net
->  W:	bluesmoke.sourceforge.net
->  S:	Supported
-> +F:	Documentation/drivers/edac/edac.txt
-> +F:	drivers/edac/edac_*
-> +F:	include/linux/edac.h
->  
->  EDAC-E752X
->  P:	Mark Gross
-> 
+Briefly tested w/ NR_CPUS=255 and verified reduced contention.
 
-Acked-by: Doug Thompson <dougthompson@xmission.com>
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+Index: 2.6-rt/kernel/time/tick-sched.c
+===================================================================
+--- 2.6-rt.orig/kernel/time/tick-sched.c
++++ 2.6-rt/kernel/time/tick-sched.c
+@@ -586,7 +586,7 @@ void tick_setup_sched_timer(void)
+ 	/* Get the next period (per cpu) */
+ 	ts->sched_timer.expires = tick_init_jiffy_update();
+ 	offset = ktime_to_ns(tick_period) >> 1;
+-	do_div(offset, NR_CPUS);
++	do_div(offset, num_possible_cpus());
+ 	offset *= smp_processor_id();
+ 	ts->sched_timer.expires = ktime_add_ns(ts->sched_timer.expires, offset);
+ 
 
 
