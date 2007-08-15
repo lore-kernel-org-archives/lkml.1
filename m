@@ -1,52 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbXHOKfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbXHOKjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755099AbXHOKfq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 06:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbXHOKfe
+	id S1755925AbXHOKjN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 06:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbXHOKiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 06:35:34 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:37731 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbXHOKfd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 06:35:33 -0400
-Message-ID: <46C2D6F3.3070707@s5r6.in-berlin.de>
-Date: Wed, 15 Aug 2007 12:35:31 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Satyam Sharma <satyam@infradead.org>
-CC: Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       ak@suse.de, heiko.carstens@de.ibm.com, davem@davemloft.net,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org, Herbert Xu <herbert@gondor.apana.org.au>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Aug 2007 06:38:55 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35298 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752164AbXHOKiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 06:38:54 -0400
+From: Andi Kleen <ak@suse.de>
+Message-Id: <200708151238.148026000@suse.de>
+To: patches@x86-64.org, linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: [PATCH 2.6.22] [0/5] x86 updates for 2.6.22-stable
+Date: Wed, 15 Aug 2007 12:38:53 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> [ BTW, why do we want the compiler to not optimize atomic_read()'s in
->   the first place? Atomic ops guarantee atomicity, which has nothing
->   to do with "volatility" -- users that expect "volatility" from
->   atomic ops are the ones who must be fixed instead, IMHO. ]
 
-LDD3 says on page 125:  "The following operations are defined for the
-type [atomic_t] and are guaranteed to be atomic with respect to all
-processors of an SMP computer."
+Should all go into the next stable release.
 
-Doesn't "atomic WRT all processors" require volatility?
--- 
-Stefan Richter
--=====-=-=== =--- -====
-http://arcgraph.de/sr/
+Two of the patches (cfi probe and rept fix) are only pending
+for mainline (I hope Linus applies them today). They should
+not go in before hitting mainline.
+
+-Andi
