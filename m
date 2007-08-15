@@ -1,104 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934584AbXHORea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934720AbXHORe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934584AbXHORea (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760355AbXHOReP
+	id S934720AbXHORe5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934597AbXHORec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:34:15 -0400
-Received: from web52506.mail.re2.yahoo.com ([206.190.48.189]:33603 "HELO
-	web52506.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1763134AbXHOReN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:34:13 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=tpkSDtaxx3hnIh8p+p+iAEVF8tBPHSkd+fDg1PLWbXQeLtpAkli7G1t4n3q6wn1RVOOZqrnUcotfWqiVK9OOYdbGYldMNTAFR0gKnhpF5oG3BJPbEcXC45q7/NSXnUrv8iTYUDBi4+UGXhVJYeOMiNr8HQUaw4AddEw19O6v578=;
-X-YMail-OSG: 5fOBESIVM1nL8D5fC6ZyvQQGrh3j_6fhkYUIfFzAiXGCjNKap2_19ImEDLAlLoVgdi1euHh08IFLLT1f9Jh77ca0SZY5jVMJGGif32x8vWgJDnr_jlofp4xUvYkDwrdqYIc3Iqlxl_T4MJuHH9zfbPmhpQ--
-Date: Wed, 15 Aug 2007 10:34:11 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: Thinking outside the box on file systems
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Valdis.Kletnieks@vt.edu, Michael Tharp <gxti@partiallystapled.com>,
-       alan <alan@clueserver.org>, LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-In-Reply-To: <A631EFDE-354D-498E-980E-2B785517AC51@mac.com>
+	Wed, 15 Aug 2007 13:34:32 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:3499 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934589AbXHOReb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:34:31 -0400
+Message-ID: <46C33934.7060802@cfl.rr.com>
+Date: Wed, 15 Aug 2007 13:34:44 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <922139.21476.qm@web52506.mail.re2.yahoo.com>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+CC: Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
+       Marc Perkel <mperkel@yahoo.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: Thinking outside the box on file systems
+References: <106259.96671.qm@web52501.mail.re2.yahoo.com> <Pine.LNX.4.64.0708141546510.22494@blackbox.fnordora.org> <46C2F96D.5030908@partiallystapled.com> <20070815133021.GB9412@csclub.uwaterloo.ca> <ECFEFFF7-0210-4D16-B508-5284FCE58B28@mac.com>
+In-Reply-To: <ECFEFFF7-0210-4D16-B508-5284FCE58B28@mac.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Aug 2007 17:34:39.0759 (UTC) FILETIME=[8EB871F0:01C7DF62]
+X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1021-15364.000
+X-TM-AS-Result: No--12.061600-5.000000-4
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Kyle Moffett <mrmacman_g4@mac.com> wrote:
-
-> On Aug 15, 2007, at 13:09:31, Marc Perkel wrote:
-> > The idea is that people have permissions - not
-> files.  By people I  
-> > mean users, groups, managers, applications
-> > etc. One might even specify that there are no
-> permission  
-> > restrictions at all. Part of the process would be
-> that the kernel  
-> > load what code it will use for the permission
-> system. It might even  
-> > be a little perl script you write.
-> >
-> > Also - you aren't even giving permission to access
-> files. It's  
-> > permission to access name patterns. One could
-> apply REGEX masks to  
-> > names to determine permissions. So if you have
-> permission to the  
-> > name you have permission to the file.
+Kyle Moffett wrote:
+> Going even further in this direction, the following POSIX ACL on the 
+> directories will do what you want:
 > 
-> Please excuse me, I'm going to go stand over in the
-> corner for a minute.
-> 
-> *hahahahahaa hahahahahaaa hahaa hoo hee snicker
-> sniff*
-> 
-> *wanders back into the conversation*
-> 
-> Sorry about that, pardon me.
-> 
-> I suspect you will find it somewhat hard to convince
-> *anybody* on  
-> this list to put either a regex engine or a Perl
-> interpreter into the  
-> kernel.  I doubt you could even get a simple
-> shell-style pattern  
-> matcher in.  First of all, both of the former chew
-> up enormous gobs  
-> of stack space *AND* they're NP-complete.  You just
-> can't do such  
-> matching even in polynomial time, let alone
-> something that scales  
-> appropriately for an OS kernel like, say, O(log(n)).
-> 
-> Cheers,
-> Kyle Moffett
-> 
+> ## Note: file owner and group are kmoffett
+> u::rw-
+> g::rw-
+> u:lsorens:rw-
+> u:mtharp:rw-
+> u:mperkel:rw-
+> g:randomcvsdudes:r-
+> default:u::rw-
+> default:g::rw-
+> default:u:lsorens
+> default:u:mtharp:rw-
+> default:u:mperkel:rw-
+> default:g:randomcvsdudes:r-
 
 
-Keep in mind that this is about thinking outside the
-box. Don't let new ideas scare you.
+The problem that I have with this setup is that it specifies an ACL on 
+EACH file.  Yes, you can set a default on the directory for newly 
+created files, but what if I want to add a user to the access list for 
+that whole directory?  I have to individually update every acl on every 
+file in that directory.  Also if you move a file created elsewhere into 
+that directory, it retains its existing permissions doesn't it?  I would 
+rather just add a new ace to the directory itself which specifies that 
+it applies to the entire tree.  Then you only need to store a single acl 
+on disk, and only have to update one acl to add a new user.
 
-I'm not suggesting that the kernel contain perl. I'm
-saying that you can let the kernel call a perl program
-in user space to control part of the permission
-system. There are examples of this in FUSE. What I'm
-suggesting would be very FUSE friendly.
-
-
-Marc Perkel
-Junk Email Filter dot com
-http://www.junkemailfilter.com
-
-
-       
-____________________________________________________________________________________
-Got a little couch potato? 
-Check out fun summer activities for kids.
-http://search.yahoo.com/search?fr=oni_on_mail&p=summer+activities+for+kids&cs=bz 
