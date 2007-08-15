@@ -1,129 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbXHOMON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758039AbXHOMTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759358AbXHOMON (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 08:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbXHOMOA
+	id S1758039AbXHOMTW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 08:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbXHOMTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 08:14:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36008 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752075AbXHOMN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 08:13:58 -0400
-Date: Wed, 15 Aug 2007 08:17:05 -0400
-From: Josef Bacik <jbacik@redhat.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Josef Bacik <jbacik@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix panic in jbd by adding locks
-Message-ID: <20070815121704.GL24127@dhcp-243-37.rdu.redhat.com>
-References: <20070814152255.GB24127@dhcp-243-37.rdu.redhat.com> <20070815113737.GC7642@atrey.karlin.mff.cuni.cz>
+	Wed, 15 Aug 2007 08:19:03 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36735 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752829AbXHOMTA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 08:19:00 -0400
+Date: Wed, 15 Aug 2007 18:01:10 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <46C2D6F3.3070707@s5r6.in-berlin.de>
+Message-ID: <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2D6F3.3070707@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070815113737.GC7642@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 01:37:37PM +0200, Jan Kara wrote:
->   Hello,
+
+
+On Wed, 15 Aug 2007, Stefan Richter wrote:
+
+> Satyam Sharma wrote:
+> > [ BTW, why do we want the compiler to not optimize atomic_read()'s in
+> >   the first place? Atomic ops guarantee atomicity, which has nothing
+> >   to do with "volatility" -- users that expect "volatility" from
+> >   atomic ops are the ones who must be fixed instead, IMHO. ]
 > 
-> > It is possible to panic the box by a race condition that exists in the
-> > journalling code where we do not take the j_revoke_lock when traversing the
-> > journal's revoked record list.  This patch has been tested and we haven't seen
-> > the issue yet, its a rather straightforward and correct (at least I think so :)
-> > fix.  Thank you,
->   In principle, the patch looks fine. The only thing I'm wondering about
-> is how that panic can happen... Journal write_revoke_records() is called
-> from journal_commit_transaction() when revoke table for the committing
-> transaction shouldn't see any further changes. So maybe the patch is
-> masking a different problem.
->   Do you have a way of reproducing the problem? Any stack trace
-> available?
+> LDD3 says on page 125:  "The following operations are defined for the
+> type [atomic_t] and are guaranteed to be atomic with respect to all
+> processors of an SMP computer."
+> 
+> Doesn't "atomic WRT all processors" require volatility?
 
-Reproducing the problem is tricky as theres no sure way to make it happen,
-basically we run the box with alot of memory pressure while doing alot
-operations that require journalling.  Here is the backtrace of the panic (note
-this is on a RHEL4 kernel so 2.6.9, but the same problem exists upstream)
+No, it definitely doesn't. Why should it?
 
-<1>Unable to handle kernel paging request at virtual address 60000000002b1110
-<4>kjournald[1310]: Oops 11012296146944 [1]
-<4>Modules linked in: ltd(U) vfat fat dm_mod button uhci_hcd shpchp e1000
-bond1(U) bond0(U) ext3 jbd hfcldd(U) hfcldd_conf(U) sd_mod scsi_mod
-<4>
-<4>Pid: 1310, CPU 0, comm:            kjournald
-<4>psr : 0000121008026018 ifs : 8000000000000c9c ip  : [<a000000200045161>]
-Tainted: P     
-<4>ip is at journal_write_revoke_records+0x221/0x4e0 [jbd]
-<4>unat: 0000000000000000 pfs : 0000000000000c9c rsc : 0000000000000003
-<4>rnat: 0000000000000000 bsps: 0000000000000000 pr  : 000000000000a681
-<4>ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70033f
-<4>csd : 0000000000000000 ssd : 0000000000000000
-<4>b0  : a000000200045270 b6  : a00000020026a240 b7  : a00000010000ee90
-<4>f6  : 0fffbe38e38e381b23800 f7  : 0ffe9edc3d22c00000000
-<4>f8  : 1000e86fb000000000000 f9  : 100029000000000000000
-<4>f10 : 1000aeff71c71b9e6e61a f11 : 1003e0000000000000eff
-<4>r1  : a000000200234000 r2  : 000000000000048c r3  : e0000002791a7a90
-<4>r8  : 0000000000000000 r9  : e0000002791a0400 r10 : 0000000000000000
-<4>r11 : e000000001000000 r12 : e0000002791a7b00 r13 : e0000002791a0000
-<4>r14 : e00000027b7ee6c0 r15 : e0000002791a7b00 r16 : e000000272d48018
-<4>r17 : 0000000000000000 r18 : 0000000000000000 r19 : 0009804c8a70033f
-<4>r20 : 60000000002b1118 r21 : a00000010006ad70 r22 : 0000000000000019
-<4>r23 : 0000000000000000 r24 : 0000000000000000 r25 : 0000000000000019
-<4>r26 : 0000000000000000 r27 : 0000000000000000 r28 : 0000000000006a41
-<4>r29 : 0000000000000000 r30 : 0000000000000000 r31 : e00000027b7ee5a4
-<4>
-<4>Call Trace:
-<4> [<a000000100016da0>] show_stack+0x80/0xa0
-<4>                                sp=e0000002791a7690 bsp=e0000002791a1170
-<4> [<a0000001000176b0>] show_regs+0x890/0x8c0
-<4>                                sp=e0000002791a7860 bsp=e0000002791a1128
-<4> [<a00000010003e910>] die+0x150/0x240
-<4>                                sp=e0000002791a7880 bsp=e0000002791a10e8
-<4> [<a0000001000644c0>] ia64_do_page_fault+0x8c0/0xbc0
-<4>                                sp=e0000002791a7880 bsp=e0000002791a1080
-<4> [<a00000010000f600>] ia64_leave_kernel+0x0/0x260
-<4>                                sp=e0000002791a7930 bsp=e0000002791a1080
-<4> [<a000000200045160>] journal_write_revoke_records+0x220/0x4e0 [jbd]
-<4>                                sp=e0000002791a7b00 bsp=e0000002791a0f98
-<4> [<a00000020003d940>] journal_commit_transaction+0xf80/0x3080 [jbd]
-<4>                                sp=e0000002791a7b10 bsp=e0000002791a0ea0
-<4> [<a0000002000458d0>] kjournald+0x170/0x580 [jbd]
-<4>                                sp=e0000002791a7d80 bsp=e0000002791a0e38
-<4> [<a000000100018c70>] kernel_thread_helper+0x30/0x60
-<4>                                sp=e0000002791a7e30 bsp=e0000002791a0e10
-<4> [<a000000100008c60>] start_kernel_thread+0x20/0x40
-<4>                                sp=e0000002791a7e30 bsp=e0000002791a0e10
+"Atomic w.r.t. all processors" is just your normal, simple "atomicity"
+for SMP systems (ensure that that object is modified / set / replaced
+in main memory atomically) and has nothing to do with "volatile"
+behaviour.
 
-While analyzing the problem, Hitachi came up with this explanation for the race
-condition
+"Volatile behaviour" itself isn't consistently defined (at least
+definitely not consistently implemented in various gcc versions across
+platforms), but it is /expected/ to mean something like: "ensure that
+every such access actually goes all the way to memory, and is not
+re-ordered w.r.t. to other accesses, as far as the compiler can take
+care of these". The last "as far as compiler can take care" disclaimer
+comes about due to CPUs doing their own re-ordering nowadays.
+
+For example (say on i386):
+
+(A)
+$ cat tp1.c
+int a;
+
+void func(void)
+{
+	a = 10;
+	a = 20;
+}
+$ gcc -Os -S tp1.c
+$ cat tp1.s
+...
+movl    $20, a
+...
+
+(B)
+$ cat tp2.c
+volatile int a;
+
+void func(void)
+{
+	a = 10;
+	a = 20;
+}
+$ gcc -Os -S tp2.c
+$ cat tp2.s
+...
+movl    $10, a
+movl    $20, a
+...
+
+(C)
+$ cat tp3.c
+int a;
+
+void func(void)
+{
+	*(volatile int *)&a = 10;
+	*(volatile int *)&a = 20;
+}
+$ gcc -Os -S tp3.c
+$ cat tp3.s
+...
+movl    $10, a
+movl    $20, a
+...
+
+In (A) the compiler optimized "a = 10;" away, but the actual store
+of the final value "20" to "a" was still "atomic". (B) and (C) also
+exhibit "volatile" behaviour apart from the "atomicity".
+
+But as others replied, it seems some callers out there depend upon
+atomic ops exhibiting "volatile" behaviour as well, so that answers
+my initial question, actually. I haven't looked at the code Paul
+pointed me at, but I wonder if that "forget(x)" macro would help
+those cases. I'd wish to avoid the "volatile" primitive, personally.
 
 
-PID: 31401  TASK: e00000004fb30000  CPU: 1   COMMAND: "GET"
-#0 [BSP:e00000004fb314d8] context_switch at a00000010006ab90
-#1 [BSP:e00000004fb313b8] schedule at a000000100590f40
-#2 [BSP:e00000004fb31340] do_get_write_access at a0000002000388e0
-#3 [BSP:e00000004fb31300] journal_get_write_access at a000000200039680
-#4 [BSP:e00000004fb312b8] ext3_reserve_inode_write at a00000020013f180
-#5 [BSP:e00000004fb31290] ext3_mark_inode_dirty at a00000020013f2a0
-#6 [BSP:e00000004fb31260] ext3_dirty_inode at a000000200144310
-#7 [BSP:e00000004fb31210] __mark_inode_dirty at a000000100178200
-#8 [BSP:e00000004fb311e8] update_atime at a000000100165cc0
-#9 [BSP:e00000004fb31128] do_generic_mapping_read at a0000001000d40e0
-#10 [BSP:e00000004fb310c0] __generic_file_aio_read at a0000001000d8b40
-#11 [BSP:e00000004fb31088] generic_file_aio_read at a0000001000d8f60
-#12 [BSP:e00000004fb31048] do_sync_read at a0000001001238a0
-#13 [BSP:e00000004fb30ff0] vfs_read at a000000100123b90
-#14 [BSP:e00000004fb30f78] sys_read at a0000001001241d0
-
-do_get_write_access() can call journal_revoke_cancel().
-revoke_record_cache variable is operated in journal_revoke_cancel().
-journal_revoke_cancel() is called in user process context, and
-journal_write_revoke_records() is called in kjournald context.
-Therefore, there is a race condition between journal_revoke_cancel() and
-journal_write_revoke_records() because journal_write_revoke_records()
-operates revoke_record_cache variable without lock.
-
-I hope this is helpful.  Thank you,
-
-Josef
+Satyam
