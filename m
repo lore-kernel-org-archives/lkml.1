@@ -1,77 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765339AbXHOOuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932520AbXHOOvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765339AbXHOOuk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 10:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762539AbXHOOuM
+	id S932520AbXHOOvx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 10:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763200AbXHOOvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 10:50:12 -0400
-Received: from iucha.net ([209.98.146.184]:34844 "EHLO mail.iucha.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932231AbXHOOuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 10:50:07 -0400
-Date: Wed, 15 Aug 2007 09:50:06 -0500
-From: Florin Iucha <florin@iucha.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Tejun Heo <htejun@gmail.com>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
-	v2.6.23-rc3-50-g28e8351
-Message-ID: <20070815145005.GB7124@iucha.net>
-References: <20070815133147.GA7124@iucha.net> <Pine.LNX.4.44L0.0708151033270.3895-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="1LKvkjL3sHcu1TtY"
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0708151033270.3895-100000@iolanthe.rowland.org>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 15 Aug 2007 10:51:41 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3822 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762951AbXHOOvi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 10:51:38 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Tony Luck <tony.luck@intel.com>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] ia64: default the NUMA node distance when there is no ACPI SLIT
+Message-ID: <b6b031e56608ee8acf4c84cb1f413403@pinky>
+Date: Wed, 15 Aug 2007 15:50:58 +0100
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---1LKvkjL3sHcu1TtY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+If during boot no ACPI 2.0 SLIT table is found we do not initialise
+the NUMA node distance table, leaving all node distances as 0.
+This causes IA-64 to fail the regression tests for libnuma.  Also,
+when we have a bad formatted table we will set all node distances
+to 10.  Both of these forms lose all NUMA information by indicating
+all nodes are as close as the "local node", and are inconsistant
+in their values.
 
-On Wed, Aug 15, 2007 at 10:38:54AM -0400, Alan Stern wrote:
-> This patch will get rid of the annoying error messages.  It won't do=20
-> anything about your keyboard's tendency to spontaneously stop working,=20
-> alas.
+When an architecture does not offer NUMA topology support the default
+node_distance is a distance of LOCAL_DISTANCE (10) to the local node
+and REMOTE_DISTANCE (20) to all others.  It seems more correct to
+follow this model when the SLIT information is missing or corrupt.
 
-My keyboard works fine for days, with kernels up to and including
-2.6.23-rc2 . I have booted into 2.6.23-rc3-$whatever this morning, and
-after 10-15 minutes the keyboard stopped working.  The mice which were
-plugged in the keyboard's built-in hub were fine though.
+This patch updates the SLIT failure paths to fill in the NUMA node
+distance table with this default.
 
-The first time it happened, I removed the keyboard and got the oops
-that started this thread.  The second time, I just logged-in remotely
-and rebooted, and the reboot process stopped at "KILLING all
-processes" step.  I simply reset the box and rebooted into 2.6.23-rc2
-and it is fine since (over an hour ago).
-
-Regards,
-florin
-
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
-
---1LKvkjL3sHcu1TtY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGwxKdND0rFCN2b1sRArHlAJ9/mo8hcA+2nhOjOqZRb4zcZjPw5ACeMR9A
-QHqX6FAvnLDkklDZ2IT83zU=
-=eP9A
------END PGP SIGNATURE-----
-
---1LKvkjL3sHcu1TtY--
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ arch/ia64/kernel/acpi.c |   62 ++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 46 insertions(+), 16 deletions(-)
+diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
+index 3d45d24..3cd3e5b 100644
+--- a/arch/ia64/kernel/acpi.c
++++ b/arch/ia64/kernel/acpi.c
+@@ -445,7 +445,6 @@ void __init acpi_numa_slit_init(struct acpi_table_slit *slit)
+ 		printk(KERN_ERR
+ 		       "ACPI 2.0 SLIT: size mismatch: %d expected, %d actual\n",
+ 		       len, slit->header.length);
+-		memset(numa_slit, 10, sizeof(numa_slit));
+ 		return;
+ 	}
+ 	slit_table = slit;
+@@ -507,9 +506,50 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
+ 	num_node_memblks++;
+ }
+ 
++void __init acpi_numa_distance_from_slit(void)
++{
++	int i, j;
++	int node_from;
++	int node_to;
++	int nodes = slit_table->locality_count;
++
++	printk(KERN_INFO "Building NUMA distance from ACPI 2.0 SLIT\n");
++
++	for (i = 0; i < nodes; i++) {
++		if (!pxm_bit_test(i))
++			continue;
++		node_from = pxm_to_node(i);
++		for (j = 0; j < nodes; j++) {
++			if (!pxm_bit_test(j))
++				continue;
++			node_to = pxm_to_node(j);
++			node_distance(node_from, node_to) =
++					  slit_table->entry[i * nodes + j];
++		}
++	}
++}
++
++void __init acpi_numa_distance_default(void)
++{
++	int i, j;
++	int node_from;
++	int node_to;
++
++	printk(KERN_INFO "No SLIT table, defaulting NUMA distance\n");
++
++	for_each_online_node(i) {
++		node_from = pxm_to_node(i);
++		for_each_online_node(j) {
++			node_to = pxm_to_node(j);
++			node_distance(node_from, node_to) = (i == j)?
++				LOCAL_DISTANCE : REMOTE_DISTANCE;
++		}
++	}
++}
++
+ void __init acpi_numa_arch_fixup(void)
+ {
+-	int i, j, node_from, node_to;
++	int i, j;
+ 
+ 	/* If there's no SRAT, fix the phys_id and mark node 0 online */
+ 	if (srat_num_cpus == 0) {
+@@ -553,21 +593,11 @@ void __init acpi_numa_arch_fixup(void)
+ 	printk(KERN_INFO "Number of memory chunks in system = %d\n",
+ 	       num_node_memblks);
+ 
+-	if (!slit_table)
+-		return;
+ 	memset(numa_slit, -1, sizeof(numa_slit));
+-	for (i = 0; i < slit_table->locality_count; i++) {
+-		if (!pxm_bit_test(i))
+-			continue;
+-		node_from = pxm_to_node(i);
+-		for (j = 0; j < slit_table->locality_count; j++) {
+-			if (!pxm_bit_test(j))
+-				continue;
+-			node_to = pxm_to_node(j);
+-			node_distance(node_from, node_to) =
+-			    slit_table->entry[i * slit_table->locality_count + j];
+-		}
+-	}
++	if (slit_table)
++		acpi_numa_distance_from_slit();
++	else
++		acpi_numa_distance_default();
+ 
+ #ifdef SLIT_DEBUG
+ 	printk("ACPI 2.0 SLIT locality table:\n");
