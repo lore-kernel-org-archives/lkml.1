@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765429AbXHOPZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932515AbXHOP26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765429AbXHOPZA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 11:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761202AbXHOPYw
+	id S932515AbXHOP26 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 11:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762008AbXHOP2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 11:24:52 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56978 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1760846AbXHOPYv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 11:24:51 -0400
-Date: Wed, 15 Aug 2007 11:24:50 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Florin Iucha <florin@iucha.net>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Tejun Heo <htejun@gmail.com>, Greg KH <gregkh@suse.de>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
- v2.6.23-rc3-50-g28e8351
-In-Reply-To: <20070815145005.GB7124@iucha.net>
-Message-ID: <Pine.LNX.4.44L0.0708151120410.3895-100000@iolanthe.rowland.org>
+	Wed, 15 Aug 2007 11:28:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46614 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761834AbXHOP2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 11:28:48 -0400
+Message-ID: <46C31B80.4040509@redhat.com>
+Date: Wed, 15 Aug 2007 12:28:00 -0300
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <ak@suse.de>
+CC: Glauber de Oliveira Costa <glommer@gmail.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
+       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 21/25][V3] export cpu_gdt_descr
+References: <11871823373106-git-send-email-gcosta@redhat.com> <11871823673236-git-send-email-gcosta@redhat.com> <11871823782610-git-send-email-gcosta@redhat.com> <11871823892519-git-send-email-gcosta@redhat.com> <11871823991803-git-send-email-gcosta@redhat.com> <11871824081337-git-send-email-!gcosta@redhat.com> <11871824192375-git-send-email-gcosta@redhat.com> <11871824292046-git-send-email-gcosta@redhat.com> <20070815140339.GG3406@bingen.suse.de> <5d6222a80708150725i45a064bfqfd43139338287988@mail.gmail.com> <20070815154351.GI3406@bingen.suse.de>
+In-Reply-To: <20070815154351.GI3406@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Aug 2007, Florin Iucha wrote:
-
-> On Wed, Aug 15, 2007 at 10:38:54AM -0400, Alan Stern wrote:
-> > This patch will get rid of the annoying error messages.  It won't do 
-> > anything about your keyboard's tendency to spontaneously stop working, 
-> > alas.
+Andi Kleen escreveu:
+> On Wed, Aug 15, 2007 at 11:25:43AM -0300, Glauber de Oliveira Costa wrote:
+>> On 8/15/07, Andi Kleen <ak@suse.de> wrote:
+>>>> +#ifdef CONFIG_PARAVIRT
+>>>> +extern unsigned long *cpu_gdt_descr;
+>>> No externs in .c files
+>>>
+>>> Normally they should be where the variable is defined
+>>> anyways.
+>> Given that this  variable is defined in head.S, what do you propose?
 > 
-> My keyboard works fine for days, with kernels up to and including
-> 2.6.23-rc2 . I have booted into 2.6.23-rc3-$whatever this morning, and
-> after 10-15 minutes the keyboard stopped working.  The mice which were
-> plugged in the keyboard's built-in hub were fine though.
+> Move it to C code first.
 > 
-> The first time it happened, I removed the keyboard and got the oops
-> that started this thread.
 
-It wasn't an oops, just a warning.
+duh. I haven't noticed that this variable is already defined as extern 
+in desc.h.
 
->  The second time, I just logged-in remotely
-> and rebooted, and the reboot process stopped at "KILLING all
-> processes" step.  I simply reset the box and rebooted into 2.6.23-rc2
-> and it is fine since (over an hour ago).
+If you don't oppose, I'll just include it in x8664_ksyms.c
 
-To track this down, you might try building 2.6.23-rc3 with 
-CONFIG_USB_DEBUG enabled.  Then retrieve the dmesg log after the 
-keyboard stops working and post it.  You probably ought to CC: the 
-maintainer of the HID core layer as well (and you can trim the existing 
-CC: list).
-
-Alan Stern
+Thanks for the nitpicking, Andi.
 
