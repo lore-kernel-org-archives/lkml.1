@@ -1,79 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964880AbXHOVL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936091AbXHOVPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964880AbXHOVL3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 17:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758250AbXHOVLV
+	id S936091AbXHOVPB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 17:15:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765975AbXHOVOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 17:11:21 -0400
-Received: from flpi101.sbcis.sbc.com ([207.115.20.70]:16123 "EHLO
-	flpi101.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752139AbXHOVLU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 17:11:20 -0400
-X-ORBL: [76.241.169.38]
-From: Chuck Lever <chuck.lever@oracle.com>
-Subject: [PATCH] Eliminate result signage problem in asm-x86_64/bitops.h
-To: andi@firstfloor.org
-Cc: linux-kernel@vger.kernel.org
-Date: Wed, 15 Aug 2007 17:02:47 -0400
-Message-ID: <20070815210247.3518.89243.stgit@monet.1015granger.net>
-In-Reply-To: <20070815204939.3518.63203.stgit@monet.1015granger.net>
-References: <20070815204939.3518.63203.stgit@monet.1015granger.net>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	Wed, 15 Aug 2007 17:14:45 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53838 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760127AbXHOVOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 17:14:43 -0400
+In-Reply-To: <20070815190722.GI9645@linux.vnet.ibm.com>
+References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com> <alpine.LFD.0.999.0708152048270.16414@enigma.security.iitk.ac.in> <20070815190722.GI9645@linux.vnet.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <caaab8327e759f3f9a0ca8f720948219@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Satyam Sharma <satyam@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       rpjday@mindspring.com, netdev@vger.kernel.org, ak@suse.de,
+       cfriesen@nortel.com, jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Wed, 15 Aug 2007 23:07:47 +0200
+To: paulmck@linux.vnet.ibm.com
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The return type of __scanbit() doesn't match the return type of
-find_{first,next}_bit().  Thus when you construct something like
-this:
+>> Possibly these were too trivial to expose any potential problems that 
+>> you
+>> may have been referring to, so would be helpful if you could write a 
+>> more
+>> concrete example / sample code.
+>
+> The trick is to have a sufficiently complicated expression to force
+> the compiler to run out of registers.
 
-   boolean ? __scanbit() : find_first_bit()
+You can use -ffixed-XXX to keep the testcase simple.
 
-you get an unsigned long result if "boolean" is true, and a signed
-long result if "boolean" is false.
 
-In file included from /home/cel/src/linux/include/linux/mmzone.h:15,
-                 from /home/cel/src/linux/include/linux/gfp.h:4,
-                 from /home/cel/src/linux/include/linux/slab.h:14,
-                 from /home/cel/src/linux/include/linux/percpu.h:5,
-                 from
-/home/cel/src/linux/include/linux/rcupdate.h:41,
-                 from /home/cel/src/linux/include/linux/dcache.h:10,
-                 from /home/cel/src/linux/include/linux/fs.h:275,
-                 from /home/cel/src/linux/fs/nfs/sysctl.c:9:
-/home/cel/src/linux/include/linux/nodemask.h: In function
-‘__first_node’:
-/home/cel/src/linux/include/linux/nodemask.h:229: warning: signed and
-unsigned type in conditional expression
-/home/cel/src/linux/include/linux/nodemask.h: In function
-‘__next_node’:
-/home/cel/src/linux/include/linux/nodemask.h:235: warning: signed and
-unsigned type in conditional expression
-/home/cel/src/linux/include/linux/nodemask.h: In function
-‘__first_unset_node’:
-/home/cel/src/linux/include/linux/nodemask.h:253: warning: signed and
-unsigned type in conditional expression
-
-Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
----
-
- include/asm-x86_64/bitops.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/asm-x86_64/bitops.h b/include/asm-x86_64/bitops.h
-index d4dbbe5..1d7d9b4 100644
---- a/include/asm-x86_64/bitops.h
-+++ b/include/asm-x86_64/bitops.h
-@@ -260,7 +260,7 @@ extern long find_first_bit(const unsigned long * addr, unsigned long size);
- extern long find_next_bit(const unsigned long * addr, long size, long offset);
- 
- /* return index of first bet set in val or max when no bit is set */
--static inline unsigned long __scanbit(unsigned long val, unsigned long max)
-+static inline long __scanbit(unsigned long val, unsigned long max)
- {
- 	asm("bsfq %1,%0 ; cmovz %2,%0" : "=&r" (val) : "r" (val), "r" (max));
- 	return val;
+Segher
 
