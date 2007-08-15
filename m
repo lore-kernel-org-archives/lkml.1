@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937053AbXHOWmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937110AbXHOWml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937053AbXHOWmE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 18:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761060AbXHOWlv
+	id S937110AbXHOWml (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 18:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761509AbXHOWmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 18:41:51 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:59434 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934667AbXHOWlu (ORCPT
+	Wed, 15 Aug 2007 18:42:25 -0400
+Received: from web50111.mail.re2.yahoo.com ([206.190.39.137]:36740 "HELO
+	web50111.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933510AbXHOWmY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 18:41:50 -0400
-Date: Thu, 16 Aug 2007 00:41:47 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: David Wilder <dwilder@us.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       martin.schwidefsky@de.ibm.com
-Subject: Re: [patch] s390 kprobe fix instruction length calculation
-Message-ID: <20070815224147.GB8741@osiris.ibm.com>
-References: <46C370BC.40302@us.ibm.com>
+	Wed, 15 Aug 2007 18:42:24 -0400
+X-Greylist: delayed 393 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Aug 2007 18:42:24 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=oJftiJWEOh0h3SUUARhKABYh+j7u0ju3e02w1oauq/wHFtZ/HmJz0PEykQ+5iL/cQEfsOCu6ASI/+Tvfapp31n0EXHRKdCyEeG6wmMQ3NJa4hB01CFqap6rc7db894W3N7/lspD6yCmacLNZobMzxg5AGGVzGcDzXguVYAY1Azs=;
+X-YMail-OSG: jnMjzrEVM1m_xoLNukYFSLKzjew8Hv_yb.T9C9Lbmo_4qn7p8GcmOgKeKg1hb7HfooQ3fPx7DjskLW6ELpVVuz.nbTfKGxc42oTY_1BIz12WBT1lqg7G4NVOepE5R3Zh6kLzYohsuX4Eog--
+Date: Wed, 15 Aug 2007 15:35:43 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Reply-To: dougthompson@xmission.com
+Subject: Re: [PATCH] [177/2many] MAINTAINERS - EDAC-PASEMI
+To: joe@perches.com, linux-kernel@vger.kernel.org, egor@pasemi.com,
+       bluesmoke-devel@lists.sourceforge.net, akpm@linux-foundation.org
+In-Reply-To: <46bff9b7.YOpxeQjK7ftqm673%joe@perches.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46C370BC.40302@us.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <695719.8685.qm@web50111.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 02:31:40PM -0700, David Wilder wrote:
-> Placing a kprobe on "bc" instruction (s390/s390x) can cause an oops.
-> The instruction length is encoded into the first two bits of the s390 
-> instruction.  Kprobe is incorrectly computing the instruction length.
-> The instruction length is used for determining what type of "fix-up" is 
-> needed for conditional branch instruction.  The problem can bee seen by 
-> placing a kprobe on a  "bc" instruction that will not branch.   The results 
-> is that  Kprobe incorrectly computes the  new instruction pointer 
-> (psw.addr) after single stepping the instruction.   The problem is 
-> corrected with this patch.
->
->  	/* save the instruction length (pop 5-5) in bytes */
-> -	switch (*(__u8 *) (ainsn->insn) >> 4) {
-> +	switch (*(__u8 *) (ainsn->insn) >> 6) {
->  	case 0:
 
-Added to the s390 patch queue. Thanks! :)
+--- joe@perches.com wrote:
+
+> Add file pattern to MAINTAINER entry
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 569f89f..08e62f1 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -1723,6 +1723,7 @@ M:	egor@pasemi.com
+>  L:	bluesmoke-devel@lists.sourceforge.net
+>  W:	bluesmoke.sourceforge.net
+>  S:	Maintained
+> +F:	drivers/edac/pasemi_edac.c
+
+Acked-by: Doug Thompson <dougthompson@xmission.com>
+
+>  
+>  EDAC-R82600
+>  P:	Tim Small
+> 
+
