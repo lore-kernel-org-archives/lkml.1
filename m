@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934281AbXHOTSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935253AbXHOTUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934281AbXHOTSq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 15:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbXHOTSe
+	id S935253AbXHOTUb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 15:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXHOTUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 15:18:34 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:33754 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752219AbXHOTSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 15:18:32 -0400
-Date: Wed, 15 Aug 2007 12:18:29 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, heiko.carstens@de.ibm.com,
-       horms@verge.net.au, linux-kernel@vger.kernel.org, rpjday@mindspring.com,
-       ak@suse.de, netdev@vger.kernel.org, cfriesen@nortel.com,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
-Message-ID: <20070815191829.GJ9645@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <46BCC26B.6080600@redhat.com> <46BB46B2.60808@redhat.com> <20070809134150.GA14890@shell.boston.redhat.com> <2708.1186737826@redhat.com> <7680.1186822071@redhat.com> <46BFFDBD.6080804@redhat.com> <46C140DD.3060509@yahoo.com.au> <2cbda24e96a49c3ab7cf7039c515f9fc@kernel.crashing.org>
+	Wed, 15 Aug 2007 15:20:20 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:48630 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752624AbXHOTUT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 15:20:19 -0400
+Date: Wed, 15 Aug 2007 15:20:17 -0400
+To: Marc Perkel <mperkel@yahoo.com>
+Cc: Valdis.Kletnieks@vt.edu, Kyle Moffett <mrmacman_g4@mac.com>,
+       Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
+       LKML Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Thinking outside the box on file systems
+Message-ID: <20070815192017.GD9410@csclub.uwaterloo.ca>
+References: <19705.1187197065@turing-police.cc.vt.edu> <763705.7247.qm@web52512.mail.re2.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2cbda24e96a49c3ab7cf7039c515f9fc@kernel.crashing.org>
+In-Reply-To: <763705.7247.qm@web52512.mail.re2.yahoo.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 08:51:58PM +0200, Segher Boessenkool wrote:
-> >Well if there is only one memory location involved, then smp_rmb() 
-> >isn't
-> >going to really do anything anyway, so it would be incorrect to use it.
+On Wed, Aug 15, 2007 at 10:09:31AM -0700, Marc Perkel wrote:
+> Yep - way outside the box - and thus the title of the
+> thread.
 > 
-> rmb() orders *any* two reads; that includes two reads from the same
-> location.
+> The idea is that people have permissions - not files.
+> By people I mean users, groups, managers, applications
+> etc. One might even specify that there are no
+> permission restrictions at all. Part of the process
+> would be that the kernel load what code it will use
+> for the permission system. It might even be a little
+> perl script you write.
+> 
+> 
+> Also - you aren't even giving permission to access
+> files. It's permission to access name patterns. One
+> could apply REGEX masks to names to determine
+> permissions. So if you have permission to the name you
+> have permission to the file.
 
-If the two reads are to the same location, all CPUs I am aware of
-will maintain the ordering without need for a memory barrier.
+So if I have permission to access /foo/*x but no permission to access
+/foo/*y, do I have permission to rename /foo/123x to /foo/123y and if I
+do so, do I loose access to my file?  Can I move it back?
 
-						Thanx, Paul
+> Hard links would be multiple names pointing to the
+> same file. Simlinks would be name aliases.
 
-> >Consider that smp_rmb basically will do anything from flushing the
-> >pipeline to invalidating loads speculatively executed out of order. 
-> >AFAIK
-> >it will not control the visibility of stores coming from other CPUs 
-> >(that
-> >is up to the cache coherency).
-> 
-> The writer side should typically use wmb() whenever the reader side
-> uses rmb(), sure.
-> 
-> 
-> Segher
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I think I prefer to keep my files inside the box.  That way I won't need
+to get a bucket. :)
+
+--
+Len Sorensen
