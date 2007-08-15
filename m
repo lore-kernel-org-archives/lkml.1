@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934502AbXHORan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934647AbXHORbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934502AbXHORan (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934092AbXHORa0
+	id S934647AbXHORbH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934483AbXHORam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:30:26 -0400
-Received: from web52501.mail.re2.yahoo.com ([206.190.48.184]:43744 "HELO
-	web52501.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933988AbXHORaY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:30:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=yDkNRLT/yLxSre0BRTzxB5hA6AMoZ0+5P1MfyJhX4r7Se9Y4TRVxhsf9PyWYXUo/kJNc434DAKVi+TB1cUkJTVNEdZm0JRxEwWSQy4MU6hj1rm0vj+vBPDz3o/A4tgjZnPYWlU6ygUFEFTp2S4N/vY5NiSu/3kAS0IQx7hwyR4c=;
-X-YMail-OSG: C9.ntbIVM1ktintSNJvDcVux2HNrjJ_KAeqSZaZ9Qzmsi9CuJ8pB.uG5BrVnIhceVQ--
-Date: Wed, 15 Aug 2007 10:30:19 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: Thinking outside the box on file systems
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-In-Reply-To: <152F34EE-58BE-43BE-9E33-597F2AE1DFAA@mac.com>
+	Wed, 15 Aug 2007 13:30:42 -0400
+Received: from sidhe.atheme.org ([204.15.224.234]:58666 "EHLO sidhe.atheme.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764614AbXHORak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:30:40 -0400
+Message-ID: <46C33835.90703@partiallystapled.com>
+Date: Wed, 15 Aug 2007 13:30:29 -0400
+From: Michael Tharp <gxti@partiallystapled.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <767509.60425.qm@web52501.mail.re2.yahoo.com>
+To: Marc Perkel <mperkel@yahoo.com>
+CC: alan <alan@clueserver.org>, linux-kernel@vger.kernel.org
+Subject: Re: Thinking outside the box on file systems
+References: <249938.3918.qm@web52506.mail.re2.yahoo.com>
+In-Reply-To: <249938.3918.qm@web52506.mail.re2.yahoo.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Marc Perkel wrote:
+> That not a problem - it's a feature. In such a
+> situation the person would get a general file creation
+> error.
 
---- Kyle Moffett <mrmacman_g4@mac.com> wrote:
-.
+Feature or not, it's still vulnerable to probing by malicious users. If
+there are create permissions on the directory, the invisibility is not
+perfect.
+
+> Although it isn't likely people would structure
+> files with invisible files in directories that the
+> user has create permissions [...]
+
+... /tmp ...
+
+> [...] it is logical that if I
+> put a file in a place where the user has no rights I
+> want it to stay there. Currently the user can delete
+> files where they have no rights.
+
+Indeed. The sticky bit works around this, but IMHO it's a hack.
+
+> I might also want to restrict the kind of a user can
+> createor give permission to create only certian file
+> names.
 > 
-> > The important point here is that directories don't
-> really exist.
+> /etc/vz/conf/*.conf - create - readonly - self-rw
+> /etc/vz/conf - deny 
 > 
-> Except they do, and without directories the
-> performance of your  
-> average filesystem is going to suck.
-> 
+> This would allow the user to read all *.conf files,
+> create new *.conf files, and full permissions to
+> read/write/delete files that the user created but not
+> files that others created. If listing a directory then
+> only the *.conf files would appear even if other files
+> are in the directory.
 
-Actually you would get a speed improvement. You hash
-the full name and get the file number. You don't have
-to break up the name into sections except for
-evaluating name permissions.
+It'd be interesting to find a use case for this, but that's no reason
+not to provide the functionality.
 
-The important concept here is that files and name
-aren't stored by levels of directories. The name
-points to the file number. Directory levels are
-emulated based on name separation characters or any
-other algorithm that you want to use.
+> Marc Perkel
+> Junk Email Filter dot com
+> http://www.junkemailfilter.com
 
-One could create a file system and permission system
-that gets rid of the concept of directories entirely
-if one chooses to.
-
-That's outside the box big time.
-
-
-Marc Perkel
-Junk Email Filter dot com
-http://www.junkemailfilter.com
-
-
-      ____________________________________________________________________________________
-Shape Yahoo! in your own image.  Join our Network Research Panel today!   http://surveylink.yahoo.com/gmrs/yahoo_panel_invite.asp?a=7 
-
-
+  -- m. tharp
