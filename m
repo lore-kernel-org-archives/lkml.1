@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764506AbXHOVi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbXHOVqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764506AbXHOVi7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 17:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbXHOViv
+	id S1760592AbXHOVqr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 17:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbXHOVqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 17:38:51 -0400
-Received: from nef2.ens.fr ([129.199.96.40]:1395 "EHLO nef2.ens.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752318AbXHOViu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 17:38:50 -0400
-Date: Wed, 15 Aug 2007 23:38:25 +0200
-From: Nicolas George <nicolas.george@normalesup.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
-Subject: [PATCH] UML: BLKGETSIZE takes a long, not an int
-Message-ID: <20070815213825.GA26490@clipper.ens.fr>
-References: <20070813124247.GA7414@she-seel.salle-s.org> <20070815171247.GA7948@c2.user-mode-linux.org>
+	Wed, 15 Aug 2007 17:46:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45840
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755443AbXHOVqf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 17:46:35 -0400
+Date: Wed, 15 Aug 2007 14:46:28 -0700 (PDT)
+Message-Id: <20070815.144628.104052147.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: 123.oleg@gmail.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux kernel 2.6.18-20 bug: rcu_read_unlock in __sock_create
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <E1ILEJr-0005Fl-00@gondolin.me.apana.org.au>
+References: <af57f1ac0708141130v729fa636k3150673809ec20a8@mail.gmail.com>
+	<E1ILEJr-0005Fl-00@gondolin.me.apana.org.au>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070815171247.GA7948@c2.user-mode-linux.org>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Wed, 15 Aug 2007 23:38:32 +0200 (CEST)
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The BLKGETSIZE ioctl expects a pointer to a long, os_file_size was providing
-an int. Therefore, ubd access to host block devices caused a segmentation
-fault on 64 bits systems.
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Wed, 15 Aug 2007 16:33:35 +0800
 
-Signed-off-by: Nicolas George <nicolas.george@normalesup.org>
+> [NET]: Fix unbalanced rcu_read_unlock in __sock_create
+> 
+> The recent RCU work created an unbalanced rcu_read_unlock
+> in __sock_create.  This patch fixes that.  Reported by
+> oleg 123.
+> 
+> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
----
-
-Jeff Dike wrote:
-> Looks sane, can I have a properly Signed-off-by: version of the patch?
-
-Of course. I should have sent it correctly the first time. And I am terribly
-sorry for the mess my mailer have done with my second mail.
-
-Here is the hopefully correct patch, against current git.
-
-Regards.
-
-diff --git a/arch/um/os-Linux/file.c b/arch/um/os-Linux/file.c
-index 6f92f73..c3ecc2a 100644
---- a/arch/um/os-Linux/file.c
-+++ b/arch/um/os-Linux/file.c
-@@ -320,7 +320,8 @@ int os_file_size(char *file, unsigned long long *size_out)
- 	}
- 
- 	if(S_ISBLK(buf.ust_mode)){
--		int fd, blocks;
-+		int fd;
-+		long blocks;
- 
- 		fd = os_open_file(file, of_read(OPENFLAGS()), 0);
- 		if(fd < 0){
+Patch applied, thanks Herbert.
