@@ -1,134 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932520AbXHOOvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932761AbXHOOw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932520AbXHOOvx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 10:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763200AbXHOOvl
+	id S932761AbXHOOw2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 10:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932601AbXHOOwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 10:51:41 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3822 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762951AbXHOOvi (ORCPT
+	Wed, 15 Aug 2007 10:52:01 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:49785 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765163AbXHOOv7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 10:51:38 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Tony Luck <tony.luck@intel.com>
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] ia64: default the NUMA node distance when there is no ACPI SLIT
-Message-ID: <b6b031e56608ee8acf4c84cb1f413403@pinky>
-Date: Wed, 15 Aug 2007 15:50:58 +0100
-X-SPF-Guess: neutral
+	Wed, 15 Aug 2007 10:51:59 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
+Date: Wed, 15 Aug 2007 15:29:43 +0200
+User-Agent: KMail/1.9.6
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Herbert Xu <herbert@gondor.apana.org.au>, csnook@redhat.com,
+       dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com
+References: <20070811042943.GA13410@linux.vnet.ibm.com> <200708150001.58217.arnd@arndb.de> <20070814224354.GE8243@linux.vnet.ibm.com>
+In-Reply-To: <20070814224354.GE8243@linux.vnet.ibm.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708151529.46780.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19NvfpWFSjPcOkZKK8rtN8x7NvhaTcx2micNX1
+ pMFygKca9j2yKAT/fLP8DmMu8vtF9WQjrjSBEGrRNebzh0/ufj
+ dyZ0ltXUgabLrOQs3Qj/A==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 15 August 2007, Paul E. McKenney wrote:
 
-If during boot no ACPI 2.0 SLIT table is found we do not initialise
-the NUMA node distance table, leaving all node distances as 0.
-This causes IA-64 to fail the regression tests for libnuma.  Also,
-when we have a bad formatted table we will set all node distances
-to 10.  Both of these forms lose all NUMA information by indicating
-all nodes are as close as the "local node", and are inconsistant
-in their values.
+> ACCESS_ONCE() is indeed intended to be used when actually loading or
+> storing the variable.  That said, I must admit that it is not clear to me
+> why you would want to add an extra order() rather than ACCESS_ONCE()ing
+> one or both of the adjacent accesses to that same variable.
+> 
+> So, what am I missing?
 
-When an architecture does not offer NUMA topology support the default
-node_distance is a distance of LOCAL_DISTANCE (10) to the local node
-and REMOTE_DISTANCE (20) to all others.  It seems more correct to
-follow this model when the SLIT information is missing or corrupt.
+You're probably right, the only case I can construct is something like
 
-This patch updates the SLIT failure paths to fill in the NUMA node
-distance table with this default.
+	if (ACCESS_ONCE(x)) {
+		...
+		ACCESS_ONCE(x)++;
+	}
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- arch/ia64/kernel/acpi.c |   62 ++++++++++++++++++++++++++++++++++------------
- 1 files changed, 46 insertions(+), 16 deletions(-)
-diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
-index 3d45d24..3cd3e5b 100644
---- a/arch/ia64/kernel/acpi.c
-+++ b/arch/ia64/kernel/acpi.c
-@@ -445,7 +445,6 @@ void __init acpi_numa_slit_init(struct acpi_table_slit *slit)
- 		printk(KERN_ERR
- 		       "ACPI 2.0 SLIT: size mismatch: %d expected, %d actual\n",
- 		       len, slit->header.length);
--		memset(numa_slit, 10, sizeof(numa_slit));
- 		return;
- 	}
- 	slit_table = slit;
-@@ -507,9 +506,50 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
- 	num_node_memblks++;
- }
- 
-+void __init acpi_numa_distance_from_slit(void)
-+{
-+	int i, j;
-+	int node_from;
-+	int node_to;
-+	int nodes = slit_table->locality_count;
-+
-+	printk(KERN_INFO "Building NUMA distance from ACPI 2.0 SLIT\n");
-+
-+	for (i = 0; i < nodes; i++) {
-+		if (!pxm_bit_test(i))
-+			continue;
-+		node_from = pxm_to_node(i);
-+		for (j = 0; j < nodes; j++) {
-+			if (!pxm_bit_test(j))
-+				continue;
-+			node_to = pxm_to_node(j);
-+			node_distance(node_from, node_to) =
-+					  slit_table->entry[i * nodes + j];
-+		}
-+	}
-+}
-+
-+void __init acpi_numa_distance_default(void)
-+{
-+	int i, j;
-+	int node_from;
-+	int node_to;
-+
-+	printk(KERN_INFO "No SLIT table, defaulting NUMA distance\n");
-+
-+	for_each_online_node(i) {
-+		node_from = pxm_to_node(i);
-+		for_each_online_node(j) {
-+			node_to = pxm_to_node(j);
-+			node_distance(node_from, node_to) = (i == j)?
-+				LOCAL_DISTANCE : REMOTE_DISTANCE;
-+		}
-+	}
-+}
-+
- void __init acpi_numa_arch_fixup(void)
- {
--	int i, j, node_from, node_to;
-+	int i, j;
- 
- 	/* If there's no SRAT, fix the phys_id and mark node 0 online */
- 	if (srat_num_cpus == 0) {
-@@ -553,21 +593,11 @@ void __init acpi_numa_arch_fixup(void)
- 	printk(KERN_INFO "Number of memory chunks in system = %d\n",
- 	       num_node_memblks);
- 
--	if (!slit_table)
--		return;
- 	memset(numa_slit, -1, sizeof(numa_slit));
--	for (i = 0; i < slit_table->locality_count; i++) {
--		if (!pxm_bit_test(i))
--			continue;
--		node_from = pxm_to_node(i);
--		for (j = 0; j < slit_table->locality_count; j++) {
--			if (!pxm_bit_test(j))
--				continue;
--			node_to = pxm_to_node(j);
--			node_distance(node_from, node_to) =
--			    slit_table->entry[i * slit_table->locality_count + j];
--		}
--	}
-+	if (slit_table)
-+		acpi_numa_distance_from_slit();
-+	else
-+		acpi_numa_distance_default();
- 
- #ifdef SLIT_DEBUG
- 	printk("ACPI 2.0 SLIT locality table:\n");
+which would be slightly less efficient than
+
+	if (x)
+		x++;
+	order(x);
+
+because in the first case, you need to do two ordered accesses
+but only one in the second case. However, I can't think of a case
+where this actually makes a noticable difference in real life.
+
+	Arnd <><
