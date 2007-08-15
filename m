@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763466AbXHOR1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933908AbXHORaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763466AbXHOR1e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761914AbXHOR1M
+	id S933908AbXHORaT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759308AbXHOR36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:27:12 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1731 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762608AbXHOR1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:27:09 -0400
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch
-	-	scripts/get_maintainer.pl
-From: Joe Perches <joe@perches.com>
-To: Rene Herman <rene.herman@gmail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Junio C Hamano <gitster@pobox.com>, git@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-In-Reply-To: <46C2E727.3050407@gmail.com>
-References: <1186984174.10249.7.camel@localhost>
-	 <200708131933.10125.m.kozlowski@tuxland.pl>
-	 <1187026955.2688.4.camel@laptopd505.fenrus.org>
-	 <1187037445.6628.98.camel@heimdal.trondhjem.org>
-	 <1187054366.2757.0.camel@laptopd505.fenrus.org>
-	 <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu>
-	 <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>
-	 <7vwsvx8twx.fsf@assigned-by-dhcp.cox.net>
-	 <1187143925.32555.208.camel@localhost> <46C2C9DC.9030307@s5r6.in-berlin.de>
-	 <46C2E727.3050407@gmail.com>
-Content-Type: text/plain
-Date: Wed, 15 Aug 2007 10:26:41 -0700
-Message-Id: <1187198801.7443.20.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Aug 2007 13:29:58 -0400
+Received: from mylar.outflux.net ([69.93.193.226]:59397 "EHLO
+	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756297AbXHOR34 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:29:56 -0400
+X-Greylist: delayed 2413 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Aug 2007 13:29:56 EDT
+Date: Wed, 15 Aug 2007 09:48:34 -0700
+From: Kees Cook <kees@outflux.net>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Jakub Jelinek <jakub@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ulrich Kunitz <kune@deine-taler.de>, Bret Towe <magnade@gmail.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] [RESEND] PIE executable randomization
+Message-ID: <20070815164834.GB7677@outflux.net>
+References: <Pine.LNX.4.64.0708081552010.11054@jikos.suse.cz> <20070814200647.GN2063@devserv.devel.redhat.com> <Pine.LNX.4.64.0708142224540.29843@jikos.suse.cz> <Pine.LNX.4.64.0708150112120.29843@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708150112120.29843@jikos.suse.cz>
+Organization: Outflux
+X-HELO: gorgon.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-15 at 13:44 +0200, Rene Herman wrote:
-> On 08/15/2007 11:39 AM, Stefan Richter wrote:
-> > Note, maintainer contacts
-> >   - should be available to patch submitters and
-> >   - must be available to *problem reporters*
-> > without having to have git and a .git repo.
-> That "must" seems rather strong. But those few non-developer users that 
-> could care are served by a MAINTAINERS file generated into releases.
+Hi,
 
-Good idea for scripts to help kernel bug reporters.
-REPORTING-BUGS is underutilized as a guide.
+On Wed, Aug 15, 2007 at 01:21:37AM +0200, Jiri Kosina wrote:
+> The following patch fixes the brk-allocation problems on x86_64 with code 
+> randomization patch on PIE-compiled binaries. Is anyone aware of any 
+> potential disaster it might cause somewhere please?
 
-I think Bug reporting is a separate issue from patch CC'ing.
-I'd rather have MAINTAINERS disappear altogether.
+(Adding myself to this thread...)
 
+I've tested this on x86_64 now (the prior patch failed on brk, as
+mentioned).  This version passes my regression tests.  I'd like to
+double-check this on i386 with unlimited stack (the situation that ran
+into problems back with 2.6.20's version of text ASLR).
 
+For anyone interested, I have a few ASLR and VM checking tools here:
+http://outflux.net/aslr/
+
+Thanks,
+
+-Kees
+
+-- 
+Kees Cook                                            @outflux.net
