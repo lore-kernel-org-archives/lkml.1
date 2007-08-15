@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932859AbXHORWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933748AbXHORXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932859AbXHORWX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbXHORWI
+	id S933748AbXHORXR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbXHORWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:22:08 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57654 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754036AbXHORWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:22:06 -0400
-X-Authenticated: #24128601
-X-Provags-ID: V01U2FsdGVkX18pFsogS5Aphvu8zOWceXW3BEeZY0Y1MLoYPNNYun
-	L/Ft/lKbl06iMh
-From: Sebastian Kemper <sebastian_ml@gmx.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Linux kernel 2.6.22.3 released
-Date: Wed, 15 Aug 2007 19:22:27 +0200
-User-Agent: KMail/1.9.7
-References: <200708151649.l7FGn7rn030084@hera.kernel.org>
-In-Reply-To: <200708151649.l7FGn7rn030084@hera.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 15 Aug 2007 13:22:55 -0400
+Received: from smtpout.mac.com ([17.250.248.176]:49217 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751663AbXHORWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:22:54 -0400
+In-Reply-To: <763705.7247.qm@web52512.mail.re2.yahoo.com>
+References: <763705.7247.qm@web52512.mail.re2.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A631EFDE-354D-498E-980E-2B785517AC51@mac.com>
+Cc: Valdis.Kletnieks@vt.edu, Michael Tharp <gxti@partiallystapled.com>,
+       alan <alan@clueserver.org>, LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708151922.27166.sebastian_ml@gmx.net>
-X-Y-GMX-Trusted: 0
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Thinking outside the box on file systems
+Date: Wed, 15 Aug 2007 13:22:43 -0400
+To: Marc Perkel <mperkel@yahoo.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 15. August 2007 18:49:07 schrieben Sie:
-> Linux kernel version 2.6.22.3 has been released.  It is available from:
-> ...
-> The following files were changed in this release:
+On Aug 15, 2007, at 13:09:31, Marc Perkel wrote:
+> The idea is that people have permissions - not files.  By people I  
+> mean users, groups, managers, applications
+> etc. One might even specify that there are no permission  
+> restrictions at all. Part of the process would be that the kernel  
+> load what code it will use for the permission system. It might even  
+> be a little perl script you write.
 >
->  Makefile |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
+> Also - you aren't even giving permission to access files. It's  
+> permission to access name patterns. One could apply REGEX masks to  
+> names to determine permissions. So if you have permission to the  
+> name you have permission to the file.
 
-Obviously something went wrong.
+Please excuse me, I'm going to go stand over in the corner for a minute.
+
+*hahahahahaa hahahahahaaa hahaa hoo hee snicker sniff*
+
+*wanders back into the conversation*
+
+Sorry about that, pardon me.
+
+I suspect you will find it somewhat hard to convince *anybody* on  
+this list to put either a regex engine or a Perl interpreter into the  
+kernel.  I doubt you could even get a simple shell-style pattern  
+matcher in.  First of all, both of the former chew up enormous gobs  
+of stack space *AND* they're NP-complete.  You just can't do such  
+matching even in polynomial time, let alone something that scales  
+appropriately for an OS kernel like, say, O(log(n)).
+
+Cheers,
+Kyle Moffett
