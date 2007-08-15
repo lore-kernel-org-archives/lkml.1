@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760700AbXHOQCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762673AbXHOQIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760700AbXHOQCx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 12:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbXHOQCn
+	id S1762673AbXHOQIt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 12:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757060AbXHOQIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 12:02:43 -0400
-Received: from web52501.mail.re2.yahoo.com ([206.190.48.184]:31294 "HELO
-	web52501.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755260AbXHOQCm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 12:02:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=tccoluM9r2XOcoWZl9rhznHz6g7yCqNqpjAz9tDysNfBLplqNReH88ekrv1kWi0IadWJhCdsfn/e+4LigDzJacbOLfbeedlddrl4sl0RTWhhGKJYYDdwpg8zPytqs9W4d0bR2zMb2b3Pnol/9Q1mUSnlFxW2TT4rn21hflMaIqw=;
-X-YMail-OSG: ZA3jUF8VM1kW9837TibI..d0HtjM_OChILqhpRLHAcfkhQatEZWf3Mx98sFPnfd_Og--
-Date: Wed, 15 Aug 2007 09:02:41 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: Thinking outside the box on file systems
-To: Kyle Moffett <mrmacman_g4@mac.com>,
-       Michael Tharp <gxti@partiallystapled.com>
-Cc: alan <alan@clueserver.org>, Marc Perkel <mperkel@yahoo.com>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-In-Reply-To: <ECFEFFF7-0210-4D16-B508-5284FCE58B28@mac.com>
+	Wed, 15 Aug 2007 12:08:36 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:34204 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756698AbXHOQIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 12:08:35 -0400
+Date: Wed, 15 Aug 2007 09:08:30 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Satyam Sharma <satyam@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070815160830.GC9645@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com> <20070815153335.GA23593@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <16329.19717.qm@web52501.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070815153335.GA23593@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Kyle Moffett <mrmacman_g4@mac.com> wrote:
-
+On Wed, Aug 15, 2007 at 11:33:36PM +0800, Herbert Xu wrote:
+> On Wed, Aug 15, 2007 at 07:25:16AM -0700, Paul E. McKenney wrote:
+> > 
+> > Do we really need another set of APIs?  Can you give even one example
+> > where the pre-existing volatile semantics are causing enough of a problem
+> > to justify adding yet more atomic_*() APIs?
 > 
-> ## Note: file owner and group are kmoffett
-> u::rw-
-> g::rw-
-> u:lsorens:rw-
-> u:mtharp:rw-
-> u:mperkel:rw-
-> g:randomcvsdudes:r-
-> default:u::rw-
-> default:g::rw-
-> default:u:lsorens
-> default:u:mtharp:rw-
-> default:u:mperkel:rw-
-> default:g:randomcvsdudes:r-
+> Let's turn this around.  Can you give a single example where
+> the volatile semantics is needed in a legitimate way?
 
-Kyle, thinking further outside the box, files would no
-longer have owners or permissions. Nor would
-directories. People, groups, managers, and other
-objects with have permissions. One might tag a file
-with the object that created it so you could implement
-"self" rights which might be use to replace the
-concept of /tmp directories. 
+Sorry, but you are the one advocating for the change.
 
+Nice try, though!  ;-)
 
-Marc Perkel
-Junk Email Filter dot com
-http://www.junkemailfilter.com
-
-
-       
-____________________________________________________________________________________
-Got a little couch potato? 
-Check out fun summer activities for kids.
-http://search.yahoo.com/search?fr=oni_on_mail&p=summer+activities+for+kids&cs=bz 
+						Thanx, Paul
