@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764300AbXHOITR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbXHOI1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764300AbXHOITR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 04:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbXHOISu
+	id S1751993AbXHOI1Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 04:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbXHOI1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 04:18:50 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:40813 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751877AbXHOISr (ORCPT
+	Wed, 15 Aug 2007 04:27:12 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53446 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752895AbXHOI1K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 04:18:47 -0400
-Date: Wed, 15 Aug 2007 10:18:41 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Chris Snook <csnook@redhat.com>, satyam@infradead.org, clameter@sgi.com,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, ak@suse.de, davem@davemloft.net,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
-	architectures
-Message-ID: <20070815081841.GA16551@osiris.boeblingen.de.ibm.com>
-References: <46C2350A.1010807@redhat.com> <E1ILCgh-00052A-00@gondolin.me.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1ILCgh-00052A-00@gondolin.me.apana.org.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 15 Aug 2007 04:27:10 -0400
+Date: Wed, 15 Aug 2007 09:33:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Joe Perches <joe@perches.com>, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] [70/2many] MAINTAINERS - ARPD SUPPORT
+Message-ID: <20070815093344.48d70c72@the-village.bc.nu>
+In-Reply-To: <46C2B4FE.3080703@s5r6.in-berlin.de>
+References: <46bff8e8.HhTQ7TBPy1zkcNfh%joe@perches.com>
+	<20070813114942.04a5483c@the-village.bc.nu>
+	<1187019966.10249.75.camel@localhost>
+	<20070813173522.685dab9e@the-village.bc.nu>
+	<1187024659.10249.125.camel@localhost>
+	<20070813185148.16308985@the-village.bc.nu>
+	<46C2B4FE.3080703@s5r6.in-berlin.de>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 02:49:03PM +0800, Herbert Xu wrote:
-> Chris Snook <csnook@redhat.com> wrote:
-> > 
-> > Because atomic operations are generally used for synchronization, which requires 
-> > volatile behavior.  Most such codepaths currently use an inefficient barrier(). 
-> >  Some forget to and we get bugs, because people assume that atomic_read() 
-> > actually reads something, and atomic_write() actually writes something.  Worse, 
-> > these are architecture-specific, even compiler version-specific bugs that are 
-> > often difficult to track down.
+On Wed, 15 Aug 2007 10:10:38 +0200
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+
+> Alan Cox wrote:
+> >> > Actually I think the entire thing is a
+> >> > bad idea but thats another matter.
 > 
-> I'm yet to see a single example from the current tree where
-> this patch series is the correct solution.  So far the only
-> example has been a buggy piece of code which has since been
-> fixed with a cpu_relax.
+> > Working off the git tree as it shows who actually is making
+> > changes/updating stuff recently and why which is a major clue when
+> > tracing bugs
+> 
+> Adrian Bunk wrote in http://lkml.org/lkml/2007/6/30/107 :
+> | I don't see how git could tell you to Cc net patches to
+> | netdev@vger.kernel.org.
+> 
+> Ditto with problem reports.
+> 
+> For example, Cc'ing linux1394-devel on FireWire topics is a lot more
+> important than Cc'ing me.
 
-Btw.: we still have
-
-include/asm-i386/mach-es7000/mach_wakecpu.h:  while (!atomic_read(deassert));
-include/asm-i386/mach-default/mach_wakecpu.h: while (!atomic_read(deassert));
-
-Looks like they need to be fixed as well.
+Tools question. And even if you need to keep a simple set of mappings by
+hand for mailing list/files thats a fairly small set of patterns
