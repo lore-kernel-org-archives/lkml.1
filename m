@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937175AbXHOXWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030270AbXHOXXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937175AbXHOXWl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 19:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764019AbXHOXWb
+	id S1030270AbXHOXXa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 19:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764019AbXHOXWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 19:22:31 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42861 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760206AbXHOXWa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 19:22:30 -0400
-Message-ID: <46C38AA8.5040202@zytor.com>
-Date: Wed, 15 Aug 2007 16:22:16 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 15 Aug 2007 19:22:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:60506 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937230AbXHOXWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 19:22:51 -0400
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Huang, Ying" <ying.huang@intel.com>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
-References: <1186990219.22431.37.camel@caritas-dev.intel.com> <20070815161642.1bfbbe9c.akpm@linux-foundation.org>
-In-Reply-To: <20070815161642.1bfbbe9c.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18115.35524.56393.347841@cargo.ozlabs.ibm.com>
+Date: Thu, 16 Aug 2007 09:22:44 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+	<Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+	<alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+	<46C2D6F3.3070707@s5r6.in-berlin.de>
+	<alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 13 Aug 2007 15:30:19 +0800
-> "Huang, Ying" <ying.huang@intel.com> wrote:
-> 
->> Following sets of patches add EFI/UEFI (Unified Extensible Firmware
->> Interface) runtime services support to x86_64 architecture.
-> 
-> OK, we have a major trainwreck when these patches meet Peter's
-> get-newsetup.patch.
-> 
-> I'm halfway into fixing it when I see this.  You have:
-> 
->  #define SYS_DESC_TABLE (*(struct sys_desc_table_struct*)(PARAM+0xa0))
-> +#define EFI_LOADER_SIG ((unsigned char *)(PARAM+0x1c0))
-> +#define EFI_MEMDESC_SIZE (*((unsigned int *) (PARAM+0x1c4)))
-> +#define EFI_MEMDESC_VERSION (*((unsigned int *) (PARAM+0x1c8)))
-> +#define EFI_MEMMAP_SIZE (*((unsigned int *) (PARAM+0x1cc)))
-> +#define EFI_MEMMAP (*((unsigned long *)(PARAM+0x1d0)))
-> +#define EFI_SYSTAB (*((unsigned long *)(PARAM+0x1d8)))
->  #define MOUNT_ROOT_RDONLY (*(unsigned short *) (PARAM+0x1F2))
-> 
+Satyam Sharma writes:
 
-Please, no more of these kinds of macros.  We have already had
-collisions.  Go ahead and redefine the efi_info structure if necessary,
-but use fixed types (u8, u16, u32, u64), *NOT* unsigned long which is
-different between i386 and x86-64.  Also keep in mind the boot code
-might in the future be compiled with a 16-bit compiler, so assuming
-"unsigned int" == 32 bits is also a Bad Thing.
-
+> > Doesn't "atomic WRT all processors" require volatility?
 > 
-> I'll give up and will drop the EFI patches.  I'd suggest that you work with
-> Peter on getting these patches integrated.
+> No, it definitely doesn't. Why should it?
 > 
+> "Atomic w.r.t. all processors" is just your normal, simple "atomicity"
+> for SMP systems (ensure that that object is modified / set / replaced
+> in main memory atomically) and has nothing to do with "volatile"
+> behaviour.
 
-Thanks.
+Atomic variables are "volatile" in the sense that they are liable to
+be changed at any time by mechanisms that are outside the knowledge of
+the C compiler, namely, other CPUs, or this CPU executing an interrupt
+routine.
 
-	-hpa
+In the kernel we use atomic variables in precisely those situations
+where a variable is potentially accessed concurrently by multiple
+CPUs, and where each CPU needs to see updates done by other CPUs in a
+timely fashion.  That is what they are for.  Therefore the compiler
+must not cache values of atomic variables in registers; each
+atomic_read must result in a load and each atomic_set must result in a
+store.  Anything else will just lead to subtle bugs.
+
+I have no strong opinion about whether or not the best way to achieve
+this is through the use of the "volatile" C keyword.  Segher's idea of
+using asm instead seems like a good one to me.
+
+Paul.
