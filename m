@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759913AbXHORko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934012AbXHORni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759913AbXHORko (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765759AbXHORkg
+	id S934012AbXHORni (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760750AbXHORna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:40:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39673 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760750AbXHORkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:40:35 -0400
-Message-ID: <46C33A67.1020102@redhat.com>
-Date: Wed, 15 Aug 2007 13:39:51 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Wed, 15 Aug 2007 13:43:30 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50916 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751154AbXHORn3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:43:29 -0400
+Date: Wed, 15 Aug 2007 12:43:26 -0500
+To: akpm@linux-foundation.org
+Cc: npiggin@suse.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] calculation of pgoff in do_linear_fault() uses mixed 
+ units
+Message-ID: <46C33B3E.mailxBSH11HDLW@aqua.americas.sgi.com>
+User-Agent: nail 11.4 8/29/04
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Jakub Jelinek <jakub@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ulrich Kunitz <kune@deine-taler.de>, Bret Towe <magnade@gmail.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] [RESEND] PIE executable randomization
-References: <Pine.LNX.4.64.0708081552010.11054@jikos.suse.cz> <20070814200647.GN2063@devserv.devel.redhat.com> <Pine.LNX.4.64.0708142224540.29843@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0708142224540.29843@jikos.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: dcn@sgi.com (Dean Nelson)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/14/2007 04:41 PM, Jiri Kosina wrote:
-> (added Arjan to CC, as he has been working on the kernel part of the 
-> randomization previously)
-> 
-> On Tue, 14 Aug 2007, Jakub Jelinek wrote:
-> 
->> If I'm reading the above hunk correctly, this means we will randomize 
->> all PIEs and even all dynamic linkers invoked as executables on i?86 and 
->> x86_64, and on the rest of arches we won't randomize at all, instead 
->> load ET_DYN objects at ELF_ET_DYN_BASE address. But I don't see anything 
->> i?86/x86_64 specific on this.
-> 
-> Hi Jakub,
-> 
-> actually, it is currently arch-specific, and that's because of different 
-> memory layouts on different archs.
-> 
-> It turned out recently that PIE-compiled binaries on x86_64, that perform 
-> larger amount of brk-allocations (for example bash) will not work (but 
-> they will work on ?86). This is because currently on ?86 the memory layout 
-> is as follows:
+The calculation of pgoff in do_linear_fault() should use PAGE_SHIFT and not
+PAGE_CACHE_SHIFT since vma->vm_pgoff is in units of PAGE_SIZE and not
+PAGE_CACHE_SIZE. At the moment linux/pagemap.h has PAGE_CACHE_SHIFT defined
+as PAGE_SHIFT, but should that ever change this calculation would break.
 
-But your patch is enabling randomization for x86_64, because CONFIG_X86
-includes both 32 and 64 bit archs.
+Signed-off-by: Dean Nelson <dcn@sgi.com>
 
+
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c	2007-08-14 06:42:18.322378070 -0500
++++ linux-2.6/mm/memory.c	2007-08-15 12:30:51.621604739 -0500
+@@ -2465,7 +2465,7 @@
+ 		int write_access, pte_t orig_pte)
+ {
+ 	pgoff_t pgoff = (((address & PAGE_MASK)
+-			- vma->vm_start) >> PAGE_CACHE_SHIFT) + vma->vm_pgoff;
++			- vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
+ 	unsigned int flags = (write_access ? FAULT_FLAG_WRITE : 0);
+ 
+ 	return __do_fault(mm, vma, address, page_table, pmd, pgoff,
