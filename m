@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934403AbXHORhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759913AbXHORko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934403AbXHORhz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764177AbXHORhr
+	id S1759913AbXHORko (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765759AbXHORkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:37:47 -0400
-Received: from smtpout.mac.com ([17.250.248.184]:58825 "EHLO smtpout.mac.com"
+	Wed, 15 Aug 2007 13:40:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39673 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764198AbXHORhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:37:46 -0400
-In-Reply-To: <174219.56922.qm@web52501.mail.re2.yahoo.com>
-References: <174219.56922.qm@web52501.mail.re2.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F38DAAD2-D984-4704-94AC-5FB963C4373C@mac.com>
-Cc: Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+	id S1760750AbXHORkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:40:35 -0400
+Message-ID: <46C33A67.1020102@redhat.com>
+Date: Wed, 15 Aug 2007 13:39:51 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Jakub Jelinek <jakub@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ulrich Kunitz <kune@deine-taler.de>, Bret Towe <magnade@gmail.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] [RESEND] PIE executable randomization
+References: <Pine.LNX.4.64.0708081552010.11054@jikos.suse.cz> <20070814200647.GN2063@devserv.devel.redhat.com> <Pine.LNX.4.64.0708142224540.29843@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0708142224540.29843@jikos.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Thinking outside the box on file systems
-Date: Wed, 15 Aug 2007 13:37:29 -0400
-To: Marc Perkel <mperkel@yahoo.com>
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 15, 2007, at 13:19:16, Marc Perkel wrote:
-> One of the problems with the Unix/Linux world is that your minds  
-> are locked into this one model. In order to do it right it requires  
-> the mental discipline to break out of that.
+On 08/14/2007 04:41 PM, Jiri Kosina wrote:
+> (added Arjan to CC, as he has been working on the kernel part of the 
+> randomization previously)
+> 
+> On Tue, 14 Aug 2007, Jakub Jelinek wrote:
+> 
+>> If I'm reading the above hunk correctly, this means we will randomize 
+>> all PIEs and even all dynamic linkers invoked as executables on i?86 and 
+>> x86_64, and on the rest of arches we won't randomize at all, instead 
+>> load ET_DYN objects at ELF_ET_DYN_BASE address. But I don't see anything 
+>> i?86/x86_64 specific on this.
+> 
+> Hi Jakub,
+> 
+> actually, it is currently arch-specific, and that's because of different 
+> memory layouts on different archs.
+> 
+> It turned out recently that PIE-compiled binaries on x86_64, that perform 
+> larger amount of brk-allocations (for example bash) will not work (but 
+> they will work on ?86). This is because currently on ?86 the memory layout 
+> is as follows:
 
-The major thing that you are missing is that this "one model" has  
-been very heavily tested over the years.  People understand it, know  
-how to use it and write software for it, and grok its limitations.   
-There's also a vast amount of *existing* code that you can't just  
-"deprecate" overnight; the world just doesn't work that way.  The  
-real way to get there (IE: a new model) from here (IE: the old model)  
-is the way all Linux development is done with a lot of sensible easy- 
-to-understand changes and refactorings.
-
-With that said, if you actually want to sit down and start writing  
-*code* for your model, go ahead.  If it turns out to be better than  
-our existing model then I owe you a bottle of your favorite beverage.
-
-Cheers,
-Kyle Moffett
+But your patch is enabling randomization for x86_64, because CONFIG_X86
+includes both 32 and 64 bit archs.
 
