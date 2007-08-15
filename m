@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760697AbXHOPTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765780AbXHOPVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760697AbXHOPTt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 11:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761099AbXHOPTj
+	id S1765780AbXHOPVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 11:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760926AbXHOPVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 11:19:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40863 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760186AbXHOPTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 11:19:38 -0400
-Date: Wed, 15 Aug 2007 11:19:33 -0400
-From: Dave Jones <davej@redhat.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@codemonkey.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: two questions about the boot_delay
-Message-ID: <20070815151933.GA13881@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Dave Young <hidave.darkstar@gmail.com>,
-	Randy Dunlap <rdunlap@xenotime.net>,
-	Dave Jones <davej@codemonkey.org.uk>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <a8e1da0708080039w1deed062hf5920e1257eb1cbb@mail.gmail.com> <20070811163331.b8ff4a6b.rdunlap@xenotime.net> <a8e1da0708150045i4b02e0a4u51a10084f1b439da@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0708150045i4b02e0a4u51a10084f1b439da@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Wed, 15 Aug 2007 11:21:06 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:11148 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761319AbXHOPVF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 11:21:05 -0400
+Date: Wed, 15 Aug 2007 17:21:33 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Florin Iucha <florin@iucha.net>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       "Randy. Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
+ v2.6.23-rc3-50-g28e8351
+Message-ID: <20070815172133.4f2eeda8@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <46C313B3.4030700@gmail.com>
+References: <Pine.LNX.4.44L0.0708151033270.3895-100000@iolanthe.rowland.org>
+	<46C313B3.4030700@gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 03:45:08PM +0800, Dave Young wrote:
- > >On 8/12/07, Randy Dunlap <rdunlap@xenotime.net> wrote:
- > > On Wed, 8 Aug 2007 07:39:33 +0000 Dave Young wrote:
- > >
- > > > Hi,
- > > > I have tried the "slow down printk" , and I have two questions.
- > > >
- > > > 1. why it depends the DEBUG_KERNEL? Sometimes we only need boot_delay
- > > > to see the printk infomations.  How about set it as a standalone
- > > > config option?
- > >
- > > Is depending on DEBUG_KERNEL a problem?  If so, why?
- > 
- > IMHO, the DEBUG_KERNEL will build a big kernel and the building time
- > is long, so if the we only want to look at the boot messages at panic
- > point, the DEBUG_KERNEL is not needed.
- 
-Only if you enable other debug options too. (Yes, some default to on,
-perhaps they shouldn't).
+On Wed, 15 Aug 2007 23:54:43 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
 
-DEBUG_KERNEL itself shouldn't make any difference to the generated
-code at all.
+> Alan Stern wrote:
+> > I think we can simply remove the error message.  There's no obvious 
+> > reason why sysfs_remove_bin_file() should complain about attempts to 
+> > remove a nonexistent file; sysfs_remove_file() doesn't.
+> > 
+> > This patch will get rid of the annoying error messages.  It won't do 
+> > anything about your keyboard's tendency to spontaneously stop working, 
+> > alas.
+> 
+> Agreed but I think sysfs_remove_bin_file() should relay the return value
+> from sysfs_has_and_remove() to the caller.
 
-	Dave
+Three comments:
 
--- 
-http://www.codemonkey.org.uk
+- Randy made sysfs_remove_bin_file() return void in commit
+995982ca79d9262869513948ec7c540f32035491.
+
+- For symmetry reasons, sysfs_remove_file() should then also pass the
+return value on.
+
+- I'm not sure who wants to care whether they removed an existing or
+non-existing file. But maybe I'm just unimaginative.
