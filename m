@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbXHOMAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbXHOMEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbXHOMAg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 08:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbXHOMA1
+	id S1758260AbXHOMEQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 08:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbXHOMEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 08:00:27 -0400
-Received: from ozlabs.org ([203.10.76.45]:58449 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752658AbXHOMA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 08:00:26 -0400
-From: Michael Neuling <mikey@neuling.org>
-To: balbir@linux.vnet.ibm.com
-cc: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH] Documentation: fix getdelays.c example -l option and segv 
-In-reply-to: <46C2E189.7040504@linux.vnet.ibm.com> 
-References: <18240.1186734285@neuling.org> <46C2A505.7040008@linux.vnet.ibm.com> <11201.1187165591@neuling.org> <46C2E189.7040504@linux.vnet.ibm.com>
-Comments: In-reply-to Balbir Singh <balbir@linux.vnet.ibm.com>
-   message dated "Wed, 15 Aug 2007 16:50:41 +0530."
-X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 21.4.1
-Date: Wed, 15 Aug 2007 22:00:21 +1000
-Message-ID: <26889.1187179221@neuling.org>
+	Wed, 15 Aug 2007 08:04:00 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:60463 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751005AbXHOMD7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 08:03:59 -0400
+X-Greylist: delayed 1581 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Aug 2007 08:03:59 EDT
+Date: Wed, 15 Aug 2007 13:37:37 +0200
+From: Jan Kara <jack@suse.cz>
+To: Josef Bacik <jbacik@redhat.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix panic in jbd by adding locks
+Message-ID: <20070815113737.GC7642@atrey.karlin.mff.cuni.cz>
+References: <20070814152255.GB24127@dhcp-243-37.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070814152255.GB24127@dhcp-243-37.rdu.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Interesting, we never used -l that way. We used -l to get data for all
-> exiting tasks
-> 
-> ./getdelays -d -l
-> 
-> For the usage you've mentioned, I'd use
-> 
-> while :
-> do
-> 	sleep 2
-> 	./getdelays -p 1 -d
-> done
-> 
-> I guess your changes change getdelays and since there are other ways
-> to obtaining the same data, I'd remove the last bit of changes made
-> to send the TGID often to get data.
+  Hello,
 
-Ok.  I'll resubmit with just the first fix.
+> It is possible to panic the box by a race condition that exists in the
+> journalling code where we do not take the j_revoke_lock when traversing the
+> journal's revoked record list.  This patch has been tested and we haven't seen
+> the issue yet, its a rather straightforward and correct (at least I think so :)
+> fix.  Thank you,
+  In principle, the patch looks fine. The only thing I'm wondering about
+is how that panic can happen... Journal write_revoke_records() is called
+from journal_commit_transaction() when revoke table for the committing
+transaction shouldn't see any further changes. So maybe the patch is
+masking a different problem.
+  Do you have a way of reproducing the problem? Any stack trace
+available?
 
-Mikey
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
