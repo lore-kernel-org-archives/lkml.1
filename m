@@ -1,86 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936015AbXHOT4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936052AbXHOT6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936015AbXHOT4R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 15:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbXHOT4I
+	id S936052AbXHOT6n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 15:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbXHOT6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 15:56:08 -0400
-Received: from igw1.br.ibm.com ([32.104.18.24]:52054 "EHLO igw1.br.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbXHOT4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 15:56:07 -0400
-Subject: Re: SLUB doesn't work with kdump kernel on Cell
-From: Lucio Correia <ljhc@br.ibm.com>
-Reply-To: ljhc@br.ibm.com
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arndb@arndb.de>
-In-Reply-To: <Pine.LNX.4.64.0708141910230.1409@schroedinger.engr.sgi.com>
-References: <1186604151.3608.46.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0708081321400.14478@schroedinger.engr.sgi.com>
-	 <1187106239.3298.2.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0708141241450.30435@schroedinger.engr.sgi.com>
-	 <dc1166600708141757q26c005d7o4c9c4d69e9d28460@mail.gmail.com>
-	 <Pine.LNX.4.64.0708141910230.1409@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 15 Aug 2007 16:57:12 -0300
-Message-Id: <1187207832.3002.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Wed, 15 Aug 2007 15:58:36 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:43886 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754475AbXHOT6f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 15:58:35 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46C35AE1.3020904@s5r6.in-berlin.de>
+Date: Wed, 15 Aug 2007 21:58:25 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: Satyam Sharma <satyam@infradead.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <46C2350A.1010807@redhat.com> <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <20070815081841.GA16551@osiris.boeblingen.de.ibm.com> <46C30540.2070603@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-14 at 19:11 -0700, Christoph Lameter wrote:
-> Can you try this patch?
+(trimmed Cc)
 
-Thanks, Christoph
-
-It worked fine, both for normal kernel and for dump kernel on Cell. Is
-this patch intended to go mainline?
-
+Satyam Sharma wrote:
+> [PATCH] ieee1394: Fix kthread stopping in nodemgr_host_thread
 > 
-> From 74863f472810cb58dc56dde050616581d38f7673 Mon Sep 17 00:00:00 2001
-> From: Christoph Lameter <christoph@qirst.com>
-> Date: Tue, 14 Aug 2007 19:09:00 -0700
-> Subject: [PATCH] SLUB: Do not fail on broken memory configurations
-> 
-> Print a big fat warning and do what is necessary to continue if a node
-> is marked as up but allocations from the node do not succeed.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> ---
->  mm/slub.c |   11 +++++++++--
->  1 files changed, 9 insertions(+), 2 deletions(-)
-> 
-> diff --git a/mm/slub.c b/mm/slub.c
-> index 1488e71..fc82751 100644
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -1877,9 +1877,16 @@ static struct kmem_cache_node * __init early_kmem_cache_node_alloc(gfp_t gfpflag
->  
->  	BUG_ON(kmalloc_caches->size < sizeof(struct kmem_cache_node));
->  
-> -	page = new_slab(kmalloc_caches, gfpflags | GFP_THISNODE, node);
-> -
-> +	page = new_slab(kmalloc_caches, gfpflags, node);
->  	BUG_ON(!page);
-> +
-> +	if (page_to_nid(page) != node) {
-> +		printk(KERN_ERR "SLUB: Unable to allocate memory from "
-> +				"node %d\n", node);
-> +		printk(KERN_ERR "SLUB: Allocating a useless per node structure"
-> +				" in order to be able to continue\n");
-> +	}
-> +
->  	n = page->freelist;
->  	BUG_ON(!n);
->  	page->freelist = get_freepointer(kmalloc_caches, n);
+> The nodemgr host thread can exit on its own even when kthread_should_stop
+> is not true, on receiving a signal (might never happen in practice, as
+> it ignores signals). But considering kthread_stop() must not be mixed with
+> kthreads that can exit on their own, I think changing the code like this
+> is clearer. This change means the thread can cut its sleep short when
+> receive a signal but looking at the code around, that sounds okay (and
+> again, it might never actually recieve a signal in practice).
 
-
+Thanks, committed to linux1394-2.6.git.
 -- 
-Lucio Correia
-Software Engineer
-IBM LTC Brazil
-
+Stefan Richter
+-=====-=-=== =--- -====
+http://arcgraph.de/sr/
