@@ -1,43 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbXHOH3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbXHOHbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756244AbXHOH3G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 03:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbXHOH24
+	id S1757529AbXHOHbi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 03:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbXHOHb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 03:28:56 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:59480 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbXHOH2z (ORCPT
+	Wed, 15 Aug 2007 03:31:29 -0400
+Received: from smtp4.actcom.co.il ([192.114.47.66]:42168 "EHLO
+	smtp4.actcom.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753492AbXHOHb2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 03:28:55 -0400
-Date: Wed, 15 Aug 2007 09:28:54 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jason Uhlenkott <jasonuhl@jasonuhl.org>
-cc: Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kfree(0) - ok?
-In-Reply-To: <20070814232107.GA4265@aurum.uhlenkott.net>
-Message-ID: <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr>
-References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org>
- <20070814232107.GA4265@aurum.uhlenkott.net>
+	Wed, 15 Aug 2007 03:31:28 -0400
+X-Greylist: delayed 6057 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Aug 2007 03:31:28 EDT
+Message-ID: <46C292F2.1050401@compulab.co.il>
+Date: Wed, 15 Aug 2007 08:45:22 +0300
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070715)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Raphael Assenat <raph@8d.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] RTC v3020 fixes
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix off-by-one in month calculations
+Add delay for bus accesses to satisfy Tw > 500ns
 
-On Aug 14 2007 16:21, Jason Uhlenkott wrote:
->On Tue, Aug 14, 2007 at 15:55:48 -0700, Arjan van de Ven wrote:
->> NULL is not 0 though.
->
->It is.  Its representation isn't guaranteed to be all-bits-zero,
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 
-C guarantees that.
+  drivers/rtc/rtc-v3020.c |    9 +++++++--
+  1 files changed, 7 insertions(+), 2 deletions(-)
 
->but the constant value 0 when used in pointer context is always a
->null pointer (and in fact the standard requires that NULL be
->#defined as 0 or a cast thereof).
->
+diff --git a/drivers/rtc/rtc-v3020.c b/drivers/rtc/rtc-v3020.c
+index 3b58d3d..21b0be5 100644
+--- a/drivers/rtc/rtc-v3020.c
++++ b/drivers/rtc/rtc-v3020.c
+@@ -26,6 +26,7 @@
+  #include <linux/types.h>
+  #include <linux/bcd.h>
+  #include <linux/rtc-v3020.h>
++#include <linux/delay.h>
 
-	Jan
--- 
+  #include <asm/io.h>
+
+@@ -47,6 +48,7 @@ static void v3020_set_reg(struct v3020 *chip, unsigned char 
+address,
+  	for (i = 0; i < 4; i++) {
+  		writel((tmp & 1) << chip->leftshift, chip->ioaddress);
+  		tmp >>= 1;
++		udelay(1);
+  	}
+
+  	/* Commands dont have data */
+@@ -54,6 +56,7 @@ static void v3020_set_reg(struct v3020 *chip, unsigned char 
+address,
+  		for (i = 0; i < 8; i++) {
+  			writel((data & 1) << chip->leftshift, chip->ioaddress);
+  			data >>= 1;
++			udelay(1);
+  		}
+  	}
+  }
+@@ -66,12 +69,14 @@ static unsigned char v3020_get_reg(struct v3020 *chip, 
+unsigned char address)
+  	for (i = 0; i < 4; i++) {
+  		writel((address & 1) << chip->leftshift, chip->ioaddress);
+  		address >>= 1;
++		udelay(1);
+  	}
+
+  	for (i = 0; i < 8; i++) {
+  		data >>= 1;
+  		if (readl(chip->ioaddress) & (1 << chip->leftshift))
+  			data |= 0x80;
++		udelay(1);
+  	}
+
+  	return data;
+@@ -95,7 +100,7 @@ static int v3020_read_time(struct device *dev, struct 
+rtc_time *dt)
+  	tmp = v3020_get_reg(chip, V3020_MONTH_DAY);
+  	dt->tm_mday	= BCD2BIN(tmp);
+  	tmp = v3020_get_reg(chip, V3020_MONTH);
+-	dt->tm_mon	= BCD2BIN(tmp);
++	dt->tm_mon	= BCD2BIN(tmp) - 1;
+  	tmp = v3020_get_reg(chip, V3020_WEEK_DAY);
+  	dt->tm_wday	= BCD2BIN(tmp);
+  	tmp = v3020_get_reg(chip, V3020_YEAR);
+@@ -135,7 +140,7 @@ static int v3020_set_time(struct device *dev, struct 
+rtc_time *dt)
+  	v3020_set_reg(chip, V3020_MINUTES, 	BIN2BCD(dt->tm_min));
+  	v3020_set_reg(chip, V3020_HOURS, 	BIN2BCD(dt->tm_hour));
+  	v3020_set_reg(chip, V3020_MONTH_DAY,	BIN2BCD(dt->tm_mday));
+-	v3020_set_reg(chip, V3020_MONTH, 	BIN2BCD(dt->tm_mon));
++	v3020_set_reg(chip, V3020_MONTH, 	BIN2BCD(dt->tm_mon) + 1);
+  	v3020_set_reg(chip, V3020_WEEK_DAY, 	BIN2BCD(dt->tm_wday));
+  	v3020_set_reg(chip, V3020_YEAR, 	BIN2BCD(dt->tm_year % 100));
+
+
