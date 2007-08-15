@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934763AbXHOSHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935223AbXHOSH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934763AbXHOSHb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 14:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759020AbXHOSHI
+	id S935223AbXHOSH6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 14:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934462AbXHOSH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 14:07:08 -0400
-Received: from gw.goop.org ([64.81.55.164]:56055 "EHLO mail.goop.org"
+	Wed, 15 Aug 2007 14:07:26 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:49711 "EHLO atlrel6.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752894AbXHOSHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 14:07:06 -0400
-Message-ID: <46C34043.1060203@goop.org>
-Date: Wed, 15 Aug 2007 11:04:51 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, mingo@elte.hu, chrisw@sous-sol.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       glommer@gmail.com
-Subject: Re: [PATCH 0/25][V3] pvops_64 last round (hopefully)
-References: <11871821854176-git-send-email-gcosta@redhat.com>
-In-Reply-To: <11871821854176-git-send-email-gcosta@redhat.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-15
+	id S933874AbXHOSHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 14:07:23 -0400
+Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Paul Jackson <pj@sgi.com>, clameter@sgi.com, dhaval@linux.vnet.ibm.com,
+       bob.picco@hp.com, nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
+       mel@skynet.ie, balbir@in.ibm.com, vatsa@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, ckrm-tech@lists.sourceforge.net
+In-Reply-To: <20070815171210.GB13286@vino.hallyn.com>
+References: <1187103831.6281.24.camel@localhost>
+	 <20070814180339.GA32553@vino.hallyn.com>
+	 <1187115224.6281.40.camel@localhost>
+	 <20070814192306.GB32553@vino.hallyn.com>
+	 <20070814204951.GA2065@vino.hallyn.com>
+	 <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
+	 <1187127685.6281.139.camel@localhost>
+	 <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
+	 <1187185392.5422.13.camel@localhost> <20070815092954.bfe7e86d.pj@sgi.com>
+	 <20070815171210.GB13286@vino.hallyn.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Wed, 15 Aug 2007 14:00:29 -0400
+Message-Id: <1187200830.5422.39.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber de Oliveira Costa wrote:
-> This is hopefully the last iteration of the pvops64 patch.
->
-> From the last version, we have only one change, which is include/asm-x86_64/processor.h: There were still one survivor in raw asm.
-> Also, git screwed me up for some reason, and the 25th patch was missing the new files, paravirt.{c,h}. (although I do remember having git-add'ed it, but who knows...)
->
-> Andrew, could you please push it to -mm ?
+On Wed, 2007-08-15 at 12:12 -0500, Serge E. Hallyn wrote:
+> Quoting Paul Jackson (pj@sgi.com):
+> > Lee wrote:
+> > > [altho' methinks CPUSET should select CONTAINERS rather than
+> > > depend on it...]
+> > 
+> > Good point -- what do you think, Paul Menage?
+> 
+> Paul mentioned (http://www.spinics.net/lists/linux-containers/msg03775.html)
+> that he was asked not to use select in Kconfigs any more.
 
-Hm, I have a patch here to refactor the pv-ops interface into smaller
-pieces.  It needs a respin against 32-bit, and obviously 64-bit should
-be equivalent.  Its mostly a moving things around patch rather than a
-big semantic change, so changing the users of the interface is fairly
-straightforward.  I'll post it shortly, but if everyone agrees that its
-the way we want to go, we should probably start out with it on 64-bit.
+That is unfortunate.  I view CPUSET is a "first class" option that
+happens to be built on CONTAINERS.  IMO, I shouldn't have to know this
+implementation detail in order to select CPUSET--indeed, even to be
+offered the optio--in 'make *config'.  However, it will be hidden if I
+haven't already selected containers.  Or do I misunderstand the
+implications of "depends on"?
 
-    J
+Andrew:  is the problem with select something fatal or just too
+difficult to fix?
+
+Lee
+
