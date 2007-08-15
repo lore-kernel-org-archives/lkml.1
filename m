@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbXHOGul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbXHOGxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbXHOGul (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 02:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbXHOGua
+	id S1757687AbXHOGxc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 02:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbXHOGxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 02:50:30 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2482 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750824AbXHOGu2 (ORCPT
+	Wed, 15 Aug 2007 02:53:09 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35772 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750731AbXHOGxG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 02:50:28 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: csnook@redhat.com (Chris Snook)
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Cc: satyam@infradead.org, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Organization: Core
-In-Reply-To: <46C2350A.1010807@redhat.com>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1ILCgh-00052A-00@gondolin.me.apana.org.au>
-Date: Wed, 15 Aug 2007 14:49:03 +0800
+	Wed, 15 Aug 2007 02:53:06 -0400
+Date: Wed, 15 Aug 2007 07:53:01 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Randy Dunlap <rddunlap@osdl.org>, Martin Bligh <mbligh@google.com>
+Subject: Re: [patch 2/2] Sort module list by pointer address to get coherent sleepable seq_file iterators
+Message-ID: <20070815065301.GK21089@ftp.linux.org.uk>
+References: <20070812150844.305211039@polymtl.ca> <20070812151039.996081605@polymtl.ca> <20070815033945.GA13134@mail.ustc.edu.cn> <20070815041845.GJ21089@ftp.linux.org.uk> <20070815063741.GB5175@mail.ustc.edu.cn>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070815063741.GB5175@mail.ustc.edu.cn>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook <csnook@redhat.com> wrote:
+On Wed, Aug 15, 2007 at 02:37:41PM +0800, Fengguang Wu wrote:
+> static void *ct_seq_next(struct seq_file *s, void *v, loff_t *pos)
+> {
+>         loff_t *spos = (loff_t *) v;
+>         *pos = ++(*spos);
+>         return spos;
+> }
 > 
-> Because atomic operations are generally used for synchronization, which requires 
-> volatile behavior.  Most such codepaths currently use an inefficient barrier(). 
->  Some forget to and we get bugs, because people assume that atomic_read() 
-> actually reads something, and atomic_write() actually writes something.  Worse, 
-> these are architecture-specific, even compiler version-specific bugs that are 
-> often difficult to track down.
+> I mean 'pos' is sometimes increased in ct_seq_next(), and sometimes from
+> seq_file.c/seq_read(), too. Thus we cannot reliably do this:
+> 
+>         *pos = (*spos) + some_variable_offset;
 
-I'm yet to see a single example from the current tree where
-this patch series is the correct solution.  So far the only
-example has been a buggy piece of code which has since been
-fixed with a cpu_relax.
+Of course we can.  These guys can be sparse - note that ->start()
+takes a pointer, and for a good reason.  ->start(m, p, pos) should
+get the first entry with offset >= *pos (or NULL if we are done) and
+set *pos accordingly.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+That m->index++ is "we are done with the partial, step just past it, so
+that ->start() will pick the first real entry after it the next time it's
+called".
+
+For dense case we don't need to update *pos in ->start() - either
+we already have one with offset == *pos (and no update is needed),
+or we are finished and should return NULL.
+
+However, we have every right to live with sparse offsets; prototype of
+->start() had been done the way it's done exactly to allow that kind
+of use.
