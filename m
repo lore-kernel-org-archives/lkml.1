@@ -1,43 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763129AbXHOAKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbXHOATn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763129AbXHOAKU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Aug 2007 20:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbXHOAJz
+	id S1759547AbXHOATn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Aug 2007 20:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbXHOATe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Aug 2007 20:09:55 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:24970 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756434AbXHOAJy (ORCPT
+	Tue, 14 Aug 2007 20:19:34 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56610 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752926AbXHOATe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Aug 2007 20:09:54 -0400
-Message-ID: <46C2444E.1080000@chelsio.com>
-Date: Tue, 14 Aug 2007 17:09:50 -0700
-From: Divy Le Ray <divy@chelsio.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Tue, 14 Aug 2007 20:19:34 -0400
+Date: Tue, 14 Aug 2007 17:19:32 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Satyam Sharma <satyam@infradead.org>
+cc: Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: kfree(0) - ok?
+In-Reply-To: <alpine.LFD.0.999.0708150454480.6482@enigma.security.iitk.ac.in>
+Message-ID: <Pine.LNX.4.64.0708141716020.937@schroedinger.engr.sgi.com>
+References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org>
+ <alpine.LFD.0.999.0708150454480.6482@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Steve Wise <swise@opengridcomputing.com>
-Subject: Re: [PATCH 9/13] cxgb3 - Update internal memory management
-References: <20070811063015.8166.66861.stgit@speedy5> <46C14189.8010304@garzik.org>
-In-Reply-To: <46C14189.8010304@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Aug 2007 00:08:33.0690 (UTC) FILETIME=[6B3A5FA0:01C7DED0]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
->
-> Divy Le Ray wrote:
-> > From: Divy Le Ray <divy@chelsio.com>
-> >
-> > Set PM1 internal memory to round robin mode
-> >
-> > Signed-off-by: Divy Le Ray <divy@chelsio.com>
->
-> why?
->
-For multiport adapters, it balances access to this internal memory.
+On Wed, 15 Aug 2007, Satyam Sharma wrote:
 
-Divy
+> [PATCH] {slub, slob}: use unlikely() for kfree(ZERO_OR_NULL_PTR) check
+
+Good that actually has a code impact.
+
