@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936375AbXHOUAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936397AbXHOUCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936375AbXHOUAs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 16:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932988AbXHOT7i
+	id S936397AbXHOUCV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 16:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933114AbXHOUCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 15:59:38 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59661 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S936207AbXHOT7h (ORCPT
+	Wed, 15 Aug 2007 16:02:08 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:59128 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932332AbXHOUCG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 15:59:37 -0400
-Date: Wed, 15 Aug 2007 12:59:32 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: Ralf Baechle <ralf@linux-mips.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mel Gorman <mel@skynet.ie>, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-mips@linux-mips.org
-Subject: Re: [PATCH 3/4] Embed zone_id information within the zonelist->zones
- pointer
-In-Reply-To: <20070815125920.GD3406@bingen.suse.de>
-Message-ID: <Pine.LNX.4.64.0708151259230.7326@schroedinger.engr.sgi.com>
-References: <20070813225841.GG3406@bingen.suse.de>
- <Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com>
- <20070813230801.GH3406@bingen.suse.de> <Pine.LNX.4.64.0708131536340.29946@schroedinger.engr.sgi.com>
- <20070813234322.GJ3406@bingen.suse.de> <Pine.LNX.4.64.0708131553050.30626@schroedinger.engr.sgi.com>
- <20070814000041.GL3406@bingen.suse.de> <20070814002223.2d8d42c5@the-village.bc.nu>
- <20070814001441.GN3406@bingen.suse.de> <20070815113749.GA5862@linux-mips.org>
- <20070815125920.GD3406@bingen.suse.de>
+	Wed, 15 Aug 2007 16:02:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NiLFqMg5jjvrBYrkyBRRIaOg69MNPnsa6/aHIvQ9YTSg8CnVNQKyDpp/1jGfQGDowhkMJS1gDcLFh3Y5HVjF4YOLDu/WXP6WZ/n+4STlN4vNVJ12pjlJZr+uHOIBeShditsJ3loecajMQdP5R/5BYPUuMb1+/o8gz9OpLQCQx1A=
+Message-ID: <f36b08ee0708151302k1d3f28a0u38dee6e879ce81e1@mail.gmail.com>
+Date: Wed, 15 Aug 2007 23:02:05 +0300
+From: "Yakov Lerner" <iler.ml@gmail.com>
+To: "Marc Perkel" <mperkel@yahoo.com>,
+       "Kernel Linux" <linux-kernel@vger.kernel.org>
+Subject: Re: Thinking outside the box on file systems
+In-Reply-To: <106259.96671.qm@web52501.mail.re2.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <106259.96671.qm@web52501.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Aug 2007, Andi Kleen wrote:
+On 8/15/07, Marc Perkel <mperkel@yahoo.com> wrote:
+> I want to throw out some concepts about a new way of
+> thinking about file systems. But the first thing you
+> have to do is to forget what you know about file
+> systems now. This is a discussion about a new view of
+> looking a file storage that is radically different and
+> it's more easily undersood if you forget a lot of what
+> you know. The idea is to create what seems natural to
+> the user rather than what seems natural to the
+> programmer.
 
-> BTW I suspect this is true for some other GFP_DMA usages too.
-> Some driver writers seem to confuse it with the PCI DMA
-> APIs or believe it is always needed for them.
 
-See especially ARM.
+I believe that kernel interface is not really meant to be operated
+on the level that's directly accessible by the end user.
+The food chain is a bit different. The human user interacts
+with userlevel apps, not with kernel API directly. The userlevel apps
+interact in turn with the kernel APIs, either directly or via the
+layers of libraries.
 
+The abstrations that's presented to the human use are not necessarily 1:1
+reflection of  the kernel APIs. For example, you could program your novel
+way of permissions as a  new file manager application that
+actually uses existing posix permissions underneath. Your file
+manager could check with userlevel-stored policies to
+implement the permissions that you describe, without any
+changes in existing kernel and existing filesystems.
+
+To expect that posix-compliant kernel will drop its posix
+complicance for temporary experiment sounds a bit far-fetched
+to me. But   the door for all kinds of experiments is widely
+open in the userlevel.
+
+Yakov
