@@ -1,76 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936667AbXHOVH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936712AbXHOVJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936667AbXHOVH7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 17:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761567AbXHOVHn
+	id S936712AbXHOVJc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 17:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760606AbXHOVJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 17:07:43 -0400
-Received: from gate.crashing.org ([63.228.1.57]:51294 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760483AbXHOVHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 17:07:41 -0400
-In-Reply-To: <20070815185724.GH9645@linux.vnet.ibm.com>
-References: <46C2350A.1010807@redhat.com> <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <20070815081841.GA16551@osiris.boeblingen.de.ibm.com> <46C30540.2070603@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in> <20070815145207.GA23106@gondor.apana.org.au> <46C3253F.5090707@s5r6.in-berlin.de> <20070815162722.GD9645@linux.vnet.ibm.com> <d4406222873856f472b9173a14a19aa2@kernel.crashing.org> <20070815185724.GH9645@linux.vnet.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2c907d70a2267b887de346891758983d@kernel.crashing.org>
+	Wed, 15 Aug 2007 17:09:23 -0400
+Received: from flpi101.sbcis.sbc.com ([207.115.20.70]:14226 "EHLO
+	flpi101.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758331AbXHOVJW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 17:09:22 -0400
+X-Greylist: delayed 394 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Aug 2007 17:09:22 EDT
+X-ORBL: [76.241.169.38]
+From: Chuck Lever <chuck.lever@oracle.com>
+Subject: [PATCH] Fix the sign of the result of a conditional expression
+To: andi@firstfloor.org
+Cc: linux-kernel@vger.kernel.org
+Date: Wed, 15 Aug 2007 17:02:41 -0400
+Message-ID: <20070815204939.3518.63203.stgit@monet.1015granger.net>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Cc: horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Satyam Sharma <satyam@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       rpjday@mindspring.com, netdev@vger.kernel.org, ak@suse.de,
-       cfriesen@nortel.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Wed, 15 Aug 2007 23:05:35 +0200
-To: paulmck@linux.vnet.ibm.com
-X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> No; compilation units have nothing to do with it, GCC can optimise
->> across compilation unit boundaries just fine, if you tell it to
->> compile more than one compilation unit at once.
->
-> Last I checked, the Linux kernel build system did compile each .c file
-> as a separate compilation unit.
+In include/asm-x86_64/bitops.h, the find_{first,next,first_zero,next_zero}_bit
+macros return a result type that depends on the width of the "size" argument.
+The type of both arms of a conditional expression should always be the same.
 
-I have some patches to use -combine -fwhole-program for Linux.
-Highly experimental, you need a patched bleeding edge toolchain.
-If there's interest I'll clean it up and put it online.
+I changed the return type of __scanbit() to match the return type of the
+x86_64 find_*_bit() functions.
 
-David Woodhouse had some similar patches about a year ago.
-
->>> In many cases, the compiler also has to assume that
->>> msleep_interruptible()
->>> might call back into a function in the current compilation unit, thus
->>> possibly modifying global static variables.
->>
->> It most often is smart enough to see what compilation-unit-local
->> variables might be modified that way, though :-)
->
-> Yep.  For example, if it knows the current value of a given such local
-> variable, and if all code paths that would change some other variable
-> cannot be reached given that current value of the first variable.
-
-Or the most common thing: if neither the address of the translation-
-unit local variable nor the address of any function writing to that
-variable can "escape" from that translation unit, nothing outside
-the translation unit can write to the variable.
-
-> At least given that gcc doesn't know about multiple threads of 
-> execution!
-
-Heh, only about the threads it creates itself (not relevant to
-the kernel, for sure :-) )
-
-
-Segher
-
+-- 
+corporate:    <chuck dot lever at oracle dot com>
