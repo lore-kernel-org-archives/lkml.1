@@ -1,89 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbXHONyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbXHONzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764248AbXHONyW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 09:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760457AbXHONyE
+	id S1757060AbXHONzy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 09:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756875AbXHONzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 09:54:04 -0400
-Received: from smtpout.mac.com ([17.250.248.171]:59010 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760695AbXHONyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 09:54:01 -0400
-In-Reply-To: <20070815133021.GB9412@csclub.uwaterloo.ca>
-References: <106259.96671.qm@web52501.mail.re2.yahoo.com> <Pine.LNX.4.64.0708141546510.22494@blackbox.fnordora.org> <46C2F96D.5030908@partiallystapled.com> <20070815133021.GB9412@csclub.uwaterloo.ca>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <ECFEFFF7-0210-4D16-B508-5284FCE58B28@mac.com>
-Cc: alan <alan@clueserver.org>, Marc Perkel <mperkel@yahoo.com>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Thinking outside the box on file systems
-Date: Wed, 15 Aug 2007 09:53:45 -0400
-To: Michael Tharp <gxti@partiallystapled.com>
-X-Mailer: Apple Mail (2.752.2)
+	Wed, 15 Aug 2007 09:55:46 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:59595 "EHLO
+	viefep31-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755110AbXHONzp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 09:55:45 -0400
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Nick Piggin <npiggin@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       David Miller <davem@davemloft.net>,
+       Daniel Phillips <phillips@google.com>
+In-Reply-To: <p731we43muw.fsf@bingen.suse.de>
+References: <20070814142103.204771292@sgi.com>
+	 <20070815122253.GA15268@wotan.suse.de> <1187183526.6114.45.camel@twins>
+	 <p731we43muw.fsf@bingen.suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zbCJ4M02+eISTRzbDrdW"
+Date: Wed, 15 Aug 2007 15:55:20 +0200
+Message-Id: <1187186120.6114.56.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 15, 2007, at 09:30:21, Lennart Sorensen wrote:
-> On Wed, Aug 15, 2007 at 09:02:37AM -0400, Michael Tharp wrote:
->> Personally, what I'd like to see is a better way of dealing with  
->> propagation of ownership. Currently, in order to allow  
->> "collaboration" directories where a directory tree is owned by a  
->> certain group and anyone in that group can write and create files,  
->> one has to change the system umask, use a magical bit on the  
->> collaboration directory to propagate group ownership, and create a  
->> group for every user on the system in order to keep their personal  
->> files safe with the new umask. This seems highly flawed. I suggest  
->> that propagation of group  ownership should be the default mode,  
->> not a special one, and that the group-writable permissions should  
->> also be propagated to new files and directories. This way, the  
->> user's home directory would remain 0755, while the collaboration  
->> directory could be 0775, without any changing of umasks.
->
-> Posix ACLs seem to solve most group permissions issues and control  
-> of permission propegation.  It actually works quite well on Linux.   
-> I am surprised if there aren't lots of people already using it.
 
-Going even further in this direction, the following POSIX ACL on the  
-directories will do what you want:
+--=-zbCJ4M02+eISTRzbDrdW
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-## Note: file owner and group are kmoffett
-u::rw-
-g::rw-
-u:lsorens:rw-
-u:mtharp:rw-
-u:mperkel:rw-
-g:randomcvsdudes:r-
-default:u::rw-
-default:g::rw-
-default:u:lsorens
-default:u:mtharp:rw-
-default:u:mperkel:rw-
-default:g:randomcvsdudes:r-
+On Wed, 2007-08-15 at 16:15 +0200, Andi Kleen wrote:
+> Peter Zijlstra <a.p.zijlstra@chello.nl> writes:
+> >=20
+> > Christoph's suggestion to set min_free_kbytes to 20% is ridiculous - no=
+r
+> > does it solve all deadlocks :-(
+>=20
+> A minimum enforced reclaimable non dirty threshold wouldn't be
+> that ridiculous though. So the memory could be used, just not
+> for dirty data.
 
-Basically any newly-created item in such a directory will get the  
-permissions described by the "default:" entries in the ACL, and  
-subdirectories will get a copy of said "default:" entries.
+Sure, and note that various patches to such an effect have already been
+posted (even one by myself), they introduce a third reclaim list on
+which clean pages live. If you add to that a requirement to keep that
+list at a certain level, one could replace part (or all) of the reserves
+with that.
 
-So yes, such functionality is nice; even more so because we already  
-have it.  I think if you were really going to "extend" a UNIX  
-filesystem it would need to be in 2 directions:
-   (A)  Handling disk failures by keeping multiple copies of  
-important files.
-   (B)  Have version-control support
-   (C)  Allowing distributed storage (also lazy synchronization and  
-offline modification support)
+But that is more an optimisation rather than anything else.
 
-With some appropriate modifications and hooks, GIT actually comes  
-pretty close here.  For larger files it needs to use a "list-of-4MB- 
-chunks" approach to minimize the computation overhead for committing  
-a randomly-modified file.  The "index" of course would be directly  
-read and modified by vfs calls and via mapped memory.  Merge handling  
-would need careful integration, preferably with allowing custom  
-default-merge-handlers per subtree.  There would be lots more design  
-issues to work out, but it's something to think about
+The thing I strongly objected to was the 20%.
 
-Cheers,
-Kyle Moffett
+Also his approach misses the threshold - the extra condition needed to
+break out of the various network deadlocks. There is no point that says
+- ok, and now we're in trouble, drop anything non-critical. Without that
+you'll always run into a wall.
+
+> His patchkit essentially turns the GFP_ATOMIC requirements=20
+> from free to easily reclaimable. I see that as an general improvement.
+>=20
+> I remember sct talked about this many years ago and it's still
+> a good idea.
+
+That is his second patch-set, and I do worry about the irq latency that
+that will introduce. It very much has the potential to ruin everything
+that cares about interactiveness or latency.
+
+Hence my suggestion to look at threaded interrupts, in which case it
+would only ruin the latency of the interrupt that does this, but does
+not hold off other interrupts/processes. Granted PI would be nice to
+ensure the threaded handler does eventually finish.
+
+
+
+--=-zbCJ4M02+eISTRzbDrdW
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGwwXIXA2jU0ANEf4RAh06AJ9tDH6os9rYP27C+XjdS0FmxIpo2QCeJRLs
+SuGkz9WLmIn91HJ+wnXl3XA=
+=JwOq
+-----END PGP SIGNATURE-----
+
+--=-zbCJ4M02+eISTRzbDrdW--
+
