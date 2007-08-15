@@ -1,161 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934120AbXHORSD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934367AbXHORT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934120AbXHORSD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:18:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758651AbXHORRw
+	id S934367AbXHORT1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:19:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758651AbXHORTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:17:52 -0400
-Received: from smtpout.mac.com ([17.250.248.172]:57805 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755792AbXHORRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:17:51 -0400
-In-Reply-To: <184413.25590.qm@web52503.mail.re2.yahoo.com>
-References: <184413.25590.qm@web52503.mail.re2.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <152F34EE-58BE-43BE-9E33-597F2AE1DFAA@mac.com>
+	Wed, 15 Aug 2007 13:19:18 -0400
+Received: from web52501.mail.re2.yahoo.com ([206.190.48.184]:30608 "HELO
+	web52501.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756740AbXHORTR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:19:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=Dk33xL+URs61QAUms2z8zHsTTpIySOS/hvn8172EIsQ29hcrvGYybCWeM9X8M7PggKVSr7fcdjN7QdYk6ioa3oMXSYd0wSZWwogUW6n4DRMllFZpECZbjRzJmasKEcMP3vi6tBby1dLBPFGjpzY+vuygT3tr3l6Ebi6HjxOKGgg=;
+X-YMail-OSG: XRbIiFsVM1nC4L1XE3O.FYnTZYw3syMtxsQergDJkf0PyA9TGzRCLJq643l94iIHFw--
+Date: Wed, 15 Aug 2007 10:19:16 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: Thinking outside the box on file systems
+To: Kyle Moffett <mrmacman_g4@mac.com>
 Cc: Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
        LKML Kernel <linux-kernel@vger.kernel.org>,
        Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Thinking outside the box on file systems
-Date: Wed, 15 Aug 2007 13:17:39 -0400
-To: Marc Perkel <mperkel@yahoo.com>
-X-Mailer: Apple Mail (2.752.2)
+In-Reply-To: <08054D5B-FDC2-4A79-8599-E135432E9B45@mac.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <174219.56922.qm@web52501.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One note before you read the rest of this:
-   The kinds of things you are discussing here are usually called  
-"MAC" or "Mandatory Access Control", and they are always implemented  
-on top of an LSM *after* ordinary "DAC" or "Discretionary Access  
-Control" (IE: file permissions) are applied.  If your MAC rules are  
-good enough you could theoretically just chmod 6777 all the files on  
-the system and make them all root-owned, but why throw away mostly- 
-free security?
 
-On Aug 15, 2007, at 12:36:38, Marc Perkel wrote:
-> --- Michael Tharp <gxti@partiallystapled.com> wrote:
->> Kyle Moffett wrote:
->>> Basically any newly-created item in such a directory will get the  
->>> permissions described by the "default:" entries in the ACL, and  
->>> subdirectories will get a copy of said "default:" entries.
->>
->> This would work well, although I would give write permissions to a  
->> group so the entire dir wouldn't need to be re-ACLed when a user  
->> is added. I may give this a shot; I've been avoiding ACLs because  
->> they have always
->> sounded incomplete/not useful, but the inheritance aspect sounds  
->> rather nice.
->
-> Michael, my idea in this model is that there will be no permissions  
-> stored in files. So you would not have to re-ACL anything.
->
-> What I'm thinking is there would be a new permission system that is  
-> completely different.
->
-> It might be something like this. I am loged in as mperkel. I get  
-> all the rights of mperkel and all other objects like groups or  
-> management lists that I am a member of. Once the system has a full  
-> list of my rights it starts to compare the file name I'm trying to  
-> access to the rights I have by testing each section of the name. So  
-> if the file is /home/mperkel/files/myfile then the test would be:
+--- Kyle Moffett <mrmacman_g4@mac.com> wrote:
 
-Big flashing "WARNING" sign number 1:  "Once the system has a _full_  
-_list_ of..."  A "full list of" anything does not scale at all.  When  
-coming up with kernel ideas, think of the biggest possible box you  
-can imagine, then scale it up by 2-3 orders of magnitude.  If it  
-still works then you're fine; otherwise....
+> On Aug 15, 2007, at 12:02:41, Marc Perkel wrote:
+> > Kyle, thinking further outside the box, files
+> would no longer have  
+> > owners or permissions. Nor would
+> > directories. People, groups, managers, and other 
+> objects with have  
+> > permissions. One might tag a file with the object
+> that created it  
+> > so you could implement "self" rights which might
+> be use to replace  
+> > the concept of /tmp directories.
+> 
+> Well, that's actually kind of close to how SELinux
+> works.
+> 
+> This is the real fundamental design gotcha:
+>    Our current apps *AND* admins speak "UNIX" and
+> "POSIX".  They  
+> don't speak "MarcPerkelOS" (or even "SELinux").  As
+> long as there is  
+> not a reasonably-close-to-1-to-1 mapping between
+> UNIX semantics and  
+> your "outside the box" semantics, the latter can't
+> really be used.   
+> It would just involve rewriting too much code *AND*
+> retraining too  
+> many admins from scratch to make it work.  Hell,
+> even Windows and Mac  
+> have moved towards a UNIX-like permissions system,
+> precisely because  
+> it's a simple model which is relatively easy to
+> teach people how to  
+> use.  ACLs are just a slight modification of that
+> model to allow two  
+> things:
+>    (A) Additional user/group permissions
+>    (B) Default permissions for new child
+> files/dirs/etc
+> 
+> People are having a huge problem with SELinux
+> permissions as is, and  
+> portions of that are a fairly standard model that's
+> been worked over  
+> in various OSes for many years.  I seriously doubt
+> that anything that  
+> far "outside the box" is going to be feasible, at
+> least in the near  
+> term.
+> 
+> Good new filesystem developments are likely to be
+> ones which preserve  
+> the same outer model, yet allow for
+> deeper/more-powerful control for  
+> those users/admins who need it.
+> 
+> Cheers,
+> Kyle Moffett
+> 
+> 
 
+Kyle, What I'm suggesting is scrapping all existing
+concepts and replacing them with something entirely
+new. Posix, Unix, SELinux go away except for an
+emulation layer for backwards compatibility. What I'm
+suggesting is to start over and do it right. 
 
-> /home/mperkel/files/myfile - nothing
-> /home/mperkel/files - nothing
-> /home/mperkel - match - mperkel granted tree permission
->
-> Rights tests would be based on trees so if you hit a tree  
-> permission they you can access anything in the tree unless you have  
-> hit a deny in the branches. All of this is based on the text  
-> strings in the file name with the "/" separator for the tests.
+If this new idea is implemented then one could
+implement POSIX as one of many permission modules that
+one could load. One could also load a WINDOWS
+permission model that could be used with SAMBA. This
+would be a new more powerful underlying layer that can
+be used to emulate anything you want. And it would be
+great for people using FUSE who could make file
+systems look any way they want.
 
-Big flashing "WARNING" sign number 2:  You are doing privileges based  
-on pathnames, which is a massive no-no.  Please go see the huge  
-AppArmor/SELinux flame-war that occurred a month or so ago for all  
-the reasons why pathname-based security doesn't work (and  
-furthermore, doesn't scale).  Hint:  It has to do with 4 syscalls:  
-chroot(), mount(), clone(CLONE_NEWNS), and link()
-
-
-> The correct way of thinking of this is applying permissions to name  
-> strings. Directories will become artificial constructs. For  
-> example, one might grant permissions for files:
->
-> /etc/*.conf - read only
-> /etc - deny
-
-And so when both /etc/shadow and /tmp/ 
-file_about_to_be_nuked_by_a_daemon point to the same block of data,  
-you now lose *ALL* of the benefits of that model.
-
-
-> In this example the user would be able to read any file in the /etc  
-> directory that ended in *.conf but no other files. If the object  
-> listed the /etc directory it would only show the *.conf files and  
-> no other file
-> would appear to exist.
-
-Big flashing "WARNING" sign number 3:  This means putting some kind  
-of pattern matcher in the kernel.  I don't even want to *THINK* about  
-how unholy of a hell that would be.  The way SELinux does this is by  
-using regexes in userspace to set the appropriate *initial* labels on  
-all the files, and let the system's automatic type transitions take  
-care of the rest.
-
-> The important point here is that directories don't really exist.
-
-Except they do, and without directories the performance of your  
-average filesystem is going to suck.
+One of the problems with the Unix/Linux world is that
+your minds are locked into this one model. In order to
+do it right it requires the mental discipline to break
+out of that.
 
 
-> Imagine that every file has an internal number that is linked to  
-> the blocks that contain that file. Then there are file names that  
-> link to that number directly.
-
-These are called "inodes" and "hardlinks".  Every file and directory  
-is a hardlink to the inode (using the inode number) containing its  
-data.  For directories the inode data blocks have more inode  
-references, and for files they have actual data blocks.  This is the  
-model that UNIX operating systems have been using for years.
+Marc Perkel
+Junk Email Filter dot com
+http://www.junkemailfilter.com
 
 
-> Then there is a permission system that compares the name you are  
-> requesting to a permission algorithm that determines what you are  
-> allowed to do to the name that you are requesting.
-
-The "name" that you are requesting is a fundamentally bad security  
-concept.  Better is the attributes of the actual *inode* that you are  
-requesting.
-
-
-> Then you will not only be denied access to the /etc/passwd file,  
-> you wouldn't even be able to tell if it exists.
-
-You could theoretically do this with SELinux now; there was even a  
-thread recently about somebody trying to add an LSM hook for readdir 
-(), so that he could hide entries from an "ls".  On the other hand,  
-under SELinux right now such a file looks like this:
-
-root@ares:~# ls -al /foo
-dr-xr-xr-x  3 root root 4096 2007-08-15 13:14 .
-dr-xr-xr-x 26 root root 4096 2007-08-15 13:14 ..
-?---------  - -    -       -                - file_with_no_selinux_perms
-
-I can still tell that "file_with_no_selinux_perms" is actually a  
-directory, though, by looking at the hardlink count of /foo.  Since  
-it's 3, I can count up the parent-dir's-link and our own link,  
-leaving one left which must be a child-dir's link.
-
-Cheers,
-Kyle Moffett
-
-
+       
+____________________________________________________________________________________
+Looking for a deal? Find great prices on flights and hotels with Yahoo! FareChase.
+http://farechase.yahoo.com/
