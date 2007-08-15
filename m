@@ -1,95 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935479AbXHOSJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935420AbXHOSLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935479AbXHOSJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 14:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935165AbXHOSIu
+	id S935420AbXHOSLS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 14:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765305AbXHOSK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 14:08:50 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:41951 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935151AbXHOSIs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 14:08:48 -0400
-Subject: [PATCH] on_each_task - let modules iterate a function on each task
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       clark.williams@gmail.com
-Content-Type: text/plain
-Date: Wed, 15 Aug 2007 14:07:47 -0400
-Message-Id: <1187201267.3848.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Aug 2007 14:10:57 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41264 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753697AbXHOSK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 14:10:56 -0400
+Date: Wed, 15 Aug 2007 11:09:29 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@suse.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, mingo@elte.hu, jeremy@goop.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       lguest@ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
+       kiran@scalemp.com, shai@scalemp.com
+Subject: Re: [PATCH 3/25][V3] irq_flags / halt routines
+Message-ID: <20070815180929.GX3672@sequoia.sous-sol.org>
+References: <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <20070815135554.GE3406@bingen.suse.de> <5d6222a80708150718v14f26343q7467385e7919fa76@mail.gmail.com> <20070815154243.GH3406@bingen.suse.de> <46C31736.2050001@redhat.com> <20070815163640.GJ3406@bingen.suse.de> <46C3283B.5090804@redhat.com> <20070815164729.GU3672@sequoia.sous-sol.org> <46C3312D.40106@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C3312D.40106@redhat.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+* Glauber de Oliveira Costa (gcosta@redhat.com) wrote:
+> Only caveat, is that it has to be done before smp gets in the game, and 
+> with interrupts disabled. (which makes the function in vsmp.c not eligible).
+> 
+> My current option is to force VSMP to use PARAVIRT, as said before, and 
+> then fill paravirt_arch_setup, which is currently unused, with code to 
+> replace the needed paravirt_ops.fn.
+> 
+> I don't know if there is any method to dynamically determine (at this 
+> point) that we are in a vsmp arch, and if there are not, it will have to 
+> get ifdefs anyway. But at least, they are far more local.
 
-I'm writing a module that can do a dynamic isolcpus at run time. This is
-much easier to do in the kernel than in userspace.  In order to do this,
-I need to iterate over all tasks in the system but I could not find a
-way to do this from a module.
+between __cacheline_aligned_in_smp and other compile time bits based on
+VSMP specific INTERNODE_CACHE, etc. I think compile time the way to go.
 
-So instead of exporting the tasklist_lock (and opening up a great big
-can of worms), I wrote this utility function that will allow a module to
-iterate some function over all tasks in the system.
+> I am okay with both, but after all the explanation, I don't think that 
+> adding a new pvops is a bad idea. It would make things less cumbersome 
+> in this case. Also, hacks like this save_fl may require changes to the 
+> hypervisor, right? I don't even know where such hypervisor is, and how 
+> easy it is to replace it (it may be deeply hidden in firmware)
 
-Comments and flames welcome.
+No hypervisor change needed.  Just the pv backend needs to return 0 or
+X86_EFLAGS_IF for save_flags (and similar translation on restore_flags).
+Xen uses a simple shared memory flag and does something which you could
+roughly translate into this:
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+	xen_save_flags()
+	if (xen_vcpu_interrupts_enabled)
+		return X86_EFLAGS_IF;
+	else
+		return 0;
 
-Index: linux-2.6.21.6-rt21/kernel/sched.c
-===================================================================
---- linux-2.6.21.6-rt21.orig/kernel/sched.c
-+++ linux-2.6.21.6-rt21/kernel/sched.c
-@@ -7065,6 +7065,31 @@ void normalize_rt_tasks(void)
- 
- #endif /* CONFIG_MAGIC_SYSRQ */
- 
-+/**
-+ * on_each_task - run a function on every task.
-+ * @func - function to call on the task
-+ * @data - data to pass in to func.
-+ *
-+ * Iterate a function over all tasks in the system.
-+ */
-+void on_each_task(int(*func)(struct task_struct *t, void *d), void *data)
-+{
-+	struct task_struct *g, *p;
-+
-+	read_lock(&tasklist_lock);
-+
-+	do_each_thread(g, p) {
-+
-+		/* do_each_thread is a double loop! */
-+		if (func(p, data))
-+			goto out;
-+
-+	} while_each_thread(g, p);
-+ out:
-+	read_unlock(&tasklist_lock);
-+}
-+EXPORT_SYMBOL_GPL(on_each_task);
-+
- #ifdef CONFIG_IA64
- /*
-  * These functions are only useful for the IA64 MCA handling.
-Index: linux-2.6.21.6-rt21/include/linux/sched.h
-===================================================================
---- linux-2.6.21.6-rt21.orig/include/linux/sched.h
-+++ linux-2.6.21.6-rt21/include/linux/sched.h
-@@ -2079,6 +2079,8 @@ extern int sched_create_sysfs_power_savi
- 
- extern void normalize_rt_tasks(void);
- 
-+extern void on_each_task(int(*func)(struct task_struct *t, void *d), void *data);
-+
- #ifdef CONFIG_TASK_XACCT
- static inline void add_rchar(struct task_struct *tsk, ssize_t amt)
- {
+This doesn't require any hypervisor changes.  Similarly, VSMP could do
+something along the lines of:
 
+	vsmp_save_flags()
+	flags = native_save_flags();
+	if (flags & X86_EFLAGS_IF) || (flags & X86_EFLAGS_AC)
+		return X86_EFLAGS_IF;
+	else
+		return 0;
 
+> A question raises here: Would vsmp turn paravirt_enabled to 1 ?
+
+Probably not.  It's mostly native and I'm not sure it would want the
+bits disabled from if (paravirt_enabled()) tests.
