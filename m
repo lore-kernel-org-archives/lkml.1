@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763950AbXHOImH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764951AbXHOImd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763950AbXHOImH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 04:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbXHOIlv
+	id S1764951AbXHOImd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 04:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758935AbXHOIl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 04:41:51 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:51588 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754760AbXHOIlu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 04:41:50 -0400
-Message-ID: <46C2BB60.6010909@gmail.com>
-Date: Wed, 15 Aug 2007 10:37:52 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Jason Uhlenkott <jasonuhl@jasonuhl.org>,
-       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kfree(0) - ok?
-References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org> <20070814232107.GA4265@aurum.uhlenkott.net> <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Wed, 15 Aug 2007 04:41:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37397 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757970AbXHOIlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 04:41:53 -0400
+Date: Wed, 15 Aug 2007 08:41:48 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.4.35.1
+Message-ID: <20070815084148.GA16893@hera.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/15/2007 09:28 AM, Jan Engelhardt wrote:
+I've just released Linux 2.4.35.1.
 
-> On Aug 14 2007 16:21, Jason Uhlenkott wrote:
+This version includes some minor build fixes for people using GCC 4.x.
+It now successfully builds with 4.2.
 
->> On Tue, Aug 14, 2007 at 15:55:48 -0700, Arjan van de Ven wrote:
->>> NULL is not 0 though.
->> It is.  Its representation isn't guaranteed to be all-bits-zero,
-> 
-> C guarantees that.
+Please also note the security update : CVE-2007-3848. Limited impact, but
+really depends on the setuid binaries provided by your distribution.
 
-C guarantees what? If you're disagreeing with Jason -- he's right.
+The patch and changelog will appear soon at the following locations:
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/patch-2.4.35.1.bz2
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.35.1
 
->> but the constant value 0 when used in pointer context is always a
->> null pointer (and in fact the standard requires that NULL be
->> #defined as 0 or a cast thereof).
+Git repository:
+   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.35.y.git
+  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.35.y.git
 
-Rene.
+Git repository through the gitweb interface:
+  http://git.kernel.org/?p=linux/kernel/git/stable/linux-v2.4.35.y.git
+
+Willy
+--
+
+Summary of changes from v2.4.35 to v2.4.35.1
+============================================
+
+Marc Haisenko (1):
+      b44: fix force mac address before ifconfig up
+
+Willy Tarreau (9):
+      build fix for lvm with gcc 4
+      fix wdt83627 build breakage with gcc 4.x
+      wdt83627: fix wdt_init() return code
+      module fdomain_cs requires fdomain_setup()
+      do not use gcc's builtin strpbrk
+      fix incorrect use of -fno-unit-at-a-time on GCC >= 4
+      second build fix for some rare buggy versions of GCC 4
+      CVE-2007-3848 Privilege escalation via PR_SET_PDEATHSIG
+      Change VERSION to 2.4.35.1
+
