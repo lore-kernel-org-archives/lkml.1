@@ -1,82 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbXHOLlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbXHOLtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758678AbXHOLlu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 07:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbXHOLlj
+	id S1756303AbXHOLtE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 07:49:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbXHOLsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 07:41:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53308 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752414AbXHOLlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 07:41:37 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-To: torvalds@osdl.org, viro@ftp.linux.org.uk
-cc: dhowells@redhat.com, sds@tycho.nsa.gov, casey@schaufler-ca.com,
-       linux-fsdevel@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Adding a security parameter to VFS functions
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Wed, 15 Aug 2007 12:40:55 +0100
-Message-ID: <29015.1187178055@redhat.com>
+	Wed, 15 Aug 2007 07:48:53 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:38741 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751386AbXHOLsw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 07:48:52 -0400
+Message-ID: <46C2E727.3050407@gmail.com>
+Date: Wed, 15 Aug 2007 13:44:39 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Joe Perches <joe@perches.com>, Junio C Hamano <gitster@pobox.com>,
+       git@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -	scripts/get_maintainer.pl
+References: <1186984174.10249.7.camel@localhost>	 <200708131933.10125.m.kozlowski@tuxland.pl>	 <1187026955.2688.4.camel@laptopd505.fenrus.org>	 <1187037445.6628.98.camel@heimdal.trondhjem.org>	 <1187054366.2757.0.camel@laptopd505.fenrus.org>	 <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu>	 <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>	 <7vwsvx8twx.fsf@assigned-by-dhcp.cox.net> <1187143925.32555.208.camel@localhost> <46C2C9DC.9030307@s5r6.in-berlin.de>
+In-Reply-To: <46C2C9DC.9030307@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/15/2007 11:39 AM, Stefan Richter wrote:
 
-Hi Linus, Al,
+> Note, maintainer contacts
+>   - should be available to patch submitters and
+>   - must be available to *problem reporters*
+> without having to have git and a .git repo.
 
-Would you object greatly to functions like vfs_mkdir() gaining a security
-parameter?  What I'm thinking of is this:
+That "must" seems rather strong. But those few non-developer users that 
+could care are served by a MAINTAINERS file generated into releases.
 
-	int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode,
-		      struct security *security)
-
-Where the security context is the state of the context at the time the call
-was issued:
-
-	struct security {
-		uid_t			fsuid;
-		git_t			fsgid;
-		struct group_info	*group_info;
-		void			*security;
-		struct key		*session_keyring;
-		struct key		*process_keyring;
-		struct key		*thread_keyring;
-
-And perhaps:
-
-		struct audit_context	*audit_context;
-		seccomp_t		seccomp;
-	};
-
-This would, for the most part, be a temporary affair, being set up by such as
-sys_mkdir()/sys_mkdirat() from data held in task_struct.
-
-This information would then be passed into the filesystem and LSM layers so
-that files, directories, etc. can be created, opened, deleted, or otherwise
-mangled based on these security items, rather than the one in whichever
-task_struct is current.
-
-
-The reason for doing this would be to support an act-as interface, so that
-services such as nfsd and cachefiles could act with different security details
-to the ones attached to the task.  This would have a couple of potential
-benefits:
-
- (1) nfsd threads don't have to keep changing their security contexts.
-
- (2) cachefiles can act on behalf of a process without changing its security
-     context.
-
-
-Note that I/O operations such as read, write and ioctl would *not* be passed
-this data as the file struct should contain the relevant security information.
-Similarly, page I/O operations would also not need alteration as the VMA
-covering the region points to a file struct, which holds the appropriate
-security.
-
-David
+Rene.
