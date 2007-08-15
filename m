@@ -1,37 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933032AbXHORNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933726AbXHORO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933032AbXHORNi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbXHORN2
+	id S933726AbXHORO3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:14:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbXHOROV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:13:28 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:46305 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbXHORN1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:13:27 -0400
-Date: Wed, 15 Aug 2007 13:12:47 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Nicolas George <nicolas.george@normalesup.org>
-Cc: linux-kernel@vger.kernel.org, uml-devel@lists.sourceforge.net
-Subject: Re: UML/man: BLKGETSIZE takes a long, not an int
-Message-ID: <20070815171247.GA7948@c2.user-mode-linux.org>
-References: <20070813124247.GA7414@she-seel.salle-s.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070813124247.GA7414@she-seel.salle-s.org>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 15 Aug 2007 13:14:21 -0400
+Received: from ms.trustica.cz ([82.208.32.68]:59134 "EHLO ms.trustica.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753425AbXHOROU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:14:20 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Aug 2007 13:14:19 EDT
+Message-ID: <46C332D6.1060907@assembler.cz>
+Date: Wed, 15 Aug 2007 19:07:34 +0200
+From: Rudolf Marek <r.marek@assembler.cz>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070621)
+MIME-Version: 1.0
+To: joe@perches.com
+CC: torvalds@linux-foundation.org, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] [134/2many] MAINTAINERS - CORETEMP HARDWARE MONITORING
+ DRIVER
+References: <46bff960.WIP0LRYr3U/rYI1a%joe@perches.com>
+In-Reply-To: <46bff960.WIP0LRYr3U/rYI1a%joe@perches.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 02:42:47PM +0200, Nicolas George wrote:
-> I found a type mismatch in UML that makes host block devices unusable as ubd
-> devices on x86_64 and other 64 bits systems (segfault of the mm subsystem):
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Looks sane, can I have a properly Signed-off-by: version of the patch?
+Hi,
 
-				Jeff
+There is documentation file too. Documentation/hwmon/coretemp
 
--- 
-Work email - jdike at linux dot intel dot com
+Rudolf
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGwzLV3J9wPJqZRNURAgdmAJ9az/Zm2rq1k+sxwivhSnLMj4pfbwCgy+LI
+5kU9ohmTljh3FNnEGTImodI=
+=d5Rg
+-----END PGP SIGNATURE-----
