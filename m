@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933908AbXHOQ7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933800AbXHORAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933908AbXHOQ7H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 12:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761161AbXHOQ6x
+	id S933800AbXHORAY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757599AbXHORAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 12:58:53 -0400
-Received: from smtpout.mac.com ([17.250.248.186]:52314 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757749AbXHOQ6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 12:58:52 -0400
-In-Reply-To: <16329.19717.qm@web52501.mail.re2.yahoo.com>
-References: <16329.19717.qm@web52501.mail.re2.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <08054D5B-FDC2-4A79-8599-E135432E9B45@mac.com>
-Cc: Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Thinking outside the box on file systems
-Date: Wed, 15 Aug 2007 12:58:39 -0400
-To: Marc Perkel <mperkel@yahoo.com>
-X-Mailer: Apple Mail (2.752.2)
+	Wed, 15 Aug 2007 13:00:06 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:60460 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756245AbXHORAD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:00:03 -0400
+Date: Wed, 15 Aug 2007 22:22:34 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Christoph Lameter <clameter@sgi.com>, bob.picco@hp.com, nacc@us.ibm.com,
+       kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
+       akpm@linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       ckrm-tech <ckrm-tech@lists.sourceforge.net>
+Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
+Message-ID: <20070815165234.GC1179@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <1187115224.6281.40.camel@localhost> <20070814192306.GB32553@vino.hallyn.com> <20070814204951.GA2065@vino.hallyn.com> <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com> <1187127685.6281.139.camel@localhost> <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com> <1187185392.5422.13.camel@localhost> <20070815143125.GA11582@vino.hallyn.com> <1187195028.5422.30.camel@localhost> <20070815163142.GA12850@vino.hallyn.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070815163142.GA12850@vino.hallyn.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 15, 2007, at 12:02:41, Marc Perkel wrote:
-> Kyle, thinking further outside the box, files would no longer have  
-> owners or permissions. Nor would
-> directories. People, groups, managers, and other  objects with have  
-> permissions. One might tag a file with the object that created it  
-> so you could implement "self" rights which might be use to replace  
-> the concept of /tmp directories.
+Hi,
 
-Well, that's actually kind of close to how SELinux works.
+On Wed, Aug 15, 2007 at 11:31:42AM -0500, Serge E. Hallyn wrote:
+> Quoting Lee Schermerhorn (Lee.Schermerhorn@hp.com):
+> > On Wed, 2007-08-15 at 09:31 -0500, Serge E. Hallyn wrote:
+> > > Quoting Lee Schermerhorn (Lee.Schermerhorn@hp.com):
+> > > > On Tue, 2007-08-14 at 14:56 -0700, Christoph Lameter wrote:
+> > > > > On Tue, 14 Aug 2007, Lee Schermerhorn wrote:
+> > > > > 
+> Ok, I'll try this soon as I have a chance.  To be honest when I first
+> looked at this and saw that node_states[] was only being initialized
+> for the first two entries this was my first instinct, except I had
+> no idea what the right way to initilaize it was :)  Cause I am
+> completely numa-challenged.
+>
 
-This is the real fundamental design gotcha:
-   Our current apps *AND* admins speak "UNIX" and "POSIX".  They  
-don't speak "MarcPerkelOS" (or even "SELinux").  As long as there is  
-not a reasonably-close-to-1-to-1 mapping between UNIX semantics and  
-your "outside the box" semantics, the latter can't really be used.   
-It would just involve rewriting too much code *AND* retraining too  
-many admins from scratch to make it work.  Hell, even Windows and Mac  
-have moved towards a UNIX-like permissions system, precisely because  
-it's a simple model which is relatively easy to teach people how to  
-use.  ACLs are just a slight modification of that model to allow two  
-things:
-   (A) Additional user/group permissions
-   (B) Default permissions for new child files/dirs/etc
+I just tried it out and it is not triggering the bug. So i guess it
+works :).
 
-People are having a huge problem with SELinux permissions as is, and  
-portions of that are a fairly standard model that's been worked over  
-in various OSes for many years.  I seriously doubt that anything that  
-far "outside the box" is going to be feasible, at least in the near  
-term.
+-- 
+regards,
+Dhaval
 
-Good new filesystem developments are likely to be ones which preserve  
-the same outer model, yet allow for deeper/more-powerful control for  
-those users/admins who need it.
-
-Cheers,
-Kyle Moffett
-
+I would like to change the world but they don't give me the source code!
