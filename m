@@ -1,65 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933366AbXHOQcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933496AbXHOQcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933366AbXHOQcG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 12:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933192AbXHOQar
+	id S933496AbXHOQcj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 12:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933284AbXHOQbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 12:30:47 -0400
-Received: from mga02.intel.com ([134.134.136.20]:14327 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933167AbXHOQap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 12:30:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,267,1183359600"; 
-   d="scan'208";a="279309252"
-Date: Wed, 15 Aug 2007 09:27:31 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch 2/4] scsi: expose AN support to user space
-Message-Id: <20070815092731.01b19e0e.kristen.c.accardi@intel.com>
-In-Reply-To: <1187186509.3327.7.camel@localhost.localdomain>
-References: <20070808190613.616085010@localhost.localdomain>
-	<20070808120822.9cf187bb.kristen.c.accardi@intel.com>
-	<46C2B59A.6070200@garzik.org>
-	<1187186509.3327.7.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Aug 2007 12:31:51 -0400
+Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:22300 "HELO
+	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933450AbXHOQbt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 12:31:49 -0400
+X-YMail-OSG: Vx4HoI4VM1kSHNFuk6eJNKq33_TKdyWdYjdDoMUuaVWi6xZSjrEItTxl6oEWCF1k05jKticVag--
+Date: Wed, 15 Aug 2007 11:31:42 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, Christoph Lameter <clameter@sgi.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, bob.picco@hp.com,
+       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
+       akpm@linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       ckrm-tech <ckrm-tech@lists.sourceforge.net>
+Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
+Message-ID: <20070815163142.GA12850@vino.hallyn.com>
+References: <20070814180339.GA32553@vino.hallyn.com> <1187115224.6281.40.camel@localhost> <20070814192306.GB32553@vino.hallyn.com> <20070814204951.GA2065@vino.hallyn.com> <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com> <1187127685.6281.139.camel@localhost> <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com> <1187185392.5422.13.camel@localhost> <20070815143125.GA11582@vino.hallyn.com> <1187195028.5422.30.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1187195028.5422.30.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Aug 2007 09:01:49 -0500
-James Bottomley <James.Bottomley@SteelEye.com> wrote:
-
-> On Wed, 2007-08-15 at 04:13 -0400, Jeff Garzik wrote:
-> > Kristen Carlson Accardi wrote:
-> > > If a scsi_device supports async notification for media change, then
-> > > let user space know this capability exists by creating a new sysfs
-> > > entry "media_change_notify", which will be 1 if it is supported, and
-> > > 0 if not supported.  Create a routine which allows scsi devices to
-> > > send a uevent when media change events occur.
+Quoting Lee Schermerhorn (Lee.Schermerhorn@hp.com):
+> On Wed, 2007-08-15 at 09:31 -0500, Serge E. Hallyn wrote:
+> > Quoting Lee Schermerhorn (Lee.Schermerhorn@hp.com):
+> > > On Tue, 2007-08-14 at 14:56 -0700, Christoph Lameter wrote:
+> > > > On Tue, 14 Aug 2007, Lee Schermerhorn wrote:
+> > > > 
+> > > > > > Ok then you did not have a NUMA system configured. So its okay for the 
+> > > > > > dummies to ignore the stuff. CONFIG_NODES_SHIFT is a constant and does not 
+> > > > > > change. The first bit is always set.
+> > > > > 
+> > > > > The first bit [node 0] is only set for the N_ONLINE [and N_POSSIBLE]
+> > > > > mask.  We could add the static init for the other masks, but since
+> > > > > non-numa platforms are going through the __build_all_zonelists, they
+> > > > > might as well set the MEMORY bits explicitly.  Or, maybe you'll
+> > > > > disagree ;-).
+> > > > 
+> > > > The bitmaps can be completely ignored if !NUMA.
+> > > > 
+> > > > In the non NUMA case we define
+> > > > 
+> > > > static inline int node_state(int node, enum node_states state)
+> > > > {
+> > > >         return node == 0;
+> > > > }
+> > > > 
+> > > > So its always true for node 0. The "bit" is set.
 > > > 
-> > > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> > > The issue is with the N_*_MEMORY masks.  They don't get initialized
+> > > properly because node_set_state() is a no-op if !NUMA.  So, where we
+> > > look for intersections with or where we AND with the N_*_MEMORY masks we
+> > > get the empty set.
+> > > 
+> > > > 
+> > > > We are trying to get cpusets to work with !NUMA?
+> 
+> Sounds reasonable.  
+> 
+> > > 
+> > > 
+> > > Well, yes.  In Serge's case, he's trying to use cpusets with !NUMA.
+> > > He'll have to comment on the reasons for that.  Looking at all of the
 > > 
-> > if James is happy with this patch, I'm happy with patch #2 and #3
+> > So I can lock a container to a cpu on a non-numa machine.
+> > 
+> > > #ifdefs and init/Kconfig, CPUSET does not depend on NUMA--only SMP and
+> > > CONTAINERS [altho' methinks CPUSET should select CONTAINERS rather than
+> > > depend on it...].  So, you can use cpusets to partition of cpus in
+> > > non-NUMA configs.
+> > > 
+> > > In the more general case, tho', I'm looking at all uses of the
+> > > node_online_map and for_each_online_node, for instances where they
+> > > should be replaced with one of the *_MEMORY masks.  IMO, generic code
+> > > that is compiled independent of any CONFIG option, like NUMA,  should
+> > > just work, independent of the config.  Currently, as Serge has shown,
+> > > this is not the case.  So, I think we should fix the *_MEMORY maps to be
+> > > correctly populated in both the NUMA and !NUMA cases.  A couple of
+> > > options:
+> > > 
+> > > 1) just use node_set() when populating the masks,
+> > > 
+> > > 2) initialize all masks to include at least cpu/node 0 in the !NUMA
+> > > case.
+> > > 
+> > > Serge chose #1 to fix his problem.  I followed his lead to fix the other
+> > > 2 places where node_set_state() was being used to initialize the NORMAL
+> > > memory node mask and the CPU node mask.  This will add a few unnecessary
+> > > instructions to !NUMA configs, so we could change to #2.
+> > > 
+> > > Thoughts?
+> > 
+> > Paul, is the mems stuff in cpusets only really useful for NUMA cases?
+> > (I think it is... but am not sure)  If so I suppose one alternative
+> > could be to just disable that when !NUMA.  But disabling cpusets when
+> > !NUMA is completely wrong.
+> > 
+> > I personally would think that 1) is still the best option.  Otherwise
+> > the action
+> > 
+> > 	echo $SOME_CPU > /cpusets/set1/cpu
+> > 	echo $SOME_CPU > /cpusets/set1/mems
+> > 
+> > works on a numa machine, and is wrong on a non-numa machine.  With
+> > option 1, the second part doesn't actually restrict the memory, but
+> > at least /cpusets/set1/mems exists and $SOME_CPU doesn't have to be 0 to
+> > be valid.
 > 
-> Actually, we just got a second potential consumer ... although I'll
-> reprod to have the reporter send it to the list.  It's a device that
-> needs notice of report luns data changing.  The proposed mechanism looks
-> a bit narrow now (too tied to media change).  I'll see if I can propose
-> a more generic update.
+> Well, you really shouldn't be writing cpu ids to the cpuset mems file.
+> Rather, it takes node ids.  And on !NUMA configs, only node 0 exists.
 > 
-> James
+> Can you actually write a !0 cpuid to the mems file with the current
+> option #1 patch [that uses node_set() to populate the node_states[]]?
+> It should allow something like:
 > 
+> 	echo 0,1<and maybe others> >/cpusets/set1/mems
+> 
+> As long as one of the specified node ids has memory, it will silently
+> ignore any that don't.
+> 
+> If you're up for it, you could try the following patch to statically
+> initialize the node state masks, in place of the "option 1" patch.  Be
+> aware, tho', that I've only tested on my ia64 NUMA platform.  I did
+> compile it [page_alloc.c] without error under allnoconfig.
+> 
+> Lee
+> 
+> -----------------
+> PATCH	Initialize N_*_MEMORY and N_CPU masks for non-NUMA config
+> 
+> Against:  2.6.23-rc2-mm2
+> 
+> Statically initialize the N_*_MEMORY and N_CPU node state masks
+> for !NUMA configurations.  This static initialization is required
+> because the node_set_state() function becomes a no-op for !NUMA.
+> Other generic code assumes that these masks are set correctly.
+> 
+> Note that in NUMA configurations, these masks will be populated
+> correctly, so don't bother with static initialization.  No sense
+> in making assumptions that could be broken down the road, resulting
+> in extra work for someone to debug.  Unlikely, perhaps, but who
+> needs the aggravation...
+> 
+> Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+> 
+>  mm/page_alloc.c |    9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+> 
+> Index: Linux/mm/page_alloc.c
+> ===================================================================
+> --- Linux.orig/mm/page_alloc.c	2007-08-15 10:01:23.000000000 -0400
+> +++ Linux/mm/page_alloc.c	2007-08-15 10:05:41.000000000 -0400
+> @@ -52,7 +52,14 @@
+>   */
+>  nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
+>  	[N_POSSIBLE] = NODE_MASK_ALL,
+> -	[N_ONLINE] = { { [0] = 1UL } }
+> +	[N_ONLINE] = { { [0] = 1UL } },
+> +#ifndef CONFIG_NUMA
+> +	[N_NORMAL_MEMORY] = { { [0] = 1UL } },
+> +#ifdef CONFIG_HIGHMEM
+> +	[N_HIGH_MEMORY] = { { [0] = 1UL } },
+> +#endif
+> +	[N_CPU] = { { [0] = 1UL } },
+> +#endif	/* NUMA */
+>  };
+>  EXPORT_SYMBOL(node_states);
 
-Too narrow because it's tied to scsi_device?  Obviously it'd be easy
-to expand the scsi_device_event enum to include LUNS_DATA_CHANGE or 
-something, and even the scsi_device_event_info struct can easily be 
-expanded if you need more info attached to the event.  Let me know if 
-there's something specific I can help with.
+Ok, I'll try this soon as I have a chance.  To be honest when I first
+looked at this and saw that node_states[] was only being initialized
+for the first two entries this was my first instinct, except I had
+no idea what the right way to initilaize it was :)  Cause I am
+completely numa-challenged.
 
-Kristen
+Will let you know how it works.
+
+thanks,
+-serge
