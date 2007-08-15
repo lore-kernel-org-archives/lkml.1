@@ -1,111 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763357AbXHONxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763888AbXHONxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763357AbXHONxc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 09:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbXHONxI
+	id S1763888AbXHONxv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 09:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762682AbXHONx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 09:53:08 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:38301 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757521AbXHONxG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 09:53:06 -0400
-Message-ID: <46C30540.2070603@s5r6.in-berlin.de>
-Date: Wed, 15 Aug 2007 15:53:04 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>, Chris Snook <csnook@redhat.com>,
-       satyam@infradead.org, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
-       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <46C2350A.1010807@redhat.com> <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <20070815081841.GA16551@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20070815081841.GA16551@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 15 Aug 2007 09:53:26 -0400
+Received: from smtpout.mac.com ([17.250.248.175]:65202 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762201AbXHONxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 09:53:23 -0400
+In-Reply-To: <46C30220.6060007@gmail.com>
+References: <1187026955.2688.4.camel@laptopd505.fenrus.org> <1187037445.6628.98.camel@heimdal.trondhjem.org> <1187054366.2757.0.camel@laptopd505.fenrus.org> <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu> <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost> <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost> <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org> <20070814193333.GI21089@ftp.linux.org.uk> <46C2548D.80605@gmail.com> <alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in> <46C30220.6060007@gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <68B09015-4411-470A-BA88-732969469AA2@mac.com>
+Cc: Satyam Sharma <satyam@infradead.org>, Al Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Joe Perches <joe@perches.com>, git@vger.kernel.org,
+       Junio C Hamano <gitster@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
+Date: Wed, 15 Aug 2007 09:52:29 -0400
+To: Rene Herman <rene.herman@gmail.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/15/2007 10:18 AM, Heiko Carstens wrote:
-> On Wed, Aug 15, 2007 at 02:49:03PM +0800, Herbert Xu wrote:
->> Chris Snook <csnook@redhat.com> wrote:
->> > 
->> > Because atomic operations are generally used for synchronization, which requires 
->> > volatile behavior.  Most such codepaths currently use an inefficient barrier(). 
->> >  Some forget to and we get bugs, because people assume that atomic_read() 
->> > actually reads something, and atomic_write() actually writes something.  Worse, 
->> > these are architecture-specific, even compiler version-specific bugs that are 
->> > often difficult to track down.
->> 
->> I'm yet to see a single example from the current tree where
->> this patch series is the correct solution.  So far the only
->> example has been a buggy piece of code which has since been
->> fixed with a cpu_relax.
-> 
-> Btw.: we still have
-> 
-> include/asm-i386/mach-es7000/mach_wakecpu.h:  while (!atomic_read(deassert));
-> include/asm-i386/mach-default/mach_wakecpu.h: while (!atomic_read(deassert));
-> 
-> Looks like they need to be fixed as well.
+On Aug 15, 2007, at 09:39:44, Rene Herman wrote:
+> On 08/15/2007 03:33 PM, Satyam Sharma wrote:
+>
+> [ git info --maintainer ]
+>
+>> I'd really _love_ a tool that does all that what you've proposed  
+>> above!  But why does it have to be "git-info" or anything in the  
+>> git(7) suite for that matter? This sounds like a job for a  
+>> different specialised tool,  long with ".metatags" kind of files  
+>> dispersed in the source tree.
+>
+> To automatically move (and delete) the meta-data alongside the  
+> files themselves is a reason.
+>
+> More generally -- shouldn't it? This is about source management  
+> (well, maybe more about project management, but...) and the source  
+> code management tool looks to be the right place for that. The  
+> different parts of git are somewhat/fairly stand-alone as is, no?
 
+If you were going to do that I'd just suggest making git aware of the  
+"user.*" extended attributes and having it save those into the git  
+repo along with the permission data.
 
-I don't know if this here is affected:
+Cheers,
+Kyle Moffett
 
-/* drivers/ieee1394/ieee1394_core.h */
-static inline unsigned int get_hpsb_generation(struct hpsb_host *host)
-{
-	return atomic_read(&host->generation);
-}
-
-/* drivers/ieee1394/nodemgr.c */
-static int nodemgr_host_thread(void *__hi)
-{
-	[...]
-
-	for (;;) {
-		[... sleep until bus reset event ...]
-
-		/* Pause for 1/4 second in 1/16 second intervals,
-		 * to make sure things settle down. */
-		g = get_hpsb_generation(host);
-		for (i = 0; i < 4 ; i++) {
-			if (msleep_interruptible(63) ||
-			    kthread_should_stop())
-				goto exit;
-
-	/* Now get the generation in which the node ID's we collect
-	 * are valid.  During the bus scan we will use this generation
-	 * for the read transactions, so that if another reset occurs
-	 * during the scan the transactions will fail instead of
-	 * returning bogus data. */
-
-			generation = get_hpsb_generation(host);
-
-	/* If we get a reset before we are done waiting, then
-	 * start the waiting over again */
-
-			if (generation != g)
-				g = generation, i = 0;
-		}
-
-		[... scan bus, using generation ...]
-
-	}
-exit:
-[...]
-}
-
-
-
--- 
-Stefan Richter
--=====-=-=== =--- -====
-http://arcgraph.de/sr/
