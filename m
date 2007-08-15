@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762560AbXHOOGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763648AbXHOOHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762560AbXHOOGU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 10:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbXHOOGF
+	id S1763648AbXHOOHG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 10:07:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756967AbXHOOGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 10:06:05 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:40240 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756509AbXHOOGE (ORCPT
+	Wed, 15 Aug 2007 10:06:52 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:59686 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757029AbXHOOGv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 10:06:04 -0400
-Date: Wed, 15 Aug 2007 10:04:39 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, mingo@elte.hu, chrisw@sous-sol.org,
-       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       glommer@gmail.com
-Subject: Re: [PATCH 18/25][V3] turn priviled operations into macros in entry.S
-In-Reply-To: <11871823991803-git-send-email-gcosta@redhat.com>
-Message-ID: <Pine.LNX.4.58.0708151002001.25252@gandalf.stny.rr.com>
-References: <11871821854176-git-send-email-gcosta@redhat.com>
- <1187182197314-git-send-email-gcosta@redhat.com> <11871822062386-git-send-email-gcosta@redhat.com>
- <11871822163867-git-send-email-gcosta@redhat.com>
- <11871822244170-git-send-email-gcosta@redhat.com>
- <11871822342754-git-send-email-gcosta@redhat.com>
- <11871822421713-git-send-email-gcosta@redhat.com> <1187182253740-git-send-email-gcosta@redhat.com>
- <1187182268408-git-send-email-gcosta@redhat.com> <1187182282913-git-send-email-gcosta@redhat.com>
- <11871822951747-git-send-email-gcosta@redhat.com>
- <11871823042011-git-send-email-gcosta@redhat.com>
- <11871823151789-git-send-email-gcosta@redhat.com>
- <11871823273810-git-send-email-gcosta@redhat.com>
- <11871823373106-git-send-email-gcosta@redhat.com>
- <11871823673236-git-send-email-gcosta@redhat.com>
- <11871823782610-git-send-email-gcosta@redhat.com>
- <11871823892519-git-send-email-gcosta@redhat.com>
- <11871823991803-git-send-email-gcosta@redhat.com>
+	Wed, 15 Aug 2007 10:06:51 -0400
+Date: Wed, 15 Aug 2007 16:06:49 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+cc: Rene Herman <rene.herman@gmail.com>,
+       Jason Uhlenkott <jasonuhl@jasonuhl.org>,
+       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kfree(0) - ok?
+In-Reply-To: <5D056606-6284-4331-98DB-77123816D5B8@mac.com>
+Message-ID: <Pine.LNX.4.64.0708151604360.15707@fbirervta.pbzchgretzou.qr>
+References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org>
+ <20070814232107.GA4265@aurum.uhlenkott.net>
+ <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr>
+ <46C2BB60.6010909@gmail.com> <Pine.LNX.4.64.0708151113410.19270@fbirervta.pbzchgretzou.qr>
+ <46C2CE42.4010303@gmail.com> <Pine.LNX.4.64.0708151217120.5639@fbirervta.pbzchgretzou.qr>
+ <5D056606-6284-4331-98DB-77123816D5B8@mac.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
---
-
-On Wed, 15 Aug 2007, Glauber de Oliveira Costa wrote:
-
-> @@ -566,10 +596,15 @@ retint_restore_args:
->  restore_args:
->  	RESTORE_ARGS 0,8,0
->  iret_label:
-> +#ifdef CONFIG_PARAVIRT
-> +	INTERRUPT_RETURN
-> +#endif
-> +.globl do_iretq;
-
-Is the .globl really required here? I would think that the reference in
-the fixup section would be resolved with in the compiling of this object.
-
--- Steve
-
-> +do_iretq:
->  	iretq
+On Aug 15 2007 09:58, Kyle Moffett wrote:
 >
->  	.section __ex_table,"a"
-> -	.quad iret_label,bad_iret
-> +	.quad do_iretq, bad_iret
->  	.previous
->  	.section .fixup,"ax"
->  	/* force a signal here? this matches i386 behaviour */
->
+> Irrespective of whatever the standard says, EVERY platform and
+> compiler anybody makes nowadays has a NULL pointer value with all
+> bits clear.  Theoretically the standard allows otherwise, but such
+> a decision would break so much code.  Linux especially, we rely on
+> the uninitialized data to have all bits clear and we depend on that
+> producing NULL pointers; if a NULL pointer was not bitwise exactly
+> 0 then the test "if (some_ptr != NULL)" would fail and we would
+> start dereferencing garbage.
+
+But if kmalloc returns NULL on failure, then testing for NULL
+(irrespective of being 0 or 0xDEADBEEF) is ok.
+What would actually concern me then is what "if (!some_ptr)" would do.
+Probably not the right thing.
+
+
+	Jan
+-- 
