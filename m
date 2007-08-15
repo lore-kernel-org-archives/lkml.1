@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764690AbXHOQO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765019AbXHOQWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764690AbXHOQO1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 12:14:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbXHOQON
+	id S1765019AbXHOQWG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 12:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759343AbXHOQVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 12:14:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36718 "EHLO mx1.redhat.com"
+	Wed, 15 Aug 2007 12:21:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39581 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753942AbXHOQOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 12:14:10 -0400
-Message-ID: <46C32618.2080108@redhat.com>
-Date: Wed, 15 Aug 2007 12:13:12 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
+	id S1759314AbXHOQVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 12:21:50 -0400
+Message-ID: <46C3283B.5090804@redhat.com>
+Date: Wed, 15 Aug 2007 13:22:19 -0300
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: satyam@infradead.org, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au>
-In-Reply-To: <E1ILCgh-00052A-00@gondolin.me.apana.org.au>
+To: Andi Kleen <ak@suse.de>
+CC: Glauber de Oliveira Costa <glommer@gmail.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
+       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
+       Steven Rostedt <rostedt@goodmis.org>, kiran@scalemp.com,
+       shai@scalemp.com
+Subject: Re: [PATCH 3/25][V3] irq_flags / halt routines
+References: <11871821854176-git-send-email-gcosta@redhat.com> <1187182197314-git-send-email-gcosta@redhat.com> <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <20070815135554.GE3406@bingen.suse.de> <5d6222a80708150718v14f26343q7467385e7919fa76@mail.gmail.com> <20070815154243.GH3406@bingen.suse.de> <46C31736.2050001@redhat.com> <20070815163640.GJ3406@bingen.suse.de>
+In-Reply-To: <20070815163640.GJ3406@bingen.suse.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> Chris Snook <csnook@redhat.com> wrote:
->> Because atomic operations are generally used for synchronization, which requires 
->> volatile behavior.  Most such codepaths currently use an inefficient barrier(). 
->>  Some forget to and we get bugs, because people assume that atomic_read() 
->> actually reads something, and atomic_write() actually writes something.  Worse, 
->> these are architecture-specific, even compiler version-specific bugs that are 
->> often difficult to track down.
+Andi Kleen escreveu:
+> On Wed, Aug 15, 2007 at 12:09:42PM -0300, Glauber de Oliveira Costa wrote:
+>> Again, this is the code of such function:
+>>
+>> static inline int raw_irqs_disabled_flags(unsigned long flags)
+>> {
+>>         return !(flags & X86_EFLAGS_IF);
+>> }
+>> so all it is doing is getting a parameter (flags), and bitmasking it. It 
+>> is not talking to any hypervisor. I can't see your point. Unless you are
+>> arguing that it _should_ be talking to a hypervisor. Is that your point?
 > 
-> I'm yet to see a single example from the current tree where
-> this patch series is the correct solution.  So far the only
-> example has been a buggy piece of code which has since been
-> fixed with a cpu_relax.
+> vSMP is a hypervisor based architecture. For some reason that is not
+> 100% clear to me, but Kiran or Shai can probably explain, it needs this 
+> additional bit in EFLAGS when interrupts are disabled. That gives
+> it some hints and then it goes somehow faster. That is clearly
+> paravirtualization.
+> 
+> Since paravirtops is designed to handle such hooks cleanly I request
+> that you move vSMP over to it or work with the vSMP maintainers to 
+> do that. Otherwise we have two different ways to do paravirtualization 
+> which is wrong.
+> 
 
-Part of the motivation here is to fix heisenbugs.  If I knew where they 
-were, I'd be posting patches for them.  Unlike most bugs, where we want 
-to expose them as obviously as possible, these can be extremely 
-difficult to track down, and are often due to people assuming that the 
-atomic_* operations have the same semantics they've historically had. 
-Remember that until recently, all SMP architectures except s390 (which 
-very few kernel developers outside of IBM, Red Hat, and SuSE do much 
-work on) had volatile declarations for atomic_t.  Removing the volatile 
-declarations from i386 and x86_64 may have created heisenbugs that won't 
-manifest themselves until GCC 6.0 comes out and people start compiling 
-kernels with -O5.  We should have consistent semantics for atomic_* 
-operations.
+Thanks for the explanation, Andi. I understand it much better now, and 
+agree with you.
 
-The other motivation is to reduce the need for the barriers used to 
-prevent/fix such problems which clobber all your registers, and instead 
-force atomic_* operations to behave in the way they're actually used. 
-After the (resubmitted) patchset is merged, we'll be able to remove a 
-whole bunch of barriers, shrinking our source and our binaries, and 
-improving performance.
+As alternatives what we have now, we can either keep the paravirt_ops as 
+it is now for the native case, just hooking the vsmp functions in place 
+of the normal one, (there are just three ops anyway), refill the 
+paravirt_ops entirely in somewhere like vsmp.c, or similar (or maybe 
+even assigning paravirt_ops.fn = vsmp_fn on the fly, but early enough).
 
-	-- Chris
+Maybe we could even make VSMP depend on PARAVIRT, to make it sure it is 
+completely a paravirt client.
+
+But as you could see, my knowledge of vsmp does not go that far, and I 
+would really like to have input from the vsmp guys prior to touch 
+anything here.
+
