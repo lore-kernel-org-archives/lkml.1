@@ -1,60 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763888AbXHONxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbXHONyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763888AbXHONxv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 09:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762682AbXHONx0
+	id S1764248AbXHONyW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 09:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760457AbXHONyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 09:53:26 -0400
-Received: from smtpout.mac.com ([17.250.248.175]:65202 "EHLO smtpout.mac.com"
+	Wed, 15 Aug 2007 09:54:04 -0400
+Received: from smtpout.mac.com ([17.250.248.171]:59010 "EHLO smtpout.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762201AbXHONxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 09:53:23 -0400
-In-Reply-To: <46C30220.6060007@gmail.com>
-References: <1187026955.2688.4.camel@laptopd505.fenrus.org> <1187037445.6628.98.camel@heimdal.trondhjem.org> <1187054366.2757.0.camel@laptopd505.fenrus.org> <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu> <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost> <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost> <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org> <20070814193333.GI21089@ftp.linux.org.uk> <46C2548D.80605@gmail.com> <alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in> <46C30220.6060007@gmail.com>
+	id S1760695AbXHONyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 09:54:01 -0400
+In-Reply-To: <20070815133021.GB9412@csclub.uwaterloo.ca>
+References: <106259.96671.qm@web52501.mail.re2.yahoo.com> <Pine.LNX.4.64.0708141546510.22494@blackbox.fnordora.org> <46C2F96D.5030908@partiallystapled.com> <20070815133021.GB9412@csclub.uwaterloo.ca>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <68B09015-4411-470A-BA88-732969469AA2@mac.com>
-Cc: Satyam Sharma <satyam@infradead.org>, Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Joe Perches <joe@perches.com>, git@vger.kernel.org,
-       Junio C Hamano <gitster@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-Id: <ECFEFFF7-0210-4D16-B508-5284FCE58B28@mac.com>
+Cc: alan <alan@clueserver.org>, Marc Perkel <mperkel@yahoo.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
 Content-Transfer-Encoding: 7bit
 From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-Date: Wed, 15 Aug 2007 09:52:29 -0400
-To: Rene Herman <rene.herman@gmail.com>
+Subject: Re: Thinking outside the box on file systems
+Date: Wed, 15 Aug 2007 09:53:45 -0400
+To: Michael Tharp <gxti@partiallystapled.com>
 X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 15, 2007, at 09:39:44, Rene Herman wrote:
-> On 08/15/2007 03:33 PM, Satyam Sharma wrote:
+On Aug 15, 2007, at 09:30:21, Lennart Sorensen wrote:
+> On Wed, Aug 15, 2007 at 09:02:37AM -0400, Michael Tharp wrote:
+>> Personally, what I'd like to see is a better way of dealing with  
+>> propagation of ownership. Currently, in order to allow  
+>> "collaboration" directories where a directory tree is owned by a  
+>> certain group and anyone in that group can write and create files,  
+>> one has to change the system umask, use a magical bit on the  
+>> collaboration directory to propagate group ownership, and create a  
+>> group for every user on the system in order to keep their personal  
+>> files safe with the new umask. This seems highly flawed. I suggest  
+>> that propagation of group  ownership should be the default mode,  
+>> not a special one, and that the group-writable permissions should  
+>> also be propagated to new files and directories. This way, the  
+>> user's home directory would remain 0755, while the collaboration  
+>> directory could be 0775, without any changing of umasks.
 >
-> [ git info --maintainer ]
->
->> I'd really _love_ a tool that does all that what you've proposed  
->> above!  But why does it have to be "git-info" or anything in the  
->> git(7) suite for that matter? This sounds like a job for a  
->> different specialised tool,  long with ".metatags" kind of files  
->> dispersed in the source tree.
->
-> To automatically move (and delete) the meta-data alongside the  
-> files themselves is a reason.
->
-> More generally -- shouldn't it? This is about source management  
-> (well, maybe more about project management, but...) and the source  
-> code management tool looks to be the right place for that. The  
-> different parts of git are somewhat/fairly stand-alone as is, no?
+> Posix ACLs seem to solve most group permissions issues and control  
+> of permission propegation.  It actually works quite well on Linux.   
+> I am surprised if there aren't lots of people already using it.
 
-If you were going to do that I'd just suggest making git aware of the  
-"user.*" extended attributes and having it save those into the git  
-repo along with the permission data.
+Going even further in this direction, the following POSIX ACL on the  
+directories will do what you want:
+
+## Note: file owner and group are kmoffett
+u::rw-
+g::rw-
+u:lsorens:rw-
+u:mtharp:rw-
+u:mperkel:rw-
+g:randomcvsdudes:r-
+default:u::rw-
+default:g::rw-
+default:u:lsorens
+default:u:mtharp:rw-
+default:u:mperkel:rw-
+default:g:randomcvsdudes:r-
+
+Basically any newly-created item in such a directory will get the  
+permissions described by the "default:" entries in the ACL, and  
+subdirectories will get a copy of said "default:" entries.
+
+So yes, such functionality is nice; even more so because we already  
+have it.  I think if you were really going to "extend" a UNIX  
+filesystem it would need to be in 2 directions:
+   (A)  Handling disk failures by keeping multiple copies of  
+important files.
+   (B)  Have version-control support
+   (C)  Allowing distributed storage (also lazy synchronization and  
+offline modification support)
+
+With some appropriate modifications and hooks, GIT actually comes  
+pretty close here.  For larger files it needs to use a "list-of-4MB- 
+chunks" approach to minimize the computation overhead for committing  
+a randomly-modified file.  The "index" of course would be directly  
+read and modified by vfs calls and via mapped memory.  Merge handling  
+would need careful integration, preferably with allowing custom  
+default-merge-handlers per subtree.  There would be lots more design  
+issues to work out, but it's something to think about
 
 Cheers,
 Kyle Moffett
-
