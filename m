@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934335AbXHOTMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934281AbXHOTSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934335AbXHOTMT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 15:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXHOTMD
+	id S934281AbXHOTSq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 15:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbXHOTSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 15:12:03 -0400
-Received: from smtp115.sbc.mail.re3.yahoo.com ([66.196.96.88]:38586 "HELO
-	smtp115.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756167AbXHOTMB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 15:12:01 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4mWFZQLOnGv0pHkw/1NLAz+prmPArcBq5zlAidFh2SN8+rwKid/WzFDubcI0MIRpCMXZlDZkksLUGphg2Oayvhp5t928FsdBaKTS9sQVcnyJQ0+is5eRf4V56kGo54BYQEt8NV1FwHojvTxsqkelA7hgHbOvK3y2/ICBE7PotKE=  ;
-X-YMail-OSG: .BGhiEgVM1nKOZp9ipuKPFBQvlWqRY6qXQUrXBKMTk322j2h5UV30u4CDhKcm96EIzCVy8XPwg--
-From: David Brownell <david-b@pacbell.net>
-To: Stuart_Hayes@dell.com
-Subject: Re: [linux-usb-devel] EHCI Regression in 2.6.23-rc2
-Date: Wed, 15 Aug 2007 12:12:03 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-usb-devel@lists.sourceforge.net, webmaster@dragonslave.de,
-       greg@kroah.com, linux-kernel@vger.kernel.org
-References: <200708101045.57166.dex@dragonslave.de> <DFEF91B22ED07447AB6AA4B237F913F9B18E7F@ausx3mpc125.aus.amer.dell.com> <DFEF91B22ED07447AB6AA4B237F913F9B18E9B@ausx3mpc125.aus.amer.dell.com>
-In-Reply-To: <DFEF91B22ED07447AB6AA4B237F913F9B18E9B@ausx3mpc125.aus.amer.dell.com>
+	Wed, 15 Aug 2007 15:18:34 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:33754 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752219AbXHOTSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 15:18:32 -0400
+Date: Wed, 15 Aug 2007 12:18:29 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au, linux-kernel@vger.kernel.org, rpjday@mindspring.com,
+       ak@suse.de, netdev@vger.kernel.org, cfriesen@nortel.com,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
+       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
+Message-ID: <20070815191829.GJ9645@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <46BCC26B.6080600@redhat.com> <46BB46B2.60808@redhat.com> <20070809134150.GA14890@shell.boston.redhat.com> <2708.1186737826@redhat.com> <7680.1186822071@redhat.com> <46BFFDBD.6080804@redhat.com> <46C140DD.3060509@yahoo.com.au> <2cbda24e96a49c3ab7cf7039c515f9fc@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708151212.04065.david-b@pacbell.net>
+In-Reply-To: <2cbda24e96a49c3ab7cf7039c515f9fc@kernel.crashing.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 15 August 2007, Stuart_Hayes@dell.com wrote:
-> So... I still think blacklisting the VIA controllers from this CPU
-> frequency stuff is the best option.  
+On Wed, Aug 15, 2007 at 08:51:58PM +0200, Segher Boessenkool wrote:
+> >Well if there is only one memory location involved, then smp_rmb() 
+> >isn't
+> >going to really do anything anyway, so it would be incorrect to use it.
+> 
+> rmb() orders *any* two reads; that includes two reads from the same
+> location.
 
-Sadly, yes.  My negative impression of VIA quality is confirmed,
-yet again...
+If the two reads are to the same location, all CPUs I am aware of
+will maintain the ordering without need for a memory barrier.
 
-Please make sure the comments in your blacklist code describe both
-of the chip bugs you've observed.
+						Thanx, Paul
 
-
-> 	It is unlikely that any real issues 
-> will be seen during CPU frequency transitions with these controllers
-> anyway, because they claim to cache 8 uframes of the periodic schedule.
- 
-I'd not be so sure.  But if there are such issues, we can wait
-for problem reports.
-
-- Dvae
-
-
+> >Consider that smp_rmb basically will do anything from flushing the
+> >pipeline to invalidating loads speculatively executed out of order. 
+> >AFAIK
+> >it will not control the visibility of stores coming from other CPUs 
+> >(that
+> >is up to the cache coherency).
+> 
+> The writer side should typically use wmb() whenever the reader side
+> uses rmb(), sure.
+> 
+> 
+> Segher
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
