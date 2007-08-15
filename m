@@ -1,120 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764390AbXHOOZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764829AbXHOO0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764390AbXHOOZi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 10:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758904AbXHOOZY
+	id S1764829AbXHOO0B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 10:26:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764576AbXHOOZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 10:25:24 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:51438 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757874AbXHOOZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 10:25:20 -0400
-Date: Wed, 15 Aug 2007 07:25:16 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070815142516.GB9645@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in>
+	Wed, 15 Aug 2007 10:25:47 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:16257 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764425AbXHOOZp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 10:25:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mWdDQim7lYBtOgpKVi4AA2nuWtIOMwWj6sxc6pePNOJm7qj+Nb+QuHhDI1DJfpiP04PzBCZFcHPvObvaRgWr36jSMybFPyc0eWjVy3L3q+aG/LQotfcDngoQfANrIoXAHKWBBK3paf+EjJFfseYNlxVUcBJyjIVe7BaHpm53wJE=
+Message-ID: <5d6222a80708150725i45a064bfqfd43139338287988@mail.gmail.com>
+Date: Wed, 15 Aug 2007 11:25:43 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH 21/25][V3] export cpu_gdt_descr
+Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
+       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
+       "Steven Rostedt" <rostedt@goodmis.org>
+In-Reply-To: <20070815140339.GG3406@bingen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <11871823151789-git-send-email-gcosta@redhat.com>
+	 <11871823373106-git-send-email-gcosta@redhat.com>
+	 <11871823673236-git-send-email-gcosta@redhat.com>
+	 <11871823782610-git-send-email-gcosta@redhat.com>
+	 <11871823892519-git-send-email-gcosta@redhat.com>
+	 <11871823991803-git-send-email-gcosta@redhat.com>
+	 <11871824081337-git-send-email-!gcosta@redhat.com>
+	 <11871824192375-git-send-email-gcosta@redhat.com>
+	 <11871824292046-git-send-email-gcosta@redhat.com>
+	 <20070815140339.GG3406@bingen.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 07:17:29PM +0530, Satyam Sharma wrote:
-> On Wed, 15 Aug 2007, Stefan Richter wrote:
-> > Satyam Sharma wrote:
-> > > On Wed, 15 Aug 2007, Stefan Richter wrote:
-> > >> Doesn't "atomic WRT all processors" require volatility?
-> > > 
-> > > No, it definitely doesn't. Why should it?
-> > > 
-> > > "Atomic w.r.t. all processors" is just your normal, simple "atomicity"
-> > > for SMP systems (ensure that that object is modified / set / replaced
-> > > in main memory atomically) and has nothing to do with "volatile"
-> > > behaviour.
-> > > 
-> > > "Volatile behaviour" itself isn't consistently defined (at least
-> > > definitely not consistently implemented in various gcc versions across
-> > > platforms), but it is /expected/ to mean something like: "ensure that
-> > > every such access actually goes all the way to memory, and is not
-> > > re-ordered w.r.t. to other accesses, as far as the compiler can take
-> > > care of these". The last "as far as compiler can take care" disclaimer
-> > > comes about due to CPUs doing their own re-ordering nowadays.
-> > > 
-> > > For example (say on i386):
-> > 
-> > [...]
-> > 
-> > > In (A) the compiler optimized "a = 10;" away, but the actual store
-> > > of the final value "20" to "a" was still "atomic". (B) and (C) also
-> > > exhibit "volatile" behaviour apart from the "atomicity".
-> > > 
-> > > But as others replied, it seems some callers out there depend upon
-> > > atomic ops exhibiting "volatile" behaviour as well, so that answers
-> > > my initial question, actually. I haven't looked at the code Paul
-> > > pointed me at, but I wonder if that "forget(x)" macro would help
-> > > those cases. I'd wish to avoid the "volatile" primitive, personally.
-> > 
-> > So, looking at load instead of store, understand I correctly that in
-> > your opinion
-> > 
-> > 	int b;
-> > 
-> > 	b = atomic_read(&a);
-> > 	if (b)
-> > 		do_something_time_consuming();
-> > 
-> > 	b = atomic_read(&a);
-> > 	if (b)
-> > 		do_something_more();
-> > 
-> > should be changed to explicitly forget(&a) after
-> > do_something_time_consuming?
-> 
-> No, I'd actually prefer something like what Christoph Lameter suggested,
-> i.e. users (such as above) who want "volatile"-like behaviour from atomic
-> ops can use alternative functions. How about something like:
-> 
-> #define atomic_read_volatile(v)			\
-> 	({					\
-> 		forget(&(v)->counter);		\
-> 		((v)->counter);			\
-> 	})
+On 8/15/07, Andi Kleen <ak@suse.de> wrote:
+> > +#ifdef CONFIG_PARAVIRT
+> > +extern unsigned long *cpu_gdt_descr;
+>
+> No externs in .c files
+>
+> Normally they should be where the variable is defined
+> anyways.
+Given that this  variable is defined in head.S, what do you propose?
+AFAICT, this is the very duty of this file (x8664_syms.c), and the
+extern is also used in other symbols like the memcpy family
 
-Wouldn't the above "forget" the value, throw it away, then forget
-that it forgot it, giving non-volatile semantics?
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
 
-> Or possibly, implement these "volatile" atomic ops variants in inline asm
-> like the patch that Sebastian Siewior has submitted on another thread just
-> a while back.
-
-Given that you are advocating a change (please keep in mind that
-atomic_read() and atomic_set() had volatile semantics on almost all
-platforms), care to give some example where these historical volatile
-semantics are causing a problem?
-
-> Of course, if we find there are more callers in the kernel who want the
-> volatility behaviour than those who don't care, we can re-define the
-> existing ops to such variants, and re-name the existing definitions to
-> somethine else, say "atomic_read_nonvolatile" for all I care.
-
-Do we really need another set of APIs?  Can you give even one example
-where the pre-existing volatile semantics are causing enough of a problem
-to justify adding yet more atomic_*() APIs?
-
-							Thanx, Paul
+"The less confident you are, the more serious you have to act."
