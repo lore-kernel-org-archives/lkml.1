@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759303AbXHON6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbXHOOCM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759303AbXHON6v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 09:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbXHON6m
+	id S1760693AbXHOOCM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 10:02:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbXHOOBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 09:58:42 -0400
-Received: from smtpout.mac.com ([17.250.248.184]:60145 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363AbXHON6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 09:58:42 -0400
-In-Reply-To: <Pine.LNX.4.64.0708151217120.5639@fbirervta.pbzchgretzou.qr>
-References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org> <20070814232107.GA4265@aurum.uhlenkott.net> <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr> <46C2BB60.6010909@gmail.com> <Pine.LNX.4.64.0708151113410.19270@fbirervta.pbzchgretzou.qr> <46C2CE42.4010303@gmail.com> <Pine.LNX.4.64.0708151217120.5639@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5D056606-6284-4331-98DB-77123816D5B8@mac.com>
-Cc: Rene Herman <rene.herman@gmail.com>,
-       Jason Uhlenkott <jasonuhl@jasonuhl.org>,
-       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
+	Wed, 15 Aug 2007 10:01:53 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:45859 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751363AbXHOOBv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 10:01:51 -0400
+Subject: Re: [patch 2/4] scsi: expose AN support to user space
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <46C2B59A.6070200@garzik.org>
+References: <20070808190613.616085010@localhost.localdomain>
+	 <20070808120822.9cf187bb.kristen.c.accardi@intel.com>
+	 <46C2B59A.6070200@garzik.org>
+Content-Type: text/plain
+Date: Wed, 15 Aug 2007 09:01:49 -0500
+Message-Id: <1187186509.3327.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: kfree(0) - ok?
-Date: Wed, 15 Aug 2007 09:58:29 -0400
-To: Jan Engelhardt <jengelh@computergmbh.de>
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 15, 2007, at 06:20:27, Jan Engelhardt wrote:
-> On Aug 15 2007 11:58, Rene Herman wrote:
->>>> NULL is not 0 though.
->>> It is.  Its representation isn't guaranteed to be all-bits-zero,
->>
->> He said the null _pointer_ isn't guaranteed to be all-bits zero.  
->> And it isn't. Read the standard or the faq.
->
-> 0 is all-bits-zero.
-> NULL is 0. ("It is.", above)
->
-> Transitively, this would make NULL all-bits-zero.  I might have  
-> missed something, though, perhaps that the cast to void* makes it  
-> intransitive.  But leave it at whatever the standard says.
->
->> but the constant value 0 when used in pointer context is always a  
->> null pointer (and in fact the standard requires that NULL be  
->> #defined as 0 or a cast thereof).
+On Wed, 2007-08-15 at 04:13 -0400, Jeff Garzik wrote:
+> Kristen Carlson Accardi wrote:
+> > If a scsi_device supports async notification for media change, then
+> > let user space know this capability exists by creating a new sysfs
+> > entry "media_change_notify", which will be 1 if it is supported, and
+> > 0 if not supported.  Create a routine which allows scsi devices to
+> > send a uevent when media change events occur.
+> > 
+> > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> 
+> if James is happy with this patch, I'm happy with patch #2 and #3
 
-Irrespective of whatever the standard says, EVERY platform and  
-compiler anybody makes nowadays has a NULL pointer value with all  
-bits clear.  Theoretically the standard allows otherwise, but such a  
-decision would break so much code.  Linux especially, we rely on the  
-uninitialized data to have all bits clear and we depend on that  
-producing NULL pointers; if a NULL pointer was not bitwise exactly 0  
-then the test "if (some_ptr != NULL)" would fail and we would start  
-dereferencing garbage.
+Actually, we just got a second potential consumer ... although I'll
+reprod to have the reporter send it to the list.  It's a device that
+needs notice of report luns data changing.  The proposed mechanism looks
+a bit narrow now (too tied to media change).  I'll see if I can propose
+a more generic update.
 
-Cheers,
-Kyle Moffett
+James
+
 
