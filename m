@@ -1,223 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765953AbXHOTHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934335AbXHOTMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765953AbXHOTHj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 15:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbXHOTH2
+	id S934335AbXHOTMT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 15:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXHOTMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 15:07:28 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:41108 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754102AbXHOTH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 15:07:26 -0400
-Date: Wed, 15 Aug 2007 12:07:22 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070815190722.GI9645@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com> <alpine.LFD.0.999.0708152048270.16414@enigma.security.iitk.ac.in>
+	Wed, 15 Aug 2007 15:12:03 -0400
+Received: from smtp115.sbc.mail.re3.yahoo.com ([66.196.96.88]:38586 "HELO
+	smtp115.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756167AbXHOTMB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 15:12:01 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=4mWFZQLOnGv0pHkw/1NLAz+prmPArcBq5zlAidFh2SN8+rwKid/WzFDubcI0MIRpCMXZlDZkksLUGphg2Oayvhp5t928FsdBaKTS9sQVcnyJQ0+is5eRf4V56kGo54BYQEt8NV1FwHojvTxsqkelA7hgHbOvK3y2/ICBE7PotKE=  ;
+X-YMail-OSG: .BGhiEgVM1nKOZp9ipuKPFBQvlWqRY6qXQUrXBKMTk322j2h5UV30u4CDhKcm96EIzCVy8XPwg--
+From: David Brownell <david-b@pacbell.net>
+To: Stuart_Hayes@dell.com
+Subject: Re: [linux-usb-devel] EHCI Regression in 2.6.23-rc2
+Date: Wed, 15 Aug 2007 12:12:03 -0700
+User-Agent: KMail/1.9.6
+Cc: linux-usb-devel@lists.sourceforge.net, webmaster@dragonslave.de,
+       greg@kroah.com, linux-kernel@vger.kernel.org
+References: <200708101045.57166.dex@dragonslave.de> <DFEF91B22ED07447AB6AA4B237F913F9B18E7F@ausx3mpc125.aus.amer.dell.com> <DFEF91B22ED07447AB6AA4B237F913F9B18E9B@ausx3mpc125.aus.amer.dell.com>
+In-Reply-To: <DFEF91B22ED07447AB6AA4B237F913F9B18E9B@ausx3mpc125.aus.amer.dell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708152048270.16414@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200708151212.04065.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 11:25:05PM +0530, Satyam Sharma wrote:
-> Hi Paul,
-> On Wed, 15 Aug 2007, Paul E. McKenney wrote:
-> 
-> > On Wed, Aug 15, 2007 at 07:17:29PM +0530, Satyam Sharma wrote:
-> > > [...]
-> > > No, I'd actually prefer something like what Christoph Lameter suggested,
-> > > i.e. users (such as above) who want "volatile"-like behaviour from atomic
-> > > ops can use alternative functions. How about something like:
-> > > 
-> > > #define atomic_read_volatile(v)			\
-> > > 	({					\
-> > > 		forget(&(v)->counter);		\
-> > > 		((v)->counter);			\
-> > > 	})
-> > 
-> > Wouldn't the above "forget" the value, throw it away, then forget
-> > that it forgot it, giving non-volatile semantics?
-> 
-> Nope, I don't think so. I wrote the following trivial testcases:
-> [ See especially tp4.c and tp4.s (last example). ]
+On Wednesday 15 August 2007, Stuart_Hayes@dell.com wrote:
+> So... I still think blacklisting the VIA controllers from this CPU
+> frequency stuff is the best option.  
 
-Right.  I should have said "wouldn't the compiler be within its rights
-to forget the value, throw it away, then forget that it forgot it".
-The value coming out of the #define above is an unadorned ((v)->counter),
-which has no volatile semantics.
+Sadly, yes.  My negative impression of VIA quality is confirmed,
+yet again...
 
-> ==============================================================================
-> $ cat tp1.c # Using volatile access casts
-> 
-> #define atomic_read(a)	(*(volatile int *)&a)
-> 
-> int a;
-> 
-> void func(void)
-> {
-> 	a = 0;
-> 	while (atomic_read(a))
-> 		;
-> }
-> ==============================================================================
-> $ gcc -Os -S tp1.c; cat tp1.s
-> 
-> func:
-> 	pushl	%ebp
-> 	movl	%esp, %ebp
-> 	movl	$0, a
-> .L2:
-> 	movl	a, %eax
-> 	testl	%eax, %eax
-> 	jne	.L2
-> 	popl	%ebp
-> 	ret
-> ==============================================================================
-> $ cat tp2.c # Using nothing; gcc will optimize the whole loop away
-> 
-> #define forget(x)
-> 
-> #define atomic_read(a)		\
-> 	({			\
-> 		forget(&(a));	\
-> 		(a);		\
-> 	})
-> 
-> int a;
-> 
-> void func(void)
-> {
-> 	a = 0;
-> 	while (atomic_read(a))
-> 		;
-> }
-> ==============================================================================
-> $ gcc -Os -S tp2.c; cat tp2.s
-> 
-> func:
-> 	pushl	%ebp
-> 	movl	%esp, %ebp
-> 	popl	%ebp
-> 	movl	$0, a
-> 	ret
-> ==============================================================================
-> $ cat tp3.c # Using a full memory clobber barrier
-> 
-> #define forget(x)	asm volatile ("":::"memory")
-> 
-> #define atomic_read(a)		\
-> 	({			\
-> 		forget(&(a));	\
-> 		(a);		\
-> 	})
-> 
-> int a;
-> 
-> void func(void)
-> {
-> 	a = 0;
-> 	while (atomic_read(a))
-> 		;
-> }
-> ==============================================================================
-> $ gcc -Os -S tp3.c; cat tp3.s
-> 
-> func:
-> 	pushl	%ebp
-> 	movl	%esp, %ebp
-> 	movl	$0, a
-> .L2:
-> 	cmpl	$0, a
-> 	jne	.L2
-> 	popl	%ebp
-> 	ret
-> ==============================================================================
-> $ cat tp4.c # Using a forget(var) macro
-> 
-> #define forget(a)	__asm__ __volatile__ ("" :"=m" (a) :"m" (a))
-> 
-> #define atomic_read(a)		\
-> 	({			\
-> 		forget(a);	\
-> 		(a);		\
-> 	})
-> 
-> int a;
-> 
-> void func(void)
-> {
-> 	a = 0;
-> 	while (atomic_read(a))
-> 		;
-> }
-> ==============================================================================
-> $ gcc -Os -S tp4.c; cat tp4.s
-> 
-> func:
-> 	pushl	%ebp
-> 	movl	%esp, %ebp
-> 	movl	$0, a
-> .L2:
-> 	cmpl	$0, a
-> 	jne	.L2
-> 	popl	%ebp
-> 	ret
-> ==============================================================================
-> 
-> Possibly these were too trivial to expose any potential problems that you
-> may have been referring to, so would be helpful if you could write a more
-> concrete example / sample code.
+Please make sure the comments in your blacklist code describe both
+of the chip bugs you've observed.
 
-The trick is to have a sufficiently complicated expression to force
-the compiler to run out of registers.  If the value is non-volatile,
-it will refetch it (and expect it not to have changed, possibly being
-disappointed by an interrupt handler running on that same CPU).
 
-> > > Or possibly, implement these "volatile" atomic ops variants in inline asm
-> > > like the patch that Sebastian Siewior has submitted on another thread just
-> > > a while back.
-> > 
-> > Given that you are advocating a change (please keep in mind that
-> > atomic_read() and atomic_set() had volatile semantics on almost all
-> > platforms), care to give some example where these historical volatile
-> > semantics are causing a problem?
-> > [...]
-> > Can you give even one example
-> > where the pre-existing volatile semantics are causing enough of a problem
-> > to justify adding yet more atomic_*() APIs?
-> 
-> Will take this to the other sub-thread ...
+> 	It is unlikely that any real issues 
+> will be seen during CPU frequency transitions with these controllers
+> anyway, because they claim to cache 8 uframes of the periodic schedule.
+ 
+I'd not be so sure.  But if there are such issues, we can wait
+for problem reports.
 
-OK.
+- Dvae
 
-> > > Of course, if we find there are more callers in the kernel who want the
-> > > volatility behaviour than those who don't care, we can re-define the
-> > > existing ops to such variants, and re-name the existing definitions to
-> > > somethine else, say "atomic_read_nonvolatile" for all I care.
-> > 
-> > Do we really need another set of APIs?
-> 
-> Well, if there's one set of users who do care about volatile behaviour,
-> and another set that doesn't, it only sounds correct to provide both
-> those APIs, instead of forcing one behaviour on all users.
 
-Well, if the second set doesn't care, they should be OK with the volatile
-behavior in this case.
-
-							Thanx, Paul
