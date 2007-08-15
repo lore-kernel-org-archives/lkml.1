@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934889AbXHORxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934978AbXHORy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934889AbXHORxk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760750AbXHORx2
+	id S934978AbXHORy3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764106AbXHORyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:53:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50615 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753774AbXHORxZ (ORCPT
+	Wed, 15 Aug 2007 13:54:16 -0400
+Received: from web52510.mail.re2.yahoo.com ([206.190.48.193]:23873 "HELO
+	web52510.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1763651AbXHORyO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:53:25 -0400
-Date: Wed, 15 Aug 2007 23:35:45 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <20070815173326.GF9645@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.0.999.0708152325270.16414@enigma.security.iitk.ac.in>
-References: <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
- <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
- <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
- <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in>
- <20070815142516.GB9645@linux.vnet.ibm.com> <20070815153335.GA23593@gondor.apana.org.au>
- <20070815160830.GC9645@linux.vnet.ibm.com>
- <alpine.LFD.0.999.0708152244310.16414@enigma.security.iitk.ac.in>
- <20070815173326.GF9645@linux.vnet.ibm.com>
+	Wed, 15 Aug 2007 13:54:14 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=tZLfOoY468KrtnjBdytv2JLOYZn3eorsaPdYy04EyHGRAw5H/V9D3Q69hASa29As1iJIdc+oAZ0kTwt3nTyniQMdXexxQt6ka7Xd/pLdrmcQKBAFP5GclInVL2DqNKGaUVDm5MMghcaezuQQ05Hd/9SNdNgGZw1E8eWoTDf50Ek=;
+X-YMail-OSG: IVUFoSQVM1lOgjcWaHwylI8uD8D_P5r9UGh6XSyX6yWMxuQjKEobIyJomlFjRevZlVq9ZLvVu4wiY5KYNxuw3jw9xL.fnYpRO8A3C2K9lhisuAN7BeqyJGNZw2ypW8XD2iiVcxVfXEf4n_c-
+Date: Wed, 15 Aug 2007 10:54:13 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: Thinking outside the box on file systems
+To: Phillip Susi <psusi@cfl.rr.com>, Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
+       Marc Perkel <mperkel@yahoo.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+In-Reply-To: <46C33934.7060802@cfl.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <579287.76409.qm@web52510.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--- Phillip Susi <psusi@cfl.rr.com> wrote:
 
-On Wed, 15 Aug 2007, Paul E. McKenney wrote:
-
-> On Wed, Aug 15, 2007 at 10:48:28PM +0530, Satyam Sharma wrote:
-> > [...]
-> > Not for i386 and x86_64 -- those have atomic ops without any "volatile"
-> > semantics (currently as per existing definitions).
+> Kyle Moffett wrote:
+> > Going even further in this direction, the
+> following POSIX ACL on the 
+> > directories will do what you want:
+> > 
+> > ## Note: file owner and group are kmoffett
+> > u::rw-
+> > g::rw-
+> > u:lsorens:rw-
+> > u:mtharp:rw-
+> > u:mperkel:rw-
+> > g:randomcvsdudes:r-
+> > default:u::rw-
+> > default:g::rw-
+> > default:u:lsorens
+> > default:u:mtharp:rw-
+> > default:u:mperkel:rw-
+> > default:g:randomcvsdudes:r-
 > 
-> I claim unit volumes with arm, and the majority of the architectures, but
-> I cannot deny the popularity of i386 and x86_64 with many developers.  ;-)
+> 
+> The problem that I have with this setup is that it
+> specifies an ACL on 
+> EACH file.  Yes, you can set a default on the
+> directory for newly 
+> created files, but what if I want to add a user to
+> the access list for 
+> that whole directory?  I have to individually update
+> every acl on every 
+> file in that directory.  Also if you move a file
+> created elsewhere into 
+> that directory, it retains its existing permissions
+> doesn't it?  I would 
+> rather just add a new ace to the directory itself
+> which specifies that 
+> it applies to the entire tree.  Then you only need
+> to store a single acl 
+> on disk, and only have to update one acl to add a
+> new user.
+> 
+> 
 
-Hmm, does arm really need that "volatile int counter;"? Hopefully RMK will
-take a patch removing that "volatile" ... ;-)
+
+In the model I'm suggesting files and directories no
+longer have permissions so ACLs go away. Only users,
+groups, managers, applications, and other objects have
+permissions.
+
+So if you move a file into the tree then everything
+that has permission to that tree has rights to the
+file.
 
 
-> However, I am not aware of code in the kernel that would benefit
-> from the compiler coalescing multiple atomic_set() and atomic_read()
-> invocations, thus I don't see the downside to volatility in this case.
-> Are there some performance-critical code fragments that I am missing?
-
-I don't know, and yes, code with multiple atomic_set's and atomic_read's
-getting optimized or coalesced does sound strange to start with. Anyway,
-I'm not against "volatile semantics" per se. As replied elsewhere, I do
-appreciate the motivation behind this series (to _avoid_ gotchas, not to
-fix existing ones). Just that I'd like to avoid using "volatile", for
-aforementioned reasons, especially given that there are perfectly
-reasonable alternatives to achieve the same desired behaviour.
+Marc Perkel
+Junk Email Filter dot com
+http://www.junkemailfilter.com
 
 
-Satyam
+       
+____________________________________________________________________________________
+Boardwalk for $500? In 2007? Ha! Play Monopoly Here and Now (it's updated for today's economy) at Yahoo! Games.
+http://get.games.yahoo.com/proddesc?gamekey=monopolyherenow  
