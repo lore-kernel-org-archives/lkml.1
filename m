@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbXHOM3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbXHOMdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757476AbXHOM3r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 08:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbXHOM3h
+	id S1758873AbXHOMdR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 08:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbXHOMdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 08:29:37 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:52388 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752323AbXHOM3g (ORCPT
+	Wed, 15 Aug 2007 08:33:08 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:49749 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753763AbXHOMdG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 08:29:36 -0400
-Message-ID: <46C2F19A.30003@anagramm.de>
-Date: Wed, 15 Aug 2007 14:29:14 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
+	Wed, 15 Aug 2007 08:33:06 -0400
+Date: Wed, 15 Aug 2007 13:32:56 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
 To: Andi Kleen <ak@suse.de>
-CC: patches@x86-64.org, linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: [PATCH] [3/4] x86_64: Change PMDS invocation to single macro
-References: <20070815240.194452000@suse.de> <20070815004036.6BBCF14DC8@wotan.suse.de>
-In-Reply-To: <20070815004036.6BBCF14DC8@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+CmMFJ+jf2IjEPcu2EnxBHg5BowIv2QucIgf3
- tYw9De4je5AE4WvfTzzPHOIAdu5oLzBgjcr2GwSrLJDCo06KAd
- 9jLJknKrynU+MIIjbAI4g==
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Christoph Lameter <clameter@sgi.com>,
+       Mel Gorman <mel@skynet.ie>, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-mips@linux-mips.org
+Subject: Re: [PATCH 3/4] Embed zone_id information within the
+	zonelist->zones pointer
+Message-ID: <20070815123256.GD5862@linux-mips.org>
+References: <Pine.LNX.4.64.0708131506030.28502@schroedinger.engr.sgi.com> <20070813230801.GH3406@bingen.suse.de> <Pine.LNX.4.64.0708131536340.29946@schroedinger.engr.sgi.com> <20070813234322.GJ3406@bingen.suse.de> <Pine.LNX.4.64.0708131553050.30626@schroedinger.engr.sgi.com> <20070814000041.GL3406@bingen.suse.de> <20070814002223.2d8d42c5@the-village.bc.nu> <20070814001441.GN3406@bingen.suse.de> <20070815113749.GA5862@linux-mips.org> <20070815125920.GD3406@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070815125920.GD3406@bingen.suse.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen schrieb:
-> Very old binutils (2.12.90...) seem to have trouble with newlines
-> in assembler macro invocation. They put them into the resulting
-> argument expansion. In this case this lead to a parse error because
-> a .rept expression ended up spread over multiple lines. Change the PMDS() 
-> invocation to a single line.
+On Wed, Aug 15, 2007 at 02:59:20PM +0200, Andi Kleen wrote:
+
+> On Wed, Aug 15, 2007 at 12:37:49PM +0100, Ralf Baechle wrote:
+> > On Tue, Aug 14, 2007 at 02:14:41AM +0200, Andi Kleen wrote:
+> > 
+> > > meth is only used on SGI O2s which are not that slow and unlikely
+> > > to work in tree anyways.
+> > 
+> > O2 doesn't enable CONFIG_ZONE_DMA so there is no point in using GFP_DMA in
+> > an O2-specific device driver.  Will send out patch in separate mail.
 > 
-> Signed-off-by: Andi Kleen <ak@suse.de>
+> Great.
 > 
-> Index: linux/arch/x86_64/kernel/head.S
-> ===================================================================
-> --- linux.orig/arch/x86_64/kernel/head.S
-> +++ linux/arch/x86_64/kernel/head.S
-> @@ -345,8 +345,7 @@ NEXT_PAGE(level2_kernel_pgt)
->  	/* 40MB kernel mapping. The kernel code cannot be bigger than that.
->  	   When you change this change KERNEL_TEXT_SIZE in page.h too. */
->  	/* (2^48-(2*1024*1024*1024)-((2^39)*511)-((2^30)*510)) = 0 */
-> -	PMDS(0x0000000000000000, __PAGE_KERNEL_LARGE_EXEC|_PAGE_GLOBAL,
-> -		KERNEL_TEXT_SIZE/PMD_SIZE)
-> +	PMDS(0x0000000000000000, __PAGE_KERNEL_LARGE_EXEC|_PAGE_GLOBAL, KERNEL_TEXT_SIZE/PMD_SIZE)
+> BTW I suspect this is true for some other GFP_DMA usages too.
+> Some driver writers seem to confuse it with the PCI DMA
+> APIs or believe it is always needed for them.
 
-Can you please add a comment, that this line must stay in a single line
-for the above reason? I would expect that the next who does some code
-clean up will break it again.
+In case of the O2 the full story is a little more complicated.  The O2 is
+not I/O coherent.  That's a well know and handled configuration for the
+R5000.  But the R10000 which was never designed for such use will do very
+stupid things such as actually performing speculative stores and scribbling
+into DMA buffers left and right.  There are two possible workarounds for
+this; one is software only the other is using a little CPLD codenamed Juice
+on the O2 R10000 board and would require a special memory region for DMA
+buffers, so the ZONE_DMA was really there as some sort of future proofing.
+But in the end the same arguments as for the Lance apply here.
 
->  	/* Module mapping starts here */
->  	.fill	(PTRS_PER_PMD - (KERNEL_TEXT_SIZE/PMD_SIZE)),8,0
-
-Regards,
--- 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm-technology.com
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+  Ralf
