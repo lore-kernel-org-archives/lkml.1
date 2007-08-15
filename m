@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965297AbXHOXqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937003AbXHOXvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965297AbXHOXqF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 19:46:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964913AbXHOXpx
+	id S937003AbXHOXvr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 19:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762959AbXHOXvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 19:45:53 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56042 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762162AbXHOXpw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 19:45:52 -0400
-Date: Thu, 16 Aug 2007 00:51:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "David P. Reed" <dpreed@reed.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: RFC: do get_rtc_time() correctly
-Message-ID: <20070816005151.56176a04@the-village.bc.nu>
-In-Reply-To: <46C35284.1080003@reed.com>
-References: <46C35284.1080003@reed.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Aug 2007 19:51:31 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:45932 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757973AbXHOXv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 19:51:29 -0400
+Date: Wed, 15 Aug 2007 16:51:25 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Herbert Xu <herbert.xu@redhat.com>
+Cc: Chris Snook <csnook@redhat.com>, satyam@infradead.org, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070815235125.GT9645@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com> <20070815234021.GA28775@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070815234021.GA28775@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So the proper way to read the RTC contents is to read the UIP flag, and 
-> if zero, read all the RTC registers with interrupts masked completely, 
-> so all reads happen in the 224 usec window.  (NMI can still be a 
-> problem, but you can have NMI's set a flag that forces a retry).
+On Thu, Aug 16, 2007 at 07:40:21AM +0800, Herbert Xu wrote:
+> On Wed, Aug 15, 2007 at 12:13:12PM -0400, Chris Snook wrote:
+> >
+> > Part of the motivation here is to fix heisenbugs.  If I knew where they 
+> 
+> By the same token we should probably disable optimisations
+> altogether since that too can create heisenbugs.
 
-SMM/SMI is more likely to be what bumps you 224usec or more.
+Precisely the point -- use of volatile (whether in casts or on asms)
+in these cases are intended to disable those optimizations likely to
+result in heisenbugs.  But they are also intended to leave other
+valuable optimizations in force.
 
-> I'm happy to code and test a patch.   Rather than just submit a patch, I 
-> thought I'd request others' comments on this, since it affects so many 
-> architectures.  cc me, if you will, as I don't subscribe to LKML, just 
-> check it periodically.
-
-Go for it. The other architectures generally inherit it by inheriting
-similar bridge chips or in more modern times the RTC macrocell. It should
-also be possible to debug by putting in an optional sanity check
-initially which checks the read made sense compared to a few more
+						Thanx, Paul
