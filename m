@@ -1,43 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754382AbXHOFeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbXHOFhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754382AbXHOFeT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 01:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXHOFeE
+	id S1754799AbXHOFhW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 01:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbXHOFhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 01:34:04 -0400
-Received: from mail.gmx.net ([213.165.64.20]:60898 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751317AbXHOFeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 01:34:03 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18zh31rEk4zgzIcuihawRmpLCTRE7Y+x2wE31Saaa
-	5dbgsWc3BtWkCn
-Subject: Re: QUESTION: RT & SCHED & fork: ?MISSING EQUIV of task_new_fair
-	for RT tasks.
-From: Mike Galbraith <efault@gmx.de>
-To: Mitchell Erblich <erblichs@earthlink.net>
-Cc: "\"Linux Kernel Mailing List\"" <linux-kernel@vger.kernel.org>,
-       "\"Ingo Molnar\"" <mingo@elte.hu>,
-       "\"\\\"Dmitry Adamushko\\\"\"" <dmitry.adamushko@gmail.com>
-In-Reply-To: <000501c7dea9$3bfca1c0$6501a8c0@earthlink.net>
-References: <000501c7dea9$3bfca1c0$6501a8c0@earthlink.net>
-Content-Type: text/plain
-Date: Wed, 15 Aug 2007 07:33:57 +0200
-Message-Id: <1187156037.6615.17.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Wed, 15 Aug 2007 01:37:07 -0400
+Received: from ihemail1.lucent.com ([135.245.0.33]:41965 "EHLO
+	ihemail1.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751275AbXHOFhF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 01:37:05 -0400
+Message-ID: <46C290F6.2090309@alcatel-lucent.com>
+Date: Wed, 15 Aug 2007 13:36:54 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: do_coredump and O_NOFOLLOW
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+X-OriginalArrivalTime: 15 Aug 2007 05:36:58.0198 (UTC) FILETIME=[4C07AF60:01C7DEFE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-14 at 12:28 -0700, Mitchell Erblich wrote:
-> Group, Ingo Molnar, etc,
-> 
-> Why does the rt sched_class contain fewer elements than fair?
-> missing is the RT for .task_new.
+Hi All,
 
-No class specific initialization needs to be done for RT tasks.
+I found that O_NOFOLLOW is used for opened core file in Linux 2.6.10. 
+This means the core file couldn't be a symbolic link. However, I want to 
+use symbolic link for core file, So I plan to remove O_NOFOLLOW as 
+follows, but I'm not sure there are any impacts introduced by the change?
 
-	-Mike
+file = filp_open(corename, O_CREAT | 2 | O_NOFOLLOW | O_LARGEFILE, 0600);
 
+TO
+
+file = filp_open(corename, O_CREAT | 2 /*| O_NOFOLLOW*/ | O_LARGEFILE, 
+0600);
+
+Thanks,
+Gavin
