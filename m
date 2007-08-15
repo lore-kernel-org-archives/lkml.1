@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934647AbXHORbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933970AbXHORdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934647AbXHORbH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934483AbXHORam
+	id S933970AbXHORdq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761864AbXHORdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:30:42 -0400
-Received: from sidhe.atheme.org ([204.15.224.234]:58666 "EHLO sidhe.atheme.org"
+	Wed, 15 Aug 2007 13:33:32 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34329 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764614AbXHORak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:30:40 -0400
-Message-ID: <46C33835.90703@partiallystapled.com>
-Date: Wed, 15 Aug 2007 13:30:29 -0400
-From: Michael Tharp <gxti@partiallystapled.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070723)
+	id S1762277AbXHORda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:33:30 -0400
+Date: Wed, 15 Aug 2007 10:33:26 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070815173326.GF9645@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com> <20070815153335.GA23593@gondor.apana.org.au> <20070815160830.GC9645@linux.vnet.ibm.com> <alpine.LFD.0.999.0708152244310.16414@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-To: Marc Perkel <mperkel@yahoo.com>
-CC: alan <alan@clueserver.org>, linux-kernel@vger.kernel.org
-Subject: Re: Thinking outside the box on file systems
-References: <249938.3918.qm@web52506.mail.re2.yahoo.com>
-In-Reply-To: <249938.3918.qm@web52506.mail.re2.yahoo.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0708152244310.16414@enigma.security.iitk.ac.in>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marc Perkel wrote:
-> That not a problem - it's a feature. In such a
-> situation the person would get a general file creation
-> error.
-
-Feature or not, it's still vulnerable to probing by malicious users. If
-there are create permissions on the directory, the invisibility is not
-perfect.
-
-> Although it isn't likely people would structure
-> files with invisible files in directories that the
-> user has create permissions [...]
-
-... /tmp ...
-
-> [...] it is logical that if I
-> put a file in a place where the user has no rights I
-> want it to stay there. Currently the user can delete
-> files where they have no rights.
-
-Indeed. The sticky bit works around this, but IMHO it's a hack.
-
-> I might also want to restrict the kind of a user can
-> createor give permission to create only certian file
-> names.
+On Wed, Aug 15, 2007 at 10:48:28PM +0530, Satyam Sharma wrote:
+> On Wed, 15 Aug 2007, Paul E. McKenney wrote:
+> > On Wed, Aug 15, 2007 at 11:33:36PM +0800, Herbert Xu wrote:
+> > > On Wed, Aug 15, 2007 at 07:25:16AM -0700, Paul E. McKenney wrote:
+> > > > 
+> > > > Do we really need another set of APIs?  Can you give even one example
+> > > > where the pre-existing volatile semantics are causing enough of a problem
+> > > > to justify adding yet more atomic_*() APIs?
+> > > 
+> > > Let's turn this around.  Can you give a single example where
+> > > the volatile semantics is needed in a legitimate way?
+> > 
+> > Sorry, but you are the one advocating for the change.
 > 
-> /etc/vz/conf/*.conf - create - readonly - self-rw
-> /etc/vz/conf - deny 
-> 
-> This would allow the user to read all *.conf files,
-> create new *.conf files, and full permissions to
-> read/write/delete files that the user created but not
-> files that others created. If listing a directory then
-> only the *.conf files would appear even if other files
-> are in the directory.
+> Not for i386 and x86_64 -- those have atomic ops without any "volatile"
+> semantics (currently as per existing definitions).
 
-It'd be interesting to find a use case for this, but that's no reason
-not to provide the functionality.
+I claim unit volumes with arm, and the majority of the architectures, but
+I cannot deny the popularity of i386 and x86_64 with many developers.  ;-)
 
-> Marc Perkel
-> Junk Email Filter dot com
-> http://www.junkemailfilter.com
+However, I am not aware of code in the kernel that would benefit
+from the compiler coalescing multiple atomic_set() and atomic_read()
+invocations, thus I don't see the downside to volatility in this case.
+Are there some performance-critical code fragments that I am missing?
 
-  -- m. tharp
+						Thanx, Paul
