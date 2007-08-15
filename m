@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764944AbXHOOes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763408AbXHOOjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764944AbXHOOes (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 10:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758911AbXHOOeZ
+	id S1763408AbXHOOjO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 10:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758349AbXHOOi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 10:34:25 -0400
-Received: from smtpout.mac.com ([17.250.248.184]:55549 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758670AbXHOOeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 10:34:24 -0400
-In-Reply-To: <Pine.LNX.4.64.0708151604360.15707@fbirervta.pbzchgretzou.qr>
-References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org> <20070814232107.GA4265@aurum.uhlenkott.net> <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr> <46C2BB60.6010909@gmail.com> <Pine.LNX.4.64.0708151113410.19270@fbirervta.pbzchgretzou.qr> <46C2CE42.4010303@gmail.com> <Pine.LNX.4.64.0708151217120.5639@fbirervta.pbzchgretzou.qr> <5D056606-6284-4331-98DB-77123816D5B8@mac.com> <Pine.LNX.4.64.0708151604360.15707@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <912C3FD2-3B6D-4328-8485-657F63CC6552@mac.com>
-Cc: Rene Herman <rene.herman@gmail.com>,
-       Jason Uhlenkott <jasonuhl@jasonuhl.org>,
-       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: kfree(0) - ok?
-Date: Wed, 15 Aug 2007 10:34:10 -0400
-To: Jan Engelhardt <jengelh@computergmbh.de>
-X-Mailer: Apple Mail (2.752.2)
+	Wed, 15 Aug 2007 10:38:58 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:33025 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758264AbXHOOi5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 10:38:57 -0400
+Date: Wed, 15 Aug 2007 10:38:54 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Florin Iucha <florin@iucha.net>
+cc: Tejun Heo <htejun@gmail.com>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
+ v2.6.23-rc3-50-g28e8351
+In-Reply-To: <20070815133147.GA7124@iucha.net>
+Message-ID: <Pine.LNX.4.44L0.0708151033270.3895-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 15, 2007, at 10:06:49, Jan Engelhardt wrote:
-> On Aug 15 2007 09:58, Kyle Moffett wrote:
->> Irrespective of whatever the standard says, EVERY platform and  
->> compiler anybody makes nowadays has a NULL pointer value with all  
->> bits clear.  Theoretically the standard allows otherwise, but such  
->> a decision would break so much code.  Linux especially, we rely on  
->> the uninitialized data to have all bits clear and we depend on  
->> that producing NULL pointers; if a NULL pointer was not bitwise  
->> exactly 0 then the test "if (some_ptr != NULL)" would fail and we  
->> would start dereferencing garbage.
->
-> But if kmalloc returns NULL on failure, then testing for NULL  
-> (irrespective of being 0 or 0xDEADBEEF) is ok.  What would actually  
-> concern me then is what "if (!some_ptr)" would do. Probably not the  
-> right thing.
+On Wed, 15 Aug 2007, Florin Iucha wrote:
 
-Well, what I was referring to is:
+> Today my USB keyboard stopped working in the middle of composing and
+> e-mail.  I unplugged it and plugged it back, with no success.  I
+> logged in remotely and found this lovely message:
+> 
+> [ 1301.567351] usb 1-4: USB disconnect, address 3
+> [ 1301.567356] usb 1-4.2: USB disconnect, address 5
+> [ 1301.567599] sysfs_remove_bin_file: bad dentry or inode or no such file: "descriptors"
+> [ 1301.567604] 
+> [ 1301.567605] Call Trace:
+> [ 1301.567614]  [<ffffffff802b89a6>] sysfs_remove_bin_file+0x39/0x3d
+> [ 1301.567619]  [<ffffffff803f1d24>] device_remove_bin_file+0x15/0x17
+> [ 1301.567623]  [<ffffffff8045ea0d>] usb_remove_sysfs_dev_files+0x89/0x9d
+> [ 1301.567627]  [<ffffffff804625cc>] generic_disconnect+0x2e/0x32
+> [ 1301.567630]  [<ffffffff8045b58d>] usb_unbind_device+0x15/0x19
+> [ 1301.567634]  [<ffffffff803f4161>] __device_release_driver+0x93/0xb3
+> [ 1301.567637]  [<ffffffff803f45af>] device_release_driver+0x31/0x49
+> [ 1301.567640]  [<ffffffff803f39f1>] bus_remove_device+0x76/0x87
+> [ 1301.567644]  [<ffffffff803f2014>] device_del+0x216/0x297
+> [ 1301.567648]  [<ffffffff80455c8f>] usb_disconnect+0xc8/0x151
+> [ 1301.567651]  [<ffffffff80455c56>] usb_disconnect+0x8f/0x151
+> [ 1301.567655]  [<ffffffff804564c8>] hub_thread+0x442/0xc47
+> [ 1301.567659]  [<ffffffff80553cdb>] _spin_unlock_irq+0x9/0xc
+> [ 1301.567664]  [<ffffffff80244ad7>] autoremove_wake_function+0x0/0x38
+> [ 1301.567668]  [<ffffffff80456086>] hub_thread+0x0/0xc47
+> [ 1301.567671]  [<ffffffff802449cb>] kthread+0x49/0x76
+> [ 1301.567674]  [<ffffffff8020c618>] child_rip+0xa/0x12
+> [ 1301.567679]  [<ffffffff80244982>] kthread+0x0/0x76
+> [ 1301.567682]  [<ffffffff8020c60e>] child_rip+0x0/0x12
 
-static struct foo *some_ptr;
+I think we can simply remove the error message.  There's no obvious 
+reason why sysfs_remove_bin_file() should complain about attempts to 
+remove a nonexistent file; sysfs_remove_file() doesn't.
 
-/* Assumes that $SOME_LOCK is held */
-int initialize_foo_module()
-{
-	if (!some_ptr) {
-		some_ptr = kmalloc(sizeof(*some_ptr));
-		if (!some_ptr)
-			return -ENOMEM;
+This patch will get rid of the annoying error messages.  It won't do 
+anything about your keyboard's tendency to spontaneously stop working, 
+alas.
 
-		/* ... */
-	}
-
-	/* ... */
-}
+Alan Stern
 
 
-We initialize all of the static data to all-bits-clear zeros during  
-kernel init.  Any platform on which the binary representations of  
-"(unsigned long)0" and "(void *)0" are different (even in length, due  
-to other issues) will not run the Linux kernel as it stands today.
-
-And as to the sizeof(unsigned long) == sizeof(void *) issue, please  
-remember that every Linux compiler is either ILP32 (int, long, and  
-pointer are 32-bit) or LP64 (int is 32-bit and long/pointer are 64- 
-bit).  We sort of fundamentally rely on these properties in code all  
-over the place.
-
-So yes the Linux kernel "breaks the standard" in a bunch of places,  
-but on the other hand we're not your average software and we don't  
-have to worry about building on an LLP64 compiler (Windows 64-bit and  
-some UNIXes) or other strangeness.
-
-Cheers,
-Kyle Moffett
+Index: usb-2.6/fs/sysfs/bin.c
+===================================================================
+--- usb-2.6.orig/fs/sysfs/bin.c
++++ usb-2.6/fs/sysfs/bin.c
+@@ -248,12 +248,7 @@ int sysfs_create_bin_file(struct kobject
+ 
+ void sysfs_remove_bin_file(struct kobject * kobj, struct bin_attribute * attr)
+ {
+-	if (sysfs_hash_and_remove(kobj->sd, attr->attr.name) < 0) {
+-		printk(KERN_ERR "%s: "
+-			"bad dentry or inode or no such file: \"%s\"\n",
+-			__FUNCTION__, attr->attr.name);
+-		dump_stack();
+-	}
++	sysfs_hash_and_remove(kobj->sd, attr->attr.name);
+ }
+ 
+ EXPORT_SYMBOL_GPL(sysfs_create_bin_file);
 
