@@ -1,71 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937158AbXHOWnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937226AbXHOWoL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937158AbXHOWnb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 18:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937120AbXHOWmm
+	id S937226AbXHOWoL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 18:44:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936999AbXHOWnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 18:42:42 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:46531 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937113AbXHOWmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 18:42:39 -0400
-Date: Wed, 15 Aug 2007 15:42:33 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Satyam Sharma <satyam@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       rpjday@mindspring.com, netdev@vger.kernel.org, ak@suse.de,
-       cfriesen@nortel.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070815224233.GP9645@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <46C30540.2070603@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in> <20070815145207.GA23106@gondor.apana.org.au> <46C3253F.5090707@s5r6.in-berlin.de> <20070815162722.GD9645@linux.vnet.ibm.com> <d4406222873856f472b9173a14a19aa2@kernel.crashing.org> <20070815185724.GH9645@linux.vnet.ibm.com> <alpine.LFD.0.999.0708160118330.16414@enigma.security.iitk.ac.in> <20070815201748.GN9645@linux.vnet.ibm.com> <96f3fa3929d873263891fefadb222431@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <96f3fa3929d873263891fefadb222431@kernel.crashing.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 15 Aug 2007 18:43:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35548 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S936724AbXHOWnM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 18:43:12 -0400
+Date: Wed, 15 Aug 2007 15:42:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org, Aaron Durbin <adurbin@google.com>
+Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
+Message-Id: <20070815154245.500c572c.akpm@linux-foundation.org>
+In-Reply-To: <1186990219.22431.37.camel@caritas-dev.intel.com>
+References: <1186990219.22431.37.camel@caritas-dev.intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 10:52:53PM +0200, Segher Boessenkool wrote:
-> >>I think this was just terminology confusion here again. Isn't "any 
-> >>code
-> >>that it cannot currently see" the same as "another compilation unit",
-> >>and wouldn't the "compilation unit" itself expand if we ask gcc to
-> >>compile more than one unit at once? Or is there some more specific
-> >>"definition" for "compilation unit" (in gcc lingo, possibly?)
-> >
-> >This is indeed my understanding -- "compilation unit" is whatever the
-> >compiler looks at in one go.  I have heard the word "module" used for
-> >the minimal compilation unit covering a single .c file and everything
-> >that it #includes, but there might be a better name for this.
-> 
-> Yes, that's what's called "compilation unit" :-)
-> 
-> [/me double checks]
-> 
-> Erm, the C standard actually calls it "translation unit".
-> 
-> To be exact, to avoid any more confusion:
-> 
-> 5.1.1.1/1:
-> A C program need not all be translated at the same time. The
-> text of the program is kept in units called source files, (or
-> preprocessing files) in this International Standard. A source
-> file together with all the headers and source files included
-> via the preprocessing directive #include is known as a
-> preprocessing translation unit. After preprocessing, a
-> preprocessing translation unit is called a translation unit.
+On Mon, 13 Aug 2007 15:30:19 +0800
+"Huang, Ying" <ying.huang@intel.com> wrote:
 
-I am OK with "translation" and "compilation" being near-synonyms.  ;-)
+> Following sets of patches add EFI/UEFI (Unified Extensible Firmware
+> Interface) runtime services support to x86_64 architecture.
 
-						Thanx, Paul
+I had to rework these a bit due to clashes with
+x86_64-add-acpi-reboot-option.patch.  Please check carefully that
+everything landed OK.
+
+
+
