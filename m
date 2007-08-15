@@ -1,53 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763648AbXHOOHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764105AbXHOOHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763648AbXHOOHG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 10:07:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756967AbXHOOGw
+	id S1764105AbXHOOHw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 10:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbXHOOHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 10:06:52 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:59686 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757029AbXHOOGv (ORCPT
+	Wed, 15 Aug 2007 10:07:42 -0400
+Received: from smtp2.actcom.co.il ([192.114.47.35]:54662 "EHLO
+	smtp2.actcom.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755094AbXHOOHl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 10:06:51 -0400
-Date: Wed, 15 Aug 2007 16:06:49 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-cc: Rene Herman <rene.herman@gmail.com>,
-       Jason Uhlenkott <jasonuhl@jasonuhl.org>,
-       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kfree(0) - ok?
-In-Reply-To: <5D056606-6284-4331-98DB-77123816D5B8@mac.com>
-Message-ID: <Pine.LNX.4.64.0708151604360.15707@fbirervta.pbzchgretzou.qr>
-References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org>
- <20070814232107.GA4265@aurum.uhlenkott.net>
- <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr>
- <46C2BB60.6010909@gmail.com> <Pine.LNX.4.64.0708151113410.19270@fbirervta.pbzchgretzou.qr>
- <46C2CE42.4010303@gmail.com> <Pine.LNX.4.64.0708151217120.5639@fbirervta.pbzchgretzou.qr>
- <5D056606-6284-4331-98DB-77123816D5B8@mac.com>
+	Wed, 15 Aug 2007 10:07:41 -0400
+Message-ID: <46C3077D.4000307@compulab.co.il>
+Date: Wed, 15 Aug 2007 17:02:37 +0300
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070715)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: =?ISO-8859-1?Q?Rapha=EBl_Ass=E9nat?= <raph@8d.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Alessandro Zummo <a.zummo@towertech.it>
+Subject: Re: [PATCH] RTC v3020 fixes
+References: <46C292F2.1050401@compulab.co.il> <46C2F8C9.6020806@8d.com>
+In-Reply-To: <46C2F8C9.6020806@8d.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Raphaël Assénat wrote:
+> Mike Rapoport wrote:
+>> Fix off-by-one in month calculations
+>> Add delay for bus accesses to satisfy Tw > 500ns
+>>
+> *snip*
+>> @@ -135,7 +140,7 @@ static int v3020_set_time(struct device *dev, 
+>> struct rtc_time *dt)
+>>      v3020_set_reg(chip, V3020_MINUTES,     BIN2BCD(dt->tm_min));
+>>      v3020_set_reg(chip, V3020_HOURS,     BIN2BCD(dt->tm_hour));
+>>      v3020_set_reg(chip, V3020_MONTH_DAY,    BIN2BCD(dt->tm_mday));
+>> -    v3020_set_reg(chip, V3020_MONTH,     BIN2BCD(dt->tm_mon));
+>> +    v3020_set_reg(chip, V3020_MONTH,     BIN2BCD(dt->tm_mon) + 1);
+> 
+> This should be BIN2BCD(dt->tm_mon + 1)) instead. Otherwise, in october 
+> (month 9), the final value will be 0xa instead of 0x10.
 
-On Aug 15 2007 09:58, Kyle Moffett wrote:
->
-> Irrespective of whatever the standard says, EVERY platform and
-> compiler anybody makes nowadays has a NULL pointer value with all
-> bits clear.  Theoretically the standard allows otherwise, but such
-> a decision would break so much code.  Linux especially, we rely on
-> the uninitialized data to have all bits clear and we depend on that
-> producing NULL pointers; if a NULL pointer was not bitwise exactly
-> 0 then the test "if (some_ptr != NULL)" would fail and we would
-> start dereferencing garbage.
-
-But if kmalloc returns NULL on failure, then testing for NULL
-(irrespective of being 0 or 0xDEADBEEF) is ok.
-What would actually concern me then is what "if (!some_ptr)" would do.
-Probably not the right thing.
+Fixed.
 
 
-	Jan
+> Other than that, the patch looks fine to me. You can add
+> Acked-by: Raphael Assenat <raph@8d.com> to the updated patch.
+> 
+> Please add Alessandro Zummo <a.zummo@towertech.it> in the CC list to 
+> make sure he sees it.
+> 
+> Best regards,
+> Raphaël Assénat
+
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+Acked-by: Raphael Assenat <raph@8d.com>
+
+  drivers/rtc/rtc-v3020.c |    9 +++++++--
+  1 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/rtc/rtc-v3020.c b/drivers/rtc/rtc-v3020.c
+index 3b58d3d..e96d667 100644
+--- a/drivers/rtc/rtc-v3020.c
++++ b/drivers/rtc/rtc-v3020.c
+@@ -26,6 +26,7 @@
+  #include <linux/types.h>
+  #include <linux/bcd.h>
+  #include <linux/rtc-v3020.h>
++#include <linux/delay.h>
+
+  #include <asm/io.h>
+
+@@ -47,6 +48,7 @@ static void v3020_set_reg(struct v3020 *chip, unsigned char 
+address,
+  	for (i = 0; i < 4; i++) {
+  		writel((tmp & 1) << chip->leftshift, chip->ioaddress);
+  		tmp >>= 1;
++		udelay(1);
+  	}
+
+  	/* Commands dont have data */
+@@ -54,6 +56,7 @@ static void v3020_set_reg(struct v3020 *chip, unsigned char 
+address,
+  		for (i = 0; i < 8; i++) {
+  			writel((data & 1) << chip->leftshift, chip->ioaddress);
+  			data >>= 1;
++			udelay(1);
+  		}
+  	}
+  }
+@@ -66,12 +69,14 @@ static unsigned char v3020_get_reg(struct v3020 *chip, 
+unsigned char address)
+  	for (i = 0; i < 4; i++) {
+  		writel((address & 1) << chip->leftshift, chip->ioaddress);
+  		address >>= 1;
++		udelay(1);
+  	}
+
+  	for (i = 0; i < 8; i++) {
+  		data >>= 1;
+  		if (readl(chip->ioaddress) & (1 << chip->leftshift))
+  			data |= 0x80;
++		udelay(1);
+  	}
+
+  	return data;
+@@ -95,7 +100,7 @@ static int v3020_read_time(struct device *dev, struct 
+rtc_time *dt)
+  	tmp = v3020_get_reg(chip, V3020_MONTH_DAY);
+  	dt->tm_mday	= BCD2BIN(tmp);
+  	tmp = v3020_get_reg(chip, V3020_MONTH);
+-	dt->tm_mon	= BCD2BIN(tmp);
++	dt->tm_mon	= BCD2BIN(tmp) - 1;
+  	tmp = v3020_get_reg(chip, V3020_WEEK_DAY);
+  	dt->tm_wday	= BCD2BIN(tmp);
+  	tmp = v3020_get_reg(chip, V3020_YEAR);
+@@ -135,7 +140,7 @@ static int v3020_set_time(struct device *dev, struct 
+rtc_time *dt)
+  	v3020_set_reg(chip, V3020_MINUTES, 	BIN2BCD(dt->tm_min));
+  	v3020_set_reg(chip, V3020_HOURS, 	BIN2BCD(dt->tm_hour));
+  	v3020_set_reg(chip, V3020_MONTH_DAY,	BIN2BCD(dt->tm_mday));
+-	v3020_set_reg(chip, V3020_MONTH, 	BIN2BCD(dt->tm_mon));
++	v3020_set_reg(chip, V3020_MONTH, 	BIN2BCD(dt->tm_mon + 1));
+  	v3020_set_reg(chip, V3020_WEEK_DAY, 	BIN2BCD(dt->tm_wday));
+  	v3020_set_reg(chip, V3020_YEAR, 	BIN2BCD(dt->tm_year % 100));
+
+
+
 -- 
+Sincerely yours,
+Mike.
+
