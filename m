@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934263AbXHOSFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934763AbXHOSHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934263AbXHOSFg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 14:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760034AbXHOSF0
+	id S934763AbXHOSHb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 14:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759020AbXHOSHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 14:05:26 -0400
-Received: from web52508.mail.re2.yahoo.com ([206.190.48.191]:22339 "HELO
-	web52508.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758896AbXHOSFZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 14:05:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=nKl1PihDxshPHtHNXYrROkFyo+NnuPdrhD98G0ACaQacfeRdoiLF8+aKvkcLXeNXVduMsyC2JdkFHhCPIMf2JWHu/DNzCS7LJ8JxKvtireKvkBKPBIkfYEMMi6OZZeI8lfGRaMQefeY3xviLq1ikjjx0B6O1Xyy+VBhjQLdcljw=;
-X-YMail-OSG: SyUggVgVM1kFLXAFEAWCKNiB2PUFZdeZJwg.FaH0r56LO6hu7AGM3eebLGudJHNTfgWld5d0WoBBkLgm9T9WEb41Yiwp2.yUgQlx
-Date: Wed, 15 Aug 2007 11:05:23 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: Thinking outside the box on file systems
-To: Kyle Moffett <mrmacman_g4@mac.com>, Phillip Susi <psusi@cfl.rr.com>
-Cc: Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
-       Marc Perkel <mperkel@yahoo.com>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-In-Reply-To: <DE34FF90-3143-4978-BBC5-3CF74B8C3C07@mac.com>
+	Wed, 15 Aug 2007 14:07:08 -0400
+Received: from gw.goop.org ([64.81.55.164]:56055 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752894AbXHOSHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 14:07:06 -0400
+Message-ID: <46C34043.1060203@goop.org>
+Date: Wed, 15 Aug 2007 11:04:51 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <824590.88264.qm@web52508.mail.re2.yahoo.com>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, ak@suse.de, mingo@elte.hu, chrisw@sous-sol.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
+       glommer@gmail.com
+Subject: Re: [PATCH 0/25][V3] pvops_64 last round (hopefully)
+References: <11871821854176-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11871821854176-git-send-email-gcosta@redhat.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle,
+Glauber de Oliveira Costa wrote:
+> This is hopefully the last iteration of the pvops64 patch.
+>
+> From the last version, we have only one change, which is include/asm-x86_64/processor.h: There were still one survivor in raw asm.
+> Also, git screwed me up for some reason, and the 25th patch was missing the new files, paravirt.{c,h}. (although I do remember having git-add'ed it, but who knows...)
+>
+> Andrew, could you please push it to -mm ?
 
-In this new system setfacl, chmod, chown, and chgrp
-all go away except inside of an emulation layer. File
-and directories no longer have permissions. People
-have permission to naming patterns. So if you put a
-file into a tree or move a tree then those who have
-permissions to the tree have access to the files. 
+Hm, I have a patch here to refactor the pv-ops interface into smaller
+pieces.  It needs a respin against 32-bit, and obviously 64-bit should
+be equivalent.  Its mostly a moving things around patch rather than a
+big semantic change, so changing the users of the interface is fairly
+straightforward.  I'll post it shortly, but if everyone agrees that its
+the way we want to go, we should probably start out with it on 64-bit.
 
-It eliminates the step of having to apply permission
-after moving files into a tree. You don't have to
-change file permissions because files no longer have
-permissions.
-
-
-Marc Perkel
-Junk Email Filter dot com
-http://www.junkemailfilter.com
-
-
-      ____________________________________________________________________________________
-Shape Yahoo! in your own image.  Join our Network Research Panel today!   http://surveylink.yahoo.com/gmrs/yahoo_panel_invite.asp?a=7 
-
-
+    J
