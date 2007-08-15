@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932600AbXHOJLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760546AbXHOJS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932600AbXHOJLt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 05:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759614AbXHOJLi
+	id S1760546AbXHOJS0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 05:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbXHOJSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 05:11:38 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:47615 "EHLO 2ka.mipt.ru"
+	Wed, 15 Aug 2007 05:18:17 -0400
+Received: from mx2.suse.de ([195.135.220.15]:56330 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758874AbXHOJLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 05:11:37 -0400
-Date: Wed, 15 Aug 2007 13:11:15 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>
-Subject: [1/1] w1: fix w1_remove_master_device() searching.
-Message-ID: <20070815091112.GB28320@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	id S1753671AbXHOJSQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 05:18:16 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Jason Uhlenkott <jasonuhl@jasonuhl.org>,
+       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kfree(0) - ok?
+References: <46C233CB.9000602@am.sony.com>
+	<1187132149.2618.2.camel@laptopd505.fenrus.org>
+	<20070814232107.GA4265@aurum.uhlenkott.net>
+	<Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr>
+X-Yow: Now that we're in LOVE, you can BUY this GOLDFISH for a 48% DISCOUNT.
+Date: Wed, 15 Aug 2007 11:18:09 +0200
+In-Reply-To: <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr>
+	(Jan Engelhardt's message of "Wed\, 15 Aug 2007 09\:28\:54 +0200 \(CEST\)")
+Message-ID: <jelkcdf966.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In case bus master driver provided bogus value as its private data,
-search can be incorrect. Problem found by Adrian Bunk.
+Jan Engelhardt <jengelh@computergmbh.de> writes:
 
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+> On Aug 14 2007 16:21, Jason Uhlenkott wrote:
+>>On Tue, Aug 14, 2007 at 15:55:48 -0700, Arjan van de Ven wrote:
+>>> NULL is not 0 though.
+>>
+>>It is.  Its representation isn't guaranteed to be all-bits-zero,
+>
+> C guarantees that.
 
-diff --git a/drivers/w1/w1_int.c b/drivers/w1/w1_int.c
-index 2fbd8dd..6840dfe 100644
---- a/drivers/w1/w1_int.c
-+++ b/drivers/w1/w1_int.c
-@@ -170,22 +170,24 @@ void __w1_remove_master_device(struct w1_master *dev)
- 
- void w1_remove_master_device(struct w1_bus_master *bm)
- {
--	struct w1_master *dev = NULL;
-+	struct w1_master *dev, *found = NULL;
- 
- 	list_for_each_entry(dev, &w1_masters, w1_master_entry) {
- 		if (!dev->initialized)
- 			continue;
- 
--		if (dev->bus_master->data == bm->data)
-+		if (dev->bus_master->data == bm->data) {
-+			found = dev;
- 			break;
-+		}
- 	}
- 
--	if (!dev) {
-+	if (!found) {
- 		printk(KERN_ERR "Device doesn't exist.\n");
- 		return;
- 	}
- 
--	__w1_remove_master_device(dev);
-+	__w1_remove_master_device(found);
- }
- 
- EXPORT_SYMBOL(w1_add_master_device);
+Linux C does it.  But not Standard C.
+
+Andreas.
 
 -- 
-	Evgeniy Polyakov
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
