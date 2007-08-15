@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763790AbXHOIRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764300AbXHOITR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763790AbXHOIRw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 04:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756595AbXHOIRd
+	id S1764300AbXHOITR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 04:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbXHOISu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 04:17:33 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41731 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753350AbXHOIRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 04:17:32 -0400
-Message-ID: <46C2B699.3080408@garzik.org>
-Date: Wed, 15 Aug 2007 04:17:29 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Wed, 15 Aug 2007 04:18:50 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:40813 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbXHOISr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 04:18:47 -0400
+Date: Wed, 15 Aug 2007 10:18:41 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Chris Snook <csnook@redhat.com>, satyam@infradead.org, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, davem@davemloft.net,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+	architectures
+Message-ID: <20070815081841.GA16551@osiris.boeblingen.de.ibm.com>
+References: <46C2350A.1010807@redhat.com> <E1ILCgh-00052A-00@gondolin.me.apana.org.au>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pata_artop: fix UDMA5 for AEC6280[R] and UDMA6 for AEC6880[R]
-References: <200708092319.34828.bzolnier@gmail.com>
-In-Reply-To: <200708092319.34828.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1ILCgh-00052A-00@gondolin.me.apana.org.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> Maximum supported UDMA mode for AEC6280[R] is UDMA5 (not UDMA4)
-> and for AEC6880[R] it is UDMA6 (not UDMA5):
+On Wed, Aug 15, 2007 at 02:49:03PM +0800, Herbert Xu wrote:
+> Chris Snook <csnook@redhat.com> wrote:
+> > 
+> > Because atomic operations are generally used for synchronization, which requires 
+> > volatile behavior.  Most such codepaths currently use an inefficient barrier(). 
+> >  Some forget to and we get bugs, because people assume that atomic_read() 
+> > actually reads something, and atomic_write() actually writes something.  Worse, 
+> > these are architecture-specific, even compiler version-specific bugs that are 
+> > often difficult to track down.
 > 
-> * Fix the problem by adding missing struct ata_port_info to artop_init_one().
-> 
-> * Use the right naming (s/626/628/).
-> 
-> * Bump driver version.
-> 
-> Fixes IDE->libata regression, problem was never present in IDE aec62xx driver.
-> 
-> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ata/pata_artop.c |   19 ++++++++++++++-----
->  1 file changed, 14 insertions(+), 5 deletions(-)
+> I'm yet to see a single example from the current tree where
+> this patch series is the correct solution.  So far the only
+> example has been a buggy piece of code which has since been
+> fixed with a cpu_relax.
 
-applied to #upstream-fixes
+Btw.: we still have
 
+include/asm-i386/mach-es7000/mach_wakecpu.h:  while (!atomic_read(deassert));
+include/asm-i386/mach-default/mach_wakecpu.h: while (!atomic_read(deassert));
 
+Looks like they need to be fixed as well.
