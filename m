@@ -1,57 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbXHOGxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758344AbXHOGz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757687AbXHOGxc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 02:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbXHOGxJ
+	id S1758344AbXHOGz1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 02:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbXHOGzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 02:53:09 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35772 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750731AbXHOGxG (ORCPT
+	Wed, 15 Aug 2007 02:55:05 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:3323 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753413AbXHOGy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 02:53:06 -0400
-Date: Wed, 15 Aug 2007 07:53:01 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Randy Dunlap <rddunlap@osdl.org>, Martin Bligh <mbligh@google.com>
-Subject: Re: [patch 2/2] Sort module list by pointer address to get coherent sleepable seq_file iterators
-Message-ID: <20070815065301.GK21089@ftp.linux.org.uk>
-References: <20070812150844.305211039@polymtl.ca> <20070812151039.996081605@polymtl.ca> <20070815033945.GA13134@mail.ustc.edu.cn> <20070815041845.GJ21089@ftp.linux.org.uk> <20070815063741.GB5175@mail.ustc.edu.cn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 15 Aug 2007 02:54:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sFPiGRfSaCaOVXDyUcM6w56rduPAmG4e5mgihbnAuv8M/cgjltQwlsTBkYhIH8I+Us2rokEh3KIFvjfGR2AhCKdPydSr0yxpyaekNys1ch823+FsyS/wOlYdEv3CsGkSP2eDfEOsLN/93e2Nfll+yBjcYSXpyZWzMLdPNtKA4uI=
+Message-ID: <4e5ebad50708142354l7a462684x7dbf84b4bac1fcb0@mail.gmail.com>
+Date: Wed, 15 Aug 2007 14:54:57 +0800
+From: "Sonic Zhang" <sonic.adi@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH again] [libata] libata driver for bf548 on chip ATAPI controller.
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4e5ebad50708142314o6bb64b6bocf75166cb9999205@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070815063741.GB5175@mail.ustc.edu.cn>
-User-Agent: Mutt/1.4.1i
+References: <1187056118.16255.1.camel@sevens.analog.com>
+	 <4e5ebad50708131925k28d283f4k5057d0902ddc10ae@mail.gmail.com>
+	 <20070814103013.6899813f@the-village.bc.nu>
+	 <4e5ebad50708142314o6bb64b6bocf75166cb9999205@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 02:37:41PM +0800, Fengguang Wu wrote:
-> static void *ct_seq_next(struct seq_file *s, void *v, loff_t *pos)
-> {
->         loff_t *spos = (loff_t *) v;
->         *pos = ++(*spos);
->         return spos;
-> }
-> 
-> I mean 'pos' is sometimes increased in ct_seq_next(), and sometimes from
-> seq_file.c/seq_read(), too. Thus we cannot reliably do this:
-> 
->         *pos = (*spos) + some_variable_offset;
+forgot to reply to all.
 
-Of course we can.  These guys can be sparse - note that ->start()
-takes a pointer, and for a good reason.  ->start(m, p, pos) should
-get the first entry with offset >= *pos (or NULL if we are done) and
-set *pos accordingly.
-
-That m->index++ is "we are done with the partial, step just past it, so
-that ->start() will pick the first real entry after it the next time it's
-called".
-
-For dense case we don't need to update *pos in ->start() - either
-we already have one with offset == *pos (and no update is needed),
-or we are finished and should return NULL.
-
-However, we have every right to live with sparse offsets; prototype of
-->start() had been done the way it's done exactly to allow that kind
-of use.
+On 8/15/07, Sonic Zhang <sonic.adi@gmail.com> wrote:
+> On 8/14/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > > +/**
+> > > + * Register transfer timing table
+> > > + */
+> >
+> > Libata has a complete set of transfer mode tables and timing functions -
+> > any reason for not using them ?
+>
+> These code are from the sample code in hardware manual. I will check
+> the libata source to see if I can rewrite them in libata functions.
+>
+> >
+> >
+> > > +                       /* increase tcyc - tdvs (tcyc_tdvs) until we
+> > > meed
+> > > +                        * the minimum cycle length
+> > > +                        */
+> > > +                       while ( (tdvs + tcyc_tdvs) < tcyc ) {
+> > > +                               tcyc_tdvs++;
+> > > +                       }
+> >
+> > Why not
+> >
+> >                         if ((tdvs + tcyc_tvds) < tcyc)
+> >                                 tcyc_tdvs = tcyc - tdvs;
+> >
+> > > +                       /* increase tk until we meed the minimum cycle
+> > > length */
+> > > +                       while ( (tkw+td) < n0 ) {
+> > > +                               tkw++;
+> > > +                       }
+> >
+> >
+> >                         if (tkw + td < n0)
+> >                                 tkw = n0 - td;
+> >
+> > (and fix up brackets)
+>
+> Yes, your suggestion is better.
+>
+> > >
+> > > +static void inline wait_complete(unsigned long base, unsigned short
+> > > mask)
+> > > +{
+> > > +       unsigned short status;
+> > > +
+> > > +       do {
+> > > +               status = ATAPI_GET_INT_STATUS(base) & mask;
+> > > +       } while (!status);
+> >
+> > Does this need a timeout or can a device write never get stuck ?
+>
+> The hardware manual says whenever an ATAPI operation is done or
+> terminated in error by the devices, a bit in the status register is
+> set. Is a timeout still necessary?
+>
+>
+> >
+> > > +static int bfin_port_start(struct ata_port *ap)
+> > > +{
+> > > +       pr_debug("in atapi port start\n");
+> > > +       if (ap->udma_mask != 0 || ap->mwdma_mask != 0) {
+> > > +               if (request_dma(CH_ATAPI_RX, "BFIN ATAPI RX DMA") >= 0)
+> > > {
+> > > +                       if (request_dma(CH_ATAPI_TX,
+> > > +                               "BFIN ATAPI TX DMA") >= 0) {
+> > > +                               return 0;
+> > > +                       }
+> > > +                       free_dma(CH_ATAPI_RX);
+> > > +               }
+> > > +               ap->udma_mask = 0;
+> > > +               ap->mwdma_mask = 0;
+> > > +               dev_err(ap->dev, "Unable to request ATAPI DMA!\n");
+> > > +               return -EBUSY;
+> >
+> > Is this an error case - if you clear the UDMA/MWDMA mask then DMA won't
+> > be needed will it so you can continue after the problem but slowly ?
+>
+> UDMA/MWDMA masks are set in ata_host_alloc_pinfo(), where it is
+> cleared? If these masks are cleared before port starts, this driver
+> falls back to PIO mode. Why this is an error case?
+>
+>
+> >
+> > Otherwise looks sound. A lot of reset method duplication but that isn't
+> > your fault and something that wants more work in libata to avoid
+> >
+> >
+>
