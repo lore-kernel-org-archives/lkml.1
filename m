@@ -1,126 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758344AbXHOGz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758003AbXHOHCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758344AbXHOGz1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 02:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbXHOGzF
+	id S1758003AbXHOHCu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 03:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXHOHCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 02:55:05 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:3323 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbXHOGy7 (ORCPT
+	Wed, 15 Aug 2007 03:02:40 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:34606 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752928AbXHOHCi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 02:54:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sFPiGRfSaCaOVXDyUcM6w56rduPAmG4e5mgihbnAuv8M/cgjltQwlsTBkYhIH8I+Us2rokEh3KIFvjfGR2AhCKdPydSr0yxpyaekNys1ch823+FsyS/wOlYdEv3CsGkSP2eDfEOsLN/93e2Nfll+yBjcYSXpyZWzMLdPNtKA4uI=
-Message-ID: <4e5ebad50708142354l7a462684x7dbf84b4bac1fcb0@mail.gmail.com>
-Date: Wed, 15 Aug 2007 14:54:57 +0800
-From: "Sonic Zhang" <sonic.adi@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH again] [libata] libata driver for bf548 on chip ATAPI controller.
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4e5ebad50708142314o6bb64b6bocf75166cb9999205@mail.gmail.com>
+	Wed, 15 Aug 2007 03:02:38 -0400
+Message-ID: <46C2A505.7040008@linux.vnet.ibm.com>
+Date: Wed, 15 Aug 2007 12:32:29 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+CC: linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [PATCH] Documentation: fix getdelays.c example -l option and
+ segv
+References: <18240.1186734285@neuling.org>
+In-Reply-To: <18240.1186734285@neuling.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1187056118.16255.1.camel@sevens.analog.com>
-	 <4e5ebad50708131925k28d283f4k5057d0902ddc10ae@mail.gmail.com>
-	 <20070814103013.6899813f@the-village.bc.nu>
-	 <4e5ebad50708142314o6bb64b6bocf75166cb9999205@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-forgot to reply to all.
+Michael Neuling wrote:
+> Fix a couple of minor issues with the getdelays.c example code. 
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+>  Documentation/accounting/getdelays.c |   21 +++++++++++----------
+>  1 file changed, 11 insertions(+), 10 deletions(-)
+> 
+> Index: linux-2.6-ozlabs/Documentation/accounting/getdelays.c
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/Documentation/accounting/getdelays.c
+> +++ linux-2.6-ozlabs/Documentation/accounting/getdelays.c
+> @@ -196,7 +196,7 @@ void print_delayacct(struct taskstats *t
+>  	       "IO    %15s%15s\n"
+>  	       "      %15llu%15llu\n"
+>  	       "MEM   %15s%15s\n"
+> -	       "      %15llu%15llu\n"
+> +	       "      %15llu%15llu\n",
 
-On 8/15/07, Sonic Zhang <sonic.adi@gmail.com> wrote:
-> On 8/14/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > > +/**
-> > > + * Register transfer timing table
-> > > + */
-> >
-> > Libata has a complete set of transfer mode tables and timing functions -
-> > any reason for not using them ?
->
-> These code are from the sample code in hardware manual. I will check
-> the libata source to see if I can rewrite them in libata functions.
->
-> >
-> >
-> > > +                       /* increase tcyc - tdvs (tcyc_tdvs) until we
-> > > meed
-> > > +                        * the minimum cycle length
-> > > +                        */
-> > > +                       while ( (tdvs + tcyc_tdvs) < tcyc ) {
-> > > +                               tcyc_tdvs++;
-> > > +                       }
-> >
-> > Why not
-> >
-> >                         if ((tdvs + tcyc_tvds) < tcyc)
-> >                                 tcyc_tdvs = tcyc - tdvs;
-> >
-> > > +                       /* increase tk until we meed the minimum cycle
-> > > length */
-> > > +                       while ( (tkw+td) < n0 ) {
-> > > +                               tkw++;
-> > > +                       }
-> >
-> >
-> >                         if (tkw + td < n0)
-> >                                 tkw = n0 - td;
-> >
-> > (and fix up brackets)
->
-> Yes, your suggestion is better.
->
-> > >
-> > > +static void inline wait_complete(unsigned long base, unsigned short
-> > > mask)
-> > > +{
-> > > +       unsigned short status;
-> > > +
-> > > +       do {
-> > > +               status = ATAPI_GET_INT_STATUS(base) & mask;
-> > > +       } while (!status);
-> >
-> > Does this need a timeout or can a device write never get stuck ?
->
-> The hardware manual says whenever an ATAPI operation is done or
-> terminated in error by the devices, a bit in the status register is
-> set. Is a timeout still necessary?
->
->
-> >
-> > > +static int bfin_port_start(struct ata_port *ap)
-> > > +{
-> > > +       pr_debug("in atapi port start\n");
-> > > +       if (ap->udma_mask != 0 || ap->mwdma_mask != 0) {
-> > > +               if (request_dma(CH_ATAPI_RX, "BFIN ATAPI RX DMA") >= 0)
-> > > {
-> > > +                       if (request_dma(CH_ATAPI_TX,
-> > > +                               "BFIN ATAPI TX DMA") >= 0) {
-> > > +                               return 0;
-> > > +                       }
-> > > +                       free_dma(CH_ATAPI_RX);
-> > > +               }
-> > > +               ap->udma_mask = 0;
-> > > +               ap->mwdma_mask = 0;
-> > > +               dev_err(ap->dev, "Unable to request ATAPI DMA!\n");
-> > > +               return -EBUSY;
-> >
-> > Is this an error case - if you clear the UDMA/MWDMA mask then DMA won't
-> > be needed will it so you can continue after the problem but slowly ?
->
-> UDMA/MWDMA masks are set in ata_host_alloc_pinfo(), where it is
-> cleared? If these masks are cleared before port starts, this driver
-> falls back to PIO mode. Why this is an error case?
->
->
-> >
-> > Otherwise looks sound. A lot of reset method duplication but that isn't
-> > your fault and something that wants more work in libata to avoid
-> >
-> >
->
+This change looks good!
+
+>  	       "count", "real total", "virtual total", "delay total",
+>  	       t->cpu_count, t->cpu_run_real_total, t->cpu_run_virtual_total,
+>  	       t->cpu_delay_total,
+> @@ -335,17 +335,17 @@ int main(int argc, char *argv[])
+>  		}
+>  	}
+> 
+> -	if (tid) {
+> -		rc = send_cmd(nl_sd, id, mypid, TASKSTATS_CMD_GET,
+> -			      cmd_type, &tid, sizeof(__u32));
+> -		PRINTF("Sent pid/tgid, retval %d\n", rc);
+> -		if (rc < 0) {
+> -			fprintf(stderr, "error sending tid/tgid cmd\n");
+> -			goto done;
+> +	do {
+> +		if (tid) {
+> +			rc = send_cmd(nl_sd, id, mypid, TASKSTATS_CMD_GET,
+> +				      cmd_type, &tid, sizeof(__u32));
+> +			PRINTF("Sent pid/tgid, retval %d\n", rc);
+> +			if (rc < 0) {
+> +				fprintf(stderr, "error sending tid/tgid cmd\n");
+> +				goto done;
+> +			}
+>  		}
+> -	}
+> 
+> -	do {
+>  		int i;
+> 
+>  		rep_len = recv(nl_sd, &msg, sizeof(msg), 0);
+> @@ -430,6 +430,7 @@ int main(int argc, char *argv[])
+>  			}
+>  			na = (struct nlattr *) (GENLMSG_DATA(&msg) + len);
+>  		}
+> +		sleep(2);
+
+Is this really required? a sleep() in the code. Why do we do multiple send_cmd()'s
+in the do loop? I'll test and get back.
+
+>  	} while (loop);
+>  done:
+>  	if (maskset) {
+> 
+> 
+> 
+> 
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
