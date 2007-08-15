@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762731AbXHOM5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763460AbXHOM6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762731AbXHOM5x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 08:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761893AbXHOMyM
+	id S1763460AbXHOM6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 08:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761471AbXHOMye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 08:54:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55922 "EHLO mx1.redhat.com"
+	Wed, 15 Aug 2007 08:54:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56067 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759536AbXHOMyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 08:54:11 -0400
+	id S1761628AbXHOMyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 08:54:32 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
@@ -17,77 +17,50 @@ Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
        lguest@ozlabs.org, glommer@gmail.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 16/25][V3] turn page operations into native versions
-Date: Wed, 15 Aug 2007 09:49:36 -0300
-Message-Id: <11871823782610-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 17/25][V3] introduce paravirt_release_pgd()
+Date: Wed, 15 Aug 2007 09:49:37 -0300
+Message-Id: <11871823892519-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11871823673236-git-send-email-gcosta@redhat.com>
-References: <11871821854176-git-send-email-gcosta@redhat.com> <1187182197314-git-send-email-gcosta@redhat.com> <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <11871822244170-git-send-email-gcosta@redhat.com> <11871822342754-git-send-email-gcosta@redhat.com> <11871822421713-git-send-email-gcosta@redhat.com> <1187182253740-git-send-email-gcosta@redhat.com> <1187182268408-git-send-email-gcosta@redhat.com> <1187182282913-git-send-email-gcosta@redhat.com> <11871822951747-git-send-email-gcosta@redhat.com> <11871823042011-git-send-email-gcosta@redhat.com> <11871823151789-git-send-email-gcosta@redhat.com> <11871823273810-git-send-email-gcosta@redhat.com> <11871823373106-git-send-email-gcosta@redhat.com> <11871823673236-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11871823782610-git-send-email-gcosta@redhat.com>
+References: <11871821854176-git-send-email-gcosta@redhat.com> <1187182197314-git-send-email-gcosta@redhat.com> <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <11871822244170-git-send-email-gcosta@redhat.com> <11871822342754-git-send-email-gcosta@redhat.com> <11871822421713-git-send-email-gcosta@redhat.com> <1187182253740-git-send-email-gcosta@redhat.com> <1187182268408-git-send-email-gcosta@redhat.com> <1187182282913-git-send-email-gcosta@redhat.com> <11871822951747-git-send-email-gcosta@redhat.com> <11871823042011-git-send-email-gcosta@redhat.com> <11871823151789-git-send-email-gcosta@redhat.com> <11871823273810-git-send-email-gcosta@redhat.com> <11871823373106-git-send-email-gcosta@redhat.com> <11871823673236-git-send-email-gcosta@redhat.com> <11871823782610-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch turns the page operations (set and make a page table)
-into native_ versions. The operations itself will be later
-overriden by paravirt.
+This patch introduces a new macro/function that informs a paravirt
+guest when its page table is not more in use, and can be released.
+In case we're not paravirt, just do nothing.
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/asm-x86_64/page.h |   36 +++++++++++++++++++++++++++++++-----
- 1 files changed, 31 insertions(+), 5 deletions(-)
+ include/asm-x86_64/pgalloc.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/include/asm-x86_64/page.h b/include/asm-x86_64/page.h
-index 88adf1a..ec8b245 100644
---- a/include/asm-x86_64/page.h
-+++ b/include/asm-x86_64/page.h
-@@ -64,16 +64,42 @@ typedef struct { unsigned long pgprot; } pgprot_t;
+diff --git a/include/asm-x86_64/pgalloc.h b/include/asm-x86_64/pgalloc.h
+index b467be6..dbe1267 100644
+--- a/include/asm-x86_64/pgalloc.h
++++ b/include/asm-x86_64/pgalloc.h
+@@ -9,6 +9,12 @@
+ #define QUICK_PGD 0	/* We preserve special mappings over free */
+ #define QUICK_PT 1	/* Other page table pages that are zero on free */
  
- extern unsigned long phys_base;
- 
--#define pte_val(x)	((x).pte)
--#define pmd_val(x)	((x).pmd)
--#define pud_val(x)	((x).pud)
--#define pgd_val(x)	((x).pgd)
--#define pgprot_val(x)	((x).pgprot)
-+static inline unsigned long native_pte_val(pte_t pte)
-+{
-+	return pte.pte;
-+}
-+
-+static inline unsigned long native_pud_val(pud_t pud)
-+{
-+	return pud.pud;
-+}
-+
-+
-+static inline unsigned long native_pmd_val(pmd_t pmd)
-+{
-+	return pmd.pmd;
-+}
-+
-+static inline unsigned long native_pgd_val(pgd_t pgd)
-+{
-+	return pgd.pgd;
-+}
-+
 +#ifdef CONFIG_PARAVIRT
 +#include <asm/paravirt.h>
 +#else
-+#define pte_val(x)	native_pte_val(x)
-+#define pmd_val(x)	native_pmd_val(x)
-+#define pud_val(x)	native_pud_val(x)
-+#define pgd_val(x)	native_pgd_val(x)
- 
- #define __pte(x) ((pte_t) { (x) } )
- #define __pmd(x) ((pmd_t) { (x) } )
- #define __pud(x) ((pud_t) { (x) } )
- #define __pgd(x) ((pgd_t) { (x) } )
-+#endif /* CONFIG_PARAVIRT */
++#define paravirt_release_pgd(pgd) do { } while (0)
++#endif
 +
-+#define pgprot_val(x)	((x).pgprot)
- #define __pgprot(x)	((pgprot_t) { (x) } )
+ #define pmd_populate_kernel(mm, pmd, pte) \
+ 		set_pmd(pmd, __pmd(_PAGE_TABLE | __pa(pte)))
+ #define pud_populate(mm, pud, pmd) \
+@@ -100,6 +106,7 @@ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+ static inline void pgd_free(pgd_t *pgd)
+ {
+ 	BUG_ON((unsigned long)pgd & (PAGE_SIZE-1));
++	paravirt_release_pgd(pgd);
+ 	quicklist_free(QUICK_PGD, pgd_dtor, pgd);
+ }
  
- #endif /* !__ASSEMBLY__ */
 -- 
 1.4.4.2
 
