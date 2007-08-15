@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934046AbXHORB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764339AbXHORCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934046AbXHORB1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 13:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760519AbXHORBG
+	id S1764339AbXHORCA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 13:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762436AbXHORBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 13:01:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53721 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757599AbXHORBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 13:01:04 -0400
-Message-ID: <46C3312D.40106@redhat.com>
-Date: Wed, 15 Aug 2007 14:00:29 -0300
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Wed, 15 Aug 2007 13:01:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60334 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763475AbXHORBj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 13:01:39 -0400
+Date: Wed, 15 Aug 2007 22:43:37 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Chris Snook <csnook@redhat.com>, clameter@sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <20070815162722.GD9645@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.0.999.0708152233090.16414@enigma.security.iitk.ac.in>
+References: <46C2350A.1010807@redhat.com> <E1ILCgh-00052A-00@gondolin.me.apana.org.au>
+ <20070815081841.GA16551@osiris.boeblingen.de.ibm.com> <46C30540.2070603@s5r6.in-berlin.de>
+ <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in>
+ <20070815145207.GA23106@gondor.apana.org.au> <46C3253F.5090707@s5r6.in-berlin.de>
+ <20070815162722.GD9645@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: Andi Kleen <ak@suse.de>, Glauber de Oliveira Costa <glommer@gmail.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, mingo@elte.hu, jeremy@goop.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       lguest@ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
-       kiran@scalemp.com, shai@scalemp.com
-Subject: Re: [PATCH 3/25][V3] irq_flags / halt routines
-References: <11871821854176-git-send-email-gcosta@redhat.com> <1187182197314-git-send-email-gcosta@redhat.com> <11871822062386-git-send-email-gcosta@redhat.com> <11871822163867-git-send-email-gcosta@redhat.com> <20070815135554.GE3406@bingen.suse.de> <5d6222a80708150718v14f26343q7467385e7919fa76@mail.gmail.com> <20070815154243.GH3406@bingen.suse.de> <46C31736.2050001@redhat.com> <20070815163640.GJ3406@bingen.suse.de> <46C3283B.5090804@redhat.com> <20070815164729.GU3672@sequoia.sous-sol.org>
-In-Reply-To: <20070815164729.GU3672@sequoia.sous-sol.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright escreveu:
-> * Glauber de Oliveira Costa (gcosta@redhat.com) wrote:
->> As alternatives what we have now, we can either keep the paravirt_ops as 
->> it is now for the native case, just hooking the vsmp functions in place 
->> of the normal one, (there are just three ops anyway), refill the 
->> paravirt_ops entirely in somewhere like vsmp.c, or similar (or maybe 
->> even assigning paravirt_ops.fn = vsmp_fn on the fly, but early enough).
 
-It will definitely keep the code shorter, and to be honest, I'd feel 
-more confortable with (since I don't know the subtles of the architecture).
 
-Only caveat, is that it has to be done before smp gets in the game, and 
-with interrupts disabled. (which makes the function in vsmp.c not eligible).
+On Wed, 15 Aug 2007, Paul E. McKenney wrote:
 
-My current option is to force VSMP to use PARAVIRT, as said before, and 
-then fill paravirt_arch_setup, which is currently unused, with code to 
-replace the needed paravirt_ops.fn.
+> On Wed, Aug 15, 2007 at 06:09:35PM +0200, Stefan Richter wrote:
+> > Herbert Xu wrote:
+> > > On Wed, Aug 15, 2007 at 08:05:38PM +0530, Satyam Sharma wrote:
+> > >>> I don't know if this here is affected:
+> > 
+> > [...something like]
+> > 	b = atomic_read(a);
+> > 	for (i = 0; i < 4; i++) {
+> > 		msleep_interruptible(63);
+> > 		c = atomic_read(a);
+> > 		if (c != b) {
+> > 			b = c;
+> > 			i = 0;
+> > 		}
+> > 	}
+> > 
+> > > Nope, we're calling schedule which is a rather heavy-weight
+> > > barrier.
+> > 
+> > How does the compiler know that msleep() has got barrier()s?
+> 
+> Because msleep_interruptible() is in a separate compilation unit,
+> the compiler has to assume that it might modify any arbitrary global.
+> In many cases, the compiler also has to assume that msleep_interruptible()
+> might call back into a function in the current compilation unit, thus
+> possibly modifying global static variables.
 
-I don't know if there is any method to dynamically determine (at this 
-point) that we are in a vsmp arch, and if there are not, it will have to 
-get ifdefs anyway. But at least, they are far more local.
-
-> This is the best (just override pvops.fn for the few needed for VSMP).
-> The irq_disabled_flags() is the only problem.  For i386 we dropped it
-> (disabled_flags) as a pvop and forced the backend to provide a flags
-> (via save_flags) that conforms to IF only.
-
-I am okay with both, but after all the explanation, I don't think that 
-adding a new pvops is a bad idea. It would make things less cumbersome 
-in this case. Also, hacks like this save_fl may require changes to the 
-hypervisor, right? I don't even know where such hypervisor is, and how 
-easy it is to replace it (it may be deeply hidden in firmware)
-
-A question raises here: Would vsmp turn paravirt_enabled to 1 ?
+Yup, I've just verified this with a testcase. So a call to any function
+outside of the current compilation unit acts as a compiler barrier. Cool.
