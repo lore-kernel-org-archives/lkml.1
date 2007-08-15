@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762887AbXHOIke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763950AbXHOImH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762887AbXHOIke (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 04:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756205AbXHOIkS
+	id S1763950AbXHOImH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 04:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbXHOIlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 04:40:18 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3328 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755249AbXHOIkQ (ORCPT
+	Wed, 15 Aug 2007 04:41:51 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:51588 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754760AbXHOIlu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 04:40:16 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: ak@suse.de (Andi Kleen)
-Subject: Re: [patch 1/2] i386: use asm() like the other atomic operations already do.
-Cc: sebastian@breakpoint.cc, linux-kernel@vger.kernel.org, ak@suse.de
-Organization: Core
-In-Reply-To: <20070815002034.GW3406@bingen.suse.de>
-X-Newsgroups: apana.lists.os.linux.kernel
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1ILEQ8-0005H5-00@gondolin.me.apana.org.au>
-Date: Wed, 15 Aug 2007 16:40:04 +0800
+	Wed, 15 Aug 2007 04:41:50 -0400
+Message-ID: <46C2BB60.6010909@gmail.com>
+Date: Wed, 15 Aug 2007 10:37:52 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Jason Uhlenkott <jasonuhl@jasonuhl.org>,
+       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kfree(0) - ok?
+References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org> <20070814232107.GA4265@aurum.uhlenkott.net> <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0708150928200.19270@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> wrote:
->> My config with march=pentium-m and gcc (GCC) 4.1.2 (Gentoo 4.1.2):
->>   text    data     bss     dec     hex filename
->> 3434150  249176  176128 3859454  3ae3fe atomic_normal/vmlinux
->> 3435308  249176  176128 3860612  3ae884 atomic_inlineasm/vmlinux
+On 08/15/2007 09:28 AM, Jan Engelhardt wrote:
+
+> On Aug 14 2007 16:21, Jason Uhlenkott wrote:
+
+>> On Tue, Aug 14, 2007 at 15:55:48 -0700, Arjan van de Ven wrote:
+>>> NULL is not 0 though.
+>> It is.  Its representation isn't guaranteed to be all-bits-zero,
 > 
-> What is the difference between atomic_normal and atomic_inlineasm? 
+> C guarantees that.
 
-The inline asm stops certain optimisations from occuring.
+C guarantees what? If you're disagreeing with Jason -- he's right.
 
-I'm still unconvinced why we need this because nobody has
-brought up any examples of kernel code that legitimately
-need this.
+>> but the constant value 0 when used in pointer context is always a
+>> null pointer (and in fact the standard requires that NULL be
+>> #defined as 0 or a cast thereof).
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Rene.
