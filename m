@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936035AbXHOXE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936631AbXHOXGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936035AbXHOXE5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 19:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760628AbXHOXEr
+	id S936631AbXHOXGV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 19:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759879AbXHOXGC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 19:04:47 -0400
-Received: from www.osadl.org ([213.239.205.134]:38988 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759900AbXHOXEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 19:04:46 -0400
-Subject: Re: [PATCH] Use num_possible_cpus() instead of NR_CPUS for timer
-	distribution
-From: Thomas Gleixner <tglx@linutronix.de>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1187217977.6062.23.camel@localhost.localdomain>
-References: <1187217977.6062.23.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 16 Aug 2007 01:04:43 +0200
-Message-Id: <1187219083.7007.3.camel@chaos>
+	Wed, 15 Aug 2007 19:06:02 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44327
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756504AbXHOXGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 19:06:00 -0400
+Date: Wed, 15 Aug 2007 16:05:57 -0700 (PDT)
+Message-Id: <20070815.160557.104645231.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] Add ETHTOOL_[GS]FLAGS sub-ioctls
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <46BCD0F1.8040006@garzik.org>
+References: <20070810202426.GA25050@havoc.gtf.org>
+	<46BCD0F1.8040006@garzik.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-15 at 15:46 -0700, john stultz wrote:
-> Andrew requested this fixup awhile back, and I just now got to it
-> (apologies for being slow).
+From: Jeff Garzik <jeff@garzik.org>
+Date: Fri, 10 Aug 2007 16:56:17 -0400
+
+> All this is currently checked into the 'eflags' branch of
+> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
 > 
-> To avoid lock contention, we distribute the sched_timer calls across the
-> cpus so they do not trigger at the same instant. However, I used
-> NR_CPUS, which can cause needless grouping on small smp systems
-> depending on your kernel config. This patch converts to using
-> num_possible_cpus() so we spread it as evenly as possible on every
-> machine.
-> 
-> Briefly tested w/ NR_CPUS=255 and verified reduced contention.
->
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> But when everybody is happy with it, IMO we should get it into 
+> net-2.6.24.git, as it enables LRO.
 
-Doh, I missed this as well
+I've backed out the ETHTOOL LRO stuff from Auke, and applied your
+patches to net-2.6.24
 
-Acked-by: Thomas Gleixner <tglx@linutronix,de>
-
-> 
-> Index: 2.6-rt/kernel/time/tick-sched.c
-> ===================================================================
-> --- 2.6-rt.orig/kernel/time/tick-sched.c
-> +++ 2.6-rt/kernel/time/tick-sched.c
-> @@ -586,7 +586,7 @@ void tick_setup_sched_timer(void)
->  	/* Get the next period (per cpu) */
->  	ts->sched_timer.expires = tick_init_jiffy_update();
->  	offset = ktime_to_ns(tick_period) >> 1;
-> -	do_div(offset, NR_CPUS);
-> +	do_div(offset, num_possible_cpus());
->  	offset *= smp_processor_id();
->  	ts->sched_timer.expires = ktime_add_ns(ts->sched_timer.expires, offset);
-
+We can get rid of that NETIF_F_LRO thing, since as you observed
+it is indeed superfluous.
 
