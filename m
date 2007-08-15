@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936052AbXHOT6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936175AbXHOT7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936052AbXHOT6n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 15:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbXHOT6g
+	id S936175AbXHOT7a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 15:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765793AbXHOT7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 15:58:36 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43886 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754475AbXHOT6f (ORCPT
+	Wed, 15 Aug 2007 15:59:08 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43683 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764310AbXHOT7F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 15:58:35 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46C35AE1.3020904@s5r6.in-berlin.de>
-Date: Wed, 15 Aug 2007 21:58:25 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Satyam Sharma <satyam@infradead.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
+	Wed, 15 Aug 2007 15:59:05 -0400
+Date: Wed, 15 Aug 2007 12:59:01 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Satyam Sharma <satyam@infradead.org>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       ak@suse.de, heiko.carstens@de.ibm.com, davem@davemloft.net,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org, Herbert Xu <herbert@gondor.apana.org.au>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
  architectures
-References: <46C2350A.1010807@redhat.com> <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <20070815081841.GA16551@osiris.boeblingen.de.ibm.com> <46C30540.2070603@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <46C2D6F3.3070707@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0708151258340.7326@schroedinger.engr.sgi.com>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2D6F3.3070707@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(trimmed Cc)
+On Wed, 15 Aug 2007, Stefan Richter wrote:
 
-Satyam Sharma wrote:
-> [PATCH] ieee1394: Fix kthread stopping in nodemgr_host_thread
+> LDD3 says on page 125:  "The following operations are defined for the
+> type [atomic_t] and are guaranteed to be atomic with respect to all
+> processors of an SMP computer."
 > 
-> The nodemgr host thread can exit on its own even when kthread_should_stop
-> is not true, on receiving a signal (might never happen in practice, as
-> it ignores signals). But considering kthread_stop() must not be mixed with
-> kthreads that can exit on their own, I think changing the code like this
-> is clearer. This change means the thread can cut its sleep short when
-> receive a signal but looking at the code around, that sounds okay (and
-> again, it might never actually recieve a signal in practice).
+> Doesn't "atomic WRT all processors" require volatility?
 
-Thanks, committed to linux1394-2.6.git.
--- 
-Stefan Richter
--=====-=-=== =--- -====
-http://arcgraph.de/sr/
+Atomic operations only require exclusive access to the cacheline while the 
+value is modified.
+
+
