@@ -1,65 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761613AbXHONaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbXHONf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761613AbXHONaw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 09:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbXHONaZ
+	id S1759939AbXHONf3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 09:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbXHONfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 09:30:25 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:49534 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754025AbXHONaW (ORCPT
+	Wed, 15 Aug 2007 09:35:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36339 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755193AbXHONfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 09:30:22 -0400
-Date: Wed, 15 Aug 2007 09:30:21 -0400
-To: Michael Tharp <gxti@partiallystapled.com>
-Cc: alan <alan@clueserver.org>, Marc Perkel <mperkel@yahoo.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Thinking outside the box on file systems
-Message-ID: <20070815133021.GB9412@csclub.uwaterloo.ca>
-References: <106259.96671.qm@web52501.mail.re2.yahoo.com> <Pine.LNX.4.64.0708141546510.22494@blackbox.fnordora.org> <46C2F96D.5030908@partiallystapled.com>
+	Wed, 15 Aug 2007 09:35:10 -0400
+Date: Wed, 15 Aug 2007 19:17:29 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <46C2FADB.7020407@s5r6.in-berlin.de>
+Message-ID: <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+ <46C2FADB.7020407@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46C2F96D.5030908@partiallystapled.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 09:02:37AM -0400, Michael Tharp wrote:
-> This jumped out at me right away. In such a system, an attacker with
-> write permissions on a "sticky" directory like /tmp could probe for
-> others' files by attempting to create them and recording all cases where
-> permission was denied due to an existing, hidden file. But of course,
-> this was just an example of something a less UNIX-y permission scheme
-> could do, not a key part of such a design.
+
+
+On Wed, 15 Aug 2007, Stefan Richter wrote:
+
+> Satyam Sharma wrote:
+> > On Wed, 15 Aug 2007, Stefan Richter wrote:
+> >> Doesn't "atomic WRT all processors" require volatility?
+> > 
+> > No, it definitely doesn't. Why should it?
+> > 
+> > "Atomic w.r.t. all processors" is just your normal, simple "atomicity"
+> > for SMP systems (ensure that that object is modified / set / replaced
+> > in main memory atomically) and has nothing to do with "volatile"
+> > behaviour.
+> > 
+> > "Volatile behaviour" itself isn't consistently defined (at least
+> > definitely not consistently implemented in various gcc versions across
+> > platforms), but it is /expected/ to mean something like: "ensure that
+> > every such access actually goes all the way to memory, and is not
+> > re-ordered w.r.t. to other accesses, as far as the compiler can take
+> > care of these". The last "as far as compiler can take care" disclaimer
+> > comes about due to CPUs doing their own re-ordering nowadays.
+> > 
+> > For example (say on i386):
 > 
-> Personally, what I'd like to see is a better way of dealing with
-> propagation of ownership. Currently, in order to allow "collaboration"
-> directories where a directory tree is owned by a certain group and
-> anyone in that group can write and create files, one has to change the
-> system umask, use a magical bit on the collaboration directory to
-> propagate group ownership, and create a group for every user on the
-> system in order to keep their personal files safe with the new umask.
-> This seems highly flawed. I suggest that propagation of group ownership
-> should be the default mode, not a special one, and that the
-> group-writable permissions should also be propagated to new files and
-> directories. This way, the user's home directory would remain 0755,
-> while the collaboration directory could be 0775, without any changing of
-> umasks.
+> [...]
 > 
-> Of course, this would go against tradition, and cause some mayhem in the
-> logic responsible for magically determining permissions for new files,
-> but since we're talking about thinking outside of the box, I think
-> that's excusable :)
+> > In (A) the compiler optimized "a = 10;" away, but the actual store
+> > of the final value "20" to "a" was still "atomic". (B) and (C) also
+> > exhibit "volatile" behaviour apart from the "atomicity".
+> > 
+> > But as others replied, it seems some callers out there depend upon
+> > atomic ops exhibiting "volatile" behaviour as well, so that answers
+> > my initial question, actually. I haven't looked at the code Paul
+> > pointed me at, but I wonder if that "forget(x)" macro would help
+> > those cases. I'd wish to avoid the "volatile" primitive, personally.
+> 
+> So, looking at load instead of store, understand I correctly that in
+> your opinion
+> 
+> 	int b;
+> 
+> 	b = atomic_read(&a);
+> 	if (b)
+> 		do_something_time_consuming();
+> 
+> 	b = atomic_read(&a);
+> 	if (b)
+> 		do_something_more();
+> 
+> should be changed to explicitly forget(&a) after
+> do_something_time_consuming?
 
-Posix ACLs seem to solve most group permissions issues and control of
-permission propegation.  It actually works quite well on Linux.  I am
-surprised if there aren't lots of people already using it.
+No, I'd actually prefer something like what Christoph Lameter suggested,
+i.e. users (such as above) who want "volatile"-like behaviour from atomic
+ops can use alternative functions. How about something like:
 
-Remember that existing software expects a unix style interface, since
-they are unix programs.  Anything you invent MUST be compatible with the
-standard unix view of things, even if it offers additional options.
+#define atomic_read_volatile(v)			\
+	({					\
+		forget(&(v)->counter);		\
+		((v)->counter);			\
+	})
 
---
-Len Sorensen
+Or possibly, implement these "volatile" atomic ops variants in inline asm
+like the patch that Sebastian Siewior has submitted on another thread just
+a while back.
+
+Of course, if we find there are more callers in the kernel who want the
+volatility behaviour than those who don't care, we can re-define the
+existing ops to such variants, and re-name the existing definitions to
+somethine else, say "atomic_read_nonvolatile" for all I care.
