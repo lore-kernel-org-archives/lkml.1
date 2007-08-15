@@ -1,71 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030270AbXHOXXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964818AbXHOXaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030270AbXHOXXa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 19:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764019AbXHOXWy
+	id S964818AbXHOXaw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 19:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762852AbXHOXaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 19:22:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:60506 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937230AbXHOXWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 19:22:51 -0400
+	Wed, 15 Aug 2007 19:30:39 -0400
+Received: from rune.sasl.smtp.pobox.com ([208.210.124.37]:47143 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759412AbXHOXah (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 19:30:37 -0400
+X-Greylist: delayed 375 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Aug 2007 19:30:37 EDT
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.2.5
+Cc: linux-kernel@vger.kernel.org
+Date: Wed, 15 Aug 2007 16:24:16 -0700
+Message-ID: <7vr6m4mlen.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18115.35524.56393.347841@cargo.ozlabs.ibm.com>
-Date: Thu, 16 Aug 2007 09:22:44 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
-References: <20070809131423.GA9927@shell.boston.redhat.com>
-	<Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
-	<alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
-	<46C2D6F3.3070707@s5r6.in-berlin.de>
-	<alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma writes:
+The latest maintenance release GIT 1.5.2.5 is available at the
+usual places:
 
-> > Doesn't "atomic WRT all processors" require volatility?
-> 
-> No, it definitely doesn't. Why should it?
-> 
-> "Atomic w.r.t. all processors" is just your normal, simple "atomicity"
-> for SMP systems (ensure that that object is modified / set / replaced
-> in main memory atomically) and has nothing to do with "volatile"
-> behaviour.
+  http://www.kernel.org/pub/software/scm/git/
 
-Atomic variables are "volatile" in the sense that they are liable to
-be changed at any time by mechanisms that are outside the knowledge of
-the C compiler, namely, other CPUs, or this CPU executing an interrupt
-routine.
+  git-1.5.2.5.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.2.5.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.2.5.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.2.5-1.$arch.rpm	(RPM)
 
-In the kernel we use atomic variables in precisely those situations
-where a variable is potentially accessed concurrently by multiple
-CPUs, and where each CPU needs to see updates done by other CPUs in a
-timely fashion.  That is what they are for.  Therefore the compiler
-must not cache values of atomic variables in registers; each
-atomic_read must result in a load and each atomic_set must result in a
-store.  Anything else will just lead to subtle bugs.
+Although 1.5.3 has been in -rc cycle for quite some time, there
+was a rather nasty data corruption bug discovered, so here is
+primarily to push that fix out.
 
-I have no strong opinion about whether or not the best way to achieve
-this is through the use of the "volatile" C keyword.  Segher's idea of
-using asm instead seems like a good one to me.
+When "git add -u $paths" records ONLY removes in a directory,
+your next "git write-tree" will write out a bogus tree object
+and cause your commit not to match the reality.
 
-Paul.
+
+GIT v1.5.2.5 Release Notes
+==========================
+
+Fixes since v1.5.2.4
+--------------------
+
+ * Bugfixes
+
+   - "git add -u" had a serious data corruption problem in one
+     special case (when the changes to a subdirectory's files
+     consist only deletion of files).
+
+   - "git add -u <path>" did not work from a subdirectory.
+
+   - "git apply" left an empty directory after all its files are
+     renamed away.
+
+   - "git $anycmd foo/bar", when there is a file 'foo' in the
+     working tree, complained that "git $anycmd foo/bar --" form
+     should be used to disambiguate between revs and files,
+     which was completely bogus.
+
+   - "git checkout-index" and other commands that checks out
+     files to the work tree tried unlink(2) on directories,
+     which is a sane thing to do on sane systems, but not on
+     Solaris when you are root.
+
+ * Documentation Fixes and Updates
+
+   - A handful documentation fixes.
+
+----------------------------------------------------------------
+
+Changes since v1.5.2.4 are as follows:
+
+Christian Couder (1):
+      rev-list --bisect: fix allocation of "int*" instead of "int".
+
+Julian Phillips (1):
+      Force listingblocks to be monospaced in manpages
+
+Junio C Hamano (4):
+      Do not expect unlink(2) to fail on a directory.
+      setup.c:verify_non_filename(): don't die unnecessarily while disambiguating
+      Fix "git add -u" data corruption.
+      GIT 1.5.2.5
+
+Linus Torvalds (1):
+      apply: remove directory that becomes empty by renaming the last file away
+
+Salikh Zakirov (1):
+      git-add -u paths... now works from subdirectory
+
