@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755681AbXHOUjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935538AbXHOUjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755681AbXHOUjR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 16:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935457AbXHOUio
+	id S935538AbXHOUjr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 16:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758503AbXHOUjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 16:38:44 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:34522 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935335AbXHOUik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 16:38:40 -0400
-Date: Wed, 15 Aug 2007 13:38:36 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
-Message-ID: <20070815203836.GO9645@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070809134150.GA14890@shell.boston.redhat.com> <2708.1186737826@redhat.com> <7680.1186822071@redhat.com> <46BFFDBD.6080804@redhat.com> <46C140DD.3060509@yahoo.com.au> <2cbda24e96a49c3ab7cf7039c515f9fc@kernel.crashing.org> <20070815191829.GJ9645@linux.vnet.ibm.com> <369924c4b3132a4b06258b7ac81b1006@kernel.crashing.org> <20070815195915.GL9645@linux.vnet.ibm.com> <d2cd1065faf8a13040e8a2405c363aa1@kernel.crashing.org>
+	Wed, 15 Aug 2007 16:39:00 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46231 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935963AbXHOUi6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 16:38:58 -0400
+Date: Wed, 15 Aug 2007 13:38:56 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Serge E. Hallyn" <serge@hallyn.com>
+cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, bob.picco@hp.com,
+       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
+       akpm@linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       ckrm-tech <ckrm-tech@lists.sourceforge.net>
+Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
+In-Reply-To: <20070815163142.GA12850@vino.hallyn.com>
+Message-ID: <Pine.LNX.4.64.0708151338140.7628@schroedinger.engr.sgi.com>
+References: <20070814180339.GA32553@vino.hallyn.com> <1187115224.6281.40.camel@localhost>
+ <20070814192306.GB32553@vino.hallyn.com> <20070814204951.GA2065@vino.hallyn.com>
+ <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
+ <1187127685.6281.139.camel@localhost> <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
+ <1187185392.5422.13.camel@localhost> <20070815143125.GA11582@vino.hallyn.com>
+ <1187195028.5422.30.camel@localhost> <20070815163142.GA12850@vino.hallyn.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d2cd1065faf8a13040e8a2405c363aa1@kernel.crashing.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 10:13:49PM +0200, Segher Boessenkool wrote:
-> >>>>>Well if there is only one memory location involved, then smp_rmb()
-> >>>>>isn't
-> >>>>>going to really do anything anyway, so it would be incorrect to use
-> >>>>>it.
-> >>>>
-> >>>>rmb() orders *any* two reads; that includes two reads from the same
-> >>>>location.
-> >>>
-> >>>If the two reads are to the same location, all CPUs I am aware of
-> >>>will maintain the ordering without need for a memory barrier.
-> >>
-> >>That's true of course, although there is no real guarantee for that.
-> >
-> >A CPU that did not provide this property ("cache coherence") would be
-> >most emphatically reviled.
-> 
-> That doesn't have anything to do with coherency as far as I can see.
-> 
-> It's just about the order in which a CPU (speculatively) performs the 
-> loads
-> (which isn't necessarily the same as the order in which it executes the
-> corresponding instructions, even).
+On Wed, 15 Aug 2007, Serge E. Hallyn wrote:
 
-Please check the definition of "cache coherence".
+> > Index: Linux/mm/page_alloc.c
+> > ===================================================================
+> > --- Linux.orig/mm/page_alloc.c	2007-08-15 10:01:23.000000000 -0400
+> > +++ Linux/mm/page_alloc.c	2007-08-15 10:05:41.000000000 -0400
+> > @@ -52,7 +52,14 @@
+> >   */
+> >  nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
+> >  	[N_POSSIBLE] = NODE_MASK_ALL,
+> > -	[N_ONLINE] = { { [0] = 1UL } }
+> > +	[N_ONLINE] = { { [0] = 1UL } },
+> > +#ifndef CONFIG_NUMA
+> > +	[N_NORMAL_MEMORY] = { { [0] = 1UL } },
+> > +#ifdef CONFIG_HIGHMEM
+> > +	[N_HIGH_MEMORY] = { { [0] = 1UL } },
+> > +#endif
+> > +	[N_CPU] = { { [0] = 1UL } },
+> > +#endif	/* NUMA */
+> >  };
+> >  EXPORT_SYMBOL(node_states);
 
-Summary: the CPU is indeed within its rights to execute loads and stores
-to a single variable out of order, -but- only if it gets the same result
-that it would have obtained by executing them in order.  Which means that
-any reordering of accesses by a single CPU to a single variable will be
-invisible to the software.
+> Will let you know how it works.
 
-> >So we are pretty safe assuming that CPUs
-> >will provide it.
-> 
-> Yeah, pretty safe.  I just don't like undocumented assumptions :-)
-
-Can't help you there!  ;-)
-
-							Thanx, Paul
+The patch above looks like we are heading in the right direction.
