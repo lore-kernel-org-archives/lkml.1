@@ -1,120 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbXHONac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761613AbXHONaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759302AbXHONac (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 09:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbXHONaW
+	id S1761613AbXHONaw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 09:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbXHONaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 09:30:22 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:32876 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754499AbXHONaU (ORCPT
+	Wed, 15 Aug 2007 09:30:25 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:49534 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754025AbXHONaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 09:30:20 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=wAj3ah5xi+o6yehAQV1FaRpesJw7QLx13X6X3U3BwNJ+mdQHKhm+0RAakTnLVioD0ZUm9co/4GueRoQcf8MWIQAqRi3yLzDKiGNIwTp1FtH+fRlfkkippPz7kSjzqw+vjNTbYll4xhmGDTojJez3OdwpOTyf37LIoGpul5zWCLg=  ;
-X-YMail-OSG: wjiJ_SsVM1lTXmm6_gGd.KkE0P9YR64tfsPU4qLgEsz1XK4XFI93hr9ccsAuwQyalIuJRlOVmFcdD.bArBrV51mSAwNjL9rV0Md3IuV0GDtEW05etec-
-Message-ID: <46C2FFDD.5000600@yahoo.com.au>
-Date: Wed, 15 Aug 2007 23:30:05 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Wed, 15 Aug 2007 09:30:22 -0400
+Date: Wed, 15 Aug 2007 09:30:21 -0400
+To: Michael Tharp <gxti@partiallystapled.com>
+Cc: alan <alan@clueserver.org>, Marc Perkel <mperkel@yahoo.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Thinking outside the box on file systems
+Message-ID: <20070815133021.GB9412@csclub.uwaterloo.ca>
+References: <106259.96671.qm@web52501.mail.re2.yahoo.com> <Pine.LNX.4.64.0708141546510.22494@blackbox.fnordora.org> <46C2F96D.5030908@partiallystapled.com>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Herbert Xu <herbert@gondor.apana.org.au>, csnook@redhat.com,
-       dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
-References: <20070811042943.GA13410@linux.vnet.ibm.com> <E1IKSHQ-0007hg-00@gondolin.me.apana.org.au> <20070813060302.GF13410@linux.vnet.ibm.com> <46C13EE1.1000707@yahoo.com.au> <20070814170128.GA8243@linux.vnet.ibm.com>
-In-Reply-To: <20070814170128.GA8243@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C2F96D.5030908@partiallystapled.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Tue, Aug 14, 2007 at 03:34:25PM +1000, Nick Piggin wrote:
-
->>Maybe it is the safe way to go, but it does obscure cases where there
->>is a real need for barriers.
+On Wed, Aug 15, 2007 at 09:02:37AM -0400, Michael Tharp wrote:
+> This jumped out at me right away. In such a system, an attacker with
+> write permissions on a "sticky" directory like /tmp could probe for
+> others' files by attempting to create them and recording all cases where
+> permission was denied due to an existing, hidden file. But of course,
+> this was just an example of something a less UNIX-y permission scheme
+> could do, not a key part of such a design.
 > 
+> Personally, what I'd like to see is a better way of dealing with
+> propagation of ownership. Currently, in order to allow "collaboration"
+> directories where a directory tree is owned by a certain group and
+> anyone in that group can write and create files, one has to change the
+> system umask, use a magical bit on the collaboration directory to
+> propagate group ownership, and create a group for every user on the
+> system in order to keep their personal files safe with the new umask.
+> This seems highly flawed. I suggest that propagation of group ownership
+> should be the default mode, not a special one, and that the
+> group-writable permissions should also be propagated to new files and
+> directories. This way, the user's home directory would remain 0755,
+> while the collaboration directory could be 0775, without any changing of
+> umasks.
 > 
-> I prefer burying barriers into other primitives.
+> Of course, this would go against tradition, and cause some mayhem in the
+> logic responsible for magically determining permissions for new files,
+> but since we're talking about thinking outside of the box, I think
+> that's excusable :)
 
-When they should naturally be there, eg. locking or the RCU primitives,
-I agree.
+Posix ACLs seem to solve most group permissions issues and control of
+permission propegation.  It actually works quite well on Linux.  I am
+surprised if there aren't lots of people already using it.
 
-I don't like having them scattered in various "just in case" places,
-because it makes both the users and the APIs hard to understand and
-change.
+Remember that existing software expects a unix style interface, since
+they are unix programs.  Anything you invent MUST be compatible with the
+standard unix view of things, even if it offers additional options.
 
-Especially since several big architectures don't have volatile in their
-atomic_get and _set, I think it would be a step backwards to add them in
-as a "just in case" thin now (unless there is a better reason).
-
-
->>Many atomic operations are allowed to be reordered between CPUs, so
->>I don't have a good idea for the rationale to order them within the
->>CPU (also loads and stores to long and ptr types are not ordered like
->>this, although we do consider those to be atomic operations too).
->>
->>barrier() in a way is like enforcing sequential memory ordering
->>between process and interrupt context, wheras volatile is just
->>enforcing coherency of a single memory location (and as such is
->>cheaper).
-> 
-> 
-> barrier() is useful, but it has the very painful side-effect of forcing
-> the compiler to dump temporaries.  So we do need something that is
-> not quite so global in effect.
-
-Yep.
-
-
->>What do you think of this crazy idea?
->>
->>/* Enforce a compiler barrier for only operations to location X.
->> * Call multiple times to provide an ordering between multiple
->> * memory locations. Other memory operations can be assumed by
->> * the compiler to remain unchanged and may be reordered
->> */
->>#define order(x) asm volatile("" : "+m" (x))
-> 
-> 
-> There was something very similar discussed earlier in this thread,
-> with quite a bit of debate as to exactly what the "m" flag should
-> look like.  I suggested something similar named ACCESS_ONCE in the
-> context of RCU (http://lkml.org/lkml/2007/7/11/664):
-
-Oh, I missed that earlier debate. Will go have a look.
-
-
-> 	#define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
-> 
-> The nice thing about this is that it works for both loads and stores.
-> Not clear that order() above does this -- I get compiler errors when
-> I try something like "b = order(a)" or "order(a) = 1" using gcc 4.1.2.
-
-As Arnd ponted out, order() is not supposed to be an lvalue, but a
-statement like the rest of our memory ordering API.
-
-As to your followup question of why to use it over ACCESS_ONCE. I
-guess, aside from consistency with the rest of the barrier APIs, you
-can use it in other primitives when you don't actually know what the
-caller is going to do or if it even will make an access. You could
-also use it between calls to _other_ primitives, etc... it just
-seems more flexible to me, but I haven't actually used such a thing
-in real code...
-
-ACCESS_ONCE doesn't seem as descriptive. What it results in is the
-memory location being loaded or stored (presumably once exactly),
-but I think the more general underlying idea is a barrier point.
-
--- 
-SUSE Labs, Novell Inc.
+--
+Len Sorensen
