@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762803AbXHOOT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763848AbXHOOUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762803AbXHOOT4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 10:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756347AbXHOOTr
+	id S1763848AbXHOOUc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 10:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758213AbXHOOUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 10:19:47 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:13476 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756335AbXHOOTq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 10:19:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RmucCh5WI+0onLlALBVtK6OobCc34II9WGY4nfW/RUHAPSxF5DfkMAt0DJM9nKU6hnlYvT9a3nZUCiL8ZumFeEzwdKYae3DrPnbyGM5xLZf8X7oCkPS4tPZaNw1Fgqbw45ycKwL/3YM1xq9zUxwlstiNZJhgB0hTDOgcQiAKSOs=
-Message-ID: <5d6222a80708150719x254627f0k40240ac6450f019c@mail.gmail.com>
-Date: Wed, 15 Aug 2007 11:19:44 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH 18/25][V3] turn priviled operations into macros in entry.S
-Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, mingo@elte.hu, chrisw@sous-sol.org,
-       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org
-In-Reply-To: <Pine.LNX.4.58.0708151002001.25252@gandalf.stny.rr.com>
+	Wed, 15 Aug 2007 10:20:09 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37661 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756347AbXHOOUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 10:20:07 -0400
+X-Authenticated: #427522
+X-Provags-ID: V01U2FsdGVkX1+rA38p7YCrkz5yuDabQ1gjk9FZTk3TMPwj+1EjDj
+	Exe61Jiy0cBJpJ
+Message-ID: <46C30C48.70905@gmx.de>
+Date: Wed, 15 Aug 2007 16:23:04 +0200
+From: Mathis Ahrens <Mathis.Ahrens@gmx.de>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070327)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Russ Dill <russ.dill@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Reporting result of pci=assign-busses to lkml
+References: <f9d2a5e10708102011o7d61086fs9e2b35abca9b39a3@mail.gmail.com>
+In-Reply-To: <f9d2a5e10708102011o7d61086fs9e2b35abca9b39a3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11871821854176-git-send-email-gcosta@redhat.com>
-	 <11871823042011-git-send-email-gcosta@redhat.com>
-	 <11871823151789-git-send-email-gcosta@redhat.com>
-	 <11871823273810-git-send-email-gcosta@redhat.com>
-	 <11871823373106-git-send-email-gcosta@redhat.com>
-	 <11871823673236-git-send-email-gcosta@redhat.com>
-	 <11871823782610-git-send-email-gcosta@redhat.com>
-	 <11871823892519-git-send-email-gcosta@redhat.com>
-	 <11871823991803-git-send-email-gcosta@redhat.com>
-	 <Pine.LNX.4.58.0708151002001.25252@gandalf.stny.rr.com>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> Is the .globl really required here? I would think that the reference in
-> the fixup section would be resolved with in the compiling of this object.
->
-For the fixup yes, you are right. But I'm using this symbol in
-paravirt.c now, to denote the native operation.
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+Hi Russ,
 
-"The less confident you are, the more serious you have to act."
+in case you are still wondering about this...
+
+There is a good explanation of the original reasoning here:
+    http://lists.opensuse.org/opensuse-bugs/2007-02/msg00149.html
+
+And there are plans to remove the message here
+    http://www.uwsg.iu.edu/hypermail/linux/kernel/0707.3/2879.html
+
+I am still seeing the warning in 2.6.23-rc3, but it makes no difference
+if I specify pci=assign-busses ... everything seems fine either way.
+
+Cheers,
+Mathis
