@@ -1,60 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761306AbXHPONv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762137AbXHPO0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761306AbXHPONv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 10:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759761AbXHPONl
+	id S1762137AbXHPO0A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 10:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757791AbXHPOZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 10:13:41 -0400
-Received: from 87-127-95-196.no-dns-yet.enta.net ([87.127.95.196]:34356 "EHLO
-	oxford.xeocode.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759481AbXHPONk (ORCPT
+	Thu, 16 Aug 2007 10:25:46 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52712 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753566AbXHPOZp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 10:13:40 -0400
-X-Greylist: delayed 2240 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Aug 2007 10:13:40 EDT
-To: "Peter Zijlstra" <peterz@infradead.org>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: soft lockup detected
-In-Reply-To: <1187270275.6114.87.camel@twins> (Peter Zijlstra's message of "Thu\, 16 Aug 2007 15\:17\:55 +0200")
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-X-Draft-From: ("nnimap+mail01.enterprisedb.com:INBOX" 31969)
-References: <87ps1nx3kl.fsf@oxford.xeocode.com>
-	<1187270275.6114.87.camel@twins>
-From: Gregory Stark <stark@enterprisedb.com>
-Organization: EnterpriseDB
-Date: Thu, 16 Aug 2007 14:36:17 +0100
-Message-ID: <874pizwqi6.fsf@oxford.xeocode.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 16 Aug 2007 10:25:45 -0400
+Subject: [PATCH] lockdep: annotate rcu_read_{,un}lock()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Paul E McKenney <paulmck@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Cc: herbert@gondor.apana.org.au, 123.oleg@gmail.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Daniel Walker <dwalker@mvista.com>
+In-Reply-To: <20070815.144628.104052147.davem@davemloft.net>
+References: <af57f1ac0708141130v729fa636k3150673809ec20a8@mail.gmail.com>
+	 <E1ILEJr-0005Fl-00@gondolin.me.apana.org.au>
+	 <20070815.144628.104052147.davem@davemloft.net>
+Content-Type: text/plain
+Date: Thu, 16 Aug 2007 16:25:07 +0200
+Message-Id: <1187274307.6114.92.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Peter Zijlstra" <peterz@infradead.org> writes:
 
-> On Thu, 2007-08-16 at 09:54 +0100, Gregory Stark wrote:
->
->> This is on 2.6.21-1.3194.fc7. I've been trying different kernels but this is
->> the first point where I've narrowed down the symptoms to something
->> reproducible.
->
-> That is a very old kernel, and a vendor kernel at that.
+There seem to be some unbalanced rcu_read_{,un}lock() issues of late,
+how about doing something like this:
 
-I'm sorry? The original kernel to exhibit the problem was 2.6.5 -- *that* was
-a very old kernel and I insisted we upgrade before trying to report any
-problems. However 2.6.21 is only one version out of date and it's about 3
-months old. None of the changelog entries since then have mentioned any semop
-or ipc related changes (aside from a hugetlb change but we're not using
-hugetlb). It's more recent than most distributions have as their current
-release.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/lockdep.h  |    7 +++++++
+ include/linux/rcupdate.h |   12 ++++++++++++
+ kernel/rcupdate.c        |    8 ++++++++
+ 3 files changed, 27 insertions(+)
 
-I do share your feelings about vendor kernels. We've seen these problems with
-SUSE 2.6.5 and 2.6.16 kernels though. This was the most recently released
-kernel we've tried.
+Index: linux-2.6/include/linux/lockdep.h
+===================================================================
+--- linux-2.6.orig/include/linux/lockdep.h
++++ linux-2.6/include/linux/lockdep.h
+@@ -252,6 +252,13 @@ extern void lockdep_init_map(struct lock
+ 			     struct lock_class_key *key, int subclass);
+ 
+ /*
++ * To initialize a lockdep_map statically use this macro.
++ * Note that _name must not be NULL.
++ */
++#define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
++	{ .name = (_name), .key = (void *)(_key), }
++
++/*
+  * Reinitialize a lock key - for cases where there is special locking or
+  * special initialization of locks so that the validator gets the scope
+  * of dependencies wrong: they are either too broad (they need a class-split)
+Index: linux-2.6/include/linux/rcupdate.h
+===================================================================
+--- linux-2.6.orig/include/linux/rcupdate.h
++++ linux-2.6/include/linux/rcupdate.h
+@@ -41,6 +41,7 @@
+ #include <linux/percpu.h>
+ #include <linux/cpumask.h>
+ #include <linux/seqlock.h>
++#include <linux/lockdep.h>
+ 
+ /**
+  * struct rcu_head - callback structure for use with RCU
+@@ -133,6 +134,15 @@ static inline void rcu_bh_qsctr_inc(int 
+ extern int rcu_pending(int cpu);
+ extern int rcu_needs_cpu(int cpu);
+ 
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++extern struct lockdep_map rcu_lock_map;
++# define rcu_read_acquire()	lock_acquire(&rcu_lock_map, 0, 0, 2, 1, _THIS_IP_)
++# define rcu_read_release()	lock_release(&rcu_lock_map, 1, _THIS_IP_)
++#else
++# define rcu_read_acquire()	do { } while (0)
++# define rcu_read_release()	do { } while (0)
++#endif
++
+ /**
+  * rcu_read_lock - mark the beginning of an RCU read-side critical section.
+  *
+@@ -166,6 +176,7 @@ extern int rcu_needs_cpu(int cpu);
+ 	do { \
+ 		preempt_disable(); \
+ 		__acquire(RCU); \
++		rcu_read_acquire(); \
+ 	} while(0)
+ 
+ /**
+@@ -175,6 +186,7 @@ extern int rcu_needs_cpu(int cpu);
+  */
+ #define rcu_read_unlock() \
+ 	do { \
++		rcu_read_release(); \
+ 		__release(RCU); \
+ 		preempt_enable(); \
+ 	} while(0)
+Index: linux-2.6/kernel/rcupdate.c
+===================================================================
+--- linux-2.6.orig/kernel/rcupdate.c
++++ linux-2.6/kernel/rcupdate.c
+@@ -49,6 +49,14 @@
+ #include <linux/cpu.h>
+ #include <linux/mutex.h>
+ 
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++static struct lock_class_key rcu_lock_key;
++struct lockdep_map rcu_lock_map =
++	STATIC_LOCKDEP_MAP_INIT("rcu_read_lock", &rcu_lock_key);
++
++EXPORT_SYMBOL_GPL(rcu_lock_map);
++#endif
++
+ /* Definition for rcupdate control block. */
+ static struct rcu_ctrlblk rcu_ctrlblk = {
+ 	.cur = -300,
 
-> Did any of the different kernels you tried include a recent upstream
-> one?
 
-Still working on it.
-
--- 
-  Gregory Stark
-  EnterpriseDB          http://www.enterprisedb.com
