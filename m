@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbXHPMzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759637AbXHPNAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760037AbXHPMzd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 08:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbXHPMzY
+	id S1759637AbXHPNAe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 09:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbXHPNA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 08:55:24 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:52677 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755927AbXHPMzY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 08:55:24 -0400
-Subject: RE: [PATCH 00/23] per device dirty throttling -v9
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: spamtrap@knobisoft.de
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <913305.55547.qm@web32608.mail.mud.yahoo.com>
-References: <913305.55547.qm@web32608.mail.mud.yahoo.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-lF2FY3tv+07NvhKCON7F"
-Date: Thu, 16 Aug 2007 14:55:20 +0200
-Message-Id: <1187268920.6114.84.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 16 Aug 2007 09:00:26 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:35178 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755635AbXHPNAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 09:00:25 -0400
+Date: Thu, 16 Aug 2007 15:00:22 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+cc: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: USB Keyboard
+In-Reply-To: <Pine.LNX.4.61.0708160724001.17168@chaos.analogic.com>
+Message-ID: <Pine.LNX.4.64.0708161456450.2460@twin.jikos.cz>
+References: <Pine.LNX.4.61.0708151320380.8581@chaos.analogic.com>
+ <Pine.LNX.4.64.0708161100340.2460@twin.jikos.cz>
+ <Pine.LNX.4.61.0708160724001.17168@chaos.analogic.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 16 Aug 2007, linux-os (Dick Johnson) wrote:
 
---=-lF2FY3tv+07NvhKCON7F
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Okay. I found what was different. It does actually build, but it is now 
+> put into a completely different directory, 
+> /lib/modules/2.6.22.1/kernel/drivers/hid/usbhid, and requires 
+> /lib/modules/2.6.22.1/kernel/drivers/input/ff-memless.ko to be installed 
+> before it can be. 
 
-On Thu, 2007-08-16 at 05:49 -0700, Martin Knoblauch wrote:
+Only if you enabled force feedback for HID devices in your menuconfig. And 
+if you did so, it perfectly makes sense that the force-feedback input 
+module must be loaded.
 
-> Peter,
->=20
->  any chance to get a rollup against 2.6.22-stable?
->=20
->  The 2.6.23 series may not be usable for me due to the
-> nosharedcache changes for NFS (the new default will massively
-> disturb the user-space automounter).
+> None of this is documented and it makes upgrading extremely difficult, 
+> expecially when a keyboard won't work anymore.
 
-I'll see what I can do, bit busy with other stuff atm, hopefully after
-the weekend.
+1) what strange distro/environment do you use that the usbhid driver is 
+   not loaded automatically when you plug the keyboard in?
+2) even if your module autoloading is that much broken, you can always ssh 
+   to the box or attach PS/2 keyboard and modprobe usbhid ... that works 
+   no matter which directory keeps the driver
 
---=-lF2FY3tv+07NvhKCON7F
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+There is nothing to be documented there, we don't document which directory 
+holds which driver.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> BYW, it did fix the problem with the old driver.
 
-iD8DBQBGxEk4XA2jU0ANEf4RAmxoAJ4q3VNSs8xnvvjNq2LVgqe0lW4JxgCfRf+k
-f4FiCsTztW9H/+a0XXXHtMQ=
-=3Sc0
------END PGP SIGNATURE-----
+Good to hear, thanks.
 
---=-lF2FY3tv+07NvhKCON7F--
-
+-- 
+Jiri Kosina
