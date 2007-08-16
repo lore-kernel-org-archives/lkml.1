@@ -1,47 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbXHPIP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933074AbXHPIRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932803AbXHPIP6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 04:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759510AbXHPIO7
+	id S933074AbXHPIRz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 04:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760069AbXHPIRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 04:14:59 -0400
-Received: from webmailfront01.ispgateway.de ([80.67.16.111]:38417 "EHLO
-	webmailfront01.ispgateway.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755603AbXHPIOy (ORCPT
+	Thu, 16 Aug 2007 04:17:34 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:9405 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757691AbXHPIRa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 04:14:54 -0400
-X-Greylist: delayed 2078 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Aug 2007 04:14:54 EDT
-Message-ID: <20070816093703.sndy0gg44gk0o0ko@webmail.df.eu>
-Date: Thu, 16 Aug 2007 09:37:03 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-To: David Griffith <dgriffi@cs.csubak.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: MOTU Fastlane USB MIDI interface
-References: <Pine.GSO.4.55.0708100242000.25856@helios.cs.csubak.edu>
-In-Reply-To: <Pine.GSO.4.55.0708100242000.25856@helios.cs.csubak.edu>
+	Thu, 16 Aug 2007 04:17:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=H6/rJ8LjvSnvo6WxiA3crZ5hIUnSmyOVLCHJg6wID/7TvnqiAXZ5LuWD1EHxEdD6YfdepCFKp0BdwJ037ibLjihoVO1uSr9/GBIqJesXg7A+f+Jtx7HaF4ycVLKCYaahBbxFqnG9Q0/PHlESuRKthGJDkkhNJvq5SzkI5jRdQ74=
+Message-ID: <6bffcb0e0708160117m31b6edc6ta277b6ddf2d894f6@mail.gmail.com>
+Date: Thu, 16 Aug 2007 10:17:28 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Zoltan Boszormenyi" <zboszor@dunaweb.hu>
+Subject: Re: Bad CD disk disables IDE DMA
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>
+In-Reply-To: <46C2F526.30005@dunaweb.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-User-Agent: domainFACTORY
-X-Originating-IP: 213.238.46.206
+References: <46C2F526.30005@dunaweb.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Griffith wrote:
-> Does anyone here have or can borrow a MOTU Fastlane USB MIDI interface?
-> I'm having a nasty time trying to nail down what's going wrong.  It seems
-> that for kernels 2.6.17 and earlier, MIDI works fine through this
-> interface.  After that, it doesn't.
+Hi Zoltan,
 
-What do you mean with "doesn't work"?  Does the kernel detect it?   
-Does it appear
-in /proc/asound/cards?  What happens if you try to use it?
+On 15/08/07, Zoltan Boszormenyi <zboszor@dunaweb.hu> wrote:
+> Hi,
+>
+> I noticed that a bad CD of mine makes DMA disabled:
+>
+> hda: selected mode 0x44
+> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
+> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
+> ide: failed opcode was: unknown
+> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
+> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
+> ide: failed opcode was: unknown
+> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
+> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
+> ide: failed opcode was: unknown
+> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
+> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
+> ide: failed opcode was: unknown
+> hda: DMA disabled
+> hda: ide_intr: huh? expected NULL handler on exit
+> hda: ATAPI reset complete
+>
+> Every time I put the said CD into to drive and DMA is on, I get the
+> above messages.
 
+This might be intended.
+
+> Two things are interesting: first, it gets mounted correctly and
+> readable and
+> second, when DMA was already disabled no such messages occur in the logs.
+> Anyhow, I would need DMA to correctly burn CDs/DVDs...
+> What can I do besides manually re-enable DMA?
+> All other disks I have tried behave perfectly.
+> This happened on 2.6.22[-rcX], 2.6.23-rc3-git1 and 2.6.20-1.2962.fc6.
+> This is on a Fedora Core 6 system. CD/DVD is using the old IDE drivers:
+>
+> Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+> ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+> NFORCE-MCP55: IDE controller at PCI slot 0000:00:04.0
+> NFORCE-MCP55: chipset revision 161
+> NFORCE-MCP55: not 100% native mode: will probe irqs later
+> NFORCE-MCP55: BIOS didn't set cable bits correctly. Enabling workaround.
+> NFORCE-MCP55: 0000:00:04.0 (rev a1) UDMA133 controller
+>     ide0: BM-DMA at 0xf000-0xf007, BIOS settings: hda:DMA, hdb:DMA
+> Probing IDE interface ide0...
+> hda: PIONEER DVD-RW DVR-111L, ATAPI CD/DVD-ROM drive
+> ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+> Probing IDE interface ide1...
+> ide-floppy driver 0.99.newide
+>
+> $ cat /proc/ide/amd74xx
+> ----------AMD BusMastering IDE Configuration----------------
+> Driver Version:                     2.13
+> South Bridge:                       0000:00:04.0
+> Revision:                           IDE 0xa1
+> Highest DMA rate:                   UDMA133
+> BM-DMA base:                        0xf000
+> PCI clock:                          33.3MHz
+> -----------------------Primary IDE-------Secondary IDE------
+> Prefetch Buffer:              yes                 yes
+> Post Write Buffer:            yes                 yes
+> Enabled:                      yes                  no
+> Simplex only:                  no                 yes
+> Cable Type:                   80w                 80w
+> -------------------drive0----drive1----drive2----drive3-----
+> Transfer Mode:        PIO       DMA       DMA       DMA
+> Address Setup:       30ns      90ns      90ns      90ns
+> Cmd Active:          90ns      90ns     300ns     300ns
+> Cmd Recovery:        30ns      30ns     300ns     300ns
+> Data Active:         90ns     330ns     330ns     330ns
+> Data Recovery:       30ns     270ns     270ns     270ns
+> Cycle Time:         120ns     600ns     600ns     600ns
+> Transfer Rate:   16.6MB/s   3.3MB/s   3.3MB/s   3.3MB/s
+>
+> Best regards,
+> Zoltán Böszörményi
 
 Regards,
-Clemens
+Michal
 
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
