@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765287AbXHPXc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762469AbXHPXfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765287AbXHPXc0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 19:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758438AbXHPXcP
+	id S1762469AbXHPXfB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 19:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846AbXHPXeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 19:32:15 -0400
-Received: from utopia.booyaka.com ([72.9.107.138]:56847 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759778AbXHPXcN (ORCPT
+	Thu, 16 Aug 2007 19:34:50 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41429 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755724AbXHPXes (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 19:32:13 -0400
-X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Aug 2007 19:32:13 EDT
-MBOX-Line: From Paul Walmsley <paul@pwsan.com> Thu Aug 16 16:22:39 2007
-Message-Id: <20070816232239.533779000@pwsan.com>
-References: <20070816232134.151893000@pwsan.com>
-User-Agent: quilt/0.45-1
-Date: Thu, 16 Aug 2007 16:21:35 -0700
-From: Paul Walmsley <paul@pwsan.com>
-To: linux-kernel@vger.kernel.org
-Cc: Raj Kumar <rkumar@archive.org>, <gphoto-devel@lists.sourceforge.net>,
-       Siznax <steve@archive.org>, Brewster Kahle <brewster@archive.org>
-Subject: [patch 1/1] usb quirks: Add Canon EOS 5D (PC Connection mode) to the autosuspend blacklist
-Content-Disposition: inline; filename=canon-eos5d-no-autosuspend.patch
+	Thu, 16 Aug 2007 19:34:48 -0400
+Date: Fri, 17 Aug 2007 00:34:12 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, sds@tycho.nsa.gov,
+       casey@schaufler-ca.com, linux-fsdevel@vger.kernel.org,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+Subject: Re: Adding a security parameter to VFS functions
+Message-ID: <20070816233412.GO21089@ftp.linux.org.uk>
+References: <29015.1187178055@redhat.com> <alpine.LFD.0.999.0708161550140.30176@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0708161550140.30176@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recent versions of the Linux kernel auto-suspend attached USB devices.
-After this happens to the Canon EOS 5D camera, the camera's interrupt endpoints
-don't seem to wake back up correctly, causing further use with libgphoto2
-to fail with a -114 "OS error in camera communication" error.  
+On Thu, Aug 16, 2007 at 03:57:24PM -0700, Linus Torvalds wrote:
+> I personally consider this an affront to everythign that is decent.
+> 
+> Why the *hell* would mkdir() be so magical as to need something like that?
+> 
+> Make it something sane, like a "struct nameidata" instead, and make it at 
+> least try to look like the path creation that is done by "open()".  Or 
+> create a "struct file *" or something.
 
-A similar fix is probably necessary for this camera in PTP mode, which
-identifies as USB product id 0x3102, but we haven't tested this.
+No.  I agree that mkdir/mknod/etc. should all take the same thing.
+*However*, it should not be nameidata or file.  Why?  Because it
+should not contain vfsmount.  Object creation should not *care*
+where fs is mounted.  At all.  The same goes for open(), BTW - letting
+it see the reference to vfsmount via nameidata is bloody wrong and
+I really couldn't care less what kinds of perversions apparmour crowd
+might like - pathnames simply do not belong there.
 
-As part of our testing process, we tried the USB_QUIRK_RESET_RESUME
-quirk also, it's not helpful in this case.
+Said that, I agree that we need uniform prototypes for all these guys
+and I can see arguments both for and against having creds passed by
+reference stored in whatever struct we are passing (for: copy-on-write
+refcounted cred objects would almost never have to be modified or
+copied and normally we would just pick the current creds reference
+from task_struct and assing it to a single field in whatever we pass
+instead of nameidata; against: might be conceptually simpler to have
+all that data directly in that struct and a helper filling it in).
 
-Applies against 2.6.23-rc3.
-
-Signed-off-by: Raj Kumar <rkumar@archive.org>
-Signed-off-by: Paul Walmsley <paul@pwsan.com>
-
----
- drivers/usb/core/quirks.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-Index: linux-2.6/drivers/usb/core/quirks.c
-===================================================================
---- linux-2.6.orig/drivers/usb/core/quirks.c	2007-08-16 14:42:31.000000000 -0700
-+++ linux-2.6/drivers/usb/core/quirks.c	2007-08-16 16:17:51.000000000 -0700
-@@ -70,6 +70,9 @@
- 	/* Philips PSC805 audio device */
- 	{ USB_DEVICE(0x0471, 0x0155), .driver_info = USB_QUIRK_RESET_RESUME },
- 
-+	/* Canon EOS 5D in PC Connection mode */
-+	{ USB_DEVICE(0x04a9, 0x3101), .driver_info = USB_QUIRK_NO_AUTOSUSPEND },
-+
- 	/* RIM Blackberry */
- 	{ USB_DEVICE(0x0fca, 0x0001), .driver_info = USB_QUIRK_NO_AUTOSUSPEND },
- 	{ USB_DEVICE(0x0fca, 0x0004), .driver_info = USB_QUIRK_NO_AUTOSUSPEND },
-
---
-
+Which way we do that and which struct we end up passing is a very good
+question, but I want to make it very clear: having object creation/removal/
+renaming methods[1] depend on which vfsmount we are dealing with is *wrong*.
+IOW, I strongly object against the use of nameidata here.
