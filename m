@@ -1,72 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761393AbXHPFkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760824AbXHPFoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761393AbXHPFkg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 01:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbXHPFkL
+	id S1760824AbXHPFoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 01:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbXHPFoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 01:40:11 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:4187 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752064AbXHPFkH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 01:40:07 -0400
-Date: Thu, 16 Aug 2007 13:39:45 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Satyam Sharma <satyam@infradead.org>, Christoph Lameter <clameter@sgi.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070816053945.GB32442@gondor.apana.org.au>
-References: <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
+	Thu, 16 Aug 2007 01:44:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36509 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753415AbXHPFoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 01:44:02 -0400
+Date: Thu, 16 Aug 2007 05:43:57 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Linux 2.6.20.16
+Message-ID: <20070816054357.GA22242@hera.kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 02:11:43PM +1000, Paul Mackerras wrote:
->
-> The uses of atomic_read where one might want it to allow caching of
-> the result seem to me to fall into 3 categories:
-> 
-> 1. Places that are buggy because of a race arising from the way it's
->    used.
-> 
-> 2. Places where there is a race but it doesn't matter because we're
->    doing some clever trick.
-> 
-> 3. Places where there is some locking in place that eliminates any
->    potential race.
 
-Agreed.
+I've just released Linux 2.6.20.16. This version catches up with 2.6.21.7.
+I hope to issue newer releases soon with next batches of pending patches.
 
-> In case 1, adding volatile won't solve the race, of course, but it's
-> hard to argue that we shouldn't do something because it will slow down
-> buggy code.  Case 2 is hopefully pretty rare and accompanied by large
-> comment blocks, and in those cases caching the result of atomic_read
-> explicitly in a local variable would probably make the code clearer.
-> And in case 3 there is no reason to use atomic_t at all; we might as
-> well just use an int.
+I'll also be replying to this message with a copy of the patch between
+2.6.20.15 and 2.6.20.16.
 
-Since adding volatile doesn't help any of the 3 cases, and
-takes away optimisations from both 2 and 3, I wonder what
-is the point of the addition after all?
+The patch and changelog will appear soon at the following locations:
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.6/
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.6/patch-2.6.20.16.bz2
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.20.16
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Git repository:
+   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
+  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
+
+Git repository through the gitweb interface:
+  http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.20.y.git
+
+Willy
+
+-------
+
+ Makefile                                      |    2 
+ arch/i386/kernel/entry.S                      |    8 -
+ arch/i386/oprofile/nmi_int.c                  |    9 +
+ arch/powerpc/kernel/signal_64.c               |   10 -
+ arch/x86_64/mm/init.c                         |    8 +
+ drivers/char/cyclades.c                       |    1 
+ drivers/md/bitmap.c                           |   17 +-
+ drivers/md/dm-crypt.c                         |   50 ++----
+ drivers/md/raid0.c                            |    3 
+ drivers/md/raid1.c                            |   21 +-
+ drivers/md/raid10.c                           |    6 
+ drivers/media/video/saa7134/saa7134-tvaudio.c |    2 
+ drivers/net/e1000/e1000_main.c                |   11 -
+ drivers/net/sky2.c                            |    9 +
+ drivers/serial/mpsc.c                         |    3 
+ include/linux/bootmem.h                       |    1 
+ include/linux/pci_ids.h                       |    4 
+ include/linux/raid/bitmap.h                   |    1 
+ include/linux/sched.h                         |    1 
+ include/linux/workqueue.h                     |    2 
+ kernel/auditfilter.c                          |    2 
+ kernel/exit.c                                 |   22 ++
+ kernel/futex.c                                |  205 ++++++++++++++++----------
+ kernel/rtmutex.c                              |   24 ++-
+ kernel/sched.c                                |   22 +-
+ mm/rmap.c                                     |   24 ---
+ mm/sparse.c                                   |   11 +
+ 27 files changed, 307 insertions(+), 172 deletions(-)
+
+Summary of changes from 2.6.20.15 to 2.6.20.16
+============================================
+
+Alexey Kuznetsov (1):
+      pi-futex: Fix exit races and locking problems
+
+Andi Kleen (1):
+      i386: Fix K8/core2 oprofile on multiple CPUs
+
+Auke Kok (1):
+      e1000: disable polling before registering netdevice
+
+Bob Picco (1):
+      sparsemem: fix oops in x86_64 show_mem
+
+Christoph Lameter (1):
+      sched: fix next_interval determination in idle_balance()
+
+Hugh Dickins (1):
+      mm: kill validate_anon_vma to avoid mapcount BUG
+
+Jason Gaston (1):
+      pci_ids: update patch for Intel ICH9M
+
+Jason Wessel (1):
+      i386: fix infinite loop with singlestep int80 syscalls
+
+Jay Lubomirski (1):
+      serial: clear proper MPSC interrupt cause bits
+
+Jeff Mahoney (1):
+      saa7134: fix thread shutdown handling
+
+Jiri Slaby (1):
+      Char: cyclades, fix deadlock
+
+Mike Accetta (1):
+      md: Fix bug in error handling during raid1 repair.
+
+Milan Broz (1):
+      dm crypt: disable barriers
+
+NeilBrown (3):
+      md: Avoid overflow in raid0 calculation with large components.
+      md: Don't write more than is required of the last page of a bitmap
+      md: Fix two raid10 bugs.
+
+Olaf Kirch (3):
+      dm crypt: fix call to clone_init
+      dm crypt: fix avoid cloned bio ref after free
+      dm crypt: fix remove first_clone
+
+Oleg Nesterov (1):
+      make freezeable workqueues singlethread
+
+Paul Mackerras (1):
+      POWERPC: Fix subtle FP state corruption bug in signal return on SMP
+
+Stephen Hemminger (1):
+      sky2: workaround for lost IRQ
+
+Thomas Gleixner (3):
+      rt-mutex: Fix stale return value
+      rt-mutex: Fix chain walk early wakeup bug
+      FUTEX: Restore the dropped ERSCH fix
+
+Tony Jones (1):
+      audit: fix oops removing watch if audit disabled
+
+Willy Tarreau (1):
+      Linux 2.6.20.16
+
+Zou Nan hai (1):
+      x86_64: allocate sparsemem memmap above 4G
+
