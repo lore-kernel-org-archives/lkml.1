@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762774AbXHPLTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932237AbXHPLTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762774AbXHPLTR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 07:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbXHPLTI
+	id S932237AbXHPLTw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 07:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbXHPLTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 07:19:08 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:16032 "EHLO kernel.dk"
+	Thu, 16 Aug 2007 07:19:44 -0400
+Received: from khc.piap.pl ([195.187.100.11]:59404 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755136AbXHPLTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 07:19:07 -0400
-Date: Thu, 16 Aug 2007 13:19:03 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH 002 of 5] Replace bio_data with blk_rq_data
-Message-ID: <20070816111903.GU23758@kernel.dk>
-References: <20070816150445.30843.patches@notabene> <1070816051337.31344@suse.de> <20070816070255.GJ23758@kernel.dk> <18115.63917.990694.904646@notabene.brown> <20070816072114.GK23758@kernel.dk> <18116.12755.587269.111597@notabene.brown>
+	id S1754973AbXHPLTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 07:19:43 -0400
+To: "Anand Jahagirdar" <anandjigar@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Fork Bombing Patch
+References: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 16 Aug 2007 13:19:11 +0200
+In-Reply-To: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com> (Anand Jahagirdar's message of "Thu, 16 Aug 2007 11:54:50 +0530")
+Message-ID: <m3lkcbu3ps.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18116.12755.587269.111597@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16 2007, Neil Brown wrote:
-> On Thursday August 16, jens.axboe@oracle.com wrote:
-> > > 2 and 3 are very simple changes that - I think - make it clearer what
-> > > is happening.
-> > 
-> > To be honest, I don't see much win in using blk_rq_data() over
-> > bio_data() at all. I'd much much rather just see it go away!
-> > 
-> 
-> Well, as it is always the data at the (current) head of the request...
-> 
-> But I can make it go a way if you like.. What does it become?
-> bvec_kmap ??
+"Anand Jahagirdar" <anandjigar@gmail.com> writes:
 
-Yeah, it then just becomes a kmap. And ->buffer goes away completely.
+> +++ linux-2.6.17/kernel/fork.c
+> +        /*
+> +         * following code does not allow Non Root User to cross its process
+> +         * limit and it alerts administrator about user Nearing the process limit.
+> +         */
+> + 
+>        	if (atomic_read(&p->user->processes) >= p->signal->rlim[RLIMIT_NPROC].rlim_cur) 
+>  		if (!capable(CAP_SYS_ADMIN) && !capable(CAP_SYS_RESOURCE) &&
+> -				p->user != &root_user) 
+> +				p->user != &root_user)  {
+> +                        if (printk_ratelimit())
+> +                                printk(KERN_WARNING "User with uid %u is Nearing the process limit\n",p->user->uid);
+> +
+>  			 goto bad_fork_free;
 
-> > > And I felt 5 was a sufficient improvement to justify it and 4...
-> > 
-> > 5 is nice, I would like to apply that :-)
-> > 
-> 
-> OK, here comes '5' at the top of a small set of patches.  Take it and
-> any of the following that you like.
+At least make that configurable - on some systems users are allowed
+50 processes or so and I'm sure admins don't really want to know
+which particular users are currently close to limits.
 
-Thanks.
-
+I don't really find the above useful. Perhaps we should warn when users
+try to write to R/O files or execute root-only commands etc?
 -- 
-Jens Axboe
-
+Krzysztof Halasa
