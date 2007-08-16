@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934487AbXHPQsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933497AbXHPQzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934487AbXHPQsh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 12:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764953AbXHPQsX
+	id S933497AbXHPQzU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 12:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbXHPQzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 12:48:23 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:47346 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764973AbXHPQsW (ORCPT
+	Thu, 16 Aug 2007 12:55:08 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:33843 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756554AbXHPQzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 12:48:22 -0400
-In-Reply-To: <adatzqz1mjx.fsf@cisco.com>
-Subject: Re: [ofa-general] [PATCH 7/7] IB/ehca: Prevent overwriting QP init
-	attributes given by caller
-To: Roland Dreier <rdreier@cisco.com>
-Cc: general-bounces@lists.openfabrics.org, Joachim Fenkes <fenkes@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       openib-general@openib.org, Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF50DCEF62.940E3D7F-ONC1257339.005C150A-C1257339.005C4CA8@de.ibm.com>
-From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-Date: Thu, 16 Aug 2007 18:48:18 +0200
-X-MIMETrack: Serialize by Router on D12ML065/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
- 16/08/2007 18:48:18
+	Thu, 16 Aug 2007 12:55:07 -0400
+Message-ID: <46C48160.3070401@nortel.com>
+Date: Thu, 16 Aug 2007 10:54:56 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: dual Xeon hyperthread system only showing up as 2 cpus
+References: <fa.5IVbZBqVHBgyu8BpsYPjQ9pqQ5M@ifi.uio.no> <46C38DB2.9040400@shaw.ca>
+In-Reply-To: <46C38DB2.9040400@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Aug 2007 16:54:59.0913 (UTC) FILETIME=[2EA28390:01C7E026]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-general-bounces@lists.openfabrics.org wrote on 16.08.2007 18:17:22:
+Robert Hancock wrote:
 
-> I don't understand this patch.  <rdma/ib_verbs.h> says this about
-> ib_create_qp():
->
->  * @qp_init_attr: A list of initial attributes required to create the
->  *   QP.  If QP creation succeeds, then the attributes are updated to
->  *   the actual capabilities of the created QP.
->
-> So it seems the current code is actually correct and your patch breaks
-> it??
-Yes. That's absolutely true. Please ignore it.
-Thanks!
-Nam
+> You snipped the important part of the log. It's not using ACPI in 2.6.14 
+> for some reason, which you need for HT to be detected. Either you didn't 
+> configure it in or it's failed to enable somehow. Please post the entire 
+> dmesg.
 
+Wacky.  In 2.6.10 CONFIG_ACPI is disabled, but somehow it has 
+CONFIG_ACPI_BOOT=y and CONFIG_ACPI_BLACKLIST_YEAR=0.
+
+In 2.6.14, turning on CONFIG_ACPI allows it to detect 4 cpus.
+
+Thanks for the help.
+
+Chris
