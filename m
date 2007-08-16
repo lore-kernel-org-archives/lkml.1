@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937860AbXHPCUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030319AbXHPCUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937860AbXHPCUQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 22:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933427AbXHPCTx
+	id S1030319AbXHPCUw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 22:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936522AbXHPCUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 22:19:53 -0400
-Received: from mga03.intel.com ([143.182.124.21]:45995 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762708AbXHPCTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 22:19:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,268,1183359600"; 
-   d="scan'208";a="263787383"
-Message-ID: <46C3B428.4000003@intel.com>
-Date: Wed, 15 Aug 2007 19:19:20 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
+	Wed, 15 Aug 2007 22:20:01 -0400
+Received: from zcars04f.nortel.com ([47.129.242.57]:63136 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936156AbXHPCT6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 22:19:58 -0400
+Message-ID: <46C3B40D.3010909@nortel.com>
+Date: Wed, 15 Aug 2007 20:18:53 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>, Andy Whitcroft <apw@shadowen.org>,
-       "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>
-CC: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       rolandd@cisco.com, Chas Williams <chas@cmf.nrl.navy.mil>,
-       Paul Mundt <lethal@linux-sh.org>, isdn4linux@listserv.isdn4linux.de,
-       mikep@linuxtr.net, netdev@vger.kernel.org, swen@vnet.ibm.com,
-       linux390@de.ibm.com, linux-s390@vger.kernel.org, jdike@karaya.com,
-       user-mode-linux-devel@lists.sourceforge.net,
-       user-mode-linux-user@lists.sourceforge.net,
-       netfilter-devel@lists.netfilter.org, coreteam@netfilter.org
-Subject: Re: drivers/infiniband/mlx/mad.c misplaced ;
-References: <20070815235825.GB17004@redhat.com> <1187224811.5906.55.camel@localhost>
-In-Reply-To: <1187224811.5906.55.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Satyam Sharma <satyam@infradead.org>, Christoph Lameter <clameter@sgi.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <20070816005348.GA9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151757400.11196@schroedinger.engr.sgi.com> <20070816011414.GC9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151839140.11520@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708160730590.24380@enigma.security.iitk.ac.in> <20070816020851.GA30809@gondor.apana.org.au>
+In-Reply-To: <20070816020851.GA30809@gondor.apana.org.au>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Aug 2007 02:18:57.0409 (UTC) FILETIME=[CCF0E710:01C7DFAB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Wed, 2007-08-15 at 19:58 -0400, Dave Jones wrote:
->> Signed-off-by: Dave Jones <davej@redhat.com>
->>
->> diff --git a/drivers/infiniband/hw/mlx4/mad.c b/drivers/infiniband/hw/mlx4/mad.c
->> index 3330917..0ed02b7 100644
->> --- a/drivers/infiniband/hw/mlx4/mad.c
->> +++ b/drivers/infiniband/hw/mlx4/mad.c
->> @@ -109,7 +109,7 @@ int mlx4_MAD_IFC(struct mlx4_ib_dev *dev, int ignore_mkey, int ignore_bkey,
->>  			   in_modifier, op_modifier,
->>  			   MLX4_CMD_MAD_IFC, MLX4_CMD_TIME_CLASS_C);
->>  
->> -	if (!err);
->> +	if (!err)
-> 
-> There's more than a few of these (not inspected).
-> 
-> $ egrep -r --include=*.c "\bif[[:space:]]*\([^\)]*\)[[:space:]]*\;" * 
-> arch/sh/boards/se/7343/io.c:    if (0) ;
-> drivers/atm/iphase.c:     if (!desc1) ;
-> drivers/infiniband/hw/mlx4/mad.c:       if (!err);
-> drivers/isdn/capi/capiutil.c:   else if (c <= 0x0f);
-> drivers/net/tokenring/ibmtr.c:  else if (ti->shared_ram_paging == 0xf);  /* No paging in adapter */
-> drivers/s390/scsi/zfcp_erp.c:           if (status == ZFCP_ERP_SUCCEEDED) ;     /* no further action */
-> fs/hostfs/hostfs_user.c:        if(attrs->ia_valid & HOSTFS_ATTR_CTIME) ;
-> net/netfilter/xt_u32.c:         if (skb->len < 4 || pos > skb->len - 4);
-> sound/pci/au88x0/au88x0_synth.c:                                if (eax == 0) ;
+Herbert Xu wrote:
 
-sounds like an excellent candidate check for checkpatch.pl !!!
+> But I have to say that I still don't know of a single place
+> where one would actually use the volatile variant.
 
-Cheers,
+Given that many of the existing users do currently have "volatile", are 
+you comfortable simply removing that behaviour from them?  Are you sure 
+that you will not introduce any issues?
 
-Auke
+Forcing a re-read is only a performance penalty.  Removing it can cause 
+behavioural changes.
+
+I would be more comfortable making the default match the majority of the 
+current implementations (ie: volatile semantics).  Then, if someone 
+cares about performance they can explicitly validate the call path and 
+convert it over to the non-volatile version.
+
+Correctness before speed...
+
+Chris
