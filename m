@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935171AbXHPLX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935464AbXHPLY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935171AbXHPLX4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 07:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934182AbXHPLVf
+	id S935464AbXHPLY2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 07:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934239AbXHPLWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 07:21:35 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47900 "EHLO mx1.suse.de"
+	Thu, 16 Aug 2007 07:22:39 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:18144 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932765AbXHPLVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 07:21:34 -0400
-From: NeilBrown <neilb@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Date: Thu, 16 Aug 2007 21:21:27 +1000
-Message-Id: <1070816112127.12245@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	id S1763466AbXHPLWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 07:22:36 -0400
+Date: Thu, 16 Aug 2007 13:22:32 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
 Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 006 of 6] Share code between init_request_from_bio and blk_rq_bio_prep
-References: <20070816211551.11839.patches@notabene>
+Subject: Re: [PATCH 002 of 5] Replace bio_data with blk_rq_data
+Message-ID: <20070816112229.GW23758@kernel.dk>
+References: <20070816150445.30843.patches@notabene> <1070816051337.31344@suse.de> <20070816070255.GJ23758@kernel.dk> <18115.63917.990694.904646@notabene.brown> <20070816072114.GK23758@kernel.dk> <18116.12755.587269.111597@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18116.12755.587269.111597@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 16 2007, Neil Brown wrote:
+> On Thursday August 16, jens.axboe@oracle.com wrote:
+> > > 2 and 3 are very simple changes that - I think - make it clearer what
+> > > is happening.
+> > 
+> > To be honest, I don't see much win in using blk_rq_data() over
+> > bio_data() at all. I'd much much rather just see it go away!
+> > 
+> 
+> Well, as it is always the data at the (current) head of the request...
 
-These have very similar functions and should share code where
-possible.
+So is bio_data(bio), and bio_data(rq->bio) is by definition the head of
+the request. If anything, you are making it less flexible. Hence my
+suggestion to just kill it off completely, it's a long over due cleanup.
 
-Signed-off-by: Neil Brown <neilb@suse.de>
+-- 
+Jens Axboe
 
-### Diffstat output
- ./block/ll_rw_blk.c |    8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
-
-diff .prev/block/ll_rw_blk.c ./block/ll_rw_blk.c
---- .prev/block/ll_rw_blk.c	2007-08-16 21:10:55.000000000 +1000
-+++ ./block/ll_rw_blk.c	2007-08-16 21:11:03.000000000 +1000
-@@ -2932,15 +2932,9 @@ static void init_request_from_bio(struct
- 
- 	req->errors = 0;
- 	req->hard_sector = req->sector = bio->bi_sector;
--	req->hard_nr_sectors = req->nr_sectors = bio_sectors(bio);
--	req->current_nr_sectors = req->hard_cur_sectors = bio_cur_sectors(bio);
--	req->nr_phys_segments = bio_phys_segments(req->q, bio);
--	req->nr_hw_segments = bio_hw_segments(req->q, bio);
--	req->buffer = bio_data(bio);	/* see ->buffer comment above */
--	req->bio = req->biotail = bio;
- 	req->ioprio = bio_prio(bio);
--	req->rq_disk = bio->bi_bdev->bd_disk;
- 	req->start_time = jiffies;
-+	blk_rq_bio_prep(req->q, req, bio);
- }
- 
- static int __make_request(struct request_queue *q, struct bio *bio)
