@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761321AbXHPUUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761995AbXHPUY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761321AbXHPUUn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 16:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbXHPUUb
+	id S1761995AbXHPUY2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 16:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbXHPUYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 16:20:31 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52422 "EHLO
+	Thu, 16 Aug 2007 16:24:20 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37713 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754454AbXHPUU3 (ORCPT
+	with ESMTP id S1750901AbXHPUYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 16:20:29 -0400
-Date: Thu, 16 Aug 2007 13:20:26 -0700 (PDT)
+	Thu, 16 Aug 2007 16:24:19 -0400
+Date: Thu, 16 Aug 2007 13:24:17 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Chris Snook <csnook@redhat.com>
-cc: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <46C4ABA5.9010804@redhat.com>
-Message-ID: <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com>
-References: <20070816003948.GY9645@linux.vnet.ibm.com>
- <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
- <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au>
- <18115.45316.702491.681906@cargo.ozlabs.ibm.com>
- <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in>
- <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in>
- <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au>
- <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au>
- <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
- <46C4ABA5.9010804@redhat.com>
+To: Nick Piggin <npiggin@suse.de>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC 0/9] Reclaim during GFP_ATOMIC allocs
+In-Reply-To: <20070816024949.GA16372@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0708161322550.17777@schroedinger.engr.sgi.com>
+References: <20070814153021.446917377@sgi.com> <20070816024949.GA16372@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Aug 2007, Chris Snook wrote:
+On Thu, 16 Aug 2007, Nick Piggin wrote:
 
-> atomic_dec() already has volatile behavior everywhere, so this is semantically
-> okay, but this code (and any like it) should be calling cpu_relax() each
-> iteration through the loop, unless there's a compelling reason not to.  I'll
-> allow that for some hardware drivers (possibly this one) such a compelling
-> reason may exist, but hardware-independent core subsystems probably have no
-> excuse.
+> Just to clarify... I can see how recursive reclaim can prevent memory getting
+> eaten up by reclaim (which thus causes allocations from interrupt handlers to
+> fail)...
+> 
+> But this patchset I don't see will do anything to prevent reclaim deadlocks,
+> right? (because if there is reclaimable memory at hand, then kswapd should
+> eventually reclaim it).
 
-No it does not have any volatile semantics. atomic_dec() can be reordered 
-at will by the compiler within the current basic unit if you do not add a 
-barrier.
+What deadlocks are you thinking about? Reclaim can be run concurrently 
+right now.
+
+
