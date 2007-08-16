@@ -1,40 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761383AbXHPSg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762403AbXHPSkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761383AbXHPSg1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 14:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbXHPSgQ
+	id S1762403AbXHPSkb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 14:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbXHPSkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 14:36:16 -0400
-Received: from mx2.suse.de ([195.135.220.15]:56830 "EHLO mx2.suse.de"
+	Thu, 16 Aug 2007 14:40:19 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52069 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753878AbXHPSgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 14:36:16 -0400
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Andrew Morton <akpm@osdl.org>, stable@kernel.org,
-       Alberto Pires de Oliveira Neto <apon1@terra.com.br>, giedrius@su.lt,
-       LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH] UML - Add a .note.SuSE section
-References: <20070816162428.GA8128@c2.user-mode-linux.org>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 16 Aug 2007 21:30:17 +0200
-In-Reply-To: <20070816162428.GA8128@c2.user-mode-linux.org>
-Message-ID: <p73vebf1dme.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1755374AbXHPSkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 14:40:17 -0400
+Message-ID: <46C49A0D.5080002@garzik.org>
+Date: Thu, 16 Aug 2007 14:40:13 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Mike Frysinger <vapier.adi@gmail.com>
+CC: Sonic Zhang <sonic.adi@gmail.com>, Linux IDE <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Bryan Wu <bryan.wu@analog.com>
+Subject: Re: [PATCH take #5] [libata] libata driver for bf548 on chip ATAPI
+ controller.
+References: <1187169256.31383.3.camel@sevens.analog.com>	 <46C3F6FB.2070909@garzik.org> <8bd0f97a0708160927s625fd5ax84cd6d12a693d9ad@mail.gmail.com>
+In-Reply-To: <8bd0f97a0708160927s625fd5ax84cd6d12a693d9ad@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Dike <jdike@addtoit.com> writes:
-
-> [ This is both 2.6.24 and -stable material ]
+Mike Frysinger wrote:
+> On 8/16/07, Jeff Garzik <jeff@garzik.org> wrote:
+>> Sonic Zhang wrote:
+>>> +static void bfin_set_piomode(struct ata_port *ap, struct ata_device *adev)
+>>> +{
+>>> +     int mode = adev->pio_mode - XFER_PIO_0;
+>>> +     unsigned long base = (unsigned long)ap->ioaddr.ctl_addr;
+>>
+>> (added Bryan Wu to CC)
+>>
+>> Someone needs to need fix the bfin architecture:  the addresses on the
+>> bfin_read/bfin_write functions should be 'void __iomem *' not unsigned long.
 > 
-> SuSE seems to require that binaries have a .note.SuSE section.
-> Without it, UML segfaults if any parameters are passed on the command
-> line.
+> there are no address pointers anymore, so there is nothing to cast ...
+> the bfin_read/bfin_write macros are done in sexy asm:
+> #define bfin_write8(addr,val) __asm__ __volatile__("b[%0] = %1;" ::
+> "a"(addr), "d"(val))
+> or i'm misunderstanding what you mean ...
+> 
+> where do you see (unsigned long) ?
 
-This doesn't make any sense. You must have misanalyzed this.
+Look up (into the message you quoted).
 
--Andi
+Regardless of the implementation, the C type system should be employed 
+to ensure that 'addr' is known to the compiler as 'void __iomem *' 
+rather than unsigned long.
+
+	Jeff
+
+
 
