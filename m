@@ -1,96 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbXHPEer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbXHPEo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756701AbXHPEer (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 00:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbXHPEeg
+	id S1756699AbXHPEo7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 00:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbXHPEot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 00:34:36 -0400
-Received: from ozlabs.org ([203.10.76.45]:56028 "EHLO ozlabs.org"
+	Thu, 16 Aug 2007 00:44:49 -0400
+Received: from smtpout.mac.com ([17.250.248.176]:49677 "EHLO smtpout.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751171AbXHPEef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 00:34:35 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752237AbXHPEor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 00:44:47 -0400
+In-Reply-To: <46C37AD4.5060006@cfl.rr.com>
+References: <106259.96671.qm@web52501.mail.re2.yahoo.com> <Pine.LNX.4.64.0708141546510.22494@blackbox.fnordora.org> <46C2F96D.5030908@partiallystapled.com> <20070815133021.GB9412@csclub.uwaterloo.ca> <ECFEFFF7-0210-4D16-B508-5284FCE58B28@mac.com> <46C33934.7060802@cfl.rr.com> <DE34FF90-3143-4978-BBC5-3CF74B8C3C07@mac.com> <46C3644C.9020102@cfl.rr.com> <87EEB1B3-7FFA-472C-B539-1A7AA2843869@mac.com> <46C37AD4.5060006@cfl.rr.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A93D7AFB-6883-48E4-96A9-CAD76E39132E@mac.com>
+Cc: Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
+       Marc Perkel <mperkel@yahoo.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Al Viro <viro@zeniv.linux.org.uk>
 Content-Transfer-Encoding: 7bit
-Message-ID: <18115.54225.644905.463771@cargo.ozlabs.ibm.com>
-Date: Thu, 16 Aug 2007 14:34:25 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Christoph Lameter <clameter@sgi.com>, Satyam Sharma <satyam@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-In-Reply-To: <20070816040308.GA32133@gondor.apana.org.au>
-References: <20070816005348.GA9645@linux.vnet.ibm.com>
-	<Pine.LNX.4.64.0708151757400.11196@schroedinger.engr.sgi.com>
-	<20070816011414.GC9645@linux.vnet.ibm.com>
-	<Pine.LNX.4.64.0708151839140.11520@schroedinger.engr.sgi.com>
-	<alpine.LFD.0.999.0708160730590.24380@enigma.security.iitk.ac.in>
-	<20070816020851.GA30809@gondor.apana.org.au>
-	<Pine.LNX.4.64.0708151917210.11736@schroedinger.engr.sgi.com>
-	<18115.49946.522011.832468@cargo.ozlabs.ibm.com>
-	<20070816033343.GA31844@gondor.apana.org.au>
-	<18115.51472.408193.332905@cargo.ozlabs.ibm.com>
-	<20070816040308.GA32133@gondor.apana.org.au>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Thinking outside the box on file systems
+Date: Thu, 16 Aug 2007 00:44:25 -0400
+To: Phillip Susi <psusi@cfl.rr.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu writes:
+Mmm, slow-as-dirt hotel wireless.  What fun...
 
-> > You mean it's intended that *sk->sk_prot->memory_pressure can end up
-> > as 1 when sk->sk_prot->memory_allocated is small (less than
-> > ->sysctl_mem[0]), or as 0 when ->memory_allocated is large (greater
-> > than ->sysctl_mem[2])?  Because that's the effect of the current code.
-> > If so I wonder why you bother computing it.
-> 
-> You need to remember that there are three different limits:
-> minimum, pressure, and maximum.  By default we should never
-> be in a situation where what you say can occur.
-> 
-> If you set all three limits to the same thing, then yes it
-> won't work as intended but it's still well-behaved.
+On Aug 15, 2007, at 18:14:44, Phillip Susi wrote:
+> Kyle Moffett wrote:
+>>> I am well aware of that, I'm simply saying that sucks.  Doing a  
+>>> recursive chmod or setfacl on a large directory tree is slow as  
+>>> all hell.
+>>
+>> Doing it in the kernel won't make it any faster.
+>
+> Right... I'm talking about getting rid of it entirely.
 
-I'm not talking about setting all three limits to the same thing.
+Let me repeat myself here:  Algorithmically you fundamentally CANNOT  
+implement inheritance-based ACLs without one of the following  
+(although if you have some other algorithm in mind, I'm listening):
+   (A) Some kind of recursive operation *every* time you change an  
+inheritable permission
+   (B) A unified "starting point" from which you begin *every* access- 
+control lookup (or one "starting point" per useful semantic grouping,  
+like a namespace).
 
-I'm talking about this situation:
+The "(A)" is presently done in userspace and that's what you want to  
+avoid.  As to (B), I will attempt to prove below that you cannot  
+implement "(B)" without breaking existing assumptions and restricting  
+a very nice VFS model.
 
-CPU 0 comes into __sk_stream_mem_reclaim, reads memory_allocated, but
-then before it can do the store to *memory_pressure, CPUs 1-1023 all
-go through sk_stream_mem_schedule, collectively increase
-memory_allocated to more than sysctl_mem[2] and set *memory_pressure.
-Finally CPU 0 gets to do its store and it sets *memory_pressure back
-to 0, but by this stage memory_allocated is way larger than
-sysctl_mem[2].
+>> Not necessarily.  When I do "vim some-file-in-current-directory",  
+>> for example, the kernel does *NOT* look up the path of my current  
+>> directory.  It does (in pseudocode):
+>> if (starts_with_slash(filename)) {
+>>     entry = task->cwd;
+>> } else {
+>>     entry = task->root;
+>> }
+>> while (have_components_left(filename)
+>>     entry = lookup_next_component(filename);
+>> return entry;
+>
+> Right.... and task->cwd would have the effective acl in memory,  
+> ready to be combined with any acl set on the file.
 
-Yes, it's unlikely, but that is the nature of race conditions - they
-are unlikely, and only show up at inconvenient times, never when
-someone who could fix the bug is watching. :)
+What ACL would "task->cwd" use?
 
-Similarly it would be possible for other CPUs to decrease
-memory_allocated from greater than sysctl_mem[2] to less than
-sysctl_mem[0] in the interval between when we read memory_allocated
-and set *memory_pressure to 1.  And it's quite possible for their
-setting of *memory_pressure to 0 to happen before our setting of it to
-1, so that it ends up at 1 when it should be 0.
+Options:
+(1.a) Use the one calculated during the original chdir() call.
+(1.b) Navigate "up" task->cwd building an ACL backwards.
+(1.c) $CAN_YOU_THINK_OF_SOMETHING_ELSE_HERE
 
-Now, maybe it's the case that it doesn't really matter whether
-*->memory_pressure is 0 or 1.  But if so, why bother computing it at
-all?
+Unsolvable problems with each option:
 
-People seem to think that using atomic_t means they don't need to use
-a spinlock.  That's fine if there is only one variable involved, but
-as soon as there's more than one, there's the possibility of a race,
-whether or not you use atomic_t, and whether or not atomic_read has
-"volatile" behaviour.
+(1.a.I)
+You just broke all sorts of chrooted daemons.  When I start bind in  
+its chroot jail, it does the following:
+   chdir("/private/bind9");
+   chroot(".");
+   setgid(...);
+   setuid(...);
+The "/private" directory is readable only by root, since root is the  
+only one who will be navigating you into these chroots for any  
+reason.  You only switch UID/GID after the chroot() call, at which  
+point you are inside of a sub-context and your cwd is fully  
+accessible.  If you stick an inheritable ACL on "/private", then the  
+"cwd" ACL will not allow access by anybody but root and my bind won't  
+be able to read any config files.
 
-Paul.
+You also break relative paths and directory-moving.  Say a process  
+does chdir("/foo/bar").  Now the ACL data in "cwd" is appropriate  
+for /foo/bar.  If you later chdir("../quux"), how do you unapply the  
+changes made when you switched into that directory?  For inheritable  
+ACLs, you can't "unapply" such an ACL state change unless you save  
+state for all the parent directories, except...  What happens when  
+you are in "/foo/bar" and another process does "mv /foo/bar /foobar/ 
+quux"?  Suddenly any "cwd" ACL data you have is completely invalid  
+and you have to rebuild your ACLs from scratch.  Moreover, if the  
+directory you are in was moved to a portion of the filesystem not  
+accessible from your current namespace then how do you deal with it?
+
+For example:
+NS1 has the / root dir of /dev/sdb1 mounted on /mnt
+NS2 has the /bar subdir of /dev/sdb1 mounted on /mnt
+
+Your process is in NS2 and does chdir("/mnt/quux").  A user in NS1  
+does: "mv /mnt/bar/quux /mnt/quux".  Now your "cwd" is in a directory  
+on a filesystem you have mounted, but it does not correspond *AT ALL*  
+to any path available from your namespace.
+
+Another example:
+Your process has done dirfd=open("/media/cdrom/somestuff") when the  
+admin does "umount -l /media/cdrom".  You still have the CD-ROM open  
+and accessible but IT HAS NO PATH.  It isn't even mounted in *any*  
+namespace, it's just kind of dangling waiting for its last users to  
+go away.  You can still do fchdir(dirfd), openat(dirfd, "foo/ 
+bar", ...), open("./foo"), etc.
+
+In Linux the ONLY distinction between "relative" and "absolute" paths  
+is that the "absolute" path begins with a magic slash which implies  
+that you start at the hidden "root" fd the kernel manages.
+
+More detail on problems with the "building the ACL from scratch" part:
+>> That's not even paying attention to functions like "fchdir" or  
+>> their interactions with "chroot" and namespaces.  I can probably  
+>> have an open directory handle to a volume in a completely  
+>> different namespace, a volume which isn't even *MOUNTED* in my  
+>> current fs namespace.  Using that file-handle I believe I can  
+>> "fchdir", "openat", etc, in a completely different namespace.  I  
+>> can do the same thing with a chroot, except there I can even  
+>> "escape":
+>>   /* Switch into chroot.  Doesn't drop root privs */
+>>   chdir("/some/dir/somewhere");
+>>   chroot(".");
+>>   /* Malicious code later on */
+>>   chdir("/");
+>>   chroot("another_dir");
+>>   chdir("../../../../../../../../..");
+>>   chroot(".");
+>>   /* Now I'm back in the real root filesystem */
+>
+> I don't see what this has to do with this discussion, and I also  
+> can't believe that is correct... the chdir( "../../../../.." )  
+> should fail because there is no such directory.
+
+No, this is correct because in the root directory "/", the ".." entry  
+is just another link to the root directory.  So the absolute path  
+"/../../../../../.." is just a fancy name for the root directory.   
+The above jail-escape-as-root exploit is possible because it is  
+impossible to determine whether a directory is or is not a subentry  
+of another directory without an exhaustive search.  So when your  
+"cwd" points to a path outside of the chroot, the one special case in  
+the code for the "root" directory does not ever match and you can  
+"chdir" all the way up to the real root.  You can even do an fstat()  
+after every iteration to figure out whether you're there or not!
+
+And yes, this has been exploited before, although not often as chroot 
+()-ed uid=0 daemons aren't all that common.
+
+So, pray tell, when this code runs and you do the "chroot" call, what  
+ACL do you think should get stuck on "cwd"?  It doesn't reference  
+anything available relative to the chroot.
+
+
+>> The locking penalty is because the path-lookup is *not* implied.   
+>> The above chroot example shows that in detail.  If you have to do  
+>> the lookup in *reverse* on every open operation then you have to  
+>> either:
+>>   (A) Store lots of security context with every open directory  
+>> (cwd included).  When a directory you have open is moved, you  
+>> still have full access to everything inside it since your handle's  
+>> data hasn't changed.
+>
+> Yes, the effective acl of the open directory is kept in memory, but  
+> in the directory itself, not the handle to it, thus when the  
+> directory is moved, it's acl is recomputed for the new location and  
+> updated immediately.  It is like using fcntl to set a file to non  
+> blocking... it is the file you set, not the handle to it, so it  
+> effects other processes that have inherited or duplicated the file.
+
+With this you just got into the big-ugly-nasty-recursive-behavior  
+again.  Say I untar 20 kernel source trees and then have my program  
+open all 1000 available FDs to various directories in the kernel  
+source tree.  Now I run 20 copies of this program, one for each tree,  
+still well within my ulimits even on a conservative box.  Now run "mv  
+dir_full_of_kernel_sources some/new/dir".  The only thing you can do  
+to find all of the FDs is to iterate down the entire subdirectory  
+tree looking for open files and updating their contexts one-by-one.   
+Except you have 20,000 directory FDs to update.  Ouch.
+
+To sum up, when doing access control the only values you can safely  
+and efficiently get at are:
+(A)  The dentry/inode
+(B)  The superblock
+(C)  *Maybe* the vfsmount if those patches get accepted
+
+Any access control model which tries to poke other values is just  
+going to have a shitload of corner cases where it just falls over.
+
+Cheers,
+Kyle Moffett
+
