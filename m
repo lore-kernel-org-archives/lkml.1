@@ -1,94 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbXHPFIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758949AbXHPFNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758029AbXHPFIp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 01:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbXHPFIb
+	id S1758949AbXHPFNl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 01:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753630AbXHPFNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 01:08:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43957 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbXHPFIa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 01:08:30 -0400
-Date: Thu, 16 Aug 2007 10:50:44 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Bill Fink <billfink@mindspring.com>
-cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <20070815233721.91032366.billfink@mindspring.com>
-Message-ID: <alpine.LFD.0.999.0708161045360.25951@enigma.security.iitk.ac.in>
-References: <20070809131423.GA9927@shell.boston.redhat.com>
- <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
- <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
- <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
- <20070815233721.91032366.billfink@mindspring.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 16 Aug 2007 01:13:33 -0400
+Received: from mx2.suse.de ([195.135.220.15]:51246 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753213AbXHPFNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 01:13:32 -0400
+From: NeilBrown <neilb@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Date: Thu, 16 Aug 2007 15:13:25 +1000
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
+Subject: [PATCH 000 of 5] Introductory patches for bio refactor.
+Message-ID: <20070816150445.30843.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bill,
+
+Hi Jens,
+ I wonder if you would accept these patches the block layer.
+ They are, as far as I can tell, quite uncontroversial and provide
+ good cleanups.
+
+ The first is a minor bug-fix.
+ The next to replace helper function that take a bio (always the first
+ bio of a request), to instead take a request.
+
+ The last two combine to replace rq_for_each_bio with
+ rq_for_each_segment which makes blk_recalc_rq_segments a lot
+ cleaner, and improves (to a lesser degree) every other place that
+ used rq_for_each_bio.
+
+ The net result is a decrease in object code size (for my x86-64 compile)
+ for block/built-in.o of 96 bytes, though there is some growth out in
+ drivers making and over-all decrease of only 48 bytes.
+
+Thanks,
+NeilBrown
 
 
-On Wed, 15 Aug 2007, Bill Fink wrote:
 
-> On Wed, 15 Aug 2007, Satyam Sharma wrote:
-> 
-> > (C)
-> > $ cat tp3.c
-> > int a;
-> > 
-> > void func(void)
-> > {
-> > 	*(volatile int *)&a = 10;
-> > 	*(volatile int *)&a = 20;
-> > }
-> > $ gcc -Os -S tp3.c
-> > $ cat tp3.s
-> > ...
-> > movl    $10, a
-> > movl    $20, a
-> > ...
-> 
-> I'm curious about one minor tangential point.  Why, instead of:
-> 
-> 	b = *(volatile int *)&a;
-> 
-> why can't this just be expressed as:
-> 
-> 	b = (volatile int)a;
-> 
-> Isn't it the contents of a that's volatile, i.e. it's value can change
-> invisibly to the compiler, and that's why you want to force a read from
-> memory?  Why do you need the "*(volatile int *)&" construct?
-
-"b = (volatile int)a;" doesn't help us because a cast to a qualified type
-has the same effect as a cast to an unqualified version of that type, as
-mentioned in 6.5.4:4 (footnote 86) of the standard. Note that "volatile"
-is a type-qualifier, not a type itself, so a cast of the _object_ itself
-to a qualified-type i.e. (volatile int) would not make the access itself
-volatile-qualified.
-
-To serve our purposes, it is necessary for us to take the address of this
-(non-volatile) object, cast the resulting _pointer_ to the corresponding
-volatile-qualified pointer-type, and then dereference it. This makes that
-particular _access_ be volatile-qualified, without the object itself being
-such. Also note that the (dereferenced) result is also a valid lvalue and
-hence can be used in "*(volatile int *)&a = b;" kind of construction
-(which we use for the atomic_set case).
-
-
-Satyam
+ [PATCH 001 of 5] Don't update bi_hw_*_size if we aren't going to merge.
+ [PATCH 002 of 5] Replace bio_data with blk_rq_data
+ [PATCH 003 of 5] Replace bio_cur_sectors with blk_rq_cur_sectors.
+ [PATCH 004 of 5] Introduce rq_for_each_segment replacing rq_for_each_bio
+ [PATCH 005 of 5] Merge blk_recount_segments into blk_recalc_rq_segments
