@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934964AbXHPIrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbXHPJMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934964AbXHPIrf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 04:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757038AbXHPIrH
+	id S1757966AbXHPJMW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 05:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbXHPJML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 04:47:07 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:55631 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751745AbXHPIrC (ORCPT
+	Thu, 16 Aug 2007 05:12:11 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:1341 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752042AbXHPJMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 04:47:02 -0400
-Date: Thu, 16 Aug 2007 10:46:35 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Joe Perches <joe@perches.com>
-Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       rolandd@cisco.com, Chas Williams <chas@cmf.nrl.navy.mil>,
-       Paul Mundt <lethal@linux-sh.org>, isdn4linux@listserv.isdn4linux.de,
-       mikep@linuxtr.net, netdev@vger.kernel.org, swen@vnet.ibm.com,
-       linux390@de.ibm.com, linux-s390@vger.kernel.org, jdike@karaya.com,
-       user-mode-linux-devel@lists.sourceforge.net,
-       user-mode-linux-user@lists.sourceforge.net,
-       netfilter-devel@lists.netfilter.org, coreteam@netfilter.org
-Subject: Re: drivers/infiniband/mlx/mad.c misplaced ;
-Message-ID: <20070816084635.GA15985@osiris.boeblingen.de.ibm.com>
-References: <20070815235825.GB17004@redhat.com> <1187224811.5906.55.camel@localhost>
+	Thu, 16 Aug 2007 05:12:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SjgDYqIjQ7Fu8SRnv+MzQAN3Xkdk3lyRKnq2bjDTRpNzBUkGUqVyxhfFkSGaUYF0PTLRqkdOon+nLquYDpihqdrMO9NsaKMw77GYuqy5ylEM/TzrUVJHv6DEjGsJ7doKK97v+tus7YWGiCWnkMu0hMyl6zLv5M46MZbWP/zy5I0=
+Message-ID: <653402b90708160212x538296b0wbe93c69fe3561dfa@mail.gmail.com>
+Date: Thu, 16 Aug 2007 11:12:07 +0200
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: [PATCH 1/5] Add a 00-INDEX file to Documentation/auxdisplay/
+Cc: linux-doc@vger.kernel.org, "Rob Landley" <rob@landley.net>,
+       "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200708120046.15100.jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1187224811.5906.55.camel@localhost>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <200708120045.03032.jesper.juhl@gmail.com>
+	 <200708120046.15100.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 05:40:11PM -0700, Joe Perches wrote:
-> On Wed, 2007-08-15 at 19:58 -0400, Dave Jones wrote:
-> > Signed-off-by: Dave Jones <davej@redhat.com>
-> > 
-> > diff --git a/drivers/infiniband/hw/mlx4/mad.c b/drivers/infiniband/hw/mlx4/mad.c
-> > index 3330917..0ed02b7 100644
-> > --- a/drivers/infiniband/hw/mlx4/mad.c
-> > +++ b/drivers/infiniband/hw/mlx4/mad.c
-> > @@ -109,7 +109,7 @@ int mlx4_MAD_IFC(struct mlx4_ib_dev *dev, int ignore_mkey, int ignore_bkey,
-> >  			   in_modifier, op_modifier,
-> >  			   MLX4_CMD_MAD_IFC, MLX4_CMD_TIME_CLASS_C);
-> >  
-> > -	if (!err);
-> > +	if (!err)
-> 
-> There's more than a few of these (not inspected).
-> 
-> $ egrep -r --include=*.c "\bif[[:space:]]*\([^\)]*\)[[:space:]]*\;" * 
+On 8/12/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
+>
+> Add a 00-INDEX file to Documentation/auxdisplay/
+>
+>
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> ---
+>
+>  00-INDEX |    8 ++++++++
+>  1 file changed, 8 insertions(+)
+>
+> --- /dev/null   2005-11-21 04:22:37.000000000 +0100
+> +++ linux-2.6/Documentation/auxdisplay/00-INDEX 2007-08-11 23:58:49.000000000 +0200
+> @@ -0,0 +1,8 @@
+> +00-INDEX
+> +       - this file.
+> +cfag12864b
+> +       - documentation for the cfag12864b LCD driver.
+> +cfag12864b-example.c
+> +       - cfag12864b LCD userspace example program.
+> +ks0108
+> +       - documentation for the ks0108 LCD controller driver.
+>
+>
+>
 
-[...]
+Thank you for the patch.
 
-> drivers/s390/scsi/zfcp_erp.c:           if (status == ZFCP_ERP_SUCCEEDED) ;     /* no further action */
+Signed-off-by: Miguel Ojeda <maxextreme@gmail.com>
 
-At least this one is not a bug. But I'm going to add a "break" there, so it
-doesn't look that strange anymore. Thanks!
+-- 
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm
