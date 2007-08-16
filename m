@@ -1,56 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937437AbXHPBiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937648AbXHPBk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937437AbXHPBiQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 21:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbXHPBh6
+	id S937648AbXHPBk1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 21:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbXHPBkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 21:37:58 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:25492 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751825AbXHPBh5 (ORCPT
+	Wed, 15 Aug 2007 21:40:11 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:46472 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756338AbXHPBkI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 21:37:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=d+lasCtSolmh1w2GrKVd1xK4f8F3wYRl/SpE8uXwTXuRlxFiZiELCvGvff9Kl2cgZW5MgyS6OQg6oPsRlw4UegJR6ruC8zmXARq4PgB6USi94s21xqJbeZMZYYB/WOp3IV/y4KKW5CUL7Kv7u7de4kYjYEoUl3jwoTzA2U4hIT4=  ;
-X-YMail-OSG: 6iql9Z0VM1l9dkPX8gmqddkCmunUsUkDQfboMC7Q1W9RcNJtVlR_kcjvFBDZKqNbSRFtyxDRfg--
-Message-ID: <46C3AA70.9010000@yahoo.com.au>
-Date: Thu, 16 Aug 2007 11:37:52 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Herbert Xu <herbert.xu@redhat.com>
-CC: Chris Snook <csnook@redhat.com>, Andi Kleen <ak@suse.de>,
-       sebastian@breakpoint.cc, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] i386: use asm() like the other atomic operations
- already do.
-References: <E1ILEQ8-0005H5-00@gondolin.me.apana.org.au> <46C3319F.4050809@redhat.com> <20070815234434.GC28775@gondor.apana.org.au>
-In-Reply-To: <20070815234434.GC28775@gondor.apana.org.au>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 15 Aug 2007 21:40:08 -0400
+Subject: [BUG -rt] circular locking deadlock
+From: john stultz <johnstul@us.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 15 Aug 2007 18:39:53 -0700
+Message-Id: <1187228393.6062.31.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> On Wed, Aug 15, 2007 at 01:02:23PM -0400, Chris Snook wrote:
-> 
->>Herbert Xu wrote:
+Hey Ingo, Thomas,
 
->>>I'm still unconvinced why we need this because nobody has
->>>brought up any examples of kernel code that legitimately
->>>need this.
->>
->>There's plenty of kernel code that *wants* this though.  If we can 
-> 
-> 
-> You keep saying this yet everytime I ask for an example I
-> get nothing.
+I was playing with the latency tracer on 2.6.23-rc2-rt2 while a "make
+-j8" was going on in the background and the box hung with this on the
+console:
 
-Agreed. Simplest thing to do will be to post those patches which
-eliminate the register-clobbering barriers, shrink binaries, etc.
-for all that code that wants this.
 
--- 
-SUSE Labs, Novell Inc.
+============================================
+[ BUG: circular locking deadlock detected! ]
+--------------------------------------------
+cc1/7161 is deadlocking current task cc1/7164
+
+
+1) cc1/7164 is trying to acquire this lock:
+ [ffff8101fa375250] {&list->lock}
+.. ->owner: ffff8101ef7f7162
+.. held by:               cc1: 7161 [ffff8101ef7f7160, 120]
+
+2) cc1/7161 is blocked on this lock:
+ [ffff8102118e5900] {&list->lock}
+.. ->owner: ffff8100ddb3ace2
+.. held by:               cc1: 7164 [ffff8100ddb3ace0, 120]
+
+cc1/7161's [blocked] stackdump:
+
+ ffff8101f9423c68 0000000000000086 0000000100000000 0000000000000002
+ ffffffff82205d00 0000000000000202 ffffffff82189280 ffff8101ef7f7160
+ ffff8100ddb3ace0 ffff8101f9423c10 0000000000000202 0000000000000000
+Call Trace:
+ [<ffffffff8100c58c>] mcount+0x2c/0x3a
+ [<ffffffff817e6e6b>] schedule+0x3b/0x130
+ [<ffffffff817e7feb>] rt_spin_lock_slowlock+0xdb/0x210
+ [<ffffffff817e8b4d>] __rt_spin_lock+0x3d/0x50
+ [<ffffffff817e8b6e>] rt_spin_lock+0xe/0x10
+ [<ffffffff81297a62>] __lock_list+0x42/0x70
+ [<ffffffff81297b43>] lock_list_splice_init+0x33/0xb0
+ [<ffffffff810bf9d8>] file_move+0xc8/0xd0
+ [<ffffffff810bc99e>] __dentry_open+0xae/0x1d0
+ [<ffffffff810bcb84>] nameidata_to_filp+0x44/0x60
+ [<ffffffff810bcbed>] do_filp_open+0x4d/0x60
+ [<ffffffff817e8ace>] __lock_text_start+0xe/0x10
+ [<ffffffff810bc8a3>] get_unused_fd_flags+0x103/0x130
+ [<ffffffff810bcc61>] do_sys_open+0x61/0x100
+ [<ffffffff810bcd40>] sys_open+0x20/0x30
+ [<ffffffff8100c9a5>] tracesys+0x151/0x1be
+
+---------------------------
+| preempt count: 00000002 ]
+| 2-level deep critical section nesting:
+----------------------------------------
+.. [<ffffffff817e5e33>] .... __schedule+0x23/0x265
+.....[<ffffffff817e6e6b>] ..   ( <= schedule+0x3b/0x130)
+.. [<ffffffff817e9041>] .... __spin_lock_irq+0x21/0x40
+.....[<ffffffff817e5ec4>] ..   ( <= __schedule+0xb4/0x265)
+
+
+cc1/7164's [current] stackdump:
+
+
+Call Trace:
+ [<ffffffff8100e433>] show_stack+0x13/0x20
+ [<ffffffff8106c643>] debug_rt_mutex_print_deadlock+0x163/0x180
+ [<ffffffff817e7fe6>] rt_spin_lock_slowlock+0xd6/0x210
+ [<ffffffff817e8b4d>] __rt_spin_lock+0x3d/0x50
+ [<ffffffff817e8b6e>] rt_spin_lock+0xe/0x10
+ [<ffffffff81297a62>] __lock_list+0x42/0x70
+ [<ffffffff81297be6>] lock_list_del_init+0x26/0x70
+ [<ffffffff810bf8fa>] file_kill+0x4a/0x60
+ [<ffffffff810bfb8e>] __fput+0x12e/0x1d0
+ [<ffffffff810bfcc5>] fput+0x25/0x30
+ [<ffffffff810bc771>] filp_close+0x61/0x90
+ [<ffffffff810bded9>] sys_close+0xa9/0x100
+ [<ffffffff8100c9a5>] tracesys+0x151/0x1be
+
+---------------------------
+| preempt count: 00000000 ]
+| 0-level deep critical section nesting:
+----------------------------------------
+
+[ turning off deadlock detection.Please report this trace. ]
+
+
