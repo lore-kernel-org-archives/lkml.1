@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763438AbXHPXbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765287AbXHPXc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763438AbXHPXbv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 19:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757419AbXHPXbm
+	id S1765287AbXHPXc0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 19:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758438AbXHPXcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 19:31:42 -0400
-Received: from smtpout.mac.com ([17.250.248.174]:59325 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756890AbXHPXbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 19:31:41 -0400
-In-Reply-To: <alpine.LFD.0.999.0708161550140.30176@woody.linux-foundation.org>
-References: <29015.1187178055@redhat.com> <alpine.LFD.0.999.0708161550140.30176@woody.linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <08F0A127-BBEE-4B80-8AE7-1EB7CB815C16@mac.com>
-Cc: David Howells <dhowells@redhat.com>, viro@ftp.linux.org.uk,
-       sds@tycho.nsa.gov, casey@schaufler-ca.com,
-       linux-fsdevel@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Adding a security parameter to VFS functions
-Date: Thu, 16 Aug 2007 19:30:42 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.2)
+	Thu, 16 Aug 2007 19:32:15 -0400
+Received: from utopia.booyaka.com ([72.9.107.138]:56847 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759778AbXHPXcN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 19:32:13 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Aug 2007 19:32:13 EDT
+MBOX-Line: From Paul Walmsley <paul@pwsan.com> Thu Aug 16 16:22:39 2007
+Message-Id: <20070816232239.533779000@pwsan.com>
+References: <20070816232134.151893000@pwsan.com>
+User-Agent: quilt/0.45-1
+Date: Thu, 16 Aug 2007 16:21:35 -0700
+From: Paul Walmsley <paul@pwsan.com>
+To: linux-kernel@vger.kernel.org
+Cc: Raj Kumar <rkumar@archive.org>, <gphoto-devel@lists.sourceforge.net>,
+       Siznax <steve@archive.org>, Brewster Kahle <brewster@archive.org>
+Subject: [patch 1/1] usb quirks: Add Canon EOS 5D (PC Connection mode) to the autosuspend blacklist
+Content-Disposition: inline; filename=canon-eos5d-no-autosuspend.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 16, 2007, at 18:57:24, Linus Torvalds wrote:
-> On Wed, 15 Aug 2007, David Howells wrote:
->> Would you object greatly to functions like vfs_mkdir() gaining a  
->> security parameter?  What I'm thinking of is this:
->> int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode,  
->> struct security *security)
->
-> I personally consider this an affront to everythign that is decent.
->
-> Why the *hell* would mkdir() be so magical as to need something  
-> like that?
+Recent versions of the Linux kernel auto-suspend attached USB devices.
+After this happens to the Canon EOS 5D camera, the camera's interrupt endpoints
+don't seem to wake back up correctly, causing further use with libgphoto2
+to fail with a -114 "OS error in camera communication" error.  
 
-Not speaking directly for David, but I believe the reason is for  
-background kernel code which needs to do filesystem access during a  
-thread's execution with *completely* different security context from  
-that of the thread.  Examples should be reasonably obvious; kNFSd is  
-one, but it also includes anything where the kernel would poke  
-directly into the filesystem, such as network filesystem cachefiles.
+A similar fix is probably necessary for this camera in PTP mode, which
+identifies as USB product id 0x3102, but we haven't tested this.
 
-> Make it something sane, like a "struct nameidata" instead, and make  
-> it at least try to look like the path creation that is done by "open 
-> ()".  Or create a "struct file *" or something.
->
-> I can imagine having "mkdir()" being passed similar data as "open 
-> ()" (ie "lookup()"), but I cannot _possibly_ imagine it ever being  
-> valid to pass in something totally made-up to just mkdir(), and  
-> nothing else. There's something fundamentally wrong there.
+As part of our testing process, we tried the USB_QUIRK_RESET_RESUME
+quirk also, it's not helpful in this case.
 
-I would offer the suggestion of using the described "struct security"  
-in-place in the task struct, in place of using all those fields  
-individually.  That would be, in effect the "default" security  
-context for any given task, if "NULL" is passed to the appropriate  
-vfs function.  For CacheFiles and kNFSd, they could each allocate  
-their own during initialization or new-connection and pass that to  
-any "mkdir()", etc that they do on behalf of a given client.
+Applies against 2.6.23-rc3.
 
+Signed-off-by: Raj Kumar <rkumar@archive.org>
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
 
-> What makes mkdir() so magical?
->
-> Also, what about all the other ops? Why is mkdir() special, but not  
-> "mknod()"? Why is "mkdir()" special, but not "rmdir()"? Really,  
-> none of this seems to make any sense unless you describe what is so  
-> magical about mkdir().
+---
+ drivers/usb/core/quirks.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-I think mkdir() was just an example he was using, probably because it  
-was the first VFS call he needed to set a security context on.   Next  
-would come anything which CacheFiles or NFSd call on the underlying  
-filesystem.
+Index: linux-2.6/drivers/usb/core/quirks.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/core/quirks.c	2007-08-16 14:42:31.000000000 -0700
++++ linux-2.6/drivers/usb/core/quirks.c	2007-08-16 16:17:51.000000000 -0700
+@@ -70,6 +70,9 @@
+ 	/* Philips PSC805 audio device */
+ 	{ USB_DEVICE(0x0471, 0x0155), .driver_info = USB_QUIRK_RESET_RESUME },
+ 
++	/* Canon EOS 5D in PC Connection mode */
++	{ USB_DEVICE(0x04a9, 0x3101), .driver_info = USB_QUIRK_NO_AUTOSUSPEND },
++
+ 	/* RIM Blackberry */
+ 	{ USB_DEVICE(0x0fca, 0x0001), .driver_info = USB_QUIRK_NO_AUTOSUSPEND },
+ 	{ USB_DEVICE(0x0fca, 0x0004), .driver_info = USB_QUIRK_NO_AUTOSUSPEND },
 
-Cheers,
-Kyle Moffett
+--
 
