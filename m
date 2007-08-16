@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761995AbXHPUY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762429AbXHPU0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761995AbXHPUY2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 16:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbXHPUYU
+	id S1762429AbXHPU0j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 16:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbXHPU0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 16:24:20 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37713 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750901AbXHPUYT (ORCPT
+	Thu, 16 Aug 2007 16:26:32 -0400
+Received: from mailrelay003.isp.belgacom.be ([195.238.6.53]:36355 "EHLO
+	mailrelay003.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753292AbXHPU0c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 16:24:19 -0400
-Date: Thu, 16 Aug 2007 13:24:17 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <npiggin@suse.de>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dkegel@google.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [RFC 0/9] Reclaim during GFP_ATOMIC allocs
-In-Reply-To: <20070816024949.GA16372@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0708161322550.17777@schroedinger.engr.sgi.com>
-References: <20070814153021.446917377@sgi.com> <20070816024949.GA16372@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 16 Aug 2007 16:26:32 -0400
+Date: Thu, 16 Aug 2007 22:30:34 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: joe@perches.com
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] [540/2many] MAINTAINERS - WATCHDOG DEVICE DRIVERS
+Message-ID: <20070816203034.GA4495@infomag.infomag.iguana.be>
+References: <46bffcab.hvODrZFyIOzH/Lb/%joe@perches.com> <20070816194638.GA3498@infomag.infomag.iguana.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070816194638.GA3498@infomag.infomag.iguana.be>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Aug 2007, Nick Piggin wrote:
+Hi Joe,
 
-> Just to clarify... I can see how recursive reclaim can prevent memory getting
-> eaten up by reclaim (which thus causes allocations from interrupt handlers to
-> fail)...
+> > Add file pattern to MAINTAINER entry
+> > 
+> > Signed-off-by: Joe Perches <joe@perches.com>
 > 
-> But this patchset I don't see will do anything to prevent reclaim deadlocks,
-> right? (because if there is reclaimable memory at hand, then kswapd should
-> eventually reclaim it).
+> patch added to linux-2.6-watchdog git trees.
 
-What deadlocks are you thinking about? Reclaim can be run concurrently 
-right now.
+Patch removed until there is a consensus on how to proceed with your proposal.
 
-
+Greetings,
+Wim.
