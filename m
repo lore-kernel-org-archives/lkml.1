@@ -1,39 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937576AbXHPA6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937508AbXHPA77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937576AbXHPA6r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 20:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763985AbXHPA6h
+	id S937508AbXHPA77 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 20:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764048AbXHPA7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 20:58:37 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:48331 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754938AbXHPA6g (ORCPT
+	Wed, 15 Aug 2007 20:59:47 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56662 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755757AbXHPA7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 20:58:36 -0400
-Message-ID: <46C3A04E.7030205@gmail.com>
-Date: Thu, 16 Aug 2007 02:54:38 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 15 Aug 2007 20:59:45 -0400
+Date: Wed, 15 Aug 2007 17:59:41 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <20070816005348.GA9645@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0708151757400.11196@schroedinger.engr.sgi.com>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+ <18115.35524.56393.347841@cargo.ozlabs.ibm.com>
+ <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com>
+ <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
+ <20070816005348.GA9645@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "David P. Reed" <dpreed@reed.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: do get_rtc_time() correctly
-References: <46C35284.1080003@reed.com> <20070816005151.56176a04@the-village.bc.nu> <46C399C1.9000502@reed.com>
-In-Reply-To: <46C399C1.9000502@reed.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/16/2007 02:26 AM, David P. Reed wrote:
+On Wed, 15 Aug 2007, Paul E. McKenney wrote:
 
-> My mention of NMI (which by definition can't be masked) is because NMI
+> The volatile cast should not disable all that many optimizations,
+> for example, it is much less hurtful than barrier().  Furthermore,
+> the main optimizations disabled (pulling atomic_read() and atomic_set()
+> out of loops) really do need to be disabled.
 
-Well, not by the CPU it can't, but on a PC, masking NMIs is a simple matter 
-of setting bit 7 of I/O port 0x70 to 1 (it seems the kernel does not provide 
-an interface for it though?).
-
-Rene.
+In many cases you do not need a barrier. Having volatile there *will* 
+impact optimization because the compiler cannot use a register that may 
+contain the value that was fetched earlier. And the compiler cannot choose 
+freely when to fetch the value. The order of memory accesses are fixed if 
+you use volatile. If the variable is not volatile then the compiler can 
+arrange memory accesses any way they fit and thus generate better code.
 
