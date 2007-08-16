@@ -1,75 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764480AbXHPIAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758279AbXHPIHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764480AbXHPIAm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 04:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757824AbXHPIAb
+	id S1758279AbXHPIHK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 04:07:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbXHPIGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 04:00:31 -0400
-Received: from mga09.intel.com ([134.134.136.24]:5400 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757731AbXHPIAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 04:00:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,270,1183359600"; 
-   d="scan'208";a="118144484"
-Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46C38AA8.5040202@zytor.com>
-References: <1186990219.22431.37.camel@caritas-dev.intel.com>
-	 <20070815161642.1bfbbe9c.akpm@linux-foundation.org>
-	 <46C38AA8.5040202@zytor.com>
-Content-Type: text/plain
+	Thu, 16 Aug 2007 04:06:39 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:40942 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbXHPIGe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 04:06:34 -0400
+Message-ID: <46C40587.7050708@s5r6.in-berlin.de>
+Date: Thu, 16 Aug 2007 10:06:31 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au>
+In-Reply-To: <20070816070907.GA964@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Thu, 16 Aug 2007 16:00:48 +0800
-Message-Id: <1187251248.15063.12.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 16 Aug 2007 08:00:19.0785 (UTC) FILETIME=[7D637390:01C7DFDB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-16 at 07:22 +0800, H. Peter Anvin wrote:
-> Andrew Morton wrote:
-> > On Mon, 13 Aug 2007 15:30:19 +0800
-> > "Huang, Ying" <ying.huang@intel.com> wrote:
-> >
-> >> Following sets of patches add EFI/UEFI (Unified Extensible Firmware
-> >> Interface) runtime services support to x86_64 architecture.
-> >
-> > OK, we have a major trainwreck when these patches meet Peter's
-> > get-newsetup.patch.
-> >
-> > I'm halfway into fixing it when I see this.  You have:
-> >
-> >  #define SYS_DESC_TABLE (*(struct sys_desc_table_struct*)(PARAM
-> +0xa0))
-> > +#define EFI_LOADER_SIG ((unsigned char *)(PARAM+0x1c0))
-> > +#define EFI_MEMDESC_SIZE (*((unsigned int *) (PARAM+0x1c4)))
-> > +#define EFI_MEMDESC_VERSION (*((unsigned int *) (PARAM+0x1c8)))
-> > +#define EFI_MEMMAP_SIZE (*((unsigned int *) (PARAM+0x1cc)))
-> > +#define EFI_MEMMAP (*((unsigned long *)(PARAM+0x1d0)))
-> > +#define EFI_SYSTAB (*((unsigned long *)(PARAM+0x1d8)))
-> >  #define MOUNT_ROOT_RDONLY (*(unsigned short *) (PARAM+0x1F2))
-> >
+Herbert Xu wrote:
+> On Thu, Aug 16, 2007 at 04:56:21PM +1000, Paul Mackerras wrote:
+>>
+>> Note that I said these are the cases _where one might want to allow
+>> caching_, so of course adding volatile doesn't help _these_ cases.
+>> There are of course other cases where one definitely doesn't want to
+>> allow the compiler to cache the value, such as when polling an atomic
+>> variable waiting for another CPU to change it, and from my inspection
+>> so far these cases seem to be the majority.
 > 
-> Please, no more of these kinds of macros.  We have already had
-> collisions.  Go ahead and redefine the efi_info structure if
-> necessary,
+> We've been through that already.  If it's a busy-wait it
+> should use cpu_relax.  If it's scheduling away that already
+> forces the compiler to reread anyway.
+> 
+> Do you have an actual example where volatile is needed?
+> 
+>> - It matches the normal expectation based on the name "atomic_read"
+>> - It matches the behaviour of the other atomic_* primitives
+> 
+> Can't argue since you left out what those expectations
+> or properties are.
 
-I missed the git-newsetup.patch. I will change EFI runtime service patch
-according to the git-newsetup.patch.
+We use atomic_t for data that is concurrently locklessly written and
+read at arbitrary times.  My naive expectation as driver author (driver
+maintainer) is that all atomic_t accessors, including atomic_read, (and
+atomic bitops) work with the then current value of the atomic data.
 
-One question:
+>> - It avoids bugs in the cases where "volatile" behaviour is required
+> 
+> Do you (or anyone else for that matter) have an example of this?
 
-The boot_params.efi_info.efi_systab is defined as u32. But it should be
-u64 on x86_64, because it comes from firmware and is not controlled by
-bootloader. But, changing it from u32 to u64 will break current i386 EFI
-support, should we change it and fix the i386 EFI bootloader?
+The only code I somewhat know, the ieee1394 subsystem, was perhaps
+authored and is currently maintained with the expectation that each
+occurrence of atomic_read actually results in a load operation, i.e. is
+not optimized away.  This means all atomic_t (bus generation, packet and
+buffer refcounts, and some other state variables)* and likewise all
+atomic bitops in that subsystem.
 
-Best Regards,
-Huang Ying
+If that assumption is wrong, then what is the API or language primitive
+to force a load operation to occur?
+
+
+*)  Interesting what a quick LXR session in search for all atomic_t
+usages in 'my' subsystem brings to light.  I now noticed an apparently
+unused struct member in the bitrotting pcilynx driver, and more
+importantly, a pairing of two atomic_t variables in raw1394 that should
+be audited for race conditions and for possible replacement by plain int.
+-- 
+Stefan Richter
+-=====-=-=== =--- =----
+http://arcgraph.de/sr/
