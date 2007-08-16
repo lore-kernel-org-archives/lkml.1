@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761748AbXHPP5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764670AbXHPP5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761748AbXHPP5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 11:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbXHPP50
+	id S1764670AbXHPP5u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 11:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759322AbXHPP5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 11:57:26 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:34493 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751383AbXHPP5Z (ORCPT
+	Thu, 16 Aug 2007 11:57:31 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56746 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755796AbXHPP53 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 11:57:25 -0400
-Message-ID: <46C472E1.6060703@gmail.com>
-Date: Thu, 16 Aug 2007 17:53:05 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 16 Aug 2007 11:57:29 -0400
+Message-ID: <46C473EC.8000309@bull.net>
+Date: Thu, 16 Aug 2007 17:57:32 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Kyle Moffett <mrmacman_g4@mac.com>, Satyam Sharma <satyam@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Joe Perches <joe@perches.com>, git@vger.kernel.org,
-       Junio C Hamano <gitster@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-References: <1187110824.32555.76.camel@localhost> <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost> <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org> <20070814193333.GI21089@ftp.linux.org.uk> <46C2548D.80605@gmail.com> <alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in> <46C30220.6060007@gmail.com> <68B09015-4411-470A-BA88-732969469AA2@mac.com> <46C42DCB.1060502@gmail.com> <20070816154029.GN21089@ftp.linux.org.uk>
-In-Reply-To: <20070816154029.GN21089@ftp.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+To: kvm-devel@lists.sourceforge.net
+Cc: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH/RFC 0/4]Virtual Machine time accounting
+X-Enigmail-Version: 0.94.0.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 16/08/2007 18:02:36,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 16/08/2007 18:02:38,
+	Serialize complete at 16/08/2007 18:02:38
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/16/2007 05:40 PM, Al Viro wrote:
+The aim of these four patches is to introduce Virtual Machine time accounting.
 
-> On Thu, Aug 16, 2007 at 12:58:19PM +0200, Rene Herman wrote:
+[PATCH 1/4] as modern CPUs introduce a third running state, after "user" and
+"system", we need a new field, "guest", in cpustat to store the time used by
+the CPU to run virtual CPU. Modify /proc/stat to display this new field.
 
->> The git-blame thing as sketched before by Linus would never be able to 
->> point out mailing lists, or general lists of "interested parties" for 
->> example, but these properties can do anything...
-> 
-> No, they can not.  "I'm interested in drivers/foo/bar.c fixes" is not
-> an earth-shattering event and it sure as hell does not create a new revision
-> of the tree.
+[PATCH 2/4] like for cpustat, introduce the "guest" and "cguest" fields for the
+tasks. Modify signal_struct and task_struct. Modify /proc/<pid>/stat to display
+these new field
 
-That's true. Okay, it can't do those general lists of interested parties.
+[PATCH 3/3] introduce "account modifiers" mechanism in the kernel allowing a
+module to modify the collected accounting for a given task. This implementation
+is based on the "preempt_notifier". "account_system_time()" and
+"account_user_time()" can call functions registered by a module to modify the
+cputime value.
 
-Rene.
+[PATCH 4/4] Modify KVM to use the "account modifiers". KVM can now measure time
+consumed by a Virtual Machine on a per-cpu basis and modify kernel statistics to
+report this value.
+
+Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+-- 
+------------- Laurent.Vivier@bull.net  --------------
+          "Software is hard" - Donald Knuth
 
