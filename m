@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934096AbXHPQ1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934013AbXHPQ2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934096AbXHPQ1p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 12:27:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765442AbXHPQ1J
+	id S934013AbXHPQ2r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 12:28:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765442AbXHPQ2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 12:27:09 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:12784 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765810AbXHPQ1G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 12:27:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Td8U3tds58+S5amC2Zp6H2d4yBGvyQCP8mOx106rY0uWwFISm9bv1aJGP+ObJJ1LuWSfh0Nev3vqTbS4R5MXToWY++puFNY+frs1Np2yEuz3+jBijD0RlR+5v0OGviyFpV0G2P6aet+QuxL2dJ4DxAZPbrXMyKjyOsmBAGCD3D8=
-Message-ID: <8bd0f97a0708160927s625fd5ax84cd6d12a693d9ad@mail.gmail.com>
-Date: Thu, 16 Aug 2007 12:27:05 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [PATCH take #5] [libata] libata driver for bf548 on chip ATAPI controller.
-Cc: "Sonic Zhang" <sonic.adi@gmail.com>,
-       "Linux IDE" <linux-ide@vger.kernel.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Bryan Wu" <bryan.wu@analog.com>
-In-Reply-To: <46C3F6FB.2070909@garzik.org>
+	Thu, 16 Aug 2007 12:28:32 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:41816 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765534AbXHPQ2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 12:28:30 -0400
+Date: Fri, 17 Aug 2007 01:27:24 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       Andrew Morton <akpm@osdl.org>, linuxsh-dev@lists.sourceforge.net
+Subject: Re: [PATCH 3/6] sh: remove extraneous ; on scif_sercon_putc wait loop
+Message-ID: <20070816162724.GA15562@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
+	Randy Dunlap <rdunlap@xenotime.net>, Andrew Morton <akpm@osdl.org>,
+	linuxsh-dev@lists.sourceforge.net
+References: <exportbomb.1187270320@pinky> <1495a7af981296bd422ef293e96ad167@pinky>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1187169256.31383.3.camel@sevens.analog.com>
-	 <46C3F6FB.2070909@garzik.org>
+In-Reply-To: <1495a7af981296bd422ef293e96ad167@pinky>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/16/07, Jeff Garzik <jeff@garzik.org> wrote:
-> Sonic Zhang wrote:
-> > +static void bfin_set_piomode(struct ata_port *ap, struct ata_device *adev)
-> > +{
-> > +     int mode = adev->pio_mode - XFER_PIO_0;
-> > +     unsigned long base = (unsigned long)ap->ioaddr.ctl_addr;
->
->
-> (added Bryan Wu to CC)
->
-> Someone needs to need fix the bfin architecture:  the addresses on the
-> bfin_read/bfin_write functions should be 'void __iomem *' not unsigned long.
+On Thu, Aug 16, 2007 at 02:18:56PM +0100, Andy Whitcroft wrote:
+> It seems we have gained an extraneous trailing ';' on one of the
+> wait loops in scif_sercon_putc().  Although this is completely
+> benign as the apparent payload is also the empty statement, it
+> invites error in the future.  Clean it up now.
+> 
+> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 
-there are no address pointers anymore, so there is nothing to cast ...
-the bfin_read/bfin_write macros are done in sexy asm:
-#define bfin_write8(addr,val) __asm__ __volatile__("b[%0] = %1;" ::
-"a"(addr), "d"(val))
-or i'm misunderstanding what you mean ...
-
-where do you see (unsigned long) ?
--mike
+Applied, thanks.
