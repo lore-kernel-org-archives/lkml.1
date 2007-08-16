@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbXHPQTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765378AbXHPQU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933290AbXHPQTo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 12:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763593AbXHPQTc
+	id S1765378AbXHPQU2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 12:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764943AbXHPQT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 12:19:32 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:52286 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764448AbXHPQTb (ORCPT
+	Thu, 16 Aug 2007 12:19:56 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:42198 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764891AbXHPQTy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 12:19:31 -0400
-X-IronPort-AV: i="4.19,272,1183359600"; 
-   d="scan'208"; a="171240392:sNHT42396651"
-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [GIT PULL] please pull infiniband.git for-linus branch
-X-Message-Flag: Warning: May contain useful information
-References: <adamyws2lry.fsf@cisco.com>
-	<20070816064826.GB19432@mellanox.co.il>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 16 Aug 2007 09:19:26 -0700
-In-Reply-To: <20070816064826.GB19432@mellanox.co.il> (Michael S. Tsirkin's message of "Thu, 16 Aug 2007 09:48:26 +0300")
-Message-ID: <adaps1n1mgh.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Thu, 16 Aug 2007 12:19:54 -0400
+Message-ID: <46C47927.8050703@s5r6.in-berlin.de>
+Date: Thu, 16 Aug 2007 18:19:51 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 16 Aug 2007 16:19:27.0511 (UTC) FILETIME=[379FCA70:01C7E021]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Hmm, if these things are appropriate for 2.6.23, maybe my patch
- > adding linux/mutex.h to ehca_classes.h can go in too?
+Ilpo Järvinen wrote:
+> I looked around a bit by using some command lines and ended up wondering 
+> if these are equal to busy-wait case (and should be fixed) or not:
+> 
+> ./drivers/telephony/ixj.c
+> 6674:   while (atomic_read(&j->DSPWrite) > 0)
+> 6675-           atomic_dec(&j->DSPWrite);
+> 
+> ...besides that, there are couple of more similar cases in the same file 
+> (with braces)...
 
-Actually I queued Dotan's patches quite a while ago, although Linus
-seems to be ignoring my pull requests.
-
-I don't see any urgency in adding more similar patches to 2.6.23,
-since AFAIK 2.6.23 builds fine, right?
-
-Also I would prefer to get ehca patches from the ehca people at IBM,
-or at least an ack from them.
+Generally, ixj.c has several occurrences of couples of atomic write and
+atomic read which potentially do not do what the author wanted.
+-- 
+Stefan Richter
+-=====-=-=== =--- =----
+http://arcgraph.de/sr/
