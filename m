@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761104AbXHPPbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764091AbXHPPeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761104AbXHPPbl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 11:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754943AbXHPPbW
+	id S1764091AbXHPPeJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 11:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758644AbXHPPdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 11:31:22 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35783 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1763226AbXHPPbK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 11:31:10 -0400
-Date: Thu, 16 Aug 2007 11:31:04 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Rene Herman <rene.herman@gmail.com>
-cc: Kyle Moffett <mrmacman_g4@mac.com>, Salikh Zakirov <salikh@gmail.com>,
-       Junio C Hamano <gitster@pobox.com>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Joe Perches <joe@perches.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       <linux-pm@lists.linux-foundation.org>, <git@vger.kernel.org>
-Subject: Re: [linux-pm] Re: Storing Maintainers info around the kernel tree
-In-Reply-To: <46C469A5.8020003@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0708161128540.3757-100000@iolanthe.rowland.org>
+	Thu, 16 Aug 2007 11:33:55 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:53773 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757822AbXHPPdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 11:33:54 -0400
+Date: Fri, 17 Aug 2007 00:32:47 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Katsuya MATSUBARA <matsu@igel.co.jp>
+Cc: linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net
+Subject: Re: [PATCH] sh: replace mutexes which are used in SH-4 user page copy/clear functions in 2.6.22.X
+Message-ID: <20070816153247.GB13927@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Katsuya MATSUBARA <matsu@igel.co.jp>, linux-kernel@vger.kernel.org,
+	linuxsh-dev@lists.sourceforge.net
+References: <20070814.170816.143307233.matsu@igel.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070814.170816.143307233.matsu@igel.co.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Aug 2007, Rene Herman wrote:
-
-> > It would be much easier to put in the "kernel/somesubsys" directory a 
-> > Maintainers file which has:
+On Tue, Aug 14, 2007 at 05:08:16PM +0900, Katsuya MATSUBARA wrote:
+> sh: replace mutexes which are used in SH-4 user page copy/clear
+> functions in 2.6.22.X
 > 
-> It's ofcourse possible, but note that if we want this stuff to be minimally 
-> manual, moving files around (and deleting them) then requires editing these 
-> actual in-tree files via a tool.
+> This patch replaces mutexes in copy_user_pages() and clear_user_pages() 
+> for SH-4 in 2.6.22.X. A 2.6.22.X kernel with CONFIG_PREEMPT_VOLUNTARY=y
+> shows the following error because mutexes are sleepable.
 > 
-> With the properties deleting files just requires deleting any file-specific 
-> properties alongside which is trivial since those are linked from the file.
-> 
-> Moving stuff works by building a list of all properties that are set on the 
-> source starting at the source and destination's highest shared parent 
-> directory and then reconstructing this list at the destination, striking 
-> properties off the list that are already set at the destination.
-> 
-> Adding properties, alongside added files or after the fact, could be done 
-> via standard patch submissals via the kind of "meta-diff" that already 
-> exists for "git move".
-> 
-> I really believe this stuff should be meta-data -- and these properties as 
-> outlined work well it seems.
-
-Please remember that not everybody uses git.  The MAINTAINERS data 
-should be available in the kernel source itself.
-
-(Maybe your suggestion is consistent with this -- I simply wanted to 
-raise the point.)
-
-Alan Stern
-
+This has already been fixed in current git by kmap_coherent(), including
+reclaiming the beginning of P3 space for vmalloc.
