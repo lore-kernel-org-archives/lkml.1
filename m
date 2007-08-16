@@ -1,93 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937574AbXHPCsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938007AbXHPCt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937574AbXHPCsy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 22:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758777AbXHPCsi
+	id S938007AbXHPCt1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 22:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932140AbXHPCtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 22:48:38 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:32779 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755833AbXHPCsh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 22:48:37 -0400
-Date: Thu, 16 Aug 2007 08:31:02 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Paul Mackerras <paulus@samba.org>
-cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in>
-Message-ID: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in>
-References: <20070809131423.GA9927@shell.boston.redhat.com>
- <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
- <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
- <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
- <18115.35524.56393.347841@cargo.ozlabs.ibm.com>
- <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com>
- <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
- <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au>
- <18115.45316.702491.681906@cargo.ozlabs.ibm.com>
- <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in>
+	Wed, 15 Aug 2007 22:49:12 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:40370 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760648AbXHPCtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 22:49:09 -0400
+Date: Wed, 15 Aug 2007 19:49:04 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org
+Cc: bunk@kernel.org, josh@kernel.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: [PATCH] Make rcutorture RNG use temporal entropy
+Message-ID: <20070816024904.GA5312@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Repost of http://lkml.org/lkml/2007/8/10/472 made available by request.
 
+The locking used by get_random_bytes() can conflict with the
+preempt_disable() and synchronize_sched() form of RCU.  This patch changes
+rcutorture's RNG to gather entropy from the new cpu_clock() interface
+(relying on interrupts, preemption, daemons, and rcutorture's reader
+thread's rock-bottom scheduling priority to provide useful entropy),
+and also adds and EXPORT_SYMBOL_GPL() to make that interface available
+to GPLed kernel modules such as rcutorture.
 
-On Thu, 16 Aug 2007, Satyam Sharma wrote:
+Passes several hours of rcutorture.
 
-> On Thu, 16 Aug 2007, Paul Mackerras wrote:
-> > Herbert Xu writes:
-> > 
-> > > See sk_stream_mem_schedule in net/core/stream.c:
-> > > 
-> > >         /* Under limit. */
-> > >         if (atomic_read(sk->sk_prot->memory_allocated) < sk->sk_prot->sysctl_mem[0]) {
-> > >                 if (*sk->sk_prot->memory_pressure)
-> > >                         *sk->sk_prot->memory_pressure = 0;
-> > >                 return 1;
-> > >         }
-> > > 
-> > >         /* Over hard limit. */
-> > >         if (atomic_read(sk->sk_prot->memory_allocated) > sk->sk_prot->sysctl_mem[2]) {
-> > >                 sk->sk_prot->enter_memory_pressure();
-> > >                 goto suppress_allocation;
-> > >         }
-> > > 
-> > > We don't need to reload sk->sk_prot->memory_allocated here.
-> > 
-> > Are you sure?  How do you know some other CPU hasn't changed the value
-> > in between?
-> 
-> I can't speak for this particular case, but there could be similar code
-> examples elsewhere, where we do the atomic ops on an atomic_t object
-> inside a higher-level locking scheme that would take care of the kind of
-> problem you're referring to here. It would be useful for such or similar
-> code if the compiler kept the value of that atomic object in a register.
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-We might not be using atomic_t (and ops) if we already have a higher-level
-locking scheme, actually. So as Herbert mentioned, such cases might just
-not care. [ Too much of this thread, too little sleep, sorry! ]
+ rcutorture.c |    8 ++------
+ sched.c      |    2 ++
+ 2 files changed, 4 insertions(+), 6 deletions(-)
 
-Anyway, the problem, of course, is that this conversion to a stronger /
-safer-by-default behaviour doesn't happen with zero cost to performance.
-Converting atomic ops to "volatile" behaviour did add ~2K to kernel text
-for archs such as i386 (possibly to important codepaths) that didn't have
-those semantics already so it would be constructive to actually look at
-those differences and see if there were really any heisenbugs that got
-rectified. Or if there were legitimate optimizations that got wrongly
-disabled. Onus lies on those proposing the modifications, I'd say ;-)
+diff -urpNa -X dontdiff linux-2.6.23-rc2/kernel/rcutorture.c linux-2.6.23-rc2-rcutorturesched/kernel/rcutorture.c
+--- linux-2.6.23-rc2/kernel/rcutorture.c	2007-08-03 19:49:55.000000000 -0700
++++ linux-2.6.23-rc2-rcutorturesched/kernel/rcutorture.c	2007-08-10 17:15:22.000000000 -0700
+@@ -42,7 +42,6 @@
+ #include <linux/notifier.h>
+ #include <linux/freezer.h>
+ #include <linux/cpu.h>
+-#include <linux/random.h>
+ #include <linux/delay.h>
+ #include <linux/byteorder/swabb.h>
+ #include <linux/stat.h>
+@@ -166,16 +165,13 @@ struct rcu_random_state {
+ 
+ /*
+  * Crude but fast random-number generator.  Uses a linear congruential
+- * generator, with occasional help from get_random_bytes().
++ * generator, with occasional help from cpu_clock().
+  */
+ static unsigned long
+ rcu_random(struct rcu_random_state *rrsp)
+ {
+-	long refresh;
+-
+ 	if (--rrsp->rrs_count < 0) {
+-		get_random_bytes(&refresh, sizeof(refresh));
+-		rrsp->rrs_state += refresh;
++		rrsp->rrs_state += (unsigned long)cpu_clock(smp_processor_id());
+ 		rrsp->rrs_count = RCU_RANDOM_REFRESH;
+ 	}
+ 	rrsp->rrs_state = rrsp->rrs_state * RCU_RANDOM_MULT + RCU_RANDOM_ADD;
+diff -urpNa -X dontdiff linux-2.6.23-rc2/kernel/sched.c linux-2.6.23-rc2-rcutorturesched/kernel/sched.c
+--- linux-2.6.23-rc2/kernel/sched.c	2007-08-03 19:49:55.000000000 -0700
++++ linux-2.6.23-rc2-rcutorturesched/kernel/sched.c	2007-08-10 17:22:57.000000000 -0700
+@@ -394,6 +394,8 @@ unsigned long long cpu_clock(int cpu)
+ 	return now;
+ }
+ 
++EXPORT_SYMBOL_GPL(cpu_clock);
++
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ /* Change a task's ->cfs_rq if it moves across CPUs */
+ static inline void set_task_cfs_rq(struct task_struct *p)
