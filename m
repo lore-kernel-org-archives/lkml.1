@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933680AbXHPWlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764942AbXHPWwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933680AbXHPWlZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 18:41:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762537AbXHPWlI
+	id S1764942AbXHPWwU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 18:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbXHPWwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 18:41:08 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:3292 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762457AbXHPWlH (ORCPT
+	Thu, 16 Aug 2007 18:52:09 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:2691 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754281AbXHPWwF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 18:41:07 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Thu, 16 Aug 2007 15:40:42 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKOEJBGDAC.davids@webmaster.com>
+	Thu, 16 Aug 2007 18:52:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=gvwtJJmTk6CPLr3u1l1ZZXh9sUnj0joCJ88JdX/X6WQvNYjcEhZnl5r/Bk5hHrnijuaxj7uDVEdIPmx5sD4Wd128tbgh98iYLlsgK2X9EMqfMrImSDjF86O1IZadbJhEslWvLIT2KCleBAIGRn//e5/gJ57DWlPp2z7lg/FoooE=
+Message-ID: <f40fb4250708161552ub87bf8ve8168eec1b3955e7@mail.gmail.com>
+Date: Fri, 17 Aug 2007 02:52:03 +0400
+From: GolovaSteek <golovasteek@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: nanosleep() accuracy
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-In-Reply-To: <4952d3f536060c186f40c277dfc74194@kernel.crashing.org>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 16 Aug 2007 15:41:24 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 16 Aug 2007 15:41:24 -0700
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello!
+I need use sleep with accurat timing.
+I use 2.6.21 with rt-prempt patch.
+with enabled rt_preempt, dyn_ticks, and local_apic
+But
 
-> There is a quite convincing argument that such an access _is_ an
-> access to a volatile object; see GCC PR21568 comment #9.  This
-> probably isn't the last word on the matter though...
+req.tv_nsec = 300000;
+req.tv_sec = 0;
+nanosleep(&req,NULL)
 
-I find this argument completely convincing and retract the contrary argument
-that I've made many times in this forum and others. You learn something new
-every day.
+make pause around 310-330 microseconds.
 
-Just in case it wasn't clear:
-int i;
-*(volatile int *)&i=2;
+I tried to understend how work nanosleep(), but it not depends from
+jiffies and from smp_apic_timer_interrupt.
 
-In this case, there *is* an access to a volatile object. This is the end
-result of the the standard's definition of what it means to apply the
-'volatile int *' cast to '&i' and then apply the '*' operator to the result
-and use it as an lvalue.
-
-C does not define the type of an object by how it is defined but by how it
-is accessed!
-
-DS
+When can accuracy be lost?
+And how are process waked up?
 
 
+GolovaSteek
