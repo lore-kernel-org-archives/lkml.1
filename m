@@ -1,52 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764108AbXHPCwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937765AbXHPC6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764108AbXHPCwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 22:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763770AbXHPCwT
+	id S937765AbXHPC6y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 22:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760679AbXHPC6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 22:52:19 -0400
-Received: from mail.suse.de ([195.135.220.2]:36876 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763471AbXHPCwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 22:52:18 -0400
-Date: Thu, 16 Aug 2007 04:52:17 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Dean Nelson <dcn@sgi.com>
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] calculation of pgoff in do_linear_fault() uses mixed units
-Message-ID: <20070816025217.GC16372@wotan.suse.de>
-References: <46C33B3E.mailxBSH11HDLW@aqua.americas.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 15 Aug 2007 22:58:43 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:6401 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759443AbXHPC6n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 22:58:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=hkicZFZwyFsvuSEVvf5hvyqK97kHhpCztvOs+OfU5Tyii4JHIWrlcmsHL9yQ72gOIQYbJfDtNwYkekvUIFcDPouTf9PIo2CWR9lz9knBhOyzRcN1ODoB5szEXTijnBJfZBxQ4FVhbfuV+lhzn0avfbc3Fe8V4JP5fz72HPdMX90=
+Message-ID: <af3ea28a0708151958h4af993e6o1db3b9adddc14294@mail.gmail.com>
+Date: Thu, 16 Aug 2007 10:58:41 +0800
+From: "ye janboe" <janboe.ye@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: how can I get an account on master.kernel.org machine
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46C33B3E.mailxBSH11HDLW@aqua.americas.sgi.com>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 12:43:26PM -0500, Dean Nelson wrote:
-> The calculation of pgoff in do_linear_fault() should use PAGE_SHIFT and not
-> PAGE_CACHE_SHIFT since vma->vm_pgoff is in units of PAGE_SIZE and not
-> PAGE_CACHE_SIZE. At the moment linux/pagemap.h has PAGE_CACHE_SHIFT defined
-> as PAGE_SHIFT, but should that ever change this calculation would break.
-> 
-> Signed-off-by: Dean Nelson <dcn@sgi.com>
-> 
+I want to down linux-arm git repos, but I do not have an account on
+master machine.
 
-Acked-by: Nick Piggin <npiggin@suse.de>
+thanks
 
-> 
-> Index: linux-2.6/mm/memory.c
-> ===================================================================
-> --- linux-2.6.orig/mm/memory.c	2007-08-14 06:42:18.322378070 -0500
-> +++ linux-2.6/mm/memory.c	2007-08-15 12:30:51.621604739 -0500
-> @@ -2465,7 +2465,7 @@
->  		int write_access, pte_t orig_pte)
->  {
->  	pgoff_t pgoff = (((address & PAGE_MASK)
-> -			- vma->vm_start) >> PAGE_CACHE_SHIFT) + vma->vm_pgoff;
-> +			- vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
->  	unsigned int flags = (write_access ? FAULT_FLAG_WRITE : 0);
->  
->  	return __do_fault(mm, vma, address, page_table, pmd, pgoff,
+Yuanbo
