@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937553AbXHPAyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937614AbXHPAyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937553AbXHPAyM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 20:54:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933712AbXHPAxl
+	id S937614AbXHPAyo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 20:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937505AbXHPAx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 20:53:41 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:1683 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758509AbXHPAxj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 20:53:39 -0400
-Date: Thu, 16 Aug 2007 08:53:16 +0800
-From: Herbert Xu <herbert.xu@redhat.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: David Howells <dhowells@redhat.com>, Satyam Sharma <satyam@infradead.org>,
+	Wed, 15 Aug 2007 20:53:57 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:38143 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937499AbXHPAxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 20:53:53 -0400
+Date: Wed, 15 Aug 2007 17:53:48 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
        Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Chris Snook <csnook@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-arch@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
@@ -23,35 +22,35 @@ Cc: David Howells <dhowells@redhat.com>, Satyam Sharma <satyam@infradead.org>,
        heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
        wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
        cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
+       jesper.juhl@gmail.com, segher@kernel.crashing.org,
+       Herbert Xu <herbert@gondor.apana.org.au>
 Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070816005316.GA29802@gondor.apana.org.au>
-References: <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com> <4413.1187201997@redhat.com> <20070815184520.GG9645@linux.vnet.ibm.com> <20070815234146.GB28775@gondor.apana.org.au> <20070815235335.GU9645@linux.vnet.ibm.com> <20070816001248.GA29214@gondor.apana.org.au> <20070816002310.GW9645@linux.vnet.ibm.com> <20070816003023.GA29447@gondor.apana.org.au> <20070816004950.GZ9645@linux.vnet.ibm.com>
-Mime-Version: 1.0
+Message-ID: <20070816005348.GA9645@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070816004950.GZ9645@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 05:49:50PM -0700, Paul E. McKenney wrote:
-> On Thu, Aug 16, 2007 at 08:30:23AM +0800, Herbert Xu wrote:
->
-> > Thanks.  But I don't need a summary of the thread, I'm asking
-> > for an extant code snippet in our kernel that benefits from
-> > the volatile change and is not part of a busy-wait.
+On Wed, Aug 15, 2007 at 05:42:07PM -0700, Christoph Lameter wrote:
+> On Wed, 15 Aug 2007, Paul E. McKenney wrote:
 > 
-> Sorry, can't help you there.  I really do believe that the information
-> you need (as opposed to the specific item you are asking for) really
-> has been put forth in this thread.
+> > Seems to me that we face greater chance of confusion without the
+> > volatile than with, particularly as compiler optimizations become
+> > more aggressive.  Yes, we could simply disable optimization, but
+> > optimization can be quite helpful.
+> 
+> A volatile default would disable optimizations for atomic_read. 
+> atomic_read without volatile would allow for full optimization by the 
+> compiler. Seems that this is what one wants in many cases.
 
-That only leads me to believe that such a code snippet simply
-does not exist.
+The volatile cast should not disable all that many optimizations,
+for example, it is much less hurtful than barrier().  Furthermore,
+the main optimizations disabled (pulling atomic_read() and atomic_set()
+out of loops) really do need to be disabled.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+						Thanx, Paul
