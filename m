@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761495AbXHPOHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbXHPOIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761495AbXHPOHk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 10:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759428AbXHPOH1
+	id S1762079AbXHPOIu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 10:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757741AbXHPOIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 10:07:27 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1423 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759309AbXHPOHZ (ORCPT
+	Thu, 16 Aug 2007 10:08:40 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54588 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759066AbXHPOIj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 10:07:25 -0400
-Message-ID: <46C45996.6060802@shadowen.org>
-Date: Thu, 16 Aug 2007 15:05:10 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Thu, 16 Aug 2007 10:08:39 -0400
+Date: Thu, 16 Aug 2007 19:51:22 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Andy Whitcroft <apw@shadowen.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <rdunlap@xenotime.net>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 0/6] checkpatch checks for trailing semicolons on
+ conditionals
+In-Reply-To: <exportbomb.1187270320@pinky>
+Message-ID: <alpine.LFD.0.999.0708161943560.25951@enigma.security.iitk.ac.in>
+References: <exportbomb.1187270320@pinky>
 MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: Joe Perches <joe@perches.com>, "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, Dave Jones <davej@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, rolandd@cisco.com,
-       Chas Williams <chas@cmf.nrl.navy.mil>, Paul Mundt <lethal@linux-sh.org>,
-       isdn4linux@listserv.isdn4linux.de, mikep@linuxtr.net,
-       netdev@vger.kernel.org, swen@vnet.ibm.com, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org, jdike@karaya.com,
-       user-mode-linux-devel@lists.sourceforge.net,
-       user-mode-linux-user@lists.sourceforge.net,
-       netfilter-devel@lists.netfilter.org, coreteam@netfilter.org
-Subject: Re: drivers/infiniband/mlx/mad.c misplaced ;
-References: <20070815235825.GB17004@redhat.com> <1187224811.5906.55.camel@localhost> <46C3B428.4000003@intel.com>
-In-Reply-To: <46C3B428.4000003@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-SPF-Guess: neutral
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
-> Joe Perches wrote:
->> On Wed, 2007-08-15 at 19:58 -0400, Dave Jones wrote:
->>> Signed-off-by: Dave Jones <davej@redhat.com>
->>>
->>> diff --git a/drivers/infiniband/hw/mlx4/mad.c
->>> b/drivers/infiniband/hw/mlx4/mad.c
->>> index 3330917..0ed02b7 100644
->>> --- a/drivers/infiniband/hw/mlx4/mad.c
->>> +++ b/drivers/infiniband/hw/mlx4/mad.c
->>> @@ -109,7 +109,7 @@ int mlx4_MAD_IFC(struct mlx4_ib_dev *dev, int
->>> ignore_mkey, int ignore_bkey,
->>>                 in_modifier, op_modifier,
->>>                 MLX4_CMD_MAD_IFC, MLX4_CMD_TIME_CLASS_C);
->>>  
->>> -    if (!err);
->>> +    if (!err)
->>
->> There's more than a few of these (not inspected).
->>
->> $ egrep -r --include=*.c "\bif[[:space:]]*\([^\)]*\)[[:space:]]*\;" *
->> arch/sh/boards/se/7343/io.c:    if (0) ;
->> drivers/atm/iphase.c:     if (!desc1) ;
->> drivers/infiniband/hw/mlx4/mad.c:       if (!err);
->> drivers/isdn/capi/capiutil.c:   else if (c <= 0x0f);
->> drivers/net/tokenring/ibmtr.c:  else if (ti->shared_ram_paging ==
->> 0xf);  /* No paging in adapter */
->> drivers/s390/scsi/zfcp_erp.c:           if (status ==
->> ZFCP_ERP_SUCCEEDED) ;     /* no further action */
->> fs/hostfs/hostfs_user.c:        if(attrs->ia_valid & HOSTFS_ATTR_CTIME) ;
->> net/netfilter/xt_u32.c:         if (skb->len < 4 || pos > skb->len - 4);
->> sound/pci/au88x0/au88x0_synth.c:                                if
->> (eax == 0) ;
+
+
+On Thu, 16 Aug 2007, Andy Whitcroft wrote:
+
+> A couple of people suggested adding checks to checkpatch for trailing
+> semicolons on conditionals, where the conditional block may not be
+> actually conditional:
 > 
-> sounds like an excellent candidate check for checkpatch.pl !!!
+> 	if (err);
+> 		return err;
+> 
+> While regression testing the changes, I ran these checks across the
+> whole of 2.6.23-rc3 and there appear to be 5 places where this is
+> occurs (above and beyond the IPv6 one which triggered this effort)
+> and a benign use which could be confused later which it seems safest
+> to fix.
+> 
+> Following this email are 6 patches for these issues, relevant
+> maintainers cc'd.  All against 2.6.23-rc3
 
-Yep.  My scan of 2.6.23-rc3 with a checkpatch with this new test added,
-found 6 which seemed wrong.
-
--apw
+Amazing :-) All 6 obviously correct, and one of those 5 bugs was around
+for more than ~2 years! But most of these made one wonder (sadly) about
+the (lack of) testing code got before getting merged, considering some
+(#2 and 6, at least) should've been obvious immediately on basic testing
+of the new feature, I think.
