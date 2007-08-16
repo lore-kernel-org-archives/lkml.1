@@ -1,22 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758279AbXHPIHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763054AbXHPIMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758279AbXHPIHK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 04:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbXHPIGj
+	id S1763054AbXHPIMq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 04:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758323AbXHPIMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 04:06:39 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:40942 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752082AbXHPIGe (ORCPT
+	Thu, 16 Aug 2007 04:12:24 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:1278 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755603AbXHPIMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 04:06:34 -0400
-Message-ID: <46C40587.7050708@s5r6.in-berlin.de>
-Date: Thu, 16 Aug 2007 10:06:31 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
+	Thu, 16 Aug 2007 04:12:21 -0400
+Date: Thu, 16 Aug 2007 16:10:49 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
        Christoph Lameter <clameter@sgi.com>,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Chris Snook <csnook@redhat.com>,
@@ -28,63 +25,34 @@ CC: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
        wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
        cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
        jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au>
-In-Reply-To: <20070816070907.GA964@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070816081049.GA1431@gondor.apana.org.au>
+References: <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C40587.7050708@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> On Thu, Aug 16, 2007 at 04:56:21PM +1000, Paul Mackerras wrote:
->>
->> Note that I said these are the cases _where one might want to allow
->> caching_, so of course adding volatile doesn't help _these_ cases.
->> There are of course other cases where one definitely doesn't want to
->> allow the compiler to cache the value, such as when polling an atomic
->> variable waiting for another CPU to change it, and from my inspection
->> so far these cases seem to be the majority.
+On Thu, Aug 16, 2007 at 10:06:31AM +0200, Stefan Richter wrote:
+> > 
+> > Do you (or anyone else for that matter) have an example of this?
 > 
-> We've been through that already.  If it's a busy-wait it
-> should use cpu_relax.  If it's scheduling away that already
-> forces the compiler to reread anyway.
-> 
-> Do you have an actual example where volatile is needed?
-> 
->> - It matches the normal expectation based on the name "atomic_read"
->> - It matches the behaviour of the other atomic_* primitives
-> 
-> Can't argue since you left out what those expectations
-> or properties are.
+> The only code I somewhat know, the ieee1394 subsystem, was perhaps
+> authored and is currently maintained with the expectation that each
+> occurrence of atomic_read actually results in a load operation, i.e. is
+> not optimized away.  This means all atomic_t (bus generation, packet and
+> buffer refcounts, and some other state variables)* and likewise all
+> atomic bitops in that subsystem.
 
-We use atomic_t for data that is concurrently locklessly written and
-read at arbitrary times.  My naive expectation as driver author (driver
-maintainer) is that all atomic_t accessors, including atomic_read, (and
-atomic bitops) work with the then current value of the atomic data.
+Can you find an actual atomic_read code snippet there that is
+broken without the volatile modifier?
 
->> - It avoids bugs in the cases where "volatile" behaviour is required
-> 
-> Do you (or anyone else for that matter) have an example of this?
-
-The only code I somewhat know, the ieee1394 subsystem, was perhaps
-authored and is currently maintained with the expectation that each
-occurrence of atomic_read actually results in a load operation, i.e. is
-not optimized away.  This means all atomic_t (bus generation, packet and
-buffer refcounts, and some other state variables)* and likewise all
-atomic bitops in that subsystem.
-
-If that assumption is wrong, then what is the API or language primitive
-to force a load operation to occur?
-
-
-*)  Interesting what a quick LXR session in search for all atomic_t
-usages in 'my' subsystem brings to light.  I now noticed an apparently
-unused struct member in the bitrotting pcilynx driver, and more
-importantly, a pairing of two atomic_t variables in raw1394 that should
-be audited for race conditions and for possible replacement by plain int.
+Thanks,
 -- 
-Stefan Richter
--=====-=-=== =--- =----
-http://arcgraph.de/sr/
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
