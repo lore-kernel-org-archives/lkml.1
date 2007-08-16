@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760446AbXHPOJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762535AbXHPOL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760446AbXHPOJZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 10:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761174AbXHPOI7
+	id S1762535AbXHPOL5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 10:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbXHPOLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 10:08:59 -0400
-Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:32869 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757118AbXHPOI6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 10:08:58 -0400
-X-Greylist: delayed 1465 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Aug 2007 10:08:58 EDT
-Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports
-	from the host TCP port space.
-From: Tom Tucker <tom@opengridcomputing.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Steve Wise <swise@opengridcomputing.com>,
-       David Miller <davem@davemloft.net>, mshefty@ichips.intel.com,
-       rdreier@cisco.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-In-Reply-To: <46C3B5EF.5060409@garzik.org>
-References: <46B883B5.8040702@opengridcomputing.com>
-	 <46BB61D0.4090101@opengridcomputing.com>
-	 <46BB89C0.4040303@ichips.intel.com>
-	 <20070809.145534.102938208.davem@davemloft.net>
-	 <46C310E1.7020503@opengridcomputing.com>  <46C3B5EF.5060409@garzik.org>
-Content-Type: text/plain
-Date: Thu, 16 Aug 2007 08:43:11 -0500
-Message-Id: <1187271791.4685.9.camel@trinity.ogc.int>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+	Thu, 16 Aug 2007 10:11:50 -0400
+Received: from cantor.suse.de ([195.135.220.2]:36999 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759534AbXHPOLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 10:11:49 -0400
+Message-ID: <46C45B22.5090701@suse.de>
+Date: Thu, 16 Aug 2007 16:11:46 +0200
+From: Andi Kleen <ak@suse.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org, Aaron Durbin <adurbin@google.com>
+Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
+References: <1186990219.22431.37.camel@caritas-dev.intel.com>	 <20070815154245.500c572c.akpm@linux-foundation.org> <1187250664.15063.0.camel@caritas-dev.intel.com>
+In-Reply-To: <1187250664.15063.0.camel@caritas-dev.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-15 at 22:26 -0400, Jeff Garzik wrote:
+Huang, Ying wrote:
+> On Thu, 2007-08-16 at 06:42 +0800, Andrew Morton wrote:
+>> On Mon, 13 Aug 2007 15:30:19 +0800
+>> "Huang, Ying" <ying.huang@intel.com> wrote:
+>>
+>>> Following sets of patches add EFI/UEFI (Unified Extensible Firmware
+>>> Interface) runtime services support to x86_64 architecture.
+>> I had to rework these a bit due to clashes with
+>> x86_64-add-acpi-reboot-option.patch.  Please check carefully that
+>> everything landed OK.
+>>
+> OK, I will be more careful next time.
 
-[...snip...]
 
-> > I think removing the RDMA stack is the wrong thing to do, and you 
-> > shouldn't just threaten to yank entire subsystems because you don't like 
-> > the technology.  Lets keep this constructive, can we?  RDMA should get 
-> > the respect of any other technology in Linux.  Maybe its a niche in your 
-> > opinion, but come on, there's more RDMA users than say, the sparc64 
-> > port.  Eh?
-> 
-> It's not about being a niche.  It's about creating a maintainable 
-> software net stack that has predictable behavior.
+Has the zero page documentation and version numbering project
+made any progress? I think we cannot merge this without at least
+the version number
 
-Isn't RDMA _part_ of the "software net stack" within Linux? Why isn't
-making RDMA stable, supportable and maintainable equally as important as
-any other subsystem? 
-
-> 
-> Needing to reach out of the RDMA sandbox and reserve net stack resources 
-> away from itself travels a path we've consistently avoided.
-> 
-> 
-> >> I will NACK any patch that opens up sockets to eat up ports or
-> >> anything stupid like that.
-> > 
-> > Got it.
-> 
-> Ditto for me as well.
-> 
-> 	Jeff
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+-Andi
