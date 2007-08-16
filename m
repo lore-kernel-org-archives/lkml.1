@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934906AbXHPAbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936241AbXHPAdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934906AbXHPAbV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 20:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbXHPAbD
+	id S936241AbXHPAdR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 20:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757549AbXHPAc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 20:31:03 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:1390 "EHLO
+	Wed, 15 Aug 2007 20:32:57 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:1435 "EHLO
 	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752787AbXHPAbA (ORCPT
+	with ESMTP id S1752840AbXHPAcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 20:31:00 -0400
-Date: Thu, 16 Aug 2007 08:30:23 +0800
-From: Herbert Xu <herbert.xu@redhat.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: David Howells <dhowells@redhat.com>, Satyam Sharma <satyam@infradead.org>,
+	Wed, 15 Aug 2007 20:32:55 -0400
+Date: Thu, 16 Aug 2007 08:32:26 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>, horms@verge.net.au,
        Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070816003023.GA29447@gondor.apana.org.au>
-References: <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <46C2FADB.7020407@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151906330.16414@enigma.security.iitk.ac.in> <20070815142516.GB9645@linux.vnet.ibm.com> <4413.1187201997@redhat.com> <20070815184520.GG9645@linux.vnet.ibm.com> <20070815234146.GB28775@gondor.apana.org.au> <20070815235335.GU9645@linux.vnet.ibm.com> <20070816001248.GA29214@gondor.apana.org.au> <20070816002310.GW9645@linux.vnet.ibm.com>
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
+       netdev@vger.kernel.org, cfriesen@nortel.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+Subject: Re: your mail
+Message-ID: <20070816003226.GA29491@gondor.apana.org.au>
+References: <46C30540.2070603@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in> <20070815145207.GA23106@gondor.apana.org.au> <46C3253F.5090707@s5r6.in-berlin.de> <20070815162722.GD9645@linux.vnet.ibm.com> <d4406222873856f472b9173a14a19aa2@kernel.crashing.org> <20070815185724.GH9645@linux.vnet.ibm.com> <alpine.LFD.0.999.0708160118330.16414@enigma.security.iitk.ac.in> <2d2eeab6276cab2e6cc5830d36a43b98@kernel.crashing.org> <alpine.LFD.0.999.0708160338520.22701@enigma.security.iitk.ac.in>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070816002310.GW9645@linux.vnet.ibm.com>
+In-Reply-To: <alpine.LFD.0.999.0708160338520.22701@enigma.security.iitk.ac.in>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 05:23:10PM -0700, Paul E. McKenney wrote:
-> On Thu, Aug 16, 2007 at 08:12:48AM +0800, Herbert Xu wrote:
-> > On Wed, Aug 15, 2007 at 04:53:35PM -0700, Paul E. McKenney wrote:
-> > >
-> > > > > Communicating between process context and interrupt/NMI handlers using
-> > > > > per-CPU variables.
-> > > > 
-> > > > Remeber we're talking about atomic_read/atomic_set.  Please
-> > > > cite the actual file/function name you have in mind.
-> > > 
-> > > Yep, we are indeed talking about atomic_read()/atomic_set().
-> > > 
-> > > We have been through this issue already in this thread.
-> > 
-> > Sorry, but I must've missed it.  Could you cite the file or
-> > function for my benefit?
+On Thu, Aug 16, 2007 at 06:06:00AM +0530, Satyam Sharma wrote:
 > 
-> I might summarize the thread if there is interest, but I am not able to
-> do so right this minute.
+> that are:
+> 
+> 	while ((atomic_read(&waiting_for_crash_ipi) > 0) && msecs) {
+> 		mdelay(1);
+> 		msecs--;
+> 	}
+> 
+> where mdelay() becomes __const_udelay() which happens to be in another
+> translation unit (arch/i386/lib/delay.c) and hence saves this callsite
+> from being a bug :-)
 
-Thanks.  But I don't need a summary of the thread, I'm asking
-for an extant code snippet in our kernel that benefits from
-the volatile change and is not part of a busy-wait.
+The udelay itself certainly should have some form of cpu_relax in it.
 
 Cheers,
 -- 
