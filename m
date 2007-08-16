@@ -1,87 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938007AbXHPCt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938129AbXHPCuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938007AbXHPCt1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 22:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932140AbXHPCtM
+	id S938129AbXHPCuH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 22:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760089AbXHPCtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 22:49:12 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:40370 "EHLO e6.ny.us.ibm.com"
+	Wed, 15 Aug 2007 22:49:53 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43394 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760648AbXHPCtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 22:49:09 -0400
-Date: Wed, 15 Aug 2007 19:49:04 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org
-Cc: bunk@kernel.org, josh@kernel.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Subject: [PATCH] Make rcutorture RNG use temporal entropy
-Message-ID: <20070816024904.GA5312@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-MIME-Version: 1.0
+	id S1765966AbXHPCtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 22:49:52 -0400
+Date: Thu, 16 Aug 2007 04:49:49 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC 0/9] Reclaim during GFP_ATOMIC allocs
+Message-ID: <20070816024949.GA16372@wotan.suse.de>
+References: <20070814153021.446917377@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070814153021.446917377@sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Repost of http://lkml.org/lkml/2007/8/10/472 made available by request.
+On Tue, Aug 14, 2007 at 08:30:21AM -0700, Christoph Lameter wrote:
+> This is the extended version of the reclaim patchset. It enables reclaim from
+> clean file backed pages during GFP_ATOMIC allocs. A bit invasive since
+> may locks must now be taken with saving flags. But it works.
+> 
+> Tested by repeatedly allocating 12MB of memory from the timer interrupt.
+> 
+> -- 
 
-The locking used by get_random_bytes() can conflict with the
-preempt_disable() and synchronize_sched() form of RCU.  This patch changes
-rcutorture's RNG to gather entropy from the new cpu_clock() interface
-(relying on interrupts, preemption, daemons, and rcutorture's reader
-thread's rock-bottom scheduling priority to provide useful entropy),
-and also adds and EXPORT_SYMBOL_GPL() to make that interface available
-to GPLed kernel modules such as rcutorture.
+Just to clarify... I can see how recursive reclaim can prevent memory getting
+eaten up by reclaim (which thus causes allocations from interrupt handlers to
+fail)...
 
-Passes several hours of rcutorture.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- rcutorture.c |    8 ++------
- sched.c      |    2 ++
- 2 files changed, 4 insertions(+), 6 deletions(-)
-
-diff -urpNa -X dontdiff linux-2.6.23-rc2/kernel/rcutorture.c linux-2.6.23-rc2-rcutorturesched/kernel/rcutorture.c
---- linux-2.6.23-rc2/kernel/rcutorture.c	2007-08-03 19:49:55.000000000 -0700
-+++ linux-2.6.23-rc2-rcutorturesched/kernel/rcutorture.c	2007-08-10 17:15:22.000000000 -0700
-@@ -42,7 +42,6 @@
- #include <linux/notifier.h>
- #include <linux/freezer.h>
- #include <linux/cpu.h>
--#include <linux/random.h>
- #include <linux/delay.h>
- #include <linux/byteorder/swabb.h>
- #include <linux/stat.h>
-@@ -166,16 +165,13 @@ struct rcu_random_state {
- 
- /*
-  * Crude but fast random-number generator.  Uses a linear congruential
-- * generator, with occasional help from get_random_bytes().
-+ * generator, with occasional help from cpu_clock().
-  */
- static unsigned long
- rcu_random(struct rcu_random_state *rrsp)
- {
--	long refresh;
--
- 	if (--rrsp->rrs_count < 0) {
--		get_random_bytes(&refresh, sizeof(refresh));
--		rrsp->rrs_state += refresh;
-+		rrsp->rrs_state += (unsigned long)cpu_clock(smp_processor_id());
- 		rrsp->rrs_count = RCU_RANDOM_REFRESH;
- 	}
- 	rrsp->rrs_state = rrsp->rrs_state * RCU_RANDOM_MULT + RCU_RANDOM_ADD;
-diff -urpNa -X dontdiff linux-2.6.23-rc2/kernel/sched.c linux-2.6.23-rc2-rcutorturesched/kernel/sched.c
---- linux-2.6.23-rc2/kernel/sched.c	2007-08-03 19:49:55.000000000 -0700
-+++ linux-2.6.23-rc2-rcutorturesched/kernel/sched.c	2007-08-10 17:22:57.000000000 -0700
-@@ -394,6 +394,8 @@ unsigned long long cpu_clock(int cpu)
- 	return now;
- }
- 
-+EXPORT_SYMBOL_GPL(cpu_clock);
-+
- #ifdef CONFIG_FAIR_GROUP_SCHED
- /* Change a task's ->cfs_rq if it moves across CPUs */
- static inline void set_task_cfs_rq(struct task_struct *p)
+But this patchset I don't see will do anything to prevent reclaim deadlocks,
+right? (because if there is reclaimable memory at hand, then kswapd should
+eventually reclaim it).
