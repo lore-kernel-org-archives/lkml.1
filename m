@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937761AbXHPCgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938090AbXHPChA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937761AbXHPCgX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 22:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbXHPCgH
+	id S938090AbXHPChA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 22:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759864AbXHPCgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 22:36:07 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:53364 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755354AbXHPCgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 22:36:03 -0400
-Date: Wed, 15 Aug 2007 19:35:58 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
-       Satyam Sharma <satyam@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070816023558.GE14613@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <20070816021105.GA30883@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070816021105.GA30883@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 15 Aug 2007 22:36:49 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60037 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755593AbXHPCgr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 22:36:47 -0400
+Date: Wed, 15 Aug 2007 19:36:41 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: clameter@sgi.com, ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com,
+       vatsa@linux.vnet.ibm.com, bob.picco@hp.com,
+       linux-kernel@vger.kernel.org, mel@skynet.ie, nacc@us.ibm.com,
+       akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       serge@hallyn.com
+Subject: Re: [ckrm-tech] Regression in 2.6.23-rc2-mm2, mounting cpusets
+ causes a hang
+Message-Id: <20070815193641.c1a20434.pj@sgi.com>
+In-Reply-To: <1187210893.5422.60.camel@localhost>
+References: <20070812152126.GA26239@linux.vnet.ibm.com>
+	<20070813201215.GA16908@vino.hallyn.com>
+	<1187103831.6281.24.camel@localhost>
+	<20070814180339.GA32553@vino.hallyn.com>
+	<1187115224.6281.40.camel@localhost>
+	<20070814192306.GB32553@vino.hallyn.com>
+	<20070814204951.GA2065@vino.hallyn.com>
+	<Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
+	<1187127685.6281.139.camel@localhost>
+	<Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
+	<1187185392.5422.13.camel@localhost>
+	<Pine.LNX.4.64.0708151333230.7628@schroedinger.engr.sgi.com>
+	<1187210893.5422.60.camel@localhost>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 10:11:05AM +0800, Herbert Xu wrote:
-> On Thu, Aug 16, 2007 at 12:05:56PM +1000, Paul Mackerras wrote:
-> > Herbert Xu writes:
-> > 
-> > > See sk_stream_mem_schedule in net/core/stream.c:
-> > > 
-> > >         /* Under limit. */
-> > >         if (atomic_read(sk->sk_prot->memory_allocated) < sk->sk_prot->sysctl_mem[0]) {
-> > >                 if (*sk->sk_prot->memory_pressure)
-> > >                         *sk->sk_prot->memory_pressure = 0;
-> > >                 return 1;
-> > >         }
-> > > 
-> > >         /* Over hard limit. */
-> > >         if (atomic_read(sk->sk_prot->memory_allocated) > sk->sk_prot->sysctl_mem[2]) {
-> > >                 sk->sk_prot->enter_memory_pressure();
-> > >                 goto suppress_allocation;
-> > >         }
-> > > 
-> > > We don't need to reload sk->sk_prot->memory_allocated here.
-> > 
-> > Are you sure?  How do you know some other CPU hasn't changed the value
-> > in between?
-> 
-> Yes I'm sure, because we don't care if others have increased
-> the reservation.
-> 
-> Note that even if we did we'd be using barriers so volatile
-> won't do us any good here.
+Christoph wrote (and Lee quoted):
+> Looks like we need to fix cpuset nodemasks for the !NUMA case then?
+> It cannot expect to find valid nodemasks if !NUMA.
 
-If the load-coalescing is important to performance, why not load into
-a local variable?
+The code in kernel/cpuset.c should be written as if there are always
+valid nodemasks.  In the case of !NUMA, it will happen that there is
+only one node, but kernel/cpuset.c should not manifest that detail.
 
-						Thanx, Paul
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
