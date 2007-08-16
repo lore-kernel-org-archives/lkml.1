@@ -1,121 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765329AbXHPHSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765106AbXHPHUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765329AbXHPHSs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 03:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbXHPHSj
+	id S1765106AbXHPHUk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 03:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbXHPHUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 03:18:39 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:55923 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754993AbXHPHSi (ORCPT
+	Thu, 16 Aug 2007 03:20:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:16098 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752889AbXHPHUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 03:18:38 -0400
-Message-Id: <20070815205708.687507636@breakpoint.cc>
-References: <20070815205430.512612422@breakpoint.cc>
-User-Agent: quilt/0.46-1
-Date: Wed, 15 Aug 2007 22:54:32 +0200
-From: Sebastian Siewior <sebastian@breakpoint.cc>
-To: linux-kernel@vger.kernel.org
-Cc: Andi Kleen <ak@suse.de>, Chris Snook <csnook@redhat.com>
-Subject: [patch 2/2] x86_64: use asm() like the other atomic operations already do.
-Content-Disposition: inline; filename=atomic_x86_64.diff
+	Thu, 16 Aug 2007 03:20:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=ewOKE6tGTRcMyER+am/7lf2Em8LG7Kxx4RrrxKWZ+h+mCYVLSDJHCoylk/WCZ5QljmCQ5Dua15MoEJ0WFA+p10ipLNZ85zTdqkweHQmYz4U9ufHyCgwXKQerhQ9uxP19L1tFaMmQ20n6V6GZE+ANNozoaWb0sYkJGYHqkFpRmaw=
+Message-ID: <46C3FAB5.5070903@gmail.com>
+Date: Thu, 16 Aug 2007 11:20:21 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: Re: [v4l-dvb-maintainer] [2.6 patch] dvb_net_ule(): fix check-after-use
+References: <20070814212241.GA18945@stusta.de>
+In-Reply-To: <20070814212241.GA18945@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As Segher pointed out, inline asm is better than the volatile casting all over
-the place. From the PowerPC patch description:
- Also use inline functions instead of macros; this actually
- improves code generation (some code becomes a little smaller,
- probably because of improved alias information -- just a few
- hundred bytes total on a default kernel build, nothing shocking).
+Adrian Bunk wrote:
+> The Coverity checker spotted that we'd have already oops'ed if "dev"
+> was NULL.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> --- linux-2.6.23-rc1-mm2/drivers/media/dvb/dvb-core/dvb_net.c.old	2007-08-08 06:17:19.000000000 +0200
+> +++ linux-2.6.23-rc1-mm2/drivers/media/dvb/dvb-core/dvb_net.c	2007-08-08 06:17:35.000000000 +0200
+> @@ -346,33 +346,28 @@
+>  static void dvb_net_ule( struct net_device *dev, const u8 *buf, size_t buf_len )
+>  {
+>  	struct dvb_net_priv *priv = dev->priv;
+>  	unsigned long skipped = 0L;
+>  	const u8 *ts, *ts_end, *from_where = NULL;
+>  	u8 ts_remain = 0, how_much = 0, new_ts = 1;
+>  	struct ethhdr *ethh = NULL;
+>  
+>  #ifdef ULE_DEBUG
+>  	/* The code inside ULE_DEBUG keeps a history of the last 100 TS cells processed. */
+>  	static unsigned char ule_hist[100*TS_SZ];
+>  	static unsigned char *ule_where = ule_hist, ule_dump = 0;
+>  #endif
+>  
+> -	if (dev == NULL) {
+> -		printk( KERN_ERR "NO netdev struct!\n" );
+> -		return;
+> -	}
+> -
+>  	/* For all TS cells in current buffer.
+>  	 * Appearently, we are called for every single TS cell.
+>  	 */
+>  	for (ts = buf, ts_end = buf + buf_len; ts < ts_end; /* no default incr. */ ) {
+>  
+>  		if (new_ts) {
+>  			/* We are about to process a new TS cell. */
+>  
+>  #ifdef ULE_DEBUG
+>  			if (ule_where >= &ule_hist[100*TS_SZ]) ule_where = ule_hist;
+>  			memcpy( ule_where, ts, TS_SZ );
+>  			if (ule_dump) {
+>  				hexdump( ule_where, TS_SZ );
+>  				ule_dump = 0;
+> 
+> 
 
-My config with march=k8 and gcc (GCC) 4.1.2 (Gentoo 4.1.2):
-  text    data     bss     dec     hex filename
-  4002473  385936  474440 4862849  4a3381 atomic_normal/vmlinux
-  4002587  385936  474440 4862963  4a33f3 atomic_inlineasm/vmlinux
-  4003911  385936  474440 4864287  4a391f atomic_volatile/vmlinux
-  4003959  385936  474440 4864335  4a394f atomic_volatile_inline/vmlinux
-
-Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Chris Snook <csnook@redhat.com>
---- a/include/asm-x86_64/atomic.h
-+++ b/include/asm-x86_64/atomic.h
-@@ -32,7 +32,16 @@ typedef struct { int counter; } atomic_t
-  * 
-  * Atomically reads the value of @v.
-  */ 
--#define atomic_read(v)		((v)->counter)
-+static inline int atomic_read(const atomic_t *v)
-+{
-+	int t;
-+
-+	asm volatile(
-+			"movl %1, %0"
-+			: "=r"(t)
-+			: "m"(v->counter));
-+	return t;
-+}
- 
- /**
-  * atomic_set - set atomic variable
-@@ -41,7 +50,13 @@ typedef struct { int counter; } atomic_t
-  * 
-  * Atomically sets the value of @v to @i.
-  */ 
--#define atomic_set(v,i)		(((v)->counter) = (i))
-+static inline void atomic_set(atomic_t *v, int i)
-+{
-+	asm volatile(
-+			"movl %1, %0"
-+			: "=m"(v->counter)
-+			: "ir"(i));
-+}
- 
- /**
-  * atomic_add - add integer to atomic variable
-@@ -206,7 +221,7 @@ static __inline__ int atomic_sub_return(
- 
- /* An 64bit atomic type */
- 
--typedef struct { volatile long counter; } atomic64_t;
-+typedef struct { long counter; } atomic64_t;
- 
- #define ATOMIC64_INIT(i)	{ (i) }
- 
-@@ -217,7 +232,16 @@ typedef struct { volatile long counter; 
-  * Atomically reads the value of @v.
-  * Doesn't imply a read memory barrier.
-  */
--#define atomic64_read(v)		((v)->counter)
-+static inline long atomic64_read(const atomic64_t *v)
-+{
-+	long t;
-+
-+	asm volatile(
-+			"movq %1, %0"
-+			: "=r"(t)
-+			: "m"(v->counter));
-+	return t;
-+}
- 
- /**
-  * atomic64_set - set atomic64 variable
-@@ -226,7 +250,13 @@ typedef struct { volatile long counter; 
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic64_set(v,i)		(((v)->counter) = (i))
-+static inline void atomic64_set(atomic64_t *v, long i)
-+{
-+	asm volatile(
-+			"movq %1, %0"
-+			: "=m"(v->counter)
-+			: "ir"(i));
-+}
- 
- /**
-  * atomic64_add - add integer to atomic64 variable
-
--- 
-
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
