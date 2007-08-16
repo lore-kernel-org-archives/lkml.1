@@ -1,114 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938294AbXHPD3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938207AbXHPDex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938294AbXHPD3e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 23:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764946AbXHPD3Y
+	id S938207AbXHPDex (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 23:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932624AbXHPDel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 23:29:24 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45775 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764641AbXHPD3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 23:29:22 -0400
-Date: Thu, 16 Aug 2007 05:29:21 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dkegel@google.com, David Miller <davem@davemloft.net>,
-       Daniel Phillips <phillips@google.com>
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-Message-ID: <20070816032921.GA32197@wotan.suse.de>
-References: <20070814142103.204771292@sgi.com> <20070815122253.GA15268@wotan.suse.de> <1187183526.6114.45.camel@twins>
+	Wed, 15 Aug 2007 23:34:41 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:3268 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932509AbXHPDek (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 23:34:40 -0400
+Date: Thu, 16 Aug 2007 11:33:43 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Christoph Lameter <clameter@sgi.com>, Satyam Sharma <satyam@infradead.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070816033343.GA31844@gondor.apana.org.au>
+References: <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <20070816005348.GA9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151757400.11196@schroedinger.engr.sgi.com> <20070816011414.GC9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151839140.11520@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708160730590.24380@enigma.security.iitk.ac.in> <20070816020851.GA30809@gondor.apana.org.au> <Pine.LNX.4.64.0708151917210.11736@schroedinger.engr.sgi.com> <18115.49946.522011.832468@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1187183526.6114.45.camel@twins>
+In-Reply-To: <18115.49946.522011.832468@cargo.ozlabs.ibm.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 03:12:06PM +0200, Peter Zijlstra wrote:
-> On Wed, 2007-08-15 at 14:22 +0200, Nick Piggin wrote:
-> > On Tue, Aug 14, 2007 at 07:21:03AM -0700, Christoph Lameter wrote:
-> > > The following patchset implements recursive reclaim. Recursive reclaim
-> > > is necessary if we run out of memory in the writeout patch from reclaim.
-> > > 
-> > > This is f.e. important for stacked filesystems or anything that does
-> > > complicated processing in the writeout path.
-> > 
-> > Filesystems (most of them) that require compilcated allocations at
-> > writeout time suck. That said, especially with network ones, it
-> > seems like making them preallocate or reserve required memory isn't
-> > progressing very smoothly.
+On Thu, Aug 16, 2007 at 01:23:06PM +1000, Paul Mackerras wrote:
+>
+> In particular, atomic_read seems to lend itself to buggy uses.  People
+> seem to do things like:
 > 
-> Mainly because we seem to go in circles :-(
-> 
-> >  I think these patchsets are definitely
-> > worth considering as an alternative. 
-> 
-> Honestly, I don't. They very much do not solve the problem, they just
-> displace it.
+> 	atomic_add(&v, something);
+> 	if (atomic_read(&v) > something_else) ...
 
-Well perhaps it doesn't work for networked swap, because dirty accounting
-doesn't work the same way with anonymous memory... but for _filesystems_,
-right?
+If you're referring to the code in sk_stream_mem_schedule
+then it's working as intended.  The atomicity guarantees
+that the atomic_add/atomic_sub won't be seen in parts by
+other readers.
 
-I mean, it intuitively seems like a good idea to terminate the recursive
-allocation problem with an attempt to reclaim clean pages rather than
-immediately let them have-at our memory reserve that is used for other
-things as well. Any and all writepage() via reclaim is allowed to eat
-into all of memory (I hate that writepage() ever has to use any memory,
-and have prototyped how to fix that for simple block based filesystems
-in fsblock, but others will require it).
+We certainly do not need to see other atomic_add/atomic_sub
+operations immediately.
 
+If you're referring to another code snippet please cite.
 
-> Christoph's suggestion to set min_free_kbytes to 20% is ridiculous - nor
-> does it solve all deadlocks :-(
+> I'd go so far as to say that anywhere where you want a non-"volatile"
+> atomic_read, either your code is buggy, or else an int would work just
+> as well.
 
-Well of course it doesn't, but it is a pragmatic way to reduce some
-memory depletion cases. I don't see too much harm in it (although I didn't
-see the 20% suggestion?)
+An int won't work here because += and -= do not have the
+atomicity guarantees that atomic_add/atomic_sub do.  In
+particular, this may cause an atomic_read on another CPU
+to give a bogus reading.
 
-
-> > No substantial comments though. 
-> 
-> Please do ponder the problem and its proposed solutions, because I'm
-> going crazy here.
- 
-Well yeah I think you simply have to reserve a minimum amount of memory in
-order to reclaim a page, and I don't see any other way to do it other than
-what you describe to be _technically_ deadlock free.
-
-But firstly, you don't _want_ to start dropping packets when you hit a tough
-patch in reclaim -- even if you are strictly deadlock free. And secondly,
-I think recursive reclaim could reduce the deadlocks in practice which is
-not a bad thing as your patches aren't merged.
-
-How are your deadlock patches going anyway? AFAIK they are mostly a network
-issue and I haven't been keeping up with them for a while. Do you really need
-networked swap and actually encounter the deadlock, or is it just a question of
-wanting to fix the bugs? If the former, what for, may I ask?
-
-
-> <> What Christoph is proposing is doing recursive reclaim and not
-> initiating writeout. This will only work _IFF_ there are clean pages
-> about. Which in the general case need not be true (memory might be
-> packed with anonymous pages - consider an MPI cluster doing computation
-> stuff). So this gets us a workload dependant solution - which IMHO is
-> bad!
-
-Although you will quite likely have at least a couple of MB worth of
-clean program text. The important part of recursive reclaim is that it
-doesn't so easily allow reclaim to blow all memory reserves (including
-interrupt context). Sure you still have theoretical deadlocks, but if
-I understand correctly, they are going to be lessened. I would be
-really interested to see if even just these recursive reclaim patches
-eliminate the problem in practice.
-
-
-> > I've been sick all week.
-> 
-> Do get well.
-
-Thanks!
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
