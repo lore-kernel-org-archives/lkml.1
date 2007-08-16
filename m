@@ -1,150 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760824AbXHPFoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763188AbXHPFpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760824AbXHPFoS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 01:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbXHPFoE
+	id S1763188AbXHPFpe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 01:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbXHPFpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 01:44:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36509 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753415AbXHPFoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 01:44:02 -0400
-Date: Thu, 16 Aug 2007 05:43:57 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Linux 2.6.20.16
-Message-ID: <20070816054357.GA22242@hera.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Thu, 16 Aug 2007 01:45:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41869 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754526AbXHPFpL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 01:45:11 -0400
+Date: Thu, 16 Aug 2007 11:27:39 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Bill Fink <billfink@mindspring.com>
+cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <alpine.LFD.0.999.0708161045360.25951@enigma.security.iitk.ac.in>
+Message-ID: <alpine.LFD.0.999.0708161115370.25951@enigma.security.iitk.ac.in>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+ <20070815233721.91032366.billfink@mindspring.com>
+ <alpine.LFD.0.999.0708161045360.25951@enigma.security.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I've just released Linux 2.6.20.16. This version catches up with 2.6.21.7.
-I hope to issue newer releases soon with next batches of pending patches.
 
-I'll also be replying to this message with a copy of the patch between
-2.6.20.15 and 2.6.20.16.
+On Thu, 16 Aug 2007, Satyam Sharma wrote:
 
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.6/
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.6/patch-2.6.20.16.bz2
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.20.16
+> Hi Bill,
+> 
+> 
+> On Wed, 15 Aug 2007, Bill Fink wrote:
+> 
+> > On Wed, 15 Aug 2007, Satyam Sharma wrote:
+> > 
+> > > (C)
+> > > $ cat tp3.c
+> > > int a;
+> > > 
+> > > void func(void)
+> > > {
+> > > 	*(volatile int *)&a = 10;
+> > > 	*(volatile int *)&a = 20;
+> > > }
+> > > $ gcc -Os -S tp3.c
+> > > $ cat tp3.s
+> > > ...
+> > > movl    $10, a
+> > > movl    $20, a
+> > > ...
+> > 
+> > I'm curious about one minor tangential point.  Why, instead of:
+> > 
+> > 	b = *(volatile int *)&a;
+> > 
+> > why can't this just be expressed as:
+> > 
+> > 	b = (volatile int)a;
+> > 
+> > Isn't it the contents of a that's volatile, i.e. it's value can change
+> > invisibly to the compiler, and that's why you want to force a read from
+> > memory?  Why do you need the "*(volatile int *)&" construct?
+> 
+> "b = (volatile int)a;" doesn't help us because a cast to a qualified type
+> has the same effect as a cast to an unqualified version of that type, as
+> mentioned in 6.5.4:4 (footnote 86) of the standard. Note that "volatile"
+> is a type-qualifier, not a type itself, so a cast of the _object_ itself
+> to a qualified-type i.e. (volatile int) would not make the access itself
+> volatile-qualified.
+> 
+> To serve our purposes, it is necessary for us to take the address of this
+> (non-volatile) object, cast the resulting _pointer_ to the corresponding
+> volatile-qualified pointer-type, and then dereference it. This makes that
+> particular _access_ be volatile-qualified, without the object itself being
+> such. Also note that the (dereferenced) result is also a valid lvalue and
+> hence can be used in "*(volatile int *)&a = b;" kind of construction
+> (which we use for the atomic_set case).
 
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
+Here, I should obviously admit that the semantics of *(volatile int *)&
+aren't any neater or well-defined in the _language standard_ at all. The
+standard does say (verbatim) "precisely what constitutes as access to
+object of volatile-qualified type is implementation-defined", but GCC
+does help us out here by doing the right thing. Accessing the non-volatile
+object there using the volatile-qualified pointer-type cast makes GCC
+treat the object stored at that memory address itself as if it were a 
+volatile object, thus making the access end up having what we're calling
+as "volatility" semantics here.
 
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.20.y.git
-
-Willy
-
--------
-
- Makefile                                      |    2 
- arch/i386/kernel/entry.S                      |    8 -
- arch/i386/oprofile/nmi_int.c                  |    9 +
- arch/powerpc/kernel/signal_64.c               |   10 -
- arch/x86_64/mm/init.c                         |    8 +
- drivers/char/cyclades.c                       |    1 
- drivers/md/bitmap.c                           |   17 +-
- drivers/md/dm-crypt.c                         |   50 ++----
- drivers/md/raid0.c                            |    3 
- drivers/md/raid1.c                            |   21 +-
- drivers/md/raid10.c                           |    6 
- drivers/media/video/saa7134/saa7134-tvaudio.c |    2 
- drivers/net/e1000/e1000_main.c                |   11 -
- drivers/net/sky2.c                            |    9 +
- drivers/serial/mpsc.c                         |    3 
- include/linux/bootmem.h                       |    1 
- include/linux/pci_ids.h                       |    4 
- include/linux/raid/bitmap.h                   |    1 
- include/linux/sched.h                         |    1 
- include/linux/workqueue.h                     |    2 
- kernel/auditfilter.c                          |    2 
- kernel/exit.c                                 |   22 ++
- kernel/futex.c                                |  205 ++++++++++++++++----------
- kernel/rtmutex.c                              |   24 ++-
- kernel/sched.c                                |   22 +-
- mm/rmap.c                                     |   24 ---
- mm/sparse.c                                   |   11 +
- 27 files changed, 307 insertions(+), 172 deletions(-)
-
-Summary of changes from 2.6.20.15 to 2.6.20.16
-============================================
-
-Alexey Kuznetsov (1):
-      pi-futex: Fix exit races and locking problems
-
-Andi Kleen (1):
-      i386: Fix K8/core2 oprofile on multiple CPUs
-
-Auke Kok (1):
-      e1000: disable polling before registering netdevice
-
-Bob Picco (1):
-      sparsemem: fix oops in x86_64 show_mem
-
-Christoph Lameter (1):
-      sched: fix next_interval determination in idle_balance()
-
-Hugh Dickins (1):
-      mm: kill validate_anon_vma to avoid mapcount BUG
-
-Jason Gaston (1):
-      pci_ids: update patch for Intel ICH9M
-
-Jason Wessel (1):
-      i386: fix infinite loop with singlestep int80 syscalls
-
-Jay Lubomirski (1):
-      serial: clear proper MPSC interrupt cause bits
-
-Jeff Mahoney (1):
-      saa7134: fix thread shutdown handling
-
-Jiri Slaby (1):
-      Char: cyclades, fix deadlock
-
-Mike Accetta (1):
-      md: Fix bug in error handling during raid1 repair.
-
-Milan Broz (1):
-      dm crypt: disable barriers
-
-NeilBrown (3):
-      md: Avoid overflow in raid0 calculation with large components.
-      md: Don't write more than is required of the last page of a bitmap
-      md: Fix two raid10 bugs.
-
-Olaf Kirch (3):
-      dm crypt: fix call to clone_init
-      dm crypt: fix avoid cloned bio ref after free
-      dm crypt: fix remove first_clone
-
-Oleg Nesterov (1):
-      make freezeable workqueues singlethread
-
-Paul Mackerras (1):
-      POWERPC: Fix subtle FP state corruption bug in signal return on SMP
-
-Stephen Hemminger (1):
-      sky2: workaround for lost IRQ
-
-Thomas Gleixner (3):
-      rt-mutex: Fix stale return value
-      rt-mutex: Fix chain walk early wakeup bug
-      FUTEX: Restore the dropped ERSCH fix
-
-Tony Jones (1):
-      audit: fix oops removing watch if audit disabled
-
-Willy Tarreau (1):
-      Linux 2.6.20.16
-
-Zou Nan hai (1):
-      x86_64: allocate sparsemem memmap above 4G
-
+Honestly, given such confusion, and the propensity of the "volatile"
+type-qualifier keyword to be ill-defined (or at least poorly understood,
+often inconsistently implemented), I'd (again) express my opinion that it
+would be best to avoid its usage, given other alternatives do exist.
