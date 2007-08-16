@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933679AbXHPQru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934487AbXHPQsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933679AbXHPQru (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 12:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763418AbXHPQrm
+	id S934487AbXHPQsh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 12:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764953AbXHPQsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 12:47:42 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:43492 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760408AbXHPQrm (ORCPT
+	Thu, 16 Aug 2007 12:48:23 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:47346 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764973AbXHPQsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 12:47:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Z92z9hN3wQMLjDe1QizGv/q5V4LMTfmSGyq841Q6vQsiTsZypS8L6dDZVq+u0nQIEY6uoMhDVsOqj7RGXQUHSxUmCIoM3iDEK60O8v3Dyd/qR8k0h3Qs+DhQEMc/Bp8s0tmsplszuLQXxwYqbqdKAGndx3JbMvo3HffhVL2cVsg=
-Message-ID: <8bd0f97a0708160947x3bd308abmc4f3b523e2444586@mail.gmail.com>
-Date: Thu, 16 Aug 2007 12:47:41 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Gerd Hoffmann" <kraxel@redhat.com>
-Subject: Re: Early printk behaviour
-Cc: "Robin Getz" <rgetz@blackfin.uclinux.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <46C4009F.9090206@redhat.com>
+	Thu, 16 Aug 2007 12:48:22 -0400
+In-Reply-To: <adatzqz1mjx.fsf@cisco.com>
+Subject: Re: [ofa-general] [PATCH 7/7] IB/ehca: Prevent overwriting QP init
+	attributes given by caller
+To: Roland Dreier <rdreier@cisco.com>
+Cc: general-bounces@lists.openfabrics.org, Joachim Fenkes <fenkes@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       openib-general@openib.org, Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF50DCEF62.940E3D7F-ONC1257339.005C150A-C1257339.005C4CA8@de.ibm.com>
+From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+Date: Thu, 16 Aug 2007 18:48:18 +0200
+X-MIMETrack: Serialize by Router on D12ML065/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 16/08/2007 18:48:18
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200708152234.06734.rgetz@blackfin.uclinux.org>
-	 <46C4009F.9090206@redhat.com>
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/16/07, Gerd Hoffmann <kraxel@redhat.com> wrote:
-> Robin Getz wrote:
-> > I was putting together an early printk implementation for the Blackfin, and
-> > was wondering what the expected behaviour was in this situation.
-> >
-> > When I set up my bootargs earlyprintk=serial,ttyBF0,57600 and have no console
-> > defined (no graphical console, no serial console).
-> >
-> > based on the patch:
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=69331af79cf29e26d1231152a172a1a10c2df511
-> >
-> > which no longer calls disable_early_printk, the earlyprintk console never gets
-> > turned off (because nothing else ever calls register_console). I get
-> > everything out the early console, until the init section is released (where
-> > the console structure is sitting), and it starts printing out garbage.
-> >
-> > Is this expected behaviour?
+general-bounces@lists.openfabrics.org wrote on 16.08.2007 18:17:22:
+
+> I don't understand this patch.  <rdma/ib_verbs.h> says this about
+> ib_create_qp():
 >
-> Hmm, sort of, although I didn't think about the case of no real console
-> replacing the early console.  The intention of the patch is to have a
-> smooth handover from the boot console to the real console.  And, yes, if
-> no real console is ever registered the boot console keeps running ...
+>  * @qp_init_attr: A list of initial attributes required to create the
+>  *   QP.  If QP creation succeeds, then the attributes are updated to
+>  *   the actual capabilities of the created QP.
+>
+> So it seems the current code is actually correct and your patch breaks
+> it??
+Yes. That's absolutely true. Please ignore it.
+Thanks!
+Nam
 
-i think it also occurs in the case where real console != early console
-
-> So you can either let it running and *not* mark it __init, so it can
-> keep on going without breaking.  Or you can explicitly unregister your
-> boot console at some point, maybe using a late_initcall.
-
-wouldnt a common kernel late_initcall() be more appropriate ?  if
-early console hasnt switched over (for whatever reason), then kill it
-...
--mike
