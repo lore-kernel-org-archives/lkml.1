@@ -1,173 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbXHPMP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbXHPMZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758791AbXHPMP3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 08:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXHPMPH
+	id S1757974AbXHPMZZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 08:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbXHPMZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 08:15:07 -0400
-Received: from linux.dunaweb.hu ([62.77.196.1]:37715 "EHLO linux.dunaweb.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbXHPMPE convert rfc822-to-8bit (ORCPT
+	Thu, 16 Aug 2007 08:25:13 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42078 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753607AbXHPMZK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 08:15:04 -0400
-Message-ID: <46C43FB0.2020404@dunaweb.hu>
-Date: Thu, 16 Aug 2007 14:14:40 +0200
-From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Thu, 16 Aug 2007 08:25:10 -0400
+X-Sasl-enc: BTKaHzxxmYdEEMv16TIlS5PVOawVYUWdP2vM9K3ij5Sg 1187267109
+Date: Thu, 16 Aug 2007 09:25:06 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: lenb@kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Richard Hughes <hughsient@gmail.com>
+Subject: Re: [PATCH 3/3] ACPI: thinkpad-acpi: change thinkpad-acpi input
+	default and kconfig help
+Message-ID: <20070816122506.GA5081@khazad-dum.debian.net>
+References: <11868017142597-git-send-email-hmh@hmh.eng.br> <11868017143582-git-send-email-hmh@hmh.eng.br> <20070811180602.GA17843@mellanox.co.il> <20070811221625.GB27761@khazad-dum.debian.net> <20070816073053.GA19833@mellanox.co.il>
 MIME-Version: 1.0
-To: IDE/ATA development list <linux-ide@vger.kernel.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Bad CD disk disables IDE DMA
-References: <46C2F526.30005@dunaweb.hu> <6bffcb0e0708160117m31b6edc6ta277b6ddf2d894f6@mail.gmail.com> <46C42DD6.5090200@dunaweb.hu>
-In-Reply-To: <46C42DD6.5090200@dunaweb.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070816073053.GA19833@mellanox.co.il>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zoltan Boszormenyi írta:
-> Michal Piotrowski írta:
->> Hi Zoltan,
->>
->> On 15/08/07, Zoltan Boszormenyi <zboszor@dunaweb.hu> wrote:
->>  
->>> Hi,
->>>
->>> I noticed that a bad CD of mine makes DMA disabled:
->>>
->>> hda: selected mode 0x44
->>> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
->>> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
->>> ide: failed opcode was: unknown
->>> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
->>> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
->>> ide: failed opcode was: unknown
->>> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
->>> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
->>> ide: failed opcode was: unknown
->>> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
->>> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
->>> ide: failed opcode was: unknown
->>> hda: DMA disabled
->>> hda: ide_intr: huh? expected NULL handler on exit
->>> hda: ATAPI reset complete
->>>
->>> Every time I put the said CD into to drive and DMA is on, I get the
->>> above messages.
->>>     
->>
->> This might be intended.
->>   
->
-> Might be. Note however, that there are no "cdrom_decode_status: " lines
-> when the drive is not using DMA. The disk is the same in both cases.
-> I don't know too much about ATAPI, but shouldn't it report the same
-> errors no matter how the commands are passed to the drive?
-> I tried to make it using DMA after mounting the "faulty" disk and 
-> copying it.
-> The same errors occured in the logs when dd started reading but it 
-> actually
-> finished reading:
->
-> $ LANG=C dd if=/dev/hda of=image.iso bs=2048
-> dd: reading `/dev/hda': Input/output error
-> 298106+0 records in
-> 298106+0 records out
-> 610521088 bytes (611 MB) copied, 144.349 seconds, 4.2 MB/s
->
-> The file is a bit larger than what isosize reports about it but IIRC 
-> it's expected.
-> So, if the disk is actually faulty dd would drop dead and not able to 
-> read the disk.
-> Or something is not quite right in the ide-cd driver. The "DMA 
-> disabled" message
-> comes when the drive should spin up the disk. Isn't there a timeout 
-> error somewhere?
-> Hm. Thinking about it a bit more upon mount the same is happening - 
-> before
-> the disk is spun up the error shows up in the logs and it switches to 
-> PIO.
-> Does it ring a bell to someone?
+On Thu, 16 Aug 2007, Michael S. Tsirkin wrote:
+> > I *can* make the compile-time option a module parameter, though.  That
+> > wouldn't be much of a problem, and the compile-time option would select the
+> > default for that parameter, but it would be easier to override it at run
+> > time (you can already do it, but it requires reprogramming various driver
+> > parameters using sysfs and the input device IOCTLs).
+> > 
+> > Would a module parameter address enough of your concerns?  Kconfig would
+> > only set the default for that parameter, then...
+> 
+> I really think modifying defaults it not a great idea.
+> What about adding a writeable module parameter?
+> Then new HAL would just write to /sysfs/module/thinkpad/parameters/interface_version to 
+> switch to new behaviour.
 
-Another data point: the other disks I tried up to now were DVDs
-and DMA remains turned on for those. It's even true for empty
-DVDs and the label side of a Labelflash disk. On the other hand,
-another CD and two other CDRW disks (no visible faults, scratches
-on either btw) give me the same error when they are mounted,
-DMA gets disabled.
+Nah. This thing regulates what the module has to do when it loads and inits
+the firmware, and the whole point of the new behaviour is to get userspace
+to be as hands' off as possible, so that we can auto-tune things better
+in-kernel, without a need to worry about HAL and friends overwriting local
+admin configurations needlessly.
 
-... some more tests and researching ...
+I will probably have to do something like the strict versioned interfaces of
+wireless extensions, I think.  It really is a case of a deprecation of
+current userland interfaces done sanely.  Right now I am thinking about
+giving userland two kernel releases before I change the default interface
+level, and one to two years to remove the older ones.
 
-TADA! The solution was to tune down the drive to only use UDMA3
-with "hdparm -X67". Now although dd didn't get any faster, DMA
-remained enabled. Actually the drive is originally a Pioneer 111D
-that was reflashed to 111L to get the Labelflash feature.
-Can it be a firmware bug? BTW the drive has a 80w cable.
-
->>> Two things are interesting: first, it gets mounted correctly and
->>> readable and
->>> second, when DMA was already disabled no such messages occur in the 
->>> logs.
->>> Anyhow, I would need DMA to correctly burn CDs/DVDs...
->>> What can I do besides manually re-enable DMA?
->>> All other disks I have tried behave perfectly.
->>> This happened on 2.6.22[-rcX], 2.6.23-rc3-git1 and 2.6.20-1.2962.fc6.
->>> This is on a Fedora Core 6 system. CD/DVD is using the old IDE drivers:
->>>
->>> Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
->>> ide: Assuming 33MHz system bus speed for PIO modes; override with 
->>> idebus=xx
->>> NFORCE-MCP55: IDE controller at PCI slot 0000:00:04.0
->>> NFORCE-MCP55: chipset revision 161
->>> NFORCE-MCP55: not 100% native mode: will probe irqs later
->>> NFORCE-MCP55: BIOS didn't set cable bits correctly. Enabling 
->>> workaround.
->>> NFORCE-MCP55: 0000:00:04.0 (rev a1) UDMA133 controller
->>>     ide0: BM-DMA at 0xf000-0xf007, BIOS settings: hda:DMA, hdb:DMA
->>> Probing IDE interface ide0...
->>> hda: PIONEER DVD-RW DVR-111L, ATAPI CD/DVD-ROM drive
->>> ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
->>> Probing IDE interface ide1...
->>> ide-floppy driver 0.99.newide
->>>
->>> $ cat /proc/ide/amd74xx
->>> ----------AMD BusMastering IDE Configuration----------------
->>> Driver Version:                     2.13
->>> South Bridge:                       0000:00:04.0
->>> Revision:                           IDE 0xa1
->>> Highest DMA rate:                   UDMA133
->>> BM-DMA base:                        0xf000
->>> PCI clock:                          33.3MHz
->>> -----------------------Primary IDE-------Secondary IDE------
->>> Prefetch Buffer:              yes                 yes
->>> Post Write Buffer:            yes                 yes
->>> Enabled:                      yes                  no
->>> Simplex only:                  no                 yes
->>> Cable Type:                   80w                 80w
->>> -------------------drive0----drive1----drive2----drive3-----
->>> Transfer Mode:        PIO       DMA       DMA       DMA
->>> Address Setup:       30ns      90ns      90ns      90ns
->>> Cmd Active:          90ns      90ns     300ns     300ns
->>> Cmd Recovery:        30ns      30ns     300ns     300ns
->>> Data Active:         90ns     330ns     330ns     330ns
->>> Data Recovery:       30ns     270ns     270ns     270ns
->>> Cycle Time:         120ns     600ns     600ns     600ns
->>> Transfer Rate:   16.6MB/s   3.3MB/s   3.3MB/s   3.3MB/s
->>>
->>> Best regards,
->>> Zoltán Böszörményi
->>>     
->>
->> Regards,
->> Michal
->>
->>   
->
-> Best regards,
-> Zoltán
->
->
->
-
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
