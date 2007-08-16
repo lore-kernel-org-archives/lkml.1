@@ -1,87 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764997AbXHPGZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761390AbXHPG1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764997AbXHPGZM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 02:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757793AbXHPGYx
+	id S1761390AbXHPG1F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 02:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758025AbXHPG0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 02:24:53 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:59543 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758025AbXHPGYv (ORCPT
+	Thu, 16 Aug 2007 02:26:53 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54786 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757793AbXHPG0w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 02:24:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type;
-        b=Ej/MzjjU00AmCg1hZ/Vooc4FKjagHgX02mUu2cxCXaVXK5rmKqsoNx9tbxME2Bg8Fu80P2tANCs11Lu2DNfsV49mxsF8W7FIr0dLLWPB+07dt6tpbYe6DBqsuUE6si64NcwVtqTJ3g56HZ8K2fqG4AZPkWQlg/gSBHnvF1a21Bc=
-Message-ID: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com>
-Date: Thu, 16 Aug 2007 11:54:50 +0530
-From: "Anand Jahagirdar" <anandjigar@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Fork Bombing Patch
+	Thu, 16 Aug 2007 02:26:52 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46C3EE1F.40309@s5r6.in-berlin.de>
+Date: Thu, 16 Aug 2007 08:26:39 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_54833_5071274.1187245490340"
+To: Gregor Jasny <gjasny@googlemail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux1394-devel@lists.sourceforge.net
+Subject: Re: Corrupted filesystem with new Firewire stack
+References: <9d2cd630708151447u7e415712u17e974859fbd5481@mail.gmail.com>
+In-Reply-To: <9d2cd630708151447u7e415712u17e974859fbd5481@mail.gmail.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_54833_5071274.1187245490340
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+(full quote for linux1394-devel)
 
-Hello All
-           I have searched for Maintainers List to get the correct
-Maintainer for my patch. But i am not getting exact maintainer to
-which i should forward my patch. Will any body please tell me,to which
-maintainer i should forward my patch for its inclusion?
+Gregor Jasny wrote at lkml:
+> today I got the "status write for unknown orb" during early boot
+> sequence. This corrupted somehow my root filesystem which is
+> completely located at the external disk.
+> 
+> Aug 15 23:06:02 Mini kernel: firewire_sbp2: logged in to sbp2 unit fw1.0 (0 retries)
+> Aug 15 23:06:02 Mini kernel: firewire_sbp2:  - management_agent_address:    0xfffff0030000
+> Aug 15 23:06:02 Mini kernel: firewire_sbp2:  - command_block_agent_address: 0xfffff0100000
+> Aug 15 23:06:02 Mini kernel: firewire_sbp2:  - status write address:        0x000100000000
+> ...
+> Aug 15 23:06:02 Mini kernel: Freeing unused kernel memory: 252k freed
+> Aug 15 23:06:02 Mini kernel: firewire_sbp2: status write for unknown orb
+> Aug 15 23:06:02 Mini kernel: firewire_sbp2: sbp2_scsi_abort
+> 
+> After this error with timeout the kernel complained about missing
+> symbols in the intel agp module and udev behave strange.
 
-Summery of the Patch:
+There were some similar reports involving that "status write for unknown
+orb".  I haven't found a way to reproduce it; I noticed it only once in
+the logs here so far.
 
-This patch Warns the administrator about the fork bombing attack
-(whenever any user is crossing its process limit). I have used
-printk_ratelimit function in this patch. This function helps to
-prevent flooding of syslog and prints message as per the values set by
-root user in following files:-
+> After the next reboot I found the following lines in the kernel logfile:
+> 
+> Aug 15 23:09:52 Mini kernel: firewire_core: created new fw device fw1 (0 config rom retries)
+> Aug 15 23:09:52 Mini kernel: firewire_core: phy config: card 0, new root=ffc1, gap_count=5
+> Aug 15 23:09:52 Mini kernel: firewire_ohci: context_stop: still active (0x00000411)
+> Aug 15 23:09:52 Mini kernel: firewire_sbp2: management write failed, rcode 0x11
+> 
+> Sometimes rcode is 0x12:
+> Aug 13 22:24:13 Mini kernel: firewire_core: phy config: card 0, new root=ffc0, gap_count=5
+> Aug 13 22:24:13 Mini kernel: firewire_sbp2: management write failed, rcode 0x12
+> Aug 13 22:24:13 Mini kernel: firewire_sbp2: reconnected to unit fw1.0 (1 retries)
 
-1) /proc/sys/kernel/printk_ratelimit:- This file contains value for,
-how many times message should be printed in syslog.
+As long as it ends in "reconnected to...", failure messages like this
+can typically be ignored.  It cannot be predicted which failures are
+transient and which aren't, hence all are logged.
 
-2) /proc/sys/kernel/printk_ratelimit_burst: - This file contains value
-for, after how much time message should be repeated.
+> The system is an early Mac Mini with C2D CPU. The external disk is a
+> Formax Oxygen 250 with Oxford OXFW_911 chipset. The Kernel was a
+> vanilla 2.6.22.2 with the mactel patches applied.
 
-This patch is really helpful for administrator/root user from security
-point of view. They can take action against attacker by looking at
-syslog messages related with fork bombing attack.
+Among else I too have an Intel Mac mini (running x86-64 Linux though)
+and a OXFW911 enclosure with a NTFS formatted disk in it; I'll swap the
+disk and try stress tests with a native filesystem.
 
-Added comments will definitely help developers.
+> Is there anything I can do to help debugging this problem?
 
-Signed-Off-by: Anand Jahagirdar <anandjigar@gmail.com>
-
-------=_Part_54833_5071274.1187245490340
-Content-Type: text/plain; name=fork.patch~; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f5evao06
-Content-Disposition: attachment; filename="fork.patch~"
-
-SW5kZXg6IHJvb3QvRGVza3RvcC9hMS9saW51eC0yLjYuMTcudGFyLmJ6Ml9GSUxFUy9saW51eC0y
-LjYuMTcva2VybmVsL2ZvcmsuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSByb290Lm9yaWcvRGVza3RvcC9hMS9s
-aW51eC0yLjYuMTcudGFyLmJ6Ml9GSUxFUy9saW51eC0yLjYuMTcva2VybmVsL2ZvcmsuYwkyMDA3
-LTA2LTI2IDIwOjQwOjA2LjAwMDAwMDAwMCArMDUzMAorKysgcm9vdC9EZXNrdG9wL2ExL2xpbnV4
-LTIuNi4xNy50YXIuYnoyX0ZJTEVTL2xpbnV4LTIuNi4xNy9rZXJuZWwvZm9yay5jCTIwMDctMDYt
-MjYgMjA6NDE6NDEuMDAwMDAwMDAwICswNTMwCkBAIC05NTcsMTIgKzk1NywxOSBAQAogCiAJcmV0
-dmFsID0gLUVBR0FJTjsKIAkKLSAgICAgICAgCisgICAgICAgIC8qCisgICAgICAgICAqIGZvbGxv
-d2luZyBjb2RlIGRvZXMgbm90IGFsbG93IE5vbiBSb290IFVzZXIgdG8gY3Jvc3MgaXRzIHByb2Nl
-c3MKKyAgICAgICAgICogbGltaXQgYW5kIGl0IGFsZXJ0cyBhZG1pbmlzdHJhdG9yIGFib3V0IHVz
-ZXIgTmVhcmluZyB0aGUgcHJvY2VzcyBsaW1pdC4KKyAgICAgICAgICovCisgCiAgICAgICAJaWYg
-KGF0b21pY19yZWFkKCZwLT51c2VyLT5wcm9jZXNzZXMpID49IHAtPnNpZ25hbC0+cmxpbVtSTElN
-SVRfTlBST0NdLnJsaW1fY3VyKSAKIAkJaWYgKCFjYXBhYmxlKENBUF9TWVNfQURNSU4pICYmICFj
-YXBhYmxlKENBUF9TWVNfUkVTT1VSQ0UpICYmCi0JCQkJcC0+dXNlciAhPSAmcm9vdF91c2VyKSAK
-KwkJCQlwLT51c2VyICE9ICZyb290X3VzZXIpICB7CisgICAgICAgICAgICAgICAgICAgICAgICBp
-ZiAocHJpbnRrX3JhdGVsaW1pdCgpKQorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBw
-cmludGsoS0VSTl9XQVJOSU5HICJVc2VyIHdpdGggdWlkICV1IGlzIE5lYXJpbmcgdGhlIHByb2Nl
-c3MgbGltaXRcbiIscC0+dXNlci0+dWlkKTsKKwogCQkJIGdvdG8gYmFkX2ZvcmtfZnJlZTsKLQkJ
-CQorCQl9CQkJCiAJCQkKIAlhdG9taWNfaW5jKCZwLT51c2VyLT5fX2NvdW50KTsKIAlhdG9taWNf
-aW5jKCZwLT51c2VyLT5wcm9jZXNzZXMpOwo=
-------=_Part_54833_5071274.1187245490340--
+Alas this kind of bug is harder to debug remotely, and the root FS isn't
+exactly ideal for respective tests...  I'll try to remember to Cc you on
+potentially related patches though.
+-- 
+Stefan Richter
+-=====-=-=== =--- =----
+http://arcgraph.de/sr/
