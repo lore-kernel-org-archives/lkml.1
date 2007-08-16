@@ -1,90 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932850AbXHPIaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933409AbXHPIbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932850AbXHPIaw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 04:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764921AbXHPI2t
+	id S933409AbXHPIbX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 04:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759380AbXHPI2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 04:28:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60326 "EHLO mx1.redhat.com"
+	Thu, 16 Aug 2007 04:28:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60328 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755131AbXHPI2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757904AbXHPI2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 16 Aug 2007 04:28:46 -0400
-Message-Id: <20070816074626.987287000@chello.nl>
+Message-Id: <20070816074628.012251000@chello.nl>
 References: <20070816074525.065850000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Thu, 16 Aug 2007 09:45:35 +0200
+Date: Thu, 16 Aug 2007 09:45:39 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
-       torvalds@linux-foundation.org
-Subject: [PATCH 10/23] lib: percpu_counter_init_irq
-Content-Disposition: inline; filename=percpu_counter_init_irq.patch
+       torvalds@linux-foundation.org, David Woodhouse <dwmw2@infradead.org>
+Subject: [PATCH 14/23] mtd: clean up the backing_dev_info usage
+Content-Disposition: inline; filename=mtd-bdi-fixups.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-provide a way to tell lockdep about percpu_counters that are supposed to be
-used from irq safe contexts.
+Give each mtd device its own backing_dev_info instance.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: David Woodhouse <dwmw2@infradead.org>
 ---
- include/linux/percpu_counter.h |    3 +++
- lib/percpu_counter.c           |   12 ++++++++++++
- 2 files changed, 15 insertions(+)
+ drivers/mtd/mtdcore.c   |    8 +++++---
+ include/linux/mtd/mtd.h |    2 ++
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/include/linux/percpu_counter.h
+Index: linux-2.6/drivers/mtd/mtdcore.c
 ===================================================================
---- linux-2.6.orig/include/linux/percpu_counter.h
-+++ linux-2.6/include/linux/percpu_counter.h
-@@ -31,6 +31,7 @@ struct percpu_counter {
- #endif
+--- linux-2.6.orig/drivers/mtd/mtdcore.c
++++ linux-2.6/drivers/mtd/mtdcore.c
+@@ -19,6 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/mtd/compatmac.h>
+ #include <linux/proc_fs.h>
++#include <linux/backing-dev.h>
  
- int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
-+int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount);
- void percpu_counter_destroy(struct percpu_counter *fbc);
- void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
- void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
-@@ -84,6 +85,8 @@ static inline int percpu_counter_init(st
- 	return 0;
- }
- 
-+#define percpu_counter_init_irq percpu_counter_init
-+
- static inline void percpu_counter_destroy(struct percpu_counter *fbc)
- {
- }
-Index: linux-2.6/lib/percpu_counter.c
+ #include <linux/mtd/mtd.h>
+ #include "internal.h"
+@@ -53,15 +54,16 @@ int add_mtd_device(struct mtd_info *mtd)
+ 	if (!mtd->backing_dev_info) {
+ 		switch (mtd->type) {
+ 		case MTD_RAM:
+-			mtd->backing_dev_info = &mtd_bdi_rw_mappable;
++			mtd->mtd_backing_dev_info = mtd_bdi_rw_mappable;
+ 			break;
+ 		case MTD_ROM:
+-			mtd->backing_dev_info = &mtd_bdi_ro_mappable;
++			mtd->mtd_backing_dev_info = mtd_bdi_ro_mappable;
+ 			break;
+ 		default:
+-			mtd->backing_dev_info = &mtd_bdi_unmappable;
++			mtd->mtd_backing_dev_info = mtd_bdi_unmappable;
+ 			break;
+ 		}
++		mtd->backing_dev_info = &mtd->mtd_backing_dev_info;
+ 	}
+ 	err = bdi_init(mtd->backing_dev_info);
+ 	if (err)
+Index: linux-2.6/include/linux/mtd/mtd.h
 ===================================================================
---- linux-2.6.orig/lib/percpu_counter.c
-+++ linux-2.6/lib/percpu_counter.c
-@@ -68,6 +68,8 @@ s64 __percpu_counter_sum(struct percpu_c
- }
- EXPORT_SYMBOL(__percpu_counter_sum);
+--- linux-2.6.orig/include/linux/mtd/mtd.h
++++ linux-2.6/include/linux/mtd/mtd.h
+@@ -13,6 +13,7 @@
+ #include <linux/module.h>
+ #include <linux/uio.h>
+ #include <linux/notifier.h>
++#include <linux/backing-dev.h>
  
-+static struct lock_class_key percpu_counter_irqsafe;
-+
- int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
- {
- 	spin_lock_init(&fbc->lock);
-@@ -84,6 +86,16 @@ int percpu_counter_init(struct percpu_co
- }
- EXPORT_SYMBOL(percpu_counter_init);
+ #include <linux/mtd/compatmac.h>
+ #include <mtd/mtd-abi.h>
+@@ -154,6 +155,7 @@ struct mtd_info {
+ 	 * - provides mmap capabilities
+ 	 */
+ 	struct backing_dev_info *backing_dev_info;
++	struct backing_dev_info mtd_backing_dev_info;
  
-+int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount)
-+{
-+	int err;
-+
-+	err = percpu_counter_init(fbc, amount);
-+	if (!err)
-+		lockdep_set_class(&fbc->lock, &percpu_counter_irqsafe);
-+	return err;
-+}
-+
- void percpu_counter_destroy(struct percpu_counter *fbc)
- {
- 	if (!fbc->counters)
+ 
+ 	int (*read) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
 
 --
 
