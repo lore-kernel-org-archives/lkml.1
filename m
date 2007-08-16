@@ -1,68 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761127AbXHPRDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764212AbXHPRH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761127AbXHPRDy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 13:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbXHPRDn
+	id S1764212AbXHPRH1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 13:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbXHPRHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 13:03:43 -0400
-Received: from ns2.suse.de ([195.135.220.15]:49569 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753602AbXHPRDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 13:03:42 -0400
-Subject: RE: scripts/mod/file2alias.c cross compile problem
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Adrian Bunk <bunk@stusta.de>,
-       Sam Ravnborg <sam@ravnborg.org>, Jan Dittmer <jdi@l4x.org>,
-       Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-In-Reply-To: <617E1C2C70743745A92448908E030B2A022DBC43@scsmsx411.amr.corp.intel.com>
-References: <617E1C2C70743745A92448908E030B2A0211AFF0@scsmsx411.amr.corp.intel.com>
-	 <1186092501.6131.154.camel@localhost.localdomain>
-	 <1187274435.8780.780.camel@queen.suse.de>
-	 <617E1C2C70743745A92448908E030B2A022DBC43@scsmsx411.amr.corp.intel.com>
-Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Thu, 16 Aug 2007 19:03:37 +0200
-Message-Id: <1187283817.8780.837.camel@queen.suse.de>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Aug 2007 13:07:17 -0400
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:63267 "EHLO
+	aeryn.fluff.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755256AbXHPRHP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 13:07:15 -0400
+Date: Thu, 16 Aug 2007 18:07:13 +0100
+From: Ben Dooks <ben@fluff.org>
+To: Conke Hu <conke.hu@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ben-linux@fluff.org
+Subject: Re: [PATCH] nand/s3c2410.c: fix header file include path
+Message-ID: <20070816170713.GA31790@fluff.org.uk>
+References: <5767b9100708141111ke19e7e5xaa555556e9633f83@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5767b9100708141111ke19e7e5xaa555556e9633f83@mail.gmail.com>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-16 at 09:26 -0700, Luck, Tony wrote:
-> > -#define ACPI_ID_LEN	9
-> > +#define ACPI_ID_LEN	16 /* only 9 bytes needed here, 16 bytes are used */
+On Wed, Aug 15, 2007 at 02:11:17AM +0800, Conke Hu wrote:
+> regs-nand.h and nand.h for s3c nand driver have been moved to plat-s3c/ dir.
 > 
-> What will happen if someone uses more than 9 bytes?  With the old
-> limit there would be a compile time error it someone initialized
-> with:
-> 
-> 	{"PNP0C0ABCDEFGH", 0},
-> 
-> But if we change ACPI_ID_LEN the error will move to run-time.
+> Signed-off-by: conke.hu@gmail.com
 
-That should not harm.
->From spec point of view only 8 bytes are needed. Here 9 bytes are used
-as then string functions can be used. The whole rest of the kernel does
-not use ACPI_ID_LEN.
-If someone defines such an id, his driver won't ever get loaded and he
-gets bug reports very soon anyway.
+This patch is currently awaiting the MTD maintainer to push 
+to linus, which should hopefully be next week.
 
-Hmm, I wonder whether this even may come in handy later:
-Some BIOSes have some spec violating strange hids like:
-"*PNP0C0A"
-or
-"_PNP0C0A"
-While I thought the "_" or "*" should be cut away by ACPI parser, it
-might be a hint to the OS to do something special. AFAIK only very
-specific devices (WMI and some graphics?) have such strange hids
-defined, those drivers could explicitly match for the spec violating
-string then.
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-   Thomas
-
+  'a smiley only costs 4 bytes'
