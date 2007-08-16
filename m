@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935258AbXHPIjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbXHPIkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935258AbXHPIjv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 04:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757031AbXHPI3U
+	id S1752809AbXHPIkr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 04:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759832AbXHPI3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 04:29:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60461 "EHLO mx1.redhat.com"
+	Thu, 16 Aug 2007 04:29:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60465 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765963AbXHPI3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 04:29:01 -0400
-Message-Id: <20070816074629.983607000@chello.nl>
+	id S932173AbXHPI3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 04:29:03 -0400
+Message-Id: <20070816074629.522411000@chello.nl>
 References: <20070816074525.065850000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Thu, 16 Aug 2007 09:45:48 +0200
+Date: Thu, 16 Aug 2007 09:45:45 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
@@ -20,146 +20,568 @@ Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
        torvalds@linux-foundation.org
-Subject: [PATCH 23/23] debug: sysfs files for the current ratio/size/total
-Content-Disposition: inline; filename=bdi_stat_debug.patch
+Subject: [PATCH 20/23] lib: floating proportions
+Content-Disposition: inline; filename=proportions.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Expose the per bdi dirty limits in sysfs
+Given a set of objects, floating proportions aims to efficiently give the
+proportional 'activity' of a single item as compared to the whole set. Where
+'activity' is a measure of a temporal property of the items.
+
+It is efficient in that it need not inspect any other items of the set
+in order to provide the answer. It is not even needed to know how many
+other items there are.
+
+It has one parameter, and that is the period of 'time' over which the 
+'activity' is measured.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- block/ll_rw_blk.c   |   80 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- mm/page-writeback.c |    4 +-
- 2 files changed, 82 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/block/ll_rw_blk.c
+Changes since -v8:
+
+ - merged _single into this patch
+ - major cleanup
+  - removed the overloading of the prop_local methods
+  - removed the prop_adjust_shift macro [akpm]
+  - simplified the _single code
+ - limited the shift argument
+ - provided prop_inc_{percpu,single}
+ - static initializer for prop_local_single
+
+ include/linux/proportions.h |  119 +++++++++++++
+ lib/Makefile                |    3 
+ lib/proportions.c           |  384 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 505 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/lib/proportions.c
 ===================================================================
---- linux-2.6.orig/block/ll_rw_blk.c
-+++ linux-2.6/block/ll_rw_blk.c
-@@ -4000,6 +4000,56 @@ static ssize_t queue_nr_writeback_show(s
- 			nr_writeback >> (PAGE_CACHE_SHIFT - 10));
- }
- 
-+extern void bdi_writeout_fraction(struct backing_dev_info *bdi,
+--- /dev/null
++++ linux-2.6/lib/proportions.c
+@@ -0,0 +1,384 @@
++/*
++ * Floating proportions
++ *
++ *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
++ *
++ * Description:
++ *
++ * The floating proportion is a time derivative with an exponentially decaying
++ * history:
++ *
++ *   p_{j} = \Sum_{i=0} (dx_{j}/dt_{-i}) / 2^(1+i)
++ *
++ * Where j is an element from {prop_local}, x_{j} is j's number of events,
++ * and i the time period over which the differential is taken. So d/dt_{-i} is
++ * the differential over the i-th last period.
++ *
++ * The decaying history gives smooth transitions. The time differential carries
++ * the notion of speed.
++ *
++ * The denominator is 2^(1+i) because we want the series to be normalised, ie.
++ *
++ *   \Sum_{i=0} 1/2^(1+i) = 1
++ *
++ * Further more, if we measure time (t) in the same events as x; so that:
++ *
++ *   t = \Sum_{j} x_{j}
++ *
++ * we get that:
++ *
++ *   \Sum_{j} p_{j} = 1
++ *
++ * Writing this in an iterative fashion we get (dropping the 'd's):
++ *
++ *   if (++x_{j}, ++t > period)
++ *     t /= 2;
++ *     for_each (j)
++ *       x_{j} /= 2;
++ *
++ * so that:
++ *
++ *   p_{j} = x_{j} / t;
++ *
++ * We optimize away the '/= 2' for the global time delta by noting that:
++ *
++ *   if (++t > period) t /= 2:
++ *
++ * Can be approximated by:
++ *
++ *   period/2 + (++t % period/2)
++ *
++ * [ Furthermore, when we choose period to be 2^n it can be written in terms of
++ *   binary operations and wraparound artefacts disappear. ]
++ *
++ * Also note that this yields a natural counter of the elapsed periods:
++ *
++ *   c = t / (period/2)
++ *
++ * [ Its monotonic increasing property can be applied to mitigate the wrap-
++ *   around issue. ]
++ *
++ * This allows us to do away with the loop over all prop_locals on each period
++ * expiration. By remembering the period count under which it was last accessed
++ * as c_{j}, we can obtain the number of 'missed' cycles from:
++ *
++ *   c - c_{j}
++ *
++ * We can then lazily catch up to the global period count every time we are
++ * going to use x_{j}, by doing:
++ *
++ *   x_{j} /= 2^(c - c_{j}), c_{j} = c
++ */
++
++#include <linux/proportions.h>
++#include <linux/rcupdate.h>
++
++/*
++ * Limit the time part in order to ensure there are some bits left for the
++ * cycle counter.
++ */
++#define PROP_MAX_SHIFT (3*BITS_PER_LONG/4)
++
++int prop_descriptor_init(struct prop_descriptor *pd, int shift)
++{
++	int err;
++
++	if (shift > PROP_MAX_SHIFT)
++		shift = PROP_MAX_SHIFT;
++
++	pd->index = 0;
++	pd->pg[0].shift = shift;
++	mutex_init(&pd->mutex);
++	err = percpu_counter_init_irq(&pd->pg[0].events, 0);
++	if (err)
++		goto out;
++
++	err = percpu_counter_init_irq(&pd->pg[1].events, 0);
++	if (err)
++		percpu_counter_destroy(&pd->pg[0].events);
++
++out:
++	return err;
++}
++
++/*
++ * We have two copies, and flip between them to make it seem like an atomic
++ * update. The update is not really atomic wrt the events counter, but
++ * it is internally consistent with the bit layout depending on shift.
++ *
++ * We copy the events count, move the bits around and flip the index.
++ */
++void prop_change_shift(struct prop_descriptor *pd, int shift)
++{
++	int index;
++	int offset;
++	u64 events;
++	unsigned long flags;
++
++	if (shift > PROP_MAX_SHIFT)
++		shift = PROP_MAX_SHIFT;
++
++	mutex_lock(&pd->mutex);
++
++	index = pd->index ^ 1;
++	offset = pd->pg[pd->index].shift - shift;
++	if (!offset)
++		goto out;
++
++	pd->pg[index].shift = shift;
++
++	local_irq_save(flags);
++	events = percpu_counter_sum(&pd->pg[pd->index].events);
++	if (offset < 0)
++		events <<= -offset;
++	else
++		events >>= offset;
++	percpu_counter_set(&pd->pg[index].events, events);
++
++	/*
++	 * ensure the new pg is fully written before the switch
++	 */
++	smp_wmb();
++	pd->index = index;
++	local_irq_restore(flags);
++
++	synchronize_rcu();
++
++out:
++	mutex_unlock(&pd->mutex);
++}
++
++/*
++ * wrap the access to the data in an rcu_read_lock() section;
++ * this is used to track the active references.
++ */
++static struct prop_global *prop_get_global(struct prop_descriptor *pd)
++{
++	int index;
++
++	rcu_read_lock();
++	index = pd->index;
++	/*
++	 * match the wmb from vcd_flip()
++	 */
++	smp_rmb();
++	return &pd->pg[index];
++}
++
++static void prop_put_global(struct prop_descriptor *pd, struct prop_global *pg)
++{
++	rcu_read_unlock();
++}
++
++static void
++prop_adjust_shift(int *pl_shift, unsigned long *pl_period, int new_shift)
++{
++	int offset = *pl_shift - new_shift;
++
++	if (!offset)
++		return;
++
++	if (offset < 0)
++		*pl_period <<= -offset;
++	else
++		*pl_period >>= offset;
++
++	*pl_shift = new_shift;
++}
++
++/*
++ * PERCPU
++ */
++
++int prop_local_init_percpu(struct prop_local_percpu *pl)
++{
++	spin_lock_init(&pl->lock);
++	pl->shift = 0;
++	pl->period = 0;
++	return percpu_counter_init_irq(&pl->events, 0);
++}
++
++void prop_local_destroy_percpu(struct prop_local_percpu *pl)
++{
++	percpu_counter_destroy(&pl->events);
++}
++
++/*
++ * Catch up with missed period expirations.
++ *
++ *   until (c_{j} == c)
++ *     x_{j} -= x_{j}/2;
++ *     c_{j}++;
++ */
++static
++void prop_norm_percpu(struct prop_global *pg, struct prop_local_percpu *pl)
++{
++	unsigned long period = 1UL << (pg->shift - 1);
++	unsigned long period_mask = ~(period - 1);
++	unsigned long global_period;
++	unsigned long flags;
++
++	global_period = percpu_counter_read(&pg->events);
++	global_period &= period_mask;
++
++	/*
++	 * Fast path - check if the local and global period count still match
++	 * outside of the lock.
++	 */
++	if (pl->period == global_period)
++		return;
++
++	spin_lock_irqsave(&pl->lock, flags);
++	prop_adjust_shift(&pl->shift, &pl->period, pg->shift);
++	/*
++	 * For each missed period, we half the local counter.
++	 * basically:
++	 *   pl->events >> (global_period - pl->period);
++	 *
++	 * but since the distributed nature of percpu counters make division
++	 * rather hard, use a regular subtraction loop. This is safe, because
++	 * the events will only every be incremented, hence the subtraction
++	 * can never result in a negative number.
++	 */
++	while (pl->period != global_period) {
++		unsigned long val = percpu_counter_read(&pl->events);
++		unsigned long half = (val + 1) >> 1;
++
++		/*
++		 * Half of zero won't be much less, break out.
++		 * This limits the loop to shift iterations, even
++		 * if we missed a million.
++		 */
++		if (!val)
++			break;
++
++		percpu_counter_add(&pl->events, -half);
++		pl->period += period;
++	}
++	pl->period = global_period;
++	spin_unlock_irqrestore(&pl->lock, flags);
++}
++
++/*
++ *   ++x_{j}, ++t
++ */
++void __prop_inc_percpu(struct prop_descriptor *pd, struct prop_local_percpu *pl)
++{
++	struct prop_global *pg = prop_get_global(pd);
++
++	prop_norm_percpu(pg, pl);
++	percpu_counter_add(&pl->events, 1);
++	percpu_counter_add(&pg->events, 1);
++	prop_put_global(pd, pg);
++}
++
++/*
++ * Obtain a fraction of this proportion
++ *
++ *   p_{j} = x_{j} / (period/2 + t % period/2)
++ */
++void prop_fraction_percpu(struct prop_descriptor *pd,
++		struct prop_local_percpu *pl,
++		long *numerator, long *denominator)
++{
++	struct prop_global *pg = prop_get_global(pd);
++	unsigned long period_2 = 1UL << (pg->shift - 1);
++	unsigned long counter_mask = period_2 - 1;
++	unsigned long global_count;
++
++	prop_norm_percpu(pg, pl);
++	*numerator = percpu_counter_read_positive(&pl->events);
++
++	global_count = percpu_counter_read(&pg->events);
++	*denominator = period_2 + (global_count & counter_mask);
++
++	prop_put_global(pd, pg);
++}
++
++/*
++ * SINGLE
++ */
++
++int prop_local_init_single(struct prop_local_single *pl)
++{
++	spin_lock_init(&pl->lock);
++	pl->shift = 0;
++	pl->period = 0;
++	pl->events = 0;
++	return 0;
++}
++
++void prop_local_destroy_single(struct prop_local_single *pl)
++{
++}
++
++/*
++ * Catch up with missed period expirations.
++ */
++static
++void prop_norm_single(struct prop_global *pg, struct prop_local_single *pl)
++{
++	unsigned long period = 1UL << (pg->shift - 1);
++	unsigned long period_mask = ~(period - 1);
++	unsigned long global_period;
++	unsigned long flags;
++
++	global_period = percpu_counter_read(&pg->events);
++	global_period &= period_mask;
++
++	/*
++	 * Fast path - check if the local and global period count still match
++	 * outside of the lock.
++	 */
++	if (pl->period == global_period)
++		return;
++
++	spin_lock_irqsave(&pl->lock, flags);
++	prop_adjust_shift(&pl->shift, &pl->period, pg->shift);
++	/*
++	 * For each missed period, we half the local counter.
++	 */
++	period = (global_period - pl->period) >> (pg->shift - 1);
++	if (likely(period < BITS_PER_LONG))
++		pl->events >>= period;
++	else
++		pl->events = 0;
++	pl->period = global_period;
++	spin_unlock_irqrestore(&pl->lock, flags);
++}
++
++/*
++ *   ++x_{j}, ++t
++ */
++void __prop_inc_single(struct prop_descriptor *pd, struct prop_local_single *pl)
++{
++	struct prop_global *pg = prop_get_global(pd);
++
++	prop_norm_single(pg, pl);
++	pl->events++;
++	percpu_counter_add(&pg->events, 1);
++	prop_put_global(pd, pg);
++}
++
++/*
++ * Obtain a fraction of this proportion
++ *
++ *   p_{j} = x_{j} / (period/2 + t % period/2)
++ */
++void prop_fraction_single(struct prop_descriptor *pd,
++	       	struct prop_local_single *pl,
++		long *numerator, long *denominator)
++{
++	struct prop_global *pg = prop_get_global(pd);
++	unsigned long period_2 = 1UL << (pg->shift - 1);
++	unsigned long counter_mask = period_2 - 1;
++	unsigned long global_count;
++
++	prop_norm_single(pg, pl);
++	*numerator = pl->events;
++
++	global_count = percpu_counter_read(&pg->events);
++	*denominator = period_2 + (global_count & counter_mask);
++
++	prop_put_global(pd, pg);
++}
+Index: linux-2.6/include/linux/proportions.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/linux/proportions.h
+@@ -0,0 +1,119 @@
++/*
++ * FLoating proportions
++ *
++ *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
++ *
++ * This file contains the public data structure and API definitions.
++ */
++
++#ifndef _LINUX_PROPORTIONS_H
++#define _LINUX_PROPORTIONS_H
++
++#include <linux/percpu_counter.h>
++#include <linux/spinlock.h>
++#include <linux/mutex.h>
++
++struct prop_global {
++	/*
++	 * The period over which we differentiate
++	 *
++	 *   period = 2^shift
++	 */
++	int shift;
++	/*
++	 * The total event counter aka 'time'.
++	 *
++	 * Treated as an unsigned long; the lower 'shift - 1' bits are the
++	 * counter bits, the remaining upper bits the period counter.
++	 */
++	struct percpu_counter events;
++};
++
++/*
++ * global proportion descriptor
++ *
++ * this is needed to consitently flip prop_global structures.
++ */
++struct prop_descriptor {
++	int index;
++	struct prop_global pg[2];
++	struct mutex mutex;		/* serialize the prop_global switch */
++};
++
++int prop_descriptor_init(struct prop_descriptor *pd, int shift);
++void prop_change_shift(struct prop_descriptor *pd, int new_shift);
++
++/*
++ * ----- PERCPU ------
++ */
++
++struct prop_local_percpu {
++	/*
++	 * the local events counter
++	 */
++	struct percpu_counter events;
++
++	/*
++	 * snapshot of the last seen global state
++	 */
++	int shift;
++	unsigned long period;
++	spinlock_t lock;		/* protect the snapshot state */
++};
++
++int prop_local_init_percpu(struct prop_local_percpu *pl);
++void prop_local_destroy_percpu(struct prop_local_percpu *pl);
++void __prop_inc_percpu(struct prop_descriptor *pd, struct prop_local_percpu *pl);
++void prop_fraction_percpu(struct prop_descriptor *pd, struct prop_local_percpu *pl,
 +		long *numerator, long *denominator);
 +
-+static ssize_t queue_nr_cache_ratio_show(struct request_queue *q, char *page)
++static inline
++void prop_inc_percpu(struct prop_descriptor *pd, struct prop_local_percpu *pl)
 +{
-+	long scale, div;
++	unsigned long flags;
 +
-+	bdi_writeout_fraction(&q->backing_dev_info, &scale, &div);
-+	scale *= 1024;
-+	scale /= div;
-+
-+	return sprintf(page, "%ld\n", scale);
++	local_irq_save(flags);
++	__prop_inc_percpu(pd, pl);
++	local_irq_restore(flags);
 +}
 +
-+static ssize_t queue_nr_cache_num_show(struct request_queue *q, char *page)
-+{
-+	long scale, div;
++/*
++ * ----- SINGLE ------
++ */
 +
-+	bdi_writeout_fraction(&q->backing_dev_info, &scale, &div);
++struct prop_local_single {
++	/*
++	 * the local events counter
++	 */
++	unsigned long events;
 +
-+	return sprintf(page, "%ld\n", scale);
++	/*
++	 * snapshot of the last seen global state
++	 * and a lock protecting this state
++	 */
++	int shift;
++	unsigned long period;
++	spinlock_t lock;		/* protect the snapshot state */
++};
++
++#define INIT_PROP_LOCAL_SINGLE(name)			\
++{	.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\
 +}
 +
-+static ssize_t queue_nr_cache_denom_show(struct request_queue *q, char *page)
++int prop_local_init_single(struct prop_local_single *pl);
++void prop_local_destroy_single(struct prop_local_single *pl);
++void __prop_inc_single(struct prop_descriptor *pd, struct prop_local_single *pl);
++void prop_fraction_single(struct prop_descriptor *pd, struct prop_local_single *pl,
++		long *numerator, long *denominator);
++
++static inline
++void prop_inc_single(struct prop_descriptor *pd, struct prop_local_single *pl)
 +{
-+	long scale, div;
++	unsigned long flags;
 +
-+	bdi_writeout_fraction(&q->backing_dev_info, &scale, &div);
-+
-+	return sprintf(page, "%ld\n", div);
++	local_irq_save(flags);
++	__prop_inc_single(pd, pl);
++	local_irq_restore(flags);
 +}
 +
-+extern void
-+get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
-+		struct backing_dev_info *bdi);
-+
-+static ssize_t queue_nr_cache_size_show(struct request_queue *q, char *page)
-+{
-+	long background, dirty, bdi_dirty;
-+	get_dirty_limits(&background, &dirty, &bdi_dirty, &q->backing_dev_info);
-+	return sprintf(page, "%ld\n", bdi_dirty);
-+}
-+
-+static ssize_t queue_nr_cache_total_show(struct request_queue *q, char *page)
-+{
-+	long background, dirty, bdi_dirty;
-+	get_dirty_limits(&background, &dirty, &bdi_dirty, &q->backing_dev_info);
-+	return sprintf(page, "%ld\n", dirty);
-+}
-+
- static struct queue_sysfs_entry queue_requests_entry = {
- 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
- 	.show = queue_requests_show,
-@@ -4033,6 +4083,31 @@ static struct queue_sysfs_entry queue_wr
- 	.show = queue_nr_writeback_show,
- };
- 
-+static struct queue_sysfs_entry queue_cache_ratio_entry = {
-+	.attr = {.name = "cache_ratio", .mode = S_IRUGO },
-+	.show = queue_nr_cache_ratio_show,
-+};
-+
-+static struct queue_sysfs_entry queue_cache_num_entry = {
-+	.attr = {.name = "cache_num", .mode = S_IRUGO },
-+	.show = queue_nr_cache_num_show,
-+};
-+
-+static struct queue_sysfs_entry queue_cache_denom_entry = {
-+	.attr = {.name = "cache_denom", .mode = S_IRUGO },
-+	.show = queue_nr_cache_denom_show,
-+};
-+
-+static struct queue_sysfs_entry queue_cache_size_entry = {
-+	.attr = {.name = "cache_size", .mode = S_IRUGO },
-+	.show = queue_nr_cache_size_show,
-+};
-+
-+static struct queue_sysfs_entry queue_cache_total_entry = {
-+	.attr = {.name = "cache_total", .mode = S_IRUGO },
-+	.show = queue_nr_cache_total_show,
-+};
-+
- static struct queue_sysfs_entry queue_iosched_entry = {
- 	.attr = {.name = "scheduler", .mode = S_IRUGO | S_IWUSR },
- 	.show = elv_iosched_show,
-@@ -4046,6 +4121,11 @@ static struct attribute *default_attrs[]
- 	&queue_max_sectors_entry.attr,
- 	&queue_reclaimable_entry.attr,
- 	&queue_writeback_entry.attr,
-+	&queue_cache_ratio_entry.attr,
-+	&queue_cache_num_entry.attr,
-+	&queue_cache_denom_entry.attr,
-+	&queue_cache_size_entry.attr,
-+	&queue_cache_total_entry.attr,
- 	&queue_iosched_entry.attr,
- 	NULL,
- };
-Index: linux-2.6/mm/page-writeback.c
++#endif /* _LINUX_PROPORTIONS_H */
+Index: linux-2.6/lib/Makefile
 ===================================================================
---- linux-2.6.orig/mm/page-writeback.c
-+++ linux-2.6/mm/page-writeback.c
-@@ -169,7 +169,7 @@ static inline void task_dirty_inc(struct
- /*
-  * Obtain an accurate fraction of the BDI's portion.
-  */
--static void bdi_writeout_fraction(struct backing_dev_info *bdi,
-+void bdi_writeout_fraction(struct backing_dev_info *bdi,
- 		long *numerator, long *denominator)
- {
- 	if (bdi_cap_writeback_dirty(bdi)) {
-@@ -291,7 +291,7 @@ static unsigned long determine_dirtyable
- 	return x + 1;	/* Ensure that we never return 0 */
- }
+--- linux-2.6.orig/lib/Makefile
++++ linux-2.6/lib/Makefile
+@@ -5,7 +5,8 @@
+ lib-y := ctype.o string.o vsprintf.o kasprintf.o cmdline.o \
+ 	 rbtree.o radix-tree.o dump_stack.o \
+ 	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
+-	 sha1.o irq_regs.o reciprocal_div.o argv_split.o
++	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
++	 proportions.o
  
--static void
-+void
- get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
- 		 struct backing_dev_info *bdi)
- {
+ lib-$(CONFIG_MMU) += ioremap.o pagewalk.o
+ lib-$(CONFIG_SMP) += cpumask.o
 
 --
 
