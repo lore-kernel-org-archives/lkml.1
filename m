@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030284AbXHPDLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936343AbXHPDPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030284AbXHPDLc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 23:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbXHPDLV
+	id S936343AbXHPDPw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 23:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbXHPDPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 23:11:21 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:12340 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753615AbXHPDLT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 23:11:19 -0400
-X-IronPort-AV: i="4.19,268,1183359600"; 
-   d="scan'208"; a="200851391:sNHT47033505"
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Steve Wise <swise@opengridcomputing.com>,
-       David Miller <davem@davemloft.net>, mshefty@ichips.intel.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports from the host TCP port space.
-X-Message-Flag: Warning: May contain useful information
-References: <46B883B5.8040702@opengridcomputing.com>
-	<46BB61D0.4090101@opengridcomputing.com>
-	<46BB89C0.4040303@ichips.intel.com>
-	<20070809.145534.102938208.davem@davemloft.net>
-	<46C310E1.7020503@opengridcomputing.com> <46C3B5EF.5060409@garzik.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 15 Aug 2007 20:11:15 -0700
-In-Reply-To: <46C3B5EF.5060409@garzik.org> (Jeff Garzik's message of "Wed, 15 Aug 2007 22:26:55 -0400")
-Message-ID: <adaabss41ik.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Wed, 15 Aug 2007 23:15:45 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:47383 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1755067AbXHPDPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 23:15:44 -0400
+Message-ID: <387234139.16356@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Thu, 16 Aug 2007 11:15:39 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Rientjes <rientjes@google.com>,
+       John Berthels <jjberthels@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC][PATCH] /proc/<pid>/pmaps - memory maps in granularity of
+	pages
+Message-ID: <20070816031539.GA5110@mail.ustc.edu.cn>
+References: <20070814085204.GA10884@mail.ustc.edu.cn> <20070814162618.GV30556@waste.org> <20070816013701.GA5209@mail.ustc.edu.cn>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 16 Aug 2007 03:11:15.0575 (UTC) FILETIME=[1B6F0870:01C7DFB3]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20070816013701.GA5209@mail.ustc.edu.cn>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Needing to reach out of the RDMA sandbox and reserve net stack
- > resources away from itself travels a path we've consistently avoided.
+On Thu, Aug 16, 2007 at 09:37:01AM +0800, Fengguang Wu wrote:
+> 3) A 64bit number can be encoded in hex in 8 bytes, no more than its
+                                             ~~ sorry, I'm a fool!
+> binary presentation. And often the text string will be much shorter
+> because of the common small values.
 
-Where did the idea of an "RDMA sandbox" come from?  Obviously no one
-disagrees with keeping things clean and maintainable, but the idea
-that RDMA is a second-class citizen that doesn't get any input into
-the evolution of the networking code seems kind of offensive to me.
-
- - R.
