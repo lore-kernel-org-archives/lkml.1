@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764325AbXHPVCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765432AbXHPVC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764325AbXHPVCa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 17:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756471AbXHPVCS
+	id S1765432AbXHPVC4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 17:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764703AbXHPVCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 17:02:18 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47902 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753312AbXHPVCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 17:02:16 -0400
-In-Reply-To: <alpine.LFD.0.999.0708161115370.25951@enigma.security.iitk.ac.in>
-References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <20070815233721.91032366.billfink@mindspring.com> <alpine.LFD.0.999.0708161045360.25951@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708161115370.25951@enigma.security.iitk.ac.in>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <43eccf425e36943ce0411c3b504b1de2@kernel.crashing.org>
+	Thu, 16 Aug 2007 17:02:45 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54125 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757950AbXHPVCo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 17:02:44 -0400
+Date: Thu, 16 Aug 2007 14:02:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [-mm patch] AFLAGS: fix the -g setting
+Message-Id: <20070816140201.3ff0f582.akpm@linux-foundation.org>
+In-Reply-To: <20070814212329.GQ18945@stusta.de>
+References: <20070809224254.11f42716.akpm@linux-foundation.org>
+	<20070814212329.GQ18945@stusta.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Cc: Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
-       horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Bill Fink <billfink@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Thu, 16 Aug 2007 23:00:30 +0200
-To: Satyam Sharma <satyam@infradead.org>
-X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Here, I should obviously admit that the semantics of *(volatile int *)&
-> aren't any neater or well-defined in the _language standard_ at all. 
-> The
-> standard does say (verbatim) "precisely what constitutes as access to
-> object of volatile-qualified type is implementation-defined", but GCC
-> does help us out here by doing the right thing.
+On Tue, 14 Aug 2007 23:23:29 +0200
+Adrian Bunk <bunk@kernel.org> wrote:
 
-Where do you get that idea?  GCC manual, section 6.1, "When
-is a Volatile Object Accessed?" doesn't say anything of the
-kind.  PR33053 and some others.
+> It's -gdwarf-2, not -gdwarf2. With this fix it can actually work.
 
-> Honestly, given such confusion, and the propensity of the "volatile"
-> type-qualifier keyword to be ill-defined (or at least poorly 
-> understood,
-> often inconsistently implemented), I'd (again) express my opinion that 
-> it
-> would be best to avoid its usage, given other alternatives do exist.
+Andreas Schwab has said "The option is officially called -gdwarf-2, and
+-gdwarf2 is an alias for backward compatibility.".  So the code should be
+working OK now.
 
-Yeah.  Or we can have an email thread like this every time
-someone proposes a patch that uses an atomic variable ;-)
-
-
-Segher
-
+> And since even gcc 3.2 supports -gdwarf-2 there's no reason for checking 
+> with as-option.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 6ab1091b06e762635430b452f82a474890bda230 
+> diff --git a/Makefile b/Makefile
+> index 5b0d58c..accfdc4 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -504,7 +504,7 @@ endif
+>  
+>  ifdef CONFIG_DEBUG_INFO
+>  CFLAGS		+= -g
+> -AFLAGS		+= $(call as-option, -gdwarf2)
+> +AFLAGS		+= -gdwarf-2
+>  endif
+>  
+>  # Force gcc to behave correct even for buggy distributions
