@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932487AbXHPKnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933771AbXHPKw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932487AbXHPKnp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 06:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757715AbXHPKne
+	id S933771AbXHPKw5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 06:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762010AbXHPKws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 06:43:34 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2754 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757452AbXHPKnc (ORCPT
+	Thu, 16 Aug 2007 06:52:48 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:51230 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758915AbXHPKwr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 06:43:32 -0400
-Date: Thu, 16 Aug 2007 18:42:50 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070816104250.GB2927@gondor.apana.org.au>
-References: <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C41EE4.9090806@s5r6.in-berlin.de> <46C42767.4070104@s5r6.in-berlin.de>
-Mime-Version: 1.0
+	Thu, 16 Aug 2007 06:52:47 -0400
+Date: Thu, 16 Aug 2007 11:52:43 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Joe Perches <joe@perches.com>
+Cc: Pat Gefre <pfg@americas.sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [261/2many] MAINTAINERS - IOC3 DRIVER
+Message-ID: <20070816105243.GA5412@linux-mips.org>
+References: <Pine.SGI.3.96.1070815090732.63602A-100000@fsgi900.americas.sgi.com> <1187199095.7443.25.camel@localhost>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46C42767.4070104@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1187199095.7443.25.camel@localhost>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 12:31:03PM +0200, Stefan Richter wrote:
+On Wed, Aug 15, 2007 at 10:31:35AM -0700, Joe Perches wrote:
+> From: Joe Perches <joe@perches.com>
+> Date: Wed, 15 Aug 2007 10:31:35 -0700
+> To: Pat Gefre <pfg@americas.sgi.com>
+> Cc: Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH] [261/2many] MAINTAINERS - IOC3 DRIVER
+> Content-Type: text/plain
 > 
-> PS:  Just to clarify, I'm not speaking for the volatile modifier.  I'm
-> not speaking for any particular implementation of atomic_t and its
-> accessors at all.  All I am saying is that
->   - we use atomically accessed data types because we concurrently but
->     locklessly access this data,
->   - hence a read access to this data that could be optimized away
->     makes *no sense at all*.
+> On Wed, 2007-08-15 at 09:08 -0500, Pat Gefre wrote:
+> > On Tue, 14 Aug 2007, Joe Perches wrote:
+> > + On Mon, 2007-08-13 at 11:19 +0100, Ralf Baechle wrote:
+> > + > I suggest to add a separate
+> > + > MAINTAINERS entry for ioc3_serial with Patrick Gefre <pfg@sgi.com> as the
+> > + > maintainer.
+> > + Patrick? Is that what you want?
+> > Yeah that's fine. I'm the most likely person for this.
+> 
+> IOC3 DRIVER
+> P:	Ralf Baechle
+> M:	ralf@linux-mips.org
+> L:	linux-mips@linux-mips.org
+> S:	Maintained
+> F:	drivers/net/ioc3-eth.c
+> 
+> IOC3 SERIAL DRIVER
+> P:	Pat Gefre
+> M:	pfg@sgi.com
+> L:	linux-mips@linux-mips.org
+> S:	Maintained
+> F:	drivers/serial/ioc3_serial.c
 
-No sane compiler can optimise away an atomic_read per se.
-That's only possible if there's a preceding atomic_set or
-atomic_read, with no barriers in the middle.
+Looks good.
 
-If that's the case, then one has to conclude that doing
-away with the second read is acceptable, as otherwise
-a memory (or at least a compiler) barrier should have been
-used.
-
-In fact, volatile doesn't guarantee that the memory gets
-read anyway.  You might be reading some stale value out
-of the cache.  Granted this doesn't happen on x86 but
-when you're coding for the kernel you can't make such
-assumptions.
-
-So the point here is that if you don't mind getting a stale
-value from the CPU cache when doing an atomic_read, then
-surely you won't mind getting a stale value from the compiler
-"cache".
-
-> So, the architecture guys can implement atomic_read however they want
-> --- as long as it cannot be optimized away.*
-
-They can implement it however they want as long as it stays
-atomic.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+  Ralf
