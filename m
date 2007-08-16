@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938044AbXHPCbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964871AbXHPCd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938044AbXHPCbT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 22:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937366AbXHPCa4
+	id S964871AbXHPCd0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 22:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764020AbXHPCdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 22:30:56 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:58469 "EHLO e6.ny.us.ibm.com"
+	Wed, 15 Aug 2007 22:33:05 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:59941 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937122AbXHPCay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 22:30:54 -0400
-Date: Wed, 15 Aug 2007 19:30:50 -0700
+	id S1755051AbXHPCdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 22:33:00 -0400
+Date: Wed, 15 Aug 2007 19:32:55 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, jesper.juhl@gmail.com,
-       linux-arch@vger.kernel.org, zlynx@acm.org, satyam@infradead.org,
-       clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org,
+       Herbert Xu <herbert@gondor.apana.org.au>
 Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070816023050.GC14613@linux.vnet.ibm.com>
+Message-ID: <20070816023255.GD14613@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com> <20070815234021.GA28775@gondor.apana.org.au> <20070815235125.GT9645@linux.vnet.ibm.com> <0de0c3d833b6f543bd75f74bb17a124b@kernel.crashing.org>
+References: <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <20070816005348.GA9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151757400.11196@schroedinger.engr.sgi.com> <20070816011414.GC9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151839140.11520@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0de0c3d833b6f543bd75f74bb17a124b@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0708151839140.11520@schroedinger.engr.sgi.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 03:30:44AM +0200, Segher Boessenkool wrote:
-> >>>Part of the motivation here is to fix heisenbugs.  If I knew where 
-> >>>they
-> >>
-> >>By the same token we should probably disable optimisations
-> >>altogether since that too can create heisenbugs.
-> >
-> >Precisely the point -- use of volatile (whether in casts or on asms)
-> >in these cases are intended to disable those optimizations likely to
-> >result in heisenbugs.
+On Wed, Aug 15, 2007 at 06:41:40PM -0700, Christoph Lameter wrote:
+> On Wed, 15 Aug 2007, Paul E. McKenney wrote:
 > 
-> The only thing volatile on an asm does is create a side effect
-> on the asm statement; in effect, it tells the compiler "do not
-> remove this asm even if you don't need any of its outputs".
+> > Understood.  My point is not that the impact is precisely zero, but
+> > rather that the impact on optimization is much less hurtful than the
+> > problems that could arise otherwise, particularly as compilers become
+> > more aggressive in their optimizations.
 > 
-> It's not disabling optimisation likely to result in bugs,
-> heisen- or otherwise; _not_ putting the volatile on an asm
-> that needs it simply _is_ a bug :-)
+> The problems arise because barriers are not used as required. Volatile 
+> has wishy washy semantics and somehow marries memory barriers with data 
+> access. It is clearer to separate the two. Conceptual cleanness usually 
+> translates into better code. If one really wants the volatile then lets 
+> make it explicit and use
+> 
+> 	atomic_read_volatile()
 
-Yep.  And the reason it is a bug is that it fails to disable
-the relevant compiler optimizations.  So I suspect that we might
-actually be saying the same thing here.
+There are indeed architectures where you can cause gcc to emit memory
+barriers in response to volatile.  I am assuming that we are -not-
+making gcc do this.  Given this, then volatiles and memory barrier
+instructions are orthogonal -- one controls the compiler, the other
+controls the CPU.
 
 						Thanx, Paul
