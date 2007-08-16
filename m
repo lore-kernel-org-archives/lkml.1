@@ -1,20 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964988AbXHPBmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936971AbXHPBwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964988AbXHPBmJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 21:42:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761779AbXHPBlp
+	id S936971AbXHPBwD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 21:52:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757609AbXHPBvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 21:41:45 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58651 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760168AbXHPBlm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 21:41:42 -0400
-Date: Wed, 15 Aug 2007 18:41:40 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
+	Wed, 15 Aug 2007 21:51:50 -0400
+Received: from ozlabs.org ([203.10.76.45]:45444 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753556AbXHPBvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 21:51:49 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18115.44462.622801.683446@cargo.ozlabs.ibm.com>
+Date: Thu, 16 Aug 2007 11:51:42 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Satyam Sharma <satyam@infradead.org>,
        Stefan Richter <stefanr@s5r6.in-berlin.de>,
        Chris Snook <csnook@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -28,32 +31,32 @@ cc: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
        Herbert Xu <herbert@gondor.apana.org.au>
 Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
  architectures
-In-Reply-To: <20070816011414.GC9645@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.64.0708151839140.11520@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
- <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
- <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
- <18115.35524.56393.347841@cargo.ozlabs.ibm.com>
- <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com>
- <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
- <20070816005348.GA9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151757400.11196@schroedinger.engr.sgi.com>
- <20070816011414.GC9645@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+	<Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+	<alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+	<46C2D6F3.3070707@s5r6.in-berlin.de>
+	<alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+	<18115.35524.56393.347841@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com>
+	<20070816003948.GY9645@linux.vnet.ibm.com>
+	<Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Aug 2007, Paul E. McKenney wrote:
+Christoph Lameter writes:
 
-> Understood.  My point is not that the impact is precisely zero, but
-> rather that the impact on optimization is much less hurtful than the
-> problems that could arise otherwise, particularly as compilers become
-> more aggressive in their optimizations.
+> A volatile default would disable optimizations for atomic_read. 
+> atomic_read without volatile would allow for full optimization by the 
+> compiler. Seems that this is what one wants in many cases.
 
-The problems arise because barriers are not used as required. Volatile 
-has wishy washy semantics and somehow marries memory barriers with data 
-access. It is clearer to separate the two. Conceptual cleanness usually 
-translates into better code. If one really wants the volatile then lets 
-make it explicit and use
+Name one such case.
 
-	atomic_read_volatile()
+An atomic_read should do a load from memory.  If the programmer puts
+an atomic_read() in the code then the compiler should emit a load for
+it, not re-use a value returned by a previous atomic_read.  I do not
+believe it would ever be useful for the compiler to collapse two
+atomic_read statements into a single load.
+
+Paul.
