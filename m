@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030205AbXHPCGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935244AbXHPCJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030205AbXHPCGj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 22:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbXHPCG1
+	id S935244AbXHPCJZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 22:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbXHPCJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 22:06:27 -0400
-Received: from ozlabs.org ([203.10.76.45]:44737 "EHLO ozlabs.org"
+	Wed, 15 Aug 2007 22:09:04 -0400
+Received: from gate.crashing.org ([63.228.1.57]:51652 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756306AbXHPCGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 22:06:24 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750976AbXHPCJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 22:09:02 -0400
+In-Reply-To: <18115.44462.622801.683446@cargo.ozlabs.ibm.com>
+References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e21c163fdfa7f2fa9428816d6ba69671@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
-Message-ID: <18115.45316.702491.681906@cargo.ozlabs.ibm.com>
-Date: Thu, 16 Aug 2007 12:05:56 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+Cc: Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
        Satyam Sharma <satyam@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Chris Snook <csnook@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-In-Reply-To: <20070816020042.GA30650@gondor.apana.org.au>
-References: <20070809131423.GA9927@shell.boston.redhat.com>
-	<Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
-	<alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
-	<46C2D6F3.3070707@s5r6.in-berlin.de>
-	<alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
-	<18115.35524.56393.347841@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com>
-	<20070816003948.GY9645@linux.vnet.ibm.com>
-	<Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
-	<18115.44462.622801.683446@cargo.ozlabs.ibm.com>
-	<20070816020042.GA30650@gondor.apana.org.au>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Date: Thu, 16 Aug 2007 04:07:01 +0200
+To: Paul Mackerras <paulus@samba.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu writes:
+>> A volatile default would disable optimizations for atomic_read.
+>> atomic_read without volatile would allow for full optimization by the
+>> compiler. Seems that this is what one wants in many cases.
+>
+> Name one such case.
+>
+> An atomic_read should do a load from memory.  If the programmer puts
+> an atomic_read() in the code then the compiler should emit a load for
+> it, not re-use a value returned by a previous atomic_read.  I do not
+> believe it would ever be useful for the compiler to collapse two
+> atomic_read statements into a single load.
 
-> See sk_stream_mem_schedule in net/core/stream.c:
-> 
->         /* Under limit. */
->         if (atomic_read(sk->sk_prot->memory_allocated) < sk->sk_prot->sysctl_mem[0]) {
->                 if (*sk->sk_prot->memory_pressure)
->                         *sk->sk_prot->memory_pressure = 0;
->                 return 1;
->         }
-> 
->         /* Over hard limit. */
->         if (atomic_read(sk->sk_prot->memory_allocated) > sk->sk_prot->sysctl_mem[2]) {
->                 sk->sk_prot->enter_memory_pressure();
->                 goto suppress_allocation;
->         }
-> 
-> We don't need to reload sk->sk_prot->memory_allocated here.
+An atomic_read() implemented as a "normal" C variable read would
+allow that read to be combined with another "normal" read from
+that variable.  This could perhaps be marginally useful, although
+I'd bet you cannot see it unless counting cycles on a simulator
+or counting bits in the binary size.
 
-Are you sure?  How do you know some other CPU hasn't changed the value
-in between?
+With an asm() implementation, the compiler can not do this; with
+a "volatile" implementation (either volatile variable or volatile-cast),
+this invokes undefined behaviour (in both C and GCC).
 
-Paul.
+
+Segher
+
