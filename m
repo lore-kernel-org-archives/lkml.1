@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbXHPUDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbXHPUD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757476AbXHPUDh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 16:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbXHPUDY
+	id S1753226AbXHPUD6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 16:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbXHPUDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 16:03:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41452 "EHLO mx1.redhat.com"
+	Thu, 16 Aug 2007 16:03:43 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:33166 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750925AbXHPUDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 16:03:22 -0400
-Message-ID: <46C4ABC5.0@redhat.com>
-Date: Thu, 16 Aug 2007 15:55:49 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-CC: Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	id S1758014AbXHPUDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 16:03:41 -0400
+Date: Thu, 16 Aug 2007 22:04:55 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@osdl.org>,
+       stable@kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Alberto Pires de Oliveira Neto <apon1@terra.com.br>, giedrius@su.lt
+Subject: Re: [PATCH] UML - Add a .note.SuSE section
+Message-ID: <20070816200455.GA14424@uranus.ravnborg.org>
+References: <20070816162428.GA8128@c2.user-mode-linux.org> <1187281856.2663.0.camel@laptopd505.fenrus.org> <20070816192639.GA8957@c2.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070816192639.GA8957@c2.user-mode-linux.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilpo Järvinen wrote:
-> On Thu, 16 Aug 2007, Herbert Xu wrote:
+On Thu, Aug 16, 2007 at 03:26:39PM -0400, Jeff Dike wrote:
 > 
->> We've been through that already.  If it's a busy-wait it
->> should use cpu_relax. 
+> The crash is in this section:
 > 
-> I looked around a bit by using some command lines and ended up wondering 
-> if these are equal to busy-wait case (and should be fixed) or not:
-> 
-> ./drivers/telephony/ixj.c
-> 6674:   while (atomic_read(&j->DSPWrite) > 0)
-> 6675-           atomic_dec(&j->DSPWrite);
-> 
-> ...besides that, there are couple of more similar cases in the same file 
-> (with braces)...
+>   __uml_setup_start = .;
+>   .uml.setup.init : { *(.uml.setup.init) }
+>   __uml_setup_end = .;
 
-atomic_dec() already has volatile behavior everywhere, so this is 
-semantically okay, but this code (and any like it) should be calling 
-cpu_relax() each iteration through the loop, unless there's a compelling 
-reason not to.  I'll allow that for some hardware drivers (possibly this 
-one) such a compelling reason may exist, but hardware-independent core 
-subsystems probably have no excuse.
+This looks like a classic bug.
+You wanted this:
+.uml.setup.init : {
+	__uml_setup_start = .;
+	*(.uml.setup.init)
+	__uml_setup_end = .;
+}
 
-If the maintainer of this code doesn't see a compelling reason not to 
-add cpu_relax() in this loop, then it should be patched.
+In this way you are sure __uml_setup_start has same address as start
+of section.
+With the original code the linker will align the .uml.setup.init section
+to the alignment required by the included sections and thus
+the label and the actual start address may differ.
 
-	-- Chris
+	Sam
