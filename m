@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762403AbXHPSkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763988AbXHPSm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762403AbXHPSkb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 14:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbXHPSkT
+	id S1763988AbXHPSm6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 14:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbXHPSms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 14:40:19 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52069 "EHLO mail.dvmed.net"
+	Thu, 16 Aug 2007 14:42:48 -0400
+Received: from mail.suse.de ([195.135.220.2]:35854 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755374AbXHPSkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 14:40:17 -0400
-Message-ID: <46C49A0D.5080002@garzik.org>
-Date: Thu, 16 Aug 2007 14:40:13 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1755898AbXHPSmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 14:42:47 -0400
+Date: Thu, 16 Aug 2007 21:36:49 +0200
+From: Andi Kleen <ak@suse.de>
+To: Len Brown <lenb@kernel.org>
+Cc: Andi Kleen <ak@suse.de>, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ACPI: boot correctly with "nosmp" or "maxcpus=0"
+Message-ID: <20070816193649.GA16680@bingen.suse.de>
+References: <200708160332.30732.lenb@kernel.org>
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: Sonic Zhang <sonic.adi@gmail.com>, Linux IDE <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Bryan Wu <bryan.wu@analog.com>
-Subject: Re: [PATCH take #5] [libata] libata driver for bf548 on chip ATAPI
- controller.
-References: <1187169256.31383.3.camel@sevens.analog.com>	 <46C3F6FB.2070909@garzik.org> <8bd0f97a0708160927s625fd5ax84cd6d12a693d9ad@mail.gmail.com>
-In-Reply-To: <8bd0f97a0708160927s625fd5ax84cd6d12a693d9ad@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708160332.30732.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger wrote:
-> On 8/16/07, Jeff Garzik <jeff@garzik.org> wrote:
->> Sonic Zhang wrote:
->>> +static void bfin_set_piomode(struct ata_port *ap, struct ata_device *adev)
->>> +{
->>> +     int mode = adev->pio_mode - XFER_PIO_0;
->>> +     unsigned long base = (unsigned long)ap->ioaddr.ctl_addr;
->>
->> (added Bryan Wu to CC)
->>
->> Someone needs to need fix the bfin architecture:  the addresses on the
->> bfin_read/bfin_write functions should be 'void __iomem *' not unsigned long.
-> 
-> there are no address pointers anymore, so there is nothing to cast ...
-> the bfin_read/bfin_write macros are done in sexy asm:
-> #define bfin_write8(addr,val) __asm__ __volatile__("b[%0] = %1;" ::
-> "a"(addr), "d"(val))
-> or i'm misunderstanding what you mean ...
-> 
-> where do you see (unsigned long) ?
+> @@ -157,10 +162,13 @@ early_param("nosmp", nosmp);
+>  static int __init maxcpus(char *str)
+>  {
+>  	get_option(&str, &max_cpus);
+> -	return 1;
+> +	if (max_cpus == 0)
+> +		disable_ioapic_setup();
 
-Look up (into the message you quoted).
+I must say I never liked that maxcpus=0 ... does disable the APIC
+too. There can be situations where you want only a single CPU,
+but still full APICs because modern systems don't boot without. 
 
-Regardless of the implementation, the C type system should be employed 
-to ensure that 'addr' is known to the compiler as 'void __iomem *' 
-rather than unsigned long.
+It's the old traditional documented semantics though,
+but on the other hand if it never worked with ACPI i guess people are
+not relying on it.
 
-	Jeff
+So perhaps it would be better to change that? 
+Or add a new option to limit CPUs without disabling ACPIC?
 
-
-
+-Andi
