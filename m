@@ -1,107 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937648AbXHPBk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937838AbXHPBl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937648AbXHPBk1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 21:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbXHPBkL
+	id S937838AbXHPBl0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 21:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758363AbXHPBlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 21:40:11 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:46472 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756338AbXHPBkI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 21:40:08 -0400
-Subject: [BUG -rt] circular locking deadlock
-From: john stultz <johnstul@us.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 15 Aug 2007 18:39:53 -0700
-Message-Id: <1187228393.6062.31.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 15 Aug 2007 21:41:13 -0400
+Received: from gate.crashing.org ([63.228.1.57]:60490 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756473AbXHPBlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 21:41:10 -0400
+In-Reply-To: <alpine.LFD.0.999.0708160338520.22701@enigma.security.iitk.ac.in>
+References: <46C2350A.1010807@redhat.com> <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <20070815081841.GA16551@osiris.boeblingen.de.ibm.com> <46C30540.2070603@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in> <20070815145207.GA23106@gondor.apana.org.au> <46C3253F.5090707@s5r6.in-berlin.de> <20070815162722.GD9645@linux.vnet.ibm.com> <d4406222873856f472b9173a14a19aa2@kernel.crashing.org> <20070815185724.GH9645@linux.vnet.ibm.com> <alpine.LFD.0.999.0708160118330.16414@enigma.security.iitk.ac.in> <2d2eeab6276cab2e6cc5830d36a43b98@kernel.crashing.org> <alpine.LFD.0.999.0708160338520.22701@enigma.security.iitk.ac.in>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1ad8c70930530d4639a72e1c77d3904e@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
+       netdev@vger.kernel.org, cfriesen@nortel.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: 
+Date: Thu, 16 Aug 2007 03:38:43 +0200
+To: Satyam Sharma <satyam@infradead.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Ingo, Thomas,
+>> "compilation unit" is a C standard term.  It typically boils down
+>> to "single .c file".
+>
+> As you mentioned later, "single .c file with all the other files 
+> (headers
+> or other .c files) that it pulls in via #include" is actually 
+> "translation
+> unit", both in the C standard as well as gcc docs.
 
-I was playing with the latency tracer on 2.6.23-rc2-rt2 while a "make
--j8" was going on in the background and the box hung with this on the
-console:
+Yeah.  "single .c file after preprocessing".  Same thing :-)
 
+> "Compilation unit"
+> doesn't seem to be nearly as standard a term, though in most places it
+> is indeed meant to be same as "translation unit", but with the new gcc
+> inter-module-analysis stuff that you referred to above, I suspect one 
+> may
+> reasonably want to call a "compilation unit" as all that the compiler 
+> sees
+> at a given instant.
 
-============================================
-[ BUG: circular locking deadlock detected! ]
---------------------------------------------
-cc1/7161 is deadlocking current task cc1/7164
-
-
-1) cc1/7164 is trying to acquire this lock:
- [ffff8101fa375250] {&list->lock}
-.. ->owner: ffff8101ef7f7162
-.. held by:               cc1: 7161 [ffff8101ef7f7160, 120]
-
-2) cc1/7161 is blocked on this lock:
- [ffff8102118e5900] {&list->lock}
-.. ->owner: ffff8100ddb3ace2
-.. held by:               cc1: 7164 [ffff8100ddb3ace0, 120]
-
-cc1/7161's [blocked] stackdump:
-
- ffff8101f9423c68 0000000000000086 0000000100000000 0000000000000002
- ffffffff82205d00 0000000000000202 ffffffff82189280 ffff8101ef7f7160
- ffff8100ddb3ace0 ffff8101f9423c10 0000000000000202 0000000000000000
-Call Trace:
- [<ffffffff8100c58c>] mcount+0x2c/0x3a
- [<ffffffff817e6e6b>] schedule+0x3b/0x130
- [<ffffffff817e7feb>] rt_spin_lock_slowlock+0xdb/0x210
- [<ffffffff817e8b4d>] __rt_spin_lock+0x3d/0x50
- [<ffffffff817e8b6e>] rt_spin_lock+0xe/0x10
- [<ffffffff81297a62>] __lock_list+0x42/0x70
- [<ffffffff81297b43>] lock_list_splice_init+0x33/0xb0
- [<ffffffff810bf9d8>] file_move+0xc8/0xd0
- [<ffffffff810bc99e>] __dentry_open+0xae/0x1d0
- [<ffffffff810bcb84>] nameidata_to_filp+0x44/0x60
- [<ffffffff810bcbed>] do_filp_open+0x4d/0x60
- [<ffffffff817e8ace>] __lock_text_start+0xe/0x10
- [<ffffffff810bc8a3>] get_unused_fd_flags+0x103/0x130
- [<ffffffff810bcc61>] do_sys_open+0x61/0x100
- [<ffffffff810bcd40>] sys_open+0x20/0x30
- [<ffffffff8100c9a5>] tracesys+0x151/0x1be
-
----------------------------
-| preempt count: 00000002 ]
-| 2-level deep critical section nesting:
-----------------------------------------
-.. [<ffffffff817e5e33>] .... __schedule+0x23/0x265
-.....[<ffffffff817e6e6b>] ..   ( <= schedule+0x3b/0x130)
-.. [<ffffffff817e9041>] .... __spin_lock_irq+0x21/0x40
-.....[<ffffffff817e5ec4>] ..   ( <= __schedule+0xb4/0x265)
+That would be a bit confusing, would it not?  They'd better find
+some better name for that if they want to name it at all (remember,
+none of these optimisations should have any effect on the semantics
+of the program, you just get fewer .o files etc.).
 
 
-cc1/7164's [current] stackdump:
-
-
-Call Trace:
- [<ffffffff8100e433>] show_stack+0x13/0x20
- [<ffffffff8106c643>] debug_rt_mutex_print_deadlock+0x163/0x180
- [<ffffffff817e7fe6>] rt_spin_lock_slowlock+0xd6/0x210
- [<ffffffff817e8b4d>] __rt_spin_lock+0x3d/0x50
- [<ffffffff817e8b6e>] rt_spin_lock+0xe/0x10
- [<ffffffff81297a62>] __lock_list+0x42/0x70
- [<ffffffff81297be6>] lock_list_del_init+0x26/0x70
- [<ffffffff810bf8fa>] file_kill+0x4a/0x60
- [<ffffffff810bfb8e>] __fput+0x12e/0x1d0
- [<ffffffff810bfcc5>] fput+0x25/0x30
- [<ffffffff810bc771>] filp_close+0x61/0x90
- [<ffffffff810bded9>] sys_close+0xa9/0x100
- [<ffffffff8100c9a5>] tracesys+0x151/0x1be
-
----------------------------
-| preempt count: 00000000 ]
-| 0-level deep critical section nesting:
-----------------------------------------
-
-[ turning off deadlock detection.Please report this trace. ]
-
+Segher
 
