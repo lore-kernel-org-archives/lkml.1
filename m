@@ -1,265 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbXHPNFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbXHPNGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759417AbXHPNFb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 09:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbXHPNFA
+	id S1757971AbXHPNGJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 09:06:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758841AbXHPNFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 09:05:00 -0400
-Received: from smtpout.mac.com ([17.250.248.178]:49953 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753692AbXHPNE6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 09:04:58 -0400
-In-Reply-To: <200708151321.05959.rjw@sisk.pl>
-References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com> <20070814232430.GA9325@redhat.com> <2ABEF126-D860-46D2-8E15-673C3ADB51A0@mac.com> <200708151321.05959.rjw@sisk.pl>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: multipart/mixed; boundary=Apple-Mail-11-656376432
-Message-Id: <D31EF534-ACD1-426D-AF88-F152C23CB542@mac.com>
-Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Joe Perches <joe@perches.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-pm@lists.linux-foundation.org,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Salikh Zakirov <salikh@gmail.com>, git@vger.kernel.org
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Storing Maintainers info around the kernel tree
-Date: Thu, 16 Aug 2007 09:04:50 -0400
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Rene Herman <rene.herman@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
+	Thu, 16 Aug 2007 09:05:21 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58329 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757887AbXHPNFR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 09:05:17 -0400
+Date: Thu, 16 Aug 2007 09:05:56 -0400
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Cc: "James Corey" <ploversegg@yahoo.com>, linux-kernel@vger.kernel.org,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.23-rc3 and SKY2 driver issue
+Message-ID: <20070816090556.6a5295e6@oldman>
+In-Reply-To: <6bffcb0e0708160125v56f3d0f3l865574bdd56bd6ad@mail.gmail.com>
+References: <663186.13204.qm@web90403.mail.mud.yahoo.com>
+	<6bffcb0e0708160125v56f3d0f3l865574bdd56bd6ad@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 16 Aug 2007 10:25:45 +0200
+"Michal Piotrowski" <michal.k.k.piotrowski@gmail.com> wrote:
 
---Apple-Mail-11-656376432
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset=US-ASCII;
-	delsp=yes;
-	format=flowed
+> [Adding Stephen and netdev to CC]
+> 
+> On 15/08/07, James Corey <ploversegg@yahoo.com> wrote:
+> >
+> > I tried running a D-link gig card on kernel 2.6.21.1
+> > and it came up fine, but when I did a sftp of
+> > an linux dvd ISO to it, the interface would lock
+> > up hard with the error
+> >
+> > eth1: hw csum failure.
+> >
+> > Call Trace:
+> >  <IRQ>  [<ffffffff804d3e31>]
+> > __skb_checksum_complete_head+0x46/0x5f
+> >  [<ffffffff804d3e56>] __skb_checksum_complete+0xc/0x11
+> >  [<ffffffff805046c7>] tcp_v4_rcv+0x157/0x810
+> >  [<ffffffff804d8a6f>] dev_queue_xmit+0x237/0x260
+> >  [<ffffffff80229990>] find_busiest_group+0x252/0x684
+> >  [<ffffffff804ead50>] ip_local_deliver+0xca/0x14c
+> >  [<ffffffff804eb24a>] ip_rcv+0x478/0x4ba
+> >  [<ffffffff803ec7d3>] sky2_poll+0x6f9/0x9b9
+> >  [<ffffffff8022bd5d>]
+> > run_rebalance_domains+0x13e/0x408
+> >  [<ffffffff804d877a>] net_rx_action+0xa8/0x166
+> >  [<ffffffff80235d62>] __do_softirq+0x55/0xc3
+> >  [<ffffffff8020a4ec>] call_softirq+0x1c/0x28
+> >  [<ffffffff8020b611>] do_softirq+0x2c/0x7d
+> >  [<ffffffff8020b8cf>] do_IRQ+0x13e/0x15f
+> >  [<ffffffff802086ce>] mwait_idle+0x0/0x46
+> >  [<ffffffff80209871>] ret_from_intr+0x0/0xa
+> >  <EOI>  [<ffffffff80208710>] mwait_idle+0x42/0x46
+> >  [<ffffffff80208666>] cpu_idle+0x8c/0xaf
+> >  [<ffffffff8078174e>] start_kernel+0x2ac/0x2b8
+> >  [<ffffffff80781140>] _sinittext+0x140/0x144
+> >
+> >
+> > So I tried running the latest snapshot 2.6.23-rc3
+> > and the almost the same thing happens. Only
+> > difference is that now the entire box locks up.
+> > The error is almost the same
+> >
+> > eth1: hw csum failure.
+> >
+> > Call Trace:
+> >  <IRQ>  [<ffffffff804779b6>]
+> > __skb_checksum_complete_head+0x43/0x56
+> >  [<ffffffff804779d5>] __skb_checksum_complete+0xc/0x11
+> >  [<ffffffff804a989d>] tcp_v4_rcv+0x14e/0x801
+> >  [<ffffffff8048ff84>] ip_local_deliver+0xca/0x14c
+> >  [<ffffffff80490472>] ip_rcv+0x46c/0x4ae
+> >  [<ffffffff880060f9>] :sky2:sky2_poll+0x72b/0x9c7
+> >  [<ffffffff8047c934>] net_rx_action+0xa8/0x166
+> >  [<ffffffff80235ced>] __do_softirq+0x55/0xc4
+> >  [<ffffffff8020c5cc>] call_softirq+0x1c/0x28
+> >  [<ffffffff8020d6fd>] do_softirq+0x2c/0x7d
+> >  [<ffffffff8020d9bb>] do_IRQ+0x13e/0x15f
+> >  [<ffffffff8020a780>] mwait_idle+0x0/0x48
+> >  [<ffffffff8020b951>] ret_from_intr+0x0/0xa
+> >  <EOI>  [<ffffffff880063e7>]
+> > :sky2:sky2_xmit_frame+0x0/0x41d
+> >  [<ffffffff8020a7c2>] mwait_idle+0x42/0x48
+> >  [<ffffffff8020a718>] cpu_idle+0xbd/0xe0
+> >  [<ffffffff80704a5a>] start_kernel+0x2ac/0x2b8
+> >  [<ffffffff80704140>] _sinittext+0x140/0x144
+> >
+> >
+> > I see that the new kernel includes some sort of
+> > SKY2 DEBUG stuff. I would be happy to rerun
+> > the test with that turned on, given some minor
+> > direction.
+> >
+> 
+> Regards,
+> Michal
 
-Merging a couple related threads here:
-
-On Aug 16, 2007, at 07:57:23, Rene Herman wrote:
-> On 08/16/2007 01:26 PM, Salikh Zakirov wrote:
->> Rene Herman wrote:
->>> Perhaps that immediately suggests an implementation to someone  
->>> already familiar with git internals?
->> perhaps http://www.kernel.org/pub/software/scm/git/docs/ 
->> gitattributes.html and http://www.kernel.org/pub/software/scm/git/ 
->> docs/git-check-attr.html can help you?
->
-> No, thanks, saw them, but .gitattributes is in fact in the same  
-> category as .gitignore, which would _be_ a property.
->
-> If you do this stuff in files scattered around the tree, updating  
-> and moving stuff becomes a pain -- the tool would need to go edit  
-> files.
-
- From a practical standpoint we don't want to duplicate someone's  
-maintainer information in the attributes of every file they  
-maintain.  It would be much easier to put in the "kernel/somesubsys"  
-directory a Maintainers file which has:
-
-[SOME RANDOM SUBSYSTEM]
-P: J. Random Hacker
-M: j.random.hacker@localhost
-L: random-subsys-devel@vger.kernel.org
-F: *
-
-Anywhere else you had files that you wanted to associate with J.  
-Random Hacker's maintainership, you would just use:
-
-[SOME RANDOM SUBSYSTEM]
-F: somesubsys.h
-
-
-I posted a comment describing a mechanism like this a couple days ago:
-   http://lkml.org/lkml/2007/8/14/488
-
-Executive overview:
-On Aug 15, 2007, at 07:21:04, Rafael J. Wysocki wrote:
-> On Wednesday, 15 August 2007 04:51, Kyle Moffett wrote:
->> (a) "Maintainers" files sprinkled around the source tree with  
->> relative pathnames and other data
->>
->> (b) Tool to generate a combined "MAINTAINERS" file from the ones  
->> sprinkled around the source tree
->>
->> (c) Tool to search through the generated "MAINTAINERS" file with  
->> all sorts of useful command-line options
->>
->> (d) Tool to check the generated "MAINTAINERS" file against recent  
->> git history and make suggestions
->
-> I like this idea. :-)
-
-Well, to back up this idea with some code, I'm attaching a little  
-perl script which does part (b).  Basically you call it as:
-   ./maint-combine $(find . -name Maintainers)
-
-It will print any syntax errors on stderr during parsing.  Once it's  
-done it will dump to stdout its combined "MAINTAINERS" text.  A  
-couple notes:
-
-*  It uses a little "priority" system to figure out what order to  
-print the data from each origin in.  For example, the "F:" tag is  
-given a score of 0, to force data consisting of just files towards  
-the end.  The "P:", "M:", and "L:" tags are given scores of 5, since  
-people are generally interesting to know about.  Everything else is  
-given a score of "1".  The scores are added up per ($file,  
-$subsystem) pair and then during printing each subsystem's data is  
-ordered by score (highest comes first).
-
-*  It generally allows any field at all; eventually we might want to  
-limit it to a fixed list to help avoid typos.
-
-*  It has a little bit of magic logic for the "F:" field so that it  
-figures out the relative directory for each field when generating the  
-output.  For example, an entry of "asm-*/suspend.h" in a file  
-"include/Maintainers" will produce the output file entry: "F: include/ 
-asm-*/suspend.h"
-
-*  The format isn't quite the same as the current MAINTAINERS file,  
-to make parsing easier and more dummy-proof I changed the syntax for  
-a subsystem-name to use square brackets (IE: "[SUSPEND TO RAM]").   
-The samples I gave in my previous email are what I used to test it  
-with, plus a little dummy file with some syntax errors to check out  
-the error messages:
-
-Maintainers:
-> [EVERYTHING ELSE]
-> P: Various Linux Kernel Developers
-> L: linux-kernel@vger.kernel.org
-> F: *
-
-kernel/power/Maintainers:
-> [SUSPEND TO RAM]
-> P: Pavel Machek
-> M: pavel@suse.cz
-> P: Rafael J. Wysocki
-> M: rjw@sisk.pl
-> L: linux-pm@lists.linux-foundation.org
-> S: Maintained
-> F: *
-
-include/Maintainers:
-> [SUSPEND TO RAM]
-> F: linux/suspend.h
-> F: linux/freezer.h
-> F: linux/pm.h
-> F: asm-*/suspend.h
-
-
-
-If you have any other questions, the perl script is pretty self- 
-explanatory and I'll be completely back online this weekend.  With  
-any luck I'll have some time in a hotel tomorrow (mmm, slow-as-dirt  
-hotel wireless, what fun) to work on parts (c) and (d).
-
-Cheers,
-Kyle Moffett
-
-
---Apple-Mail-11-656376432
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	x-unix-mode=0755;
-	name=maint-combine.txt
-Content-Disposition: attachment;
-	filename=maint-combine.txt
-
-#! /usr/bin/perl
-
-use strict;
-use warnings;
-
-## This table is for determining what order to show entries from different
-## source "Maintainers" files.  They are prioritized based on the number and
-## significance of each field, as listed in this table.  Any field not found
-## here will be assumed to have a significance of "1".
-my %fieldprio = (
-	p => 5,  ## Person
-	m => 5,  ## Email
-	l => 5,  ## Mailing List
-	f => 0,  ## File
-);
-
-
-my %mprio;
-my %maint;
-my $section;
-my $origin;
-my $pathprefix;
-my $printorigin;
-
-while (<>) {
-	unless (defined $origin and $origin eq $ARGV) {
-		undef $section;
-
-		## Get rid of extra slashes, unnecessary "./" entries
-		$ARGV =~ s{//+}{/}g;
-		$ARGV =~ s{(^|/)\./}{$1};
-
-		$origin = $ARGV;
-	}
-
-	chomp; s/\s+/ /g; s/^ //; s/ $//;
-	/\S+/ or next;
-
-	if (/^\[ ?([^]]+) ?\]$/) {
-		$section = uc $1;
-
-		$printorigin = 1 if $origin ne '-';
-
-		$maint{$section}{$origin} ||= [];
-		$mprio{$section}{$origin} ||= 0;
-
-		## Figure out a useful path prefix if there is one
-		$pathprefix = ($origin =~ m{(^.*/)(?!\.\.?$)[^/]+$})?$1:"";
-
-		next;
-	}
-
-	unless (/^([^:]+?) ?: ?(.*)$/) {
-		print STDERR "$ARGV:$.: Invalid line: $_\n";
-		next;
-	}
-
-	my($field,$value) = (lc($1), $2);
-
-	unless (defined $section) {
-		print STDERR "$ARGV:$.: Found field '\u$field' before ",
-				"any subsystem declaration: $_\n";
-		next;
-	}
-
-	## Preprocess paths to make them absolute
-	$value = $pathprefix.$value if $field eq 'f';
-
-	## Update the sorting order
-	if (exists $fieldprio{$field}) {
-		$mprio{$section}{$origin} += $fieldprio{$field};
-	} else {
-		$mprio{$section}{$origin}++;
-	}
-
-	push @{$maint{$section}{$origin}}, [$field, $value];
-}
-
-sub priosort ( $@ )
-{
-	my $section = shift;
-	return sort {$mprio{$section}{$b} <=> $mprio{$section}{$a}} @_;
-}
-
-for $section (sort {$a cmp $b} keys %maint) {
-	print "[$section]\n";
-	for my $origin (priosort $section, keys %{$maint{$section}}) {
-		print "\nOrigin: $origin\n" if $printorigin;
-		print "\u$_->[0]: $_->[1]\n" for @{$maint{$section}{$origin}};
-	}
-	print "\n\n";
-}
-
-# vim:set ft=perl:
-
---Apple-Mail-11-656376432--
+Please reproduce with a more recent kernel?
