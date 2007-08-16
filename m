@@ -1,112 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933057AbXHPQTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbXHPQTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933057AbXHPQTO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 12:19:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763593AbXHPQS6
+	id S933290AbXHPQTo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 12:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763593AbXHPQTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 12:18:58 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:29611 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761473AbXHPQS4 (ORCPT
+	Thu, 16 Aug 2007 12:19:32 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:52286 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764448AbXHPQTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 12:18:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=C4miYICHpb+q7FGL1Sn/Vdk/xpjhtoaahUQ3LsbFNo6qR3OqkQUpOr15YbGkSpDgGJwKiENr/C75fvbic99GrjokDCX9OtVVuGTYvVPicI153HUsotu2hNKtMnKpbVSlOk+BGaouKmyUeEKIAnW6uPfv8joN6MfiyHPu+VK3Xzc=
-Message-ID: <3d8471ca0708160918h1a1eba52v42cdd4bf614cf733@mail.gmail.com>
-Date: Thu, 16 Aug 2007 18:18:53 +0200
-From: "Guillaume Chazarain" <guichaz@yahoo.fr>
-To: "Corentin Chary" <corentincj@iksaif.net>, linux-acpi@vger.kernel.org,
-       acpi4asus-user@lists.sourceforge.net, "Len Brown" <lenb@kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Fix rmmod of asus_laptop
+	Thu, 16 Aug 2007 12:19:31 -0400
+X-IronPort-AV: i="4.19,272,1183359600"; 
+   d="scan'208"; a="171240392:sNHT42396651"
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [GIT PULL] please pull infiniband.git for-linus branch
+X-Message-Flag: Warning: May contain useful information
+References: <adamyws2lry.fsf@cisco.com>
+	<20070816064826.GB19432@mellanox.co.il>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 16 Aug 2007 09:19:26 -0700
+In-Reply-To: <20070816064826.GB19432@mellanox.co.il> (Michael S. Tsirkin's message of "Thu, 16 Aug 2007 09:48:26 +0300")
+Message-ID: <adaps1n1mgh.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: 203a4ecd1d56571d
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 Aug 2007 16:19:27.0511 (UTC) FILETIME=[379FCA70:01C7E021]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Resent, with a bigger recipients list]
+ > Hmm, if these things are appropriate for 2.6.23, maybe my patch
+ > adding linux/mutex.h to ehca_classes.h can go in too?
 
-Hi,
+Actually I queued Dotan's patches quite a while ago, although Linus
+seems to be ignoring my pull requests.
 
-The asus laptop driver conditionnaly registers leds in asus_led_register()
-depending on their availability, but unconditionnaly registers them all at
-exit time or when the module fails to load. Unregistering not registered leds
-result in the following Oops. So we should check before unregistering.
+I don't see any urgency in adding more similar patches to 2.6.23,
+since AFAIK 2.6.23 builds fine, right?
 
-DEV: Unregistering device. ID = 'asus-laptop'
-PM: Removing info for No Bus:asus-laptop
-kobject_uevent_env
-fill_kobj_path: path = '/class/backlight/asus-laptop'
-kobject asus-laptop: cleaning up
-DEV: Unregistering device. ID = '<NULL>'
-BUG: unable to handle kernel NULL pointer dereference at virtual
-address 00000064
- printing eip:
-c026a9a3
-*pde = 00000000
-Oops: 0000 [#1]
-PREEMPT
-Modules linked in: radeon drm cpufreq_ondemand acpi_cpufreq freq_table
-lm90 hwmon ipv6 binfmt_misc dm_mirror dm_mod snd_intel8x0
-snd_intel8x0m snd_ac97_codec snd_seq_dummy ac97_bus snd_seq_oss
-snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss hci_usb
-snd_mixer_oss bluetooth snd_pcm ohci1394 snd_timer ieee1394 sr_mod snd
-cdrom ipw2200 ieee80211 firewire_ohci asus_laptop rtc_cmos
-firewire_core button video i2c_i801 rtc_core serio_raw soundcore irda
-crc_ccitt crc_itu_t output ac ieee80211_crypt battery i2c_core
-led_class sdhci mmc_core snd_page_alloc iTCO_wdt sg rtc_lib skge
-ehci_hcd ohci_hcd uhci_hcd
-CPU:    0
-EIP:    0060:[<c026a9a3>]    Not tainted VLI
-EFLAGS: 00210296   (2.6.23-rc3-patched #2)
-EIP is at device_del+0xb/0x23a
-eax: 00000000   ebx: 00000000   ecx: 00000033   edx: f7d0c7c0
-esi: f88ab580   edi: 00000880   ebp: f594ef1c   esp: f594ef0c
-ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-Process rmmod (pid: 2552, ti=f594e000 task=f628e5b0 task.ti=f594e000)
-Stack: c011fb2e 00000000 f88ab580 00000880 f594ef30 c026abf8 c03a85df 000000a4
-       f88ab780 f594ef40 f8864218 f88ab780 00000000 f594ef48 f88a90f8 f594ef50
-       f88a91c9 f594efb0 c013cee1 73757361 70616c5f 00706f74 c015c10a 00000004
-Call Trace:
- [<c0107ee3>] show_trace_log_lvl+0x1a/0x2f
- [<c0107f95>] show_stack_log_lvl+0x9d/0xa5
- [<c010816a>] show_registers+0x1cd/0x2e3
- [<c010839d>] die+0x11d/0x218
- [<c032d2f9>] do_page_fault+0x511/0x5e9
- [<c032bae2>] error_code+0x6a/0x70
- [<c026abf8>] device_unregister+0x26/0x32
- [<f8864218>] led_classdev_unregister+0x58/0x94 [led_class]
- [<f88a90f8>] asus_led_exit+0x17/0x41 [asus_laptop]
- [<f88a91c9>] asus_laptop_exit+0xd/0x3f [asus_laptop]
- [<c013cee1>] sys_delete_module+0x17b/0x1a2
- [<c0106eae>] sysenter_past_esp+0x6b/0xa1
- =======================
-Code: 8b 56 04 89 d8 e8 10 fb ff ff 85 ff 74 0d 8b 97 d0 00 00 00 89
-d8 e8 9d ff ff ff 5b 5e 5f 5d c3 55 89 e5 57 56 53 89 c3 83 ec 04 <8b>
-40 64 85 c0 89 45 f0 74 08 8d 43 10 e8 e0 ee 0b 00 8b 83 20
-EIP: [<c026a9a3>] device_del+0xb/0x23a SS:ESP 0068:f594ef0c
-
-Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
----
-
-diff -r 1559df81a153 drivers/misc/asus-laptop.c
---- a/drivers/misc/asus-laptop.c	Mon Aug 13 05:00:33 2007 +0000
-+++ b/drivers/misc/asus-laptop.c	Tue Aug 14 13:06:40 2007 +0200
-@@ -1072,7 +1072,8 @@ static void asus_backlight_exit(void)
- }
-
- #define  ASUS_LED_UNREGISTER(object)				\
--	led_classdev_unregister(&object##_led)
-+	if (object##_led.dev)					\
-+		led_classdev_unregister(&object##_led)
-
- static void asus_led_exit(void)
- {
-
--- 
-Guillaume
+Also I would prefer to get ehca patches from the ehca people at IBM,
+or at least an ack from them.
