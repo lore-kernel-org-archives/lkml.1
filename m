@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765672AbXHPHks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762033AbXHPHp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765672AbXHPHks (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 03:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761623AbXHPHk3
+	id S1762033AbXHPHp6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 03:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXHPHpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 03:40:29 -0400
-Received: from styx.suse.cz ([82.119.242.94]:34451 "EHLO elijah.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760835AbXHPHkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 03:40:07 -0400
-Subject: Re: Fork Bombing Patch
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Anand Jahagirdar <anandjigar@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com>
-References: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com>
-Content-Type: text/plain
+	Thu, 16 Aug 2007 03:45:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45918 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751043AbXHPHpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 03:45:45 -0400
+Message-ID: <46C4009F.9090206@redhat.com>
+Date: Thu, 16 Aug 2007 09:45:35 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Early printk behaviour
+References: <200708152234.06734.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200708152234.06734.rgetz@blackfin.uclinux.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Organization: SuSE CR
-Date: Thu, 16 Aug 2007 09:40:04 +0200
-Message-Id: <1187250004.12446.3.camel@elijah.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-16 at 11:54 +0530, Anand Jahagirdar wrote:
-> Hello All
->            I have searched for Maintainers List to get the correct
-> Maintainer for my patch. But i am not getting exact maintainer to
-> which i should forward my patch. Will any body please tell me,to which
-> maintainer i should forward my patch for its inclusion?
+Robin Getz wrote:
+> I was putting together an early printk implementation for the Blackfin, and 
+> was wondering what the expected behaviour was in this situation.
 > 
-> Summery of the Patch:
+> When I set up my bootargs earlyprintk=serial,ttyBF0,57600 and have no console 
+> defined (no graphical console, no serial console).
 > 
-> This patch Warns the administrator about the fork bombing attack
-> (whenever any user is crossing its process limit). I have used
-> printk_ratelimit function in this patch. This function helps to
-> prevent flooding of syslog and prints message as per the values set by
-> root user in following files:-
+> based on the patch:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=69331af79cf29e26d1231152a172a1a10c2df511
 > 
-> 1) /proc/sys/kernel/printk_ratelimit:- This file contains value for,
-> how many times message should be printed in syslog.
+> which no longer calls disable_early_printk, the earlyprintk console never gets 
+> turned off (because nothing else ever calls register_console). I get 
+> everything out the early console, until the init section is released (where 
+> the console structure is sitting), and it starts printing out garbage.
 > 
-> 2) /proc/sys/kernel/printk_ratelimit_burst: - This file contains value
-> for, after how much time message should be repeated.
-> 
-> This patch is really helpful for administrator/root user from security
-> point of view. They can take action against attacker by looking at
-> syslog messages related with fork bombing attack.
-> 
-> Added comments will definitely help developers.
-> 
-> Signed-Off-by: Anand Jahagirdar <anandjigar@gmail.com>
-> 
-> Index: root/Desktop/a1/linux-2.6.17.tar.bz2_FILES/linux-2.6.17/kernel/fork.c
-> ===================================================================
-> --- root.orig/Desktop/a1/linux-2.6.17.tar.bz2_FILES/linux-2.6.17/kernel/fork.c	2007-06-26 20:40:06.000000000 +0530
-> +++ root/Desktop/a1/linux-2.6.17.tar.bz2_FILES/linux-2.6.17/kernel/fork.c	2007-06-26 20:41:41.000000000 +0530
-> @@ -957,12 +957,19 @@
->  
->  	retval = -EAGAIN;
->  	
-> -        
-> +        /*
-> +         * following code does not allow Non Root User to cross its process
-> +         * limit and it alerts administrator about user Nearing the process limit.
-> +         */
-> + 
+> Is this expected behaviour?
 
-Please do not add comments inside functions. The printk() is self-descriptive, anyway.
+Hmm, sort of, although I didn't think about the case of no real console
+replacing the early console.  The intention of the patch is to have a
+smooth handover from the boot console to the real console.  And, yes, if
+no real console is ever registered the boot console keeps running ...
 
->        	if (atomic_read(&p->user->processes) >= p->signal->rlim[RLIMIT_NPROC].rlim_cur) 
->  		if (!capable(CAP_SYS_ADMIN) && !capable(CAP_SYS_RESOURCE) &&
-> -				p->user != &root_user) 
-> +				p->user != &root_user)  {
-> +                        if (printk_ratelimit())
-> +                                printk(KERN_WARNING "User with uid %u is Nearing the process limit\n",p->user->uid);
-> +
->  			 goto bad_fork_free;
-> -			
-> +		}			
->  			
->  	atomic_inc(&p->user->__count);
->  	atomic_inc(&p->user->processes);
+So you can either let it running and *not* mark it __init, so it can
+keep on going without breaking.  Or you can explicitly unregister your
+boot console at some point, maybe using a late_initcall.
 
+cheers,
+  Gerd
