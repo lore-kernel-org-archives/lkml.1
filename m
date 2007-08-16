@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762033AbXHPHp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765485AbXHPHqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762033AbXHPHp6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 03:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXHPHpq
+	id S1765485AbXHPHqa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 03:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757824AbXHPHpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 03:45:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45918 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751043AbXHPHpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 03:45:45 -0400
-Message-ID: <46C4009F.9090206@redhat.com>
-Date: Thu, 16 Aug 2007 09:45:35 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 16 Aug 2007 03:45:52 -0400
+Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:38419 "EHLO
+	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752023AbXHPHpr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 03:45:47 -0400
+X-Greylist: delayed 17019 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Aug 2007 03:45:47 EDT
+Message-Id: <200708160300.AA00236@paprika.lab.ntt.co.jp>
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Date: Thu, 16 Aug 2007 12:00:42 +0900
+To: trond.myklebust@fys.uio.no
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       moriai.satoshi@lab.ntt.co.jp
+Subject: [PATCH] NFS: fix /proc/sys oops after module removal
 MIME-Version: 1.0
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Early printk behaviour
-References: <200708152234.06734.rgetz@blackfin.uclinux.org>
-In-Reply-To: <200708152234.06734.rgetz@blackfin.uclinux.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+X-Mailer: AL-Mail32 Version 1.13
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Getz wrote:
-> I was putting together an early printk implementation for the Blackfin, and 
-> was wondering what the expected behaviour was in this situation.
-> 
-> When I set up my bootargs earlyprintk=serial,ttyBF0,57600 and have no console 
-> defined (no graphical console, no serial console).
-> 
-> based on the patch:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=69331af79cf29e26d1231152a172a1a10c2df511
-> 
-> which no longer calls disable_early_printk, the earlyprintk console never gets 
-> turned off (because nothing else ever calls register_console). I get 
-> everything out the early console, until the init section is released (where 
-> the console structure is sitting), and it starts printing out garbage.
-> 
-> Is this expected behaviour?
+NFS client made without CONFIG_NFS_V4 option does not call
+nfs_unregister_sysctl() when the module is unloaded, and
+causes kernel oopses.  For instance, the oopses will occur
+when accessing /proc/sys.
 
-Hmm, sort of, although I didn't think about the case of no real console
-replacing the early console.  The intention of the patch is to have a
-smooth handover from the boot console to the real console.  And, yes, if
-no real console is ever registered the boot console keeps running ...
+This fixes the problem.
 
-So you can either let it running and *not* mark it __init, so it can
-keep on going without breaking.  Or you can explicitly unregister your
-boot console at some point, maybe using a late_initcall.
+Note that register_nfs_fs() requires no change in this regard.
+It looks similar at the first glance, but written properly.
 
-cheers,
-  Gerd
+Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+---
+ fs/nfs/super.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index b2a851c..e784310 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -345,8 +345,8 @@ void __exit unregister_nfs_fs(void)
+ 	unregister_shrinker(&acl_shrinker);
+ #ifdef CONFIG_NFS_V4
+ 	unregister_filesystem(&nfs4_fs_type);
+-	nfs_unregister_sysctl();
+ #endif
++	nfs_unregister_sysctl();
+ 	unregister_filesystem(&nfs_fs_type);
+ }
+ 
