@@ -1,276 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763444AbXHPOMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763239AbXHPON0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763444AbXHPOMT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 10:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762570AbXHPOL6
+	id S1763239AbXHPON0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 10:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760079AbXHPONG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 10:11:58 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52661 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762446AbXHPOL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 10:11:57 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch] s2ram: kill old debugging junk
-Date: Thu, 16 Aug 2007 16:21:44 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>
-References: <20070816091641.GC11373@elf.ucw.cz>
-In-Reply-To: <20070816091641.GC11373@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Aug 2007 10:13:06 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:51025 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759699AbXHPONE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 10:13:04 -0400
+Date: Thu, 16 Aug 2007 16:11:22 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Karl Meyer <adhocrocker@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
+Message-ID: <20070816141122.GA6625@electric-eye.fr.zoreil.com>
+References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com> <20070813165821.GA19356@electric-eye.fr.zoreil.com> <be1b757c0708131027v5c57822as2d9bd3190fd19b71@mail.gmail.com> <20070814070901.GA14693@electric-eye.fr.zoreil.com> <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com> <20070814224629.GB3495@electric-eye.fr.zoreil.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="LpQ9ahxlCli8rRTG"
 Content-Disposition: inline
-Message-Id: <200708161621.44761.rjw@sisk.pl>
+In-Reply-To: <20070814224629.GB3495@electric-eye.fr.zoreil.com>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 16 August 2007 11:16, Pavel Machek wrote:
-> 
-> This removes old debugging stuff, that should be no longer
-> neccessary. It accessed VGA hardware (which may not be ready at this
-> point), and used LEDs at port 80 for debugging.
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+--LpQ9ahxlCli8rRTG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> diff --git a/arch/i386/kernel/acpi/wakeup.S b/arch/i386/kernel/acpi/wakeup.S
-> index ed0a0f2..9cebef7 100644
-> --- a/arch/i386/kernel/acpi/wakeup.S
-> +++ b/arch/i386/kernel/acpi/wakeup.S
-> @@ -11,7 +11,7 @@ # Do we need to deal with A20? It is oka
->  #
->  # If physical address of wakeup_code is 0x12345, BIOS should call us with
->  # cs = 0x1234, eip = 0x05
-> -# 
-> +#
->  
->  #define BEEP \
->  	inb	$97, %al; 	\
-> @@ -52,7 +52,6 @@ wakeup_code:
->  	BEEP
->  1:
->  	mov	$(wakeup_stack - wakeup_code), %sp		# Private stack is needed for ASUS board
-> -	movw	$0x0e00 + 'S', %fs:(0x12)
->  
->  	pushl	$0						# Kill any dangerous flags
->  	popfl
-> @@ -90,9 +89,6 @@ wakeup_code:
->  	# make sure %cr4 is set correctly (features, etc)
->  	movl	real_save_cr4 - wakeup_code, %eax
->  	movl	%eax, %cr4
-> -	movw	$0xb800, %ax
-> -	movw	%ax,%fs
-> -	movw	$0x0e00 + 'i', %fs:(0x12)
->  	
->  	# need a gdt -- use lgdtl to force 32-bit operands, in case
->  	# the GDT is located past 16 megabytes.
-> @@ -102,8 +98,6 @@ wakeup_code:
->  	movl	%eax, %cr0
->  	jmp 1f
->  1:
-> -	movw	$0x0e00 + 'n', %fs:(0x14)
-> -
->  	movl	real_magic - wakeup_code, %eax
->  	cmpl	$0x12345678, %eax
->  	jne	bogus_real_magic
-> @@ -122,13 +116,11 @@ real_save_cr4:	.long 0
->  real_magic:	.long 0
->  video_mode:	.long 0
->  realmode_flags:	.long 0
-> -beep_flags:	.long 0
->  real_efer_save_restore:	.long 0
->  real_save_efer_edx: 	.long 0
->  real_save_efer_eax: 	.long 0
->  
->  bogus_real_magic:
-> -	movw	$0x0e00 + 'B', %fs:(0x12)
->  	jmp bogus_real_magic
->  
->  /* This code uses an extended set of video mode numbers. These include:
-> @@ -153,29 +145,9 @@ #define VIDEO_FIRST_V7 0x0900
->  # Setting of user mode (AX=mode ID) => CF=success
->  mode_set:
->  	movw	%ax, %bx
-> -#if 0
-> -	cmpb	$0xff, %ah
-> -	jz	setalias
-> -
-> -	testb	$VIDEO_RECALC>>8, %ah
-> -	jnz	_setrec
-> -
-> -	cmpb	$VIDEO_FIRST_RESOLUTION>>8, %ah
-> -	jnc	setres
-> -	
-> -	cmpb	$VIDEO_FIRST_SPECIAL>>8, %ah
-> -	jz	setspc
-> -
-> -	cmpb	$VIDEO_FIRST_V7>>8, %ah
-> -	jz	setv7
-> -#endif
->  	
->  	cmpb	$VIDEO_FIRST_VESA>>8, %ah
->  	jnc	check_vesa
-> -#if 0	
-> -	orb	%ah, %ah
-> -	jz	setmenu
-> -#endif
->  	
->  	decb	%ah
->  #	jz	setbios				  Add bios modes later
-> @@ -215,7 +187,6 @@ wakeup_pmode_return:
->  	movw	%ax, %es
->  	movw	%ax, %fs
->  	movw	%ax, %gs
-> -	movw	$0x0e00 + 'u', 0xb8016
->  
->  	# reload the gdt, as we need the full 32 bit address
->  	lgdt	saved_gdt
-> @@ -239,7 +210,6 @@ wakeup_pmode_return:
->  	jmp	*%eax
->  
->  bogus_magic:
-> -	movw	$0x0e00 + 'B', 0xb8018
->  	jmp	bogus_magic
->  
->  
-> diff --git a/arch/x86_64/kernel/acpi/wakeup.S b/arch/x86_64/kernel/acpi/wakeup.S
-> index 13f1480..fd09434 100644
-> --- a/arch/x86_64/kernel/acpi/wakeup.S
-> +++ b/arch/x86_64/kernel/acpi/wakeup.S
-> @@ -41,7 +41,6 @@ wakeup_code:
->  
->  # Running in *copy* of this code, somewhere in low 1MB.
->  
-> -	movb	$0xa1, %al	;  outb %al, $0x80
->  	cli
->  	cld
->  	# setup data segment
-> @@ -65,11 +64,6 @@ # Running in *copy* of this code, somewh
->  	cmpl	$0x12345678, %eax
->  	jne	bogus_real_magic
->  
-> -  	call	verify_cpu			# Verify the cpu supports long
-> -						# mode
-> -	testl	%eax, %eax
-> -	jnz	no_longmode
-> -
->  	testl	$1, realmode_flags - wakeup_code
->  	jz	1f
->  	lcall   $0xc000,$3
-> @@ -84,12 +78,6 @@ # Running in *copy* of this code, somewh
->  	call	mode_seta
->  1:
->  
-> - 	movw	$0xb800, %ax
-> -	movw	%ax,%fs
-> -	movw	$0x0e00 + 'L', %fs:(0x10)
-> -
-> -	movb	$0xa2, %al	;  outb %al, $0x80
-> -	
->  	mov	%ds, %ax			# Find 32bit wakeup_code addr
->  	movzx   %ax, %esi			# (Convert %ds:gdt to a liner ptr)
->  	shll    $4, %esi
-> @@ -117,14 +105,10 @@ wakeup_32_vector:
->  	.code32
->  wakeup_32:
->  # Running in this code, but at low address; paging is not yet turned on.
-> -	movb	$0xa5, %al	;  outb %al, $0x80
->  
->  	movl	$__KERNEL_DS, %eax
->  	movl	%eax, %ds
->  
-> -	movw	$0x0e00 + 'i', %ds:(0xb8012)
-> -	movb	$0xa8, %al	;  outb %al, $0x80;
-> -
->  	/*
->  	 * Prepare for entering 64bits mode
->  	 */
-> @@ -200,16 +184,11 @@ wakeup_long64:
->  	 */
->  	lgdt	cpu_gdt_descr
->  
-> -	movw	$0x0e00 + 'n', %ds:(0xb8014)
-> -	movb	$0xa9, %al	;  outb %al, $0x80
-> -
->  	movq    saved_magic, %rax
->  	movq    $0x123456789abcdef0, %rdx
->  	cmpq    %rdx, %rax
->  	jne     bogus_64_magic
->  
-> -	movw	$0x0e00 + 'u', %ds:(0xb8016)
-> -	
->  	nop
->  	nop
->  	movw	$__KERNEL_DS, %ax
-> @@ -220,13 +199,11 @@ wakeup_long64:
->  	movw	%ax, %gs
->  	movq	saved_rsp, %rsp
->  
-> -	movw	$0x0e00 + 'x', %ds:(0xb8018)
->  	movq	saved_rbx, %rbx
->  	movq	saved_rdi, %rdi
->  	movq	saved_rsi, %rsi
->  	movq	saved_rbp, %rbp
->  
-> -	movw	$0x0e00 + '!', %ds:(0xb801a)
->  	movq	saved_rip, %rax
->  	jmp	*%rax
->  
-> @@ -256,20 +233,12 @@ realmode_flags:	.quad 0
->  
->  .code16
->  bogus_real_magic:
-> -	movb	$0xba,%al	;  outb %al,$0x80
->  	jmp bogus_real_magic
->  
->  .code64
->  bogus_64_magic:
-> -	movb	$0xb3,%al	;  outb %al,$0x80
->  	jmp bogus_64_magic
->  
-> -.code16
-> -no_longmode:
-> -	movb    $0xbc,%al       ;  outb %al,$0x80
-> -	jmp no_longmode
-> -
-> -#include "../verify_cpu.S"
->  	
->  /* This code uses an extended set of video mode numbers. These include:
->   * Aliases for standard modes
-> @@ -294,29 +263,9 @@ # Setting of user mode (AX=mode ID) => C
->  .code16
->  mode_seta:
->  	movw	%ax, %bx
-> -#if 0
-> -	cmpb	$0xff, %ah
-> -	jz	setalias
-> -
-> -	testb	$VIDEO_RECALC>>8, %ah
-> -	jnz	_setrec
-> -
-> -	cmpb	$VIDEO_FIRST_RESOLUTION>>8, %ah
-> -	jnc	setres
-> -	
-> -	cmpb	$VIDEO_FIRST_SPECIAL>>8, %ah
-> -	jz	setspc
-> -
-> -	cmpb	$VIDEO_FIRST_V7>>8, %ah
-> -	jz	setv7
-> -#endif
->  	
->  	cmpb	$VIDEO_FIRST_VESA>>8, %ah
->  	jnc	check_vesaa
-> -#if 0	
-> -	orb	%ah, %ah
-> -	jz	setmenu
-> -#endif
->  	
->  	decb	%ah
->  #	jz	setbios				  Add bios modes later
-> 
+(please do not remove the netdev Cc:)
+
+Francois Romieu <romieu@fr.zoreil.com> :
+[...]
+> If it does not work I'll dissect 0e4851502f846b13b29b7f88f1250c980d57e944
+> tomorrow.
+
+You will find a tgz archive in attachment which contains a serie of patches
+(0001-... to 0005-...) to walk from 6dccd16b7c2703e8bbf8bca62b5cf248332afbe2
+to 0e4851502f846b13b29b7f88f1250c980d57e944 in smaller steps.
+
+Please apply 0001 on top of 6dccd16b7c2703e8bbf8bca62b5cf248332afbe2. If it
+still works, apply 0002 on top of 0001, etc.
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Ueimor
+
+--LpQ9ahxlCli8rRTG
+Content-Type: application/x-gzip
+Content-Disposition: attachment; filename="r8169-meyer.tgz"
+Content-Transfer-Encoding: base64
+
+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
+bMu2bMu2bMu2bMu2bMu2/FPK/wC2twRFAFAAAA==
+
+--LpQ9ahxlCli8rRTG--
