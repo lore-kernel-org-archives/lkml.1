@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764211AbXHPR2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933260AbXHPR2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764211AbXHPR2M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 13:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758423AbXHPR2A
+	id S933260AbXHPR2q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 13:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758408AbXHPR2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 13:28:00 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37081 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758408AbXHPR17 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 13:27:59 -0400
-Date: Thu, 16 Aug 2007 10:23:54 -0700
-From: Greg KH <greg@kroah.com>
-To: Thorsten Leemhuis <fedora@leemhuis.info>
-Cc: Willy Tarreau <w@1wt.eu>, stable@kernel.org, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [stable] no announce mails for "older" stable-releases on
-	linux-kernel-announce (Was: Re: Linux 2.6.20.16)
-Message-ID: <20070816172354.GA18661@kroah.com>
-References: <20070816054357.GA22242@hera.kernel.org> <46C3EAB7.2000503@leemhuis.info> <20070816062908.GA1620@1wt.eu> <46C3F1D5.9040604@leemhuis.info>
+	Thu, 16 Aug 2007 13:28:36 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:2647 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932262AbXHPR2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 13:28:25 -0400
+Message-ID: <46C4893A.4050000@cfl.rr.com>
+Date: Thu, 16 Aug 2007 13:28:26 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46C3F1D5.9040604@leemhuis.info>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Valdis.Kletnieks@vt.edu
+CC: Kyle Moffett <mrmacman_g4@mac.com>,
+       Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
+       Marc Perkel <mperkel@yahoo.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: Thinking outside the box on file systems
+References: <106259.96671.qm@web52501.mail.re2.yahoo.com> <Pine.LNX.4.64.0708141546510.22494@blackbox.fnordora.org> <46C2F96D.5030908@partiallystapled.com> <20070815133021.GB9412@csclub.uwaterloo.ca> <ECFEFFF7-0210-4D16-B508-5284FCE58B28@mac.com> <46C33934.7060802@cfl.rr.com> <DE34FF90-3143-4978-BBC5-3CF74B8C3C07@mac.com> <46C3644C.9020102@cfl.rr.com> <87EEB1B3-7FFA-472C-B539-1A7AA2843869@mac.com> <46C37AD4.5060006@cfl.rr.com> <A93D7AFB-6883-48E4-96A9-CAD76E39132E@mac.com>            <46C4689C.8020702@cfl.rr.com> <17471.1187278162@turing-police.cc.vt.edu>
+In-Reply-To: <17471.1187278162@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Aug 2007 17:28:35.0682 (UTC) FILETIME=[E0207420:01C7E02A]
+X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1021-15366.000
+X-TM-AS-Result: No--9.963000-5.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 08:42:29AM +0200, Thorsten Leemhuis wrote:
-> On 16.08.2007 08:29, Willy Tarreau wrote:
-> > On Thu, Aug 16, 2007 at 08:12:07AM +0200, Thorsten Leemhuis wrote:
-> >> On 16.08.2007 07:43, Willy Tarreau wrote:
-> >>> I've just released Linux 2.6.20.16. This version catches up with 2.6.21.7.
-> >>> I hope to issue newer releases soon with next batches of pending patches.
-> >>>
-> >>> I'll also be replying to this message with a copy of the patch between
-> >>> 2.6.20.15 and 2.6.20.16.
-> >>> [...]
-> >> Just wondering -- Kernels like this (or 2.6.16.x, 2.6.21.x as well as
-> >> 2.6.22.x once 2.6.23 got released) don't get announced on
-> >> linux-kernel-announce. Is that on purpose or a misbehavior of scripts
-> >> that create the messages for linux-kernel-announce?
-> > even simpler : I've never been aware of linux-kernel-announce. It's
-> > possible that only Linus sends there and that even the -stable team
-> > does not use/know about it either.
-> 
-> Mails for the current stable-releases get out there -- e.g. I received a
-> "Linux kernel 2.6.22.3 released" not that long ago (that particular one
-> was broken, but that's another story mentioned somewhere else on LKML
-> already).
-> 
-> If just seems that 2.6.21.x (or 2.6.20.x or 2.6.16.x) don't get
-> mentioned on the list because some script likely does a check like this:
-> 
-> if 2.6.22.3 > 2.6.20.16;
-> then
-> 	# don't send mail
-> 	exit
-> fi
-> 
-> >> > If the latter: are those scripts available somewhere?
-> > we all have somewhat different scripts. [...]
-> 
-> I tend to think it's a script that runs on a server site somewhere to
-> generates those mails, as they contain the text:
+Valdis.Kletnieks@vt.edu wrote:
+> What happens if I do a 'mv /home /home1'?  Looks like more than a "relatively
+> small" number.  A cold-cache 'find' takes a few minutes to wade through it all,
+> so any solutions you come up with should beware of locking issues...
 
-Yes, it's something on kernel.org, I don't do anything to generate a
-message to be sent on the -announce mailing list.
-
-Perhaps you need to ask the kernel.org maintainers about this.
-
-thanks,
-
-greg k-h
+Then the directory is moved.... one dentry on disk needs changed to 
+reflect the new name.
