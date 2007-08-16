@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbXHPUNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760025AbXHPUQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758134AbXHPUNS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 16:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbXHPUNJ
+	id S1760025AbXHPUQS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 16:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbXHPUQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 16:13:09 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:45020 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750910AbXHPUNI (ORCPT
+	Thu, 16 Aug 2007 16:16:05 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40289 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752646AbXHPUQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 16:13:08 -0400
-Date: Thu, 16 Aug 2007 16:13:06 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-cc: Tejun Heo <htejun@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sysfs: don't warn on removal of a nonexistent binary file
-Message-ID: <Pine.LNX.4.44L0.0708161609060.2553-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 16 Aug 2007 16:16:04 -0400
+Date: Thu, 16 Aug 2007 21:23:48 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Authenticated <NWQ3MzhlY2QwZDAzODVhN@steudten.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Kernel 2.6.20:  INFO: possible circular locking dependency
+ detected
+Message-ID: <20070816212348.0d260d06@the-village.bc.nu>
+In-Reply-To: <46C48E73.8090309@steudten.com>
+References: <46C48E73.8090309@steudten.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch (as960) removes the error message and stack dump logged by
-sysfs_remove_bin_file() when someone tries to remove a nonexistent
-file.  The warning doesn't seem to be needed, since none of the other
-file-, symlink-, or directory-removal routines in sysfs complain in a
-comparable way.
+On Thu, 16 Aug 2007 19:50:43 +0200
+Authenticated <NWQ3MzhlY2QwZDAzODVhN@steudten.com> wrote:
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> 
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.20-1.2948.self #1
+> -------------------------------------------------------
+> squid/4058 is trying to acquire lock:
+>  (tty_mutex){--..}, at: [<c019fb54>] print_warning+0x8b/0x12e
+> 
+> but task is already holding lock:
+>  (&s->s_dquot.dqptr_sem){----}, at: [<c01a0802>] dquot_alloc_inode+0x34/0x10a
+> 
+> which lock already depends on the new lock.
 
----
-
-This is 2.6.23 material.  The spurious error message can be triggered
-by USB code added since 2.6.22, so it needs to be removed before the 
-final release.
-
-Alan Stern
-
-
-
-Index: usb-2.6/fs/sysfs/bin.c
-===================================================================
---- usb-2.6.orig/fs/sysfs/bin.c
-+++ usb-2.6/fs/sysfs/bin.c
-@@ -248,12 +248,7 @@ int sysfs_create_bin_file(struct kobject
- 
- void sysfs_remove_bin_file(struct kobject * kobj, struct bin_attribute * attr)
- {
--	if (sysfs_hash_and_remove(kobj->sd, attr->attr.name) < 0) {
--		printk(KERN_ERR "%s: "
--			"bad dentry or inode or no such file: \"%s\"\n",
--			__FUNCTION__, attr->attr.name);
--		dump_stack();
--	}
-+	sysfs_hash_and_remove(kobj->sd, attr->attr.name);
- }
- 
- EXPORT_SYMBOL_GPL(sysfs_create_bin_file);
-
+Yep - known 2.6.20 problem. Its very very unlikely to ever cause a real
+problem however.
