@@ -1,67 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbXHPMOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbXHPMP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758278AbXHPMOM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 08:14:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbXHPMN5
+	id S1758791AbXHPMP3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 08:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXHPMPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 08:13:57 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:51155 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753590AbXHPMN4 (ORCPT
+	Thu, 16 Aug 2007 08:15:07 -0400
+Received: from linux.dunaweb.hu ([62.77.196.1]:37715 "EHLO linux.dunaweb.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750822AbXHPMPE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 08:13:56 -0400
-Date: Thu, 16 Aug 2007 07:13:54 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: xemul@openvz.org, containers@lists.osdl.org, linux-kernel@vger.kernel.org,
-       oleg@tv-sign.ru
-Subject: Re: [PATCH 19/20] Changes to show virtual ids to user
-Message-ID: <20070816121354.GB13302@sergelap.austin.ibm.com>
-References: <46BC508C.mailGLJ118R5H@openvz.org> <20070814131202.73b7d559.akpm@linux-foundation.org>
+	Thu, 16 Aug 2007 08:15:04 -0400
+Message-ID: <46C43FB0.2020404@dunaweb.hu>
+Date: Thu, 16 Aug 2007 14:14:40 +0200
+From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070814131202.73b7d559.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: IDE/ATA development list <linux-ide@vger.kernel.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Bad CD disk disables IDE DMA
+References: <46C2F526.30005@dunaweb.hu> <6bffcb0e0708160117m31b6edc6ta277b6ddf2d894f6@mail.gmail.com> <46C42DD6.5090200@dunaweb.hu>
+In-Reply-To: <46C42DD6.5090200@dunaweb.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morton (akpm@linux-foundation.org):
-> On Fri, 10 Aug 2007 15:48:28 +0400
-> xemul@openvz.org wrote:
-> 
-> > This is the largest patch in the set. Make all (I hope) the places where
-> > the pid is shown to or get from user operate on the virtual pids.
-> > 
-> > The idea is:
-> >  - all in-kernel data structures must store either struct pid itself
-> >    or the pid's global nr, obtained with pid_nr() call;
-> >  - when seeking the task from kernel code with the stored id one
-> >    should use find_task_by_pid() call that works with global pids;
-> >  - when showing pid's numerical value to the user the virtual one
-> >    should be used, but however when one shows task's pid outside this
-> >    task's namespace the global one is to be used;
-> >  - when getting the pid from userspace one need to consider this as
-> >    the virtual one and use appropriate task/pid-searching functions.
-> > 
-> > ...
-> >
-> > -	si.si_pid = current->pid;
-> > +	si.si_pid = task_pid_vnr(current);
-> 
-> This is going to be an ongoing maintenance problem: people will sneak
-> new references to current->pid into the tree and nobody will notice.
-> 
-> It'd be best to rename task_struct.pid to something else to catch such
-> problems and to force people to use the right accessors.  Is that feasible?
+Zoltan Boszormenyi írta:
+> Michal Piotrowski írta:
+>> Hi Zoltan,
+>>
+>> On 15/08/07, Zoltan Boszormenyi <zboszor@dunaweb.hu> wrote:
+>>  
+>>> Hi,
+>>>
+>>> I noticed that a bad CD of mine makes DMA disabled:
+>>>
+>>> hda: selected mode 0x44
+>>> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
+>>> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
+>>> ide: failed opcode was: unknown
+>>> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
+>>> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
+>>> ide: failed opcode was: unknown
+>>> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
+>>> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
+>>> ide: failed opcode was: unknown
+>>> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
+>>> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
+>>> ide: failed opcode was: unknown
+>>> hda: DMA disabled
+>>> hda: ide_intr: huh? expected NULL handler on exit
+>>> hda: ATAPI reset complete
+>>>
+>>> Every time I put the said CD into to drive and DMA is on, I get the
+>>> above messages.
+>>>     
+>>
+>> This might be intended.
+>>   
+>
+> Might be. Note however, that there are no "cdrom_decode_status: " lines
+> when the drive is not using DMA. The disk is the same in both cases.
+> I don't know too much about ATAPI, but shouldn't it report the same
+> errors no matter how the commands are passed to the drive?
+> I tried to make it using DMA after mounting the "faulty" disk and 
+> copying it.
+> The same errors occured in the logs when dd started reading but it 
+> actually
+> finished reading:
+>
+> $ LANG=C dd if=/dev/hda of=image.iso bs=2048
+> dd: reading `/dev/hda': Input/output error
+> 298106+0 records in
+> 298106+0 records out
+> 610521088 bytes (611 MB) copied, 144.349 seconds, 4.2 MB/s
+>
+> The file is a bit larger than what isosize reports about it but IIRC 
+> it's expected.
+> So, if the disk is actually faulty dd would drop dead and not able to 
+> read the disk.
+> Or something is not quite right in the ide-cd driver. The "DMA 
+> disabled" message
+> comes when the drive should spin up the disk. Isn't there a timeout 
+> error somewhere?
+> Hm. Thinking about it a bit more upon mount the same is happening - 
+> before
+> the disk is spun up the error shows up in the logs and it switches to 
+> PIO.
+> Does it ring a bell to someone?
 
-It's certainly feasible, and something we'd previously done for instance
-in http://marc.info/?l=linux-kernel&m=113751118609597&w=2
+Another data point: the other disks I tried up to now were DVDs
+and DMA remains turned on for those. It's even true for empty
+DVDs and the label side of a Labelflash disk. On the other hand,
+another CD and two other CDRW disks (no visible faults, scratches
+on either btw) give me the same error when they are mounted,
+DMA gets disabled.
 
-> Generally this is a tactic which should be used whenever things like this
-> are virtualised.
+... some more tests and researching ...
 
-Ok, it's a big invasive patchset, but there's no reason we can't do it.
+TADA! The solution was to tune down the drive to only use UDMA3
+with "hdparm -X67". Now although dd didn't get any faster, DMA
+remained enabled. Actually the drive is originally a Pioneer 111D
+that was reflashed to 111L to get the Labelflash feature.
+Can it be a firmware bug? BTW the drive has a 80w cable.
 
-thanks,
--serge
+>>> Two things are interesting: first, it gets mounted correctly and
+>>> readable and
+>>> second, when DMA was already disabled no such messages occur in the 
+>>> logs.
+>>> Anyhow, I would need DMA to correctly burn CDs/DVDs...
+>>> What can I do besides manually re-enable DMA?
+>>> All other disks I have tried behave perfectly.
+>>> This happened on 2.6.22[-rcX], 2.6.23-rc3-git1 and 2.6.20-1.2962.fc6.
+>>> This is on a Fedora Core 6 system. CD/DVD is using the old IDE drivers:
+>>>
+>>> Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+>>> ide: Assuming 33MHz system bus speed for PIO modes; override with 
+>>> idebus=xx
+>>> NFORCE-MCP55: IDE controller at PCI slot 0000:00:04.0
+>>> NFORCE-MCP55: chipset revision 161
+>>> NFORCE-MCP55: not 100% native mode: will probe irqs later
+>>> NFORCE-MCP55: BIOS didn't set cable bits correctly. Enabling 
+>>> workaround.
+>>> NFORCE-MCP55: 0000:00:04.0 (rev a1) UDMA133 controller
+>>>     ide0: BM-DMA at 0xf000-0xf007, BIOS settings: hda:DMA, hdb:DMA
+>>> Probing IDE interface ide0...
+>>> hda: PIONEER DVD-RW DVR-111L, ATAPI CD/DVD-ROM drive
+>>> ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+>>> Probing IDE interface ide1...
+>>> ide-floppy driver 0.99.newide
+>>>
+>>> $ cat /proc/ide/amd74xx
+>>> ----------AMD BusMastering IDE Configuration----------------
+>>> Driver Version:                     2.13
+>>> South Bridge:                       0000:00:04.0
+>>> Revision:                           IDE 0xa1
+>>> Highest DMA rate:                   UDMA133
+>>> BM-DMA base:                        0xf000
+>>> PCI clock:                          33.3MHz
+>>> -----------------------Primary IDE-------Secondary IDE------
+>>> Prefetch Buffer:              yes                 yes
+>>> Post Write Buffer:            yes                 yes
+>>> Enabled:                      yes                  no
+>>> Simplex only:                  no                 yes
+>>> Cable Type:                   80w                 80w
+>>> -------------------drive0----drive1----drive2----drive3-----
+>>> Transfer Mode:        PIO       DMA       DMA       DMA
+>>> Address Setup:       30ns      90ns      90ns      90ns
+>>> Cmd Active:          90ns      90ns     300ns     300ns
+>>> Cmd Recovery:        30ns      30ns     300ns     300ns
+>>> Data Active:         90ns     330ns     330ns     330ns
+>>> Data Recovery:       30ns     270ns     270ns     270ns
+>>> Cycle Time:         120ns     600ns     600ns     600ns
+>>> Transfer Rate:   16.6MB/s   3.3MB/s   3.3MB/s   3.3MB/s
+>>>
+>>> Best regards,
+>>> Zoltán Böszörményi
+>>>     
+>>
+>> Regards,
+>> Michal
+>>
+>>   
+>
+> Best regards,
+> Zoltán
+>
+>
+>
+
+
