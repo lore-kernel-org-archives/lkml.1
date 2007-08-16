@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937263AbXHPDJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030284AbXHPDLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937263AbXHPDJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 23:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbXHPDJQ
+	id S1030284AbXHPDLc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 23:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbXHPDLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 23:09:16 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:22970 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750764AbXHPDJQ (ORCPT
+	Wed, 15 Aug 2007 23:11:21 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:12340 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753615AbXHPDLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 23:09:16 -0400
-Date: Wed, 15 Aug 2007 20:14:21 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "ye janboe" <janboe.ye@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: how can I get an account on master.kernel.org machine
-Message-Id: <20070815201421.ffbd84f3.randy.dunlap@oracle.com>
-In-Reply-To: <af3ea28a0708151958h4af993e6o1db3b9adddc14294@mail.gmail.com>
-References: <af3ea28a0708151958h4af993e6o1db3b9adddc14294@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 15 Aug 2007 23:11:19 -0400
+X-IronPort-AV: i="4.19,268,1183359600"; 
+   d="scan'208"; a="200851391:sNHT47033505"
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Steve Wise <swise@opengridcomputing.com>,
+       David Miller <davem@davemloft.net>, mshefty@ichips.intel.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports from the host TCP port space.
+X-Message-Flag: Warning: May contain useful information
+References: <46B883B5.8040702@opengridcomputing.com>
+	<46BB61D0.4090101@opengridcomputing.com>
+	<46BB89C0.4040303@ichips.intel.com>
+	<20070809.145534.102938208.davem@davemloft.net>
+	<46C310E1.7020503@opengridcomputing.com> <46C3B5EF.5060409@garzik.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 15 Aug 2007 20:11:15 -0700
+In-Reply-To: <46C3B5EF.5060409@garzik.org> (Jeff Garzik's message of "Wed, 15 Aug 2007 22:26:55 -0400")
+Message-ID: <adaabss41ik.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 Aug 2007 03:11:15.0575 (UTC) FILETIME=[1B6F0870:01C7DFB3]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Aug 2007 10:58:41 +0800 ye janboe wrote:
+ > Needing to reach out of the RDMA sandbox and reserve net stack
+ > resources away from itself travels a path we've consistently avoided.
 
-> I want to down linux-arm git repos, but I do not have an account on
-> master machine.
+Where did the idea of an "RDMA sandbox" come from?  Obviously no one
+disagrees with keeping things clean and maintainable, but the idea
+that RDMA is a second-class citizen that doesn't get any input into
+the evolution of the networking code seems kind of offensive to me.
 
-see http://www.kernel.org/faq/#account
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+ - R.
