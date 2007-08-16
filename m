@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759637AbXHPNAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbXHPNEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759637AbXHPNAe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 09:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbXHPNA0
+	id S1758946AbXHPNEB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 09:04:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbXHPNDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 09:00:26 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:35178 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755635AbXHPNAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 09:00:25 -0400
-Date: Thu, 16 Aug 2007 15:00:22 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-cc: Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: USB Keyboard
-In-Reply-To: <Pine.LNX.4.61.0708160724001.17168@chaos.analogic.com>
-Message-ID: <Pine.LNX.4.64.0708161456450.2460@twin.jikos.cz>
-References: <Pine.LNX.4.61.0708151320380.8581@chaos.analogic.com>
- <Pine.LNX.4.64.0708161100340.2460@twin.jikos.cz>
- <Pine.LNX.4.61.0708160724001.17168@chaos.analogic.com>
+	Thu, 16 Aug 2007 09:03:53 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:39683 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752460AbXHPNDw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 09:03:52 -0400
+X-Sasl-enc: XeM7XEugsle72v5ZzdPesv14kqpidHHC3cDV0XHD+BLt 1187269431
+Date: Thu, 16 Aug 2007 10:03:48 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: lenb@kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Richard Hughes <hughsient@gmail.com>
+Subject: Re: [PATCH 3/3] ACPI: thinkpad-acpi: change thinkpad-acpi input
+	default and kconfig help
+Message-ID: <20070816130348.GC5081@khazad-dum.debian.net>
+References: <11868017142597-git-send-email-hmh@hmh.eng.br> <11868017143582-git-send-email-hmh@hmh.eng.br> <20070811180602.GA17843@mellanox.co.il> <20070811221625.GB27761@khazad-dum.debian.net> <20070816073053.GA19833@mellanox.co.il> <20070816122506.GA5081@khazad-dum.debian.net> <20070816122823.GH5684@mellanox.co.il>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070816122823.GH5684@mellanox.co.il>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Aug 2007, linux-os (Dick Johnson) wrote:
+On Thu, 16 Aug 2007, Michael S. Tsirkin wrote:
+> > Quoting Henrique de Moraes Holschuh <hmh@hmh.eng.br>:
+> > Subject: Re: [PATCH 3/3] ACPI: thinkpad-acpi: change thinkpad-acpi input default and kconfig help
+> > On Thu, 16 Aug 2007, Michael S. Tsirkin wrote:
+> > > > I *can* make the compile-time option a module parameter, though.  That
+> > > > wouldn't be much of a problem, and the compile-time option would select the
+> > > > default for that parameter, but it would be easier to override it at run
+> > > > time (you can already do it, but it requires reprogramming various driver
+> > > > parameters using sysfs and the input device IOCTLs).
+> > > > 
+> > > > Would a module parameter address enough of your concerns?  Kconfig would
+> > > > only set the default for that parameter, then...
+> > > 
+> > > I really think modifying defaults it not a great idea.
+> > > What about adding a writeable module parameter?
+> > > Then new HAL would just write to /sysfs/module/thinkpad/parameters/interface_version to 
+> > > switch to new behaviour.
+> > 
+> > Nah. This thing regulates what the module has to do when it loads and inits
+> > the firmware,
+> 
+> This does not have to be at module load time, though, does it?
 
-> Okay. I found what was different. It does actually build, but it is now 
-> put into a completely different directory, 
-> /lib/modules/2.6.22.1/kernel/drivers/hid/usbhid, and requires 
-> /lib/modules/2.6.22.1/kernel/drivers/input/ff-memless.ko to be installed 
-> before it can be. 
+Depends on how you view things.  If I do it at any other time, I will
+clobber the current configuration of the module, i.e. it will be an
+"autoconfig now, overriding current state" trigger.  It will also waste a
+lot of memory since a big deal of stuff will stop being __init and
+__initdata.
 
-Only if you enabled force feedback for HID devices in your menuconfig. And 
-if you did so, it perfectly makes sense that the force-feedback input 
-module must be loaded.
+Also, it means the configuration the local admin did gets overwritten every
+time HAL or something else feels the need to poke thinkpad-acpi (hopefully
+once at system startup, but still...).  I consider that completely
+unacceptable, because in my experience, every time you give someone such a
+knob, it is abused.
 
-> None of this is documented and it makes upgrading extremely difficult, 
-> expecially when a keyboard won't work anymore.
-
-1) what strange distro/environment do you use that the usbhid driver is 
-   not loaded automatically when you plug the keyboard in?
-2) even if your module autoloading is that much broken, you can always ssh 
-   to the box or attach PS/2 keyboard and modprobe usbhid ... that works 
-   no matter which directory keeps the driver
-
-There is nothing to be documented there, we don't document which directory 
-holds which driver.
-
-> BYW, it did fix the problem with the old driver.
-
-Good to hear, thanks.
+And if I make it a only-one-use knob (i.e. start returning -EPERM after it
+was used once), it is not much different from a module parameter, is it?
+And both KISS and the principle of least suprise tells me that in that case
+it better be a module parameter.
 
 -- 
-Jiri Kosina
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
