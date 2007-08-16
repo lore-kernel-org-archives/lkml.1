@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758507AbXHPS2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761383AbXHPSg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758507AbXHPS2y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 14:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbXHPS2o
+	id S1761383AbXHPSg1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 14:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbXHPSgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 14:28:44 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:4877 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753556AbXHPS2n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 14:28:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UwblxnUz0BAClKzAplFqVE/qQRFV1VdvKZA8l7tKaCWn8+ByV4deMEubrQ8dvMXWNNQTZA66qjVwvCtMhyk4/DzD+ejrHhoTLW1ca/M4DDWwyzK7zyLvm7MFahYMebyvoPR+iuFmq0ug6iw38vdiAai7ReGdSHjLTCewHMqIuzc=
-Message-ID: <8bd0f97a0708161128g71ca385ak6ddcb1b36d7fabc2@mail.gmail.com>
-Date: Thu, 16 Aug 2007 14:28:43 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Jie Zhang" <jie.zhang@analog.com>
-Subject: Re: [PATCH 1/2] Add a new field `name' to struct linux_binfmt
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1187248823.11475.24.camel@mercury.analog.com>
+	Thu, 16 Aug 2007 14:36:16 -0400
+Received: from mx2.suse.de ([195.135.220.15]:56830 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753878AbXHPSgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 14:36:16 -0400
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Andrew Morton <akpm@osdl.org>, stable@kernel.org,
+       Alberto Pires de Oliveira Neto <apon1@terra.com.br>, giedrius@su.lt,
+       LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [PATCH] UML - Add a .note.SuSE section
+References: <20070816162428.GA8128@c2.user-mode-linux.org>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 16 Aug 2007 21:30:17 +0200
+In-Reply-To: <20070816162428.GA8128@c2.user-mode-linux.org>
+Message-ID: <p73vebf1dme.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1187248823.11475.24.camel@mercury.analog.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/16/07, Jie Zhang <jie.zhang@analog.com> wrote:
-> This patch addes a new `name' field to struct linux_binfmt and
-> initialize it in each binfmt type.
->
-> A second blackfin arch patch will use this field to distinguish `flat'
-> binfmt with `FDPIC ELF'.
->
-> Is it OK? Any comments?
+Jeff Dike <jdike@addtoit.com> writes:
 
-the other possibility would be to not make linux_binfmt definitions
-static and put appropriate prototypes in the fs.h header ... then you
-could do:
-if (current->binfmt == aout_format) {
-  ... aout stuff ...
-}
+> [ This is both 2.6.24 and -stable material ]
+> 
+> SuSE seems to require that binaries have a .note.SuSE section.
+> Without it, UML segfaults if any parameters are passed on the command
+> line.
 
-then again, this goes against the dynamic nature of the binfmt itself
-... and the idea that the binfmt should not matter to anything else in
-the kernel once it's executing ...
--mike
+This doesn't make any sense. You must have misanalyzed this.
+
+-Andi
+
