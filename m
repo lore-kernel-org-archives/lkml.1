@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964871AbXHPCd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937761AbXHPCgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964871AbXHPCd0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 22:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764020AbXHPCdF
+	id S937761AbXHPCgX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 22:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbXHPCgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 22:33:05 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:59941 "EHLO e6.ny.us.ibm.com"
+	Wed, 15 Aug 2007 22:36:07 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:53364 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755051AbXHPCdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 22:33:00 -0400
-Date: Wed, 15 Aug 2007 19:32:55 -0700
+	id S1755354AbXHPCgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 22:36:03 -0400
+Date: Wed, 15 Aug 2007 19:35:58 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
+       Satyam Sharma <satyam@infradead.org>,
        Stefan Richter <stefanr@s5r6.in-berlin.de>,
        Chris Snook <csnook@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -22,40 +23,50 @@ Cc: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
        heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
        wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
        cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org,
-       Herbert Xu <herbert@gondor.apana.org.au>
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
 Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070816023255.GD14613@linux.vnet.ibm.com>
+Message-ID: <20070816023558.GE14613@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <20070816005348.GA9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151757400.11196@schroedinger.engr.sgi.com> <20070816011414.GC9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151839140.11520@schroedinger.engr.sgi.com>
+References: <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <20070816021105.GA30883@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708151839140.11520@schroedinger.engr.sgi.com>
+In-Reply-To: <20070816021105.GA30883@gondor.apana.org.au>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 15, 2007 at 06:41:40PM -0700, Christoph Lameter wrote:
-> On Wed, 15 Aug 2007, Paul E. McKenney wrote:
+On Thu, Aug 16, 2007 at 10:11:05AM +0800, Herbert Xu wrote:
+> On Thu, Aug 16, 2007 at 12:05:56PM +1000, Paul Mackerras wrote:
+> > Herbert Xu writes:
+> > 
+> > > See sk_stream_mem_schedule in net/core/stream.c:
+> > > 
+> > >         /* Under limit. */
+> > >         if (atomic_read(sk->sk_prot->memory_allocated) < sk->sk_prot->sysctl_mem[0]) {
+> > >                 if (*sk->sk_prot->memory_pressure)
+> > >                         *sk->sk_prot->memory_pressure = 0;
+> > >                 return 1;
+> > >         }
+> > > 
+> > >         /* Over hard limit. */
+> > >         if (atomic_read(sk->sk_prot->memory_allocated) > sk->sk_prot->sysctl_mem[2]) {
+> > >                 sk->sk_prot->enter_memory_pressure();
+> > >                 goto suppress_allocation;
+> > >         }
+> > > 
+> > > We don't need to reload sk->sk_prot->memory_allocated here.
+> > 
+> > Are you sure?  How do you know some other CPU hasn't changed the value
+> > in between?
 > 
-> > Understood.  My point is not that the impact is precisely zero, but
-> > rather that the impact on optimization is much less hurtful than the
-> > problems that could arise otherwise, particularly as compilers become
-> > more aggressive in their optimizations.
+> Yes I'm sure, because we don't care if others have increased
+> the reservation.
 > 
-> The problems arise because barriers are not used as required. Volatile 
-> has wishy washy semantics and somehow marries memory barriers with data 
-> access. It is clearer to separate the two. Conceptual cleanness usually 
-> translates into better code. If one really wants the volatile then lets 
-> make it explicit and use
-> 
-> 	atomic_read_volatile()
+> Note that even if we did we'd be using barriers so volatile
+> won't do us any good here.
 
-There are indeed architectures where you can cause gcc to emit memory
-barriers in response to volatile.  I am assuming that we are -not-
-making gcc do this.  Given this, then volatiles and memory barrier
-instructions are orthogonal -- one controls the compiler, the other
-controls the CPU.
+If the load-coalescing is important to performance, why not load into
+a local variable?
 
 						Thanx, Paul
