@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761404AbXHPTOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765588AbXHPTYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761404AbXHPTOw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 15:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbXHPTOm
+	id S1765588AbXHPTYV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 15:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbXHPTYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 15:14:42 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48927 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751906AbXHPTOk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 15:14:40 -0400
-Date: Thu, 16 Aug 2007 12:14:38 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: akpm@linux-foundation.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>, bob.picco@hp.com, nacc@us.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com, mel@skynet.ie,
-       Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       ckrm-tech <ckrm-tech@lists.sourceforge.net>
-Subject: Re: Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
-In-Reply-To: <1187270797.5900.9.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0708161214150.17132@schroedinger.engr.sgi.com>
-References: <1187115224.6281.40.camel@localhost>  <20070814192306.GB32553@vino.hallyn.com>
-  <20070814204951.GA2065@vino.hallyn.com>  <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
-  <1187127685.6281.139.camel@localhost>  <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
-  <1187185392.5422.13.camel@localhost>  <20070815143125.GA11582@vino.hallyn.com>
-  <1187195028.5422.30.camel@localhost>  <20070815163142.GA12850@vino.hallyn.com>
-  <20070815165234.GC1179@linux.vnet.ibm.com> <1187270797.5900.9.camel@localhost>
+	Thu, 16 Aug 2007 15:24:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52990 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754604AbXHPTYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 15:24:06 -0400
+Message-ID: <46C4A445.6070802@redhat.com>
+Date: Thu, 16 Aug 2007 15:23:49 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Herbert Xu <herbert.xu@redhat.com>
+CC: Andi Kleen <ak@suse.de>, sebastian@breakpoint.cc,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] i386: use asm() like the other atomic operations
+ already do.
+References: <E1ILEQ8-0005H5-00@gondolin.me.apana.org.au> <46C3319F.4050809@redhat.com> <20070815234434.GC28775@gondor.apana.org.au>
+In-Reply-To: <20070815234434.GC28775@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Aug 2007, Lee Schermerhorn wrote:
+Herbert Xu wrote:
+> On Wed, Aug 15, 2007 at 01:02:23PM -0400, Chris Snook wrote:
+>> Herbert Xu wrote:
+>>> Andi Kleen <ak@suse.de> wrote:
+>>>>> My config with march=pentium-m and gcc (GCC) 4.1.2 (Gentoo 4.1.2):
+>>>>>  text    data     bss     dec     hex filename
+>>>>> 3434150  249176  176128 3859454  3ae3fe atomic_normal/vmlinux
+>>>>> 3435308  249176  176128 3860612  3ae884 atomic_inlineasm/vmlinux
+>>>> What is the difference between atomic_normal and atomic_inlineasm? 
+>>> The inline asm stops certain optimisations from occuring.
+>>>
+>>> I'm still unconvinced why we need this because nobody has
+>>> brought up any examples of kernel code that legitimately
+>>> need this.
+>> There's plenty of kernel code that *wants* this though.  If we can 
+> 
+> You keep saying this yet everytime I ask for an example I
+> get nothing.
 
-> PATCH	Initialize N_*_MEMORY and N_CPU masks for non-NUMA config
+Just look for all the code (and there's an immense amount) that has a 
+barrier() between two atomic_* operations, or in a loop with such 
+operations.  With these patches merged, we can proceed to *remove* those 
+barriers.
 
-Acked-by: Christoph Lameter <clameter@sgi.com>
+>> reduce the need for register-clobbering barriers, shrink our binaries, 
+>> shrink our code, improve performance, and avoid heisenbugs, I think it's 
+>> a win, whether or not we *need* it.
+> 
+> Hmm, you're increasing our binary size and probably killing
+> performance.
+
+The cost of these patches themselves is negligible, since people pretty 
+much always use barriers in places where it would matter.  The long-term 
+benefit is that with guaranteed volatile behavior, we can go through and 
+remove a whole bunch of these barriers.
+
+	-- Chris
