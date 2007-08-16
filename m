@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbXHPVSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932295AbXHPVUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932659AbXHPVSs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 17:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757963AbXHPVSj
+	id S932295AbXHPVUe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 17:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760907AbXHPVUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 17:18:39 -0400
-Received: from helios.cs.csubak.edu ([136.168.201.112]:43417 "EHLO
-	helios.cs.csubak.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757551AbXHPVSi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 17:18:38 -0400
-Date: Thu, 16 Aug 2007 14:18:26 -0700 (PDT)
-From: David Griffith <dgriffi@cs.csubak.edu>
-To: Clemens Ladisch <clemens@ladisch.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: MOTU Fastlane USB MIDI interface
-In-Reply-To: <20070816174510.6o8cray64g8kosos@webmail.df.eu>
-Message-ID: <Pine.GSO.4.55.0708161417270.9354@helios.cs.csubak.edu>
-References: <Pine.GSO.4.55.0708100242000.25856@helios.cs.csubak.edu>
- <20070816093703.sndy0gg44gk0o0ko@webmail.df.eu>
- <Pine.GSO.4.55.0708160308450.24052@helios.cs.csubak.edu>
- <20070816174510.6o8cray64g8kosos@webmail.df.eu>
+	Thu, 16 Aug 2007 17:20:24 -0400
+Received: from mail.gmx.net ([213.165.64.20]:54548 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1760858AbXHPVUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 17:20:23 -0400
+X-Authenticated: #5964578
+X-Provags-ID: V01U2FsdGVkX1+SYDBmOAiSOGkPAIOeLmRkOKP8QW8CPcCZ7543kL
+	Ug+xy+9ENifvbq
+From: Dexter Filmore <Dexter.Filmore@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: which drive to pluck?
+Date: Thu, 16 Aug 2007 23:20:47 +0200
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.5 (--)
-X-Spam-Report: ---- Start Spam Filter Report
-	Filter Analysis score is (-2.5/5.0)
-	-0.0 NO_RELAYS              Informational: message was not relayed via SMTP
-	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.1 AWL                    AWL: From: address is in the auto white-list
-	---- End Spam Filter results
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708162320.47645.Dexter.Filmore@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Aug 2007, Clemens Ladisch wrote:
-
-> David Griffith wrote:
-> > Checking further, I've never been able to
-> > get midi to work with kernels 2.6.18 and later.
->
-> Please try "amidi -d -p virtual" and playing a .mid file to this port with
-> aplaymidi.
-
-$ aplaymidi -p "virtual" castle2.mid
-Invalid port virtual - No such file or directory
-
-amidi reports nothing.
+So I got 4 disks on the array, all on one controller. Now if I have to replace 
+a drive, how do I tell which one to pull out?
+I really wouldn't know which one is sdb and which sdc.
 
 -- 
-David Griffith
-dgriffi@cs.csubak.edu
+-----BEGIN GEEK CODE BLOCK-----
+Version: 3.12
+GCS d--(+)@ s-:+ a- C++++ UL++ P+>++ L+++>++++ E-- W++ N o? K-
+w--(---) !O M+ V- PS+ PE Y++ PGP t++(---)@ 5 X+(++) R+(++) tv--(+)@ 
+b++(+++) DI+++ D- G++ e* h>++ r* y?
+------END GEEK CODE BLOCK------
+
+http://www.stop1984.com
+http://www.againsttcpa.com
