@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765432AbXHPVC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765630AbXHPVDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765432AbXHPVC4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 17:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764703AbXHPVCp
+	id S1765630AbXHPVDy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 17:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758200AbXHPVDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 17:02:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54125 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757950AbXHPVCo (ORCPT
+	Thu, 16 Aug 2007 17:03:39 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:62379 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754667AbXHPVDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 17:02:44 -0400
-Date: Thu, 16 Aug 2007 14:02:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [-mm patch] AFLAGS: fix the -g setting
-Message-Id: <20070816140201.3ff0f582.akpm@linux-foundation.org>
-In-Reply-To: <20070814212329.GQ18945@stusta.de>
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-	<20070814212329.GQ18945@stusta.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 16 Aug 2007 17:03:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aGpjKiICxwrZ3MJN3sx24CmefCUVE2zHMFdwni3dHagYVXYbTH31yP3ZmelVjc5i8TOEYvUTL+LdQ/8aGtnggnA7gBmHTT1exzdBe48ReH5J58mPNmv7egS+IhlfiPVKQGRY+xBj8sq6qjYPLMHMSPudmS2rZl7H4NyH1mTU7IY=
+Message-ID: <be1b757c0708161403r3faa7190wd74ac1ecc8aa8f45@mail.gmail.com>
+Date: Thu, 16 Aug 2007 23:03:35 +0200
+From: "Karl Meyer" <adhocrocker@gmail.com>
+To: "Francois Romieu" <romieu@fr.zoreil.com>
+Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20070816141122.GA6625@electric-eye.fr.zoreil.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com>
+	 <20070813165821.GA19356@electric-eye.fr.zoreil.com>
+	 <be1b757c0708131027v5c57822as2d9bd3190fd19b71@mail.gmail.com>
+	 <20070814070901.GA14693@electric-eye.fr.zoreil.com>
+	 <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com>
+	 <20070814224629.GB3495@electric-eye.fr.zoreil.com>
+	 <20070816141122.GA6625@electric-eye.fr.zoreil.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Aug 2007 23:23:29 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
+I did some testing today and found that the error occurs after
+applying some of the patches. However I did not figure out the exact
+patch in which the error "starts" since it sometimes occurs immediatly
+when moving some data over the net and sometimes it takes 30 min till
+I get the transmit timeout. I will be away till sunday and do some
+more testing then.
 
-> It's -gdwarf-2, not -gdwarf2. With this fix it can actually work.
-
-Andreas Schwab has said "The option is officially called -gdwarf-2, and
--gdwarf2 is an alias for backward compatibility.".  So the code should be
-working OK now.
-
-> And since even gcc 3.2 supports -gdwarf-2 there's no reason for checking 
-> with as-option.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 6ab1091b06e762635430b452f82a474890bda230 
-> diff --git a/Makefile b/Makefile
-> index 5b0d58c..accfdc4 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -504,7 +504,7 @@ endif
->  
->  ifdef CONFIG_DEBUG_INFO
->  CFLAGS		+= -g
-> -AFLAGS		+= $(call as-option, -gdwarf2)
-> +AFLAGS		+= -gdwarf-2
->  endif
->  
->  # Force gcc to behave correct even for buggy distributions
+2007/8/16, Francois Romieu <romieu@fr.zoreil.com>:
+> (please do not remove the netdev Cc:)
+>
+> Francois Romieu <romieu@fr.zoreil.com> :
+> [...]
+> > If it does not work I'll dissect 0e4851502f846b13b29b7f88f1250c980d57e944
+> > tomorrow.
+>
+> You will find a tgz archive in attachment which contains a serie of patches
+> (0001-... to 0005-...) to walk from 6dccd16b7c2703e8bbf8bca62b5cf248332afbe2
+> to 0e4851502f846b13b29b7f88f1250c980d57e944 in smaller steps.
+>
+> Please apply 0001 on top of 6dccd16b7c2703e8bbf8bca62b5cf248332afbe2. If it
+> still works, apply 0002 on top of 0001, etc.
+>
+> --
+> Ueimor
+>
+>
