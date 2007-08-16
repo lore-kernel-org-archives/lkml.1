@@ -1,78 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbXHPLBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761454AbXHPLCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100AbXHPLBj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 07:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbXHPLBY
+	id S1761454AbXHPLCs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 07:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbXHPLCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 07:01:24 -0400
-Received: from mail.suse.de ([195.135.220.2]:46411 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751179AbXHPLBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 07:01:22 -0400
-Date: Thu, 16 Aug 2007 13:01:16 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Joe Perches <joe@perches.com>,
-       Dave Jones <davej@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, rolandd@cisco.com,
-       Chas Williams <chas@cmf.nrl.navy.mil>, Paul Mundt <lethal@linux-sh.org>,
-       isdn4linux@listserv.isdn4linux.de, mikep@linuxtr.net,
-       Netdev <netdev@vger.kernel.org>, swen@vnet.ibm.com, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org, jdike@karaya.com,
-       user-mode-linux-devel@lists.sourceforge.net,
-       user-mode-linux-user@lists.sourceforge.net,
-       netfilter-devel@lists.netfilter.org, coreteam@netfilter.org,
-       Satyam Sharma <satyam@infradead.org>
-Subject: Re: drivers/infiniband/mlx/mad.c misplaced ;
-Message-ID: <20070816110116.GA8100@pingi.kke.suse.de>
-Mail-Followup-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Joe Perches <joe@perches.com>, Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>, rolandd@cisco.com,
-	Chas Williams <chas@cmf.nrl.navy.mil>,
-	Paul Mundt <lethal@linux-sh.org>, isdn4linux@listserv.isdn4linux.de,
-	mikep@linuxtr.net, Netdev <netdev@vger.kernel.org>,
-	swen@vnet.ibm.com, linux390@de.ibm.com, linux-s390@vger.kernel.org,
-	jdike@karaya.com, user-mode-linux-devel@lists.sourceforge.net,
-	user-mode-linux-user@lists.sourceforge.net,
-	netfilter-devel@lists.netfilter.org, coreteam@netfilter.org,
-	Satyam Sharma <satyam@infradead.org>
-References: <20070815235825.GB17004@redhat.com> <1187224811.5906.55.camel@localhost> <20070816084635.GA15985@osiris.boeblingen.de.ibm.com> <Pine.LNX.4.64.0708161248050.22579@kivilampi-30.cs.helsinki.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0708161248050.22579@kivilampi-30.cs.helsinki.fi>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.27-0.6-smp x86_64
-User-Agent: Mutt/1.5.9i
+	Thu, 16 Aug 2007 07:02:37 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:48368 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753359AbXHPLCg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 07:02:36 -0400
+Message-ID: <46C42DCB.1060502@gmail.com>
+Date: Thu, 16 Aug 2007 12:58:19 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Kyle Moffett <mrmacman_g4@mac.com>
+CC: Satyam Sharma <satyam@infradead.org>, Al Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Joe Perches <joe@perches.com>, git@vger.kernel.org,
+       Junio C Hamano <gitster@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
+References: <1187026955.2688.4.camel@laptopd505.fenrus.org> <1187037445.6628.98.camel@heimdal.trondhjem.org> <1187054366.2757.0.camel@laptopd505.fenrus.org> <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu> <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost> <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost> <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org> <20070814193333.GI21089@ftp.linux.org.uk> <46C2548D.80605@gmail.com> <alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in> <46C30220.6060007@gmail.com> <68B09015-4411-470A-BA88-732969469AA2@mac.com>
+In-Reply-To: <68B09015-4411-470A-BA88-732969469AA2@mac.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 01:22:04PM +0300, Ilpo Järvinen wrote:
-> 
-> ...I guess those guys hunting for broken busyloops in the other thread 
-> could also benefit from similar searching commands introduced in this 
-> thread... ...Ccing Satyam to caught their attention too.
-> 
-> 
-> ./drivers/isdn/hisax/hfc_pci.c
-> 125:	if (Read_hfc(cs, HFCPCI_INT_S1)) ;
-> 155:	if (Read_hfc(cs, HFCPCI_INT_S1)) ;
-> 1483:					if (Read_hfc(cs, HFCPCI_INT_S1)) ;
-> --
-> ./drivers/isdn/hisax/hfc_sx.c
-> 377:	if (Read_hfc(cs, HFCSX_INT_S1)) ;
-> 407:	if (Read_hfc(cs, HFCSX_INT_S2)) ;
-> 1246:					if (Read_hfc(cs, HFCSX_INT_S1)) ;
-> --
+On 08/15/2007 03:52 PM, Kyle Moffett wrote:
 
-These are workaround to not get compiler warnings about ignored return
-values I got some time ago under some architecture.
+> On Aug 15, 2007, at 09:39:44, Rene Herman wrote:
+>> On 08/15/2007 03:33 PM, Satyam Sharma wrote:
+>>
+>> [ git info --maintainer ]
+>>
+>>> I'd really _love_ a tool that does all that what you've proposed 
+>>> above!  But why does it have to be "git-info" or anything in the 
+>>> git(7) suite for that matter? This sounds like a job for a different 
+>>> specialised tool,  long with ".metatags" kind of files dispersed in 
+>>> the source tree.
+>>
+>> To automatically move (and delete) the meta-data alongside the files 
+>> themselves is a reason.
+>>
+>> More generally -- shouldn't it? This is about source management (well, 
+>> maybe more about project management, but...) and the source code 
+>> management tool looks to be the right place for that. The different 
+>> parts of git are somewhat/fairly stand-alone as is, no?
+> 
+> If you were going to do that I'd just suggest making git aware of the 
+> "user.*" extended attributes and having it save those into the git repo 
+> along with the permission data.
 
+Am looking at it but am not so sure that's a very good idea. I guess it'd be 
+largely okay-ish to require the repo to be on a filesystem that supports EAs 
+for this feature to work, but keeping the attributes intact over file system 
+operations seems not all that easy (yet). Having not used EAs before I may 
+be missing something but my version of "cp" for example (GNU coreutils 6.9) 
+appears to not copy them. Nor do they seem to survive a trip through GNU tar 
+1.16.1. EAs appear to not be very useful unless every single tool supports 
+them -- a repo should be resistant against simple operations like that.
 
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+Googling around, I see subversion already has this and calls the meta-data 
+"properties" (svn propset/get and friends). It uses a few properties itself, 
+such as the svn:executable property (which I saw is also the only permission 
+bit git keeps) and svn:ignore, which serves the same role as the .gitignore 
+files for git. Both those would fit into this scheme nicely for git as well, 
+if git were to do something similar and reserve for example the "git.*" 
+namespace for internal use.
+
+Junio (and others), do you have an opinion on this? If these properties are 
+versioned themselves such as in svn I believe it's a decidedly non-trivial 
+addition (and I'm a complete git newbie) but to me, they look incredibly 
+useful, both for the original "maintainers" properties (and anyone else one 
+would want to come up with such as summary properties and author/license 
+stuff) and even for git internal reasons such as sketched above.
+
+The git-blame thing as sketched before by Linus would never be able to point 
+out mailing lists, or general lists of "interested parties" for example, but 
+these properties can do anything...
+
+Rene.
