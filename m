@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765106AbXHPHUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932148AbXHPHV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765106AbXHPHUk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 03:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbXHPHUc
+	id S932148AbXHPHV3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 03:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758367AbXHPHVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 03:20:32 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:16098 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752889AbXHPHUa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 03:20:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ewOKE6tGTRcMyER+am/7lf2Em8LG7Kxx4RrrxKWZ+h+mCYVLSDJHCoylk/WCZ5QljmCQ5Dua15MoEJ0WFA+p10ipLNZ85zTdqkweHQmYz4U9ufHyCgwXKQerhQ9uxP19L1tFaMmQ20n6V6GZE+ANNozoaWb0sYkJGYHqkFpRmaw=
-Message-ID: <46C3FAB5.5070903@gmail.com>
-Date: Thu, 16 Aug 2007 11:20:21 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Thu, 16 Aug 2007 03:21:19 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:24642 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758895AbXHPHVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 03:21:18 -0400
+Date: Thu, 16 Aug 2007 09:21:15 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH 002 of 5] Replace bio_data with blk_rq_data
+Message-ID: <20070816072114.GK23758@kernel.dk>
+References: <20070816150445.30843.patches@notabene> <1070816051337.31344@suse.de> <20070816070255.GJ23758@kernel.dk> <18115.63917.990694.904646@notabene.brown>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: Re: [v4l-dvb-maintainer] [2.6 patch] dvb_net_ule(): fix check-after-use
-References: <20070814212241.GA18945@stusta.de>
-In-Reply-To: <20070814212241.GA18945@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18115.63917.990694.904646@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> The Coverity checker spotted that we'd have already oops'ed if "dev"
-> was NULL.
+On Thu, Aug 16 2007, Neil Brown wrote:
+> On Thursday August 16, jens.axboe@oracle.com wrote:
+> > On Thu, Aug 16 2007, NeilBrown wrote:
+> > > 
+> > > Almost every call to bio_data is for the first bio
+> > > in a request.  A future patch will add some accounting
+> > > information to 'struct request' which will need to be
+> > > used to find the start of the request in the bio.
+> > > So replace bio_data with blk_rq_data which takes a 'struct request *'
+> > > 
+> > > The one exception is in dm-emc were using
+> > >    page_address(bio->bi_io_vec[0].bv_page);
+> > > is appropriate.
+> > 
+> > This (and 3+4) just look like preparatory patches if we want to merge
+> > the full patchset, not bug fixes. I seem to recall you had more bug
+> > fixes or cleanups in your patchset, maybe I was mistaken. So nak for now
+> > for 2-4, I'd apply 5 but it depends on the previous.
+> > 
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> --- linux-2.6.23-rc1-mm2/drivers/media/dvb/dvb-core/dvb_net.c.old	2007-08-08 06:17:19.000000000 +0200
-> +++ linux-2.6.23-rc1-mm2/drivers/media/dvb/dvb-core/dvb_net.c	2007-08-08 06:17:35.000000000 +0200
-> @@ -346,33 +346,28 @@
->  static void dvb_net_ule( struct net_device *dev, const u8 *buf, size_t buf_len )
->  {
->  	struct dvb_net_priv *priv = dev->priv;
->  	unsigned long skipped = 0L;
->  	const u8 *ts, *ts_end, *from_where = NULL;
->  	u8 ts_remain = 0, how_much = 0, new_ts = 1;
->  	struct ethhdr *ethh = NULL;
->  
->  #ifdef ULE_DEBUG
->  	/* The code inside ULE_DEBUG keeps a history of the last 100 TS cells processed. */
->  	static unsigned char ule_hist[100*TS_SZ];
->  	static unsigned char *ule_where = ule_hist, ule_dump = 0;
->  #endif
->  
-> -	if (dev == NULL) {
-> -		printk( KERN_ERR "NO netdev struct!\n" );
-> -		return;
-> -	}
-> -
->  	/* For all TS cells in current buffer.
->  	 * Appearently, we are called for every single TS cell.
->  	 */
->  	for (ts = buf, ts_end = buf + buf_len; ts < ts_end; /* no default incr. */ ) {
->  
->  		if (new_ts) {
->  			/* We are about to process a new TS cell. */
->  
->  #ifdef ULE_DEBUG
->  			if (ule_where >= &ule_hist[100*TS_SZ]) ule_where = ule_hist;
->  			memcpy( ule_where, ts, TS_SZ );
->  			if (ule_dump) {
->  				hexdump( ule_where, TS_SZ );
->  				ule_dump = 0;
-> 
-> 
+> I don't remember other bug fixes, but I'll look through and check.
 
-Signed-off-by: Manu Abraham <manu@linuxtv.org>
+OK, I'm properly remembering incorrectly then.
+
+> 2 and 3 are very simple changes that - I think - make it clearer what
+> is happening.
+
+To be honest, I don't see much win in using blk_rq_data() over
+bio_data() at all. I'd much much rather just see it go away!
+
+> And I felt 5 was a sufficient improvement to justify it and 4...
+
+5 is nice, I would like to apply that :-)
+
+> I'll go hunting and see what other preliminaries I can find.
+
+Thanks!
+
+-- 
+Jens Axboe
+
