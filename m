@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030243AbXHPCKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936783AbXHPCMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030243AbXHPCKR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 22:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761188AbXHPCJx
+	id S936783AbXHPCMA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 22:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764828AbXHPCLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 22:09:53 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2471 "EHLO
+	Wed, 15 Aug 2007 22:11:49 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2509 "EHLO
 	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760627AbXHPCJv (ORCPT
+	with ESMTP id S1761511AbXHPCLr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 22:09:51 -0400
-Date: Thu, 16 Aug 2007 10:08:51 +0800
+	Wed, 15 Aug 2007 22:11:47 -0400
+Date: Thu, 16 Aug 2007 10:11:05 +0800
 From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Satyam Sharma <satyam@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
 Cc: Christoph Lameter <clameter@sgi.com>,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Paul Mackerras <paulus@samba.org>,
+       Satyam Sharma <satyam@infradead.org>,
        Stefan Richter <stefanr@s5r6.in-berlin.de>,
        Chris Snook <csnook@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -27,39 +27,44 @@ Cc: Christoph Lameter <clameter@sgi.com>,
        cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
        jesper.juhl@gmail.com, segher@kernel.crashing.org
 Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070816020851.GA30809@gondor.apana.org.au>
-References: <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <20070816005348.GA9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151757400.11196@schroedinger.engr.sgi.com> <20070816011414.GC9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151839140.11520@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708160730590.24380@enigma.security.iitk.ac.in>
+Message-ID: <20070816021105.GA30883@gondor.apana.org.au>
+References: <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708160730590.24380@enigma.security.iitk.ac.in>
+In-Reply-To: <18115.45316.702491.681906@cargo.ozlabs.ibm.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 07:45:44AM +0530, Satyam Sharma wrote:
->
-> Completely agreed, again. To summarize again (had done so about ~100 mails
-> earlier in this thread too :-) ...
+On Thu, Aug 16, 2007 at 12:05:56PM +1000, Paul Mackerras wrote:
+> Herbert Xu writes:
 > 
-> atomic_{read,set}_volatile() -- guarantees volatility also along with
-> atomicity (the two _are_ different concepts after all, irrespective of
-> whether callsites normally want one with the other or not)
+> > See sk_stream_mem_schedule in net/core/stream.c:
+> > 
+> >         /* Under limit. */
+> >         if (atomic_read(sk->sk_prot->memory_allocated) < sk->sk_prot->sysctl_mem[0]) {
+> >                 if (*sk->sk_prot->memory_pressure)
+> >                         *sk->sk_prot->memory_pressure = 0;
+> >                 return 1;
+> >         }
+> > 
+> >         /* Over hard limit. */
+> >         if (atomic_read(sk->sk_prot->memory_allocated) > sk->sk_prot->sysctl_mem[2]) {
+> >                 sk->sk_prot->enter_memory_pressure();
+> >                 goto suppress_allocation;
+> >         }
+> > 
+> > We don't need to reload sk->sk_prot->memory_allocated here.
 > 
-> atomic_{read,set}_nonvolatile() -- only guarantees atomicity, compiler
-> free to elid / coalesce / optimize such accesses, can keep the object
-> in question cached in a local register, leads to smaller text, etc.
-> 
-> As to which one should be the default atomic_read() is a question of
-> whether majority of callsites (more weightage to important / hot
-> codepaths, lesser to obscure callsites) want a particular behaviour.
-> 
-> Do we have a consensus here? (hoping against hope, probably :-)
+> Are you sure?  How do you know some other CPU hasn't changed the value
+> in between?
 
-I can certainly agree with this.
+Yes I'm sure, because we don't care if others have increased
+the reservation.
 
-But I have to say that I still don't know of a single place
-where one would actually use the volatile variant.
+Note that even if we did we'd be using barriers so volatile
+won't do us any good here.
 
 Cheers,
 -- 
