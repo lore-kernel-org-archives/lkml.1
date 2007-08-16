@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbXHPErR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbXHPFIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758097AbXHPErR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 00:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbXHPErE
+	id S1758029AbXHPFIp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 01:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbXHPFIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 00:47:04 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:12250 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752060AbXHPErB (ORCPT
+	Thu, 16 Aug 2007 01:08:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43957 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbXHPFIa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 00:47:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=RxNPc+1ZylFezGqqe0BEk78QcA5bBLl+2VktQ+Xyz/hblz6cKatCR/2IKGrVku2wd
-	Y8LWOWoXtep0LKjdjjoLg==
-Message-ID: <6599ad830708152146n7c617626pecec496bebc383cf@mail.gmail.com>
-Date: Wed, 15 Aug 2007 21:46:39 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [ckrm-tech] Regression in 2.6.23-rc2-mm2, mounting cpusets causes a hang
-Cc: "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
-       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com,
-       vatsa@linux.vnet.ibm.com, bob.picco@hp.com,
-       linux-kernel@vger.kernel.org, mel@skynet.ie, nacc@us.ibm.com,
-       akpm@linux-foundation.org, clameter@sgi.com,
-       kamezawa.hiroyu@jp.fujitsu.com, serge@hallyn.com
-In-Reply-To: <20070815092954.bfe7e86d.pj@sgi.com>
+	Thu, 16 Aug 2007 01:08:30 -0400
+Date: Thu, 16 Aug 2007 10:50:44 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Bill Fink <billfink@mindspring.com>
+cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <20070815233721.91032366.billfink@mindspring.com>
+Message-ID: <alpine.LFD.0.999.0708161045360.25951@enigma.security.iitk.ac.in>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+ <20070815233721.91032366.billfink@mindspring.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070812152126.GA26239@linux.vnet.ibm.com>
-	 <20070814180339.GA32553@vino.hallyn.com>
-	 <1187115224.6281.40.camel@localhost>
-	 <20070814192306.GB32553@vino.hallyn.com>
-	 <20070814204951.GA2065@vino.hallyn.com>
-	 <Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
-	 <1187127685.6281.139.camel@localhost>
-	 <Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
-	 <1187185392.5422.13.camel@localhost>
-	 <20070815092954.bfe7e86d.pj@sgi.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/15/07, Paul Jackson <pj@sgi.com> wrote:
-> Lee wrote:
-> > [altho' methinks CPUSET should select CONTAINERS rather than
-> > depend on it...]
->
-> Good point -- what do you think, Paul Menage?
+Hi Bill,
 
-That's how I made the configs originally; akpm asked me to invert the
-dependencies to use "depends" rather than "select" due to some general
-problems with using "select". I agree that "select" seems more
-natural.
 
-Paul
+On Wed, 15 Aug 2007, Bill Fink wrote:
+
+> On Wed, 15 Aug 2007, Satyam Sharma wrote:
+> 
+> > (C)
+> > $ cat tp3.c
+> > int a;
+> > 
+> > void func(void)
+> > {
+> > 	*(volatile int *)&a = 10;
+> > 	*(volatile int *)&a = 20;
+> > }
+> > $ gcc -Os -S tp3.c
+> > $ cat tp3.s
+> > ...
+> > movl    $10, a
+> > movl    $20, a
+> > ...
+> 
+> I'm curious about one minor tangential point.  Why, instead of:
+> 
+> 	b = *(volatile int *)&a;
+> 
+> why can't this just be expressed as:
+> 
+> 	b = (volatile int)a;
+> 
+> Isn't it the contents of a that's volatile, i.e. it's value can change
+> invisibly to the compiler, and that's why you want to force a read from
+> memory?  Why do you need the "*(volatile int *)&" construct?
+
+"b = (volatile int)a;" doesn't help us because a cast to a qualified type
+has the same effect as a cast to an unqualified version of that type, as
+mentioned in 6.5.4:4 (footnote 86) of the standard. Note that "volatile"
+is a type-qualifier, not a type itself, so a cast of the _object_ itself
+to a qualified-type i.e. (volatile int) would not make the access itself
+volatile-qualified.
+
+To serve our purposes, it is necessary for us to take the address of this
+(non-volatile) object, cast the resulting _pointer_ to the corresponding
+volatile-qualified pointer-type, and then dereference it. This makes that
+particular _access_ be volatile-qualified, without the object itself being
+such. Also note that the (dereferenced) result is also a valid lvalue and
+hence can be used in "*(volatile int *)&a = b;" kind of construction
+(which we use for the atomic_set case).
+
+
+Satyam
