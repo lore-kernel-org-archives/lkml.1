@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbXHPUqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbXHPUr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759910AbXHPUqu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 16:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXHPUqj
+	id S1753223AbXHPUr3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 16:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbXHPUrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 16:46:39 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44571 "EHLO gate.crashing.org"
+	Thu, 16 Aug 2007 16:47:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57687 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751583AbXHPUqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 16:46:38 -0400
-In-Reply-To: <18115.48863.331246.638826@cargo.ozlabs.ibm.com>
-References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <18115.48863.331246.638826@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a63e07dd8c48d22132c1292415a63c78@kernel.crashing.org>
+	id S1752914AbXHPUrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 16:47:13 -0400
+Message-ID: <46C4B7BF.70305@redhat.com>
+Date: Thu, 16 Aug 2007 16:46:55 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
+MIME-Version: 1.0
+To: sk malik <srikrishanmalik@yahoo.co.in>
+CC: LKML1 <linux-kernel@vger.kernel.org>
+Subject: Re: Self healing in linux ?
+References: <666676.51583.qm@web7614.mail.in.yahoo.com>
+In-Reply-To: <666676.51583.qm@web7614.mail.in.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Cc: Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
-       horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Satyam Sharma <satyam@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Thu, 16 Aug 2007 21:39:18 +0200
-To: Paul Mackerras <paulus@samba.org>
-X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> I can't speak for this particular case, but there could be similar 
->> code
->> examples elsewhere, where we do the atomic ops on an atomic_t object
->> inside a higher-level locking scheme that would take care of the kind 
->> of
->> problem you're referring to here. It would be useful for such or 
->> similar
->> code if the compiler kept the value of that atomic object in a 
->> register.
->
-> If there is a higher-level locking scheme then there is no point to
-> using atomic_t variables.  Atomic_t is specifically for the situation
-> where multiple CPUs are updating a variable without locking.
+sk malik wrote:
+> Solaris 10 people are talkin a lot about the
+> predictive self healing thing.
+> 
+> Do we have something similar planned/going on for
+> linux. Or there is no use of this tecnology ;)
 
-And don't forget about the case where it is an I/O device that is
-updating the memory (in buffer descriptors or similar).  The driver
-needs to do a "volatile" atomic read to get at the most recent version
-of that data, which can be important for optimising latency (or 
-throughput
-even).  There is no other way the kernel can get that info -- doing an
-MMIO read is way way too expensive.
+Doing this in-kernel would violate the separation of policy and 
+mechanism.  There's nothing wrong with providing the hooks necessary for 
+userspace to do this, but it's generally userspace's responsibility to 
+decide what should be done when a possible problem is detected.  I'm 
+aware of software that does predictive migration with mdadm when smartd 
+detects a problem.  Getting this into users' hands is a distro/vendor 
+problem, not a kernel development problem.
 
+That said, if you can think of some additional hooks that would really 
+be beneficial to userspace monitoring tools, by all means send in patches.
 
-Segher
-
+	-- Chris
