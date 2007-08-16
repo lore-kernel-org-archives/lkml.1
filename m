@@ -1,181 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762330AbXHPHJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764012AbXHPHJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762330AbXHPHJj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 03:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbXHPHJa
+	id S1764012AbXHPHJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 03:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbXHPHJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 03:09:30 -0400
-Received: from ozlabs.org ([203.10.76.45]:48247 "EHLO ozlabs.org"
+	Thu, 16 Aug 2007 03:09:31 -0400
+Received: from ozlabs.org ([203.10.76.45]:48251 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752747AbXHPHJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752948AbXHPHJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 16 Aug 2007 03:09:29 -0400
 To: Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@osdl.org>,
        <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
 From: Michael Neuling <mikey@neuling.org>
 Date: Thu, 16 Aug 2007 17:09:22 +1000
-Subject: [PATCH 1/2] Add scaled time to taskstats based process accounting
+Subject: [PATCH 2/2] [POWERPC] Add scaled time accounting
 CC: Michael Neuling <mikey@neuling.org>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <20070816070922.37B5370074@localhost.localdomain>
+Message-Id: <20070816070922.6642E70073@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds two items to the taststats struct to account for user and
-system time based on scaling the CPU frequency and instruction issue
-rates.
+This adds POWERPC specific hooks for scaled time accounting.
 
-Adds account_(user|system)_time_scaled callbacks which architectures
-can use to account for time using this mechanism.
+POWER6 includes a SPURR register.  The SPURR is based off the PURR
+register but is scaled based on CPU frequency and issue rates.  This
+gives a more accurate account of the instructions used per task.  The
+PURR and timebase will be constant relative to the wall clock,
+irrespective of the CPU frequency.  
+
+This implementation reads the SPURR register in account_system_vtime
+which is only call called on context witch and hard and soft irq entry
+and exit.  The percentage of user and system time is then estimated
+using the ratio of these accounted by the PURR.  If the SPURR is not
+present, the PURR read.
+
+An earlier implementation of this patch read the SPURR whenever the
+PURR was read, which included the system call entry and exit path.
+Unfortunately this showed a performance regression on lmbench runs, so
+was re-implemented.
+
+I've included the lmbench results here when run bare metal on POWER6.
+1st column is the unpatch results.  2nd column is the results using the
+below patch and the 3rd is the % diff of these results from the base.
+4th and 5th columns are the results and % differnce from the base
+using the older patch (SPURR read in syscall entry/exit path).
+
+                              Base        Scaled-Acct     SPURR-in-syscall 
+                             Result      Result  % diff    Result % diff  
+Simple syscall:              0.3086      0.3086  0.0000    0.3452 11.8600 
+Simple read:                 0.4591      0.4671  1.7425    0.5044 9.86713 
+Simple write:                0.4364      0.4366  0.0458    0.4731 8.40971 
+Simple stat:                 2.0055      2.0295  1.1967    2.0669 3.06158 
+Simple fstat:                0.5962      0.5876  -1.442    0.6368 6.80979 
+Simple open/close:           3.1283      3.1009  -0.875    3.2088 2.57328 
+Select on 10 fd's:           0.8554      0.8457  -1.133    0.8667 1.32101 
+Select on 100 fd's:          3.5292      3.6329  2.9383    3.6664 3.88756 
+Select on 250 fd's:          7.9097      8.1881  3.5197    8.2242 3.97613 
+Select on 500 fd's:          15.2659     15.836  3.7357    15.873 3.97814 
+Select on 10 tcp fd's:       0.9576      0.9416  -1.670    0.9752 1.83792 
+Select on 100 tcp fd's:      7.248       7.2254  -0.311    7.2685 0.28283 
+Select on 250 tcp fd's:      17.7742     17.707  -0.375    17.749 -0.1406 
+Select on 500 tcp fd's:      35.4258     35.25   -0.496    35.286 -0.3929 
+Signal handler installation: 0.6131      0.6075  -0.913    0.647  5.52927 
+Signal handler overhead:     2.0919      2.1078  0.7600    2.1831 4.35967 
+Protection fault:            0.7345      0.7478  1.8107    0.8031 9.33968 
+Pipe latency:                33.006      16.398  -50.31    33.475 1.42368 
+AF_UNIX sock stream latency: 14.5093     30.910  113.03    30.715 111.692 
+Process fork+exit:           219.8       222.8   1.3648    229.37 4.35623 
+Process fork+execve:         876.14      873.28  -0.32     868.66 -0.8533 
+Process fork+/bin/sh -c:     2830        2876.5  1.6431    2958   4.52296 
+File /var/tmp/XXX write bw:  1193497     1195536 0.1708    118657 -0.5799 
+Pagefaults on /var/tmp/XXX:  3.1272      3.2117  2.7020    3.2521 3.99398 
+
+Also, kernel compile times show no difference with this patch applied.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 
 ---
 
- include/linux/kernel_stat.h |    2 ++
- include/linux/sched.h       |    2 +-
- include/linux/taskstats.h   |    6 +++++-
- kernel/fork.c               |    2 ++
- kernel/sched.c              |   21 +++++++++++++++++++++
- kernel/timer.c              |    7 +++++--
- kernel/tsacct.c             |    4 ++++
- 7 files changed, 40 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/asm-offsets.c |    1 +
+ arch/powerpc/kernel/time.c        |   32 ++++++++++++++++++++++++++++++--
+ include/asm-powerpc/paca.h        |    3 +++
+ 3 files changed, 34 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-ozlabs/include/linux/kernel_stat.h
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/asm-offsets.c
 ===================================================================
---- linux-2.6-ozlabs.orig/include/linux/kernel_stat.h
-+++ linux-2.6-ozlabs/include/linux/kernel_stat.h
-@@ -52,7 +52,9 @@ static inline int kstat_irqs(int irq)
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/asm-offsets.c
++++ linux-2.6-ozlabs/arch/powerpc/kernel/asm-offsets.c
+@@ -141,6 +141,7 @@ int main(void)
+ 	DEFINE(PACALPPACAPTR, offsetof(struct paca_struct, lppaca_ptr));
+ 	DEFINE(PACAHWCPUID, offsetof(struct paca_struct, hw_cpu_id));
+ 	DEFINE(PACA_STARTPURR, offsetof(struct paca_struct, startpurr));
++	DEFINE(PACA_STARTSPURR, offsetof(struct paca_struct, startspurr));
+ 	DEFINE(PACA_USER_TIME, offsetof(struct paca_struct, user_time));
+ 	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
+ 	DEFINE(PACA_SLBSHADOWPTR, offsetof(struct paca_struct, slb_shadow_ptr));
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/time.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/time.c
++++ linux-2.6-ozlabs/arch/powerpc/kernel/time.c
+@@ -168,23 +168,44 @@ static u64 read_purr(void)
  }
  
- extern void account_user_time(struct task_struct *, cputime_t);
-+extern void account_user_time_scaled(struct task_struct *, cputime_t);
- extern void account_system_time(struct task_struct *, int, cputime_t);
-+extern void account_system_time_scaled(struct task_struct *, cputime_t);
- extern void account_steal_time(struct task_struct *, cputime_t);
- 
- #endif /* _LINUX_KERNEL_STAT_H */
-Index: linux-2.6-ozlabs/include/linux/sched.h
-===================================================================
---- linux-2.6-ozlabs.orig/include/linux/sched.h
-+++ linux-2.6-ozlabs/include/linux/sched.h
-@@ -1020,7 +1020,7 @@ struct task_struct {
- 	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
- 
- 	unsigned int rt_priority;
--	cputime_t utime, stime;
-+	cputime_t utime, stime, utimescaled, stimescaled;
- 	unsigned long nvcsw, nivcsw; /* context switch counts */
- 	struct timespec start_time; 		/* monotonic time */
- 	struct timespec real_start_time;	/* boot based time */
-Index: linux-2.6-ozlabs/include/linux/taskstats.h
-===================================================================
---- linux-2.6-ozlabs.orig/include/linux/taskstats.h
-+++ linux-2.6-ozlabs/include/linux/taskstats.h
-@@ -31,7 +31,7 @@
+ /*
++ * Read the SPURR on systems that have it, otherwise the purr
++ */
++static u64 read_spurr(void)
++{
++	if (cpu_has_feature(CPU_FTR_SPURR))
++		return mfspr(SPRN_SPURR);
++	return read_purr();
++}
++
++/*
+  * Account time for a transition between system, hard irq
+  * or soft irq state.
   */
+ void account_system_vtime(struct task_struct *tsk)
+ {
+-	u64 now, delta;
++	u64 now, nowscaled, delta, deltascaled;
+ 	unsigned long flags;
  
- 
--#define TASKSTATS_VERSION	5
-+#define TASKSTATS_VERSION	6
- #define TS_COMM_LEN		32	/* should be >= TASK_COMM_LEN
- 					 * in linux/sched.h */
- 
-@@ -142,6 +142,10 @@ struct taskstats {
- 	__u64	write_char;		/* bytes written */
- 	__u64	read_syscalls;		/* read syscalls */
- 	__u64	write_syscalls;		/* write syscalls */
-+
-+	/* time accounting for SMT machines */
-+	__u64	ac_utimescaled;		/* utime scaled on frequency etc */
-+	__u64	ac_stimescaled;		/* stime scaled on frequency etc */
- 	/* Extended accounting fields end */
- 
- #define TASKSTATS_HAS_IO_ACCOUNTING
-Index: linux-2.6-ozlabs/kernel/fork.c
-===================================================================
---- linux-2.6-ozlabs.orig/kernel/fork.c
-+++ linux-2.6-ozlabs/kernel/fork.c
-@@ -1045,6 +1045,8 @@ static struct task_struct *copy_process(
- 
- 	p->utime = cputime_zero;
- 	p->stime = cputime_zero;
-+	p->utimescaled = cputime_zero;
-+	p->stimescaled = cputime_zero;
- 
- #ifdef CONFIG_TASK_XACCT
- 	p->rchar = 0;		/* I/O counter: bytes read */
-Index: linux-2.6-ozlabs/kernel/sched.c
-===================================================================
---- linux-2.6-ozlabs.orig/kernel/sched.c
-+++ linux-2.6-ozlabs/kernel/sched.c
-@@ -3249,6 +3249,16 @@ void account_user_time(struct task_struc
+ 	local_irq_save(flags);
+ 	now = read_purr();
+ 	delta = now - get_paca()->startpurr;
+ 	get_paca()->startpurr = now;
++	nowscaled = read_spurr();
++	deltascaled = nowscaled - get_paca()->startspurr;
++	get_paca()->startspurr = nowscaled;
+ 	if (!in_interrupt()) {
++		/* deltascaled includes both user and system time.
++		 * Hence scale it based on the purr ratio to estimate
++		 * the system time */
++		deltascaled = deltascaled * get_paca()->system_time /
++			(get_paca()->system_time + get_paca()->user_time);
+ 		delta += get_paca()->system_time;
+ 		get_paca()->system_time = 0;
+ 	}
+ 	account_system_time(tsk, 0, delta);
++	get_paca()->purrdelta = delta;
++	account_system_time_scaled(tsk, deltascaled);
++	get_paca()->spurrdelta = deltascaled;
+ 	local_irq_restore(flags);
  }
  
- /*
-+ * Account scaled user cpu time to a process.
-+ * @p: the process that the cpu time gets accounted to
-+ * @cputime: the cpu time spent in user space since the last update
-+ */
-+void account_user_time_scaled(struct task_struct *p, cputime_t cputime)
-+{
-+	p->utimescaled = cputime_add(p->utimescaled, cputime);
-+}
+@@ -196,11 +217,17 @@ void account_system_vtime(struct task_st
+  */
+ void account_process_vtime(struct task_struct *tsk)
+ {
+-	cputime_t utime;
++	cputime_t utime, utimescaled;
+ 
+ 	utime = get_paca()->user_time;
+ 	get_paca()->user_time = 0;
+ 	account_user_time(tsk, utime);
 +
-+/*
-  * Account system cpu time to a process.
-  * @p: the process that the cpu time gets accounted to
-  * @hardirq_offset: the offset to subtract from hardirq_count()
-@@ -3280,6 +3290,17 @@ void account_system_time(struct task_str
++	/* Estimate the scaled utime by scaling the real utime based
++	 * on the last spurr to purr ratio */
++	utimescaled = utime * get_paca()->spurrdelta / get_paca()->purrdelta;
++	get_paca()->spurrdelta = get_paca()->purrdelta = 0;
++	account_user_time_scaled(tsk, utimescaled);
  }
  
+ static void account_process_time(struct pt_regs *regs)
+@@ -222,6 +249,7 @@ struct cpu_purr_data {
+ 	int	initialized;			/* thread is running */
+ 	u64	tb;			/* last TB value read */
+ 	u64	purr;			/* last PURR value read */
++	u64	spurr;			/* last SPURR value read */
+ };
+ 
  /*
-+ * Account scaled system cpu time to a process.
-+ * @p: the process that the cpu time gets accounted to
-+ * @hardirq_offset: the offset to subtract from hardirq_count()
-+ * @cputime: the cpu time spent in kernel space since the last update
-+ */
-+void account_system_time_scaled(struct task_struct *p, cputime_t cputime)
-+{
-+	p->stimescaled = cputime_add(p->stimescaled, cputime);
-+}
-+
-+/*
-  * Account for involuntary wait time.
-  * @p: the process from which the cpu time has been stolen
-  * @steal: the cpu time spent in involuntary wait
-Index: linux-2.6-ozlabs/kernel/timer.c
+Index: linux-2.6-ozlabs/include/asm-powerpc/paca.h
 ===================================================================
---- linux-2.6-ozlabs.orig/kernel/timer.c
-+++ linux-2.6-ozlabs/kernel/timer.c
-@@ -826,10 +826,13 @@ void update_process_times(int user_tick)
- 	int cpu = smp_processor_id();
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/paca.h
++++ linux-2.6-ozlabs/include/asm-powerpc/paca.h
+@@ -103,6 +103,9 @@ struct paca_struct {
+ 	u64 user_time;			/* accumulated usermode TB ticks */
+ 	u64 system_time;		/* accumulated system TB ticks */
+ 	u64 startpurr;			/* PURR/TB value snapshot */
++	u64 startspurr;			/* SPURR value snapshot */
++	u64 purrdelta;			/* FIXME: document */
++	u64 spurrdelta;			/* FIXME: document */
+ };
  
- 	/* Note: this timer irq context must be accounted for as well. */
--	if (user_tick)
-+	if (user_tick) {
- 		account_user_time(p, jiffies_to_cputime(1));
--	else
-+		account_user_time_scaled(p, jiffies_to_cputime(1));
-+	} else {
- 		account_system_time(p, HARDIRQ_OFFSET, jiffies_to_cputime(1));
-+		account_system_time_scaled(p, jiffies_to_cputime(1));
-+	}
- 	run_local_timers();
- 	if (rcu_pending(cpu))
- 		rcu_check_callbacks(cpu, user_tick);
-Index: linux-2.6-ozlabs/kernel/tsacct.c
-===================================================================
---- linux-2.6-ozlabs.orig/kernel/tsacct.c
-+++ linux-2.6-ozlabs/kernel/tsacct.c
-@@ -62,6 +62,10 @@ void bacct_add_tsk(struct taskstats *sta
- 	rcu_read_unlock();
- 	stats->ac_utime	 = cputime_to_msecs(tsk->utime) * USEC_PER_MSEC;
- 	stats->ac_stime	 = cputime_to_msecs(tsk->stime) * USEC_PER_MSEC;
-+	stats->ac_utimescaled =
-+		cputime_to_msecs(tsk->utimescaled) * USEC_PER_MSEC;
-+	stats->ac_stimescaled =
-+		cputime_to_msecs(tsk->stimescaled) * USEC_PER_MSEC;
- 	stats->ac_minflt = tsk->min_flt;
- 	stats->ac_majflt = tsk->maj_flt;
- 
+ extern struct paca_struct paca[];
