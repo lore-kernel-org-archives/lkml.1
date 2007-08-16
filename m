@@ -1,79 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937476AbXHPBL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937762AbXHPBLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937476AbXHPBL1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 21:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755704AbXHPBLJ
+	id S937762AbXHPBLy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 21:11:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935827AbXHPBLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 21:11:09 -0400
-Received: from mga03.intel.com ([143.182.124.21]:7352 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754479AbXHPBLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 21:11:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,268,1183359600"; 
-   d="scan'208";a="263768483"
-Date: Wed, 15 Aug 2007 18:04:26 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: mingo@elte.hu
-Cc: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [patch] sched: skip updating  rq's next_balance under null SD
-Message-ID: <20070816010426.GH10033@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Wed, 15 Aug 2007 21:11:17 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50344 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762600AbXHPBLO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 21:11:14 -0400
+Date: Thu, 16 Aug 2007 06:53:45 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Segher Boessenkool <segher@kernel.crashing.org>
+cc: Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <d36ec7799cfb43557770951c1cd57355@kernel.crashing.org>
+Message-ID: <alpine.LFD.0.999.0708160649590.24380@enigma.security.iitk.ac.in>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+ <9350e9fab505c92af8d5e1f3441d6ad2@kernel.crashing.org>
+ <alpine.LFD.0.999.0708160102550.16414@enigma.security.iitk.ac.in>
+ <d36ec7799cfb43557770951c1cd57355@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Was playing with sched_smt_power_savings/sched_mc_power_savings and found
-out that while the scheduler domains are reconstructed when sysfs settings
-change, rebalance_domains() can get triggered with null domain on other cpus,
-which is setting next_balance to jiffies + 60*HZ. Resulting in no idle/busy
-balancing for 60 seconds.
 
-Fix this.
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
+On Wed, 15 Aug 2007, Segher Boessenkool wrote:
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 45e17b8..74565c0 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3020,6 +3020,7 @@ static inline void rebalance_domains(int cpu, enum cpu_idle_type idle)
- 	struct sched_domain *sd;
- 	/* Earliest time when we have to do rebalance again */
- 	unsigned long next_balance = jiffies + 60*HZ;
-+	int update_next_balance = 0;
- 
- 	for_each_domain(cpu, sd) {
- 		if (!(sd->flags & SD_LOAD_BALANCE))
-@@ -3056,8 +3057,10 @@ static inline void rebalance_domains(int cpu, enum cpu_idle_type idle)
- 		if (sd->flags & SD_SERIALIZE)
- 			spin_unlock(&balancing);
- out:
--		if (time_after(next_balance, sd->last_balance + interval))
-+		if (time_after(next_balance, sd->last_balance + interval)) {
- 			next_balance = sd->last_balance + interval;
-+			update_next_balance = 1;
-+		}
- 
- 		/*
- 		 * Stop the load balance at this level. There is another
-@@ -3067,7 +3070,14 @@ out:
- 		if (!balance)
- 			break;
- 	}
--	rq->next_balance = next_balance;
-+
-+	/*
-+	 * next_balance will be updated only when there is a need.
-+	 * When the cpu is attached to null domain for ex, it will not be
-+	 * updated.
-+	 */
-+	if (likely(update_next_balance))
-+		rq->next_balance = next_balance;
- }
- 
- /*
+> [...]
+> > BTW:
+> > 
+> > #define atomic_read(a)	(*(volatile int *)&(a))
+> > #define atomic_set(a,i)	(*(volatile int *)&(a) = (i))
+> > 
+> > int a;
+> > 
+> > void func(void)
+> > {
+> > 	int b;
+> > 
+> > 	b = atomic_read(a);
+> > 	atomic_set(a, 20);
+> > 	b = atomic_read(a);
+> > }
+> > 
+> > gives:
+> > 
+> > func:
+> > 	pushl	%ebp
+> > 	movl	a, %eax
+> > 	movl	%esp, %ebp
+> > 	movl	$20, a
+> > 	movl	a, %eax
+> > 	popl	%ebp
+> > 	ret
+> > 
+> > so the first atomic_read() wasn't optimized away.
+> 
+> Of course.  It is executed by the abstract machine, so
+> it will be executed by the actual machine.  On the other
+> hand, try
+> 
+> 	b = 0;
+> 	if (b)
+> 		b = atomic_read(a);
+> 
+> or similar.
+
+Yup, obviously. Volatile accesses (or any access to volatile objects),
+or even "__volatile__ asms" (which gcc normally promises never to elid)
+can always be optimized for cases such as these where the compiler can
+trivially determine that the code in question is not reachable.
