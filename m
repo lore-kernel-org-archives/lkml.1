@@ -1,83 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbXHPOEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761495AbXHPOHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760858AbXHPOEf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 10:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758697AbXHPOE0
+	id S1761495AbXHPOHk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 10:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759428AbXHPOH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 10:04:26 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:37801 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756850AbXHPOEZ (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 10:04:25 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Susanne Oberhauser <froh@novell.com>
-Cc: Jan Blunck <jblunck@suse.de>,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       opensuse-kernel@opensuse.org, opensuse@opensuse.org
-Subject: Re: Testing the Current Upstream Kernel
-In-Reply-To: Your message of "Thu, 16 Aug 2007 12:28:34 +0200."
-             <s2iwsvvlqnh.fsf@byron.suse.de>
-From: Valdis.Kletnieks@vt.edu
-References: <s2ihcn1vwob.fsf@totally-fudged-out-message-id>
-            <s2iwsvvlqnh.fsf@byron.suse.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1187273061_618P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Thu, 16 Aug 2007 10:07:27 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1423 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759309AbXHPOHZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 10:07:25 -0400
+Message-ID: <46C45996.6060802@shadowen.org>
+Date: Thu, 16 Aug 2007 15:05:10 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+CC: Joe Perches <joe@perches.com>, "Randy.Dunlap" <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, Dave Jones <davej@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, rolandd@cisco.com,
+       Chas Williams <chas@cmf.nrl.navy.mil>, Paul Mundt <lethal@linux-sh.org>,
+       isdn4linux@listserv.isdn4linux.de, mikep@linuxtr.net,
+       netdev@vger.kernel.org, swen@vnet.ibm.com, linux390@de.ibm.com,
+       linux-s390@vger.kernel.org, jdike@karaya.com,
+       user-mode-linux-devel@lists.sourceforge.net,
+       user-mode-linux-user@lists.sourceforge.net,
+       netfilter-devel@lists.netfilter.org, coreteam@netfilter.org
+Subject: Re: drivers/infiniband/mlx/mad.c misplaced ;
+References: <20070815235825.GB17004@redhat.com> <1187224811.5906.55.camel@localhost> <46C3B428.4000003@intel.com>
+In-Reply-To: <46C3B428.4000003@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Thu, 16 Aug 2007 10:04:21 -0400
-Message-ID: <6891.1187273061@turing-police.cc.vt.edu>
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1187273061_618P
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Kok, Auke wrote:
+> Joe Perches wrote:
+>> On Wed, 2007-08-15 at 19:58 -0400, Dave Jones wrote:
+>>> Signed-off-by: Dave Jones <davej@redhat.com>
+>>>
+>>> diff --git a/drivers/infiniband/hw/mlx4/mad.c
+>>> b/drivers/infiniband/hw/mlx4/mad.c
+>>> index 3330917..0ed02b7 100644
+>>> --- a/drivers/infiniband/hw/mlx4/mad.c
+>>> +++ b/drivers/infiniband/hw/mlx4/mad.c
+>>> @@ -109,7 +109,7 @@ int mlx4_MAD_IFC(struct mlx4_ib_dev *dev, int
+>>> ignore_mkey, int ignore_bkey,
+>>>                 in_modifier, op_modifier,
+>>>                 MLX4_CMD_MAD_IFC, MLX4_CMD_TIME_CLASS_C);
+>>>  
+>>> -    if (!err);
+>>> +    if (!err)
+>>
+>> There's more than a few of these (not inspected).
+>>
+>> $ egrep -r --include=*.c "\bif[[:space:]]*\([^\)]*\)[[:space:]]*\;" *
+>> arch/sh/boards/se/7343/io.c:    if (0) ;
+>> drivers/atm/iphase.c:     if (!desc1) ;
+>> drivers/infiniband/hw/mlx4/mad.c:       if (!err);
+>> drivers/isdn/capi/capiutil.c:   else if (c <= 0x0f);
+>> drivers/net/tokenring/ibmtr.c:  else if (ti->shared_ram_paging ==
+>> 0xf);  /* No paging in adapter */
+>> drivers/s390/scsi/zfcp_erp.c:           if (status ==
+>> ZFCP_ERP_SUCCEEDED) ;     /* no further action */
+>> fs/hostfs/hostfs_user.c:        if(attrs->ia_valid & HOSTFS_ATTR_CTIME) ;
+>> net/netfilter/xt_u32.c:         if (skb->len < 4 || pos > skb->len - 4);
+>> sound/pci/au88x0/au88x0_synth.c:                                if
+>> (eax == 0) ;
+> 
+> sounds like an excellent candidate check for checkpatch.pl !!!
 
-On Thu, 16 Aug 2007 12:28:34 +0200, Susanne Oberhauser said:
-> Jan Blunck <jblunck=40suse.de> writes:
->=20
-> > With our openSUSE Build Service we build a daily kernel, where we tak=
-e
-> > nightly snapshots of the current upstream development kernel (Linus' =
-kernel
-> > tree linux-2.6.git) without any patches (besides those we need for bu=
-ilding a
-> > RPM).  We do call this the vanilla kernel. It can be downloaded from:=
+Yep.  My scan of 2.6.23-rc3 with a checkpatch with this new test added,
+found 6 which seemed wrong.
 
-> >=20
-> >  http://download.opensuse.org/repositories/Kernel:/Vanilla/SUSE_Facto=
-ry/
->=20
-> Would it make sense to build it for the other distros as well?  like
-> debian, fedora and mandrake?  I mena in _theory_ we could build it for
-> those distros in the build server, couldn't we?
-
-Most of the distros prefer a chance to add their own =22Special Sauce=22 =
-to it
-before building, and building inside their build environment (for instanc=
-e,
-Fedora RPM's get PGP-signed - *that* would be a trust issue right there).=
-
-
-The current Fedora Rawhide kernel is 'kernel-2.6.23-0.105.rc3.fc8', and a=
- few
-RPMs ago it was based against -rc2-git5, so they track *very* close.  I t=
-hink
-that crew is managing well enough without help from the kernel.org build
-server.
-
-
---==_Exmh_1187273061_618P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGxFllcC3lWbTT17ARAtTDAKDDn8ATA6WPugpHLVL18VBUVuJZtQCdFUdX
-ukqZTKh7IJX4KVrUs0jllXo=
-=RW53
------END PGP SIGNATURE-----
-
---==_Exmh_1187273061_618P--
+-apw
