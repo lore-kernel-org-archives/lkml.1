@@ -1,37 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbXHPLpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbXHPLpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754336AbXHPLpU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 07:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbXHPLpF
+	id S1756137AbXHPLpn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 07:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbXHPLpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 07:45:05 -0400
-Received: from main.gmane.org ([80.91.229.2]:39527 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750893AbXHPLpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 07:45:04 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Salikh Zakirov <salikh@gmail.com>
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-Date: Thu, 16 Aug 2007 20:26:16 +0900
-Message-ID: <fa1c95$sv6$1@sea.gmane.org>
-References: <1187026955.2688.4.camel@laptopd505.fenrus.org> <1187037445.6628.98.camel@heimdal.trondhjem.org> <1187054366.2757.0.camel@laptopd505.fenrus.org> <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu> <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost> <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost> <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org> <20070814193333.GI21089@ftp.linux.org.uk> <46C2548D.80605@gmail.com> <alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in> <46C30220.6060007@gmail.com> <68B09015-4411-470A-BA88-732969469AA2@mac.com> <46C42DCB.1060502@gmail.com> <46C43015.7080804@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Thu, 16 Aug 2007 07:45:12 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:38057 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752685AbXHPLpL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 07:45:11 -0400
+Message-ID: <46C43818.4050506@aitel.hist.no>
+Date: Thu, 16 Aug 2007 13:42:16 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: Marc Perkel <mperkel@yahoo.com>
+CC: Kyle Moffett <mrmacman_g4@mac.com>,
+       Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: Thinking outside the box on file systems
+References: <174219.56922.qm@web52501.mail.re2.yahoo.com>
+In-Reply-To: <174219.56922.qm@web52501.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: cerberus.is.titech.ac.jp
-User-Agent: Thunderbird 2.0.0.4 (X11/20070708)
-In-Reply-To: <46C43015.7080804@gmail.com>
-Cc: git@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> Perhaps that immediately suggests an implementation to someone already
-> familiar with git internals?
+Marc Perkel wrote:
+> Kyle, What I'm suggesting is scrapping all existing
+> concepts and replacing them with something entirely
+> new. Posix, Unix, SELinux go away except for an
+> emulation layer for backwards compatibility. What I'm
+> suggesting is to start over and do it right. 
+>   
+If you want to get any support for "starting over",
+then  you need to:
+1. Point out some serious problem with the existing stuff,
+   otherwise why _bother_ start over
+2. Come up with a truly better idea (demonstrably better)
+    that isn't full of so obvious flaws that a seasoned kernel
+    developer can shoot it down in 5 minutes.
 
-perhaps http://www.kernel.org/pub/software/scm/git/docs/gitattributes.html
-and http://www.kernel.org/pub/software/scm/git/docs/git-check-attr.html
-can help you?
+Trying to be a visionary with a "great idea" that you are
+prepared to let others implement just don't work on
+this list.  If you want to go that route, you
+start a company, hire programmers, tell them to
+implement your vision. If your idea is good then
+your company succeeds.
 
+If you want to be an open-source visionary, you have to
+do the initial work yourself until you attract other interested people.
+
+> One of the problems with the Unix/Linux world is that
+> your minds are locked into this one model. In order to
+> do it right it requires the mental discipline to break
+> out of that.
+>   
+Or perhaps unix have the best model already? ;-)
+If you want a big break with the existing unix models, then
+perhaps a entirely new project is in order, rather than
+trying to change linux. Linux is after all, in use by millions
+who are satisfied with the linux filesystem model already.
+
+Now, linux is open-source, so you can of course use it as a
+starting point for your different system.  Then you can compete
+with "standard linux" - see who attracts most developers and
+most users in the long run.
+
+Helge Hafting
