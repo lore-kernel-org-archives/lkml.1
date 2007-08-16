@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761442AbXHPUp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbXHPUqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761442AbXHPUp1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 16:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbXHPUpT
+	id S1759910AbXHPUqu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 16:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXHPUqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 16:45:19 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3174 "EHLO perches.com"
+	Thu, 16 Aug 2007 16:46:39 -0400
+Received: from gate.crashing.org ([63.228.1.57]:44571 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754481AbXHPUpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 16:45:18 -0400
-Subject: Re: [PATCH] [540/2many] MAINTAINERS - WATCHDOG DEVICE DRIVERS
-From: Joe Perches <joe@perches.com>
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20070816203034.GA4495@infomag.infomag.iguana.be>
-References: <46bffcab.hvODrZFyIOzH/Lb/%joe@perches.com>
-	 <20070816194638.GA3498@infomag.infomag.iguana.be>
-	 <20070816203034.GA4495@infomag.infomag.iguana.be>
-Content-Type: text/plain
-Date: Thu, 16 Aug 2007 13:44:37 -0700
-Message-Id: <1187297077.5906.107.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+	id S1751583AbXHPUqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 16:46:38 -0400
+In-Reply-To: <18115.48863.331246.638826@cargo.ozlabs.ibm.com>
+References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <18115.48863.331246.638826@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a63e07dd8c48d22132c1292415a63c78@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Satyam Sharma <satyam@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Thu, 16 Aug 2007 21:39:18 +0200
+To: Paul Mackerras <paulus@samba.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-16 at 22:30 +0200, Wim Van Sebroeck wrote:
-> Patch removed until there is a consensus on how to proceed with your proposal.
+>> I can't speak for this particular case, but there could be similar 
+>> code
+>> examples elsewhere, where we do the atomic ops on an atomic_t object
+>> inside a higher-level locking scheme that would take care of the kind 
+>> of
+>> problem you're referring to here. It would be useful for such or 
+>> similar
+>> code if the compiler kept the value of that atomic object in a 
+>> register.
+>
+> If there is a higher-level locking scheme then there is no point to
+> using atomic_t variables.  Atomic_t is specifically for the situation
+> where multiple CPUs are updating a variable without locking.
 
-Hi Wim.
+And don't forget about the case where it is an I/O device that is
+updating the memory (in buffer descriptors or similar).  The driver
+needs to do a "volatile" atomic read to get at the most recent version
+of that data, which can be important for optimising latency (or 
+throughput
+even).  There is no other way the kernel can get that info -- doing an
+MMIO read is way way too expensive.
 
-I think that's wise.
 
-I've got all the changes that people have CC'd me.
-I expect it'll be an all or nothing sort of thing.
-
-Even if it's nothing, the content tracking parts
-might be useful if another of the proposals floating
-'round gets implemented.
-
-I personally find the distributed MAINTAINERS approach
-a bit odd given that there isn't really a single place
-for many of the parts of a maintained block to be.
-
-The single MAINTAINERS is too "hot" to use Linus' word.
-I rather like the Maintainers/* block approach myself.
-
-Unless that's rejected out of hand, that's what I'll
-submit tomorrow.
-
-cheers,  Joe
+Segher
 
