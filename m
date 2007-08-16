@@ -1,39 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765745AbXHPQNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765641AbXHPQQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765745AbXHPQNf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 12:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756639AbXHPQNZ
+	id S1765641AbXHPQQP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 12:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762994AbXHPQP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 12:13:25 -0400
-Received: from web7614.mail.in.yahoo.com ([202.86.4.33]:42227 "HELO
-	web7614.mail.in.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756005AbXHPQNZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 12:13:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.co.in;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=XoKFzf8J1eyZdMAsqJR8lIwG77NiBgnKQ5GThu7p9hxH0hBY+K8KPWcLstoMsZ/FWKfWi78apFrDEaYUgRPjsIqm1GhQyeuPTnVT5ctXeDkNpLf28WTG9DVI7IQ1k9+9IWKsReqL6ySbd7umDZl3254zDoOrJ3hNJ5YX6ziIit4=;
-X-YMail-OSG: HfxHJ4YVM1mP5nkRyo6OdCaeWvp3m.w.C4YY7YnSIETnc_y2uxDMYym_oY_Uil2Fcu0YL381Iw5kNWc2XMi3DmD3wII3iIzWivbGT2y7jNOEpTWr6gU-
-Date: Thu, 16 Aug 2007 17:13:21 +0100 (BST)
-From: sk malik <srikrishanmalik@yahoo.co.in>
-Subject: Self healing in linux ?
-To: LKML1 <linux-kernel@vger.kernel.org>
+	Thu, 16 Aug 2007 12:15:58 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:60890 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759883AbXHPQP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 12:15:57 -0400
+Date: Fri, 17 Aug 2007 01:14:50 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: a.zummo@towertech.it, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com, dbrownell@users.sourceforge.net
+Subject: Re: [PATCH] rtc: Make rtc-ds1553 driver hotplug-aware
+Message-ID: <20070816161450.GE13927@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Atsushi Nemoto <anemo@mba.ocn.ne.jp>, a.zummo@towertech.it,
+	linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com,
+	dbrownell@users.sourceforge.net
+References: <20070817.010627.110331225.anemo@mba.ocn.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <666676.51583.qm@web7614.mail.in.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070817.010627.110331225.anemo@mba.ocn.ne.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Solaris 10 people are talkin a lot about the
-predictive self healing thing.
+On Fri, Aug 17, 2007 at 01:06:27AM +0900, Atsushi Nemoto wrote:
+> Add an MODULE_ALIAS() to make this platform driver hotplug-aware.
+> 
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> ---
+> diff --git a/drivers/rtc/rtc-ds1553.c b/drivers/rtc/rtc-ds1553.c
+> index 46da571..e932024 100644
+> --- a/drivers/rtc/rtc-ds1553.c
+> +++ b/drivers/rtc/rtc-ds1553.c
+> @@ -417,3 +417,4 @@ MODULE_AUTHOR("Atsushi Nemoto <anemo@mba.ocn.ne.jp>");
+>  MODULE_DESCRIPTION("Dallas DS1553 RTC driver");
+>  MODULE_LICENSE("GPL");
+>  MODULE_VERSION(DRV_VERSION);
+> +MODULE_ALIAS("ds1742");
 
-Do we have something similar planned/going on for
-linux. Or there is no use of this tecnology ;)
-
-Jats do it
-
-
-
-      Once upon a time there was 1 GB storage in your inbox. To know the happy ending go to http://help.yahoo.com/l/in/yahoo/mail/yahoomail/tools/tools-08.html
+Presumably this should be ds1553.
