@@ -1,31 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763341AbXHPPy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761748AbXHPP5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763341AbXHPPy6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 11:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758675AbXHPPys
+	id S1761748AbXHPP5g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 11:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbXHPP50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 11:54:48 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:60344 "EHLO
+	Thu, 16 Aug 2007 11:57:26 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:34493 "EHLO
 	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758632AbXHPPyr (ORCPT
+	with ESMTP id S1751383AbXHPP5Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 11:54:47 -0400
-Message-ID: <46C47246.9020800@gmail.com>
-Date: Thu, 16 Aug 2007 17:50:30 +0200
+	Thu, 16 Aug 2007 11:57:25 -0400
+Message-ID: <46C472E1.6060703@gmail.com>
+Date: Thu, 16 Aug 2007 17:53:05 +0200
 From: Rene Herman <rene.herman@gmail.com>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Kyle Moffett <mrmacman_g4@mac.com>, Salikh Zakirov <salikh@gmail.com>,
-       Junio C Hamano <gitster@pobox.com>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Joe Perches <joe@perches.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Kyle Moffett <mrmacman_g4@mac.com>, Satyam Sharma <satyam@infradead.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, git@vger.kernel.org
-Subject: Re: [linux-pm] Re: Storing Maintainers info around the kernel tree
-References: <Pine.LNX.4.44L0.0708161128540.3757-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0708161128540.3757-100000@iolanthe.rowland.org>
+       Joe Perches <joe@perches.com>, git@vger.kernel.org,
+       Junio C Hamano <gitster@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
+References: <1187110824.32555.76.camel@localhost> <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost> <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org> <20070814193333.GI21089@ftp.linux.org.uk> <46C2548D.80605@gmail.com> <alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in> <46C30220.6060007@gmail.com> <68B09015-4411-470A-BA88-732969469AA2@mac.com> <46C42DCB.1060502@gmail.com> <20070816154029.GN21089@ftp.linux.org.uk>
+In-Reply-To: <20070816154029.GN21089@ftp.linux.org.uk>
 Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
@@ -33,25 +35,19 @@ X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/16/2007 05:31 PM, Alan Stern wrote:
+On 08/16/2007 05:40 PM, Al Viro wrote:
 
-> Please remember that not everybody uses git.  The MAINTAINERS data 
-> should be available in the kernel source itself.
+> On Thu, Aug 16, 2007 at 12:58:19PM +0200, Rene Herman wrote:
 
-It may be useful to generate a MAINTAINERS file into releases yes.
+>> The git-blame thing as sketched before by Linus would never be able to 
+>> point out mailing lists, or general lists of "interested parties" for 
+>> example, but these properties can do anything...
+> 
+> No, they can not.  "I'm interested in drivers/foo/bar.c fixes" is not
+> an earth-shattering event and it sure as hell does not create a new revision
+> of the tree.
 
-I must say though that "why?" would also be a question. I personally don't 
-think there's a whole lot wrong with more and more expecting people who 
-submit patches (for whom this automation is intended) to be using git. Back 
-in the BK days there were lots of reasons for resisting any and all 
-dependency on the source code management tool but there don't seem to be too 
-many left today as far as I'm concerned.
-
-If it's about non-developer users, I suspect it would to a fairly large 
-degree be an "in theory" thing to expect that said user does want the 
-information in a downloaded releases, but not in git, and not online where 
-git-web could also easily display all the information right alongside the files.
-
-But yes, sure, anything can be generated...
+That's true. Okay, it can't do those general lists of interested parties.
 
 Rene.
+
