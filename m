@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936783AbXHPCMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936822AbXHPCQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936783AbXHPCMA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 22:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764828AbXHPCLt
+	id S936822AbXHPCQT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 22:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbXHPCP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 22:11:49 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2509 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761511AbXHPCLr (ORCPT
+	Wed, 15 Aug 2007 22:15:58 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54539 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759443AbXHPCP5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 22:11:47 -0400
-Date: Thu, 16 Aug 2007 10:11:05 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
+	Wed, 15 Aug 2007 22:15:57 -0400
+Date: Wed, 15 Aug 2007 19:15:54 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
 To: Paul Mackerras <paulus@samba.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
+cc: Herbert Xu <herbert@gondor.apana.org.au>,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Satyam Sharma <satyam@infradead.org>,
        Stefan Richter <stefanr@s5r6.in-berlin.de>,
@@ -26,49 +27,30 @@ Cc: Christoph Lameter <clameter@sgi.com>,
        wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
        cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
        jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070816021105.GA30883@gondor.apana.org.au>
-References: <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
 In-Reply-To: <18115.45316.702491.681906@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.9i
+Message-ID: <Pine.LNX.4.64.0708151915390.11706@schroedinger.engr.sgi.com>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+ <18115.35524.56393.347841@cargo.ozlabs.ibm.com>
+ <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com>
+ <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
+ <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au>
+ <18115.45316.702491.681906@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 12:05:56PM +1000, Paul Mackerras wrote:
-> Herbert Xu writes:
-> 
-> > See sk_stream_mem_schedule in net/core/stream.c:
-> > 
-> >         /* Under limit. */
-> >         if (atomic_read(sk->sk_prot->memory_allocated) < sk->sk_prot->sysctl_mem[0]) {
-> >                 if (*sk->sk_prot->memory_pressure)
-> >                         *sk->sk_prot->memory_pressure = 0;
-> >                 return 1;
-> >         }
-> > 
-> >         /* Over hard limit. */
-> >         if (atomic_read(sk->sk_prot->memory_allocated) > sk->sk_prot->sysctl_mem[2]) {
-> >                 sk->sk_prot->enter_memory_pressure();
-> >                 goto suppress_allocation;
-> >         }
-> > 
+On Thu, 16 Aug 2007, Paul Mackerras wrote:
+
 > > We don't need to reload sk->sk_prot->memory_allocated here.
 > 
 > Are you sure?  How do you know some other CPU hasn't changed the value
 > in between?
 
-Yes I'm sure, because we don't care if others have increased
-the reservation.
+The cpu knows because the cacheline was not invalidated.
 
-Note that even if we did we'd be using barriers so volatile
-won't do us any good here.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
