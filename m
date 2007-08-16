@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934908AbXHPIhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935149AbXHPIif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934908AbXHPIhx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 04:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932482AbXHPI3N
+	id S935149AbXHPIif (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 04:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764897AbXHPI3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 04:29:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60439 "EHLO mx1.redhat.com"
+	Thu, 16 Aug 2007 04:29:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60448 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765759AbXHPI27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 04:28:59 -0400
-Message-Id: <20070816074628.776394000@chello.nl>
+	id S1759602AbXHPI3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 04:29:00 -0400
+Message-Id: <20070816074624.713614000@chello.nl>
 References: <20070816074525.065850000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Thu, 16 Aug 2007 09:45:42 +0200
+Date: Thu, 16 Aug 2007 09:45:26 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
@@ -20,121 +20,69 @@ Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
        torvalds@linux-foundation.org
-Subject: [PATCH 17/23] mm: count reclaimable pages per BDI
-Content-Disposition: inline; filename=bdi_stat_reclaimable.patch
+Subject: [PATCH 01/23] nfs: remove congestion_end()
+Content-Disposition: inline; filename=nfs_congestion_fixup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Count per BDI reclaimable pages; nr_reclaimable = nr_dirty + nr_unstable.
+Its redundant, clear_bdi_congested() already wakes the waiters.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- fs/buffer.c                 |    2 ++
- fs/nfs/write.c              |    7 +++++++
- include/linux/backing-dev.h |    1 +
- mm/page-writeback.c         |    4 ++++
- mm/truncate.c               |    2 ++
- 5 files changed, 16 insertions(+)
+ fs/nfs/write.c              |    5 ++---
+ include/linux/backing-dev.h |    1 -
+ mm/backing-dev.c            |   13 -------------
+ 3 files changed, 2 insertions(+), 17 deletions(-)
 
-Index: linux-2.6/fs/buffer.c
-===================================================================
---- linux-2.6.orig/fs/buffer.c
-+++ linux-2.6/fs/buffer.c
-@@ -697,6 +697,8 @@ static int __set_page_dirty(struct page 
- 
- 		if (mapping_cap_account_dirty(mapping)) {
- 			__inc_zone_page_state(page, NR_FILE_DIRTY);
-+			__inc_bdi_stat(mapping->backing_dev_info,
-+					BDI_RECLAIMABLE);
- 			task_io_account_write(PAGE_CACHE_SIZE);
- 		}
- 		radix_tree_tag_set(&mapping->page_tree,
-Index: linux-2.6/mm/page-writeback.c
-===================================================================
---- linux-2.6.orig/mm/page-writeback.c
-+++ linux-2.6/mm/page-writeback.c
-@@ -827,6 +827,8 @@ int __set_page_dirty_nobuffers(struct pa
- 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
- 			if (mapping_cap_account_dirty(mapping)) {
- 				__inc_zone_page_state(page, NR_FILE_DIRTY);
-+				__inc_bdi_stat(mapping->backing_dev_info,
-+						BDI_RECLAIMABLE);
- 				task_io_account_write(PAGE_CACHE_SIZE);
- 			}
- 			radix_tree_tag_set(&mapping->page_tree,
-@@ -961,6 +963,8 @@ int clear_page_dirty_for_io(struct page 
- 		 */
- 		if (TestClearPageDirty(page)) {
- 			dec_zone_page_state(page, NR_FILE_DIRTY);
-+			dec_bdi_stat(mapping->backing_dev_info,
-+					BDI_RECLAIMABLE);
- 			return 1;
- 		}
- 		return 0;
-Index: linux-2.6/mm/truncate.c
-===================================================================
---- linux-2.6.orig/mm/truncate.c
-+++ linux-2.6/mm/truncate.c
-@@ -72,6 +72,8 @@ void cancel_dirty_page(struct page *page
- 		struct address_space *mapping = page->mapping;
- 		if (mapping && mapping_cap_account_dirty(mapping)) {
- 			dec_zone_page_state(page, NR_FILE_DIRTY);
-+			dec_bdi_stat(mapping->backing_dev_info,
-+					BDI_RECLAIMABLE);
- 			if (account_size)
- 				task_io_account_cancelled_write(account_size);
- 		}
 Index: linux-2.6/fs/nfs/write.c
 ===================================================================
 --- linux-2.6.orig/fs/nfs/write.c
 +++ linux-2.6/fs/nfs/write.c
-@@ -464,6 +464,7 @@ nfs_mark_request_commit(struct nfs_page 
- 			NFS_PAGE_TAG_COMMIT);
- 	spin_unlock(&inode->i_lock);
- 	inc_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
-+	inc_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_RECLAIMABLE);
- 	__mark_inode_dirty(inode, I_DIRTY_DATASYNC);
+@@ -235,10 +235,8 @@ static void nfs_end_page_writeback(struc
+ 	struct nfs_server *nfss = NFS_SERVER(inode);
+ 
+ 	end_page_writeback(page);
+-	if (atomic_long_dec_return(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH) {
++	if (atomic_long_dec_return(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH)
+ 		clear_bdi_congested(&nfss->backing_dev_info, WRITE);
+-		congestion_end(WRITE);
+-	}
  }
  
-@@ -550,6 +551,8 @@ static void nfs_cancel_commit_list(struc
- 	while(!list_empty(head)) {
- 		req = nfs_list_entry(head->next);
- 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
-+		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
-+				BDI_RECLAIMABLE);
- 		nfs_list_remove_request(req);
- 		clear_bit(PG_NEED_COMMIT, &(req)->wb_flags);
- 		nfs_inode_remove_request(req);
-@@ -1210,6 +1213,8 @@ nfs_commit_list(struct inode *inode, str
- 		nfs_list_remove_request(req);
- 		nfs_mark_request_commit(req);
- 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
-+		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
-+				BDI_RECLAIMABLE);
- 		nfs_clear_page_tag_locked(req);
- 	}
- 	return -ENOMEM;
-@@ -1235,6 +1240,8 @@ static void nfs_commit_done(struct rpc_t
- 		nfs_list_remove_request(req);
- 		clear_bit(PG_NEED_COMMIT, &(req)->wb_flags);
- 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
-+		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
-+				BDI_RECLAIMABLE);
- 
- 		dprintk("NFS: commit (%s/%Ld %d@%Ld)",
- 			req->wb_context->path.dentry->d_inode->i_sb->s_id,
+ /*
 Index: linux-2.6/include/linux/backing-dev.h
 ===================================================================
 --- linux-2.6.orig/include/linux/backing-dev.h
 +++ linux-2.6/include/linux/backing-dev.h
-@@ -27,6 +27,7 @@ enum bdi_state {
- typedef int (congested_fn)(void *, int);
+@@ -93,7 +93,6 @@ static inline int bdi_rw_congested(struc
+ void clear_bdi_congested(struct backing_dev_info *bdi, int rw);
+ void set_bdi_congested(struct backing_dev_info *bdi, int rw);
+ long congestion_wait(int rw, long timeout);
+-void congestion_end(int rw);
  
- enum bdi_stat_item {
-+	BDI_RECLAIMABLE,
- 	NR_BDI_STAT_ITEMS
- };
- 
+ #define bdi_cap_writeback_dirty(bdi) \
+ 	(!((bdi)->capabilities & BDI_CAP_NO_WRITEBACK))
+Index: linux-2.6/mm/backing-dev.c
+===================================================================
+--- linux-2.6.orig/mm/backing-dev.c
++++ linux-2.6/mm/backing-dev.c
+@@ -54,16 +54,3 @@ long congestion_wait(int rw, long timeou
+ 	return ret;
+ }
+ EXPORT_SYMBOL(congestion_wait);
+-
+-/**
+- * congestion_end - wake up sleepers on a congested backing_dev_info
+- * @rw: READ or WRITE
+- */
+-void congestion_end(int rw)
+-{
+-	wait_queue_head_t *wqh = &congestion_wqh[rw];
+-
+-	if (waitqueue_active(wqh))
+-		wake_up(wqh);
+-}
+-EXPORT_SYMBOL(congestion_end);
 
 --
 
