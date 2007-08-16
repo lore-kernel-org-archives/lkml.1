@@ -1,57 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938090AbXHPChA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937574AbXHPCsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938090AbXHPChA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 22:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759864AbXHPCgt
+	id S937574AbXHPCsy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 22:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758777AbXHPCsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 22:36:49 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60037 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755593AbXHPCgr (ORCPT
+	Wed, 15 Aug 2007 22:48:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:32779 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755833AbXHPCsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 22:36:47 -0400
-Date: Wed, 15 Aug 2007 19:36:41 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: clameter@sgi.com, ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com,
-       vatsa@linux.vnet.ibm.com, bob.picco@hp.com,
-       linux-kernel@vger.kernel.org, mel@skynet.ie, nacc@us.ibm.com,
-       akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
-       serge@hallyn.com
-Subject: Re: [ckrm-tech] Regression in 2.6.23-rc2-mm2, mounting cpusets
- causes a hang
-Message-Id: <20070815193641.c1a20434.pj@sgi.com>
-In-Reply-To: <1187210893.5422.60.camel@localhost>
-References: <20070812152126.GA26239@linux.vnet.ibm.com>
-	<20070813201215.GA16908@vino.hallyn.com>
-	<1187103831.6281.24.camel@localhost>
-	<20070814180339.GA32553@vino.hallyn.com>
-	<1187115224.6281.40.camel@localhost>
-	<20070814192306.GB32553@vino.hallyn.com>
-	<20070814204951.GA2065@vino.hallyn.com>
-	<Pine.LNX.4.64.0708141427150.31693@schroedinger.engr.sgi.com>
-	<1187127685.6281.139.camel@localhost>
-	<Pine.LNX.4.64.0708141454110.32257@schroedinger.engr.sgi.com>
-	<1187185392.5422.13.camel@localhost>
-	<Pine.LNX.4.64.0708151333230.7628@schroedinger.engr.sgi.com>
-	<1187210893.5422.60.camel@localhost>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Aug 2007 22:48:37 -0400
+Date: Thu, 16 Aug 2007 08:31:02 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Paul Mackerras <paulus@samba.org>
+cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Christoph Lameter <clameter@sgi.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in>
+Message-ID: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in>
+References: <20070809131423.GA9927@shell.boston.redhat.com>
+ <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
+ <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
+ <18115.35524.56393.347841@cargo.ozlabs.ibm.com>
+ <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com>
+ <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
+ <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au>
+ <18115.45316.702491.681906@cargo.ozlabs.ibm.com>
+ <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph wrote (and Lee quoted):
-> Looks like we need to fix cpuset nodemasks for the !NUMA case then?
-> It cannot expect to find valid nodemasks if !NUMA.
 
-The code in kernel/cpuset.c should be written as if there are always
-valid nodemasks.  In the case of !NUMA, it will happen that there is
-only one node, but kernel/cpuset.c should not manifest that detail.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+On Thu, 16 Aug 2007, Satyam Sharma wrote:
+
+> On Thu, 16 Aug 2007, Paul Mackerras wrote:
+> > Herbert Xu writes:
+> > 
+> > > See sk_stream_mem_schedule in net/core/stream.c:
+> > > 
+> > >         /* Under limit. */
+> > >         if (atomic_read(sk->sk_prot->memory_allocated) < sk->sk_prot->sysctl_mem[0]) {
+> > >                 if (*sk->sk_prot->memory_pressure)
+> > >                         *sk->sk_prot->memory_pressure = 0;
+> > >                 return 1;
+> > >         }
+> > > 
+> > >         /* Over hard limit. */
+> > >         if (atomic_read(sk->sk_prot->memory_allocated) > sk->sk_prot->sysctl_mem[2]) {
+> > >                 sk->sk_prot->enter_memory_pressure();
+> > >                 goto suppress_allocation;
+> > >         }
+> > > 
+> > > We don't need to reload sk->sk_prot->memory_allocated here.
+> > 
+> > Are you sure?  How do you know some other CPU hasn't changed the value
+> > in between?
+> 
+> I can't speak for this particular case, but there could be similar code
+> examples elsewhere, where we do the atomic ops on an atomic_t object
+> inside a higher-level locking scheme that would take care of the kind of
+> problem you're referring to here. It would be useful for such or similar
+> code if the compiler kept the value of that atomic object in a register.
+
+We might not be using atomic_t (and ops) if we already have a higher-level
+locking scheme, actually. So as Herbert mentioned, such cases might just
+not care. [ Too much of this thread, too little sleep, sorry! ]
+
+Anyway, the problem, of course, is that this conversion to a stronger /
+safer-by-default behaviour doesn't happen with zero cost to performance.
+Converting atomic ops to "volatile" behaviour did add ~2K to kernel text
+for archs such as i386 (possibly to important codepaths) that didn't have
+those semantics already so it would be constructive to actually look at
+those differences and see if there were really any heisenbugs that got
+rectified. Or if there were legitimate optimizations that got wrongly
+disabled. Onus lies on those proposing the modifications, I'd say ;-)
