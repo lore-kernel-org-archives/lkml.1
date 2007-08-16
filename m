@@ -1,117 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933074AbXHPIRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933260AbXHPITF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933074AbXHPIRz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 04:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760069AbXHPIRe
+	id S933260AbXHPITF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 04:19:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761723AbXHPISp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 04:17:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:9405 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757691AbXHPIRa convert rfc822-to-8bit (ORCPT
+	Thu, 16 Aug 2007 04:18:45 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:30174 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756068AbXHPISn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 04:17:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=H6/rJ8LjvSnvo6WxiA3crZ5hIUnSmyOVLCHJg6wID/7TvnqiAXZ5LuWD1EHxEdD6YfdepCFKp0BdwJ037ibLjihoVO1uSr9/GBIqJesXg7A+f+Jtx7HaF4ycVLKCYaahBbxFqnG9Q0/PHlESuRKthGJDkkhNJvq5SzkI5jRdQ74=
-Message-ID: <6bffcb0e0708160117m31b6edc6ta277b6ddf2d894f6@mail.gmail.com>
-Date: Thu, 16 Aug 2007 10:17:28 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Zoltan Boszormenyi" <zboszor@dunaweb.hu>
-Subject: Re: Bad CD disk disables IDE DMA
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>
-In-Reply-To: <46C2F526.30005@dunaweb.hu>
+	Thu, 16 Aug 2007 04:18:43 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH][RFC] Re: accounting regression since rc1
+Date: Thu, 16 Aug 2007 10:17:56 +0200
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
+       Paul Mackerras <paulus@samba.org>
+References: <20070812163225.GA11996@elte.hu> <200708141037.48001.borntraeger@de.ibm.com>
+In-Reply-To: <200708141037.48001.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <46C2F526.30005@dunaweb.hu>
+Message-Id: <200708161017.56971.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Zoltan,
+Ingo,
 
-On 15/08/07, Zoltan Boszormenyi <zboszor@dunaweb.hu> wrote:
-> Hi,
->
-> I noticed that a bad CD of mine makes DMA disabled:
->
-> hda: selected mode 0x44
-> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
-> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
-> ide: failed opcode was: unknown
-> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
-> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
-> ide: failed opcode was: unknown
-> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
-> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
-> ide: failed opcode was: unknown
-> hda: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
-> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
-> ide: failed opcode was: unknown
-> hda: DMA disabled
-> hda: ide_intr: huh? expected NULL handler on exit
-> hda: ATAPI reset complete
->
-> Every time I put the said CD into to drive and DMA is on, I get the
-> above messages.
+this patch fixes the accounting regression for CONFIG_VIRT_CPU_ACCOUNTING. It 
+reverts parts of commit b27f03d4bdc145a09fb7b0c0e004b29f1ee555fa by converting 
+fs/proc/array.c back to cputime_t. The new functions task_utime and 
+task_stime now return cputime_t instead of clock_t. If 
+CONFIG_VIRT_CPU_ACCOUTING is set, task->utime and task->stime are returned 
+directly instead of using sum_exec_runtime. 
 
-This might be intended.
+Patch is tested on s390x with and without VIRT_CPU_ACCOUTING as well as on 
+i386. Not tested on ppc64 - Paul?
 
-> Two things are interesting: first, it gets mounted correctly and
-> readable and
-> second, when DMA was already disabled no such messages occur in the logs.
-> Anyhow, I would need DMA to correctly burn CDs/DVDs...
-> What can I do besides manually re-enable DMA?
-> All other disks I have tried behave perfectly.
-> This happened on 2.6.22[-rcX], 2.6.23-rc3-git1 and 2.6.20-1.2962.fc6.
-> This is on a Fedora Core 6 system. CD/DVD is using the old IDE drivers:
->
-> Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-> ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-> NFORCE-MCP55: IDE controller at PCI slot 0000:00:04.0
-> NFORCE-MCP55: chipset revision 161
-> NFORCE-MCP55: not 100% native mode: will probe irqs later
-> NFORCE-MCP55: BIOS didn't set cable bits correctly. Enabling workaround.
-> NFORCE-MCP55: 0000:00:04.0 (rev a1) UDMA133 controller
->     ide0: BM-DMA at 0xf000-0xf007, BIOS settings: hda:DMA, hdb:DMA
-> Probing IDE interface ide0...
-> hda: PIONEER DVD-RW DVR-111L, ATAPI CD/DVD-ROM drive
-> ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-> Probing IDE interface ide1...
-> ide-floppy driver 0.99.newide
->
-> $ cat /proc/ide/amd74xx
-> ----------AMD BusMastering IDE Configuration----------------
-> Driver Version:                     2.13
-> South Bridge:                       0000:00:04.0
-> Revision:                           IDE 0xa1
-> Highest DMA rate:                   UDMA133
-> BM-DMA base:                        0xf000
-> PCI clock:                          33.3MHz
-> -----------------------Primary IDE-------Secondary IDE------
-> Prefetch Buffer:              yes                 yes
-> Post Write Buffer:            yes                 yes
-> Enabled:                      yes                  no
-> Simplex only:                  no                 yes
-> Cable Type:                   80w                 80w
-> -------------------drive0----drive1----drive2----drive3-----
-> Transfer Mode:        PIO       DMA       DMA       DMA
-> Address Setup:       30ns      90ns      90ns      90ns
-> Cmd Active:          90ns      90ns     300ns     300ns
-> Cmd Recovery:        30ns      30ns     300ns     300ns
-> Data Active:         90ns     330ns     330ns     330ns
-> Data Recovery:       30ns     270ns     270ns     270ns
-> Cycle Time:         120ns     600ns     600ns     600ns
-> Transfer Rate:   16.6MB/s   3.3MB/s   3.3MB/s   3.3MB/s
->
-> Best regards,
-> Zoltán Böszörményi
+Feedback is welcome.
 
-Regards,
-Michal
+Signed-Off-By: Christian Borntraeger <borntraeger@de.ibm.com>
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+---
+ fs/proc/array.c |   41 ++++++++++++++++++++++++++---------------
+ 1 file changed, 26 insertions(+), 15 deletions(-)
+
+Index: linux-2.6/fs/proc/array.c
+===================================================================
+--- linux-2.6.orig/fs/proc/array.c
++++ linux-2.6/fs/proc/array.c
+@@ -320,7 +320,18 @@ int proc_pid_status(struct task_struct *
+ 	return buffer - orig;
+ }
+ 
+-static clock_t task_utime(struct task_struct *p)
++#if defined(CONFIG_VIRT_CPU_ACCOUNTING)
++static cputime_t task_utime(struct task_struct *p)
++{
++	return p->utime;
++}
++
++static cputime_t task_stime(struct task_struct *p)
++{
++	return p->stime;
++}
++#else
++static cputime_t task_utime(struct task_struct *p)
+ {
+ 	clock_t utime = cputime_to_clock_t(p->utime),
+ 		total = utime + cputime_to_clock_t(p->stime);
+@@ -337,10 +348,10 @@ static clock_t task_utime(struct task_st
+ 	}
+ 	utime = (clock_t)temp;
+ 
+-	return utime;
++	return clock_t_to_cputime(utime);
+ }
+ 
+-static clock_t task_stime(struct task_struct *p)
++static cputime_t task_stime(struct task_struct *p)
+ {
+ 	clock_t stime;
+ 
+@@ -349,10 +360,12 @@ static clock_t task_stime(struct task_st
+ 	 * the total, to make sure the total observed by userspace
+ 	 * grows monotonically - apps rely on that):
+ 	 */
+-	stime = nsec_to_clock_t(p->se.sum_exec_runtime) - task_utime(p);
++	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
++			cputime_to_clock_t(task_utime(p));
+ 
+-	return stime;
++	return clock_t_to_cputime(stime);
+ }
++#endif
+ 
+ static int do_task_stat(struct task_struct *task, char *buffer, int whole)
+ {
+@@ -368,8 +381,7 @@ static int do_task_stat(struct task_stru
+ 	unsigned long long start_time;
+ 	unsigned long cmin_flt = 0, cmaj_flt = 0;
+ 	unsigned long  min_flt = 0,  maj_flt = 0;
+-	cputime_t cutime, cstime;
+-	clock_t utime, stime;
++	cputime_t cutime, cstime, utime, stime;
+ 	unsigned long rsslim = 0;
+ 	char tcomm[sizeof(task->comm)];
+ 	unsigned long flags;
+@@ -387,8 +399,7 @@ static int do_task_stat(struct task_stru
+ 
+ 	sigemptyset(&sigign);
+ 	sigemptyset(&sigcatch);
+-	cutime = cstime = cputime_zero;
+-	utime = stime = 0;
++	cutime = cstime = utime = stime = cputime_zero;
+ 
+ 	rcu_read_lock();
+ 	if (lock_task_sighand(task, &flags)) {
+@@ -414,15 +425,15 @@ static int do_task_stat(struct task_stru
+ 			do {
+ 				min_flt += t->min_flt;
+ 				maj_flt += t->maj_flt;
+-				utime += task_utime(t);
+-				stime += task_stime(t);
++				utime = cputime_add(utime, task_utime(t));
++				stime = cputime_add(stime, task_stime(t));
+ 				t = next_thread(t);
+ 			} while (t != task);
+ 
+ 			min_flt += sig->min_flt;
+ 			maj_flt += sig->maj_flt;
+-			utime += cputime_to_clock_t(sig->utime);
+-			stime += cputime_to_clock_t(sig->stime);
++			utime = cputime_add(utime, sig->utime);
++			stime = cputime_add(stime, sig->stime);
+ 		}
+ 
+ 		sid = signal_session(sig);
+@@ -471,8 +482,8 @@ static int do_task_stat(struct task_stru
+ 		cmin_flt,
+ 		maj_flt,
+ 		cmaj_flt,
+-		utime,
+-		stime,
++		cputime_to_clock_t(utime),
++		cputime_to_clock_t(stime),
+ 		cputime_to_clock_t(cutime),
+ 		cputime_to_clock_t(cstime),
+ 		priority,
