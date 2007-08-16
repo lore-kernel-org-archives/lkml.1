@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbXHPUIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbXHPUNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758970AbXHPUIU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 16:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbXHPUIE
+	id S1758134AbXHPUNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 16:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbXHPUNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 16:08:04 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:50551 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752571AbXHPUIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 16:08:00 -0400
-Date: Thu, 16 Aug 2007 13:07:56 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070816200756.GF16957@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708161151270.17049@schroedinger.engr.sgi.com>
+	Thu, 16 Aug 2007 16:13:09 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:45020 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750910AbXHPUNI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 16:13:08 -0400
+Date: Thu, 16 Aug 2007 16:13:06 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+cc: Tejun Heo <htejun@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sysfs: don't warn on removal of a nonexistent binary file
+Message-ID: <Pine.LNX.4.44L0.0708161609060.2553-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708161151270.17049@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 11:54:54AM -0700, Christoph Lameter wrote:
-> On Thu, 16 Aug 2007, Paul Mackerras wrote:
-> > So I don't see any good reason to make the atomic API more complex by
-> > having "volatile" and "non-volatile" versions of atomic_read.  It
-> > should just have the "volatile" behaviour.
-> 
-> If you want to make it less complex then drop volatile which causes weird 
-> side effects without solving any problems as you just pointed out.
+This patch (as960) removes the error message and stack dump logged by
+sysfs_remove_bin_file() when someone tries to remove a nonexistent
+file.  The warning doesn't seem to be needed, since none of the other
+file-, symlink-, or directory-removal routines in sysfs complain in a
+comparable way.
 
-The other set of problems are communication between process context
-and interrupt/NMI handlers.  Volatile does help here.  And the performance
-impact of volatile is pretty near zero, so why have the non-volatile
-variant?
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-						Thanx, Paul
+---
+
+This is 2.6.23 material.  The spurious error message can be triggered
+by USB code added since 2.6.22, so it needs to be removed before the 
+final release.
+
+Alan Stern
+
+
+
+Index: usb-2.6/fs/sysfs/bin.c
+===================================================================
+--- usb-2.6.orig/fs/sysfs/bin.c
++++ usb-2.6/fs/sysfs/bin.c
+@@ -248,12 +248,7 @@ int sysfs_create_bin_file(struct kobject
+ 
+ void sysfs_remove_bin_file(struct kobject * kobj, struct bin_attribute * attr)
+ {
+-	if (sysfs_hash_and_remove(kobj->sd, attr->attr.name) < 0) {
+-		printk(KERN_ERR "%s: "
+-			"bad dentry or inode or no such file: \"%s\"\n",
+-			__FUNCTION__, attr->attr.name);
+-		dump_stack();
+-	}
++	sysfs_hash_and_remove(kobj->sd, attr->attr.name);
+ }
+ 
+ EXPORT_SYMBOL_GPL(sysfs_create_bin_file);
+
