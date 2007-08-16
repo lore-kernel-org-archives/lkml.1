@@ -1,122 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763239AbXHPON0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761306AbXHPONv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763239AbXHPON0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 10:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760079AbXHPONG
+	id S1761306AbXHPONv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 10:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759761AbXHPONl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 10:13:06 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:51025 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759699AbXHPONE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 10:13:04 -0400
-Date: Thu, 16 Aug 2007 16:11:22 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Karl Meyer <adhocrocker@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
-Message-ID: <20070816141122.GA6625@electric-eye.fr.zoreil.com>
-References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com> <20070813165821.GA19356@electric-eye.fr.zoreil.com> <be1b757c0708131027v5c57822as2d9bd3190fd19b71@mail.gmail.com> <20070814070901.GA14693@electric-eye.fr.zoreil.com> <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com> <20070814224629.GB3495@electric-eye.fr.zoreil.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="LpQ9ahxlCli8rRTG"
-Content-Disposition: inline
-In-Reply-To: <20070814224629.GB3495@electric-eye.fr.zoreil.com>
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+	Thu, 16 Aug 2007 10:13:41 -0400
+Received: from 87-127-95-196.no-dns-yet.enta.net ([87.127.95.196]:34356 "EHLO
+	oxford.xeocode.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759481AbXHPONk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 10:13:40 -0400
+X-Greylist: delayed 2240 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Aug 2007 10:13:40 EDT
+To: "Peter Zijlstra" <peterz@infradead.org>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: soft lockup detected
+In-Reply-To: <1187270275.6114.87.camel@twins> (Peter Zijlstra's message of "Thu\, 16 Aug 2007 15\:17\:55 +0200")
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+X-Draft-From: ("nnimap+mail01.enterprisedb.com:INBOX" 31969)
+References: <87ps1nx3kl.fsf@oxford.xeocode.com>
+	<1187270275.6114.87.camel@twins>
+From: Gregory Stark <stark@enterprisedb.com>
+Organization: EnterpriseDB
+Date: Thu, 16 Aug 2007 14:36:17 +0100
+Message-ID: <874pizwqi6.fsf@oxford.xeocode.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Peter Zijlstra" <peterz@infradead.org> writes:
 
---LpQ9ahxlCli8rRTG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> On Thu, 2007-08-16 at 09:54 +0100, Gregory Stark wrote:
+>
+>> This is on 2.6.21-1.3194.fc7. I've been trying different kernels but this is
+>> the first point where I've narrowed down the symptoms to something
+>> reproducible.
+>
+> That is a very old kernel, and a vendor kernel at that.
 
-(please do not remove the netdev Cc:)
+I'm sorry? The original kernel to exhibit the problem was 2.6.5 -- *that* was
+a very old kernel and I insisted we upgrade before trying to report any
+problems. However 2.6.21 is only one version out of date and it's about 3
+months old. None of the changelog entries since then have mentioned any semop
+or ipc related changes (aside from a hugetlb change but we're not using
+hugetlb). It's more recent than most distributions have as their current
+release.
 
-Francois Romieu <romieu@fr.zoreil.com> :
-[...]
-> If it does not work I'll dissect 0e4851502f846b13b29b7f88f1250c980d57e944
-> tomorrow.
+I do share your feelings about vendor kernels. We've seen these problems with
+SUSE 2.6.5 and 2.6.16 kernels though. This was the most recently released
+kernel we've tried.
 
-You will find a tgz archive in attachment which contains a serie of patches
-(0001-... to 0005-...) to walk from 6dccd16b7c2703e8bbf8bca62b5cf248332afbe2
-to 0e4851502f846b13b29b7f88f1250c980d57e944 in smaller steps.
+> Did any of the different kernels you tried include a recent upstream
+> one?
 
-Please apply 0001 on top of 6dccd16b7c2703e8bbf8bca62b5cf248332afbe2. If it
-still works, apply 0002 on top of 0001, etc.
+Still working on it.
 
 -- 
-Ueimor
-
---LpQ9ahxlCli8rRTG
-Content-Type: application/x-gzip
-Content-Disposition: attachment; filename="r8169-meyer.tgz"
-Content-Transfer-Encoding: base64
-
-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
-bMu2bMu2bMu2bMu2bMu2/FPK/wC2twRFAFAAAA==
-
---LpQ9ahxlCli8rRTG--
+  Gregory Stark
+  EnterpriseDB          http://www.enterprisedb.com
