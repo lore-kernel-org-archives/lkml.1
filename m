@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbXHPEMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbXHPEVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755303AbXHPEMJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 00:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXHPELw
+	id S1756773AbXHPEVV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 00:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbXHPEVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 00:11:52 -0400
-Received: from ozlabs.org ([203.10.76.45]:42424 "EHLO ozlabs.org"
+	Thu, 16 Aug 2007 00:21:10 -0400
+Received: from mga02.intel.com ([134.134.136.20]:39056 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751238AbXHPELu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 00:11:50 -0400
+	id S1750878AbXHPEVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 00:21:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,269,1183359600"; 
+   d="scan'208";a="279561129"
+Message-ID: <46C3D09B.6060405@intel.com>
+Date: Wed, 15 Aug 2007 21:20:43 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Joe Perches <joe@perches.com>
+CC: netfilter-devel@lists.netfilter.org, coreteam@netfilter.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: drivers/infiniband/mlx/mad.c misplaced ;
+References: <20070815235825.GB17004@redhat.com>	 <1187224811.5906.55.camel@localhost>  <46C3B428.4000003@intel.com> <1187234225.5906.73.camel@localhost>
+In-Reply-To: <1187234225.5906.73.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
-Date: Thu, 16 Aug 2007 14:11:43 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in>
-References: <20070809131423.GA9927@shell.boston.redhat.com>
-	<Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
-	<alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
-	<46C2D6F3.3070707@s5r6.in-berlin.de>
-	<alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
-	<18115.35524.56393.347841@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com>
-	<20070816003948.GY9645@linux.vnet.ibm.com>
-	<Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
-	<18115.44462.622801.683446@cargo.ozlabs.ibm.com>
-	<20070816020042.GA30650@gondor.apana.org.au>
-	<18115.45316.702491.681906@cargo.ozlabs.ibm.com>
-	<alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in>
-	<alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma writes:
+Joe Perches wrote:
+> On Wed, 2007-08-15 at 19:19 -0700, Kok, Auke wrote:
+>> Joe Perches wrote:
+>>> On Wed, 2007-08-15 at 19:58 -0400, Dave Jones wrote:
+>>> There's more than a few of these (not inspected).
+>>> $ egrep -r --include=*.c "\bif[[:space:]]*\([^\)]*\)[[:space:]]*\;" * 
+>>> arch/sh/boards/se/7343/io.c:    if (0) ;
+>>> drivers/atm/iphase.c:     if (!desc1) ;
+>>> drivers/infiniband/hw/mlx4/mad.c:       if (!err);
+>>> drivers/isdn/capi/capiutil.c:   else if (c <= 0x0f);
+>>> drivers/net/tokenring/ibmtr.c:  else if (ti->shared_ram_paging == 0xf);  /* No paging in adapter */
+>>> drivers/s390/scsi/zfcp_erp.c:           if (status == ZFCP_ERP_SUCCEEDED) ;     /* no further action */
+>>> fs/hostfs/hostfs_user.c:        if(attrs->ia_valid & HOSTFS_ATTR_CTIME) ;
+>>> net/netfilter/xt_u32.c:         if (skb->len < 4 || pos > skb->len - 4);
+>>> sound/pci/au88x0/au88x0_synth.c:                                if (eax == 0) ;
+>> sounds like an excellent candidate check for checkpatch.pl !!!
+> 
+> I think it's poor style and all of these should go away.
+> 
+> the netfilter one appears to be a real error too.
 
-> Anyway, the problem, of course, is that this conversion to a stronger /
-> safer-by-default behaviour doesn't happen with zero cost to performance.
-> Converting atomic ops to "volatile" behaviour did add ~2K to kernel text
-> for archs such as i386 (possibly to important codepaths) that didn't have
-> those semantics already so it would be constructive to actually look at
-> those differences and see if there were really any heisenbugs that got
-> rectified. Or if there were legitimate optimizations that got wrongly
-> disabled. Onus lies on those proposing the modifications, I'd say ;-)
+I was more thinking of making sure that none of these slip back in...
 
-The uses of atomic_read where one might want it to allow caching of
-the result seem to me to fall into 3 categories:
-
-1. Places that are buggy because of a race arising from the way it's
-   used.
-
-2. Places where there is a race but it doesn't matter because we're
-   doing some clever trick.
-
-3. Places where there is some locking in place that eliminates any
-   potential race.
-
-In case 1, adding volatile won't solve the race, of course, but it's
-hard to argue that we shouldn't do something because it will slow down
-buggy code.  Case 2 is hopefully pretty rare and accompanied by large
-comment blocks, and in those cases caching the result of atomic_read
-explicitly in a local variable would probably make the code clearer.
-And in case 3 there is no reason to use atomic_t at all; we might as
-well just use an int.
-
-So I don't see any good reason to make the atomic API more complex by
-having "volatile" and "non-volatile" versions of atomic_read.  It
-should just have the "volatile" behaviour.
-
-Paul.
+Auke
