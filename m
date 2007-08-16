@@ -1,88 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbXHPDnC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938383AbXHPDof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755719AbXHPDnC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 23:43:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765988AbXHPDmw
+	id S938383AbXHPDof (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 23:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934488AbXHPDoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 23:42:52 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:55893 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933032AbXHPDmv (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 23:42:51 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Marc Perkel <mperkel@yahoo.com>
-Cc: Phillip Susi <psusi@cfl.rr.com>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: Thinking outside the box on file systems
-In-Reply-To: Your message of "Wed, 15 Aug 2007 15:48:15 PDT."
-             <291255.29775.qm@web52505.mail.re2.yahoo.com>
-From: Valdis.Kletnieks@vt.edu
-References: <291255.29775.qm@web52505.mail.re2.yahoo.com>
+	Wed, 15 Aug 2007 23:44:22 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:3351 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761949AbXHPDoU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 23:44:20 -0400
+Date: Thu, 16 Aug 2007 11:43:39 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Satyam Sharma <satyam@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070816034339.GB31844@gondor.apana.org.au>
+References: <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com> <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <20070816021105.GA30883@gondor.apana.org.au> <18115.49465.34538.840034@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1187235765_11310P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 15 Aug 2007 23:42:45 -0400
-Message-ID: <15627.1187235765@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18115.49465.34538.840034@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1187235765_11310P
-Content-Type: text/plain; charset=us-ascii
-
-On Wed, 15 Aug 2007 15:48:15 PDT, Marc Perkel said:
-> > Consider the rules:
-> > 
-> > peter '*a*' can create
-> > peter '*b*' cannot create
-> > 
-> > Peter tries to create 'foo-ab-bar' - is he allowed
-> > to or not?
-> > 
+On Thu, Aug 16, 2007 at 01:15:05PM +1000, Paul Mackerras wrote:
 > 
-> First - I'm proposing a concept, not writing the
-> implementation of the concept. You are asking what
-> happens when someone write conflicting rules. That
-> depends on how you implement it. Conflicting rules can
-> cause unpredictable results.
+> But others can also reduce the reservation.  Also, the code sets and
+> clears *sk->sk_prot->memory_pressure nonatomically with respect to the
+> reads of sk->sk_prot->memory_allocated, so in fact the code doesn't
+> guarantee any particular relationship between the two.
 
-Good. Go work out what the rules have to be in order for the system to
-behave sanely.  "Hand-waving concept" doesn't get anywhere.  Fully fleshed-out
-concepts sometimes do - once they sprout code to actually  implement them.
+Yes others can reduce the reservation, but the point of this
+is that the code doesn't care.  We'll either see the value
+before or after the reduction and in either case we'll do
+something sensible.
 
-> The point is that one can choose any rule system they
-> want and the rules applies to the names of the files
-> and the permissions of the users.
+The worst that can happen is when we're just below the hard
+limit and multiple CPUs fail to allocate but that's not really
+a problem because if the machine is making progress at all
+then we will eventually scale back and allow these allocations
+to succeed.
 
-No, you *can't* choose any rule system you want - some rule systems are
-unworkable because they create security exposures (usually of the
-"ln /etc/passwd /tmp/foo" variety, but sometimes race conditions as well).
+As to the non-atomic operation on memory_pressue, that's OK
+because we only ever assign values to it and never do other
+operations such as += or -=.  Remember that int/long assignments
+must be atomic or Linux won't run on your architecture.
 
-> > For an exersize, either write a program or do by
-> > hand:
-
-> All you would have to do is create a set of rules that
-> emulates the current rules and you would have the same
-> results.
-
-Good. Go create it. Let us know when you're done.  Remember - not only do
-you need to have it generate the same results, you need to find a way to
-implement it so that it's somewhere near the same speed as the current code.
-If it's 10 times slower, it's not going to fly no matter *how* "cool" it is.
-
---==_Exmh_1187235765_11310P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGw8e1cC3lWbTT17ARAtrOAKDTfpTe433Ny7O3DQA4x6v0Bs6fZwCg+l23
-aRfJlP3MKT+sqXp4KS8rDOQ=
-=aF1w
------END PGP SIGNATURE-----
-
---==_Exmh_1187235765_11310P--
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
