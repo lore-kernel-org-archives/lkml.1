@@ -1,50 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764704AbXHPLgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbXHPLpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764704AbXHPLgz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 07:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbXHPLgn
+	id S1754336AbXHPLpU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 07:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbXHPLpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 07:36:43 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:13747 "EHLO kernel.dk"
+	Thu, 16 Aug 2007 07:45:05 -0400
+Received: from main.gmane.org ([80.91.229.2]:39527 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750796AbXHPLgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 07:36:42 -0400
-Date: Thu, 16 Aug 2007 13:36:38 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: NeilBrown <neilb@suse.de>
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH 000 of 6] A few block-layer tidy-up patches.
-Message-ID: <20070816113638.GX23758@kernel.dk>
-References: <20070816211551.11839.patches@notabene>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070816211551.11839.patches@notabene>
+	id S1750893AbXHPLpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 07:45:04 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Salikh Zakirov <salikh@gmail.com>
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
+Date: Thu, 16 Aug 2007 20:26:16 +0900
+Message-ID: <fa1c95$sv6$1@sea.gmane.org>
+References: <1187026955.2688.4.camel@laptopd505.fenrus.org> <1187037445.6628.98.camel@heimdal.trondhjem.org> <1187054366.2757.0.camel@laptopd505.fenrus.org> <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu> <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost> <46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost> <alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org> <20070814193333.GI21089@ftp.linux.org.uk> <46C2548D.80605@gmail.com> <alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in> <46C30220.6060007@gmail.com> <68B09015-4411-470A-BA88-732969469AA2@mac.com> <46C42DCB.1060502@gmail.com> <46C43015.7080804@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: cerberus.is.titech.ac.jp
+User-Agent: Thunderbird 2.0.0.4 (X11/20070708)
+In-Reply-To: <46C43015.7080804@gmail.com>
+Cc: git@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16 2007, NeilBrown wrote:
-> Following are 5 patches which - I think - clean up various bits and pieces
-> in the block layer.
-> 
-> The only part that might be seen as a function change rather than
-> simply rearranging code is in ps3disk where bvec_kmap_irq is used
-> instead of bio_kmap_atomic (so interrupts are disabled).
-> 
-> The only other user of bvec_kmap_irq is ide-floppy.c.  If that does
-> need to disable interrupts, and ps3disk doesn't, make the disabling of
-> interrupts should be separated from the kmapping??
+Rene Herman wrote:
+> Perhaps that immediately suggests an implementation to someone already
+> familiar with git internals?
 
-Applied 1-6, thanks! BTW, your patch #2 doesn't apply cleanly on
-floppy.c in current -git, and there has been no changes there since July
-24th. So you must be diffing against something else?
-
-You also don't re-indent and remove one nesting when removing
-bio_for_each_segment(). It makes it easier to review, but I formatted
-that as well since I had to hand-apply patch #2.
-
-Please inspect the #block-2.6.24 branch to see the result.
-
--- 
-Jens Axboe
+perhaps http://www.kernel.org/pub/software/scm/git/docs/gitattributes.html
+and http://www.kernel.org/pub/software/scm/git/docs/git-check-attr.html
+can help you?
 
