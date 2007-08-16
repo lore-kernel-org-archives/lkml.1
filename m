@@ -1,123 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763453AbXHPWJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932453AbXHPWKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763453AbXHPWJv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 18:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759432AbXHPWI4
+	id S932453AbXHPWKc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 18:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXHPWI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 18:08:56 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:44017 "HELO ustc.edu.cn"
+	Thu, 16 Aug 2007 18:08:57 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:44020 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1757572AbXHPWIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757939AbXHPWIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 16 Aug 2007 18:08:53 -0400
-Message-ID: <387302129.71819@ustc.edu.cn>
+Message-ID: <387302129.10657@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070816220849.064901548@mail.ustc.edu.cn>
+Message-Id: <20070816220849.192029043@mail.ustc.edu.cn>
 References: <20070816220516.782145952@mail.ustc.edu.cn>
 User-Agent: quilt/0.46-1
-Date: Fri, 17 Aug 2007 06:05:17 +0800
+Date: Fri, 17 Aug 2007 06:05:18 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
-Cc: Matt Mackall <mpm@selenic.com>, John Berthels <jjberthels@gmail.com>
+Cc: Matt Mackall <mpm@selenic.com>, Al Viro <viro@ftp.linux.org.uk>
+Cc: John Berthels <jjberthels@gmail.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] maps: PSS(proportional set size) accounting in smaps
-Content-Disposition: inline; filename=smaps-vmstat.patch
+Subject: [PATCH 2/4] maps: address based vma walking
+Content-Disposition: inline; filename=maps-enable-address-based-pos.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The "proportional set size" (PSS) of a process is the count of pages it has in
-memory, where each page is divided by the number of processes sharing it. So if
-a process has 1000 pages all to itself, and 1000 shared with one other process,
-its PSS will be 1500.
-               - lwn.net: "ELC: How much memory are applications really using?"
-
-The PSS proposed by Matt Mackall is a very nice metic for measuring an process's
-memory footprint. So collect and export it via /proc/<pid>/smaps.
-
-Matt Mackall's pagemap/kpagemap and John Berthels's exmap can also do the job.
-They are comprehensive tools. But for PSS, let's do it in the simple way. 
-
+Split large vmas into page groups of proc_maps_private.batch_size bytes, and
+iterate them one by one for seqfile->show. This allows us to export large scale
+process address space information via the seqfile interface. The old behavior
+of walking one vma at a time can be achieved by setting the batching size to
+~0UL.
 
 Cc: Matt Mackall <mpm@selenic.com>
-Cc: John Berthels <jjberthels@gmail.com>
+Cc: Al Viro <viro@ftp.linux.org.uk>
 Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
 ---
- fs/proc/task_mmu.c |   29 ++++++++++++++++++++++++++++-
- 1 file changed, 28 insertions(+), 1 deletion(-)
+ fs/proc/task_mmu.c      |  105 ++++++++++++--------------------------
+ include/linux/proc_fs.h |    6 +-
+ mm/mempolicy.c          |    2 
+ 3 files changed, 38 insertions(+), 75 deletions(-)
 
---- linux-2.6.23-rc2-mm2.orig/fs/proc/task_mmu.c
-+++ linux-2.6.23-rc2-mm2/fs/proc/task_mmu.c
-@@ -324,6 +324,27 @@ struct mem_size_stats
- 	unsigned long private_clean;
- 	unsigned long private_dirty;
- 	unsigned long referenced;
-+
-+	/*
-+	 * Proportional Set Size(PSS): my share of RSS.
-+	 *
-+	 * PSS of a process is the count of pages it has in memory, where each
-+	 * page is divided by the number of processes sharing it.  So if a
-+	 * process has 1000 pages all to itself, and 1000 shared with one other
-+	 * process, its PSS will be 1500. (lwn.net)
-+	 */
-+	u64 	      pss;
-+	/*
-+	 * To keep (accumulated) division errors low, we adopt 64bit pss and
-+	 * use some low bits for division errors. So (pss >> PSS_ERROR_BITS)
-+	 * would be the real byte count.
-+	 *
-+	 * A shift of 12 before division means(assuming 4K page size):
-+	 * 	- 1M 3-user-pages add up to 8KB errors;
-+	 * 	- supports mapcount up to 2^24, or 16M;
-+	 * 	- supports PSS up to 2^52 bytes, or 4PB.
-+	 */
-+#define PSS_ERROR_BITS	12
+--- linux-2.6.23-rc2-mm2.orig/include/linux/proc_fs.h
++++ linux-2.6.23-rc2-mm2/include/linux/proc_fs.h
+@@ -283,9 +283,9 @@ static inline struct proc_dir_entry *PDE
+ struct proc_maps_private {
+ 	struct pid *pid;
+ 	struct task_struct *task;
+-#ifdef CONFIG_MMU
+-	struct vm_area_struct *tail_vma;
+-#endif
++	struct mm_struct *mm;
++	/* walk min(batch_size, remaining_size_of(vma)) bytes at a time */
++	unsigned long batch_size;
  };
  
- struct smaps_arg
-@@ -341,6 +362,7 @@ static int smaps_pte_range(pmd_t *pmd, u
- 	pte_t *pte, ptent;
- 	spinlock_t *ptl;
- 	struct page *page;
-+	int mapcount;
+ #endif /* _LINUX_PROC_FS_H */
+--- linux-2.6.23-rc2-mm2.orig/mm/mempolicy.c
++++ linux-2.6.23-rc2-mm2/mm/mempolicy.c
+@@ -1937,7 +1937,5 @@ out:
+ 	seq_putc(m, '\n');
+ 	kfree(md);
  
- 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
- 	for (; addr != end; pte++, addr += PAGE_SIZE) {
-@@ -357,16 +379,19 @@ static int smaps_pte_range(pmd_t *pmd, u
- 		/* Accumulate the size in pages that have been accessed. */
- 		if (pte_young(ptent) || PageReferenced(page))
- 			mss->referenced += PAGE_SIZE;
--		if (page_mapcount(page) >= 2) {
-+		mapcount = page_mapcount(page);
-+		if (mapcount >= 2) {
- 			if (pte_dirty(ptent))
- 				mss->shared_dirty += PAGE_SIZE;
- 			else
- 				mss->shared_clean += PAGE_SIZE;
-+			mss->pss += (PAGE_SIZE << PSS_ERROR_BITS) / mapcount;
- 		} else {
- 			if (pte_dirty(ptent))
- 				mss->private_dirty += PAGE_SIZE;
- 			else
- 				mss->private_clean += PAGE_SIZE;
-+			mss->pss += (PAGE_SIZE << PSS_ERROR_BITS);
- 		}
+-	if (m->count < m->size)
+-		m->version = (vma != priv->tail_vma) ? vma->vm_start : 0;
+ 	return 0;
+ }
+--- linux-2.6.23-rc2-mm2.orig/fs/proc/task_mmu.c
++++ linux-2.6.23-rc2-mm2/fs/proc/task_mmu.c
+@@ -115,99 +115,65 @@ static void pad_len_spaces(struct seq_fi
+ 	seq_printf(m, "%*c", len, ' ');
+ }
+ 
+-static void vma_stop(struct proc_maps_private *priv, struct vm_area_struct *vma)
++static void *seek_vma_addr(struct seq_file *m,
++			   struct vm_area_struct *vma, loff_t *pos)
+ {
+-	if (vma && vma != priv->tail_vma) {
+-		struct mm_struct *mm = vma->vm_mm;
+-		up_read(&mm->mmap_sem);
+-		mmput(mm);
+-	}
++	struct proc_maps_private *priv = m->private;
++	unsigned long addr = *pos;
++
++	if (addr & ~PAGE_MASK) { /* time for next batch */
++		if (vma->vm_end - addr < priv->batch_size) {
++			vma = vma->vm_next;
++			if (!vma || vma == get_gate_vma(priv->task))
++				goto done;
++		} else
++			addr = (addr + priv->batch_size) & PAGE_MASK;
++	}
++	if (addr < vma->vm_start)
++	    addr = vma->vm_start;
++
++	m->version = *pos = addr;
++	return vma;
++done:
++	return NULL;
+ }
+ 
+ static void *m_start(struct seq_file *m, loff_t *pos)
+ {
+ 	struct proc_maps_private *priv = m->private;
+-	unsigned long last_addr = m->version;
+-	struct mm_struct *mm;
+-	struct vm_area_struct *vma, *tail_vma = NULL;
+-	loff_t l = *pos;
+-
+-	/* Clear the per syscall fields in priv */
+-	priv->task = NULL;
+-	priv->tail_vma = NULL;
+-
+-	/*
+-	 * We remember last_addr rather than next_addr to hit with
+-	 * mmap_cache most of the time. We have zero last_addr at
+-	 * the beginning and also after lseek. We will have -1 last_addr
+-	 * after the end of the vmas.
+-	 */
+-
+-	if (last_addr == -1UL)
+-		return NULL;
++	struct vm_area_struct *vma;
+ 
++	priv->mm = NULL;
+ 	priv->task = get_pid_task(priv->pid, PIDTYPE_PID);
+ 	if (!priv->task)
+ 		return NULL;
+ 
+-	mm = get_task_mm(priv->task);
+-	if (!mm)
++	priv->mm = get_task_mm(priv->task);
++	if (!priv->mm)
+ 		return NULL;
+ 
+-	priv->tail_vma = tail_vma = get_gate_vma(priv->task);
+-	down_read(&mm->mmap_sem);
++	down_read(&priv->mm->mmap_sem);
+ 
+-	/* Start with last addr hint */
+-	if (last_addr && (vma = find_vma(mm, last_addr))) {
+-		vma = vma->vm_next;
+-		goto out;
+-	}
+-
+-	/*
+-	 * Check the vma index is within the range and do
+-	 * sequential scan until m_index.
+-	 */
+-	vma = NULL;
+-	if ((unsigned long)l < mm->map_count) {
+-		vma = mm->mmap;
+-		while (l-- && vma)
+-			vma = vma->vm_next;
+-		goto out;
+-	}
+-
+-	if (l != mm->map_count)
+-		tail_vma = NULL; /* After gate vma */
+-
+-out:
+-	if (vma)
+-		return vma;
++	vma = find_vma(priv->mm, *pos);
++	if (!vma || vma == get_gate_vma(priv->task))
++		return NULL;
+ 
+-	/* End of vmas has been reached */
+-	m->version = (tail_vma != NULL)? 0: -1UL;
+-	up_read(&mm->mmap_sem);
+-	mmput(mm);
+-	return tail_vma;
++	return seek_vma_addr(m, vma, pos);
+ }
+ 
+ static void *m_next(struct seq_file *m, void *v, loff_t *pos)
+ {
+-	struct proc_maps_private *priv = m->private;
+-	struct vm_area_struct *vma = v;
+-	struct vm_area_struct *tail_vma = priv->tail_vma;
+-
+ 	(*pos)++;
+-	if (vma && (vma != tail_vma) && vma->vm_next)
+-		return vma->vm_next;
+-	vma_stop(priv, vma);
+-	return (vma != tail_vma)? tail_vma: NULL;
++	return seek_vma_addr(m, v, pos);
+ }
+ 
+ static void m_stop(struct seq_file *m, void *v)
+ {
+ 	struct proc_maps_private *priv = m->private;
+-	struct vm_area_struct *vma = v;
+-
+-	vma_stop(priv, vma);
++	if (priv->mm) {
++		up_read(&priv->mm->mmap_sem);
++		mmput(priv->mm);
++	}
+ 	if (priv->task)
+ 		put_task_struct(priv->task);
+ }
+@@ -220,6 +186,7 @@ static int do_maps_open(struct inode *in
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+ 	if (priv) {
+ 		priv->pid = proc_pid(inode);
++		priv->batch_size = ~0;
+ 		ret = seq_open(file, ops);
+ 		if (!ret) {
+ 			struct seq_file *m = file->private_data;
+@@ -291,8 +258,6 @@ static int show_map(struct seq_file *m, 
  	}
- 	pte_unmap_unlock(pte - 1, ptl);
-@@ -395,6 +420,7 @@ static int show_smap(struct seq_file *m,
- 	seq_printf(m,
- 		   "Size:           %8lu kB\n"
- 		   "Rss:            %8lu kB\n"
-+		   "Pss:            %8lu kB\n"
- 		   "Shared_Clean:   %8lu kB\n"
- 		   "Shared_Dirty:   %8lu kB\n"
- 		   "Private_Clean:  %8lu kB\n"
-@@ -402,6 +428,7 @@ static int show_smap(struct seq_file *m,
- 		   "Referenced:     %8lu kB\n",
- 		   (vma->vm_end - vma->vm_start) >> 10,
- 		   sarg.mss.resident >> 10,
-+		   (unsigned long)(sarg.mss.pss >> (10 + PSS_ERROR_BITS)),
- 		   sarg.mss.shared_clean  >> 10,
- 		   sarg.mss.shared_dirty  >> 10,
- 		   sarg.mss.private_clean >> 10,
+ 	seq_putc(m, '\n');
+ 
+-	if (m->count < m->size)  /* vma is copied successfully */
+-		m->version = (vma != get_gate_vma(task))? vma->vm_start: 0;
+ 	return 0;
+ }
+ 
 
 -- 
