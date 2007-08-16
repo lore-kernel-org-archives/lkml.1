@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbXHPLpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbXHPLxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756137AbXHPLpn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 07:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbXHPLpM
+	id S1755540AbXHPLxu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 07:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXHPLxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 07:45:12 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:38057 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752685AbXHPLpL (ORCPT
+	Thu, 16 Aug 2007 07:53:40 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:51758 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbXHPLxk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 07:45:11 -0400
-Message-ID: <46C43818.4050506@aitel.hist.no>
-Date: Thu, 16 Aug 2007 13:42:16 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Thu, 16 Aug 2007 07:53:40 -0400
+Date: Thu, 16 Aug 2007 14:53:50 +0300
+From: Dan Aloni <da-x@monatomic.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Jarek Poplawski <jarkao2@o2.pl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] tty_io.c: don't use flush_scheduled_work()
+Message-ID: <20070816115349.GA26908@localdomain>
+References: <20070701153749.GA111@tv-sign.ru>
 MIME-Version: 1.0
-To: Marc Perkel <mperkel@yahoo.com>
-CC: Kyle Moffett <mrmacman_g4@mac.com>,
-       Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: Thinking outside the box on file systems
-References: <174219.56922.qm@web52501.mail.re2.yahoo.com>
-In-Reply-To: <174219.56922.qm@web52501.mail.re2.yahoo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070701153749.GA111@tv-sign.ru>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marc Perkel wrote:
-> Kyle, What I'm suggesting is scrapping all existing
-> concepts and replacing them with something entirely
-> new. Posix, Unix, SELinux go away except for an
-> emulation layer for backwards compatibility. What I'm
-> suggesting is to start over and do it right. 
->   
-If you want to get any support for "starting over",
-then  you need to:
-1. Point out some serious problem with the existing stuff,
-   otherwise why _bother_ start over
-2. Come up with a truly better idea (demonstrably better)
-    that isn't full of so obvious flaws that a seasoned kernel
-    developer can shoot it down in 5 minutes.
+On Sun, Jul 01, 2007 at 07:37:49PM +0400, Oleg Nesterov wrote:
+> I don't know how to test this patch, the ack/nack from maintainer is wanted.
+> 
+> flush_scheduled_work() is evil and should be avoided. Change tty_set_ldisc()
+> and release_dev() to use cancel_delayed_work_sync/cancel_work_sync.
+> 
+> I am not sure we really need to call do_tty_hangup() when cancel_work_sync()
+> returns true, but this matches the current behaviour.
 
-Trying to be a visionary with a "great idea" that you are
-prepared to let others implement just don't work on
-this list.  If you want to go that route, you
-start a company, hire programmers, tell them to
-implement your vision. If your idea is good then
-your company succeeds.
+I also noticed this problem recently with 2.6.22, on a 2-CPU box where there 
+was one SCHED_RR userspace process stuck in a busy loop. The box was completely 
+responsive but had this annoyance where all tty closings were stuck in 
+flush_scheduled_work(). It's especially noticable when you ssh to the machine
+and then try to log out.
 
-If you want to be an open-source visionary, you have to
-do the initial work yourself until you attract other interested people.
+A temporary workaround was to give just the workqueue events/* threads a 
+SCHED_FIFO static priority of 99, but I have kept that small patch to 
+myself (figured it's just too nasty).
 
-> One of the problems with the Unix/Linux world is that
-> your minds are locked into this one model. In order to
-> do it right it requires the mental discipline to break
-> out of that.
->   
-Or perhaps unix have the best model already? ;-)
-If you want a big break with the existing unix models, then
-perhaps a entirely new project is in order, rather than
-trying to change linux. Linux is after all, in use by millions
-who are satisfied with the linux filesystem model already.
-
-Now, linux is open-source, so you can of course use it as a
-starting point for your different system.  Then you can compete
-with "standard linux" - see who attracts most developers and
-most users in the long run.
-
-Helge Hafting
+-- 
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
