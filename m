@@ -1,56 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759483AbXHPGs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761367AbXHPGs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759483AbXHPGs3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 02:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbXHPGsT
+	id S1761367AbXHPGs4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 02:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbXHPGsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 02:48:19 -0400
-Received: from hpsmtp-eml11.kpnxchange.com ([213.75.38.111]:18125 "EHLO
-	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751255AbXHPGsS (ORCPT
+	Thu, 16 Aug 2007 02:48:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:57054 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751581AbXHPGsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 02:48:18 -0400
-X-Greylist: delayed 975 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Aug 2007 02:48:18 EDT
-From: Frans Pop <elendil@planet.nl>
-To: ebiederm@xmission.com
-Subject: Regression in 'tty layer struct pid conversions' (2.6.21)?
-Date: Thu, 16 Aug 2007 08:32:01 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
+	Thu, 16 Aug 2007 02:48:39 -0400
+Date: Thu, 16 Aug 2007 09:48:26 +0300
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [GIT PULL] please pull infiniband.git for-linus branch
+Message-ID: <20070816064826.GB19432@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+References: <adamyws2lry.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708160832.01369.elendil@planet.nl>
-X-OriginalArrivalTime: 16 Aug 2007 06:32:01.0635 (UTC) FILETIME=[2771EB30:01C7DFCF]
+In-Reply-To: <adamyws2lry.fsf@cisco.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Eric,
+> Dotan Barak (3):
+>       IB: Include <linux/list.h> from <rdma/ib_mad.h>
+>       IB: Include <linux/list.h> and <linux/rwsem.h> from <rdma/ib_verbs.h>
 
-Since 2.6.21, the KDE 'fish' protocol (basically remote file system access 
-using ssh) has started showing problems, mostly on systems running x86_64 
-kernels. The process crashes with a signal 29.
+Hmm, if these things are appropriate for 2.6.23, maybe my patch
+adding linux/mutex.h to ehca_classes.h can go in too?
 
-The bug log indicated a relation with the kernel. A git-bisect has shown the 
-cause to be the activation patch in the 'tty layer struct pid conversions' 
-patch set:
-commit ab521dc0f8e117fd808d3e425216864d60390500 
-Author: Eric W. Biederman <ebiederm@xmission.com> 
-Date:   Mon Feb 12 00:53:00 2007 -0800 
-     [PATCH] tty: update the tty layer to work with struct pid 
- 
-It looks from the description of the patch set that it should cause no 
-changes in behavior. It may of course be that the change in the kernel has 
-exposed a latent issue in the KDE code.
-
-Details about the issue are available in the KDE BTS:
-http://bugs.kde.org/show_bug.cgi?id=145123
-
-The comments in that report indicate that the issue is almost certainly
-more related to the (relative?) speed of systems than to x86_64 as an 
-architecture.
-
-Cheers,
-Frans Pop
+-- 
+MST
