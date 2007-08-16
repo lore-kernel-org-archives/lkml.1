@@ -1,97 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937544AbXHPBGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937214AbXHPBIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937544AbXHPBGf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 21:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758073AbXHPBGX
+	id S937214AbXHPBIl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 21:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbXHPBId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 21:06:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53428 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764817AbXHPBGW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 21:06:22 -0400
-Date: Thu, 16 Aug 2007 06:48:53 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: Segher Boessenkool <segher@kernel.crashing.org>, horms@verge.net.au,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <20070816005156.GA29698@gondor.apana.org.au>
-Message-ID: <alpine.LFD.0.999.0708160637510.24380@enigma.security.iitk.ac.in>
-References: <20070815145207.GA23106@gondor.apana.org.au> <46C3253F.5090707@s5r6.in-berlin.de>
- <20070815162722.GD9645@linux.vnet.ibm.com> <d4406222873856f472b9173a14a19aa2@kernel.crashing.org>
- <20070815185724.GH9645@linux.vnet.ibm.com>
- <alpine.LFD.0.999.0708160118330.16414@enigma.security.iitk.ac.in>
- <2d2eeab6276cab2e6cc5830d36a43b98@kernel.crashing.org>
- <alpine.LFD.0.999.0708160338520.22701@enigma.security.iitk.ac.in>
- <20070816003226.GA29491@gondor.apana.org.au>
- <alpine.LFD.0.999.0708160621260.24380@enigma.security.iitk.ac.in>
- <20070816005156.GA29698@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 15 Aug 2007 21:08:33 -0400
+Received: from mga02.intel.com ([134.134.136.20]:36342 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754880AbXHPBIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 21:08:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,268,1183359600"; 
+   d="scan'208";a="279502774"
+Date: Wed, 15 Aug 2007 18:01:50 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: mingo@elte.hu
+Cc: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [patch] sched: fix broken smt/mc optimizations with CFS
+Message-ID: <20070816010150.GG10033@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Herbert,
+Ingo, let me know if there any side effects of this change. Thanks.
+---
 
+On a four package system with HT - HT load balancing optimizations
+were broken. For example, if two tasks end up running on two logical
+threads of one of the packages, scheduler is not able to pull one of
+the tasks to a completely idle package.
 
-On Thu, 16 Aug 2007, Herbert Xu wrote:
+In this scenario, for nice-0 tasks, imbalance calculated by scheduler
+will be 512 and find_busiest_queue() will return 0 (as each cpu's load
+is 1024 > imbalance and has only one task running).
 
-> On Thu, Aug 16, 2007 at 06:28:42AM +0530, Satyam Sharma wrote:
-> >
-> > > The udelay itself certainly should have some form of cpu_relax in it.
-> > 
-> > Yes, a form of barrier() must be present in mdelay() or udelay() itself
-> > as you say, having it in __const_udelay() is *not* enough (superflous
-> > actually, considering it is already a separate translation unit and
-> > invisible to the compiler).
-> 
-> As long as __const_udelay does something which has the same
-> effect as barrier it is enough even if it's in the same unit.
+Similarly MC scheduler optimizations also get fixed with this patch.
 
-Only if __const_udelay() is inlined. But as I said, __const_udelay()
--- although marked "inline" -- will never be inlined anywhere in the
-kernel in reality. It's an exported symbol, and never inlined from
-modules. Even from built-in targets, the definition of __const_udelay
-is invisible when gcc is compiling the compilation units of those
-callsites. The compiler has no idea that that function has barriers
-or not, so we're saved here _only_ by the lucky fact that
-__const_udelay() is in a different compilation unit.
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
 
-
-> As a matter of fact it does on i386 where __delay either uses
-> rep_nop or asm/volatile.
-
-__delay() can be either delay_tsc() or delay_loop() on i386.
-
-delay_tsc() uses the rep_nop() there for it's own little busy
-loop, actually. But for a call site that inlines __const_udelay()
--- if it were ever moved to a .h file and marked inline -- the
-call to __delay() will _still_ be across compilation units. So,
-again for this case, it does not matter if the callee function
-has compiler barriers or not (it would've been a different story
-if we were discussing real/CPU barriers, I think), what saves us
-here is just the fact that a call is made to a function from a
-different compilation unit, which is invisible to the compiler
-when compiling the callsite, and hence acting as the compiler
-barrier.
-
-Regarding delay_loop(), it uses "volatile" for the "asm" which
-has quite different semantics from the C language "volatile"
-type-qualifier keyword and does not imply any compiler barrier
-at all.
-
-
-Satyam
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 45e17b8..c5ac710 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2494,7 +2494,7 @@ group_next:
+ 	 * a think about bumping its value to force at least one task to be
+ 	 * moved
+ 	 */
+-	if (*imbalance + SCHED_LOAD_SCALE_FUZZ < busiest_load_per_task/2) {
++	if (*imbalance < busiest_load_per_task) {
+ 		unsigned long tmp, pwr_now, pwr_move;
+ 		unsigned int imbn;
+ 
