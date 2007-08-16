@@ -1,41 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936343AbXHPDPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937879AbXHPDRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936343AbXHPDPw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 23:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbXHPDPp
+	id S937879AbXHPDRY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 23:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763496AbXHPDRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 23:15:45 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:47383 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1755067AbXHPDPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 23:15:44 -0400
-Message-ID: <387234139.16356@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Thu, 16 Aug 2007 11:15:39 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Matt Mackall <mpm@selenic.com>
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       John Berthels <jjberthels@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [RFC][PATCH] /proc/<pid>/pmaps - memory maps in granularity of
-	pages
-Message-ID: <20070816031539.GA5110@mail.ustc.edu.cn>
-References: <20070814085204.GA10884@mail.ustc.edu.cn> <20070814162618.GV30556@waste.org> <20070816013701.GA5209@mail.ustc.edu.cn>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070816013701.GA5209@mail.ustc.edu.cn>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 15 Aug 2007 23:17:14 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2348 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763024AbXHPDRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 23:17:14 -0400
+Subject: Re: drivers/infiniband/mlx/mad.c misplaced ;
+From: Joe Perches <joe@perches.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: netfilter-devel@lists.netfilter.org, coreteam@netfilter.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46C3B428.4000003@intel.com>
+References: <20070815235825.GB17004@redhat.com>
+	 <1187224811.5906.55.camel@localhost>  <46C3B428.4000003@intel.com>
+Content-Type: text/plain
+Date: Wed, 15 Aug 2007 20:17:05 -0700
+Message-Id: <1187234225.5906.73.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 09:37:01AM +0800, Fengguang Wu wrote:
-> 3) A 64bit number can be encoded in hex in 8 bytes, no more than its
-                                             ~~ sorry, I'm a fool!
-> binary presentation. And often the text string will be much shorter
-> because of the common small values.
+On Wed, 2007-08-15 at 19:19 -0700, Kok, Auke wrote:
+> Joe Perches wrote:
+> > On Wed, 2007-08-15 at 19:58 -0400, Dave Jones wrote:
+> > There's more than a few of these (not inspected).
+> > $ egrep -r --include=*.c "\bif[[:space:]]*\([^\)]*\)[[:space:]]*\;" * 
+> > arch/sh/boards/se/7343/io.c:    if (0) ;
+> > drivers/atm/iphase.c:     if (!desc1) ;
+> > drivers/infiniband/hw/mlx4/mad.c:       if (!err);
+> > drivers/isdn/capi/capiutil.c:   else if (c <= 0x0f);
+> > drivers/net/tokenring/ibmtr.c:  else if (ti->shared_ram_paging == 0xf);  /* No paging in adapter */
+> > drivers/s390/scsi/zfcp_erp.c:           if (status == ZFCP_ERP_SUCCEEDED) ;     /* no further action */
+> > fs/hostfs/hostfs_user.c:        if(attrs->ia_valid & HOSTFS_ATTR_CTIME) ;
+> > net/netfilter/xt_u32.c:         if (skb->len < 4 || pos > skb->len - 4);
+> > sound/pci/au88x0/au88x0_synth.c:                                if (eax == 0) ;
+> 
+> sounds like an excellent candidate check for checkpatch.pl !!!
+
+I think it's poor style and all of these should go away.
+
+the netfilter one appears to be a real error too.
+
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/net/netfilter/xt_u32.c b/net/netfilter/xt_u32.c
+index 74f9b14..bec4279 100644
+--- a/net/netfilter/xt_u32.c
++++ b/net/netfilter/xt_u32.c
+@@ -36,7 +36,7 @@ static bool u32_match_it(const struct xt_u32 *data,
+ 		at  = 0;
+ 		pos = ct->location[0].number;
+ 
+-		if (skb->len < 4 || pos > skb->len - 4);
++		if (skb->len < 4 || pos > skb->len - 4)
+ 			return false;
+ 
+ 		ret   = skb_copy_bits(skb, pos, &n, sizeof(n));
+
 
