@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932571AbXHPSzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933159AbXHPS4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932571AbXHPSzQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 14:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759073AbXHPSy6
+	id S933159AbXHPS4f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 14:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761895AbXHPS4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 14:54:58 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60603 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758646AbXHPSy4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 14:54:56 -0400
-Date: Thu, 16 Aug 2007 11:54:54 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Paul Mackerras <paulus@samba.org>
-cc: Satyam Sharma <satyam@infradead.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.64.0708161151270.17049@schroedinger.engr.sgi.com>
-References: <20070809131423.GA9927@shell.boston.redhat.com>
- <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
- <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
- <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
- <18115.35524.56393.347841@cargo.ozlabs.ibm.com>
- <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com>
- <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
- <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au>
- <18115.45316.702491.681906@cargo.ozlabs.ibm.com>
- <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in>
- <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in>
- <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
+	Thu, 16 Aug 2007 14:56:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:40207 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760010AbXHPS4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 14:56:24 -0400
+Message-ID: <46C49DD6.9050508@garzik.org>
+Date: Thu, 16 Aug 2007 14:56:22 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mike Frysinger <vapier.adi@gmail.com>
+CC: Sonic Zhang <sonic.adi@gmail.com>, Linux IDE <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Bryan Wu <bryan.wu@analog.com>
+Subject: Re: [PATCH take #5] [libata] libata driver for bf548 on chip ATAPI
+ controller.
+References: <1187169256.31383.3.camel@sevens.analog.com>	 <46C3F6FB.2070909@garzik.org>	 <8bd0f97a0708160927s625fd5ax84cd6d12a693d9ad@mail.gmail.com>	 <46C49A0D.5080002@garzik.org> <8bd0f97a0708161146l70eeea69jd5fdedbaa8486590@mail.gmail.com>
+In-Reply-To: <8bd0f97a0708161146l70eeea69jd5fdedbaa8486590@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Aug 2007, Paul Mackerras wrote:
-
-> The uses of atomic_read where one might want it to allow caching of
-> the result seem to me to fall into 3 categories:
+Mike Frysinger wrote:
+> On 8/16/07, Jeff Garzik <jeff@garzik.org> wrote:
+>> Mike Frysinger wrote:
+>>> On 8/16/07, Jeff Garzik <jeff@garzik.org> wrote:
+>>>> Sonic Zhang wrote:
+>>>>> +static void bfin_set_piomode(struct ata_port *ap, struct ata_device *adev)
+>>>>> +{
+>>>>> +     int mode = adev->pio_mode - XFER_PIO_0;
+>>>>> +     unsigned long base = (unsigned long)ap->ioaddr.ctl_addr;
+>>>> (added Bryan Wu to CC)
+>>>>
+>>>> Someone needs to need fix the bfin architecture:  the addresses on the
+>>>> bfin_read/bfin_write functions should be 'void __iomem *' not unsigned long.
+>>> there are no address pointers anymore, so there is nothing to cast ...
+>>> the bfin_read/bfin_write macros are done in sexy asm:
+>>> #define bfin_write8(addr,val) __asm__ __volatile__("b[%0] = %1;" ::
+>>> "a"(addr), "d"(val))
+>>> or i'm misunderstanding what you mean ...
+>>>
+>>> where do you see (unsigned long) ?
+>> Look up (into the message you quoted).
 > 
-> 1. Places that are buggy because of a race arising from the way it's
->    used.
+> yes, you quoted the driver, not the Blackfin core parts
 > 
-> 2. Places where there is a race but it doesn't matter because we're
->    doing some clever trick.
+>> Regardless of the implementation, the C type system should be employed
+>> to ensure that 'addr' is known to the compiler as 'void __iomem *'
+>> rather than unsigned long.
 > 
-> 3. Places where there is some locking in place that eliminates any
->    potential race.
-> 
-> In case 1, adding volatile won't solve the race, of course, but it's
-> hard to argue that we shouldn't do something because it will slow down
-> buggy code.  Case 2 is hopefully pretty rare and accompanied by large
-> comment blocks, and in those cases caching the result of atomic_read
-> explicitly in a local variable would probably make the code clearer.
-> And in case 3 there is no reason to use atomic_t at all; we might as
-> well just use an int.
+> i agree the specific pata driver should be declared the way you
+> described, however i dont see how that has bearing on the
+> bfin_read/bfin_write macros as you seemed to indicate
 
-In 2 + 3 you may increment the atomic variable in some places. The value 
-of the atomic variable may not matter because you only do optimizations.
+Macros completely ignore the C type system.  Look at other architectures 
+if you cannot figure out how to implement a static inline with stronger 
+typing.
 
-Checking a atomic_t for a definite state has to involve either
-some side conditions (lock only taken if refcount is <= 0 or so) or done 
-by changing the state (see f.e. atomic_inc_unless_zero).
+	Jeff
 
-> So I don't see any good reason to make the atomic API more complex by
-> having "volatile" and "non-volatile" versions of atomic_read.  It
-> should just have the "volatile" behaviour.
 
-If you want to make it less complex then drop volatile which causes weird 
-side effects without solving any problems as you just pointed out.
+
