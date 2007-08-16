@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbXHPMMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbXHPMOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757946AbXHPMMU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 08:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbXHPMMG
+	id S1758278AbXHPMOM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 08:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbXHPMN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 08:12:06 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:62302 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbXHPMME (ORCPT
+	Thu, 16 Aug 2007 08:13:57 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:51155 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753590AbXHPMN4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 08:12:04 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Bad CD disk disables IDE DMA
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Zoltan Boszormenyi <zboszor@dunaweb.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Reply-To: 7eggert@gmx.de
-Date: Thu, 16 Aug 2007 14:11:53 +0200
-References: <8Squ5-2cU-19@gated-at.bofh.it> <8SIKl-5IK-13@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Thu, 16 Aug 2007 08:13:56 -0400
+Date: Thu, 16 Aug 2007 07:13:54 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: xemul@openvz.org, containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       oleg@tv-sign.ru
+Subject: Re: [PATCH 19/20] Changes to show virtual ids to user
+Message-ID: <20070816121354.GB13302@sergelap.austin.ibm.com>
+References: <46BC508C.mailGLJ118R5H@openvz.org> <20070814131202.73b7d559.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1ILeCg-0000iH-2W@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+hzA6MPTkzfFc8cxqLLDH6axgYqqwN83rr/Z+
- JyHW6gUU4jdzzJLAEa17CyE5FrAza19bppfGUy5e02Jt1Ep5M+
- xmdqSv1aRHsyyWmkyNzPQ==
+Content-Disposition: inline
+In-Reply-To: <20070814131202.73b7d559.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> On 15/08/07, Zoltan Boszormenyi <zboszor@dunaweb.hu> wrote:
-
->> I noticed that a bad CD of mine makes DMA disabled:
-
-[...]
->> hda: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
->> ide: failed opcode was: unknown
->> hda: DMA disabled
->> hda: ide_intr: huh? expected NULL handler on exit
->> hda: ATAPI reset complete
->>
->> Every time I put the said CD into to drive and DMA is on, I get the
->> above messages.
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Fri, 10 Aug 2007 15:48:28 +0400
+> xemul@openvz.org wrote:
 > 
-> This might be intended.
+> > This is the largest patch in the set. Make all (I hope) the places where
+> > the pid is shown to or get from user operate on the virtual pids.
+> > 
+> > The idea is:
+> >  - all in-kernel data structures must store either struct pid itself
+> >    or the pid's global nr, obtained with pid_nr() call;
+> >  - when seeking the task from kernel code with the stored id one
+> >    should use find_task_by_pid() call that works with global pids;
+> >  - when showing pid's numerical value to the user the virtual one
+> >    should be used, but however when one shows task's pid outside this
+> >    task's namespace the global one is to be used;
+> >  - when getting the pid from userspace one need to consider this as
+> >    the virtual one and use appropriate task/pid-searching functions.
+> > 
+> > ...
+> >
+> > -	si.si_pid = current->pid;
+> > +	si.si_pid = task_pid_vnr(current);
+> 
+> This is going to be an ongoing maintenance problem: people will sneak
+> new references to current->pid into the tree and nobody will notice.
+> 
+> It'd be best to rename task_struct.pid to something else to catch such
+> problems and to force people to use the right accessors.  Is that feasible?
 
-Maybe, and maybe only a certain effect might be intended. And maybe I can
-help by asking these questions:
+It's certainly feasible, and something we'd previously done for instance
+in http://marc.info/?l=linux-kernel&m=113751118609597&w=2
 
-1) Does disabling DMA fix the seek errors, or does it hide them by the PIO
-   interfce not printing them?
+> Generally this is a tactic which should be used whenever things like this
+> are virtualised.
 
-2) If it does hide them, would filtering for seek errors be a sane thing to
-   do, or does the DMA engine (or HDD) behave badly on these errors, or
-   do bad-DMA devices report seek errors, too?
+Ok, it's a big invasive patchset, but there's no reason we can't do it.
 
-3) If it does not hide them, would re-enabling DMA on disk change be a
-   feasable workaround?
-   (proposed interface: use hdparm -d $num where $num =
-     0, 1: as before
-     3: DMA on, if switched off automatically, will be set to 2
-     2: DMA off, will be turned on (set to 3) on disk change)
-
-4) Does libata work well enough for making all effort put into that old
-   IDE layer be a waste of time?
--- 
-Fun things to slip into your budget
-True: NASA couldn't get money approved for hangars for Space Shuttle so they
-put in request for 'Space Vehicle Refurbishment and Storage Facilities'
-       - and got the money to build hangars
+thanks,
+-serge
