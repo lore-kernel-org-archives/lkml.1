@@ -1,42 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933402AbXHPTkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763545AbXHPTmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933402AbXHPTkm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 15:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760942AbXHPTju
+	id S1763545AbXHPTmm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 15:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759662AbXHPTmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 15:39:50 -0400
-Received: from qb-out-0506.google.com ([72.14.204.236]:45536 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759934AbXHPTjq (ORCPT
+	Thu, 16 Aug 2007 15:42:32 -0400
+Received: from mailrelay010.isp.belgacom.be ([195.238.6.177]:6419 "EHLO
+	mailrelay010.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758328AbXHPTmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 15:39:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dEjKXSC5QNEnpUJwFCog8r8iWfv+H7FRZ8ddI7HFbWoS0KPUbcgIhV+2crPvL/A/cplc+kUEs16/rmoHl1Js7zdYIv7XoW72KaRtXZkpzDUqdXJRKJyBt6dcbiwzhrE0qbfTkW9RGrkHsF62SlpYzfjCdUHTSz6Fk9oUszXOx70=
-Message-ID: <8bd0f97a0708161239p499247baqd32b2c1eabcab819@mail.gmail.com>
-Date: Thu, 16 Aug 2007 15:39:45 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: [PATCH 1/2] Add a new field `name' to struct linux_binfmt
-Cc: "Jie Zhang" <jie.zhang@analog.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070816192447.GA5875@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Aug 2007 15:42:31 -0400
+Date: Thu, 16 Aug 2007 21:46:38 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: joe@perches.com
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] [540/2many] MAINTAINERS - WATCHDOG DEVICE DRIVERS
+Message-ID: <20070816194638.GA3498@infomag.infomag.iguana.be>
+References: <46bffcab.hvODrZFyIOzH/Lb/%joe@perches.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1187248823.11475.24.camel@mercury.analog.com>
-	 <20070816192447.GA5875@martell.zuzino.mipt.ru>
+In-Reply-To: <46bffcab.hvODrZFyIOzH/Lb/%joe@perches.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/16/07, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> On Thu, Aug 16, 2007 at 03:20:23PM +0800, Jie Zhang wrote:
-> > A second blackfin arch patch will use this field to distinguish `flat'
-> > binfmt with `FDPIC ELF'.
->
-> Please, post it. It a bit hard to see what you're actually trying to do.
+Hi Joe,
 
-he already did ...
-http://article.gmane.org/gmane.linux.kernel/571072
--mike
+> Add file pattern to MAINTAINER entry
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+
+patch added to linux-2.6-watchdog git trees.
+
+Greetings,
+Wim.
