@@ -1,138 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935611AbXHPInm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936064AbXHPIo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935611AbXHPInm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 04:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763391AbXHPI3d
+	id S936064AbXHPIo1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 04:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762393AbXHPIeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 04:29:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60525 "EHLO mx1.redhat.com"
+	Thu, 16 Aug 2007 04:34:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33818 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932402AbXHPI3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 04:29:08 -0400
-Message-Id: <20070816074628.355847000@chello.nl>
+	id S934161AbXHPIeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 04:34:01 -0400
+Message-Id: <20070816074626.473901000@chello.nl>
 References: <20070816074525.065850000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Thu, 16 Aug 2007 09:45:40 +0200
+Date: Thu, 16 Aug 2007 09:45:33 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
-       torvalds@linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
-       Robert Kaiser <rkaiser@sysgo.de>
-Subject: [PATCH 15/23] mtd: give mtdconcat devices their own backing_dev_info
-Content-Disposition: inline; filename=bdi_mtdconcat.patch
+       torvalds@linux-foundation.org
+Subject: [PATCH 08/23] lib: percpu_count_sum()
+Content-Disposition: inline; filename=percpu_counter_sum.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These are actual devices, give them their own BDI.
+Provide an accurate version of percpu_counter_read.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Robert Kaiser <rkaiser@sysgo.de>
 ---
- drivers/mtd/mtdconcat.c |   28 ++++++++++++++++++----------
- 1 file changed, 18 insertions(+), 10 deletions(-)
+ include/linux/percpu_counter.h |   18 +++++++++++++++++-
+ lib/percpu_counter.c           |    6 +++---
+ 2 files changed, 20 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/drivers/mtd/mtdconcat.c
+Index: linux-2.6/include/linux/percpu_counter.h
 ===================================================================
---- linux-2.6.orig/drivers/mtd/mtdconcat.c	2007-04-22 18:55:17.000000000 +0200
-+++ linux-2.6/drivers/mtd/mtdconcat.c	2007-04-22 19:01:42.000000000 +0200
-@@ -32,6 +32,7 @@ struct mtd_concat {
- 	struct mtd_info mtd;
- 	int num_subdev;
- 	struct mtd_info **subdev;
-+	struct backing_dev_info backing_dev_info;
- };
+--- linux-2.6.orig/include/linux/percpu_counter.h
++++ linux-2.6/include/linux/percpu_counter.h
+@@ -34,13 +34,24 @@ void percpu_counter_init(struct percpu_c
+ void percpu_counter_destroy(struct percpu_counter *fbc);
+ void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
+ void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
+-s64 percpu_counter_sum_positive(struct percpu_counter *fbc);
++s64 __percpu_counter_sum(struct percpu_counter *fbc);
  
- /*
-@@ -782,10 +783,9 @@ struct mtd_info *mtd_concat_create(struc
- 
- 	for (i = 1; i < num_devs; i++) {
- 		if (concat->mtd.type != subdev[i]->type) {
--			kfree(concat);
- 			printk("Incompatible device type on \"%s\"\n",
- 			       subdev[i]->name);
--			return NULL;
-+			goto error;
- 		}
- 		if (concat->mtd.flags != subdev[i]->flags) {
- 			/*
-@@ -794,10 +794,9 @@ struct mtd_info *mtd_concat_create(struc
- 			 */
- 			if ((concat->mtd.flags ^ subdev[i]->
- 			     flags) & ~MTD_WRITEABLE) {
--				kfree(concat);
- 				printk("Incompatible device flags on \"%s\"\n",
- 				       subdev[i]->name);
--				return NULL;
-+				goto error;
- 			} else
- 				/* if writeable attribute differs,
- 				   make super device writeable */
-@@ -809,9 +808,12 @@ struct mtd_info *mtd_concat_create(struc
- 		 * - copy-mapping is still permitted
- 		 */
- 		if (concat->mtd.backing_dev_info !=
--		    subdev[i]->backing_dev_info)
-+		    subdev[i]->backing_dev_info) {
-+			concat->backing_dev_info = default_backing_dev_info;
-+			bdi_init(&concat->backing_dev_info);
- 			concat->mtd.backing_dev_info =
--				&default_backing_dev_info;
-+				&concat->backing_dev_info;
-+		}
- 
- 		concat->mtd.size += subdev[i]->size;
- 		concat->mtd.ecc_stats.badblocks +=
-@@ -821,10 +823,9 @@ struct mtd_info *mtd_concat_create(struc
- 		    concat->mtd.oobsize    !=  subdev[i]->oobsize ||
- 		    !concat->mtd.read_oob  != !subdev[i]->read_oob ||
- 		    !concat->mtd.write_oob != !subdev[i]->write_oob) {
--			kfree(concat);
- 			printk("Incompatible OOB or ECC data on \"%s\"\n",
- 			       subdev[i]->name);
--			return NULL;
-+			goto error;
- 		}
- 		concat->subdev[i] = subdev[i];
- 
-@@ -903,11 +904,10 @@ struct mtd_info *mtd_concat_create(struc
- 		    kmalloc(num_erase_region *
- 			    sizeof (struct mtd_erase_region_info), GFP_KERNEL);
- 		if (!erase_region_p) {
--			kfree(concat);
- 			printk
- 			    ("memory allocation error while creating erase region list"
- 			     " for device \"%s\"\n", name);
--			return NULL;
-+			goto error;
- 		}
- 
- 		/*
-@@ -968,6 +968,12 @@ struct mtd_info *mtd_concat_create(struc
- 	}
- 
- 	return &concat->mtd;
-+
-+error:
-+	if (concat->mtd.backing_dev_info == &concat->backing_dev_info)
-+		bdi_destroy(&concat->backing_dev_info);
-+	kfree(concat);
-+	return NULL;
+ static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
+ {
+ 	__percpu_counter_add(fbc, amount, FBC_BATCH);
  }
  
- /*
-@@ -977,6 +983,8 @@ struct mtd_info *mtd_concat_create(struc
- void mtd_concat_destroy(struct mtd_info *mtd)
++static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
++{
++	s64 ret = __percpu_counter_sum(fbc);
++	return ret < 0 ? 0 : ret;
++}
++
++static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
++{
++	return __percpu_counter_sum(fbc);
++}
++
+ static inline s64 percpu_counter_read(struct percpu_counter *fbc)
  {
- 	struct mtd_concat *concat = CONCAT(mtd);
-+	if (concat->mtd.backing_dev_info == &concat->backing_dev_info)
-+		bdi_destroy(&concat->backing_dev_info);
- 	if (concat->mtd.numeraseregions)
- 		kfree(concat->mtd.eraseregions);
- 	kfree(concat);
+ 	return fbc->count;
+@@ -107,6 +118,11 @@ static inline s64 percpu_counter_sum_pos
+ 	return percpu_counter_read_positive(fbc);
+ }
+ 
++static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
++{
++	return percpu_counter_read(fbc);
++}
++
+ #endif	/* CONFIG_SMP */
+ 
+ static inline void percpu_counter_inc(struct percpu_counter *fbc)
+Index: linux-2.6/lib/percpu_counter.c
+===================================================================
+--- linux-2.6.orig/lib/percpu_counter.c
++++ linux-2.6/lib/percpu_counter.c
+@@ -52,7 +52,7 @@ EXPORT_SYMBOL(__percpu_counter_add);
+  * Add up all the per-cpu counts, return the result.  This is a more accurate
+  * but much slower version of percpu_counter_read_positive()
+  */
+-s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
++s64 __percpu_counter_sum(struct percpu_counter *fbc)
+ {
+ 	s64 ret;
+ 	int cpu;
+@@ -64,9 +64,9 @@ s64 percpu_counter_sum_positive(struct p
+ 		ret += *pcount;
+ 	}
+ 	spin_unlock(&fbc->lock);
+-	return ret < 0 ? 0 : ret;
++	return ret;
+ }
+-EXPORT_SYMBOL(percpu_counter_sum_positive);
++EXPORT_SYMBOL(__percpu_counter_sum);
+ 
+ void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
+ {
 
 --
 
