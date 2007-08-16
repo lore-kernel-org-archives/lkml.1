@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763496AbXHPHuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932677AbXHPHvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763496AbXHPHuq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 03:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827AbXHPHuj
+	id S932677AbXHPHvV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 03:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756254AbXHPHvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 03:50:39 -0400
-Received: from mga02.intel.com ([134.134.136.20]:39452 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754299AbXHPHui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 03:50:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,270,1183359600"; 
-   d="scan'208";a="279632611"
-Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org, Aaron Durbin <adurbin@google.com>
-In-Reply-To: <20070815154245.500c572c.akpm@linux-foundation.org>
-References: <1186990219.22431.37.camel@caritas-dev.intel.com>
-	 <20070815154245.500c572c.akpm@linux-foundation.org>
-Content-Type: text/plain
+	Thu, 16 Aug 2007 03:51:11 -0400
+Received: from host2.marvell.com ([65.219.4.2]:47150 "EHLO maili.marvell.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755888AbXHPHvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 03:51:09 -0400
+X-Greylist: delayed 1769 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Aug 2007 03:51:09 EDT
+Message-ID: <46C3FB01.9090203@gmail.com>
+Date: Thu, 16 Aug 2007 15:21:37 +0800
+From: eric miao <eric.y.miao@gmail.com>
+Reply-To: eric.y.miao@gmail.com
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: ye janboe <janboe.ye@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: how can I get an account on master.kernel.org machine
+References: <af3ea28a0708151958h4af993e6o1db3b9adddc14294@mail.gmail.com> <20070815201421.ffbd84f3.randy.dunlap@oracle.com>
+In-Reply-To: <20070815201421.ffbd84f3.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Date: Thu, 16 Aug 2007 15:51:04 +0800
-Message-Id: <1187250664.15063.0.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 16 Aug 2007 07:50:35.0383 (UTC) FILETIME=[210EC870:01C7DFDA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-16 at 06:42 +0800, Andrew Morton wrote:
-> On Mon, 13 Aug 2007 15:30:19 +0800
-> "Huang, Ying" <ying.huang@intel.com> wrote:
-> 
-> > Following sets of patches add EFI/UEFI (Unified Extensible Firmware
-> > Interface) runtime services support to x86_64 architecture.
-> 
-> I had to rework these a bit due to clashes with
-> x86_64-add-acpi-reboot-option.patch.  Please check carefully that
-> everything landed OK.
-> 
-OK, I will be more careful next time.
+And if you purpose is only to download that tree, my suggestion is that
+some of the git trees are not public like linux-arm so the owner can do
+whatever he likes in the tree, and don't ever try to have access to it.
 
-Best Regards,
-Huang Ying
+for linux-arm, it will be constantly pulled by Linus, unless you really
+want the _most_ up-to-date patches, which you might find them at
+
+  http://ftp.arm.linux.org.uk/pub/armlinux/kernel/git-cur/
+
+that folder will be constantly refreshed by the maintainer.
+
+- eric
+
+Randy Dunlap wrote:
+> On Thu, 16 Aug 2007 10:58:41 +0800 ye janboe wrote:
+> 
+>> I want to down linux-arm git repos, but I do not have an account on
+>> master machine.
+> 
+> see http://www.kernel.org/faq/#account
+> 
+> ---
+> ~Randy
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
