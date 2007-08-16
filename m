@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765641AbXHPQQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932828AbXHPQRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765641AbXHPQQP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 12:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762994AbXHPQP6
+	id S932828AbXHPQRk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 12:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758809AbXHPQRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 12:15:58 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:60890 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759883AbXHPQP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 12:15:57 -0400
-Date: Fri, 17 Aug 2007 01:14:50 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: a.zummo@towertech.it, linux-kernel@vger.kernel.org,
-       rtc-linux@googlegroups.com, dbrownell@users.sourceforge.net
-Subject: Re: [PATCH] rtc: Make rtc-ds1553 driver hotplug-aware
-Message-ID: <20070816161450.GE13927@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Atsushi Nemoto <anemo@mba.ocn.ne.jp>, a.zummo@towertech.it,
-	linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com,
-	dbrownell@users.sourceforge.net
-References: <20070817.010627.110331225.anemo@mba.ocn.ne.jp>
+	Thu, 16 Aug 2007 12:17:32 -0400
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:38311 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755311AbXHPQRa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 12:17:30 -0400
+X-IronPort-AV: i="4.19,272,1183359600"; 
+   d="scan'208"; a="392648496:sNHT46684326"
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       openib-general@openib.org, fenkes@de.ibm.com,
+       "\"Hoang-Nam Nguyen\" @dyn-9-152-249-53" 
+	<Hoang-Nam.Nguyen@d01av04.pok.ibm.com>
+Subject: Re: [ofa-general] [PATCH 7/7] IB/ehca: Prevent overwriting QP init attributes given by caller
+X-Message-Flag: Warning: May contain useful information
+References: <200708082044.38247.ossrosch@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 16 Aug 2007 09:17:22 -0700
+In-Reply-To: <200708082044.38247.ossrosch@linux.vnet.ibm.com> (Stefan Roscher's message of "Wed, 8 Aug 2007 20:44:37 +0200")
+Message-ID: <adatzqz1mjx.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070817.010627.110331225.anemo@mba.ocn.ne.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 16 Aug 2007 16:17:23.0398 (UTC) FILETIME=[EDA5A660:01C7E020]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 01:06:27AM +0900, Atsushi Nemoto wrote:
-> Add an MODULE_ALIAS() to make this platform driver hotplug-aware.
-> 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-> ---
-> diff --git a/drivers/rtc/rtc-ds1553.c b/drivers/rtc/rtc-ds1553.c
-> index 46da571..e932024 100644
-> --- a/drivers/rtc/rtc-ds1553.c
-> +++ b/drivers/rtc/rtc-ds1553.c
-> @@ -417,3 +417,4 @@ MODULE_AUTHOR("Atsushi Nemoto <anemo@mba.ocn.ne.jp>");
->  MODULE_DESCRIPTION("Dallas DS1553 RTC driver");
->  MODULE_LICENSE("GPL");
->  MODULE_VERSION(DRV_VERSION);
-> +MODULE_ALIAS("ds1742");
+I don't understand this patch.  <rdma/ib_verbs.h> says this about
+ib_create_qp():
 
-Presumably this should be ds1553.
+ * @qp_init_attr: A list of initial attributes required to create the
+ *   QP.  If QP creation succeeds, then the attributes are updated to
+ *   the actual capabilities of the created QP.
+
+So it seems the current code is actually correct and your patch breaks
+it??
