@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934456AbXHPQgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934167AbXHPQjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934456AbXHPQgJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 12:36:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761246AbXHPQfP
+	id S934167AbXHPQjJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 12:39:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764570AbXHPQi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 12:35:15 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36607 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762580AbXHPQfM (ORCPT
+	Thu, 16 Aug 2007 12:38:56 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:60880 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763485AbXHPQiy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 12:35:12 -0400
-Subject: Re: [PATCH] UML - Add a .note.SuSE section
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Andrew Morton <akpm@osdl.org>, stable@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Alberto Pires de Oliveira Neto <apon1@terra.com.br>, giedrius@su.lt
-In-Reply-To: <20070816162428.GA8128@c2.user-mode-linux.org>
-References: <20070816162428.GA8128@c2.user-mode-linux.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Thu, 16 Aug 2007 09:30:56 -0700
-Message-Id: <1187281856.2663.0.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 (2.11.6.1-1.fc8) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 16 Aug 2007 12:38:54 -0400
+Date: Thu, 16 Aug 2007 11:38:50 -0500
+To: Michael Neuling <mikey@neuling.org>
+Cc: Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@osdl.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] Add scaled time to taskstats based process accounting
+Message-ID: <20070816163850.GU4261@austin.ibm.com>
+References: <20070816070922.37B5370074@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070816070922.37B5370074@localhost.localdomain>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2007-08-16 at 12:24 -0400, Jeff Dike wrote:
-> [ This is both 2.6.24 and -stable material ]
+On Thu, Aug 16, 2007 at 05:09:22PM +1000, Michael Neuling wrote:
+> This adds two items to the taststats struct to account for user and
+> system time based on scaling the CPU frequency and instruction issue
+> rates.
 > 
-> SuSE seems to require that binaries have a .note.SuSE section.
-> Without it, UML segfaults if any parameters are passed on the command
-> line.
+> Adds account_(user|system)_time_scaled callbacks which architectures
+> can use to account for time using this mechanism.
 
+There's something simple here that I just don't understand.
 
-this sounds like something really stupid and bad... why would the kernel
-need to have a per-distro note section???
+>  /*
+> + * Account scaled user cpu time to a process.
+> + * @p: the process that the cpu time gets accounted to
+> + * @cputime: the cpu time spent in user space since the last update
+> + */
+> +void account_user_time_scaled(struct task_struct *p, cputime_t cputime)
+> +{
+> +	p->utimescaled = cputime_add(p->utimescaled, cputime);
+> +}
 
+My gut impression (maybe wrong?) is that the scaled time is,
+in a certain sense, "more accurate" than the unscaled time.
+In fact, the unscaled time gives me the impression of being
+rather meaningless, as it has no particular significance
+with respect to the wall-clock, and it also doesn't give
+any accurate hint of how much cpu resource was actually
+consumed.
+
+If one has a cpu with frequency scaling, then when would
+one ever be interested in the non-scaled time? If the answer
+is "never", then why not just always use the scaled time,
+instead of adding more stuff to the kernel structs?
+
+--linas
 
