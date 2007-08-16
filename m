@@ -1,126 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762137AbXHPO0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760776AbXHPO1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762137AbXHPO0A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 10:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757791AbXHPOZq
+	id S1760776AbXHPO1o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 10:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760037AbXHPO1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 10:25:46 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52712 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753566AbXHPOZp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 10:25:45 -0400
-Subject: [PATCH] lockdep: annotate rcu_read_{,un}lock()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Paul E McKenney <paulmck@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Cc: herbert@gondor.apana.org.au, 123.oleg@gmail.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Daniel Walker <dwalker@mvista.com>
-In-Reply-To: <20070815.144628.104052147.davem@davemloft.net>
-References: <af57f1ac0708141130v729fa636k3150673809ec20a8@mail.gmail.com>
-	 <E1ILEJr-0005Fl-00@gondolin.me.apana.org.au>
-	 <20070815.144628.104052147.davem@davemloft.net>
+	Thu, 16 Aug 2007 10:27:24 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36254 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759922AbXHPO1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 10:27:22 -0400
+Subject: RE: scripts/mod/file2alias.c cross compile problem
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "Luck, Tony" <tony.luck@intel.com>, Adrian Bunk <bunk@stusta.de>,
+       Sam Ravnborg <sam@ravnborg.org>, Jan Dittmer <jdi@l4x.org>,
+       Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+In-Reply-To: <1186092501.6131.154.camel@localhost.localdomain>
+References: <617E1C2C70743745A92448908E030B2A0211AFF0@scsmsx411.amr.corp.intel.com>
+	 <1186092501.6131.154.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Thu, 16 Aug 2007 16:25:07 +0200
-Message-Id: <1187274307.6114.92.camel@twins>
+Organization: Novell/SUSE
+Date: Thu, 16 Aug 2007 16:27:15 +0200
+Message-Id: <1187274435.8780.780.camel@queen.suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-08-03 at 08:08 +1000, Rusty Russell wrote:
+> On Thu, 2007-08-02 at 09:25 -0700, Luck, Tony wrote:
+> > > Adrian Bunk: scripts/mod/file2alias.c is compiled with HOSTCC and ensures that
+> > > kernel_ulong_t is correct, but it can't cope with different padding on
+> > > different architectures.
+> > 
+> > Surely this is the root cause ... you can't expect that the alignment
+> > rules of HOSTCC to make any sense for an arbitraty target.
+> > 
+> > > +#define FILLUP_LEN	7 /* dirty fix for i386 -> 64bit cross-compilation */
+> > >  
+> > >  struct acpi_device_id {
+> > >  	__u8 id[ACPI_ID_LEN];
+> > > +	__u8 dummy[FILLUP_LEN];
+> > >  	kernel_ulong_t driver_data;
+> > >  };
+> > 
+> > What's so special about this structure that we get an error?
+> 
+> It's in mod_devicetable.h: see comment at top of that file.  These
+> structures serve dual purpose: to describe the capabilities of the
+> driver to the kernel probing functions, *and* to export them to
+> userspace tables.  The former purpose is why there's a data pointer in
+> there.
+> 
+> scripts/mod/file2alias is the program that reads this: although it can
+> be altered to parse 32-vs-64, Adrian's fix is the simplest.
 
-There seem to be some unbalanced rcu_read_{,un}lock() issues of late,
-how about doing something like this:
+Oops, this will cause a lot build warnings, as this struct gets
+initialized like that:
+        ..
+        {"PNP0C0A", 0},
+        ..
+at a lot places. It would be better to bump up the id itself like the
+attached patch does...
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Thanks,
+
+    Thomas
+
+----------------------
+
+Cross-compilation between e.g. i386 -> 64bit could break -> work around it
+
+Adrian Bunk: scripts/mod/file2alias.c is compiled with HOSTCC and ensures that
+kernel_ulong_t is correct, but it can't cope with different padding on
+different architectures.
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+
 ---
- include/linux/lockdep.h  |    7 +++++++
- include/linux/rcupdate.h |   12 ++++++++++++
- kernel/rcupdate.c        |    8 ++++++++
- 3 files changed, 27 insertions(+)
+ include/linux/mod_devicetable.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/include/linux/lockdep.h
+Index: linux-2.6.23-rc3/include/linux/mod_devicetable.h
 ===================================================================
---- linux-2.6.orig/include/linux/lockdep.h
-+++ linux-2.6/include/linux/lockdep.h
-@@ -252,6 +252,13 @@ extern void lockdep_init_map(struct lock
- 			     struct lock_class_key *key, int subclass);
+--- linux-2.6.23-rc3.orig/include/linux/mod_devicetable.h
++++ linux-2.6.23-rc3/include/linux/mod_devicetable.h
+@@ -159,7 +159,8 @@ struct ap_device_id {
  
- /*
-+ * To initialize a lockdep_map statically use this macro.
-+ * Note that _name must not be NULL.
-+ */
-+#define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
-+	{ .name = (_name), .key = (void *)(_key), }
-+
-+/*
-  * Reinitialize a lock key - for cases where there is special locking or
-  * special initialization of locks so that the validator gets the scope
-  * of dependencies wrong: they are either too broad (they need a class-split)
-Index: linux-2.6/include/linux/rcupdate.h
-===================================================================
---- linux-2.6.orig/include/linux/rcupdate.h
-+++ linux-2.6/include/linux/rcupdate.h
-@@ -41,6 +41,7 @@
- #include <linux/percpu.h>
- #include <linux/cpumask.h>
- #include <linux/seqlock.h>
-+#include <linux/lockdep.h>
+ #define AP_DEVICE_ID_MATCH_DEVICE_TYPE		0x01
  
- /**
-  * struct rcu_head - callback structure for use with RCU
-@@ -133,6 +134,15 @@ static inline void rcu_bh_qsctr_inc(int 
- extern int rcu_pending(int cpu);
- extern int rcu_needs_cpu(int cpu);
+-#define ACPI_ID_LEN	9
++#define ACPI_ID_LEN	16 /* only 9 bytes needed here, 16 bytes are used */
++			   /* to workaround crosscompile issues */
  
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+extern struct lockdep_map rcu_lock_map;
-+# define rcu_read_acquire()	lock_acquire(&rcu_lock_map, 0, 0, 2, 1, _THIS_IP_)
-+# define rcu_read_release()	lock_release(&rcu_lock_map, 1, _THIS_IP_)
-+#else
-+# define rcu_read_acquire()	do { } while (0)
-+# define rcu_read_release()	do { } while (0)
-+#endif
-+
- /**
-  * rcu_read_lock - mark the beginning of an RCU read-side critical section.
-  *
-@@ -166,6 +176,7 @@ extern int rcu_needs_cpu(int cpu);
- 	do { \
- 		preempt_disable(); \
- 		__acquire(RCU); \
-+		rcu_read_acquire(); \
- 	} while(0)
- 
- /**
-@@ -175,6 +186,7 @@ extern int rcu_needs_cpu(int cpu);
-  */
- #define rcu_read_unlock() \
- 	do { \
-+		rcu_read_release(); \
- 		__release(RCU); \
- 		preempt_enable(); \
- 	} while(0)
-Index: linux-2.6/kernel/rcupdate.c
-===================================================================
---- linux-2.6.orig/kernel/rcupdate.c
-+++ linux-2.6/kernel/rcupdate.c
-@@ -49,6 +49,14 @@
- #include <linux/cpu.h>
- #include <linux/mutex.h>
- 
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+static struct lock_class_key rcu_lock_key;
-+struct lockdep_map rcu_lock_map =
-+	STATIC_LOCKDEP_MAP_INIT("rcu_read_lock", &rcu_lock_key);
-+
-+EXPORT_SYMBOL_GPL(rcu_lock_map);
-+#endif
-+
- /* Definition for rcupdate control block. */
- static struct rcu_ctrlblk rcu_ctrlblk = {
- 	.cur = -300,
+ struct acpi_device_id {
+ 	__u8 id[ACPI_ID_LEN];
 
 
