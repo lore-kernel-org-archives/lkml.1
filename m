@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935013AbXHPIjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935258AbXHPIjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935013AbXHPIjL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 04:39:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759276AbXHPI3S
+	id S935258AbXHPIjv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 04:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757031AbXHPI3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 04:29:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60452 "EHLO mx1.redhat.com"
+	Thu, 16 Aug 2007 04:29:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60461 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765950AbXHPI3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1765963AbXHPI3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 16 Aug 2007 04:29:01 -0400
-Message-Id: <20070816074525.065850000@chello.nl>
+Message-Id: <20070816074629.983607000@chello.nl>
+References: <20070816074525.065850000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Thu, 16 Aug 2007 09:45:25 +0200
+Date: Thu, 16 Aug 2007 09:45:48 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
@@ -19,35 +20,146 @@ Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
        torvalds@linux-foundation.org
-Subject: [PATCH 00/23] per device dirty throttling -v9
+Subject: [PATCH 23/23] debug: sysfs files for the current ratio/size/total
+Content-Disposition: inline; filename=bdi_stat_debug.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Per device dirty throttling patches
+Expose the per bdi dirty limits in sysfs
 
-These patches aim to improve balance_dirty_pages() and directly address three
-issues:
-  1) inter device starvation
-  2) stacked device deadlocks
-  3) inter process starvation
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ block/ll_rw_blk.c   |   80 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ mm/page-writeback.c |    4 +-
+ 2 files changed, 82 insertions(+), 2 deletions(-)
 
-1 and 2 are a direct result from removing the global dirty limit and using
-per device dirty limits. By giving each device its own dirty limit is will
-no longer starve another device, and the cyclic dependancy on the dirty limit
-is broken.
-
-In order to efficiently distribute the dirty limit across the independant
-devices a floating proportion is used, this will allocate a share of the total
-limit proportional to the device's recent activity.
-
-3 is done by also scaling the dirty limit proportional to the current task's
-recent dirty rate.
-
-Changes since -v8:
- - cleanup of the proportion code
- - fix percpu_counter_add(&counter, -(unsigned long))
- - fix per task dirty rate code
- - fwd port to .23-rc2-mm2
+Index: linux-2.6/block/ll_rw_blk.c
+===================================================================
+--- linux-2.6.orig/block/ll_rw_blk.c
++++ linux-2.6/block/ll_rw_blk.c
+@@ -4000,6 +4000,56 @@ static ssize_t queue_nr_writeback_show(s
+ 			nr_writeback >> (PAGE_CACHE_SHIFT - 10));
+ }
+ 
++extern void bdi_writeout_fraction(struct backing_dev_info *bdi,
++		long *numerator, long *denominator);
++
++static ssize_t queue_nr_cache_ratio_show(struct request_queue *q, char *page)
++{
++	long scale, div;
++
++	bdi_writeout_fraction(&q->backing_dev_info, &scale, &div);
++	scale *= 1024;
++	scale /= div;
++
++	return sprintf(page, "%ld\n", scale);
++}
++
++static ssize_t queue_nr_cache_num_show(struct request_queue *q, char *page)
++{
++	long scale, div;
++
++	bdi_writeout_fraction(&q->backing_dev_info, &scale, &div);
++
++	return sprintf(page, "%ld\n", scale);
++}
++
++static ssize_t queue_nr_cache_denom_show(struct request_queue *q, char *page)
++{
++	long scale, div;
++
++	bdi_writeout_fraction(&q->backing_dev_info, &scale, &div);
++
++	return sprintf(page, "%ld\n", div);
++}
++
++extern void
++get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
++		struct backing_dev_info *bdi);
++
++static ssize_t queue_nr_cache_size_show(struct request_queue *q, char *page)
++{
++	long background, dirty, bdi_dirty;
++	get_dirty_limits(&background, &dirty, &bdi_dirty, &q->backing_dev_info);
++	return sprintf(page, "%ld\n", bdi_dirty);
++}
++
++static ssize_t queue_nr_cache_total_show(struct request_queue *q, char *page)
++{
++	long background, dirty, bdi_dirty;
++	get_dirty_limits(&background, &dirty, &bdi_dirty, &q->backing_dev_info);
++	return sprintf(page, "%ld\n", dirty);
++}
++
+ static struct queue_sysfs_entry queue_requests_entry = {
+ 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
+ 	.show = queue_requests_show,
+@@ -4033,6 +4083,31 @@ static struct queue_sysfs_entry queue_wr
+ 	.show = queue_nr_writeback_show,
+ };
+ 
++static struct queue_sysfs_entry queue_cache_ratio_entry = {
++	.attr = {.name = "cache_ratio", .mode = S_IRUGO },
++	.show = queue_nr_cache_ratio_show,
++};
++
++static struct queue_sysfs_entry queue_cache_num_entry = {
++	.attr = {.name = "cache_num", .mode = S_IRUGO },
++	.show = queue_nr_cache_num_show,
++};
++
++static struct queue_sysfs_entry queue_cache_denom_entry = {
++	.attr = {.name = "cache_denom", .mode = S_IRUGO },
++	.show = queue_nr_cache_denom_show,
++};
++
++static struct queue_sysfs_entry queue_cache_size_entry = {
++	.attr = {.name = "cache_size", .mode = S_IRUGO },
++	.show = queue_nr_cache_size_show,
++};
++
++static struct queue_sysfs_entry queue_cache_total_entry = {
++	.attr = {.name = "cache_total", .mode = S_IRUGO },
++	.show = queue_nr_cache_total_show,
++};
++
+ static struct queue_sysfs_entry queue_iosched_entry = {
+ 	.attr = {.name = "scheduler", .mode = S_IRUGO | S_IWUSR },
+ 	.show = elv_iosched_show,
+@@ -4046,6 +4121,11 @@ static struct attribute *default_attrs[]
+ 	&queue_max_sectors_entry.attr,
+ 	&queue_reclaimable_entry.attr,
+ 	&queue_writeback_entry.attr,
++	&queue_cache_ratio_entry.attr,
++	&queue_cache_num_entry.attr,
++	&queue_cache_denom_entry.attr,
++	&queue_cache_size_entry.attr,
++	&queue_cache_total_entry.attr,
+ 	&queue_iosched_entry.attr,
+ 	NULL,
+ };
+Index: linux-2.6/mm/page-writeback.c
+===================================================================
+--- linux-2.6.orig/mm/page-writeback.c
++++ linux-2.6/mm/page-writeback.c
+@@ -169,7 +169,7 @@ static inline void task_dirty_inc(struct
+ /*
+  * Obtain an accurate fraction of the BDI's portion.
+  */
+-static void bdi_writeout_fraction(struct backing_dev_info *bdi,
++void bdi_writeout_fraction(struct backing_dev_info *bdi,
+ 		long *numerator, long *denominator)
+ {
+ 	if (bdi_cap_writeback_dirty(bdi)) {
+@@ -291,7 +291,7 @@ static unsigned long determine_dirtyable
+ 	return x + 1;	/* Ensure that we never return 0 */
+ }
+ 
+-static void
++void
+ get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
+ 		 struct backing_dev_info *bdi)
+ {
 
 --
 
