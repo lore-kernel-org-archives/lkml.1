@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765378AbXHPQU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933661AbXHPQVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765378AbXHPQU2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 12:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764943AbXHPQT4
+	id S933661AbXHPQVL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 12:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764833AbXHPQUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 12:19:56 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:42198 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764891AbXHPQTy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 12:19:54 -0400
-Message-ID: <46C47927.8050703@s5r6.in-berlin.de>
-Date: Thu, 16 Aug 2007 18:19:51 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+	Thu, 16 Aug 2007 12:20:49 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:33346 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764719AbXHPQUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 12:20:46 -0400
+Date: Fri, 17 Aug 2007 01:19:37 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Joe Perches <joe@perches.com>, Andy Whitcroft <apw@shadowen.org>
+Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       rolandd@cisco.com, Chas Williams <chas@cmf.nrl.navy.mil>,
+       isdn4linux@listserv.isdn4linux.de, mikep@linuxtr.net,
+       netdev@vger.kernel.org, swen@vnet.ibm.com, linux390@de.ibm.com,
+       linux-s390@vger.kernel.org, jdike@karaya.com,
+       user-mode-linux-devel@lists.sourceforge.net,
+       user-mode-linux-user@lists.sourceforge.net,
+       netfilter-devel@lists.netfilter.org, coreteam@netfilter.org,
+       Randy Dunlap <rdunlap@xenotime.net>, Andrew Morton <akpm@osdl.org>
+Subject: Re: drivers/infiniband/mlx/mad.c misplaced ;
+Message-ID: <20070816161937.GA15530@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Joe Perches <joe@perches.com>, Andy Whitcroft <apw@shadowen.org>,
+	Dave Jones <davej@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, rolandd@cisco.com,
+	Chas Williams <chas@cmf.nrl.navy.mil>,
+	isdn4linux@listserv.isdn4linux.de, mikep@linuxtr.net,
+	netdev@vger.kernel.org, swen@vnet.ibm.com, linux390@de.ibm.com,
+	linux-s390@vger.kernel.org, jdike@karaya.com,
+	user-mode-linux-devel@lists.sourceforge.net,
+	user-mode-linux-user@lists.sourceforge.net,
+	netfilter-devel@lists.netfilter.org, coreteam@netfilter.org,
+	Randy Dunlap <rdunlap@xenotime.net>, Andrew Morton <akpm@osdl.org>
+References: <exportbomb.1187270320@pinky> <20070815235825.GB17004@redhat.com> <1187224811.5906.55.camel@localhost>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-CC: Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <exportbomb.1187270320@pinky> <1187224811.5906.55.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilpo Järvinen wrote:
-> I looked around a bit by using some command lines and ended up wondering 
-> if these are equal to busy-wait case (and should be fixed) or not:
-> 
-> ./drivers/telephony/ixj.c
-> 6674:   while (atomic_read(&j->DSPWrite) > 0)
-> 6675-           atomic_dec(&j->DSPWrite);
-> 
-> ...besides that, there are couple of more similar cases in the same file 
-> (with braces)...
+On Wed, Aug 15, 2007 at 05:40:11PM -0700, Joe Perches wrote:
+> $ egrep -r --include=*.c "\bif[[:space:]]*\([^\)]*\)[[:space:]]*\;" * 
+> arch/sh/boards/se/7343/io.c:    if (0) ;
+> drivers/atm/iphase.c:     if (!desc1) ;
+> drivers/infiniband/hw/mlx4/mad.c:       if (!err);
+> drivers/isdn/capi/capiutil.c:   else if (c <= 0x0f);
+> drivers/net/tokenring/ibmtr.c:  else if (ti->shared_ram_paging == 0xf);  /* No paging in adapter */
+> drivers/s390/scsi/zfcp_erp.c:           if (status == ZFCP_ERP_SUCCEEDED) ;     /* no further action */
+> fs/hostfs/hostfs_user.c:        if(attrs->ia_valid & HOSTFS_ATTR_CTIME) ;
+> net/netfilter/xt_u32.c:         if (skb->len < 4 || pos > skb->len - 4);
+> sound/pci/au88x0/au88x0_synth.c:                                if (eax == 0) ;
 
-Generally, ixj.c has several occurrences of couples of atomic write and
-atomic read which potentially do not do what the author wanted.
--- 
-Stefan Richter
--=====-=-=== =--- =----
-http://arcgraph.de/sr/
+On Thu, Aug 16, 2007 at 02:18:40PM +0100, Andy Whitcroft wrote:
+> A couple of people suggested adding checks to checkpatch for trailing
+> semicolons on conditionals, where the conditional block may not be
+> actually conditional:
+> 
+> 	if (err);
+> 		return err;
+> 
+> While regression testing the changes, I ran these checks across the
+> whole of 2.6.23-rc3 and there appear to be 5 places where this is
+> occurs (above and beyond the IPv6 one which triggered this effort)
+> and a benign use which could be confused later which it seems safest
+> to fix.
+> 
+> Following this email are 6 patches for these issues, relevant
+> maintainers cc'd.  All against 2.6.23-rc3
+> 
+It looks like you may want to refine your search parameters to match the
+above, as there are at least a few cases where the space exists.
