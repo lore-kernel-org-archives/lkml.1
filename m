@@ -1,110 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933589AbXHPTA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933186AbXHPTHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933589AbXHPTA7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 15:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757218AbXHPTAr
+	id S933186AbXHPTHd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 15:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbXHPTHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 15:00:47 -0400
-Received: from rune.sasl.smtp.pobox.com ([208.210.124.37]:33900 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756296AbXHPTAp (ORCPT
+	Thu, 16 Aug 2007 15:07:23 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:52078 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758045AbXHPTHV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 15:00:45 -0400
-From: Junio C Hamano <gitster@pobox.com>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, Satyam Sharma <satyam@infradead.org>,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Joe Perches <joe@perches.com>, git@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-References: <1187026955.2688.4.camel@laptopd505.fenrus.org>
-	<1187037445.6628.98.camel@heimdal.trondhjem.org>
-	<1187054366.2757.0.camel@laptopd505.fenrus.org>
-	<46C10AA8.3090505@gmail.com>
-	<20070814102033.604c8695@the-village.bc.nu>
-	<46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>
-	<46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost>
-	<alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>
-	<20070814193333.GI21089@ftp.linux.org.uk> <46C2548D.80605@gmail.com>
-	<alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in>
-	<46C30220.6060007@gmail.com>
-	<68B09015-4411-470A-BA88-732969469AA2@mac.com>
-	<46C42DCB.1060502@gmail.com>
-Date: Thu, 16 Aug 2007 12:00:27 -0700
-In-Reply-To: <46C42DCB.1060502@gmail.com> (Rene Herman's message of "Thu, 16
-	Aug 2007 12:58:19 +0200")
-Message-ID: <7v7invjodw.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 16 Aug 2007 15:07:21 -0400
+X-Greylist: delayed 1818 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Aug 2007 15:07:20 EDT
+From: Michael Gerdau <mgerdau@tiscali.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: 2.6.22.2-cfs-v19.1 stops honouring nice 3 after some hours
+Date: Thu, 16 Aug 2007 20:36:53 +0200
+User-Agent: KMail/1.9.7
+Cc: Michael Gerdau <mgd@technosis.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+References: <200708151823.17623.mgd@technosis.de> <1187286737.6114.100.camel@twins>
+In-Reply-To: <1187286737.6114.100.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart1438384.NivTLNVYtX";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200708162037.07356.mgerdau@tiscali.de>
+X-bounce-key: webpack.hosteurope.de;mgerdau@tiscali.de;1187291241;41c9d55b;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman <rene.herman@gmail.com> writes:
+--nextPart1438384.NivTLNVYtX
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Am looking at it but am not so sure that's a very good idea. I guess
-> it'd be largely okay-ish to require the repo to be on a filesystem
-> that supports EAs for this feature to work, but keeping the attributes
-> intact over file system operations seems not all that easy
-> (yet). Having not used EAs before I may be missing something but my
-> version of "cp" for example (GNU coreutils 6.9) appears to not copy
-> them. Nor do they seem to survive a trip through GNU tar 1.16.1. EAs
-> appear to not be very useful unless every single tool supports them --
-> a repo should be resistant against simple operations like that.
->
-> Googling around, I see subversion already has this and calls the
-> meta-data "properties" (svn propset/get and friends). It uses a few
-> properties itself, such as the svn:executable property (which I saw is
-> also the only permission bit git keeps) and svn:ignore, which serves
-> the same role as the .gitignore files for git. Both those would fit
-> into this scheme nicely for git as well, if git were to do something
-> similar and reserve for example the "git.*" namespace for internal use.
->
-> Junio (and others), do you have an opinion on this?
+> > I'm on 2.6.22.2-cfs-v19.1 -- I can't boot into 2.6.23-rc3 as part of
+> > my daily work because my NVIDIA driver doesn't yet work with it though
+> > I could try to do some X-less testing if need be.
+>=20
+> Please do try, a lot has changed since v19.1.
+>=20
+> FWIW the nv driver lets one do most desktop-ish things without problems,
+> or so I've been told - just no 3d.
 
-Please step back a bit and imagine a world in which there was no
-git.  IOW, you kernel folks switched to tarballs and patches 20
-months ago.  It is a far superiour solution compared to CVS and
-SVN, so it ought to work, right ;-)?
+Damien Wyart was kind enough to point me to a patch that solved the compile
+problem of the nv driver and I now have a ready-to-boot-into 2.6.23-rc3
+lying around.
 
-Now, would you implement the "whom would I send my patches to"
-with EAs?
+However due to other time constraints this will have to wait until tomorrow.
 
-I would hope not.
+Anyway, observing the currently running CPU bound jobs and comparing their
+progress (as documented by their logfiles) with the CPU % one of the jobs
+receives (as documented by top -d 60) it seems as if this is not so much
+a scheduling problem but an accounting issue.
 
-Git or no git, I think a file that can be viewed with less,
-edited with regular editor and processed with sed/perl/grep
-tools is the way to go.  I do not think adding 600+ patches to
-the single MAINTAINERS list is workable in the longer term, as
-it would become the single file many subsystem people need to
-update and is asking for merge conflicts, but I think a file
-with known name (say, "CcMe.txt") sprinkled in relevant
-subdirectories, perhaps with the same format originally
-suggested for MAINTAINERS, would make a lot more sense.
+=46WIW the jobs doing basically the same work are more or less head to head
+after 12+ hours of computation while according to top one of them is
+reported to receive roughly twice the CPU of the other.
 
-That would give people who work with tarballs and patches, or a
-subsystem managed with something other than git (one of the most
-important one is quilt), the equal access to the necessary data.
+I will retry with 2.6.23-rc3 tomorrow and over the weekend to see whether
+the problem persists.
 
-Even with git, it is my understanding that kernel community
-works largely on patches exchanged over e-mails, between people
-who do use git and people who do not.  You would want to have
-something you can easily transfer over e-mail in the patch
-form.
+Best wishes,
+Michael
+=2D-=20
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ !tagline
+ Michael Gerdau       email: mgerdau@tiscali.de
+ GPG-keys available on request or at public keyserver
 
-We _could_ invent a new "patches to properties" git diff output
-format that "git apply" can understand to propagate that
-information, but that approach is making it less interoperable
-with others, and you need to demonstrate the benefit far
-outweighs that.  I do not see it for this particular
-application.
+--nextPart1438384.NivTLNVYtX
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-There may be places for "properties" that would be useful to
-git, but I do not think the "find whom to send patches to" is
-one of them.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGxJlTUYYhyuxDQc4RAqCVAJoCfQf42/pAm97T4dIgPc0Eg7NqqgCgjMa5
+h5V/tUkhqFp1fau96Ofbcq0=
+=koI2
+-----END PGP SIGNATURE-----
+
+--nextPart1438384.NivTLNVYtX--
