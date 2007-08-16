@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937697AbXHPBVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937524AbXHPB0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937697AbXHPBVT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 21:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758529AbXHPBVG
+	id S937524AbXHPB0r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 21:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762951AbXHPB0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 21:21:06 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:40843 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758441AbXHPBVE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 21:21:04 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=L5CrhetbDRBs1wq6FCTLPz9hLFIDupP15Stk0afimJEl0mHePlbcoyutbZ8sm71xSby2Ek7AEKcZD3QqkT+P5aK5oDhUqOYypKd6VUUM2odJD8EMSjeifbSDqDQULXwTxt95rSr/E5N2aXMbn1r0F5N5pOJxMvFOIYUE4Cdqb9c=  ;
-X-YMail-OSG: wAYfujkVM1lUVkvZEunvK_WLE9nPdVRg47k4ylORgt_oz2OtYFWjo8qGQYv.MZYYmghjWbrLVA--
-Message-ID: <46C3A675.7050108@yahoo.com.au>
-Date: Thu, 16 Aug 2007 11:20:53 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-CC: paulmck@linux.vnet.ibm.com, heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-arch@vger.kernel.org,
-       jesper.juhl@gmail.com, zlynx@acm.org, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>, davem@davemloft.net,
-       wensong@linux-vs.org, wjiang@resilience.com,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 6/24] make atomic_read() behave consistently on frv
-References: <20070809134150.GA14890@shell.boston.redhat.com> <2708.1186737826@redhat.com> <7680.1186822071@redhat.com> <46BFFDBD.6080804@redhat.com> <46C140DD.3060509@yahoo.com.au> <2cbda24e96a49c3ab7cf7039c515f9fc@kernel.crashing.org> <20070815191829.GJ9645@linux.vnet.ibm.com> <369924c4b3132a4b06258b7ac81b1006@kernel.crashing.org> <20070815195915.GL9645@linux.vnet.ibm.com> <d2cd1065faf8a13040e8a2405c363aa1@kernel.crashing.org> <20070815203836.GO9645@linux.vnet.ibm.com> <7131d547746a998fcec74d1c091f9f6a@kernel.crashing.org>
-In-Reply-To: <7131d547746a998fcec74d1c091f9f6a@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 15 Aug 2007 21:26:30 -0400
+Received: from gate.crashing.org ([63.228.1.57]:34184 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760662AbXHPB02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 21:26:28 -0400
+In-Reply-To: <20070815224433.GQ9645@linux.vnet.ibm.com>
+References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <20070815081841.GA16551@osiris.boeblingen.de.ibm.com> <46C30540.2070603@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151941150.16414@enigma.security.iitk.ac.in> <20070815145207.GA23106@gondor.apana.org.au> <46C3253F.5090707@s5r6.in-berlin.de> <20070815162722.GD9645@linux.vnet.ibm.com> <d4406222873856f472b9173a14a19aa2@kernel.crashing.org> <20070815185724.GH9645@linux.vnet.ibm.com> <2c907d70a2267b887de346891758983d@kernel.crashing.org> <20070815224433.GQ9645@linux.vnet.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f24994ecd2ecfcda6e01b289a25c1e47@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Satyam Sharma <satyam@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       rpjday@mindspring.com, netdev@vger.kernel.org, ak@suse.de,
+       cfriesen@nortel.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Thu, 16 Aug 2007 03:23:28 +0200
+To: paulmck@linux.vnet.ibm.com
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Segher Boessenkool wrote:
->> Please check the definition of "cache coherence".
-> 
-> 
-> Which of the twelve thousand such definitions?  :-)
+>>>> No; compilation units have nothing to do with it, GCC can optimise
+>>>> across compilation unit boundaries just fine, if you tell it to
+>>>> compile more than one compilation unit at once.
+>>>
+>>> Last I checked, the Linux kernel build system did compile each .c 
+>>> file
+>>> as a separate compilation unit.
+>>
+>> I have some patches to use -combine -fwhole-program for Linux.
+>> Highly experimental, you need a patched bleeding edge toolchain.
+>> If there's interest I'll clean it up and put it online.
+>>
+>> David Woodhouse had some similar patches about a year ago.
+>
+> Sounds exciting...  ;-)
 
-Every definition I have seen says that writes to a single memory
-location have a serial order as seen by all CPUs, and that a read
-will return the most recent write in the sequence (with a bit of
-extra mumbo jumbo to cover store queues and store forwarding).
+Yeah, the breakage is *quite* spectacular :-)
 
-Within such a definition, I don't see how would be allowed for a
-single CPU to execute reads out of order and have the second read
-return an earlier write than the first read.
+>>>>> In many cases, the compiler also has to assume that
+>>>>> msleep_interruptible()
+>>>>> might call back into a function in the current compilation unit, 
+>>>>> thus
+>>>>> possibly modifying global static variables.
+>>>>
+>>>> It most often is smart enough to see what compilation-unit-local
+>>>> variables might be modified that way, though :-)
+>>>
+>>> Yep.  For example, if it knows the current value of a given such 
+>>> local
+>>> variable, and if all code paths that would change some other variable
+>>> cannot be reached given that current value of the first variable.
+>>
+>> Or the most common thing: if neither the address of the translation-
+>> unit local variable nor the address of any function writing to that
+>> variable can "escape" from that translation unit, nothing outside
+>> the translation unit can write to the variable.
+>
+> But there is usually at least one externally callable function in
+> a .c file.
 
--- 
-SUSE Labs, Novell Inc.
+Of course, but often none of those will (indirectly) write a certain
+static variable.
+
+
+Segher
+
