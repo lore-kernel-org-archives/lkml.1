@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932237AbXHPLTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932966AbXHPLVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932237AbXHPLTw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 07:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbXHPLTo
+	id S932966AbXHPLVF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 07:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbXHPLUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 07:19:44 -0400
-Received: from khc.piap.pl ([195.187.100.11]:59404 "EHLO khc.piap.pl"
+	Thu, 16 Aug 2007 07:20:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48311 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754973AbXHPLTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 07:19:43 -0400
-To: "Anand Jahagirdar" <anandjigar@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Fork Bombing Patch
-References: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 16 Aug 2007 13:19:11 +0200
-In-Reply-To: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com> (Anand Jahagirdar's message of "Thu, 16 Aug 2007 11:54:50 +0530")
-Message-ID: <m3lkcbu3ps.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755662AbXHPLUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 07:20:54 -0400
+From: NeilBrown <neilb@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Date: Thu, 16 Aug 2007 21:20:47 +1000
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
+Subject: [PATCH 000 of 6] A few block-layer tidy-up patches.
+Message-ID: <20070816211551.11839.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Anand Jahagirdar" <anandjigar@gmail.com> writes:
+Following are 5 patches which - I think - clean up various bits and pieces
+in the block layer.
 
-> +++ linux-2.6.17/kernel/fork.c
-> +        /*
-> +         * following code does not allow Non Root User to cross its process
-> +         * limit and it alerts administrator about user Nearing the process limit.
-> +         */
-> + 
->        	if (atomic_read(&p->user->processes) >= p->signal->rlim[RLIMIT_NPROC].rlim_cur) 
->  		if (!capable(CAP_SYS_ADMIN) && !capable(CAP_SYS_RESOURCE) &&
-> -				p->user != &root_user) 
-> +				p->user != &root_user)  {
-> +                        if (printk_ratelimit())
-> +                                printk(KERN_WARNING "User with uid %u is Nearing the process limit\n",p->user->uid);
-> +
->  			 goto bad_fork_free;
+The only part that might be seen as a function change rather than
+simply rearranging code is in ps3disk where bvec_kmap_irq is used
+instead of bio_kmap_atomic (so interrupts are disabled).
 
-At least make that configurable - on some systems users are allowed
-50 processes or so and I'm sure admins don't really want to know
-which particular users are currently close to limits.
+The only other user of bvec_kmap_irq is ide-floppy.c.  If that does
+need to disable interrupts, and ps3disk doesn't, make the disabling of
+interrupts should be separated from the kmapping??
 
-I don't really find the above useful. Perhaps we should warn when users
-try to write to R/O files or execute root-only commands etc?
--- 
-Krzysztof Halasa
+Thanks,
+NeilBrown
+
+
+ [PATCH 001 of 6] Merge blk_recount_segments into blk_recalc_rq_segments
+ [PATCH 002 of 6] Introduce rq_for_each_segment replacing rq_for_each_bio
+ [PATCH 003 of 6] Fix various abuse of bio fields in umem.c
+ [PATCH 004 of 6] New function blk_req_append_bio
+ [PATCH 005 of 6] Stop exporting blk_rq_bio_prep
+ [PATCH 006 of 6] Share code between init_request_from_bio and blk_rq_bio_prep
