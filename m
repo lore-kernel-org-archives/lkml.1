@@ -1,66 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936311AbXHPAf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936893AbXHPAix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936311AbXHPAf4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Aug 2007 20:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbXHPAfm
+	id S936893AbXHPAix (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Aug 2007 20:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756850AbXHPAil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Aug 2007 20:35:42 -0400
-Received: from ozlabs.org ([203.10.76.45]:39643 "EHLO ozlabs.org"
+	Wed, 15 Aug 2007 20:38:41 -0400
+Received: from ns.suse.de ([195.135.220.2]:58468 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753060AbXHPAfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Aug 2007 20:35:41 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18115.39815.730873.346526@cargo.ozlabs.ibm.com>
-Date: Thu, 16 Aug 2007 10:34:15 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Satyam Sharma <satyam@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com>
-References: <20070809131423.GA9927@shell.boston.redhat.com>
-	<Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
-	<alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
-	<46C2D6F3.3070707@s5r6.in-berlin.de>
-	<alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
-	<18115.35524.56393.347841@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0708151725130.10497@schroedinger.engr.sgi.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	id S1756821AbXHPAik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Aug 2007 20:38:40 -0400
+From: NeilBrown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 16 Aug 2007 10:38:32 +1000
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 000 of 2] md: bug fixes for 2.6.23-rc
+Message-ID: <20070816103626.32539.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter writes:
+Following 2 patches contain bugfixes for md.  Both apply to earlier
+kernels, but probably aren't significant enough for -stable (no oops,
+no data corruption, no security hole).
+They should go in 2.6.23 though.
 
-> On Thu, 16 Aug 2007, Paul Mackerras wrote:
-> 
-> > In the kernel we use atomic variables in precisely those situations
-> > where a variable is potentially accessed concurrently by multiple
-> > CPUs, and where each CPU needs to see updates done by other CPUs in a
-> > timely fashion.  That is what they are for.  Therefore the compiler
-> > must not cache values of atomic variables in registers; each
-> > atomic_read must result in a load and each atomic_set must result in a
-> > store.  Anything else will just lead to subtle bugs.
-> 
-> This may have been the intend. However, today the visibility is controlled 
-> using barriers. And we have barriers that we use with atomic operations. 
+Thanks,
+NeilBrown
 
-Those barriers are for when we need ordering between atomic variables
-and other memory locations.  An atomic variable by itself doesn't and
-shouldn't need any barriers for other CPUs to be able to see what's
-happening to it.
 
-Paul.
+ [PATCH 001 of 2] md: Make sure a re-add after a restart honours bitmap when resyncing.
+ [PATCH 002 of 2] md: Correctly update sysfs when a raid1 is reshaped.
