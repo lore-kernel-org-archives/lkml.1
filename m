@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760025AbXHPUQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761442AbXHPURI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760025AbXHPUQS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 16:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbXHPUQF
+	id S1761442AbXHPURI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 16:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbXHPUQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 16:16:05 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40289 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752646AbXHPUQE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 16:16:04 -0400
-Date: Thu, 16 Aug 2007 21:23:48 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Authenticated <NWQ3MzhlY2QwZDAzODVhN@steudten.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Kernel 2.6.20:  INFO: possible circular locking dependency
- detected
-Message-ID: <20070816212348.0d260d06@the-village.bc.nu>
-In-Reply-To: <46C48E73.8090309@steudten.com>
-References: <46C48E73.8090309@steudten.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Aug 2007 16:16:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46125 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753388AbXHPUQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 16:16:54 -0400
+Date: Thu, 16 Aug 2007 16:16:49 -0400
+From: Dave Jones <davej@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: khvcd
+Message-ID: <20070816201649.GA5375@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Aug 2007 19:50:43 +0200
-Authenticated <NWQ3MzhlY2QwZDAzODVhN@steudten.com> wrote:
+Hi Rusty,
+ In profiling bootup time, we noticed something new appeared
+on the graph at http://pjones.fedorapeople.org/bootchart-preinit.png
+in the name of khvcd.
 
-> 
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.20-1.2948.self #1
-> -------------------------------------------------------
-> squid/4058 is trying to acquire lock:
->  (tty_mutex){--..}, at: [<c019fb54>] print_warning+0x8b/0x12e
-> 
-> but task is already holding lock:
->  (&s->s_dquot.dqptr_sem){----}, at: [<c01a0802>] dquot_alloc_inode+0x34/0x10a
-> 
-> which lock already depends on the new lock.
+"wtf is this" was my first reaction.
+Followed shortly by much headscratching after finding it's
+created by drivers/char/hvc_console.c whose Kconfig yeilds..
 
-Yep - known 2.6.20 problem. Its very very unlikely to ever cause a real
-problem however.
+config HVC_DRIVER
+        bool
+        help
+          Users of pSeries machines that want to utilize the hvc console front-end
+          module for their backend console driver should select this option.
+
+Which is a little confusing for those of us not actually using a pSeries.
+The above profile came from a x86 box.
+A little more grepping around revealed that lguest select's HVC_DRIVER,
+thus sneaking this config option into the build.
+
+asides from the needed Kconfig clarification, is it necessary for khvcd
+to run at all if the lguest module hasn't been loaded ?  Is it possible
+we can somehow delay creation of the kthread ?
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
