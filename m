@@ -1,212 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762829AbXHQQWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764914AbXHQQXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762829AbXHQQWT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 12:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbXHQQWC
+	id S1764914AbXHQQXY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 12:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXHQQXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 12:22:02 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:35223 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751120AbXHQQWA (ORCPT
+	Fri, 17 Aug 2007 12:23:14 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:10113 "EHLO
+	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754613AbXHQQXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 12:22:00 -0400
-Date: Fri, 17 Aug 2007 12:21:54 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] Simple Performance Counters: SLUB instrumentation
-Message-ID: <20070817162154.GB30922@Krystal>
-References: <1185924312685-git-send-email-clameter@sgi.com>
+	Fri, 17 Aug 2007 12:23:12 -0400
+Subject: Re: [PATCH 16/23] mm: scalable bdi statistics counters.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, torvalds@linux-foundation.org
+In-Reply-To: <20070817162030.GA27836@filer.fsl.cs.sunysb.edu>
+References: <20070816074525.065850000@chello.nl>
+	 <20070816074628.520798000@chello.nl>
+	 <20070817162030.GA27836@filer.fsl.cs.sunysb.edu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-HE5+SSmnle+pT2IB5ITF"
+Date: Fri, 17 Aug 2007 18:23:02 +0200
+Message-Id: <1187367782.6114.132.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1185924312685-git-send-email-clameter@sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:12:33 up 18 days, 16:31,  5 users,  load average: 0.84, 1.86, 2.15
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
 
-A few remarks on these tests:
+--=-HE5+SSmnle+pT2IB5ITF
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Why do you printk inside the timing period ? Filling the printk buffers
-or outputting on things such as serial console could really hurt your
-results.
+On Fri, 2007-08-17 at 12:20 -0400, Josef Sipek wrote:
+> On Thu, Aug 16, 2007 at 09:45:41AM +0200, Peter Zijlstra wrote:
+> ....
+> > Index: linux-2.6/include/linux/backing-dev.h
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux-2.6.orig/include/linux/backing-dev.h
+> > +++ linux-2.6/include/linux/backing-dev.h
+> ....
+> > @@ -24,6 +26,12 @@ enum bdi_state {
+> > =20
+> >  typedef int (congested_fn)(void *, int);
+> > =20
+> > +enum bdi_stat_item {
+> > +	NR_BDI_STAT_ITEMS
+> > +};
+>=20
+> enum numbering starts at 0, so NR_BDI_STAT_ITEMS =3D=3D 0
+>=20
+> > +
+> > +#define BDI_STAT_BATCH (8*(1+ilog2(nr_cpu_ids)))
+> > +
+> >  struct backing_dev_info {
+> >  	unsigned long ra_pages;	/* max readahead in PAGE_CACHE_SIZE units */
+> >  	unsigned long state;	/* Always use atomic bitops on this */
+> > @@ -32,15 +40,86 @@ struct backing_dev_info {
+> >  	void *congested_data;	/* Pointer to aux data for congested func */
+> >  	void (*unplug_io_fn)(struct backing_dev_info *, struct page *);
+> >  	void *unplug_io_data;
+> > +
+> > +	struct percpu_counter bdi_stat[NR_BDI_STAT_ITEMS];
+>=20
+> So, this is a 0-element array.
+>=20
+> >  };
+> > =20
+> > -static inline int bdi_init(struct backing_dev_info *bdi)
+> > +int bdi_init(struct backing_dev_info *bdi);
+> > +void bdi_destroy(struct backing_dev_info *bdi);
+> > +
+> > +static inline void __add_bdi_stat(struct backing_dev_info *bdi,
+> > +		enum bdi_stat_item item, s64 amount)
+> >  {
+> > -	return 0;
+> > +	__percpu_counter_add(&bdi->bdi_stat[item], amount, BDI_STAT_BATCH);
+>=20
+> Boom!
+>=20
+> >  }
 
-I hope you run your system with idle=poll and without frequency scaling
-at all, because otherwise your cycle count would be completely off on
-many AMD and Intel CPUs. You can have a look at this (very rough)
-document on the topic: 
+Quite so, but since there are no callers _yet_ it will not go boom :-)
 
-http://ltt.polymtl.ca/ > "Notes on AMD and Intel asynchronous TSC
-                          architectures (with workarounds)"
-http://ltt.polymtl.ca/svn/ltt/branches/poly/doc/developer/tsc.txt
+This patch introduces the framework, patch 17 and 18 will introduce both
+stat items and callers.
 
-I would be tempted to try running these tests with interrupts disabled,
-just to make sure that the timings are not too much modified by
-the system load. Especially since you are comparing an algorithm that
-disables interrupts with one that doesn't, it would be unfair to say
-that the second one is slower just because less interrupts have been
-serviced during its execution.
+So it should all work out just fine.
 
-Mathieu
+--=-HE5+SSmnle+pT2IB5ITF
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> With this patch SLUB will perform tests on bootup and display results.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> ---
->  mm/slub.c |   97 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
->  1 files changed, 92 insertions(+), 5 deletions(-)
-> 
-> diff --git a/mm/slub.c b/mm/slub.c
-> index 6c6d74f..568b16a 100644
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -20,6 +20,7 @@
->  #include <linux/mempolicy.h>
->  #include <linux/ctype.h>
->  #include <linux/kallsyms.h>
-> +#include <linux/perf.h>
->  
->  /*
->   * Lock order:
-> @@ -152,6 +153,7 @@ static inline void ClearSlabDebug(struct page *page)
->  
->  /* Enable to test recovery from slab corruption on boot */
->  #undef SLUB_RESILIENCY_TEST
-> +#undef SLUB_PERFORMANCE_TEST
->  
->  #if PAGE_SHIFT <= 12
->  
-> @@ -2870,9 +2872,97 @@ static long validate_slab_cache(struct kmem_cache *s)
->  	return count;
->  }
->  
-> -#ifdef SLUB_RESILIENCY_TEST
->  static void resiliency_test(void)
->  {
-> +#ifdef SLUB_PERFORMANCE_TEST
-> +#define TEST_COUNT 10000
-> +	int size, i;
-> +	struct pc x;
-> +	void **v = kmalloc(TEST_COUNT * sizeof(void *), GFP_KERNEL);
-> +
-> +	printk(KERN_INFO "SLUB Performance testing\n");
-> +	printk(KERN_INFO "========================\n");
-> +	printk(KERN_INFO "1. Kmalloc: Repeatedly allocate then free test\n");
-> +	for (size = 8; size <= PAGE_SIZE << 2; size <<= 1) {
-> +		pc_start(&x);
-> +		for(i = 0; i < TEST_COUNT; i++) {
-> +			v[i] = kmalloc(size, GFP_KERNEL);
-> +		}
-> +		printk(KERN_INFO "%i times kmalloc(%d) = ", i, size);
-> +		pc_stop_printk(&x);
-> +		pc_start(&x);
-> +		for(i = 0; i < TEST_COUNT; i++)
-> +			kfree(v[i]);
-> +		printk(" kfree() = ");
-> +		pc_stop_printk(&x);
-> +		printk("\n");
-> +	}
-> +
-> +	printk(KERN_INFO "2. Kmalloc: alloc/free test\n");
-> +	for (size = 8; size <= PAGE_SIZE << 2; size <<= 1) {
-> +		pc_start(&x);
-> +		for(i = 0; i < TEST_COUNT; i++)
-> +			kfree(kmalloc(size, GFP_KERNEL));
-> +		printk(KERN_INFO "%i times kmalloc(%d)/kfree = ", i, size);
-> +		pc_stop_printk(&x);
-> +		printk("\n");
-> +	}
-> +	printk(KERN_INFO "3. kmem_cache_alloc: Repeatedly allocate then free test\n");
-> +	for (size = 3; size <= PAGE_SHIFT; size ++) {
-> +		pc_start(&x);
-> +		for(i = 0; i < TEST_COUNT; i++) {
-> +			v[i] = kmem_cache_alloc(kmalloc_caches + size, GFP_KERNEL);
-> +		}
-> +		printk(KERN_INFO "%d times kmem_cache_alloc(%d) = ", i, 1 << size);
-> +		pc_stop_printk(&x);
-> +		pc_start(&x);
-> +		for(i = 0; i < TEST_COUNT; i++)
-> +			kmem_cache_free(kmalloc_caches + size, v[i]);
-> +		printk(" kmem_cache_free() = ");
-> +		pc_stop_printk(&x);
-> +		printk("\n");
-> +	}
-> +
-> +	printk(KERN_INFO "4. kmem_cache_alloc: alloc/free test\n");
-> +	for (size = 3; size <= PAGE_SHIFT; size++) {
-> +		pc_start(&x);
-> +		for(i = 0; i < TEST_COUNT; i++)
-> +			kmem_cache_free(kmalloc_caches + size,
-> +				kmem_cache_alloc(kmalloc_caches + size,
-> +							GFP_KERNEL));
-> +		printk(KERN_INFO "%d times kmem_cache_alloc(%d)/kmem_cache_free = ", i, 1 << size);
-> +		pc_stop_printk(&x);
-> +		printk("\n");
-> +	}
-> +	printk(KERN_INFO "5. kmem_cache_zalloc: Repeatedly allocate then free test\n");
-> +	for (size = 3; size <= PAGE_SHIFT; size ++) {
-> +		pc_start(&x);
-> +		for(i = 0; i < TEST_COUNT; i++) {
-> +			v[i] = kmem_cache_zalloc(kmalloc_caches + size, GFP_KERNEL);
-> +		}
-> +		printk(KERN_INFO "%d times kmem_cache_zalloc(%d) = ", i, 1 << size);
-> +		pc_stop_printk(&x);
-> +		pc_start(&x);
-> +		for(i = 0; i < TEST_COUNT; i++)
-> +			kmem_cache_free(kmalloc_caches + size, v[i]);
-> +		printk(" kmem_cache_free() = ");
-> +		pc_stop_printk(&x);
-> +		printk("\n");
-> +	}
-> +
-> +	printk(KERN_INFO "6. kmem_cache_zalloc: alloc/free test\n");
-> +	for (size = 3; size <= PAGE_SHIFT; size++) {
-> +		pc_start(&x);
-> +		for(i = 0; i < TEST_COUNT; i++)
-> +			kmem_cache_free(kmalloc_caches + size,
-> +				kmem_cache_zalloc(kmalloc_caches + size,
-> +							GFP_KERNEL));
-> +		printk(KERN_INFO "%d times kmem_cache_zalloc(%d)/kmem_cache_free = ", i, 1 << size);
-> +		pc_stop_printk(&x);
-> +		printk("\n");
-> +	}
-> +#endif
-> +#ifdef SLUB_RESILIENCY_TEST
->  	u8 *p;
->  
->  	printk(KERN_ERR "SLUB resiliency testing\n");
-> @@ -2920,11 +3010,8 @@ static void resiliency_test(void)
->  	p[512] = 0xab;
->  	printk(KERN_ERR "\n3. kmalloc-512: Clobber redzone 0xab->0x%p\n\n", p);
->  	validate_slab_cache(kmalloc_caches + 9);
-> -}
-> -#else
-> -static void resiliency_test(void) {};
->  #endif
-> -
-> +}
->  /*
->   * Generate lists of code addresses where slabcache objects are allocated
->   * and freed.
-> -- 
-> 1.5.2.4
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+iD8DBQBGxctmXA2jU0ANEf4RAonUAJ4iD7JBaQB2UgldCQniZdBibJwbpgCgiwcQ
+q9JNa142MkTqspID2JJEZgM=
+=WwQO
+-----END PGP SIGNATURE-----
+
+--=-HE5+SSmnle+pT2IB5ITF--
+
