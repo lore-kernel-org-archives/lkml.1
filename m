@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762392AbXHQRo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761688AbXHQRxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762392AbXHQRo3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 13:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755901AbXHQRoV
+	id S1761688AbXHQRxW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 13:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756825AbXHQRxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 13:44:21 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4645 "EHLO ra.tuxdriver.com"
+	Fri, 17 Aug 2007 13:53:09 -0400
+Received: from gate.crashing.org ([63.228.1.57]:34537 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752926AbXHQRoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 13:44:20 -0400
-Date: Fri, 17 Aug 2007 13:25:22 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       flamingice@sourmilk.net
-Subject: Re: rtl8187: Invalid hwaddr! Using randomly generated MAC address
-Message-ID: <20070817172522.GD6090@tuxdriver.com>
-References: <46C5C5E5.3040503@tuffmail.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46C5C5E5.3040503@tuffmail.co.uk>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	id S1756207AbXHQRxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 13:53:07 -0400
+In-Reply-To: <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com>
+References: <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi> <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c298f0e3f9e49c9dd2d326115d156084@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: Paul Mackerras <paulus@samba.org>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Satyam Sharma <satyam@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
+       Netdev <netdev@vger.kernel.org>, jesper.juhl@gmail.com,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       zlynx@acm.org, schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Fri, 17 Aug 2007 19:41:13 +0200
+To: Christoph Lameter <clameter@sgi.com>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Probably want to copy linux-wireless@vger.kernel.org on
-wireless-related posts.  Adding Michael Wu to the CC: as well...
+>> atomic_dec() already has volatile behavior everywhere, so this is 
+>> semantically
+>> okay, but this code (and any like it) should be calling cpu_relax() 
+>> each
+>> iteration through the loop, unless there's a compelling reason not 
+>> to.  I'll
+>> allow that for some hardware drivers (possibly this one) such a 
+>> compelling
+>> reason may exist, but hardware-independent core subsystems probably 
+>> have no
+>> excuse.
+>
+> No it does not have any volatile semantics. atomic_dec() can be 
+> reordered
+> at will by the compiler within the current basic unit if you do not 
+> add a
+> barrier.
 
-John
+"volatile" has nothing to do with reordering.  atomic_dec() writes
+to memory, so it _does_ have "volatile semantics", implicitly, as
+long as the compiler cannot optimise the atomic variable away
+completely -- any store counts as a side effect.
 
-On Fri, Aug 17, 2007 at 04:59:33PM +0100, Alan Jenkins wrote:
-> I've just acquired this buggy piece of hardware otherwise known as a
-> NetGear WG111v2.  I googled and eventually found an explanation in the
-> form of source code here:
-> 
-> <http://www.gelato.unsw.edu.au/lxr/source/include/linux/etherdevice.h#L93>.
-> 
-> 
-> It seems linux rejects the hardware MAC address because it is either all
-> zero or a multicast address (ie the first byte has 0x01 set.
-> 
-> On the side of this buggy piece of hardware is written:
-> 
-> MAC 001B2F7604E6
-> 
-> which AFAICS is valid; it's definitely not all zeros and the first byte
-> has no bits set at all.
-> 
-> 
-> Q.  Udev can't access the invalid mac address.  Does that mean there is
-> no persistent identifier for the device?  I know I could identify a
-> device as a NetGear WG111v2, but I do have two of them.  It would be
-> nice if I could fix them by adding udev rules to identify individual
-> devices, and set their MAC address to what it's "supposed" to be.
-> 
-> /me scrabbles around for a Windows installation to find out whether the
-> MAC address is somehow set correctly on the Other OS.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
--- 
-John W. Linville
-linville@tuxdriver.com
+Segher
+
