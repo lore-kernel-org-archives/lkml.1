@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762884AbXHQPnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761402AbXHQPtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762884AbXHQPnY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 11:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756525AbXHQPnP
+	id S1761402AbXHQPtQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 11:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755659AbXHQPtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 11:43:15 -0400
-Received: from h155.mvista.com ([63.81.120.155]:49938 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755076AbXHQPnO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 11:43:14 -0400
-Message-ID: <46C5C2A1.3020701@ru.mvista.com>
-Date: Fri, 17 Aug 2007 19:45:37 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 17 Aug 2007 11:49:00 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46371 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754734AbXHQPs7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 11:48:59 -0400
+Date: Fri, 17 Aug 2007 11:48:04 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, torvalds@linux-foundation.org
+Subject: Re: [PATCH 02/23] lib: percpu_counter_add
+Message-ID: <20070817154804.GC24323@filer.fsl.cs.sunysb.edu>
+References: <20070816074525.065850000@chello.nl> <20070816074624.963595000@chello.nl>
 MIME-Version: 1.0
-To: joe@perches.com
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, jgarzik@pobox.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] [428/2many] MAINTAINERS - SERIAL ATA (SATA) SUBSYSTEM:
-References: <46bffbb6.4FinvGMu+SlIxG24%joe@perches.com>
-In-Reply-To: <46bffbb6.4FinvGMu+SlIxG24%joe@perches.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070816074624.963595000@chello.nl>
+User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, Aug 16, 2007 at 09:45:27AM +0200, Peter Zijlstra wrote:
+...
+> Index: linux-2.6/fs/ext2/balloc.c
+> ===================================================================
+> --- linux-2.6.orig/fs/ext2/balloc.c
+> +++ linux-2.6/fs/ext2/balloc.c
+> @@ -163,7 +163,7 @@ static int reserve_blocks(struct super_b
+>  			return 0;
+>  	}
+>  
+> -	percpu_counter_mod(&sbi->s_freeblocks_counter, -count);
+> +	percpu_counter_add(&sbi->s_freeblocks_counter, -count);
 
-joe@perches.com wrote:
+Out of curiosity, I noticed similar thing being done in the vm code, what is
+preferred:
 
-> Add file pattern to MAINTAINER entry
+	foobar_add(&counter, -num);
 
-> Signed-off-by: Joe Perches <joe@perches.com>
+or
 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 04c969c..016cd0c 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4077,6 +4077,7 @@ M:	jgarzik@pobox.com
->  L:	linux-ide@vger.kernel.org
->  T:	git kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
->  S:	Supported
-> +F:	drivers/ata/sata_*
+	foobar_sub(&counter, num);
 
-    The libata core doesn't match this pattern, ain't a a vital part of both 
-SAT and PATA drivers?
+?
 
-MBR, Sergei
+Josef 'Jeff' Sipek.
+
+-- 
+Research, n.:
+  Consider Columbus:
+    He didn't know where he was going.
+    When he got there he didn't know where he was.
+    When he got back he didn't know where he had been.
+    And he did it all on someone else's money.
