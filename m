@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760675AbXHQHrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761230AbXHQHtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760675AbXHQHrZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 03:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbXHQHrS
+	id S1761230AbXHQHtm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 03:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756750AbXHQHte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 03:47:18 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46070 "EHLO smtps.tip.net.au"
+	Fri, 17 Aug 2007 03:49:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55638 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755755AbXHQHrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 03:47:17 -0400
-Date: Fri, 17 Aug 2007 17:46:53 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Anton Blanchard <anton@samba.org>, "Ryan S. Arnold" <rsa@us.ibm.com>
-Subject: Re: [PATCH] Only initialize hvc_console if needed, cleanup Kconfig
- help
-Message-Id: <20070817174653.eae71040.sfr@canb.auug.org.au>
-In-Reply-To: <1187313946.6449.68.camel@localhost.localdomain>
-References: <20070816201649.GA5375@redhat.com>
-	<1187313946.6449.68.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__17_Aug_2007_17_46_53_+1000_273V.KTjso7zaqQF"
+	id S1756766AbXHQHtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 03:49:33 -0400
+Message-ID: <46C552FB.4000508@redhat.com>
+Date: Fri, 17 Aug 2007 09:49:15 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Mike Frysinger <vapier.adi@gmail.com>
+CC: Robin Getz <rgetz@blackfin.uclinux.org>, linux-kernel@vger.kernel.org
+Subject: Re: Early printk behaviour
+References: <200708152234.06734.rgetz@blackfin.uclinux.org>	 <46C4009F.9090206@redhat.com> <8bd0f97a0708160947x3bd308abmc4f3b523e2444586@mail.gmail.com>
+In-Reply-To: <8bd0f97a0708160947x3bd308abmc4f3b523e2444586@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__17_Aug_2007_17_46_53_+1000_273V.KTjso7zaqQF
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Mike Frysinger wrote:
+>> Hmm, sort of, although I didn't think about the case of no real console
+>> replacing the early console.  The intention of the patch is to have a
+>> smooth handover from the boot console to the real console.  And, yes, if
+>> no real console is ever registered the boot console keeps running ...
+> 
+> i think it also occurs in the case where real console != early console
 
-On Fri, 17 Aug 2007 11:25:46 +1000 Rusty Russell <rusty@rustcorp.com.au>
-wrote:
->
-> diff -r 0730da2377be drivers/char/Kconfig
-> --- a/drivers/char/Kconfig	Tue Aug 14 12:46:08 2007 +1000
-> +++ b/drivers/char/Kconfig	Fri Aug 17 09:05:12 2007 +1000
-> @@ -568,10 +568,10 @@ config HVC_DRIVER
->  config HVC_DRIVER
->  	bool
->  	help
-> -	  Users of pSeries machines that want to utilize the hvc console front-=
-end
-> -	  module for their backend console driver should select this option.
-> -	  It will automatically be selected if one of the back-end console driv=
-ers
-> -	  is selected.
-> +	  Generic "hypervisor virtual console" infrastructure for various
-> +	  hypervisors (pSeries, Xen, lguest).
-                      ^^^^^^^^^^^^^^^^^^^^^^^
-You left out iSeries.  Probably better to just not enumerate them as they
-may increase over time.
+No.  At least not of the boot console has the CON_BOOT flag set as it
+should.  Last message you'll see on the boot console is the handover
+printk, telling you which real console device prints the following
+messages.  Whenever early and real console go to the physical device or
+not doesn't matter.
 
-Otherwise looks good (though I haven't actually built/booted it).
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+>> So you can either let it running and *not* mark it __init, so it can
+>> keep on going without breaking.  Or you can explicitly unregister your
+>> boot console at some point, maybe using a late_initcall.
+> 
+> wouldnt a common kernel late_initcall() be more appropriate ?  if
+> early console hasnt switched over (for whatever reason), then kill it
 
---Signature=_Fri__17_Aug_2007_17_46_53_+1000_273V.KTjso7zaqQF
-Content-Type: application/pgp-signature
+Hmm, yes, should be doable in generic code.  Check whenever the current
+console has CON_BOOT set and if so unregister it.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+cheers,
 
-iD8DBQFGxVJ6TgG2atn1QN8RAnYjAJ9qc7YYxzJQ9hGpmKbZMF97OCHMAQCdHTr6
-PlFdIeKOEFuK//U5Vtb6FxA=
-=Gpr/
------END PGP SIGNATURE-----
+  Gerd
 
---Signature=_Fri__17_Aug_2007_17_46_53_+1000_273V.KTjso7zaqQF--
