@@ -1,67 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760667AbXHQMEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759334AbXHQMOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760667AbXHQMEM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 08:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756933AbXHQMEB
+	id S1759334AbXHQMOZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 08:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbXHQMOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 08:04:01 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:60765 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755583AbXHQMEA (ORCPT
+	Fri, 17 Aug 2007 08:14:11 -0400
+Received: from webmail.icp-qv1-irony3.iinet.net.au ([203.59.1.108]:4827 "EHLO
+	webmail.icp-qv1-irony3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751364AbXHQMOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 08:04:00 -0400
-Date: Fri, 17 Aug 2007 14:03:59 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Eugene Teo <eugeneteo@kernel.sg>, linux-kernel@vger.kernel.org,
-       auke-jan.h.kok@intel.com
-Subject: Re: [PATCH] Make checkpatch rant about trailing ; at the end of "if"
- expr
-In-Reply-To: <46C41730.3060009@shadowen.org>
-Message-ID: <Pine.LNX.4.64.0708171334460.30502@fbirervta.pbzchgretzou.qr>
-References: <20070816052215.GA3857@kernel.sg> <46C41730.3060009@shadowen.org>
+	Fri, 17 Aug 2007 08:14:08 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CACQuxUbLrQKa/2dsb2JhbAA
+X-IronPort-AV: i="4.19,275,1183305600"; 
+   d="scan'208"; a="183071348:sNHT9571500"
+Message-ID: <46C5910A.6020904@cyberone.com.au>
+Date: Fri, 17 Aug 2007 22:14:02 +1000
+From: Nick Piggin <piggin@cyberone.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Satyam Sharma <satyam@infradead.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       rpjday@mindspring.com, ak@suse.de, netdev@vger.kernel.org,
+       cfriesen@nortel.com, Andrew Morton <akpm@linux-foundation.org>,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
+       clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
+       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com> <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in> <46C54D94.5080803@yahoo.com.au> <alpine.LFD.0.999.0708171358520.3666@enigma.security.iitk.ac.in> <46C56725.6000207@cyberone.com.au> <alpine.LFD.0.999.0708171505200.3666@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0708171505200.3666@enigma.security.iitk.ac.in>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Satyam Sharma wrote:
 
-On Aug 16 2007 10:21, Andy Whitcroft wrote:
->> +		if ($line =~ /\bif\s*\([^\)]*\)\s*\;/) {
 >
->Heh, you are the second person to suggest this check today, do I detect
->some ripped out hair due to one of these!
+>On Fri, 17 Aug 2007, Nick Piggin wrote:
 >
->I've taken this idea and expanded it to cover if, for and while which
->can all suffer from this.  Using the relative indent to work out which
->are valid combinations:
+>>I think they would both be equally ugly,
+>>
+>
+>You think both these are equivalent in terms of "looks":
+>
+>					|
+>while (!atomic_read(&v)) {		|	while (!atomic_read_xxx(&v)) {
+>	...				|		...
+>	cpu_relax_no_barrier();		|		cpu_relax_no_barrier();
+>	order_atomic(&v);		|	}
+>}					|
+>
+>(where order_atomic() is an atomic_t
+>specific wrapper as you mentioned below)
+>
+>?
+>
 
-But. The above regex does not seem to handle
+I think the LHS is better if your atomic_read_xxx primitive is using the
+crazy one-sided barrier, because the LHS code you immediately know what
+barriers are happening, and with the RHS you have to look at the 
+atomic_read_xxx
+definition.
 
-	if ((a = b));
-		oops;
-
-I have tried to come up with a superduper regex that handles multiple 
-(), but my regex fu seems to stop above two pairs of ().
-
-#!/usr/bin/perl
-
-@check = (
-	q"if ((ptr = malloc(bong, GFP)) == NULL)  ; (oopsie) ;",
-	q"if ((ptr = malloc(bong, GFP)) == NULL)    (alright);",
-	q"if (  ({ bool evil = (true); evil; }) ) ; (oopsie) ;",
-	q"if (  ({ bool evil = (true); evil; }) )   (alright);",
-	q"if((()));",
-);
-
-my $r = qr/\s*\(\s*(??{$r})?\s*\)\s*|\s*\(\s*[^()]+\s*\)\s*/;
-
-foreach (@check) {
-	if ($_ =~ /(if|for|while)$r;/) {
-		print "ok $_\n";
-	}
-}
+If your atomic_read_xxx implementation was more intuitive, then both are
+pretty well equal. More lines != ugly code.
 
 
-	Jan
--- 
+>>but the atomic_read_volatile
+>>variant would be more prone to subtle bugs because of the weird
+>>implementation.
+>>
+>
+>What bugs?
+>
+
+You can't think for yourself? Your atomic_read_volatile contains a compiler
+barrier to the atomic variable before the load. 2 such reads from different
+locations look like this:
+
+asm volatile("" : "+m" (v1));
+atomic_read(&v1);
+asm volatile("" : "+m" (v2));
+atomic_read(&v2);
+
+Which implies that the load of v1 can be reordered to occur after the load
+of v2. Bet you didn't expect that?
+
+>>Secondly, what sort of code would do such a thing?
+>>
+>
+>See the nodemgr_host_thread() that does something similar, though not
+>exactly same.
+>
+
+I'm sorry, all this waffling about made up code which might do this and
+that is just a waste of time. Seriously, the thread is bloated enough
+and never going to get anywhere with all this handwaving. If someone is
+saving up all the really real and actually good arguments for why we
+must have a volatile here, now is the time to use them.
+
+>>and have barriers both before and after the memory operation,
+>>
+>
+>How could that lead to bugs? (if you can point to existing code,
+>but just some testcase / sample code would be fine as well).
+>
+
+See above.
+
+>As I said, barrier() is too heavy-handed.
+>
+
+Typo. I meant: defined for a single memory location (ie. order(x)).
+
