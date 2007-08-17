@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761985AbXHQB7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763452AbXHQCFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761985AbXHQB7V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 21:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbXHQB7L
+	id S1763452AbXHQCFq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 22:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbXHQCFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 21:59:11 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:1251 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752592AbXHQB7K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 21:59:10 -0400
-Date: Thu, 16 Aug 2007 21:58:51 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Rene Herman <rene.herman@gmail.com>
-cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Kyle Moffett <mrmacman_g4@mac.com>, Salikh Zakirov <salikh@gmail.com>,
-       Junio C Hamano <gitster@pobox.com>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Joe Perches <joe@perches.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       <linux-pm@lists.linux-foundation.org>, <git@vger.kernel.org>
-Subject: Re: [linux-pm] Re: Storing Maintainers info around the kernel tree
-In-Reply-To: <46C4FD57.3000101@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0708162156550.9927-100000@netrider.rowland.org>
+	Thu, 16 Aug 2007 22:05:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55298 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751845AbXHQCFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 22:05:33 -0400
+Message-ID: <46C50228.4000004@redhat.com>
+Date: Thu, 16 Aug 2007 22:04:24 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Herbert Xu <herbert.xu@redhat.com>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C4AA26.4060707@redhat.com> <20070817000209.GC11594@gondor.apana.org.au>
+In-Reply-To: <20070817000209.GC11594@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Aug 2007, Rene Herman wrote:
-
-> On 08/16/2007 11:39 PM, Stefan Richter wrote:
-> > Rene Herman wrote:
+Herbert Xu wrote:
+> On Thu, Aug 16, 2007 at 03:48:54PM -0400, Chris Snook wrote:
+>>> Can you find an actual atomic_read code snippet there that is
+>>> broken without the volatile modifier?
+>> A whole bunch of atomic_read uses will be broken without the volatile 
+>> modifier once we start removing barriers that aren't needed if volatile 
+>> behavior is guaranteed.
 > 
-> >> I personally don't think there's a whole lot wrong with more and more
-> >> expecting people who submit patches (for whom this automation is
-> >> intended) to be using git.
-> > 
-> > You mean "people who frequently submit patches for various different
-> > subsystems".
+> Could you please cite the file/function names so we can
+> see whether removing the barrier makes sense?
 > 
-> Erm, I guess. Is that agreeing or disagreeing with me?
+> Thanks,
 
-Don't forget also that the MAINTAINERS information is (or should be!)
-used by people who want to submit bug reports, not just by people who
-submit patches.  Bug reporters shouldn't need to use Git.
+At a glance, several architectures' implementations of smp_call_function() have 
+one or more legitimate atomic_read() busy-waits that shouldn't be using 
+CPU-relax.  Some of them do work in the loop.
 
-Alan Stern
+I'm sure there are plenty more examples that various maintainers could find in 
+their own code.
 
+	-- Chris
