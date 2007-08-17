@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760419AbXHQHpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760675AbXHQHrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760419AbXHQHpN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 03:45:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbXHQHpA
+	id S1760675AbXHQHrZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 03:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbXHQHrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 03:45:00 -0400
-Received: from wr-out-0506.google.com ([64.233.184.231]:30940 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754508AbXHQHo7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 03:44:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=onoiotXQZitF9kELkrxmGCD60gqkVRC0sSWU3izNNZ0ePU+nTY+nq+N4r/yI124IH9WGJRcdqOCQTxr3Q4Z6n1uMFGQMlz8T2An4sh7unOF7NxqRyhGmMgyjNpD1VbqaEDMu1sdqJHlQf4N6yUhaNQsQmpUhBgzbypCFUofyIYM=
-Message-ID: <f40fb4250708170044q9a259c3wb50186880d6b7f51@mail.gmail.com>
-Date: Fri, 17 Aug 2007 11:44:57 +0400
-From: GolovaSteek <golovasteek@gmail.com>
-To: "Michal Schmidt" <xschmi00@stud.feec.vutbr.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: nanosleep() accuracy
-In-Reply-To: <46C54787.1010909@stud.feec.vutbr.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f40fb4250708161552ub87bf8ve8168eec1b3955e7@mail.gmail.com>
-	 <46C54787.1010909@stud.feec.vutbr.cz>
+	Fri, 17 Aug 2007 03:47:18 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:46070 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755755AbXHQHrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 03:47:17 -0400
+Date: Fri, 17 Aug 2007 17:46:53 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Anton Blanchard <anton@samba.org>, "Ryan S. Arnold" <rsa@us.ibm.com>
+Subject: Re: [PATCH] Only initialize hvc_console if needed, cleanup Kconfig
+ help
+Message-Id: <20070817174653.eae71040.sfr@canb.auug.org.au>
+In-Reply-To: <1187313946.6449.68.camel@localhost.localdomain>
+References: <20070816201649.GA5375@redhat.com>
+	<1187313946.6449.68.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__17_Aug_2007_17_46_53_+1000_273V.KTjso7zaqQF"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/8/17, Michal Schmidt <xschmi00@stud.feec.vutbr.cz>:
-> GolovaSteek skrev:
-> > Hello!
-> > I need use sleep with accurat timing.
-> > I use 2.6.21 with rt-prempt patch.
-> > with enabled rt_preempt, dyn_ticks, and local_apic
-> > But
-> >
-> > req.tv_nsec = 300000;
-> > req.tv_sec = 0;
-> > nanosleep(&req,NULL)
-> >
-> > make pause around 310-330 microseconds.
+--Signature=_Fri__17_Aug_2007_17_46_53_+1000_273V.KTjso7zaqQF
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, 17 Aug 2007 11:25:46 +1000 Rusty Russell <rusty@rustcorp.com.au>
+wrote:
 >
-> How do you measure this?
-> If you want to have something done every 300 microseconds, you must not
-> sleep for 300 microseconds in each iteration, because you'd accumulate
-> errors. Use a periodic timer or use the current time to compute how long
-> to sleep in each iteration. Take a look how cyclictest does it.
+> diff -r 0730da2377be drivers/char/Kconfig
+> --- a/drivers/char/Kconfig	Tue Aug 14 12:46:08 2007 +1000
+> +++ b/drivers/char/Kconfig	Fri Aug 17 09:05:12 2007 +1000
+> @@ -568,10 +568,10 @@ config HVC_DRIVER
+>  config HVC_DRIVER
+>  	bool
+>  	help
+> -	  Users of pSeries machines that want to utilize the hvc console front-=
+end
+> -	  module for their backend console driver should select this option.
+> -	  It will automatically be selected if one of the back-end console driv=
+ers
+> -	  is selected.
+> +	  Generic "hypervisor virtual console" infrastructure for various
+> +	  hypervisors (pSeries, Xen, lguest).
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+You left out iSeries.  Probably better to just not enumerate them as they
+may increase over time.
 
-no. I just want my programm go to sleep sometimes and wake up in correct time.
+Otherwise looks good (though I haven't actually built/booted it).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> > I tried to understend how work nanosleep(), but it not depends from
-> > jiffies and from smp_apic_timer_interrupt.
-> >
-> > When can accuracy be lost?
-> > And how are process waked up?
-> >
-> >
-> > GolovaSteek
->
-> Don't forget the process will always have non-zero wakeup latency. It
-> takes some time to process an interrupt, wakeup the process and schedule
-> it to run on the CPU. 10-30 microseconds is not unreasonable.
+--Signature=_Fri__17_Aug_2007_17_46_53_+1000_273V.KTjso7zaqQF
+Content-Type: application/pgp-signature
 
-But 20000 operations can be done in 10 microseconds?
-and why is there that inconstancy? Why sametimes 10 and sometimes 30?
-In which points of implementation it happens?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-GolovaSteek
+iD8DBQFGxVJ6TgG2atn1QN8RAnYjAJ9qc7YYxzJQ9hGpmKbZMF97OCHMAQCdHTr6
+PlFdIeKOEFuK//U5Vtb6FxA=
+=Gpr/
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__17_Aug_2007_17_46_53_+1000_273V.KTjso7zaqQF--
