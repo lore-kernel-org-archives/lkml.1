@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761894AbXHQK4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763808AbXHQK6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761894AbXHQK4n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 06:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbXHQK4d
+	id S1763808AbXHQK6u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 06:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758064AbXHQK6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 06:56:33 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:44346 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755092AbXHQK4c (ORCPT
+	Fri, 17 Aug 2007 06:58:38 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:45124 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756066AbXHQK6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 06:56:32 -0400
-Date: Fri, 17 Aug 2007 16:26:30 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Takenori Nagano <t-nagano@ah.jp.nec.com>
-Cc: Keith Owens <kaos@ocs.com.au>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       k-miyoshi@cb.jp.nec.com, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Bernhard Walle <bwalle@suse.de>
-Subject: Re: [patch] add kdump_after_notifier
-Message-ID: <20070817105630.GA18167@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070802112852.GA7054@in.ibm.com> <31687.1186113947@kao2.melbourne.sgi.com> <20070805110746.GA12540@in.ibm.com> <46C1691E.7090708@ah.jp.nec.com> <20070814083710.GA14538@suse.de> <20070814132454.GA8293@in.ibm.com> <46C4184B.5030303@ah.jp.nec.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46C4184B.5030303@ah.jp.nec.com>
-User-Agent: Mutt/1.5.11
+	Fri, 17 Aug 2007 06:58:36 -0400
+Message-ID: <46C57F5A.2050205@s5r6.in-berlin.de>
+Date: Fri, 17 Aug 2007 12:58:34 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: paulmck@linux.vnet.ibm.com, Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C41EE4.9090806@s5r6.in-berlin.de> <46C42767.4070104@s5r6.in-berlin.de> <20070816104250.GB2927@gondor.apana.org.au> <20070816163441.GB16957@linux.vnet.ibm.com> <46C512EB.7020603@yahoo.com.au> <46C54D74.60101@s5r6.in-berlin.de> <46C556F1.8000407@yahoo.com.au> <46C57D07.80604@s5r6.in-berlin.de>
+In-Reply-To: <46C57D07.80604@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 06:26:35PM +0900, Takenori Nagano wrote:
-> Vivek Goyal wrote:
->  > So for the time being I think we can put RAS tools on die notifier list
-> > and if it runs into issues we can always think of creating a separate list.
-> > 
-> > Few things come to mind.
-> > 
-> > - Why there is a separate panic_notifier_list? Can't it be merged with
-> >   die_chain? die_val already got one of the event type as PANIC. If there
-> >   are no specific reasons then we should merge the two lists. Registering
-> >   RAS tools on a single list is easier.
+I wrote:
+> Nick Piggin wrote:
+>> You might find that these places that appear to need barriers are
+>> buggy for other reasons anyway. Can you point to some in-tree code
+>> we can have a look at?
 > 
-> I think it is difficult, because die_chain is defined by each architecture.
-> 
+> I could, or could not, if I were through with auditing the code.  I
+> remembered one case and posted it (nodemgr_host_thread) which was safe
+> because msleep_interruptible provided the necessary barrier there, and
+> this implicit barrier is not in danger to be removed by future patches.
 
-I think die_chain is arch independent definition (kernel/die_notifier.c)? 
-But anyway, to begin with it can be done only for panic_notifier.
-
-> > - Modify Kdump to register on die_chain list. 
-> > - Modify Kdb to register on die_chain list.
-> > - Export all the registered members of die_chain through sysfs along with
-> >   their priorities. Priorities should be modifiable. Most likely one 
-> >   shall have to introduce additional field in struct notifier_block. This
-> >   field will be a string as an identifier of the user registerd. e.g
-> >   "Kdump", "Kdb" etc.
-> > 
-> > Now user will be able to view all the die_chain users through sysfs and
-> > be able to modify the order in which these should run by modifying their
-> > priority. Hence all the RAS tools can co-exist.
-> 
-> This is my image of your proposal.
-> 
-> - Print current order
-> 
-> # cat /sys/class/misc/debug/panic_notifier_list
-> priority   name
-> 1          IPMI
-> 2          watchdog
-> 3          Kdb
-> 4          Kdump
-> 
-
-I think Bernhard's suggestion looks better here. I noticed that 
-/sys/kernel/debug is already present. So how about following.
-
-/sys/kernel/debug/kdump/priority
-/sys/kernel/debug/kdb/priority
-/sys/kernel/debug/IPMI/priority
-
-I think at some point of time we shall have to create another file say
-description.
-
-/sys/kernel/debug/IPMI/description
-
-Which can tell what does this tool do? Other a user might not have any
-clue how to prioritize various things.
-
-Thanks
-Vivek
+PS, just in case anybody holds his breath for more example code from me,
+I don't plan to continue with an actual audit of the drivers I maintain.
+It's an important issue, but my current time budget will restrict me to
+look at it ad hoc, per case.  (Open bugs have higher priority than
+potential bugs.)
+-- 
+Stefan Richter
+-=====-=-=== =--- =---=
+http://arcgraph.de/sr/
