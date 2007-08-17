@@ -1,66 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbXHQWM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760328AbXHQWQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760185AbXHQWM1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 18:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbXHQWMP
+	id S1760328AbXHQWQL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 18:16:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbXHQWP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 18:12:15 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47882 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751479AbXHQWMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 18:12:13 -0400
-In-Reply-To: <alpine.LFD.0.999.0708161953310.30176@woody.linux-foundation.org>
-References: <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi> <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com> <18117.1287.779351.836552@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708161953310.30176@woody.linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <784250b50ba166650cbbb4de29b5559b@kernel.crashing.org>
+	Fri, 17 Aug 2007 18:15:58 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:23326 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752226AbXHQWP5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 18:15:57 -0400
+X-IronPort-AV: i="4.19,277,1183348800"; 
+   d="scan'208"; a="48717117:sNHT27631191"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH 01/12] Blackfin arch: add peripheral resource allocation support
+Date: Fri, 17 Aug 2007 18:15:56 -0400
+User-Agent: KMail/1.9.5
+Cc: "Hennerich, Michael" <Michael.Hennerich@analog.com>,
+       "Bryan Wu" <bryan.wu@analog.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <600D5CB4DFD93545BF61FF01473D11AC0D87BD9F@limkexm2.ad.analog.com> <200708171411.00145.david-b@pacbell.net>
+In-Reply-To: <200708171411.00145.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Cc: Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Satyam Sharma <satyam@infradead.org>,
-       Ilpo J?rvinen <ilpo.jarvinen@helsinki.fi>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
-       Netdev <netdev@vger.kernel.org>, cfriesen@nortel.com,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       zlynx@acm.org, schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, wensong@linux-vs.org,
-       wjiang@resilience.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Sat, 18 Aug 2007 00:09:45 +0200
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Mailer: Apple Mail (2.623)
+Content-Disposition: inline
+Message-Id: <200708171815.56323.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 17 Aug 2007 22:15:55.0897 (UTC) FILETIME=[2E823E90:01C7E11C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Of course, since *normal* accesses aren't necessarily limited wrt
-> re-ordering, the question then becomes one of "with regard to *what* 
-> does
-> it limit re-ordering?".
->
-> A C compiler that re-orders two different volatile accesses that have a
-> sequence point in between them is pretty clearly a buggy compiler. So 
-> at a
-> minimum, it limits re-ordering wrt other volatiles (assuming sequence
-> points exists). It also means that the compiler cannot move it
-> speculatively across conditionals, but other than that it's starting to
-> get fuzzy.
+On Fri 17 Aug 2007 17:10, David Brownell pondered:
+> On the other hand, maybe you want your "typical" customer to
+> be more of a systems integrator than anything else.
 
-This is actually really well-defined in C, not fuzzy at all.
-"Volatile accesses" are a side effect, and no side effects can
-be reordered with respect to sequence points.  The side effects
-that matter in the kernel environment are: 1) accessing a volatile
-object; 2) modifying an object; 3) volatile asm(); 4) calling a
-function that does any of these.
+We are getting yelled at by our customers (I was on the phone yesterday), 
+because the kernel build environment we distribute (the default) was not 
+inside Eclipse, and someone couldn't push a button on a GUI rather than 
+typing "make".
 
-We certainly should avoid volatile whenever possible, but "because
-it's fuzzy wrt reordering" is not a reason -- all alternatives have
-exactly the same issues.
+While Linux and other open source software is free, for some taking advantage 
+of its benefits can require a significant investment in time. Linux is 
+powerful, rich, and flexible. It is these very characteristics that make 
+Linux so appealing that also create a significant level of complexity.
 
+We are seeing more and more "first time buyers" jumping from bare metal - no 
+OS, to Linux. For them - the ease of not having to write configuration files 
+gives them a warm fuzzy feeling when they boot their board, and it 
+just "works".
 
-Segher
+> > While potentially causing conflicting usage, for someone without
+> > detailed hardware knowledge. The platform device board file is a good
+> > thing to track conflicting memory or IO space resources as well as
+> > IRQs. We also utilize platform device files for exactly these purposes.
+> > 
+> > The dynamic resource allocation for pinmux and gpio seems to us the
+> > best way to handle things. The "resource allocation" mechanism will
+> > spill an error and dump in case conflicting usage is detected. It'll
+> > also tell you who is causing the conflicting usage.       
+> 
+> That's your call, of course.  I was pointing out why the "early"
+> binding of pin resources is the more usual strategy with Linux.
+> A "late" strategy is a bit surprising, and has its own issues.
 
+Agreed - Every implementation has its own issues, but based on what we were 
+being asked to do - it was the best way we could accommodate everyone.
+
+> > >That said, how you handle pinmux on Blackfin is your business.
+> > >
+> > >But you should know that this approach seems idiosyncratic and
+> > >more complex than needed:  when pin config is done early and as
+> > >part of board setup, drivers don't need to care about it or to
+> > >handle any pinmux errors.  And heck, products can sometimes be
+> > >shipped with the bootloader having done all pinmux setup, so
+> > >Linux won't need to worry about it at all.  That can help ship
+> > >multiple board revisions using the same kernel.
+> > 
+> > This works for fixed function boards.
+> 
+> That is, for typical products embedding Linux...
+
+We have multiple customers shipping the same bootloader/kernel binary on 
+different products, and the only difference is the /etc/rc file - which 
+drivers they install, and a few things in userspace.
+
+Could this be smaller - sure - but NAND is cheap (according to them) compared 
+to the effort and cost of maintaining and testing multiple kernel versions 
+for every product.
+ 
+Could this be faster - sure - but it is done at init - and then never again. 
+We have a ~2-3 second boot time - maybe we shave off a few ms - things go 
+pretty fast at 600MHz.
+
+-Robin
