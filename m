@@ -1,177 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758997AbXHQONE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761264AbXHQOS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758997AbXHQONE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 10:13:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbXHQOMx
+	id S1761264AbXHQOS5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 10:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbXHQOSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 10:12:53 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47498 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752393AbXHQOMw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 10:12:52 -0400
-Message-ID: <46C5ACE8.2050004@bull.net>
-Date: Fri, 17 Aug 2007 16:12:56 +0200
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+	Fri, 17 Aug 2007 10:18:50 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:22232 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753626AbXHQOSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 10:18:49 -0400
+Message-ID: <46C5AD92.70909@openvz.org>
+Date: Fri, 17 Aug 2007 18:15:46 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [kvm-devel] [PATCH/RFC 3/4]Introduce "account modifiers" mechanism
-References: <46C4719A.2060308@bull.net> <46C4720F.7030304@bull.net>		<46C4725A.4070607@bull.net> <46C4740F.2050701@bull.net>		<1187303955.6449.7.camel@localhost.localdomain>	<46C54FB8.7050504@bull.net>	<1187339450.6449.115.camel@localhost.localdomain> <46C56774.2030009@bull.net> <46C59AB1.6070505@qumranet.com>
-In-Reply-To: <46C59AB1.6070505@qumranet.com>
-X-Enigmail-Version: 0.94.0.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 17/08/2007 16:18:00,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 17/08/2007 16:18:02,
-	Serialize complete at 17/08/2007 16:18:02
-Content-Type: multipart/mixed;
- boundary="------------010603080806080009030604"
+To: Andrew Morton <akpm@osdl.org>
+CC: Oleg Nesterov <oleg@tv-sign.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>, devel@openvz.org
+Subject: [PATCH] Isolate some explicit usage of task->tgid
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010603080806080009030604
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=ISO-8859-1
+With pid namespaces this field is now dangerous to use explicitly, 
+so hide it behind the helpers.
 
-Avi Kivity wrote:
-[...]
-> 
-> The normal user/system accounting has the same issue, no?  Whereever we
-> happen to land (kernel or user) gets the whole tick.
-> 
-> So I think it is okay to have the same limitation for guest time.
-> 
+Also the pid and pgrp fields o task_struct and signal_struct are 
+to be deprecated. Unfortunately this patch cannot be sent right now 
+as this leads to tons of warnings, so start isolating them, and  
+deprecate later. 
 
-So this is how it looks like.
-PATCH 1 and 2 are always a prerequisite.
+Actually the p->tgid == pid has to be changed to has_group_leader_pid(), 
+but Oleg pointed out that this is the same and thread_group_leader() 
+is more preferable. 
 
-Laurent
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Acked-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---------------010603080806080009030604
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
- name="account_guest"
-Content-Disposition: inline;
- filename="account_guest"
+---
 
-Index: kvm/include/linux/sched.h
-===================================================================
---- kvm.orig/include/linux/sched.h	2007-08-17 15:07:02.000000000 +0200
-+++ kvm/include/linux/sched.h	2007-08-17 15:08:19.000000000 +0200
-@@ -1310,6 +1310,7 @@
- #define PF_STARTING	0x00000002	/* being created */
- #define PF_EXITING	0x00000004	/* getting shut down */
- #define PF_EXITPIDONE	0x00000008	/* pi exit done on shut down */
-+#define PF_VCPU		0x00000010	/* I'm a virtual CPU */
- #define PF_FORKNOEXEC	0x00000040	/* forked but didn't exec */
- #define PF_SUPERPRIV	0x00000100	/* used super-user privileges */
- #define PF_DUMPCORE	0x00000200	/* dumped core */
-Index: kvm/kernel/sched.c
-===================================================================
---- kvm.orig/kernel/sched.c	2007-08-17 14:42:43.000000000 +0200
-+++ kvm/kernel/sched.c	2007-08-17 15:16:20.000000000 +0200
-@@ -3246,10 +3246,22 @@
- 	struct rq *rq = this_rq();
- 	cputime64_t tmp;
+ fs/exec.c                 |    4 ++--
+ fs/proc/base.c            |    4 ++--
+ include/linux/sched.h     |    6 ++++++
+ kernel/posix-cpu-timers.c |   12 ++++++------
+ kernel/posix-timers.c     |    4 ++--
+ kernel/ptrace.c           |    2 +-
+ kernel/signal.c           |    2 +-
+ mm/oom_kill.c             |    2 +-
+ 8 files changed, 21 insertions(+), 15 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index f8cebf8..24b669d 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1691,6 +1691,12 @@ static inline int has_group_leader_pid(s
+ 	return p->pid == p->tgid;
+ }
  
-+	tmp = cputime_to_cputime64(cputime);
-+	if (p->flags & PF_VCPU) {
-+		p->utime = cputime_add(p->utime, cputime);
-+		p->gtime = cputime_add(p->gtime, cputime);
-+
-+		cpustat->guest = cputime64_add(cpustat->guest, tmp);
-+		cpustat->user = cputime64_add(cpustat->user, tmp);
-+
-+		p->flags &= ~PF_VCPU;
-+
-+		return;
-+	}
-+
- 	p->stime = cputime_add(p->stime, cputime);
- 
- 	/* Add system time to cpustat. */
--	tmp = cputime_to_cputime64(cputime);
- 	if (hardirq_count() - hardirq_offset)
- 		cpustat->irq = cputime64_add(cpustat->irq, tmp);
- 	else if (softirq_count())
-
---------------010603080806080009030604
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
- name="kvm_account_guest"
-Content-Disposition: inline;
- filename="kvm_account_guest"
-
-Index: kvm/drivers/kvm/kvm.h
-===================================================================
---- kvm.orig/drivers/kvm/kvm.h	2007-08-17 15:26:16.000000000 +0200
-+++ kvm/drivers/kvm/kvm.h	2007-08-17 15:29:46.000000000 +0200
-@@ -589,6 +589,19 @@
- 
- int kvm_hypercall(struct kvm_vcpu *vcpu, struct kvm_run *run);
- 
-+#ifndef PF_VCPU
-+#define PF_VCPU	0	/* no kernel support */
-+#endif
-+
-+static inline void kvm_guest_enter(void)
++static inline
++int same_thread_group(struct task_struct *p1, struct task_struct *p2)
 +{
-+	current->flags |= PF_VCPU;
++	return p1->tgid == p2->tgid;
 +}
 +
-+static inline void kvm_guest_exit(void)
-+{
-+}
-+
- static inline int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
- 				     u32 error_code)
+ static inline struct task_struct *next_thread(const struct task_struct *p)
  {
-Index: kvm/drivers/kvm/svm.c
-===================================================================
---- kvm.orig/drivers/kvm/svm.c	2007-08-17 15:26:16.000000000 +0200
-+++ kvm/drivers/kvm/svm.c	2007-08-17 15:27:03.000000000 +0200
-@@ -1404,6 +1404,7 @@
- 	clgi();
+ 	return list_entry(rcu_dereference(p->thread_group.next),
+diff --git a/fs/exec.c b/fs/exec.c
+index 35013f2..415cefb 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -865,8 +865,8 @@ static int de_thread(struct task_struct 
  
- 	vcpu->guest_mode = 1;
-+	kvm_guest_enter();
- 	if (vcpu->requests)
- 		if (test_and_clear_bit(KVM_TLB_FLUSH, &vcpu->requests))
- 		    svm_flush_tlb(vcpu);
-@@ -1536,6 +1537,7 @@
- #endif
- 		: "cc", "memory" );
+ 		write_lock_irq(&tasklist_lock);
  
-+	kvm_guest_exit();
- 	vcpu->guest_mode = 0;
+-		BUG_ON(leader->tgid != tsk->tgid);
+-		BUG_ON(tsk->pid == tsk->tgid);
++		BUG_ON(!same_thread_group(leader, tsk));
++		BUG_ON(thread_group_leader(tsk));
+ 		/*
+ 		 * An exec() starts a new thread group with the
+ 		 * TGID of the previous thread group. Rehash the
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index e3009ab..31e7dfe 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -2288,7 +2288,7 @@ retry:
+ 		 * found doesn't happen to be a thread group leader.
+ 		 * As we don't care in the case of readdir.
+ 		 */
+-		if (!task || !has_group_leader_pid(task))
++		if (!task || !thread_group_leader(task))
+ 			goto retry;
+ 		get_task_struct(task);
+ 	}
+@@ -2474,7 +2474,7 @@ static struct dentry *proc_task_lookup(s
+ 	rcu_read_unlock();
+ 	if (!task)
+ 		goto out;
+-	if (leader->tgid != task->tgid)
++	if (!same_thread_group(leader, task))
+ 		goto out_drop_task;
  
- 	if (vcpu->fpu_active) {
-Index: kvm/drivers/kvm/vmx.c
-===================================================================
---- kvm.orig/drivers/kvm/vmx.c	2007-08-17 15:26:16.000000000 +0200
-+++ kvm/drivers/kvm/vmx.c	2007-08-17 15:27:45.000000000 +0200
-@@ -2078,6 +2078,7 @@
- 	local_irq_disable();
+ 	result = proc_task_instantiate(dir, dentry, task, NULL);
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index b53c8fc..68c9637 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -21,8 +21,8 @@ static int check_clock(const clockid_t w
  
- 	vcpu->guest_mode = 1;
-+	kvm_guest_enter();
- 	if (vcpu->requests)
- 		if (test_and_clear_bit(KVM_TLB_FLUSH, &vcpu->requests))
- 		    vmx_flush_tlb(vcpu);
-@@ -2198,6 +2199,7 @@
- 		[cr2]"i"(offsetof(struct kvm_vcpu, cr2))
- 	      : "cc", "memory" );
+ 	read_lock(&tasklist_lock);
+ 	p = find_task_by_pid(pid);
+-	if (!p || (CPUCLOCK_PERTHREAD(which_clock) ?
+-		   p->tgid != current->tgid : p->tgid != pid)) {
++	if (!p || !(CPUCLOCK_PERTHREAD(which_clock) ?
++		   same_thread_group(p, current) : thread_group_leader(p))) {
+ 		error = -EINVAL;
+ 	}
+ 	read_unlock(&tasklist_lock);
+@@ -308,13 +308,13 @@ int posix_cpu_clock_get(const clockid_t 
+ 		p = find_task_by_pid(pid);
+ 		if (p) {
+ 			if (CPUCLOCK_PERTHREAD(which_clock)) {
+-				if (p->tgid == current->tgid) {
++				if (same_thread_group(p, current)) {
+ 					error = cpu_clock_sample(which_clock,
+ 								 p, &rtn);
+ 				}
+ 			} else {
+ 				read_lock(&tasklist_lock);
+-				if (p->tgid == pid && p->signal) {
++				if (thread_group_leader(p) && p->signal) {
+ 					error =
+ 					    cpu_clock_sample_group(which_clock,
+ 							           p, &rtn);
+@@ -355,7 +355,7 @@ int posix_cpu_timer_create(struct k_itim
+ 			p = current;
+ 		} else {
+ 			p = find_task_by_pid(pid);
+-			if (p && p->tgid != current->tgid)
++			if (p && !same_thread_group(p, current))
+ 				p = NULL;
+ 		}
+ 	} else {
+@@ -363,7 +363,7 @@ int posix_cpu_timer_create(struct k_itim
+ 			p = current->group_leader;
+ 		} else {
+ 			p = find_task_by_pid(pid);
+-			if (p && p->tgid != pid)
++			if (p && !thread_group_leader(p))
+ 				p = NULL;
+ 		}
+ 	}
+diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
+index 8d2cb05..bc77ba8 100644
+--- a/kernel/posix-timers.c
++++ b/kernel/posix-timers.c
+@@ -404,7 +404,7 @@ static struct task_struct * good_sigeven
  
-+	kvm_guest_exit();
- 	vcpu->guest_mode = 0;
- 	local_irq_enable();
+ 	if ((event->sigev_notify & SIGEV_THREAD_ID ) &&
+ 		(!(rtn = find_task_by_pid(event->sigev_notify_thread_id)) ||
+-		 rtn->tgid != current->tgid ||
++		 !same_thread_group(rtn, current) ||
+ 		 (event->sigev_notify & ~SIGEV_THREAD_ID) != SIGEV_SIGNAL))
+ 		return NULL;
  
-
---------------010603080806080009030604--
+@@ -609,7 +609,7 @@ static struct k_itimer * lock_timer(time
+ 		spin_unlock(&idr_lock);
+ 
+ 		if ((timr->it_id != timer_id) || !(timr->it_process) ||
+-				timr->it_process->tgid != current->tgid) {
++				!same_thread_group(timr->it_process, current)) {
+ 			unlock_timer(timr, *flags);
+ 			timr = NULL;
+ 		}
+diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+index 0d7fd07..f90207a 100644
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -169,7 +169,7 @@ int ptrace_attach(struct task_struct *ta
+ 	retval = -EPERM;
+ 	if (task->pid <= 1)
+ 		goto out;
+-	if (task->tgid == current->tgid)
++	if (same_thread_group(task, current))
+ 		goto out;
+ 
+ repeat:
+diff --git a/kernel/signal.c b/kernel/signal.c
+index d6ca591..df785a7 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1145,7 +1145,7 @@ static int kill_something_info(int sig, 
+ 
+ 		read_lock(&tasklist_lock);
+ 		for_each_process(p) {
+-			if (p->pid > 1 && p->tgid != current->tgid) {
++			if (p->pid > 1 && !same_thread_group(p, current)) {
+ 				int err = group_send_sig_info(sig, info, p);
+ 				++count;
+ 				if (err != -EPERM)
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index e276a3c..1a2f687 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -330,7 +330,7 @@ static int oom_kill_task(struct task_str
+ 	 * to memory reserves though, otherwise we might deplete all memory.
+ 	 */
+ 	do_each_thread(g, q) {
+-		if (q->mm == mm && q->tgid != p->tgid)
++		if (q->mm == mm && !same_thread_group(q, p))
+ 			force_sig(SIGKILL, q);
+ 	} while_each_thread(g, q);
+ 
