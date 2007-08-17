@@ -1,103 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbXHQXgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758911AbXHQXjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757266AbXHQXgI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 19:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXHQXfy
+	id S1758911AbXHQXjX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 19:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbXHQXjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 19:35:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58503 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750905AbXHQXfx (ORCPT
+	Fri, 17 Aug 2007 19:39:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46455 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbXHQXjI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 19:35:53 -0400
-Date: Fri, 17 Aug 2007 16:34:46 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86-64: memset optimization
-Message-ID: <20070817163446.3e63f208@freepuppy.rosehill.hemminger.net>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Aug 2007 19:39:08 -0400
+Date: Sat, 18 Aug 2007 05:21:42 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Segher Boessenkool <segher@kernel.crashing.org>
+cc: Paul Mackerras <paulus@samba.org>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       rpjday@mindspring.com, ak@suse.de, netdev@vger.kernel.org,
+       cfriesen@nortel.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-arch@vger.kernel.org, jesper.juhl@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
+       davem@davemloft.net, Linus Torvalds <torvalds@linux-foundation.org>,
+       wensong@linux-vs.org, wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <f5796b5aa38ae6305c65ffa0340ba295@kernel.crashing.org>
+Message-ID: <alpine.LFD.0.999.0708180512300.3666@enigma.security.iitk.ac.in>
+References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com>
+ <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org>
+ <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org>
+ <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com>
+ <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in>
+ <f5796b5aa38ae6305c65ffa0340ba295@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Optimize uses of memset with small constant offsets.
-This will generate smaller code, and avoid the slow rep/string instructions.
-Code copied from i386 with a little cleanup.
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
---- a/include/asm-x86_64/string.h	2007-08-17 15:14:32.000000000 -0700
-+++ b/include/asm-x86_64/string.h	2007-08-17 15:36:30.000000000 -0700
-@@ -42,9 +42,51 @@ extern void *__memcpy(void *to, const vo
- 		 __ret = __builtin_memcpy((dst),(src),__len);	\
- 	   __ret; }) 
- #endif
--
- #define __HAVE_ARCH_MEMSET
--void *memset(void *s, int c, size_t n);
-+void *__memset(void *s, int c, size_t n);
-+
-+/* Optimize for cases of trivial memset's
-+ * Compiler should optimize away all but the case used.
-+ */
-+static __always_inline void *
-+__constant_c_and_count_memset(void *s, int c, size_t count)
-+{
-+	unsigned long pattern = 0x01010101UL * (unsigned char) c;
-+
-+	switch (count) {
-+	case 0:
-+		return s;
-+	case 1:
-+		*(unsigned char *)s = pattern;
-+		return s;
-+	case 2:
-+		*(unsigned short *)s = pattern;
-+		return s;
-+	case 3:
-+		*(unsigned short *)s = pattern;
-+		*(2+(unsigned char *)s) = pattern;
-+		return s;
-+	case 4:
-+		*(unsigned long *)s = pattern;
-+		return s;
-+	case 6:
-+		*(unsigned long *)s = pattern;
-+		*(2+(unsigned short *)s) = pattern;
-+		return s;
-+	case 8:
-+		*(unsigned long *)s = pattern;
-+		*(1+(unsigned long *)s) = pattern;
-+		return s;
-+	default:
-+		return __memset(s, c, count);
-+	}
-+}
-+#define memset(s, c, count)					\
-+	(__builtin_constant_p(c)				\
-+	 ? __constant_c_and_count_memset((s),(c),(count))	\
-+	 : __memset((s),(c),(count)))
-+
-+
- 
- #define __HAVE_ARCH_MEMMOVE
- void * memmove(void * dest,const void *src,size_t count);
---- a/arch/x86_64/kernel/x8664_ksyms.c	2007-08-17 15:14:32.000000000 -0700
-+++ b/arch/x86_64/kernel/x8664_ksyms.c	2007-08-17 15:44:58.000000000 -0700
-@@ -48,10 +48,12 @@ EXPORT_SYMBOL(__read_lock_failed);
- #undef memmove
- 
- extern void * memset(void *,int,__kernel_size_t);
-+extern void * __memset(void *,int,__kernel_size_t);
- extern void * memcpy(void *,const void *,__kernel_size_t);
- extern void * __memcpy(void *,const void *,__kernel_size_t);
- 
- EXPORT_SYMBOL(memset);
-+EXPORT_SYMBOL(__memset);
- EXPORT_SYMBOL(memcpy);
- EXPORT_SYMBOL(__memcpy);
- 
+On Sat, 18 Aug 2007, Segher Boessenkool wrote:
+
+> > #define forget(a)	__asm__ __volatile__ ("" :"=m" (a) :"m" (a))
+> > 
+> > [ This is exactly equivalent to using "+m" in the constraints, as recently
+> >   explained on a GCC list somewhere, in response to the patch in my bitops
+> >   series a few weeks back where I thought "+m" was bogus. ]
+> 
+> [It wasn't explained on a GCC list in response to your patch, as
+> far as I can see -- if I missed it, please point me to an archived
+> version of it].
+
+http://gcc.gnu.org/ml/gcc-patches/2007-07/msg01758.html
+
+is a follow-up in the thread on the gcc-patches@gcc.gnu.org mailing list,
+which began with:
+
+http://gcc.gnu.org/ml/gcc-patches/2007-07/msg01677.html
+
+that was posted by Jan Kubicka, as he quotes in that initial posting,
+after I had submitted:
+
+http://lkml.org/lkml/2007/7/23/252
+
+which was a (wrong) patch to "rectify" what I thought was the "bogus"
+"+m" constraint, as per the quoted extract from gcc docs (that was
+given in that (wrong) patch's changelog).
+
+That's when _I_ came to know how GCC interprets "+m", but probably
+this has been explained on those lists multiple times. Who cares,
+anyway?
+
+
+> One last time: it isn't equivalent on older (but still supported
+> by Linux) versions of GCC.  Current versions of GCC allow it, but
+> it has no documented behaviour at all, so use it at your own risk.
+
+True.
