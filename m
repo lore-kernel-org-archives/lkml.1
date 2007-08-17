@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbXHQOrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759497AbXHQOub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760012AbXHQOrT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 10:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXHQOrL
+	id S1759497AbXHQOub (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 10:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbXHQOuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 10:47:11 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:60892 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751552AbXHQOrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 10:47:09 -0400
-Date: Fri, 17 Aug 2007 16:48:27 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Joe Perches <joe@perches.com>
-Cc: Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: RFHelp:  Splitting MAINTAINERS into maintainers/* and	Makefile/Kconfig support
-Message-ID: <20070817144827.GB20963@uranus.ravnborg.org>
-References: <1187297496.5906.113.camel@localhost> <46C53F3F.5060108@redhat.com> <1187353841.822.60.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1187353841.822.60.camel@localhost>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 17 Aug 2007 10:50:25 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:49251 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751485AbXHQOuY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 10:50:24 -0400
+Date: Fri, 17 Aug 2007 10:50:23 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Andreas Jellinghaus [c]" <aj@ciphirelabs.com>
+cc: linux-kernel@vger.kernel.org, <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] why was MODALIAS removed from usb kernel
+ events? [u]
+In-Reply-To: <200708171622.05115.aj@ciphirelabs.com>
+Message-ID: <Pine.LNX.4.44L0.0708171047170.2546-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joe.
+On Fri, 17 Aug 2007, Andreas Jellinghaus [c] wrote:
 
-> > Perhaps with a little automation it could be revived,
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9f8b17e643fe6aa505629658445849397bda4e4f
 > 
-> Which is the help I'm looking for.
-> 
-> Can someone please help here on ideas or implementation
-> adding a makefile target for MAINTAINERS from files
-> in a specific subdirectory?
+> removes MODALIAS from one of the events, this breaks user space applications 
+> like openct - everything that depends on getting an event that has both the
+> DEVICE= path to the usb device and any information on the interface, so it
+> can check if the device is something it supports (in case of openct:
+> smart card reader, i.e. bInterfaceClass 0b).
 
-Adding a specific target på top-level Makefile is easy to
-do so I assume you are looking for something more advanced?
+There is no MODALIAS for these events because there are no drivers for 
+the devices they report.  Perhaps you should be looking at 
+usb_if_uevent() in drivers/usb/core/message.c instead.  Is the problem 
+that this routine doesn't set DEVICE, BUSNUM, or DEVNUM?
 
-And that part "more advanced" I do not know what is.
-It is easy to traverse the tree and build up a file
-and I think the easies is to do so in perl or similar.
+Alan Stern
 
-Doing so using the normal kbuild machinery is not soo
-good since it will be parallel and we want something serail
-here.
-
-If you define how the Maintainer info is stored we can work
-out something.
-
-	Sam
