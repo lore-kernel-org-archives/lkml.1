@@ -1,118 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764298AbXHQTAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764723AbXHQTBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764298AbXHQTAw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 15:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756653AbXHQTAY
+	id S1764723AbXHQTBp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 15:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757631AbXHQTBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 15:00:24 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35163 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754425AbXHQTAW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 15:00:22 -0400
-Date: Fri, 17 Aug 2007 11:59:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Neuling <mikey@neuling.org>, Jay Lan <jlan@engr.sgi.com>
-Cc: Paul Mackerras <paulus@samba.org>, balbir@linux.vnet.ibm.com,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] Add scaled time to taskstats based process
- accounting
-Message-Id: <20070817115951.e1368a7d.akpm@linux-foundation.org>
-In-Reply-To: <19998.1187312981@neuling.org>
-References: <20070816070922.37B5370074@localhost.localdomain>
-	<46C3FC41.4000609@linux.vnet.ibm.com>
-	<19998.1187312981@neuling.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 17 Aug 2007 15:01:34 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:22178 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756267AbXHQTBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 15:01:33 -0400
+Message-ID: <46C5F09C.2050600@cfl.rr.com>
+Date: Fri, 17 Aug 2007 15:01:48 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+CC: Kyle Moffett <mrmacman_g4@mac.com>,
+       Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
+       Marc Perkel <mperkel@yahoo.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: Thinking outside the box on file systems
+References: <106259.96671.qm@web52501.mail.re2.yahoo.com> <Pine.LNX.4.64.0708141546510.22494@blackbox.fnordora.org> <46C2F96D.5030908@partiallystapled.com> <20070815133021.GB9412@csclub.uwaterloo.ca> <ECFEFFF7-0210-4D16-B508-5284FCE58B28@mac.com> <46C33934.7060802@cfl.rr.com> <DE34FF90-3143-4978-BBC5-3CF74B8C3C07@mac.com> <46C3644C.9020102@cfl.rr.com> <87EEB1B3-7FFA-472C-B539-1A7AA2843869@mac.com> <46C37AD4.5060006@cfl.rr.com> <A93D7AFB-6883-48E4-96A9-CAD76E39132E@mac.com> <46C4689C.8020702@cfl.rr.com> <5D526964-3F46-4B6D-A12A-437A7EF5E0D8@mac.com>            <46C5BC79.9090204@cfl.rr.com> <1942.1187365183@turing-police.cc.vt.edu>
+In-Reply-To: <1942.1187365183@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Aug 2007 19:01:46.0571 (UTC) FILETIME=[0EF829B0:01C7E101]
+X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1021-15368.000
+X-TM-AS-Result: No--11.360100-5.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Aug 2007 11:09:41 +1000
-Michael Neuling <mikey@neuling.org> wrote:
-
-> This adds items to the taststats struct to account for user and system
-> time based on scaling the CPU frequency and instruction issue rates.
+Valdis.Kletnieks@vt.edu wrote:
+> I suspect Kyle is not quite correct - it's probably the case that you don't
+> have to consider just the in-memory dentries, but *all* the descendent objects
+> in the entire file system.
 > 
-> Adds account_(user|system)_time_scaled callbacks which architectures
-> can use to account for time using this mechanism.
-> 
-> ...
-> 
-> Index: linux-2.6-ozlabs/include/linux/kernel_stat.h
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/include/linux/kernel_stat.h
-> +++ linux-2.6-ozlabs/include/linux/kernel_stat.h
-> @@ -52,7 +52,9 @@ static inline int kstat_irqs(int irq)
->  }
->  
->  extern void account_user_time(struct task_struct *, cputime_t);
-> +extern void account_user_time_scaled(struct task_struct *, cputime_t);
->  extern void account_system_time(struct task_struct *, int, cputime_t);
-> +extern void account_system_time_scaled(struct task_struct *, cputime_t);
->  extern void account_steal_time(struct task_struct *, cputime_t);
->  
->  #endif /* _LINUX_KERNEL_STAT_H */
-> Index: linux-2.6-ozlabs/include/linux/sched.h
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/include/linux/sched.h
-> +++ linux-2.6-ozlabs/include/linux/sched.h
-> @@ -1020,7 +1020,7 @@ struct task_struct {
->  	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
->  
->  	unsigned int rt_priority;
-> -	cputime_t utime, stime;
-> +	cputime_t utime, stime, utimescaled, stimescaled;
+> If you have a clever proof that on-disk can't *possibly* be affected, feel
+> free to present it.
 
-Adding 8 or 16 bytes to the task_struct for all architectures for something
-which only powerpc uses?
+Why would you have to consider the descendent entries on disk when you 
+are only changing an entry in the parent?  The effects of that change 
+are only computed in memory when the dentry for a child is created, so 
+you don't have to do a bunch of disk churning to change permissions on 
+the whole tree.  In fact, all of the children may very well have NO acl 
+of their own stored on disk, which also saves space.
 
-Is there any prospect that other CPUs can use this?
+The whole idea here is that there is ONE acl that applies to the whole 
+tree, rather than have every object in the tree have its own acl. 
+That's why every object in the tree on the disk is not effected by a 
+change.
 
->  	unsigned long nvcsw, nivcsw; /* context switch counts */
->  	struct timespec start_time; 		/* monotonic time */
->  	struct timespec real_start_time;	/* boot based time */
-> Index: linux-2.6-ozlabs/include/linux/taskstats.h
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/include/linux/taskstats.h
-> +++ linux-2.6-ozlabs/include/linux/taskstats.h
-> @@ -31,7 +31,7 @@
->   */
->  
->  
-> -#define TASKSTATS_VERSION	5
-> +#define TASKSTATS_VERSION	6
->  #define TS_COMM_LEN		32	/* should be >= TASK_COMM_LEN
->  					 * in linux/sched.h */
->  
-> @@ -85,9 +85,12 @@ struct taskstats {
->  	 * On some architectures, value will adjust for cpu time stolen
->  	 * from the kernel in involuntary waits due to virtualization.
->  	 * Value is cumulative, in nanoseconds, without a corresponding count
-> -	 * and wraps around to zero silently on overflow
-> +	 * and wraps around to zero silently on overflow.  The
-> +	 * _scaled_ version accounts for cpus which can scale the
-> +	 * number of instructions executed each cycle.
->  	 */
->  	__u64	cpu_run_real_total;
-> +	__u64	cpu_scaled_run_real_total;
->  
->  	/* cpu "virtual" running time
->  	 * Uses time intervals seen by the kernel i.e. no adjustment
-> @@ -142,6 +145,10 @@ struct taskstats {
->  	__u64	write_char;		/* bytes written */
->  	__u64	read_syscalls;		/* read syscalls */
->  	__u64	write_syscalls;		/* write syscalls */
-> +
-> +	/* time accounting for SMT machines */
-> +	__u64	ac_utimescaled;		/* utime scaled on frequency etc */
-> +	__u64	ac_stimescaled;		/* stime scaled on frequency etc */
->  	/* Extended accounting fields end */
+> It will become even *more* of a "not that common" if the lock will block moves
+> and ACL changes *across the filesystem* for potentially *minutes* at a time.
 
-umm, should we be adding new fields in the middle of this message?  I
-thought we should only add to the end, for back-compatibility, but maybe I
-misremember.
+It will not take anywhere NEAR minutes at a time to update the in memory 
+dentries, more like 50ms.
+
+
 
 
