@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763660AbXHQGR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762230AbXHQGZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763660AbXHQGR5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 02:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759437AbXHQGRi
+	id S1762230AbXHQGZV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 02:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758285AbXHQGZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 02:17:38 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:29019 "EHLO kernel.dk"
+	Fri, 17 Aug 2007 02:25:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33392 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759121AbXHQGRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 02:17:37 -0400
-Date: Fri, 17 Aug 2007 08:17:34 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH 000 of 6] A few block-layer tidy-up patches.
-Message-ID: <20070817061733.GD23758@kernel.dk>
-References: <20070816211551.11839.patches@notabene> <20070816113638.GX23758@kernel.dk> <18116.61035.621593.588647@notabene.brown>
+	id S1758223AbXHQGZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 02:25:06 -0400
+Message-ID: <46C53F3F.5060108@redhat.com>
+Date: Fri, 17 Aug 2007 02:25:03 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18116.61035.621593.588647@notabene.brown>
+To: Joe Perches <joe@perches.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: RFHelp:  Splitting MAINTAINERS into maintainers/* and	Makefile/Kconfig
+ support
+References: <1187297496.5906.113.camel@localhost>
+In-Reply-To: <1187297496.5906.113.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17 2007, Neil Brown wrote:
-> On Thursday August 16, jens.axboe@oracle.com wrote:
-> > On Thu, Aug 16 2007, NeilBrown wrote:
-> > > Following are 5 patches which - I think - clean up various bits and pieces
-> > > in the block layer.
-> > > 
-> > > The only part that might be seen as a function change rather than
-> > > simply rearranging code is in ps3disk where bvec_kmap_irq is used
-> > > instead of bio_kmap_atomic (so interrupts are disabled).
-> > > 
-> > > The only other user of bvec_kmap_irq is ide-floppy.c.  If that does
-> > > need to disable interrupts, and ps3disk doesn't, make the disabling of
-> > > interrupts should be separated from the kmapping??
-> > 
-> > Applied 1-6, thanks! BTW, your patch #2 doesn't apply cleanly on
-> > floppy.c in current -git, and there has been no changes there since July
-> > 24th. So you must be diffing against something else?
+Joe Perches wrote:
+> I've got a tree with a directory full of separate
+> MAINTAINER blocks that looks like:
 > 
-> Yes, current -mm.  That is where I usually work.  I'll make sure
-> future patches are against -linus or -block.
-
-OK
-
-> > You also don't re-indent and remove one nesting when removing
-> > bio_for_each_segment(). It makes it easier to review, but I formatted
-> > that as well since I had to hand-apply patch #2.
+> 00_file_description
+> 3c359_network_driver
+> 3c505_network_driver
+> 3c59x_network_driver
+> 3cr990_network_driver
+> ...
+> zd1211rw_wireless_driver
+> zf_machz_watchdog
+> zr36067_video_for_linux_driver
+> zs_decstation_z85c30_serial_driver
+> zz_the_rest
 > 
-> I meant to mention that in the changelog comment.  I deliberately
-> didn't re-indent most of the loops to ease review.  I was going to
-> send an indent-only patch it the first was accepted.  No need now :-)
+> A little more than 600 files
 
-Once I started going through them, it seemed so. No problem, it does
-make it easier to verify that no little extra edit crept in.
+NO.  PLEASE!
 
-> > Please inspect the #block-2.6.24 branch to see the result.
-> 
-> I don't know where to look for this.  I checked
->   http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git
-> but they don't seem to be there.
-> ??
+The whole point of MAINTAINERS is to have one central repository for this 
+information, instead of scattering it throughout the various source files.  If 
+that file is getting too unwieldy (and I don't think it is) then I could 
+understand splitting it up hierarchically, for example having a 
+drivers/net/MAINTAINERS that listed the info for all the net drivers.
 
-That's where it is, but the kernel.org mirroring is just horrible slow.
-Just checked now and it's there.
+What you're suggesting is a less efficient equivalent to putting the info 
+directly into the source files.  If that approach was enough to make people 
+happy, we wouldn't have MAINTAINERS to begin with.  Perhaps with a little 
+automation it could be revived, though I think that adding a path pattern 
+removes the need, while keeping it easier to parse by scripts.
 
--- 
-Jens Axboe
+I appreciate the effort to make MAINTAINERS more useful, but please don't add 
+another 600 files to the tree.
 
+	-- Chris
