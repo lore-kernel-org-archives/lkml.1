@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761429AbXHQGmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760648AbXHQGrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761429AbXHQGmq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 02:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXHQGme
+	id S1760648AbXHQGrk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 02:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbXHQGrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 02:42:34 -0400
-Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:55825 "EHLO
-	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbXHQGmb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 02:42:31 -0400
-X-Greylist: delayed 168262 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Aug 2007 02:42:31 EDT
-Date: Fri, 17 Aug 2007 08:42:22 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Paul Mackerras <paulus@samba.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       satyam@infradead.org, clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0708170840270.25474@anakin>
-References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com>
- <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org>
- <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org>
- <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com>
- <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
+	Fri, 17 Aug 2007 02:47:33 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:54644 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751808AbXHQGrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 02:47:32 -0400
+Message-ID: <387333248.08272@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Fri, 17 Aug 2007 14:47:27 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Rientjes <rientjes@google.com>,
+       John Berthels <jjberthels@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] maps: /proc/<pid>/pmaps interface - memory maps in
+	granularity of pages
+Message-ID: <20070817064727.GA6723@mail.ustc.edu.cn>
+References: <20070816220516.782145952@mail.ustc.edu.cn> <20070816220849.472883642@mail.ustc.edu.cn> <20070817023846.GJ30556@waste.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070817023846.GJ30556@waste.org>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Aug 2007, Linus Torvalds wrote:
-> On Fri, 17 Aug 2007, Paul Mackerras wrote:
-> > I'm really surprised it's as much as a few K.  I tried it on powerpc
-> > and it only saved 40 bytes (10 instructions) for a G5 config.
-> 
-> One of the things that "volatile" generally screws up is a simple
-> 
-> 	volatile int i;
-> 
-> 	i++;
-> 
-> which a compiler will generally get horribly, horribly wrong.
-> 
-> In a reasonable world, gcc should just make that be (on x86)
-> 
-> 	addl $1,i(%rip)
-> 
-> on x86-64, which is indeed what it does without the volatile. But with the 
-> volatile, the compiler gets really nervous, and doesn't dare do it in one 
-> instruction, and thus generates crap like
-> 
->         movl    i(%rip), %eax
->         addl    $1, %eax
->         movl    %eax, i(%rip)
-> 
-> instead. For no good reason, except that "volatile" just doesn't have any 
-> good/clear semantics for the compiler, so most compilers will just make it 
-> be "I will not touch this access in any way, shape, or form". Including 
-> even trivially correct instruction optimization/combination.
+Matt,
 
-Apart from having to fetch more bytes for the instructions (which does
-matter), execution time is probably the same on modern processors, as they
-convert the single instruction to RISC-style load, modify, store anyway.
+It's not easy to do direct performance comparisons between pmaps and
+pagemap/kpagemap. However some close analyzes are still possible :)
 
-Gr{oetje,eeting}s,
+1) code size
+pmaps                   ~200 LOC
+pagemap/kpagemap        ~300 LOC
 
-						Geert
+2) dataset size
+take for example my running firefox on Intel Core 2:
+VSZ             400 MB
+RSS              64 MB, or 16k pages
+pmaps            64 KB, wc shows 2k lines, or so much page ranges
+pagemap         800 KB, could be heavily optimized by returning partial data
+kpagemap        256 KB
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+3) runtime overheads
+pmaps            2k lines of string processing(encode/decode)
+kpagemap        16k seek()/read()s, and context switches (could be
+                    optimized somehow by doing a PFN sort first, but
+                    that's also non-trivial overheads)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+So pmaps seems to be a clear winner :)
+
+Thank you,
+Fengguang
+
