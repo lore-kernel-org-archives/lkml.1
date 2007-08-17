@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757582AbXHQPuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbXHQPxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757582AbXHQPuG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 11:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757548AbXHQPtz
+	id S1762650AbXHQPxT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 11:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbXHQPxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 11:49:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60281 "EHLO mx1.redhat.com"
+	Fri, 17 Aug 2007 11:53:10 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3976 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754734AbXHQPtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 11:49:53 -0400
-Date: Fri, 17 Aug 2007 11:49:49 -0400
-From: Dave Jones <davej@redhat.com>
-To: Valdis.Kletnieks@vt.edu, Susanne Oberhauser <froh@novell.com>,
-       Jan Blunck <jblunck@suse.de>,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: Testing the Current Upstream Kernel
-Message-ID: <20070817154949.GB22854@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Valdis.Kletnieks@vt.edu,
-	Susanne Oberhauser <froh@novell.com>, Jan Blunck <jblunck@suse.de>,
-	Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>
-References: <s2ihcn1vwob.fsf@totally-fudged-out-message-id> <s2iwsvvlqnh.fsf@byron.suse.de> <6891.1187273061@turing-police.cc.vt.edu> <20070817143119.GB13008@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070817143119.GB13008@redhat.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	id S1752680AbXHQPxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 11:53:08 -0400
+Subject: Re: [PATCH] [428/2many] MAINTAINERS - SERIAL ATA (SATA) SUBSYSTEM:
+From: Joe Perches <joe@perches.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, jgarzik@pobox.com, akpm@linux-foundation.org
+In-Reply-To: <46C5C2A1.3020701@ru.mvista.com>
+References: <46bffbb6.4FinvGMu+SlIxG24%joe@perches.com>
+	 <46C5C2A1.3020701@ru.mvista.com>
+Content-Type: text/plain
+Date: Fri, 17 Aug 2007 08:52:51 -0700
+Message-Id: <1187365972.822.93.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 10:31:19AM -0400, Dave Jones wrote:
- 
- > FWIW, you've been able to build the Fedora SRPMs with --with-vanilla
- > for a while now, which generates an RPM with no patches at all other
- > than the -rc/-git on which its based.
- > We're trying to work out logistics of which repository etc we're
- > going to host this in, but soon we'll be able to just offer
- > 'yum install kernel-vanilla' to users.
- 
-btw. please don't Cc subscriber-only lists to linux-kernel posts.
-(opensuse lists snipped from cc).
+On Fri, 2007-08-17 at 19:45 +0400, Sergei Shtylyov wrote:
 
-	Dave
+> joe@perches.com wrote:
+> > Add file pattern to MAINTAINER entry
+> > +F:	drivers/ata/sata_*
+>     The libata core doesn't match this pattern, ain't a a vital part of both 
+> SAT and PATA drivers?
+> MBR, Sergei
 
--- 
-http://www.codemonkey.org.uk
+Improvements to the pattern would be appreciated.
+Would this be a better pattern?
+
+F:	drivers/ata/
+
+There is a SATA-promise maintainer
+
+        PROMISE SATA TX2/TX4 CONTROLLER LIBATA DRIVER
+        P:	Mikael Pettersson
+        M:	mikpe@it.uu.se
+        L:	linux-ide@vger.kernel.org
+        S:	Maintained
+        F:	drivers/ata/sata_promise.*
+
+maybe there should be an entry to exclude
+this maintained driver too?
+
+X:	drivers/ata/sata_promise.*
+
+cheers,  Joe
+
