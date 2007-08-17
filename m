@@ -1,83 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762603AbXHQMtM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762795AbXHQMxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762603AbXHQMtM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 08:49:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758619AbXHQMs4
+	id S1762795AbXHQMxg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 08:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbXHQMxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 08:48:56 -0400
-Received: from web38906.mail.mud.yahoo.com ([209.191.125.112]:30482 "HELO
-	web38906.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758617AbXHQMsz (ORCPT
+	Fri, 17 Aug 2007 08:53:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53814 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbXHQMxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 08:48:55 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Aug 2007 08:48:55 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=K7t1Gw4vOIASAlLw/GQNV/eFwebeJYqh75m8eF37dK00Rv8TuyEekPrh8vw7p0tVXtdVHQ2xBEJIeXpXI5ojCRVB8LF1M51ont6uA69bY2K3BN1M+4PL4g218F5492nLkif2vqsFdGVcsjRU6zF2IOuqdK3J6qBVnwLoDxmwfZ4=;
-X-YMail-OSG: NwasPPsVM1lKmQn3DkkilanDpMYsldcpEdCXIVGrj0t2RnTPfcMtZAWpQMYSwKsMVvMid99pQucYnWONqQLMi9Y7AqYP7AEkELyWCB8BkYsHrK17R_s9gKfeKhEk.Q--
-Date: Fri, 17 Aug 2007 05:42:13 -0700 (PDT)
-From: Kevin E <kevin360@yahoo.com>
-Subject: Marvell 88E8056 gigabit ethernet controller
-To: linux-kernel@vger.kernel.org
+	Fri, 17 Aug 2007 08:53:22 -0400
+Date: Fri, 17 Aug 2007 18:35:54 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Nick Piggin <piggin@cyberone.com.au>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       rpjday@mindspring.com, ak@suse.de, netdev@vger.kernel.org,
+       cfriesen@nortel.com, Andrew Morton <akpm@linux-foundation.org>,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
+       clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
+       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <46C5910A.6020904@cyberone.com.au>
+Message-ID: <alpine.LFD.0.999.0708171822160.3666@enigma.security.iitk.ac.in>
+References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com>
+ <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org>
+ <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org>
+ <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com>
+ <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in>
+ <46C54D94.5080803@yahoo.com.au> <alpine.LFD.0.999.0708171358520.3666@enigma.security.iitk.ac.in>
+ <46C56725.6000207@cyberone.com.au> <alpine.LFD.0.999.0708171505200.3666@enigma.security.iitk.ac.in>
+ <46C5910A.6020904@cyberone.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <424491.59139.qm@web38906.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-
-	I've read where the onboard Marvell lan controller on
-some Gigabyte boards don't work.  I've got two systems
-using the same Gigabyte board, on one the LAN works on
-the other it dies like described by others.  Here's
-the systems:
 
 
-Working system:
-Gigabyte 965P-DS3 rev 3.3  (BIOS F10)
-Core2 Q6600
-2GB Corsair XMS2 memory
-kernel 2.6.22.3
+On Fri, 17 Aug 2007, Nick Piggin wrote:
 
-lspci for LAN controller:
-04:00.0 Ethernet controller: Marvell Technology Group
-Ltd. 88E8056 PCI-E Gigabit Ethernet Controller (rev
-14)
+> Satyam Sharma wrote:
+> [...]
+> > You think both these are equivalent in terms of "looks":
+> > 
+> > 					|
+> > while (!atomic_read(&v)) {		|	while (!atomic_read_xxx(&v)) {
+> > 	...				|		...
+> > 	cpu_relax_no_barrier();		|
+> > cpu_relax_no_barrier();
+> > 	order_atomic(&v);		|	}
+> > }					|
+> > 
+> > (where order_atomic() is an atomic_t
+> > specific wrapper as you mentioned below)
+> > 
+> > ?
+> 
+> I think the LHS is better if your atomic_read_xxx primitive is using the
+> crazy one-sided barrier,
+  ^^^^^
 
+I'd say it's purposefully one-sided.
 
-Broken system:
-Gigabyte 965P-DS3 rev 3.3  (BIOS F10)
-Core2 E4400
-2GB Corsair XMS2 memory
-kernel 2.6.22.3
+> because the LHS code you immediately know what
+> barriers are happening, and with the RHS you have to look at the
+> atomic_read_xxx
+> definition.
 
-lspci for LAN controller:
-03:00.0 Ethernet controller: Marvell Technology Group
-Ltd. Unknown device 4364 (rev 12)
-
-
-	The BIOS for the two systems are setup the same and
-the config for the kernels are the same too.  I've
-actually tried taking the kernel from the working
-system and booting it on the broken one but still the
-LAN dies after a couple of seconds.  The working
-system has one card plugged in (nvidia based PCI-X
-video card), I've taken that card and plugged into the
-broken system, booted the same kernel, and it still
-dies after a while.
-
-	I will gladly provide any info needed if it can help
-in getting this chipset working on the Gigabyte
-boards.
-
-	Thanks,
-	Kevin
+No. As I said, the _xxx (whatever the heck you want to name it as) should
+give the same heads-up that your "order_atomic" thing is supposed to give.
 
 
-       
-____________________________________________________________________________________
-Be a better Heartthrob. Get better relationship answers from someone who knows. Yahoo! Answers - Check it out. 
-http://answers.yahoo.com/dir/?link=list&sid=396545433
+> If your atomic_read_xxx implementation was more intuitive, then both are
+> pretty well equal. More lines != ugly code.
+> 
+> > [...]
+> > What bugs?
+> 
+> You can't think for yourself? Your atomic_read_volatile contains a compiler
+> barrier to the atomic variable before the load. 2 such reads from different
+> locations look like this:
+> 
+> asm volatile("" : "+m" (v1));
+> atomic_read(&v1);
+> asm volatile("" : "+m" (v2));
+> atomic_read(&v2);
+> 
+> Which implies that the load of v1 can be reordered to occur after the load
+> of v2.
+
+And how would that be a bug? (sorry, I really can't think for myself)
+
+
+> > > Secondly, what sort of code would do such a thing?
+> > 
+> > See the nodemgr_host_thread() that does something similar, though not
+> > exactly same.
+> 
+> I'm sorry, all this waffling about made up code which might do this and
+> that is just a waste of time.
+
+First, you could try looking at the code.
+
+And by the way, as I've already said (why do *require* people to have to
+repeat things to you?) this isn't even about only existing code.
