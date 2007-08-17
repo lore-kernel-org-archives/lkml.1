@@ -1,110 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759967AbXHQTqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbXHQTq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759967AbXHQTqm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 15:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757090AbXHQTqH
+	id S1758610AbXHQTq6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 15:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbXHQTqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 15:46:07 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:33541 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756874AbXHQTqF (ORCPT
+	Fri, 17 Aug 2007 15:46:42 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50969 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759781AbXHQTqk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 15:46:05 -0400
-Subject: [PATCH] Reset current->pdeath_signal on SUID binary execution
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, mtk-manpages@gmx.net
-Content-Type: multipart/mixed; boundary="=-bf922VW4uDUt5XP9gIA4"
-Date: Fri, 17 Aug 2007 21:47:58 +0200
-Message-Id: <1187380078.6698.448.camel@violet>
+	Fri, 17 Aug 2007 15:46:40 -0400
+Date: Fri, 17 Aug 2007 12:45:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH]: proc: export a processes resource limits via
+ proc/<pid>
+Message-Id: <20070817124547.5415a839.akpm@linux-foundation.org>
+In-Reply-To: <20070817105918.GA13937@hmsreliant.think-freely.org>
+References: <20070813140044.GB1960@hmsreliant.think-freely.org>
+	<20070816123538.GA10430@hmsreliant.think-freely.org>
+	<4379.1187338166@turing-police.cc.vt.edu>
+	<20070817105918.GA13937@hmsreliant.think-freely.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 17 Aug 2007 06:59:18 -0400
+Neil Horman <nhorman@tuxdriver.com> wrote:
 
---=-bf922VW4uDUt5XP9gIA4
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+> Currently, there exists no method for a process to query the resource
+> limits of another process.  They can be inferred via some mechanisms but they
+> cannot be explicitly determined.  Given that this information can be usefull to
+> know during the debugging of an application, I've written this patch which
+> exports all of a processes limits via /proc/<pid>/limits.
 
-Hi Linus,
+I'm struggling with this a bit.  Sure, it _might_ be handy on some
+occasions to be able to get at this information.  But I've never seen
+anyone ask for it before, and it _is_ determinable by other means, if only
+strace.
 
-the attached patch fixes a flaw in the "parent process death signal"
-when executing SUID binaries. An unprivileged user may send arbitrary
-signal to a child process even if it is running with higher privileges.
-
-The idea to fix this issue is to reset pdeath_signal not only on fork,
-but also on the execution of a SUID binary.
-
-Michael, if we fix it this way, then the prctl() manual page should
-reflect that behavior.
-
->From comments it seems that we have to also reset pdeath_signal inside
-LSM when it comes to capability-raised executes, but I must admit that I
-got lost there.
-
-Regards
-
-Marcel
-
-
---=-bf922VW4uDUt5XP9gIA4
-Content-Disposition: attachment; filename=patch-reset-pdeath-signal-on-suid
-Content-Type: text/plain; name=patch-reset-pdeath-signal-on-suid; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-[PATCH] Reset current->pdeath_signal on SUID binary execution
-
-This fixes a vulnerability in the "parent process death signal"
-implementation discoverd by Wojciech Purczynski of COSEINC PTE Ltd.
-and iSEC Security Research.
-
-http://marc.info/?l=bugtraq&m=118711306802632&w=2
-
-Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
-
----
-commit 8542f23e44f591480ca53d215481cbec43b8cbed
-tree d72f29856adb306f20e828d4bab244685fe24bf2
-parent 6adb31c90c47262c8a25bf5097de9b3426caf3ae
-author Marcel Holtmann <marcel@holtmann.org> Fri, 17 Aug 2007 21:41:52 +0200
-committer Marcel Holtmann <marcel@holtmann.org> Fri, 17 Aug 2007 21:41:52 +0200
-
- fs/exec.c |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
-
-diff --git a/fs/exec.c b/fs/exec.c
-index 7bdea79..ce62f7b 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1084,9 +1084,12 @@ int flush_old_exec(struct linux_binprm * bprm)
- 	 */
- 	current->mm->task_size = TASK_SIZE;
- 
--	if (bprm->e_uid != current->euid || bprm->e_gid != current->egid || 
--	    file_permission(bprm->file, MAY_READ) ||
--	    (bprm->interp_flags & BINPRM_FLAGS_ENFORCE_NONDUMP)) {
-+	if (bprm->e_uid != current->euid || bprm->e_gid != current->egid) {
-+		suid_keys(current);
-+		set_dumpable(current->mm, suid_dumpable);
-+		current->pdeath_signal = 0;
-+	} else if (file_permission(bprm->file, MAY_READ) ||
-+			(bprm->interp_flags & BINPRM_FLAGS_ENFORCE_NONDUMP)) {
- 		suid_keys(current);
- 		set_dumpable(current->mm, suid_dumpable);
- 	}
-@@ -1177,8 +1180,10 @@ void compute_creds(struct linux_binprm *bprm)
- {
- 	int unsafe;
- 
--	if (bprm->e_uid != current->uid)
-+	if (bprm->e_uid != current->uid) {
- 		suid_keys(current);
-+		current->pdeath_signal = 0;
-+	}
- 	exec_keys(current);
- 
- 	task_lock(current);
-
---=-bf922VW4uDUt5XP9gIA4--
-
+How do we justify adding yet more stuff to the kernel?
