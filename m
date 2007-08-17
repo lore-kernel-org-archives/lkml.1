@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762723AbXHQGRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763660AbXHQGR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762723AbXHQGRn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 02:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758163AbXHQGRf
+	id S1763660AbXHQGR5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 02:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759437AbXHQGRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 02:17:35 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:44713 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754364AbXHQGRe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 02:17:34 -0400
-Message-Id: <1187331453.13767.1205847147@webmail.messagingengine.com>
-X-Sasl-Enc: cdEMJ26YM7qVl3RSKCETeO/N4S7AnK8Het350Vbu0fRo 1187331453
-From: "Clemens Ladisch" <clemens@ladisch.de>
-To: "David Griffith" <dgriffi@cs.csubak.edu>
-Cc: linux-kernel@vger.kernel.org
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
+	Fri, 17 Aug 2007 02:17:38 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:29019 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759121AbXHQGRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 02:17:37 -0400
+Date: Fri, 17 Aug 2007 08:17:34 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH 000 of 6] A few block-layer tidy-up patches.
+Message-ID: <20070817061733.GD23758@kernel.dk>
+References: <20070816211551.11839.patches@notabene> <20070816113638.GX23758@kernel.dk> <18116.61035.621593.588647@notabene.brown>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <Pine.GSO.4.55.0708100242000.25856@helios.cs.csubak.edu>
-   <20070816093703.sndy0gg44gk0o0ko@webmail.df.eu>
-   <Pine.GSO.4.55.0708160308450.24052@helios.cs.csubak.edu>
-   <20070816174510.6o8cray64g8kosos@webmail.df.eu>
-   <Pine.GSO.4.55.0708161417270.9354@helios.cs.csubak.edu>
-Subject: Re: MOTU Fastlane USB MIDI interface
-In-Reply-To: <Pine.GSO.4.55.0708161417270.9354@helios.cs.csubak.edu>
-Date: Fri, 17 Aug 2007 08:17:33 +0200
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18116.61035.621593.588647@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Griffith wrote:
-> On Thu, 16 Aug 2007, Clemens Ladisch wrote:
-> > Please try "amidi -d -p virtual" and playing a .mid file to this port with
-> > aplaymidi.
+On Fri, Aug 17 2007, Neil Brown wrote:
+> On Thursday August 16, jens.axboe@oracle.com wrote:
+> > On Thu, Aug 16 2007, NeilBrown wrote:
+> > > Following are 5 patches which - I think - clean up various bits and pieces
+> > > in the block layer.
+> > > 
+> > > The only part that might be seen as a function change rather than
+> > > simply rearranging code is in ps3disk where bvec_kmap_irq is used
+> > > instead of bio_kmap_atomic (so interrupts are disabled).
+> > > 
+> > > The only other user of bvec_kmap_irq is ide-floppy.c.  If that does
+> > > need to disable interrupts, and ps3disk doesn't, make the disabling of
+> > > interrupts should be separated from the kmapping??
+> > 
+> > Applied 1-6, thanks! BTW, your patch #2 doesn't apply cleanly on
+> > floppy.c in current -git, and there has been no changes there since July
+> > 24th. So you must be diffing against something else?
 > 
-> $ aplaymidi -p "virtual" castle2.mid
-> Invalid port virtual - No such file or directory
+> Yes, current -mm.  That is where I usually work.  I'll make sure
+> future patches are against -linus or -block.
 
-Sorry, the name of the correspondig sequencer port is different,
-probably "128:0"; see the output of "aplaymidi -l".
+OK
 
+> > You also don't re-indent and remove one nesting when removing
+> > bio_for_each_segment(). It makes it easier to review, but I formatted
+> > that as well since I had to hand-apply patch #2.
+> 
+> I meant to mention that in the changelog comment.  I deliberately
+> didn't re-indent most of the loops to ease review.  I was going to
+> send an indent-only patch it the first was accepted.  No need now :-)
 
-Regards,
-Clemens
+Once I started going through them, it seemed so. No problem, it does
+make it easier to verify that no little extra edit crept in.
+
+> > Please inspect the #block-2.6.24 branch to see the result.
+> 
+> I don't know where to look for this.  I checked
+>   http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git
+> but they don't seem to be there.
+> ??
+
+That's where it is, but the kernel.org mirroring is just horrible slow.
+Just checked now and it's there.
+
+-- 
+Jens Axboe
+
