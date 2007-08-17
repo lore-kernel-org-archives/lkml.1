@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759902AbXHQWuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758920AbXHQXB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759902AbXHQWuh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 18:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXHQWu1
+	id S1758920AbXHQXB4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 19:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbXHQXBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 18:50:27 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33158 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754478AbXHQWu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 18:50:26 -0400
-In-Reply-To: <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in>
-References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com> <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f5796b5aa38ae6305c65ffa0340ba295@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: Paul Mackerras <paulus@samba.org>, heiko.carstens@de.ibm.com,
-       horms@verge.net.au,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       rpjday@mindspring.com, ak@suse.de, netdev@vger.kernel.org,
-       cfriesen@nortel.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-arch@vger.kernel.org, jesper.juhl@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
-       davem@davemloft.net, Linus Torvalds <torvalds@linux-foundation.org>,
-       wensong@linux-vs.org, wjiang@resilience.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Sat, 18 Aug 2007 00:49:08 +0200
-To: Satyam Sharma <satyam@infradead.org>
-X-Mailer: Apple Mail (2.623)
+	Fri, 17 Aug 2007 19:01:47 -0400
+Received: from flvpn.ccur.com ([66.10.65.2]:60589 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751654AbXHQXBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 19:01:46 -0400
+Date: Fri, 17 Aug 2007 19:01:30 -0400
+From: Joe Korty <joe.korty@ccur.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <matthew@wil.cx>
+Cc: aacraid@adaptec.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix section mismatch in the Adaptec DPT SCSI Raid driver
+Message-ID: <20070817230130.GB1840@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+References: <20070817205115.GA12416@tsunami.ccur.com> <20070817141856.5720ed38.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070817141856.5720ed38.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> #define forget(a)	__asm__ __volatile__ ("" :"=m" (a) :"m" (a))
->
-> [ This is exactly equivalent to using "+m" in the constraints, as 
-> recently
->   explained on a GCC list somewhere, in response to the patch in my 
-> bitops
->   series a few weeks back where I thought "+m" was bogus. ]
-
-[It wasn't explained on a GCC list in response to your patch, as
-far as I can see -- if I missed it, please point me to an archived
-version of it].
-
-One last time: it isn't equivalent on older (but still supported
-by Linux) versions of GCC.  Current versions of GCC allow it, but
-it has no documented behaviour at all, so use it at your own risk.
+On Fri, Aug 17, 2007 at 02:18:56PM -0700, Andrew Morton wrote:
+> Please always provide at least a copy of the error message when providing
+> patches which fix warnings, or build errors, or section mismatches.
+> 
+> For section mismatches, an analysis of what caused the problem would help,
+> too.  It saves others from having to do the same thing.
+> 
+> In this case, I'd need to see what error is being fixed so that I can judge
+> the seriousness of the problem.  In this case I don't _think_ it'll be
+> terribly serious because iirc most architectures don't free exitcall memory.
 
 
-Segher
 
+
+Fix section mismatch in the Adaptec DPT SCSI Raid driver.
+
+WARNING: vmlinux.o(.init.text+0x1fcd2): Section mismatch:
+	reference to .exit.text:adpt_exit (between 'adpt_init' and 'ahc_linux_init')
+
+This warning is due to adaptec device detection calling the exit routine
+on failure to properly register the adaptec device.
+
+The exit routine + call was added on July 30 by
+  Commit: 55d9fcf57ba5ec427544fca7abc335cf3da78160
+  Author: Matthew Wilcox
+  Subject: [SCSI] dpt_i2o: convert to SCSI hotplug model.
+
+Mathew: isn't a module exit routine a little too strong to be calling
+on the failure of a single device?  Module exit implies that other,
+non-failing adaptec raid devices will also get shut down.
+
+Signed-off-by: Joe Korty <joe.korty@ccur.com>
+
+Index: 2.6.23-rc3-git1/drivers/scsi/dpt_i2o.c
+===================================================================
+--- 2.6.23-rc3-git1.orig/drivers/scsi/dpt_i2o.c	2007-08-17 16:36:05.000000000 -0400
++++ 2.6.23-rc3-git1/drivers/scsi/dpt_i2o.c	2007-08-17 16:50:13.000000000 -0400
+@@ -3351,7 +3351,7 @@
+ 	return count > 0 ? 0 : -ENODEV;
+ }
+ 
+-static void __exit adpt_exit(void)
++static void adpt_exit(void)
+ {
+ 	while (hba_chain)
+ 		adpt_release(hba_chain);
