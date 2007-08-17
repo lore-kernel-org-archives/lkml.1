@@ -1,94 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758911AbXHQUJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756319AbXHQUMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758911AbXHQUJh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 16:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbXHQUJa
+	id S1756319AbXHQUMY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 16:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXHQUMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 16:09:30 -0400
-Received: from smtp121.sbc.mail.re3.yahoo.com ([66.196.96.94]:48634 "HELO
-	smtp121.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751952AbXHQUJ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 16:09:29 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=o4ZQxX7cqPOTOTWgyfIoxyp1tJaIUmHd8UsvsRiZXGM1sZpTRunDsHomm7V0dFlyt+K4s6+Bf38Hj5kI0NHd9kUCimn/NC4TQDJpb1K1yp3KZ9msAGAD9gX7q9apI78eA5E+1o8Og9xZfsV/nzEsWgMFzF5JcJj/BZiEvdWUAxs=  ;
-X-YMail-OSG: J7K.AwkVM1nT1JXLDbZW3c63LYjrip75qdRzeOHV7Htk9dvVlMLwkqYjO72ZpyEIpAqnnUkHcA--
-From: David Brownell <david-b@pacbell.net>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH 02/12] Blackfin arch: Add label to call new GPIO API
-Date: Fri, 17 Aug 2007 13:09:25 -0700
-User-Agent: KMail/1.9.6
-Cc: "Bryan Wu" <bryan.wu@analog.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       "Michael Hennerich" <michael.hennerich@analog.com>
-References: <11865441373719-git-send-email-bryan.wu@analog.com> <200708171124.54839.david-b@pacbell.net> <8bd0f97a0708171245j74e856e0uce009de16c00f517@mail.gmail.com>
-In-Reply-To: <8bd0f97a0708171245j74e856e0uce009de16c00f517@mail.gmail.com>
+	Fri, 17 Aug 2007 16:12:12 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:60708 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752668AbXHQUMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 16:12:10 -0400
+Date: Fri, 17 Aug 2007 13:12:05 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Chris Friesen <cfriesen@nortel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <piggin@cyberone.com.au>,
+       Satyam Sharma <satyam@infradead.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
+       Chris Snook <csnook@redhat.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070817201205.GJ8464@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <46C55E90.7010407@yahoo.com.au> <alpine.LFD.0.999.0708171431150.3666@enigma.security.iitk.ac.in> <46C56ADF.8010501@cyberone.com.au> <alpine.LFD.0.999.0708171612440.3666@enigma.security.iitk.ac.in> <46C59717.4020108@cyberone.com.au> <alpine.LFD.0.999.0708170929580.30176@woody.linux-foundation.org> <46C5EDF9.3090507@nortel.com> <1187376873.2615.2.camel@laptopd505.fenrus.org> <20070817194924.GG8464@linux.vnet.ibm.com> <1187380142.2615.6.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708171309.25529.david-b@pacbell.net>
+In-Reply-To: <1187380142.2615.6.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 August 2007, Mike Frysinger wrote:
-> On 8/17/07, David Brownell <david-b@pacbell.net> wrote:
-> > ...
-> > Just for the record, this is an unusual way to use these calls.
-> >
-> > Other platforms completely decouple these issues from the
-> > IRQ infrastructure ... doing the pinmux and gpio claiming
-> > separately from the request_irq()/free_irq() paths, mostly
-> > as part of board setup.  Doing all of that "early":
-> >
-> >  - keeps those error returns from causing hard-to-track-down
-> >    runtime bugs;
-> >
-> >  - works always, even on platforms where a given IRQ may
-> >    appear on any of several pins/balls;
-> >
-> >  - makes it easier to cross-check against board schematics,
-> >    by keeping most board-specific setup in one source file;
-> >
-> >  - shrinks the kernel's runtime footprint;
-> >
-> >  - allows the label to be more descriptive ... describeing
-> >    exactly *which* IRQ, so that using the labels for better
-> >    diagnostics actually gives better diagnostics.
-> >
-> > Again, not "wrong"; but probably sub-optimal.  You might
-> > want to move towards earlier binding now, while Linux is
-> > still young on Blackfin and you don't have legacy code to
-> > worry about.
+On Fri, Aug 17, 2007 at 12:49:00PM -0700, Arjan van de Ven wrote:
 > 
-> in the Blackfin port, if you want to use a pin as an IRQ rather than
-> GPIO, you use the normal request_irq/free_irq API ... those functions
-> will call back into the proper GPIO/PORTMUX code so that the pin is
-> setup properly.  this is done so that code isnt duplicated across
-> files and so that we can easily detect if someone does something
-> incorrect like try to take the same pin and use it as
-> irq/gpio/whatever at the same time ...
+> On Fri, 2007-08-17 at 12:49 -0700, Paul E. McKenney wrote:
+> > > > What about reading values modified in interrupt handlers, as in your 
+> > > > "random" case?  Or is this a bug where the user of atomic_read() is 
+> > > > invalidly expecting a read each time it is called?
+> > > 
+> > > the interrupt handler case is an SMP case since you do not know
+> > > beforehand what cpu your interrupt handler will run on.
+> > 
+> > With the exception of per-CPU variables, yes.
 > 
-> are you saying that other ports dont unify the backend code paths at all ?
+> if you're spinning waiting for a per-CPU variable to get changed by an
+> interrupt handler... you have bigger problems than "volatile" ;-)
 
-Some platforms try to "unify" the pin setup in the boot loader.
-Most of them cope with bogus bootloaders by doing it in the board
-setup code.
+That would be true, if you were doing that.  But you might instead be
+simply making sure that the mainline actions were seen in order by the
+interrupt handler.  My current example is the NMI-save rcu_read_lock()
+implementation for realtime.  Not the common case, I will admit, but
+still real.  ;-)
 
-I don't know of any who try to do it "late" as you summarized.
-
-See above why "late" unification is not necessarily as good as
-"early" unification.
-
-And then there's the OMAP1 example, where for example you might
-know that you want MPUIO-0 but that's insufficient to tell whether
-you must mux ball F18 or R13 ... so it's impossible to do the kind
-of "late" unification done here, and pinmux *MUST* be separate from
-IRQ setup.
-
-- Dave
-
-
+						Thanx, Paul
