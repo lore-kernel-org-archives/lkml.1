@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759894AbXHQGls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761429AbXHQGmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759894AbXHQGls (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 02:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbXHQGlj
+	id S1761429AbXHQGmq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 02:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXHQGme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 02:41:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47231 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbXHQGli (ORCPT
+	Fri, 17 Aug 2007 02:42:34 -0400
+Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:55825 "EHLO
+	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbXHQGmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 02:41:38 -0400
-Date: Fri, 17 Aug 2007 12:24:23 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Jeff Dike <jdike@addtoit.com>
-cc: Joe Perches <joe@perches.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: [PATCH] hostfs: Remove pointless if statement
-In-Reply-To: <20070816145210.GD6670@c2.user-mode-linux.org>
-Message-ID: <alpine.LFD.0.999.0708171208060.3666@enigma.security.iitk.ac.in>
-References: <20070815235825.GB17004@redhat.com> <1187224811.5906.55.camel@localhost>
- <20070816145210.GD6670@c2.user-mode-linux.org>
+	Fri, 17 Aug 2007 02:42:31 -0400
+X-Greylist: delayed 168262 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Aug 2007 02:42:31 EDT
+Date: Fri, 17 Aug 2007 08:42:22 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Paul Mackerras <paulus@samba.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
+       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
+       satyam@infradead.org, clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
+       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708170840270.25474@anakin>
+References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com>
+ <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org>
+ <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org>
+ <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com>
+ <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Cc: list heavily trimmed. ]
-
-
-On Thu, 16 Aug 2007, Jeff Dike wrote:
-
-> On Wed, Aug 15, 2007 at 05:40:11PM -0700, Joe Perches wrote:
-> > fs/hostfs/hostfs_user.c:        if(attrs->ia_valid & HOSTFS_ATTR_CTIME) ;
+On Thu, 16 Aug 2007, Linus Torvalds wrote:
+> On Fri, 17 Aug 2007, Paul Mackerras wrote:
+> > I'm really surprised it's as much as a few K.  I tried it on powerpc
+> > and it only saved 40 bytes (10 instructions) for a G5 config.
 > 
-> This one can be deleted, but I think I did it for documentation
-> reasons, to make it clear that ctime handling wasn't left out by
-> mistake.
+> One of the things that "volatile" generally screws up is a simple
+> 
+> 	volatile int i;
+> 
+> 	i++;
+> 
+> which a compiler will generally get horribly, horribly wrong.
+> 
+> In a reasonable world, gcc should just make that be (on x86)
+> 
+> 	addl $1,i(%rip)
+> 
+> on x86-64, which is indeed what it does without the volatile. But with the 
+> volatile, the compiler gets really nervous, and doesn't dare do it in one 
+> instruction, and thus generates crap like
+> 
+>         movl    i(%rip), %eax
+>         addl    $1, %eax
+>         movl    %eax, i(%rip)
+> 
+> instead. For no good reason, except that "volatile" just doesn't have any 
+> good/clear semantics for the compiler, so most compilers will just make it 
+> be "I will not touch this access in any way, shape, or form". Including 
+> even trivially correct instruction optimization/combination.
 
+Apart from having to fetch more bytes for the instructions (which does
+matter), execution time is probably the same on modern processors, as they
+convert the single instruction to RISC-style load, modify, store anyway.
 
-We normally use "comments" for that, not dead code that a compiler
-then elids ;-)
+Gr{oetje,eeting}s,
 
+						Geert
 
-[PATCH] hostfs: Remove pointless if statement
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-And replace with comment saying we don't handle ctime.
-Also some codingstyle while I was there.
-
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
-
----
-
- fs/hostfs/hostfs_user.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/fs/hostfs/hostfs_user.c b/fs/hostfs/hostfs_user.c
-index 5625e24..a554a0a 100644
---- a/fs/hostfs/hostfs_user.c
-+++ b/fs/hostfs/hostfs_user.c
-@@ -283,12 +283,12 @@ int set_attr(const char *file, struct hostfs_iattr *attrs, int fd)
- 		}
- 	}
- 
--	if(attrs->ia_valid & HOSTFS_ATTR_CTIME) ;
--	if(attrs->ia_valid & (HOSTFS_ATTR_ATIME | HOSTFS_ATTR_MTIME)){
-+	/* ctime is not handled */
-+	if (attrs->ia_valid & (HOSTFS_ATTR_ATIME | HOSTFS_ATTR_MTIME)){
- 		err = stat_file(file, NULL, NULL, NULL, NULL, NULL, NULL,
- 				&attrs->ia_atime, &attrs->ia_mtime, NULL,
- 				NULL, NULL, fd);
--		if(err != 0)
-+		if (err != 0)
- 			return err;
- 	}
- 	return 0;
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
