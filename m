@@ -1,161 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765592AbXHQV3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbXHQV36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765592AbXHQV3l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 17:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbXHQV3c
+	id S1758819AbXHQV36 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 17:29:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759614AbXHQV3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 17:29:32 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:33304 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751368AbXHQV3b (ORCPT
+	Fri, 17 Aug 2007 17:29:35 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:24230 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758898AbXHQV3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 17:29:31 -0400
-Date: Fri, 17 Aug 2007 14:29:27 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Lee.Schermerhorn@hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 5/6] Filter based on a nodemask as well as a gfp_mask
-In-Reply-To: <20070817201828.14792.57905.sendpatchset@skynet.skynet.ie>
-Message-ID: <Pine.LNX.4.64.0708171417510.9635@schroedinger.engr.sgi.com>
-References: <20070817201647.14792.2690.sendpatchset@skynet.skynet.ie>
- <20070817201828.14792.57905.sendpatchset@skynet.skynet.ie>
+	Fri, 17 Aug 2007 17:29:34 -0400
+X-IronPort-AV: i="4.19,277,1183348800"; 
+   d="scan'208"; a="48705938:sNHT35983360"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Subject: Re: Early printk behaviour
+Date: Fri, 17 Aug 2007 17:29:33 -0400
+User-Agent: KMail/1.9.5
+Cc: "Gerd Hoffmann" <kraxel@redhat.com>, linux-kernel@vger.kernel.org
+References: <200708152234.06734.rgetz@blackfin.uclinux.org> <200708171700.29647.rgetz@blackfin.uclinux.org> <8bd0f97a0708171409l39166daep185e89438f4104f0@mail.gmail.com>
+In-Reply-To: <8bd0f97a0708171409l39166daep185e89438f4104f0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708171729.33621.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 17 Aug 2007 21:29:32.0946 (UTC) FILETIME=[B3BD9F20:01C7E115]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Aug 2007, Mel Gorman wrote:
+On Fri 17 Aug 2007 17:09, Mike Frysinger pondered:
+> On 8/17/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+> >
+> > Something like:
+> >
+> > Index: kernel/printk.c
+> > ===================================================================
+> > --- kernel/printk.c     (revision 3568)
+> > +++ kernel/printk.c     (working copy)
+> > @@ -1104,6 +1104,22 @@
+> >  }
+> >  EXPORT_SYMBOL(unregister_console);
+> >
+> > +int __init disable_boot_consoles(void)
+> > +{
+> > +       struct console *con;
+> > +
+> > +       for (con = console_drivers; con; con = con->next) {
+> > +               if (con->flags & CON_BOOT) {
+> > +                       printk(KERN_INFO "Unregister BootConsole %s%d\n",
+> > +                               con->name, con->index);
+> > +                       unregister_console(con);
+> > +               }
+> > +       }
+> > +       return 0;
+> > +}
+> > +late_initcall(disable_boot_consoles);
+> 
+> is there any need for a return value then ?
+> void __init disable_boot_consoles(void);
 
-> @@ -696,6 +696,16 @@ static inline struct zonelist *node_zone
->  	return &NODE_DATA(nid)->node_zonelist;
->  }
->  
-> +static inline int zone_in_nodemask(unsigned long zone_addr,
-> +				nodemask_t *nodes)
-> +{
-> +#ifdef CONFIG_NUMA
-> +	return node_isset(zonelist_zone(zone_addr)->node, *nodes);
-> +#else
-> +	return 1;
-> +#endif /* CONFIG_NUMA */
-> +}
-> +
+So, we don't get compiler warnings?
 
-This is dereferencind the zone in a filtering operation. I wonder if
-we could encode the node in the zone_addr as well? x86_64 aligns zones on
-page boundaries. So we have 10 bits left after taking 2 for the zone id.
+Otherwise:
+kernel/printk.c:1119: warning: initialization from incompatible pointer type
 
-> -int cpuset_zonelist_valid_mems_allowed(struct zonelist *zl)
-> +int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask)
->  {
-> -	int i;
-> -
-> -	for (i = 0; zl->_zones[i]; i++) {
-> -		int nid = zone_to_nid(zonelist_zone(zl->_zones[i]));
-> +	int nid;
->  
-> +	for_each_node_mask(nid, *nodemask)
->  		if (node_isset(nid, current->mems_allowed))
->  			return 1;
-> -	}
-> +
->  	return 0;
+> and if we dont think anyone else wants to call it ...
+> static void __init disable_boot_consoles(void);
 
-Hmmm... This is equivalent to
+So I think static is Ok, but it needs to be int - that is the proper prototype
 
-nodemask_t temp;
-
-nodes_and(temp, nodemask, current->mems_allowed);
-return !nodes_empty(temp);
-
-which avoids the loop over all nodes.
-
-> -	}
-> -	if (num == 0) {
-> -		kfree(zl);
-> -		return ERR_PTR(-EINVAL);
-> +	for_each_node_mask(nd, *nodemask) {
-> +		struct zone *z = &NODE_DATA(nd)->node_zones[k];
-> +		if (z->present_pages > 0)
-> +			return 1;
-
-Here you could use an and with the N_HIGH_MEMORY or N_NORMAL_MEMORY 
-nodemask.
-
-> @@ -1149,12 +1125,19 @@ unsigned slab_node(struct mempolicy *pol
->  	case MPOL_INTERLEAVE:
->  		return interleave_nodes(policy);
->  
-> -	case MPOL_BIND:
-> +	case MPOL_BIND: {
-
-No { } needed.
-
->  		/*
->  		 * Follow bind policy behavior and start allocation at the
->  		 * first node.
->  		 */
-> -		return zone_to_nid(zonelist_zone(policy->v.zonelist->_zones[0]));
-> +		struct zonelist *zonelist;
-> +		unsigned long *z;
-> +		enum zone_type highest_zoneidx = gfp_zone(GFP_KERNEL);
-> +		zonelist = &NODE_DATA(numa_node_id())->node_zonelist;
-> +		z = first_zones_zonelist(zonelist, &policy->v.nodes,
-> +							highest_zoneidx);
-> +		return zone_to_nid(zonelist_zone(*z));
-> +	}
->  
->  	case MPOL_PREFERRED:
->  		if (policy->v.preferred_node >= 0)
-
-> @@ -1330,14 +1314,6 @@ struct mempolicy *__mpol_copy(struct mem
->  	}
->  	*new = *old;
->  	atomic_set(&new->refcnt, 1);
-> -	if (new->policy == MPOL_BIND) {
-> -		int sz = ksize(old->v.zonelist);
-> -		new->v.zonelist = kmemdup(old->v.zonelist, sz, GFP_KERNEL);
-> -		if (!new->v.zonelist) {
-> -			kmem_cache_free(policy_cache, new);
-> -			return ERR_PTR(-ENOMEM);
-> -		}
-> -	}
->  	return new;
-
-That is a good optimization.
-
-> @@ -1680,32 +1647,6 @@ void mpol_rebind_policy(struct mempolicy
->  						*mpolmask, *newmask);
->  		*mpolmask = *newmask;
->  		break;
-> -	case MPOL_BIND: {
-> -		nodemask_t nodes;
-> -		unsigned long *z;
-> -		struct zonelist *zonelist;
-> -
-> -		nodes_clear(nodes);
-> -		for (z = pol->v.zonelist->_zones; *z; z++)
-> -			node_set(zone_to_nid(zonelist_zone(*z)), nodes);
-> -		nodes_remap(tmp, nodes, *mpolmask, *newmask);
-> -		nodes = tmp;
-> -
-> -		zonelist = bind_zonelist(&nodes);
-> -
-> -		/* If no mem, then zonelist is NULL and we keep old zonelist.
-> -		 * If that old zonelist has no remaining mems_allowed nodes,
-> -		 * then zonelist_policy() will "FALL THROUGH" to MPOL_DEFAULT.
-> -		 */
-> -
-> -		if (!IS_ERR(zonelist)) {
-> -			/* Good - got mem - substitute new zonelist */
-> -			kfree(pol->v.zonelist);
-> -			pol->v.zonelist = zonelist;
-> -		}
-> -		*mpolmask = *newmask;
-> -		break;
-> -	}
-
-Simply dropped? We still need to recalculate the node_mask depending on 
-the new cpuset environment!
+-Robin
