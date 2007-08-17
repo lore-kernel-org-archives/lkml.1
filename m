@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbXHQJqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764262AbXHQJq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760878AbXHQJqU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 05:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbXHQJqJ
+	id S1764262AbXHQJq7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 05:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbXHQJqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 05:46:09 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:16291 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752282AbXHQJqH (ORCPT
+	Fri, 17 Aug 2007 05:46:47 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:12295 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762727AbXHQJqZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 05:46:07 -0400
+	Fri, 17 Aug 2007 05:46:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:subject:from:reply-to:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=FwvT64n5lAsGXLbLF9Jjghh8lvwMynbIXHjRwkekEwQFzf3541GKbP/e/uCrtoJiZ85sXOpRpb000DolUq8bbqfaIq4QSKjMM2/yVjNnqjBE7esUqtjhjDDQTOvake6uBcVm59UKmhCAXCbm2fgu69TykeBOdWwbybV58aQRVz0=
-Subject: [PATCH 2.6.22.3] ppp: fix output buffer size in
-	ppp_decompress_frame
-From: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
-Reply-To: konstantin.sharlaimov@gmail.com
-To: Suresh Mahalingam <msuresh_2001@yahoo.com>
-Cc: David Miller <davem@davemloft.net>, paulus@samba.org,
-       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 17 Aug 2007 20:45:51 +1100
-Message-Id: <1187343951.10629.9.camel@traveler>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oyLfJ5j29A795suIVrGkNMJ7PsqgbOE/ZxMWSV2i40MXJN0g+zgxh106n2/8TiPZ0QA0TQmRVfQq9CQqjjJeihMrqmL4Y8BUockEKsqHilB0pIP3MoDfp6s2vSntlopcgy7G5gbwh49UHzN7TOTSmbzFdJKFb4WXnkOG8VVKqC4=
+Message-ID: <653402b90708170246t2c826e01o23b42bc157f563bc@mail.gmail.com>
+Date: Fri, 17 Aug 2007 11:46:23 +0200
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+To: casey@schaufler-ca.com
+Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
+Cc: "Pavel Machek" <pavel@ucw.cz>, "Kyle Moffett" <mrmacman_g4@mac.com>,
+       linux-security-module@vger.kernel.org,
+       "LKML Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <638227.18984.qm@web36610.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070816205833.GC4949@ucw.cz>
+	 <638227.18984.qm@web36610.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch addresses the issue with "osize too small" errors in mppe encryption.
-The patch fixes the issue with wrong output buffer size being passed to ppp
-decompression routine.
+Btw, at:
 
-Signed-off-by: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
----
-As pointed out by Suresh Mahalingam, the issue addressed by 
-ppp-fix-osize-too-small-errors-when-decoding patch is not fully resolved yet.
-The size of allocated output buffer is correct, however it size passed to
-ppp->rcomp->decompress in ppp_generic.c if wrong. The patch fixes that.
+diff -uprN -X linux-2.6.22-base/Documentation/dontdiff
+linux-2.6.22-base/security/smack/Kconfig
+linux-2.6.22/security/smack/Kconfig
+--- linux-2.6.22-base/security/smack/Kconfig    1969-12-31
+16:00:00.000000000 -0800
++++ linux-2.6.22/security/smack/Kconfig 2007-07-10 01:08:05.000000000 -0700
+@@ -0,0 +1,10 @@
++config SECURITY_SMACK
++       bool "Simplified Mandatory Access Control Kernel Support"
++       depends on NETLABEL && SECURITY_NETWORK
++       default n
++       help
++         This selects the Simplified Mandatory Access Control Kernel.
++         SMACK is useful for sensitivity, integrity, and a variety
++          of other madatory security schemes.
++         If you are unsure how to answer this question, answer N.
++
 
---- linux-2.6.21.3/drivers/net/ppp_generic.c.orig	2007-08-17 20:35:03.000000000 +1100
-+++ linux-2.6.21.3/drivers/net/ppp_generic.c	2007-08-17 20:35:45.000000000 +1100
-@@ -1726,7 +1726,7 @@ ppp_decompress_frame(struct ppp *ppp, st
- 		}
- 		/* the decompressor still expects the A/C bytes in the hdr */
- 		len = ppp->rcomp->decompress(ppp->rc_state, skb->data - 2,
--				skb->len + 2, ns->data, ppp->mru + PPP_HDRLEN);
-+				skb->len + 2, ns->data, obuff_size);
- 		if (len < 0) {
- 			/* Pass the compressed frame to pppd as an
- 			   error indication. */
+change:
 
++          of other madatory security schemes.
+
+to:
+
++          of other mandatory security schemes.
+
+-- 
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm
