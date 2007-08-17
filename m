@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbXHQMgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761851AbXHQMhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760098AbXHQMgo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 08:36:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbXHQMgf
+	id S1761851AbXHQMhv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 08:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbXHQMho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 08:36:35 -0400
-Received: from jaguar.mkp.net ([192.139.46.146]:59145 "EHLO jaguar.mkp.net"
+	Fri, 17 Aug 2007 08:37:44 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:27552 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754251AbXHQMgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 08:36:35 -0400
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Gregor Jasny <gjasny@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux1394-devel@lists.sourceforge.net
-Subject: Re: Corrupted filesystem with new Firewire stack
-From: "Martin K. Petersen" <mkp@mkp.net>
-Organization: mkp.net
-References: <9d2cd630708151447u7e415712u17e974859fbd5481@mail.gmail.com>
-	<46C3EE1F.40309@s5r6.in-berlin.de>
-Date: Fri, 17 Aug 2007 08:36:33 -0400
-In-Reply-To: <46C3EE1F.40309@s5r6.in-berlin.de> (Stefan Richter's message of "Thu, 16 Aug 2007 08:26:39 +0200")
-Message-ID: <yq1ps1m5odq.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.50 (gnu/linux)
+	id S1756582AbXHQMhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 08:37:43 -0400
+Date: Fri, 17 Aug 2007 14:37:40 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH 000 of 6] A few block-layer tidy-up patches.
+Message-ID: <20070817123738.GL23758@kernel.dk>
+References: <20070816211551.11839.patches@notabene> <20070816113638.GX23758@kernel.dk> <18116.61035.621593.588647@notabene.brown> <20070817061733.GD23758@kernel.dk> <18117.19602.616561.525863@notabene.brown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18117.19602.616561.525863@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Stefan" == Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
+On Fri, Aug 17 2007, Neil Brown wrote:
+> On Friday August 17, jens.axboe@oracle.com wrote:
+> > > > Please inspect the #block-2.6.24 branch to see the result.
+> > > 
+> > > I don't know where to look for this.  I checked
+> > >   http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git
+> > > but they don't seem to be there.
+> > > ??
+> > 
+> > That's where it is, but the kernel.org mirroring is just horrible slow.
+> > Just checked now and it's there.
+> 
+> I discovered I was looking in the wrong place - not being very
+> familiar with git terminology.
+> I found them and it looks right.
 
-Stefan> There were some similar reports involving that "status write
-Stefan> for unknown orb".  I haven't found a way to reproduce it; I
-Stefan> noticed it only once in the logs here so far.
+Ah, good.
 
-I get those all the time.  Just do heavy ext3 I/O to the drive.
+> I had a bit of a look at removing bio_data and ->buffer ...  the
+> usages outside of drivers/ide are fairly easy to deal with - I might
+> send a patch for that.  The drivers/ide stuff looks like a fairly
+> substantial rewrite is in order.
+> e.g.  idefloppy_packet_command_s seems to duplicate a lot of 
+>   fields from 'struct request', and it should probably use the request
+>   struct directly.
 
-Happens here on both a G4 and an intel Mini.  Both running FC7.
+We can do it bits at the time, the triviel ones first. I have some
+experience with drivers/ide/ myself, so I can attempt to tackle some of
+that myself.
 
-Aug 17 08:24:08 mini kernel: firewire_sbp2: status write for unknown orb
-Aug 17 08:25:08 mini kernel: firewire_sbp2: sbp2_scsi_abort
-Aug 17 08:26:36 mini kernel: firewire_sbp2: status write for unknown orb
-Aug 17 08:27:36 mini kernel: firewire_sbp2: sbp2_scsi_abort
-Aug 17 08:33:51 mini kernel: firewire_sbp2: status write for unknown orb
-Aug 17 08:34:51 mini kernel: firewire_sbp2: sbp2_scsi_abort
+> But a number of times ->buffer points to ->cmd, and there is no bio.
+> I guess we should use bio_map_kern to make a bio?
 
-Lacie drive in both cases.
+It points to ->cmd?! But yes, generally things just need to be
+converted to map the data to a bio with bio_map_kern() (or
+bio_map_user(), where appropriate).
+
+> I'll see if I can come up with something.... testing it might be
+> awkward.  I have an ide cdrom I can test on.  Maybe an ide disk,, but
+> not an ide floppy :-)
+
+I can help with that as well :-)
 
 -- 
-Martin K. Petersen      http://mkp.net/
+Jens Axboe
+
