@@ -1,62 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761707AbXHQSnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761391AbXHQSse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761707AbXHQSnd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 14:43:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756996AbXHQSn0
+	id S1761391AbXHQSse (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 14:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbXHQSsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 14:43:26 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:28673 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756229AbXHQSnZ (ORCPT
+	Fri, 17 Aug 2007 14:48:23 -0400
+Received: from vms040pub.verizon.net ([206.46.252.40]:63208 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753696AbXHQSsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 14:43:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EenmkTlWdJifT3fuT2hb/t4FYGL0HqqSI4VibRKAVfSyY7pflE0wdEODR54szOf+4xiLaTTcYDskqxWuyW4zwxyGayajuQWuojQ8NrNtPrebAaEQyypa6UaZve691botj0vrK632hglaIkWXHiwpKjFBIocbSQ5LDNTbRFLIOs0=
-Message-ID: <8bd0f97a0708171143r6b44e506u1c07d8b69e774dd7@mail.gmail.com>
-Date: Fri, 17 Aug 2007 14:43:24 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Robin Getz" <rgetz@blackfin.uclinux.org>
-Subject: Re: [draft] Blackfin Early Printk implmentation
-Cc: linux-kernel@vger.kernel.org, "Gerd Hoffmann" <kraxel@redhat.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Bryan Wu" <bryan.wu@analog.com>,
-       "Sonic Zhang" <sonic.adi@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <200708171425.51433.rgetz@blackfin.uclinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200708152234.06734.rgetz@blackfin.uclinux.org>
-	 <200708171336.40159.rgetz@blackfin.uclinux.org>
-	 <8bd0f97a0708171057w52e3cd6ekf66a61e8292d3222@mail.gmail.com>
-	 <200708171425.51433.rgetz@blackfin.uclinux.org>
+	Fri, 17 Aug 2007 14:48:22 -0400
+Date: Fri, 17 Aug 2007 13:48:09 -0500
+From: Corey Minyard <minyard@acm.org>
+Subject: Re: [PATCH] lockdep: annotate rcu_read_{,un}lock()
+In-reply-to: <20070817155357.GD8464@linux.vnet.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       herbert@gondor.apana.org.au, 123.oleg@gmail.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Daniel Walker <dwalker@mvista.com>, josht@linux.vnet.ibm.com
+Message-id: <46C5ED69.6060604@acm.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <af57f1ac0708141130v729fa636k3150673809ec20a8@mail.gmail.com>
+ <E1ILEJr-0005Fl-00@gondolin.me.apana.org.au>
+ <20070815.144628.104052147.davem@davemloft.net>
+ <1187274307.6114.92.camel@twins> <20070816160145.GA16957@linux.vnet.ibm.com>
+ <1187337405.6114.123.camel@twins> <20070817155357.GD8464@linux.vnet.ibm.com>
+User-Agent: Icedove 1.5.0.12 (X11/20070606)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/17/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> On Fri 17 Aug 2007 13:57, Mike Frysinger pondered:
-> > On 8/17/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> > > +int __init disable_early_printk(void)
-> > > +{
-> > > +       if (!early_console_initialized)
-> > > +               return 0;
-> > > +
-> > > +       printk(KERN_INFO "Unregister %s%d\n",
-> early_console_initialized->name,
-> > > +               early_console_initialized->index);
-> > > +       unregister_console(early_console_initialized);
-> > > +       early_console_initialized = NULL;
-> > > +       return 0;
-> > > +}
-> > > +
-> > > +late_initcall(disable_early_printk);
-> >
-> > i think we agreed this would be OK/good to have in common code
+Paul E. McKenney wrote:
+> On Fri, Aug 17, 2007 at 09:56:45AM +0200, Peter Zijlstra wrote:
+>   
+>> On Thu, 2007-08-16 at 09:01 -0700, Paul E. McKenney wrote:
+>>     
+>>> On Thu, Aug 16, 2007 at 04:25:07PM +0200, Peter Zijlstra wrote:
+>>>       
+>>>> There seem to be some unbalanced rcu_read_{,un}lock() issues of late,
+>>>> how about doing something like this:
+>>>>         
+>>> This will break when rcu_read_lock() and rcu_read_unlock() are invoked
+>>> from NMI/SMI handlers -- the raw_local_irq_save() in lock_acquire() will
+>>> not mask NMIs or SMIs.
+>>>
+>>> One approach would be to check for being in an NMI/SMI handler, and
+>>> to avoid calling lock_acquire() and lock_release() in those cases.
+>>>       
+>> It seems:
+>>
+>> #define nmi_enter()		do { lockdep_off(); __irq_enter(); } while (0)
+>> #define nmi_exit()		do { __irq_exit(); lockdep_on(); } while (0)
+>>
+>> Should make it all work out just fine. (for NMIs at least, /me fully
+>> ignorant of the workings of SMIs)
+>>     
 >
-> I didn't hear back from Gerd - and in the past this was implemented in the
-> arch/*/kernel/early_printk.c - so this is where I put it....
+> Very good point, at least for NMIs on i386 and x86_64.  Can't say that I
+> know much about SMIs myself.  Or about whatever equivalents to NMIs and
+> SMIs might exist on other platforms.  :-/  Of course, the other platforms
+> could be handled by making the RCU lockdep operate only on i386 and x86_64
+> if required.
+>
+> Corey, any advice on SMI handlers?  Is there something like nmi_enter()
+> and nmi_exit() that allows disabing lockdep?
+>   
+You will certainly need something like nmi_enter() and nmi_exit() for 
+SMIs, since they can occur at any time like NMIs.  As far as anything 
+else, you just have to be extremely careful and remember that it can 
+occur anyplace.  But you already know that :).
 
-i think his response was "if you do it and he likes the code he'll say yes" :)
--mike
+It would be nice if the PowerPC board vendors would tie watchdog 
+pretimeouts and some type of timer into the SMI input.  It would make 
+debugging certain problems much easier.  And all those Marvell bridge 
+chips have a watchdog pretimeout and I haven't seen any board vendor 
+wire it up :(.
+
+-corey
+
