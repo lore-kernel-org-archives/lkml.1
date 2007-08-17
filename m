@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbXHQEs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbXHQEtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbXHQEs3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 00:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbXHQEsV
+	id S1759228AbXHQEtz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 00:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbXHQEts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 00:48:21 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:56460 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752454AbXHQEsU (ORCPT
+	Fri, 17 Aug 2007 00:49:48 -0400
+Received: from ihemail2.lucent.com ([135.245.0.35]:51388 "EHLO
+	ihemail2.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752697AbXHQEtr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 00:48:20 -0400
-Message-ID: <46C52872.9060408@linux.vnet.ibm.com>
-Date: Fri, 17 Aug 2007 10:17:46 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Fri, 17 Aug 2007 00:49:47 -0400
+Message-ID: <46C528D4.9010904@alcatel-lucent.com>
+Date: Fri, 17 Aug 2007 12:49:24 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-CC: Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@osdl.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] Add scaled time to taskstats based process accounting
-References: <20070816070922.37B5370074@localhost.localdomain> <46C3FC41.4000609@linux.vnet.ibm.com> <13529.1187310208@neuling.org>
-In-Reply-To: <13529.1187310208@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: NFS client show nothing for "ls" command.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Aug 2007 04:49:28.0046 (UTC) FILETIME=[FE0880E0:01C7E089]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Neuling wrote:
->> I'd also request for you to add a cpu_scaled_run_real_total for use
->> by delay accounting. cpu_scaled_run_real_total should be similar in
->> functionality to cpu_run_real_total.
-> 
-> Will do.  Should I add cpu_scaled_run_real_total to the end of the
-> struct taskstat, or next to cpu_run_real_total?
-> 
+Hi All,
 
-Please add it to the end, that helps maintain binary compatibility
-across all versions of taskstats.
+Recently, I got a funny problem that my NFS client can't show some of 
+mounted directories. These directories that can't be showed by "ls" 
+command have great deals of files.
 
->>>  	/* Note: this timer irq context must be accounted for as well. */
->>> -	if (user_tick)
->>> +	if (user_tick) {
->>>  		account_user_time(p, jiffies_to_cputime(1));
->>> -	else
->>> +		account_user_time_scaled(p, jiffies_to_cputime(1));
->>> +	} else {
->>>  		account_system_time(p, HARDIRQ_OFFSET, jiffies_to_cputime(1));
->>> +		account_system_time_scaled(p, jiffies_to_cputime(1));
->>> +	}
->> I am a little confused here, scaled accounting and regular accounting
->> go hand in hand?
-> 
-> We need to account for scaled and normal time in this generic code.
-> All other calls to account_(user|system)_time are in arch code.  
-> 
+For example. I have a directory on NFS server log and there are 69 
+files. I can't show it's child files through NFS.
 
-So the assumption here is that we ran at full frequency during
-this time, is my understanding correct?
+---On NFS server---
+bash-2.05b# ls
+1   13  17  20  24  28  31  35  39  42  46  5   53  57  60  64  68  9
+10  14  18  21  25  29  32  36  4   43  47  50  54  58  61  65  69
+11  15  19  22  26  3   33  37  40  44  48  51  55  59  62  66  7
+12  16  2   23  27  30  34  38  41  45  49  52  56  6   63  67  8
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+---On NFS client---
+# ls
+#
+
+After I delete one file from NFS server side, everything becomes OK.
+
+---On NFS server---
+bash-2.05b# rm 69
+bash-2.05b# ls
+1   13  17  20  24  28  31  35  39  42  46  5   53  57  60  64  68
+10  14  18  21  25  29  32  36  4   43  47  50  54  58  61  65  7
+11  15  19  22  26  3   33  37  40  44  48  51  55  59  62  66  8
+12  16  2   23  27  30  34  38  41  45  49  52  56  6   63  67  9
+
+---On NFS client---
+# ls
+1   13  17  20  24  28  31  35  39  42  46  5   53  57  60  64  68
+10  14  18  21  25  29  32  36  4   43  47  50  54  58  61  65  7
+11  15  19  22  26  3   33  37  40  44  48  51  55  59  62  66  8
+12  16  2   23  27  30  34  38  41  45  49  52  56  6   63  67  9
+#
+
+I also scrapped the packets through ethereal and saw that packet sent at 
+case 1) isn't valid. It only has 3 fileds: ., .. and last. I suppose the 
+problem came from NFS server side because we can't received valid NFS 
+packet for such directories with plenty of files. Anybody knew what's 
+the root cause?
+
+Thanks,
+Gavin
