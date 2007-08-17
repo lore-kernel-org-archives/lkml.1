@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762338AbXHQJjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbXHQJqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762338AbXHQJjq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 05:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbXHQJji
+	id S1760878AbXHQJqU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 05:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbXHQJqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 05:39:38 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:45841 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1750925AbXHQJjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 05:39:37 -0400
-Message-ID: <387343573.05776@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 17 Aug 2007 17:39:33 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH] maps: show swapped out pages in smaps
-Message-ID: <20070817093933.GA6056@mail.ustc.edu.cn>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 17 Aug 2007 05:46:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:16291 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752282AbXHQJqH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 05:46:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:reply-to:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=FwvT64n5lAsGXLbLF9Jjghh8lvwMynbIXHjRwkekEwQFzf3541GKbP/e/uCrtoJiZ85sXOpRpb000DolUq8bbqfaIq4QSKjMM2/yVjNnqjBE7esUqtjhjDDQTOvake6uBcVm59UKmhCAXCbm2fgu69TykeBOdWwbybV58aQRVz0=
+Subject: [PATCH 2.6.22.3] ppp: fix output buffer size in
+	ppp_decompress_frame
+From: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
+Reply-To: konstantin.sharlaimov@gmail.com
+To: Suresh Mahalingam <msuresh_2001@yahoo.com>
+Cc: David Miller <davem@davemloft.net>, paulus@samba.org,
+       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 17 Aug 2007 20:45:51 +1100
+Message-Id: <1187343951.10629.9.camel@traveler>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Show the amount of swapped out pages in /proc/<pid>/smaps.
-Currently there's no way to know who is using the swap file.
+This patch addresses the issue with "osize too small" errors in mppe encryption.
+The patch fixes the issue with wrong output buffer size being passed to ppp
+decompression routine.
 
-A possible better way to support it is to add a new counter to struct_mm.
-Or maybe not that important at all?
-
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Signed-off-by: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
 ---
- fs/proc/task_mmu.c |   12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+As pointed out by Suresh Mahalingam, the issue addressed by 
+ppp-fix-osize-too-small-errors-when-decoding patch is not fully resolved yet.
+The size of allocated output buffer is correct, however it size passed to
+ppp->rcomp->decompress in ppp_generic.c if wrong. The patch fixes that.
 
---- linux-2.6.23-rc2-mm2.orig/fs/proc/task_mmu.c
-+++ linux-2.6.23-rc2-mm2/fs/proc/task_mmu.c
-@@ -324,6 +324,7 @@ struct mem_size_stats
- 	unsigned long private_clean;
- 	unsigned long private_dirty;
- 	unsigned long referenced;
-+	unsigned long swapped;
- 
- 	/*
- 	 * Proportional Set Size(PSS): my share of RSS.
-@@ -367,8 +368,11 @@ static int smaps_pte_range(pmd_t *pmd, u
- 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
- 	for (; addr != end; pte++, addr += PAGE_SIZE) {
- 		ptent = *pte;
--		if (!pte_present(ptent))
-+		if (!pte_present(ptent)) {
-+			if (!pte_none(ptent) && !pte_file(ptent))
-+				mms->swapped += PAGE_SIZE;
- 			continue;
-+		}
- 
- 		mss->resident += PAGE_SIZE;
- 
-@@ -425,7 +429,8 @@ static int show_smap(struct seq_file *m,
- 		   "Shared_Dirty:   %8lu kB\n"
- 		   "Private_Clean:  %8lu kB\n"
- 		   "Private_Dirty:  %8lu kB\n"
--		   "Referenced:     %8lu kB\n",
-+		   "Referenced:     %8lu kB\n"
-+		   "Swapped:        %8lu kB\n",
- 		   (vma->vm_end - vma->vm_start) >> 10,
- 		   sarg.mss.resident >> 10,
- 		   (unsigned long)(sarg.mss.pss >> (10 + PSS_ERROR_BITS)),
-@@ -433,7 +438,8 @@ static int show_smap(struct seq_file *m,
- 		   sarg.mss.shared_dirty  >> 10,
- 		   sarg.mss.private_clean >> 10,
- 		   sarg.mss.private_dirty >> 10,
--		   sarg.mss.referenced >> 10);
-+		   sarg.mss.referenced    >> 10,
-+		   sarg.mss.swapped       >> 10);
- 
- 	return ret;
- }
+--- linux-2.6.21.3/drivers/net/ppp_generic.c.orig	2007-08-17 20:35:03.000000000 +1100
++++ linux-2.6.21.3/drivers/net/ppp_generic.c	2007-08-17 20:35:45.000000000 +1100
+@@ -1726,7 +1726,7 @@ ppp_decompress_frame(struct ppp *ppp, st
+ 		}
+ 		/* the decompressor still expects the A/C bytes in the hdr */
+ 		len = ppp->rcomp->decompress(ppp->rc_state, skb->data - 2,
+-				skb->len + 2, ns->data, ppp->mru + PPP_HDRLEN);
++				skb->len + 2, ns->data, obuff_size);
+ 		if (len < 0) {
+ 			/* Pass the compressed frame to pppd as an
+ 			   error indication. */
 
