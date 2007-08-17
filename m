@@ -1,174 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762781AbXHQHNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764208AbXHQHOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762781AbXHQHNd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 03:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbXHQHNW
+	id S1764208AbXHQHOW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 03:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbXHQHOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 17 Aug 2007 03:14:04 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:41767 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756045AbXHQHNW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 17 Aug 2007 03:13:22 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:44692 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1755697AbXHQHNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 03:13:21 -0400
-Message-ID: <387334797.23195@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 17 Aug 2007 15:13:17 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@osdl.org>,
-       Ken Chen <kenchen@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 3/6] writeback: remove pages_skipped accounting in
-	__block_write_full_page()
-Message-ID: <20070817071317.GA8965@mail.ustc.edu.cn>
-References: <20070812091120.189651872@mail.ustc.edu.cn> <20070812092052.848213359@mail.ustc.edu.cn> <20070813010321.GT12413810@sgi.com> <20070813103000.GA8520@mail.ustc.edu.cn>
+Date: Fri, 17 Aug 2007 09:13:19 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: NeilBrown <neilb@suse.de>
+cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>
+Subject: Re: [PATCH 002 of 6] Introduce rq_for_each_segment replacing
+ rq_for_each_bio
+In-Reply-To: <1070816112100.12182@suse.de>
+Message-ID: <Pine.LNX.4.62.0708170910120.8381@pademelon.sonytel.be>
+References: <20070816211551.11839.patches@notabene> <1070816112100.12182@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070813103000.GA8520@mail.ustc.edu.cn>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-995176808-1187334658=:8381"
+Content-ID: <Pine.LNX.4.62.0708170911090.8381@pademelon.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 13, 2007 at 06:30:00PM +0800, Fengguang Wu wrote:
-> > On Sun, Aug 12, 2007 at 05:11:23PM +0800, Fengguang Wu wrote:
-> > > Miklos Szeredi <miklos@szeredi.hu> and me identified a writeback bug:
-> > > Basicly they are
-> > > - during the dd: ~16M 
-> > > - after 30s:      ~4M
-> > > - after 5s:       ~4M
-> > > - after 5s:     ~176M
-> > > 
-> > > The box has 2G memory.
-> > > 
-> > > Question 1:
-> > > How come the 5s delays? I run 4 tests in total, 2 of which have such 5s delays.
-> > 
-> > pdflush runs every five seconds, so that is indicative of the inode being
-> > written once for 1024 pages, and then delayed to the next pdflush run 5s later.
-> > perhaps the inodes aren't moving between the lists exactly the way you
-> > think they are...
-> 
-> Now I figured out the exact situation. When the scan of s_io finishes
-> with some small inodes, nr_to_write will be positive, fooling kupdate
-> to quit prematurely. But in fact the big dirty file is on s_more_io
-> waiting for more io... The attached patch fixes it.
-> 
-> Fengguang
-> ===
-> 
-> Subject: writeback: introduce writeback_control.more_io to indicate more io
-> 
-> After making dirty a 100M file, the normal behavior is to
-> start the writeback for all data after 30s delays. But
-> sometimes the following happens instead:
-> 
-> 	- after 30s:    ~4M
-> 	- after 5s:     ~4M
-> 	- after 5s:     all remaining 92M
-> 
-> Some analyze shows that the internal io dispatch queues goes like this:
-> 
-> 		s_io            s_more_io
-> 		-------------------------
-> 	1)	100M,1K         0
-> 	2)	1K              96M
-> 	3)	0               96M
-> 
-> 1) initial state with a 100M file and a 1K file
-> 2) 4M written, nr_to_write <= 0, so write more
-> 3) 1K written, nr_to_write > 0, no more writes(BUG)
-> 
-> nr_to_write > 0 in 3) fools the upper layer to think that data have all been
-> written out. Bug the big dirty file is still sitting in s_more_io. We cannot
-> simply splice s_more_io back to s_io as soon as s_io becomes empty, and let the
-> loop in generic_sync_sb_inodes() continue: this may starve newly expired inodes
-> in s_dirty.  It is also not an option to draw inodes from both s_more_io and
-> s_dirty, an let the loop go on: this might lead to live locks, and might also
-> starve other superblocks in sync time(well kupdate may still starve some
-> superblocks, that's another bug).
-> 
-> So we have to return when a full scan of s_io completes. So nr_to_write > 0 does
-> not necessarily mean that "all data are written". This patch introduces a flag
-> writeback_control.more_io to indicate this situation. With it the big dirty file
-> no longer has to wait for the next kupdate invocation 5s later.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Sorry, this patch is found to be dangerous. It locks up my desktop
-on heavy I/O: kupdate *immediately* returns to push the file in
-s_more_io for writeback, but it *could* still not able to make
-progress(locks etc.). Now kupdate ends up *busy looping*.  That could
-be fixed by wait for somehow 100ms and retry the io. Should we do
-it?(or: Is 5s interval considered too long a wait?)
+---584337861-995176808-1187334658=:8381
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.62.0708170911091.8381@pademelon.sonytel.be>
 
-> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> ---
->  fs/fs-writeback.c         |    2 ++
->  include/linux/writeback.h |    1 +
->  mm/page-writeback.c       |    9 ++++++---
->  3 files changed, 9 insertions(+), 3 deletions(-)
+On Thu, 16 Aug 2007, NeilBrown wrote:
+> Every usage of rq_for_each_bio wraps a usage of
+> bio_for_each_segment, so these can be combined into
+> rq_for_each_segment.
 > 
-> --- linux-2.6.23-rc2-mm2.orig/fs/fs-writeback.c
-> +++ linux-2.6.23-rc2-mm2/fs/fs-writeback.c
-> @@ -560,6 +560,8 @@ int generic_sync_sb_inodes(struct super_
->  		if (wbc->nr_to_write <= 0)
->  			break;
->  	}
-> +	if (!list_empty(&sb->s_more_io))
-> +		wbc->more_io = 1;
->  	spin_unlock(&inode_lock);
->  	return ret;		/* Leave any unwritten inodes on s_io */
->  }
-> --- linux-2.6.23-rc2-mm2.orig/include/linux/writeback.h
-> +++ linux-2.6.23-rc2-mm2/include/linux/writeback.h
-> @@ -61,6 +61,7 @@ struct writeback_control {
->  	unsigned for_reclaim:1;		/* Invoked from the page allocator */
->  	unsigned for_writepages:1;	/* This is a writepages() call */
->  	unsigned range_cyclic:1;	/* range_start is cyclic */
-> +	unsigned more_io:1;		/* more io to be dispatched */
+> We define "struct req_iterator" to hold the 'bio' and 'index' that
+> are needed for the double iteration.
+
+> --- .prev/drivers/block/ps3disk.c	2007-08-16 20:37:26.000000000 +1000
+> +++ ./drivers/block/ps3disk.c	2007-08-16 20:50:07.000000000 +1000
+> @@ -91,30 +91,30 @@ static void ps3disk_scatter_gather(struc
+>  				   struct request *req, int gather)
+>  {
+>  	unsigned int offset = 0;
+> -	struct bio *bio;
+> -	sector_t sector;
+> +	struct req_iterator iter;
+>  	struct bio_vec *bvec;
+> -	unsigned int i = 0, j;
+> +	unsigned int i = 0;
+>  	size_t size;
+>  	void *buf;
 >  
->  	void *fs_private;		/* For use by ->writepages() */
->  };
-> --- linux-2.6.23-rc2-mm2.orig/mm/page-writeback.c
-> +++ linux-2.6.23-rc2-mm2/mm/page-writeback.c
-> @@ -382,6 +382,7 @@ static void background_writeout(unsigned
->  			global_page_state(NR_UNSTABLE_NFS) < background_thresh
->  				&& min_pages <= 0)
->  			break;
-> +		wbc.more_io = 0;
->  		wbc.encountered_congestion = 0;
->  		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
->  		wbc.pages_skipped = 0;
-> @@ -389,8 +390,9 @@ static void background_writeout(unsigned
->  		min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
->  		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
->  			/* Wrote less than expected */
-> -			congestion_wait(WRITE, HZ/10);
-> -			if (!wbc.encountered_congestion)
-> +			if (wbc.encountered_congestion)
-> +				congestion_wait(WRITE, HZ/10);
-> +			else if (!wbc.more_io)
->  				break;
->  		}
->  	}
-> @@ -455,13 +457,14 @@ static void wb_kupdate(unsigned long arg
->  			global_page_state(NR_UNSTABLE_NFS) +
->  			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
->  	while (nr_to_write > 0) {
-> +		wbc.more_io = 0;
->  		wbc.encountered_congestion = 0;
->  		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
->  		writeback_inodes(&wbc);
->  		if (wbc.nr_to_write > 0) {
->  			if (wbc.encountered_congestion)
->  				congestion_wait(WRITE, HZ/10);
-> -			else
-> +			else if (!wbc.more_io)
->  				break;	/* All the old data is written */
->  		}
->  		nr_to_write -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> -	rq_for_each_bio(bio, req) {
+> -		sector = bio->bi_sector;
+> +	rq_for_each_segment(bvec, req, iter) {
+> +		unsigned long flags;
+>  		dev_dbg(&dev->sbd.core,
+>  			"%s:%u: bio %u: %u segs %u sectors from %lu\n",
+> -			__func__, __LINE__, i, bio_segments(bio),
+> -			bio_sectors(bio), sector);
+> -		bio_for_each_segment(bvec, bio, j) {
+> +			__func__, __LINE__, i, bio_segments(iter.bio),
+> +			bio_sectors(iter.bio),
+> +			(unsigned long)iter.bio->bi_sector);
+                        ^^^^^^^^^^^^^^^
+Superfluous cast: PS3 is 64-bit only, and casts are evil.
 
+> +
+>  			size = bvec->bv_len;
+> -			buf = __bio_kmap_atomic(bio, j, KM_IRQ0);
+> +			buf = bvec_kmap_irq(bvec, flags);
+
+As you already mentioned in the preample of the patch series, this changes
+functionality.
+
+>  			if (gather)
+>  				memcpy(dev->bounce_buf+offset, buf, size);
+>  			else
+>  				memcpy(buf, dev->bounce_buf+offset, size);
+>  			offset += size;
+>  			flush_kernel_dcache_page(bio_iovec_idx(bio, j)->bv_page);
+> -			__bio_kunmap_atomic(bio, KM_IRQ0);
+> -		}
+> +			bio_kunmap_bvec(bvec, flags);
+> +
+>  		i++;
+>  	}
+>  }
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-995176808-1187334658=:8381--
