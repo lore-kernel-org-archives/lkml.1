@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763452AbXHQCFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763650AbXHQCMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763452AbXHQCFq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 22:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbXHQCFf
+	id S1763650AbXHQCMt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 22:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbXHQCMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 22:05:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55298 "EHLO mx1.redhat.com"
+	Thu, 16 Aug 2007 22:12:40 -0400
+Received: from waste.org ([66.93.16.53]:43386 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751845AbXHQCFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 22:05:33 -0400
-Message-ID: <46C50228.4000004@redhat.com>
-Date: Thu, 16 Aug 2007 22:04:24 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	id S1750828AbXHQCMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 22:12:40 -0400
+Date: Thu, 16 Aug 2007 21:13:47 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Andrew Morton <akpm@osdl.org>, John Berthels <jjberthels@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] maps: PSS(proportional set size) accounting in smaps
+Message-ID: <20070817021346.GH30556@waste.org>
+References: <20070816220516.782145952@mail.ustc.edu.cn> <20070816220849.064901548@mail.ustc.edu.cn>
 MIME-Version: 1.0
-To: Herbert Xu <herbert.xu@redhat.com>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C4AA26.4060707@redhat.com> <20070817000209.GC11594@gondor.apana.org.au>
-In-Reply-To: <20070817000209.GC11594@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070816220849.064901548@mail.ustc.edu.cn>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> On Thu, Aug 16, 2007 at 03:48:54PM -0400, Chris Snook wrote:
->>> Can you find an actual atomic_read code snippet there that is
->>> broken without the volatile modifier?
->> A whole bunch of atomic_read uses will be broken without the volatile 
->> modifier once we start removing barriers that aren't needed if volatile 
->> behavior is guaranteed.
+On Fri, Aug 17, 2007 at 06:05:17AM +0800, Fengguang Wu wrote:
+> The "proportional set size" (PSS) of a process is the count of pages it has in
+> memory, where each page is divided by the number of processes sharing it. So if
+> a process has 1000 pages all to itself, and 1000 shared with one other process,
+> its PSS will be 1500.
+>                - lwn.net: "ELC: How much memory are applications really using?"
 > 
-> Could you please cite the file/function names so we can
-> see whether removing the barrier makes sense?
+> The PSS proposed by Matt Mackall is a very nice metic for measuring an process's
+> memory footprint. So collect and export it via /proc/<pid>/smaps.
 > 
-> Thanks,
+> Matt Mackall's pagemap/kpagemap and John Berthels's exmap can also do the job.
+> They are comprehensive tools. But for PSS, let's do it in the simple way. 
 
-At a glance, several architectures' implementations of smp_call_function() have 
-one or more legitimate atomic_read() busy-waits that shouldn't be using 
-CPU-relax.  Some of them do work in the loop.
+It's a bit odd that you attribute the description of PSS to LWN rather
+than me. But anyway:
 
-I'm sure there are plenty more examples that various maintainers could find in 
-their own code.
+Acked-by: Matt Mackall <mpm@selenic.com>
 
-	-- Chris
+-- 
+Mathematics is the supreme nostalgia of our time.
