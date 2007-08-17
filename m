@@ -1,195 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763735AbXHQObY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764953AbXHQOcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763735AbXHQObY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 10:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742AbXHQObL
+	id S1764953AbXHQOcA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 10:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756896AbXHQObt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 10:31:11 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:35239 "EHLO e1.ny.us.ibm.com"
+	Fri, 17 Aug 2007 10:31:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60412 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756391AbXHQObI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 10:31:08 -0400
-Date: Fri, 17 Aug 2007 07:31:01 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070817143101.GA8464@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C41EE4.9090806@s5r6.in-berlin.de> <46C42767.4070104@s5r6.in-berlin.de> <20070816104250.GB2927@gondor.apana.org.au> <20070816163441.GB16957@linux.vnet.ibm.com> <20070816235902.GB11594@gondor.apana.org.au> <20070817010108.GJ16957@linux.vnet.ibm.com> <alpine.LFD.0.999.0708171232380.3666@enigma.security.iitk.ac.in>
+	id S1764136AbXHQOb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 10:31:26 -0400
+Date: Fri, 17 Aug 2007 10:31:19 -0400
+From: Dave Jones <davej@redhat.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Susanne Oberhauser <froh@novell.com>, Jan Blunck <jblunck@suse.de>,
+       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       opensuse-kernel@opensuse.org, opensuse@opensuse.org
+Subject: Re: Testing the Current Upstream Kernel
+Message-ID: <20070817143119.GB13008@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Valdis.Kletnieks@vt.edu,
+	Susanne Oberhauser <froh@novell.com>, Jan Blunck <jblunck@suse.de>,
+	Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+	opensuse-kernel@opensuse.org, opensuse@opensuse.org
+References: <s2ihcn1vwob.fsf@totally-fudged-out-message-id> <s2iwsvvlqnh.fsf@byron.suse.de> <6891.1187273061@turing-police.cc.vt.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708171232380.3666@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <6891.1187273061@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 01:09:08PM +0530, Satyam Sharma wrote:
-> 
-> 
-> On Thu, 16 Aug 2007, Paul E. McKenney wrote:
-> 
-> > On Fri, Aug 17, 2007 at 07:59:02AM +0800, Herbert Xu wrote:
-> > > On Thu, Aug 16, 2007 at 09:34:41AM -0700, Paul E. McKenney wrote:
-> > > >
-> > > > The compiler can also reorder non-volatile accesses.  For an example
-> > > > patch that cares about this, please see:
-> > > > 
-> > > > 	http://lkml.org/lkml/2007/8/7/280
-> > > > 
-> > > > This patch uses an ORDERED_WRT_IRQ() in rcu_read_lock() and
-> > > > rcu_read_unlock() to ensure that accesses aren't reordered with respect
-> > > > to interrupt handlers and NMIs/SMIs running on that same CPU.
-> > > 
-> > > Good, finally we have some code to discuss (even though it's
-> > > not actually in the kernel yet).
-> > 
-> > There was some earlier in this thread as well.
-> 
-> Hmm, I never quite got what all this interrupt/NMI/SMI handling and
-> RCU business you mentioned earlier was all about, but now that you've
-> pointed to the actual code and issues with it ...
+On Thu, Aug 16, 2007 at 10:04:21AM -0400, Valdis.Kletnieks@vt.edu wrote:
+ > On Thu, 16 Aug 2007 12:28:34 +0200, Susanne Oberhauser said:
+ > > Jan Blunck <jblunck@suse.de> writes:
+ > > 
+ > > > With our openSUSE Build Service we build a daily kernel, where we take
+ > > > nightly snapshots of the current upstream development kernel (Linus' kernel
+ > > > tree linux-2.6.git) without any patches (besides those we need for building a
+ > > > RPM).  We do call this the vanilla kernel. It can be downloaded from:
+ > > > 
+ > > >  http://download.opensuse.org/repositories/Kernel:/Vanilla/SUSE_Factory/
+ > > 
+ > > Would it make sense to build it for the other distros as well?  like
+ > > debian, fedora and mandrake?  I mena in _theory_ we could build it for
+ > > those distros in the build server, couldn't we?
+ > 
+ > Most of the distros prefer a chance to add their own "Special Sauce" to it
+ > before building, and building inside their build environment (for instance,
+ > Fedora RPM's get PGP-signed - *that* would be a trust issue right there).
+ > 
+ > The current Fedora Rawhide kernel is 'kernel-2.6.23-0.105.rc3.fc8', and a few
+ > RPMs ago it was based against -rc2-git5, so they track *very* close.  I think
+ > that crew is managing well enough without help from the kernel.org build
+ > server.
 
-Glad to help...
+FWIW, you've been able to build the Fedora SRPMs with --with-vanilla
+for a while now, which generates an RPM with no patches at all other
+than the -rc/-git on which its based.
+We're trying to work out logistics of which repository etc we're
+going to host this in, but soon we'll be able to just offer
+'yum install kernel-vanilla' to users.
 
-> > > First of all, I think this illustrates that what you want
-> > > here has nothing to do with atomic ops.  The ORDERED_WRT_IRQ
-> > > macro occurs a lot more times in your patch than atomic
-> > > reads/sets.  So *assuming* that it was necessary at all,
-> > > then having an ordered variant of the atomic_read/atomic_set
-> > > ops could do just as well.
-> > 
-> > Indeed.  If I could trust atomic_read()/atomic_set() to cause the compiler
-> > to maintain ordering, then I could just use them instead of having to
-> > create an  ORDERED_WRT_IRQ().  (Or ACCESS_ONCE(), as it is called in a
-> > different patch.)
-> 
-> +#define WHATEVER(x)	(*(volatile typeof(x) *)&(x))
-> 
-> I suppose one could want volatile access semantics for stuff that's
-> a bit-field too, no?
+	Dave
 
-One could, but this is not supported in general.  So if you want that,
-you need to use the usual bit-mask tricks and (for setting) atomic
-operations.
-
-> Also, this gives *zero* "re-ordering" guarantees that your code wants
-> as you've explained it below) -- neither w.r.t. CPU re-ordering (which
-> probably you don't care about) *nor* w.r.t. compiler re-ordering
-> (which you definitely _do_ care about).
-
-You are correct about CPU re-ordering (and about the fact that this
-example doesn't care about it), but not about compiler re-ordering.
-
-The compiler is prohibited from moving a volatile access across a sequence
-point.  One example of a sequence point is a statement boundary.  Because
-all of the volatile accesses in this code are separated by statement
-boundaries, a conforming compiler is prohibited from reordering them.
-
-> > > However, I still don't know which atomic_read/atomic_set in
-> > > your patch would be broken if there were no volatile.  Could
-> > > you please point them out?
-> > 
-> > Suppose I tried replacing the ORDERED_WRT_IRQ() calls with
-> > atomic_read() and atomic_set().  Starting with __rcu_read_lock():
-> > 
-> > o	If "ORDERED_WRT_IRQ(__get_cpu_var(rcu_flipctr)[idx])++"
-> > 	was ordered by the compiler after
-> > 	"ORDERED_WRT_IRQ(me->rcu_read_lock_nesting) = nesting + 1", then
-> > 	suppose an NMI/SMI happened after the rcu_read_lock_nesting but
-> > 	before the rcu_flipctr.
-> > 
-> > 	Then if there was an rcu_read_lock() in the SMI/NMI
-> > 	handler (which is perfectly legal), the nested rcu_read_lock()
-> > 	would believe that it could take the then-clause of the
-> > 	enclosing "if" statement.  But because the rcu_flipctr per-CPU
-> > 	variable had not yet been incremented, an RCU updater would
-> > 	be within its rights to assume that there were no RCU reads
-> > 	in progress, thus possibly yanking a data structure out from
-> > 	under the reader in the SMI/NMI function.
-> > 
-> > 	Fatal outcome.  Note that only one CPU is involved here
-> > 	because these are all either per-CPU or per-task variables.
-> 
-> Ok, so you don't care about CPU re-ordering. Still, I should let you know
-> that your ORDERED_WRT_IRQ() -- bad name, btw -- is still buggy. What you
-> want is a full compiler optimization barrier().
-
-No.  See above.
-
-> [ Your code probably works now, and emits correct code, but that's
->   just because of gcc did what it did. Nothing in any standard,
->   or in any documented behaviour of gcc, or anything about the real
->   (or expected) semantics of "volatile" is protecting the code here. ]
-
-Really?  Why doesn't the prohibition against moving volatile accesses
-across sequence points take care of this?
-
-> > o	If "ORDERED_WRT_IRQ(me->rcu_read_lock_nesting) = nesting + 1"
-> > 	was ordered by the compiler to follow the
-> > 	"ORDERED_WRT_IRQ(me->rcu_flipctr_idx) = idx", and an NMI/SMI
-> > 	happened between the two, then an __rcu_read_lock() in the NMI/SMI
-> > 	would incorrectly take the "else" clause of the enclosing "if"
-> > 	statement.  If some other CPU flipped the rcu_ctrlblk.completed
-> > 	in the meantime, then the __rcu_read_lock() would (correctly)
-> > 	write the new value into rcu_flipctr_idx.
-> > 
-> > 	Well and good so far.  But the problem arises in
-> > 	__rcu_read_unlock(), which then decrements the wrong counter.
-> > 	Depending on exactly how subsequent events played out, this could
-> > 	result in either prematurely ending grace periods or never-ending
-> > 	grace periods, both of which are fatal outcomes.
-> > 
-> > And the following are not needed in the current version of the
-> > patch, but will be in a future version that either avoids disabling
-> > irqs or that dispenses with the smp_read_barrier_depends() that I
-> > have 99% convinced myself is unneeded:
-> > 
-> > o	nesting = ORDERED_WRT_IRQ(me->rcu_read_lock_nesting);
-> > 
-> > o	idx = ORDERED_WRT_IRQ(rcu_ctrlblk.completed) & 0x1;
-> > 
-> > Furthermore, in that future version, irq handlers can cause the same
-> > mischief that SMI/NMI handlers can in this version.
-> > 
-> > Next, looking at __rcu_read_unlock():
-> > 
-> > o	If "ORDERED_WRT_IRQ(me->rcu_read_lock_nesting) = nesting - 1"
-> > 	was reordered by the compiler to follow the
-> > 	"ORDERED_WRT_IRQ(__get_cpu_var(rcu_flipctr)[idx])--",
-> > 	then if an NMI/SMI containing an rcu_read_lock() occurs between
-> > 	the two, this nested rcu_read_lock() would incorrectly believe
-> > 	that it was protected by an enclosing RCU read-side critical
-> > 	section as described in the first reversal discussed for
-> > 	__rcu_read_lock() above.  Again, fatal outcome.
-> > 
-> > This is what we have now.  It is not hard to imagine situations that
-> > interact with -both- interrupt handlers -and- other CPUs, as described
-> > earlier.
-> 
-> It's not about interrupt/SMI/NMI handlers at all! What you clearly want,
-> simply put, is that a certain stream of C statements must be emitted
-> by the compiler _as they are_ with no re-ordering optimizations! You must
-> *definitely* use barrier(), IMHO.
-
-Almost.  I don't care about most of the operations, only about the loads
-and stores marked volatile.  Again, although the compiler is free to
-reorder volatile accesses that occur -within- a single statement, it
-is prohibited by the standard from moving volatile accesses from one
-statement to another.  Therefore, this code can legitimately use volatile.
-
-Or am I missing something subtle?
-
-						Thanx, Paul
+-- 
+http://www.codemonkey.org.uk
