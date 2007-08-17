@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764623AbXHQR50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765431AbXHQR6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764623AbXHQR50 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 13:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758161AbXHQR5S
+	id S1765431AbXHQR6N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 13:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758161AbXHQR5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 13:57:18 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:26514 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757896AbXHQR5R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 13:57:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Q2UpCEZb/hjOCb0DSvffloiv2A+bV0Gft2OtaELZUHvxItMUZhnbRTi0mLp3BoWz7B1skpZ00Y1EJMBtIwTXA45UxZPOb/edkFhtoAAcrpGThc1tAw5RElwyl97GrzNdX6UXGguLidfsB8yqNetePCBFePARsq9r0E+QlEK+GYs=
-Message-ID: <8bd0f97a0708171057w52e3cd6ekf66a61e8292d3222@mail.gmail.com>
-Date: Fri, 17 Aug 2007 13:57:16 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Robin Getz" <rgetz@blackfin.uclinux.org>
+	Fri, 17 Aug 2007 13:57:55 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:57835 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757951AbXHQR5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 13:57:54 -0400
+Date: Fri, 17 Aug 2007 19:59:11 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: linux-kernel@vger.kernel.org, Gerd Hoffmann <kraxel@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Bryan Wu <bryan.wu@analog.com>,
+       Sonic Zhang <sonic.adi@gmail.com>,
+       Mike Frysinger <vapier.adi@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [draft] Blackfin Early Printk implmentation
-Cc: linux-kernel@vger.kernel.org, "Gerd Hoffmann" <kraxel@redhat.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Bryan Wu" <bryan.wu@analog.com>,
-       "Sonic Zhang" <sonic.adi@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <200708171336.40159.rgetz@blackfin.uclinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070817175911.GA22046@uranus.ravnborg.org>
+References: <200708152234.06734.rgetz@blackfin.uclinux.org> <46C4009F.9090206@redhat.com> <200708171336.40159.rgetz@blackfin.uclinux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200708152234.06734.rgetz@blackfin.uclinux.org>
-	 <46C4009F.9090206@redhat.com>
-	 <200708171336.40159.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200708171336.40159.rgetz@blackfin.uclinux.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/17/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> +       asm("\tRETI = %0;\n"
-> +           "\tRETX = %0;\n"
-> +           "\tRETN = %0;\n"
-> +           : : "p"(early_trap));
+On Fri, Aug 17, 2007 at 01:36:39PM -0400, Robin Getz wrote:
+> The patch (for review - not inclusion - I will send to Bryan if no one has any 
+> major objections, and he can push it via git) implements early printk for the 
+> Blackfin architecture.
+> 
+> It also adds an early exception handler, so if an 
+> interrupt/exception/violation happens before the kernel enables it's 
+> interrupts (yes that does happen periodically, and it is a nice to have a 
+> debug feature to help , that we don't go back to the bootloaders exception 
+> processing table...
+> 
+> It also removes some of the crap that was trying to implement the same thing 
+> (poorly).
 
-general note, i dont think inserting whitespace by hand in asm() is a
-good thing ... i see it as whitenoise personally ...
+So this patch does three things at least:
+-> adds early_printk
+-> delete cruft emulating early printk
+-> add an early excaption handler
 
-> +int __init disable_early_printk(void)
-> +{
-> +       if (!early_console_initialized)
-> +               return 0;
-> +
-> +       printk(KERN_INFO "Unregister %s%d\n", early_console_initialized->name,
-> +               early_console_initialized->index);
-> +       unregister_console(early_console_initialized);
-> +       early_console_initialized = NULL;
-> +       return 0;
-> +}
-> +
-> +late_initcall(disable_early_printk);
+That seems to explain why I could not follow your code changes.
+A more fine grained splitup would have helped here.
 
-i think we agreed this would be OK/good to have in common code
--mike
+I noticed that you copied the actual early_printk code from x86_64.
+What was preventing you from just using the x86_64 code here?
+A simple
+#include <arch/x86_64/boot/early_printk.c>
+in the blackfin early_printk should do the trick.
+
+alpha btw uses the implementation in lib/*printf.c
+Are there a specific reason why blackfin and x86_64 does not do the same?
+Thinking that all should do the same so maybe alpha ought to change...
+
+	Sam
