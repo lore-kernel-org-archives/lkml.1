@@ -1,111 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759702AbXHQP5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759821AbXHQP5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759702AbXHQP5F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 11:57:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758562AbXHQP4w
+	id S1759821AbXHQP5r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 11:57:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759903AbXHQP5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 11:56:52 -0400
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:59632 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756943AbXHQP4u (ORCPT
+	Fri, 17 Aug 2007 11:57:36 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46787 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758562AbXHQP5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 11:56:50 -0400
-Date: Fri, 17 Aug 2007 11:56:45 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/4] Linux Kernel Markers - Documentation
-Message-ID: <20070817155645.GB29458@Krystal>
-References: <20070812151052.704221166@polymtl.ca> <20070812151221.048605202@polymtl.ca> <y0my7ggldi9.fsf@ton.toronto.redhat.com>
-Mime-Version: 1.0
+	Fri, 17 Aug 2007 11:57:35 -0400
+Date: Fri, 17 Aug 2007 11:56:59 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, torvalds@linux-foundation.org
+Subject: Re: [PATCH 09/23] lib: percpu_counter_init error handling
+Message-ID: <20070817155659.GD24323@filer.fsl.cs.sunysb.edu>
+References: <20070816074525.065850000@chello.nl> <20070816074626.739944000@chello.nl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <y0my7ggldi9.fsf@ton.toronto.redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:43:14 up 18 days, 16:02,  3 users,  load average: 0.66, 1.67, 1.59
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070816074626.739944000@chello.nl>
+User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Frank Ch. Eigler (fche@redhat.com) wrote:
+On Thu, Aug 16, 2007 at 09:45:34AM +0200, Peter Zijlstra wrote:
+> alloc_percpu can fail, propagate that error.
 > 
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  fs/ext2/super.c                |   11 ++++++++---
+>  fs/ext3/super.c                |   11 ++++++++---
+>  fs/ext4/super.c                |   11 ++++++++---
+>  include/linux/percpu_counter.h |    5 +++--
+>  lib/percpu_counter.c           |    8 +++++++-
+>  5 files changed, 34 insertions(+), 12 deletions(-)
 > 
-> > [...]
-> > +A marker placed in your code provides a hook to call a function (probe) that
-> > +you can provide at runtime. A marker can be "on" (a probe is connected to it)
-> > +or "off" (no probe is attached). When a marker is "off" it has no
-> > +effect. [...]
-> 
-> Add something like, ", except for a (how?) small time/space penalty."
-> 
+> Index: linux-2.6/fs/ext2/super.c
+> ===================================================================
+> --- linux-2.6.orig/fs/ext2/super.c
+> +++ linux-2.6/fs/ext2/super.c
+> @@ -725,6 +725,7 @@ static int ext2_fill_super(struct super_
+>  	int db_count;
+>  	int i, j;
+>  	__le32 features;
+> +	int err;
+>  
+>  	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+>  	if (!sbi)
+> @@ -996,12 +997,16 @@ static int ext2_fill_super(struct super_
+>  	sbi->s_rsv_window_head.rsv_goal_size = 0;
+>  	ext2_rsv_window_add(sb, &sbi->s_rsv_window_head);
+>  
+> -	percpu_counter_init(&sbi->s_freeblocks_counter,
+> +	err = percpu_counter_init(&sbi->s_freeblocks_counter,
+>  				ext2_count_free_blocks(sb));
+> -	percpu_counter_init(&sbi->s_freeinodes_counter,
+> +	err |= percpu_counter_init(&sbi->s_freeinodes_counter,
+>  				ext2_count_free_inodes(sb));
+> -	percpu_counter_init(&sbi->s_dirs_counter,
+> +	err |= percpu_counter_init(&sbi->s_dirs_counter,
+>  				ext2_count_dirs(sb));
+> +	if (err) {
+> +		printk(KERN_ERR "EXT2-fs: insufficient memory\n");
+> +		goto failed_mount3;
+> +	}
 
-Yup, good idea. I plan to add:
+Can percpu_counter_init fail with only one error code? If not, the error
+code potentially used in future at failed_mount3 could be nonsensical
+because of the bitwise or-ing.
 
-When a marker is "off" it has no effect, except for adding a tiny time
-penality (checking a condition for a branch) and space penality (adding
-a few bytes for the function call at the end of the instrumented
-function and adds a data structure in a separate section). The
-immediate values are used to minimize the impact on data cache, encoding
-the condition in the instruction stream.
+> Index: linux-2.6/lib/percpu_counter.c
+> ===================================================================
+> --- linux-2.6.orig/lib/percpu_counter.c
+> +++ linux-2.6/lib/percpu_counter.c
+> @@ -68,21 +68,27 @@ s64 __percpu_counter_sum(struct percpu_c
+>  }
+>  EXPORT_SYMBOL(__percpu_counter_sum);
+>  
+> -void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
+> +int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
+>  {
+>  	spin_lock_init(&fbc->lock);
+>  	fbc->count = amount;
+>  	fbc->counters = alloc_percpu(s32);
+> +	if (!fbc->counters)
+> +		return -ENOMEM;
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  	mutex_lock(&percpu_counters_lock);
+>  	list_add(&fbc->list, &percpu_counters);
+>  	mutex_unlock(&percpu_counters_lock);
+>  #endif
+> +	return 0;
+>  }
 
-> > +[...]
-> > +trace_mark(subsystem_event, "%d %s", someint, somestring);
-> > +Where :
-> > +- subsystem_event is an identifier unique to your event
-> > +    - subsystem is the name of your subsystem.
-> > +    - event is the name of the event to mark.
-> > +[...]
-> 
-> It would be useful to clarify that this "subsystem_event" scheme is
-> only a suggested naming convention intended to limit collisions.
-> 
+I guess this answers my question. But I'd still be weary because a trivial
+change here could produce very strange error codes in ext2/3/4.
 
-Sure. Adding:
-
-The naming scheme "subsystem_event" is suggested here as a convention
-intended to limit collisions.
-
-
-
-> > +Connecting a function (probe) to a marker is done by providing a
-> > probe +(function to call) for the specific marker through
-> > marker_probe_register() and +can be activated by calling
-> > marker_arm().
-> 
-> It would help to spell out the nature of the marker namespace.  Is it
-> global to the kernel?  Per-module?  Are conflicting "subsystem_event"
-> names but different format strings considered separate markers?
-> 
-
-What do you think of :
-
-Marker names are global to the kernel: they are considered as being the
-same whether they are in the core kernel image or in modules.
-Conflicting format strings for markers with the same name will cause the
-markers to be detected to have a different format string not to be armed
-and will output a printk warning which identifies the inconsistency:
-
-"Format mismatch for probe probe_name (format), marker (format)"
-
-
-
-> > + [...] Marker disactivation [...]
-> 
-> "deactivation"
-> 
-
-Thanks for the review,
-
-Mathieu
-
-
-> - FChE
+Josef 'Jeff' Sipek.
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Once you have their hardware. Never give it back.
+(The First Rule of Hardware Acquisition)
