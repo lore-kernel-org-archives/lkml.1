@@ -1,71 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761851AbXHQMhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbXHQMkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761851AbXHQMhv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 08:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbXHQMho
+	id S1759272AbXHQMkU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 08:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbXHQMkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 08:37:44 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:27552 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756582AbXHQMhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 08:37:43 -0400
-Date: Fri, 17 Aug 2007 14:37:40 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH 000 of 6] A few block-layer tidy-up patches.
-Message-ID: <20070817123738.GL23758@kernel.dk>
-References: <20070816211551.11839.patches@notabene> <20070816113638.GX23758@kernel.dk> <18116.61035.621593.588647@notabene.brown> <20070817061733.GD23758@kernel.dk> <18117.19602.616561.525863@notabene.brown>
+	Fri, 17 Aug 2007 08:40:00 -0400
+Received: from webmail.icp-qv1-irony3.iinet.net.au ([203.59.1.108]:13885 "EHLO
+	webmail.icp-qv1-irony3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752772AbXHQMj6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 08:39:58 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAPwzxUbLrQKa/2dsb2JhbAA
+X-IronPort-AV: i="4.19,275,1183305600"; 
+   d="scan'208"; a="183079800:sNHT9122646"
+Message-ID: <46C59717.4020108@cyberone.com.au>
+Date: Fri, 17 Aug 2007 22:39:51 +1000
+From: Nick Piggin <piggin@cyberone.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18117.19602.616561.525863@notabene.brown>
+To: Satyam Sharma <satyam@infradead.org>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi> <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com> <18117.1287.779351.836552@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708161953310.30176@woody.linux-foundation.org> <18117.6495.397597.582736@cargo.ozlabs.ibm.com> <20070817035342.GA14744@gondor.apana.org.au> <alpine.LFD.0.999.0708171142550.3666@enigma.security.iitk.ac.in> <46C55E90.7010407@yahoo.com.au> <alpine.LFD.0.999.0708171431150.3666@enigma.security.iitk.ac.in> <46C56ADF.8010501@cyberone.com.au> <alpine.LFD.0.999.0708171612440.3666@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0708171612440.3666@enigma.security.iitk.ac.in>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17 2007, Neil Brown wrote:
-> On Friday August 17, jens.axboe@oracle.com wrote:
-> > > > Please inspect the #block-2.6.24 branch to see the result.
-> > > 
-> > > I don't know where to look for this.  I checked
-> > >   http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git
-> > > but they don't seem to be there.
-> > > ??
-> > 
-> > That's where it is, but the kernel.org mirroring is just horrible slow.
-> > Just checked now and it's there.
-> 
-> I discovered I was looking in the wrong place - not being very
-> familiar with git terminology.
-> I found them and it looks right.
+Satyam Sharma wrote:
 
-Ah, good.
+>
+>On Fri, 17 Aug 2007, Nick Piggin wrote:
+>
+>
+>>Because they should be thinking about them in terms of barriers, over
+>>which the compiler / CPU is not to reorder accesses or cache memory
+>>operations, rather than "special" "volatile" accesses.
+>>
+>
+>This is obviously just a taste thing. Whether to have that forget(x)
+>barrier as something author should explicitly sprinkle appropriately
+>in appropriate places in the code by himself or use a primitive that
+>includes it itself.
+>
 
-> I had a bit of a look at removing bio_data and ->buffer ...  the
-> usages outside of drivers/ide are fairly easy to deal with - I might
-> send a patch for that.  The drivers/ide stuff looks like a fairly
-> substantial rewrite is in order.
-> e.g.  idefloppy_packet_command_s seems to duplicate a lot of 
->   fields from 'struct request', and it should probably use the request
->   struct directly.
+That's not obviously just taste to me. Not when the primitive has many
+(perhaps, the majority) of uses that do not require said barriers. And
+this is not solely about the code generation (which, as Paul says, is
+relatively minor even on x86). I prefer people to think explicitly
+about barriers in their lockless code.
 
-We can do it bits at the time, the triviel ones first. I have some
-experience with drivers/ide/ myself, so I can attempt to tackle some of
-that myself.
 
-> But a number of times ->buffer points to ->cmd, and there is no bio.
-> I guess we should use bio_map_kern to make a bio?
+>I'm not saying "taste matters aren't important" (they are), but I'm really
+>skeptical if most folks would find the former tasteful.
+>
 
-It points to ->cmd?! But yes, generally things just need to be
-converted to map the data to a bio with bio_map_kern() (or
-bio_map_user(), where appropriate).
+So I /do/ have better taste than most folks? Thanks! :-)
 
-> I'll see if I can come up with something.... testing it might be
-> awkward.  I have an ide cdrom I can test on.  Maybe an ide disk,, but
-> not an ide floppy :-)
 
-I can help with that as well :-)
+>>>And by the way, the point is *also* about the fact that cpu_relax(), as
+>>>of today, implies a full memory clobber, which is not what a lot of such
+>>>loops want. (due to stuff mentioned elsewhere, summarized in that summary)
+>>>
+>>That's not the point,
+>>
+>
+>That's definitely the point, why not. This is why "barrier()", being
+>heavy-handed, is not the best option.
+>
 
--- 
-Jens Axboe
+That is _not_ the point (of why a volatile atomic_read is good) because 
+there
+has already been an alternative posted that better conforms with Linux 
+barrier
+API and is much more widely useful and more usable. If you are so 
+worried about
+barrier() being too heavyweight, then you're off to a poor start by 
+wanting to
+add a few K of kernel text by making atomic_read volatile.
 
+
+>>because as I also mentioned, the logical extention
+>>to Linux's barrier API to handle this is the order(x) macro. Again, not
+>>special volatile accessors.
+>>
+>
+>Sure, that forget(x) macro _is_ proposed to be made part of the generic
+>API. Doesn't explain why not to define/use primitives that has volatility
+>semantics in itself, though (taste matters apart).
+>
+
+If you follow the discussion.... You were thinking of a reason why the
+semantics *should* be changed or added, and I was rebutting your argument
+that it must be used when a full barrier() is too heavy (ie. by pointing
+out that order() has superior semantics anyway).
+
+Why do I keep repeating the same things? I'll not continue bloating this
+thread until a new valid point comes up...
