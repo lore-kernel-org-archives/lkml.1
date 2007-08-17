@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762824AbXHQUnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbXHQUtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762824AbXHQUnb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 16:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbXHQUnW
+	id S1759356AbXHQUtc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 16:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbXHQUtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 16:43:22 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46596 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754544AbXHQUnW (ORCPT
+	Fri, 17 Aug 2007 16:49:24 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:21779 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753789AbXHQUtX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 16:43:22 -0400
-Date: Fri, 17 Aug 2007 13:43:20 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Satyam Sharma <satyam@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kfree(0) - ok?
-In-Reply-To: <20070817112253.e6a7cb33.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0708171342190.9404@schroedinger.engr.sgi.com>
-References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org>
- <alpine.LFD.0.999.0708150454480.6482@enigma.security.iitk.ac.in>
- <20070817112253.e6a7cb33.akpm@linux-foundation.org>
+	Fri, 17 Aug 2007 16:49:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=B2z58yXGkq0yLM3zRTHc752SlotcL2H5zijONc5pqFMSiblt43Y3Gs0epjZ48qZvrYjacSqEytztvFQzOnYOCKq2uRsnfFFsQyygWOf9WXKu0Lf1793g/g777hymDnHH9l3PmC17xh0wlwJDLmjNdbavsT9Gu3CmljeNXMHv6dg=
+Message-ID: <ab40e9c0708171349n73e35f58p5f5c092b54ddeb45@mail.gmail.com>
+Date: Fri, 17 Aug 2007 22:49:21 +0200
+From: "Xu Yang" <risingsunxy@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Subject: how to add debug information into the vmlinux
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Aug 2007, Andrew Morton wrote:
+Hello everyone,
 
-> are we seeing a pattern here?  We could stick the unlikely inside
-> ZERO_OR_NULL_PTR() itself.  That's a little bit sleazy though - there might
-> be future callsites at which it is likely, who knows?
+I am trying to port kernel 2.6.19 onto my system.so I need the c code
+, which can show me where the program is running. I add -g when I
+compile it.
 
-Thought about that myself but then there would be a weird side effect to 
-ZERO_OR_NULL_PTR(). But since your thinking along the same lines: Lets do 
-it. I will fix up the patch to do just that.
+after I got the vmlinux( uncompressed) I used arm-none-eabi-objcopy
+--change-addresses 0x40000000 to change the start address.
 
+it seems that the debug information is strange. expecially after the
+mmu is turned on , it totally disappreared.
+
+anyone knows how to handle this?
+
+thanks in advance.
+
+regards,
+
+yang
