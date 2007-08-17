@@ -1,175 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761661AbXHQWEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbXHQWM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761661AbXHQWEf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 18:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbXHQWE0
+	id S1760185AbXHQWM1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 18:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbXHQWMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 18:04:26 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43929 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752160AbXHQWEZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 18:04:25 -0400
-Date: Fri, 17 Aug 2007 15:03:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: ananth@in.ibm.com, prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       Jim Keniston <jkenisto@us.ibm.com>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][kprobes] support kretprobe-blacklist
-Message-Id: <20070817150348.0f2f54da.akpm@linux-foundation.org>
-In-Reply-To: <46C5FA48.2050308@redhat.com>
-References: <46C5FA48.2050308@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 17 Aug 2007 18:12:15 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47882 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751479AbXHQWMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 18:12:13 -0400
+In-Reply-To: <alpine.LFD.0.999.0708161953310.30176@woody.linux-foundation.org>
+References: <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi> <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com> <18117.1287.779351.836552@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708161953310.30176@woody.linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <784250b50ba166650cbbb4de29b5559b@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Satyam Sharma <satyam@infradead.org>,
+       Ilpo J?rvinen <ilpo.jarvinen@helsinki.fi>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
+       Netdev <netdev@vger.kernel.org>, cfriesen@nortel.com,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       zlynx@acm.org, schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, wensong@linux-vs.org,
+       wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Sat, 18 Aug 2007 00:09:45 +0200
+To: Linus Torvalds <torvalds@linux-foundation.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Aug 2007 15:43:04 -0400
-Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> Of course, since *normal* accesses aren't necessarily limited wrt
+> re-ordering, the question then becomes one of "with regard to *what* 
+> does
+> it limit re-ordering?".
+>
+> A C compiler that re-orders two different volatile accesses that have a
+> sequence point in between them is pretty clearly a buggy compiler. So 
+> at a
+> minimum, it limits re-ordering wrt other volatiles (assuming sequence
+> points exists). It also means that the compiler cannot move it
+> speculatively across conditionals, but other than that it's starting to
+> get fuzzy.
 
-> This patch introduces architecture dependent kretprobe
-> blacklists to prohibit users from inserting return
-> probes on the function in which kprobes can be inserted
-> but kretprobes can not.
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> 
-> ---
->  <Problem Description>
-> When a kretprobe is inserted in the entry of the "__switch_to()",
-> it causes kernel panic on i386 with recent kernel.
-> 
->  <Problem Analysis>
-> In include/asm-i386/current.h, "current" is defined as an entry of
-> percpu variables.:
-> 
->  DECLARE_PER_CPU(struct task_struct *, current_task);
->  static __always_inline struct task_struct *get_current(void)
->  {
->          return x86_read_percpu(current_task);
->  }
-> 
->  #define current get_current()
-> 
-> This mean the "current" macro is separated from its stack register.
-> Kretprobe expects that "current" value when a function is called is
-> not changed, or both of "current" value and stack register are changed in
-> the target function.
-> But __switch_to() in arch/i386/kernel/process.c changes only the value of
-> "current", but doesn't changes the stack register(this was already switched
-> to new stack before calling __switch_to()):
-> 
->  struct task_struct fastcall * __switch_to(struct task_struct *prev_p, struct
->  task_struct *next_p)
->  {
->  	...
->         x86_write_percpu(current_task, next_p);
-> 
->         return prev_p;
->  }
-> 
-> Kretprobe modifies the return address stored in the stack, and
-> it saves the original return address in the kretprobe_instance with
-> the value of "current".
-> When kretprobe is hit at the return of __switch_to(), it searches
-> kretprobe_instance related to the probe point from a hash list by
-> using the hash-value of the "current" instead of stack address.
-> However, since the value of "current" is already changed,
-> it can't find proper instance, and invokes BUG() macro.
-> 
->  <Solution>
-> As a result of discussion with other kprobe developers, I'd
-> like to introduce arch-dependent blacklist.
-> To introduce "__kretprobes" mark (like "__kprobes") is another way.
-> But I thought it is not efficient way, because the kretprobe can
-> be inserted only in the entry of functions and there is no need to
-> check against a whole function.
-> 
-> This patch also removes "__kprobes" mark from "__switch_to" on x86_64
-> and registers "__switch_to" to the blacklist on x86-64, because that mark
-> is to prohibit user from inserting only kretprobe.
-> 
-> Index: 2.6-mm/include/asm-i386/kprobes.h
-> ===================================================================
-> --- 2.6-mm.orig/include/asm-i386/kprobes.h
-> +++ 2.6-mm/include/asm-i386/kprobes.h
-> @@ -44,6 +44,7 @@ typedef u8 kprobe_opcode_t;
-> 
->  #define ARCH_SUPPORTS_KRETPROBES
->  #define flush_insn_slot(p)	do { } while (0)
-> +#define ARCH_SUPPORTS_KRETPROBE_BLACKLIST
+This is actually really well-defined in C, not fuzzy at all.
+"Volatile accesses" are a side effect, and no side effects can
+be reordered with respect to sequence points.  The side effects
+that matter in the kernel environment are: 1) accessing a volatile
+object; 2) modifying an object; 3) volatile asm(); 4) calling a
+function that does any of these.
 
-Can we avoid adding this please?
+We certainly should avoid volatile whenever possible, but "because
+it's fuzzy wrt reordering" is not a reason -- all alternatives have
+exactly the same issues.
 
-It should at least have been a CONFIG_foo thing, defined in arch/*/Kconfig.
 
-But that still requires nasty ifdefs in the C code.  It would be very small
-overhead just to require that all architectures implement
-arch_kretprobe_blacklist[] (which can be renamed to kretprobe_blacklist[]).
- Architectures which don't need a blacklist can just have { { 0, 0 } }.
+Segher
 
-If the few bytes of overhead on non-x86 really offends then one could do
-something like this:
-
-in powerpc header file:
-
-#define kretprobe_blacklist_size 0
-
-in x86 header file:
-
-extern const int kretprobe_blacklist_size;
-
-in x86 C file:
-
-const int kretprobe_blacklist_size = ARRAY_SIZE(kretprobe_blacklist);
-
-and then this code:
-
-> --- 2.6-mm.orig/kernel/kprobes.c
-> +++ 2.6-mm/kernel/kprobes.c
-> @@ -716,6 +716,18 @@ int __kprobes register_kretprobe(struct
->  	int ret = 0;
->  	struct kretprobe_instance *inst;
->  	int i;
-> +#ifdef ARCH_SUPPORTS_KRETPROBE_BLACKLIST
-> +	void *addr = rp->kp.addr;
-> +
-> +	if (addr == NULL)
-> +		kprobe_lookup_name(rp->kp.symbol_name, addr);
-> +	addr += rp->kp.offset;
-> +
-> +	for (i = 0; arch_kretprobe_blacklist[i].name != NULL; i++) {
-> +		if (arch_kretprobe_blacklist[i].addr == addr)
-> +			return -EINVAL;
-> +	}
-> +#endif
-
-can be put inside
-
-	if (kretprobe_blacklist_size) {
-		...
-	}
-
-so the compiler will remove it all for (say) powerpc.
-
-There are lots of ways of doing it but code like this:
-
-> 
-> +#ifdef ARCH_SUPPORTS_KRETPROBE_BLACKLIST
-> +	/* lookup the function address from its name */
-> +	for (i = 0; arch_kretprobe_blacklist[i].name != NULL; i++) {
-> +		kprobe_lookup_name(arch_kretprobe_blacklist[i].name,
-> +				   arch_kretprobe_blacklist[i].addr);
-> +		if (!arch_kretprobe_blacklist[i].addr)
-> +			printk("kretprobe: Unknown blacklisted function: %s\n",
-> +			       arch_kretprobe_blacklist[i].name);
-> +	}
-> +#endif
-
-really isn't the sort of thing we like to see spreading through core kernel
-code.
-
-Have a think about it please, see what we can come up with?
