@@ -1,48 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762631AbXHQWRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764723AbXHQWR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762631AbXHQWRn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 18:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXHQWR3
+	id S1764723AbXHQWR6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 18:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbXHQWRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 18:17:29 -0400
-Received: from gate.crashing.org ([63.228.1.57]:45347 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754374AbXHQWR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 18:17:27 -0400
-In-Reply-To: <46C512EB.7020603@yahoo.com.au>
-References: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C41EE4.9090806@s5r6.in-berlin.de> <46C42767.4070104@s5r6.in-berlin.de> <20070816104250.GB2927@gondor.apana.org.au> <20070816163441.GB16957@linux.vnet.ibm.com> <46C512EB.7020603@yahoo.com.au>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1f265c14b28f2c5922059a130b1d8aa5@kernel.crashing.org>
+	Fri, 17 Aug 2007 18:17:36 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:46303 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756554AbXHQWRf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 18:17:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Q5Ca/uKSaXGuiA32erSqfGadYYfeOzGiaPqDcPuUsWBmmrscLePp8Vbl8R9Ferwx+7A2yx0laIHeMTdz2alB7Tp1T2vdqJGzFRfDnerZHEbh5YTVjE5RVajenaVPaHSfq4mjVCMPJcLiMXbI/XYdfN1iSVTvwuFn95AR0qUELC0=
+Message-ID: <9a8748490708171517m4c6f1330jf7990b68cebe4768@mail.gmail.com>
+Date: Sat, 18 Aug 2007 00:17:33 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: + cifs-check-for-granted-memory.patch added to -mm tree
+Cc: mm-commits@vger.kernel.org, gorcunov@gmail.com, sfrench@us.ibm.com
+In-Reply-To: <200708172150.l7HLoXqT031088@imap1.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Cc: paulmck@linux.vnet.ibm.com, Christoph Lameter <clameter@sgi.com>,
-       Paul Mackerras <paulus@samba.org>, heiko.carstens@de.ibm.com,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, horms@verge.net.au,
-       Satyam Sharma <satyam@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       rpjday@mindspring.com, netdev@vger.kernel.org, ak@suse.de,
-       cfriesen@nortel.com, jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Sat, 18 Aug 2007 00:14:30 +0200
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-X-Mailer: Apple Mail (2.623)
+Content-Disposition: inline
+References: <200708172150.l7HLoXqT031088@imap1.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> (and yes, it is perfectly legitimate to
-> want a non-volatile read for a data type that you also want to do
-> atomic RMW operations on)
+On 17/08/07, akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+>
+> The patch titled
+>      CIFS: check for granted memory
+> has been added to the -mm tree.  Its filename is
+>      cifs-check-for-granted-memory.patch
+>
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+>
+> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+> out what to do about this
+>
+> ------------------------------------------------------
+> Subject: CIFS: check for granted memory
+> From: Cyrill Gorcunov <gorcunov@gmail.com>
+>
+> Add a check for granted memory to prevent possible NULL pointer usage.
+>
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> Cc: Steven French <sfrench@us.ibm.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>
+>  fs/cifs/sess.c |    4 ++++
+>  1 files changed, 4 insertions(+)
+>
+> diff -puN fs/cifs/sess.c~cifs-check-for-granted-memory fs/cifs/sess.c
+> --- a/fs/cifs/sess.c~cifs-check-for-granted-memory
+> +++ a/fs/cifs/sess.c
+> @@ -372,6 +372,10 @@ CIFS_SessSetup(unsigned int xid, struct
+>
+>         /* 2000 big enough to fit max user, domain, NOS name etc. */
+>         str_area = kmalloc(2000, GFP_KERNEL);
+> +       if (str_area == NULL) {
+> +               cifs_small_buf_release(smb_buf);
+> +               return -ENOMEM;
+> +       }
 
-...which is undefined behaviour in C (and GCC) when that data is
-declared volatile, which is a good argument against implementing
-atomics that way in itself.
+The patch, as such, is fine - not arguing against it, but as a matter
+of style; don't we usually prefer the "if (!foo)" form over "if (foo
+== NULL)" ??
 
-
-Segher
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
