@@ -1,49 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbXHQKnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761489AbXHQKn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759272AbXHQKnP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 06:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbXHQKnE
+	id S1761489AbXHQKn6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 06:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbXHQKnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 06:43:04 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:53406 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753457AbXHQKnD (ORCPT
+	Fri, 17 Aug 2007 06:43:43 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52087 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753361AbXHQKnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 06:43:03 -0400
-Date: Fri, 17 Aug 2007 12:43:01 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Patrick McHardy <kaber@trash.net>
-cc: Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>,
-       yasuyuki.kozakai@toshiba.co.jp,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: nf_conntrack_ipv4 must be loaded explicitly
-In-Reply-To: <46B22364.9060506@trash.net>
-Message-ID: <Pine.LNX.4.64.0708171242450.5492@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0708021937140.9319@fbirervta.pbzchgretzou.qr>
- <46B22364.9060506@trash.net>
+	Fri, 17 Aug 2007 06:43:41 -0400
+Date: Fri, 17 Aug 2007 16:25:14 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Nick Piggin <piggin@cyberone.com.au>
+cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <46C56ADF.8010501@cyberone.com.au>
+Message-ID: <alpine.LFD.0.999.0708171612440.3666@enigma.security.iitk.ac.in>
+References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
+ <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com>
+ <20070816070907.GA964@gondor.apana.org.au>
+ <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
+ <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com>
+ <18117.1287.779351.836552@cargo.ozlabs.ibm.com>
+ <alpine.LFD.0.999.0708161953310.30176@woody.linux-foundation.org>
+ <18117.6495.397597.582736@cargo.ozlabs.ibm.com> <20070817035342.GA14744@gondor.apana.org.au>
+ <alpine.LFD.0.999.0708171142550.3666@enigma.security.iitk.ac.in>
+ <46C55E90.7010407@yahoo.com.au> <alpine.LFD.0.999.0708171431150.3666@enigma.security.iitk.ac.in>
+ <46C56ADF.8010501@cyberone.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Aug 2 2007 20:33, Patrick McHardy wrote:
->> End result:
->>
->> After loading nf_conntrack_ipv4.ko, everything works again (also with the
->> "bad" ff09b7). But I have to load it explicitly, and I think that
->> unfortunately breaks a lot of setups (such as mine) which assume ipv4
->> connection tracking is always there.
->
-> I already have a patch for this queued. I'll push it upstream once
-> I get a new power supply for the box I keep that tree on, hopefully
-> tommorrow.
 
-What's that patch looking like?
+On Fri, 17 Aug 2007, Nick Piggin wrote:
 
+> Satyam Sharma wrote:
+> > [...]
+> > The point is about *author expecations*. If people do expect atomic_read()
+> > (or a variant thereof) to have volatile semantics, why not give them such
+> > a variant?
+> 
+> Because they should be thinking about them in terms of barriers, over
+> which the compiler / CPU is not to reorder accesses or cache memory
+> operations, rather than "special" "volatile" accesses.
 
+This is obviously just a taste thing. Whether to have that forget(x)
+barrier as something author should explicitly sprinkle appropriately
+in appropriate places in the code by himself or use a primitive that
+includes it itself.
 
-thanks,
-	Jan
--- 
+I'm not saying "taste matters aren't important" (they are), but I'm really
+skeptical if most folks would find the former tasteful.
+
+> > And by the way, the point is *also* about the fact that cpu_relax(), as
+> > of today, implies a full memory clobber, which is not what a lot of such
+> > loops want. (due to stuff mentioned elsewhere, summarized in that summary)
+> 
+> That's not the point,
+
+That's definitely the point, why not. This is why "barrier()", being
+heavy-handed, is not the best option.
+
+> because as I also mentioned, the logical extention
+> to Linux's barrier API to handle this is the order(x) macro. Again, not
+> special volatile accessors.
+
+Sure, that forget(x) macro _is_ proposed to be made part of the generic
+API. Doesn't explain why not to define/use primitives that has volatility
+semantics in itself, though (taste matters apart).
