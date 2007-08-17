@@ -1,34 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764126AbXHQVHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765958AbXHQVIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764126AbXHQVHl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 17:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756332AbXHQVHe
+	id S1765958AbXHQVIW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 17:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbXHQVIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 17:07:34 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47859 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754426AbXHQVHe (ORCPT
+	Fri, 17 Aug 2007 17:08:12 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:18844 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756332AbXHQVIK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 17:07:34 -0400
-Date: Fri, 17 Aug 2007 14:07:33 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Lee.Schermerhorn@hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 6/6] Do not use FASTCALL for __alloc_pages_nodemask()
-In-Reply-To: <20070817201848.14792.58117.sendpatchset@skynet.skynet.ie>
-Message-ID: <Pine.LNX.4.64.0708171406520.9635@schroedinger.engr.sgi.com>
-References: <20070817201647.14792.2690.sendpatchset@skynet.skynet.ie>
- <20070817201848.14792.58117.sendpatchset@skynet.skynet.ie>
+	Fri, 17 Aug 2007 17:08:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=DqItJBeok03ic+eaPmhfgCYC1oMp5bcSkoagCTiHssVOcZzQ4sv0cNDNBnL7lvqE7ZVxjXQXDF5j1tUwi29bHrpprJXJ5NEx0XL0oXtHgYjUivWj4Z9CTTsY0UlbxlZNUbzUNY2h3WnJBGrPSWADn/WcJ5X30/jk6/7uvfjXFrk=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Marcio Saito <marcio@cyclades.com>
+Subject: [PATCH] Cyclades: Avoid label defined but not used warning
+Date: Fri, 17 Aug 2007 23:05:23 +0200
+User-Agent: KMail/1.9.7
+Cc: Randolph Bentson <bentson@grieg.seaslug.org>,
+       Jiri Slaby <jirislaby@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708172305.23730.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Aug 2007, Mel Gorman wrote:
+Hi,
 
-> Opinions as to why FASTCALL breaks on one machine are welcome.
+I don't like compiler warnings, especially not when they are easy to 
+avoid.
 
-Could we get rid of FASTCALL? AFAIK the compiler should automatically 
-choose the right calling convention?
+Building cyclades driver without CONFIG_PCI currently results in this :
+
+   CC      drivers/char/cyclades.o
+ drivers/char/cyclades.c: In function 'cy_init':
+ drivers/char/cyclades.c:5488: warning: label 'err_unr' defined but not used
+
+That's easily avoided, with no ill effects by simply moving what's 
+under the 'err_unr' label (used from only a single location) inside 
+the existing #ifdef - so that's what this patch does.
+
+Compile tested on i386 only. I don't have the hardware to do any 
+other testing.
+
+Please consider applying.
+
+
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+
+ drivers/char/cyclades.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
+index 9e0adfe..858bdab 100644
+--- a/drivers/char/cyclades.c
++++ b/drivers/char/cyclades.c
+@@ -5480,13 +5480,13 @@ static int __init cy_init(void)
+ #ifdef CONFIG_PCI
+ 	/* look for pci boards */
+ 	retval = pci_register_driver(&cy_pci_driver);
+-	if (retval && !nboards)
+-		goto err_unr;
++	if (retval && !nboards) {
++		tty_unregister_driver(cy_serial_driver);
++		goto err_frtty;
++	}
+ #endif
+ 
+ 	return 0;
+-err_unr:
+-	tty_unregister_driver(cy_serial_driver);
+ err_frtty:
+ 	put_tty_driver(cy_serial_driver);
+ err:
+
+
