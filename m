@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbXHQUtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbXHQUvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759356AbXHQUtc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 16:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbXHQUtY
+	id S1760975AbXHQUvm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 16:51:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXHQUvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 16:49:24 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:21779 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753789AbXHQUtX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 16:49:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=B2z58yXGkq0yLM3zRTHc752SlotcL2H5zijONc5pqFMSiblt43Y3Gs0epjZ48qZvrYjacSqEytztvFQzOnYOCKq2uRsnfFFsQyygWOf9WXKu0Lf1793g/g777hymDnHH9l3PmC17xh0wlwJDLmjNdbavsT9Gu3CmljeNXMHv6dg=
-Message-ID: <ab40e9c0708171349n73e35f58p5f5c092b54ddeb45@mail.gmail.com>
-Date: Fri, 17 Aug 2007 22:49:21 +0200
-From: "Xu Yang" <risingsunxy@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Subject: how to add debug information into the vmlinux
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Aug 2007 16:51:33 -0400
+Received: from flvpn.ccur.com ([66.10.65.2]:51115 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755620AbXHQUvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 16:51:33 -0400
+Date: Fri, 17 Aug 2007 16:51:15 -0400
+From: Joe Korty <joe.korty@ccur.com>
+To: akpm@osdl.org
+Cc: aacraid@adaptec.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix section mismatch in the Adaptec DPT SCSI Raid driver
+Message-ID: <20070817205115.GA12416@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+Fix section mismatch in the Adaptec DPT SCSI Raid driver.
 
-I am trying to port kernel 2.6.19 onto my system.so I need the c code
-, which can show me where the program is running. I add -g when I
-compile it.
+Signed-off-by: Joe Korty <joe.korty@ccur.com>
 
-after I got the vmlinux( uncompressed) I used arm-none-eabi-objcopy
---change-addresses 0x40000000 to change the start address.
+Index: 2.6.23-rc3-git1/drivers/scsi/dpt_i2o.c
+===================================================================
+--- 2.6.23-rc3-git1.orig/drivers/scsi/dpt_i2o.c	2007-08-17 16:36:05.000000000 -0400
++++ 2.6.23-rc3-git1/drivers/scsi/dpt_i2o.c	2007-08-17 16:50:13.000000000 -0400
+@@ -3351,7 +3351,7 @@
+ 	return count > 0 ? 0 : -ENODEV;
+ }
+ 
+-static void __exit adpt_exit(void)
++static void adpt_exit(void)
+ {
+ 	while (hba_chain)
+ 		adpt_release(hba_chain);
 
-it seems that the debug information is strange. expecially after the
-mmu is turned on , it totally disappreared.
-
-anyone knows how to handle this?
-
-thanks in advance.
-
-regards,
-
-yang
