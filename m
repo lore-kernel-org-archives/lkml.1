@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762977AbXHQVOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761810AbXHQVTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762977AbXHQVOZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 17:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbXHQVOS
+	id S1761810AbXHQVTU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 17:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756117AbXHQVTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 17:14:18 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48539 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753035AbXHQVOR (ORCPT
+	Fri, 17 Aug 2007 17:19:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35202 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754386AbXHQVTJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 17:14:17 -0400
-Date: Fri, 17 Aug 2007 14:14:17 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Satyam Sharma <satyam@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kfree(0) - ok?
-In-Reply-To: <alpine.LFD.0.999.0708180011570.3666@enigma.security.iitk.ac.in>
-Message-ID: <Pine.LNX.4.64.0708171413190.9635@schroedinger.engr.sgi.com>
-References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org>
- <alpine.LFD.0.999.0708150454480.6482@enigma.security.iitk.ac.in>
- <20070817112253.e6a7cb33.akpm@linux-foundation.org>
- <alpine.LFD.0.999.0708180011570.3666@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 17 Aug 2007 17:19:09 -0400
+Date: Fri, 17 Aug 2007 14:18:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joe Korty <joe.korty@ccur.com>
+Cc: aacraid@adaptec.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix section mismatch in the Adaptec DPT SCSI Raid
+ driver
+Message-Id: <20070817141856.5720ed38.akpm@linux-foundation.org>
+In-Reply-To: <20070817205115.GA12416@tsunami.ccur.com>
+References: <20070817205115.GA12416@tsunami.ccur.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Aug 2007, Satyam Sharma wrote:
+On Fri, 17 Aug 2007 16:51:15 -0400
+Joe Korty <joe.korty@ccur.com> wrote:
 
-> >  	page = get_object_page(object);
+> Fix section mismatch in the Adaptec DPT SCSI Raid driver.
 > 
-> Hmm, I didn't know ksize(NULL) was also allowed to succeed (and
-> return 0).
+> Signed-off-by: Joe Korty <joe.korty@ccur.com>
+> 
+> Index: 2.6.23-rc3-git1/drivers/scsi/dpt_i2o.c
+> ===================================================================
+> --- 2.6.23-rc3-git1.orig/drivers/scsi/dpt_i2o.c	2007-08-17 16:36:05.000000000 -0400
+> +++ 2.6.23-rc3-git1/drivers/scsi/dpt_i2o.c	2007-08-17 16:50:13.000000000 -0400
+> @@ -3351,7 +3351,7 @@
+>  	return count > 0 ? 0 : -ENODEV;
+>  }
+>  
+> -static void __exit adpt_exit(void)
+> +static void adpt_exit(void)
+>  {
+>  	while (hba_chain)
+>  		adpt_release(hba_chain);
 
-That was merged over my objections. IMHO ksize(NULL) should fail since we 
-are determining the size of an unallocated object.
+Please always provide at least a copy of the error message when providing
+patches which fix warnings, or build errors, or section mismatches.
 
-> Oh yes, of course. We want krealloc(NULL) cases to behave consistently 
-> as expected, and letting ksize(NULL) return 0 means the code for 
-> krealloc() can lose an extra "if (!p)" check that would otherwise have 
-> been required. Cool.
+For section mismatches, an analysis of what caused the problem would help,
+too.  It saves others from having to do the same thing.
 
-krealloc should check for that.
+In this case, I'd need to see what error is being fixed so that I can judge
+the seriousness of the problem.  In this case I don't _think_ it'll be
+terribly serious because iirc most architectures don't free exitcall memory.
+
