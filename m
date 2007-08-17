@@ -1,118 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764208AbXHQHOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760109AbXHQHQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764208AbXHQHOW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 03:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbXHQHOE
+	id S1760109AbXHQHQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 03:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbXHQHQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 03:14:04 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:41767 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756045AbXHQHNW (ORCPT
+	Fri, 17 Aug 2007 03:16:49 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:63847 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754218AbXHQHQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 03:13:22 -0400
-Date: Fri, 17 Aug 2007 09:13:19 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: NeilBrown <neilb@suse.de>
-cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>
-Subject: Re: [PATCH 002 of 6] Introduce rq_for_each_segment replacing
- rq_for_each_bio
-In-Reply-To: <1070816112100.12182@suse.de>
-Message-ID: <Pine.LNX.4.62.0708170910120.8381@pademelon.sonytel.be>
-References: <20070816211551.11839.patches@notabene> <1070816112100.12182@suse.de>
+	Fri, 17 Aug 2007 03:16:48 -0400
+Message-ID: <46C549AC.70804@linux.vnet.ibm.com>
+Date: Fri, 17 Aug 2007 12:39:32 +0530
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-995176808-1187334658=:8381"
-Content-ID: <Pine.LNX.4.62.0708170911090.8381@pademelon.sonytel.be>
+To: ltp-announce@lists.sourceforge.net, ltp-list@lists.sourceforge.net,
+       linux-audit <linux-audit@redhat.com>,
+       redhat-lspp <redhat-lspp@redhat.com>, SELinux <selinux@tycho.nsa.gov>,
+       linux-kernel@vger.kernel.org
+CC: klausk@br.ibm.com, reddenr@us.ibm.com, gcwilson@us.ibm.com
+Subject: [Announce] RHEL5 LSPP/EAL4 Certification Testsuite has been released
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Dear All,
 
----584337861-995176808-1187334658=:8381
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.62.0708170911091.8381@pademelon.sonytel.be>
+The Red Hat Enterprise Linux 5 LSPP/EAL4 Certification Testsuite  has 
+been released and can be found at http://ltp.sourceforge.net/ or 
+http://sourceforge.net/project/showfiles.php?group_id=3382. You can find 
+more details about this testsuite from 'lspp/README' contained in the 
+package.
 
-On Thu, 16 Aug 2007, NeilBrown wrote:
-> Every usage of rq_for_each_bio wraps a usage of
-> bio_for_each_segment, so these can be combined into
-> rq_for_each_segment.
-> 
-> We define "struct req_iterator" to hold the 'bio' and 'index' that
-> are needed for the double iteration.
+Regards & Thanks--
+Subrata Modak
 
-> --- .prev/drivers/block/ps3disk.c	2007-08-16 20:37:26.000000000 +1000
-> +++ ./drivers/block/ps3disk.c	2007-08-16 20:50:07.000000000 +1000
-> @@ -91,30 +91,30 @@ static void ps3disk_scatter_gather(struc
->  				   struct request *req, int gather)
->  {
->  	unsigned int offset = 0;
-> -	struct bio *bio;
-> -	sector_t sector;
-> +	struct req_iterator iter;
->  	struct bio_vec *bvec;
-> -	unsigned int i = 0, j;
-> +	unsigned int i = 0;
->  	size_t size;
->  	void *buf;
->  
-> -	rq_for_each_bio(bio, req) {
-> -		sector = bio->bi_sector;
-> +	rq_for_each_segment(bvec, req, iter) {
-> +		unsigned long flags;
->  		dev_dbg(&dev->sbd.core,
->  			"%s:%u: bio %u: %u segs %u sectors from %lu\n",
-> -			__func__, __LINE__, i, bio_segments(bio),
-> -			bio_sectors(bio), sector);
-> -		bio_for_each_segment(bvec, bio, j) {
-> +			__func__, __LINE__, i, bio_segments(iter.bio),
-> +			bio_sectors(iter.bio),
-> +			(unsigned long)iter.bio->bi_sector);
-                        ^^^^^^^^^^^^^^^
-Superfluous cast: PS3 is 64-bit only, and casts are evil.
-
-> +
->  			size = bvec->bv_len;
-> -			buf = __bio_kmap_atomic(bio, j, KM_IRQ0);
-> +			buf = bvec_kmap_irq(bvec, flags);
-
-As you already mentioned in the preample of the patch series, this changes
-functionality.
-
->  			if (gather)
->  				memcpy(dev->bounce_buf+offset, buf, size);
->  			else
->  				memcpy(buf, dev->bounce_buf+offset, size);
->  			offset += size;
->  			flush_kernel_dcache_page(bio_iovec_idx(bio, j)->bv_page);
-> -			__bio_kunmap_atomic(bio, KM_IRQ0);
-> -		}
-> +			bio_kunmap_bvec(bvec, flags);
-> +
->  		i++;
->  	}
->  }
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-995176808-1187334658=:8381--
