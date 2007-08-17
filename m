@@ -1,139 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763543AbXHQP4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759702AbXHQP5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763543AbXHQP4j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 11:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756943AbXHQP4b
+	id S1759702AbXHQP5F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 11:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758562AbXHQP4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 11:56:31 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:40369 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752536AbXHQP4a (ORCPT
+	Fri, 17 Aug 2007 11:56:52 -0400
+Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:59632 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756943AbXHQP4u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 11:56:30 -0400
-Date: Fri, 17 Aug 2007 21:19:51 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Containers <containers@lists.osdl.org>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric W Biederman <ebiederm@xmission.com>
-Subject: Re: [-mm PATCH 0/9] Memory controller introduction (v6)
-Message-ID: <20070817154951.GA1393@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20070817084228.26003.12568.sendpatchset@balbir-laptop>
-MIME-Version: 1.0
+	Fri, 17 Aug 2007 11:56:50 -0400
+Date: Fri, 17 Aug 2007 11:56:45 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/4] Linux Kernel Markers - Documentation
+Message-ID: <20070817155645.GB29458@Krystal>
+References: <20070812151052.704221166@polymtl.ca> <20070812151221.048605202@polymtl.ca> <y0my7ggldi9.fsf@ton.toronto.redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070817084228.26003.12568.sendpatchset@balbir-laptop>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <y0my7ggldi9.fsf@ton.toronto.redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:43:14 up 18 days, 16:02,  3 users,  load average: 0.66, 1.67, 1.59
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 02:12:28PM +0530, Balbir Singh wrote:
-Hi Andrew,
- 
-> The code was also tested on a power box with regular machine usage scenarios,
-> the config disabled and with a stress suite that touched all the memory
-> in the system and was limited in a container.
+* Frank Ch. Eigler (fche@redhat.com) wrote:
 > 
-> Dhaval ran several tests on v6 and gave his thumbs up to the controller
-> (a hard to achieve goal :-) ).
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
 > 
-
-I've been running v6 on x86 and there are a few things I've tried. Most
-of those results Balbir has already posted.
-
-> Run kernbench stress
-> --------------------
-> Three simultaneously and with one inside a container of 800 MB.
+> > [...]
+> > +A marker placed in your code provides a hook to call a function (probe) that
+> > +you can provide at runtime. A marker can be "on" (a probe is connected to it)
+> > +or "off" (no probe is attached). When a marker is "off" it has no
+> > +effect. [...]
+> 
+> Add something like, ", except for a (how?) small time/space penalty."
 > 
 
-The idea here was to create pressure inside the container while having
-global pressure.
+Yup, good idea. I plan to add:
 
+When a marker is "off" it has no effect, except for adding a tiny time
+penality (checking a condition for a branch) and space penality (adding
+a few bytes for the function call at the end of the instrumented
+function and adds a data structure in a separate section). The
+immediate values are used to minimize the impact on data cache, encoding
+the condition in the instruction stream.
+
+> > +[...]
+> > +trace_mark(subsystem_event, "%d %s", someint, somestring);
+> > +Where :
+> > +- subsystem_event is an identifier unique to your event
+> > +    - subsystem is the name of your subsystem.
+> > +    - event is the name of the event to mark.
+> > +[...]
 > 
-> Kernbench results running within the container of 800 MB
-> --------------------------------------------------------
-> 
-> Thu Aug 16 22:34:59 IST 2007
-> 2.6.23-rc2-mm2-mem-v6
-> Average Half load -j 4 Run (std deviation):
-> Elapsed Time 466.548 (47.6014)
-> User Time 876.598 (10.5273)
-> System Time 223.136 (1.29247)
-> Percent CPU 237.2 (23.2744)
-> Context Switches 146351 (6539.91)
-> Sleeps 174003 (5031.94)
-> 
-> Average Optimal load -j 32 Run (std deviation):
-> Elapsed Time 423.496 (60.625)
-> User Time 897.285 (23.0391)
-> System Time 228.836 (6.11205)
-> Percent CPU 257.1 (40.9022)
-> Context Switches 262134 (123397)
-> Sleeps 270815 (103597)
-> 
-> 
-> Kernbench results running within the default container
-> ------------------------------------------------------
-> 
-> Thu Aug 16 22:34:33 IST 2007
-> 2.6.23-rc2-mm2-mem-v6
-> Average Half load -j 4 Run (std deviation):
-> Elapsed Time 424.17 (3.45908)
-> User Time 841.992 (5.40178)
-> System Time 213.01 (0.706258)
-> Percent CPU 248.2 (0.83666)
-> Context Switches 134254 (9535.83)
-> Sleeps 167359 (6858.45)
-> 
-> Average Optimal load -j 32 Run (std deviation):
-> Elapsed Time 407.092 (108.932)
-> User Time 878.493 (38.6575)
-> System Time 222.155 (9.77127)
-> Percent CPU 278.4 (91.5826)
-> Context Switches 253836 (127708)
-> Sleeps 263760 (103468)
-> 
-> 
-> Kernbench results running within the default container
-> ------------------------------------------------------
-> 
-> Thu Aug 16 22:34:52 IST 2007
-> 2.6.23-rc2-mm2-mem-v6
-> Average Half load -j 4 Run (std deviation):
-> Elapsed Time 465.038 (48.5147)
-> User Time 874.742 (5.86563)
-> System Time 222.194 (0.561676)
-> Percent CPU 237.2 (22.5211)
-> Context Switches 144040 (7052.23)
-> Sleeps 172130 (5608.73)
-> 
-> Average Optimal load -j 32 Run (std deviation):
-> Elapsed Time 426.25 (62.34)
-> User Time 893.938 (20.6732)
-> System Time 227.717 (5.87502)
-> Percent CPU 255.6 (40.7163)
-> Context Switches 259560 (122953)
-> Sleeps 267402 (101801)
+> It would be useful to clarify that this "subsystem_event" scheme is
+> only a suggested naming convention intended to limit collisions.
 > 
 
-I've been running v6 for sometime and it has been stable (still not
-been able to break/crash it, whereas v4 was broken within 1 hour :-) )
+Sure. Adding:
 
-Andrew, I feel these patches whould be included in mm so that it gets
-wider testing.
+The naming scheme "subsystem_event" is suggested here as a convention
+intended to limit collisions.
+
+
+
+> > +Connecting a function (probe) to a marker is done by providing a
+> > probe +(function to call) for the specific marker through
+> > marker_probe_register() and +can be activated by calling
+> > marker_arm().
+> 
+> It would help to spell out the nature of the marker namespace.  Is it
+> global to the kernel?  Per-module?  Are conflicting "subsystem_event"
+> names but different format strings considered separate markers?
+> 
+
+What do you think of :
+
+Marker names are global to the kernel: they are considered as being the
+same whether they are in the core kernel image or in modules.
+Conflicting format strings for markers with the same name will cause the
+markers to be detected to have a different format string not to be armed
+and will output a printk warning which identifies the inconsistency:
+
+"Format mismatch for probe probe_name (format), marker (format)"
+
+
+
+> > + [...] Marker disactivation [...]
+> 
+> "deactivation"
+> 
+
+Thanks for the review,
+
+Mathieu
+
+
+> - FChE
 
 -- 
-regards,
-Dhaval
-
-I would like to change the world but they don't give me the source code!
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
