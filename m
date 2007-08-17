@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763808AbXHQK6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764552AbXHQK7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763808AbXHQK6u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 06:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758064AbXHQK6i
+	id S1764552AbXHQK7f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 06:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbXHQK70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 06:58:38 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:45124 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756066AbXHQK6g (ORCPT
+	Fri, 17 Aug 2007 06:59:26 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:53977 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754499AbXHQK7Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 06:58:36 -0400
-Message-ID: <46C57F5A.2050205@s5r6.in-berlin.de>
-Date: Fri, 17 Aug 2007 12:58:34 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+	Fri, 17 Aug 2007 06:59:25 -0400
+Date: Fri, 17 Aug 2007 12:59:24 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+cc: a.zummo@towertech.it, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com, dbrownell@users.sourceforge.net
+Subject: Re: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware
+In-Reply-To: <20070817.010638.24337787.anemo@mba.ocn.ne.jp>
+Message-ID: <Pine.LNX.4.64.0708171258360.5492@fbirervta.pbzchgretzou.qr>
+References: <20070817.010638.24337787.anemo@mba.ocn.ne.jp>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: paulmck@linux.vnet.ibm.com, Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C41EE4.9090806@s5r6.in-berlin.de> <46C42767.4070104@s5r6.in-berlin.de> <20070816104250.GB2927@gondor.apana.org.au> <20070816163441.GB16957@linux.vnet.ibm.com> <46C512EB.7020603@yahoo.com.au> <46C54D74.60101@s5r6.in-berlin.de> <46C556F1.8000407@yahoo.com.au> <46C57D07.80604@s5r6.in-berlin.de>
-In-Reply-To: <46C57D07.80604@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> Nick Piggin wrote:
->> You might find that these places that appear to need barriers are
->> buggy for other reasons anyway. Can you point to some in-tree code
->> we can have a look at?
-> 
-> I could, or could not, if I were through with auditing the code.  I
-> remembered one case and posted it (nodemgr_host_thread) which was safe
-> because msleep_interruptible provided the necessary barrier there, and
-> this implicit barrier is not in danger to be removed by future patches.
 
-PS, just in case anybody holds his breath for more example code from me,
-I don't plan to continue with an actual audit of the drivers I maintain.
-It's an important issue, but my current time budget will restrict me to
-look at it ad hoc, per case.  (Open bugs have higher priority than
-potential bugs.)
+On Aug 17 2007 01:06, Atsushi Nemoto wrote:
+>Add an MODULE_ALIAS() to make this platform driver hotplug-aware.
+>
+>Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+>---
+>diff --git a/drivers/rtc/rtc-ds1742.c b/drivers/rtc/rtc-ds1742.c
+>index b2e5481..4bd22dc 100644
+>--- a/drivers/rtc/rtc-ds1742.c
+>+++ b/drivers/rtc/rtc-ds1742.c
+>@@ -273,3 +273,4 @@ MODULE_AUTHOR("Atsushi Nemoto <anemo@mba.ocn.ne.jp>");
+> MODULE_DESCRIPTION("Dallas DS1742 RTC driver");
+> MODULE_LICENSE("GPL");
+> MODULE_VERSION(DRV_VERSION);
+>+MODULE_ALIAS("ds1742");
+
+Why exactly is this needed? What script refers to the module as ds1742 instead
+of rtc-ds1742? Regular hotplug (e.g. udev/modprobe) also go by PCI ID or
+whatever is applicable and load the module which provides support for said ID.
+
+
+	Jan
 -- 
-Stefan Richter
--=====-=-=== =--- =---=
-http://arcgraph.de/sr/
