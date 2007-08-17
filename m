@@ -1,109 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761133AbXHQJ0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759947AbXHQJae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761133AbXHQJ0i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 05:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758348AbXHQJ0X
+	id S1759947AbXHQJae (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 05:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbXHQJa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 05:26:23 -0400
-Received: from webmail.icp-qv1-irony3.iinet.net.au ([203.59.1.108]:9800 "EHLO
-	webmail.icp-qv1-irony3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758326AbXHQJ0F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 05:26:05 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAPsDxUbLrQKa/2dsb2JhbAA
-X-IronPort-AV: i="4.19,274,1183305600"; 
-   d="scan'208"; a="183002964:sNHT8155098"
-Message-ID: <46C56725.6000207@cyberone.com.au>
-Date: Fri, 17 Aug 2007 19:15:17 +1000
-From: Nick Piggin <piggin@cyberone.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Fri, 17 Aug 2007 05:30:26 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:37744 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751050AbXHQJaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 05:30:25 -0400
+Message-ID: <46C56994.30303@openvz.org>
+Date: Fri, 17 Aug 2007 13:25:40 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Satyam Sharma <satyam@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
+To: Andrew Morton <akpm@osdl.org>
+CC: Alexey Dobriyan <adobriyan@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       rpjday@mindspring.com, ak@suse.de, netdev@vger.kernel.org,
-       cfriesen@nortel.com, Andrew Morton <akpm@linux-foundation.org>,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com> <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in> <46C54D94.5080803@yahoo.com.au> <alpine.LFD.0.999.0708171358520.3666@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0708171358520.3666@enigma.security.iitk.ac.in>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+       devel@openvz.org
+Subject: [PATCH] Fix check for return value of create_pid_namespace
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> 
-> On Fri, 17 Aug 2007, Nick Piggin wrote:
+The function in question returns ERR_PTR-s to indicate the
+error, while the caller checks for return value to be NULL.
 
->>Also, why would you want to make these insane accessors for atomic_t
->>types? Just make sure everybody knows the basics of barriers, and they
->>can apply that knowledge to atomic_t and all other lockless memory
->>accesses as well.
-> 
-> 
-> Code that looks like:
-> 
-> 	while (!atomic_read(&v)) {
-> 		...
-> 		cpu_relax_no_barrier();
-> 		forget(v.counter);
-> 		        ^^^^^^^^
-> 	}
-> 
-> would be uglier. Also think about code such as:
+Found during testing the OpenVZ kernel with pid namespaces.
 
-I think they would both be equally ugly, but the atomic_read_volatile
-variant would be more prone to subtle bugs because of the weird
-implementation.
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
+Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
 
-And it would be more ugly than introducing an order(x) statement for
-all memory operations, and adding an order_atomic() wrapper for it
-for atomic types.
+---
+ kernel/pid.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-
-> 	a = atomic_read();
-> 	if (!a)
-> 		do_something();
-> 
-> 	forget();
-> 	a = atomic_read();
-> 	... /* some code that depends on value of a, obviously */
-> 
-> 	forget();
-> 	a = atomic_read();
-> 	...
-> 
-> So much explicit sprinkling of "forget()" looks ugly.
-
-Firstly, why is it ugly? It's nice because of those nice explicit
-statements there that give us a good heads up and would have some
-comments attached to them (also, lack of the word "volatile" is
-always a plus).
-
-Secondly, what sort of code would do such a thing? In most cases,
-it is probably riddled with bugs anyway (unless it is doing a
-really specific sequence of interrupts or something, but in that
-case it is very likely to either require locking or busy waits
-anyway -> ie. barriers).
-
-
-> on the other hand, looks neater. The "_volatile()" suffix makes it also
-> no less explicit than an explicit barrier-like macro that this primitive
-> is something "special", for code clarity purposes.
-
-Just don't use the word volatile, and have barriers both before
-and after the memory operation, and I'm OK with it. I don't see
-the point though, when you could just have a single barrier(x)
-barrier function defined for all memory locations, rather than
-this odd thing that only works for atomics (and would have to
-be duplicated for atomic_set.
+diff --git a/kernel/pid.c b/kernel/pid.c
+index faad017..cb1f3cb 100644
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -543,7 +543,7 @@ struct pid_namespace *copy_pid_ns(unsign
+ 		goto out_put;
+ 
+ 	new_ns = create_pid_namespace(old_ns->level + 1);
+-	if (new_ns != NULL)
++	if (!IS_ERR(new_ns))
+ 		new_ns->parent = get_pid_ns(old_ns);
+ 
+ out_put:
