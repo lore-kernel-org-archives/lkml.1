@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbXHQPxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763975AbXHQPy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762650AbXHQPxT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 11:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbXHQPxK
+	id S1763975AbXHQPy1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 11:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbXHQPyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 11:53:10 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3976 "EHLO perches.com"
+	Fri, 17 Aug 2007 11:54:07 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:45394 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752680AbXHQPxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 11:53:08 -0400
-Subject: Re: [PATCH] [428/2many] MAINTAINERS - SERIAL ATA (SATA) SUBSYSTEM:
-From: Joe Perches <joe@perches.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, jgarzik@pobox.com, akpm@linux-foundation.org
-In-Reply-To: <46C5C2A1.3020701@ru.mvista.com>
-References: <46bffbb6.4FinvGMu+SlIxG24%joe@perches.com>
-	 <46C5C2A1.3020701@ru.mvista.com>
-Content-Type: text/plain
-Date: Fri, 17 Aug 2007 08:52:51 -0700
-Message-Id: <1187365972.822.93.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	id S1752355AbXHQPyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 11:54:04 -0400
+Date: Fri, 17 Aug 2007 08:53:57 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, herbert@gondor.apana.org.au,
+       123.oleg@gmail.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Daniel Walker <dwalker@mvista.com>, josht@linux.vnet.ibm.com,
+       minyard@acm.org
+Subject: Re: [PATCH] lockdep: annotate rcu_read_{,un}lock()
+Message-ID: <20070817155357.GD8464@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <af57f1ac0708141130v729fa636k3150673809ec20a8@mail.gmail.com> <E1ILEJr-0005Fl-00@gondolin.me.apana.org.au> <20070815.144628.104052147.davem@davemloft.net> <1187274307.6114.92.camel@twins> <20070816160145.GA16957@linux.vnet.ibm.com> <1187337405.6114.123.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1187337405.6114.123.camel@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-17 at 19:45 +0400, Sergei Shtylyov wrote:
+On Fri, Aug 17, 2007 at 09:56:45AM +0200, Peter Zijlstra wrote:
+> On Thu, 2007-08-16 at 09:01 -0700, Paul E. McKenney wrote:
+> > On Thu, Aug 16, 2007 at 04:25:07PM +0200, Peter Zijlstra wrote:
+> > > 
+> > > There seem to be some unbalanced rcu_read_{,un}lock() issues of late,
+> > > how about doing something like this:
+> > 
+> > This will break when rcu_read_lock() and rcu_read_unlock() are invoked
+> > from NMI/SMI handlers -- the raw_local_irq_save() in lock_acquire() will
+> > not mask NMIs or SMIs.
+> > 
+> > One approach would be to check for being in an NMI/SMI handler, and
+> > to avoid calling lock_acquire() and lock_release() in those cases.
+> 
+> It seems:
+> 
+> #define nmi_enter()		do { lockdep_off(); __irq_enter(); } while (0)
+> #define nmi_exit()		do { __irq_exit(); lockdep_on(); } while (0)
+> 
+> Should make it all work out just fine. (for NMIs at least, /me fully
+> ignorant of the workings of SMIs)
 
-> joe@perches.com wrote:
-> > Add file pattern to MAINTAINER entry
-> > +F:	drivers/ata/sata_*
->     The libata core doesn't match this pattern, ain't a a vital part of both 
-> SAT and PATA drivers?
-> MBR, Sergei
+Very good point, at least for NMIs on i386 and x86_64.  Can't say that I
+know much about SMIs myself.  Or about whatever equivalents to NMIs and
+SMIs might exist on other platforms.  :-/  Of course, the other platforms
+could be handled by making the RCU lockdep operate only on i386 and x86_64
+if required.
 
-Improvements to the pattern would be appreciated.
-Would this be a better pattern?
+Corey, any advice on SMI handlers?  Is there something like nmi_enter()
+and nmi_exit() that allows disabing lockdep?
 
-F:	drivers/ata/
+> > Another approach would be to use sparse, which has checks for
+> > rcu_read_lock()/rcu_read_unlock() nesting.
+> 
+> Yeah, but one more method can never hurt, no? :-)
 
-There is a SATA-promise maintainer
+Excellent point!
 
-        PROMISE SATA TX2/TX4 CONTROLLER LIBATA DRIVER
-        P:	Mikael Pettersson
-        M:	mikpe@it.uu.se
-        L:	linux-ide@vger.kernel.org
-        S:	Maintained
-        F:	drivers/ata/sata_promise.*
+I guess the next thing for me is to do a performance check.  Looks like
+CONFIG_DEBUG_LOCK_ALLOC is not on by default, so not violently worried
+about performance, but would be good to know.
 
-maybe there should be an entry to exclude
-this maintained driver too?
-
-X:	drivers/ata/sata_promise.*
-
-cheers,  Joe
-
+							Thanx, Paul
