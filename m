@@ -1,156 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbXHQD4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754931AbXHQEC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756149AbXHQD4c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 23:56:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbXHQD4V
+	id S1754931AbXHQEC0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 00:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbXHQECO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 23:56:21 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:33522 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753588AbXHQD4T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 23:56:19 -0400
-X-Sasl-enc: xkbcRuzYmTXt6vnQDvj9/8mKHbOYTby1Uaf+dR0q1hDE 1187322977
-Subject: Re: [PATCH] autofs4: deadlock during create
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: autofs mailing list <autofs@linux.kernel.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>
-In-Reply-To: <1187159503.3249.36.camel@raven.themaw.net>
-References: <1187087280.4963.18.camel@raven.themaw.net>
-	 <x49mywuci9i.fsf@segfault.boston.devel.redhat.com>
-	 <1187159503.3249.36.camel@raven.themaw.net>
-Content-Type: text/plain
-Date: Fri, 17 Aug 2007 11:56:11 +0800
-Message-Id: <1187322972.3560.12.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Fri, 17 Aug 2007 00:02:14 -0400
+Received: from ozlabs.org ([203.10.76.45]:56028 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750918AbXHQECM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 00:02:12 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18117.7611.660070.879392@cargo.ozlabs.ibm.com>
+Date: Fri, 17 Aug 2007 14:02:03 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: paulmck@linux.vnet.ibm.com, Herbert Xu <herbert@gondor.apana.org.au>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Satyam Sharma <satyam@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <46C512EB.7020603@yahoo.com.au>
+References: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in>
+	<18115.52863.638655.658466@cargo.ozlabs.ibm.com>
+	<20070816053945.GB32442@gondor.apana.org.au>
+	<18115.62741.807704.969977@cargo.ozlabs.ibm.com>
+	<20070816070907.GA964@gondor.apana.org.au>
+	<46C40587.7050708@s5r6.in-berlin.de>
+	<20070816081049.GA1431@gondor.apana.org.au>
+	<46C41EE4.9090806@s5r6.in-berlin.de>
+	<46C42767.4070104@s5r6.in-berlin.de>
+	<20070816104250.GB2927@gondor.apana.org.au>
+	<20070816163441.GB16957@linux.vnet.ibm.com>
+	<46C512EB.7020603@yahoo.com.au>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-15 at 14:31 +0800, Ian Kent wrote:
-> On Tue, 2007-08-14 at 10:17 -0400, Jeff Moyer wrote:
-> > Ian Kent <raven@themaw.net> writes:
-> > >
-> > > After spending quite a bit of time trying to resolve this on more than
-> > > one occassion, using rather complex and ulgy approaches, it turns out
-> > > that just delaying the hashing of the dentry until the create operation
-> > > work fine.
+Nick Piggin writes:
+
+> Why are people making these undocumented and just plain false
+> assumptions about atomic_t?
+
+Well, it has only been false since December 2006.  Prior to that
+atomics *were* volatile on all platforms.
+
+> If they're using lockless code (ie.
+> which they must be if using atomics), then they actually need to be
+> thinking much harder about memory ordering issues.
+
+Indeed.  I believe that most uses of atomic_read other than in polling
+loops or debug printk statements are actually racy.  In some cases the
+race doesn't seem to matter, but I'm sure there are cases where it
+does.
+
+> If that is too
+> much for them, then they can just use locks.
+
+Why use locks when you can just sprinkle magic fix-the-races dust (aka
+atomic_t) over your code? :) :)
+
+> > Precisely.  And volatility is a key property of "atomic".  Let's please
+> > not throw it away.
 > 
-> There seems to be an unexpected problem with the patch after removal of
-> the d_rehash line left in the original by mistake.
-> 
+> It isn't, though (at least not since i386 and x86-64 don't have it).
 
-I see you haven't got to this yet, probably because I used your old
-email address, so to save hassle, here is the final patch and the
-description.
+Conceptually it is, because atomic_t is specifically for variables
+which are liable to be modified by other CPUs, and volatile _means_
+"liable to be changed by mechanisms outside the knowledge of the
+compiler".
 
+> _Adding_ it is trivial, and can be done any time. Throwing it away
+> (ie. making the API weaker) is _hard_. So let's not add it without
 
-Due to inconsistent locking in the VFS between calls to lookup and
-revalidate deadlock can occur in the automounter.
+Well, in one sense it's not that hard - Linus did it just 8 months ago
+in commit f9e9dcb3. :)
 
-The inconsistency is that the directory inode mutex is held for both
-lookup and revalidate calls when called via lookup_hash whereas it is
-held only for lookup during a path walk. Consequently, if the mutex
-is held during a call to revalidate autofs4 can't release the mutex
-to callback the daemon as it can't know whether it owns the mutex.
+> really good reasons. It most definitely results in worse code
+> generation in practice.
 
-This situation happens when a process tries to create a directory
-within an automount and a second process also tries to create the
-same directory between the lookup and the mkdir. Since the first
-process has dropped the mutex for the daemon callback, the second
-process takes it during revalidate leading to deadlock between the
-autofs daemon and the second process when the daemon tries to create
-the mount point directory.
+0.0008% increase in kernel text size on powerpc according to my
+measurement. :)
 
-After spending quite a bit of time trying to resolve this on more than
-one occassion, using rather complex and ulgy approaches, it turns out
-that just delaying the hashing of the dentry until the create operation
-work fine.
+> I don't know why people would assume volatile of atomics. AFAIK, most
 
-Signed-off-by: Ian Kent <raven@themaw.net>
+By making something an atomic_t you're saying "other CPUs are going to
+be modifying this, so treat it specially".  It's reasonable to assume
+that special treatment extends to reading and setting it.
 
----
---- linux-2.6.23-rc2-mm2/fs/autofs4/root.c.lookup-delay-hash	2007-08-17 11:52:33.000000000 +0800
-+++ linux-2.6.23-rc2-mm2/fs/autofs4/root.c	2007-08-17 11:53:38.000000000 +0800
-@@ -587,19 +587,20 @@ static struct dentry *autofs4_lookup(str
- 	unhashed = autofs4_lookup_unhashed(sbi, dentry->d_parent, &dentry->d_name);
- 	if (!unhashed) {
- 		/*
--		 * Mark the dentry incomplete, but add it. This is needed so
--		 * that the VFS layer knows about the dentry, and we can count
--		 * on catching any lookups through the revalidate.
--		 *
--		 * Let all the hard work be done by the revalidate function that
--		 * needs to be able to do this anyway..
--		 *
--		 * We need to do this before we release the directory semaphore.
-+		 * Mark the dentry incomplete but don't hash it. We do this 
-+		 * to serialize our inode creation operations (symlink and
-+		 * mkdir) which prevents deadlock during the callback to
-+		 * the daemon. Subsequent user space lookups for the same
-+		 * dentry are placed on the wait queue while the daemon
-+		 * itself is allowed passage unresticted so the create
-+		 * operation itself can then hash the dentry. Finally,
-+		 * we check for the hashed dentry and return the newly
-+		 * hashed dentry.
- 		 */
- 		dentry->d_op = &autofs4_root_dentry_operations;
- 
- 		dentry->d_fsdata = NULL;
--		d_add(dentry, NULL);
-+		d_instantiate(dentry, NULL);
- 	} else {
- 		struct autofs_info *ino = autofs4_dentry_ino(unhashed);
- 		DPRINTK("rehash %p with %p", dentry, unhashed);
-@@ -607,15 +608,17 @@ static struct dentry *autofs4_lookup(str
- 		 * If we are racing with expire the request might not
- 		 * be quite complete but the directory has been removed
- 		 * so it must have been successful, so just wait for it.
-+		 * We need to ensure the AUTOFS_INF_EXPIRING flag is clear
-+		 * before continuing as revalidate may fail when calling
-+		 * try_to_fill_dentry (returning EAGAIN) if we don't.
- 		 */
--		if (ino && (ino->flags & AUTOFS_INF_EXPIRING)) {
-+		while (ino && (ino->flags & AUTOFS_INF_EXPIRING)) {
- 			DPRINTK("wait for incomplete expire %p name=%.*s",
- 				unhashed, unhashed->d_name.len,
- 				unhashed->d_name.name);
- 			autofs4_wait(sbi, unhashed, NFY_NONE);
- 			DPRINTK("request completed");
- 		}
--		d_rehash(unhashed);
- 		dentry = unhashed;
- 	}
- 
-@@ -658,7 +661,7 @@ static struct dentry *autofs4_lookup(str
- 	 * for all system calls, but it should be OK for the operations
- 	 * we permit from an autofs.
- 	 */
--	if (dentry->d_inode && d_unhashed(dentry)) {
-+	if (!oz_mode && d_unhashed(dentry)) {
- 		/*
- 		 * A user space application can (and has done in the past)
- 		 * remove and re-create this directory during the callback.
-@@ -716,7 +719,7 @@ static int autofs4_dir_symlink(struct in
- 	strcpy(cp, symname);
- 
- 	inode = autofs4_get_inode(dir->i_sb, ino);
--	d_instantiate(dentry, inode);
-+	d_add(dentry, inode);
- 
- 	if (dir == dir->i_sb->s_root->d_inode)
- 		dentry->d_op = &autofs4_root_dentry_operations;
-@@ -844,7 +847,7 @@ static int autofs4_dir_mkdir(struct inod
- 		return -ENOSPC;
- 
- 	inode = autofs4_get_inode(dir->i_sb, ino);
--	d_instantiate(dentry, inode);
-+	d_add(dentry, inode);
- 
- 	if (dir == dir->i_sb->s_root->d_inode)
- 		dentry->d_op = &autofs4_root_dentry_operations;
+> of the documentation is pretty clear that all the atomic stuff can be
+> reordered etc. except for those that modify and return a value.
 
+Volatility isn't primarily about reordering (though as Linus says it
+does restrict reordering to some extent).
 
+Paul.
