@@ -1,145 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764956AbXHQNYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbXHQNcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764956AbXHQNYk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 09:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbXHQNY3
+	id S1757271AbXHQNcr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 09:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbXHQNci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 09:24:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48315 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755404AbXHQNY1 (ORCPT
+	Fri, 17 Aug 2007 09:32:38 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:43564 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751553AbXHQNch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 09:24:27 -0400
-Date: Fri, 17 Aug 2007 19:06:20 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Nick Piggin <piggin@cyberone.com.au>
-cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <46C59717.4020108@cyberone.com.au>
-Message-ID: <alpine.LFD.0.999.0708171836320.3666@enigma.security.iitk.ac.in>
-References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
- <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com>
- <20070816070907.GA964@gondor.apana.org.au>
- <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
- <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com>
- <18117.1287.779351.836552@cargo.ozlabs.ibm.com>
- <alpine.LFD.0.999.0708161953310.30176@woody.linux-foundation.org>
- <18117.6495.397597.582736@cargo.ozlabs.ibm.com> <20070817035342.GA14744@gondor.apana.org.au>
- <alpine.LFD.0.999.0708171142550.3666@enigma.security.iitk.ac.in>
- <46C55E90.7010407@yahoo.com.au> <alpine.LFD.0.999.0708171431150.3666@enigma.security.iitk.ac.in>
- <46C56ADF.8010501@cyberone.com.au> <alpine.LFD.0.999.0708171612440.3666@enigma.security.iitk.ac.in>
- <46C59717.4020108@cyberone.com.au>
+	Fri, 17 Aug 2007 09:32:37 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Subject: Re: [kvm-devel] [PATCH/RFC 3/4]Introduce "account modifiers"=?iso-8859-15?q?=09mechanism?=
+Date: Fri, 17 Aug 2007 15:32:32 +0200
+User-Agent: KMail/1.9.7
+Cc: Avi Kivity <avi@qumranet.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+References: <46C4719A.2060308@bull.net> <46C59AB1.6070505@qumranet.com> <46C59DC6.4020308@bull.net>
+In-Reply-To: <46C59DC6.4020308@bull.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708171532.32850.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 17 Aug 2007, Nick Piggin wrote:
-
-> Satyam Sharma wrote:
+Am Freitag, 17. August 2007 schrieb Laurent Vivier:
+> > The normal user/system accounting has the same issue, no?  Whereever we
+> > happen to land (kernel or user) gets the whole tick.
 > 
-> > On Fri, 17 Aug 2007, Nick Piggin wrote:
-> > 
-> > > Because they should be thinking about them in terms of barriers, over
-> > > which the compiler / CPU is not to reorder accesses or cache memory
-> > > operations, rather than "special" "volatile" accesses.
-> > 
-> > This is obviously just a taste thing. Whether to have that forget(x)
-> > barrier as something author should explicitly sprinkle appropriately
-> > in appropriate places in the code by himself or use a primitive that
-> > includes it itself.
-> 
-> That's not obviously just taste to me. Not when the primitive has many
-> (perhaps, the majority) of uses that do not require said barriers. And
-> this is not solely about the code generation (which, as Paul says, is
-> relatively minor even on x86).
+> Yes... but perhaps I should rewrite this too ;-)
 
-See, you do *require* people to have to repeat the same things to you!
+If you look further, you will see, that this was actually rewritten in 2.6.12 
+and thats why we have cputime_t. The infrastructure is currently only used by 
+s390 and ppc64. On s390 we use our cpu timer to get the current time on each 
+syscall/irq/context switch etc to get precise accounting data for 
+system/user/irq/softirq/nice. We also get steal time (this is interesting for 
+the guest: how much of my cpu was actually not available because the 
+hypervisor scheduled me away). I dont know enough about other architectures  
+to say which one could exploit this infrastructure as well.
 
-As has been written about enough times already, and if you followed the
-discussion on this thread, I am *not* proposing that atomic_read()'s
-semantics be changed to have any extra barriers. What is proposed is a
-different atomic_read_xxx() variant thereof, that those can use who do
-want that.
+The current git tree is somewhat broken for CONFIG_VIRT_CPU_ACCOUTING due to 
+the accouting changes introduced by CFS - we work on this.
 
-Now whether to have a kind of barrier ("volatile", whatever) in the
-atomic_read_xxx() itself, or whether to make the code writer himself to
-explicitly write the order(x) appropriately in appropriate places in the
-code _is_ a matter of taste.
+If you are interested in the cputime stuff, you can have a look at 
+arch/s390/kernel/vtime.c (account_system_vtime, account_vtime) as well as:
 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commit;h=6be7071fdd321c206b1ee7a3e534782f25572830
+for the first introduction and
+http://git.kernel.org/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commit;h=db59f519d37f80683f3611927f6b5c3bdfc0f9e6
+for the s390 exploitation.
 
-> > That's definitely the point, why not. This is why "barrier()", being
-> > heavy-handed, is not the best option.
-> 
-> That is _not_ the point [...]
-
-Again, you're requiring me to repeat things that were already made evident
-on this thread (if you follow it).
-
-This _is_ the point, because a lot of loops out there (too many of them,
-I WILL NOT bother citing file_name:line_number) end up having to use a
-barrier just because they're using a loop-exit-condition that depends
-on a value returned by atomic_read(). It would be good for them if they
-used an atomic_read_xxx() primitive that gave these "volatility" semantics
-without junking compiler optimizations for other memory references.
-
-> because there has already been an alternative posted
-
-Whether that alternative (explicitly using forget(x), or wrappers thereof,
-such as the "order_atomic" you proposed) is better than other alternatives
-(such as atomic_read_xxx() which includes the volatility behaviour in
-itself) is still open, and precisely what we started discussing just one
-mail back.
-
-(The above was also mostly stuff I had to repeated for you, sadly.)
-
-> that better conforms with Linux barrier
-> API and is much more widely useful and more usable.
-
-I don't think so.
-
-(Now *this* _is_ the "taste-dependent matter" that I mentioned earlier.)
-
-> If you are so worried
-> about
-> barrier() being too heavyweight, then you're off to a poor start by wanting to
-> add a few K of kernel text by making atomic_read volatile.
-
-Repeating myself, for the N'th time, NO, I DON'T want to make atomic_read
-have "volatile" semantics.
-
-> > > because as I also mentioned, the logical extention
-> > > to Linux's barrier API to handle this is the order(x) macro. Again, not
-> > > special volatile accessors.
-> > 
-> > Sure, that forget(x) macro _is_ proposed to be made part of the generic
-> > API. Doesn't explain why not to define/use primitives that has volatility
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > semantics in itself, though (taste matters apart).
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> If you follow the discussion.... You were thinking of a reason why the
-> semantics *should* be changed or added, and I was rebutting your argument
-> that it must be used when a full barrier() is too heavy (ie. by pointing
-> out that order() has superior semantics anyway).
-
-Amazing. Either you have reading comprehension problems, or else, please
-try reading this thread (or at least this sub-thread) again. I don't want
-_you_ blaming _me_ for having to repeat things to you all over again.
+Christian
