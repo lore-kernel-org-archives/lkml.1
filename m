@@ -1,72 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765648AbXHQUWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762219AbXHQU0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765648AbXHQUWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 16:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765258AbXHQUWF
+	id S1762219AbXHQU0n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 16:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXHQU0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 16:22:05 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:59889 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765114AbXHQUWE (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 16:22:04 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH]: proc: export a processes resource limits via proc/<pid>
-In-Reply-To: Your message of "Fri, 17 Aug 2007 12:45:47 PDT."
-             <20070817124547.5415a839.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070813140044.GB1960@hmsreliant.think-freely.org> <20070816123538.GA10430@hmsreliant.think-freely.org> <4379.1187338166@turing-police.cc.vt.edu> <20070817105918.GA13937@hmsreliant.think-freely.org>
-            <20070817124547.5415a839.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1187382045_3142P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 17 Aug 2007 16:20:45 -0400
-Message-ID: <21194.1187382045@turing-police.cc.vt.edu>
+	Fri, 17 Aug 2007 16:26:36 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:16307 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752807AbXHQU0f convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 16:26:35 -0400
+X-IronPort-AV: i="4.19,277,1183348800"; 
+   d="scan'208"; a="37384086:sNHT27002983"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 02/12] Blackfin arch: Add label to call new GPIO API
+Date: Fri, 17 Aug 2007 21:25:45 +0100
+Message-ID: <600D5CB4DFD93545BF61FF01473D11AC0D87BDAD@limkexm2.ad.analog.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 02/12] Blackfin arch: Add label to call new GPIO API
+Thread-Index: AcfhCoVfmYuSSUwqRqiMqXABW/+GbwAAQokQ
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "David Brownell" <david-b@pacbell.net>,
+       "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: "Bryan Wu" <bryan.wu@analog.com>, <torvalds@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
+       "Michael Hennerich" <michael.hennerich@analog.com>
+X-OriginalArrivalTime: 17 Aug 2007 20:25:48.0452 (UTC) FILETIME=[CC2A2640:01C7E10C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1187382045_3142P
-Content-Type: text/plain; charset=us-ascii
-
-On Fri, 17 Aug 2007 12:45:47 PDT, Andrew Morton said:
-> On Fri, 17 Aug 2007 06:59:18 -0400
-> Neil Horman <nhorman@tuxdriver.com> wrote:
-> 
-> > Currently, there exists no method for a process to query the resource
-> > limits of another process.  They can be inferred via some mechanisms but they
-> > cannot be explicitly determined.  Given that this information can be usefull to
-> > know during the debugging of an application, I've written this patch which
-> > exports all of a processes limits via /proc/<pid>/limits.
-> 
-> I'm struggling with this a bit.  Sure, it _might_ be handy on some
-> occasions to be able to get at this information.  But I've never seen
-> anyone ask for it before, and it _is_ determinable by other means, if only
-> strace.
-
-Most of the times *I*'ve struggled with this, it's been a case of "this program
-forks that one that calls a PAM module that does this and then double-forks
-yadda yadda".  So I know where Neil is coming from.
-
-> How do we justify adding yet more stuff to the kernel?
-
-I looked the code over, and *if* we want to do it, the code looks good.
-Making that final call is why they pay you and Linus the big bucks. :)
 
 
---==_Exmh_1187382045_3142P
-Content-Type: application/pgp-signature
+>-----Original Message-----
+>From: David Brownell [mailto:david-b@pacbell.net]
+>
+>On Friday 17 August 2007, Mike Frysinger wrote:
+>> On 8/17/07, David Brownell <david-b@pacbell.net> wrote:
+>> > ...
+>> > Just for the record, this is an unusual way to use these calls.
+>> >
+>> > Other platforms completely decouple these issues from the
+>> > IRQ infrastructure ... doing the pinmux and gpio claiming
+>> > separately from the request_irq()/free_irq() paths, mostly
+>> > as part of board setup.  Doing all of that "early":
+>> >
+>> >  - keeps those error returns from causing hard-to-track-down
+>> >    runtime bugs;
+>> >
+>> >  - works always, even on platforms where a given IRQ may
+>> >    appear on any of several pins/balls;
+>> >
+>> >  - makes it easier to cross-check against board schematics,
+>> >    by keeping most board-specific setup in one source file;
+>> >
+>> >  - shrinks the kernel's runtime footprint;
+>> >
+>> >  - allows the label to be more descriptive ... describeing
+>> >    exactly *which* IRQ, so that using the labels for better
+>> >    diagnostics actually gives better diagnostics.
+>> >
+>> > Again, not "wrong"; but probably sub-optimal.  You might
+>> > want to move towards earlier binding now, while Linux is
+>> > still young on Blackfin and you don't have legacy code to
+>> > worry about.
+>>
+>> in the Blackfin port, if you want to use a pin as an IRQ rather than
+>> GPIO, you use the normal request_irq/free_irq API ... those functions
+>> will call back into the proper GPIO/PORTMUX code so that the pin is
+>> setup properly.  this is done so that code isnt duplicated across
+>> files and so that we can easily detect if someone does something
+>> incorrect like try to take the same pin and use it as
+>> irq/gpio/whatever at the same time ...
+>>
+>> are you saying that other ports dont unify the backend code paths at
+all
+>?
+>
+>Some platforms try to "unify" the pin setup in the boot loader.
+>Most of them cope with bogus bootloaders by doing it in the board
+>setup code.
+>
+>I don't know of any who try to do it "late" as you summarized.
+>
+>See above why "late" unification is not necessarily as good as
+>"early" unification.
+>
+>And then there's the OMAP1 example, where for example you might
+>know that you want MPUIO-0 but that's insufficient to tell whether
+>you must mux ball F18 or R13 ... so it's impossible to do the kind
+>of "late" unification done here, and pinmux *MUST* be separate from
+>IRQ setup.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Dave,
 
-iD8DBQFGxgMdcC3lWbTT17ARAvhyAJ9QgY7x1jUr/usj5uQSrj9MFhKUIQCg2Fk9
-O9q2RySAH5/tjgo5cG3+Bk0=
-=gvsZ
------END PGP SIGNATURE-----
+We are not talking about PIN routing. One physical PIN/BALL can only
+have one dedicated function the same time. It's more about telling about
+possible conflicts, on a development board level.
 
---==_Exmh_1187382045_3142P--
+What Mike wants to point out is that a external IRQ is first a GPIO and
+needs to be configured like an INPUT GPIO and then a specific bit needs
+to be set unmask it as IRQ.
+
+So why not use the GPIO infrastructure to setup this pin as GPIO?
+
+-Michael  
+
+  
+
+
+>
+>- Dave
