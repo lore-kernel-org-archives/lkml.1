@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758773AbXHQWWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbXHQWaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758773AbXHQWWl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 18:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbXHQWWf
+	id S1758008AbXHQWaw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 18:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbXHQWal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 18:22:35 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:32826 "EHLO mail.screens.ru"
+	Fri, 17 Aug 2007 18:30:41 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53034 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752646AbXHQWWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 18:22:34 -0400
-Date: Sat, 18 Aug 2007 02:22:28 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Neil Horman <nhorman@tuxdriver.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: + proc-export-a-processes-resource-limits-via-proc-pid.patch added to -mm tree
-Message-ID: <20070817222228.GA783@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	id S1752951AbXHQWaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 18:30:39 -0400
+In-Reply-To: <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
+References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com> <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <036b785bc30ad3faa872171d8630542f@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: Paul Mackerras <paulus@samba.org>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au, linux-kernel@vger.kernel.org, rpjday@mindspring.com,
+       ak@suse.de, netdev@vger.kernel.org, cfriesen@nortel.com,
+       akpm@linux-foundation.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, satyam@infradead.org,
+       zlynx@acm.org, clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
+       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Sat, 18 Aug 2007 00:29:30 +0200
+To: Linus Torvalds <torvalds@linux-foundation.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman wrote:
-> 
-> +static int proc_pid_limits(struct task_struct *task, char *buffer)
-> +{
-> +	unsigned int i;
-> +	int count = 0;
-> +	char *bufptr = buffer;
-> +
-> +	struct rlimit rlim[RLIM_NLIMITS];
-> +
-> +	read_lock(&tasklist_lock);
-> +	memcpy(rlim, task->signal->rlim, sizeof(struct rlimit) * RLIM_NLIMITS);
-> +	read_unlock(&tasklist_lock);
+> In a reasonable world, gcc should just make that be (on x86)
+>
+> 	addl $1,i(%rip)
+>
+> on x86-64, which is indeed what it does without the volatile. But with 
+> the
+> volatile, the compiler gets really nervous, and doesn't dare do it in 
+> one
+> instruction, and thus generates crap like
+>
+>         movl    i(%rip), %eax
+>         addl    $1, %eax
+>         movl    %eax, i(%rip)
+>
+> instead. For no good reason, except that "volatile" just doesn't have 
+> any
+> good/clear semantics for the compiler, so most compilers will just 
+> make it
+> be "I will not touch this access in any way, shape, or form". Including
+> even trivially correct instruction optimization/combination.
 
-Please don't re-introduce tasklist_lock unless strictly needed. And in this case
-it doesn't help, sys_getrlimit() changes ->rlim[] under task_lock().
+It's just a (target-specific, perhaps) missed-optimisation kind
+of bug in GCC.  Care to file a bug report?
 
-Hovewer, I think the whole patch is not right. The "tsk" itself is pinned, but its
-->signal is not stable and can be == NULL.
+> but is
+> (again) something that gcc doesn't dare do, since "i" is volatile.
 
-You can use lock_task_sighand() to access ->signal.
+Just nobody taught it it can do this; perhaps no one wanted to
+add optimisations like that, maybe with a reasoning like "people
+who hit the go-slow-in-unspecified-ways button should get what
+they deserve" ;-)
 
-Oleg.
+
+Segher
 
