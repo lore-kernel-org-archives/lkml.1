@@ -1,71 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbXHQEtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbXHQExW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759228AbXHQEtz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 00:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbXHQEts
+	id S1758097AbXHQExW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 00:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbXHQExM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 00:49:48 -0400
-Received: from ihemail2.lucent.com ([135.245.0.35]:51388 "EHLO
-	ihemail2.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752697AbXHQEtr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 00:49:47 -0400
-Message-ID: <46C528D4.9010904@alcatel-lucent.com>
-Date: Fri, 17 Aug 2007 12:49:24 +0800
-From: gshan <gshan@alcatel-lucent.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: NFS client show nothing for "ls" command.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 17 Aug 2007 00:53:12 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:45862 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753796AbXHQExK (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 00:53:10 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Marc Perkel <mperkel@yahoo.com>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>, Phillip Susi <psusi@cfl.rr.com>,
+       Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: Thinking outside the box on file systems
+In-Reply-To: Your message of "Thu, 16 Aug 2007 21:24:22 PDT."
+             <826926.60792.qm@web52510.mail.re2.yahoo.com>
+From: Valdis.Kletnieks@vt.edu
+References: <826926.60792.qm@web52510.mail.re2.yahoo.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1187326371_6461P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Aug 2007 04:49:28.0046 (UTC) FILETIME=[FE0880E0:01C7E089]
+Date: Fri, 17 Aug 2007 00:52:51 -0400
+Message-ID: <21543.1187326371@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+--==_Exmh_1187326371_6461P
+Content-Type: text/plain; charset=us-ascii
 
-Recently, I got a funny problem that my NFS client can't show some of 
-mounted directories. These directories that can't be showed by "ls" 
-command have great deals of files.
+On Thu, 16 Aug 2007 21:24:22 PDT, Marc Perkel said:
 
-For example. I have a directory on NFS server log and there are 69 
-files. I can't show it's child files through NFS.
+> And then everything that's stored as /1/2/3/4 is still
+> the same but the sections resolve to different names.
+At that point, you need to go re-think your full-pathname permission scheme,
+because that severely broke it.
 
----On NFS server---
-bash-2.05b# ls
-1   13  17  20  24  28  31  35  39  42  46  5   53  57  60  64  68  9
-10  14  18  21  25  29  32  36  4   43  47  50  54  58  61  65  69
-11  15  19  22  26  3   33  37  40  44  48  51  55  59  62  66  7
-12  16  2   23  27  30  34  38  41  45  49  52  56  6   63  67  8
+> I'm sure there are errors in my logic but I'm trying
+> to show that if you are persistent in trying to come
+> up with ideas on how to do something you will
+> eventually make it work.
 
----On NFS client---
-# ls
-#
+Not true - there are *large* fields where *no* amount of persistence will
+make it work - squaring a circle or trisecting an angle by geometric means,
+perpetual motion machines, and many broken-as-designed computer programs.
 
-After I delete one file from NFS server side, everything becomes OK.
+>                           But if you are looking for
+> ways to make it not work then you probably won't solve
+> it.
 
----On NFS server---
-bash-2.05b# rm 69
-bash-2.05b# ls
-1   13  17  20  24  28  31  35  39  42  46  5   53  57  60  64  68
-10  14  18  21  25  29  32  36  4   43  47  50  54  58  61  65  7
-11  15  19  22  26  3   33  37  40  44  48  51  55  59  62  66  8
-12  16  2   23  27  30  34  38  41  45  49  52  56  6   63  67  9
+Right.  It's not *our* job to solve your problem. It's *our* job to find
+ways to not make it work - those are called *bugs*.  We try very hard to keep
+buggy code and ideas out of the kernel.  So we make it difficult for bugs.
 
----On NFS client---
-# ls
-1   13  17  20  24  28  31  35  39  42  46  5   53  57  60  64  68
-10  14  18  21  25  29  32  36  4   43  47  50  54  58  61  65  7
-11  15  19  22  26  3   33  37  40  44  48  51  55  59  62  66  8
-12  16  2   23  27  30  34  38  41  45  49  52  56  6   63  67  9
-#
+> So the correct response to this message isn't to prove
+> that my method won't work, but to come up with a
 
-I also scrapped the packets through ethereal and saw that packet sent at 
-case 1) isn't valid. It only has 3 fileds: ., .. and last. I suppose the 
-problem came from NFS server side because we can't received valid NFS 
-packet for such directories with plenty of files. Anybody knew what's 
-the root cause?
+You're the one proposing something.  *You* get to come up with something
+that works.  It's *our* job to review and comment and point out problems.
+You want to get something to happen, you take the comments, and use them
+to improve the result. We point out every possible issue we can find (and
+maybe suggest ways to fix them). That's what code review is about.
 
-Thanks,
-Gavin
+And if you think people like me and Kyle are rough on you, I suggest you go
+back in the archives and read what people like Al Viro and Chris Hellwig
+had to say about ReiserFS4.  And *that* was not just a hand-wave like
+you're doing, that was an actual *working* filesystem.
+
+> method that will work. You have to look for a solution
+> rather than attack other people's solutions.
+
+No, *you* have to look for a solution that is good enough to withstand the
+combined scrutiny of everybody on the linux-kernel list.  That's why Linux
+works, and why we're able to have several *million* lines of changes between
+2.6.2N and 2.6.2(N+1), and only have several dozen things on the "known
+regressions" list.
+
+> That's what thinking outside the box means.
+> 
+> Impossible = Challenge
+
+Good. Let us know when you come up with something that actually works.
+
+
+
+--==_Exmh_1187326371_6461P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGxSmjcC3lWbTT17ARAmUUAKCBvKixm2Q9qZJZ+60HCO6GIYztzACgomj1
+UPtVZ+Mb7uFIQiTIHOCwyOY=
+=jctq
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1187326371_6461P--
