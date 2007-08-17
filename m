@@ -1,92 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765894AbXHQS2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763550AbXHQSet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765894AbXHQS2b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 14:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbXHQS1n
+	id S1763550AbXHQSet (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 14:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbXHQSej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 14:27:43 -0400
-Received: from smtp111.sbc.mail.re2.yahoo.com ([68.142.229.94]:47477 "HELO
-	smtp111.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756013AbXHQS1m (ORCPT
+	Fri, 17 Aug 2007 14:34:39 -0400
+Received: from web53807.mail.re2.yahoo.com ([206.190.36.202]:40864 "HELO
+	web53807.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751608AbXHQSei (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 14:27:42 -0400
+	Fri, 17 Aug 2007 14:34:38 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=h51MBt7uB3PlF+b6AruUqMlmdHdjIVLGei0t1qawh0TsQFTr5elMe/575/hiiCuD4LPtP2Fkoq7MfalobX3Te9bZa0VofrZddeGIMeWNO9aBO/F2mTcvgqDMmmpj0N2bxvIYjQOzlhOlWR2c0clm/3laCz2Odv80a/wFC/pToVQ=  ;
-X-YMail-OSG: m9DHcmAVM1mFguAXDAADJ2LfjaTLhsiuUOkBUK802S5uueagCw95CHTy5vzlKI.H6VCB9zNz32h1N7VlTEQc0FfvxD9f7xqan3CE255OTVjvDKUKE7zjL1lRGZYOGtOMquqUIB1SjIXxSfY-
-From: David Brownell <david-b@pacbell.net>
-To: Bryan Wu <bryan.wu@analog.com>
-Subject: Re: [PATCH 02/12] Blackfin arch: Add label to call new GPIO API
-Date: Fri, 17 Aug 2007 11:24:54 -0700
-User-Agent: KMail/1.9.6
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-References: <11865441373719-git-send-email-bryan.wu@analog.com> <1186544139342-git-send-email-bryan.wu@analog.com>
-In-Reply-To: <1186544139342-git-send-email-bryan.wu@analog.com>
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=K3Nbju62m4Nwi3wsMQ6gpQ4vIqCbppbKOXnjWXVFMtG9lZ6hCIAAsIhMuxJdwRvb/Qmw0UG9UhgXl+a47X9MzwGRJ7X25yA9dsrFgu/VfqZYQpRNZsecoku4SG0RsftKVOeJiox3P6WgOtCLsJGcVHhM6V7mMD5ZEZgQ1bSDCAw=;
+X-YMail-OSG: MdKrJGMVM1kTdg6TN_ymVleb9ywtQXAKGTcXH1ZwCHgzLzAYoZvCmQMBGqXHBO_9irVNPgo67N6AT1FO5LnqTWPDmb0TwiD3Z7nH4FuZXatD3JVgZck-
+Date: Fri, 17 Aug 2007 11:34:37 -0700 (PDT)
+From: K Naru <squat_rack@yahoo.com>
+Subject: [Patch 2.6.22.2 ] : drivers/net/via-rhine.c:   Offload checksum handling to VT6105M
+To: rl@hellgate.ch
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200708171124.54839.david-b@pacbell.net>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <534451.72377.qm@web53807.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Again, the patch descriptions need work.  This changes the
-IRQ code (to add those labels).  $SUBJECT doesn't mention IRQs,
-neither does the description ...
+From: Kim Naru (squat_rack@yahoo.com)
+
+Added support to offload TCP/UDP/IP checksum to the
+VIA Technologies VT6105M chip.
+Firstly, let the stack know this chip is capable of
+doing its own checksum(IPV4 only).
+Secondly offload checksum to VT6105M, if necessary. 
 
 
-On Tuesday 07 August 2007, Bryan Wu wrote:
-> --- a/arch/blackfin/mach-common/ints-priority-dc.c
-> +++ b/arch/blackfin/mach-common/ints-priority-dc.c
-> @@ -221,7 +221,7 @@ static unsigned int bf561_gpio_irq_startup(unsigned int irq)
->  
->         if (!(gpio_enabled[gpio_bank(gpionr)] & gpio_bit(gpionr))) {
->  
-> -               ret = gpio_request(gpionr, NULL);
-> +               ret = gpio_request(gpionr, "IRQ");
->                 if (ret)
->                         return ret;
->  
-> @@ -261,7 +261,7 @@ static int bf561_gpio_irq_type(unsigned int irq, unsigned int type)
->  
->                 if (!(gpio_enabled[gpio_bank(gpionr)] & gpio_bit(gpionr))) {
->  
-> -                       ret = gpio_request(gpionr, NULL);
-> +                       ret = gpio_request(gpionr, "IRQ");
->                         if (ret)
->                                 return ret;
->  
+Verbose Mode:
 
-Just for the record, this is an unusual way to use these calls.
+#1. Define 3 bits(18,19,20) in Transmit Descriptor 1
+of chip, which affect checksum processing.
+The prefix(TDES1) for the 3 variables is the short
+name for Transmit Descriptior 1.
+#2. In rhine_init_one(), if pci_rev >=  VT6105M then
+set  NETIF_F_IP_CSUM(see skbuff.h for details).
+#3. In rhine_start_tx() if NETIF_F_IP_CSUM is set AND
+the stack requires a checksum then
+set either bit 19(UDP),20(TCP) AND bit 18(IP).
 
-Other platforms completely decouple these issues from the
-IRQ infrastructure ... doing the pinmux and gpio claiming
-separately from the request_irq()/free_irq() paths, mostly
-as part of board setup.  Doing all of that "early":
+Note : The numbered items above(i.e.#1,#2,#3) denote
+pseudo code.
 
- - keeps those error returns from causing hard-to-track-down
-   runtime bugs;
+This patch was developed and tested on Imedia
+linux-2.6.20 under a PC-Engines Alix System board
+(www.pcengines.ch/alix.htm). It was tested(compilation
+only) on linux-2.6.22.2. The minor code change between
+2.6.20 and 2.6.22 is the use of ip_hdr() in 2.26.22.
 
- - works always, even on platforms where a given IRQ may
-   appear on any of several pins/balls;
+In 2.6.20 :
+                struct iphdr *ip = skb->nh.iph;
+In 2.6.22 :
+                const struct iphdr *ip = ip_hdr(skb);
 
- - makes it easier to cross-check against board schematics,
-   by keeping most board-specific setup in one source file;
+Testing:
 
- - shrinks the kernel's runtime footprint;
 
- - allows the label to be more descriptive ... describeing
-   exactly *which* IRQ, so that using the labels for better
-   diagnostics actually gives better diagnostics.
+ttcp,netperf ftp and top  where used. There appears to
+be a small CPU utilization gain. Throughput results 
+where more inconclusive.
 
-Again, not "wrong"; but probably sub-optimal.  You might
-want to move towards earlier binding now, while Linux is
-still young on Blackfin and you don't have legacy code to
-worry about.
+The data sheet used to get information is 'VT6105M
+Data Sheet, Revision 1.63  June21,2006'.
 
-- Dave
+Signed-off-by: Kim Naru (squat_rack@yahoo.com)
 
+---
+
+
+--- drivers/net/via-rhine.c     2007-08-17
+00:24:33.000000000 -0700
++++ drivers/net/via-rhine.c.orig        2007-08-15
+05:03:20.000000000 -0700
+@@ -95,8 +95,6 @@ static const int
+multicast_filter_limit 
+ #include <linux/netdevice.h>
+ #include <linux/etherdevice.h>
+ #include <linux/skbuff.h>
+-#include <linux/in.h>
+-#include <linux/ip.h>
+ #include <linux/init.h>
+ #include <linux/delay.h>
+ #include <linux/mii.h>
+@@ -345,9 +343,6 @@ struct tx_desc {
+ 
+ /* Initial value for tx_desc.desc_length, Buffer size
+goes to bits 0-10 */
+ #define TXDESC         0x00e08000
+-#define TDES1_TCPCK    0x00100000  /* Bit 20,
+Transmit Desc 1 (VT6105M Data Sheet 1.63) */
+-#define TDES1_UDPCK    0x00080000  /* Bit 19,
+Transmit Desc 1 (VT6105M Data Sheet 1.63) */     
+-#define TDES1_IPCK     0x00040000  /* Bit 18,
+Transmit Desc 1 (VT6105M Data Sheet 1.63) */     
+ 
+ enum rx_status_bits {
+        RxOK=0x8000, RxWholePkt=0x0300, RxErr=0x008F
+@@ -793,9 +788,6 @@ static int __devinit
+rhine_init_one(stru
+        if (rp->quirks & rqRhineI)
+                dev->features |=
+NETIF_F_SG|NETIF_F_HW_CSUM;
+ 
+-       if (pci_rev >=  VT6105M)    
+-               dev->features |= NETIF_F_IP_CSUM;   /*
+tell stack chip does checksum */
+-
+        /* dev->name not defined before
+register_netdev()! */
+        rc = register_netdev(dev);
+        if (rc)
+@@ -1270,20 +1262,6 @@ static int
+rhine_start_tx(struct sk_buff
+ 
+        /* lock eth irq */
+        spin_lock_irq(&rp->lock);
+-
+-       if ((dev->features & NETIF_F_IP_CSUM) &&
+(skb->ip_summed == CHECKSUM_PARTIAL)) { 
+-               const struct iphdr *ip = ip_hdr(skb);
+-
+-               /* offload checksum to chip. */
+-
+-               if (ip->protocol == IPPROTO_TCP)
+-                       rp->tx_ring[entry].desc_length
+|= TDES1_TCPCK;
+-               else if (ip->protocol == IPPROTO_UDP)
+-                       rp->tx_ring[entry].desc_length
+|=  TDES1_UDPCK;
+-               rp->tx_ring[entry].desc_length |= 
+TDES1_IPCK;
+-
+-       }
+-
+        wmb();
+        rp->tx_ring[entry].tx_status =
+cpu_to_le32(DescOwn);
+        wmb();
+
+
+
+       
+____________________________________________________________________________________
+Take the Internet to Go: Yahoo!Go puts the Internet in your pocket: mail, news, photos & more. 
+http://mobile.yahoo.com/go?refer=1GNXIC
