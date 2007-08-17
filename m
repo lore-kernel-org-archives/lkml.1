@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932467AbXHQVb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbXHQVd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932467AbXHQVb5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 17:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932241AbXHQVas
+	id S932282AbXHQVd3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 17:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759926AbXHQVdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 17:30:48 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:34278 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765916AbXHQVaq (ORCPT
+	Fri, 17 Aug 2007 17:33:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33280 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760456AbXHQVdT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 17:30:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UA42tAqgMQED+RVnNhwegHhd9xyTkacFmevEbLPEgjeXwYI5oljKryO2M8u/hul+GggLiHex8Y1B7rp3/bbw0JY3N14HnJrD0II7JnNhA5AWHzXVnWoNkoQiW9PGjlHJqfMZl8nBLK5daN396GSeSKiPW5+g6pCwLxLNVBYXoRI=
-Message-ID: <9a8748490708171430u2be506canf640d5c8c97149c6@mail.gmail.com>
-Date: Fri, 17 Aug 2007 23:30:45 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Xu Yang" <risingsunxy@googlemail.com>
-Subject: Re: how to add debug information into the vmlinux
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <ab40e9c0708171349n73e35f58p5f5c092b54ddeb45@mail.gmail.com>
+	Fri, 17 Aug 2007 17:33:19 -0400
+Date: Sat, 18 Aug 2007 03:16:01 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Christoph Lameter <clameter@sgi.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kfree(0) - ok?
+In-Reply-To: <Pine.LNX.4.64.0708171413190.9635@schroedinger.engr.sgi.com>
+Message-ID: <alpine.LFD.0.999.0708180309320.3666@enigma.security.iitk.ac.in>
+References: <46C233CB.9000602@am.sony.com> <1187132149.2618.2.camel@laptopd505.fenrus.org>
+ <alpine.LFD.0.999.0708150454480.6482@enigma.security.iitk.ac.in>
+ <20070817112253.e6a7cb33.akpm@linux-foundation.org>
+ <alpine.LFD.0.999.0708180011570.3666@enigma.security.iitk.ac.in>
+ <Pine.LNX.4.64.0708171413190.9635@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ab40e9c0708171349n73e35f58p5f5c092b54ddeb45@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/08/07, Xu Yang <risingsunxy@googlemail.com> wrote:
-> Hello everyone,
->
-> I am trying to port kernel 2.6.19 onto my system.so I need the c code
-> , which can show me where the program is running. I add -g when I
-> compile it.
->
-You shouldn't need to do that manually, simply go into "make
-menuconfig", enter the "Kernel hacking" menu and select the "Kernel
-debugging" and "Compile the kernel with debug info" options.
-You may also want to enable "Compile the kernel with frame pointers"
-and various other options in that menu to get more debug info.
 
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+On Fri, 17 Aug 2007, Christoph Lameter wrote:
+
+> On Sat, 18 Aug 2007, Satyam Sharma wrote:
+> 
+> > Hmm, I didn't know ksize(NULL) was also allowed to succeed (and
+> > return 0).
+> 
+> That was merged over my objections. IMHO ksize(NULL) should fail since we 
+> are determining the size of an unallocated object.
+
+Agreed, I'd have implemented ksize() that oops'ed on NULL, myself.
+For that matter, I'd wish that kfree() oops'ed on NULL too (and have
+duly participated in such a flamewar once), but not many (if any) on
+this list seem to sympathize with such an opinion :-)
+
+> > Oh yes, of course. We want krealloc(NULL) cases to behave consistently 
+> > as expected, and letting ksize(NULL) return 0 means the code for 
+> > krealloc() can lose an extra "if (!p)" check that would otherwise have 
+> > been required. Cool.
+> 
+> krealloc should check for that.
+
+Agreed again, explicitly checking for that only sounds fair to me.
