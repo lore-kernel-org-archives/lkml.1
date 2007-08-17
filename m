@@ -1,93 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbXHQMbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbXHQMgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760006AbXHQMbP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 08:31:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbXHQMa7
+	id S1760098AbXHQMgo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 08:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbXHQMgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 08:30:59 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3828 "EHLO perches.com"
+	Fri, 17 Aug 2007 08:36:35 -0400
+Received: from jaguar.mkp.net ([192.139.46.146]:59145 "EHLO jaguar.mkp.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755610AbXHQMa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 08:30:58 -0400
-Subject: Re: RFHelp:  Splitting MAINTAINERS into maintainers/*
-	and	Makefile/Kconfig support
-From: Joe Perches <joe@perches.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <46C53F3F.5060108@redhat.com>
-References: <1187297496.5906.113.camel@localhost>
-	 <46C53F3F.5060108@redhat.com>
-Content-Type: text/plain
-Date: Fri, 17 Aug 2007 05:30:41 -0700
-Message-Id: <1187353841.822.60.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	id S1754251AbXHQMgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 08:36:35 -0400
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Gregor Jasny <gjasny@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux1394-devel@lists.sourceforge.net
+Subject: Re: Corrupted filesystem with new Firewire stack
+From: "Martin K. Petersen" <mkp@mkp.net>
+Organization: mkp.net
+References: <9d2cd630708151447u7e415712u17e974859fbd5481@mail.gmail.com>
+	<46C3EE1F.40309@s5r6.in-berlin.de>
+Date: Fri, 17 Aug 2007 08:36:33 -0400
+In-Reply-To: <46C3EE1F.40309@s5r6.in-berlin.de> (Stefan Richter's message of "Thu, 16 Aug 2007 08:26:39 +0200")
+Message-ID: <yq1ps1m5odq.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-17 at 02:25 -0400, Chris Snook wrote:
-> The whole point of MAINTAINERS is to have one central repository for this 
-> information, instead of scattering it throughout the various source files.  If 
-> that file is getting too unwieldy (and I don't think it is) then I could 
-> understand splitting it up hierarchically, for example having a 
-> drivers/net/MAINTAINERS that listed the info for all the net drivers.
+>>>>> "Stefan" == Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
 
-The individual MAINTAINERS files eliminates what Linus
-described as their "hotness".
-No shared updates by multiple parties.
+Stefan> There were some similar reports involving that "status write
+Stefan> for unknown orb".  I haven't found a way to reproduce it; I
+Stefan> noticed it only once in the logs here so far.
 
-> What you're suggesting is a less efficient equivalent to putting the info 
-> directly into the source files.
+I get those all the time.  Just do heavy ext3 I/O to the drive.
 
-I believe that wrong.
+Happens here on both a G4 and an intel Mini.  Both running FC7.
 
-Maintainer patterns frequently look like:
+Aug 17 08:24:08 mini kernel: firewire_sbp2: status write for unknown orb
+Aug 17 08:25:08 mini kernel: firewire_sbp2: sbp2_scsi_abort
+Aug 17 08:26:36 mini kernel: firewire_sbp2: status write for unknown orb
+Aug 17 08:27:36 mini kernel: firewire_sbp2: sbp2_scsi_abort
+Aug 17 08:33:51 mini kernel: firewire_sbp2: status write for unknown orb
+Aug 17 08:34:51 mini kernel: firewire_sbp2: sbp2_scsi_abort
 
-F:	arch/i386/kernel/cpu/cpufreq/
-F:	drivers/cpufreq/
-F:	include/linux/cpufreq.h
+Lacie drive in both cases.
 
-If in source, this would currently require 21 + 12 + 1 
-modifications instead of 1.
-
-> If that approach was enough to make people 
-> happy, we wouldn't have MAINTAINERS to begin with.
-
-I think the insertion of maintainers into source
-itself is wrong.  It's freeform, error prone and
-requires significant modifications to source files
-as maintainers come and go.
- 
-> Perhaps with a little automation it could be revived,
-
-Which is the help I'm looking for.
-
-Can someone please help here on ideas or implementation
-adding a makefile target for MAINTAINERS from files
-in a specific subdirectory?
-
-> though I think that adding a path pattern 
-> removes the need, while keeping it easier to parse by scripts.
-> I appreciate the effort to make MAINTAINERS more useful,
-> but please don't add  another 600 files to the tree.
-
-In the distributed form, you'll still end up with
-~400 new files spread all over the tree.
-
-Either way, you'll have hundreds of files.
-
-$ grep "^F:" MAINTAINERS |  sed -e "s/[A-Za-z0-9\_\*\.\-]*$//" | sort |
-uniq | wc -l
-415
-
-Centralized as maintainers/* or distributed as ../../../Maintainers
-
-Pick one, I don't much care, but I'm still looking for
-Makefile/KConfig help reassembling it into a single
-MAINTAINERS block similar to the current form.
-
-Help?
-
-cheers, Joe
-
+-- 
+Martin K. Petersen      http://mkp.net/
