@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932736AbXHQCo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764731AbXHQCpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932736AbXHQCo5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 22:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755163AbXHQCot
+	id S1764731AbXHQCpr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 22:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbXHQCp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 22:44:49 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:39028 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754989AbXHQCos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 22:44:48 -0400
-Message-ID: <387318684.03065@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 17 Aug 2007 10:44:44 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@osdl.org>, John Berthels <jjberthels@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] maps: PSS(proportional set size) accounting in
-	smaps
-Message-ID: <20070817024443.GA5521@mail.ustc.edu.cn>
-References: <20070816220516.782145952@mail.ustc.edu.cn> <20070816220849.064901548@mail.ustc.edu.cn> <20070817021346.GH30556@waste.org>
+	Thu, 16 Aug 2007 22:45:28 -0400
+Received: from ozlabs.org ([203.10.76.45]:36783 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933192AbXHQCpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 22:45:05 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070817021346.GH30556@waste.org>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18117.1287.779351.836552@cargo.ozlabs.ibm.com>
+Date: Fri, 17 Aug 2007 12:16:39 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Chris Snook <csnook@redhat.com>,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Satyam Sharma <satyam@infradead.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com>
+References: <20070816003948.GY9645@linux.vnet.ibm.com>
+	<Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
+	<18115.44462.622801.683446@cargo.ozlabs.ibm.com>
+	<20070816020042.GA30650@gondor.apana.org.au>
+	<18115.45316.702491.681906@cargo.ozlabs.ibm.com>
+	<alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in>
+	<alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in>
+	<18115.52863.638655.658466@cargo.ozlabs.ibm.com>
+	<20070816053945.GB32442@gondor.apana.org.au>
+	<18115.62741.807704.969977@cargo.ozlabs.ibm.com>
+	<20070816070907.GA964@gondor.apana.org.au>
+	<Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
+	<46C4ABA5.9010804@redhat.com>
+	<Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 09:13:47PM -0500, Matt Mackall wrote:
-> On Fri, Aug 17, 2007 at 06:05:17AM +0800, Fengguang Wu wrote:
-> > The "proportional set size" (PSS) of a process is the count of pages it has in
-> > memory, where each page is divided by the number of processes sharing it. So if
-> > a process has 1000 pages all to itself, and 1000 shared with one other process,
-> > its PSS will be 1500.
-> >                - lwn.net: "ELC: How much memory are applications really using?"
-> > 
-> > The PSS proposed by Matt Mackall is a very nice metic for measuring an process's
-> > memory footprint. So collect and export it via /proc/<pid>/smaps.
-> > 
-> > Matt Mackall's pagemap/kpagemap and John Berthels's exmap can also do the job.
-> > They are comprehensive tools. But for PSS, let's do it in the simple way. 
-> 
-> It's a bit odd that you attribute the description of PSS to LWN rather
-> than me. But anyway:
-> 
-> Acked-by: Matt Mackall <mpm@selenic.com>
+Christoph Lameter writes:
 
-Sorry and thank you!
-I'll change it in the next take.
+> No it does not have any volatile semantics. atomic_dec() can be reordered 
+> at will by the compiler within the current basic unit if you do not add a 
+> barrier.
 
+Volatile doesn't mean it can't be reordered; volatile means the
+accesses can't be eliminated.
+
+Paul.
