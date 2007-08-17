@@ -1,81 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbXHQLJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763908AbXHQLJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756674AbXHQLJS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 07:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760179AbXHQLIf
+	id S1763908AbXHQLJg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 07:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762265AbXHQLJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 07:08:35 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:45182 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758915AbXHQLI2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 07:08:28 -0400
-Message-ID: <46C581AA.7020807@s5r6.in-berlin.de>
-Date: Fri, 17 Aug 2007 13:08:26 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Satyam Sharma <satyam@infradead.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi> <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com> <18117.1287.779351.836552@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708161953310.30176@woody.linux-foundation.org> <18117.6495.397597.582736@cargo.ozlabs.ibm.com> <20070817035342.GA14744@gondor.apana.org.au> <alpine.LFD.0.999.0708171142550.3666@enigma.security.iitk.ac.in> <46C55E90.7010407@yahoo.com.au>
-In-Reply-To: <46C55E90.7010407@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 17 Aug 2007 07:09:23 -0400
+Received: from main.gmane.org ([80.91.229.2]:41812 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762309AbXHQLJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 07:09:21 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Andreas Moroder <andreas.moroder@sb-brixen.it>
+Subject: Unable to handle kernel NULL pointer dereference at 0000000000000001
+ RIP
+Date: Fri, 17 Aug 2007 12:59:36 +0200
+Message-ID: <fa3v2o$m16$1@sea.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: merlin2.provinz.bz.it
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Satyam Sharma wrote:
->> And we have driver / subsystem maintainers such as Stefan
->> coming up and admitting that often a lot of code that's written to use
->> atomic_read() does assume the read will not be elided by the compiler.
-> 
-> So these are broken on i386 and x86-64?
+Hello,
 
-The ieee1394 and firewire subsystems have open, undiagnosed bugs, also
-on i386 and x86-64.  But whether there is any bug because of wrong
-assumptions about atomic_read among them, I don't know.  I don't know
-which assumptions the authors made, I only know that I wasn't aware of
-all the properties of atomic_read until now.
+our SLES production system
+2.6.5-7.252-smp #1 SMP Tue Feb 14 11:11:04 UTC 2006 x86_64 x86_64 x86_64
+stopped with the following messages in the log
+Is this a known bug in this version and is it solved in the next versions.
 
-> Are they definitely safe on SMP and weakly ordered machines with
-> just a simple compiler barrier there? Because I would not be
-> surprised if there are a lot of developers who don't really know
-> what to assume when it comes to memory ordering issues.
-> 
-> This is not a dig at driver writers: we still have memory ordering
-> problems in the VM too (and probably most of the subtle bugs in
-> lockless VM code are memory ordering ones). Let's not make up a
-> false sense of security and hope that sprinkling volatile around
-> will allow people to write bug-free lockless code. If a writer
-> can't be bothered reading API documentation
+As I wrote it is a production server so I can't change away from reiserfs.
 
-...or, if there is none, the implementation specification (as in case of
-the atomic ops), or, if there is none, the implementation (as in case of
-a some infrastructure code here and there)...
+Thanks
+Andreas Moroder
 
-> and learning the Linux memory model, they can still be productive
-> writing safely locked code.
+Aug 16 22:00:07 falcon1 su: pam_unix2: session started for user oracle, 
+service su
+Aug 16 22:00:37 falcon1 kernel: Unable to handle kernel NULL pointer 
+dereference at 0000000000000001 RIP:
+Aug 16 22:00:37 falcon1 kernel: 
+<ffffffffa00b3d26>{:reiserfs:reiserfs_clear_inode+22}
+Aug 16 22:00:37 falcon1 kernel: PML4 12c07a067 PGD 103721067 PMD 0
+Aug 16 22:00:37 falcon1 kernel: Oops: 0002 [1] SMP
+Aug 16 22:00:37 falcon1 kernel: CPU 2
+Aug 16 22:00:37 falcon1 kernel: Pid: 224, comm: kswapd0 Tainted: P   UM 
+  (2.6.5-7.252-smp SLES9_SP3_BRANCH-200602141111040000)
+Aug 16 22:00:37 falcon1 kernel: RIP: 0010:[<ffffffffa00b3d26>] 
+<ffffffffa00b3d26>{:reiserfs:reiserfs_clear_inode+22}
+Aug 16 22:00:37 falcon1 kernel: RSP: 0000:000001013fdfdc08  EFLAGS: 00010213
+Aug 16 22:00:37 falcon1 kernel: RAX: ffffffffa00b3d10 RBX: 
+00000100b8fd49f8 RCX: ffffffff8053fa80
+Aug 16 22:00:37 falcon1 kernel: RDX: 000001013fdfdc78 RSI: 
+00000100b8fd4680 RDI: 0000000000000001
+Aug 16 22:00:37 falcon1 kernel: RBP: 00000100b8fd49f8 R08: 
+000001000a75c810 R09: 0000000000000001
+Aug 16 22:00:37 falcon1 kernel: R10: 0000000000000000 R11: 
+00000000fffffb11 R12: 000001013fdfdc78
+Aug 16 22:00:37 falcon1 kernel: R13: 0000000000000031 R14: 
+ffffffff803e6b20 R15: 000001013fdfdc78
+Aug 16 22:00:37 falcon1 kernel: FS:  0000000000000000(0000) 
+GS:ffffffff8057d000(0000) knlGS:0000000000000000
+Aug 16 22:00:37 falcon1 kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 
+000000008005003b
+Aug 16 22:00:37 falcon1 kernel: CR2: 0000000000000001 CR3: 
+000000000a6b1000 CR4: 00000000000006e0
+Aug 16 22:00:37 falcon1 kernel: Process kswapd0 (pid: 224, threadinfo 
+000001013fdfc000, task 000001013fe2aa40)
+Aug 16 22:00:37 falcon1 kernel: Stack: 00000100b8fd49f8 ffffffff801aa7eb 
+00000100b8fd4a08 ffffffff801aa898
+Aug 16 22:00:37 falcon1 kernel:        0000010005147530 0000010046a47d08 
+0000010046a47cf8 0000000000000080
+Aug 16 22:00:37 falcon1 kernel:        0000000000000080 ffffffff801aab17
+Aug 16 22:00:37 falcon1 kernel: Call 
+Trace:<ffffffff801aa7eb>{clear_inode+155} 
+<ffffffff801aa898>{dispose_list+104}
+Aug 16 22:00:37 falcon1 kernel: 
+<ffffffff801aab17>{shrink_icache_memory+471} 
+<ffffffff80172c55>{shrink_slab+245}
+Aug 16 22:00:37 falcon1 kernel: 
+<ffffffff80172ecd>{balance_pgdat+477} <ffffffff80173226>{kswapd+390}
+Aug 16 22:00:37 falcon1 kernel:        <ffffffff80141461>{do_exit+3505} 
+<ffffffff8013d3e0>{autoremove_wake_function+0}
+Aug 16 22:00:37 falcon1 kernel: 
+<ffffffff8013d3e0>{autoremove_wake_function+0} 
+<ffffffff801111b7>{child_rip+8}
+Aug 16 22:00:37 falcon1 kernel:        <ffffffff801730a0>{kswapd+0} 
+<ffffffff801111af>{child_rip+0}
+Aug 16 22:00:37 falcon1 kernel:
+Aug 16 22:00:37 falcon1 kernel:
+Aug 16 22:00:37 falcon1 kernel: Code: f0 ff 0f 0f 94 c0 84 c0 74 05 e8 
+0b a4 0b e0 48 8b 7b e0 48
+Aug 16 22:00:37 falcon1 kernel: RIP 
+<ffffffffa00b3d26>{:reiserfs:reiserfs_clear_inode+22} RSP <000001013fdfdc08>
+Aug 16 22:00:37 falcon1 kernel: CR2: 0000000000000001
 
-Provided they are aware that they might not have the full picture of the
-lockless primitives.  :-)
--- 
-Stefan Richter
--=====-=-=== =--- =---=
-http://arcgraph.de/sr/
