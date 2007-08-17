@@ -1,74 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763975AbXHQPy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763543AbXHQP4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763975AbXHQPy1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 11:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbXHQPyH
+	id S1763543AbXHQP4j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 11:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756943AbXHQP4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 11:54:07 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:45394 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752355AbXHQPyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 11:54:04 -0400
-Date: Fri, 17 Aug 2007 08:53:57 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, herbert@gondor.apana.org.au,
-       123.oleg@gmail.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Daniel Walker <dwalker@mvista.com>, josht@linux.vnet.ibm.com,
-       minyard@acm.org
-Subject: Re: [PATCH] lockdep: annotate rcu_read_{,un}lock()
-Message-ID: <20070817155357.GD8464@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <af57f1ac0708141130v729fa636k3150673809ec20a8@mail.gmail.com> <E1ILEJr-0005Fl-00@gondolin.me.apana.org.au> <20070815.144628.104052147.davem@davemloft.net> <1187274307.6114.92.camel@twins> <20070816160145.GA16957@linux.vnet.ibm.com> <1187337405.6114.123.camel@twins>
+	Fri, 17 Aug 2007 11:56:31 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:40369 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752536AbXHQP4a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 11:56:30 -0400
+Date: Fri, 17 Aug 2007 21:19:51 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Containers <containers@lists.osdl.org>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric W Biederman <ebiederm@xmission.com>
+Subject: Re: [-mm PATCH 0/9] Memory controller introduction (v6)
+Message-ID: <20070817154951.GA1393@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20070817084228.26003.12568.sendpatchset@balbir-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1187337405.6114.123.camel@twins>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070817084228.26003.12568.sendpatchset@balbir-laptop>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 09:56:45AM +0200, Peter Zijlstra wrote:
-> On Thu, 2007-08-16 at 09:01 -0700, Paul E. McKenney wrote:
-> > On Thu, Aug 16, 2007 at 04:25:07PM +0200, Peter Zijlstra wrote:
-> > > 
-> > > There seem to be some unbalanced rcu_read_{,un}lock() issues of late,
-> > > how about doing something like this:
-> > 
-> > This will break when rcu_read_lock() and rcu_read_unlock() are invoked
-> > from NMI/SMI handlers -- the raw_local_irq_save() in lock_acquire() will
-> > not mask NMIs or SMIs.
-> > 
-> > One approach would be to check for being in an NMI/SMI handler, and
-> > to avoid calling lock_acquire() and lock_release() in those cases.
+On Fri, Aug 17, 2007 at 02:12:28PM +0530, Balbir Singh wrote:
+Hi Andrew,
+ 
+> The code was also tested on a power box with regular machine usage scenarios,
+> the config disabled and with a stress suite that touched all the memory
+> in the system and was limited in a container.
 > 
-> It seems:
+> Dhaval ran several tests on v6 and gave his thumbs up to the controller
+> (a hard to achieve goal :-) ).
 > 
-> #define nmi_enter()		do { lockdep_off(); __irq_enter(); } while (0)
-> #define nmi_exit()		do { __irq_exit(); lockdep_on(); } while (0)
+
+I've been running v6 on x86 and there are a few things I've tried. Most
+of those results Balbir has already posted.
+
+> Run kernbench stress
+> --------------------
+> Three simultaneously and with one inside a container of 800 MB.
 > 
-> Should make it all work out just fine. (for NMIs at least, /me fully
-> ignorant of the workings of SMIs)
 
-Very good point, at least for NMIs on i386 and x86_64.  Can't say that I
-know much about SMIs myself.  Or about whatever equivalents to NMIs and
-SMIs might exist on other platforms.  :-/  Of course, the other platforms
-could be handled by making the RCU lockdep operate only on i386 and x86_64
-if required.
+The idea here was to create pressure inside the container while having
+global pressure.
 
-Corey, any advice on SMI handlers?  Is there something like nmi_enter()
-and nmi_exit() that allows disabing lockdep?
-
-> > Another approach would be to use sparse, which has checks for
-> > rcu_read_lock()/rcu_read_unlock() nesting.
 > 
-> Yeah, but one more method can never hurt, no? :-)
+> Kernbench results running within the container of 800 MB
+> --------------------------------------------------------
+> 
+> Thu Aug 16 22:34:59 IST 2007
+> 2.6.23-rc2-mm2-mem-v6
+> Average Half load -j 4 Run (std deviation):
+> Elapsed Time 466.548 (47.6014)
+> User Time 876.598 (10.5273)
+> System Time 223.136 (1.29247)
+> Percent CPU 237.2 (23.2744)
+> Context Switches 146351 (6539.91)
+> Sleeps 174003 (5031.94)
+> 
+> Average Optimal load -j 32 Run (std deviation):
+> Elapsed Time 423.496 (60.625)
+> User Time 897.285 (23.0391)
+> System Time 228.836 (6.11205)
+> Percent CPU 257.1 (40.9022)
+> Context Switches 262134 (123397)
+> Sleeps 270815 (103597)
+> 
+> 
+> Kernbench results running within the default container
+> ------------------------------------------------------
+> 
+> Thu Aug 16 22:34:33 IST 2007
+> 2.6.23-rc2-mm2-mem-v6
+> Average Half load -j 4 Run (std deviation):
+> Elapsed Time 424.17 (3.45908)
+> User Time 841.992 (5.40178)
+> System Time 213.01 (0.706258)
+> Percent CPU 248.2 (0.83666)
+> Context Switches 134254 (9535.83)
+> Sleeps 167359 (6858.45)
+> 
+> Average Optimal load -j 32 Run (std deviation):
+> Elapsed Time 407.092 (108.932)
+> User Time 878.493 (38.6575)
+> System Time 222.155 (9.77127)
+> Percent CPU 278.4 (91.5826)
+> Context Switches 253836 (127708)
+> Sleeps 263760 (103468)
+> 
+> 
+> Kernbench results running within the default container
+> ------------------------------------------------------
+> 
+> Thu Aug 16 22:34:52 IST 2007
+> 2.6.23-rc2-mm2-mem-v6
+> Average Half load -j 4 Run (std deviation):
+> Elapsed Time 465.038 (48.5147)
+> User Time 874.742 (5.86563)
+> System Time 222.194 (0.561676)
+> Percent CPU 237.2 (22.5211)
+> Context Switches 144040 (7052.23)
+> Sleeps 172130 (5608.73)
+> 
+> Average Optimal load -j 32 Run (std deviation):
+> Elapsed Time 426.25 (62.34)
+> User Time 893.938 (20.6732)
+> System Time 227.717 (5.87502)
+> Percent CPU 255.6 (40.7163)
+> Context Switches 259560 (122953)
+> Sleeps 267402 (101801)
+> 
 
-Excellent point!
+I've been running v6 for sometime and it has been stable (still not
+been able to break/crash it, whereas v4 was broken within 1 hour :-) )
 
-I guess the next thing for me is to do a performance check.  Looks like
-CONFIG_DEBUG_LOCK_ALLOC is not on by default, so not violently worried
-about performance, but would be good to know.
+Andrew, I feel these patches whould be included in mm so that it gets
+wider testing.
 
-							Thanx, Paul
+-- 
+regards,
+Dhaval
+
+I would like to change the world but they don't give me the source code!
