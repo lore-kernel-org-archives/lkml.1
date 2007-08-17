@@ -1,73 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbXHQIf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761938AbXHQIfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760127AbXHQIf3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 04:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbXHQIfH
+	id S1761938AbXHQIfy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 04:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757754AbXHQIfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 04:35:07 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:5237 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755309AbXHQIfE (ORCPT
+	Fri, 17 Aug 2007 04:35:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34060 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756283AbXHQIfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 04:35:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=c+zTaybHbqfJOwqnrPYAeD12xN7RY+PS5kZe22YTvrxGK/zLntM4rRsO21UMTpD+Q92B0tP/b7RvP78l/1dwG5kShAR7yoBckq2aovhw1rhqxPfIXfs8oEfEgtq3Tunpv3MUFw8SkwO+joWToZWkwPg0nUMoupP9nOPCLc/3sKA=
-Message-ID: <af3ea28a0708170135r23f7f9a1tf028701e26e3db9c@mail.gmail.com>
-Date: Fri, 17 Aug 2007 16:35:00 +0800
-From: "ye janboe" <janboe.ye@gmail.com>
-To: eric.y.miao@gmail.com
-Subject: Re: how can I get an account on master.kernel.org machine
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <46C3FB01.9090203@gmail.com>
+	Fri, 17 Aug 2007 04:35:10 -0400
+Date: Fri, 17 Aug 2007 14:17:36 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       rpjday@mindspring.com, ak@suse.de, netdev@vger.kernel.org,
+       cfriesen@nortel.com, Andrew Morton <akpm@linux-foundation.org>,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
+       clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
+       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <46C54D94.5080803@yahoo.com.au>
+Message-ID: <alpine.LFD.0.999.0708171358520.3666@enigma.security.iitk.ac.in>
+References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com>
+ <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org>
+ <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org>
+ <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com>
+ <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in>
+ <46C54D94.5080803@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <af3ea28a0708151958h4af993e6o1db3b9adddc14294@mail.gmail.com>
-	 <20070815201421.ffbd84f3.randy.dunlap@oracle.com>
-	 <46C3FB01.9090203@gmail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy, Eric,
-Thanks you very much!
 
-There is only diffs in http://ftp.arm.linux.org.uk/pub/armlinux/kernel/git-cur/.
-What's these diffs base on, Linus' kernel tree?
 
-2007/8/16, eric miao <eric.y.miao@gmail.com>:
-> And if you purpose is only to download that tree, my suggestion is that
-> some of the git trees are not public like linux-arm so the owner can do
-> whatever he likes in the tree, and don't ever try to have access to it.
->
-> for linux-arm, it will be constantly pulled by Linus, unless you really
-> want the _most_ up-to-date patches, which you might find them at
->
->   http://ftp.arm.linux.org.uk/pub/armlinux/kernel/git-cur/
->
-> that folder will be constantly refreshed by the maintainer.
->
-> - eric
->
-> Randy Dunlap wrote:
-> > On Thu, 16 Aug 2007 10:58:41 +0800 ye janboe wrote:
-> >
-> >> I want to down linux-arm git repos, but I do not have an account on
-> >> master machine.
-> >
-> > see http://www.kernel.org/faq/#account
-> >
-> > ---
-> > ~Randy
-> > *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
->
->
+On Fri, 17 Aug 2007, Nick Piggin wrote:
+
+> Satyam Sharma wrote:
+> 
+> > #define atomic_read_volatile(v)				\
+> > 	({						\
+> > 		forget((v)->counter);			\
+> > 		((v)->counter);				\
+> > 	})
+> > 
+> > where:
+> 
+> *vomit* :)
+
+I wonder if this'll generate smaller and better code than _both_ the
+other atomic_read_volatile() variants. Would need to build allyesconfig
+on lots of diff arch's etc to test the theory though.
+
+
+> Not only do I hate the keyword volatile, but the barrier is only a
+> one-sided affair so its probable this is going to have slightly
+> different allowed reorderings than a real volatile access.
+
+True ...
+
+
+> Also, why would you want to make these insane accessors for atomic_t
+> types? Just make sure everybody knows the basics of barriers, and they
+> can apply that knowledge to atomic_t and all other lockless memory
+> accesses as well.
+
+Code that looks like:
+
+	while (!atomic_read(&v)) {
+		...
+		cpu_relax_no_barrier();
+		forget(v.counter);
+		        ^^^^^^^^
+	}
+
+would be uglier. Also think about code such as:
+
+	a = atomic_read();
+	if (!a)
+		do_something();
+
+	forget();
+	a = atomic_read();
+	... /* some code that depends on value of a, obviously */
+
+	forget();
+	a = atomic_read();
+	...
+
+So much explicit sprinkling of "forget()" looks ugly.
+
+	atomic_read_volatile()
+
+on the other hand, looks neater. The "_volatile()" suffix makes it also
+no less explicit than an explicit barrier-like macro that this primitive
+is something "special", for code clarity purposes.
+
+
+> > #define forget(a)	__asm__ __volatile__ ("" :"=m" (a) :"m" (a))
+> 
+> I like order(x) better, but it's not the most perfect name either.
+
+forget(x) is just a stupid-placeholder-for-a-better-name. order(x) sounds
+good but we could leave quibbling about function or macro names for later,
+this thread is noisy as it is :-)
