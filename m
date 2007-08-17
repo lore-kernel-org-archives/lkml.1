@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760510AbXHQHWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763454AbXHQHXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760510AbXHQHWR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 03:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbXHQHWD
+	id S1763454AbXHQHXF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 03:23:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbXHQHWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 03:22:03 -0400
-Received: from ns.suse.de ([195.135.220.2]:37931 "EHLO mx1.suse.de"
+	Fri, 17 Aug 2007 03:22:55 -0400
+Received: from mx0.karneval.cz ([81.27.192.123]:7403 "EHLO av1.karneval.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755357AbXHQHWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 03:22:01 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Date: Fri, 17 Aug 2007 17:21:54 +1000
+	id S1756274AbXHQHWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 03:22:54 -0400
+X-Greylist: delayed 1347 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Aug 2007 03:22:54 EDT
+Message-ID: <46C54787.1010909@stud.feec.vutbr.cz>
+Date: Fri, 17 Aug 2007 09:00:23 +0200
+From: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: GolovaSteek <golovasteek@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: nanosleep() accuracy
+References: <f40fb4250708161552ub87bf8ve8168eec1b3955e7@mail.gmail.com>
+In-Reply-To: <f40fb4250708161552ub87bf8ve8168eec1b3955e7@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18117.19602.616561.525863@notabene.brown>
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH 000 of 6] A few block-layer tidy-up patches.
-In-Reply-To: message from Jens Axboe on Friday August 17
-References: <20070816211551.11839.patches@notabene>
-	<20070816113638.GX23758@kernel.dk>
-	<18116.61035.621593.588647@notabene.brown>
-	<20070817061733.GD23758@kernel.dk>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday August 17, jens.axboe@oracle.com wrote:
-> > > Please inspect the #block-2.6.24 branch to see the result.
-> > 
-> > I don't know where to look for this.  I checked
-> >   http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git
-> > but they don't seem to be there.
-> > ??
+GolovaSteek skrev:
+> Hello!
+> I need use sleep with accurat timing.
+> I use 2.6.21 with rt-prempt patch.
+> with enabled rt_preempt, dyn_ticks, and local_apic
+> But
 > 
-> That's where it is, but the kernel.org mirroring is just horrible slow.
-> Just checked now and it's there.
+> req.tv_nsec = 300000;
+> req.tv_sec = 0;
+> nanosleep(&req,NULL)
+> 
+> make pause around 310-330 microseconds.
 
-I discovered I was looking in the wrong place - not being very
-familiar with git terminology.
-I found them and it looks right.
+How do you measure this?
+If you want to have something done every 300 microseconds, you must not 
+sleep for 300 microseconds in each iteration, because you'd accumulate 
+errors. Use a periodic timer or use the current time to compute how long 
+to sleep in each iteration. Take a look how cyclictest does it.
 
-I had a bit of a look at removing bio_data and ->buffer ...  the
-usages outside of drivers/ide are fairly easy to deal with - I might
-send a patch for that.  The drivers/ide stuff looks like a fairly
-substantial rewrite is in order.
-e.g.  idefloppy_packet_command_s seems to duplicate a lot of 
-  fields from 'struct request', and it should probably use the request
-  struct directly.
+> I tried to understend how work nanosleep(), but it not depends from
+> jiffies and from smp_apic_timer_interrupt.
+> 
+> When can accuracy be lost?
+> And how are process waked up?
+> 
+> 
+> GolovaSteek
 
-But a number of times ->buffer points to ->cmd, and there is no bio.
-I guess we should use bio_map_kern to make a bio?
+Don't forget the process will always have non-zero wakeup latency. It 
+takes some time to process an interrupt, wakeup the process and schedule 
+it to run on the CPU. 10-30 microseconds is not unreasonable.
 
-I'll see if I can come up with something.... testing it might be
-awkward.  I have an ide cdrom I can test on.  Maybe an ide disk,, but
-not an ide floppy :-)
-
-NeilBrown
+Michal
