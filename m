@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763920AbXHQKKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbXHQKnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763920AbXHQKKn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 06:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbXHQKKa
+	id S1759272AbXHQKnP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 06:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbXHQKnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 06:10:30 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33357 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755751AbXHQKK2 (ORCPT
+	Fri, 17 Aug 2007 06:43:04 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:53406 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753457AbXHQKnD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 06:10:28 -0400
-Date: Fri, 17 Aug 2007 15:53:02 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Paul Mackerras <paulus@samba.org>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       rpjday@mindspring.com, ak@suse.de, netdev@vger.kernel.org,
-       cfriesen@nortel.com, Andrew Morton <akpm@linux-foundation.org>,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <18117.28409.943948.355586@cargo.ozlabs.ibm.com>
-Message-ID: <alpine.LFD.0.999.0708171547050.3666@enigma.security.iitk.ac.in>
-References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com>
- <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org>
- <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org>
- <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com>
- <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
- <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in>
- <46C54D94.5080803@yahoo.com.au> <alpine.LFD.0.999.0708171358520.3666@enigma.security.iitk.ac.in>
- <18117.28409.943948.355586@cargo.ozlabs.ibm.com>
+	Fri, 17 Aug 2007 06:43:03 -0400
+Date: Fri, 17 Aug 2007 12:43:01 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Patrick McHardy <kaber@trash.net>
+cc: Netfilter Developer Mailing List 
+	<netfilter-devel@lists.netfilter.org>,
+       yasuyuki.kozakai@toshiba.co.jp,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: nf_conntrack_ipv4 must be loaded explicitly
+In-Reply-To: <46B22364.9060506@trash.net>
+Message-ID: <Pine.LNX.4.64.0708171242450.5492@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0708021937140.9319@fbirervta.pbzchgretzou.qr>
+ <46B22364.9060506@trash.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Aug 2 2007 20:33, Patrick McHardy wrote:
+>> End result:
+>>
+>> After loading nf_conntrack_ipv4.ko, everything works again (also with the
+>> "bad" ff09b7). But I have to load it explicitly, and I think that
+>> unfortunately breaks a lot of setups (such as mine) which assume ipv4
+>> connection tracking is always there.
+>
+> I already have a patch for this queued. I'll push it upstream once
+> I get a new power supply for the box I keep that tree on, hopefully
+> tommorrow.
 
-On Fri, 17 Aug 2007, Paul Mackerras wrote:
+What's that patch looking like?
 
-> Satyam Sharma writes:
-> 
-> > I wonder if this'll generate smaller and better code than _both_ the
-> > other atomic_read_volatile() variants. Would need to build allyesconfig
-> > on lots of diff arch's etc to test the theory though.
-> 
-> I'm sure it would be a tiny effect.
-> 
-> This whole thread is arguing about effects that are quite
-> insignificant.
 
-Hmm, the fact that this thread became what it did, probably means that
-most developers on this list do not mind thinking/arguing about effects
-or optimizations that are otherwise "tiny". But yeah, they are tiny
-nonetheless.
+
+thanks,
+	Jan
+-- 
