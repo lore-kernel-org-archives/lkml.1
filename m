@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbXHQTNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbXHQTez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755360AbXHQTNx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 15:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbXHQTNo
+	id S1755658AbXHQTez (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 15:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbXHQTet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 15:13:44 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:61424 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752690AbXHQTNo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 15:13:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=ogtTxzaEhEEPQIt+d9aRrHkirkmIQchTtVEvKp665l9e6x3QXpac8oFeKRQuetjxoLJqgwiykez7RZutBq9yqGKnJ5gvRA5uP9BHa04eQxOXKDQd6CeTmVCEcvKk8D55TDMCrQxsVrLAwYX/357EO93Yr1XNjuJgwqDtKMA/Y0k=
-Date: Fri, 17 Aug 2007 23:13:29 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Steve French <sfrench@samba.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] CIFS: check for granted memory
-Message-ID: <20070817191329.GA7218@cvg>
-MIME-Version: 1.0
+	Fri, 17 Aug 2007 15:34:49 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:51074 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750805AbXHQTes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 15:34:48 -0400
+Date: Fri, 17 Aug 2007 23:34:53 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH,RESEND] documentation: atomic_add_unless() doesn't imply mb() on failure
+Message-ID: <20070817193453.GA198@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds just a check for granted memory
-to prevent possible NULL pointer usage.
+(the explicit ack/nack from maintainers is wanted).
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+A "typical" implementation of atomic_add_unless() can return 0 immediately
+after the first atomic_read() (before doing cmpxchg). In that case it doesn't
+provide any barrier semantics. See include/asm-ia64/atomic.h as an example.
 
- fs/cifs/sess.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+We should either change the implementation, or fix the docs.
 
-diff --git a/fs/cifs/sess.c b/fs/cifs/sess.c
-index 2ea027d..892be9b 100644
---- a/fs/cifs/sess.c
-+++ b/fs/cifs/sess.c
-@@ -372,6 +372,10 @@ CIFS_SessSetup(unsigned int xid, struct cifsSesInfo *ses, int first_time,
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+ Documentation/atomic_ops.txt      |    3 ++-
+ Documentation/memory-barriers.txt |    2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff -puN Documentation/atomic_ops.txt~doc-atomic_add_unless-doesnt-imply-mb-on-failure Documentation/atomic_ops.txt
+--- a/Documentation/atomic_ops.txt~doc-atomic_add_unless-doesnt-imply-mb-on-failure
++++ a/Documentation/atomic_ops.txt
+@@ -137,7 +137,8 @@ If the atomic value v is not equal to u,
+ returns non zero. If v is equal to u then it returns zero. This is done as
+ an atomic operation.
  
- 	/* 2000 big enough to fit max user, domain, NOS name etc. */
- 	str_area = kmalloc(2000, GFP_KERNEL);
-+	if (str_area == NULL) {
-+		cifs_small_buf_release(smb_buf);
-+		return -ENOMEM;
-+	}
- 	bcc_ptr = str_area;
+-atomic_add_unless requires explicit memory barriers around the operation.
++atomic_add_unless requires explicit memory barriers around the operation
++unless it fails (returns 0).
  
- 	ses->flags &= ~CIFS_SES_LANMAN;
+ atomic_inc_not_zero, equivalent to atomic_add_unless(v, 1, 0)
+ 
+diff -puN Documentation/memory-barriers.txt~doc-atomic_add_unless-doesnt-imply-mb-on-failure Documentation/memory-barriers.txt
+--- a/Documentation/memory-barriers.txt~doc-atomic_add_unless-doesnt-imply-mb-on-failure
++++ a/Documentation/memory-barriers.txt
+@@ -1492,7 +1492,7 @@ about the state (old or new) implies an 
+ 	atomic_dec_and_test();
+ 	atomic_sub_and_test();
+ 	atomic_add_negative();
+-	atomic_add_unless();
++	atomic_add_unless();	/* when succeeds (returns 1) */
+ 	test_and_set_bit();
+ 	test_and_clear_bit();
+ 	test_and_change_bit();
+_
+
