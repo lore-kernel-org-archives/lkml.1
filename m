@@ -1,18 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbXHQFd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761274AbXHQFlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760210AbXHQFd1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 01:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbXHQFdQ
+	id S1761274AbXHQFlt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 01:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756928AbXHQFlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 01:33:16 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:1619 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755076AbXHQFdO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 01:33:14 -0400
-Date: Fri, 17 Aug 2007 13:32:00 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Paul Mackerras <paulus@samba.org>
+	Fri, 17 Aug 2007 01:41:39 -0400
+Received: from ozlabs.org ([203.10.76.45]:56066 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756898AbXHQFlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 01:41:37 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18117.13576.93583.222760@cargo.ozlabs.ibm.com>
+Date: Fri, 17 Aug 2007 15:41:28 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>
 Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
        Satyam Sharma <satyam@infradead.org>,
        Christoph Lameter <clameter@sgi.com>,
@@ -27,36 +30,45 @@ Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
        cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
        jesper.juhl@gmail.com, segher@kernel.crashing.org
 Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070817053200.GA15457@gondor.apana.org.au>
-References: <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <18117.11685.431347.996767@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18117.11685.431347.996767@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070817053200.GA15457@gondor.apana.org.au>
+References: <18115.45316.702491.681906@cargo.ozlabs.ibm.com>
+	<alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in>
+	<alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in>
+	<18115.52863.638655.658466@cargo.ozlabs.ibm.com>
+	<20070816053945.GB32442@gondor.apana.org.au>
+	<18115.62741.807704.969977@cargo.ozlabs.ibm.com>
+	<20070816070907.GA964@gondor.apana.org.au>
+	<46C40587.7050708@s5r6.in-berlin.de>
+	<20070816081049.GA1431@gondor.apana.org.au>
+	<18117.11685.431347.996767@cargo.ozlabs.ibm.com>
+	<20070817053200.GA15457@gondor.apana.org.au>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 03:09:57PM +1000, Paul Mackerras wrote:
-> Herbert Xu writes:
+Herbert Xu writes:
+
+> On Fri, Aug 17, 2007 at 03:09:57PM +1000, Paul Mackerras wrote:
+> > Herbert Xu writes:
+> > 
+> > > Can you find an actual atomic_read code snippet there that is
+> > > broken without the volatile modifier?
+> > 
+> > There are some in arch-specific code, for example line 1073 of
+> > arch/mips/kernel/smtc.c.  On mips, cpu_relax() is just barrier(), so
+> > the empty loop body is ok provided that atomic_read actually does the
+> > load each time around the loop.
 > 
-> > Can you find an actual atomic_read code snippet there that is
-> > broken without the volatile modifier?
+> A barrier() is all you need to force the compiler to reread
+> the value.
 > 
-> There are some in arch-specific code, for example line 1073 of
-> arch/mips/kernel/smtc.c.  On mips, cpu_relax() is just barrier(), so
-> the empty loop body is ok provided that atomic_read actually does the
-> load each time around the loop.
+> The people advocating volatile in this thread are talking
+> about code that doesn't use barrier()/cpu_relax().
 
-A barrier() is all you need to force the compiler to reread
-the value.
+Did you look at it?  Here it is:
 
-The people advocating volatile in this thread are talking
-about code that doesn't use barrier()/cpu_relax().
+	/* Someone else is initializing in parallel - let 'em finish */
+	while (atomic_read(&idle_hook_initialized) < 1000)
+		;
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Paul.
