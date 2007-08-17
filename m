@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbXHQEMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756457AbXHQETy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbXHQEMf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 00:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbXHQEM2
+	id S1756457AbXHQETy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 00:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbXHQETt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 00:12:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55646 "EHLO
+	Fri, 17 Aug 2007 00:19:49 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37879 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751434AbXHQEM0 (ORCPT
+	with ESMTP id S1752268AbXHQETr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 00:12:26 -0400
-Date: Fri, 17 Aug 2007 09:54:50 +0530 (IST)
+	Fri, 17 Aug 2007 00:19:47 -0400
+Date: Fri, 17 Aug 2007 10:02:13 +0530 (IST)
 From: Satyam Sharma <satyam@infradead.org>
 X-X-Sender: satyam@enigma.security.iitk.ac.in
 To: Segher Boessenkool <segher@kernel.crashing.org>
@@ -25,18 +25,19 @@ cc: Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
        schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
        Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
        Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com, davids@webmaster.com
+       wjiang@resilience.com
 Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
  architectures
-In-Reply-To: <4952d3f536060c186f40c277dfc74194@kernel.crashing.org>
-Message-ID: <alpine.LFD.0.999.0708170945300.3666@enigma.security.iitk.ac.in>
+In-Reply-To: <43eccf425e36943ce0411c3b504b1de2@kernel.crashing.org>
+Message-ID: <alpine.LFD.0.999.0708170957350.3666@enigma.security.iitk.ac.in>
 References: <20070809131423.GA9927@shell.boston.redhat.com>
  <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com>
  <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in>
  <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in>
  <20070815233721.91032366.billfink@mindspring.com>
  <alpine.LFD.0.999.0708161045360.25951@enigma.security.iitk.ac.in>
- <4952d3f536060c186f40c277dfc74194@kernel.crashing.org>
+ <alpine.LFD.0.999.0708161115370.25951@enigma.security.iitk.ac.in>
+ <43eccf425e36943ce0411c3b504b1de2@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
@@ -46,24 +47,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Thu, 16 Aug 2007, Segher Boessenkool wrote:
 
-> > Note that "volatile"
-> > is a type-qualifier, not a type itself, so a cast of the _object_ itself
-> > to a qualified-type i.e. (volatile int) would not make the access itself
-> > volatile-qualified.
+> > Here, I should obviously admit that the semantics of *(volatile int *)&
+> > aren't any neater or well-defined in the _language standard_ at all. The
+> > standard does say (verbatim) "precisely what constitutes as access to
+> > object of volatile-qualified type is implementation-defined", but GCC
+> > does help us out here by doing the right thing.
 > 
-> There is no such thing as "volatile-qualified access" defined
-> anywhere; there only is the concept of a "volatile-qualified
-> *object*".
+> Where do you get that idea?
 
-Sure, "volatile-qualified access" was not some standard term I used
-there. Just something to mean "an access that would make the compiler
-treat the object at that memory as if it were an object with a
-volatile-qualified type".
+Try a testcase (experimentally verify).
 
-Now the second wording *IS* technically correct, but come on, it's
-24 words long whereas the original one was 3 -- and hopefully anybody
-reading the shorter phrase *would* have known anyway what was meant,
-without having to be pedantic about it :-)
+> GCC manual, section 6.1, "When
+> is a Volatile Object Accessed?" doesn't say anything of the
+> kind.
 
-
-Satyam
+True, "implementation-defined" as per the C standard _is_ supposed to mean
+"unspecified behaviour where each implementation documents how the choice
+is made". So ok, probably GCC isn't "documenting" this
+implementation-defined behaviour which it is supposed to, but can't really
+fault them much for this, probably.
