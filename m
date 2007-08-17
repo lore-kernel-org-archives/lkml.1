@@ -1,115 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764205AbXHQRzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764623AbXHQR50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764205AbXHQRzd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 13:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758161AbXHQRzW
+	id S1764623AbXHQR50 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 13:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758161AbXHQR5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 13:55:22 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4064 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756941AbXHQRzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 13:55:20 -0400
-Subject: [PATCH] - git-send-email.perl
-From: Joe Perches <joe@perches.com>
-To: Junio C Hamano <gitster@pobox.com>
-Cc: Rene Herman <rene.herman@gmail.com>, git@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-In-Reply-To: <1187317826.822.23.camel@localhost>
-References: <1186984174.10249.7.camel@localhost>
-	 <200708131933.10125.m.kozlowski@tuxland.pl>
-	 <1187026955.2688.4.camel@laptopd505.fenrus.org>
-	 <1187037445.6628.98.camel@heimdal.trondhjem.org>
-	 <1187054366.2757.0.camel@laptopd505.fenrus.org>
-	 <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu>
-	 <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>
-	 <7vwsvx8twx.fsf@assigned-by-dhcp.cox.net>
-	 <1187316783.822.19.camel@localhost>  <1187317826.822.23.camel@localhost>
-Content-Type: text/plain
-Date: Fri, 17 Aug 2007 10:54:38 -0700
-Message-Id: <1187373278.822.100.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+	Fri, 17 Aug 2007 13:57:18 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:26514 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757896AbXHQR5R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 13:57:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Q2UpCEZb/hjOCb0DSvffloiv2A+bV0Gft2OtaELZUHvxItMUZhnbRTi0mLp3BoWz7B1skpZ00Y1EJMBtIwTXA45UxZPOb/edkFhtoAAcrpGThc1tAw5RElwyl97GrzNdX6UXGguLidfsB8yqNetePCBFePARsq9r0E+QlEK+GYs=
+Message-ID: <8bd0f97a0708171057w52e3cd6ekf66a61e8292d3222@mail.gmail.com>
+Date: Fri, 17 Aug 2007 13:57:16 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Robin Getz" <rgetz@blackfin.uclinux.org>
+Subject: Re: [draft] Blackfin Early Printk implmentation
+Cc: linux-kernel@vger.kernel.org, "Gerd Hoffmann" <kraxel@redhat.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Bryan Wu" <bryan.wu@analog.com>,
+       "Sonic Zhang" <sonic.adi@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <200708171336.40159.rgetz@blackfin.uclinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200708152234.06734.rgetz@blackfin.uclinux.org>
+	 <46C4009F.9090206@redhat.com>
+	 <200708171336.40159.rgetz@blackfin.uclinux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a path to enable a command line option
-that takes a string argument
+On 8/17/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+> +       asm("\tRETI = %0;\n"
+> +           "\tRETX = %0;\n"
+> +           "\tRETN = %0;\n"
+> +           : : "p"(early_trap));
 
-	cc-cmd
+general note, i dont think inserting whitespace by hand in asm() is a
+good thing ... i see it as whitenoise personally ...
 
-This modifies the @cc array to include whatever
-output is produced by cc_cmd $patchfile
+> +int __init disable_early_printk(void)
+> +{
+> +       if (!early_console_initialized)
+> +               return 0;
+> +
+> +       printk(KERN_INFO "Unregister %s%d\n", early_console_initialized->name,
+> +               early_console_initialized->index);
+> +       unregister_console(early_console_initialized);
+> +       early_console_initialized = NULL;
+> +       return 0;
+> +}
+> +
+> +late_initcall(disable_early_printk);
 
-cccmd can be stored in a config settings file
-
-previous versions of this patch were submitted
-against an older version of git-send-email.perl
-
-diff --git a/git-send-email.perl b/git-send-email.perl
-index 69559b2..828a77a 100755
---- a/git-send-email.perl
-+++ b/git-send-email.perl
-@@ -46,6 +46,9 @@ Options:
-    --cc           Specify an initial "Cc:" list for the entire series
-                   of emails.
- 
-+   --cc-cmd       Specify a command to execute per file which adds
-+                  per file specific cc address entries
-+
-    --bcc          Specify a list of email addresses that should be Bcc:
- 		  on all the emails.
- 
-@@ -157,13 +160,14 @@ if ($@) {
- my ($quiet, $dry_run) = (0, 0);
- 
- # Variables with corresponding config settings
--my ($thread, $chain_reply_to, $suppress_from, $signed_off_cc);
-+my ($thread, $chain_reply_to, $suppress_from, $signed_off_cc, $cc_cmd);
- 
- my %config_settings = (
-     "thread" => [\$thread, 1],
-     "chainreplyto" => [\$chain_reply_to, 1],
-     "suppressfrom" => [\$suppress_from, 0],
-     "signedoffcc" => [\$signed_off_cc, 1],
-+    "cccmd" => [\$cc_cmd, ""],
- );
- 
- foreach my $setting (keys %config_settings) {
-@@ -189,6 +193,7 @@ my $rc = GetOptions("sender|from=s" => \$sender,
- 		    "smtp-server=s" => \$smtp_server,
- 		    "compose" => \$compose,
- 		    "quiet" => \$quiet,
-+		    "cc-cmd=s" => \$cc_cmd,
- 		    "suppress-from!" => \$suppress_from,
- 		    "signed-off-cc|signed-off-by-cc!" => \$signed_off_cc,
- 		    "dry-run" => \$dry_run,
-@@ -652,11 +657,21 @@ foreach my $t (@files) {
- 		}
- 	}
- 	close F;
-+
-+	if (${cc_cmd} ne "") {
-+	    my $output = `${cc_cmd} $t`;
-+	    my @lines = split("\n", $output);
-+	    foreach my $c (@lines) {
-+		push @cc, $c;
-+		printf("(cc-cmd) Adding cc: %s from: '%s'\n", $c, $cc_cmd)
-+		    unless $quiet;
-+	    }
-+	}
-+
- 	if (defined $author) {
- 		$message = "From: $author\n\n$message";
- 	}
- 
--
- 	send_message();
- 
- 	# set up for the next message
-
-
+i think we agreed this would be OK/good to have in common code
+-mike
