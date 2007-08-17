@@ -1,92 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbXHQSxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759970AbXHQSyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757532AbXHQSxr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 14:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbXHQSxe
+	id S1759970AbXHQSyb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 14:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXHQSyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 14:53:34 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:49897 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753272AbXHQSxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 14:53:32 -0400
-Date: Fri, 17 Aug 2007 11:53:27 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, herbert@gondor.apana.org.au,
-       123.oleg@gmail.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Daniel Walker <dwalker@mvista.com>, josht@linux.vnet.ibm.com,
-       minyard@acm.org
-Subject: Re: [PATCH] lockdep: annotate rcu_read_{,un}lock()
-Message-ID: <20070817185327.GA21190@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <af57f1ac0708141130v729fa636k3150673809ec20a8@mail.gmail.com> <E1ILEJr-0005Fl-00@gondolin.me.apana.org.au> <20070815.144628.104052147.davem@davemloft.net> <1187274307.6114.92.camel@twins> <20070816160145.GA16957@linux.vnet.ibm.com> <1187337405.6114.123.camel@twins> <20070817155357.GD8464@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070817155357.GD8464@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 17 Aug 2007 14:54:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41626 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756897AbXHQSyT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 14:54:19 -0400
+Date: Fri, 17 Aug 2007 11:53:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: bunk@kernel.org, josh@kernel.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH] Make rcutorture RNG use temporal entropy
+Message-Id: <20070817115356.cb201e42.akpm@linux-foundation.org>
+In-Reply-To: <20070816024904.GA5312@linux.vnet.ibm.com>
+References: <20070816024904.GA5312@linux.vnet.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 08:53:57AM -0700, Paul E. McKenney wrote:
-> On Fri, Aug 17, 2007 at 09:56:45AM +0200, Peter Zijlstra wrote:
-> > On Thu, 2007-08-16 at 09:01 -0700, Paul E. McKenney wrote:
-> > > On Thu, Aug 16, 2007 at 04:25:07PM +0200, Peter Zijlstra wrote:
-> > > > 
-> > > > There seem to be some unbalanced rcu_read_{,un}lock() issues of late,
-> > > > how about doing something like this:
-> > > 
-> > > This will break when rcu_read_lock() and rcu_read_unlock() are invoked
-> > > from NMI/SMI handlers -- the raw_local_irq_save() in lock_acquire() will
-> > > not mask NMIs or SMIs.
-> > > 
-> > > One approach would be to check for being in an NMI/SMI handler, and
-> > > to avoid calling lock_acquire() and lock_release() in those cases.
-> > 
-> > It seems:
-> > 
-> > #define nmi_enter()		do { lockdep_off(); __irq_enter(); } while (0)
-> > #define nmi_exit()		do { __irq_exit(); lockdep_on(); } while (0)
-> > 
-> > Should make it all work out just fine. (for NMIs at least, /me fully
-> > ignorant of the workings of SMIs)
+On Wed, 15 Aug 2007 19:49:04 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+
+> Repost of http://lkml.org/lkml/2007/8/10/472 made available by request.
 > 
-> Very good point, at least for NMIs on i386 and x86_64.  Can't say that I
-> know much about SMIs myself.  Or about whatever equivalents to NMIs and
-> SMIs might exist on other platforms.  :-/  Of course, the other platforms
-> could be handled by making the RCU lockdep operate only on i386 and x86_64
-> if required.
+> The locking used by get_random_bytes() can conflict with the
+> preempt_disable() and synchronize_sched() form of RCU.  This patch changes
+> rcutorture's RNG to gather entropy from the new cpu_clock() interface
+> (relying on interrupts, preemption, daemons, and rcutorture's reader
+> thread's rock-bottom scheduling priority to provide useful entropy),
+> and also adds and EXPORT_SYMBOL_GPL() to make that interface available
+> to GPLed kernel modules such as rcutorture.
 > 
-> Corey, any advice on SMI handlers?  Is there something like nmi_enter()
-> and nmi_exit() that allows disabing lockdep?
-> 
-> > > Another approach would be to use sparse, which has checks for
-> > > rcu_read_lock()/rcu_read_unlock() nesting.
-> > 
-> > Yeah, but one more method can never hurt, no? :-)
-> 
-> Excellent point!
-> 
-> I guess the next thing for me is to do a performance check.  Looks like
-> CONFIG_DEBUG_LOCK_ALLOC is not on by default, so not violently worried
-> about performance, but would be good to know.
+> Passes several hours of rcutorture.
 
-4-CPU 1.8GHz Opteron 844 running 2.6.22 CONFIG_PREEMPT_NONE with Peter's
-patch running rcu_read_lock()/rcu_read_unlock() in a tight loop:
-
-1 CPU:  91.7ns
-2 CPU: 335.2ns
-3 CPU: 534.3ns  (But bimodal: two CPUs at 640.7ns, one at 321.6ns)
-4 CPU: 784.0ns  (again bimodal: three CPUs at 895.9ns, one at 448.2ns)
-
-Running without Peter's patch measures the loop overhead of about 1.2ns.
-
-So not crippling, but definitely a debug-only option that is not enabled
-by default in production.
-
-In summary, seems like an eminently reasonable approach to me, assuming
-that the NMI/SMI issues can be resolved across the platforms that have
-them.  Good stuff, Peter!!!
-
-						Thanx, Paul
+Please explain what "conflict with" means so that I can work out if
+this is a needed-in-2.6.23 change, thanks.
