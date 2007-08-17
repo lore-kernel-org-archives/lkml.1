@@ -1,61 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbXHQXfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbXHQXgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758024AbXHQXfb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 19:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXHQXfY
+	id S1757266AbXHQXgI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 19:36:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXHQXfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 19:35:24 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:55688 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751561AbXHQXfX (ORCPT
+	Fri, 17 Aug 2007 19:35:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58503 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750905AbXHQXfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 19:35:23 -0400
-Date: Fri, 17 Aug 2007 16:41:55 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] serial: keep the DTR setting for serial console.
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <ak@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200708171641.56603.yinghai.lu@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.8.2
+	Fri, 17 Aug 2007 19:35:53 -0400
+Date: Fri, 17 Aug 2007 16:34:46 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86-64: memset optimization
+Message-ID: <20070817163446.3e63f208@freepuppy.rosehill.hemminger.net>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] serial: keep the DTR setting for serial console.
+Optimize uses of memset with small constant offsets.
+This will generate smaller code, and avoid the slow rep/string instructions.
+Code copied from i386 with a little cleanup.
 
-with reverting "x86, serial: convert legacy COM ports to platform devices", we will have the serial console before the port is probled again.
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
-uart_add_one_port==>uart_configure_port==>set_mcttrl(port, 0) will clear the DTR setting by uart_set_options(). then I will lose my output from serial console again.
-
-So try to keep DTR in uart_configure_port()
-
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 030a606..70f1106 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2117,10 +2117,11 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
+--- a/include/asm-x86_64/string.h	2007-08-17 15:14:32.000000000 -0700
++++ b/include/asm-x86_64/string.h	2007-08-17 15:36:30.000000000 -0700
+@@ -42,9 +42,51 @@ extern void *__memcpy(void *to, const vo
+ 		 __ret = __builtin_memcpy((dst),(src),__len);	\
+ 	   __ret; }) 
+ #endif
+-
+ #define __HAVE_ARCH_MEMSET
+-void *memset(void *s, int c, size_t n);
++void *__memset(void *s, int c, size_t n);
++
++/* Optimize for cases of trivial memset's
++ * Compiler should optimize away all but the case used.
++ */
++static __always_inline void *
++__constant_c_and_count_memset(void *s, int c, size_t count)
++{
++	unsigned long pattern = 0x01010101UL * (unsigned char) c;
++
++	switch (count) {
++	case 0:
++		return s;
++	case 1:
++		*(unsigned char *)s = pattern;
++		return s;
++	case 2:
++		*(unsigned short *)s = pattern;
++		return s;
++	case 3:
++		*(unsigned short *)s = pattern;
++		*(2+(unsigned char *)s) = pattern;
++		return s;
++	case 4:
++		*(unsigned long *)s = pattern;
++		return s;
++	case 6:
++		*(unsigned long *)s = pattern;
++		*(2+(unsigned short *)s) = pattern;
++		return s;
++	case 8:
++		*(unsigned long *)s = pattern;
++		*(1+(unsigned long *)s) = pattern;
++		return s;
++	default:
++		return __memset(s, c, count);
++	}
++}
++#define memset(s, c, count)					\
++	(__builtin_constant_p(c)				\
++	 ? __constant_c_and_count_memset((s),(c),(count))	\
++	 : __memset((s),(c),(count)))
++
++
  
- 		/*
- 		 * Ensure that the modem control lines are de-activated.
-+		 * keep the DTR setting that is set in uart_set_options()
- 		 * We probably don't need a spinlock around this, but
- 		 */
- 		spin_lock_irqsave(&port->lock, flags);
--		port->ops->set_mctrl(port, 0);
-+		port->ops->set_mctrl(port, port->mctrl & TIOCM_DTR);
- 		spin_unlock_irqrestore(&port->lock, flags);
+ #define __HAVE_ARCH_MEMMOVE
+ void * memmove(void * dest,const void *src,size_t count);
+--- a/arch/x86_64/kernel/x8664_ksyms.c	2007-08-17 15:14:32.000000000 -0700
++++ b/arch/x86_64/kernel/x8664_ksyms.c	2007-08-17 15:44:58.000000000 -0700
+@@ -48,10 +48,12 @@ EXPORT_SYMBOL(__read_lock_failed);
+ #undef memmove
  
- 		/*
+ extern void * memset(void *,int,__kernel_size_t);
++extern void * __memset(void *,int,__kernel_size_t);
+ extern void * memcpy(void *,const void *,__kernel_size_t);
+ extern void * __memcpy(void *,const void *,__kernel_size_t);
+ 
+ EXPORT_SYMBOL(memset);
++EXPORT_SYMBOL(__memset);
+ EXPORT_SYMBOL(memcpy);
+ EXPORT_SYMBOL(__memcpy);
+ 
