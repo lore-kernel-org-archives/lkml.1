@@ -1,74 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761355AbXHQOv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbXHQO5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761355AbXHQOv4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 10:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbXHQOvt
+	id S1758671AbXHQO5v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 10:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbXHQO5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 10:51:49 -0400
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:49198 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753122AbXHQOvs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 10:51:48 -0400
-Message-ID: <46C5B602.2060706@lwfinger.net>
-Date: Fri, 17 Aug 2007 09:51:46 -0500
-From: Larry Finger <larry.finger@lwfinger.net>
+	Fri, 17 Aug 2007 10:57:42 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:5600 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752895AbXHQO5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 10:57:41 -0400
+Message-ID: <46C5B6AB.6070201@openvz.org>
+Date: Fri, 17 Aug 2007 18:54:35 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       bcm43xx devel <Bcm43xx-dev@lists.berlios.de>
-Subject: Re: Need help with modules loading
-References: <46C50902.4000502@lwfinger.net> <3ae72650708170055p51846c6dp8d8e5b22138f627a@mail.gmail.com>
-In-Reply-To: <3ae72650708170055p51846c6dp8d8e5b22138f627a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@osdl.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>, devel@openvz.org
+Subject: Re: [PATCH] Isolate some explicit usage of task->tgid
+References: <46C5AD92.70909@openvz.org> <20070817144813.GA347@tv-sign.ru>
+In-Reply-To: <20070817144813.GA347@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> On 8/17/07, Larry Finger <Larry.Finger@lwfinger.net> wrote:
->> A new driver for the Broadcom BCM43xx devices has been written that uses mac80211, rather than
->> softmac. The newest versions of the Broadcom firmware does not support all the BCM devices.
->> Accordingly, a separate driver is being prepared that will use an older version of the firmware and
->> support these legacy devices. Unfortunately, there is not a clean separation based on PCI id's;
->> however, the revision level of the 802.11 wireless core can be used to determine which driver should
->> be used. The scheme works on most systems, but not mine and I need some help to discover why.
+Oleg Nesterov wrote:
+> On 08/17, Pavel Emelyanov wrote:
+>> Actually the p->tgid == pid has to be changed to has_group_leader_pid(), 
+>> but Oleg pointed out that this is the same and thread_group_leader() 
+>> is more preferable. 
 > 
->> The 'MODALIAS=ssb:v4243id0812rev0A' line is correct for my device. In fact issuing a modprobe
->> "ssb:v4243id0812rev0A" command results in the loading of the module. For some reason, this does not
->> happen automatically.
->>
->> Initially, I suspected that my version of udev (103-13) was too old; however, upgrading to version
->> 114 did not help. My module-init-tools are V 3.2.2 and my distro is the x86_64 version of openSUSE 10.2.
-> 
-> openSUSE 10.2 used a whitelist of buses which trigger module loading.
-> It's in the udev sysconfig. rules and /sbin/hwup.
-> 
-> The easiest is probably to add a rule for that bus:
->   ACTION=="add", SUBSYSTEM=="ssb", ENV{MODALIAS}=="?*",
-> RUN+="/sbin/modprobe $env{MODALIAS}"
-> 
-> openSUSE 10.3 will call modprobe directly, the whitelist and the whole
-> hwup logic is removed in the meantime.
+> No, no, sorry for confusion! I was not clear. I meant that thread_group_leader()
+> is imho better for posix timers, but
 
-Thanks for the help. A new rule in sysconfig.rules took care of the problem.
+Oh! Sorry, new patch is included:
 
-I added the bcm43xx developers mailing list to this reply. For their benefit, this is the patch that 
-fixed my system:
+From: Pavel Emelyanov <xemul@openvz.org>
 
-Index: /etc/udev/rules.d/80-sysconfig.rules
-===================================================================
---- /etc/udev/rules.d.orig/80-sysconfig.rules
-+++ /etc/udev/rules.d/80-sysconfig.rules
-@@ -15,5 +15,6 @@ SUBSYSTEM=="pnp", ACTION=="add", RUN+="/
-  SUBSYSTEM=="ide", ACTION=="add", RUN+="/sbin/hwup ide-devpath-%p -o hotplug"
-  SUBSYSTEM=="input", KERNEL=="input[0-9]*", ACTION=="add", RUN+="/sbin/hwup input-devpath-%p -o 
-hotplug"
-  SUBSYSTEM=="platform", ACTION=="add", RUN+="/sbin/hwup platform-devpath-%p -o hotplug"
-+SUBSYSTEM=="ssb", ACTION=="add", ENV{MODALIAS}=="?*", RUN+="/sbin/modprobe $env{MODALIAS}"
+With pid namespaces this field is now dangerous to use explicitly, so
+hide it behind the helpers.
 
-  LABEL="sysconfig_end"
+Also the pid and pgrp fields o task_struct and signal_struct are to be 
+deprecated. Unfortunately this patch cannot be sent right now as this 
+leads to tons of warnings, so start isolating them, and  deprecate later.
 
+Actually the p->tgid == pid has to be changed to has_group_leader_pid(), 
+but Oleg pointed out that in case of posix cpu timers this is the same,
+and thread_group_leader() is more preferable.
 
-Larry
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Acked-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+---
+
+ fs/exec.c                 |    4 ++--
+ fs/proc/base.c            |    2 +-
+ include/linux/sched.h     |    6 ++++++
+ kernel/posix-cpu-timers.c |   12 ++++++------
+ kernel/posix-timers.c     |    4 ++--
+ kernel/ptrace.c           |    2 +-
+ kernel/signal.c           |    2 +-
+ mm/oom_kill.c             |    2 +-
+ 8 files changed, 20 insertions(+), 14 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index f8cebf8..24b669d 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1691,6 +1691,12 @@ static inline int has_group_leader_pid(s
+ 	return p->pid == p->tgid;
+ }
+ 
++static inline
++int same_thread_group(struct task_struct *p1, struct task_struct *p2)
++{
++	return p1->tgid == p2->tgid;
++}
++
+ static inline struct task_struct *next_thread(const struct task_struct *p)
+ {
+ 	return list_entry(rcu_dereference(p->thread_group.next),
+diff --git a/fs/exec.c b/fs/exec.c
+index 35013f2..796453b 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -865,8 +865,8 @@ static int de_thread(struct task_struct 
+ 
+ 		write_lock_irq(&tasklist_lock);
+ 
+-		BUG_ON(leader->tgid != tsk->tgid);
+-		BUG_ON(tsk->pid == tsk->tgid);
++		BUG_ON(!same_thread_group(leader, tsk));
++		BUG_ON(has_group_leader_pid(tsk));
+ 		/*
+ 		 * An exec() starts a new thread group with the
+ 		 * TGID of the previous thread group. Rehash the
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index e3009ab..6dce57c 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -2474,7 +2474,7 @@ static struct dentry *proc_task_lookup(s
+ 	rcu_read_unlock();
+ 	if (!task)
+ 		goto out;
+-	if (leader->tgid != task->tgid)
++	if (!same_thread_group(leader, task))
+ 		goto out_drop_task;
+ 
+ 	result = proc_task_instantiate(dir, dentry, task, NULL);
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index b53c8fc..68c9637 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -21,8 +21,8 @@ static int check_clock(const clockid_t w
+ 
+ 	read_lock(&tasklist_lock);
+ 	p = find_task_by_pid(pid);
+-	if (!p || (CPUCLOCK_PERTHREAD(which_clock) ?
+-		   p->tgid != current->tgid : p->tgid != pid)) {
++	if (!p || !(CPUCLOCK_PERTHREAD(which_clock) ?
++		   same_thread_group(p, current) : thread_group_leader(p))) {
+ 		error = -EINVAL;
+ 	}
+ 	read_unlock(&tasklist_lock);
+@@ -308,13 +308,13 @@ int posix_cpu_clock_get(const clockid_t 
+ 		p = find_task_by_pid(pid);
+ 		if (p) {
+ 			if (CPUCLOCK_PERTHREAD(which_clock)) {
+-				if (p->tgid == current->tgid) {
++				if (same_thread_group(p, current)) {
+ 					error = cpu_clock_sample(which_clock,
+ 								 p, &rtn);
+ 				}
+ 			} else {
+ 				read_lock(&tasklist_lock);
+-				if (p->tgid == pid && p->signal) {
++				if (thread_group_leader(p) && p->signal) {
+ 					error =
+ 					    cpu_clock_sample_group(which_clock,
+ 							           p, &rtn);
+@@ -355,7 +355,7 @@ int posix_cpu_timer_create(struct k_itim
+ 			p = current;
+ 		} else {
+ 			p = find_task_by_pid(pid);
+-			if (p && p->tgid != current->tgid)
++			if (p && !same_thread_group(p, current))
+ 				p = NULL;
+ 		}
+ 	} else {
+@@ -363,7 +363,7 @@ int posix_cpu_timer_create(struct k_itim
+ 			p = current->group_leader;
+ 		} else {
+ 			p = find_task_by_pid(pid);
+-			if (p && p->tgid != pid)
++			if (p && !thread_group_leader(p))
+ 				p = NULL;
+ 		}
+ 	}
+diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
+index 8d2cb05..bc77ba8 100644
+--- a/kernel/posix-timers.c
++++ b/kernel/posix-timers.c
+@@ -404,7 +404,7 @@ static struct task_struct * good_sigeven
+ 
+ 	if ((event->sigev_notify & SIGEV_THREAD_ID ) &&
+ 		(!(rtn = find_task_by_pid(event->sigev_notify_thread_id)) ||
+-		 rtn->tgid != current->tgid ||
++		 !same_thread_group(rtn, current) ||
+ 		 (event->sigev_notify & ~SIGEV_THREAD_ID) != SIGEV_SIGNAL))
+ 		return NULL;
+ 
+@@ -609,7 +609,7 @@ static struct k_itimer * lock_timer(time
+ 		spin_unlock(&idr_lock);
+ 
+ 		if ((timr->it_id != timer_id) || !(timr->it_process) ||
+-				timr->it_process->tgid != current->tgid) {
++				!same_thread_group(timr->it_process, current)) {
+ 			unlock_timer(timr, *flags);
+ 			timr = NULL;
+ 		}
+diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+index 0d7fd07..f90207a 100644
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -169,7 +169,7 @@ int ptrace_attach(struct task_struct *ta
+ 	retval = -EPERM;
+ 	if (task->pid <= 1)
+ 		goto out;
+-	if (task->tgid == current->tgid)
++	if (same_thread_group(task, current))
+ 		goto out;
+ 
+ repeat:
+diff --git a/kernel/signal.c b/kernel/signal.c
+index d6ca591..df785a7 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1145,7 +1145,7 @@ static int kill_something_info(int sig, 
+ 
+ 		read_lock(&tasklist_lock);
+ 		for_each_process(p) {
+-			if (p->pid > 1 && p->tgid != current->tgid) {
++			if (p->pid > 1 && !same_thread_group(p, current)) {
+ 				int err = group_send_sig_info(sig, info, p);
+ 				++count;
+ 				if (err != -EPERM)
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index e276a3c..1a2f687 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -330,7 +330,7 @@ static int oom_kill_task(struct task_str
+ 	 * to memory reserves though, otherwise we might deplete all memory.
+ 	 */
+ 	do_each_thread(g, q) {
+-		if (q->mm == mm && q->tgid != p->tgid)
++		if (q->mm == mm && !same_thread_group(q, p))
+ 			force_sig(SIGKILL, q);
+ 	} while_each_thread(g, q);
+ 
