@@ -1,108 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759587AbXHQTua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758741AbXHQTwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759587AbXHQTua (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 15:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbXHQTuO
+	id S1758741AbXHQTwS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 15:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbXHQTwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 15:50:14 -0400
-Received: from smtp106.sbc.mail.re2.yahoo.com ([68.142.229.99]:39199 "HELO
-	smtp106.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752934AbXHQTuM (ORCPT
+	Fri, 17 Aug 2007 15:52:08 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:43225 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbXHQTwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 15:50:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=uDNrgnHMj4mauHI0F/0gWp7xo9FY9O4NwzN/qn3UiOYWBrTnMsniV58qaXYVzRto1F1eahwN8r9zGsEI6A8I9INPLzVpBlNCulmv9ZuJxDlfu09qXj5DF0m0PzOLiF33IP9+EzONHnnmsR1b2UDX+m3Pd0C9dyc0FHJGJeT4twI=  ;
-X-YMail-OSG: 6l6SDuEVM1l8bRCMJ6bN8cQL17eSe2nOqBRAjwPSWYtwT2FRkaTyBS_WWOeFYTBsORpo_gMYAbL17H8YW1lrXnl59Bf5fXH0VYUMBy50kkOkOyZnucIj_UghIUGL_fOOYYTBJ3GZlOWM.VI-
-From: David Brownell <david-b@pacbell.net>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware
-Date: Fri, 17 Aug 2007 12:50:09 -0700
-User-Agent: KMail/1.9.6
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, jengelh@computergmbh.de,
-       a.zummo@towertech.it, linux-kernel@vger.kernel.org,
-       rtc-linux@googlegroups.com, Greg KH <greg@kroah.com>
-References: <200708170823.15894.david-b@pacbell.net> <200708170955.06388.david-b@pacbell.net> <1187371126.4253.10.camel@lov.localdomain>
-In-Reply-To: <1187371126.4253.10.camel@lov.localdomain>
+	Fri, 17 Aug 2007 15:52:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NhMhSPzWYr6/gEeWTtBRUwP9Gzp4TeFOcajPNWLYktqiGbK8dPNGMnHB30zeWY72NkU+ONI8qJLXbgf+5WouRtqupFZdjOxgmQICHoWo1Uh3nvgUI2d1tzRNs2zgwoKuF8WFngC0i2lccdvASd2xZCerLpNhVlZE2rgnzRyM5Rs=
+Message-ID: <9a8748490708171252n5653d879j309328504e31c338@mail.gmail.com>
+Date: Fri, 17 Aug 2007 21:52:03 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: SVr4/SVID/SUS IPC conformance
+Cc: "Anton Arapov" <aarapov@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1187376971.2615.4.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708171250.09653.david-b@pacbell.net>
+References: <h8ps1mm64v.fsf@pepelac.englab.brq.redhat.com>
+	 <1187376971.2615.4.camel@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 August 2007, Kay Sievers wrote:
-> On Fri, 2007-08-17 at 09:55 -0700, David Brownell wrote:
-> > On Friday 17 August 2007, Kay Sievers wrote:
-> > > Again,
-> > 
-> > "Again"?
-> 
-> We exchanges several mails a few weeks ago after the Debian bug caused
-> by a modprobe loop. 
-
-Which has been fixed for some time now; it was caused by legacy
-drivers, which are incapable of hotplugging.
-
-
-> > > the only sane solution is to provide MODALIAS="platform:<name>" 
-> > > from the platform bus, and adding the aliases to drivers who support
-> > > autoloading. Modalias strings are not free-text strings, they are
-> > > required to be prefixed by the subsystem.
-> > 
-> > If so, then whoever tried to change the usage of module aliases
-> > in that way goofed in several ways.  First, by not changing all
-> > the in-kernel uses.  Second, by not changing all the out-of-tree
-> > uses in various distros, toolchains, etc.  Third, by not even
-> > documenting that change...
-> 
-> Yes, please fix the misuse of MODALIAS.
-
-I'm not the one who's advocating a change here.  If you want to
-first change/break and then fix things, all of that is up to you.
+On 17/08/07, Arjan van de Ven <arjan@infradead.org> wrote:
+>
+> On Fri, 2007-08-17 at 19:18 +0200, Anton Arapov wrote:
+> >
+> >   IPC code is good, EIDRM is justification of EINVAL. But neither SVr4 nor SVID \
+> > documents EIDRM.   Single Unix Specification mentions EINVAL but not EIDRM as a \
+> > possible failure for shmctl(), so the current kernel behavior is not merely \
+> > self-inconsistent but a flat violation of the spec.
+>
+> these specs tend to always allow additional error codes.
+>
+I can't seem to find anything in SuS v3 that says that. If you know
+where I'd appreciate a pointer.
+In fact, the spec seems pretty clear on what errors are OK.
 
 
-> > > Please change that stuff, and the bugs which we 
-> > > are fighting magically go away, because module-init-tools alias
-> > > resolving works like it does for every other subsystem in the kernel.
-> > 
-> > Those bugs would be ... what?  "We" haven't observed anything
-> > attributable to this usage, which has been common for years now.
-> 
-> Loops of modprobe by modules requesting itself, you worked around that
-> in the recent kernel,
+"
+    The shmctl() function shall fail if:
 
-Legacy drivers of the "create my own device node" ilk will never
-be able to hotplug ... since it's the /sys/device/... node creation
-which causes any "find my driver" hotplug event.  (Like "i82365".)
+    [EACCES]
+        The argument cmd is equal to IPC_STAT and the calling process
+does not have read permission; see XSI Interprocess Communication.
+    [EINVAL]
+        The value of shmid is not a valid shared memory identifier, or
+the value of cmd is not a valid command.
+    [EPERM]
+        The argument cmd is equal to IPC_RMID or IPC_SET and the
+effective user ID of the calling process is not equal to that of a
+process with appropriate privileges and it is not equal to the value
+of shm_perm.cuid or shm_perm.uid in the data structure associated with
+shmid.
 
-That bug has been *FIXED* for some time now, as far as I hear.
+    The shmctl() function may fail if:
 
-And that's based on having looked at several hundred platform
-drivers to make sure of it... mostly that's not legacy code, so
-it can hotplug just fine.
-
-
-> but that broke other setups.
-
-That's news to me.  Of course, the breakage could also be in
-those setups ... legacy drivers with legacy setup shouldn't
-break, but they don't necessarily obey enough of the rules
-that newer tools expect.
+    [EOVERFLOW]
+        The cmd argument is IPC_STAT and the gid or uid value is too
+large to be stored in the structure pointed to by the buf argument.
+"
 
 
-> And module-init-tools  
-> "blacklist" does not work, because platform uses no alias, but a plain
-> driver name. That should be fixed, please, please, please...
+But I guess removing EIDRM is out of the question since that would
+break userspace applications currently depending on it.
+So I guess that the only way to write applications that are portable
+between Linux and other *NIX clones is to test for the error code
+being  (EINVAL || EIDRM)...
 
-Module init tools "blacklist" is squirrely, yes ... it
-ignores *most* of the names that "modprobe" accepts,
-so it can't actually "blacklist" modules from loading.
+Or am I missing something?
 
-The ancient "alias modname none" trick still has life.
-
-- Dave
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
