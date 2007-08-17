@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761231AbXHRAnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759924AbXHRAne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761231AbXHRAnF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 20:43:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbXHRAmL
+	id S1759924AbXHRAne (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 20:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756680AbXHRAmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 20:42:11 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:57706 "EHLO
+	Fri, 17 Aug 2007 20:42:14 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:57710 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751434AbXHRAmH (ORCPT
+	with ESMTP id S1753414AbXHRAmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 20:42:07 -0400
+	Fri, 17 Aug 2007 20:42:08 -0400
 Date: Fri, 17 Aug 2007 15:43:41 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 4/6] UML - Clean up tlb flush path
-Message-ID: <20070817194341.GA8749@c2.user-mode-linux.org>
+Subject: [PATCH 3/6] UML - Userspace files should call libc directly
+Message-ID: <20070817194341.GA8754@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,471 +24,706 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tidy the tlb flushing code.
+A number of files that were changed in the recent removal of tt mode
+are userspace files which call the os_* wrappers instead of calling
+libc directly.  A few other files were affected by this, through
 
-With tt mode gone, there is no reason to have the capability to have
-different host-level address space updating routines.  So, do_op is
-called directly from do_mmap, do_mprotect, and do_munmap, rather than
-calling a function pointer that it is given.
+This patch makes these call glibc directly.
 
-There was a large amount of data that was passed from function to
-function, being used at the lowest level, without being changed.  This
-stuff is now encapsulated in a structure which is initialized at the
-top layer and passed down.  This simplifies the code, reduces the
-amount of code needed to pass the parameters around, and saves on
-stack space.
+There are also style fixes in the affected areas.
 
-A somewhat more subtle change is the meaning of the current operation
-index.  It used to start at -1, being pre-incremented when adding an
-operation.  It now starts at 0, being post-incremented, with
-associated adjustments of +/- 1 on comparisons.
+os_print_error has no remaining callers, so it is deleted.
 
-In addition, tlb.h contained a couple of declarations which had no
-users outside of tlb.c, so they could be moved or deleted.
+There is a interface change to os_set_exec_close, eliminating a
+parameter which was always the same.  The callers are fixed as well.
+
+os_process_pc got its error path cleaned up.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- arch/um/include/tlb.h |   27 -----
- arch/um/kernel/tlb.c  |  258 ++++++++++++++++++++++++--------------------------
- 2 files changed, 127 insertions(+), 158 deletions(-)
+ arch/um/include/os.h                     |    3 
+ arch/um/kernel/ksyms.c                   |    1 
+ arch/um/kernel/physmem.c                 |    4 -
+ arch/um/os-Linux/aio.c                   |    4 -
+ arch/um/os-Linux/drivers/ethertap_user.c |   61 ++++++++++++------
+ arch/um/os-Linux/drivers/tuntap_user.c   |   24 +++----
+ arch/um/os-Linux/file.c                  |  102 +++++++++++++------------------
+ arch/um/os-Linux/helper.c                |    8 +-
+ arch/um/os-Linux/mem.c                   |    6 -
+ arch/um/os-Linux/process.c               |   37 ++++++-----
+ arch/um/os-Linux/skas/process.c          |    4 -
+ arch/um/os-Linux/start_up.c              |    5 -
+ 12 files changed, 138 insertions(+), 121 deletions(-)
 
-Index: linux-2.6.22/arch/um/include/tlb.h
+Index: linux-2.6.22/arch/um/os-Linux/file.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/include/tlb.h	2007-08-17 13:36:34.000000000 -0400
-+++ linux-2.6.22/arch/um/include/tlb.h	2007-08-17 13:37:27.000000000 -0400
-@@ -8,34 +8,7 @@
- 
- #include "um_mmu.h"
- 
--struct host_vm_op {
--	enum { NONE, MMAP, MUNMAP, MPROTECT } type;
--	union {
--		struct {
--			unsigned long addr;
--			unsigned long len;
--			unsigned int prot;
--			int fd;
--			__u64 offset;
--		} mmap;
--		struct {
--			unsigned long addr;
--			unsigned long len;
--		} munmap;
--		struct {
--			unsigned long addr;
--			unsigned long len;
--			unsigned int prot;
--		} mprotect;
--	} u;
--};
--
- extern void force_flush_all(void);
--extern void fix_range_common(struct mm_struct *mm, unsigned long start_addr,
--                             unsigned long end_addr, int force,
--			     int (*do_ops)(struct mm_context *,
--					   struct host_vm_op *, int, int,
--					   void **));
- extern int flush_tlb_kernel_range_common(unsigned long start,
- 					 unsigned long end);
- 
-Index: linux-2.6.22/arch/um/kernel/tlb.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tlb.c	2007-08-17 13:36:34.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/tlb.c	2007-08-17 13:37:27.000000000 -0400
-@@ -12,19 +12,85 @@
- #include "skas.h"
- #include "tlb.h"
- 
-+struct host_vm_change {
-+	struct host_vm_op {
-+		enum { NONE, MMAP, MUNMAP, MPROTECT } type;
-+		union {
-+			struct {
-+				unsigned long addr;
-+				unsigned long len;
-+				unsigned int prot;
-+				int fd;
-+				__u64 offset;
-+			} mmap;
-+			struct {
-+				unsigned long addr;
-+				unsigned long len;
-+			} munmap;
-+			struct {
-+				unsigned long addr;
-+				unsigned long len;
-+				unsigned int prot;
-+			} mprotect;
-+		} u;
-+	} ops[1];
-+	int index;
-+	struct mm_id *id;
-+	void *data;
-+	int force;
-+};
-+
-+#define INIT_HVC(mm, force) \
-+	((struct host_vm_change) \
-+	 { .ops		= { { .type = NONE } },	\
-+	   .id		= &mm->context.id, \
-+       	   .data	= NULL, \
-+	   .index	= 0, \
-+	   .force	= force })
-+
-+static int do_ops(struct host_vm_change *hvc, int end,
-+		  int finished)
-+{
-+	struct host_vm_op *op;
-+	int i, ret = 0;
-+
-+	for (i = 0; i < end && !ret; i++) {
-+		op = &hvc->ops[i];
-+		switch(op->type) {
-+		case MMAP:
-+			ret = map(hvc->id, op->u.mmap.addr, op->u.mmap.len,
-+				  op->u.mmap.prot, op->u.mmap.fd,
-+				  op->u.mmap.offset, finished, &hvc->data);
-+			break;
-+		case MUNMAP:
-+			ret = unmap(hvc->id, op->u.munmap.addr,
-+				    op->u.munmap.len, finished, &hvc->data);
-+			break;
-+		case MPROTECT:
-+			ret = protect(hvc->id, op->u.mprotect.addr,
-+				      op->u.mprotect.len, op->u.mprotect.prot,
-+				      finished, &hvc->data);
-+			break;
-+		default:
-+			printk(KERN_ERR "Unknown op type %d in do_ops\n",
-+			       op->type);
-+			break;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
- static int add_mmap(unsigned long virt, unsigned long phys, unsigned long len,
--		    unsigned int prot, struct host_vm_op *ops, int *index,
--		    int last_filled, struct mm_context *mmu, void **flush,
--		    int (*do_ops)(struct mm_context *, struct host_vm_op *,
--				  int, int, void **))
-+		    unsigned int prot, struct host_vm_change *hvc)
- {
- 	__u64 offset;
- 	struct host_vm_op *last;
- 	int fd, ret = 0;
- 
- 	fd = phys_mapping(phys, &offset);
--	if (*index != -1) {
--		last = &ops[*index];
-+	if (hvc->index != 0) {
-+		last = &hvc->ops[hvc->index - 1];
- 		if ((last->type == MMAP) &&
- 		   (last->u.mmap.addr + last->u.mmap.len == virt) &&
- 		   (last->u.mmap.prot == prot) && (last->u.mmap.fd == fd) &&
-@@ -34,33 +100,30 @@ static int add_mmap(unsigned long virt, 
- 		}
- 	}
- 
--	if (*index == last_filled) {
--		ret = (*do_ops)(mmu, ops, last_filled, 0, flush);
--		*index = -1;
-+	if (hvc->index == ARRAY_SIZE(hvc->ops)) {
-+		ret = do_ops(hvc, ARRAY_SIZE(hvc->ops), 0);
-+		hvc->index = 0;
- 	}
- 
--	ops[++*index] = ((struct host_vm_op) { .type	= MMAP,
--			     			.u = { .mmap = {
--						       .addr	= virt,
--						       .len	= len,
--						       .prot	= prot,
--						       .fd	= fd,
--						       .offset	= offset }
-+	hvc->ops[hvc->index++] = ((struct host_vm_op)
-+				  { .type	= MMAP,
-+				    .u = { .mmap = { .addr	= virt,
-+						     .len	= len,
-+						     .prot	= prot,
-+						     .fd	= fd,
-+						     .offset	= offset }
- 			   } });
- 	return ret;
+--- linux-2.6.22.orig/arch/um/os-Linux/file.c	2007-08-17 14:32:32.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/file.c	2007-08-17 14:32:32.000000000 -0400
+@@ -82,13 +82,6 @@ int os_access(const char* file, int mode
+ 	return 0;
  }
  
- static int add_munmap(unsigned long addr, unsigned long len,
--		      struct host_vm_op *ops, int *index, int last_filled,
--		      struct mm_context *mmu, void **flush,
--		      int (*do_ops)(struct mm_context *, struct host_vm_op *,
--				    int, int, void **))
-+		      struct host_vm_change *hvc)
- {
- 	struct host_vm_op *last;
- 	int ret = 0;
- 
--	if (*index != -1) {
--		last = &ops[*index];
-+	if (hvc->index != 0) {
-+		last = &hvc->ops[hvc->index - 1];
- 		if ((last->type == MUNMAP) &&
- 		   (last->u.munmap.addr + last->u.mmap.len == addr)) {
- 			last->u.munmap.len += len;
-@@ -68,29 +131,26 @@ static int add_munmap(unsigned long addr
- 		}
- 	}
- 
--	if (*index == last_filled) {
--		ret = (*do_ops)(mmu, ops, last_filled, 0, flush);
--		*index = -1;
-+	if (hvc->index == ARRAY_SIZE(hvc->ops)) {
-+		ret = do_ops(hvc, ARRAY_SIZE(hvc->ops), 0);
-+		hvc->index = 0;
- 	}
- 
--	ops[++*index] = ((struct host_vm_op) { .type	= MUNMAP,
--			     		       .u = { .munmap = {
--						        .addr	= addr,
--							.len	= len } } });
-+	hvc->ops[hvc->index++] = ((struct host_vm_op)
-+				  { .type	= MUNMAP,
-+			     	    .u = { .munmap = { .addr	= addr,
-+						       .len	= len } } });
- 	return ret;
- }
- 
- static int add_mprotect(unsigned long addr, unsigned long len,
--			unsigned int prot, struct host_vm_op *ops, int *index,
--			int last_filled, struct mm_context *mmu, void **flush,
--			int (*do_ops)(struct mm_context *, struct host_vm_op *,
--				      int, int, void **))
-+			unsigned int prot, struct host_vm_change *hvc)
- {
- 	struct host_vm_op *last;
- 	int ret = 0;
- 
--	if (*index != -1) {
--		last = &ops[*index];
-+	if (hvc->index != 0) {
-+		last = &hvc->ops[hvc->index - 1];
- 		if ((last->type == MPROTECT) &&
- 		   (last->u.mprotect.addr + last->u.mprotect.len == addr) &&
- 		   (last->u.mprotect.prot == prot)) {
-@@ -99,28 +159,24 @@ static int add_mprotect(unsigned long ad
- 		}
- 	}
- 
--	if (*index == last_filled) {
--		ret = (*do_ops)(mmu, ops, last_filled, 0, flush);
--		*index = -1;
-+	if (hvc->index == ARRAY_SIZE(hvc->ops)) {
-+		ret = do_ops(hvc, ARRAY_SIZE(hvc->ops), 0);
-+		hvc->index = 0;
- 	}
- 
--	ops[++*index] = ((struct host_vm_op) { .type	= MPROTECT,
--			     		       .u = { .mprotect = {
--						       .addr	= addr,
--						       .len	= len,
--						       .prot	= prot } } });
-+	hvc->ops[hvc->index++] = ((struct host_vm_op)
-+				  { .type	= MPROTECT,
-+			     	    .u = { .mprotect = { .addr	= addr,
-+							 .len	= len,
-+							 .prot	= prot } } });
- 	return ret;
- }
- 
- #define ADD_ROUND(n, inc) (((n) + (inc)) & ~((inc) - 1))
- 
- static inline int update_pte_range(pmd_t *pmd, unsigned long addr,
--				   unsigned long end, struct host_vm_op *ops,
--				   int last_op, int *op_index, int force,
--				   struct mm_context *mmu, void **flush,
--				   int (*do_ops)(struct mm_context *,
--						 struct host_vm_op *, int, int,
--						 void **))
-+				   unsigned long end,
-+				   struct host_vm_change *hvc)
- {
- 	pte_t *pte;
- 	int r, w, x, prot, ret = 0;
-@@ -138,29 +194,22 @@ static inline int update_pte_range(pmd_t
- 		}
- 		prot = ((r ? UM_PROT_READ : 0) | (w ? UM_PROT_WRITE : 0) |
- 			(x ? UM_PROT_EXEC : 0));
--		if (force || pte_newpage(*pte)) {
-+		if (hvc->force || pte_newpage(*pte)) {
- 			if (pte_present(*pte))
- 				ret = add_mmap(addr, pte_val(*pte) & PAGE_MASK,
--					       PAGE_SIZE, prot, ops, op_index,
--					       last_op, mmu, flush, do_ops);
--			else ret = add_munmap(addr, PAGE_SIZE, ops, op_index,
--					      last_op, mmu, flush, do_ops);
-+					       PAGE_SIZE, prot, hvc);
-+			else ret = add_munmap(addr, PAGE_SIZE, hvc);
- 		}
- 		else if (pte_newprot(*pte))
--			ret = add_mprotect(addr, PAGE_SIZE, prot, ops, op_index,
--					   last_op, mmu, flush, do_ops);
-+			ret = add_mprotect(addr, PAGE_SIZE, prot, hvc);
- 		*pte = pte_mkuptodate(*pte);
- 	} while (pte++, addr += PAGE_SIZE, ((addr != end) && !ret));
- 	return ret;
- }
- 
- static inline int update_pmd_range(pud_t *pud, unsigned long addr,
--				   unsigned long end, struct host_vm_op *ops,
--				   int last_op, int *op_index, int force,
--				   struct mm_context *mmu, void **flush,
--				   int (*do_ops)(struct mm_context *,
--						 struct host_vm_op *, int, int,
--						 void **))
-+				   unsigned long end,
-+				   struct host_vm_change *hvc)
- {
- 	pmd_t *pmd;
- 	unsigned long next;
-@@ -170,27 +219,19 @@ static inline int update_pmd_range(pud_t
- 	do {
- 		next = pmd_addr_end(addr, end);
- 		if (!pmd_present(*pmd)) {
--			if (force || pmd_newpage(*pmd)) {
--				ret = add_munmap(addr, next - addr, ops,
--						 op_index, last_op, mmu,
--						 flush, do_ops);
-+			if (hvc->force || pmd_newpage(*pmd)) {
-+				ret = add_munmap(addr, next - addr, hvc);
- 				pmd_mkuptodate(*pmd);
- 			}
- 		}
--		else ret = update_pte_range(pmd, addr, next, ops, last_op,
--					    op_index, force, mmu, flush,
--					    do_ops);
-+		else ret = update_pte_range(pmd, addr, next, hvc);
- 	} while (pmd++, addr = next, ((addr != end) && !ret));
- 	return ret;
- }
- 
- static inline int update_pud_range(pgd_t *pgd, unsigned long addr,
--				   unsigned long end, struct host_vm_op *ops,
--				   int last_op, int *op_index, int force,
--				   struct mm_context *mmu, void **flush,
--				   int (*do_ops)(struct mm_context *,
--						 struct host_vm_op *, int, int,
--						 void **))
-+				   unsigned long end,
-+				   struct host_vm_change *hvc)
- {
- 	pud_t *pud;
- 	unsigned long next;
-@@ -200,51 +241,39 @@ static inline int update_pud_range(pgd_t
- 	do {
- 		next = pud_addr_end(addr, end);
- 		if (!pud_present(*pud)) {
--			if (force || pud_newpage(*pud)) {
--				ret = add_munmap(addr, next - addr, ops,
--						 op_index, last_op, mmu,
--						 flush, do_ops);
-+			if (hvc->force || pud_newpage(*pud)) {
-+				ret = add_munmap(addr, next - addr, hvc);
- 				pud_mkuptodate(*pud);
- 			}
- 		}
--		else ret = update_pmd_range(pud, addr, next, ops, last_op,
--					    op_index, force, mmu, flush,
--					    do_ops);
-+		else ret = update_pmd_range(pud, addr, next, hvc);
- 	} while (pud++, addr = next, ((addr != end) && !ret));
- 	return ret;
- }
- 
- void fix_range_common(struct mm_struct *mm, unsigned long start_addr,
--		      unsigned long end_addr, int force,
--		      int (*do_ops)(struct mm_context *, struct host_vm_op *,
--				    int, int, void **))
-+		      unsigned long end_addr, int force)
- {
- 	pgd_t *pgd;
--	struct mm_context *mmu = &mm->context;
--	struct host_vm_op ops[1];
-+	struct host_vm_change hvc;
- 	unsigned long addr = start_addr, next;
--	int ret = 0, last_op = ARRAY_SIZE(ops) - 1, op_index = -1;
--	void *flush = NULL;
-+	int ret = 0;
- 
--	ops[0].type = NONE;
-+	hvc = INIT_HVC(mm, force);
- 	pgd = pgd_offset(mm, addr);
- 	do {
- 		next = pgd_addr_end(addr, end_addr);
- 		if (!pgd_present(*pgd)) {
- 			if (force || pgd_newpage(*pgd)) {
--				ret = add_munmap(addr, next - addr, ops,
--						 &op_index, last_op, mmu,
--						 &flush, do_ops);
-+				ret = add_munmap(addr, next - addr, &hvc);
- 				pgd_mkuptodate(*pgd);
- 			}
- 		}
--		else ret = update_pud_range(pgd, addr, next, ops, last_op,
--					    &op_index, force, mmu, &flush,
--					    do_ops);
-+		else ret = update_pud_range(pgd, addr, next, &hvc);
- 	} while (pgd++, addr = next, ((addr != end_addr) && !ret));
- 
- 	if (!ret)
--		ret = (*do_ops)(mmu, ops, op_index, 1, &flush);
-+		ret = do_ops(&hvc, hvc.index, 1);
- 
- 	/* This is not an else because ret is modified above */
- 	if (ret) {
-@@ -453,46 +482,13 @@ void __flush_tlb_one(unsigned long addr)
- 	flush_tlb_kernel_range_common(addr, addr + PAGE_SIZE);
- }
- 
--static int do_ops(struct mm_context *mmu, struct host_vm_op *ops, int last,
--		  int finished, void **flush)
+-void os_print_error(int error, const char* str)
 -{
--	struct host_vm_op *op;
--	int i, ret = 0;
+-	errno = error < 0 ? -error : error;
 -
--	for (i = 0; i <= last && !ret; i++) {
--	op = &ops[i];
--		switch(op->type) {
--		case MMAP:
--			ret = map(&mmu->id, op->u.mmap.addr, op->u.mmap.len,
--				  op->u.mmap.prot, op->u.mmap.fd,
--				  op->u.mmap.offset, finished, flush);
--			break;
--		case MUNMAP:
--			ret = unmap(&mmu->id, op->u.munmap.addr,
--				    op->u.munmap.len, finished, flush);
--			break;
--		case MPROTECT:
--			ret = protect(&mmu->id, op->u.mprotect.addr,
--				      op->u.mprotect.len, op->u.mprotect.prot,
--				      finished, flush);
--			break;
--		default:
--			printk(KERN_ERR "Unknown op type %d in do_ops\n",
--			       op->type);
--			break;
--		}
--	}
--
--	return ret;
+-	perror(str);
 -}
 -
- static void fix_range(struct mm_struct *mm, unsigned long start_addr,
- 		      unsigned long end_addr, int force)
+ /* FIXME? required only by hostaudio (because it passes ioctls verbatim) */
+ int os_ioctl_generic(int fd, unsigned int cmd, unsigned long arg)
  {
- 	if (!proc_mm && (end_addr > CONFIG_STUB_START))
- 		end_addr = CONFIG_STUB_START;
+@@ -181,19 +174,19 @@ int os_file_mode(char *file, struct open
  
--	fix_range_common(mm, start_addr, end_addr, force, do_ops);
-+	fix_range_common(mm, start_addr, end_addr, force);
+ 	*mode_out = OPENFLAGS();
+ 
+-	err = os_access(file, OS_ACC_W_OK);
+-	if((err < 0) && (err != -EACCES))
+-		return(err);
+-
+-	*mode_out = of_write(*mode_out);
+-
+-	err = os_access(file, OS_ACC_R_OK);
+-	if((err < 0) && (err != -EACCES))
+-		return(err);
++	err = access(file, W_OK);
++	if(err && (errno != EACCES))
++		return -errno;
++	else if(!err)
++		*mode_out = of_write(*mode_out);
+ 
+-	*mode_out = of_read(*mode_out);
++	err = access(file, R_OK);
++	if(err && (errno != EACCES))
++		return -errno;
++	else if(!err)
++		*mode_out = of_read(*mode_out);
+ 
+-	return(0);
++	return err;
  }
  
- void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ int os_open_file(char *file, struct openflags flags, int mode)
+@@ -212,15 +205,15 @@ int os_open_file(char *file, struct open
+ 
+ 	fd = open64(file, f, mode);
+ 	if(fd < 0)
+-		return(-errno);
++		return -errno;
+ 
+ 	if(flags.cl && fcntl(fd, F_SETFD, 1)){
+ 		err = -errno;
+-		os_close_file(fd);
++		close(fd);
+ 		return err;
+ 	}
+ 
+-	return(fd);
++	return fd;
+ }
+ 
+ int os_connect_socket(char *name)
+@@ -292,31 +285,33 @@ int os_file_size(char *file, unsigned lo
+ 	err = os_stat_file(file, &buf);
+ 	if(err < 0){
+ 		printk("Couldn't stat \"%s\" : err = %d\n", file, -err);
+-		return(err);
++		return err;
+ 	}
+ 
+ 	if(S_ISBLK(buf.ust_mode)){
+ 		int fd;
+ 		long blocks;
+ 
+-		fd = os_open_file(file, of_read(OPENFLAGS()), 0);
+-		if(fd < 0){
+-			printk("Couldn't open \"%s\", errno = %d\n", file, -fd);
+-			return(fd);
++		fd = open(file, O_RDONLY, 0);
++		if(fd < 0) {
++			err = -errno;
++			printk("Couldn't open \"%s\", errno = %d\n", file,
++			       errno);
++			return err;
+ 		}
+ 		if(ioctl(fd, BLKGETSIZE, &blocks) < 0){
+ 			err = -errno;
+ 			printk("Couldn't get the block size of \"%s\", "
+ 			       "errno = %d\n", file, errno);
+-			os_close_file(fd);
+-			return(err);
++			close(fd);
++			return err;
+ 		}
+ 		*size_out = ((long long) blocks) * 512;
+-		os_close_file(fd);
+-		return(0);
++		close(fd);
+ 	}
+-	*size_out = buf.ust_size;
+-	return(0);
++	else *size_out = buf.ust_size;
++
++	return 0;
+ }
+ 
+ int os_file_modtime(char *file, unsigned long *modtime)
+@@ -334,35 +329,28 @@ int os_file_modtime(char *file, unsigned
+ 	return 0;
+ }
+ 
+-int os_get_exec_close(int fd, int* close_on_exec)
++int os_get_exec_close(int fd, int *close_on_exec)
+ {
+ 	int ret;
+ 
+-	do {
+-		ret = fcntl(fd, F_GETFD);
+-	} while((ret < 0) && (errno == EINTR)) ;
++	CATCH_EINTR(ret = fcntl(fd, F_GETFD));
+ 
+ 	if(ret < 0)
+-		return(-errno);
++		return -errno;
+ 
+-	*close_on_exec = (ret&FD_CLOEXEC) ? 1 : 0;
+-	return(ret);
++	*close_on_exec = (ret & FD_CLOEXEC) ? 1 : 0;
++	return ret;
+ }
+ 
+-int os_set_exec_close(int fd, int close_on_exec)
++int os_set_exec_close(int fd)
+ {
+-	int flag, err;
+-
+-	if(close_on_exec) flag = FD_CLOEXEC;
+-	else flag = 0;
++	int err;
+ 
+-	do {
+-		err = fcntl(fd, F_SETFD, flag);
+-	} while((err < 0) && (errno == EINTR)) ;
++	CATCH_EINTR(err = fcntl(fd, F_SETFD, FD_CLOEXEC));
+ 
+ 	if(err < 0)
+-		return(-errno);
+-	return(err);
++		return -errno;
++	return err;
+ }
+ 
+ int os_pipe(int *fds, int stream, int close_on_exec)
+@@ -371,16 +359,16 @@ int os_pipe(int *fds, int stream, int cl
+ 
+ 	err = socketpair(AF_UNIX, type, 0, fds);
+ 	if(err < 0)
+-		return(-errno);
++		return -errno;
+ 
+ 	if(!close_on_exec)
+-		return(0);
++		return 0;
+ 
+-	err = os_set_exec_close(fds[0], 1);
++	err = os_set_exec_close(fds[0]);
+ 	if(err < 0)
+ 		goto error;
+ 
+-	err = os_set_exec_close(fds[1], 1);
++	err = os_set_exec_close(fds[1]);
+ 	if(err < 0)
+ 		goto error;
+ 
+@@ -388,9 +376,9 @@ int os_pipe(int *fds, int stream, int cl
+ 
+  error:
+ 	printk("os_pipe : Setting FD_CLOEXEC failed, err = %d\n", -err);
+-	os_close_file(fds[1]);
+-	os_close_file(fds[0]);
+-	return(err);
++	close(fds[1]);
++	close(fds[0]);
++	return err;
+ }
+ 
+ int os_set_fd_async(int fd, int owner)
+@@ -537,7 +525,7 @@ int os_create_unix_socket(char *file, in
+ 		return -errno;
+ 
+ 	if(close_on_exec) {
+-		err = os_set_exec_close(sock, 1);
++		err = os_set_exec_close(sock);
+ 		if(err < 0)
+ 			printk("create_unix_socket : close_on_exec failed, "
+ 		       "err = %d", -err);
+Index: linux-2.6.22/arch/um/os-Linux/process.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/process.c	2007-08-17 13:37:55.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/process.c	2007-08-17 14:32:52.000000000 -0400
+@@ -7,6 +7,7 @@
+ #include <unistd.h>
+ #include <errno.h>
+ #include <signal.h>
++#include <fcntl.h>
+ #include <sys/mman.h>
+ #include <sys/ptrace.h>
+ #include <sys/wait.h>
+@@ -28,31 +29,32 @@
+ unsigned long os_process_pc(int pid)
+ {
+ 	char proc_stat[STAT_PATH_LEN], buf[256];
+-	unsigned long pc;
++	unsigned long pc = ARBITRARY_ADDR;
+ 	int fd, err;
+ 
+ 	sprintf(proc_stat, "/proc/%d/stat", pid);
+-	fd = os_open_file(proc_stat, of_read(OPENFLAGS()), 0);
++	fd = open(proc_stat, O_RDONLY, 0);
+ 	if (fd < 0) {
+ 		printk(UM_KERN_ERR "os_process_pc - couldn't open '%s', "
+-		       "err = %d\n", proc_stat, -fd);
+-		return ARBITRARY_ADDR;
++		       "errno = %d\n", proc_stat, errno);
++		goto out;
+ 	}
+ 	CATCH_EINTR(err = read(fd, buf, sizeof(buf)));
+ 	if (err < 0) {
+ 		printk(UM_KERN_ERR "os_process_pc - couldn't read '%s', "
+ 		       "err = %d\n", proc_stat, errno);
+-		os_close_file(fd);
+-		return ARBITRARY_ADDR;
++		goto out_close;
+ 	}
+ 	os_close_file(fd);
+ 	pc = ARBITRARY_ADDR;
+ 	if (sscanf(buf, "%*d " COMM_SCANF " %*c %*d %*d %*d %*d %*d %*d %*d "
+-		  "%*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d "
+-		  "%*d %*d %*d %*d %*d %lu", &pc) != 1) {
++		   "%*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d "
++		   "%*d %*d %*d %*d %*d %lu", &pc) != 1)
+ 		printk(UM_KERN_ERR "os_process_pc - couldn't find pc in '%s'\n",
+ 		       buf);
+-	}
++ out_close:
++	close(fd);
++ out:
+ 	return pc;
+ }
+ 
+@@ -60,25 +62,26 @@ int os_process_parent(int pid)
+ {
+ 	char stat[STAT_PATH_LEN];
+ 	char data[256];
+-	int parent, n, fd;
++	int parent = FAILURE_PID, n, fd;
+ 
+ 	if (pid == -1)
+-		return -1;
++		return parent;
+ 
+ 	snprintf(stat, sizeof(stat), "/proc/%d/stat", pid);
+-	fd = os_open_file(stat, of_read(OPENFLAGS()), 0);
++	fd = open(stat, O_RDONLY, 0);
+ 	if (fd < 0) {
+-		printk(UM_KERN_ERR "Couldn't open '%s', err = %d\n", stat, -fd);
+-		return FAILURE_PID;
++		printk(UM_KERN_ERR "Couldn't open '%s', errno = %d\n", stat,
++		       errno);
++		return parent;
+ 	}
+ 
+ 	CATCH_EINTR(n = read(fd, data, sizeof(data)));
+-	os_close_file(fd);
++	close(fd);
+ 
+ 	if (n < 0) {
+-		printk(UM_KERN_ERR "Couldn't read '%s', err = %d\n", stat,
++		printk(UM_KERN_ERR "Couldn't read '%s', errno = %d\n", stat,
+ 		       errno);
+-		return FAILURE_PID;
++		return parent;
+ 	}
+ 
+ 	parent = FAILURE_PID;
+Index: linux-2.6.22/arch/um/os-Linux/skas/process.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/skas/process.c	2007-08-17 13:37:55.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/skas/process.c	2007-08-17 14:32:32.000000000 -0400
+@@ -28,7 +28,7 @@
+ 
+ int is_skas_winch(int pid, int fd, void *data)
+ {
+-	if (pid != os_getpgrp())
++	if (pid != getpgrp())
+ 		return 0;
+ 
+ 	register_winch_irq(-1, fd, -1, data, 0);
+@@ -233,7 +233,7 @@ static int userspace_tramp(void *stack)
+ 			      "failed - errno = %d\n", errno);
+ 	}
+ 
+-	os_stop_process(os_getpid());
++	kill(os_getpid(), SIGSTOP);
+ 	return 0;
+ }
+ 
+Index: linux-2.6.22/arch/um/os-Linux/start_up.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/start_up.c	2007-08-17 13:37:55.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/start_up.c	2007-08-17 14:32:32.000000000 -0400
+@@ -28,13 +28,14 @@
+ static int ptrace_child(void)
+ {
+ 	int ret;
++	/* Calling os_getpid because some libcs cached getpid incorrectly */
+ 	int pid = os_getpid(), ppid = getppid();
+ 	int sc_result;
+ 
+ 	change_sig(SIGWINCH, 0);
+ 	if (ptrace(PTRACE_TRACEME, 0, 0, 0) < 0) {
+ 		perror("ptrace");
+-		os_kill_process(pid, 0);
++		kill(pid, SIGKILL);
+ 	}
+ 	kill(pid, SIGSTOP);
+ 
+@@ -496,7 +497,7 @@ int __init parse_iomem(char *str, int *a
+ 	file++;
+ 	fd = open(file, O_RDWR, 0);
+ 	if (fd < 0) {
+-		os_print_error(fd, "parse_iomem - Couldn't open io file");
++		perror("parse_iomem - Couldn't open io file");
+ 		goto out;
+ 	}
+ 
+Index: linux-2.6.22/arch/um/include/os.h
+===================================================================
+--- linux-2.6.22.orig/arch/um/include/os.h	2007-08-17 13:37:55.000000000 -0400
++++ linux-2.6.22/arch/um/include/os.h	2007-08-17 14:32:32.000000000 -0400
+@@ -128,9 +128,8 @@ static inline struct openflags of_cloexe
+ extern int os_stat_file(const char *file_name, struct uml_stat *buf);
+ extern int os_stat_fd(const int fd, struct uml_stat *buf);
+ extern int os_access(const char *file, int mode);
+-extern void os_print_error(int error, const char* str);
+ extern int os_get_exec_close(int fd, int *close_on_exec);
+-extern int os_set_exec_close(int fd, int close_on_exec);
++extern int os_set_exec_close(int fd);
+ extern int os_ioctl_generic(int fd, unsigned int cmd, unsigned long arg);
+ extern int os_get_ifname(int fd, char *namebuf);
+ extern int os_set_slip(int fd);
+Index: linux-2.6.22/arch/um/kernel/ksyms.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/ksyms.c	2007-08-17 13:37:55.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/ksyms.c	2007-08-17 14:32:32.000000000 -0400
+@@ -40,7 +40,6 @@ EXPORT_SYMBOL(uml_strdup);
+ EXPORT_SYMBOL(os_stat_fd);
+ EXPORT_SYMBOL(os_stat_file);
+ EXPORT_SYMBOL(os_access);
+-EXPORT_SYMBOL(os_print_error);
+ EXPORT_SYMBOL(os_get_exec_close);
+ EXPORT_SYMBOL(os_set_exec_close);
+ EXPORT_SYMBOL(os_getpid);
+Index: linux-2.6.22/arch/um/kernel/physmem.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/physmem.c	2007-08-17 13:37:55.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/physmem.c	2007-08-17 14:32:32.000000000 -0400
+@@ -99,7 +99,9 @@ void __init setup_physmem(unsigned long 
+ 	err = os_map_memory((void *) uml_reserved, physmem_fd, offset,
+ 			    len - offset, 1, 1, 1);
+ 	if (err < 0) {
+-		os_print_error(err, "Mapping memory");
++		printf("setup_physmem - mapping %ld bytes of memory at 0x%p "
++		       "failed - errno = %d\n", len - offset,
++		       (void *) uml_reserved, err);
+ 		exit(1);
+ 	}
+ 
+Index: linux-2.6.22/arch/um/os-Linux/aio.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/aio.c	2007-08-17 13:37:55.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/aio.c	2007-08-17 14:32:32.000000000 -0400
+@@ -226,8 +226,8 @@ static int init_aio_24(void)
+ 	goto out;
+ 
+ out_close_pipe:
+-	os_close_file(fds[0]);
+-	os_close_file(fds[1]);
++	close(fds[0]);
++	close(fds[1]);
+ 	aio_req_fd_w = -1;
+ 	aio_req_fd_r = -1;
+ out:
+Index: linux-2.6.22/arch/um/os-Linux/drivers/ethertap_user.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/drivers/ethertap_user.c	2007-08-17 13:37:55.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/drivers/ethertap_user.c	2007-08-17 14:35:24.000000000 -0400
+@@ -87,11 +87,11 @@ static void etap_pre_exec(void *arg)
+ 	struct etap_pre_exec_data *data = arg;
+ 
+ 	dup2(data->control_remote, 1);
+-	os_close_file(data->data_me);
+-	os_close_file(data->control_me);
++	close(data->data_me);
++	close(data->control_me);
+ }
+ 
+-static int etap_tramp(char *dev, char *gate, int control_me, 
++static int etap_tramp(char *dev, char *gate, int control_me,
+ 		      int control_remote, int data_me, int data_remote)
+ {
+ 	struct etap_pre_exec_data pe_data;
+@@ -101,7 +101,7 @@ static int etap_tramp(char *dev, char *g
+ 	char gate_buf[sizeof("nnn.nnn.nnn.nnn\0")];
+ 	char *setup_args[] = { "uml_net", version_buf, "ethertap", dev,
+ 			       data_fd_buf, gate_buf, NULL };
+-	char *nosetup_args[] = { "uml_net", version_buf, "ethertap", 
++	char *nosetup_args[] = { "uml_net", version_buf, "ethertap",
+ 				 dev, data_fd_buf, NULL };
+ 	char **args, c;
+ 
+@@ -121,8 +121,8 @@ static int etap_tramp(char *dev, char *g
+ 
+ 	if(pid < 0)
+ 		err = pid;
+-	os_close_file(data_remote);
+-	os_close_file(control_remote);
++	close(data_remote);
++	close(control_remote);
+ 	CATCH_EINTR(n = read(control_me, &c, sizeof(c)));
+ 	if(n != sizeof(c)){
+ 		err = -errno;
+@@ -151,19 +151,23 @@ static int etap_open(void *data)
+ 	if(err)
+ 		return err;
+ 
+-	err = os_pipe(data_fds, 0, 0);
+-	if(err < 0){
+-		printk("data os_pipe failed - err = %d\n", -err);
++	err = socketpair(AF_UNIX, SOCK_DGRAM, 0, data_fds);
++	if(err){
++		err = -errno;
++		printk("etap_open - data socketpair failed - err = %d\n",
++		       errno);
+ 		return err;
+ 	}
+ 
+-	err = os_pipe(control_fds, 1, 0);
+-	if(err < 0){
+-		printk("control os_pipe failed - err = %d\n", -err);
+-		return err;
++	err = socketpair(AF_UNIX, SOCK_STREAM, 0, control_fds);
++	if(err){
++		err = -errno;
++		printk("etap_open - control socketpair failed - err = %d\n",
++		       errno);
++		goto out_close_data;
+ 	}
+ 
+-	err = etap_tramp(pri->dev_name, pri->gate_addr, control_fds[0], 
++	err = etap_tramp(pri->dev_name, pri->gate_addr, control_fds[0],
+ 			 control_fds[1], data_fds[0], data_fds[1]);
+ 	output_len = UM_KERN_PAGE_SIZE;
+ 	output = kmalloc(output_len, UM_GFP_KERNEL);
+@@ -178,13 +182,21 @@ static int etap_open(void *data)
+ 
+ 	if(err < 0){
+ 		printk("etap_tramp failed - err = %d\n", -err);
+-		return err;
++		goto out_close_control;
+ 	}
+ 
+ 	pri->data_fd = data_fds[0];
+ 	pri->control_fd = control_fds[0];
+ 	iter_addresses(pri->dev, etap_open_addr, &pri->control_fd);
+ 	return data_fds[0];
++
++out_close_control:
++	close(control_fds[0]);
++	close(control_fds[1]);
++out_close_data:
++	close(data_fds[0]);
++	close(data_fds[1]);
++	return err;
+ }
+ 
+ static void etap_close(int fd, void *data)
+@@ -192,11 +204,19 @@ static void etap_close(int fd, void *dat
+ 	struct ethertap_data *pri = data;
+ 
+ 	iter_addresses(pri->dev, etap_close_addr, &pri->control_fd);
+-	os_close_file(fd);
+-	os_shutdown_socket(pri->data_fd, 1, 1);
+-	os_close_file(pri->data_fd);
++	close(fd);
++
++	if(shutdown(pri->data_fd, SHUT_RDWR) < 0)
++		printk("etap_close - shutdown data socket failed, errno = %d\n",
++		       errno);
++
++	if(shutdown(pri->control_fd, SHUT_RDWR) < 0)
++		printk("etap_close - shutdown control socket failed, "
++		       "errno = %d\n", errno);
++
++	close(pri->data_fd);
+ 	pri->data_fd = -1;
+-	os_close_file(pri->control_fd);
++	close(pri->control_fd);
+ 	pri->control_fd = -1;
+ }
+ 
+@@ -216,13 +236,14 @@ static void etap_add_addr(unsigned char 
+ 	etap_open_addr(addr, netmask, &pri->control_fd);
+ }
+ 
+-static void etap_del_addr(unsigned char *addr, unsigned char *netmask, 
++static void etap_del_addr(unsigned char *addr, unsigned char *netmask,
+ 			  void *data)
+ {
+ 	struct ethertap_data *pri = data;
+ 
+ 	if(pri->control_fd == -1)
+ 		return;
++
+ 	etap_close_addr(addr, netmask, &pri->control_fd);
+ }
+ 
+Index: linux-2.6.22/arch/um/os-Linux/drivers/tuntap_user.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/drivers/tuntap_user.c	2007-08-17 13:37:55.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/drivers/tuntap_user.c	2007-08-17 14:37:22.000000000 -0400
+@@ -62,7 +62,7 @@ static void tuntap_pre_exec(void *arg)
+ 	struct tuntap_pre_exec_data *data = arg;
+ 
+ 	dup2(data->stdout, 1);
+-	os_close_file(data->close_me);
++	close(data->close_me);
+ }
+ 
+ static int tuntap_open_tramp(char *gate, int *fd_out, int me, int remote,
+@@ -88,7 +88,7 @@ static int tuntap_open_tramp(char *gate,
+ 	if(pid < 0)
+ 		return -pid;
+ 
+-	os_close_file(remote);
++	close(remote);
+ 
+ 	msg.msg_name = NULL;
+ 	msg.msg_namelen = 0;
+@@ -125,7 +125,7 @@ static int tuntap_open_tramp(char *gate,
+ 		return -EINVAL;
+ 	}
+ 	*fd_out = ((int *) CMSG_DATA(cmsg))[0];
+-	os_set_exec_close(*fd_out, 1);
++	os_set_exec_close(*fd_out);
+ 	return 0;
+ }
+ 
+@@ -154,20 +154,22 @@ static int tuntap_open(void *data)
+ 		if(ioctl(pri->fd, TUNSETIFF, (void *) &ifr) < 0){
+ 			err = -errno;
+ 			printk("TUNSETIFF failed, errno = %d\n", errno);
+-			os_close_file(pri->fd);
++			close(pri->fd);
+ 			return err;
+ 		}
+ 	}
+ 	else {
+-		err = os_pipe(fds, 0, 0);
+-		if(err < 0){
+-			printk("tuntap_open : os_pipe failed - err = %d\n",
+-			       -err);
++		err = socketpair(AF_UNIX, SOCK_DGRAM, 0, fds);
++		if(err){
++			err = -errno;
++			printk("tuntap_open : socketpair failed - errno = %d\n",
++			       errno);
+ 			return err;
+ 		}
+ 
+ 		buffer = get_output_buffer(&len);
+-		if(buffer != NULL) len--;
++		if(buffer != NULL)
++			len--;
+ 		used = 0;
+ 
+ 		err = tuntap_open_tramp(pri->gate_addr, &pri->fd, fds[0],
+@@ -186,7 +188,7 @@ static int tuntap_open(void *data)
+ 		printk("%s", output);
+ 		free_output_buffer(buffer);
+ 
+-		os_close_file(fds[0]);
++		close(fds[0]);
+ 		iter_addresses(pri->dev, open_addr, pri->dev_name);
+ 	}
+ 
+@@ -199,7 +201,7 @@ static void tuntap_close(int fd, void *d
+ 
+ 	if(!pri->fixed_config) 
+ 		iter_addresses(pri->dev, close_addr, pri->dev_name);
+-	os_close_file(fd);
++	close(fd);
+ 	pri->fd = -1;
+ }
+ 
+Index: linux-2.6.22/arch/um/os-Linux/helper.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/helper.c	2007-08-17 13:37:55.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/helper.c	2007-08-17 14:32:32.000000000 -0400
+@@ -11,6 +11,7 @@
+ #include <limits.h>
+ #include <sys/signal.h>
+ #include <sys/wait.h>
++#include <sys/socket.h>
+ #include "user.h"
+ #include "kern_util.h"
+ #include "os.h"
+@@ -54,13 +55,14 @@ int run_helper(void (*pre_exec)(void *),
+ 	if (stack == 0)
+ 		return -ENOMEM;
+ 
+-	ret = os_pipe(fds, 1, 0);
++	ret = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+ 	if (ret < 0) {
+-		printk("run_helper : pipe failed, ret = %d\n", -ret);
++		ret = -errno;
++		printk("run_helper : pipe failed, errno = %d\n", errno);
+ 		goto out_free;
+ 	}
+ 
+-	ret = os_set_exec_close(fds[1], 1);
++	ret = os_set_exec_close(fds[1]);
+ 	if (ret < 0) {
+ 		printk("run_helper : setting FD_CLOEXEC failed, ret = %d\n",
+ 		       -ret);
+Index: linux-2.6.22/arch/um/os-Linux/mem.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/mem.c	2007-08-17 13:37:55.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/mem.c	2007-08-17 14:32:32.000000000 -0400
+@@ -218,7 +218,7 @@ int __init create_tmp_file(unsigned long
+ 
+ 	err = fchmod(fd, 0777);
+ 	if(err < 0){
+-		perror("os_mode_fd");
++		perror("fchmod");
+ 		exit(1);
+ 	}
+ 
+@@ -226,7 +226,7 @@ int __init create_tmp_file(unsigned long
+ 	 * increase the file size by one byte, to the desired length.
+ 	 */
+ 	if (lseek64(fd, len - 1, SEEK_SET) < 0) {
+-		perror("os_seek_file");
++		perror("lseek64");
+ 		exit(1);
+ 	}
+ 
+@@ -247,7 +247,7 @@ int __init create_mem_file(unsigned long
+ 
+ 	fd = create_tmp_file(len);
+ 
+-	err = os_set_exec_close(fd, 1);
++	err = os_set_exec_close(fd);
+ 	if(err < 0){
+ 		errno = -err;
+ 		perror("exec_close");
