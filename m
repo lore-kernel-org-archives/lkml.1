@@ -1,325 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763090AbXHQJCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764861AbXHQJC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763090AbXHQJCV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 05:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757951AbXHQJCM
+	id S1764861AbXHQJC4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 05:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760649AbXHQJCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 05:02:12 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:61714 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758052AbXHQJCK (ORCPT
+	Fri, 17 Aug 2007 05:02:43 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47572 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763817AbXHQJC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 05:02:10 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Menage <menage@google.com>,
+	Fri, 17 Aug 2007 05:02:29 -0400
+Date: Fri, 17 Aug 2007 14:44:48 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Eric W Biederman <ebiederm@xmission.com>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Fri, 17 Aug 2007 14:12:59 +0530
-Message-Id: <20070817084259.26003.80630.sendpatchset@balbir-laptop>
-In-Reply-To: <20070817084228.26003.12568.sendpatchset@balbir-laptop>
-References: <20070817084228.26003.12568.sendpatchset@balbir-laptop>
-Subject: [-mm PATCH 3/9] Memory controller accounting setup (v6)
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <46C55E90.7010407@yahoo.com.au>
+Message-ID: <alpine.LFD.0.999.0708171431150.3666@enigma.security.iitk.ac.in>
+References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
+ <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com>
+ <20070816070907.GA964@gondor.apana.org.au>
+ <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
+ <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com>
+ <18117.1287.779351.836552@cargo.ozlabs.ibm.com>
+ <alpine.LFD.0.999.0708161953310.30176@woody.linux-foundation.org>
+ <18117.6495.397597.582736@cargo.ozlabs.ibm.com> <20070817035342.GA14744@gondor.apana.org.au>
+ <alpine.LFD.0.999.0708171142550.3666@enigma.security.iitk.ac.in>
+ <46C55E90.7010407@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Pavel Emelianov <xemul@openvz.org>
 
-Changelog for v5
+On Fri, 17 Aug 2007, Nick Piggin wrote:
 
-1. Remove inclusion of memcontrol.h from mm_types.h
+> Satyam Sharma wrote:
+> [...]
+> > Granted, the above IS buggy code. But, the stated objective is to avoid
+> > heisenbugs.
+    ^^^^^^^^^^
 
-Changelog
+> Anyway, why are you making up code snippets that are buggy in other
+> ways in order to support this assertion being made that lots of kernel
+> code supposedly depends on volatile semantics. Just reference the
+> actual code.
 
-As per Paul's review comments
+Because the point is *not* about existing bugs in kernel code. At some
+point Chris Snook (who started this thread) did write that "If I knew
+of the existing bugs in the kernel, I would be sending patches for them,
+not this series" or something to that effect.
 
-1. Drop css_get() for the root memory container
-2. Use mem_container_from_task() as an optimization instead of using
-   mem_container_from_cont() along with task_container.
+The point is about *author expecations*. If people do expect atomic_read()
+(or a variant thereof) to have volatile semantics, why not give them such
+a variant?
 
-Basic setup routines, the mm_struct has a pointer to the container that
-it belongs to and the the page has a page_container associated with it.
+And by the way, the point is *also* about the fact that cpu_relax(), as
+of today, implies a full memory clobber, which is not what a lot of such
+loops want. (due to stuff mentioned elsewhere, summarized in that summary)
 
-Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
-Signed-off-by: <balbir@linux.vnet.ibm.com>
----
+> > And we have driver / subsystem maintainers such as Stefan
+> > coming up and admitting that often a lot of code that's written to use
+> > atomic_read() does assume the read will not be elided by the compiler.
+                                                             ^^^^^^^^^^^^^
 
- include/linux/memcontrol.h |   36 ++++++++++++++++++++++++++++
- include/linux/mm_types.h   |    6 ++++
- include/linux/sched.h      |    1 
- kernel/fork.c              |   11 ++++++--
- mm/memcontrol.c            |   57 +++++++++++++++++++++++++++++++++++++++++----
- 5 files changed, 104 insertions(+), 7 deletions(-)
+(so it's about compiler barrier expectations only, though I fully agree
+that those who're using atomic_t as if it were some magic thing that lets
+them write lockless code are sorrily mistaken.)
 
-diff -puN include/linux/memcontrol.h~mem-control-accounting-setup include/linux/memcontrol.h
---- linux-2.6.23-rc2-mm2/include/linux/memcontrol.h~mem-control-accounting-setup	2007-08-17 13:14:19.000000000 +0530
-+++ linux-2.6.23-rc2-mm2-balbir/include/linux/memcontrol.h	2007-08-17 13:14:19.000000000 +0530
-@@ -3,6 +3,9 @@
-  * Copyright IBM Corporation, 2007
-  * Author Balbir Singh <balbir@linux.vnet.ibm.com>
-  *
-+ * Copyright 2007 OpenVZ SWsoft Inc
-+ * Author: Pavel Emelianov <xemul@openvz.org>
-+ *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-  * the Free Software Foundation; either version 2 of the License, or
-@@ -17,5 +20,38 @@
- #ifndef _LINUX_MEMCONTROL_H
- #define _LINUX_MEMCONTROL_H
- 
-+struct mem_container;
-+struct page_container;
-+
-+#ifdef CONFIG_CONTAINER_MEM_CONT
-+
-+extern void mm_init_container(struct mm_struct *mm, struct task_struct *p);
-+extern void mm_free_container(struct mm_struct *mm);
-+extern void page_assign_page_container(struct page *page,
-+					struct page_container *pc);
-+extern struct page_container *page_get_page_container(struct page *page);
-+
-+#else /* CONFIG_CONTAINER_MEM_CONT */
-+static inline void mm_init_container(struct mm_struct *mm,
-+					struct task_struct *p)
-+{
-+}
-+
-+static inline void mm_free_container(struct mm_struct *mm)
-+{
-+}
-+
-+static inline void page_assign_page_container(struct page *page,
-+						struct page_container *pc)
-+{
-+}
-+
-+static inline struct page_container *page_get_page_container(struct page *page)
-+{
-+	return NULL;
-+}
-+
-+#endif /* CONFIG_CONTAINER_MEM_CONT */
-+
- #endif /* _LINUX_MEMCONTROL_H */
- 
-diff -puN include/linux/mm_types.h~mem-control-accounting-setup include/linux/mm_types.h
---- linux-2.6.23-rc2-mm2/include/linux/mm_types.h~mem-control-accounting-setup	2007-08-17 13:14:19.000000000 +0530
-+++ linux-2.6.23-rc2-mm2-balbir/include/linux/mm_types.h	2007-08-17 13:14:19.000000000 +0530
-@@ -95,6 +95,9 @@ struct page {
- 	unsigned int gfp_mask;
- 	unsigned long trace[8];
- #endif
-+#ifdef CONFIG_CONTAINER_MEM_CONT
-+	unsigned long page_container;
-+#endif
- };
- 
- /*
-@@ -226,6 +229,9 @@ struct mm_struct {
- 	/* aio bits */
- 	rwlock_t		ioctx_list_lock;
- 	struct kioctx		*ioctx_list;
-+#ifdef CONFIG_CONTAINER_MEM_CONT
-+	struct mem_container *mem_container;
-+#endif
- };
- 
- #endif /* _LINUX_MM_TYPES_H */
-diff -puN include/linux/sched.h~mem-control-accounting-setup include/linux/sched.h
---- linux-2.6.23-rc2-mm2/include/linux/sched.h~mem-control-accounting-setup	2007-08-17 13:14:19.000000000 +0530
-+++ linux-2.6.23-rc2-mm2-balbir/include/linux/sched.h	2007-08-17 13:14:19.000000000 +0530
-@@ -87,6 +87,7 @@ struct sched_param {
- 
- #include <asm/processor.h>
- 
-+struct mem_container;
- struct exec_domain;
- struct futex_pi_state;
- struct bio;
-diff -puN kernel/fork.c~mem-control-accounting-setup kernel/fork.c
---- linux-2.6.23-rc2-mm2/kernel/fork.c~mem-control-accounting-setup	2007-08-17 13:14:19.000000000 +0530
-+++ linux-2.6.23-rc2-mm2-balbir/kernel/fork.c	2007-08-17 13:14:19.000000000 +0530
-@@ -50,6 +50,7 @@
- #include <linux/taskstats_kern.h>
- #include <linux/random.h>
- #include <linux/tty.h>
-+#include <linux/memcontrol.h>
- 
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -328,7 +329,7 @@ __cacheline_aligned_in_smp DEFINE_SPINLO
- 
- #include <linux/init_task.h>
- 
--static struct mm_struct * mm_init(struct mm_struct * mm)
-+static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
- {
- 	atomic_set(&mm->mm_users, 1);
- 	atomic_set(&mm->mm_count, 1);
-@@ -345,11 +346,14 @@ static struct mm_struct * mm_init(struct
- 	mm->ioctx_list = NULL;
- 	mm->free_area_cache = TASK_UNMAPPED_BASE;
- 	mm->cached_hole_size = ~0UL;
-+	mm_init_container(mm, p);
- 
- 	if (likely(!mm_alloc_pgd(mm))) {
- 		mm->def_flags = 0;
- 		return mm;
- 	}
-+
-+	mm_free_container(mm);
- 	free_mm(mm);
- 	return NULL;
- }
-@@ -364,7 +368,7 @@ struct mm_struct * mm_alloc(void)
- 	mm = allocate_mm();
- 	if (mm) {
- 		memset(mm, 0, sizeof(*mm));
--		mm = mm_init(mm);
-+		mm = mm_init(mm, current);
- 	}
- 	return mm;
- }
-@@ -378,6 +382,7 @@ void fastcall __mmdrop(struct mm_struct 
- {
- 	BUG_ON(mm == &init_mm);
- 	mm_free_pgd(mm);
-+	mm_free_container(mm);
- 	destroy_context(mm);
- 	free_mm(mm);
- }
-@@ -498,7 +503,7 @@ static struct mm_struct *dup_mm(struct t
- 	mm->token_priority = 0;
- 	mm->last_interval = 0;
- 
--	if (!mm_init(mm))
-+	if (!mm_init(mm, tsk))
- 		goto fail_nomem;
- 
- 	if (init_new_context(tsk, mm))
-diff -puN mm/memcontrol.c~mem-control-accounting-setup mm/memcontrol.c
---- linux-2.6.23-rc2-mm2/mm/memcontrol.c~mem-control-accounting-setup	2007-08-17 13:14:19.000000000 +0530
-+++ linux-2.6.23-rc2-mm2-balbir/mm/memcontrol.c	2007-08-17 13:14:19.000000000 +0530
-@@ -3,6 +3,9 @@
-  * Copyright IBM Corporation, 2007
-  * Author Balbir Singh <balbir@linux.vnet.ibm.com>
-  *
-+ * Copyright 2007 OpenVZ SWsoft Inc
-+ * Author: Pavel Emelianov <xemul@openvz.org>
-+ *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-  * the Free Software Foundation; either version 2 of the License, or
-@@ -17,6 +20,7 @@
- #include <linux/res_counter.h>
- #include <linux/memcontrol.h>
- #include <linux/container.h>
-+#include <linux/mm.h>
- 
- struct container_subsys mem_container_subsys;
- 
-@@ -35,6 +39,13 @@ struct mem_container {
- 	 * the counter to account for memory usage
- 	 */
- 	struct res_counter res;
-+	/*
-+	 * Per container active and inactive list, similar to the
-+	 * per zone LRU lists.
-+	 * TODO: Consider making these lists per zone
-+	 */
-+	struct list_head active_list;
-+	struct list_head inactive_list;
- };
- 
- /*
-@@ -56,6 +67,37 @@ struct mem_container *mem_container_from
- 				css);
- }
- 
-+static inline
-+struct mem_container *mem_container_from_task(struct task_struct *p)
-+{
-+	return container_of(task_subsys_state(p, mem_container_subsys_id),
-+				struct mem_container, css);
-+}
-+
-+void mm_init_container(struct mm_struct *mm, struct task_struct *p)
-+{
-+	struct mem_container *mem;
-+
-+	mem = mem_container_from_task(p);
-+	css_get(&mem->css);
-+	mm->mem_container = mem;
-+}
-+
-+void mm_free_container(struct mm_struct *mm)
-+{
-+	css_put(&mm->mem_container->css);
-+}
-+
-+void page_assign_page_container(struct page *page, struct page_container *pc)
-+{
-+	page->page_container = (unsigned long)pc;
-+}
-+
-+struct page_container *page_get_page_container(struct page *page)
-+{
-+	return page->page_container;
-+}
-+
- static ssize_t mem_container_read(struct container *cont, struct cftype *cft,
- 			struct file *file, char __user *userbuf, size_t nbytes,
- 			loff_t *ppos)
-@@ -91,14 +133,21 @@ static struct cftype mem_container_files
- 	},
- };
- 
-+static struct mem_container init_mem_container;
-+
- static struct container_subsys_state *
- mem_container_create(struct container_subsys *ss, struct container *cont)
- {
- 	struct mem_container *mem;
- 
--	mem = kzalloc(sizeof(struct mem_container), GFP_KERNEL);
--	if (!mem)
--		return -ENOMEM;
-+	if (unlikely((cont->parent) == NULL)) {
-+		mem = &init_mem_container;
-+		init_mm.mem_container = mem;
-+	} else
-+		mem = kzalloc(sizeof(struct mem_container), GFP_KERNEL);
-+
-+	if (mem == NULL)
-+		return NULL;
- 
- 	res_counter_init(&mem->res);
- 	return &mem->css;
-@@ -123,5 +172,5 @@ struct container_subsys mem_container_su
- 	.create = mem_container_create,
- 	.destroy = mem_container_destroy,
- 	.populate = mem_container_populate,
--	.early_init = 0,
-+	.early_init = 1,
- };
-_
+> So these are broken on i386 and x86-64?
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Possibly, but the point is not about existing bugs, as mentioned above.
+
+Some such bugs have been found nonetheless -- reminds me, can somebody
+please apply http://www.gossamer-threads.com/lists/linux/kernel/810674 ?
+
+
+Satyam
