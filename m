@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764724AbXHQB31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764294AbXHQBkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764724AbXHQB31 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 21:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756417AbXHQB3P
+	id S1764294AbXHQBkv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 21:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757609AbXHQBkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 21:29:15 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3978 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755229AbXHQB3N (ORCPT
+	Thu, 16 Aug 2007 21:40:41 -0400
+Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:21983 "EHLO
+	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756993AbXHQBkk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 21:29:13 -0400
-Date: Fri, 17 Aug 2007 09:28:00 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070817012800.GA12621@gondor.apana.org.au>
-References: <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi> <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com> <20070817010232.GK16957@linux.vnet.ibm.com>
+	Thu, 16 Aug 2007 21:40:40 -0400
+X-Greylist: delayed 1425 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Aug 2007 21:40:40 EDT
+Date: Fri, 17 Aug 2007 10:16:47 +0900 (JST)
+Message-Id: <20070817.101647.93018729.nemoto@toshiba-tops.co.jp>
+To: lethal@linux-sh.org
+Cc: a.zummo@towertech.it, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com, dbrownell@users.sourceforge.net
+Subject: Re: [PATCH] rtc: Make rtc-ds1553 driver hotplug-aware
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20070816161450.GE13927@linux-sh.org>
+References: <20070817.010627.110331225.anemo@mba.ocn.ne.jp>
+	<20070816161450.GE13927@linux-sh.org>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070817010232.GK16957@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 06:02:32PM -0700, Paul E. McKenney wrote:
+On Fri, 17 Aug 2007 01:14:50 +0900, Paul Mundt <lethal@linux-sh.org> wrote:
+> > +MODULE_ALIAS("ds1742");
 > 
-> Yep.  Or you can use atomic_dec_return() instead of using a barrier.
+> Presumably this should be ds1553.
 
-Or you could use smp_mb__{before,after}_atomic_dec.
+Oh of course!  Thanks.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+
+Subject: [PATCH] rtc: Make rtc-ds1553 driver hotplug-aware
+
+Add an MODULE_ALIAS() to make this platform driver hotplug-aware.
+
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+diff --git a/drivers/rtc/rtc-ds1553.c b/drivers/rtc/rtc-ds1553.c
+index 46da571..a2eafd2 100644
+--- a/drivers/rtc/rtc-ds1553.c
++++ b/drivers/rtc/rtc-ds1553.c
+@@ -417,3 +417,4 @@ MODULE_AUTHOR("Atsushi Nemoto <anemo@mba.ocn.ne.jp>");
+ MODULE_DESCRIPTION("Dallas DS1553 RTC driver");
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(DRV_VERSION);
++MODULE_ALIAS("ds1553");
