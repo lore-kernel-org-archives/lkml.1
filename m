@@ -1,117 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbXHQUTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755802AbXHQUTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbXHQUTV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 16:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbXHQUS5
+	id S1755802AbXHQUTr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 16:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761812AbXHQUTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 16:18:57 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56087 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764759AbXHQUSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 16:18:55 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Lee.Schermerhorn@hp.com, ak@suse.de, clameter@sgi.com
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Message-Id: <20070817201848.14792.58117.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20070817201647.14792.2690.sendpatchset@skynet.skynet.ie>
-References: <20070817201647.14792.2690.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 6/6] Do not use FASTCALL for __alloc_pages_nodemask()
-Date: Fri, 17 Aug 2007 21:18:48 +0100 (IST)
+	Fri, 17 Aug 2007 16:19:35 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:39339 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755215AbXHQUTd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 16:19:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PR5Z2tCH5YRyyamxFpdX8P9l3v+kPQuUXjNRZzhh4Yxo+cNqwZ/rx2rlzR+aoBA16Tu2ko5/iAbPvGXTojxoZeWuLnyifRso6PuS3kjNLyQ7eJ2f0zO1S9nhPrjoTQum/euOnXO4FlDOAUVBdqJ7fOAKAoGTNKGKkEOEUL0m5/M=
+Message-ID: <8bd0f97a0708171319q71b5a117v8882f4fb70d2dc43@mail.gmail.com>
+Date: Fri, 17 Aug 2007 16:19:32 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH 02/12] Blackfin arch: Add label to call new GPIO API
+Cc: "Bryan Wu" <bryan.wu@analog.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "Michael Hennerich" <michael.hennerich@analog.com>
+In-Reply-To: <200708171309.25529.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11865441373719-git-send-email-bryan.wu@analog.com>
+	 <200708171124.54839.david-b@pacbell.net>
+	 <8bd0f97a0708171245j74e856e0uce009de16c00f517@mail.gmail.com>
+	 <200708171309.25529.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 8/17/07, David Brownell <david-b@pacbell.net> wrote:
+> On Friday 17 August 2007, Mike Frysinger wrote:
+> > On 8/17/07, David Brownell <david-b@pacbell.net> wrote:
+> > > ...
+> > > Just for the record, this is an unusual way to use these calls.
+> > >
+> > > Other platforms completely decouple these issues from the
+> > > IRQ infrastructure ... doing the pinmux and gpio claiming
+> > > separately from the request_irq()/free_irq() paths, mostly
+> > > as part of board setup.  Doing all of that "early":
+> > >
+> > >  - keeps those error returns from causing hard-to-track-down
+> > >    runtime bugs;
+> > >
+> > >  - works always, even on platforms where a given IRQ may
+> > >    appear on any of several pins/balls;
+> > >
+> > >  - makes it easier to cross-check against board schematics,
+> > >    by keeping most board-specific setup in one source file;
+> > >
+> > >  - shrinks the kernel's runtime footprint;
+> > >
+> > >  - allows the label to be more descriptive ... describeing
+> > >    exactly *which* IRQ, so that using the labels for better
+> > >    diagnostics actually gives better diagnostics.
+> > >
+> > > Again, not "wrong"; but probably sub-optimal.  You might
+> > > want to move towards earlier binding now, while Linux is
+> > > still young on Blackfin and you don't have legacy code to
+> > > worry about.
+> >
+> > in the Blackfin port, if you want to use a pin as an IRQ rather than
+> > GPIO, you use the normal request_irq/free_irq API ... those functions
+> > will call back into the proper GPIO/PORTMUX code so that the pin is
+> > setup properly.  this is done so that code isnt duplicated across
+> > files and so that we can easily detect if someone does something
+> > incorrect like try to take the same pin and use it as
+> > irq/gpio/whatever at the same time ...
+> >
+> > are you saying that other ports dont unify the backend code paths at all ?
+>
+> Some platforms try to "unify" the pin setup in the boot loader.
+> Most of them cope with bogus bootloaders by doing it in the board
+> setup code.
+>
+> I don't know of any who try to do it "late" as you summarized.
+>
+> See above why "late" unification is not necessarily as good as
+> "early" unification.
+>
+> And then there's the OMAP1 example, where for example you might
+> know that you want MPUIO-0 but that's insufficient to tell whether
+> you must mux ball F18 or R13 ... so it's impossible to do the kind
+> of "late" unification done here, and pinmux *MUST* be separate from
+> IRQ setup.
 
-One PPC64 machine using gcc 3.4.6 the machine fails to boot when
-__alloc_pages_nodemask() uses the FASTCALL calling convention. It is not
-clear why this machine in particular is affected as other PPC64 machines
-boot. The only usual aspect of the machine is that it has memoryless nodes
-but I couldn't see any problem using them. The error received looks like
+sorry, i'm not familiar at all with anything OMAP, but the Blackfin
+architecture is such that all of its pins can be flipped on the fly
+between modes ... i have seen once or twice some drivers which
+actually needed this ability at runtime as they were muxing things
+(maybe our fault there ... give someone the ability and they'll use
+it).
 
-Initializing hardware...  storageUnable to handle kernel paging request for data at address 0xffffffff
-Faulting instruction address: 0xc0000000001aaa0c
-cpu 0x4: Vector: 300 (Data Access) at [c00000000fea7650]
-    pc: c0000000001aaa0c: .strnlen+0x10/0x3c
-    lr: c0000000001ab880: .vsnprintf+0x378/0x644
-    sp: c00000000fea78d0
-   msr: 9000000000009032
-   dar: ffffffff
- dsisr: 40000000
-  current = 0xc00000003fe4d7a0
-  paca    = 0xc000000000487300
-    pid   = 1178, comm = 05-wait_for_sys
-enter ? for help
-[link register   ] c0000000001ab880 .vsnprintf+0x378/0x644
-[c00000000fea78d0] c0000000003cad35 (unreliable)
-[c00000000fea7990] c0000000001abc70 .sprintf+0x3c/0x4c
-[c00000000fea7a10] c00000000021d5c0 .show_uevent+0x150/0x1a4
-[c00000000fea7bb0] c00000000021cedc .dev_attr_show+0x44/0x60
-[c00000000fea7c30] c000000000143874 .sysfs_read_file+0x128/0x208
-[c00000000fea7cf0] c0000000000d71bc .vfs_read+0x134/0x1f8
-[c00000000fea7d90] c0000000000d75f4 .sys_read+0x4c/0x8c
-[c00000000fea7e30] c00000000000852c syscall_exit+0x0/0x40
---- Exception: c01 (System Call) at 000000000ff65894
-SP (ff90f730) is in userspace
-
-
-This patch creates an inline version of __alloc_pages called
-__alloc_pages_internal() which allows the machine to boot. Both __alloc_pages
-and __alloc_pages_nodemask use this interal function but only __alloc_pages()
-uses FASTCALL.
-
-Opinions as to why FASTCALL breaks on one machine are welcome.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
-
- include/linux/gfp.h |    3 +--
- mm/page_alloc.c     |   13 ++++++++++---
- 2 files changed, 11 insertions(+), 5 deletions(-)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc3-030_filter_nodemask/include/linux/gfp.h linux-2.6.23-rc3-035_nofastcall/include/linux/gfp.h
---- linux-2.6.23-rc3-030_filter_nodemask/include/linux/gfp.h	2007-08-17 16:56:36.000000000 +0100
-+++ linux-2.6.23-rc3-035_nofastcall/include/linux/gfp.h	2007-08-17 17:00:37.000000000 +0100
-@@ -142,8 +142,7 @@ extern struct page *
- FASTCALL(__alloc_pages(gfp_t, unsigned int, struct zonelist *));
- 
- extern struct page *
--FASTCALL(__alloc_pages_nodemask(gfp_t, unsigned int,
--				struct zonelist *, nodemask_t *nodemask));
-+__alloc_pages_nodemask(gfp_t, unsigned int, struct zonelist *, nodemask_t *);
- 
- static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
- 						unsigned int order)
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc3-030_filter_nodemask/mm/page_alloc.c linux-2.6.23-rc3-035_nofastcall/mm/page_alloc.c
---- linux-2.6.23-rc3-030_filter_nodemask/mm/page_alloc.c	2007-08-17 17:00:27.000000000 +0100
-+++ linux-2.6.23-rc3-035_nofastcall/mm/page_alloc.c	2007-08-17 17:00:37.000000000 +0100
-@@ -1222,8 +1222,8 @@ try_next_zone:
- /*
-  * This is the 'heart' of the zoned buddy allocator.
-  */
--struct page * fastcall
--__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
-+static inline struct page *
-+__alloc_pages_internal(gfp_t gfp_mask, unsigned int order,
- 			struct zonelist *zonelist, nodemask_t *nodemask)
- {
- 	const gfp_t wait = gfp_mask & __GFP_WAIT;
-@@ -1396,11 +1396,18 @@ got_pg:
- 	return page;
- }
- 
-+struct page *
-+__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
-+			struct zonelist *zonelist, nodemask_t *nodemask)
-+{
-+	return __alloc_pages_internal(gfp_mask, order, zonelist, nodemask);
-+}
-+
- struct page * fastcall
- __alloc_pages(gfp_t gfp_mask, unsigned int order,
- 		struct zonelist *zonelist)
- {
--	return __alloc_pages_nodemask(gfp_mask, order, zonelist, NULL);
-+	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
- }
- 
- 
+as Michael pointed out, in the Blackfin world we tend to keep things
+very dynamic as we have dev systems which allow for dropping in of
+optional cards at will, so doing this in the bootloader is way too
+inflexible.
+-mike
