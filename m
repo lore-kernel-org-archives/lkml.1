@@ -1,113 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbXHQE3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbXHQEhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758961AbXHQE3S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 00:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbXHQE27
+	id S1755409AbXHQEhp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 00:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbXHQEhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 00:28:59 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:54077 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752916AbXHQE25 (ORCPT
+	Fri, 17 Aug 2007 00:37:36 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:29925 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968AbXHQEhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 00:28:57 -0400
-Message-ID: <46C522F5.9080802@gmail.com>
-Date: Fri, 17 Aug 2007 06:24:21 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 17 Aug 2007 00:37:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BpAj/i6fC8bgeTfr53jFanVUZiPtNKEyod29PEIjOUQQQbOWhlfRIRxcLLv0k1bbDRr2w5Z6Q1ZDL73EUg2wjwTD50U1BFUW5FFhwiRu6FVZKpGAUFeI8w8OtTdWtH8BIV2O9CjOJSpupPORWoNdWtUSPLKilPua8i5GTIojM5U=
+Message-ID: <653402b90708162137r6079d431ud91216bb7b140610@mail.gmail.com>
+Date: Fri, 17 Aug 2007 06:37:33 +0200
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+To: "Joe Perches" <joe@perches.com>
+Subject: Re: [PATCH] [120/2many] MAINTAINERS - CFAG12864BFB LCD FRAMEBUFFER DRIVER
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <1187272507.5906.80.camel@localhost>
 MIME-Version: 1.0
-To: Junio C Hamano <gitster@pobox.com>
-CC: Kyle Moffett <mrmacman_g4@mac.com>, Satyam Sharma <satyam@infradead.org>,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Joe Perches <joe@perches.com>, git@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch - scripts/get_maintainer.pl
-References: <1187026955.2688.4.camel@laptopd505.fenrus.org>	<1187037445.6628.98.camel@heimdal.trondhjem.org>	<1187054366.2757.0.camel@laptopd505.fenrus.org>	<46C10AA8.3090505@gmail.com>	<20070814102033.604c8695@the-village.bc.nu>	<46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>	<46C1EE6F.2080807@gmail.com> <1187116082.32555.122.camel@localhost>	<alpine.LFD.0.999.0708141131140.30176@woody.linux-foundation.org>	<20070814193333.GI21089@ftp.linux.org.uk> <46C2548D.80605@gmail.com>	<alpine.LFD.0.999.0708151846130.16414@enigma.security.iitk.ac.in>	<46C30220.6060007@gmail.com>	<68B09015-4411-470A-BA88-732969469AA2@mac.com>	<46C42DCB.1060502@gmail.com> <7v7invjodw.fsf@gitster.siamese.dyndns.org>
-In-Reply-To: <7v7invjodw.fsf@gitster.siamese.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Disposition: inline
+References: <46bff946.crSIrCRHeVaUjuwb%joe@perches.com>
+	 <653402b90708160216k1ea20490k7a846bd019e44b3d@mail.gmail.com>
+	 <1187272507.5906.80.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/16/2007 09:00 PM, Junio C Hamano wrote:
+On 8/16/07, Joe Perches <joe@perches.com> wrote:
+> On Thu, 2007-08-16 at 11:16 +0200, Miguel Ojeda wrote:
+> > I think you could add also:
+> >  +F:     Documentation/auxdisplay/cfag12864bfb
+>
+> This is what I have now:
+>
+> CFAG12864BFB LCD FRAMEBUFFER DRIVER
+> P:      Miguel Ojeda Sandonis
+> M:      maxextreme@gmail.com
+> L:      linux-kernel@vger.kernel.org
+> W:      http://auxdisplay.googlepages.com/
+> S:      Maintained
+> F:      Documentation/auxdisplay/cfag12864bfb
+> F:      drivers/auxdisplay/cfag12864bfb.c
+> F:      include/linux/cfag12864b.h
+>
+> Joe
+>
+>
 
-> Git or no git, I think a file that can be viewed with less,
-> edited with regular editor and processed with sed/perl/grep
-> tools is the way to go.  I do not think adding 600+ patches to
-> the single MAINTAINERS list is workable in the longer term, as
-> it would become the single file many subsystem people need to
-> update and is asking for merge conflicts, but I think a file
-> with known name (say, "CcMe.txt") sprinkled in relevant
-> subdirectories, perhaps with the same format originally
-> suggested for MAINTAINERS, would make a lot more sense.
-> 
-> That would give people who work with tarballs and patches, or a
-> subsystem managed with something other than git (one of the most
-> important one is quilt), the equal access to the necessary data.
+Oh, I got confused by the different emails:
 
-That is ofcourse an argument but I believe a bit of a non-argument at the 
-same time in practice.
+   Documentation/auxdisplay/cfag12864bfb
 
-There's really not much point in pretending that non-git users are still 
-first class citizens anyway; Linus' own suggestion of using git-blame would 
-tie things to git as well, as do for example frequent requests to bisect a 
-problem. I moreover feel there's absolutely nothing wrong with that, given 
-that there's nothing wrong with git.
+does not exist. I meant
 
-It's the kernel's source code management tool, is included out of the box in 
-most distributions nowadays and is GPLd meaning that the tool (itself) won't 
-keep anyone from exporting data from it and importing it into something else 
-if someone cares to. Also, I never managed to stay un-annoyed at source code 
-management tools long enough to understand why I wanted to use them but have 
-been using git for months now so as far as I am concerned, it appears to 
-even be a good tool.
+   Documentation/auxdisplay/cfag12864b
 
-But, well, anyways, I did look at a git repo a bit but will unfortunately 
-not be able to follow up the proposal with actual (good) code in a sensible 
-timeframe, let alone "quickly", which means I was hoping others would agree. 
-I believe these properties make for an elegant setup with many possible uses 
-including the maintainers information, but if you disagree I guess I'm going 
-to shelve it...
+Also, in this patch:
 
-> Even with git, it is my understanding that kernel community
-> works largely on patches exchanged over e-mails, between people
-> who do use git and people who do not.  You would want to have
-> something you can easily transfer over e-mail in the patch
-> form.
-> 
-> We _could_ invent a new "patches to properties" git diff output
-> format that "git apply" can understand to propagate that
-> information
+    [PATCH] [119/2many] MAINTAINERS - CFAG12864B LCD DRIVER
 
-Yes, not unlike the current git move "meta-diffs" ...
+You could add the same line:
 
-> but that approach is making it less interoperable with others, and you 
-> need to demonstrate the benefit far outweighs that.  I do not see it for 
-> this particular application.
-> 
-> There may be places for "properties" that would be useful to git, but I 
-> do not think the "find whom to send patches to" is one of them.
+   Documentation/auxdisplay/cfag12864b
 
-The important reason for wiring this into git directly would be keeping the 
-meta-data in sync with the data it refers to in an automated fashion. With 
-manual intervention, there's much more opportunity for things to grow stale.
+As it is related to the same stuff: cfag12864b is the driver that
+makes the LCD work along with ks0108; and cfag12864bfb is a
+framebuffer to work with the LCD from userspace. I named it
+"cfag12864b" because that is the name of the LCD, so people will not
+get confused with the "fb".
 
-In practice, it may not be a huge problem. It certainly is with the current 
-MAINTAINERS file but if one does finer-grained data around the tree, that 
-will probably help.
+As Documentation/auxdisplay/cfag12864b describes both at the same
+time, it is OK to add them in both entries.
 
-It's also not a now or never thing fortunately. If git does ever grow these 
-properties, the issue can be revisited, perhaps at that time both with the 
-experience of what the finer-grained in-tree solution did not solve and even 
-fewer people around that care about not making git even more of an intrinsic 
-part of development.
+Sorry for the mistake.
 
-Rene.
-
+-- 
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm
