@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbXHQFGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761387AbXHQFIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761608AbXHQFGk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 01:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754931AbXHQFG0
+	id S1761387AbXHQFIS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 01:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889AbXHQFHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 01:06:26 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:16326 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754929AbXHQFGY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 01:06:24 -0400
-X-IronPort-AV: i="4.19,273,1183359600"; 
-   d="scan'208"; a="171378201:sNHT46585278"
-To: akepner@sgi.com
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com, jes@sgi.com
-Subject: Re: [PATCH] sn-ia64: allow drivers to flush in-flight DMA
-X-Message-Flag: Warning: May contain useful information
-References: <20070816225603.GJ1813@sgi.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 16 Aug 2007 22:06:22 -0700
-In-Reply-To: <20070816225603.GJ1813@sgi.com> (akepner@sgi.com's message of "Thu, 16 Aug 2007 15:56:03 -0700")
-Message-ID: <adawsvuyckx.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Fri, 17 Aug 2007 01:07:55 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:59273 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754850AbXHQFHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 01:07:52 -0400
+Date: Thu, 16 Aug 2007 22:07:47 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070817050747.GA12232@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi> <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com> <20070817010232.GK16957@linux.vnet.ibm.com> <20070817012800.GA12621@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Aug 2007 05:06:22.0850 (UTC) FILETIME=[5AE74E20:01C7E08C]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20070817012800.GA12621@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The overall approach looks fine to me, although I'm not the arbiter of
-taste for the DMA API.
+On Fri, Aug 17, 2007 at 09:28:00AM +0800, Herbert Xu wrote:
+> On Thu, Aug 16, 2007 at 06:02:32PM -0700, Paul E. McKenney wrote:
+> > 
+> > Yep.  Or you can use atomic_dec_return() instead of using a barrier.
+> 
+> Or you could use smp_mb__{before,after}_atomic_dec.
 
-However, I think this wants to be split into at least three parts for
-merging: adding the dmaflush flags stuff into the DMA API; adding the
-dmaflush parameter to the ib_umem_get() API (and fixing every caller);
-and using that API to fix mthca on SGI boxes.  (And also there should
-probably be a 4th patch to fix the same issue with mlx4 at least, and
-possibly further patches for other drivers such as the cxgb3 RDMA
-driver, etc)
+Yep.  That would be an example of a barrier, either in the
+atomic_dec() itself or in the smp_mb...().
 
-Also further comments below:
-
- >  struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
- > -			    size_t size, int access)
- > +			    size_t size, int access, int dmaflush)
-
-This change means every caller of ib_umem_get needs to be fixed up as
-part of the patch.
-
- > @@ -1027,7 +1029,14 @@ static struct ib_mr *mthca_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
- >  	if (!mr)
- >  		return ERR_PTR(-ENOMEM);
- >  
- > -	mr->umem = ib_umem_get(pd->uobject->context, start, length, acc);
- > +	if (ib_copy_from_udata(&ucmd, udata, sizeof ucmd)) {
- > +		err = -EFAULT;
- > +		goto err;
- > +	}
-
-trivial, but you might as well do the copy_from_udata before
-allocating mr, so that you can just return ERR_PTR(-EFAULT) without
-having to free mr on the error path.
-
- > +	dmaflush = (int) ucmd.mr_attrs & MTHCA_MR_DMAFLUSH;
- > +
- > +	mr->umem = ib_umem_get(pd->uobject->context, start, length, acc, 
- > +			       dmaflush);
-
-I think the dmaflush temporary variable isn't adding anything, and
-certainly the cast to int is unnecessary.  Anyway, it looks better to
-me to write this simply as
-
-	mr->umem = ib_umem_get(pd->uobject->context, start, length, acc, 
-			       ucmd.mr_attrs & MTHCA_MR_DMAFLUSH);
-
- > +#define MTHCA_MR_DMAFLUSH 0x1	/* flush in-flight DMA on a write to 
- > +				 * memory region (IA64_SGI_SN2 only) */
-
-I would leave out the commentary about this being SN2-only -- the
-whole point is to use a generic API to hide this detail.
-
- - R.
+							Thanx, Paul
