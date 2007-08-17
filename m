@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbXHQTq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbXHQTtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758610AbXHQTq6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 15:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbXHQTqm
+	id S1757259AbXHQTtm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 15:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbXHQTtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 15:46:42 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50969 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759781AbXHQTqk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 15:46:40 -0400
-Date: Fri, 17 Aug 2007 12:45:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH]: proc: export a processes resource limits via
- proc/<pid>
-Message-Id: <20070817124547.5415a839.akpm@linux-foundation.org>
-In-Reply-To: <20070817105918.GA13937@hmsreliant.think-freely.org>
-References: <20070813140044.GB1960@hmsreliant.think-freely.org>
-	<20070816123538.GA10430@hmsreliant.think-freely.org>
-	<4379.1187338166@turing-police.cc.vt.edu>
-	<20070817105918.GA13937@hmsreliant.think-freely.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Aug 2007 15:49:31 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:40093 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751434AbXHQTt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 15:49:29 -0400
+Date: Fri, 17 Aug 2007 12:49:24 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Chris Friesen <cfriesen@nortel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <piggin@cyberone.com.au>,
+       Satyam Sharma <satyam@infradead.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
+       Chris Snook <csnook@redhat.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070817194924.GG8464@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070817035342.GA14744@gondor.apana.org.au> <alpine.LFD.0.999.0708171142550.3666@enigma.security.iitk.ac.in> <46C55E90.7010407@yahoo.com.au> <alpine.LFD.0.999.0708171431150.3666@enigma.security.iitk.ac.in> <46C56ADF.8010501@cyberone.com.au> <alpine.LFD.0.999.0708171612440.3666@enigma.security.iitk.ac.in> <46C59717.4020108@cyberone.com.au> <alpine.LFD.0.999.0708170929580.30176@woody.linux-foundation.org> <46C5EDF9.3090507@nortel.com> <1187376873.2615.2.camel@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1187376873.2615.2.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Aug 2007 06:59:18 -0400
-Neil Horman <nhorman@tuxdriver.com> wrote:
+On Fri, Aug 17, 2007 at 11:54:33AM -0700, Arjan van de Ven wrote:
+> 
+> On Fri, 2007-08-17 at 12:50 -0600, Chris Friesen wrote:
+> > Linus Torvalds wrote:
+> > 
+> > >  - in other words, the *only* possible meaning for "volatile" is a purely 
+> > >    single-CPU meaning. And if you only have a single CPU involved in the 
+> > >    process, the "volatile" is by definition pointless (because even 
+> > >    without a volatile, the compiler is required to make the C code appear 
+> > >    consistent as far as a single CPU is concerned).
+> > 
+> > I assume you mean "except for IO-related code and 'random' values like 
+> > jiffies" as you mention later on?  I assume other values set in 
+> > interrupt handlers would count as "random" from a volatility perspective?
+> > 
+> > > So anybody who argues for "volatile" fixing bugs is fundamentally 
+> > > incorrect. It does NO SUCH THING. By arguing that, such people only show 
+> > > that you have no idea what they are talking about.
+> > 
+> > What about reading values modified in interrupt handlers, as in your 
+> > "random" case?  Or is this a bug where the user of atomic_read() is 
+> > invalidly expecting a read each time it is called?
+> 
+> the interrupt handler case is an SMP case since you do not know
+> beforehand what cpu your interrupt handler will run on.
 
-> Currently, there exists no method for a process to query the resource
-> limits of another process.  They can be inferred via some mechanisms but they
-> cannot be explicitly determined.  Given that this information can be usefull to
-> know during the debugging of an application, I've written this patch which
-> exports all of a processes limits via /proc/<pid>/limits.
+With the exception of per-CPU variables, yes.
 
-I'm struggling with this a bit.  Sure, it _might_ be handy on some
-occasions to be able to get at this information.  But I've never seen
-anyone ask for it before, and it _is_ determinable by other means, if only
-strace.
-
-How do we justify adding yet more stuff to the kernel?
+							Thanx, Paul
