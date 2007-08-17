@@ -1,123 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759334AbXHQMOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbXHQMbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759334AbXHQMOZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 08:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbXHQMOL
+	id S1760006AbXHQMbP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 08:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbXHQMa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 08:14:11 -0400
-Received: from webmail.icp-qv1-irony3.iinet.net.au ([203.59.1.108]:4827 "EHLO
-	webmail.icp-qv1-irony3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751364AbXHQMOI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 08:14:08 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CACQuxUbLrQKa/2dsb2JhbAA
-X-IronPort-AV: i="4.19,275,1183305600"; 
-   d="scan'208"; a="183071348:sNHT9571500"
-Message-ID: <46C5910A.6020904@cyberone.com.au>
-Date: Fri, 17 Aug 2007 22:14:02 +1000
-From: Nick Piggin <piggin@cyberone.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Satyam Sharma <satyam@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       rpjday@mindspring.com, ak@suse.de, netdev@vger.kernel.org,
-       cfriesen@nortel.com, Andrew Morton <akpm@linux-foundation.org>,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com> <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in> <46C54D94.5080803@yahoo.com.au> <alpine.LFD.0.999.0708171358520.3666@enigma.security.iitk.ac.in> <46C56725.6000207@cyberone.com.au> <alpine.LFD.0.999.0708171505200.3666@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0708171505200.3666@enigma.security.iitk.ac.in>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 17 Aug 2007 08:30:59 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3828 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755610AbXHQMa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 08:30:58 -0400
+Subject: Re: RFHelp:  Splitting MAINTAINERS into maintainers/*
+	and	Makefile/Kconfig support
+From: Joe Perches <joe@perches.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46C53F3F.5060108@redhat.com>
+References: <1187297496.5906.113.camel@localhost>
+	 <46C53F3F.5060108@redhat.com>
+Content-Type: text/plain
+Date: Fri, 17 Aug 2007 05:30:41 -0700
+Message-Id: <1187353841.822.60.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
+On Fri, 2007-08-17 at 02:25 -0400, Chris Snook wrote:
+> The whole point of MAINTAINERS is to have one central repository for this 
+> information, instead of scattering it throughout the various source files.  If 
+> that file is getting too unwieldy (and I don't think it is) then I could 
+> understand splitting it up hierarchically, for example having a 
+> drivers/net/MAINTAINERS that listed the info for all the net drivers.
 
->
->On Fri, 17 Aug 2007, Nick Piggin wrote:
->
->>I think they would both be equally ugly,
->>
->
->You think both these are equivalent in terms of "looks":
->
->					|
->while (!atomic_read(&v)) {		|	while (!atomic_read_xxx(&v)) {
->	...				|		...
->	cpu_relax_no_barrier();		|		cpu_relax_no_barrier();
->	order_atomic(&v);		|	}
->}					|
->
->(where order_atomic() is an atomic_t
->specific wrapper as you mentioned below)
->
->?
->
+The individual MAINTAINERS files eliminates what Linus
+described as their "hotness".
+No shared updates by multiple parties.
 
-I think the LHS is better if your atomic_read_xxx primitive is using the
-crazy one-sided barrier, because the LHS code you immediately know what
-barriers are happening, and with the RHS you have to look at the 
-atomic_read_xxx
-definition.
+> What you're suggesting is a less efficient equivalent to putting the info 
+> directly into the source files.
 
-If your atomic_read_xxx implementation was more intuitive, then both are
-pretty well equal. More lines != ugly code.
+I believe that wrong.
 
+Maintainer patterns frequently look like:
 
->>but the atomic_read_volatile
->>variant would be more prone to subtle bugs because of the weird
->>implementation.
->>
->
->What bugs?
->
+F:	arch/i386/kernel/cpu/cpufreq/
+F:	drivers/cpufreq/
+F:	include/linux/cpufreq.h
 
-You can't think for yourself? Your atomic_read_volatile contains a compiler
-barrier to the atomic variable before the load. 2 such reads from different
-locations look like this:
+If in source, this would currently require 21 + 12 + 1 
+modifications instead of 1.
 
-asm volatile("" : "+m" (v1));
-atomic_read(&v1);
-asm volatile("" : "+m" (v2));
-atomic_read(&v2);
+> If that approach was enough to make people 
+> happy, we wouldn't have MAINTAINERS to begin with.
 
-Which implies that the load of v1 can be reordered to occur after the load
-of v2. Bet you didn't expect that?
+I think the insertion of maintainers into source
+itself is wrong.  It's freeform, error prone and
+requires significant modifications to source files
+as maintainers come and go.
+ 
+> Perhaps with a little automation it could be revived,
 
->>Secondly, what sort of code would do such a thing?
->>
->
->See the nodemgr_host_thread() that does something similar, though not
->exactly same.
->
+Which is the help I'm looking for.
 
-I'm sorry, all this waffling about made up code which might do this and
-that is just a waste of time. Seriously, the thread is bloated enough
-and never going to get anywhere with all this handwaving. If someone is
-saving up all the really real and actually good arguments for why we
-must have a volatile here, now is the time to use them.
+Can someone please help here on ideas or implementation
+adding a makefile target for MAINTAINERS from files
+in a specific subdirectory?
 
->>and have barriers both before and after the memory operation,
->>
->
->How could that lead to bugs? (if you can point to existing code,
->but just some testcase / sample code would be fine as well).
->
+> though I think that adding a path pattern 
+> removes the need, while keeping it easier to parse by scripts.
+> I appreciate the effort to make MAINTAINERS more useful,
+> but please don't add  another 600 files to the tree.
 
-See above.
+In the distributed form, you'll still end up with
+~400 new files spread all over the tree.
 
->As I said, barrier() is too heavy-handed.
->
+Either way, you'll have hundreds of files.
 
-Typo. I meant: defined for a single memory location (ie. order(x)).
+$ grep "^F:" MAINTAINERS |  sed -e "s/[A-Za-z0-9\_\*\.\-]*$//" | sort |
+uniq | wc -l
+415
+
+Centralized as maintainers/* or distributed as ../../../Maintainers
+
+Pick one, I don't much care, but I'm still looking for
+Makefile/KConfig help reassembling it into a single
+MAINTAINERS block similar to the current form.
+
+Help?
+
+cheers, Joe
 
