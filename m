@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763768AbXHQUVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765648AbXHQUWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763768AbXHQUVv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 16:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbXHQUVn
+	id S1765648AbXHQUWU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 16:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765258AbXHQUWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 16:21:43 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:42411 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752247AbXHQUVm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 16:21:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sNXPOnrQN7VYam8hN8ieDUVX+Eqy98eellfwwzbEilW/G2eYnD8wTljgQhyG5mhLr6NCgHV7zsowb4cS8hjsBJRERtWBRLskVLjFXP9dq8wqDgfT4v7mAZ9Ll7bbcipvl+C/gDaw5AHQHEX4lwFiebo7KcnFJH0uMNRvUPNn0ik=
-Message-ID: <8bd0f97a0708171321g3460312fwf2b6cb998845ea85@mail.gmail.com>
-Date: Fri, 17 Aug 2007 16:21:40 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH 02/12] Blackfin arch: Add label to call new GPIO API
-Cc: "Bryan Wu" <bryan.wu@analog.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       "Michael Hennerich" <michael.hennerich@analog.com>
-In-Reply-To: <8bd0f97a0708171319q71b5a117v8882f4fb70d2dc43@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 17 Aug 2007 16:22:05 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:59889 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765114AbXHQUWE (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 16:22:04 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH]: proc: export a processes resource limits via proc/<pid>
+In-Reply-To: Your message of "Fri, 17 Aug 2007 12:45:47 PDT."
+             <20070817124547.5415a839.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20070813140044.GB1960@hmsreliant.think-freely.org> <20070816123538.GA10430@hmsreliant.think-freely.org> <4379.1187338166@turing-police.cc.vt.edu> <20070817105918.GA13937@hmsreliant.think-freely.org>
+            <20070817124547.5415a839.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1187382045_3142P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11865441373719-git-send-email-bryan.wu@analog.com>
-	 <200708171124.54839.david-b@pacbell.net>
-	 <8bd0f97a0708171245j74e856e0uce009de16c00f517@mail.gmail.com>
-	 <200708171309.25529.david-b@pacbell.net>
-	 <8bd0f97a0708171319q71b5a117v8882f4fb70d2dc43@mail.gmail.com>
+Date: Fri, 17 Aug 2007 16:20:45 -0400
+Message-ID: <21194.1187382045@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/17/07, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> as Michael pointed out, in the Blackfin world we tend to keep things
-> very dynamic as we have dev systems which allow for dropping in of
-> optional cards at will, so doing this in the bootloader is way too
-> inflexible.
+--==_Exmh_1187382045_3142P
+Content-Type: text/plain; charset=us-ascii
 
-oh, and another [smallish] data point.  the Blackfin processor has a
-small bootrom on it that could be likened to a very micro bios.  so
-it's possible to actually boot the linux kernel straight without a
-boot loader.  send the kernel over the UART to a Blackfin and watch it
-go go go :)
--mike
+On Fri, 17 Aug 2007 12:45:47 PDT, Andrew Morton said:
+> On Fri, 17 Aug 2007 06:59:18 -0400
+> Neil Horman <nhorman@tuxdriver.com> wrote:
+> 
+> > Currently, there exists no method for a process to query the resource
+> > limits of another process.  They can be inferred via some mechanisms but they
+> > cannot be explicitly determined.  Given that this information can be usefull to
+> > know during the debugging of an application, I've written this patch which
+> > exports all of a processes limits via /proc/<pid>/limits.
+> 
+> I'm struggling with this a bit.  Sure, it _might_ be handy on some
+> occasions to be able to get at this information.  But I've never seen
+> anyone ask for it before, and it _is_ determinable by other means, if only
+> strace.
+
+Most of the times *I*'ve struggled with this, it's been a case of "this program
+forks that one that calls a PAM module that does this and then double-forks
+yadda yadda".  So I know where Neil is coming from.
+
+> How do we justify adding yet more stuff to the kernel?
+
+I looked the code over, and *if* we want to do it, the code looks good.
+Making that final call is why they pay you and Linus the big bucks. :)
+
+
+--==_Exmh_1187382045_3142P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGxgMdcC3lWbTT17ARAvhyAJ9QgY7x1jUr/usj5uQSrj9MFhKUIQCg2Fk9
+O9q2RySAH5/tjgo5cG3+Bk0=
+=gvsZ
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1187382045_3142P--
