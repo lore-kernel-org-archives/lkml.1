@@ -1,47 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763650AbXHQCMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765366AbXHQCN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763650AbXHQCMt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 22:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbXHQCMk
+	id S1765366AbXHQCN1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 22:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbXHQCNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 22:12:40 -0400
-Received: from waste.org ([66.93.16.53]:43386 "EHLO waste.org"
+	Thu, 16 Aug 2007 22:13:16 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3373 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750828AbXHQCMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 22:12:40 -0400
-Date: Thu, 16 Aug 2007 21:13:47 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@osdl.org>, John Berthels <jjberthels@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] maps: PSS(proportional set size) accounting in smaps
-Message-ID: <20070817021346.GH30556@waste.org>
-References: <20070816220516.782145952@mail.ustc.edu.cn> <20070816220849.064901548@mail.ustc.edu.cn>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070816220849.064901548@mail.ustc.edu.cn>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1750897AbXHQCNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 22:13:14 -0400
+Subject: Re: [PATCH] [1/2many] - FInd the maintainer(s) for a patch -
+	scripts/get_maintainer.pl
+From: Joe Perches <joe@perches.com>
+To: Junio C Hamano <gitster@pobox.com>
+Cc: Rene Herman <rene.herman@gmail.com>, git@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+In-Reply-To: <7vwsvx8twx.fsf@assigned-by-dhcp.cox.net>
+References: <1186984174.10249.7.camel@localhost>
+	 <200708131933.10125.m.kozlowski@tuxland.pl>
+	 <1187026955.2688.4.camel@laptopd505.fenrus.org>
+	 <1187037445.6628.98.camel@heimdal.trondhjem.org>
+	 <1187054366.2757.0.camel@laptopd505.fenrus.org>
+	 <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu>
+	 <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>
+	 <7vwsvx8twx.fsf@assigned-by-dhcp.cox.net>
+Content-Type: text/plain
+Date: Thu, 16 Aug 2007 19:13:03 -0700
+Message-Id: <1187316783.822.19.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 06:05:17AM +0800, Fengguang Wu wrote:
-> The "proportional set size" (PSS) of a process is the count of pages it has in
-> memory, where each page is divided by the number of processes sharing it. So if
-> a process has 1000 pages all to itself, and 1000 shared with one other process,
-> its PSS will be 1500.
->                - lwn.net: "ELC: How much memory are applications really using?"
-> 
-> The PSS proposed by Matt Mackall is a very nice metic for measuring an process's
-> memory footprint. So collect and export it via /proc/<pid>/smaps.
-> 
-> Matt Mackall's pagemap/kpagemap and John Berthels's exmap can also do the job.
-> They are comprehensive tools. But for PSS, let's do it in the simple way. 
+On Tue, 2007-08-14 at 18:31 -0700, Junio C Hamano wrote:
+>    On the other hand, git-send-email _is_ all about sending it
+>    out, and it needs to know who your patch should reach.  I
+>    think it makes sense to have one script that, given a set of
+>    paths that are affected, gives a list of potentially
+>    interested people (that is "Finding" part -- and I see there
+>    are 600+ patches to implement this on the list), and a new
+>    option to git-send-email to (1) inspect the patch to see what
+>    paths are affected, and (2) call that "Find" script to figure
+>    out whom to send it to, and probably asking for confirmation.
 
-It's a bit odd that you attribute the description of PSS to LWN rather
-than me. But anyway:
+Sorry, not a git developer, so the paths are wrong.
+This seems to work:
 
-Acked-by: Matt Mackall <mpm@selenic.com>
+Example:
 
--- 
-Mathematics is the supreme nostalgia of our time.
+git-send-email \
+   --cc-cmd "perl scripts/get_maintainers.pl -non -multiline" foo.diff
+
+--- git-send-email.pl	2007-08-16 19:06:07.000000000 -0700
++++ /usr/local/bin/git-send-email	2007-05-01 11:59:14.000000000 -0700
+@@ -47,9 +47,6 @@ Options:
+    --cc           Specify an initial "Cc:" list for the entire series
+                   of emails.
+ 
+-   --cc-cmd       Specify a command to execute per file which adds
+-                  per file specific cc address entries
+-
+    --bcc          Specify a list of email addresses that should be Bcc:
+ 		  on all the emails.
+ 
+@@ -143,7 +140,7 @@ my (@to,@cc,@initial_cc,@bcclist,@xh,
+ 
+ # Behavior modification variables
+ my ($chain_reply_to, $quiet, $suppress_from, $no_signed_off_cc,
+-	$dry_run, $cc_cmd) = (1, 0, 0, 0, 0, 0);
++	$dry_run) = (1, 0, 0, 0, 0);
+ my $smtp_server;
+ my $envelope_sender;
+ 
+@@ -176,7 +173,6 @@ my $rc = GetOptions("from=s" => \$from,
+ 		    "subject=s" => \$initial_subject,
+ 		    "to=s" => \@to,
+ 		    "cc=s" => \@initial_cc,
+-		    "cc-cmd=s" => \$cc_cmd,
+ 		    "bcc=s" => \@bcclist,
+ 		    "chain-reply-to!" => \$chain_reply_to,
+ 		    "smtp-server=s" => \$smtp_server,
+@@ -611,16 +607,6 @@ foreach my $t (@files) {
+ 		}
+ 	}
+ 	close F;
+-
+-	if (${cc_cmd} ne "") {
+-	    my $output = `${cc_cmd} $t`;
+-	    my @lines = split("\n", $output);
+-	    foreach my $c (@lines) {
+-		push @cc, $c;
+-		printf("(sob) Adding cc: %s from cc-cmd: '%s'\n", $c, $t) unless $quiet;
+-	    }
+-	}
+-
+ 	if (defined $author_not_sender) {
+ 		$author_not_sender = unquote_rfc2047($author_not_sender);
+ 		$message = "From: $author_not_sender\n\n$message";
+
+
