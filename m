@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbXHQFFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761273AbXHQFGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759429AbXHQFFU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 01:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbXHQFFI
+	id S1761273AbXHQFGE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 01:06:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbXHQFFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 01:05:08 -0400
-Received: from lixom.net ([66.141.50.11]:37590 "EHLO mail.lixom.net"
+	Fri, 17 Aug 2007 01:05:11 -0400
+Received: from ozlabs.org ([203.10.76.45]:53239 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754325AbXHQFFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 01:05:06 -0400
-Date: Thu, 16 Aug 2007 23:09:02 -0500
-From: Olof Johansson <olof@lixom.net>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] serial: Add pci ids for PA Semi PWRficient onchip uarts
-Message-ID: <20070817040902.GB8294@lixom.net>
+	id S1754682AbXHQFFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 01:05:08 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18117.11376.111737.891134@cargo.ozlabs.ibm.com>
+Date: Fri, 17 Aug 2007 15:04:48 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Satyam Sharma <satyam@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+In-Reply-To: <20070816104250.GB2927@gondor.apana.org.au>
+References: <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in>
+	<alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in>
+	<18115.52863.638655.658466@cargo.ozlabs.ibm.com>
+	<20070816053945.GB32442@gondor.apana.org.au>
+	<18115.62741.807704.969977@cargo.ozlabs.ibm.com>
+	<20070816070907.GA964@gondor.apana.org.au>
+	<46C40587.7050708@s5r6.in-berlin.de>
+	<20070816081049.GA1431@gondor.apana.org.au>
+	<46C41EE4.9090806@s5r6.in-berlin.de>
+	<46C42767.4070104@s5r6.in-berlin.de>
+	<20070816104250.GB2927@gondor.apana.org.au>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add PCI IDs for the onchip UARTs on PA Semi PWRficient.
+Herbert Xu writes:
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+> So the point here is that if you don't mind getting a stale
+> value from the CPU cache when doing an atomic_read, then
+> surely you won't mind getting a stale value from the compiler
+> "cache".
 
+No, that particular argument is bogus, because there is a cache
+coherency protocol operating to keep the CPU cache coherent with
+stores from other CPUs, but there isn't any such protocol (nor should
+there be) for a register used as a "cache".
 
-Index: linux-2.6/drivers/serial/8250_pci.c
-===================================================================
---- linux-2.6.orig/drivers/serial/8250_pci.c
-+++ linux-2.6/drivers/serial/8250_pci.c
-@@ -984,6 +984,7 @@ enum pci_board_num_t {
- 	pbn_exar_XR17C152,
- 	pbn_exar_XR17C154,
- 	pbn_exar_XR17C158,
-+	pbn_pasemi_1682M,
- };
- 
- /*
-@@ -1511,6 +1512,14 @@ static struct pciserial_board pci_boards
- 		.base_baud	= 921600,
- 		.uart_offset	= 0x200,
- 	},
-+	/*
-+	 * PA Semi PWRficient PA6T-1682M on-chip UART
-+	 */
-+	[pbn_pasemi_1682M] = {
-+		.flags		= FL_BASE0,
-+		.num_ports	= 1,
-+		.base_baud	= 8333333,
-+	},
- };
- 
- /*
-@@ -2402,6 +2411,13 @@ static struct pci_device_id serial_pci_t
- 		PCI_SUBVENDOR_ID_PERLE, PCI_SUBDEVICE_ID_PCI_RAS8,
- 		0, 0, pbn_b2_8_921600 },
- 	/*
-+	 * PA Semi PA6T-1682M on-chip UART
-+	 */
-+	{	PCI_VENDOR_ID_PASEMI, 0xa004,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_pasemi_1682M },
-+
-+	/*
- 	 * These entries match devices with class COMMUNICATION_SERIAL,
- 	 * COMMUNICATION_MODEM or COMMUNICATION_MULTISERIAL
- 	 */
+(Linux requires SMP systems to keep any CPU caches coherent as far as
+accesses by other CPUs are concerned.  It doesn't support any SMP
+systems that are not cache-coherent as far as CPU accesses are
+concerned.  It does support systems with non-cache-coherent DMA.)
+
+Paul.
