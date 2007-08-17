@@ -1,92 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbXHQLvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbXHQLv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757794AbXHQLvM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 07:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759946AbXHQLuw
+	id S1761392AbXHQLv5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 07:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756838AbXHQLvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 07:50:52 -0400
-Received: from webmail.icp-qv1-irony2.iinet.net.au ([203.59.1.107]:38245 "EHLO
-	webmail.icp-qv1-irony2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759944AbXHQLuu (ORCPT
+	Fri, 17 Aug 2007 07:51:45 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:57272 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756674AbXHQLvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 07:50:50 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAAgoxUbLrQKa/2dsb2JhbAA
-X-IronPort-AV: i="4.19,275,1183305600"; 
-   d="scan'208"; a="184803854:sNHT8781468"
-Message-ID: <46C58B93.5000408@cyberone.com.au>
-Date: Fri, 17 Aug 2007 21:50:43 +1000
-From: Nick Piggin <piggin@cyberone.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Fri, 17 Aug 2007 07:51:44 -0400
+Message-ID: <46C58BD5.3090207@bull.net>
+Date: Fri, 17 Aug 2007 13:51:49 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
-To: Satyam Sharma <satyam@infradead.org>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, paulmck@linux.vnet.ibm.com,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C41EE4.9090806@s5r6.in-berlin.de> <46C42767.4070104@s5r6.in-berlin.de> <20070816104250.GB2927@gondor.apana.org.au> <20070816163441.GB16957@linux.vnet.ibm.com> <46C512EB.7020603@yahoo.com.au> <46C54D74.60101@s5r6.in-berlin.de> <46C556F1.8000407@yahoo.com.au> <alpine.LFD.0.999.0708171420060.3666@enigma.security.iitk.ac.in> <46C5672E.4060003@cyberone.com.au> <alpine.LFD.0.999.0708171521230.3666@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0708171521230.3666@enigma.security.iitk.ac.in>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       Ingo Molnar <mingo@elte.hu>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH/RFC 3/4, second shot]Introduce "account_guest_time"
+References: <46C4719A.2060308@bull.net> <46C4720F.7030304@bull.net>	 <46C4725A.4070607@bull.net>  <46C4740F.2050701@bull.net>	 <1187303955.6449.7.camel@localhost.localdomain> <46C54FB8.7050504@bull.net> <1187339450.6449.115.camel@localhost.localdomain> <46C56774.2030009@bull.net>
+In-Reply-To: <46C56774.2030009@bull.net>
+X-Enigmail-Version: 0.94.0.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 17/08/2007 13:56:52,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 17/08/2007 13:56:54,
+	Serialize complete at 17/08/2007 13:56:54
+Content-Type: multipart/mixed;
+ boundary="------------070305070409050007030503"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
+This is a multi-part message in MIME format.
+--------------070305070409050007030503
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-1
 
->
->On Fri, 17 Aug 2007, Nick Piggin wrote:
->
->
->>Satyam Sharma wrote:
->>
->>It is very obvious. msleep calls schedule() (ie. sleeps), which is
->>always a barrier.
->>
->
->Probably you didn't mean that, but no, schedule() is not barrier because
->it sleeps. It's a barrier because it's invisible.
->
+This is another way to compute guest time... I remove the "account modifi=
+ers"
+mechanism and call directly account_guest_time() from account_system_time=
+().
+account_system_time() computes user, system and guest times according val=
+ue
+accumulated in vtime (a ktime_t) in task_struct by the virtual machine.
+--=20
+------------- Laurent.Vivier@bull.net  --------------
+          "Software is hard" - Donald Knuth
 
-Where did I say it is a barrier because it sleeps?
+--------------070305070409050007030503
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+ name="account_guest"
+Content-Disposition: inline;
+ filename="account_guest"
 
-It is always a barrier because, at the lowest level, schedule() (and thus
-anything that sleeps) is defined to always be a barrier. Regardless of
-whatever obscure means the compiler might need to infer the barrier.
+Index: kvm/include/linux/sched.h
+===================================================================
+--- kvm.orig/include/linux/sched.h	2007-08-17 10:18:53.000000000 +0200
++++ kvm/include/linux/sched.h	2007-08-17 12:33:22.000000000 +0200
+@@ -1192,6 +1192,9 @@
+ #ifdef CONFIG_FAULT_INJECTION
+ 	int make_it_fail;
+ #endif
++#ifdef CONFIG_GUEST_ACCOUNTING
++	ktime_t vtime;
++#endif
+ };
+ 
+ /*
+Index: kvm/kernel/sched.c
+===================================================================
+--- kvm.orig/kernel/sched.c	2007-08-17 10:18:53.000000000 +0200
++++ kvm/kernel/sched.c	2007-08-17 12:33:07.000000000 +0200
+@@ -3233,6 +3233,37 @@
+ 		cpustat->user = cputime64_add(cpustat->user, tmp);
+ }
+ 
++#ifdef CONFIG_GUEST_ACCOUNTING
++/*
++ * Account guest time to a process
++ * @p: the process that the cpu time gets accounted to
++ * @cputime: the cpu time spent in kernel space since the last update
++ */
++
++static cputime_t account_guest_time(struct task_struct *p, cputime_t cputime)
++{
++	struct cpu_usage_stat *cpustat = &kstat_this_cpu.cpustat;
++	ktime_t kmsec = ktime_set(0, NSEC_PER_MSEC);
++	cputime_t cmsec = msecs_to_cputime(1);
++
++	while ((ktime_to_ns(p->vtime) >= NSEC_PER_MSEC) &&
++		(cputime_to_msecs(cputime) >= 1)) {
++		p->vtime = ktime_sub(p->vtime, kmsec);
++		p->utime = cputime_add(p->utime, cmsec);
++		p->gtime = cputime_add(p->gtime, cmsec);
++
++		cpustat->guest = cputime64_add(cpustat->guest,
++				cputime_to_cputime64(cmsec));
++		cpustat->user = cputime64_add(cpustat->user,
++		cputime_to_cputime64(cmsec));
++
++		cputime = cputime_sub(cputime, cmsec);
++	}
++
++	return cputime;
++}
++#endif
++
+ /*
+  * Account system cpu time to a process.
+  * @p: the process that the cpu time gets accounted to
+@@ -3246,6 +3277,10 @@
+ 	struct rq *rq = this_rq();
+ 	cputime64_t tmp;
+ 
++#ifdef CONFIG_GUEST_ACCOUNTING
++	cputime = account_guest_time(p, cputime);
++#endif
++
+ 	p->stime = cputime_add(p->stime, cputime);
+ 
+ 	/* Add system time to cpustat. */
 
-In other words, you can ignore those obscure details because schedule() is
-always going to have an explicit barrier in it.
-
-
->>The "unobvious" thing is that you wanted to know how the compiler knows
->>a function is a barrier -- answer is that if it does not *know* it is not
->>a barrier, it must assume it is a barrier.
->>
->
->True, that's clearly what happens here. But are you're definitely joking
->that this is "obvious" in terms of code-clarity, right?
->
-
-No. If you accept that barrier() is implemented correctly, and you know
-that sleeping is defined to be a barrier, then its perfectly clear. You
-don't have to know how the compiler "knows" that some function contains
-a barrier.
-
-
->Just 5 minutes back you mentioned elsewhere you like seeing lots of
->explicit calls to barrier() (with comments, no less, hmm? :-)
->
-
-Sure, but there are well known primitives which contain barriers, and
-trivial recognisable code sequences for which you don't need comments.
-waiting-loops using sleeps or cpu_relax() are prime examples.
+--------------070305070409050007030503--
