@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764262AbXHQJq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763035AbXHQJtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764262AbXHQJq7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 05:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbXHQJqr
+	id S1763035AbXHQJtF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 05:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbXHQJst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 05:46:47 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:12295 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762727AbXHQJqZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 05:46:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oyLfJ5j29A795suIVrGkNMJ7PsqgbOE/ZxMWSV2i40MXJN0g+zgxh106n2/8TiPZ0QA0TQmRVfQq9CQqjjJeihMrqmL4Y8BUockEKsqHilB0pIP3MoDfp6s2vSntlopcgy7G5gbwh49UHzN7TOTSmbzFdJKFb4WXnkOG8VVKqC4=
-Message-ID: <653402b90708170246t2c826e01o23b42bc157f563bc@mail.gmail.com>
-Date: Fri, 17 Aug 2007 11:46:23 +0200
-From: "Miguel Ojeda" <maxextreme@gmail.com>
-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Kyle Moffett" <mrmacman_g4@mac.com>,
-       linux-security-module@vger.kernel.org,
-       "LKML Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <638227.18984.qm@web36610.mail.mud.yahoo.com>
+	Fri, 17 Aug 2007 05:48:49 -0400
+Received: from ozlabs.org ([203.10.76.45]:56124 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750950AbXHQJsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 05:48:47 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070816205833.GC4949@ucw.cz>
-	 <638227.18984.qm@web36610.mail.mud.yahoo.com>
+Message-ID: <18117.28409.943948.355586@cargo.ozlabs.ibm.com>
+Date: Fri, 17 Aug 2007 19:48:41 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       rpjday@mindspring.com, ak@suse.de, netdev@vger.kernel.org,
+       cfriesen@nortel.com, Andrew Morton <akpm@linux-foundation.org>,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
+       clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
+       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <alpine.LFD.0.999.0708171358520.3666@enigma.security.iitk.ac.in>
+References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au>
+	<46C32618.2080108@redhat.com>
+	<20070815234021.GA28775@gondor.apana.org.au>
+	<3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org>
+	<46C3B50E.7010702@yahoo.com.au>
+	<194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org>
+	<46C505B2.6030704@yahoo.com.au>
+	<18117.4848.695269.72976@cargo.ozlabs.ibm.com>
+	<alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
+	<alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in>
+	<46C54D94.5080803@yahoo.com.au>
+	<alpine.LFD.0.999.0708171358520.3666@enigma.security.iitk.ac.in>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Btw, at:
+Satyam Sharma writes:
 
-diff -uprN -X linux-2.6.22-base/Documentation/dontdiff
-linux-2.6.22-base/security/smack/Kconfig
-linux-2.6.22/security/smack/Kconfig
---- linux-2.6.22-base/security/smack/Kconfig    1969-12-31
-16:00:00.000000000 -0800
-+++ linux-2.6.22/security/smack/Kconfig 2007-07-10 01:08:05.000000000 -0700
-@@ -0,0 +1,10 @@
-+config SECURITY_SMACK
-+       bool "Simplified Mandatory Access Control Kernel Support"
-+       depends on NETLABEL && SECURITY_NETWORK
-+       default n
-+       help
-+         This selects the Simplified Mandatory Access Control Kernel.
-+         SMACK is useful for sensitivity, integrity, and a variety
-+          of other madatory security schemes.
-+         If you are unsure how to answer this question, answer N.
-+
+> I wonder if this'll generate smaller and better code than _both_ the
+> other atomic_read_volatile() variants. Would need to build allyesconfig
+> on lots of diff arch's etc to test the theory though.
 
-change:
+I'm sure it would be a tiny effect.
 
-+          of other madatory security schemes.
+This whole thread is arguing about effects that are quite
+insignificant.  On the one hand we have the non-volatile proponents,
+who want to let the compiler do extra optimizations - which amounts to
+letting it elide maybe a dozen loads in the whole kernel, loads which
+would almost always be L1 cache hits.
 
-to:
+On the other hand we have the volatile proponents, who are concerned
+that some code somewhere in the kernel might be buggy without the
+volatile behaviour, and who also want to be able to remove some
+barriers and thus save a few bytes of code and a few loads here and
+there (and possibly some stores too).
 
-+          of other mandatory security schemes.
+Either way the effect on code size and execution time is miniscule.
 
--- 
-Miguel Ojeda
-http://maxextreme.googlepages.com/index.htm
+In the end the strongest argument is actually that gcc generates
+unnecessarily verbose code on x86[-64] for volatile accesses.  Even
+then we're only talking about ~2000 bytes, or less than 1 byte per
+instance of atomic_read on average, about 0.06% of the kernel text
+size.
+
+The x86[-64] developers seem to be willing to bear the debugging cost
+involved in having the non-volatile behaviour for atomic_read, in
+order to save the 2kB.  That's fine with me.  Either way I think
+somebody should audit all the uses of atomic_read, not just for
+missing barriers, but also to find the places where it's used in a
+racy manner.  Then we can work out where the races matter and fix them
+if they do.
+
+Paul.
