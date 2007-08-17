@@ -1,132 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761489AbXHQKsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761894AbXHQK4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761489AbXHQKsy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 06:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbXHQKsn
+	id S1761894AbXHQK4n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 06:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbXHQK4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 06:48:43 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:45071 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754015AbXHQKsl (ORCPT
+	Fri, 17 Aug 2007 06:56:33 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:44346 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755092AbXHQK4c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 06:48:41 -0400
-Message-ID: <46C57D07.80604@s5r6.in-berlin.de>
-Date: Fri, 17 Aug 2007 12:48:39 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: paulmck@linux.vnet.ibm.com, Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C41EE4.9090806@s5r6.in-berlin.de> <46C42767.4070104@s5r6.in-berlin.de> <20070816104250.GB2927@gondor.apana.org.au> <20070816163441.GB16957@linux.vnet.ibm.com> <46C512EB.7020603@yahoo.com.au> <46C54D74.60101@s5r6.in-berlin.de> <46C556F1.8000407@yahoo.com.au>
-In-Reply-To: <46C556F1.8000407@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Aug 2007 06:56:32 -0400
+Date: Fri, 17 Aug 2007 16:26:30 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Takenori Nagano <t-nagano@ah.jp.nec.com>
+Cc: Keith Owens <kaos@ocs.com.au>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       k-miyoshi@cb.jp.nec.com, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [patch] add kdump_after_notifier
+Message-ID: <20070817105630.GA18167@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070802112852.GA7054@in.ibm.com> <31687.1186113947@kao2.melbourne.sgi.com> <20070805110746.GA12540@in.ibm.com> <46C1691E.7090708@ah.jp.nec.com> <20070814083710.GA14538@suse.de> <20070814132454.GA8293@in.ibm.com> <46C4184B.5030303@ah.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C4184B.5030303@ah.jp.nec.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Stefan Richter wrote:
->> For architecture port authors, there is Documentation/atomic_ops.txt.
->> Driver authors also can learn something from that document, as it
->> indirectly documents the atomic_t and bitops APIs.
+On Thu, Aug 16, 2007 at 06:26:35PM +0900, Takenori Nagano wrote:
+> Vivek Goyal wrote:
+>  > So for the time being I think we can put RAS tools on die notifier list
+> > and if it runs into issues we can always think of creating a separate list.
+> > 
+> > Few things come to mind.
+> > 
+> > - Why there is a separate panic_notifier_list? Can't it be merged with
+> >   die_chain? die_val already got one of the event type as PANIC. If there
+> >   are no specific reasons then we should merge the two lists. Registering
+> >   RAS tools on a single list is easier.
 > 
-> "Semantics and Behavior of Atomic and Bitmask Operations" is
-> pretty direct :)
-
-"Indirect", "pretty direct"... It's subjective.
-
-(It is not an API documentation; it is an implementation specification.)
-
-> Sure, it says that it's for arch maintainers, but there is no
-> reason why users can't make use of it.
+> I think it is difficult, because die_chain is defined by each architecture.
 > 
+
+I think die_chain is arch independent definition (kernel/die_notifier.c)? 
+But anyway, to begin with it can be done only for panic_notifier.
+
+> > - Modify Kdump to register on die_chain list. 
+> > - Modify Kdb to register on die_chain list.
+> > - Export all the registered members of die_chain through sysfs along with
+> >   their priorities. Priorities should be modifiable. Most likely one 
+> >   shall have to introduce additional field in struct notifier_block. This
+> >   field will be a string as an identifier of the user registerd. e.g
+> >   "Kdump", "Kdb" etc.
+> > 
+> > Now user will be able to view all the die_chain users through sysfs and
+> > be able to modify the order in which these should run by modifying their
+> > priority. Hence all the RAS tools can co-exist.
 > 
->> Prompted by this thread, I reread this document, and indeed, the
->> sentence "Unlike the above routines, it is required that explicit memory
->> barriers are performed before and after [atomic_{inc,dec}_return]"
->> indicates that atomic_read (one of the "above routines") is very
->> different from all other atomic_t accessors that return values.
->> 
->> This is strange.  Why is it that atomic_read stands out that way?  IMO
+> This is my image of your proposal.
 > 
-> It is not just atomic_read of course. It is atomic_add,sub,inc,dec,set.
-
-Yes, but unlike these, atomic_read returns a value.
-
-Without me (the API user) providing extra barriers, that value may
-become something else whenever someone touches code in the vicinity of
-the atomic_read.
-
->> this API imbalance is quite unexpected by many people.  Wouldn't it be
->> beneficial to change the atomic_read API to behave the same like all
->> other atomic_t accessors that return values?
+> - Print current order
 > 
-> It is very consistent and well defined. Operations which both modify
-> the data _and_ return something are defined to have full barriers
-> before and after.
-
-You are right, atomic_read is not only different from accessors that
-don't retunr values, it is also different from all other accessors that
-return values (because they all also modify the value).  There is just
-no actual API documentation, which contributes to the issue that some
-people (or at least one: me) learn a little bit late how special
-atomic_read is.
-
-> What do you want to add to the other atomic accessors? Full memory
-> barriers? Only compiler barriers? It's quite likely that if you think
-> some barriers will fix bugs, then there are other bugs lurking there
-> anyway.
-
-A lot of different though related issues are discussed in this thread,
-but I personally am only occupied by one particular thing:  What kind of
-return values do I get from atomic_read.
-
-> Just use spinlocks if you're not absolutely clear about potential
-> races and memory ordering issues -- they're pretty cheap and simple.
-
-Probably good advice, like generally if driver guys consider lockless
-algorithms.
-
->> OK, it is also different from the other accessors that return data in so
->> far as it doesn't modify the data.  But as driver "author", i.e. user of
->> the API, I can't see much use of an atomic_read that can be reordered
->> and, more importantly, can be optimized away by the compiler.
+> # cat /sys/class/misc/debug/panic_notifier_list
+> priority   name
+> 1          IPMI
+> 2          watchdog
+> 3          Kdb
+> 4          Kdump
 > 
-> It will return to you an atomic snapshot of the data (loaded from
-> memory at some point since the last compiler barrier). All you have
-> to be aware of compiler barriers and the Linux SMP memory ordering
-> model, which should be a given if you are writing lockless code.
 
-OK, that's what I slowly realized during this discussion, and I
-appreciate the explanations that were given here.
+I think Bernhard's suggestion looks better here. I noticed that 
+/sys/kernel/debug is already present. So how about following.
 
->> Sure, now
->> that I learned of these properties I can start to audit code and insert
->> barriers where I believe they are needed, but this simply means that
->> almost all occurrences of atomic_read will get barriers (unless there
->> already are implicit but more or less obvious barriers like msleep).
-> 
-> You might find that these places that appear to need barriers are
-> buggy for other reasons anyway. Can you point to some in-tree code
-> we can have a look at?
+/sys/kernel/debug/kdump/priority
+/sys/kernel/debug/kdb/priority
+/sys/kernel/debug/IPMI/priority
 
-I could, or could not, if I were through with auditing the code.  I
-remembered one case and posted it (nodemgr_host_thread) which was safe
-because msleep_interruptible provided the necessary barrier there, and
-this implicit barrier is not in danger to be removed by future patches.
--- 
-Stefan Richter
--=====-=-=== =--- =---=
-http://arcgraph.de/sr/
+I think at some point of time we shall have to create another file say
+description.
+
+/sys/kernel/debug/IPMI/description
+
+Which can tell what does this tool do? Other a user might not have any
+clue how to prioritize various things.
+
+Thanks
+Vivek
