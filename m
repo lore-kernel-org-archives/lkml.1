@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbXHQXuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758834AbXHQX6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760681AbXHQXuy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 19:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317AbXHQXuo
+	id S1758834AbXHQX6J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 19:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXHQX5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 19:50:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38455 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753218AbXHQXun (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 19:50:43 -0400
-Date: Fri, 17 Aug 2007 16:50:30 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] i386: optimize memset of 6 and 8 bytes
-Message-ID: <20070817165030.5455f761@freepuppy.rosehill.hemminger.net>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 17 Aug 2007 19:57:51 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56184 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752190AbXHQX5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 19:57:50 -0400
+In-Reply-To: <alpine.LFD.0.999.0708180512300.3666@enigma.security.iitk.ac.in>
+References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com> <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in> <f5796b5aa38ae6305c65ffa0340ba295@kernel.crashing.org> <alpine.LFD.0.999.0708180512300.3666@enigma.security.iitk.ac.in>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <899db25b292a84560e5cc955ebe4c9e1@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: Paul Mackerras <paulus@samba.org>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       rpjday@mindspring.com, ak@suse.de, netdev@vger.kernel.org,
+       cfriesen@nortel.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-arch@vger.kernel.org, jesper.juhl@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
+       davem@davemloft.net, Linus Torvalds <torvalds@linux-foundation.org>,
+       wensong@linux-vs.org, wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Sat, 18 Aug 2007 01:55:55 +0200
+To: Satyam Sharma <satyam@infradead.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tne network code does memset for 6 and 8 byte values, that can easily
-be optimized into simple assignments without string instructions.
+>>> #define forget(a)	__asm__ __volatile__ ("" :"=m" (a) :"m" (a))
+>>>
+>>> [ This is exactly equivalent to using "+m" in the constraints, as 
+>>> recently
+>>>   explained on a GCC list somewhere, in response to the patch in my 
+>>> bitops
+>>>   series a few weeks back where I thought "+m" was bogus. ]
+>>
+>> [It wasn't explained on a GCC list in response to your patch, as
+>> far as I can see -- if I missed it, please point me to an archived
+>> version of it].
+>
+> http://gcc.gnu.org/ml/gcc-patches/2007-07/msg01758.html
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Ah yes, that old thread, thank you.
+
+> That's when _I_ came to know how GCC interprets "+m", but probably
+> this has been explained on those lists multiple times. Who cares,
+> anyway?
+
+I just couldn't find the thread you meant, I thought I missed
+have it, that's all :-)
 
 
---- a/include/asm-i386/string.h	2007-08-17 15:14:37.000000000 -0700
-+++ b/include/asm-i386/string.h	2007-08-17 16:49:10.000000000 -0700
-@@ -228,6 +228,14 @@ static __always_inline void * __constant
- 		case 4:
- 			*(unsigned long *)s = pattern;
- 			return s;
-+		case 6:
-+			*(unsigned long *)s = pattern;
-+			*(2+(unsigned short *)s) = pattern;
-+			return s;
-+		case 8:
-+			*(unsigned long *)s = pattern;
-+			*(1+(unsigned long *)s) = pattern;
-+			return s;
- 	}
- #define COMMON(x) \
- __asm__  __volatile__( \
+Segher
+
