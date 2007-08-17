@@ -1,83 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbXHQLIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbXHQLJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759622AbXHQLIb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 07:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbXHQLIW
+	id S1756674AbXHQLJS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 07:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760179AbXHQLIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 07:08:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52483 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752735AbXHQLIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 07:08:21 -0400
-Message-ID: <46C581A0.7090000@stud.feec.vutbr.cz>
-Date: Fri, 17 Aug 2007 13:08:16 +0200
-From: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070718)
+	Fri, 17 Aug 2007 07:08:35 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:45182 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758915AbXHQLI2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 07:08:28 -0400
+Message-ID: <46C581AA.7020807@s5r6.in-berlin.de>
+Date: Fri, 17 Aug 2007 13:08:26 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
 MIME-Version: 1.0
-To: GolovaSteek <golovasteek@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: nanosleep() accuracy
-References: <f40fb4250708161552ub87bf8ve8168eec1b3955e7@mail.gmail.com>	 <46C54787.1010909@stud.feec.vutbr.cz> <f40fb4250708170044q9a259c3wb50186880d6b7f51@mail.gmail.com>
-In-Reply-To: <f40fb4250708170044q9a259c3wb50186880d6b7f51@mail.gmail.com>
-X-Enigmail-Version: 0.94.2.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Satyam Sharma <satyam@infradead.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi> <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com> <18117.1287.779351.836552@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708161953310.30176@woody.linux-foundation.org> <18117.6495.397597.582736@cargo.ozlabs.ibm.com> <20070817035342.GA14744@gondor.apana.org.au> <alpine.LFD.0.999.0708171142550.3666@enigma.security.iitk.ac.in> <46C55E90.7010407@yahoo.com.au>
+In-Reply-To: <46C55E90.7010407@yahoo.com.au>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GolovaSteek wrote:
-> 2007/8/17, Michal Schmidt <xschmi00@stud.feec.vutbr.cz>:
->   
->> GolovaSteek skrev:
->>     
->>> Hello!
->>> I need use sleep with accurat timing.
->>> I use 2.6.21 with rt-prempt patch.
->>> with enabled rt_preempt, dyn_ticks, and local_apic
->>> But
->>>
->>> req.tv_nsec = 300000;
->>> req.tv_sec = 0;
->>> nanosleep(&req,NULL)
->>>
->>> make pause around 310-330 microseconds.
->>>       
->> How do you measure this?
->> If you want to have something done every 300 microseconds, you must not
->> sleep for 300 microseconds in each iteration, because you'd accumulate
->> errors. Use a periodic timer or use the current time to compute how long
->> to sleep in each iteration. Take a look how cyclictest does it.
->>     
->
-> no. I just want my programm go to sleep sometimes and wake up in correct time.
->   
+Nick Piggin wrote:
+> Satyam Sharma wrote:
+>> And we have driver / subsystem maintainers such as Stefan
+>> coming up and admitting that often a lot of code that's written to use
+>> atomic_read() does assume the read will not be elided by the compiler.
+> 
+> So these are broken on i386 and x86-64?
 
-What does your program do that it has such a strict requirement on the
-exact length of sleeping?
+The ieee1394 and firewire subsystems have open, undiagnosed bugs, also
+on i386 and x86-64.  But whether there is any bug because of wrong
+assumptions about atomic_read among them, I don't know.  I don't know
+which assumptions the authors made, I only know that I wasn't aware of
+all the properties of atomic_read until now.
 
->>> I tried to understend how work nanosleep(), but it not depends from
->>> jiffies and from smp_apic_timer_interrupt.
->>>
->>> When can accuracy be lost?
->>> And how are process waked up?
->>>
->>>
->>> GolovaSteek
->>>       
->> Don't forget the process will always have non-zero wakeup latency. It
->> takes some time to process an interrupt, wakeup the process and schedule
->> it to run on the CPU. 10-30 microseconds is not unreasonable.
->>     
->
-> But 20000 operations can be done in 10 microseconds?
-> and why is there that inconstancy? Why sametimes 10 and sometimes 30?
-> In which points of implementation it happens?
->
-> GolovaSteek
->   
+> Are they definitely safe on SMP and weakly ordered machines with
+> just a simple compiler barrier there? Because I would not be
+> surprised if there are a lot of developers who don't really know
+> what to assume when it comes to memory ordering issues.
+> 
+> This is not a dig at driver writers: we still have memory ordering
+> problems in the VM too (and probably most of the subtle bugs in
+> lockless VM code are memory ordering ones). Let's not make up a
+> false sense of security and hope that sprinkling volatile around
+> will allow people to write bug-free lockless code. If a writer
+> can't be bothered reading API documentation
 
-If a jitter of 20 microseconds is unacceptable for your application,
-don't use PC hardware. Consider using a microcontroller.
+...or, if there is none, the implementation specification (as in case of
+the atomic ops), or, if there is none, the implementation (as in case of
+a some infrastructure code here and there)...
 
-Michal
+> and learning the Linux memory model, they can still be productive
+> writing safely locked code.
 
+Provided they are aware that they might not have the full picture of the
+lockless primitives.  :-)
+-- 
+Stefan Richter
+-=====-=-=== =--- =---=
+http://arcgraph.de/sr/
