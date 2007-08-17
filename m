@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761273AbXHQFGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbXHQFGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761273AbXHQFGE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 01:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbXHQFFL
+	id S1761608AbXHQFGk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 01:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754931AbXHQFG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 01:05:11 -0400
-Received: from ozlabs.org ([203.10.76.45]:53239 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754682AbXHQFFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 01:05:08 -0400
+	Fri, 17 Aug 2007 01:06:26 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:16326 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754929AbXHQFGY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 01:06:24 -0400
+X-IronPort-AV: i="4.19,273,1183359600"; 
+   d="scan'208"; a="171378201:sNHT46585278"
+To: akepner@sgi.com
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com, jes@sgi.com
+Subject: Re: [PATCH] sn-ia64: allow drivers to flush in-flight DMA
+X-Message-Flag: Warning: May contain useful information
+References: <20070816225603.GJ1813@sgi.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 16 Aug 2007 22:06:22 -0700
+In-Reply-To: <20070816225603.GJ1813@sgi.com> (akepner@sgi.com's message of "Thu, 16 Aug 2007 15:56:03 -0700")
+Message-ID: <adawsvuyckx.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18117.11376.111737.891134@cargo.ozlabs.ibm.com>
-Date: Fri, 17 Aug 2007 15:04:48 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Satyam Sharma <satyam@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-In-Reply-To: <20070816104250.GB2927@gondor.apana.org.au>
-References: <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in>
-	<alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in>
-	<18115.52863.638655.658466@cargo.ozlabs.ibm.com>
-	<20070816053945.GB32442@gondor.apana.org.au>
-	<18115.62741.807704.969977@cargo.ozlabs.ibm.com>
-	<20070816070907.GA964@gondor.apana.org.au>
-	<46C40587.7050708@s5r6.in-berlin.de>
-	<20070816081049.GA1431@gondor.apana.org.au>
-	<46C41EE4.9090806@s5r6.in-berlin.de>
-	<46C42767.4070104@s5r6.in-berlin.de>
-	<20070816104250.GB2927@gondor.apana.org.au>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+X-OriginalArrivalTime: 17 Aug 2007 05:06:22.0850 (UTC) FILETIME=[5AE74E20:01C7E08C]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu writes:
+The overall approach looks fine to me, although I'm not the arbiter of
+taste for the DMA API.
 
-> So the point here is that if you don't mind getting a stale
-> value from the CPU cache when doing an atomic_read, then
-> surely you won't mind getting a stale value from the compiler
-> "cache".
+However, I think this wants to be split into at least three parts for
+merging: adding the dmaflush flags stuff into the DMA API; adding the
+dmaflush parameter to the ib_umem_get() API (and fixing every caller);
+and using that API to fix mthca on SGI boxes.  (And also there should
+probably be a 4th patch to fix the same issue with mlx4 at least, and
+possibly further patches for other drivers such as the cxgb3 RDMA
+driver, etc)
 
-No, that particular argument is bogus, because there is a cache
-coherency protocol operating to keep the CPU cache coherent with
-stores from other CPUs, but there isn't any such protocol (nor should
-there be) for a register used as a "cache".
+Also further comments below:
 
-(Linux requires SMP systems to keep any CPU caches coherent as far as
-accesses by other CPUs are concerned.  It doesn't support any SMP
-systems that are not cache-coherent as far as CPU accesses are
-concerned.  It does support systems with non-cache-coherent DMA.)
+ >  struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
+ > -			    size_t size, int access)
+ > +			    size_t size, int access, int dmaflush)
 
-Paul.
+This change means every caller of ib_umem_get needs to be fixed up as
+part of the patch.
+
+ > @@ -1027,7 +1029,14 @@ static struct ib_mr *mthca_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
+ >  	if (!mr)
+ >  		return ERR_PTR(-ENOMEM);
+ >  
+ > -	mr->umem = ib_umem_get(pd->uobject->context, start, length, acc);
+ > +	if (ib_copy_from_udata(&ucmd, udata, sizeof ucmd)) {
+ > +		err = -EFAULT;
+ > +		goto err;
+ > +	}
+
+trivial, but you might as well do the copy_from_udata before
+allocating mr, so that you can just return ERR_PTR(-EFAULT) without
+having to free mr on the error path.
+
+ > +	dmaflush = (int) ucmd.mr_attrs & MTHCA_MR_DMAFLUSH;
+ > +
+ > +	mr->umem = ib_umem_get(pd->uobject->context, start, length, acc, 
+ > +			       dmaflush);
+
+I think the dmaflush temporary variable isn't adding anything, and
+certainly the cast to int is unnecessary.  Anyway, it looks better to
+me to write this simply as
+
+	mr->umem = ib_umem_get(pd->uobject->context, start, length, acc, 
+			       ucmd.mr_attrs & MTHCA_MR_DMAFLUSH);
+
+ > +#define MTHCA_MR_DMAFLUSH 0x1	/* flush in-flight DMA on a write to 
+ > +				 * memory region (IA64_SGI_SN2 only) */
+
+I would leave out the commentary about this being SN2-only -- the
+whole point is to use a generic API to hide this detail.
+
+ - R.
