@@ -1,86 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765786AbXHQQMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765500AbXHQQN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765786AbXHQQMz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 12:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765452AbXHQQMS
+	id S1765500AbXHQQN7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 12:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757149AbXHQQNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 12:12:18 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48076 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758310AbXHQQMO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 12:12:14 -0400
-Message-ID: <46C5C8C4.4060407@zytor.com>
-Date: Fri, 17 Aug 2007 09:11:48 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: "Huang, Ying" <ying.huang@intel.com>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org, Aaron Durbin <adurbin@google.com>
-Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
-References: <1186990219.22431.37.camel@caritas-dev.intel.com>	 <20070815154245.500c572c.akpm@linux-foundation.org>	 <1187250664.15063.0.camel@caritas-dev.intel.com> <46C45B22.5090701@suse.de> <1187313920.28497.1.camel@caritas-dev.intel.com>
-In-Reply-To: <1187313920.28497.1.camel@caritas-dev.intel.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 17 Aug 2007 12:13:47 -0400
+Received: from mba.ocn.ne.jp ([122.1.175.29]:57334 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755095AbXHQQNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 12:13:46 -0400
+Date: Sat, 18 Aug 2007 01:15:01 +0900 (JST)
+Message-Id: <20070818.011501.41012303.anemo@mba.ocn.ne.jp>
+To: david-b@pacbell.net
+Cc: jengelh@computergmbh.de, a.zummo@towertech.it,
+       linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
+Subject: Re: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <200708170902.01260.david-b@pacbell.net>
+References: <200708170823.15894.david-b@pacbell.net>
+	<Pine.LNX.4.64.0708171736170.30502@fbirervta.pbzchgretzou.qr>
+	<200708170902.01260.david-b@pacbell.net>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang, Ying wrote:
->>
->> Has the zero page documentation and version numbering project
->> made any progress? I think we cannot merge this without at least
->> the version number
+On Fri, 17 Aug 2007 09:02:00 -0700, David Brownell <david-b@pacbell.net> wrote:
+> Because for some reason the driver name isn't rtc-ds1742 ...
 > 
+> My preferred style for such patches puts the MODULE_ALIAS up
+> near the strange driver name, so it's more clear what's going
+> on.  Putting all the MODULE_*() stuff at the end of the file
+> gets confusing in this case.
 
-More than that.  You need to be able to boot a 32-bit kernel on a 64-bit
-system, so anything that breaks that is a nonstarter.  Of course, if EFI
-itself inherently breaks that, then, well, that's just another reason to
-avoid EFI like the plague, but I can't think that even EFI is that broken.
+OK, then I should update my patches anyway ;)
 
-> OK, I will work on the zero page documentation and version numbering
-> project.
+Which do you prefer, MODULE_ALIAS or change some strings?
 
-There already is documentation (Documentation/i386/zero-page.txt); as
-far as version numbering, that means sticking in a field with a number,
-and adding a magic number (since there isn't anything that guarantees
-that fields are otherwise zero.)
+I guess there are some out-of-tree users of this driver, but fixing
+them is really trivial, so I don't think this is a big compatibility
+problem.
 
-Anything that conforms to the updated standard should guarantee
-undefined fields are zero.
-
-However, we also have an immediate need to define how to grow past 4K,
-and if we're going to have a major revision in mechanism I would like to
-see that happen now.
-
-I propose that, in addition to the aforementioned version number and
-magic fields, we add a pointer, which should be the last pointer added
-that doesn't point into I/O space or reserved memory (i.e. memory that
-is off limit anyway for the operating system.)
-
-This pointer should point to a linked list of suggested form:
-
-struct setup_data {
-	u64 next;
-	u32 type;
-	u32 len;
-	u8 data[];
-};
-
-This can thus encapsulate large objects as necessary, and the early
-kernel entry can linearize them if it needs to move them out of the way.
- Better yet, this information can be made available to sysfs for
-debuggability, and/or use by kexec.
-
-I haven't heard anything from the kexec people on this, and they are the
-main users of the PM entrypoint as far as I can tell.
-
-Also, is there a maintainer for 32-bit EFI?
-
-	-hpa
-
-
-	-hpa
+---
+Atsushi Nemoto
