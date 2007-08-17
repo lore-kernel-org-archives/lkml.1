@@ -1,108 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760504AbXHQWqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759902AbXHQWuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760504AbXHQWqi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 18:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXHQWq3
+	id S1759902AbXHQWuh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 18:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXHQWu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 18:46:29 -0400
-Received: from smtp102.sbc.mail.re2.yahoo.com ([68.142.229.103]:25376 "HELO
-	smtp102.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754478AbXHQWq2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 18:46:28 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=IcRKmbYrog48JfFFpiL2PDLNOnIW4l1E+sjdKXJ+4DDSNZdYwPtcs2+X3GE0pR4HiAnSjbCE8JBQpEcX1vm866xOGECb614Lt2KWojh3YQG4GfOG5FqzweCchhVi5RMcp/Jw7GRpzgKE9Qad5BC3/jVGNJFUjMeoTboiRIDHOHg=  ;
-X-YMail-OSG: a9Q.XLkVM1mdY7Da37RHq0gKuZj9aIJcmdatad_MKs8bvquqgN1ifvJjGoZgVdEJiQ8.K1UN_ypu8Tth8ZpHyctv2_gWym18hDQ.VCGhwhfhb3fgZwdOE5C_iqsuvEOeeMO.2nW6F5SrFbE-
-From: David Brownell <david-b@pacbell.net>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Subject: Re: [PATCH 01/12] Blackfin arch: add peripheral resource allocation support
-Date: Fri, 17 Aug 2007 15:46:24 -0700
-User-Agent: KMail/1.9.6
-Cc: "Hennerich, Michael" <Michael.Hennerich@analog.com>,
-       "Bryan Wu" <bryan.wu@analog.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <600D5CB4DFD93545BF61FF01473D11AC0D87BD9F@limkexm2.ad.analog.com> <200708171411.00145.david-b@pacbell.net> <200708171815.56323.rgetz@blackfin.uclinux.org>
-In-Reply-To: <200708171815.56323.rgetz@blackfin.uclinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Fri, 17 Aug 2007 18:50:27 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33158 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754478AbXHQWu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 18:50:26 -0400
+In-Reply-To: <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in>
+References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com> <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f5796b5aa38ae6305c65ffa0340ba295@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708171546.25445.david-b@pacbell.net>
+Cc: Paul Mackerras <paulus@samba.org>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       rpjday@mindspring.com, ak@suse.de, netdev@vger.kernel.org,
+       cfriesen@nortel.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-arch@vger.kernel.org, jesper.juhl@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
+       clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
+       davem@davemloft.net, Linus Torvalds <torvalds@linux-foundation.org>,
+       wensong@linux-vs.org, wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Sat, 18 Aug 2007 00:49:08 +0200
+To: Satyam Sharma <satyam@infradead.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 August 2007, Robin Getz wrote:
-> On Fri 17 Aug 2007 17:10, David Brownell pondered:
-> > On the other hand, maybe you want your "typical" customer to
-> > be more of a systems integrator than anything else.
-> 
-> We are getting yelled at by our customers (I was on the phone yesterday), 
-> because the kernel build environment we distribute (the default) was not 
-> inside Eclipse, and someone couldn't push a button on a GUI rather than 
-> typing "make".
+> #define forget(a)	__asm__ __volatile__ ("" :"=m" (a) :"m" (a))
+>
+> [ This is exactly equivalent to using "+m" in the constraints, as 
+> recently
+>   explained on a GCC list somewhere, in response to the patch in my 
+> bitops
+>   series a few weeks back where I thought "+m" was bogus. ]
 
-Press the "enter" button after typing "make".  ;)
+[It wasn't explained on a GCC list in response to your patch, as
+far as I can see -- if I missed it, please point me to an archived
+version of it].
 
-
-> While Linux and other open source software is free, for some taking advantage 
-> of its benefits can require a significant investment in time. Linux is 
-> powerful, rich, and flexible. It is these very characteristics that make 
-> Linux so appealing that also create a significant level of complexity.
-
-Yes.
-
- 
-> We are seeing more and more "first time buyers" jumping from bare metal - no 
-> OS, to Linux. For them - the ease of not having to write configuration files 
-> gives them a warm fuzzy feeling when they boot their board, and it 
-> just "works".
-
-There's certainly a lot to be said for having things
-just work the first time when you're making such a big
-transition in tools.  On the other hand, at some point
-the training wheels need to come off!
+One last time: it isn't equivalent on older (but still supported
+by Linux) versions of GCC.  Current versions of GCC allow it, but
+it has no documented behaviour at all, so use it at your own risk.
 
 
-
-> > > >That said, how you handle pinmux on Blackfin is your business.
-> > > >
-> > > >But you should know that this approach seems idiosyncratic and
-> > > >more complex than needed:  when pin config is done early and as
-> > > >part of board setup, drivers don't need to care about it or to
-> > > >handle any pinmux errors.  And heck, products can sometimes be
-> > > >shipped with the bootloader having done all pinmux setup, so
-> > > >Linux won't need to worry about it at all.  That can help ship
-> > > >multiple board revisions using the same kernel.
-> > > 
-> > > This works for fixed function boards.
-> > 
-> > That is, for typical products embedding Linux...
-> 
-> We have multiple customers shipping the same bootloader/kernel binary on 
-> different products, and the only difference is the /etc/rc file - which 
-> drivers they install, and a few things in userspace.
-
-Be careful there.  Remember that the driver model is predicated
-on knowing the devices first, and *then* matching drivers.  I
-expect you *will* see problems if you get people thinking system
-config comes from a "which driver" selection rather than "here's
-the exact hardware that's available".  Maybe configfs should be
-used for device config.
-
-
-> Could this be smaller - sure - but NAND is cheap (according to them) compared 
-> to the effort and cost of maintaining and testing multiple kernel versions 
-> for every product.
->  
-> Could this be faster - sure - but it is done at init - and then never again. 
-> We have a ~2-3 second boot time - maybe we shave off a few ms - things go 
-> pretty fast at 600MHz.
-
-I'm more used to clock rates less than 1/3 that much.  :)
-
-- Dave
-
+Segher
 
