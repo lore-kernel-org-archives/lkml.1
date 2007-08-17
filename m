@@ -1,41 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbXHQOjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbXHQOpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbXHQOjj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 10:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbXHQOja
+	id S1758543AbXHQOpk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 10:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbXHQOpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 10:39:30 -0400
-Received: from mx1.ciphirelabs.net ([217.72.114.64]:44100 "EHLO
-	mx.dmz.ciphirelabs.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751781AbXHQOja (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 10:39:30 -0400
-X-Greylist: delayed 1033 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Aug 2007 10:39:30 EDT
-From: "Andreas Jellinghaus [c]" <aj@ciphirelabs.com>
-To: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: why was MODALIAS removed from usb kernel events? [u]
-Date: Fri, 17 Aug 2007 16:22:04 +0200
-User-Agent: KMail/1.9.6
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Aug 2007 10:45:33 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:45025 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751705AbXHQOpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 10:45:32 -0400
+Date: Fri, 17 Aug 2007 18:48:13 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>, devel@openvz.org
+Subject: Re: [PATCH] Isolate some explicit usage of task->tgid
+Message-ID: <20070817144813.GA347@tv-sign.ru>
+References: <46C5AD92.70909@openvz.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708171622.05115.aj@ciphirelabs.com>
-X-Ciphire-Security: plain
+In-Reply-To: <46C5AD92.70909@openvz.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9f8b17e643fe6aa505629658445849397bda4e4f
+On 08/17, Pavel Emelyanov wrote:
+>
+> Actually the p->tgid == pid has to be changed to has_group_leader_pid(), 
+> but Oleg pointed out that this is the same and thread_group_leader() 
+> is more preferable. 
 
-removes MODALIAS from one of the events, this breaks user space applications 
-like openct - everything that depends on getting an event that has both the
-DEVICE= path to the usb device and any information on the interface, so it
-can check if the device is something it supports (in case of openct:
-smart card reader, i.e. bInterfaceClass 0b).
+No, no, sorry for confusion! I was not clear. I meant that thread_group_leader()
+is imho better for posix timers, but
 
-The text does not mention MODALIAS nor the reason for it's removal.
+> @@ -865,8 +865,8 @@ static int de_thread(struct task_struct 
+> 
+> 		write_lock_irq(&tasklist_lock);
+> 
+> -		BUG_ON(leader->tgid != tsk->tgid);
+> -		BUG_ON(tsk->pid == tsk->tgid);
+> +		BUG_ON(!same_thread_group(leader, tsk));
+> +		BUG_ON(thread_group_leader(tsk));
 
-sorry for being late, this problem shows up with 2.6.21 -> 2.6.22 changes.
+This should be has_group_leader_pid(), BUG_ON() really checks that
+we didn't confuse ->tgid's.
 
-Andreas
+> 		/*
+> 		 * An exec() starts a new thread group with the
+> 		 * TGID of the previous thread group. Rehash the
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> index e3009ab..31e7dfe 100644
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -2288,7 +2288,7 @@ retry:
+> 		 * found doesn't happen to be a thread group leader.
+> 		 * As we don't care in the case of readdir.
+> 		 */
+> -		if (!task || !has_group_leader_pid(task))
+> +		if (!task || !thread_group_leader(task))
+
+And this _must_ be has_group_leader_pid(), this was actually the reason
+to introduce the "has_group_leader_pid()" helper.
+
+Otherwise I think the patch is fine, and the new helper is really useful.
+
+Oleg.
+
