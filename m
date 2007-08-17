@@ -1,71 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759878AbXHQWp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760504AbXHQWqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759878AbXHQWp3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 18:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXHQWpM
+	id S1760504AbXHQWqi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 18:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXHQWq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 18:45:12 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39401 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754668AbXHQWpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 18:45:10 -0400
-In-Reply-To: <alpine.LFD.0.999.0708170957350.3666@enigma.security.iitk.ac.in>
-References: <20070809131423.GA9927@shell.boston.redhat.com> <Pine.LNX.4.64.0708141529310.32693@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708150417240.6482@enigma.security.iitk.ac.in> <46C2D6F3.3070707@s5r6.in-berlin.de> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <20070815233721.91032366.billfink@mindspring.com> <alpine.LFD.0.999.0708161045360.25951@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708161115370.25951@enigma.security.iitk.ac.in> <43eccf425e36943ce0411c3b504b1de2@kernel.crashing.org> <alpine.LFD.0.999.0708170957350.3666@enigma.security.iitk.ac.in>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d14d1a768bfbbef34ee9f981cfd348c6@kernel.crashing.org>
+	Fri, 17 Aug 2007 18:46:29 -0400
+Received: from smtp102.sbc.mail.re2.yahoo.com ([68.142.229.103]:25376 "HELO
+	smtp102.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754478AbXHQWq2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 18:46:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=IcRKmbYrog48JfFFpiL2PDLNOnIW4l1E+sjdKXJ+4DDSNZdYwPtcs2+X3GE0pR4HiAnSjbCE8JBQpEcX1vm866xOGECb614Lt2KWojh3YQG4GfOG5FqzweCchhVi5RMcp/Jw7GRpzgKE9Qad5BC3/jVGNJFUjMeoTboiRIDHOHg=  ;
+X-YMail-OSG: a9Q.XLkVM1mdY7Da37RHq0gKuZj9aIJcmdatad_MKs8bvquqgN1ifvJjGoZgVdEJiQ8.K1UN_ypu8Tth8ZpHyctv2_gWym18hDQ.VCGhwhfhb3fgZwdOE5C_iqsuvEOeeMO.2nW6F5SrFbE-
+From: David Brownell <david-b@pacbell.net>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Subject: Re: [PATCH 01/12] Blackfin arch: add peripheral resource allocation support
+Date: Fri, 17 Aug 2007 15:46:24 -0700
+User-Agent: KMail/1.9.6
+Cc: "Hennerich, Michael" <Michael.Hennerich@analog.com>,
+       "Bryan Wu" <bryan.wu@analog.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <600D5CB4DFD93545BF61FF01473D11AC0D87BD9F@limkexm2.ad.analog.com> <200708171411.00145.david-b@pacbell.net> <200708171815.56323.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200708171815.56323.rgetz@blackfin.uclinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
-       horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Bill Fink <billfink@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Sat, 18 Aug 2007 00:38:12 +0200
-To: Satyam Sharma <satyam@infradead.org>
-X-Mailer: Apple Mail (2.623)
+Content-Disposition: inline
+Message-Id: <200708171546.25445.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Here, I should obviously admit that the semantics of *(volatile int 
->>> *)&
->>> aren't any neater or well-defined in the _language standard_ at all. 
->>> The
->>> standard does say (verbatim) "precisely what constitutes as access to
->>> object of volatile-qualified type is implementation-defined", but GCC
->>> does help us out here by doing the right thing.
->>
->> Where do you get that idea?
->
-> Try a testcase (experimentally verify).
+On Friday 17 August 2007, Robin Getz wrote:
+> On Fri 17 Aug 2007 17:10, David Brownell pondered:
+> > On the other hand, maybe you want your "typical" customer to
+> > be more of a systems integrator than anything else.
+> 
+> We are getting yelled at by our customers (I was on the phone yesterday), 
+> because the kernel build environment we distribute (the default) was not 
+> inside Eclipse, and someone couldn't push a button on a GUI rather than 
+> typing "make".
 
-That doesn't prove anything.  Experiments can only disprove
-things.
-
->> GCC manual, section 6.1, "When
->> is a Volatile Object Accessed?" doesn't say anything of the
->> kind.
->
-> True, "implementation-defined" as per the C standard _is_ supposed to 
-> mean
-> "unspecified behaviour where each implementation documents how the 
-> choice
-> is made". So ok, probably GCC isn't "documenting" this
-> implementation-defined behaviour which it is supposed to, but can't 
-> really
-> fault them much for this, probably.
-
-GCC _is_ documenting this, namely in this section 6.1.  It doesn't
-mention volatile-casted stuff.  Draw your own conclusions.
+Press the "enter" button after typing "make".  ;)
 
 
-Segher
+> While Linux and other open source software is free, for some taking advantage 
+> of its benefits can require a significant investment in time. Linux is 
+> powerful, rich, and flexible. It is these very characteristics that make 
+> Linux so appealing that also create a significant level of complexity.
+
+Yes.
+
+ 
+> We are seeing more and more "first time buyers" jumping from bare metal - no 
+> OS, to Linux. For them - the ease of not having to write configuration files 
+> gives them a warm fuzzy feeling when they boot their board, and it 
+> just "works".
+
+There's certainly a lot to be said for having things
+just work the first time when you're making such a big
+transition in tools.  On the other hand, at some point
+the training wheels need to come off!
+
+
+
+> > > >That said, how you handle pinmux on Blackfin is your business.
+> > > >
+> > > >But you should know that this approach seems idiosyncratic and
+> > > >more complex than needed:  when pin config is done early and as
+> > > >part of board setup, drivers don't need to care about it or to
+> > > >handle any pinmux errors.  And heck, products can sometimes be
+> > > >shipped with the bootloader having done all pinmux setup, so
+> > > >Linux won't need to worry about it at all.  That can help ship
+> > > >multiple board revisions using the same kernel.
+> > > 
+> > > This works for fixed function boards.
+> > 
+> > That is, for typical products embedding Linux...
+> 
+> We have multiple customers shipping the same bootloader/kernel binary on 
+> different products, and the only difference is the /etc/rc file - which 
+> drivers they install, and a few things in userspace.
+
+Be careful there.  Remember that the driver model is predicated
+on knowing the devices first, and *then* matching drivers.  I
+expect you *will* see problems if you get people thinking system
+config comes from a "which driver" selection rather than "here's
+the exact hardware that's available".  Maybe configfs should be
+used for device config.
+
+
+> Could this be smaller - sure - but NAND is cheap (according to them) compared 
+> to the effort and cost of maintaining and testing multiple kernel versions 
+> for every product.
+>  
+> Could this be faster - sure - but it is done at init - and then never again. 
+> We have a ~2-3 second boot time - maybe we shave off a few ms - things go 
+> pretty fast at 600MHz.
+
+I'm more used to clock rates less than 1/3 that much.  :)
+
+- Dave
+
 
