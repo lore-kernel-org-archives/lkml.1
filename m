@@ -1,78 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932609AbXHQCb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932866AbXHQCdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932609AbXHQCb7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 22:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757985AbXHQCbs
+	id S932866AbXHQCdw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 22:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762817AbXHQCdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 22:31:48 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:40552 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751781AbXHQCbq (ORCPT
+	Thu, 16 Aug 2007 22:33:42 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:49016 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751476AbXHQCdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 22:31:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=ZfReF3wUO757LZ7SKBtntE4PFDTnWtqsfKy4OYLzHb5toD/e1srWv+EdjgzYMHZy4jQN+TU226IUF3p702O+KnNsBSJdtyKq10sB+/7Za5a12rdd2TKlZkcvErMbqNZdEtidS8UmSV59QM90xpltIGtDMVbQUCYUInCRutoignk=  ;
-X-YMail-OSG: hgeUaBEVM1mRvRRh4GaJa2HZ2y4dnKEmcUJmly.6F7rj26aLzzjpPJZ55YK5tzoRWi0lA6lEBg--
-Message-ID: <46C50886.90008@yahoo.com.au>
-Date: Fri, 17 Aug 2007 12:31:34 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Thu, 16 Aug 2007 22:33:41 -0400
+Message-ID: <46C50902.4000502@lwfinger.net>
+Date: Thu, 16 Aug 2007 21:33:38 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Chris Snook <csnook@redhat.com>
-CC: Herbert Xu <herbert.xu@redhat.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-References: <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C4AA26.4060707@redhat.com> <20070817000209.GC11594@gondor.apana.org.au> <46C50228.4000004@redhat.com>
-In-Reply-To: <46C50228.4000004@redhat.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Need help with modules loading
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook wrote:
-> Herbert Xu wrote:
-> 
->> On Thu, Aug 16, 2007 at 03:48:54PM -0400, Chris Snook wrote:
->>
->>>> Can you find an actual atomic_read code snippet there that is
->>>> broken without the volatile modifier?
->>>
->>> A whole bunch of atomic_read uses will be broken without the volatile 
->>> modifier once we start removing barriers that aren't needed if 
->>> volatile behavior is guaranteed.
->>
->>
->> Could you please cite the file/function names so we can
->> see whether removing the barrier makes sense?
->>
->> Thanks,
-> 
-> 
-> At a glance, several architectures' implementations of 
-> smp_call_function() have one or more legitimate atomic_read() busy-waits 
-> that shouldn't be using CPU-relax.  Some of them do work in the loop.
+A new driver for the Broadcom BCM43xx devices has been written that uses mac80211, rather than 
+softmac. The newest versions of the Broadcom firmware does not support all the BCM devices. 
+Accordingly, a separate driver is being prepared that will use an older version of the firmware and 
+support these legacy devices. Unfortunately, there is not a clean separation based on PCI id's; 
+however, the revision level of the 802.11 wireless core can be used to determine which driver should 
+be used. The scheme works on most systems, but not mine and I need some help to discover why.
 
-sh looks like the only one there that would be broken (and that's only
-because they don't have a cpu_relax there, but it should be added anyway).
-Sure, if we removed volatile from other architectures, it would be wise
-to audit arch code because arch maintainers do sometimes make assumptions
-about their implementation details... however we can assume most generic
-code is safe without volatile.
+The ssb driver handles the interaction between an internal bus in the device and the PCIe interface 
+in my HP dv2125nr notebook. When this driver is loaded, the output of 'udevmonitor --env' is as follows:
 
--- 
-SUSE Labs, Novell Inc.
+UEVENT[1187314028.568540] add      /module/ssb (module)
+ACTION=add
+DEVPATH=/module/ssb
+SUBSYSTEM=module
+SEQNUM=1749
+
+UEVENT[1187314028.571360] add      /bus/ssb (bus)
+ACTION=add
+DEVPATH=/bus/ssb
+SUBSYSTEM=bus
+SEQNUM=1750
+
+UEVENT[1187314028.571635] add      /bus/pci/drivers/b43-pci-bridge (drivers)
+ACTION=add
+DEVPATH=/bus/pci/drivers/b43-pci-bridge
+SUBSYSTEM=drivers
+SEQNUM=1751
+
+UDEV  [1187314028.579067] add      /module/ssb (module)
+UDEV_LOG=3
+ACTION=add
+DEVPATH=/module/ssb
+SUBSYSTEM=module
+SEQNUM=1749
+UDEVD_EVENT=1
+
+UDEV  [1187314028.583959] add      /bus/pci/drivers/b43-pci-bridge (drivers)
+UDEV_LOG=3
+ACTION=add
+DEVPATH=/bus/pci/drivers/b43-pci-bridge
+SUBSYSTEM=drivers
+SEQNUM=1751
+UDEVD_EVENT=1
+
+UDEV  [1187314028.584452] add      /bus/ssb (bus)
+UDEV_LOG=3
+ACTION=add
+DEVPATH=/bus/ssb
+SUBSYSTEM=bus
+SEQNUM=1750
+UDEVD_EVENT=1
+
+UEVENT[1187314028.644176] add      /devices/pci0000:00/0000:00:02.0/0000:01:00.0/ssb0:0 (ssb)
+ACTION=add
+DEVPATH=/devices/pci0000:00/0000:00:02.0/0000:01:00.0/ssb0:0
+SUBSYSTEM=ssb
+SEQNUM=1752
+PHYSDEVBUS=ssb
+MODALIAS=ssb:v4243id0812rev0A
+
+UEVENT[1187314028.645471] add      /devices/pci0000:00/0000:00:02.0/0000:01:00.0/ssb0:1 (ssb)
+ACTION=add
+DEVPATH=/devices/pci0000:00/0000:00:02.0/0000:01:00.0/ssb0:1
+SUBSYSTEM=ssb
+SEQNUM=1753
+PHYSDEVBUS=ssb
+MODALIAS=ssb:v4243id0817rev03
+
+UDEV  [1187314028.656957] add      /devices/pci0000:00/0000:00:02.0/0000:01:00.0/ssb0:1 (ssb)
+UDEV_LOG=3
+ACTION=add
+DEVPATH=/devices/pci0000:00/0000:00:02.0/0000:01:00.0/ssb0:1
+SUBSYSTEM=ssb
+SEQNUM=1753
+PHYSDEVBUS=ssb
+MODALIAS=ssb:v4243id0817rev03
+UDEVD_EVENT=1
+
+UDEV  [1187314028.662723] add      /devices/pci0000:00/0000:00:02.0/0000:01:00.0/ssb0:0 (ssb)
+UDEV_LOG=3
+ACTION=add
+DEVPATH=/devices/pci0000:00/0000:00:02.0/0000:01:00.0/ssb0:0
+SUBSYSTEM=ssb
+SEQNUM=1752
+PHYSDEVBUS=ssb
+MODALIAS=ssb:v4243id0812rev0A
+UDEVD_EVENT=1
+
+The 'MODALIAS=ssb:v4243id0812rev0A' line is correct for my device. In fact issuing a modprobe 
+"ssb:v4243id0812rev0A" command results in the loading of the module. For some reason, this does not 
+happen automatically.
+
+Initially, I suspected that my version of udev (103-13) was too old; however, upgrading to version 
+114 did not help. My module-init-tools are V 3.2.2 and my distro is the x86_64 version of openSUSE 10.2.
+
+I would appreciate any suggestions on how to chase down this problem.
+
+Thanks,
+
+Larry
+
+
+
