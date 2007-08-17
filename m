@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758911AbXHQXjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759559AbXHQXkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758911AbXHQXjX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 19:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbXHQXjK
+	id S1759559AbXHQXkh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 19:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXHQXka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 19:39:10 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:46455 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbXHQXjI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 19:39:08 -0400
-Date: Sat, 18 Aug 2007 05:21:42 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Segher Boessenkool <segher@kernel.crashing.org>
-cc: Paul Mackerras <paulus@samba.org>, heiko.carstens@de.ibm.com,
-       horms@verge.net.au,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       rpjday@mindspring.com, ak@suse.de, netdev@vger.kernel.org,
-       cfriesen@nortel.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-arch@vger.kernel.org, jesper.juhl@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>, zlynx@acm.org,
-       clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
-       davem@davemloft.net, Linus Torvalds <torvalds@linux-foundation.org>,
-       wensong@linux-vs.org, wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <f5796b5aa38ae6305c65ffa0340ba295@kernel.crashing.org>
-Message-ID: <alpine.LFD.0.999.0708180512300.3666@enigma.security.iitk.ac.in>
-References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com>
- <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org>
- <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org>
- <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com>
- <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
- <alpine.LFD.0.999.0708171016160.3666@enigma.security.iitk.ac.in>
- <f5796b5aa38ae6305c65ffa0340ba295@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 17 Aug 2007 19:40:30 -0400
+Received: from www.osadl.org ([213.239.205.134]:49097 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750979AbXHQXk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 19:40:29 -0400
+Subject: Re: kfree(0) - ok?
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <clameter@sgi.com>, Satyam Sharma <satyam@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <84144f020708171442x52b18722k2971ceef96d3e72@mail.gmail.com>
+References: <46C233CB.9000602@am.sony.com>
+	 <1187132149.2618.2.camel@laptopd505.fenrus.org>
+	 <alpine.LFD.0.999.0708150454480.6482@enigma.security.iitk.ac.in>
+	 <20070817112253.e6a7cb33.akpm@linux-foundation.org>
+	 <alpine.LFD.0.999.0708180011570.3666@enigma.security.iitk.ac.in>
+	 <Pine.LNX.4.64.0708171413190.9635@schroedinger.engr.sgi.com>
+	 <84144f020708171442x52b18722k2971ceef96d3e72@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 18 Aug 2007 01:40:22 +0200
+Message-Id: <1187394022.7007.133.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 18 Aug 2007, Segher Boessenkool wrote:
-
-> > #define forget(a)	__asm__ __volatile__ ("" :"=m" (a) :"m" (a))
-> > 
-> > [ This is exactly equivalent to using "+m" in the constraints, as recently
-> >   explained on a GCC list somewhere, in response to the patch in my bitops
-> >   series a few weeks back where I thought "+m" was bogus. ]
+On Sat, 2007-08-18 at 00:42 +0300, Pekka Enberg wrote:
+> On 8/18/07, Christoph Lameter <clameter@sgi.com> wrote:
+> > That was merged over my objections. IMHO ksize(NULL) should fail since we
+> > are determining the size of an unallocated object.
 > 
-> [It wasn't explained on a GCC list in response to your patch, as
-> far as I can see -- if I missed it, please point me to an archived
-> version of it].
+> Agreed, especially as we have real zero-sized objects returned from
+> kmalloc() et al now.
 
-http://gcc.gnu.org/ml/gcc-patches/2007-07/msg01758.html
+Do we really ? 
 
-is a follow-up in the thread on the gcc-patches@gcc.gnu.org mailing list,
-which began with:
+If yes, who invented this 1980s reminiscence, where you got valid
+pointers for malloc(0) ?
 
-http://gcc.gnu.org/ml/gcc-patches/2007-07/msg01677.html
+This is completely stupid. You do not go into a bar and order an empty
+glass, just because you might eventually become thirsty later.
 
-that was posted by Jan Kubicka, as he quotes in that initial posting,
-after I had submitted:
-
-http://lkml.org/lkml/2007/7/23/252
-
-which was a (wrong) patch to "rectify" what I thought was the "bogus"
-"+m" constraint, as per the quoted extract from gcc docs (that was
-given in that (wrong) patch's changelog).
-
-That's when _I_ came to know how GCC interprets "+m", but probably
-this has been explained on those lists multiple times. Who cares,
-anyway?
+	tglx
 
 
-> One last time: it isn't equivalent on older (but still supported
-> by Linux) versions of GCC.  Current versions of GCC allow it, but
-> it has no documented behaviour at all, so use it at your own risk.
-
-True.
