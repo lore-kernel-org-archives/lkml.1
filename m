@@ -1,119 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761414AbXHQJQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbXHQJZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761414AbXHQJQs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 05:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758203AbXHQJQj
+	id S1757397AbXHQJZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 05:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbXHQJZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 05:16:39 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38862 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755580AbXHQJQh (ORCPT
+	Fri, 17 Aug 2007 05:25:46 -0400
+Received: from webmail.icp-qv1-irony3.iinet.net.au ([203.59.1.108]:9612 "EHLO
+	webmail.icp-qv1-irony3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751009AbXHQJZo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 05:16:37 -0400
-Message-ID: <46C56774.2030009@bull.net>
-Date: Fri, 17 Aug 2007 11:16:36 +0200
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+	Fri, 17 Aug 2007 05:25:44 -0400
+X-Greylist: delayed 619 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Aug 2007 05:25:43 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAPsDxUbLrQKa/2dsb2JhbAA
+X-IronPort-AV: i="4.19,274,1183305600"; 
+   d="scan'208"; a="183003105:sNHT9611358"
+Message-ID: <46C5672E.4060003@cyberone.com.au>
+Date: Fri, 17 Aug 2007 19:15:26 +1000
+From: Nick Piggin <piggin@cyberone.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: kvm-devel <kvm-devel@lists.sourceforge.net>, Ingo Molnar <mingo@elte.hu>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH/RFC 3/4]Introduce "account modifiers" mechanism
-References: <46C4719A.2060308@bull.net> <46C4720F.7030304@bull.net>	 <46C4725A.4070607@bull.net>  <46C4740F.2050701@bull.net>	 <1187303955.6449.7.camel@localhost.localdomain> <46C54FB8.7050504@bull.net> <1187339450.6449.115.camel@localhost.localdomain>
-In-Reply-To: <1187339450.6449.115.camel@localhost.localdomain>
-X-Enigmail-Version: 0.94.0.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 17/08/2007 11:21:45,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 17/08/2007 11:21:47,
-	Serialize complete at 17/08/2007 11:21:47
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig0381E23CC19789AE44F721AC"
+To: Satyam Sharma <satyam@infradead.org>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, paulmck@linux.vnet.ibm.com,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C41EE4.9090806@s5r6.in-berlin.de> <46C42767.4070104@s5r6.in-berlin.de> <20070816104250.GB2927@gondor.apana.org.au> <20070816163441.GB16957@linux.vnet.ibm.com> <46C512EB.7020603@yahoo.com.au> <46C54D74.60101@s5r6.in-berlin.de> <46C556F1.8000407@yahoo.com.au> <alpine.LFD.0.999.0708171420060.3666@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0708171420060.3666@enigma.security.iitk.ac.in>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig0381E23CC19789AE44F721AC
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Satyam Sharma wrote:
+> 
+> On Fri, 17 Aug 2007, Nick Piggin wrote:
 
-Rusty Russell wrote:
-> On Fri, 2007-08-17 at 09:35 +0200, Laurent Vivier wrote:
->> Rusty Russell wrote:
->>> Hi Laurent,
->> Hi Rusty,
->> how are your puppies ?
->=20
-> They're getting a little fat, actually.  Too many features ...
->=20
->> - remove PATCH 3, and add in task_struct a "ktime vtime" where we accu=
-mulate
->> guest time (by calling something like guest_enter() and guest_exit() f=
-rom the
->> virtualization engine), and when in account_system_time() we have cput=
-ime >
->> vtime we substrate vtime from cputime and add vtime to user time and g=
-uest time.
->> But doing like this we freeze in kernel/sched.c the link between syste=
-m time,
->> user time and guest time (i.e. system time =3D system time - vtime, us=
-er time =3D
->> user time + vtime and guest time =3D guest time + vtime).
->=20
-> Actually, I think we can set a per-cpu "in_guest" flag for the schedule=
-r
-> code, which then knows to add the tick to the guest time.  That seems
-> the simplest possible solution.
->=20
-> lguest or kvm would set the flag before running the guest (which is don=
-e
-> with preempt disabled or using preemption hooks), and reset it
-> afterwards.
->=20
-> Thoughts?
+>>>Sure, now
+>>>that I learned of these properties I can start to audit code and insert
+>>>barriers where I believe they are needed, but this simply means that
+>>>almost all occurrences of atomic_read will get barriers (unless there
+>>>already are implicit but more or less obvious barriers like msleep).
+>>
+>>You might find that these places that appear to need barriers are
+>>buggy for other reasons anyway. Can you point to some in-tree code
+>>we can have a look at?
+> 
+> 
+> Such code was mentioned elsewhere (query nodemgr_host_thread in cscope)
+> that managed to escape the requirement for a barrier only because of
+> some completely un-obvious compilation-unit-scope thing. But I find such
+> an non-explicit barrier quite bad taste. Stefan, do consider plunking an
+> explicit call to barrier() there.
 
-It was my first attempt (except I didn't have a per-cpu flag, but a per-t=
-ask
-flag), it's not visible but I love simplicity... ;-)
+It is very obvious. msleep calls schedule() (ie. sleeps), which is
+always a barrier.
 
-A KVM VCPU is stopped by preemption, so when we enter in scheduler we hav=
-e
-exited from VCPU and thus this flags is off (so we account 0 to the guest=
-). What
-I did then is "set the flag on when we enter in the VCPU, and
-"account_system_time()" sets the flag off when it adds this timeslice to =
-cpustat
-(and compute correctly guest, user, system time). But I didn't like this =
-idea
-because all code executed after we entered in the VCPU is accounted to th=
-e guest
-until we have an account_system_time() and I suppose we can have real sys=
-tem
-time in this part. And I guess a VCPU can be less than 1 ms (unit of cput=
-ime) in
-a timeslice.
-
-So ? What's best ?
-Laurent
---=20
-------------- Laurent.Vivier@bull.net  --------------
-          "Software is hard" - Donald Knuth
-
-
---------------enig0381E23CC19789AE44F721AC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.7 (GNU/Linux)
-
-iD8DBQFGxWd79Kffa9pFVzwRAq3jAKCZGGebPJKSVM7gZ0Jcw8IaFjFKXACfVo+P
-t0lvQShts8SUsT/ECx4EVUk=
-=BOzN
------END PGP SIGNATURE-----
-
---------------enig0381E23CC19789AE44F721AC--
+The "unobvious" thing is that you wanted to know how the compiler knows
+a function is a barrier -- answer is that if it does not *know* it is not
+a barrier, it must assume it is a barrier. If the whole msleep call chain
+including the scheduler were defined static in the current compilation
+unit, then it would still be a barrier because it would actually be able
+to see the barriers in schedule(void), if nothing else.
