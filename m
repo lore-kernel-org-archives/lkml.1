@@ -1,106 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbXHQFS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760520AbXHQFVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760041AbXHQFS3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 01:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbXHQFSR
+	id S1760520AbXHQFVT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 01:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbXHQFVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 01:18:17 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:49714 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752563AbXHQFSQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 01:18:16 -0400
-Date: Thu, 16 Aug 2007 22:18:11 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Paul Mackerras <paulus@samba.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       satyam@infradead.org, clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>, Herbert Xu <herbert.xu@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070817051811.GB12232@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <E1ILCgh-00052A-00@gondolin.me.apana.org.au> <46C32618.2080108@redhat.com> <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
+	Fri, 17 Aug 2007 01:21:11 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:25120 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754024AbXHQFVK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 01:21:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oh0aB2G6LqFQebQuNEi3mrxxVH/2stQcmNfZKv1A6WrP/iwCzvJMdWMkyJC0tmcV06/jxlLgXeK49Gzg4zCnVVwt3XSu8GI22wNTe8HrfBVy7pAQufdtU6uaojZpFWjb+esvb+Gf5n8q59E45ipRP7VkZ4q7uhAzWQ7UKyhfCrw=
+Message-ID: <653402b90708162221t1081650doe3efc976377b26cf@mail.gmail.com>
+Date: Fri, 17 Aug 2007 07:21:08 +0200
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+To: "Joe Perches" <joe@perches.com>
+Subject: Re: [PATCH] [120/2many] MAINTAINERS - CFAG12864BFB LCD FRAMEBUFFER DRIVER
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <1187326515.822.25.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708162033400.30176@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <46bff946.crSIrCRHeVaUjuwb%joe@perches.com>
+	 <653402b90708160216k1ea20490k7a846bd019e44b3d@mail.gmail.com>
+	 <1187272507.5906.80.camel@localhost>
+	 <653402b90708162137r6079d431ud91216bb7b140610@mail.gmail.com>
+	 <1187326515.822.25.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 08:42:23PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Fri, 17 Aug 2007, Paul Mackerras wrote:
-> > 
-> > I'm really surprised it's as much as a few K.  I tried it on powerpc
-> > and it only saved 40 bytes (10 instructions) for a G5 config.
-> 
-> One of the things that "volatile" generally screws up is a simple
-> 
-> 	volatile int i;
-> 
-> 	i++;
-> 
-> which a compiler will generally get horribly, horribly wrong.
-> 
-> In a reasonable world, gcc should just make that be (on x86)
-> 
-> 	addl $1,i(%rip)
-> 
-> on x86-64, which is indeed what it does without the volatile. But with the 
-> volatile, the compiler gets really nervous, and doesn't dare do it in one 
-> instruction, and thus generates crap like
-> 
->         movl    i(%rip), %eax
->         addl    $1, %eax
->         movl    %eax, i(%rip)
+On 8/17/07, Joe Perches <joe@perches.com> wrote:
+> On Fri, 2007-08-17 at 06:37 +0200, Miguel Ojeda wrote:
+> > On 8/16/07, Joe Perches <joe@perches.com> wrote:
+> > > On Thu, 2007-08-16 at 11:16 +0200, Miguel Ojeda wrote:
+> > > > I think you could add also:
+> > > >  +F:     Documentation/auxdisplay/cfag12864bfb
+> > does not exist. I meant
+> >    Documentation/auxdisplay/cfag12864b
+> > As Documentation/auxdisplay/cfag12864b describes both at the same
+> > time, it is OK to add them in both entries.
+> > Sorry for the mistake.
+>
+> No worries.  We all make a bunch of 'em.
+>
+> This is what I have now:
+>
+> CFAG12864B LCD DRIVER
+> P:      Miguel Ojeda Sandonis
+> M:      maxextreme@gmail.com
+> L:      linux-kernel@vger.kernel.org
+> W:      http://auxdisplay.googlepages.com/
+> S:      Maintained
+> F:      Documentation/auxdisplay/cfag12864b
+> F:      drivers/auxdisplay/cfag12864b.c
+> F:      include/linux/cfag12864b.h
+>
+> CFAG12864BFB LCD FRAMEBUFFER DRIVER
+> P:      Miguel Ojeda Sandonis
+> M:      maxextreme@gmail.com
+> L:      linux-kernel@vger.kernel.org
+> W:      http://auxdisplay.googlepages.com/
+> S:      Maintained
+> F:      Documentation/auxdisplay/cfag12864b
+> F:      drivers/auxdisplay/cfag12864bfb.c
+> F:      include/linux/cfag12864b.h
+>
+> cheers, Joe
+>
+>
 
-Blech.  Sounds like a chat with some gcc people is in order.  Will
-see what I can do.
+Fine!
 
-						Thanx, Paul
+Btw, you did me to look at the Documentation to check the correct name
+of the "cfag12864b" file, and now, looking at the code, I have
+discovered a one-line bug... So the mistake will solve two things at
+the same thing! I'm creating the patch now.
 
-> instead. For no good reason, except that "volatile" just doesn't have any 
-> good/clear semantics for the compiler, so most compilers will just make it 
-> be "I will not touch this access in any way, shape, or form". Including 
-> even trivially correct instruction optimization/combination.
-> 
-> This is one of the reasons why we should never use "volatile". It 
-> pessimises code generation for no good reason - just because compilers 
-> don't know what the heck it even means! 
-> 
-> Now, people don't do "i++" on atomics (you'd use "atomic_inc()" for that), 
-> but people *do* do things like
-> 
-> 	if (atomic_read(..) <= 1)
-> 		..
-> 
-> On ppc, things like that probably don't much matter. But on x86, it makes 
-> a *huge* difference whether you do
-> 
-> 	movl i(%rip),%eax
-> 	cmpl $1,%eax
-> 
-> or if you can just use the value directly for the operation, like this:
-> 
-> 	cmpl $1,i(%rip)
-> 
-> which is again a totally obvious and totally safe optimization, but is 
-> (again) something that gcc doesn't dare do, since "i" is volatile.
-> 
-> In other words: "volatile" is a horribly horribly bad way of doing things, 
-> because it generates *worse*code*, for no good reason. You just don't see 
-> it on powerpc, because it's already a load-store architecture, so there is 
-> no "good code" for doing direct-to-memory operations.
-> 
-> 		Linus
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Miguel Ojeda <maxextreme@gmail.com>
+
+-- 
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm
