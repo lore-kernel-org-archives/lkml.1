@@ -1,85 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765369AbXHQQ5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759459AbXHQRLL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765369AbXHQQ5q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 12:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXHQQ5j
+	id S1759459AbXHQRLL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 13:11:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbXHQRK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 12:57:39 -0400
-Received: from waste.org ([66.93.16.53]:42424 "EHLO waste.org"
+	Fri, 17 Aug 2007 13:10:57 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:59892 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752332AbXHQQ5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 12:57:38 -0400
-Date: Fri, 17 Aug 2007 11:58:08 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       John Berthels <jjberthels@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] maps: /proc/<pid>/pmaps interface - memory maps in granularity of pages
-Message-ID: <20070817165808.GM30556@waste.org>
-References: <20070816220516.782145952@mail.ustc.edu.cn> <20070816220849.472883642@mail.ustc.edu.cn> <20070817023846.GJ30556@waste.org> <20070817064727.GA6723@mail.ustc.edu.cn>
+	id S1755293AbXHQRK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 13:10:56 -0400
+Date: Fri, 17 Aug 2007 12:10:53 -0500
+To: Paul Mackerras <paulus@samba.org>
+Cc: Michael Neuling <mikey@neuling.org>, Andrew Morton <akpm@osdl.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] Add scaled time to taskstats based process accounting
+Message-ID: <20070817171053.GB4261@austin.ibm.com>
+References: <20070816070922.37B5370074@localhost.localdomain> <20070816163850.GU4261@austin.ibm.com> <18116.52784.132826.595409@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070817064727.GA6723@mail.ustc.edu.cn>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <18116.52784.132826.595409@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 02:47:27PM +0800, Fengguang Wu wrote:
-> Matt,
+On Fri, Aug 17, 2007 at 08:22:40AM +1000, Paul Mackerras wrote:
+> Linas Vepstas writes:
 > 
-> It's not easy to do direct performance comparisons between pmaps and
-> pagemap/kpagemap. However some close analyzes are still possible :)
+> > My gut impression (maybe wrong?) is that the scaled time is,
+> > in a certain sense, "more accurate" than the unscaled time.
 > 
-> 1) code size
-> pmaps                   ~200 LOC
-> pagemap/kpagemap        ~300 LOC
-> 
-> 2) dataset size
-> take for example my running firefox on Intel Core 2:
-> VSZ             400 MB
-> RSS              64 MB, or 16k pages
-> pmaps            64 KB, wc shows 2k lines, or so much page ranges
-> pagemap         800 KB, could be heavily optimized by returning partial data
+> The "unscaled" time is just time, as in "how many seconds did this
+> task spend on the CPU".  It's what all the tools (except a certain
+> proprietary workload manager) expect.  Top, ps, etc. get unhappy if
+> the times reported (user, system, hardirq, softirq, idle, stolen)
+> don't add up to elapsed wall-clock time.
 
-I take it you're in 64-bit mode?
+OK, so to keep the tools happy, the total time needs to add up
+to wall-clock time.  Which tells me that the "scaled idle time"
+should be defined as "wall clock time minus the other stuff".
 
-You're right, this data compresses well in many circumstances. I
-suspect it will suffer under memory pressure though. That will
-fragment the ranges in-memory and also fragment the active bits. The
-worst case here is huge, of course, but realistically I'd expect
-something like 2x-4x.
+> The "scaled" time is really CPU cycles divided by some arbitrary
+> factor (the notional CPU frequency).  So yes it does give some
+> indication of how much progress the task should have made, in some
+> sense.
 
-But there are still the downsides I have mentioned:
+Yes, good, that's what I was expecting.  As a sysadmin and/or 
+back-of-the-envelope performance person, I would certainly like 
+to have ps and top report the scaled time. When I do "performance 
+tuning", I almost always can get away with quick-n-dirty use of
+vmstat and top, and only rarely have to descend into more complex 
+tools.  I'd hate to loose this quick-n-dirty utility, which,
+again ... my gut impression is that these numbers suddenly turn 
+mostly meaningless.
 
-- you don't get page frame numbers
-- you can't do random access
+That is, if I run the same task 3 times over the next few hours,
+will vmstat/top/ps report more or less he same figures?  I'm 
+concerned that they won't ... that I'll see different values
+come out, depending on whether the chip is overheating, or whether
+some other partition is stealing, or whatever causes this thing to 
+dynamically scale.
 
-And how long does it take to pull the data out? My benchmarks show
-greater than 50MB/s (and that's with the version in -mm that's doing
-double buffering), so that 800K would take < .016s. 
+> Both measures are useful.  Because the current user API is in terms of
+> real time rather than cycles, we have to continue reporting real time,
+> not scaled time, which is why the existing interfaces report unscaled
+> time, and the scaled time values are reported through a new extension
+> to the taskstats interface.
 
-> kpagemap        256 KB
-> 
-> 3) runtime overheads
-> pmaps            2k lines of string processing(encode/decode)
-> kpagemap        16k seek()/read()s, and context switches (could be
->                     optimized somehow by doing a PFN sort first, but
->                     that's also non-trivial overheads)
+This begs the question of "what is the real, actual elapsed time?" 
+... currently, the "real time" depends very much on how often your 
+process got scheduled -- but, if your process is scheduled but 
+(due to scaling) isn't "actually running", should that count towards 
+the "real time"?
 
-You can do anywhere between 16k small reads or 1 large read. Depends
-what data you're trying to get. Right now, kpagemap is fast enough
-that I can do realtime displays of the whole of memory in my desktop
-in a GUI written in Python. And Python is fairly horrible for drawing
-bitmaps and such.
+---
+I supose that its inevitable that this stuff will get more complex;
+I'm just trying to make sure we don't end up doing this backwards,
+and deciding to change it around later.
 
-http://www.selenic.com/Screenshot-kpagemap.png
+I already notice that "stolen time" is causing confusion in some 
+areas.  Its disconcerting to have lots of cores, and lots of threads
+per core, only to find that some of your time has been "stolen".
+I'm still wondering ... was this the right way to report this?
 
-> So pmaps seems to be a clear winner :)
-
-Except that it's only providing a subset of the data.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+--linas
