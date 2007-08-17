@@ -1,96 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760991AbXHQGOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbXHQGQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760991AbXHQGOP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 02:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758188AbXHQGOD
+	id S1762189AbXHQGQd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 02:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXHQGQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 02:14:03 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56668 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758080AbXHQGOA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 02:14:00 -0400
-Date: Fri, 17 Aug 2007 11:56:22 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: Paul Mackerras <paulus@samba.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <20070817035342.GA14744@gondor.apana.org.au>
-Message-ID: <alpine.LFD.0.999.0708171142550.3666@enigma.security.iitk.ac.in>
-References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
- <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com>
- <20070816070907.GA964@gondor.apana.org.au>
- <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
- <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com>
- <18117.1287.779351.836552@cargo.ozlabs.ibm.com>
- <alpine.LFD.0.999.0708161953310.30176@woody.linux-foundation.org>
- <18117.6495.397597.582736@cargo.ozlabs.ibm.com>
- <20070817035342.GA14744@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 17 Aug 2007 02:16:24 -0400
+Received: from mga02.intel.com ([134.134.136.20]:16440 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758467AbXHQGQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 02:16:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,274,1183359600"; 
+   d="scan'208";a="280205748"
+Subject: Re: [linux-pm] Re: [PATH 1/1] Kexec jump - v2 - kexec jump
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: david@lang.hm, nigel@nigel.suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+In-Reply-To: <20070816102635.GA2039@elf.ucw.cz>
+References: <1184483639.1898.99.camel@caritas-dev.intel.com>
+	 <20070731095101.GA1774@elf.ucw.cz>
+	 <1185954978.1363.23.camel@caritas-dev.intel.com>
+	 <20070816102635.GA2039@elf.ucw.cz>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 17 Aug 2007 14:15:49 +0800
+Message-Id: <1187331349.28497.9.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 17 Aug 2007 06:15:18.0410 (UTC) FILETIME=[FBE3AEA0:01C7E095]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, Pavel,
 
-
-On Fri, 17 Aug 2007, Herbert Xu wrote:
-
-> On Fri, Aug 17, 2007 at 01:43:27PM +1000, Paul Mackerras wrote:
-> >
-> > The cost of doing so seems to me to be well down in the noise - 44
-> > bytes of extra kernel text on a ppc64 G5 config, and I don't believe
-> > the extra few cycles for the occasional extra load would be measurable
-> > (they should all hit in the L1 dcache).  I don't mind if x86[-64] have
-> > atomic_read/set be nonvolatile and find all the missing barriers, but
-> > for now on powerpc, I think that not having to find those missing
-> > barriers is worth the 0.00076% increase in kernel text size.
+On Thu, 2007-08-16 at 12:26 +0200, Pavel Machek wrote:
+> Ping... is there some next version?
 > 
-> BTW, the sort of missing barriers that triggered this thread
-> aren't that subtle.  It'll result in a simple lock-up if the
-> loop condition holds upon entry.  At which point it's fairly
-> straightforward to find the culprit.
+> I'm stuck at the tools side currently. kexec-1.101 just won't load the
+> kernel properly, and kexec-testing from git does not know -j option. I
+> tried hand-patching it, but got lots of scary rejects.
+> 
+> Is there chance for a patch against kexec-testing?
 
-Not necessarily. A barrier-less buggy code such as below:
+I have some other work to do recently. So the next version will delay
+for some while. :(
 
-	atomic_set(&v, 0);
+But now, I have a patch against kexec-tools-testing.
 
-	... /* some initial code */
+Best Regards,
+Huang Ying
 
-	while (atomic_read(&v))
-		;
-
-	... /* code that MUST NOT be executed unless v becomes non-zero */
-
-(where v->counter is has no volatile access semantics)
-
-could be generated by the compiler to simply *elid* or *do away* with
-the loop itself, thereby making the:
-
-"/* code that MUST NOT be executed unless v becomes non-zero */"
-
-to be executed even when v is zero! That is subtle indeed, and causes
-no hard lockups.
-
-Granted, the above IS buggy code. But, the stated objective is to avoid
-heisenbugs. And we have driver / subsystem maintainers such as Stefan
-coming up and admitting that often a lot of code that's written to use
-atomic_read() does assume the read will not be elided by the compiler.
-
-See, I agree, "volatility" semantics != what we often want. However, if
-what we want is compiler barrier, for only the object under consideration,
-"volatility" semantics aren't really "nonsensical" or anything.
+Index: kexec-tools/kexec/arch/i386/crashdump-x86.c
+===================================================================
+--- kexec-tools.orig/kexec/arch/i386/crashdump-x86.c	2007-08-17 13:48:51.000000000 +0800
++++ kexec-tools/kexec/arch/i386/crashdump-x86.c	2007-08-17 13:49:50.000000000 +0800
+@@ -428,6 +428,29 @@
+ 	return 0;
+ }
+ 
++/* Adds the kexec_backup= command line parameter to command line. */
++static int cmdline_add_backup(char *cmdline, unsigned long addr)
++{
++	int cmdlen, len, align = 1024;
++	char str[30], *ptr;
++
++	/* Passing in kexec_backup=xxxK format. Saves space required
++	 * in cmdline. Ensure 1K alignment*/
++	if (addr%align)
++		return -1;
++	addr = addr/align;
++	ptr = str;
++	strcpy(str, " kexec_backup=");
++	ptr += strlen(str);
++	ultoa(addr, ptr);
++	strcat(str, "K");
++	len = strlen(str);
++	cmdlen = strlen(cmdline) + len;
++	if (cmdlen > (COMMAND_LINE_SIZE - 1))
++		die("Command line overflow\n");
++	strcat(cmdline, str);
++	return 0;
++}
+ 
+ /*
+  * This routine is specific to i386 architecture to maintain the
+@@ -575,6 +598,7 @@
+ 		return -1;
+ 	cmdline_add_memmap(mod_cmdline, memmap_p);
+ 	cmdline_add_elfcorehdr(mod_cmdline, elfcorehdr);
++	cmdline_add_backup(mod_cmdline, info->backup_start);
+ 	return 0;
+ }
+ 
+Index: kexec-tools/kexec/kexec-syscall.h
+===================================================================
+--- kexec-tools.orig/kexec/kexec-syscall.h	2007-08-17 13:48:51.000000000 +0800
++++ kexec-tools/kexec/kexec-syscall.h	2007-08-17 13:49:50.000000000 +0800
+@@ -21,6 +21,7 @@
+ #define LINUX_REBOOT_CMD_KEXEC_OLD	0x81726354
+ #define LINUX_REBOOT_CMD_KEXEC_OLD2	0x18263645
+ #define LINUX_REBOOT_CMD_KEXEC		0x45584543
++#define LINUX_REBOOT_CMD_KJUMP		0x3928A5FD
+ 
+ #ifdef __i386__
+ #define __NR_kexec_load		283
+@@ -63,6 +64,10 @@
+ 	return (long) syscall(__NR_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_KEXEC, 0);
+ }
+ 
++static inline long kexec_jump(void)
++{
++	return (long) syscall(__NR_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_KJUMP, 0);
++}
+ 
+ #define KEXEC_ON_CRASH  0x00000001
+ #define KEXEC_ARCH_MASK 0xffff0000
+Index: kexec-tools/kexec/kexec.c
+===================================================================
+--- kexec-tools.orig/kexec/kexec.c	2007-08-17 13:48:51.000000000 +0800
++++ kexec-tools/kexec/kexec.c	2007-08-17 13:49:50.000000000 +0800
+@@ -716,6 +716,17 @@
+ 	return -1;
+ }
+ 
++/*
++ *	Jump to the new kernel
++ */
++static int my_jump(void)
++{
++	int result;
++
++	result = kexec_jump();
++	return result;
++}
++
+ static void version(void)
+ {
+ 	printf(PACKAGE " " VERSION " released " RELEASE_DATE "\n");
+@@ -743,6 +754,7 @@
+ 	       "                      If capture kernel is being unloaded\n"
+ 	       "                      specify -p with -u.\n"
+ 	       " -e, --exec           Execute a currently loaded kernel.\n"
++ 	       " -j, --jump           Jump to a currently loaded kernel or jump back to the previous kernel.\n"
+ 	       " -t, --type=TYPE      Specify the new kernel is of this type.\n"
+ 	       "     --mem-min=<addr> Specify the lowest memory address to\n"
+ 	       "                      load code into.\n"
+@@ -803,6 +815,7 @@
+ {
+ 	int do_load = 1;
+ 	int do_exec = 0;
++	int do_jump = 0;
+ 	int do_shutdown = 1;
+ 	int do_sync = 1;
+ 	int do_ifdown = 0;
+@@ -858,6 +871,14 @@
+ 			do_ifdown = 1;
+ 			do_exec = 1;
+ 			break;
++		case OPT_JUMP:
++			do_load = 0;
++			do_shutdown = 0;
++			do_sync = 1;
++			do_ifdown = 0;
++			do_exec = 0;
++			do_jump = 1;
++			break;
+ 		case OPT_TYPE:
+ 			type = optarg;
+ 			break;
+@@ -949,6 +970,9 @@
+ 	if ((result == 0) && do_exec) {
+ 		result = my_exec();
+ 	}
++	if ((result == 0) && do_jump) {
++		result = my_jump();
++	}
+ 
+ 	fflush(stdout);
+ 	fflush(stderr);
+Index: kexec-tools/kexec/kexec.h
+===================================================================
+--- kexec-tools.orig/kexec/kexec.h	2007-08-17 13:48:51.000000000 +0800
++++ kexec-tools/kexec/kexec.h	2007-08-17 13:49:50.000000000 +0800
+@@ -156,6 +156,7 @@
+ #define OPT_FORCE		'f'
+ #define OPT_NOIFDOWN		'x'
+ #define OPT_EXEC		'e'
++#define OPT_JUMP		'j'
+ #define OPT_LOAD		'l'
+ #define OPT_UNLOAD		'u'
+ #define OPT_TYPE		't'
+@@ -172,13 +173,14 @@
+ 	{ "load",		0, 0, OPT_LOAD }, \
+ 	{ "unload",		0, 0, OPT_UNLOAD }, \
+ 	{ "exec",		0, 0, OPT_EXEC }, \
++ 	{ "jump",		0, 0, OPT_JUMP }, \
+ 	{ "type",		1, 0, OPT_TYPE }, \
+ 	{ "load-panic",         0, 0, OPT_PANIC }, \
+ 	{ "mem-min",		1, 0, OPT_MEM_MIN }, \
+ 	{ "mem-max",		1, 0, OPT_MEM_MAX }, \
+ 	{ "reuseinitrd",	0, 0, OPT_REUSE_INITRD }, \
+ 
+-#define KEXEC_OPT_STR "hvdfxluet:p"
++#define KEXEC_OPT_STR "hvdfxluejt:p"
+ 
+ extern void die(char *fmt, ...);
+ extern void *xmalloc(size_t size);
