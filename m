@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbXHRAnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbXHRAoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755741AbXHRAnu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 20:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759343AbXHRAmw
+	id S1755994AbXHRAoX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 20:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759448AbXHRAmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 20:42:52 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:57731 "EHLO
+	Fri, 17 Aug 2007 20:42:53 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:57734 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757708AbXHRAmS (ORCPT
+	with ESMTP id S1758349AbXHRAmU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 20:42:18 -0400
+	Fri, 17 Aug 2007 20:42:20 -0400
 Date: Fri, 17 Aug 2007 15:43:40 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Adrian Bunk <bunk@kernel.org>
-Subject: [PATCH 1/6] UML - Fix inlines
-Message-ID: <20070817194340.GA8734@c2.user-mode-linux.org>
+       Nicolas George <nicolas.george@normalesup.org>
+Subject: [PATCH 2/6] UML - Use 64-bits for block size on x86_64
+Message-ID: <20070817194340.GA8739@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,66 +25,27 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"extern inline" will have different semantics with gcc 4.3.
+The BLKGETSIZE ioctl expects a pointer to a long, os_file_size was providing
+an int. Therefore, ubd access to host block devices caused a segmentation
+fault on 64 bits systems.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Nicolas George <nicolas.george@normalesup.org>
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- include/asm-um/pgalloc.h          |    2 +-
- include/asm-um/pgtable-3level.h   |    2 +-
- include/asm-um/processor-x86_64.h |    2 +-
- include/asm-um/smp.h              |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ arch/um/os-Linux/file.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.22/include/asm-um/pgalloc.h
+Index: linux-2.6.22/arch/um/os-Linux/file.c
 ===================================================================
---- linux-2.6.22.orig/include/asm-um/pgalloc.h	2007-08-13 22:38:59.000000000 -0400
-+++ linux-2.6.22/include/asm-um/pgalloc.h	2007-08-16 12:04:12.000000000 -0400
-@@ -42,7 +42,7 @@ static inline void pte_free(struct page 
+--- linux-2.6.22.orig/arch/um/os-Linux/file.c	2007-08-17 13:36:35.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/file.c	2007-08-17 13:37:55.000000000 -0400
+@@ -296,7 +296,8 @@ int os_file_size(char *file, unsigned lo
+ 	}
  
- #ifdef CONFIG_3_LEVEL_PGTABLES
+ 	if(S_ISBLK(buf.ust_mode)){
+-		int fd, blocks;
++		int fd;
++		long blocks;
  
--extern __inline__ void pmd_free(pmd_t *pmd)
-+static inline void pmd_free(pmd_t *pmd)
- {
- 	free_page((unsigned long)pmd);
- }
-Index: linux-2.6.22/include/asm-um/pgtable-3level.h
-===================================================================
---- linux-2.6.22.orig/include/asm-um/pgtable-3level.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.22/include/asm-um/pgtable-3level.h	2007-08-15 10:39:59.000000000 -0400
-@@ -69,7 +69,7 @@ static inline pmd_t *pmd_alloc_one(struc
-         return pmd;
- }
- 
--extern inline void pud_clear (pud_t *pud)
-+static inline void pud_clear (pud_t *pud)
- {
-         set_pud(pud, __pud(0));
- }
-Index: linux-2.6.22/include/asm-um/processor-x86_64.h
-===================================================================
---- linux-2.6.22.orig/include/asm-um/processor-x86_64.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.22/include/asm-um/processor-x86_64.h	2007-08-15 10:39:59.000000000 -0400
-@@ -18,7 +18,7 @@ struct arch_thread {
- };
- 
- /* REP NOP (PAUSE) is a good thing to insert into busy-wait loops. */
--extern inline void rep_nop(void)
-+static inline void rep_nop(void)
- {
- 	__asm__ __volatile__("rep;nop": : :"memory");
- }
-Index: linux-2.6.22/include/asm-um/smp.h
-===================================================================
---- linux-2.6.22.orig/include/asm-um/smp.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.22/include/asm-um/smp.h	2007-08-15 10:39:59.000000000 -0400
-@@ -18,7 +18,7 @@ extern int hard_smp_processor_id(void);
- extern int ncpus;
- 
- 
--extern inline void smp_cpus_done(unsigned int maxcpus)
-+static inline void smp_cpus_done(unsigned int maxcpus)
- {
- }
- 
+ 		fd = os_open_file(file, of_read(OPENFLAGS()), 0);
+ 		if(fd < 0){
