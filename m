@@ -1,183 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764098AbXHQB0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765365AbXHQB0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764098AbXHQB0b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Aug 2007 21:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756279AbXHQB0X
+	id S1765365AbXHQB0r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Aug 2007 21:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756339AbXHQB0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Aug 2007 21:26:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:41023 "EHLO ozlabs.org"
+	Thu, 16 Aug 2007 21:26:24 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:51196 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755789AbXHQB0V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Aug 2007 21:26:21 -0400
-Subject: [PATCH] Only initialize hvc_console if needed, cleanup Kconfig help
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Anton Blanchard <anton@samba.org>, "Ryan S. Arnold" <rsa@us.ibm.com>
-In-Reply-To: <20070816201649.GA5375@redhat.com>
-References: <20070816201649.GA5375@redhat.com>
-Content-Type: text/plain
-Date: Fri, 17 Aug 2007 11:25:46 +1000
-Message-Id: <1187313946.6449.68.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1756266AbXHQB0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Aug 2007 21:26:22 -0400
+Date: Thu, 16 Aug 2007 18:26:18 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: ego@in.ibm.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, dvhltc@us.ibm.com,
+       tytso@us.ibm.com, akpm@linux-foundation.org
+Subject: Re: [PATCH RFC] CPU hotplug support for preemptible RCU
+Message-ID: <20070817012618.GA26067@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070814234116.GA19341@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070814234116.GA19341@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-16 at 16:16 -0400, Dave Jones wrote:
-> asides from the needed Kconfig clarification, is it necessary for khvcd
-> to run at all if the lguest module hasn't been loaded ?  Is it possible
-> we can somehow delay creation of the kthread ?
+On Tue, Aug 14, 2007 at 04:41:16PM -0700, Paul E. McKenney wrote:
+> Hello!
+> 
+> Work in progress, not for inclusion.
+> 
+> The attached patch passes multiple hours of rcutorture while hotplugging
+> CPUs every ten seconds on 64-bit PPC and x86_64.  It fails miserably on
+> 32-bit i386 after a few hotplugs, but then again, so does stock 2.6.22
+> even without running rcutorture simultaneously.
+> 
+> Is there some extra patch or hardware dependency for CPU hotplug on
+> 32-bit i386?
 
-It's for lguest guests, so it kind of needs to be built-in.  But yes, it
-should be made to suck less.  Xen will want it too.
+Progress report: turns out to be at least partly a hardware dependency.
+I have found a couple of x86 machines that survive a goodly number of
+CPU-hotplug operations on stock 2.6.22.  They also have some other
+problems, in one case, only booting at odd intervals regardless of
+what kernel you are using.  Though when it does boot, it does seems to
+run reliably.  :-/
 
-How's this?
-==
-This changes hvc_init() to be called only when someone actually uses
-the hvc_console driver.
+In contrast, doing even a small number of CPU hotplug operations on the
+other machines eventually causes themselves to NMI themselves to death
+regardless of what kernel I boot on them.  One of these machines ends up
+writing LOCK_PREFIX and nop into kernel text on CPU hotplug operations.
+While other CPUs are running.  I cannot believe that this is a good
+thing, but suppressing this with the smp-alt-boot (see the bootonly()
+function) doesn't seem to improve matters.  Even so, seems to me that
+smp-alt-boot should be enabled by default.  Unless there are objections,
+I will send a patch to do this.
 
-hvc_console used to only be for Power aka pSeries: now lguest and Xen
-both want it built-in in case the kernel is a guest under one of
-those, even though usually it will be a native boot.
+Thoughts?
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+						Thanx, Paul
 
-diff -r 0730da2377be drivers/char/Kconfig
---- a/drivers/char/Kconfig	Tue Aug 14 12:46:08 2007 +1000
-+++ b/drivers/char/Kconfig	Fri Aug 17 09:05:12 2007 +1000
-@@ -568,10 +568,10 @@ config HVC_DRIVER
- config HVC_DRIVER
- 	bool
- 	help
--	  Users of pSeries machines that want to utilize the hvc console front-end
--	  module for their backend console driver should select this option.
--	  It will automatically be selected if one of the back-end console drivers
--	  is selected.
-+	  Generic "hypervisor virtual console" infrastructure for various
-+	  hypervisors (pSeries, Xen, lguest).
-+	  It will automatically be selected if one of those back-end
-+	  console drivers is selected.
- 
- 
- config HVC_CONSOLE
-diff -r 0730da2377be drivers/char/hvc_console.c
---- a/drivers/char/hvc_console.c	Tue Aug 14 12:46:08 2007 +1000
-+++ b/drivers/char/hvc_console.c	Fri Aug 17 09:15:24 2007 +1000
-@@ -68,6 +68,8 @@ static struct task_struct *hvc_task;
- 
- /* Picks up late kicks after list walk but before schedule() */
- static int hvc_kicked;
-+
-+static int hvc_init(void);
- 
- #ifdef CONFIG_MAGIC_SYSRQ
- static int sysrq_pressed;
-@@ -754,6 +756,13 @@ struct hvc_struct __devinit *hvc_alloc(u
- 	struct hvc_struct *hp;
- 	int i;
- 
-+	/* We wait until a driver actually comes along */
-+	if (!hvc_driver) {
-+		int err = hvc_init();
-+		if (err)
-+			return ERR_PTR(err);
-+	}
-+
- 	hp = kmalloc(ALIGN(sizeof(*hp), sizeof(long)) + outbuf_size,
- 			GFP_KERNEL);
- 	if (!hp)
-@@ -829,16 +838,18 @@ int __devexit hvc_remove(struct hvc_stru
- 	return 0;
- }
- 
--/* Driver initialization.  Follow console initialization.  This is where the TTY
-- * interfaces start to become available. */
--static int __init hvc_init(void)
-+/* Driver initialization: called as soon as someone uses hvc_alloc(). */
-+static int hvc_init(void)
- {
- 	struct tty_driver *drv;
-+	int err;
- 
- 	/* We need more than hvc_count adapters due to hotplug additions. */
- 	drv = alloc_tty_driver(HVC_ALLOC_TTY_ADAPTERS);
--	if (!drv)
--		return -ENOMEM;
-+	if (!drv) {
-+		err = -ENOMEM;
-+		goto out;
-+	}
- 
- 	drv->owner = THIS_MODULE;
- 	drv->driver_name = "hvc";
-@@ -854,30 +865,43 @@ static int __init hvc_init(void)
- 	 * added later. */
- 	hvc_task = kthread_run(khvcd, NULL, "khvcd");
- 	if (IS_ERR(hvc_task)) {
--		panic("Couldn't create kthread for console.\n");
--		put_tty_driver(drv);
--		return -EIO;
--	}
--
--	if (tty_register_driver(drv))
--		panic("Couldn't register hvc console driver\n");
--
-+		printk(KERN_ERR "Couldn't create kthread for console.\n");
-+		err = PTR_ERR(hvc_task);
-+		goto put_tty;
-+	}
-+
-+	err = tty_register_driver(drv);
-+	if (err) {
-+		printk(KERN_ERR "Couldn't register hvc console driver\n");
-+		goto stop_thread;
-+	}
-+
-+	/* FIXME: This mb() seems completely random.  Remove it. */
- 	mb();
- 	hvc_driver = drv;
- 	return 0;
--}
--module_init(hvc_init);
-+
-+put_tty:
-+	put_tty_driver(hvc_driver);
-+stop_thread:
-+	kthread_stop(hvc_task);
-+	hvc_task = NULL;
-+out:
-+	return err;
-+}
- 
- /* This isn't particularly necessary due to this being a console driver
-  * but it is nice to be thorough.
-  */
- static void __exit hvc_exit(void)
- {
--	kthread_stop(hvc_task);
--
--	tty_unregister_driver(hvc_driver);
--	/* return tty_struct instances allocated in hvc_init(). */
--	put_tty_driver(hvc_driver);
--	unregister_console(&hvc_con_driver);
-+	if (hvc_driver) {
-+		kthread_stop(hvc_task);
-+
-+		tty_unregister_driver(hvc_driver);
-+		/* return tty_struct instances allocated in hvc_init(). */
-+		put_tty_driver(hvc_driver);
-+		unregister_console(&hvc_con_driver);
-+	}
- }
- module_exit(hvc_exit);
-
-
-
-
-
-
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+> 
+>  include/linux/rcuclassic.h |    2 
+>  include/linux/rcupreempt.h |    2 
+>  kernel/rcuclassic.c        |    8 +++
+>  kernel/rcupreempt.c        |   93 +++++++++++++++++++++++++++++++++++++++++++--
+>  4 files changed, 100 insertions(+), 5 deletions(-)
+> 
+> diff -urpNa -X dontdiff linux-2.6.22-d-schedclassic/include/linux/rcuclassic.h linux-2.6.22-e-hotplugcpu/include/linux/rcuclassic.h
+> --- linux-2.6.22-d-schedclassic/include/linux/rcuclassic.h	2007-08-06 10:16:16.000000000 -0700
+> +++ linux-2.6.22-e-hotplugcpu/include/linux/rcuclassic.h	2007-08-07 18:15:08.000000000 -0700
+> @@ -83,6 +83,8 @@ static inline void rcu_bh_qsctr_inc(int 
+>  #define rcu_check_callbacks_rt(cpu, user)
+>  #define rcu_init_rt()
+>  #define rcu_needs_cpu_rt(cpu) 0
+> +#define rcu_offline_cpu_rt(cpu)
+> +#define rcu_online_cpu_rt(cpu)
+>  #define rcu_pending_rt(cpu) 0
+>  #define rcu_process_callbacks_rt(unused)
+>  
+> diff -urpNa -X dontdiff linux-2.6.22-d-schedclassic/include/linux/rcupreempt.h linux-2.6.22-e-hotplugcpu/include/linux/rcupreempt.h
+> --- linux-2.6.22-d-schedclassic/include/linux/rcupreempt.h	2007-08-06 14:56:00.000000000 -0700
+> +++ linux-2.6.22-e-hotplugcpu/include/linux/rcupreempt.h	2007-08-07 18:15:10.000000000 -0700
+> @@ -59,6 +59,8 @@ extern void rcu_advance_callbacks_rt(int
+>  extern void rcu_check_callbacks_rt(int cpu, int user);
+>  extern void rcu_init_rt(void);
+>  extern int  rcu_needs_cpu_rt(int cpu);
+> +extern void rcu_offline_cpu_rt(int cpu);
+> +extern void rcu_online_cpu_rt(int cpu);
+>  extern int  rcu_pending_rt(int cpu);
+>  struct softirq_action;
+>  extern void rcu_process_callbacks_rt(struct softirq_action *unused);
+> diff -urpNa -X dontdiff linux-2.6.22-d-schedclassic/kernel/rcuclassic.c linux-2.6.22-e-hotplugcpu/kernel/rcuclassic.c
+> --- linux-2.6.22-d-schedclassic/kernel/rcuclassic.c	2007-08-06 14:07:26.000000000 -0700
+> +++ linux-2.6.22-e-hotplugcpu/kernel/rcuclassic.c	2007-08-11 08:25:55.000000000 -0700
+> @@ -404,14 +404,19 @@ static void __rcu_offline_cpu(struct rcu
+>  static void rcu_offline_cpu(int cpu)
+>  {
+>  	struct rcu_data *this_rdp = &get_cpu_var(rcu_data);
+> +#ifdef CONFIG_CLASSIC_RCU
+>  	struct rcu_data *this_bh_rdp = &get_cpu_var(rcu_bh_data);
+> +#endif /* #ifdef CONFIG_CLASSIC_RCU */
+>  
+>  	__rcu_offline_cpu(this_rdp, &rcu_ctrlblk,
+>  					&per_cpu(rcu_data, cpu));
+> +#ifdef CONFIG_CLASSIC_RCU
+>  	__rcu_offline_cpu(this_bh_rdp, &rcu_bh_ctrlblk,
+>  					&per_cpu(rcu_bh_data, cpu));
+> -	put_cpu_var(rcu_data);
+>  	put_cpu_var(rcu_bh_data);
+> +#endif /* #ifdef CONFIG_CLASSIC_RCU */
+> +	put_cpu_var(rcu_data);
+> +	rcu_offline_cpu_rt(cpu);
+>  }
+>  
+>  #else
+> @@ -561,6 +566,7 @@ static void __devinit rcu_online_cpu(int
+>  	rdp->passed_quiesc = &per_cpu(rcu_data_passed_quiesc, cpu);
+>  	rcu_init_percpu_data(cpu, &rcu_bh_ctrlblk, bh_rdp);
+>  	bh_rdp->passed_quiesc = &per_cpu(rcu_data_bh_passed_quiesc, cpu);
+> +	rcu_online_cpu_rt(cpu);
+>  }
+>  
+>  static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
+> diff -urpNa -X dontdiff linux-2.6.22-d-schedclassic/kernel/rcupreempt.c linux-2.6.22-e-hotplugcpu/kernel/rcupreempt.c
+> --- linux-2.6.22-d-schedclassic/kernel/rcupreempt.c	2007-08-06 14:58:07.000000000 -0700
+> +++ linux-2.6.22-e-hotplugcpu/kernel/rcupreempt.c	2007-08-11 04:02:10.000000000 -0700
+> @@ -125,6 +125,8 @@ enum rcu_mb_flag_values {
+>  };
+>  static DEFINE_PER_CPU(enum rcu_mb_flag_values, rcu_mb_flag) = rcu_mb_done;
+>  
+> +static cpumask_t rcu_cpu_online_map = CPU_MASK_NONE;
+> +
+>  /*
+>   * Macro that prevents the compiler from reordering accesses, but does
+>   * absolutely -nothing- to prevent CPUs from reordering.  This is used
+> @@ -400,7 +402,7 @@ rcu_try_flip_idle(void)
+>  
+>  	/* Now ask each CPU for acknowledgement of the flip. */
+>  
+> -	for_each_possible_cpu(cpu)
+> +	for_each_cpu_mask(cpu, rcu_cpu_online_map)
+>  		per_cpu(rcu_flip_flag, cpu) = rcu_flipped;
+>  
+>  	return 1;
+> @@ -416,7 +418,7 @@ rcu_try_flip_waitack(void)
+>  	int cpu;
+>  
+>  	RCU_TRACE_ME(rcupreempt_trace_try_flip_a1);
+> -	for_each_possible_cpu(cpu)
+> +	for_each_cpu_mask(cpu, rcu_cpu_online_map)
+>  		if (per_cpu(rcu_flip_flag, cpu) != rcu_flip_seen) {
+>  			RCU_TRACE_ME(rcupreempt_trace_try_flip_ae1);
+>  			return 0;
+> @@ -460,7 +462,7 @@ rcu_try_flip_waitzero(void)
+>  
+>  	/* Call for a memory barrier from each CPU. */
+>  
+> -	for_each_possible_cpu(cpu)
+> +	for_each_cpu_mask(cpu, rcu_cpu_online_map)
+>  		per_cpu(rcu_mb_flag, cpu) = rcu_mb_needed;
+>  
+>  	RCU_TRACE_ME(rcupreempt_trace_try_flip_z2);
+> @@ -478,7 +480,7 @@ rcu_try_flip_waitmb(void)
+>  	int cpu;
+>  
+>  	RCU_TRACE_ME(rcupreempt_trace_try_flip_m1);
+> -	for_each_possible_cpu(cpu)
+> +	for_each_cpu_mask(cpu, rcu_cpu_online_map)
+>  		if (per_cpu(rcu_mb_flag, cpu) != rcu_mb_done) {
+>  			RCU_TRACE_ME(rcupreempt_trace_try_flip_me1);
+>  			return 0;
+> @@ -583,6 +585,89 @@ void rcu_advance_callbacks_rt(int cpu, i
+>  	spin_unlock_irqrestore(&rdp->lock, oldirq);
+>  }
+>  
+> +#ifdef CONFIG_HOTPLUG_CPU
+> +
+> +#define rcu_offline_cpu_rt_enqueue(srclist, srctail, dstlist, dsttail) do { \
+> +		*dsttail = srclist; \
+> +		if (srclist != NULL) { \
+> +			dsttail = srctail; \
+> +			srclist = NULL; \
+> +			srctail = &srclist;\
+> +		} \
+> +	} while (0)
+> +	
+> +
+> +void rcu_offline_cpu_rt(int cpu)
+> +{
+> +	int i;
+> +	struct rcu_head *list = NULL;
+> +	unsigned long oldirq;
+> +	struct rcu_data *rdp = RCU_DATA_CPU(cpu);
+> +	struct rcu_head **tail = &list;
+> +
+> +	/* Remove all callbacks from the newly dead CPU, retaining order. */
+> +
+> +	spin_lock_irqsave(&rdp->lock, oldirq);
+> +	rcu_offline_cpu_rt_enqueue(rdp->donelist, rdp->donetail, list, tail);
+> +	for (i = GP_STAGES - 1; i >= 0; i--)
+> +		rcu_offline_cpu_rt_enqueue(rdp->waitlist[i], rdp->waittail[i],
+> +					   list, tail);
+> +	rcu_offline_cpu_rt_enqueue(rdp->nextlist, rdp->nexttail, list, tail);
+> +	spin_unlock_irqrestore(&rdp->lock, oldirq);
+> +	rdp->waitlistcount = 0;
+> +
+> +	/* Disengage the newly dead CPU from grace-period computation. */
+> +
+> +	spin_lock_irqsave(&rcu_ctrlblk.fliplock, oldirq);
+> +	rcu_check_mb(cpu);
+> +	if (per_cpu(rcu_flip_flag, cpu) == rcu_flipped) {
+> +		smp_mb();  /* Subsequent counter accesses must see new value */
+> +		per_cpu(rcu_flip_flag, cpu) = rcu_flip_seen;
+> +		smp_mb();  /* Subsequent RCU read-side critical sections */
+> +			   /*  seen -after- acknowledgement. */
+> +	}
+> +	cpu_clear(cpu, rcu_cpu_online_map);
+> +	spin_unlock_irqrestore(&rcu_ctrlblk.fliplock, oldirq);
+> +
+> +	/*
+> +	 * Place the removed callbacks on the current CPU's queue.
+> +	 * Make them all start a new grace period: simple approach,
+> +	 * in theory could starve a given set of callbacks, but
+> +	 * you would need to be doing some serious CPU hotplugging
+> +	 * to make this happen.  If this becomes a problem, adding
+> +	 * a synchronize_rcu() to the hotplug path would be a simple
+> +	 * fix.
+> +	 */
+> +
+> +	rdp = RCU_DATA_ME();
+> +	spin_lock_irqsave(&rdp->lock, oldirq);
+> +	*rdp->nexttail = list;
+> +	if (list)
+> +		rdp->nexttail = tail;
+> +	spin_unlock_irqrestore(&rdp->lock, oldirq);
+> +}
+> +
+> +void __devinit rcu_online_cpu_rt(int cpu)
+> +{
+> +	unsigned long oldirq;
+> +
+> +	spin_lock_irqsave(&rcu_ctrlblk.fliplock, oldirq);
+> +	cpu_set(cpu, rcu_cpu_online_map);
+> +	spin_unlock_irqrestore(&rcu_ctrlblk.fliplock, oldirq);
+> +}
+> +
+> +#else /* #ifdef CONFIG_HOTPLUG_CPU */
+> +
+> +void rcu_offline_cpu(int cpu)
+> +{
+> +}
+> +
+> +void __devinit rcu_online_cpu_rt(int cpu)
+> +{
+> +}
+> +
+> +#endif /* #else #ifdef CONFIG_HOTPLUG_CPU */
+> +
+>  void rcu_process_callbacks_rt(struct softirq_action *unused)
+>  {
+>  	unsigned long flags;
