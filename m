@@ -1,39 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765225AbXHQQCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759325AbXHQQDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765225AbXHQQCb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 12:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbXHQQCG
+	id S1759325AbXHQQDU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 12:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbXHQQC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 12:02:06 -0400
-Received: from smtp123.sbc.mail.re3.yahoo.com ([66.196.96.96]:35559 "HELO
-	smtp123.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751337AbXHQQCF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 12:02:05 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=q/4yB8u4UJ7lvcpUs1ec548VP5MQy3sNzcS9MxJxQyjIeelTsdYU2ZQclJtPcdqHtcDw8ur/exkDgVipsTedCzZu+plixThsKl7A3S87KeOPcsNTKOR9luDSx8Jv3lI06dc49yzTTq9l0ScFYghdbjs9WDSVnlE/jXqD/wI/xB8=  ;
-X-YMail-OSG: EKGDzTUVM1nhpQqPVIi.oLg4EKczINVDjH9QdIHEIkWVfoDIhChB1efVBvKf2uOPuCh2ba.M8A--
-From: David Brownell <david-b@pacbell.net>
-To: Jan Engelhardt <jengelh@computergmbh.de>
+	Fri, 17 Aug 2007 12:02:58 -0400
+Received: from mba.ocn.ne.jp ([122.1.175.29]:55533 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752205AbXHQQC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 12:02:57 -0400
+Date: Sat, 18 Aug 2007 01:04:12 +0900 (JST)
+Message-Id: <20070818.010412.72709547.anemo@mba.ocn.ne.jp>
+To: jengelh@computergmbh.de
+Cc: david-b@pacbell.net, a.zummo@towertech.it, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com, dbrownell@users.sourceforge.net
 Subject: Re: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware
-Date: Fri, 17 Aug 2007 09:02:00 -0700
-User-Agent: KMail/1.9.6
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, a.zummo@towertech.it,
-       linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
-References: <20070817.010638.24337787.anemo@mba.ocn.ne.jp> <200708170823.15894.david-b@pacbell.net> <Pine.LNX.4.64.0708171736170.30502@fbirervta.pbzchgretzou.qr>
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 In-Reply-To: <Pine.LNX.4.64.0708171736170.30502@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+References: <Pine.LNX.4.64.0708171258360.5492@fbirervta.pbzchgretzou.qr>
+	<200708170823.15894.david-b@pacbell.net>
+	<Pine.LNX.4.64.0708171736170.30502@fbirervta.pbzchgretzou.qr>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708170902.01260.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 August 2007, Jan Engelhardt wrote:
+On Fri, 17 Aug 2007 17:37:01 +0200 (CEST), Jan Engelhardt <jengelh@computergmbh.de> wrote:
 > >Most busses don't have managed device IDs like PCI, USB, or PNP.
 > >
 > >The platform, spi, and i2c busses use the driver name, which is
@@ -43,10 +39,22 @@ On Friday 17 August 2007, Jan Engelhardt wrote:
 > if scripts (whatever they use to discover it) could modprobe rtc-ds1742
 > instead.
 
-Because for some reason the driver name isn't rtc-ds1742 ...
+Well, the rtc-ds1742 platform driver uses a string "ds1742" for its
+platform_driver definition.
 
-My preferred style for such patches puts the MODULE_ALIAS up
-near the strange driver name, so it's more clear what's going
-on.  Putting all the MODULE_*() stuff at the end of the file
-gets confusing in this case.
+static struct platform_driver ds1742_rtc_driver = {
+	.probe		= ds1742_rtc_probe,
+	.remove		= __devexit_p(ds1742_rtc_remove),
+	.driver		= {
+		.name	= "ds1742",
+		.owner	= THIS_MODULE,
+	},
+};
 
+We can change the name string and all definitions of "ds1742" platform
+device instead of adding MODULE_ALIAS.  It is easy since there are
+only a few users in kernel.  If that was preferred, I can rewrite this
+patch.
+
+---
+Atsushi Nemoto
