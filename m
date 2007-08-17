@@ -1,64 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756319AbXHQUMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758948AbXHQURA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756319AbXHQUMY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 16:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXHQUMM
+	id S1758948AbXHQURA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 16:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXHQUQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 16:12:12 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:60708 "EHLO e1.ny.us.ibm.com"
+	Fri, 17 Aug 2007 16:16:53 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:55960 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752668AbXHQUMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 16:12:10 -0400
-Date: Fri, 17 Aug 2007 13:12:05 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Chris Friesen <cfriesen@nortel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <piggin@cyberone.com.au>,
-       Satyam Sharma <satyam@infradead.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
-       Chris Snook <csnook@redhat.com>,
-       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070817201205.GJ8464@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <46C55E90.7010407@yahoo.com.au> <alpine.LFD.0.999.0708171431150.3666@enigma.security.iitk.ac.in> <46C56ADF.8010501@cyberone.com.au> <alpine.LFD.0.999.0708171612440.3666@enigma.security.iitk.ac.in> <46C59717.4020108@cyberone.com.au> <alpine.LFD.0.999.0708170929580.30176@woody.linux-foundation.org> <46C5EDF9.3090507@nortel.com> <1187376873.2615.2.camel@laptopd505.fenrus.org> <20070817194924.GG8464@linux.vnet.ibm.com> <1187380142.2615.6.camel@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187380142.2615.6.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1752723AbXHQUQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 16:16:52 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Lee.Schermerhorn@hp.com, ak@suse.de, clameter@sgi.com
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Message-Id: <20070817201647.14792.2690.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/6] Use one zonelist per node instead of multiple zonelists v4
+Date: Fri, 17 Aug 2007 21:16:47 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 12:49:00PM -0700, Arjan van de Ven wrote:
-> 
-> On Fri, 2007-08-17 at 12:49 -0700, Paul E. McKenney wrote:
-> > > > What about reading values modified in interrupt handlers, as in your 
-> > > > "random" case?  Or is this a bug where the user of atomic_read() is 
-> > > > invalidly expecting a read each time it is called?
-> > > 
-> > > the interrupt handler case is an SMP case since you do not know
-> > > beforehand what cpu your interrupt handler will run on.
-> > 
-> > With the exception of per-CPU variables, yes.
-> 
-> if you're spinning waiting for a per-CPU variable to get changed by an
-> interrupt handler... you have bigger problems than "volatile" ;-)
+Biggest changes are altering the embedding of zone IDs so that the type is
+unsigned long instead of struct zone * and the removal of MPOL_BIND-specific
+zonelists and filering based on node data instead. The biggest concern is the
+last patch where FASTCALL doesn't appear to do the right thing in all cases.
 
-That would be true, if you were doing that.  But you might instead be
-simply making sure that the mainline actions were seen in order by the
-interrupt handler.  My current example is the NMI-save rcu_read_lock()
-implementation for realtime.  Not the common case, I will admit, but
-still real.  ;-)
+Changelog since V3
+  o Fix compile error in the parisc change
+  o Calculate gfp_zone only once in __alloc_pages
+  o Calculate classzone_idx properly in get_page_from_freelist
+  o Alter check so that zone id embedded may still be used on UP
+  o Use Kamezawa-sans suggestion for skipping zones in zonelist
+  o Add __alloc_pages_nodemask() to filter zonelist based on a nodemask. This
+    removes the need for MPOL_BIND to have a custom zonelist
+  o Move zonelist iterators and helpers to mm.h
+  o Change _zones from struct zone * to unsigned long
+  
+Changelog since V2
+  o shrink_zones() uses zonelist instead of zonelist->zones
+  o hugetlb uses zonelist iterator
+  o zone_idx information is embedded in zonelist pointers
+  o replace NODE_DATA(nid)->node_zonelist with node_zonelist(nid)
 
-						Thanx, Paul
+Changelog since V1
+  o Break up the patch into 3 patches
+  o Introduce iterators for zonelists
+  o Performance regression test
+
+The following patches replace multiple zonelists per node with one zonelist
+that is filtered based on the GFP flags. The patches as a set fix a bug
+with regard to the use of MPOL_BIND and ZONE_MOVABLE. With this patchset,
+the MPOL_BIND will apply to the two highest zones when the highest zone
+is ZONE_MOVABLE. This should be considered as an alternative fix for the
+MPOL_BIND+ZONE_MOVABLE in 2.6.23 to the previously discussed hack that
+filters only custom zonelists. As a bonus, the patchset reduces the cache
+footprint of the kernel and should improve performance in a number of cases.
+
+The first patch cleans up an inconsitency where direct reclaim uses
+zonelist->zones where other places use zonelist.
+
+The second patch replaces multiple zonelists with one zonelist that is
+filtered.
+
+The final patch is a fix that depends on the previous two patches. The
+patch changes policy zone so that the MPOL_BIND policy gets applied
+to the two highest populated zones when the highest populated zone is
+ZONE_MOVABLE. Otherwise, MPOL_BIND only applies to the highest populated zone.
+
+The tests passed regression tests with numactltest. Performance results
+varied depending on the machine configuration but were usually small
+performance gains. The new algorithm relies heavily on the implementation
+of zone_idx which is currently pretty expensive. Experiments to optimise
+this have shown significant improvements for this algorithm, but is beyond
+the scope of this patchset. Due to the nature of the change, the results
+for other people are likely to vary - it'll usually win but occasionally lose.
+
+In real workloads the gain/loss will depend on how much the userspace
+portion of the benchmark benefits from having more cache available due
+to reduced referencing of zonelists. I expect it'll be more noticable on
+x86_64 with many zones than on IA64 which typically would only have one
+active zonelist-per-node.
+
+These are the range of performance losses/gains I found when running against
+2.6.23-rc1-mm2. The set and these machines are a mix of i386, x86_64 and
+ppc64 both NUMA and non-NUMA.
+
+Total CPU time on Kernbench: -0.02% to  0.27%
+Elapsed   time on Kernbench: -0.21% to  1.26%
+page_test from aim9:         -3.41% to  3.90%
+brk_test  from aim9:         -0.20% to 40.94%
+fork_test from aim9:         -0.42% to  4.59%
+exec_test from aim9:         -0.78% to  1.95%
+Size reduction of pg_dat_t:   0     to  7808 bytes (depends on alignment)
+
+The TBench figures were too variable between runs to draw conclusions from but
+there didn't appear to be any regressions there. The hackbench results for both
+sockets and pipes was within noise. I haven't gone though lmbench.
+
+These three patches are a standalone set which address the MPOL_BIND problem
+with ZONE_MOVABLE as well as reducing memory usage and in many cases the
+cache footprint of the kernel.  They should be considered as a bug fix due to
+the MPOL_BIND fixup.
+
+If these patches are accepted, the follow-on work would entail;
+
+o Encode zone_id in the zonelist pointers to avoid zone_idx() (Christoph's idea)
+o If zone_id works out, eliminate z_to_n from the zonelist cache as unnecessary
+o Remove bind_zonelist() (Patch in progress, very messy right now)
+o Eliminate policy_zone (Trickier)
+
+Comments?
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
