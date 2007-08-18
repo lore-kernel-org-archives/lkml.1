@@ -1,49 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbXHRACN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbXHRAEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757483AbXHRACN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 20:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbXHRAB6
+	id S1756603AbXHRAEs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 20:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbXHRAEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 20:01:58 -0400
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:17011 "EHLO
-	outbound5-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751081AbXHRAB5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 20:01:57 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
-Message-ID: <46C636F0.2@am.sony.com>
-Date: Fri, 17 Aug 2007 17:01:52 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [announce] Updated PS3 Linux Distro Kit released
-References: <4581CA0C.20102@am.sony.com>
-In-Reply-To: <4581CA0C.20102@am.sony.com>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 17 Aug 2007 20:04:40 -0400
+Received: from main.gmane.org ([80.91.229.2]:46849 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751383AbXHRAEj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 20:04:39 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: Marvell 88E8056 gigabit ethernet controller
+Date: Fri, 17 Aug 2007 17:03:41 -0700
+Organization: Linux Foundation
+Message-ID: <20070817170341.7f2645fa@freepuppy.rosehill.hemminger.net>
+References: <424491.59139.qm@web38906.mail.mud.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Aug 2007 00:01:52.0664 (UTC) FILETIME=[FB6FE980:01C7E12A]
+X-Complaints-To: usenet@sea.gmane.org
+Cc: netdev@vger.kernel.org
+X-Gmane-NNTP-Posting-Host: 069-064-229-129.pdx.net
+In-Reply-To: <424491.59139.qm@web38906.mail.mud.yahoo.com>
+X-Newsreader: Claws Mail 2.9.2 (GTK+ 2.10.13; x86_64-redhat-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For those interested, an updated PS3 Linux Distributor's Starter
-Kit (v1.4) was released.
+On Fri, 17 Aug 2007 05:42:13 -0700 (PDT)
+Kevin E <kevin360@yahoo.com> wrote:
 
-The release note is here:
+> Hi all,
+> 
+> 	I've read where the onboard Marvell lan controller on
+> some Gigabyte boards don't work.  I've got two systems
+> using the same Gigabyte board, on one the LAN works on
+> the other it dies like described by others.  Here's
+> the systems:
+> 
+> 
+> Working system:
+> Gigabyte 965P-DS3 rev 3.3  (BIOS F10)
+> Core2 Q6600
+> 2GB Corsair XMS2 memory
+> kernel 2.6.22.3
+> 
+> lspci for LAN controller:
+> 04:00.0 Ethernet controller: Marvell Technology Group
+> Ltd. 88E8056 PCI-E Gigabit Ethernet Controller (rev
+> 14)
+> 
+> 
+> Broken system:
+> Gigabyte 965P-DS3 rev 3.3  (BIOS F10)
+> Core2 E4400
+> 2GB Corsair XMS2 memory
+> kernel 2.6.22.3
+> 
+> lspci for LAN controller:
+> 03:00.0 Ethernet controller: Marvell Technology Group
+> Ltd. Unknown device 4364 (rev 12)
+> 
+> 
+> 	The BIOS for the two systems are setup the same and
+> the config for the kernels are the same too.  I've
+> actually tried taking the kernel from the working
+> system and booting it on the broken one but still the
+> LAN dies after a couple of seconds.  The working
+> system has one card plugged in (nvidia based PCI-X
+> video card), I've taken that card and plugged into the
+> broken system, booted the same kernel, and it still
+> dies after a while.
+> 
+> 	I will gladly provide any info needed if it can help
+> in getting this chipset working on the Gigabyte
+> boards.
+> 
+> 	Thanks,
+> 	Kevin
 
-  http://www.kernel.org/pub/linux/kernel/people/geoff/cell/CELL-Linux-CL_20070817-ADDON/README-e.txt
+I maintain the sky2 driver, and have one of the (buggy) Gigabyte motherboards.
+It is interesting that the problem seems to track with video card.
+Are you using the Nvidia binary driver?
+The video card in the system I have troubles with is:
+	ATI Technologies Inc RV370 [Radeon X300SE]
 
-And the CD-ROM iso image is here (169 MiB):
+Surprisingly, using other PCI-E cards with same driver (different Marvell chips)
+has no problem.  Vendor version of sk98lin driver has same failure mode
+on the buggy hardware.
 
-  ftp://ftp.infradead.org/pub/Sony-PS3/CELL-Linux-CL_20070817-ADDON.iso
-  http://ftp.uk.linux.org/pub/linux/Sony-PS3/CELL-Linux-CL_20070817-ADDON.iso
-
-I extracted files are here for convenient browsing:
-
-  http://www.kernel.org/pub/linux/kernel/people/geoff/cell/CELL-Linux-CL_20070817-ADDON
-
--Geoff
+You might want to look at lspci -vvv output on two system to see if there
+are differences. Perhaps there is a CPU speed dependency?
 
 
