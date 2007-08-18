@@ -1,119 +1,295 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbXHRHSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbXHRIKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754071AbXHRHSZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 03:18:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXHRHSQ
+	id S1752886AbXHRIKA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 04:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbXHRIJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 03:18:16 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:55152 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbXHRHSP (ORCPT
+	Sat, 18 Aug 2007 04:09:41 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:16194 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750804AbXHRIJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 03:18:15 -0400
-Message-ID: <46C69D26.3000200@cosmosbay.com>
-Date: Sat, 18 Aug 2007 09:17:58 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-CC: Andi Kleen <ak@suse.de>, discuss@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86-64: memset optimization
-References: <20070817163446.3e63f208@freepuppy.rosehill.hemminger.net>
-In-Reply-To: <20070817163446.3e63f208@freepuppy.rosehill.hemminger.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 18 Aug 2007 09:18:08 +0200 (CEST)
+	Sat, 18 Aug 2007 04:09:38 -0400
+Subject: [PATCH 09/23] lib: percpu_counter_init error handling
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, torvalds@linux-foundation.org
+In-Reply-To: <20070817155659.GD24323@filer.fsl.cs.sunysb.edu>
+References: <20070816074525.065850000@chello.nl>
+	 <20070816074626.739944000@chello.nl>
+	 <20070817155659.GD24323@filer.fsl.cs.sunysb.edu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-udGAS9+EExMDI/FMsiLl"
+Date: Sat, 18 Aug 2007 10:09:34 +0200
+Message-Id: <1187424574.6114.136.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger a écrit :
-> Optimize uses of memset with small constant offsets.
-> This will generate smaller code, and avoid the slow rep/string instructions.
-> Code copied from i386 with a little cleanup.
-> 
 
-You obviously didnt test it, did you ?
+--=-udGAS9+EExMDI/FMsiLl
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-How can you be sure this is going to speedup things then ?
+On Fri, 2007-08-17 at 11:56 -0400, Josef Sipek wrote:
+> On Thu, Aug 16, 2007 at 09:45:34AM +0200, Peter Zijlstra wrote:
 
-> Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-> 
-> --- a/include/asm-x86_64/string.h	2007-08-17 15:14:32.000000000 -0700
-> +++ b/include/asm-x86_64/string.h	2007-08-17 15:36:30.000000000 -0700
-> @@ -42,9 +42,51 @@ extern void *__memcpy(void *to, const vo
->  		 __ret = __builtin_memcpy((dst),(src),__len);	\
->  	   __ret; }) 
->  #endif
-> -
->  #define __HAVE_ARCH_MEMSET
-> -void *memset(void *s, int c, size_t n);
-> +void *__memset(void *s, int c, size_t n);
-> +
-> +/* Optimize for cases of trivial memset's
-> + * Compiler should optimize away all but the case used.
-> + */
-> +static __always_inline void *
-> +__constant_c_and_count_memset(void *s, int c, size_t count)
-> +{
-> +	unsigned long pattern = 0x01010101UL * (unsigned char) c;
+> > Index: linux-2.6/fs/ext2/super.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux-2.6.orig/fs/ext2/super.c
+> > +++ linux-2.6/fs/ext2/super.c
+> > @@ -725,6 +725,7 @@ static int ext2_fill_super(struct super_
+> >  	int db_count;
+> >  	int i, j;
+> >  	__le32 features;
+> > +	int err;
+> > =20
+> >  	sbi =3D kzalloc(sizeof(*sbi), GFP_KERNEL);
+> >  	if (!sbi)
+> > @@ -996,12 +997,16 @@ static int ext2_fill_super(struct super_
+> >  	sbi->s_rsv_window_head.rsv_goal_size =3D 0;
+> >  	ext2_rsv_window_add(sb, &sbi->s_rsv_window_head);
+> > =20
+> > -	percpu_counter_init(&sbi->s_freeblocks_counter,
+> > +	err =3D percpu_counter_init(&sbi->s_freeblocks_counter,
+> >  				ext2_count_free_blocks(sb));
+> > -	percpu_counter_init(&sbi->s_freeinodes_counter,
+> > +	err |=3D percpu_counter_init(&sbi->s_freeinodes_counter,
+> >  				ext2_count_free_inodes(sb));
+> > -	percpu_counter_init(&sbi->s_dirs_counter,
+> > +	err |=3D percpu_counter_init(&sbi->s_dirs_counter,
+> >  				ext2_count_dirs(sb));
+> > +	if (err) {
+> > +		printk(KERN_ERR "EXT2-fs: insufficient memory\n");
+> > +		goto failed_mount3;
+> > +	}
+>=20
+> Can percpu_counter_init fail with only one error code? If not, the error
+> code potentially used in future at failed_mount3 could be nonsensical
+> because of the bitwise or-ing.
 
-Main difference between x86_64 and i386 is sizeof(long) being 8 instead of 4
+The actual value of err is irrelevant, it is not used after this not
+zero check.
 
-Why not let gcc do its job about memset() ?
+But how about this:
+---
+Subject: lib: percpu_counter_init error handling
 
-On x86_64 at least, modern gcc are smart enough.
+alloc_percpu can fail, propagate that error.
 
-> +
-> +	switch (count) {
-> +	case 0:
-> +		return s;
-> +	case 1:
-> +		*(unsigned char *)s = pattern;
-> +		return s;
-> +	case 2:
-> +		*(unsigned short *)s = pattern;
-> +		return s;
-> +	case 3:
-> +		*(unsigned short *)s = pattern;
-> +		*(2+(unsigned char *)s) = pattern;
-> +		return s;
-> +	case 4:
-> +		*(unsigned long *)s = pattern;
-> +		return s;
-> +	case 6:
-> +		*(unsigned long *)s = pattern;
-> +		*(2+(unsigned short *)s) = pattern;
-> +		return s;
-> +	case 8:
-> +		*(unsigned long *)s = pattern;
-> +		*(1+(unsigned long *)s) = pattern;
-> +		return s;
-> +	default:
-> +		return __memset(s, c, count);
-> +	}
-> +}
-> +#define memset(s, c, count)					\
-> +	(__builtin_constant_p(c)				\
-> +	 ? __constant_c_and_count_memset((s),(c),(count))	\
-> +	 : __memset((s),(c),(count)))
-> +
-> +
->  
->  #define __HAVE_ARCH_MEMMOVE
->  void * memmove(void * dest,const void *src,size_t count);
-> --- a/arch/x86_64/kernel/x8664_ksyms.c	2007-08-17 15:14:32.000000000 -0700
-> +++ b/arch/x86_64/kernel/x8664_ksyms.c	2007-08-17 15:44:58.000000000 -0700
-> @@ -48,10 +48,12 @@ EXPORT_SYMBOL(__read_lock_failed);
->  #undef memmove
->  
->  extern void * memset(void *,int,__kernel_size_t);
-> +extern void * __memset(void *,int,__kernel_size_t);
->  extern void * memcpy(void *,const void *,__kernel_size_t);
->  extern void * __memcpy(void *,const void *,__kernel_size_t);
->  
->  EXPORT_SYMBOL(memset);
-> +EXPORT_SYMBOL(__memset);
->  EXPORT_SYMBOL(memcpy);
->  EXPORT_SYMBOL(__memcpy);
->  
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/ext2/super.c                |   15 ++++++++++++---
+ fs/ext3/super.c                |   21 +++++++++++++++------
+ fs/ext4/super.c                |   21 +++++++++++++++------
+ include/linux/percpu_counter.h |    5 +++--
+ lib/percpu_counter.c           |    8 +++++++-
+ 5 files changed, 52 insertions(+), 18 deletions(-)
+
+Index: linux-2.6/fs/ext2/super.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/fs/ext2/super.c
++++ linux-2.6/fs/ext2/super.c
+@@ -725,6 +725,7 @@ static int ext2_fill_super(struct super_
+ 	int db_count;
+ 	int i, j;
+ 	__le32 features;
++	int err;
+=20
+ 	sbi =3D kzalloc(sizeof(*sbi), GFP_KERNEL);
+ 	if (!sbi)
+@@ -996,12 +997,20 @@ static int ext2_fill_super(struct super_
+ 	sbi->s_rsv_window_head.rsv_goal_size =3D 0;
+ 	ext2_rsv_window_add(sb, &sbi->s_rsv_window_head);
+=20
+-	percpu_counter_init(&sbi->s_freeblocks_counter,
++	err =3D percpu_counter_init(&sbi->s_freeblocks_counter,
+ 				ext2_count_free_blocks(sb));
+-	percpu_counter_init(&sbi->s_freeinodes_counter,
++	if (!err) {
++		err =3D percpu_counter_init(&sbi->s_freeinodes_counter,
+ 				ext2_count_free_inodes(sb));
+-	percpu_counter_init(&sbi->s_dirs_counter,
++	}
++	if (!err) {
++		err =3D percpu_counter_init(&sbi->s_dirs_counter,
+ 				ext2_count_dirs(sb));
++	}
++	if (err) {
++		printk(KERN_ERR "EXT2-fs: insufficient memory\n");
++		goto failed_mount3;
++	}
+ 	/*
+ 	 * set up enough so that it can read an inode
+ 	 */
+Index: linux-2.6/fs/ext3/super.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/fs/ext3/super.c
++++ linux-2.6/fs/ext3/super.c
+@@ -1485,6 +1485,7 @@ static int ext3_fill_super (struct super
+ 	int i;
+ 	int needs_recovery;
+ 	__le32 features;
++	int err;
+=20
+ 	sbi =3D kzalloc(sizeof(*sbi), GFP_KERNEL);
+ 	if (!sbi)
+@@ -1745,12 +1746,20 @@ static int ext3_fill_super (struct super
+ 	get_random_bytes(&sbi->s_next_generation, sizeof(u32));
+ 	spin_lock_init(&sbi->s_next_gen_lock);
+=20
+-	percpu_counter_init(&sbi->s_freeblocks_counter,
+-		ext3_count_free_blocks(sb));
+-	percpu_counter_init(&sbi->s_freeinodes_counter,
+-		ext3_count_free_inodes(sb));
+-	percpu_counter_init(&sbi->s_dirs_counter,
+-		ext3_count_dirs(sb));
++	err =3D percpu_counter_init(&sbi->s_freeblocks_counter,
++			ext3_count_free_blocks(sb));
++	if (!err) {
++		err =3D percpu_counter_init(&sbi->s_freeinodes_counter,
++				ext3_count_free_inodes(sb));
++	}
++	if (!err) {
++		err =3D percpu_counter_init(&sbi->s_dirs_counter,
++				ext3_count_dirs(sb));
++	}
++	if (err) {
++		printk(KERN_ERR "EXT3-fs: insufficient memory\n");
++		goto failed_mount3;
++	}
+=20
+ 	/* per fileystem reservation list head & lock */
+ 	spin_lock_init(&sbi->s_rsv_window_lock);
+Index: linux-2.6/fs/ext4/super.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/fs/ext4/super.c
++++ linux-2.6/fs/ext4/super.c
+@@ -1576,6 +1576,7 @@ static int ext4_fill_super (struct super
+ 	int needs_recovery;
+ 	__le32 features;
+ 	__u64 blocks_count;
++	int err;
+=20
+ 	sbi =3D kzalloc(sizeof(*sbi), GFP_KERNEL);
+ 	if (!sbi)
+@@ -1857,12 +1858,20 @@ static int ext4_fill_super (struct super
+ 	get_random_bytes(&sbi->s_next_generation, sizeof(u32));
+ 	spin_lock_init(&sbi->s_next_gen_lock);
+=20
+-	percpu_counter_init(&sbi->s_freeblocks_counter,
+-		ext4_count_free_blocks(sb));
+-	percpu_counter_init(&sbi->s_freeinodes_counter,
+-		ext4_count_free_inodes(sb));
+-	percpu_counter_init(&sbi->s_dirs_counter,
+-		ext4_count_dirs(sb));
++	err =3D percpu_counter_init(&sbi->s_freeblocks_counter,
++			ext4_count_free_blocks(sb));
++	if (!err) {
++		err =3D percpu_counter_init(&sbi->s_freeinodes_counter,
++				ext4_count_free_inodes(sb));
++	}
++	if (!err) {
++		err =3D percpu_counter_init(&sbi->s_dirs_counter,
++				ext4_count_dirs(sb));
++	}
++	if (err) {
++		printk(KERN_ERR "EXT4-fs: insufficient memory\n");
++		goto failed_mount3;
++	}
+=20
+ 	/* per fileystem reservation list head & lock */
+ 	spin_lock_init(&sbi->s_rsv_window_lock);
+Index: linux-2.6/include/linux/percpu_counter.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/include/linux/percpu_counter.h
++++ linux-2.6/include/linux/percpu_counter.h
+@@ -30,7 +30,7 @@ struct percpu_counter {
+ #define FBC_BATCH	(NR_CPUS*4)
+ #endif
+=20
+-void percpu_counter_init(struct percpu_counter *fbc, s64 amount);
++int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
+ void percpu_counter_destroy(struct percpu_counter *fbc);
+ void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
+ void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batc=
+h);
+@@ -78,9 +78,10 @@ struct percpu_counter {
+ 	s64 count;
+ };
+=20
+-static inline void percpu_counter_init(struct percpu_counter *fbc, s64 amo=
+unt)
++static inline int percpu_counter_init(struct percpu_counter *fbc, s64 amou=
+nt)
+ {
+ 	fbc->count =3D amount;
++	return 0;
+ }
+=20
+ static inline void percpu_counter_destroy(struct percpu_counter *fbc)
+Index: linux-2.6/lib/percpu_counter.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/lib/percpu_counter.c
++++ linux-2.6/lib/percpu_counter.c
+@@ -68,21 +68,27 @@ s64 __percpu_counter_sum(struct percpu_c
+ }
+ EXPORT_SYMBOL(__percpu_counter_sum);
+=20
+-void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
++int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
+ {
+ 	spin_lock_init(&fbc->lock);
+ 	fbc->count =3D amount;
+ 	fbc->counters =3D alloc_percpu(s32);
++	if (!fbc->counters)
++		return -ENOMEM;
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	mutex_lock(&percpu_counters_lock);
+ 	list_add(&fbc->list, &percpu_counters);
+ 	mutex_unlock(&percpu_counters_lock);
+ #endif
++	return 0;
+ }
+ EXPORT_SYMBOL(percpu_counter_init);
+=20
+ void percpu_counter_destroy(struct percpu_counter *fbc)
+ {
++	if (!fbc->counters)
++		return;
++
+ 	free_percpu(fbc->counters);
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	mutex_lock(&percpu_counters_lock);
+
+
+--=-udGAS9+EExMDI/FMsiLl
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGxqk+XA2jU0ANEf4RAlyFAJ44s8rqWuwg+fYvwooKsX+DGOW6ZgCfT8sh
+gysDjgShL+Uq65rXR/z7mRY=
+=dHoU
+-----END PGP SIGNATURE-----
+
+--=-udGAS9+EExMDI/FMsiLl--
 
