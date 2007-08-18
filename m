@@ -1,71 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbXHRRVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbXHRRXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756885AbXHRRVf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 13:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbXHRRV0
+	id S1757405AbXHRRXR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 13:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbXHRRXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 13:21:26 -0400
-Received: from waste.org ([66.93.16.53]:50334 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750805AbXHRRV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 13:21:26 -0400
-Date: Sat, 18 Aug 2007 12:22:26 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       John Berthels <jjberthels@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] maps: /proc/<pid>/pmaps interface - memory maps in granularity of pages
-Message-ID: <20070818172225.GR30556@waste.org>
-References: <20070816220516.782145952@mail.ustc.edu.cn> <20070816220849.472883642@mail.ustc.edu.cn> <20070817023846.GJ30556@waste.org> <20070817064727.GA6723@mail.ustc.edu.cn> <20070817165808.GM30556@waste.org> <20070818024831.GA7856@mail.ustc.edu.cn> <20070818064042.GQ30556@waste.org> <20070818084531.GB5277@mail.ustc.edu.cn>
+	Sat, 18 Aug 2007 13:23:05 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39296 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753174AbXHRRXE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 13:23:04 -0400
+Date: Sat, 18 Aug 2007 10:22:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>, Muli Ben-Yehuda <muli@il.ibm.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: patches@x86-64.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [1/4] x86_64: Fail dma_alloc_coherent on dma less devices
+In-Reply-To: <20070815004034.4AB7814DC8@wotan.suse.de>
+Message-ID: <alpine.LFD.0.999.0708181003430.30176@woody.linux-foundation.org>
+References: <20070815240.194452000@suse.de>
+ <20070815004034.4AB7814DC8@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070818084531.GB5277@mail.ustc.edu.cn>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 18, 2007 at 04:45:31PM +0800, Fengguang Wu wrote:
-> Matt,
-> 
-> On Sat, Aug 18, 2007 at 01:40:42AM -0500, Matt Mackall wrote:
-> > > - On memory pressure,
-> > >   - as VSZ goes up, RSS will be bounded by physical memory.
-> > >     So VSZ:RSS ratio actually goes up with memory pressure.
-> > 
-> > And yes.
-> > 
-> > But that's not what I'm talking about. You're likely to have more
-> > holes in your ranges with memory pressure as things that aren't active
-> > get paged or swapped out and back in. And because we're walking the
-> > LRU more rapidly, we'll flip over a lot of the active bits more often
-> > which will mean more output.
-> > 
-> > >   - page range is a good unit of locality. They are more likely to be
-> > >     reclaimed as a whole. So (RSS:page_ranges) wouldn't degrade as much.
-> > 
-> > There is that. The relative magnitude of the different effects is
-> > unclear. But it is clear that the worst case for pmap is much worse
-> 
-> > than pagemap (two lines per page of RSS?). 
-> It's one line per page. No sane app will make vmas proliferate.
 
-Sane apps are few and far between.
- 
-> So let's talk about the worst case.
+Hmm. I think this is wrong. 
+
+Why? Because the regular 32-bit x86 code does this all completely 
+differently, and doesn't use dma_mask at all. Instead, it _only_ uses 
+dev->coherent_dma_mask (which, considering the name of the function, 
+would seem to make sense).
+
+Considering that the oops comes from this:
+
+        /* Kludge to make it bug-to-bug compatible with i386. i386
+           uses the normal dma_mask for alloc_coherent. */
+        dma_mask &= *dev->dma_mask;
+
+and that that code is *old*, and comes from when this file was called 
+arch/x86_64/kernel/pci-gart.c, and the comment doesn't seem to even be 
+correct any more, I really think the proper fix is likely to just *remove* 
+that kludge that causes the oops entirely.
+
+Anyway, I'll apply the patch, because clearly it's not going to make 
+things *worse* (it does avoid the oops that we get now), but I don't think 
+it's really even "probably still the right thing to do". I really think we 
+should just remove the line that causes the oops instead, but that might 
+change behaviour for non-oopsing cases, so I'm not ready to do that at 
+this point.
+
+Hmm? Who feels in charge of the DMA mapping stuff? Muli? James? Anybody?
+
+		Linus
+
+On Wed, 15 Aug 2007, Andi Kleen wrote:
 > 
-> pagemap's data set size is determined by VSZ.
-> 4GB VSZ means 1M PFNs, hence 8MB pagemap data.
+> This should fix an oops with PCMCIA PATA devices
 > 
-> pmaps's data set size is bounded by RSS hence physical memory.
-> 4GB RSS means up to 1M page ranges, hence ~20M pmaps data.
-> Not too bad :)
-
-Hmmm, I've been misreading the output.
-
-What does it do with nonlinear VMAs?
-
--- 
-Mathematics is the supreme nostalgia of our time.
+> http://bugzilla.kernel.org/show_bug.cgi?id=8424
+> 
+> This is not a full fix for the problem, but probably
+> still the right thing to do.
+> 
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> ---
+>  arch/x86_64/kernel/pci-dma.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> Index: linux/arch/x86_64/kernel/pci-dma.c
+> ===================================================================
+> --- linux.orig/arch/x86_64/kernel/pci-dma.c
+> +++ linux/arch/x86_64/kernel/pci-dma.c
+> @@ -82,6 +82,10 @@ dma_alloc_coherent(struct device *dev, s
+>  	if (dma_mask == 0)
+>  		dma_mask = DMA_32BIT_MASK;
+>  
+> +	/* Device not DMA able */
+> +	if (dev->dma_mask == NULL)
+> +		return NULL;
+> +
+>  	/* Don't invoke OOM killer */
+>  	gfp |= __GFP_NORETRY;
+>  
+> 
