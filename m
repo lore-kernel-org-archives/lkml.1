@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751976AbXHREG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbXHREP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751976AbXHREG4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 00:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750711AbXHREGq
+	id S1752439AbXHREP5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 00:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbXHREPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 00:06:46 -0400
-Received: from smtp121.sbc.mail.re3.yahoo.com ([66.196.96.94]:48751 "HELO
-	smtp121.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750728AbXHREGp (ORCPT
+	Sat, 18 Aug 2007 00:15:45 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51408 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750743AbXHREPn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 00:06:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=5Dm9gi52Gygudbr0Frs/VJ+FaJZS0fDFl2FdRf7GMawgbPJpDQwtMqO125CJIVYL/1V3prIxYMyTsBC69d+8IcYEJxvx6DazYe7APA71IE1T5f75b3APyET+f561NKV9oI3WXyceNZcbbMcUwbLuIgmP/amb09WCGsyox7OOwXk=  ;
-X-YMail-OSG: uCMArj8VM1ng_Zqr65c3M._gXXPdW6BL9YmHtHm6JDt2DLti
-From: David Brownell <david-b@pacbell.net>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware
-Date: Fri, 17 Aug 2007 21:06:51 -0700
-User-Agent: KMail/1.9.6
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, jengelh@computergmbh.de,
-       a.zummo@towertech.it, linux-kernel@vger.kernel.org,
-       rtc-linux@googlegroups.com, Greg KH <greg@kroah.com>
-References: <200708170823.15894.david-b@pacbell.net> <200708171250.09653.david-b@pacbell.net> <1187404839.4419.5.camel@lov.localdomain>
-In-Reply-To: <1187404839.4419.5.camel@lov.localdomain>
+	Sat, 18 Aug 2007 00:15:43 -0400
+Date: Fri, 17 Aug 2007 21:13:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Satyam Sharma <satyam@infradead.org>
+cc: Christoph Lameter <clameter@sgi.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Paul Mackerras <paulus@samba.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
+       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
+       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <alpine.LFD.0.999.0708180709060.3666@enigma.security.iitk.ac.in>
+Message-ID: <alpine.LFD.0.999.0708172110400.30176@woody.linux-foundation.org>
+References: <20070815234021.GA28775@gondor.apana.org.au>
+ <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au>
+ <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au>
+ <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <46C516BA.60700@yahoo.com.au>
+ <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org>
+ <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au>
+ <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0708180709060.3666@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200708172106.52940.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 August 2007, Kay Sievers wrote:
+
+
+On Sat, 18 Aug 2007, Satyam Sharma wrote:
 > 
-> > I'm not the one who's advocating a change here.  If you want to
-> > first change/break and then fix things, all of that is up to you.
+> No code does (or would do, or should do):
 > 
-> I'm happy to do that. Patch is attached.
+> 	x.counter++;
+> 
+> on an "atomic_t x;" anyway.
 
-NAK.  That wasn't even a serious attempt at the "fix" part,
-though it does the "break" part well enough to cause severe
-regressions.
+That's just an example of a general problem.
 
-(As well as leaving all my technical points about your pushback
-un-addressed.  As I noted before, the evident fact that you don't
-have technical responses to them says to me that your pushback
-has no real technical basis ...)
+No, you don't use "x.counter++". But you *do* use
 
+	if (atomic_read(&x) <= 1)
 
-Out of around 300 platform drivers in the tree (and many more
-not yet merged upstream), this makes it so that only *THREE* of
-them can hotplug ... versus in the current tree, essentially
-everything that's not a legacy driver is hotplugging just fine.
+and loading into a register is stupid and pointless, when you could just 
+do it as a regular memory-operand to the cmp instruction.
 
-That's one heck of a regression.  Just shy of 100% ...
+And as far as the compiler is concerned, the problem is the 100% same: 
+combining operations with the volatile memop.
 
-Plus it treats rtc-ds1742 as if it's a platform_driver not
-an i2c_driver.
+The fact is, a compiler that thinks that
 
-- Dave
+	movl mem,reg
+	cmpl $val,reg
 
+is any better than
+
+	cmpl $val,mem
+
+is just not a very good compiler. But when talking about "volatile", 
+that's exactly what ytou always get (and always have gotten - this is 
+not a regression, and I doubt gcc is alone in this).
+
+			Linus
