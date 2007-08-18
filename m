@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbXHRRNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbXHRRVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756716AbXHRRNb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 13:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbXHRRM7
+	id S1756885AbXHRRVf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 13:21:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbXHRRV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 13:12:59 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:41410 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751913AbXHRRM5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 13:12:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=fDzjg/gRGY+Vc7gkJU5Si3VTGdG/ibOfbbEoSuheTsk0hWt7PMd1DPIJ09V1xKd6KeTLg0NP8bSTKmJvOMAUcNJXuN4x8QcT7OIgsqSgJiVvi+7YwSqOlG+BOlLz5UmH6pZh00iD8KGXUVM9xlv2GAsiuOc/jg9wq+Ft5znK+yE=
-Message-ID: <46C728CB.6060102@gmail.com>
-Date: Sat, 18 Aug 2007 19:13:47 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sat, 18 Aug 2007 13:21:26 -0400
+Received: from waste.org ([66.93.16.53]:50334 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750805AbXHRRV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 13:21:26 -0400
+Date: Sat, 18 Aug 2007 12:22:26 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Rientjes <rientjes@google.com>,
+       John Berthels <jjberthels@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] maps: /proc/<pid>/pmaps interface - memory maps in granularity of pages
+Message-ID: <20070818172225.GR30556@waste.org>
+References: <20070816220516.782145952@mail.ustc.edu.cn> <20070816220849.472883642@mail.ustc.edu.cn> <20070817023846.GJ30556@waste.org> <20070817064727.GA6723@mail.ustc.edu.cn> <20070817165808.GM30556@waste.org> <20070818024831.GA7856@mail.ustc.edu.cn> <20070818064042.GQ30556@waste.org> <20070818084531.GB5277@mail.ustc.edu.cn>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       source@mvista.com, dougthompson@xmission.com,
-       bluesmoke-devel@lists.sourceforge.net, dtor@mail.ru,
-       linux-input@atrey.karlin.mff.cuni.cz, netdev@vger.kernel.org,
-       James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
-       gtolstolytkin@ru.mvista.com, vitalywool@gmail.com, dsaxena@plexity.net,
-       ralf@linux-mips.org, linux-mips@linux-mips.org, mchehab@infradead.org,
-       video4linux-list@redhat.com, jbenc@suse.cz, flamingice@sourmilk.net,
-       linux-wireless@vger.kernel.org
-Subject: Re: [PATCH 8/9] define global BIT macro
-References: <737828602404912540@wsc.cz>	<428714662539710215@wsc.cz> <20070818094602.0ea69c27.randy.dunlap@oracle.com>
-In-Reply-To: <20070818094602.0ea69c27.randy.dunlap@oracle.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070818084531.GB5277@mail.ustc.edu.cn>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap napsal(a):
-> On Sat, 18 Aug 2007 11:44:12 +0200 (CEST) Jiri Slaby wrote:
+On Sat, Aug 18, 2007 at 04:45:31PM +0800, Fengguang Wu wrote:
+> Matt,
 > 
->> define global BIT macro
->>
->> move all local BIT defines to the new globally define macro.
->>
->> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
->>
->> ---
->>
->>  include/linux/bitops.h                      |    1 +
->>  include/video/sstfb.h                       |    1 -
->>  include/video/tdfx.h                        |    2 --
->>  net/mac80211/ieee80211_i.h                  |    2 --
->>  18 files changed, 1 insertions(+), 37 deletions(-)
->>
->> diff --git a/include/linux/bitops.h b/include/linux/bitops.h
->> index 3255b06..a57b81f 100644
->> --- a/include/linux/bitops.h
->> +++ b/include/linux/bitops.h
->> @@ -3,6 +3,7 @@
->>  #include <asm/types.h>
->>  
->>  #ifdef	__KERNEL__
->> +#define BIT(nr)			(1UL << (nr))
->>  #define BIT_MASK(nr)		(1UL << ((nr) % BITS_PER_LONG))
->>  #define BIT_WORD(nr)		((nr) / BITS_PER_LONG)
->>  #define BITS_TO_TYPE(nr, t)	(((nr)+(t)-1)/(t))
+> On Sat, Aug 18, 2007 at 01:40:42AM -0500, Matt Mackall wrote:
+> > > - On memory pressure,
+> > >   - as VSZ goes up, RSS will be bounded by physical memory.
+> > >     So VSZ:RSS ratio actually goes up with memory pressure.
+> > 
+> > And yes.
+> > 
+> > But that's not what I'm talking about. You're likely to have more
+> > holes in your ranges with memory pressure as things that aren't active
+> > get paged or swapped out and back in. And because we're walking the
+> > LRU more rapidly, we'll flip over a lot of the active bits more often
+> > which will mean more output.
+> > 
+> > >   - page range is a good unit of locality. They are more likely to be
+> > >     reclaimed as a whole. So (RSS:page_ranges) wouldn't degrade as much.
+> > 
+> > There is that. The relative magnitude of the different effects is
+> > unclear. But it is clear that the worst case for pmap is much worse
 > 
+> > than pagemap (two lines per page of RSS?). 
+> It's one line per page. No sane app will make vmas proliferate.
+
+Sane apps are few and far between.
+ 
+> So let's talk about the worst case.
 > 
-> So users of the BIT() macro in include/linux/input.h can be
-> changed to use the global BIT_MASK() macro...
-> and the former can be removed.
+> pagemap's data set size is determined by VSZ.
+> 4GB VSZ means 1M PFNs, hence 8MB pagemap data.
+> 
+> pmaps's data set size is bounded by RSS hence physical memory.
+> 4GB RSS means up to 1M page ranges, hence ~20M pmaps data.
+> Not too bad :)
 
-I'm afraid I don't understand you. Maybe, you are writing about changes done in
-patch no. 7 [1], which didn't go through to the lkml?
+Hmmm, I've been misreading the output.
 
-[1]
-http://www.fi.muni.cz/~xslaby/sklad/07-get-rid-of-input-bit-duplicate-defines.patch
+What does it do with nonlinear VMAs?
 
-thanks,
 -- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+Mathematics is the supreme nostalgia of our time.
