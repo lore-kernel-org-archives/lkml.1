@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbXHRBEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbXHRBIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756376AbXHRBEF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 21:04:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbXHRBDy
+	id S1756628AbXHRBIi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 21:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbXHRBI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 21:03:54 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:32878 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753111AbXHRBDx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 21:03:53 -0400
-Date: Fri, 17 Aug 2007 18:03:52 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Satyam Sharma <satyam@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kfree(0) - ok?
-In-Reply-To: <1187394022.7007.133.camel@chaos>
-Message-ID: <Pine.LNX.4.64.0708171758520.15278@schroedinger.engr.sgi.com>
-References: <46C233CB.9000602@am.sony.com>  <1187132149.2618.2.camel@laptopd505.fenrus.org>
-  <alpine.LFD.0.999.0708150454480.6482@enigma.security.iitk.ac.in> 
- <20070817112253.e6a7cb33.akpm@linux-foundation.org> 
- <alpine.LFD.0.999.0708180011570.3666@enigma.security.iitk.ac.in> 
- <Pine.LNX.4.64.0708171413190.9635@schroedinger.engr.sgi.com> 
- <84144f020708171442x52b18722k2971ceef96d3e72@mail.gmail.com>
- <1187394022.7007.133.camel@chaos>
+	Fri, 17 Aug 2007 21:08:26 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:53352 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751033AbXHRBIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 21:08:24 -0400
+Date: Fri, 17 Aug 2007 18:08:18 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Paul Mackerras <paulus@samba.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
+       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
+       satyam@infradead.org, clameter@sgi.com, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>, davem@davemloft.net,
+       wensong@linux-vs.org, wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070818010818.GQ8464@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <46C516BA.60700@yahoo.com.au> <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org> <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070818000913.GA25585@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Aug 2007, Thomas Gleixner wrote:
+On Sat, Aug 18, 2007 at 08:09:13AM +0800, Herbert Xu wrote:
+> On Fri, Aug 17, 2007 at 04:59:12PM -0700, Paul E. McKenney wrote:
+> >
+> > gcc bugzilla bug #33102, for whatever that ends up being worth.  ;-)
+> 
+> I had totally forgotten that I'd already filed that bug more
+> than six years ago until they just closed yours as a duplicate
+> of mine :)
+> 
+> Good luck in getting it fixed!
 
-> If yes, who invented this 1980s reminiscence, where you got valid
-> pointers for malloc(0) ?
+Well, just got done re-opening it for the third time.  And a local
+gcc community member advised me not to give up too easily.  But I
+must admit that I am impressed with the speed that it was identified
+as duplicate.
 
-I believe his first name started with an L and ended with an s ;-)
+Should be entertaining!  ;-)
 
-Seriously the kmalloc(0) pointer allowed us to detect cases in which 
-people tried to store into objects allocated with kmalloc(0).
-
-If we would just return NULL then we would not be able to distinguish it 
-from a failure (that is what I initially had).
-
+						Thanx, Paul
