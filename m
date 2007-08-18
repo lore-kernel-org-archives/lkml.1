@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbXHRJbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbXHRJiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753135AbXHRJbw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 05:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbXHRJbn
+	id S1753424AbXHRJiJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 05:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXHRJh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 05:31:43 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1311 "EHLO spitz.ucw.cz"
+	Sat, 18 Aug 2007 05:37:58 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:53321 "EHLO smtp.wsc.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750716AbXHRJbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 05:31:42 -0400
-Date: Sat, 18 Aug 2007 07:10:36 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dkegel@google.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [RFC 2/9] Use NOMEMALLOC reclaim to allow reclaim if PF_MEMALLOC is set
-Message-ID: <20070818071035.GA4667@ucw.cz>
-References: <20070814153021.446917377@sgi.com> <20070814153501.305923060@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070814153501.305923060@sgi.com>
-User-Agent: Mutt/1.5.9i
+	id S1750720AbXHRJh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 05:37:58 -0400
+Message-id: <737828602404912540@wsc.cz>
+Subject: [PATCH 1/9] fs/select, remove unused macros
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Cc: <viro@zeniv.linux.org.uk>
+Date: Sat, 18 Aug 2007 11:39:16 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+fs/select, remove unused macros
 
-> If we exhaust the reserves in the page allocator when PF_MEMALLOC is set
-> then no longer give up but call into reclaim with PF_MEMALLOC set.
-> 
-> This is in essence a recursive call back into page reclaim with another
-> page flag (__GFP_NOMEMALLOC) set. The recursion is bounded since potential
-> allocations with __PF_NOMEMALLOC set will not enter that branch again.
-> 
-> This means that allocation under PF_MEMALLOC will no longer run out of
-> memory. Allocations under PF_MEMALLOC will do a limited form of reclaim
-> instead.
-> 
-> The reclaim is of particular important to stacked filesystems that may
-> do a lot of allocations in the write path. Reclaim will be working
-> as long as there are clean file backed pages to reclaim.
+this is due to preparation for global BIT macro
 
-I don't get it. Lets say that we have stacked filesystem that needs
-it. That filesystem is broken today.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
-Now you give it second chance by reclaiming clean pages, but there are
-no guarantees that we have any.... so that filesystem is still broken
-with your patch...?
+---
+commit 8754d87e5b6221e7d34cccef473588d5170b689e
+tree 52ac6a983077ab5854dcacfa4b0e3323c7bbd9c8
+parent 7129cd56f4f7f8d9f7cc9deb9a62291fc989cf91
+author Jiri Slaby <jirislaby@gmail.com> Sun, 12 Aug 2007 21:39:36 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Sun, 12 Aug 2007 21:39:36 +0200
 
-Should we fix the filesystem instead?
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ fs/select.c |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
+
+diff --git a/fs/select.c b/fs/select.c
+index 53b3fe9..22647d4 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -179,11 +179,6 @@ get_max:
+ 	return max;
+ }
+ 
+-#define BIT(i)		(1UL << ((i)&(__NFDBITS-1)))
+-#define MEM(i,m)	((m)+(unsigned)(i)/__NFDBITS)
+-#define ISSET(i,m)	(((i)&*(m)) != 0)
+-#define SET(i,m)	(*(m) |= (i))
+-
+ #define POLLIN_SET (POLLRDNORM | POLLRDBAND | POLLIN | POLLHUP | POLLERR)
+ #define POLLOUT_SET (POLLWRBAND | POLLWRNORM | POLLOUT | POLLERR)
+ #define POLLEX_SET (POLLPRI)
