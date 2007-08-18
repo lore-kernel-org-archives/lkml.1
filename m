@@ -1,62 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbXHRXTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbXHRXYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbXHRXTo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 19:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbXHRXTc
+	id S1759393AbXHRXYl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 19:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbXHRXYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 19:19:32 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:37055 "EHLO e6.ny.us.ibm.com"
+	Sat, 18 Aug 2007 19:24:34 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3856 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755812AbXHRXTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 19:19:30 -0400
-Date: Sat, 18 Aug 2007 16:19:24 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Satyam Sharma <satyam@infradead.org>, Christoph Lameter <clameter@sgi.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070818231924.GH7628@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <46C516BA.60700@yahoo.com.au> <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org> <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au> <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708180709060.3666@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708172110400.30176@woody.linux-foundation.org> <20070818215409.GC7628@linux.vnet.ibm.com> <alpine.LFD.0.999.0708181526270.30176@woody.linux-foundation.org>
+	id S1755946AbXHRXYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 19:24:33 -0400
+Date: Sat, 18 Aug 2007 19:23:52 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + proc-export-a-processes-resource-limits-via-proc-pid.patch added to -mm tree
+Message-ID: <20070818232352.GA25994@hmsreliant.think-freely.org>
+References: <20070817222228.GA783@tv-sign.ru> <20070818115816.GA23555@hmsreliant.think-freely.org> <20070818125926.GA74@tv-sign.ru> <20070818185529.GA25372@hmsreliant.think-freely.org> <20070818190351.GA98@tv-sign.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708181526270.30176@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070818190351.GA98@tv-sign.ru>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 18, 2007 at 03:41:13PM -0700, Linus Torvalds wrote:
 > 
+> Neil, please, don't add tasklist_lock again. It was not easy to wipe it from
+> fs/proc/ :) Just change this code to use rcu_read_lock().
 > 
-> On Sat, 18 Aug 2007, Paul E. McKenney wrote:
-> > 
-> > One of the gcc guys claimed that he thought that the two-instruction
-> > sequence would be faster on some x86 machines.  I pointed out that
-> > there might be a concern about code size.  I chose not to point out
-> > that people might also care about the other x86 machines.  ;-)
-> 
-> Some (very few) x86 uarchs do tend to prefer "load-store" like code 
-> generation, and doing a "mov [mem],reg + op reg" instead of "op [mem]" can 
-> actually be faster on some of them. Not any that are relevant today, 
-> though.
 
-;-)
+Ok, done/tested.  Thanks!
 
-> Also, that has nothing to do with volatile, and should be controlled by 
-> optimization flags (like -mtune). In fact, I thought there was a separate 
-> flag to do that (ie something like "-mload-store"), but I can't find it, 
-> so maybe that's just my fevered brain..
+Currently, there exists no method for a process to query the resource
+limits of another process.  They can be inferred via some mechanisms but they
+cannot be explicitly determined.  Given that this information can be usefull to
+know during the debugging of an application, I've written this patch which
+exports all of a processes limits via /proc/<pid>/limits.  Tested successfully
+by myself on x86 on top of 2.6.23-rc2-mm1.
 
-Good point, will suggest this if the need arises.
 
-							Thanx, Paul
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+
+
+ base.c |   77 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 77 insertions(+)
+
+
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index ed2b224..86130b0 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -74,6 +74,7 @@
+ #include <linux/nsproxy.h>
+ #include <linux/oom.h>
+ #include <linux/elf.h>
++#include <linux/resource.h>
+ #include "internal.h"
+ 
+ /* NOTE:
+@@ -323,6 +324,80 @@ static int proc_oom_score(struct task_struct *task, char *buffer)
+ 	return sprintf(buffer, "%lu\n", points);
+ }
+ 
++struct limit_names {
++	char *name;
++	char *unit;
++};
++
++static const struct limit_names lnames[RLIM_NLIMITS] = {
++	[RLIMIT_CPU] = {"Max cpu time", "ms"},
++	[RLIMIT_FSIZE] = {"Max file size", "bytes"},
++	[RLIMIT_DATA] = {"Max data size", "bytes"},
++	[RLIMIT_STACK] = {"Max stack size", "bytes"},
++	[RLIMIT_CORE] = {"Max core file size", "bytes"},
++	[RLIMIT_RSS] = {"Max resident set", "bytes"},
++	[RLIMIT_NPROC] = {"Max processes", "processes"},
++	[RLIMIT_NOFILE] = {"Max open files", "files"},
++	[RLIMIT_MEMLOCK] = {"Max locked memory", "bytes"},
++	[RLIMIT_AS] = {"Max address space", "bytes"},
++	[RLIMIT_LOCKS] = {"Max file locks", "locks"},
++	[RLIMIT_SIGPENDING] = {"Max pending signals", "signals"},
++	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes"},
++	[RLIMIT_NICE] = {"Max nice priority", NULL},
++	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL},
++};
++
++/* Display limits for a process */
++static int proc_pid_limits(struct task_struct *task, char *buffer)
++{
++	unsigned int i;
++	int count = 0;
++	unsigned long flags;
++	char *bufptr = buffer;
++
++	struct rlimit rlim[RLIM_NLIMITS];
++
++	rcu_read_lock();
++	lock_task_sighand(task,&flags);
++	if (task->signal == NULL){
++		unlock_task_sighand(task, &flags);
++		rcu_read_unlock();
++		return 0;
++	}
++	memcpy(rlim, task->signal->rlim, sizeof(struct rlimit) * RLIM_NLIMITS);
++	unlock_task_sighand(task, &flags);
++	rcu_read_unlock();
++
++	/*
++	 * print the file header
++	 */
++	count += sprintf(&bufptr[count], "%-25s %-20s %-20s %-10s\n",
++			"Limit", "Soft Limit", "Hard Limit", "Units");
++
++	for (i = 0; i < RLIM_NLIMITS; i++) {
++		if (rlim[i].rlim_cur == RLIM_INFINITY)
++			count += sprintf(&bufptr[count], "%-25s %-20s ",
++					 lnames[i].name, "unlimited");
++		else
++			count += sprintf(&bufptr[count], "%-25s %-20lu ",
++					 lnames[i].name, rlim[i].rlim_cur);
++
++		if (rlim[i].rlim_max == RLIM_INFINITY)
++			count += sprintf(&bufptr[count], "%-20s ", "unlimited");
++		else
++			count += sprintf(&bufptr[count], "%-20lu ",
++					 rlim[i].rlim_max);
++
++		if (lnames[i].unit)
++			count += sprintf(&bufptr[count], "%-10s\n",
++					 lnames[i].unit);
++		else
++			count += sprintf(&bufptr[count], "\n");
++	}
++
++	return count;
++}
++
+ /************************************************************************/
+ /*                       Here the fs part begins                        */
+ /************************************************************************/
+@@ -2017,6 +2092,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	INF("environ",    S_IRUSR, pid_environ),
+ 	INF("auxv",       S_IRUSR, pid_auxv),
+ 	INF("status",     S_IRUGO, pid_status),
++	INF("limits",	  S_IRUSR, pid_limits),
+ #ifdef CONFIG_SCHED_DEBUG
+ 	REG("sched",      S_IRUGO|S_IWUSR, pid_sched),
+ #endif
+@@ -2310,6 +2386,7 @@ static const struct pid_entry tid_base_stuff[] = {
+ 	INF("environ",   S_IRUSR, pid_environ),
+ 	INF("auxv",      S_IRUSR, pid_auxv),
+ 	INF("status",    S_IRUGO, pid_status),
++	INF("limits",	 S_IRUSR, pid_limits),
+ #ifdef CONFIG_SCHED_DEBUG
+ 	REG("sched",     S_IRUGO|S_IWUSR, pid_sched),
+ #endif
+-- 
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
