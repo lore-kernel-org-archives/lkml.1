@@ -1,118 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752174AbXHRJiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbXHRJjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752174AbXHRJiv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 05:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbXHRJin
+	id S1755207AbXHRJjc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 05:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbXHRJjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 05:38:43 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:53331 "EHLO smtp.wsc.cz"
+	Sat, 18 Aug 2007 05:39:23 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:53386 "EHLO smtp.wsc.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752268AbXHRJil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 05:38:41 -0400
-Message-id: <96215875148836636@wsc.cz>
+	id S1751325AbXHRJjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 05:39:22 -0400
+Message-id: <21572844081791984@wsc.cz>
 In-reply-to: <737828602404912540@wsc.cz>
-Subject: [PATCH 2/9] cyber2000fb, rename BIT macro
+Subject: [PATCH 3/9] i2c-pxa, rename BIT macro to PXA_BIT
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>
-Cc: <rmk@arm.linux.org.uk>
-Date: Sat, 18 Aug 2007 11:40:00 +0200 (CEST)
+Cc: <nico@cam.org>
+Date: Sat, 18 Aug 2007 11:40:41 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cyber2000fb, rename BIT macro
+i2c-pxa, rename BIT macro to PXA_BIT
 
-BIT will be global macro for (1 << x)
+BIT macro will be global definiton of (1 << x)
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
 ---
-commit e99a73f0e9d20869736b5cbd106f63fe31d63c85
-tree 33d5589b80148507614fb5c203c752a744b999be
-parent 8754d87e5b6221e7d34cccef473588d5170b689e
-author Jiri Slaby <jirislaby@gmail.com> Sun, 12 Aug 2007 21:42:59 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Sun, 12 Aug 2007 21:42:59 +0200
+commit 6aec5d2e526e319488e6cdd627ca370086d458df
+tree 322ca256a63baf90c75688c6aff3e253352c2321
+parent e99a73f0e9d20869736b5cbd106f63fe31d63c85
+author Jiri Slaby <jirislaby@gmail.com> Sun, 12 Aug 2007 21:45:38 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Sun, 12 Aug 2007 21:45:38 +0200
 
- drivers/video/cyber2000fb.c |   44 ++++++++++++++++++++++---------------------
- 1 files changed, 22 insertions(+), 22 deletions(-)
+ drivers/i2c/busses/i2c-pxa.c |   54 +++++++++++++++++++++---------------------
+ 1 files changed, 27 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/video/cyber2000fb.c b/drivers/video/cyber2000fb.c
-index 30ede6e..9e35353 100644
---- a/drivers/video/cyber2000fb.c
-+++ b/drivers/video/cyber2000fb.c
-@@ -550,7 +550,7 @@ cyber2000fb_decode_crtc(struct par_info *hw, struct cfb_info *cfb,
- {
- 	u_int Htotal, Hblankend, Hsyncend;
- 	u_int Vtotal, Vdispend, Vblankstart, Vblankend, Vsyncstart, Vsyncend;
--#define BIT(v,b1,m,b2) (((v >> b1) & m) << b2)
-+#define ENCODE_BIT(v,b1,m,b2) (((v >> b1) & m) << b2)
+diff --git a/drivers/i2c/busses/i2c-pxa.c b/drivers/i2c/busses/i2c-pxa.c
+index 9d6b790..2e8fee7 100644
+--- a/drivers/i2c/busses/i2c-pxa.c
++++ b/drivers/i2c/busses/i2c-pxa.c
+@@ -82,7 +82,7 @@ struct bits {
+ 	const char *set;
+ 	const char *unset;
+ };
+-#define BIT(m, s, u)	{ .mask = m, .set = s, .unset = u }
++#define PXA_BIT(m, s, u)	{ .mask = m, .set = s, .unset = u }
  
- 	hw->crtc[13] = hw->pitch;
- 	hw->crtc[17] = 0xe3;
-@@ -570,13 +570,13 @@ cyber2000fb_decode_crtc(struct par_info *hw, struct cfb_info *cfb,
+ static inline void
+ decode_bits(const char *prefix, const struct bits *bits, int num, u32 val)
+@@ -97,17 +97,17 @@ decode_bits(const char *prefix, const struct bits *bits, int num, u32 val)
+ }
  
- 	Hblankend   = (Htotal - 4*8) >> 3;
+ static const struct bits isr_bits[] = {
+-	BIT(ISR_RWM,	"RX",		"TX"),
+-	BIT(ISR_ACKNAK,	"NAK",		"ACK"),
+-	BIT(ISR_UB,	"Bsy",		"Rdy"),
+-	BIT(ISR_IBB,	"BusBsy",	"BusRdy"),
+-	BIT(ISR_SSD,	"SlaveStop",	NULL),
+-	BIT(ISR_ALD,	"ALD",		NULL),
+-	BIT(ISR_ITE,	"TxEmpty",	NULL),
+-	BIT(ISR_IRF,	"RxFull",	NULL),
+-	BIT(ISR_GCAD,	"GenCall",	NULL),
+-	BIT(ISR_SAD,	"SlaveAddr",	NULL),
+-	BIT(ISR_BED,	"BusErr",	NULL),
++	PXA_BIT(ISR_RWM,	"RX",		"TX"),
++	PXA_BIT(ISR_ACKNAK,	"NAK",		"ACK"),
++	PXA_BIT(ISR_UB,		"Bsy",		"Rdy"),
++	PXA_BIT(ISR_IBB,	"BusBsy",	"BusRdy"),
++	PXA_BIT(ISR_SSD,	"SlaveStop",	NULL),
++	PXA_BIT(ISR_ALD,	"ALD",		NULL),
++	PXA_BIT(ISR_ITE,	"TxEmpty",	NULL),
++	PXA_BIT(ISR_IRF,	"RxFull",	NULL),
++	PXA_BIT(ISR_GCAD,	"GenCall",	NULL),
++	PXA_BIT(ISR_SAD,	"SlaveAddr",	NULL),
++	PXA_BIT(ISR_BED,	"BusErr",	NULL),
+ };
  
--	hw->crtc[3] = BIT(Hblankend,  0, 0x1f,  0) |
--		      BIT(1,          0, 0x01,  7);
-+	hw->crtc[3] = ENCODE_BIT(Hblankend,  0, 0x1f,  0) |
-+		      ENCODE_BIT(1,          0, 0x01,  7);
+ static void decode_ISR(unsigned int val)
+@@ -117,21 +117,21 @@ static void decode_ISR(unsigned int val)
+ }
  
- 	Hsyncend    = (var->xres + var->right_margin + var->hsync_len) >> 3;
+ static const struct bits icr_bits[] = {
+-	BIT(ICR_START,  "START",	NULL),
+-	BIT(ICR_STOP,   "STOP",		NULL),
+-	BIT(ICR_ACKNAK, "ACKNAK",	NULL),
+-	BIT(ICR_TB,     "TB",		NULL),
+-	BIT(ICR_MA,     "MA",		NULL),
+-	BIT(ICR_SCLE,   "SCLE",		"scle"),
+-	BIT(ICR_IUE,    "IUE",		"iue"),
+-	BIT(ICR_GCD,    "GCD",		NULL),
+-	BIT(ICR_ITEIE,  "ITEIE",	NULL),
+-	BIT(ICR_IRFIE,  "IRFIE",	NULL),
+-	BIT(ICR_BEIE,   "BEIE",		NULL),
+-	BIT(ICR_SSDIE,  "SSDIE",	NULL),
+-	BIT(ICR_ALDIE,  "ALDIE",	NULL),
+-	BIT(ICR_SADIE,  "SADIE",	NULL),
+-	BIT(ICR_UR,     "UR",		"ur"),
++	PXA_BIT(ICR_START,  "START",	NULL),
++	PXA_BIT(ICR_STOP,   "STOP",	NULL),
++	PXA_BIT(ICR_ACKNAK, "ACKNAK",	NULL),
++	PXA_BIT(ICR_TB,     "TB",	NULL),
++	PXA_BIT(ICR_MA,     "MA",	NULL),
++	PXA_BIT(ICR_SCLE,   "SCLE",	"scle"),
++	PXA_BIT(ICR_IUE,    "IUE",	"iue"),
++	PXA_BIT(ICR_GCD,    "GCD",	NULL),
++	PXA_BIT(ICR_ITEIE,  "ITEIE",	NULL),
++	PXA_BIT(ICR_IRFIE,  "IRFIE",	NULL),
++	PXA_BIT(ICR_BEIE,   "BEIE",	NULL),
++	PXA_BIT(ICR_SSDIE,  "SSDIE",	NULL),
++	PXA_BIT(ICR_ALDIE,  "ALDIE",	NULL),
++	PXA_BIT(ICR_SADIE,  "SADIE",	NULL),
++	PXA_BIT(ICR_UR,     "UR",		"ur"),
+ };
  
--	hw->crtc[5] = BIT(Hsyncend,   0, 0x1f,  0) |
--		      BIT(Hblankend,  5, 0x01,  7);
-+	hw->crtc[5] = ENCODE_BIT(Hsyncend,   0, 0x1f,  0) |
-+		      ENCODE_BIT(Hblankend,  5, 0x01,  7);
- 
- 	Vdispend    = var->yres - 1;
- 	Vsyncstart  = var->yres + var->lower_margin;
-@@ -591,20 +591,20 @@ cyber2000fb_decode_crtc(struct par_info *hw, struct cfb_info *cfb,
- 	Vblankend   = Vtotal - 10;
- 
- 	hw->crtc[6]  = Vtotal;
--	hw->crtc[7]  = BIT(Vtotal,     8, 0x01,  0) |
--			BIT(Vdispend,   8, 0x01,  1) |
--			BIT(Vsyncstart, 8, 0x01,  2) |
--			BIT(Vblankstart,8, 0x01,  3) |
--			BIT(1,          0, 0x01,  4) |
--	        	BIT(Vtotal,     9, 0x01,  5) |
--			BIT(Vdispend,   9, 0x01,  6) |
--			BIT(Vsyncstart, 9, 0x01,  7);
--	hw->crtc[9]  = BIT(0,          0, 0x1f,  0) |
--		        BIT(Vblankstart,9, 0x01,  5) |
--			BIT(1,          0, 0x01,  6);
-+	hw->crtc[7]  = ENCODE_BIT(Vtotal,     8, 0x01,  0) |
-+			ENCODE_BIT(Vdispend,   8, 0x01,  1) |
-+			ENCODE_BIT(Vsyncstart, 8, 0x01,  2) |
-+			ENCODE_BIT(Vblankstart,8, 0x01,  3) |
-+			ENCODE_BIT(1,          0, 0x01,  4) |
-+	        	ENCODE_BIT(Vtotal,     9, 0x01,  5) |
-+			ENCODE_BIT(Vdispend,   9, 0x01,  6) |
-+			ENCODE_BIT(Vsyncstart, 9, 0x01,  7);
-+	hw->crtc[9]  = ENCODE_BIT(0,          0, 0x1f,  0) |
-+		        ENCODE_BIT(Vblankstart,9, 0x01,  5) |
-+			ENCODE_BIT(1,          0, 0x01,  6);
- 	hw->crtc[10] = Vsyncstart;
--	hw->crtc[11] = BIT(Vsyncend,   0, 0x0f,  0) |
--		       BIT(1,          0, 0x01,  7);
-+	hw->crtc[11] = ENCODE_BIT(Vsyncend,   0, 0x0f,  0) |
-+		       ENCODE_BIT(1,          0, 0x01,  7);
- 	hw->crtc[12] = Vdispend;
- 	hw->crtc[15] = Vblankstart;
- 	hw->crtc[16] = Vblankend;
-@@ -616,10 +616,10 @@ cyber2000fb_decode_crtc(struct par_info *hw, struct cfb_info *cfb,
- 	 * 4=LINECOMP:10 5-IVIDEO 6=FIXCNT
- 	 */
- 	hw->crtc_ofl =
--		BIT(Vtotal,     10, 0x01,  0) |
--		BIT(Vdispend,   10, 0x01,  1) |
--		BIT(Vsyncstart, 10, 0x01,  2) |
--		BIT(Vblankstart,10, 0x01,  3) |
-+		ENCODE_BIT(Vtotal,     10, 0x01,  0) |
-+		ENCODE_BIT(Vdispend,   10, 0x01,  1) |
-+		ENCODE_BIT(Vsyncstart, 10, 0x01,  2) |
-+		ENCODE_BIT(Vblankstart,10, 0x01,  3) |
- 		EXT_CRT_VRTOFL_LINECOMP10;
- 
- 	/* woody: set the interlaced bit... */
+ static void decode_ICR(unsigned int val)
