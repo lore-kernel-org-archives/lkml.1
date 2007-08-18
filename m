@@ -1,66 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbXHRGW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbXHRGfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753411AbXHRGW0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 02:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbXHRGWR
+	id S1753437AbXHRGfc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 02:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbXHRGfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 02:22:17 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:59145 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750987AbXHRGWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 02:22:16 -0400
-Date: Sat, 18 Aug 2007 08:23:33 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: linux-kernel@vger.kernel.org, Gerd Hoffmann <kraxel@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Bryan Wu <bryan.wu@analog.com>,
-       Sonic Zhang <sonic.adi@gmail.com>,
-       Mike Frysinger <vapier.adi@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [draft] Blackfin Early Printk implmentation
-Message-ID: <20070818062333.GA26416@uranus.ravnborg.org>
-References: <200708152234.06734.rgetz@blackfin.uclinux.org> <200708171336.40159.rgetz@blackfin.uclinux.org> <20070817175911.GA22046@uranus.ravnborg.org> <200708171607.32849.rgetz@blackfin.uclinux.org>
-Mime-Version: 1.0
+	Sat, 18 Aug 2007 02:35:22 -0400
+Received: from web36507.mail.mud.yahoo.com ([209.191.85.7]:46918 "HELO
+	web36507.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751294AbXHRGfW convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 02:35:22 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sat, 18 Aug 2007 02:35:21 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=PIeUWjykCE0rQTdcUVM3/t0I1Kn3CVGyVZzqKadXzfE0wyUxa4LmcpXCNKE9KiXhhesKINB98exoSjfW1qLIMqduy4dO1ZYbSp6HKAJJbo7rNdh+ZoA1rM1K7b4qZesnRZbSh/uKMEOYZRGox4ao7gOiwUR4jvj9CaS2ojh7iHM=;
+X-YMail-OSG: wW7AoQEVM1lp7DZOocUK8S7ITMVY2KVzaFDxSXBu4gStd8T9XjwqujaisgKVqciWRmFrYyf8rw--
+X-Mailer: YahooMailRC/651.48 YahooMailWebService/0.7.119
+Date: Fri, 17 Aug 2007 23:28:40 -0700 (PDT)
+From: sean a <seansd@yahoo.com>
+Subject: Re: [PATCH] [5/12] x86_64: Make patching more robust, fix paravirt
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708171607.32849.rgetz@blackfin.uclinux.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8BIT
+Message-ID: <63986.35847.qm@web36507.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > What was preventing you from just using the x86_64 code here?
-> 
-> Some was borrowed - but not much. since we don't support vga, or 16550 UARTs
-> (Blackfin has it's own on-chip UART), I don't think this would work. 
-> 
-> Maybe I'm missing something - but I don't think so. Every one who implements
-> implements direct IO to the hardware (except me, since I put it into the driver
-> file, and force Sonic - the serial driver developer - to maintain it forever).
-> 
-> Most of the other early printks talks directly to the hardware.
-I only looked at your version and it looked general thats why I brought
-up the code sharing idea - which I agree is not possible.
+git-bisect bad ab144f5ec64c42218a555ec1dbde6b60cf2982d6
 
-> > Thinking that all should do the same so maybe alpha ought to change...
-> 
-> When I looked at all the printk implementations, I thought they were all
-> kind of hokey, and not very common - but what do you want for a debug interface
-> that lasts less than 5 seconds?
-> 
-> ./arch/x86_64/kernel/early_printk.c
-> ./arch/blackfin/kernel/early_printk.c
-> ./arch/sh64/kernel/early_printk.c
-> ./arch/sh/kernel/early_printk.c
-> ./arch/i386/kernel/early_printk.c
-> ./arch/mips/kernel/early_printk.c
-> 
-> I didn't see an alpha implementation - where is it done?
-Alpha uses the imlementation in lib/*print.c somehow.
-And I think the right choice would be to implement
-a private version of early_printk for alpha like the
-other architectures do.
+Also breaks booting in VMWare's WS 6 if paravirtual support is enabled for the guest.
+Hope this helps narrow it down.
 
-Thanks for the split-up. I could follow the changes now.
-
-	Sam
+Sean
