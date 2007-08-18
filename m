@@ -1,159 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758949AbXHRW2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbXHRWeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758949AbXHRW2w (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 18:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbXHRW2m
+	id S1758676AbXHRWeQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 18:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbXHRWd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 18:28:42 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:60985 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751247AbXHRW2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 18:28:41 -0400
-Date: Sat, 18 Aug 2007 15:28:21 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Zach Amsden <zach@vmware.com>
-Subject: [PATCH] x86: skip paravirt patching when appropriate
-Message-ID: <20070818222821.GX3672@sequoia.sous-sol.org>
-References: <20070809241.425881000@suse.de> <20070809124132.C794A14F3B@wotan.suse.de> <46C637B7.30200@goop.org> <200708181149.48217.ak@suse.de> <20070818203230.GV3672@sequoia.sous-sol.org> <alpine.LFD.0.999.0708181355280.30176@woody.linux-foundation.org> <20070818213141.GW3672@sequoia.sous-sol.org>
+	Sat, 18 Aug 2007 18:33:58 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:33060 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751337AbXHRWd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 18:33:57 -0400
+Date: Sat, 18 Aug 2007 15:33:52 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] exec: kill unsafe BUG_ON(sig->count) checks
+Message-ID: <20070818223352.GG7628@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070818173936.GA206@tv-sign.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070818213141.GW3672@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070818173936.GA206@tv-sign.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Chris Wright (chrisw@sous-sol.org) wrote:
-> Now that I understand the problem, I do have a very simple (slightly
-> overkill) fix for paravirt patching.  This can be cleaned up to avoid
-> the copies when they aren't needed, but that will take a little more
-> auditing of the various patchers.  If you still prefer a revert I've
-> got one handy, and we can re-visit this all post .23.
+On Sat, Aug 18, 2007 at 09:39:36PM +0400, Oleg Nesterov wrote:
+> de_thread:
+> 
+> 	if (atomic_read(&oldsighand->count) <= 1)
+> 		BUG_ON(atomic_read(&sig->count) != 1);
+> 
+> This is not safe without the rmb() in between. The results of two correctly
+> ordered __exit_signal()->atomic_dec_and_test()'s could be seen out of order
+> on our CPU.
+> 
+> The same is true for the "thread_group_empty()" case, __unhash_process()'s
+> changes could be seen before atomic_dec_and_test(&sig->count).
+> 
+> On some platforms (including i386) atomic_read() doesn't provide even the
+> compiler barrier, in that case these checks are simply racy.
+> 
+> Remove these BUG_ON()'s. Alternatively, we can do something like
+> 
+> 	BUG_ON( ({ smp_rmb(); atomic_read(&sig->count) != 1; }) );
 
-This one avoids the patching when necessary, but needs some validation on
-VMI (and Zach's not avail today).  I'll resend when I know it's working
-for all paravirt patchers.
+Good catches!
 
-thanks,
--chris
---
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Subject: [PATCH] x86: skip paravirt patching when appropriate
-From: Chris Wright <chrisw@sous-sol.org>
-
-commit d34fda4a84c18402640a1a2342d6e6d9829e6db7 was a little overkill
-in the case where a paravirt patcher chooses to leave patch site
-unpatched.  Instead of copying original instructions to temp buffer
-then back to patch site, simply skip patching those sites altogether.
-
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Zach Amsden <zach@vmware.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- arch/i386/kernel/alternative.c |    4 ++--
- arch/i386/kernel/paravirt.c    |   10 +++++-----
- arch/i386/kernel/vmi.c         |    4 ++--
- include/asm-i386/paravirt.h    |    3 +++
- 4 files changed, 12 insertions(+), 9 deletions(-)
-
-diff --git a/arch/i386/kernel/alternative.c b/arch/i386/kernel/alternative.c
-index 9f4ac8b..b81d87e 100644
---- a/arch/i386/kernel/alternative.c
-+++ b/arch/i386/kernel/alternative.c
-@@ -366,10 +366,10 @@ void apply_paravirt(struct paravirt_patch_site *start,
- 		unsigned int used;
- 
- 		BUG_ON(p->len > MAX_PATCH_LEN);
--		/* prep the buffer with the original instructions */
--		memcpy(insnbuf, p->instr, p->len);
- 		used = paravirt_ops.patch(p->instrtype, p->clobbers, insnbuf,
- 					  (unsigned long)p->instr, p->len);
-+		if (used == PV_NO_PATCH)
-+			continue;
- 
- 		BUG_ON(used > p->len);
- 
-diff --git a/arch/i386/kernel/paravirt.c b/arch/i386/kernel/paravirt.c
-index 739cfb2..a36ce34 100644
---- a/arch/i386/kernel/paravirt.c
-+++ b/arch/i386/kernel/paravirt.c
-@@ -122,7 +122,7 @@ unsigned paravirt_patch_nop(void)
- 
- unsigned paravirt_patch_ignore(unsigned len)
- {
--	return len;
-+	return PV_NO_PATCH;
- }
- 
- struct branch {
-@@ -139,9 +139,9 @@ unsigned paravirt_patch_call(void *insnbuf,
- 	unsigned long delta = (unsigned long)target - (addr+5);
- 
- 	if (tgt_clobbers & ~site_clobbers)
--		return len;	/* target would clobber too much for this site */
-+		return PV_NO_PATCH;	/* target would clobber too much for this site */
- 	if (len < 5)
--		return len;	/* call too long for patch site */
-+		return PV_NO_PATCH;	/* call too long for patch site */
- 
- 	b->opcode = 0xe8; /* call */
- 	b->delta = delta;
-@@ -157,7 +157,7 @@ unsigned paravirt_patch_jmp(const void *target, void *insnbuf,
- 	unsigned long delta = (unsigned long)target - (addr+5);
- 
- 	if (len < 5)
--		return len;	/* call too long for patch site */
-+		return PV_NO_PATCH;	/* call too long for patch site */
- 
- 	b->opcode = 0xe9;	/* jmp */
- 	b->delta = delta;
-@@ -196,7 +196,7 @@ unsigned paravirt_patch_insns(void *insnbuf, unsigned len,
- 	unsigned insn_len = end - start;
- 
- 	if (insn_len > len || start == NULL)
--		insn_len = len;
-+		insn_len = PV_NO_PATCH;
- 	else
- 		memcpy(insnbuf, start, insn_len);
- 
-diff --git a/arch/i386/kernel/vmi.c b/arch/i386/kernel/vmi.c
-index 18673e0..27ae004 100644
---- a/arch/i386/kernel/vmi.c
-+++ b/arch/i386/kernel/vmi.c
-@@ -118,7 +118,7 @@ static unsigned patch_internal(int call, unsigned len, void *insnbuf,
- 
- 		case VMI_RELOCATION_NONE:
- 			/* leave native code in place */
--			break;
-+			return PV_NO_PATCH;
- 
- 		default:
- 			BUG();
-@@ -153,7 +153,7 @@ static unsigned vmi_patch(u8 type, u16 clobbers, void *insns,
- 		default:
- 			break;
- 	}
--	return len;
-+	return PV_NO_PATCH;
- }
- 
- /* CPUID has non-C semantics, and paravirt-ops API doesn't match hardware ISA */
-diff --git a/include/asm-i386/paravirt.h b/include/asm-i386/paravirt.h
-index 9fa3fa9..b26794f 100644
---- a/include/asm-i386/paravirt.h
-+++ b/include/asm-i386/paravirt.h
-@@ -252,6 +252,9 @@ extern struct paravirt_ops paravirt_ops;
- #define paravirt_alt(insn_string)					\
- 	_paravirt_alt(insn_string, "%c[paravirt_typenum]", "%c[paravirt_clobber]")
- 
-+enum {
-+	PV_NO_PATCH = -1
-+};
- unsigned paravirt_patch_nop(void);
- unsigned paravirt_patch_ignore(unsigned len);
- unsigned paravirt_patch_call(void *insnbuf,
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> 
+> --- t/fs/exec.c~1_BUG_ON	2007-08-18 17:36:58.000000000 +0400
+> +++ t/fs/exec.c	2007-08-18 18:19:41.000000000 +0400
+> @@ -784,7 +784,6 @@ static int de_thread(struct task_struct 
+>  	 * and we can just re-use it all.
+>  	 */
+>  	if (atomic_read(&oldsighand->count) <= 1) {
+> -		BUG_ON(atomic_read(&sig->count) != 1);
+>  		signalfd_detach(tsk);
+>  		exit_itimers(sig);
+>  		return 0;
+> @@ -929,8 +928,6 @@ no_thread_group:
+>  	if (leader)
+>  		release_task(leader);
+> 
+> -	BUG_ON(atomic_read(&sig->count) != 1);
+> -
+>  	if (atomic_read(&oldsighand->count) == 1) {
+>  		/*
+>  		 * Now that we nuked the rest of the thread group,
+> 
