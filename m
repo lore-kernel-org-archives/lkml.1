@@ -1,83 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbXHROnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756410AbXHROrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbXHROnQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 10:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbXHROnB
+	id S1756410AbXHROrR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 10:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbXHROrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 10:43:01 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:60207 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751242AbXHROm7 (ORCPT
+	Sat, 18 Aug 2007 10:47:05 -0400
+Received: from baldrick.fusednetworks.co.uk ([83.142.228.48]:39073 "EHLO
+	baldrick.fusednetworks.co.uk" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754005AbXHROrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 10:42:59 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46C703C9.9060507@s5r6.in-berlin.de>
-Date: Sat, 18 Aug 2007 16:35:53 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Sat, 18 Aug 2007 10:47:03 -0400
+X-Greylist: delayed 1751 seconds by postgrey-1.27 at vger.kernel.org; Sat, 18 Aug 2007 10:47:02 EDT
+Message-ID: <46C6FF93.4040509@bootc.net>
+Date: Sat, 18 Aug 2007 15:17:55 +0100
+From: Chris Boot <bootc@bootc.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
 MIME-Version: 1.0
-To: Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@suse.de>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, paulmck@linux.vnet.ibm.com,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-Subject: LDD3 pitfalls (was Re: [PATCH 0/24] make atomic_read() behave consistently
- across all architectures)
-References: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C41EE4.9090806@s5r6.in-berlin.de> <46C42767.4070104@s5r6.in-berlin.de> <20070816104250.GB2927@gondor.apana.org.au> <20070816163441.GB16957@linux.vnet.ibm.com> <46C512EB.7020603@yahoo.com.au> <46C54D74.60101@s5r6.in-berlin.de> <46C556F1.8000407@yahoo.com.au>
-In-Reply-To: <46C556F1.8000407@yahoo.com.au>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Subject: Re: Panic with XFS on RHEL5 (2.6.18-8.1.8.el5)
+References: <46C6C145.70506@abacustree.com> <yw1xr6m1ja7o.fsf@thrashbarg.mansr.com>
+In-Reply-To: <yw1xr6m1ja7o.fsf@thrashbarg.mansr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Stefan Richter wrote:
->> Nick Piggin wrote:
+Måns Rullgård wrote:
+> Chris Boot <chris.boot@abacustree.com> writes:
+>
+>   
+>> All,
 >>
->>> I don't know why people would assume volatile of atomics. AFAIK, most
->>> of the documentation is pretty clear that all the atomic stuff can be
->>> reordered etc. except for those that modify and return a value.
+>> I've got a box running RHEL5 and haven't been impressed by ext3
+>> performance on it (running of a 1.5TB HP MSA20 using the cciss
+>> driver). I compiled XFS as a module and tried it out since I'm used to
+>> using it on Debian, which runs much more efficiently. However, every
+>> so often the kernel panics as below. Apologies for the tainted kernel,
+>> but we run VMware Server on the box as well.
 >>
+>> Does anyone have any hits/tips for using XFS on Red Hat? What's
+>> causing the panic below, and is there a way around this?
 >>
->> Which documentation is there?
-> 
-> Documentation/atomic_ops.txt
-> 
-> 
->> For driver authors, there is LDD3.  It doesn't specifically cover
->> effects of optimization on accesses to atomic_t.
->>
->> For architecture port authors, there is Documentation/atomic_ops.txt.
->> Driver authors also can learn something from that document, as it
->> indirectly documents the atomic_t and bitops APIs.
->>
-> 
-> "Semantics and Behavior of Atomic and Bitmask Operations" is
-> pretty direct :)
-> 
-> Sure, it says that it's for arch maintainers, but there is no
-> reason why users can't make use of it.
+>> BUG: unable to handle kernel paging request at virtual address b8af9d60
+>> printing eip:
+>> c0415974
+>> *pde = 00000000
+>> Oops: 0000 [#1]
+>> SMP last sysfs file: /block/loop7/dev
+>> Modules linked in: loop nfsd exportfs lockd nfs_acl iscsi_trgt(U)
+>> autofs4 hidp nls_utf8 cifs ppdev rfcomm l2cap bluetooth vmnet(U)
+>> vmmon(U) sunrpc ipv6 xfs(U) video sbs i2c_ec button battery asus_acpi
+>> ac lp st sg floppy serio_raw intel_rng pcspkr e100 mii e7xxx_edac
+>> i2c_i801 edac_mc i2c_core e1000 r8169 ide_cd cdrom parport_pc parport
+>> dm_snapshot dm_zero dm_mirror dm_mod cciss mptspi mptscsih
+>> scsi_transport_spi sd_mod scsi_mod mptbase ext3 jbd ehci_hcd ohci_hcd
+>> uhci_hcd
+>> CPU:    1
+>> EIP:    0060:[<c0415974>]    Tainted: P      VLI
+>> EFLAGS: 00010046   (2.6.18-8.1.8.el5 #1) EIP is at
+>> smp_send_reschedule+0x3/0x53
+>> eax: c213f000   ebx: c213f000   ecx: eef84000   edx: c213f000
+>> esi: 00001086   edi: f668c000   ebp: f4f2fce8   esp: f4f2fc8c
+>> ds: 007b   es: 007b   ss: 0068
+>> Process crond (pid: 3146, ti=f4f2f000 task=f51faaa0 task.ti=f4f2f000)
+>> Stack: 66d66b89 c041dc23 00000000 a9afbb0e fffffea5 01904500 00000000
+>> 0000000f     00000000 00000001 00000001 c200c6e0 00000100 00000000
+>> 00000069 00000180     018fc500 c200d240 00000003 00000292 f601efc0
+>> f6027e00 00000000 00000050 Call Trace:
+>> [<c041dc23>] try_to_wake_up+0x351/0x37b
+>> [<f936884e>] xfsbufd_wakeup+0x28/0x49 [xfs]
+>> [<c04572f9>] shrink_slab+0x56/0x13c
+>> [<c0457c0c>] try_to_free_pages+0x162/0x23e
+>> [<c0454064>] __alloc_pages+0x18d/0x27e
+>> [<c045214e>] find_or_create_page+0x53/0x8c
+>> [<c046c7b1>] __getblk+0x162/0x270
+>> [<c0475be0>] do_lookup+0x53/0x157
+>> [<f889138f>] ext3_getblk+0x7c/0x233 [ext3]
+>> [<f88913fe>] ext3_getblk+0xeb/0x233 [ext3]
+>> [<c048215c>] mntput_no_expire+0x11/0x6a
+>> [<f889226e>] ext3_bread+0x13/0x69 [ext3]
+>> [<f8895606>] htree_dirblock_to_tree+0x22/0x113 [ext3]
+>> [<f889574f>] ext3_htree_fill_tree+0x58/0x1a0 [ext3]
+>> [<c047828b>] do_path_lookup+0x20e/0x25f
+>> [<c046b987>] get_empty_filp+0x99/0x15e
+>> [<f889d611>] ext3_permission+0x0/0xa [ext3]
+>> [<f888eaa3>] ext3_readdir+0x1ce/0x59b [ext3]
+>> [<c047a0dd>] filldir+0x0/0xb9
+>> [<c0472973>] sys_fstat64+0x1e/0x23
+>> [<c047a1f9>] vfs_readdir+0x63/0x8d
+>> [<c047a0dd>] filldir+0x0/0xb9
+>> [<c047a447>] sys_getdents+0x5f/0x9c
+>> [<c0403eff>] syscall_call+0x7/0xb
+>> =======================
+>>     
+>
+> Your Redhat kernel is probably built with 4k stacks and XFS+loop+ext3
+> seems to be enough to overflow it.
+>   
+Thanks, that explains a lot. However, I don't have any XFS filesystems 
+mounted over loop devices on ext3. Earlier in the day I had iso9660 on 
+loop on xfs, could that have caused the issue? It was unmounted and 
+deleted when this panic occurred.
 
+I'll probably just try and recompile the kernel with 8k stacks and see 
+how it goes. Screw the support, we're unlikely to get it anyway. :-P
 
-Note, LDD3 page 238 says:  "It is worth noting that most of the other
-kernel primitives dealing with synchronization, such as spinlock and
-atomic_t operations, also function as memory barriers."
+Many thanks,
+Chris
 
-I don't know about Linux 2.6.10 against which LDD3 was written, but
-currently only _some_ atomic_t operations function as memory barriers.
-
-Besides, judging from some posts in this thread, saying that atomic_t
-operations dealt with synchronization may not be entirely precise.
--- 
-Stefan Richter
--=====-=-=== =--- =--=-
-http://arcgraph.de/sr/
