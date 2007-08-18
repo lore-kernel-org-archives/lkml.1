@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbXHRAAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbXHRACN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760878AbXHRAAo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 20:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbXHRAAf
+	id S1757483AbXHRACN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 20:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbXHRAB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 20:00:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43242
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753091AbXHRAAe (ORCPT
+	Fri, 17 Aug 2007 20:01:58 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:17011 "EHLO
+	outbound5-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751081AbXHRAB5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 20:00:34 -0400
-Date: Fri, 17 Aug 2007 17:00:33 -0700 (PDT)
-Message-Id: <20070817.170033.63993876.davem@davemloft.net>
-To: rdreier@cisco.com
-Cc: tom@opengridcomputing.com, jeff@garzik.org, swise@opengridcomputing.com,
-       mshefty@ichips.intel.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports
- from the host TCP port space.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <adafy2hyc04.fsf@cisco.com>
-References: <adaodh6x7js.fsf@cisco.com>
-	<20070817.142756.65194845.davem@davemloft.net>
-	<adafy2hyc04.fsf@cisco.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 17 Aug 2007 20:01:57 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <46C636F0.2@am.sony.com>
+Date: Fri, 17 Aug 2007 17:01:52 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [announce] Updated PS3 Linux Distro Kit released
+References: <4581CA0C.20102@am.sony.com>
+In-Reply-To: <4581CA0C.20102@am.sony.com>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Aug 2007 00:01:52.0664 (UTC) FILETIME=[FB6FE980:01C7E12A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 17 Aug 2007 16:31:07 -0700
+For those interested, an updated PS3 Linux Distributor's Starter
+Kit (v1.4) was released.
 
->  > >  > When using RDMA you lose the capability to do packet shaping,
->  > >  > classification, and all the other wonderful networking facilities
->  > >  > you've grown to love and use over the years.
->  > > 
->  > > Same thing with TSO and LRO and who knows what else.
->  > 
->  > Not true at all.  Full classification and filtering still is usable
->  > with TSO and LRO.
-> 
-> Well, obviously with TSO and LRO the packets that the stack sends or
-> receives are not the same as what's on the wire.  Whether that breaks
-> your wonderful networking facilities or not depends on the specifics
-> of the particular facility I guess -- for example shaping is clearly
-> broken by TSO.  (And people can wonder what the packet trains TSO
-> creates do to congestion control on the internet, but the netdev crowd
-> has already decided that TSO is "good" and RDMA is "bad")
+The release note is here:
 
-This is also a series of falsehoods.  All packet filtering,
-queue management, and packet scheduling facilities work perfectly
-fine and as designed with both LRO and TSO.
+  http://www.kernel.org/pub/linux/kernel/people/geoff/cell/CELL-Linux-CL_20070817-ADDON/README-e.txt
 
-When problems come up, they are bugs, and we fix them.
+And the CD-ROM iso image is here (169 MiB):
 
-Please stop spreading this FUD about TSO and LRO.
+  ftp://ftp.infradead.org/pub/Sony-PS3/CELL-Linux-CL_20070817-ADDON.iso
+  http://ftp.uk.linux.org/pub/linux/Sony-PS3/CELL-Linux-CL_20070817-ADDON.iso
 
-The fact is that RDMA bypasses the whole stack so that supporting
-these facilities is not even _POSSIBLE_.  With stateless offloads it
-is possible to support all of these facilities, and we do.
+I extracted files are here for convenient browsing:
+
+  http://www.kernel.org/pub/linux/kernel/people/geoff/cell/CELL-Linux-CL_20070817-ADDON
+
+-Geoff
+
+
