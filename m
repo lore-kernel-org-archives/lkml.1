@@ -1,36 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759225AbXHRXNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbXHRXTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759225AbXHRXNQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 19:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbXHRXNG
+	id S1759338AbXHRXTo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 19:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbXHRXTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 19:13:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58919 "EHLO mx1.redhat.com"
+	Sat, 18 Aug 2007 19:19:32 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:37055 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756088AbXHRXND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 19:13:03 -0400
+	id S1755812AbXHRXTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 19:19:30 -0400
+Date: Sat, 18 Aug 2007 16:19:24 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Satyam Sharma <satyam@infradead.org>, Christoph Lameter <clameter@sgi.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Paul Mackerras <paulus@samba.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
+       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
+       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
+       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070818231924.GH7628@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <46C516BA.60700@yahoo.com.au> <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org> <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au> <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com> <alpine.LFD.0.999.0708180709060.3666@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708172110400.30176@woody.linux-foundation.org> <20070818215409.GC7628@linux.vnet.ibm.com> <alpine.LFD.0.999.0708181526270.30176@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] exec: simplify the new ->sighand allocation
-In-Reply-To: Oleg Nesterov's message of  Saturday, 18 August 2007 21:39:50 +0400 <20070818173950.GA212@tv-sign.ru>
-Emacs: no job too big... no job.
-Message-Id: <20070818231259.1A9834D05C6@magilla.localdomain>
-Date: Sat, 18 Aug 2007 16:12:59 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0708181526270.30176@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 	- ENOMEM still can happen after de_thread(), ->sighand is not the last
-> 	  object we have to allocate
+On Sat, Aug 18, 2007 at 03:41:13PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Sat, 18 Aug 2007, Paul E. McKenney wrote:
+> > 
+> > One of the gcc guys claimed that he thought that the two-instruction
+> > sequence would be faster on some x86 machines.  I pointed out that
+> > there might be a concern about code size.  I chose not to point out
+> > that people might also care about the other x86 machines.  ;-)
+> 
+> Some (very few) x86 uarchs do tend to prefer "load-store" like code 
+> generation, and doing a "mov [mem],reg + op reg" instead of "op [mem]" can 
+> actually be faster on some of them. Not any that are relevant today, 
+> though.
 
-As long as this is true, I think it's the incontrovertible argument there
-is no reason not to simplify it.  (Not that I don't also agree with your
-other reasons).
+;-)
 
+> Also, that has nothing to do with volatile, and should be controlled by 
+> optimization flags (like -mtune). In fact, I thought there was a separate 
+> flag to do that (ie something like "-mload-store"), but I can't find it, 
+> so maybe that's just my fevered brain..
 
-Thanks,
-Roland
+Good point, will suggest this if the need arises.
+
+							Thanx, Paul
