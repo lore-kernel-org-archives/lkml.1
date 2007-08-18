@@ -1,152 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbXHRBw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbXHRBxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754642AbXHRBw4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 21:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbXHRBwo
+	id S1756120AbXHRBxy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 21:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbXHRBxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 21:52:44 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4438 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751009AbXHRBwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 21:52:42 -0400
-Subject: Re: [PATCH] - git-send-email.perl
-From: Joe Perches <joe@perches.com>
-To: Junio C Hamano <gitster@pobox.com>
-Cc: Rene Herman <rene.herman@gmail.com>, git@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-In-Reply-To: <7vy7g9enqd.fsf@gitster.siamese.dyndns.org>
-References: <1186984174.10249.7.camel@localhost>
-	 <200708131933.10125.m.kozlowski@tuxland.pl>
-	 <1187026955.2688.4.camel@laptopd505.fenrus.org>
-	 <1187037445.6628.98.camel@heimdal.trondhjem.org>
-	 <1187054366.2757.0.camel@laptopd505.fenrus.org>
-	 <46C10AA8.3090505@gmail.com> <20070814102033.604c8695@the-village.bc.nu>
-	 <46C1CFFE.4000001@gmail.com> <1187110824.32555.76.camel@localhost>
-	 <7vwsvx8twx.fsf@assigned-by-dhcp.cox.net>
-	 <1187316783.822.19.camel@localhost> <1187317826.822.23.camel@localhost>
-	 <1187373278.822.100.camel@localhost>
-	 <7vy7g9enqd.fsf@gitster.siamese.dyndns.org>
+	Fri, 17 Aug 2007 21:53:43 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58259 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbXHRBxm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 21:53:42 -0400
+Subject: Re: [PATCH] i386: optimize memset of 6 and 8 bytes
+From: Arjan van de Ven <arjan@infradead.org>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20070817165030.5455f761@freepuppy.rosehill.hemminger.net>
+References: <20070817165030.5455f761@freepuppy.rosehill.hemminger.net>
 Content-Type: text/plain
-Date: Fri, 17 Aug 2007 18:51:12 -0700
-Message-Id: <1187401873.822.146.camel@localhost>
+Organization: Intel International BV
+Date: Fri, 17 Aug 2007 18:49:34 -0700
+Message-Id: <1187401774.2789.0.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+X-Mailer: Evolution 2.11.6.1 (2.11.6.1-1.fc8) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-17 at 16:38 -0700, Junio C Hamano wrote:
-> Joe Perches <joe@perches.com> writes:
-> ... Signed-off-by: ...
-> I do not see a patch to "Documentation/git-send-email.txt" here...
-> Something like this, with appropriate error checking, perhaps?
-> 
-> 	open my $cc, "${cc_cmd} $t |";
->         while (my $c = <$cc>) {
->         	...
-> 	}
->         close $cc;
 
-Add --cc-cmd, the ability to execute an arbitrary "cmd" to
-generate per patch file specific "Cc:"s to git-send-email.perl
+On Fri, 2007-08-17 at 16:50 -0700, Stephen Hemminger wrote:
+> Tne network code does memset for 6 and 8 byte values, that can easily
+> be optimized into simple assignments without string instructions.
 
-Signed-off-by: Joe Perches <joe@perches.com>
 
-diff --git a/Documentation/git-send-email.txt b/Documentation/git-send-email.txt
-index d243ed1..9a48847 100644
---- a/Documentation/git-send-email.txt
-+++ b/Documentation/git-send-email.txt
-@@ -34,6 +34,12 @@ The --bcc option must be repeated for each user you want on the bcc list.
- +
- The --cc option must be repeated for each user you want on the cc list.
- 
-+--cc-cmd::
-+	Specify a command to execute once per patch file which
-+	should generate patch file specific "Cc:" entries.
-+	Output of this command must be single email address per line.
-+	Default is the value of 'sendemail.cccmd' configuration value.
-+	
- --chain-reply-to, --no-chain-reply-to::
- 	If this is set, each email will be sent as a reply to the previous
- 	email sent.  If disabled with "--no-chain-reply-to", all emails after
-@@ -124,6 +130,9 @@ sendemail.aliasfiletype::
- 	Format of the file(s) specified in sendemail.aliasesfile. Must be
- 	one of 'mutt', 'mailrc', 'pine', or 'gnus'.
- 
-+sendemail.cccmd::
-+	Command to execute to generate per patch file specific "Cc:"s.
-+
- sendemail.bcc::
- 	Email address (or alias) to always bcc.
- 
-diff --git a/git-send-email.perl b/git-send-email.perl
-index 69559b2..d49947c 100755
---- a/git-send-email.perl
-+++ b/git-send-email.perl
-@@ -46,6 +46,9 @@ Options:
-    --cc           Specify an initial "Cc:" list for the entire series
-                   of emails.
- 
-+   --cc-cmd       Specify a command to execute per file which adds
-+                  per file specific cc address entries
-+
-    --bcc          Specify a list of email addresses that should be Bcc:
- 		  on all the emails.
- 
-@@ -157,13 +160,14 @@ if ($@) {
- my ($quiet, $dry_run) = (0, 0);
- 
- # Variables with corresponding config settings
--my ($thread, $chain_reply_to, $suppress_from, $signed_off_cc);
-+my ($thread, $chain_reply_to, $suppress_from, $signed_off_cc, $cc_cmd);
- 
- my %config_settings = (
-     "thread" => [\$thread, 1],
-     "chainreplyto" => [\$chain_reply_to, 1],
-     "suppressfrom" => [\$suppress_from, 0],
-     "signedoffcc" => [\$signed_off_cc, 1],
-+    "cccmd" => [\$cc_cmd, ""],
- );
- 
- foreach my $setting (keys %config_settings) {
-@@ -189,6 +193,7 @@ my $rc = GetOptions("sender|from=s" => \$sender,
- 		    "smtp-server=s" => \$smtp_server,
- 		    "compose" => \$compose,
- 		    "quiet" => \$quiet,
-+		    "cc-cmd=s" => \$cc_cmd,
- 		    "suppress-from!" => \$suppress_from,
- 		    "signed-off-cc|signed-off-by-cc!" => \$signed_off_cc,
- 		    "dry-run" => \$dry_run,
-@@ -652,11 +657,25 @@ foreach my $t (@files) {
- 		}
- 	}
- 	close F;
-+
-+	if (${cc_cmd} ne "") {
-+	    open(F, "${cc_cmd} $t |")
-+		or die "(cc-cmd) Could not execute '${cc_cmd}'\n";
-+	    while(<F>) {
-+		my $c = $_;
-+		$c =~ s/^\s*//g;
-+		$c =~ s/\n$//g;
-+		push @cc, $c;
-+		printf("(cc-cmd) Adding cc: %s from: '%s'\n", $c, $cc_cmd)
-+		    unless $quiet;
-+	    }
-+	    close F;
-+	}
-+
- 	if (defined $author) {
- 		$message = "From: $author\n\n$message";
- 	}
- 
--
- 	send_message();
- 
- 	# set up for the next message
-
+so... question.
+Why are we doing this by hand? Wouldn't gcc just generate this code in
+the first place (when using __builtin_memset)? I very much suspect it
+would (and if some version doesn't.... we really ought to get that
+fixed)
 
