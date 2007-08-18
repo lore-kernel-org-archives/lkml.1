@@ -1,78 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbXHRKhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbXHRKmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755311AbXHRKhd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 06:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbXHRKh0
+	id S1755301AbXHRKmK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 06:42:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbXHRKl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 06:37:26 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60850 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753072AbXHRKhZ (ORCPT
+	Sat, 18 Aug 2007 06:41:57 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:55803 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752203AbXHRKl4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 06:37:25 -0400
-Date: Sat, 18 Aug 2007 12:37:22 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Dave Jones <davej@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Hajime Inoue <hinoue@ccsl.carleton.ca>, linux-kernel@vger.kernel.org
-Subject: Re: System call interposition/unprotecting the table
-Message-ID: <20070818103722.GA15626@one.firstfloor.org>
-References: <20070813180535.vo36rcevi80s0c4c@www.ccsl.carleton.ca> <20070814000956.7c8929dd@the-village.bc.nu> <46C1E5F5.9050702@ccsl.carleton.ca> <p73zm0tnbf8.fsf@bingen.suse.de> <20070814234206.76121d02@the-village.bc.nu> <20070814224835.GJ23308@one.firstfloor.org> <20070817141900.GA7223@redhat.com>
+	Sat, 18 Aug 2007 06:41:56 -0400
+Subject: Re: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, jengelh@computergmbh.de,
+       a.zummo@towertech.it, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com, Greg KH <greg@kroah.com>,
+       David Zeuthen <david@fubar.dk>
+In-Reply-To: <200708172106.52940.david-b@pacbell.net>
+References: <200708170823.15894.david-b@pacbell.net>
+	 <200708171250.09653.david-b@pacbell.net>
+	 <1187404839.4419.5.camel@lov.localdomain>
+	 <200708172106.52940.david-b@pacbell.net>
+Content-Type: text/plain
+Date: Sat, 18 Aug 2007 12:45:39 +0200
+Message-Id: <1187433939.4419.42.camel@lov.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070817141900.GA7223@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.11.6.1 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19zy8hSPjZvyDGtFCw0i/1qitbonWWEzOJGEOM
+ 3eim8eqcp6OosJSuXoK39FNrCAQqF35UkOejv26kTd7q4qHWSv
+ slMbVCBFkhGBWFxRrYqtpDNRymEgM4w
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 10:19:00AM -0400, Dave Jones wrote:
-> On Wed, Aug 15, 2007 at 12:48:35AM +0200, Andi Kleen wrote:
+On Fri, 2007-08-17 at 21:06 -0700, David Brownell wrote:
+> On Friday 17 August 2007, Kay Sievers wrote:
+> > 
+> > > I'm not the one who's advocating a change here.  If you want to
+> > > first change/break and then fix things, all of that is up to you.
+> > 
+> > I'm happy to do that. Patch is attached.
 > 
->  > > > In general the .data protection is only considered a debugging
->  > > > feature. I don't know why Fedora enables it in their production
->  > > > kernels.
->  > > 
->  > > That would be because we think you are wrong 8)
->  > 
->  > Well, it might at best buy you a few weeks/months in
->  > terms of the exploit arms race, but thrash your user's TLBs
->  > forever.
+> NAK.  That wasn't even a serious attempt at the "fix" part,
+> though it does the "break" part well enough to cause severe
+> regressions.
+
+You disabled uevents which breaks udev and HAL setups, because we can't
+track the existence of the devices, You can't just disable device events
+to disable module loading. Uevents have are by far not only about module
+loading.
+
+> (As well as leaving all my technical points about your pushback
+> un-addressed.  As I noted before, the evident fact that you don't
+> have technical responses to them says to me that your pushback
+> has no real technical basis ...)
+
+It has. Disabling uevents to control module loading is just the totally
+wrong thing to do. Uevents are there to let userspace know that a device
+exists. Only the existence of MODALIAS and the "modalias" file controls
+module loading, not the enabling and disabling of uevents, which is a
+completely broken hack.
+
+My patch fixes tons of issues, and that is "technical basis" enough. It
+makes platform play nice with userspace, by behaving like the rest of 
+the kernel.
+
+Userspace udev/HAL relies entirely on uevents, for hot- and for
+coldplug. Coldplug is done by writing "add" to all "uevent" files during
+early boot, that does not work anymore with platform, and needs to be
+fixed.
+
+> Out of around 300 platform drivers in the tree (and many more
+> not yet merged upstream), this makes it so that only *THREE* of
+> them can hotplug ... versus in the current tree, essentially
+> everything that's not a legacy driver is hotplugging just fine.
 > 
-> Show me a single situation where this matters.
+> That's one heck of a regression.  Just shy of 100% ...
 
-We had a couple of benchmarks where compiled in vs external
-4K mapped drivers made a noticeable difference.
+So where are the 100's of drivers that send an uevent? I'll go and fix them.
 
-> When we first enabled, we tried both benchmarks and real-world
-> loads, and it didn't matter at all.  Unless something fundamental
+> Plus it treats rtc-ds1742 as if it's a platform_driver not
+> an i2c_driver.
 
-It also depends on the CPU -- the sizes of the TLBs vary widely.
-On some older CPUs using 2/4MB pages was indeed a bad idea
-because the number of large TLB entries were very small.
+Wrong, the whole model is the other way around. MODALIAS does not tie
+other drivers to a device. A driver matches on a device, and the ds1742
+driver triggers on the existence of a platform driver. The alias strings
+don't "treat" anything.
+The whole kernel works that way, a lot of drivers get loaded by matching
+on "dmi:*" or "acpi:*" strings by not letting the driver be a dmi driver
+or acpi driver.
 
-Also there are sometimes effects where the CPU splits the 
-TLBs internally so even with 2MB pages you effectively
-get 4K TLB use. You could have run in one of those
+Please stop doing adding weird hacks to the kernel to fit your personal
+taste and breaking all assumptions existing tools rely on. Fix the stuff
+you broke and enable uevent for _all_ devices again. And let userspace
+make the decision what to do with the event, like all other subsystems
+in the kernel do.
 
-> has changed since then, the story should still be the same.
-
-Well if you believe it is that hyper useful you should try to convince 
-Linus then to readd the text protection for DEBUG_RODATA and a working text_poke() 
-that handles it correctly. The last version was nearly there, unfortunately the
-time allowed for a new feature to be buggy and getting fixed before it 
-is reverted is very short these days[1].
-
-Even if you say "my dumb attacker can patch sys_call_table but not
-root_inode->i_ops in memory" it is still much harder to say 
-"my dumb attacker can patch sys_call_table but not a jump into *sys_read"
-So without text protection your scheme is really double plus useless.
-
-Modules could be also protected early BTW if you waste enough memory
-to make .data page aligned [so likely raising minimal module size
-from one page to two]
-
--Andi
-
-[1] unless you name it pci sysinfo -- then anything is allowed.
+Thanks,
+Kay
 
