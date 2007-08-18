@@ -1,128 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbXHRRiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757708AbXHRRot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758470AbXHRRiw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 13:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757591AbXHRRhf
+	id S1757708AbXHRRot (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 13:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbXHRRoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 13:37:35 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:39348 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756583AbXHRRh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 13:37:28 -0400
-Date: Sat, 18 Aug 2007 21:40:01 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [RFC,PATCH 5/5] exec: RT sub-thread can livelock and monopolize CPU on exec
-Message-ID: <20070818174001.GA218@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Sat, 18 Aug 2007 13:44:39 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:53208 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753072AbXHRRoi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 13:44:38 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sat, 18 Aug 2007 13:35:33 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: tracking MAINTAINERS versus tracking SUBSYSTEMS
+Message-ID: <Pine.LNX.4.64.0708181311490.10387@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-de_thread() yields waiting for ->group_leader to be a zombie. This deadlocks
-if an rt-prio execer shares the same cpu with ->group_leader. Change the code
-to use ->group_exit_task/notify_count mechanics.
 
-This patch certainly uglifies the code, perhaps someone can suggest something
-better.
+  this latest project of cramming the full definition of each kernel
+subsystem into the MAINTAINERS file has been bothering me, and i've
+finally figured out why.  it's because the MAINTAINERS file is being
+asked to now be the source of reference information that just doesn't
+match its name.  it's the "MAINTAINERS" file so it seems that all it
+should be keeping track of is the maintainer of each subsystem, and
+that's all.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+  what people are clearly after is a way to match any part of the
+kernel source to a subsystem and, henceforth, to a maintainer, but
+there's nothing that says all of that has to be crammed into *that*
+file.
 
---- t/kernel/exit.c~5_DEADLOCK	2007-08-17 18:56:31.000000000 +0400
-+++ t/kernel/exit.c	2007-08-18 20:57:49.000000000 +0400
-@@ -102,10 +102,9 @@ static void __exit_signal(struct task_st
- 		 * If there is any task waiting for the group exit
- 		 * then notify it:
- 		 */
--		if (sig->group_exit_task && atomic_read(&sig->count) == sig->notify_count) {
-+		if (sig->group_exit_task && atomic_read(&sig->count) == sig->notify_count)
- 			wake_up_process(sig->group_exit_task);
--			sig->group_exit_task = NULL;
--		}
-+
- 		if (tsk == sig->curr_target)
- 			sig->curr_target = next_thread(tsk);
- 		/*
-@@ -850,6 +849,11 @@ static void exit_notify(struct task_stru
- 		state = EXIT_DEAD;
- 	tsk->exit_state = state;
- 
-+	if (thread_group_leader(tsk) &&
-+	    tsk->signal->notify_count < 0 &&
-+	    tsk->signal->group_exit_task)
-+		wake_up_process(tsk->signal->group_exit_task);
-+
- 	write_unlock_irq(&tasklist_lock);
- 
- 	list_for_each_safe(_p, _n, &ptrace_dead) {
---- t/fs/exec.c~5_DEADLOCK	2007-08-18 19:34:12.000000000 +0400
-+++ t/fs/exec.c	2007-08-18 20:43:59.000000000 +0400
-@@ -828,16 +828,15 @@ static int de_thread(struct task_struct 
- 			hrtimer_restart(&sig->real_timer);
- 		spin_lock_irq(lock);
- 	}
-+
-+	sig->notify_count = count;
-+	sig->group_exit_task = tsk;
- 	while (atomic_read(&sig->count) > count) {
--		sig->group_exit_task = tsk;
--		sig->notify_count = count;
- 		__set_current_state(TASK_UNINTERRUPTIBLE);
- 		spin_unlock_irq(lock);
- 		schedule();
- 		spin_lock_irq(lock);
- 	}
--	sig->group_exit_task = NULL;
--	sig->notify_count = 0;
- 	spin_unlock_irq(lock);
- 
- 	/*
-@@ -846,14 +845,17 @@ static int de_thread(struct task_struct 
- 	 * and to assume its PID:
- 	 */
- 	if (!thread_group_leader(tsk)) {
--		/*
--		 * Wait for the thread group leader to be a zombie.
--		 * It should already be zombie at this point, most
--		 * of the time.
--		 */
- 		leader = tsk->group_leader;
--		while (leader->exit_state != EXIT_ZOMBIE)
--			yield();
-+
-+		sig->notify_count = -1;
-+		for (;;) {
-+			write_lock_irq(&tasklist_lock);
-+			if (likely(leader->exit_state))
-+				break;
-+			__set_current_state(TASK_UNINTERRUPTIBLE);
-+			write_unlock_irq(&tasklist_lock);
-+			schedule();
-+		}
- 
- 		/*
- 		 * The only record we have of the real-time age of a
-@@ -867,8 +869,6 @@ static int de_thread(struct task_struct 
- 		 */
- 		tsk->start_time = leader->start_time;
- 
--		write_lock_irq(&tasklist_lock);
--
- 		BUG_ON(leader->tgid != tsk->tgid);
- 		BUG_ON(tsk->pid == tsk->tgid);
- 		/*
-@@ -901,6 +901,8 @@ static int de_thread(struct task_struct 
- 		write_unlock_irq(&tasklist_lock);
-         }
- 
-+	sig->group_exit_task = NULL;
-+	sig->notify_count = 0;
- 	/*
- 	 * There may be one thread left which is just exiting,
- 	 * but it's safe to stop telling the group to kill themselves.
+  why not add a new script to the kernel source tree that, given a
+file or directory name as an argument, returns its corresponding
+"subsystem" that can be cross-referenced against the MAINTAINERS file?
+something like:
 
+  $ show_subsystem drivers/bluetooth/bpa10x.c
+  BLUETOOTH
+
+there would seem to be a number of advantages to this approach:
+
+1) it reduces the MAINTAINERS file back to what it should be in the
+first place -- a simple reference list of each kernel subsystem, and
+who's responsible for it, so that constant reshuffling of files or
+directories in a particular subsystem doesn't require constant
+updating of the MAINTAINERS file.
+
+2) you could extend the show_subsystem() routine to, once it found the
+subsystem, quickly cross-reference the MAINTAINERS file and print out
+the corresponding maintainer.  i believe the word "trivial" applies
+here.
+
+3) by making this a feature separate from the MAINTAINERS file, it can
+be mocked up and hacked separately and finally patched in when it's
+ready to go, rather than applying 5 bazillion patches to the poor
+MAINTAINERS file.
+
+4) finally, a feature like this could be used as a sanity check on the
+kernel subsystem structure.  every once in a while, it could be
+invoked for every single file and directory in the tree, just to see
+if all of those appear to belong to at least one subsystem.  if not,
+print a warning:  "Whoa, file /fubar/snafu doesn't belong to a
+subsystem.  Deal with it."
+
+  the actual implementation would seem to be easy -- perhaps a simple
+text file that defines each subsystem and every file and directory
+that's part of it:
+
+FIREWIRE:drivers/firewire/,include/linux/firewire.h,... etc ...
+
+i mean, it doesn't get a whole lot simpler than that, and it would
+seem to be *way* easier to read.
+
+  thoughts?
+
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
