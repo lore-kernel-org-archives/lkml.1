@@ -1,175 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbXHRFSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbXHRFVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752717AbXHRFSM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 01:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbXHRFSA
+	id S1753411AbXHRFVY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 01:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXHRFVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 01:18:00 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36548
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750833AbXHRFR7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 01:17:59 -0400
-Date: Fri, 17 Aug 2007 22:17:58 -0700 (PDT)
-Message-Id: <20070817.221758.116352652.davem@davemloft.net>
-To: clameter@sgi.com
-CC: linux-kernel@vger.kernel.org
-Subject: SLUB bug on sparc64
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 18 Aug 2007 01:21:11 -0400
+Received: from gate.crashing.org ([63.228.1.57]:37895 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750833AbXHRFVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 01:21:09 -0400
+In-Reply-To: <alpine.LFD.0.999.0708180833520.3666@enigma.security.iitk.ac.in>
+References: <20070816003948.GY9645@linux.vnet.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi> <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com> <c298f0e3f9e49c9dd2d326115d156084@kernel.crashing.org> <alpine.LFD.0.999.0708180002290.3666@enigma.security.iitk.ac.in> <a51ab88dc00f8d7fd44f79400671d259@kernel.crashing.org> <alpine.LFD.0.999.0708180522120.3666@enigma.security.iitk.ac.in> <c0115c88da5d6756502e0c0499faa71f@kernel.crashing.org> <alpine.LFD.0.999.0708! 180556330.3666@enigma.security.iitk.ac.in> <67eca5ac43d3b1dbd1a04c7c36aebd5a@kernel.crashing.org> <alpine.LFD.0.999.0708180833520.3666@enigma!
+ .security.iitk.ac.in>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6db2717888e35173c9f36ef0b8c7b32b@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
+       Netdev <netdev@vger.kernel.org>, jesper.juhl@gmail.com,
+       linux-arch@vger.kernel.org, zlynx@acm.org,
+       Andrew Morton <akpm@linux-foundation.org>, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Sat, 18 Aug 2007 07:18:20 +0200
+To: Satyam Sharma <satyam@infradead.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> The documentation simply doesn't say "+m" is allowed.  The code to
+>> allow it was added for the benefit of people who do not read the
+>> documentation.  Documentation for "+m" might get added later if it
+>> is decided this [the code, not the documentation] is a sane thing
+>> to have (which isn't directly obvious).
+>
+> Huh?
+>
+> "If the (current) documentation doesn't match up with the (current)
+> code, then _at least one_ of them has to be (as of current) wrong."
+>
+> I wonder how could you even try to disagree with that.
 
-Hi Christoph,
+Easy.
 
-When I force SLUB debugging on sparc64, it barfs on early bootup while
-making the sysfs nodes.  Removing the BUG()'s on the sysfs error
-returns, and adding some tracing I captured the log below.
+The GCC documentation you're referring to is the user's manual.
+See the blurb on the first page:
 
-BTW, I would recommending removing the BUG() calls, they serve only to
-force someone hitting them to edit them out and reboot which is
-absolutely pointless :-) This code can also often run before the
-console is first enabled, making analysis of the error return that
-much harder if it BUG()'s instead of trying to continue.
+"This manual documents how to use the GNU compilers, as well as their
+features and incompatibilities, and how to report bugs.  It corresponds
+to GCC version 4.3.0.  The internals of the GNU compilers, including
+how to port them to new targets and some information about how to write
+front ends for new languages, are documented in a separate manual."
 
-The problem seems to be that both tsb_512KB and tsb_1MB are
-unmergeable, and so are the kmalloc caches of those sizes.  But the
-"unique name" created for the aliases are identical, always ":%d"
-where %d is the cache size, so the kobject_add() fails the second
-time around.
+_How to use_.  This documentation doesn't describe in minute detail
+everything the compiler does (see the source code for that -- no, it
+isn't described in the internals manual either).
 
-[16529.414107] sysfs_slab_add: name[shmem_inode_cache] size[800] unmergeable[1]
-[16529.414958] sysfs_slab_add: name[nsproxy] size[120] unmergeable[1]
-[16529.415683] sysfs_slab_add: name[posix_timers_cache] size[232] unmergeable[1]
-[16529.416459] sysfs_slab_add: name[uid_cache] size[160] unmergeable[1]
-[16529.417180] sysfs_slab_add: name[ip_mrt_cache] size[192] unmergeable[1]
-[16529.417952] sysfs_slab_add: name[UDP-Lite] size[800] unmergeable[1]
-[16529.418674] sysfs_slab_add: name[tcp_bind_bucket] size[128] unmergeable[1]
-[16529.419402] sysfs_slab_add: name[inet_peer_cache] size[160] unmergeable[1]
-[16529.420179] sysfs_slab_add: name[secpath_cache] size[128] unmergeable[1]
-[16529.420913] sysfs_slab_add: name[xfrm_dst_cache] size[416] unmergeable[1]
-[16529.421689] sysfs_slab_add: name[ip_fib_alias] size[128] unmergeable[1]
-[16529.422417] sysfs_slab_add: name[ip_fib_hash] size[128] unmergeable[1]
-[16529.423194] sysfs_slab_add: name[ip_dst_cache] size[384] unmergeable[1]
-[16529.423930] sysfs_slab_add: name[arp_cache] size[288] unmergeable[1]
-[16529.424723] sysfs_slab_add: name[RAW] size[800] unmergeable[1]
-[16529.425445] sysfs_slab_add: name[UDP] size[800] unmergeable[1]
-[16529.426234] sysfs_slab_add: name[tw_sock_TCP] size[224] unmergeable[1]
-[16529.426968] sysfs_slab_add: name[request_sock_TCP] size[160] unmergeable[1]
-[16529.427745] sysfs_slab_add: name[TCP] size[1568] unmergeable[1]
-[16529.428467] sysfs_slab_add: name[eventpoll_pwq] size[144] unmergeable[1]
-[16529.429244] sysfs_slab_add: name[eventpoll_epi] size[224] unmergeable[1]
-[16529.429977] sysfs_slab_add: name[sgpool-128] size[3168] unmergeable[1]
-[16529.430753] sysfs_slab_add: name[sgpool-64] size[1632] unmergeable[1]
-[16529.431495] sysfs_slab_add: name[sgpool-32] size[864] unmergeable[1]
-[16529.432223] sysfs_slab_add: name[sgpool-16] size[480] unmergeable[1]
-[16529.432995] sysfs_slab_add: name[sgpool-8] size[288] unmergeable[1]
-[16529.433722] sysfs_slab_add: name[scsi_io_context] size[184] unmergeable[1]
-[16529.434528] sysfs_slab_add: name[blkdev_ioc] size[136] unmergeable[1]
-[16529.435254] sysfs_slab_add: name[blkdev_queue] size[1624] unmergeable[1]
-[16529.436028] sysfs_slab_add: name[blkdev_requests] size[360] unmergeable[1]
-[16529.436760] sysfs_slab_add: name[biovec-256] size[4192] unmergeable[1]
-[16529.437538] sysfs_slab_add: name[biovec-128] size[2144] unmergeable[1]
-[16529.438270] sysfs_slab_add: name[biovec-64] size[1120] unmergeable[1]
-[16529.439041] sysfs_slab_add: name[biovec-16] size[352] unmergeable[1]
-[16529.439768] sysfs_slab_add: name[biovec-4] size[160] unmergeable[1]
-[16529.440540] sysfs_slab_add: name[biovec-1] size[88] unmergeable[1]
-[16529.441266] sysfs_slab_add: name[bio] size[192] unmergeable[1]
-[16529.442035] sysfs_slab_add: name[sock_inode_cache] size[704] unmergeable[1]
-[16529.442901] sysfs_slab_add: name[skbuff_fclone_cache] size[480] unmergeable[1]
-[16529.443710] sysfs_slab_add: name[skbuff_head_cache] size[288] unmergeable[1]
-[16529.444465] sysfs_slab_add: name[file_lock_cache] size[248] unmergeable[1]
-[16529.445197] sysfs_slab_add: name[proc_inode_cache] size[640] unmergeable[1]
-[16529.445993] sysfs_slab_add: name[sigqueue] size[232] unmergeable[1]
-[16529.446730] sysfs_slab_add: name[radix_tree_node] size[624] unmergeable[1]
-[16529.447515] sysfs_slab_add: name[bdev_cache] size[832] unmergeable[1]
-[16529.448250] sysfs_slab_add: name[sysfs_dir_cache] size[160] unmergeable[1]
-[16529.449103] sysfs_slab_add: name[mnt_cache] size[288] unmergeable[1]
-[16529.449836] sysfs_slab_add: name[inode_cache] size[608] unmergeable[1]
-[16529.450616] sysfs_slab_add: name[dentry] size[280] unmergeable[1]
-[16529.451347] sysfs_slab_add: name[filp] size[288] unmergeable[1]
-[16529.452127] sysfs_slab_add: name[names_cache] size[4192] unmergeable[1]
-[16529.452890] sysfs_slab_add: name[key_jar] size[224] unmergeable[1]
-[16529.453670] sysfs_slab_add: name[idr_layer_cache] size[600] unmergeable[1]
-[16529.454515] sysfs_slab_add: name[buffer_head] size[176] unmergeable[1]
-[16529.455293] sysfs_slab_add: name[mm_struct] size[1056] unmergeable[1]
-[16529.456028] sysfs_slab_add: name[vm_area_struct] size[240] unmergeable[1]
-[16529.456807] sysfs_slab_add: name[fs_cache] size[160] unmergeable[1]
-[16529.457542] sysfs_slab_add: name[files_cache] size[800] unmergeable[1]
-[16529.458280] sysfs_slab_add: name[signal_cache] size[800] unmergeable[1]
-[16529.459064] sysfs_slab_add: name[sighand_cache] size[2688] unmergeable[1]
-[16529.459831] sysfs_slab_add: name[task_struct] size[1376] unmergeable[1]
-[16529.460615] sysfs_slab_add: name[anon_vma] size[96] unmergeable[1]
-[16529.461346] sysfs_slab_add: name[tsb_1MB] size[1048576] unmergeable[0]
-[16529.462161] sysfs_slab_alias: name[tsb_1MB] size[1048576]
-[16529.462212] sysfs_slab_add: name[tsb_512KB] size[524288] unmergeable[0]
-[16529.462969] sysfs_slab_alias: name[tsb_512KB] size[524288]
-[16529.463020] sysfs_slab_add: name[tsb_256KB] size[524288] unmergeable[1]
-[16529.463796] sysfs_slab_add: name[tsb_128KB] size[262144] unmergeable[1]
-[16529.464573] sysfs_slab_add: name[tsb_64KB] size[131072] unmergeable[1]
-[16529.465354] sysfs_slab_add: name[tsb_32KB] size[65536] unmergeable[1]
-[16529.466107] sysfs_slab_add: name[tsb_16KB] size[32768] unmergeable[1]
-[16529.466888] sysfs_slab_add: name[tsb_8KB] size[16384] unmergeable[1]
-[16529.467627] sysfs_slab_add: name[pid] size[136] unmergeable[1]
-[16529.468407] sysfs_slab_add: name[kmalloc-8388608] size[8388608] unmergeable[0]
-[16529.469144] sysfs_slab_alias: name[kmalloc-8388608] size[8388608]
-[16529.469197] sysfs_slab_add: name[kmalloc-4194304] size[4194304] unmergeable[0]
-[16529.469976] sysfs_slab_alias: name[kmalloc-4194304] size[4194304]
-[16529.470031] sysfs_slab_add: name[kmalloc-2097152] size[2097152] unmergeable[0]
-[16529.470764] sysfs_slab_alias: name[kmalloc-2097152] size[2097152]
-[16529.470819] sysfs_slab_add: name[kmalloc-1048576] size[1048576] unmergeable[0]
-[16529.470876] kobject_add failed for :1048576 with -EEXIST, don't try to register things with the same name in the same directory.
-[16529.470907] Call Trace:
-[16529.470921]  [00000000004bcf24] sysfs_slab_add+0x168/0x1bc
-[16529.470955]  [00000000008313f4] slab_sysfs_init+0x58/0xb8
-[16529.470986]  [0000000000820370] kernel_init+0x22c/0x3ac
-[16529.471016]  [0000000000427844] kernel_thread+0x38/0x48
-[16529.471039]  [00000000006cf278] rest_init+0x18/0x60
-[16529.471062] sysfs_slab_add: name[kmalloc-524288] size[524288] unmergeable[0]
-[16529.471113] kobject_add failed for :0524288 with -EEXIST, don't try to register things with the same name in the same directory.
-[16529.471142] Call Trace:
-[16529.471155]  [00000000004bcf24] sysfs_slab_add+0x168/0x1bc
-[16529.471180]  [00000000008313f4] slab_sysfs_init+0x58/0xb8
-[16529.471204]  [0000000000820370] kernel_init+0x22c/0x3ac
-[16529.471227]  [0000000000427844] kernel_thread+0x38/0x48
-[16529.471248]  [00000000006cf278] rest_init+0x18/0x60
-[16529.471271] sysfs_slab_add: name[kmalloc-262144] size[262216] unmergeable[1]
-[16529.472052] sysfs_slab_add: name[kmalloc-131072] size[131144] unmergeable[1]
-[16529.472794] sysfs_slab_add: name[kmalloc-65536] size[65608] unmergeable[1]
-[16529.473584] sysfs_slab_add: name[kmalloc-32768] size[32840] unmergeable[1]
-[16529.474913] sysfs_slab_add: name[kmalloc-16384] size[16456] unmergeable[1]
-[16529.475648] sysfs_slab_add: name[kmalloc-8192] size[8264] unmergeable[1]
-[16529.476431] sysfs_slab_add: name[kmalloc-4096] size[4168] unmergeable[1]
-[16529.477168] sysfs_slab_add: name[kmalloc-2048] size[2120] unmergeable[1]
-[16529.477952] sysfs_slab_add: name[kmalloc-1024] size[1096] unmergeable[1]
-[16529.478689] sysfs_slab_add: name[kmalloc-512] size[584] unmergeable[1]
-[16529.479473] sysfs_slab_add: name[kmalloc-256] size[328] unmergeable[1]
-[16529.480211] sysfs_slab_add: name[kmalloc-128] size[200] unmergeable[1]
-[16529.480995] sysfs_slab_add: name[kmalloc-64] size[136] unmergeable[1]
-[16529.481731] sysfs_slab_add: name[kmalloc-32] size[104] unmergeable[1]
-[16529.482527] sysfs_slab_add: name[kmalloc-16] size[88] unmergeable[1]
-[16529.483273] sysfs_slab_add: name[kmalloc-8] size[80] unmergeable[1]
-[16529.484058] sysfs_slab_add: name[kmalloc-192] size[264] unmergeable[1]
-[16529.484830] sysfs_slab_add: name[kmalloc-96] size[168] unmergeable[1]
-[16529.485654] sysfs_slab_add: name[fasync_cache] size[96] unmergeable[1]
-[16529.486426] sysfs_slab_add: name[kiocb] size[320] unmergeable[1]
-[16529.487242] sysfs_slab_add: name[kioctx] size[384] unmergeable[1]
-[16529.496786] sysfs_slab_add: name[inotify_watch_cache] size[144] unmergeable[1]
-[16529.497582] sysfs_slab_add: name[inotify_event_cache] size[112] unmergeable[1]
-[16529.498530] sysfs_slab_add: name[dnotify_cache] size[112] unmergeable[1]
-[16529.499424] sysfs_slab_add: name[ext3_xattr] size[160] unmergeable[1]
-[16529.500238] sysfs_slab_add: name[ext3_inode_cache] size[808] unmergeable[1]
-[16529.501040] sysfs_slab_add: name[revoke_record] size[128] unmergeable[1]
-[16529.501861] sysfs_slab_add: name[revoke_table] size[88] unmergeable[1]
-[16529.502638] sysfs_slab_add: name[journal_head] size[168] unmergeable[1]
-[16529.503459] sysfs_slab_add: name[journal_handle] size[96] unmergeable[1]
-[16529.504315] sysfs_slab_add: name[ext2_xattr] size[160] unmergeable[1]
-[16529.505127] sysfs_slab_add: name[ext2_inode_cache] size[768] unmergeable[1]
-[16529.505904] sysfs_slab_add: name[hugetlbfs_inode_cache] size[608] unmergeable[1]
-[16529.506902] sysfs_slab_add: name[mqueue_inode_cache] size[896] unmergeable[1]
-[16529.507830] sysfs_slab_add: name[bsg_cmd] size[384] unmergeable[1]
+If it doesn't tell you how to use "+m", and even tells you _not_ to
+use it, maybe that is what it means to say?  It doesn't mean "+m"
+doesn't actually do something.  It also doesn't mean it does what
+you think it should do.  It might do just that of course.  But treating
+writing C code as an empirical science isn't such a smart idea.
+
+> And I didn't go whining about this ... you asked me. (I think I'd said
+> something to the effect of GCC docs are often wrong,
+
+No need to guess at what you said, even if you managed to delete
+your own mail already, there are plenty of free web-based archives
+around.  You said:
+
+> See, "volatile" C keyword, for all it's ill-definition and dodgy
+> semantics, is still at least given somewhat of a treatment in the C
+> standard (whose quality is ... ummm, sadly not always good and clear,
+> but unsurprisingly, still about 5,482 orders-of-magnitude times
+> better than GCC docs).
+
+and that to me reads as complaining that the ISO C standard "isn't
+very good" and that the GCC documentation is 10**5482 times worse
+even.  Which of course is hyperbole and cannot be true.  It also
+isn't helpful in any way or form for anyone on this list.  I call
+that whining.
+
+> which is true,
+
+Yes, documentation of that size often has shortcomings.  No surprise
+there.  However, great effort is made to make it better documentation,
+and especially to keep it up to date; if you find any errors or
+omissions, please report them.  There are many ways how to do that,
+see the GCC homepage.</end-of-marketing-blurb>
+
+> but probably you feel saying that is "not allowed" on non-gcc lists?)
+
+You're allowed to say whatever you want.  Let's have a quote again
+shall we?  I said:
+
+> If you find any problems/shortcomings in the GCC documentation,
+> please file a PR, don't go whine on some unrelated mailing lists.
+> Thank you.
+
+I read that as a friendly request, not a prohibition.  Well maybe
+not actually friendly, more a bit angry.  A request, either way.
+
+> As for the "PR"
+
+"Problem report", a bugzilla ticket.  Sorry for using terminology
+unknown to you.
+
+> you're requesting me to file with GCC for this, that
+> gcc-patches@ thread did precisely that
+
+Actually not -- PRs make sure issues aren't forgotten (although
+they might gather dust, sure).  But yes, submitting patches is a
+Great Thing(tm).
+
+> and more (submitted a patch to
+> said documentation -- and no, saying "documentation might get added
+> later" is totally bogus and nonsensical -- documentation exists to
+> document current behaviour, not past).
+
+When code like you want to write becomes a supported feature, that
+will be reflected in the user manual.  It is completely nonsensical
+to expect everything that is *not* a supported feature to be mentioned
+there.
+
+> I wouldn't have replied, really, if you weren't so provoking.
+
+Hey, maybe that character trait is good for something, then.
+Now to build a business plan around it...
+
+
+Segher
 
