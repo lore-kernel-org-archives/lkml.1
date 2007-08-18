@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760380AbXHRAKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761156AbXHRAMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760380AbXHRAKp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 20:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbXHRAKf
+	id S1761156AbXHRAMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 20:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbXHRAMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 20:10:35 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:4770 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752796AbXHRAKd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 20:10:33 -0400
-Date: Sat, 18 Aug 2007 08:09:13 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       satyam@infradead.org, clameter@sgi.com, schwidefsky@de.ibm.com,
-       Chris Snook <csnook@redhat.com>, davem@davemloft.net,
-       wensong@linux-vs.org, wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070818000913.GA25585@gondor.apana.org.au>
-References: <46C32618.2080108@redhat.com> <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <46C516BA.60700@yahoo.com.au> <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org> <20070817235912.GA24314@linux.vnet.ibm.com>
-Mime-Version: 1.0
+	Fri, 17 Aug 2007 20:12:08 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:47478 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752705AbXHRAMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 20:12:07 -0400
+Date: Fri, 17 Aug 2007 17:11:45 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, patches@x86-64.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] [5/12] x86_64: Make patching more robust, fix paravirt
+	issue
+Message-ID: <20070818001145.GT3672@sequoia.sous-sol.org>
+References: <20070809241.425881000@suse.de> <20070809124132.C794A14F3B@wotan.suse.de> <46C637B7.30200@goop.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070817235912.GA24314@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <46C637B7.30200@goop.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 04:59:12PM -0700, Paul E. McKenney wrote:
->
-> gcc bugzilla bug #33102, for whatever that ends up being worth.  ;-)
+* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> This patch breaks Xen booting.  I get infinite recursive faults during
+> patching when this patch is present.  If I boot with
+> "noreplace-paravirt" it works OK, and it works as expected if I back
+> this patch out.  I haven't tracked down the exact failure mode; its a
+> little hard to debug because it overwrites all kernel memory with
+> recursive fault stackframes and then finally traps out to Xen when it
+> hits the bottom of memory.
+> 
+> I think we should back this one out before .23.
 
-I had totally forgotten that I'd already filed that bug more
-than six years ago until they just closed yours as a duplicate
-of mine :)
+I agree (second time this has broken during .23 devel).
 
-Good luck in getting it fixed!
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+thanks,
+-chris
