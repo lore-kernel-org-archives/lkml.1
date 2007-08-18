@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758575AbXHRTdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758360AbXHRThl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758575AbXHRTdW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 15:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbXHRTdH
+	id S1758360AbXHRThl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 15:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757542AbXHRThb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 15:33:07 -0400
-Received: from smtp3-g19.free.fr ([212.27.42.29]:49211 "EHLO smtp3-g19.free.fr"
+	Sat, 18 Aug 2007 15:37:31 -0400
+Received: from smtp3-g19.free.fr ([212.27.42.29]:50056 "EHLO smtp3-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758035AbXHRTcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 15:32:36 -0400
-Date: Sat, 18 Aug 2007 21:32:33 +0200
-From: Philippe Bourcier <gnulinux@gala.bourcier.hd.free.fr>
+	id S1757520AbXHRTha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 15:37:30 -0400
+Date: Sat, 18 Aug 2007 21:37:26 +0200
+From: Philippe Bourcier <buffalo.phil@free.fr>
 To: Debian Bug Tracking System <submit@bugs.debian.org>
 Cc: Carl-Daniel Hailfinger <c-d.hailfinger.kernel.2004@gmx.net>,
-       linux-kernel@vger.kernel.org
+       linux-kernel@vger.kernel.org, Philippe Bourcier <buffalo.phil@free.fr>
 Subject: linux-image-2.6.22-1-amd64: Ethernet not functioning on Nvidia
 	MCP51
-Message-ID: <20070818193233.GA10334@gala>
+Message-ID: <20070818193726.GA10535@gala>
 Mail-Followup-To: Debian Bug Tracking System <submit@bugs.debian.org>,
 	Carl-Daniel Hailfinger <c-d.hailfinger.kernel.2004@gmx.net>,
-	linux-kernel@vger.kernel.org
+	linux-kernel@vger.kernel.org,
+	Philippe Bourcier <buffalo.phil@free.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
