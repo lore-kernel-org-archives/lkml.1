@@ -1,102 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbXHRKmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbXHRK44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301AbXHRKmK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 06:42:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbXHRKl5
+	id S1754650AbXHRK44 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 06:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbXHRK4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 06:41:57 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:55803 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752203AbXHRKl4 (ORCPT
+	Sat, 18 Aug 2007 06:56:47 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53319 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbXHRK4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 06:41:56 -0400
-Subject: Re: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, jengelh@computergmbh.de,
-       a.zummo@towertech.it, linux-kernel@vger.kernel.org,
-       rtc-linux@googlegroups.com, Greg KH <greg@kroah.com>,
-       David Zeuthen <david@fubar.dk>
-In-Reply-To: <200708172106.52940.david-b@pacbell.net>
-References: <200708170823.15894.david-b@pacbell.net>
-	 <200708171250.09653.david-b@pacbell.net>
-	 <1187404839.4419.5.camel@lov.localdomain>
-	 <200708172106.52940.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Sat, 18 Aug 2007 12:45:39 +0200
-Message-Id: <1187433939.4419.42.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19zy8hSPjZvyDGtFCw0i/1qitbonWWEzOJGEOM
- 3eim8eqcp6OosJSuXoK39FNrCAQqF35UkOejv26kTd7q4qHWSv
- slMbVCBFkhGBWFxRrYqtpDNRymEgM4w
+	Sat, 18 Aug 2007 06:56:46 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 18 Aug 2007 12:56:21 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] Add some help texts to recently-introduced kconfig items
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0708132009510.9759@fbirervta.pbzchgretzou.qr>
+Message-ID: <tkrat.773d63ed4fb869d9@s5r6.in-berlin.de>
+References: <46C09C1A.7050706@googlemail.com>
+ <Pine.LNX.4.64.0708132009510.9759@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-17 at 21:06 -0700, David Brownell wrote:
-> On Friday 17 August 2007, Kay Sievers wrote:
-> > 
-> > > I'm not the one who's advocating a change here.  If you want to
-> > > first change/break and then fix things, all of that is up to you.
-> > 
-> > I'm happy to do that. Patch is attached.
+On 13 Aug, Jan Engelhardt wrote:
 > 
-> NAK.  That wasn't even a serious attempt at the "fix" part,
-> though it does the "break" part well enough to cause severe
-> regressions.
-
-You disabled uevents which breaks udev and HAL setups, because we can't
-track the existence of the devices, You can't just disable device events
-to disable module loading. Uevents have are by far not only about module
-loading.
-
-> (As well as leaving all my technical points about your pushback
-> un-addressed.  As I noted before, the evident fact that you don't
-> have technical responses to them says to me that your pushback
-> has no real technical basis ...)
-
-It has. Disabling uevents to control module loading is just the totally
-wrong thing to do. Uevents are there to let userspace know that a device
-exists. Only the existence of MODALIAS and the "modalias" file controls
-module loading, not the enabling and disabling of uevents, which is a
-completely broken hack.
-
-My patch fixes tons of issues, and that is "technical basis" enough. It
-makes platform play nice with userspace, by behaving like the rest of 
-the kernel.
-
-Userspace udev/HAL relies entirely on uevents, for hot- and for
-coldplug. Coldplug is done by writing "add" to all "uevent" files during
-early boot, that does not work anymore with platform, and needs to be
-fixed.
-
-> Out of around 300 platform drivers in the tree (and many more
-> not yet merged upstream), this makes it so that only *THREE* of
-> them can hotplug ... versus in the current tree, essentially
-> everything that's not a legacy driver is hotplugging just fine.
+> On Aug 13 2007 19:59, Michal Piotrowski wrote:
+>>
+>>Subject         : Kconfig prompts without help text
+>>References      : http://lkml.org/lkml/2007/7/16/326
+>>Last known good : ?
+>>Submitter       : Stefan Richter <stefanr@s5r6.in-berlin.de>
+>>Caused-By       : ?
+>>Handled-By      : Jan Engelhardt <jengelh@linux01.gwdg.de>
+>>Patch           : http://lkml.org/lkml/2007/7/18/236
+>>Status          : patch available
 > 
-> That's one heck of a regression.  Just shy of 100% ...
+> Is there some special magic needed (like resubmit), or will you slurp this one
+> yourself?
 
-So where are the 100's of drivers that send an uevent? I'll go and fix them.
 
-> Plus it treats rtc-ds1742 as if it's a platform_driver not
-> an i2c_driver.
+From: Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Add some help texts to recently-introduced kconfig items
 
-Wrong, the whole model is the other way around. MODALIAS does not tie
-other drivers to a device. A driver matches on a device, and the ds1742
-driver triggers on the existence of a platform driver. The alias strings
-don't "treat" anything.
-The whole kernel works that way, a lot of drivers get loaded by matching
-on "dmi:*" or "acpi:*" strings by not letting the driver be a dmi driver
-or acpi driver.
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de> (edited MACINTOSH_DRIVERS per Geert Uytterhoeven's remark)
+---
 
-Please stop doing adding weird hacks to the kernel to fit your personal
-taste and breaking all assumptions existing tools rely on. Fix the stuff
-you broke and enable uevent for _all_ devices again. And let userspace
-make the decision what to do with the event, like all other subsystems
-in the kernel do.
+fixes a regression in 2.6.23-rc1:  new Kconfig prompts without help text
 
-Thanks,
-Kay
+ arch/i386/Kconfig          |    5 +++++
+ drivers/atm/Kconfig        |    5 +++++
+ drivers/auxdisplay/Kconfig |    5 +++++
+ drivers/block/Kconfig      |    6 ++++++
+ drivers/crypto/Kconfig     |    5 +++++
+ drivers/hid/Kconfig        |    5 +++++
+ drivers/kvm/Kconfig        |    5 +++++
+ drivers/macintosh/Kconfig  |    5 +++++
+ drivers/misc/Kconfig       |    5 +++++
+ drivers/net/Kconfig        |   15 +++++++++++++++
+ drivers/usb/Kconfig        |    3 +++
+ 11 files changed, 64 insertions(+)
+
+Index: linux-2.6.23-rc3/arch/i386/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/arch/i386/Kconfig
++++ linux-2.6.23-rc3/arch/i386/Kconfig
+@@ -1228,6 +1228,11 @@ menuconfig INSTRUMENTATION
+ 	bool "Instrumentation Support"
+ 	depends on EXPERIMENTAL
+ 	default y
++	---help---
++	  Say Y here to get to see options related to performance measurement,
++	  debugging, and testing. This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
+ 
+ if INSTRUMENTATION
+ 
+Index: linux-2.6.23-rc3/drivers/atm/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/drivers/atm/Kconfig
++++ linux-2.6.23-rc3/drivers/atm/Kconfig
+@@ -6,6 +6,11 @@ menuconfig ATM_DRIVERS
+ 	bool "ATM drivers"
+ 	depends on NETDEVICES && ATM
+ 	default y
++	---help---
++	  Say Y here to get to see options for Asynchronous Transfer Mode
++	  device drivers. This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
+ 
+ if ATM_DRIVERS && NETDEVICES && ATM
+ 
+Index: linux-2.6.23-rc3/drivers/auxdisplay/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/drivers/auxdisplay/Kconfig
++++ linux-2.6.23-rc3/drivers/auxdisplay/Kconfig
+@@ -8,6 +8,11 @@
+ menuconfig AUXDISPLAY
+ 	depends on PARPORT
+ 	bool "Auxiliary Display support"
++	---help---
++	  Say Y here to get to see options for auxiliary display drivers.
++	  This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
+ 
+ if AUXDISPLAY && PARPORT
+ 
+Index: linux-2.6.23-rc3/drivers/block/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/drivers/block/Kconfig
++++ linux-2.6.23-rc3/drivers/block/Kconfig
+@@ -6,6 +6,12 @@ menuconfig BLK_DEV
+ 	bool "Block devices"
+ 	depends on BLOCK
+ 	default y
++	---help---
++	  Say Y here to get to see options for various different block device
++	  drivers. This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled;
++	  only do this if you know what you are doing.
+ 
+ if BLK_DEV
+ 
+Index: linux-2.6.23-rc3/drivers/crypto/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/drivers/crypto/Kconfig
++++ linux-2.6.23-rc3/drivers/crypto/Kconfig
+@@ -2,6 +2,11 @@
+ menuconfig CRYPTO_HW
+ 	bool "Hardware crypto devices"
+ 	default y
++	---help---
++	  Say Y here to get to see options for hardware crypto devices and
++	  processors. This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
+ 
+ if CRYPTO_HW
+ 
+Index: linux-2.6.23-rc3/drivers/hid/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/drivers/hid/Kconfig
++++ linux-2.6.23-rc3/drivers/hid/Kconfig
+@@ -5,6 +5,11 @@ menuconfig HID_SUPPORT
+ 	bool "HID Devices"
+ 	depends on INPUT
+ 	default y
++	---help---
++	  Say Y here to get to see options for various computer-human interface
++	  device drivers. This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
+ 
+ if HID_SUPPORT
+ 
+Index: linux-2.6.23-rc3/drivers/kvm/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/drivers/kvm/Kconfig
++++ linux-2.6.23-rc3/drivers/kvm/Kconfig
+@@ -5,6 +5,11 @@ menuconfig VIRTUALIZATION
+ 	bool "Virtualization"
+ 	depends on X86
+ 	default y
++	---help---
++	  Say Y here to get to see options for virtualization guest drivers.
++	  This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
+ 
+ if VIRTUALIZATION
+ 
+Index: linux-2.6.23-rc3/drivers/macintosh/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/drivers/macintosh/Kconfig
++++ linux-2.6.23-rc3/drivers/macintosh/Kconfig
+@@ -3,6 +3,11 @@ menuconfig MACINTOSH_DRIVERS
+ 	bool "Macintosh device drivers"
+ 	depends on PPC || MAC || X86
+ 	default y if (PPC_PMAC || MAC)
++	---help---
++	  Say Y here to get to see options for devices used with Macintosh
++	  computers. This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
+ 
+ if MACINTOSH_DRIVERS
+ 
+Index: linux-2.6.23-rc3/drivers/misc/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/drivers/misc/Kconfig
++++ linux-2.6.23-rc3/drivers/misc/Kconfig
+@@ -5,6 +5,11 @@
+ menuconfig MISC_DEVICES
+ 	bool "Misc devices"
+ 	default y
++	---help---
++	  Say Y here to get to see options for device drivers from various
++	  different categories. This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
+ 
+ if MISC_DEVICES
+ 
+Index: linux-2.6.23-rc3/drivers/net/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/drivers/net/Kconfig
++++ linux-2.6.23-rc3/drivers/net/Kconfig
+@@ -1968,6 +1968,16 @@ menuconfig NETDEV_1000
+ 	bool "Ethernet (1000 Mbit)"
+ 	depends on !UML
+ 	default y
++	---help---
++	  Ethernet (also called IEEE 802.3 or ISO 8802-2) is the most common
++	  type of Local Area Network (LAN) in universities and companies.
++
++	  Say Y here to get to see options for Gigabit Ethernet drivers.
++	  This option alone does not add any kernel code.
++	  Note that drivers supporting both 100 and 1000 MBit may be listed
++	  under "Ethernet (10 or 100MBit)" instead.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
+ 
+ if NETDEV_1000
+ 
+@@ -2339,6 +2349,11 @@ menuconfig NETDEV_10000
+ 	bool "Ethernet (10000 Mbit)"
+ 	depends on !UML
+ 	default y
++	---help---
++	  Say Y here to get to see options for 10 Gigabit Ethernet drivers.
++	  This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
+ 
+ if NETDEV_10000
+ 
+Index: linux-2.6.23-rc3/drivers/usb/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/drivers/usb/Kconfig
++++ linux-2.6.23-rc3/drivers/usb/Kconfig
+@@ -6,6 +6,9 @@ menuconfig USB_SUPPORT
+ 	bool "USB support"
+ 	depends on HAS_IOMEM
+ 	default y
++	---help---
++	  This option adds core support for Universal Serial Bus (USB).
++	  You will also need drivers from the following menu to make use of it.
+ 
+ if USB_SUPPORT
+ 
+
+
+
+-- 
+Stefan Richter
+-=====-=-=== =--- =--=-
+http://arcgraph.de/sr/
 
