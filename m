@@ -1,110 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbXHRGju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbXHRGoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753624AbXHRGju (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 02:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXHRGjn
+	id S1754336AbXHRGoU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 02:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXHRGoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 02:39:43 -0400
-Received: from waste.org ([66.93.16.53]:58559 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751702AbXHRGjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 02:39:42 -0400
-Date: Sat, 18 Aug 2007 01:40:42 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       John Berthels <jjberthels@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] maps: /proc/<pid>/pmaps interface - memory maps in granularity of pages
-Message-ID: <20070818064042.GQ30556@waste.org>
-References: <20070816220516.782145952@mail.ustc.edu.cn> <20070816220849.472883642@mail.ustc.edu.cn> <20070817023846.GJ30556@waste.org> <20070817064727.GA6723@mail.ustc.edu.cn> <20070817165808.GM30556@waste.org> <20070818024831.GA7856@mail.ustc.edu.cn>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070818024831.GA7856@mail.ustc.edu.cn>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 18 Aug 2007 02:44:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47887
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751979AbXHRGoG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 02:44:06 -0400
+Date: Fri, 17 Aug 2007 23:44:05 -0700 (PDT)
+Message-Id: <20070817.234405.66176298.davem@davemloft.net>
+To: rdreier@cisco.com
+Cc: tom@opengridcomputing.com, jeff@garzik.org, swise@opengridcomputing.com,
+       mshefty@ichips.intel.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports
+ from the host TCP port space.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <adatzqxwh56.fsf@cisco.com>
+References: <adafy2hyc04.fsf@cisco.com>
+	<20070817.170033.63993876.davem@davemloft.net>
+	<adatzqxwh56.fsf@cisco.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 18, 2007 at 10:48:31AM +0800, Fengguang Wu wrote:
-> Matt,
-> 
-> On Fri, Aug 17, 2007 at 11:58:08AM -0500, Matt Mackall wrote:
-> > On Fri, Aug 17, 2007 at 02:47:27PM +0800, Fengguang Wu wrote:
-> > > It's not easy to do direct performance comparisons between pmaps and
-> > > pagemap/kpagemap. However some close analyzes are still possible :)
-> > > 
-> > > 1) code size
-> > > pmaps                   ~200 LOC
-> > > pagemap/kpagemap        ~300 LOC
-> > > 
-> > > 2) dataset size
-> > > take for example my running firefox on Intel Core 2:
-> > > VSZ             400 MB
-> > > RSS              64 MB, or 16k pages
-> > > pmaps            64 KB, wc shows 2k lines, or so much page ranges
-> > > pagemap         800 KB, could be heavily optimized by returning partial data
-> > 
-> > I take it you're in 64-bit mode?
-> 
-> Yes. That will be the common case.
-> 
-> > You're right, this data compresses well in many circumstances. I
-> > suspect it will suffer under memory pressure though. That will
-> > fragment the ranges in-memory and also fragment the active bits. The
-> > worst case here is huge, of course, but realistically I'd expect
-> > something like 2x-4x.
-> 
-> Not likely to degrade even under memory pressure ;)
-> 
-> The compress_ratio = (VSZ:RSS) * (RSS:page_ranges).
-> - On fresh startup and no memory pressure,
->   - the VSZ:RSS ratio of ALL processes are 4516796KB:457048KB ~= 10:1.
->   - the firefox case shows a (RSS:page_ranges) of 16k:2k ~= 8:1.
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 17 Aug 2007 22:23:01 -0700
 
-Yes.
+> Also, looking at the complexity and bug-fixing effort that go into
+> making TSO work vs the really pretty small gain it gives also makes
+> part of me wonder whether the noble proclamations about
+> maintainability are always taken to heart.
 
-> - On memory pressure,
->   - as VSZ goes up, RSS will be bounded by physical memory.
->     So VSZ:RSS ratio actually goes up with memory pressure.
+The cpu and bus utilization improvements of TSO on the sender side are
+more than significant.  Ask anyone who looks closely at this.
 
-And yes.
+For example, as part of his batching work Krisha Kumar has been
+posting lots of numbers lately on the netdev list, I'm sure he can
+post more specific numbers comparing the current stack in the case of
+TSO disabled vs. TSO enabled if that is what you need to see how
+beneficial TSO in fact is.
 
-But that's not what I'm talking about. You're likely to have more
-holes in your ranges with memory pressure as things that aren't active
-get paged or swapped out and back in. And because we're walking the
-LRU more rapidly, we'll flip over a lot of the active bits more often
-which will mean more output.
+If TSO is such a lose why does pretty much every ethernet chip vendor
+implement it in hardware?  If you say it's just because Microsoft
+defines TSO in their NDI, that's a total cop-out.  It really does help
+performance a lot.  Why did the Xen folks bother making generic
+software TSO infrastructure for the kernel for the benefit of their
+virtualization network device?  Why would someone as bright as Herbert
+Xu even bother to implement that stuff if TSO gives a "pretty small
+gain"?
 
->   - page range is a good unit of locality. They are more likely to be
->     reclaimed as a whole. So (RSS:page_ranges) wouldn't degrade as much.
+Similarly for LRO and this isn't defined in NDI at all.  Vendors are
+going so far as to put full flow tables in their chips in order to do
+LRO better.
 
-There is that. The relative magnitude of the different effects is
-unclear. But it is clear that the worst case for pmap is much worse
-than pagemap (two lines per page of RSS?). 
+Using the bugs and issues we've run into while implementing TSO as
+evidence there is something wrong with it is a total straw man.  Look
+how many times the filesystem page cache has been rewritten over the
+years.
 
-> > But there are still the downsides I have mentioned:
-> > 
-> > - you don't get page frame numbers
-> 
-> True. I guess PFNs are meaningless to a normal user?
+Use the TSO problems as more of an example of how shitty a programmer
+I must be. :)
 
-They're useful for anyone who's trying to look at the system as a
-whole.
- 
-> > - you can't do random access
-> 
-> Not for now.
-> 
-> It would be trivial to support seek-by-address semantic: the seqfile
-> operations already iterate by addresses. Only that we cannot do it via
-> the regular read/pread/seek interfaces. They have different semantic
-> on fpos. However, tricks like ioctl(begin_addr, end_addr) can be
-> employed if necessary.
+Just be realistic and accept that RDMA is a point in time solution,
+and like any other such technology takes flexibility away from users.
 
-I suppose. But if you're willing to stomach that sort of thing, you
-might as well use a simple binary interface.
- 
--- 
-Mathematics is the supreme nostalgia of our time.
+Horizontal scaling of cpus up to huge arity cores, network devices
+using large numbers of transmit and receive queues and classification
+based queue selection, are all going to work to make things like RDMA
+even more irrelevant than they already are.
+
+If you can't see that this is the future, you have my condolences.
+Because frankly, the signs are all around that this is where things
+are going.
+
+The work doesn't belong in these special purpose devices, they belong
+in the far-end-node compute resources, and our computers are getting
+more and more of these general purpose compute engines every day.
+We will be constantly moving away from specialized solutions and
+towards those which solve large classes of problems for large groups
+of people.
