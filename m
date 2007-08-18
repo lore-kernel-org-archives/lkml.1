@@ -1,85 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759199AbXHRWDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758949AbXHRW2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759199AbXHRWDy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 18:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757971AbXHRWDm
+	id S1758949AbXHRW2w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 18:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbXHRW2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 18:03:42 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:59619 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756609AbXHRWDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 18:03:41 -0400
-Date: Sat, 18 Aug 2007 15:03:37 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Corey Minyard <minyard@acm.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       herbert@gondor.apana.org.au, 123.oleg@gmail.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Daniel Walker <dwalker@mvista.com>, josht@linux.vnet.ibm.com
-Subject: Re: [PATCH] lockdep: annotate rcu_read_{,un}lock()
-Message-ID: <20070818220337.GE7628@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <af57f1ac0708141130v729fa636k3150673809ec20a8@mail.gmail.com> <E1ILEJr-0005Fl-00@gondolin.me.apana.org.au> <20070815.144628.104052147.davem@davemloft.net> <1187274307.6114.92.camel@twins> <20070816160145.GA16957@linux.vnet.ibm.com> <1187337405.6114.123.camel@twins> <20070817155357.GD8464@linux.vnet.ibm.com> <46C5ED69.6060604@acm.org>
+	Sat, 18 Aug 2007 18:28:42 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:60985 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751247AbXHRW2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 18:28:41 -0400
+Date: Sat, 18 Aug 2007 15:28:21 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Zach Amsden <zach@vmware.com>
+Subject: [PATCH] x86: skip paravirt patching when appropriate
+Message-ID: <20070818222821.GX3672@sequoia.sous-sol.org>
+References: <20070809241.425881000@suse.de> <20070809124132.C794A14F3B@wotan.suse.de> <46C637B7.30200@goop.org> <200708181149.48217.ak@suse.de> <20070818203230.GV3672@sequoia.sous-sol.org> <alpine.LFD.0.999.0708181355280.30176@woody.linux-foundation.org> <20070818213141.GW3672@sequoia.sous-sol.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46C5ED69.6060604@acm.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070818213141.GW3672@sequoia.sous-sol.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 01:48:09PM -0500, Corey Minyard wrote:
-> Paul E. McKenney wrote:
-> >On Fri, Aug 17, 2007 at 09:56:45AM +0200, Peter Zijlstra wrote:
-> >  
-> >>On Thu, 2007-08-16 at 09:01 -0700, Paul E. McKenney wrote:
-> >>    
-> >>>On Thu, Aug 16, 2007 at 04:25:07PM +0200, Peter Zijlstra wrote:
-> >>>      
-> >>>>There seem to be some unbalanced rcu_read_{,un}lock() issues of late,
-> >>>>how about doing something like this:
-> >>>>        
-> >>>This will break when rcu_read_lock() and rcu_read_unlock() are invoked
-> >>>from NMI/SMI handlers -- the raw_local_irq_save() in lock_acquire() will
-> >>>not mask NMIs or SMIs.
-> >>>
-> >>>One approach would be to check for being in an NMI/SMI handler, and
-> >>>to avoid calling lock_acquire() and lock_release() in those cases.
-> >>>      
-> >>It seems:
-> >>
-> >>#define nmi_enter()		do { lockdep_off(); __irq_enter(); } while 
-> >>(0)
-> >>#define nmi_exit()		do { __irq_exit(); lockdep_on(); } while (0)
-> >>
-> >>Should make it all work out just fine. (for NMIs at least, /me fully
-> >>ignorant of the workings of SMIs)
-> >>    
-> >
-> >Very good point, at least for NMIs on i386 and x86_64.  Can't say that I
-> >know much about SMIs myself.  Or about whatever equivalents to NMIs and
-> >SMIs might exist on other platforms.  :-/  Of course, the other platforms
-> >could be handled by making the RCU lockdep operate only on i386 and x86_64
-> >if required.
-> >
-> >Corey, any advice on SMI handlers?  Is there something like nmi_enter()
-> >and nmi_exit() that allows disabing lockdep?
-> >  
-> You will certainly need something like nmi_enter() and nmi_exit() for 
-> SMIs, since they can occur at any time like NMIs.  As far as anything 
-> else, you just have to be extremely careful and remember that it can 
-> occur anyplace.  But you already know that :).
+* Chris Wright (chrisw@sous-sol.org) wrote:
+> Now that I understand the problem, I do have a very simple (slightly
+> overkill) fix for paravirt patching.  This can be cleaned up to avoid
+> the copies when they aren't needed, but that will take a little more
+> auditing of the various patchers.  If you still prefer a revert I've
+> got one handy, and we can re-visit this all post .23.
 
-So we would need to create an smi_enter() and smi_exit() an place them
-appropriately.  Any preferences?
+This one avoids the patching when necessary, but needs some validation on
+VMI (and Zach's not avail today).  I'll resend when I know it's working
+for all paravirt patchers.
 
-> It would be nice if the PowerPC board vendors would tie watchdog 
-> pretimeouts and some type of timer into the SMI input.  It would make 
-> debugging certain problems much easier.  And all those Marvell bridge 
-> chips have a watchdog pretimeout and I haven't seen any board vendor 
-> wire it up :(.
+thanks,
+-chris
+--
 
-Can't say that I have much influence over them, but I must agree
-that debuggability is a very good thing!
+Subject: [PATCH] x86: skip paravirt patching when appropriate
+From: Chris Wright <chrisw@sous-sol.org>
 
-						Thanx, Paul
+commit d34fda4a84c18402640a1a2342d6e6d9829e6db7 was a little overkill
+in the case where a paravirt patcher chooses to leave patch site
+unpatched.  Instead of copying original instructions to temp buffer
+then back to patch site, simply skip patching those sites altogether.
+
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Zach Amsden <zach@vmware.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ arch/i386/kernel/alternative.c |    4 ++--
+ arch/i386/kernel/paravirt.c    |   10 +++++-----
+ arch/i386/kernel/vmi.c         |    4 ++--
+ include/asm-i386/paravirt.h    |    3 +++
+ 4 files changed, 12 insertions(+), 9 deletions(-)
+
+diff --git a/arch/i386/kernel/alternative.c b/arch/i386/kernel/alternative.c
+index 9f4ac8b..b81d87e 100644
+--- a/arch/i386/kernel/alternative.c
++++ b/arch/i386/kernel/alternative.c
+@@ -366,10 +366,10 @@ void apply_paravirt(struct paravirt_patch_site *start,
+ 		unsigned int used;
+ 
+ 		BUG_ON(p->len > MAX_PATCH_LEN);
+-		/* prep the buffer with the original instructions */
+-		memcpy(insnbuf, p->instr, p->len);
+ 		used = paravirt_ops.patch(p->instrtype, p->clobbers, insnbuf,
+ 					  (unsigned long)p->instr, p->len);
++		if (used == PV_NO_PATCH)
++			continue;
+ 
+ 		BUG_ON(used > p->len);
+ 
+diff --git a/arch/i386/kernel/paravirt.c b/arch/i386/kernel/paravirt.c
+index 739cfb2..a36ce34 100644
+--- a/arch/i386/kernel/paravirt.c
++++ b/arch/i386/kernel/paravirt.c
+@@ -122,7 +122,7 @@ unsigned paravirt_patch_nop(void)
+ 
+ unsigned paravirt_patch_ignore(unsigned len)
+ {
+-	return len;
++	return PV_NO_PATCH;
+ }
+ 
+ struct branch {
+@@ -139,9 +139,9 @@ unsigned paravirt_patch_call(void *insnbuf,
+ 	unsigned long delta = (unsigned long)target - (addr+5);
+ 
+ 	if (tgt_clobbers & ~site_clobbers)
+-		return len;	/* target would clobber too much for this site */
++		return PV_NO_PATCH;	/* target would clobber too much for this site */
+ 	if (len < 5)
+-		return len;	/* call too long for patch site */
++		return PV_NO_PATCH;	/* call too long for patch site */
+ 
+ 	b->opcode = 0xe8; /* call */
+ 	b->delta = delta;
+@@ -157,7 +157,7 @@ unsigned paravirt_patch_jmp(const void *target, void *insnbuf,
+ 	unsigned long delta = (unsigned long)target - (addr+5);
+ 
+ 	if (len < 5)
+-		return len;	/* call too long for patch site */
++		return PV_NO_PATCH;	/* call too long for patch site */
+ 
+ 	b->opcode = 0xe9;	/* jmp */
+ 	b->delta = delta;
+@@ -196,7 +196,7 @@ unsigned paravirt_patch_insns(void *insnbuf, unsigned len,
+ 	unsigned insn_len = end - start;
+ 
+ 	if (insn_len > len || start == NULL)
+-		insn_len = len;
++		insn_len = PV_NO_PATCH;
+ 	else
+ 		memcpy(insnbuf, start, insn_len);
+ 
+diff --git a/arch/i386/kernel/vmi.c b/arch/i386/kernel/vmi.c
+index 18673e0..27ae004 100644
+--- a/arch/i386/kernel/vmi.c
++++ b/arch/i386/kernel/vmi.c
+@@ -118,7 +118,7 @@ static unsigned patch_internal(int call, unsigned len, void *insnbuf,
+ 
+ 		case VMI_RELOCATION_NONE:
+ 			/* leave native code in place */
+-			break;
++			return PV_NO_PATCH;
+ 
+ 		default:
+ 			BUG();
+@@ -153,7 +153,7 @@ static unsigned vmi_patch(u8 type, u16 clobbers, void *insns,
+ 		default:
+ 			break;
+ 	}
+-	return len;
++	return PV_NO_PATCH;
+ }
+ 
+ /* CPUID has non-C semantics, and paravirt-ops API doesn't match hardware ISA */
+diff --git a/include/asm-i386/paravirt.h b/include/asm-i386/paravirt.h
+index 9fa3fa9..b26794f 100644
+--- a/include/asm-i386/paravirt.h
++++ b/include/asm-i386/paravirt.h
+@@ -252,6 +252,9 @@ extern struct paravirt_ops paravirt_ops;
+ #define paravirt_alt(insn_string)					\
+ 	_paravirt_alt(insn_string, "%c[paravirt_typenum]", "%c[paravirt_clobber]")
+ 
++enum {
++	PV_NO_PATCH = -1
++};
+ unsigned paravirt_patch_nop(void);
+ unsigned paravirt_patch_ignore(unsigned len);
+ unsigned paravirt_patch_call(void *insnbuf,
