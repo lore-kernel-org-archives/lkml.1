@@ -1,95 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbXHRNYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbXHRN2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754416AbXHRNYW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 09:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbXHRNYI
+	id S1754891AbXHRN2S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 09:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbXHRN2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 09:24:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45661 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750987AbXHRNYF (ORCPT
+	Sat, 18 Aug 2007 09:28:09 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57896 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804AbXHRN2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 09:24:05 -0400
-Date: Sat, 18 Aug 2007 19:06:33 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Christoph Lameter <clameter@sgi.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <alpine.LFD.0.999.0708172110400.30176@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0708181853210.29105@enigma.security.iitk.ac.in>
-References: <20070815234021.GA28775@gondor.apana.org.au>
- <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au>
- <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au>
- <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <46C516BA.60700@yahoo.com.au>
- <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org>
- <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au>
- <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com>
- <alpine.LFD.0.999.0708180709060.3666@enigma.security.iitk.ac.in>
- <alpine.LFD.0.999.0708172110400.30176@woody.linux-foundation.org>
+	Sat, 18 Aug 2007 09:28:07 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46C6F3C7.3070002@s5r6.in-berlin.de>
+Date: Sat, 18 Aug 2007 15:27:35 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: "Martin K. Petersen" <mkp@mkp.net>
+CC: Gregor Jasny <gjasny@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux1394-devel@lists.sourceforge.net
+Subject: Re: Corrupted filesystem with new Firewire stack
+References: <9d2cd630708151447u7e415712u17e974859fbd5481@mail.gmail.com>	<46C3EE1F.40309@s5r6.in-berlin.de> <yq1ps1m5odq.fsf@sermon.lab.mkp.net>
+In-Reply-To: <yq1ps1m5odq.fsf@sermon.lab.mkp.net>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 17 Aug 2007, Linus Torvalds wrote:
-
-> On Sat, 18 Aug 2007, Satyam Sharma wrote:
-> > 
-> > No code does (or would do, or should do):
-> > 
-> > 	x.counter++;
-> > 
-> > on an "atomic_t x;" anyway.
+Martin K. Petersen wrote:
+>>>>>> "Stefan" == Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
 > 
-> That's just an example of a general problem.
+> Stefan> There were some similar reports involving that "status write
+> Stefan> for unknown orb".  I haven't found a way to reproduce it; I
+> Stefan> noticed it only once in the logs here so far.
 > 
-> No, you don't use "x.counter++". But you *do* use
+> I get those all the time.  Just do heavy ext3 I/O to the drive.
 > 
-> 	if (atomic_read(&x) <= 1)
+> Happens here on both a G4 and an intel Mini.  Both running FC7.
 > 
-> and loading into a register is stupid and pointless, when you could just 
-> do it as a regular memory-operand to the cmp instruction.
+> Aug 17 08:24:08 mini kernel: firewire_sbp2: status write for unknown orb
+> Aug 17 08:25:08 mini kernel: firewire_sbp2: sbp2_scsi_abort
+> Aug 17 08:26:36 mini kernel: firewire_sbp2: status write for unknown orb
+> Aug 17 08:27:36 mini kernel: firewire_sbp2: sbp2_scsi_abort
+> Aug 17 08:33:51 mini kernel: firewire_sbp2: status write for unknown orb
+> Aug 17 08:34:51 mini kernel: firewire_sbp2: sbp2_scsi_abort
+> 
+> Lacie drive in both cases.
 
-True, but that makes this a bad/poor code generation issue with the
-compiler, not something that affects the _correctness_ of atomic ops if
-"volatile" is used for that counter object (as was suggested), because
-we'd always use the atomic_inc() etc primitives to do increments, which
-are always (should be!) implemented to be atomic.
+I replaced a HDD in my OFXW911 enclosure and am starting tests now.
 
+While backing ~80 GB from its current reiserfs partition up in order to
+reformat to ext3, using find | cpio, I got that error 4 times:
 
-> And as far as the compiler is concerned, the problem is the 100% same: 
-> combining operations with the volatile memop.
-> 
-> The fact is, a compiler that thinks that
-> 
-> 	movl mem,reg
-> 	cmpl $val,reg
-> 
-> is any better than
-> 
-> 	cmpl $val,mem
-> 
-> is just not a very good compiler.
+Aug 18 13:24:58 stein ReiserFS: sdd1: Using r5 hash to sort names
+Aug 18 13:47:41 stein firewire_sbp2: status write for unknown orb
+Aug 18 13:48:11 stein firewire_sbp2: sbp2_scsi_abort
+Aug 18 14:18:30 stein firewire_sbp2: status write for unknown orb
+Aug 18 14:19:00 stein firewire_sbp2: sbp2_scsi_abort
+Aug 18 14:50:08 stein firewire_sbp2: status write for unknown orb
+Aug 18 14:50:39 stein firewire_sbp2: sbp2_scsi_abort
+Aug 18 14:57:24 stein firewire_sbp2: status write for unknown orb
+Aug 18 14:57:54 stein firewire_sbp2: sbp2_scsi_abort
 
-Absolutely, this is definitely a bug report worth opening with gcc. And
-what you've said to explain this previously sounds definitely correct --
-seeing "volatile" for any access does appear to just scare the hell out
-of gcc and makes it generate such (poor) code.
+cpio finished with exit code 0, and I compared one of the directories
+within which a command was aborted after remounting the disk.  Seems
+that error was properly recovered from.
 
-
-Satyam
+I will test if more of these errors occur in write access or with ext3,
+but at least I have a way now to get one error per ~20 minutes
+continuous IO, on average.  Then I will proceed to examine the new
+stack's sources for potential related bugs.  Will take a while though
+because I have other projects going on at the moment.
+-- 
+Stefan Richter
+-=====-=-=== =--- =--=-
+http://arcgraph.de/sr/
