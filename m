@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbXHRAFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757629AbXHRAIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758584AbXHRAFb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 20:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbXHRAFS
+	id S1757629AbXHRAIp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 20:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbXHRAIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 20:05:18 -0400
-Received: from gw.goop.org ([64.81.55.164]:44450 "EHLO mail.goop.org"
+	Fri, 17 Aug 2007 20:08:34 -0400
+Received: from gate.crashing.org ([63.228.1.57]:57610 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752214AbXHRAFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 20:05:16 -0400
-Message-ID: <46C637B7.30200@goop.org>
-Date: Fri, 17 Aug 2007 17:05:11 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: patches@x86-64.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] [5/12] x86_64: Make patching more robust, fix paravirt
- issue
-References: <20070809241.425881000@suse.de> <20070809124132.C794A14F3B@wotan.suse.de>
-In-Reply-To: <20070809124132.C794A14F3B@wotan.suse.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-15
+	id S1752348AbXHRAId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 20:08:33 -0400
+In-Reply-To: <alpine.LFD.0.999.0708180522120.3666@enigma.security.iitk.ac.in>
+References: <20070816003948.GY9645@linux.vnet.ibm.com> <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com> <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au> <18115.45316.702491.681906@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi> <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com> <c298f0e3f9e49c9dd2d326115d156084@kernel.crashing.org> <alpine.LFD.0.999.0708180002290.3666@enigma.security.iitk.ac.in> <a51ab88dc00f8d7fd44f79400671d259@kernel.crashing.org> <alpine.LFD.0.999.0708180522120.3666@enigma.security.iitk.ac.in>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c0115c88da5d6756502e0c0499faa71f@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
+       Netdev <netdev@vger.kernel.org>, jesper.juhl@gmail.com,
+       linux-arch@vger.kernel.org, zlynx@acm.org,
+       Andrew Morton <akpm@linux-foundation.org>, schwidefsky@de.ibm.com,
+       Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Sat, 18 Aug 2007 02:04:35 +0200
+To: Satyam Sharma <satyam@infradead.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Commit 19d36ccdc34f5ed444f8a6af0cbfdb6790eb1177 "x86: Fix alternatives
-> and kprobes to remap write-protected kernel text" uses code which is
-> being patched for patching.
+>>>> atomic_dec() writes
+>>>> to memory, so it _does_ have "volatile semantics", implicitly, as
+>>>> long as the compiler cannot optimise the atomic variable away
+>>>> completely -- any store counts as a side effect.
+>>>
+>>> I don't think an atomic_dec() implemented as an inline "asm volatile"
+>>> or one that uses a "forget" macro would have the same re-ordering
+>>> guarantees as an atomic_dec() that uses a volatile access cast.
+>>
+>> The "asm volatile" implementation does have exactly the same
+>> reordering guarantees as the "volatile cast" thing,
 >
-> In particular, paravirt_ops does patching in two stages: first it
-> calls paravirt_ops.patch, then it fills any remaining instructions
-> with nop_out().  nop_out calls text_poke() which calls
-> lookup_address() which calls pgd_val() (aka paravirt_ops.pgd_val):
-> that call site is one of the places we patch.
+> I don't think so.
+
+"asm volatile" creates a side effect.  Side effects aren't
+allowed to be reordered wrt sequence points.  This is exactly
+the same reason as why "volatile accesses" cannot be reordered.
+
+>> if that is
+>> implemented by GCC in the "obvious" way.  Even a "plain" asm()
+>> will do the same.
 >
-> If we always do patching as one single call to text_poke(), we only
-> need make sure we're not patching the memcpy in text_poke itself.
-> This means the prototype to paravirt_ops.patch needs to change, to
-> marshal the new code into a buffer rather than patching in place as it
-> does now.  It also means all patching goes through text_poke(), which
-> is known to be safe (apply_alternatives is also changed to make a
-> single patch).
->   
+> Read the relevant GCC documentation.
 
-Hi Andi,
+I did, yes.
 
-This patch breaks Xen booting.  I get infinite recursive faults during
-patching when this patch is present.  If I boot with
-"noreplace-paravirt" it works OK, and it works as expected if I back
-this patch out.  I haven't tracked down the exact failure mode; its a
-little hard to debug because it overwrites all kernel memory with
-recursive fault stackframes and then finally traps out to Xen when it
-hits the bottom of memory.
+> [ of course, if the (latest) GCC documentation is *yet again*
+>   wrong, then alright, not much I can do about it, is there. ]
 
-I think we should back this one out before .23.
+There was (and is) nothing wrong about the "+m" documentation, if
+that is what you are talking about.  It could be extended now, to
+allow "+m" -- but that takes more than just "fixing" the documentation.
 
-    J
+
+Segher
+
