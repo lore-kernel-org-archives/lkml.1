@@ -1,78 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbXHRB24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbXHRBaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756885AbXHRB24 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 21:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbXHRB2o
+	id S1757639AbXHRBaS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 21:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXHRB36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 21:28:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37547 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752104AbXHRB2n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 21:28:43 -0400
-Date: Sat, 18 Aug 2007 07:11:01 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Christoph Lameter <clameter@sgi.com>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com>
-Message-ID: <alpine.LFD.0.999.0708180709060.3666@enigma.security.iitk.ac.in>
-References: <20070815234021.GA28775@gondor.apana.org.au>
- <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au>
- <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au>
- <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <46C516BA.60700@yahoo.com.au>
- <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org>
- <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au>
- <20070818010818.GQ8464@linux.vnet.ibm.com>
- <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 17 Aug 2007 21:29:58 -0400
+Received: from gate.crashing.org ([63.228.1.57]:48098 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751373AbXHRB35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 21:29:57 -0400
+In-Reply-To: <18116.61246.856760.243185@cargo.ozlabs.ibm.com>
+References: <11867913303733-git-send-email-segher@kernel.crashing.org> <d6775e129db48371cdf86e94ddfaa1d15617bb8f.1186773842.git.segher@kernel.crashing.org> <18116.61246.856760.243185@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5f948fd33e0908c03c07f32ae89834a9@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: linuxppc-dev@ozlabs.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Implement atomic{,64}_{read,write}() without volatile
+Date: Sat, 18 Aug 2007 03:29:48 +0200
+To: Paul Mackerras <paulus@samba.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> Instead, use asm() like all other atomic operations already do.
+>
+>> +static __inline__ long atomic64_read(const atomic_t *v)
+>
+>> +static __inline__ void atomic64_set(atomic_t *v, long i)
+>
+> s/atomic_t/atomic64_t/ in both lines.  I've edited my copy of the 
+> patch.
+
+Ouch, sorry about that.
 
 
-On Fri, 17 Aug 2007, Christoph Lameter wrote:
+Segher
 
-> On Fri, 17 Aug 2007, Paul E. McKenney wrote:
-> 
-> > On Sat, Aug 18, 2007 at 08:09:13AM +0800, Herbert Xu wrote:
-> > > On Fri, Aug 17, 2007 at 04:59:12PM -0700, Paul E. McKenney wrote:
-> > > >
-> > > > gcc bugzilla bug #33102, for whatever that ends up being worth.  ;-)
-> > > 
-> > > I had totally forgotten that I'd already filed that bug more
-> > > than six years ago until they just closed yours as a duplicate
-> > > of mine :)
-> > > 
-> > > Good luck in getting it fixed!
-> > 
-> > Well, just got done re-opening it for the third time.  And a local
-> > gcc community member advised me not to give up too easily.  But I
-> > must admit that I am impressed with the speed that it was identified
-> > as duplicate.
-> > 
-> > Should be entertaining!  ;-)
-> 
-> Right. ROTFL... volatile actually breaks atomic_t instead of making it 
-> safe. x++ becomes a register load, increment and a register store. Without 
-> volatile we can increment the memory directly.
-
-No code does (or would do, or should do):
-
-	x.counter++;
-
-on an "atomic_t x;" anyway.
