@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbXHRL7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbXHRMZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754710AbXHRL7I (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 07:59:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXHRL65
+	id S1754797AbXHRMZT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 08:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXHRMZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 07:58:57 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2739 "EHLO ra.tuxdriver.com"
+	Sat, 18 Aug 2007 08:25:07 -0400
+Received: from 1wt.eu ([62.212.114.60]:1739 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753372AbXHRL64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 07:58:56 -0400
-Date: Sat, 18 Aug 2007 07:58:16 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + proc-export-a-processes-resource-limits-via-proc-pid.patch added to -mm tree
-Message-ID: <20070818115816.GA23555@hmsreliant.think-freely.org>
-References: <20070817222228.GA783@tv-sign.ru>
-MIME-Version: 1.0
+	id S1750759AbXHRMZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 08:25:05 -0400
+Date: Sat, 18 Aug 2007 14:17:14 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Kevin E <kevin360@yahoo.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Marvell 88E8056 gigabit ethernet controller
+Message-ID: <20070818121714.GA28247@1wt.eu>
+References: <20070818053812.GP6002@1wt.eu> <244053.17817.qm@web38913.mail.mud.yahoo.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070817222228.GA783@tv-sign.ru>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <244053.17817.qm@web38913.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 18, 2007 at 02:22:28AM +0400, Oleg Nesterov wrote:
-> Neil Horman wrote:
-> > 
-> > +static int proc_pid_limits(struct task_struct *task, char *buffer)
-> > +{
-> > +	unsigned int i;
-> > +	int count = 0;
-> > +	char *bufptr = buffer;
-> > +
-> > +	struct rlimit rlim[RLIM_NLIMITS];
-> > +
-> > +	read_lock(&tasklist_lock);
-> > +	memcpy(rlim, task->signal->rlim, sizeof(struct rlimit) * RLIM_NLIMITS);
-> > +	read_unlock(&tasklist_lock);
+On Sat, Aug 18, 2007 at 04:45:26AM -0700, Kevin E wrote:
 > 
-> Please don't re-introduce tasklist_lock unless strictly needed. And in this case
-> it doesn't help, sys_getrlimit() changes ->rlim[] under task_lock().
+> --- Willy Tarreau <w@1wt.eu> wrote:
 > 
-> Hovewer, I think the whole patch is not right. The "tsk" itself is pinned, but its
-> ->signal is not stable and can be == NULL.
+> > No Stephen, look again, he says that moving the
+> > video card into the broken
+> > system does not change anything.
 > 
-> You can use lock_task_sighand() to access ->signal.
+> Correct, I've used three different video cards in the
+> broken machine.  I've used an old PCI vid card, the
+> PCI-X vid card from the working machine, and now PCI-X
+> card I just bought yesterday (nvidia based).  None
+> have affected whether the Marvell chipset works or
+> not.  
 > 
-You're right about the use of task_lock rather than tasklist_lock in getrlimit,
-but the comment from lock_task_sighand indicates that its use is predicated on
-the prerequisite of locking tasklist_lock, so I think the situation is not that
-much of an issue.  From what I see the use of lock_task_sighand is used when
-modifying values in the signal struct, not when removing it entirely (IIRC it
-needs to exist until such time as all sharing processes exit.  The fact that we
-have an outstanding task struct we are using here guarantees its continued
-existence).  Since we are only reading signal->rlimit, which is only written to
-from sys_setrlimit, we should be safe from corrupted limit reads, which at worst
-would cause an erroneous transient data read, rather than any sort of
-panic/crash.
+> Also, the broken machine is a server so I don't start
+> X on it.  It just sits in console mode all the time. 
+> The CPU (Core2 E4400) used to be in the working
+> machine, then upgraded it to the Q6600 and put the old
+> E4400 in the new MB that became the broken machine. 
+> Memory was brand new out of the package.  So I've used
+> the E4400 in a MB that worked fine.
+> 
+> 
+> > I don't understand why the working one is on PCI bus
+> > 3 while the other
+> > is on PCI bus 4. It's just as if the chip embedded a
+> > PCI bridge. Maybe
+> > those chips are just cheaper dual-channel
+> > controllers with one faulty
+> > controller disabled. It would also explain why the
+> > PCI ID is different.
+> 
+> I've attached the "lspci -vvv" output for the two
+> machines, if it doesn't come through just let me know
+> how I can get it to you.
 
-Regards 
-Neil
+OK, in this trace, both controllers are on the same bus. The broken
+one has 'Capabilities: [100] Advanced Error Reporting' the other
+does not have, and the bridge to this bus has two more capabilities :
+'Capabilities: [100] Virtual Channel' and 'Capabilities: [180] Unknown (5)'.
 
-> Oleg.
+I don't know whether it can jutify a different behaviour. Also, maybe this
+is caused by a minuscule difference in the BIOS setup ?
 
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+Regards,
+Willy
+
