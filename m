@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbXHRF4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbXHRGW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754725AbXHRF4R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 01:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbXHRF4H
+	id S1753411AbXHRGW0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 02:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbXHRGWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 01:56:07 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:54463 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751296AbXHRF4G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 01:56:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=TXthuhIDDua333+b7DDa0h5NNqMyW85fu7BkLZskoa1+8vYhrO1F23JUI0G9SAHJ/4wgePSU9P3/74WLRcK/Uz+56MyRr9sTteuOoRbXL4aMEnsN/eFf8LWUNgxr0O2rq4nYkUgAXZ9r4xzxiKb2HzupiRWs1WyUPaSWnDKSNsw=
-Message-ID: <4746469c0708172256g164049f0qeaf02462aebd6d27@mail.gmail.com>
-Date: Fri, 17 Aug 2007 22:56:04 -0700
-From: "Mike Mohr" <akihana@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: group ownership of tun devices -- nonfunctional?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 18 Aug 2007 02:22:17 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:59145 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750987AbXHRGWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 02:22:16 -0400
+Date: Sat, 18 Aug 2007 08:23:33 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: linux-kernel@vger.kernel.org, Gerd Hoffmann <kraxel@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Bryan Wu <bryan.wu@analog.com>,
+       Sonic Zhang <sonic.adi@gmail.com>,
+       Mike Frysinger <vapier.adi@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [draft] Blackfin Early Printk implmentation
+Message-ID: <20070818062333.GA26416@uranus.ravnborg.org>
+References: <200708152234.06734.rgetz@blackfin.uclinux.org> <200708171336.40159.rgetz@blackfin.uclinux.org> <20070817175911.GA22046@uranus.ravnborg.org> <200708171607.32849.rgetz@blackfin.uclinux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200708171607.32849.rgetz@blackfin.uclinux.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Per the post here:
+> > What was preventing you from just using the x86_64 code here?
+> 
+> Some was borrowed - but not much. since we don't support vga, or 16550 UARTs
+> (Blackfin has it's own on-chip UART), I don't think this would work. 
+> 
+> Maybe I'm missing something - but I don't think so. Every one who implements
+> implements direct IO to the hardware (except me, since I put it into the driver
+> file, and force Sonic - the serial driver developer - to maintain it forever).
+> 
+> Most of the other early printks talks directly to the hardware.
+I only looked at your version and it looked general thats why I brought
+up the code sharing idea - which I agree is not possible.
 
-http://lkml.org/lkml/2007/6/18/228
+> > Thinking that all should do the same so maybe alpha ought to change...
+> 
+> When I looked at all the printk implementations, I thought they were all
+> kind of hokey, and not very common - but what do you want for a debug interface
+> that lasts less than 5 seconds?
+> 
+> ./arch/x86_64/kernel/early_printk.c
+> ./arch/blackfin/kernel/early_printk.c
+> ./arch/sh64/kernel/early_printk.c
+> ./arch/sh/kernel/early_printk.c
+> ./arch/i386/kernel/early_printk.c
+> ./arch/mips/kernel/early_printk.c
+> 
+> I didn't see an alpha implementation - where is it done?
+Alpha uses the imlementation in lib/*print.c somehow.
+And I think the right choice would be to implement
+a private version of early_printk for alpha like the
+other architectures do.
 
-it appears that the group ownership patch has made it into .23.  I am
-using these patches, amongst which the kernel component appears to be
-identical:
+Thanks for the split-up. I could follow the changes now.
 
-http://sigxcpu.org/unsorted-patches/0001-allow-tun-ownership-by-group.patch
-http://sigxcpu.org/unsorted-patches/tunctl_gid.diff
-
-I can create devices that are owned by my user account (tunctl -u
-`whoami` -t tap0) and it works fine.  However, if I use group
-permissions with -g it stops working.  In all cases, if I pass -g
-<group>, the interface is created correctly but it is unusable as a
-non-root user.
-
-So my question is: am I doing something wrong?  If I am, I don't see
-it.  Assuming then that I am not doing anything wrong on my end, I
-assume then that there is something missing from the kernel patch I
-applied.  I read over it and I can't see any issues, especially
-considering that tunctl comes back without error (even with -g) and
-creates an interface.
-
-Just wondering if this was an issue that should be looked into--
-
-Mike
+	Sam
