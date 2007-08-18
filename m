@@ -1,96 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbXHRAEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbXHRAFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603AbXHRAEs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 20:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbXHRAEk
+	id S1758584AbXHRAFb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 20:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbXHRAFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 20:04:40 -0400
-Received: from main.gmane.org ([80.91.229.2]:46849 "EHLO ciao.gmane.org"
+	Fri, 17 Aug 2007 20:05:18 -0400
+Received: from gw.goop.org ([64.81.55.164]:44450 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751383AbXHRAEj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 20:04:39 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: Marvell 88E8056 gigabit ethernet controller
-Date: Fri, 17 Aug 2007 17:03:41 -0700
-Organization: Linux Foundation
-Message-ID: <20070817170341.7f2645fa@freepuppy.rosehill.hemminger.net>
-References: <424491.59139.qm@web38906.mail.mud.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752214AbXHRAFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 20:05:16 -0400
+Message-ID: <46C637B7.30200@goop.org>
+Date: Fri, 17 Aug 2007 17:05:11 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: patches@x86-64.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] [5/12] x86_64: Make patching more robust, fix paravirt
+ issue
+References: <20070809241.425881000@suse.de> <20070809124132.C794A14F3B@wotan.suse.de>
+In-Reply-To: <20070809124132.C794A14F3B@wotan.suse.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: netdev@vger.kernel.org
-X-Gmane-NNTP-Posting-Host: 069-064-229-129.pdx.net
-In-Reply-To: <424491.59139.qm@web38906.mail.mud.yahoo.com>
-X-Newsreader: Claws Mail 2.9.2 (GTK+ 2.10.13; x86_64-redhat-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Aug 2007 05:42:13 -0700 (PDT)
-Kevin E <kevin360@yahoo.com> wrote:
+Andi Kleen wrote:
+> Commit 19d36ccdc34f5ed444f8a6af0cbfdb6790eb1177 "x86: Fix alternatives
+> and kprobes to remap write-protected kernel text" uses code which is
+> being patched for patching.
+>
+> In particular, paravirt_ops does patching in two stages: first it
+> calls paravirt_ops.patch, then it fills any remaining instructions
+> with nop_out().  nop_out calls text_poke() which calls
+> lookup_address() which calls pgd_val() (aka paravirt_ops.pgd_val):
+> that call site is one of the places we patch.
+>
+> If we always do patching as one single call to text_poke(), we only
+> need make sure we're not patching the memcpy in text_poke itself.
+> This means the prototype to paravirt_ops.patch needs to change, to
+> marshal the new code into a buffer rather than patching in place as it
+> does now.  It also means all patching goes through text_poke(), which
+> is known to be safe (apply_alternatives is also changed to make a
+> single patch).
+>   
 
-> Hi all,
-> 
-> 	I've read where the onboard Marvell lan controller on
-> some Gigabyte boards don't work.  I've got two systems
-> using the same Gigabyte board, on one the LAN works on
-> the other it dies like described by others.  Here's
-> the systems:
-> 
-> 
-> Working system:
-> Gigabyte 965P-DS3 rev 3.3  (BIOS F10)
-> Core2 Q6600
-> 2GB Corsair XMS2 memory
-> kernel 2.6.22.3
-> 
-> lspci for LAN controller:
-> 04:00.0 Ethernet controller: Marvell Technology Group
-> Ltd. 88E8056 PCI-E Gigabit Ethernet Controller (rev
-> 14)
-> 
-> 
-> Broken system:
-> Gigabyte 965P-DS3 rev 3.3  (BIOS F10)
-> Core2 E4400
-> 2GB Corsair XMS2 memory
-> kernel 2.6.22.3
-> 
-> lspci for LAN controller:
-> 03:00.0 Ethernet controller: Marvell Technology Group
-> Ltd. Unknown device 4364 (rev 12)
-> 
-> 
-> 	The BIOS for the two systems are setup the same and
-> the config for the kernels are the same too.  I've
-> actually tried taking the kernel from the working
-> system and booting it on the broken one but still the
-> LAN dies after a couple of seconds.  The working
-> system has one card plugged in (nvidia based PCI-X
-> video card), I've taken that card and plugged into the
-> broken system, booted the same kernel, and it still
-> dies after a while.
-> 
-> 	I will gladly provide any info needed if it can help
-> in getting this chipset working on the Gigabyte
-> boards.
-> 
-> 	Thanks,
-> 	Kevin
+Hi Andi,
 
-I maintain the sky2 driver, and have one of the (buggy) Gigabyte motherboards.
-It is interesting that the problem seems to track with video card.
-Are you using the Nvidia binary driver?
-The video card in the system I have troubles with is:
-	ATI Technologies Inc RV370 [Radeon X300SE]
+This patch breaks Xen booting.  I get infinite recursive faults during
+patching when this patch is present.  If I boot with
+"noreplace-paravirt" it works OK, and it works as expected if I back
+this patch out.  I haven't tracked down the exact failure mode; its a
+little hard to debug because it overwrites all kernel memory with
+recursive fault stackframes and then finally traps out to Xen when it
+hits the bottom of memory.
 
-Surprisingly, using other PCI-E cards with same driver (different Marvell chips)
-has no problem.  Vendor version of sk98lin driver has same failure mode
-on the buggy hardware.
+I think we should back this one out before .23.
 
-You might want to look at lspci -vvv output on two system to see if there
-are differences. Perhaps there is a CPU speed dependency?
-
-
+    J
