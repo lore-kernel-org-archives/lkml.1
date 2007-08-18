@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbXHRKVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbXHRKWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbXHRKVR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 06:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbXHRKVF
+	id S1754771AbXHRKWi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 06:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbXHRKWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 06:21:05 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:30901 "EHLO
+	Sat, 18 Aug 2007 06:22:32 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:31767 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbXHRKVE (ORCPT
+	with ESMTP id S1752419AbXHRKWb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 06:21:04 -0400
+	Sat, 18 Aug 2007 06:22:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NezdiJeci0e6lNAZJjxToBA3J0o/gEuNRyHUGner6BlIM3/lfJ5Ak6fOWdS+5Bbxz6O4qjb75wxK7pazPQx/YvEcBRi+uk6eTaU+xYJJtCo+aX6Y6o6ZcrqYFFb09lKLajzsVUJiQrmMv2AzLszCb/RtXw3dnIKMZxKqJ2PnLZU=
-Message-ID: <ab40e9c0708180321k6415c454v35a0b00fd050f570@mail.gmail.com>
-Date: Sat, 18 Aug 2007 12:21:01 +0200
+        b=uebvSKJrDzXD5uFOVWfuYolLrnCaum1VdNS7bIfzqDSE3wUgPRLzLXjKLZqOHW3ZGA8ZunJL3/8OjtuhmKEN9Dk7fmds7HzViZSb8hneFDVnPz8lPSMvKJ1qciRd33bNCqKysbBnJCXdeKw48d5vng3jt7PjN4mbJ0TVT3GkkSk=
+Message-ID: <ab40e9c0708180322p3e8fa27bh77cfbb8195548758@mail.gmail.com>
+Date: Sat, 18 Aug 2007 12:22:29 +0200
 From: "Xu Yang" <risingsunxy@googlemail.com>
 To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
 Subject: Re: kernel 2.6.19 porting
@@ -30,29 +30,9 @@ References: <ab40e9c0708170924h5b958423jcd0e82e211ca8463@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Willy ,
+Ok I will try that.
 
-thanks for your reply.
-
-I am sure that my timer is working( TIMER0_1), because I checked the
-register , it was counting , and the interrupt flag register also
-gives out interrupts periodicly.
-the problem is that it seems that the program just toggles here:
-interrupt rountines, gic_ack(), interrupt handle
-functions.............., my simulation enviorment also tells me that
-invalid iqr id (0x21) is writen to EOI(end of interrupt).
-I am also sure in the interrupt routine I clean the interrupt flag of the timer.
-
-so this is roughly my situation.
-
-does anyone have some idea?
-
-thanks,
-
-regards,
-
-yang
-
+thanks :)
 
 2007/8/18, Stefan Richter <stefanr@s5r6.in-berlin.de>:
 > Willy Tarreau wrote:
