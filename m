@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbXHROgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbXHROnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbXHROgS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 10:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXHROgG
+	id S1756020AbXHROnQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 10:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbXHROnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 10:36:06 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36075 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753299AbXHROgF (ORCPT
+	Sat, 18 Aug 2007 10:43:01 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:60207 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751242AbXHROm7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 10:36:05 -0400
-Date: Sat, 18 Aug 2007 20:18:29 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       NeilBrown <neilb@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>
-Subject: Re: [PATCH 002 of 6] Introduce rq_for_each_segment replacing
- rq_for_each_bio
-In-Reply-To: <Pine.LNX.4.64.0708181628350.5186@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LFD.0.999.0708182016000.29105@enigma.security.iitk.ac.in>
-References: <20070816211551.11839.patches@notabene> <1070816112100.12182@suse.de>
- <Pine.LNX.4.62.0708170910120.8381@pademelon.sonytel.be>
- <alpine.LFD.0.999.0708181953560.29105@enigma.security.iitk.ac.in>
- <Pine.LNX.4.64.0708181628350.5186@fbirervta.pbzchgretzou.qr>
+	Sat, 18 Aug 2007 10:42:59 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46C703C9.9060507@s5r6.in-berlin.de>
+Date: Sat, 18 Aug 2007 16:35:53 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@suse.de>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, paulmck@linux.vnet.ibm.com,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org
+Subject: LDD3 pitfalls (was Re: [PATCH 0/24] make atomic_read() behave consistently
+ across all architectures)
+References: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <46C40587.7050708@s5r6.in-berlin.de> <20070816081049.GA1431@gondor.apana.org.au> <46C41EE4.9090806@s5r6.in-berlin.de> <46C42767.4070104@s5r6.in-berlin.de> <20070816104250.GB2927@gondor.apana.org.au> <20070816163441.GB16957@linux.vnet.ibm.com> <46C512EB.7020603@yahoo.com.au> <46C54D74.60101@s5r6.in-berlin.de> <46C556F1.8000407@yahoo.com.au>
+In-Reply-To: <46C556F1.8000407@yahoo.com.au>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 18 Aug 2007, Jan Engelhardt wrote:
-
-> On Aug 18 2007 20:07, Satyam Sharma wrote:
-> >On Fri, 17 Aug 2007, Geert Uytterhoeven wrote:
-> >
-> >> On Thu, 16 Aug 2007, NeilBrown wrote:
-> >> [...]
-> >> >  		dev_dbg(&dev->sbd.core,
-> >> >  			"%s:%u: bio %u: %u segs %u sectors from %lu\n",
-> >> > -			__func__, __LINE__, i, bio_segments(bio),
-> >> > -			bio_sectors(bio), sector);
-> >> > -		bio_for_each_segment(bvec, bio, j) {
-> >> > +			__func__, __LINE__, i, bio_segments(iter.bio),
-> >> > +			bio_sectors(iter.bio),
-> >> > +			(unsigned long)iter.bio->bi_sector);
-> >>                         ^^^^^^^^^^^^^^^
-> >> Superfluous cast: PS3 is 64-bit only, and casts are evil.
+Nick Piggin wrote:
+> Stefan Richter wrote:
+>> Nick Piggin wrote:
+>>
+>>> I don't know why people would assume volatile of atomics. AFAIK, most
+>>> of the documentation is pretty clear that all the atomic stuff can be
+>>> reordered etc. except for those that modify and return a value.
+>>
+>>
+>> Which documentation is there?
 > 
-> bi_sector is sector_t. The cast is ok, because printf will warn, and rightfully
-> so since sector_t may just change its shape underneath. It would not be so much
-> of a problem if printf() was not a varargs function, but it is, and hence,
-> passing an object bigger than the format specifier can make problems.
+> Documentation/atomic_ops.txt
+> 
+> 
+>> For driver authors, there is LDD3.  It doesn't specifically cover
+>> effects of optimization on accesses to atomic_t.
+>>
+>> For architecture port authors, there is Documentation/atomic_ops.txt.
+>> Driver authors also can learn something from that document, as it
+>> indirectly documents the atomic_t and bitops APIs.
+>>
+> 
+> "Semantics and Behavior of Atomic and Bitmask Operations" is
+> pretty direct :)
+> 
+> Sure, it says that it's for arch maintainers, but there is no
+> reason why users can't make use of it.
 
-Oh yeah, that's why the _cast_ _is_ needed in the first place, by the way.
-I was mentioning why the cast itself should be (unsigned long long) otoh.
+
+Note, LDD3 page 238 says:  "It is worth noting that most of the other
+kernel primitives dealing with synchronization, such as spinlock and
+atomic_t operations, also function as memory barriers."
+
+I don't know about Linux 2.6.10 against which LDD3 was written, but
+currently only _some_ atomic_t operations function as memory barriers.
+
+Besides, judging from some posts in this thread, saying that atomic_t
+operations dealt with synchronization may not be entirely precise.
+-- 
+Stefan Richter
+-=====-=-=== =--- =--=-
+http://arcgraph.de/sr/
