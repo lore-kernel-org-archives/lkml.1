@@ -1,88 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbXHRGoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448AbXHRG72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754336AbXHRGoU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 02:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXHRGoI
+	id S1754448AbXHRG72 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 02:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbXHRG7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 02:44:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47887
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751979AbXHRGoG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 02:44:06 -0400
-Date: Fri, 17 Aug 2007 23:44:05 -0700 (PDT)
-Message-Id: <20070817.234405.66176298.davem@davemloft.net>
-To: rdreier@cisco.com
-Cc: tom@opengridcomputing.com, jeff@garzik.org, swise@opengridcomputing.com,
-       mshefty@ichips.intel.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports
- from the host TCP port space.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <adatzqxwh56.fsf@cisco.com>
-References: <adafy2hyc04.fsf@cisco.com>
-	<20070817.170033.63993876.davem@davemloft.net>
-	<adatzqxwh56.fsf@cisco.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 18 Aug 2007 02:59:19 -0400
+Received: from mx30.mail.ru ([194.67.23.238]:20920 "EHLO mx30.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751269AbXHRG7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 02:59:18 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+Date: Sat, 18 Aug 2007 10:59:12 +0400
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Samuel Ortiz <samuel@sortiz.org>,
+       "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>,
+       linux-kernel@vger.kernel.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, ambx1@neo.rr.com,
+       linux-pcmcia@lists.infradead.org
+References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <200708112239.37475.arvidjaar@mail.ru> <200708131009.46641.bjorn.helgaas@hp.com>
+In-Reply-To: <200708131009.46641.bjorn.helgaas@hp.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart6422843.rQnnpa6CLf";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200708181059.13741.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 17 Aug 2007 22:23:01 -0700
+--nextPart6422843.rQnnpa6CLf
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Also, looking at the complexity and bug-fixing effort that go into
-> making TSO work vs the really pretty small gain it gives also makes
-> part of me wonder whether the noble proclamations about
-> maintainability are always taken to heart.
+On Monday 13 August 2007, Bjorn Helgaas wrote:
+> On Saturday 11 August 2007 12:39:35 pm Andrey Borzenkov wrote:
+> > This stopped working again in 2.6.23-rc. In 2.6.22 we decided to disable
+> > PnP by default; it is apparently enabled now and fails to activte IrDA
+> > completely. So it moves to post-2.6.22 regressions :)
+> >
+> > let me know which information you need
+> >
+> > [ 2192.666450] pnp: PnP ACPI init
+> > [ 2192.666589] ACPI: bus type pnp registered
+> > [ 2192.686035] pnp: Device 00:0a activated.
+> > [ 2192.686089]  00:0a: SMCf010 not responding at SIR 0x100, FIR 0x2e8;
+> > auto-configuring
+> > [ 2192.687610] pnp: Device 00:0a disabled.
+> > [ 2192.693179] pnp: Device 00:0a activated.
+> > [ 2192.693210]  00:0a: not responding at SIR 0x100, FIR 0x2e8; swapping
+> > SIR/FIR and reconfiguring
+> > [ 2192.694720] pnp: Device 00:0a disabled.
+> > [ 2192.701232] pnp: Device 00:0a activated.
+> > [ 2192.701259]  00:0a: responds at SIR 0x2e8, FIR 0x100
+> > [ 2192.709309] pnp: PnP ACPI: found 12 devices
+> > [ 2192.709351] ACPI: ACPI bus type pnp unregistered
+> >
+> > ....
+> >
+> > [ 2207.986550] Detected unconfigured Toshiba laptop with ALi ISA bridge
+> > SMSC IrDA chip, pre-configuring device.
+> > [ 2207.986587] Activated ALi 1533 ISA bridge port 0x02e8.
+> > [ 2207.986602] Activated ALi 1533 ISA bridge port 0x02f8.
+> > [ 2207.986817] found SMC SuperIO Chip (devid=3D0x5a rev=3D00 base=3D0x0=
+02e):
+> > LPC47N227
+> > [ 2207.986851] smsc_superio_flat(): fir: 0x2f8, sir: 0x2e8, dma: 03, ir=
+q:
+> > 7, mode: 0x0e
+> > [ 2207.986873] smsc_ircc_present: can't get sir_base of 0x2e8
+>
+> As of 2.6.23-rc2, we should have:
+>   - probes for 8250 legacy devices (as in 2.6.21 and previous)
+>   - smsc PNP probes turned off by default (2.6.21 and previous had no
+>     PNP probes for smsc at all)
+>   - some complicated PNP quirks for SMCf010 devices
+>
+> In other words, I think we're basically back where we started.
 
-The cpu and bus utilization improvements of TSO on the sender side are
-more than significant.  Ask anyone who looks closely at this.
+Nope, it is a regression.
 
-For example, as part of his batching work Krisha Kumar has been
-posting lots of numbers lately on the netdev list, I'm sure he can
-post more specific numbers comparing the current stack in the case of
-TSO disabled vs. TSO enabled if that is what you need to see how
-beneficial TSO in fact is.
+> The 8250=20
+> driver should find a ttyS3 device at 0x2e8, and it should claim those
+> ports, which will prevent smsc from claiming them.
+>
 
-If TSO is such a lose why does pretty much every ethernet chip vendor
-implement it in hardware?  If you say it's just because Microsoft
-defines TSO in their NDI, that's a total cop-out.  It really does help
-performance a lot.  Why did the Xen folks bother making generic
-software TSO infrastructure for the kernel for the benefit of their
-virtualization network device?  Why would someone as bright as Herbert
-Xu even bother to implement that stuff if TSO gives a "pretty small
-gain"?
+This worked in 2.6.22 and does not work in 2.6.23. So something changed. I=
+=20
+make a separate post about it because it is probably unrelated to smsc.
 
-Similarly for LRO and this isn't defined in NDI at all.  Vendors are
-going so far as to put full flow tables in their chips in order to do
-LRO better.
+> If you use "setserial /dev/ttyS3 none", the 8250 driver should release
+> the ports at 0x2e8, and then the smsc-ircc2 driver should be able to
+> load correctly.  I think this is what we always had to do in the past,
+> right?
+>
 
-Using the bugs and issues we've run into while implementing TSO as
-evidence there is something wrong with it is a total straw man.  Look
-how many times the filesystem page cache has been rewritten over the
-years.
+No; it "just worked". I do not even have setserial command ... installed on=
+e=20
+but this does not support "none"
 
-Use the TSO problems as more of an example of how shitty a programmer
-I must be. :)
+> If that doesn't work, try removing the body of quirk_smc_enable() in
+> drivers/pnp/quirks.c in addition.  It's possible that the quirk changes
+> the config in a way that messes up the smsc-ircc2 probe.
+>
 
-Just be realistic and accept that RDMA is a point in time solution,
-and like any other such technology takes flexibility away from users.
+If I unload 8250 smsc-ircc2 loads just fine.=20
 
-Horizontal scaling of cpus up to huge arity cores, network devices
-using large numbers of transmit and receive queues and classification
-based queue selection, are all going to work to make things like RDMA
-even more irrelevant than they already are.
+--nextPart6422843.rQnnpa6CLf
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-If you can't see that this is the future, you have my condolences.
-Because frankly, the signs are all around that this is where things
-are going.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-The work doesn't belong in these special purpose devices, they belong
-in the far-end-node compute resources, and our computers are getting
-more and more of these general purpose compute engines every day.
-We will be constantly moving away from specialized solutions and
-towards those which solve large classes of problems for large groups
-of people.
+iD8DBQBGxpjBR6LMutpd94wRAlitAKDNKmKkcTJ5vfGmzAReYgL6tl8V+QCeKa+J
+ai2j0zh+4wyszqXKIOXkuQk=
+=vtGR
+-----END PGP SIGNATURE-----
+
+--nextPart6422843.rQnnpa6CLf--
