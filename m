@@ -1,295 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbXHRIKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbXHRILW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752886AbXHRIKA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 04:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbXHRIJl
+	id S1752512AbXHRILW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 04:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbXHRIKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 04:09:41 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:16194 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750804AbXHRIJi (ORCPT
+	Sat, 18 Aug 2007 04:10:53 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:28798 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753237AbXHRIKb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 04:09:38 -0400
-Subject: [PATCH 09/23] lib: percpu_counter_init error handling
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, torvalds@linux-foundation.org
-In-Reply-To: <20070817155659.GD24323@filer.fsl.cs.sunysb.edu>
-References: <20070816074525.065850000@chello.nl>
-	 <20070816074626.739944000@chello.nl>
-	 <20070817155659.GD24323@filer.fsl.cs.sunysb.edu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-udGAS9+EExMDI/FMsiLl"
-Date: Sat, 18 Aug 2007 10:09:34 +0200
-Message-Id: <1187424574.6114.136.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sat, 18 Aug 2007 04:10:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=hd4pju/F2fCafJTjLpZHnpbUe4q0/PFUC/QTTgu1b1uJat/w31+WjYiqfd1EtrPhxWGJ8Nh+7frBAGsbddRgkPKx9BViSC6Sv/SGmkkb9dRbtaQvwSVRf7Jjyhb9/9bxy2GkzGPE/jcfglloDrP5bqt4/6KXj1aApScTVU+bKlo=
+Message-ID: <84144f020708180110i1558dc77p84241615c8ceb6a3@mail.gmail.com>
+Date: Sat, 18 Aug 2007 11:10:29 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: kfree(0) - ok?
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       "Satyam Sharma" <satyam@infradead.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Tim Bird" <tim.bird@am.sony.com>,
+       "linux kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1187394022.7007.133.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46C233CB.9000602@am.sony.com>
+	 <1187132149.2618.2.camel@laptopd505.fenrus.org>
+	 <alpine.LFD.0.999.0708150454480.6482@enigma.security.iitk.ac.in>
+	 <20070817112253.e6a7cb33.akpm@linux-foundation.org>
+	 <alpine.LFD.0.999.0708180011570.3666@enigma.security.iitk.ac.in>
+	 <Pine.LNX.4.64.0708171413190.9635@schroedinger.engr.sgi.com>
+	 <84144f020708171442x52b18722k2971ceef96d3e72@mail.gmail.com>
+	 <1187394022.7007.133.camel@chaos>
+X-Google-Sender-Auth: dd37703541cd2463
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 8/18/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> If yes, who invented this 1980s reminiscence, where you got valid
+> pointers for malloc(0) ?
 
---=-udGAS9+EExMDI/FMsiLl
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2007-08-17 at 11:56 -0400, Josef Sipek wrote:
-> On Thu, Aug 16, 2007 at 09:45:34AM +0200, Peter Zijlstra wrote:
-
-> > Index: linux-2.6/fs/ext2/super.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux-2.6.orig/fs/ext2/super.c
-> > +++ linux-2.6/fs/ext2/super.c
-> > @@ -725,6 +725,7 @@ static int ext2_fill_super(struct super_
-> >  	int db_count;
-> >  	int i, j;
-> >  	__le32 features;
-> > +	int err;
-> > =20
-> >  	sbi =3D kzalloc(sizeof(*sbi), GFP_KERNEL);
-> >  	if (!sbi)
-> > @@ -996,12 +997,16 @@ static int ext2_fill_super(struct super_
-> >  	sbi->s_rsv_window_head.rsv_goal_size =3D 0;
-> >  	ext2_rsv_window_add(sb, &sbi->s_rsv_window_head);
-> > =20
-> > -	percpu_counter_init(&sbi->s_freeblocks_counter,
-> > +	err =3D percpu_counter_init(&sbi->s_freeblocks_counter,
-> >  				ext2_count_free_blocks(sb));
-> > -	percpu_counter_init(&sbi->s_freeinodes_counter,
-> > +	err |=3D percpu_counter_init(&sbi->s_freeinodes_counter,
-> >  				ext2_count_free_inodes(sb));
-> > -	percpu_counter_init(&sbi->s_dirs_counter,
-> > +	err |=3D percpu_counter_init(&sbi->s_dirs_counter,
-> >  				ext2_count_dirs(sb));
-> > +	if (err) {
-> > +		printk(KERN_ERR "EXT2-fs: insufficient memory\n");
-> > +		goto failed_mount3;
-> > +	}
->=20
-> Can percpu_counter_init fail with only one error code? If not, the error
-> code potentially used in future at failed_mount3 could be nonsensical
-> because of the bitwise or-ing.
-
-The actual value of err is irrelevant, it is not used after this not
-zero check.
-
-But how about this:
----
-Subject: lib: percpu_counter_init error handling
-
-alloc_percpu can fail, propagate that error.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- fs/ext2/super.c                |   15 ++++++++++++---
- fs/ext3/super.c                |   21 +++++++++++++++------
- fs/ext4/super.c                |   21 +++++++++++++++------
- include/linux/percpu_counter.h |    5 +++--
- lib/percpu_counter.c           |    8 +++++++-
- 5 files changed, 52 insertions(+), 18 deletions(-)
-
-Index: linux-2.6/fs/ext2/super.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.orig/fs/ext2/super.c
-+++ linux-2.6/fs/ext2/super.c
-@@ -725,6 +725,7 @@ static int ext2_fill_super(struct super_
- 	int db_count;
- 	int i, j;
- 	__le32 features;
-+	int err;
-=20
- 	sbi =3D kzalloc(sizeof(*sbi), GFP_KERNEL);
- 	if (!sbi)
-@@ -996,12 +997,20 @@ static int ext2_fill_super(struct super_
- 	sbi->s_rsv_window_head.rsv_goal_size =3D 0;
- 	ext2_rsv_window_add(sb, &sbi->s_rsv_window_head);
-=20
--	percpu_counter_init(&sbi->s_freeblocks_counter,
-+	err =3D percpu_counter_init(&sbi->s_freeblocks_counter,
- 				ext2_count_free_blocks(sb));
--	percpu_counter_init(&sbi->s_freeinodes_counter,
-+	if (!err) {
-+		err =3D percpu_counter_init(&sbi->s_freeinodes_counter,
- 				ext2_count_free_inodes(sb));
--	percpu_counter_init(&sbi->s_dirs_counter,
-+	}
-+	if (!err) {
-+		err =3D percpu_counter_init(&sbi->s_dirs_counter,
- 				ext2_count_dirs(sb));
-+	}
-+	if (err) {
-+		printk(KERN_ERR "EXT2-fs: insufficient memory\n");
-+		goto failed_mount3;
-+	}
- 	/*
- 	 * set up enough so that it can read an inode
- 	 */
-Index: linux-2.6/fs/ext3/super.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.orig/fs/ext3/super.c
-+++ linux-2.6/fs/ext3/super.c
-@@ -1485,6 +1485,7 @@ static int ext3_fill_super (struct super
- 	int i;
- 	int needs_recovery;
- 	__le32 features;
-+	int err;
-=20
- 	sbi =3D kzalloc(sizeof(*sbi), GFP_KERNEL);
- 	if (!sbi)
-@@ -1745,12 +1746,20 @@ static int ext3_fill_super (struct super
- 	get_random_bytes(&sbi->s_next_generation, sizeof(u32));
- 	spin_lock_init(&sbi->s_next_gen_lock);
-=20
--	percpu_counter_init(&sbi->s_freeblocks_counter,
--		ext3_count_free_blocks(sb));
--	percpu_counter_init(&sbi->s_freeinodes_counter,
--		ext3_count_free_inodes(sb));
--	percpu_counter_init(&sbi->s_dirs_counter,
--		ext3_count_dirs(sb));
-+	err =3D percpu_counter_init(&sbi->s_freeblocks_counter,
-+			ext3_count_free_blocks(sb));
-+	if (!err) {
-+		err =3D percpu_counter_init(&sbi->s_freeinodes_counter,
-+				ext3_count_free_inodes(sb));
-+	}
-+	if (!err) {
-+		err =3D percpu_counter_init(&sbi->s_dirs_counter,
-+				ext3_count_dirs(sb));
-+	}
-+	if (err) {
-+		printk(KERN_ERR "EXT3-fs: insufficient memory\n");
-+		goto failed_mount3;
-+	}
-=20
- 	/* per fileystem reservation list head & lock */
- 	spin_lock_init(&sbi->s_rsv_window_lock);
-Index: linux-2.6/fs/ext4/super.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.orig/fs/ext4/super.c
-+++ linux-2.6/fs/ext4/super.c
-@@ -1576,6 +1576,7 @@ static int ext4_fill_super (struct super
- 	int needs_recovery;
- 	__le32 features;
- 	__u64 blocks_count;
-+	int err;
-=20
- 	sbi =3D kzalloc(sizeof(*sbi), GFP_KERNEL);
- 	if (!sbi)
-@@ -1857,12 +1858,20 @@ static int ext4_fill_super (struct super
- 	get_random_bytes(&sbi->s_next_generation, sizeof(u32));
- 	spin_lock_init(&sbi->s_next_gen_lock);
-=20
--	percpu_counter_init(&sbi->s_freeblocks_counter,
--		ext4_count_free_blocks(sb));
--	percpu_counter_init(&sbi->s_freeinodes_counter,
--		ext4_count_free_inodes(sb));
--	percpu_counter_init(&sbi->s_dirs_counter,
--		ext4_count_dirs(sb));
-+	err =3D percpu_counter_init(&sbi->s_freeblocks_counter,
-+			ext4_count_free_blocks(sb));
-+	if (!err) {
-+		err =3D percpu_counter_init(&sbi->s_freeinodes_counter,
-+				ext4_count_free_inodes(sb));
-+	}
-+	if (!err) {
-+		err =3D percpu_counter_init(&sbi->s_dirs_counter,
-+				ext4_count_dirs(sb));
-+	}
-+	if (err) {
-+		printk(KERN_ERR "EXT4-fs: insufficient memory\n");
-+		goto failed_mount3;
-+	}
-=20
- 	/* per fileystem reservation list head & lock */
- 	spin_lock_init(&sbi->s_rsv_window_lock);
-Index: linux-2.6/include/linux/percpu_counter.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.orig/include/linux/percpu_counter.h
-+++ linux-2.6/include/linux/percpu_counter.h
-@@ -30,7 +30,7 @@ struct percpu_counter {
- #define FBC_BATCH	(NR_CPUS*4)
- #endif
-=20
--void percpu_counter_init(struct percpu_counter *fbc, s64 amount);
-+int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
- void percpu_counter_destroy(struct percpu_counter *fbc);
- void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
- void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batc=
-h);
-@@ -78,9 +78,10 @@ struct percpu_counter {
- 	s64 count;
- };
-=20
--static inline void percpu_counter_init(struct percpu_counter *fbc, s64 amo=
-unt)
-+static inline int percpu_counter_init(struct percpu_counter *fbc, s64 amou=
-nt)
- {
- 	fbc->count =3D amount;
-+	return 0;
- }
-=20
- static inline void percpu_counter_destroy(struct percpu_counter *fbc)
-Index: linux-2.6/lib/percpu_counter.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.orig/lib/percpu_counter.c
-+++ linux-2.6/lib/percpu_counter.c
-@@ -68,21 +68,27 @@ s64 __percpu_counter_sum(struct percpu_c
- }
- EXPORT_SYMBOL(__percpu_counter_sum);
-=20
--void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
-+int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
- {
- 	spin_lock_init(&fbc->lock);
- 	fbc->count =3D amount;
- 	fbc->counters =3D alloc_percpu(s32);
-+	if (!fbc->counters)
-+		return -ENOMEM;
- #ifdef CONFIG_HOTPLUG_CPU
- 	mutex_lock(&percpu_counters_lock);
- 	list_add(&fbc->list, &percpu_counters);
- 	mutex_unlock(&percpu_counters_lock);
- #endif
-+	return 0;
- }
- EXPORT_SYMBOL(percpu_counter_init);
-=20
- void percpu_counter_destroy(struct percpu_counter *fbc)
- {
-+	if (!fbc->counters)
-+		return;
-+
- 	free_percpu(fbc->counters);
- #ifdef CONFIG_HOTPLUG_CPU
- 	mutex_lock(&percpu_counters_lock);
-
-
---=-udGAS9+EExMDI/FMsiLl
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGxqk+XA2jU0ANEf4RAlyFAJ44s8rqWuwg+fYvwooKsX+DGOW6ZgCfT8sh
-gysDjgShL+Uq65rXR/z7mRY=
-=dHoU
------END PGP SIGNATURE-----
-
---=-udGAS9+EExMDI/FMsiLl--
-
+Well, kmalloc(0) has always been legal and traditionally returned a
+pointer to a smallest non-zero sized object. We did try to make
+kmalloc(0) illegal for a while but ended up fixing up a bunch of
+call-sites for little or no gain. I did propose that kmalloc(0) should
+return NULL but Linus and others pointed out that we can do better and
+not mix up out-of-memory and zero-sized allocations.
