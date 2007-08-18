@@ -1,5250 +1,5455 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbXHRHI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbXHRHJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753916AbXHRHI0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 03:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbXHRHIO
+	id S1754796AbXHRHJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 03:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbXHRHJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 03:08:14 -0400
-Received: from mx30.mail.ru ([194.67.23.238]:22761 "EHLO mx30.mail.ru"
+	Sat, 18 Aug 2007 03:09:15 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4615 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751269AbXHRHIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 03:08:04 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-serial@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: [2.6.23-rc3 possible regression] 8250 claims nonexisting device blocking IO port
-Date: Sat, 18 Aug 2007 11:07:55 +0400
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart34928498.DP1s2lMd4K";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200708181107.56087.arvidjaar@mail.ru>
+	id S1751127AbXHRHJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 03:09:07 -0400
+Subject: [PATCH 2/2] MAINTAINERS
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 18 Aug 2007 00:08:54 -0700
+Message-Id: <1187420935.4200.16.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart34928498.DP1s2lMd4K
-Content-Type: multipart/mixed;
-  boundary="Boundary-01=_LrpxGIopXkH3w14"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Added patterns to describe files maintained.
+
+Signed-off-by: Joe Perches <joe@perches.com>
+
+Bits and pieces Signed-off-by: and Acked-by: (probably missed a few)
+
+Signed-off-by: Miguel Ojeda <maxextreme@gmail.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Nathan Laredo <laredo@gnu.org>
+Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+Signed-off-by: Mike Isely <isely@pobox.com>
+Acked-by: Doug Thompson <dougthompson@xmission.com>
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+Acked-by: GOTO Masanori <gotom@sanori.org>
+Acked-by: Linas Vepstas <linas@austin.ibm.com>
+Acked-by: Ron Mercer <ron.mercer@qlogic.com>
+Acked-by: Mattia Dongili <malattia@linux.it>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Acked-by: Len Brown <len.brown@intel.com>
+Acked-by: Josh Triplett <josh@freedesktop.org>
+Acked-by: Dan Williams <dan.j.williams@intel.com>
+Acked-by: Jiri Slaby <jirislaby@gmail.com>
+Acked-by: Pavel Pisa <pisa@cmp.felk.cvut.cz>
+Acked-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Acked-by: Chris Snook <csnook@redhat.com>
+Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
+Acked-by: Dave Dillow <dave@thedillows.org>
+Acked-by: Kent Yoder <shpedoikal@gmail.com>
+Acked-by: Auke Kok <auke-jan.h.kok@intel.com>
+Acked-by: Corey Minyard <cminyard@mvista.com>
+Acked-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Salyzyn, Mark <mark_salyzyn@adaptec.com>
+Acked-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+Acked-by: Dave Kleikamp <shaggy@vnet.linux.ibm.com
+Acked-by: Petko Manolov <petkan@nucleusys.com>
+Acked-By: Thomas Sailer <t.sailer@alumni.ethz.ch>
+Acked-by: Alan Cox <alan@redhat.com>
+Acked-by: Ian McDonald <ian.mcdonald@jandi.co.nz>
+Acked-by: Kai Makisara <Kai.Makisara@kolumbus.fi>
+Acked-by: Mitchell Blank Jr <mitch@sfgoth.com>
+
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index d3a0684..d7fe1c5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -19,40 +19,44 @@ trivial patch so apply some common sense.
+ 3.	Make sure your changes compile correctly in multiple
+ 	configurations. In particular check that changes work both as a
+ 	module and built into the kernel.
+ 
+ 4.	When you are happy with a change make it generally available for
+ 	testing and await feedback.
+ 
+ 5.	Make a patch available to the relevant maintainer in the list. Use
+ 	'diff -u' to make the patch easy to merge. Be prepared to get your
+ 	changes sent back with seemingly silly requests about formatting
+ 	and variable names.  These aren't as silly as they seem. One
+ 	job the maintainers (and especially Linus) do is to keep things
+ 	looking the same. Sometimes this means that the clever hack in
+ 	your driver to get around a problem actually needs to become a
+ 	generalized kernel feature ready for next time.
+ 
+ 	PLEASE check your patch with the automated style checker
+ 	(scripts/checkpatch.pl) to catch trival style violations.
+ 	See Documentation/CodingStyle for guidance here.
+ 
++	PLEASE include the appropriate maintainers and developers
++	that have modified files touched by your patch by using the
++	automated CC generator (scripts/get_maintainer.pl)
++
+ 	PLEASE try to include any credit lines you want added with the
+ 	patch. It avoids people being missed off by mistake and makes
+ 	it easier to know who wants adding and who doesn't.
+ 
+ 	PLEASE document known bugs. If it doesn't work for everything
+ 	or does something very odd once a month document it.
+ 
+ 	PLEASE remember that submissions must be made under the terms
+ 	of the OSDL certificate of contribution
+ 	(http://www.osdl.org/newsroom/press_releases/2004/2004_05_24_dco.html)
+ 	and should include a Signed-off-by: line.
+ 
+ 6.	Make sure you have the right to send any changes you make. If you
+ 	do changes at work you may find your employer owns the patch
+ 	not you.
+ 
+ 7.	When sending security related changes or reports to a maintainer
+ 	please Cc: security@kernel.org, especially if the maintainer
+ 	does not respond.
+ 
+@@ -66,513 +70,644 @@ Note: For the hard of thinking, this list is meant to remain in alphabetical
+ order. If you could add yourselves to it in alphabetical order that would be
+ so much easier [Ed]
+ 
+ P: Person
+ M: Mail patches to
+ L: Mailing list that is relevant to this area
+ W: Web-page with status/info
+ T: SCM tree type and location.  Type is one of: git, hg, quilt.
+ S: Status, one of the following:
+ 
+ 	Supported:	Someone is actually paid to look after this.
+ 	Maintained:	Someone actually looks after it.
+ 	Odd Fixes:	It has a maintainer but they don't have time to do
+ 			much other than throw the odd patch in. See below..
+ 	Orphan:		No current maintainer [but maybe you could take the
+ 			role as you write your new code].
+ 	Obsolete:	Old code. Something tagged obsolete generally means
+ 			it has been replaced by a better system and you
+ 			should be using that.
+ 
++F: Files and directories with wildcard patterns.
++   A trailing slash includes all files and subdirectory files.
++	F:	drivers/net/	all files in and below drivers/net
++	F:	drivers/net/*	all files in drivers/net, but not below
++	F:	*/net/*		all files in "any top level directory"/net
++   One pattern per line.  Multiple F: lines acceptable.
++
++X: Files and directories that are NOT maintained, same rules as F:
++   Files exclusions are tested before file matches.
++   Can be useful for excluding a specific subdirectory, for instance:
++        F:     /net/
++	X:     /net/ipv6/
++   matches all files in net excluding /net/ipv6/
++
+ 3C359 NETWORK DRIVER
+ P:	Mike Phillips
+ M:	mikep@linuxtr.net
+ L:	netdev@vger.kernel.org
+-L:	linux-tr@linuxtr.net
+ W:	http://www.linuxtr.net
+ S:	Maintained
++F:	drivers/net/tokenring/3c359*
+ 
+ 3C505 NETWORK DRIVER
+ P:	Philip Blundell
+ M:	philb@gnu.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/3c505*
++
++3C59X NETWORK DRIVER
++P:	Steffen Klassert
++M:	klassert@mathematik.tu-chemnitz.de
++L:	netdev@vger.kernel.org
++S:	Maintained
++F:	Documentation/networking/vortex.txt
++F:	drivers/net/3c59x.c
+ 
+ 3CR990 NETWORK DRIVER
+ P:	David Dillow
+ M:	dave@thedillows.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/typhoon*
+ 
+ 3W-XXXX ATA-RAID CONTROLLER DRIVER
+ P:	Adam Radford
+ M:	linuxraid@amcc.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.amcc.com
+ S:	Supported
++F:	drivers/scsi/3w-xxxx*
+ 
+ 3W-9XXX SATA-RAID CONTROLLER DRIVER
+ P:	Adam Radford
+ M:	linuxraid@amcc.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.amcc.com
+ S:	Supported
++F:	drivers/scsi/3w-9xxx*
+ 
+ 53C700 AND 53C700-66 SCSI DRIVER
+ P:	James E.J. Bottomley
+ M:	James.Bottomley@HansenPartnership.com
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/53c700*
+ 
+ 6PACK NETWORK DRIVER FOR AX.25
+ P:	Andreas Koensgen
+ M:	ajk@iehk.rwth-aachen.de
+ L:	linux-hams@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/hamradio/6pack.c
+ 
+ 8139CP 10/100 FAST ETHERNET DRIVER
+ P:	Jeff Garzik
+ M:	jgarzik@pobox.com
+ S:	Maintained
++F:	drivers/net/8139cp.c
+ 
+ 8139TOO 10/100 FAST ETHERNET DRIVER
+ P:	Jeff Garzik
+ M:	jgarzik@pobox.com
+ W:	http://sourceforge.net/projects/gkernel/
+ S:	Maintained
++F:	drivers/net/8139too.c
+ 
+ 8169 10/100/1000 GIGABIT ETHERNET DRIVER
+ P:	Francois Romieu
+ M:	romieu@fr.zoreil.com
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/r8169.c
+ 
+ 8250/16?50 (AND CLONE UARTS) SERIAL DRIVER
+ L:	linux-serial@vger.kernel.org
+ W:	http://serial.sourceforge.net
+ S:	Orphan
+ 
+ 8390 NETWORK DRIVERS [WD80x3/SMC-ELITE, SMC-ULTRA, NE2000, 3C503, etc.]
+ P:	Paul Gortmaker
+ M:	p_gortmaker@yahoo.com
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/*8390*
++F:	drivers/net/ax88796.c
+ 
+ 9P FILE SYSTEM
+ P:	Eric Van Hensbergen
+ M:	ericvh@gmail.com
+ P:	Ron Minnich
+ M:	rminnich@lanl.gov
+ P:	Latchesar Ionkov
+ M:	lucho@ionkov.net
+ L:	v9fs-developer@lists.sourceforge.net
+ W:	http://v9fs.sf.net
+ T:	git kernel.org:/pub/scm/linux/kernel/ericvh/v9fs.git
+ S:	Maintained
++F:	fs/9p/
+ 
+ A2232 SERIAL BOARD DRIVER
+ P:	Enver Haase
+-M:	ehaase@inf.fu-berlin.de
+ M:	A2232@gmx.net
+ L:	linux-m68k@lists.linux-m68k.org
+ S:	Maintained
++F:	drivers/char/ser_a2232*
+ 
+ AIO
+ P:	Benjamin LaHaise
+ M:	bcrl@kvack.org
+ L:	linux-aio@kvack.org
+ S:	Supported
++F:	fs/aio.c
++F:	include/linux/*aio*.h
+ 
+ ABIT UGURU HARDWARE MONITOR DRIVER
+ P:	Hans de Goede
+ M:	j.w.r.degoede@hhs.nl
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	drivers/hwmon/abitguru*
+ 
+ ACENIC DRIVER
+ P:	Jes Sorensen
+ M:	jes@trained-monkey.org
+ L:	linux-acenic@sunsite.dk
+ S:	Maintained
++F:	drivers/net/acenic*
+ 
+ IPS SCSI RAID DRIVER
+ P:	Adaptec OEM Raid Solutions
+ M:	aacraid@adaptec.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.adaptec.com/
+ S:	Maintained
++F:	drivers/scsi/ips*
+ 
+ DPT_I2O SCSI RAID DRIVER
+ P:	Adaptec OEM Raid Solutions
+ M:	aacraid@adaptec.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.adaptec.com/
+ S:	Maintained
++F:	drivers/scsi/dpt*
++F:	drivers/scsi/dpt/
+ 
+ AACRAID SCSI RAID DRIVER
+ P:	Adaptec OEM Raid Solutions
+ M:	aacraid@adaptec.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.adaptec.com/
+ S:	Supported
++F:	Documentation/scsi/aacraid.txt
++F:	drivers/scsi/aacraid/
+ 
+ ACPI
+ P:	Len Brown
+ M:	len.brown@intel.com
+ M:	lenb@kernel.org
+ L:	linux-acpi@vger.kernel.org
+ W:	http://acpi.sourceforge.net/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git
+ S:	Supported
++F:	drivers/acpi/
++F:	drivers/pnp/pnpacpi/
+ 
+ ACPI BATTERY DRIVERS
+ P:	Alexey Starikovskiy
+ M:	astarikovskiy@suse.de
+ L:	linux-acpi@vger.kernel.org
+ W:	http://acpi.sourceforge.net/
+ S:	Supported
++F:	drivers/acpi/battery.c
++F:	drivers/acpi/*sbs*
+ 
+ ACPI EC DRIVER
+ P:	Alexey Starikovskiy
+ M:	astarikovskiy@suse.de
+ L:	linux-acpi@vger.kernel.org
+ W:	http://acpi.sourceforge.net/
+ S:	Supported
++F:	drivers/acpi/ec.c
+ 
+ ACPI FAN DRIVER
+-P:	Konstantin A. Karasyov
+-M:	konstantin.a.karasyov@intel.com
++P:	Len Brown
++M:	len.brown@intel.com
+ L:	linux-acpi@vger.kernel.org
+ W:	http://acpi.sourceforge.net/
+ S:	Supported
++F:	drivers/acpi/fan.c
+ 
+ ACPI PCI HOTPLUG DRIVER
+ P:	Kristen Carlson Accardi
+ M:	kristen.c.accardi@intel.com
+ L:	pcihpd-discuss@lists.sourceforge.net
+ S:	Supported
++F:	drivers/pci/hotplug/acip*
+ 
+ ACPI THERMAL DRIVER
+-P:	Konstantin A. Karasyov
+-M:	konstantin.a.karasyov@intel.com
++P:	Len Brown
++M:	len.brown@intel.com
+ L:	linux-acpi@vger.kernel.org
+ W:	http://acpi.sourceforge.net/
+ S:	Supported
++F:	drivers/acpi/*thermal*
+ 
+ ACPI VIDEO DRIVER
+-P:	Luming Yu
+-M:	luming.yu@intel.com
++P:	Rui Zhang
++M:	rui.zhang@intel.com
+ L:	linux-acpi@vger.kernel.org
+ W:	http://acpi.sourceforge.net/
+ S:	Supported
++F:	drivers/acpi/video.c
+ 
+ ADM1025 HARDWARE MONITOR DRIVER
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/adm1025
++F:	drivers/hwmon/adm1025.c
+ 
+ ADM1029 HARDWARE MONITOR DRIVER
+ P:	Corentin Labbe
+ M:	corentin.labbe@geomatys.fr
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	drivers/hwmon/adm1029.c
+ 
+ ADT746X FAN DRIVER
+ P:	Colin Leroy
+ M:	colin@colino.net
+ S:	Maintained
++F:	drivers/macintosh/therm_adt746x.c
+ 
+ AEDSP16 DRIVER
+ P:	Riccardo Facchetti
+ M:	fizban@tin.it
+ S:	Maintained
++F:	sound/oss/aedsp16.c
+ 
+ AFFS FILE SYSTEM
+ P:	Roman Zippel
+ M:	zippel@linux-m68k.org
+ S:	Maintained
++F:	fs/affs/
+ 
+ AGPGART DRIVER
+ P:	David Airlie
+ M:	airlied@linux.ie
+ T:	git kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+ S:	Maintained
++F:	drivers/char/agp/
+ 
+ AHA152X SCSI DRIVER
+ P:	Juergen E. Fischer
+-M:	Juergen Fischer <fischer@norbit.de>
++M:	fischer@norbit.de
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/aha152x*
++F:	drivers/scsi/pcmcia/aha152x*
+ 
+ ALCATEL SPEEDTOUCH USB DRIVER
+ P:	Duncan Sands
+ M:	duncan.sands@free.fr
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ W:	http://www.linux-usb.org/SpeedTouch/
+ S:	Maintained
++F:	drivers/usb/atm/speedtch.c
++F:	drivers/usb/atm/usbatm.c
+ 
+ ALCHEMY AU1XX0 MMC DRIVER
+ S:	Orphan
+ 
+ ALI1563 I2C DRIVER
+ P:	Rudolf Marek
+ M:	r.marek@assembler.cz
+ L:	i2c@lm-sensors.org
+ S:	Maintained
++F:	Documentation/i2c/busses/i2c-ali1563
++F:	drivers/i2c/busses/i2c-ali1563.c
+ 
+ ALPHA PORT
+ P:	Richard Henderson
+ M:	rth@twiddle.net
+ S:	Odd Fixes for 2.4; Maintained for 2.6.
+ P:	Ivan Kokshaysky
+ M:	ink@jurassic.park.msu.ru
+ S:	Maintained for 2.4; PCI support for 2.6.
++F:	arch/alpha/
+ 
+ AMD GEODE CS5536 USB DEVICE CONTROLLER DRIVER
+ P:	Thomas Dahlmann
+ M:	thomas.dahlmann@amd.com
+ L:	info-linux@geode.amd.com
+ S:	Supported
++F:	drivers/usb/gadget/amd5536udc.*
+ 
+ AMD GEODE PROCESSOR/CHIPSET SUPPORT
+ P:	Jordan Crouse
+ M:	info-linux@geode.amd.com
+ L:	info-linux@geode.amd.com
+ W:	http://www.amd.com/us-en/ConnectivitySolutions/TechnicalResources/0,,50_2334_2452_11363,00.html
+ S:	Supported
++F:	arch/i386/kernel/geode.c
++F:	drivers/char/hw-random/geode*
++F:	drivers/crypto/geode*
++F:	drivers/video/geode/
++F:	include/asm-i386/geode.h
+ 
+ AMS (Apple Motion Sensor) DRIVER
+ P:	Stelian Pop
+ M:	stelian@popies.net
+ P:	Michael Hanselmann
+ M:	linux-kernel@hansmi.ch
+ S:	Supported
++F:	drivers/hwmon/ams/
+ 
+ AMSO1100 RNIC DRIVER
+ P:	Tom Tucker
+ M:	tom@opengridcomputing.com
+ P:	Steve Wise
+ M:	swise@opengridcomputing.com
+ L:	general@lists.openfabrics.org
+ S:	Maintained
++F:	drivers/infiniband/hw/amso1100/
+ 
+ AOA (Apple Onboard Audio) ALSA DRIVER
+ P:	Johannes Berg
+ M:	johannes@sipsolutions.net
+ L:	linuxppc-dev@ozlabs.org
+ L:	alsa-devel@alsa-project.org (subscribers-only)
+ S:	Maintained
++F:	sound/aoa/
+ 
+ APM DRIVER
+ P:	Stephen Rothwell
+ M:	sfr@canb.auug.org.au
+ L:	linux-laptop@vger.kernel.org
+ W:	http://www.canb.auug.org.au/~sfr/
+ S:	Supported
++F:	arch/i386/kernel/apm.c
++F:	include/linux/apm_bios.h
+ 
+ APPLE SMC DRIVER
+ P:	Nicolas Boichat
+ M:	nicolas@boichat.ch
+ L:	mactel-linux-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/hwmon/applesmc.c
+ 
+ APPLETALK NETWORK LAYER
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
+ S:	Maintained
++F:	drivers/net/appletalk/
++F:	net/appletalk/
+ 
+ ARC FRAMEBUFFER DRIVER
+ P:	Jaya Kumar
+ M:	jayalk@intworks.biz
+ S:	Maintained
++F:	drivers/video/arcfb.c
++F:	drivers/video/fb_defio.c
+ 
+ ARM MFM AND FLOPPY DRIVERS
+ P:	Ian Molton
+ M:	spyro@f2s.com
+ S:	Maintained
++F:	arch/arm/lib/floppydma.S
++F:	drivers/asm-arm/floppy.h
+ 
+ ARM PRIMECELL MMCI PL180/1 DRIVER
+ P:	Russell King
+ M:	rmk@arm.linux.org.uk
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	drivers/mmc/host/mmci.*
+ 
+ ARM/ADI ROADRUNNER MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-ixp23xx/
++F:	include/asm-arm/arch-ixp23xx/
+ 
+ ARM/ADS SPHERE MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-ep93xx/adssphere.c
++F:	include/asm-arm/arch-ep93xx/
+ 
+ ARM/AJECO 1ARM MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-at91/board-1arm.c
++F:	include/asm-arm/arch-at91/
+ 
+ ARM/ATMEL AT91RM9200 ARM ARCHITECTURE
+-P:      Andrew Victor
+-M:      andrew@sanpeople.com
+-L:      linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+-W:      http://maxim.org.za/at91_26.html
+-S:      Maintained
++P:	Andrew Victor
++M:	andrew@sanpeople.com
++L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++W:	http://maxim.org.za/at91_26.html
++S:	Maintained
++F:	arch/arm/mach-at91/
++F:	include/asm-arm/arch-at91/
+ 
+ ARM/CIRRUS LOGIC EP93XX ARM ARCHITECTURE
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-ep93xx/
++F:	include/asm-arm/arch-ep93xx/
+ 
+ ARM/CIRRUS LOGIC EDB9315A MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-ep93xx/edb9315a.c
++F:	include/asm-arm/arch-ep93xx/
+ 
+ ARM/CORGI MACHINE SUPPORT
+ P:	Richard Purdie
+ M:	rpurdie@rpsys.net
+ S:	Maintained
++F:	arch/arm/mach-pxa/
++F:	include/asm-arm/arch-pxa/
+ 
+ ARM/GLOMATION GESBC9312SX MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-ep93xx/gesbc9312.c
++F:	include/asm-arm/arch-ep93xx/
+ 
+ ARM/HP JORNADA 7XX MACHINE SUPPORT
+-P:      Kristoffer Ericson
+-M:      kristoffer.ericson@gmail.com
+-W:      www.jlime.com
+-S:      Maintained
++P:	Kristoffer Ericson
++M:	kristoffer.ericson@gmail.com
++W:	www.jlime.com
++S:	Maintained
++F:	arch/arm/mach-sa1100/jornada*
++F:	include/asm-arm/arch-sa1100/
+ 
+ ARM/INTEL IOP32X ARM ARCHITECTURE
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ P:	Dan Williams
+ M:	dan.j.williams@intel.com
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Supported
++F:	arch/arm/plat-iop/
++F:	arch/arm/mach-iop32x/
++F:	include/asm-arm/hardware/iop*
++F:	include/asm-arm/plat-iop/
+ 
+ ARM/INTEL IOP33X ARM ARCHITECTURE
+ P:	Dan Williams
+ M:	dan.j.williams@intel.com
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Supported
++F:	arch/arm/plat-iop/
++F:	arch/arm/mach-iop33x/
++F:	include/asm-arm/hardware/iop*
++F:	include/asm-arm/plat-iop/
+ 
+ ARM/INTEL IOP13XX ARM ARCHITECTURE
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ P:	Dan Williams
+ M:	dan.j.williams@intel.com
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Supported
++F:	include/asm-arm/hardware/iop*
++F:	arch/arm/plat-iop/
++F:	arch/arm/mach-iop13xx/
++F:	include/asm-arm/plat-iop/
+ 
+ ARM/INTEL IQ81342EX MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ P:	Dan Williams
+ M:	dan.j.williams@intel.com
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Supported
+ 
+ ARM/INTEL IXP2000 ARM ARCHITECTURE
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-ixp2000/
++F:	include/asm-arm/arch-ixp2000/
+ 
+ ARM/INTEL IXDP2850 MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
+ 
+ ARM/INTEL IXP23XX ARM ARCHITECTURE
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-ixp23xx/
++F:	include/asm-arm/arch-ixp23xx/
+ 
+ ARM/INTEL XSC3 (MANZANO) ARM CORE
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ P:	Dan Williams
+ M:	dan.j.williams@intel.com
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Supported
+ 
+ ARM/IP FABRICS DOUBLE ESPRESSO MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
+ 
+ ARM/LOGICPD PXA270 MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-pxa/
++F:	include/asm-arm/arch-pxa/
+ 
+ ARM/TOSA MACHINE SUPPORT
+ P:	Dirk Opfer
+ M:	dirk@opfer-online.de
+ S:	Maintained
++F:	arch/arm/mach-pxa/tosa.c
++F:	include/asm-arm/arch-pxa/
+ 
+ ARM/PLEB SUPPORT
+ P:	Peter Chubb
+ M:	pleb@gelato.unsw.edu.au
+ W:	http://www.disy.cse.unsw.edu.au/Hardware/PLEB
+ S:	Maintained
++F:	arch/arm/mach-sa1100/pleb.c
++F:	include/asm-arm/arch-sa1100/
+ 
+ ARM/PT DIGITAL BOARD PORT
+ P:	Stefan Eletzhofer
+ M:	stefan.eletzhofer@eletztrick.de
+ L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ 
+ ARM/RADISYS ENP2611 MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-ixp2000/enp2611.c
++F:	include/asm-arm/arch-ixp2000/
+ 
+ ARM/SHARK MACHINE SUPPORT
+ P:	Alexander Schulz
+ M:	alex@shark-linux.de
+ W:	http://www.shark-linux.de/shark.html
+ S:	Maintained
++F:	arch/arm/mach-shark/
++F:	include/asm-arm/arch-shark/
+ 
+ ARM/STRONGARM110 PORT
+ P:	Russell King
+ M:	rmk@arm.linux.org.uk
+ L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
++F:	arch/arm/mach-ebsa110/
++F:	include/asm-arm/arch-ebsa110/
+ 
+ ARM/S3C2410 ARM ARCHITECTURE
+ P:	Ben Dooks
+ M:	ben-linux@fluff.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ 
+ ARM/S3C2440 ARM ARCHITECTURE
+ P:	Ben Dooks
+ M:	ben-linux@fluff.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ 
+ ARM/TECHNOLOGIC SYSTEMS TS7250 MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
+@@ -580,3657 +715,4605 @@ S:	Maintained
+ ARM/THECUS N2100 MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
+ 
+ ARPD SUPPORT
+ P:	Jonathan Layes
+ L:	netdev@vger.kernel.org
+ S:	Maintained
+ 
+ ASUS ACPI EXTRAS DRIVER
+ P:	Corentin Chary
+ M:	corentincj@iksaif.net
+ P:	Karol Kozimor
+ M:	sziwan@users.sourceforge.net
+ L:	acpi4asus-user@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/acpi4asus
+ W:	http://xf.iksaif.net/acpi4asus
+ S:	Maintained
++F:	arch/i386/kernel/acpi/boot.c
++F:	drivers/acpi/asus_acpi.c
+ 
+ ASUS ASB100 HARDWARE MONITOR DRIVER
+ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	drivers/hwmon/asb100.c
+ 
+ ASUS LAPTOP EXTRAS DRIVER
+ P:	Corentin Chary
+ M:	corentincj@iksaif.net
+ L:	acpi4asus-user@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/acpi4asus
+ W:	http://xf.iksaif.net/acpi4asus
+ S:	Maintained
+ 
+ ASYNCHRONOUS TRANSFERS/TRANSFORMS API
+ P:	Dan Williams
+ M:	dan.j.williams@intel.com
+ P:	Shannon Nelson
+ M:	shannon.nelson@intel.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://sourceforge.net/projects/xscaleiop
+ S:	Supported
+ 
+ ATA OVER ETHERNET DRIVER
+ P:	Ed L. Cashin
+ M:	ecashin@coraid.com
+ W:	http://www.coraid.com/support/linux
+ S:	Supported
++F:	Documentation/aoe/
++F:	drivers/block/aoe/
+ 
+ ATL1 ETHERNET DRIVER
+ P:	Jay Cliburn
+ M:	jcliburn@gmail.com
+ P:	Chris Snook
+ M:	csnook@redhat.com
+ L:	atl1-devel@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/atl1
+ W:	http://atl1.sourceforge.net
+ S:	Maintained
++F:	drivers/net/atl1/
+ 
+ ATM
+ P:	Chas Williams
+ M:	chas@cmf.nrl.navy.mil
+ L:	linux-atm-general@lists.sourceforge.net (subscribers-only)
+ W:	http://linux-atm.sourceforge.net
+ S:	Maintained
++F:	drivers/atm/
++F:	include/linux/atm*
+ 
+ ATMEL AT91 MCI DRIVER
+ P:	Nicolas Ferre
+ M:	nicolas.ferre@rfo.atmel.com
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ W:	http://www.atmel.com/products/AT91/
+ W:	http://www.at91.com/
+ S:	Maintained
++F:	drivers/mmc/host/at91_mci.c
+ 
+ ATMEL MACB ETHERNET DRIVER
+ P:	Haavard Skinnemoen
+ M:	hskinnemoen@atmel.com
+ S:	Supported
++F:	drivers/net/macb.*
+ 
+ ATMEL SPI DRIVER
+ P:	Haavard Skinnemoen
+ M:	hskinnemoen@atmel.com
+ S:	Supported
++F:	drivers/api/atmel_spi.*
+ 
+ ATMEL WIRELESS DRIVER
+ P:	Simon Kelley
+ M:	simon@thekelleys.org.uk
+ L:	linux-wireless@vger.kernel.org
+ W:	http://www.thekelleys.org.uk/atmel
+ W:	http://atmelwlandriver.sourceforge.net/
+ S:	Maintained
+ 
+ AUDIT SUBSYSTEM
+ P:	David Woodhouse
+ M:	dwmw2@infradead.org
+ L:	linux-audit@redhat.com (subscribers-only)
+ W:	http://people.redhat.com/sgrubb/audit/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/dwmw2/audit-2.6.git
+ S:	Maintained
++F:	include/linux/audit*
++F:	kernel/audit*
+ 
+ AUXILIARY DISPLAY DRIVERS
+ P:	Miguel Ojeda Sandonis
+ M:	maxextreme@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://auxdisplay.googlepages.com/
+ S:	Maintained
++F:	drivers/auxdisplay/
++F:	include/linux/cfag12864b.h
+ 
+ AVR32 ARCHITECTURE
+ P:	Haavard Skinnemoen
+ M:	hskinnemoen@atmel.com
+ W:	http://www.atmel.com/products/AVR32/
+ W:	http://avr32linux.org/
+ W:	http://avrfreaks.net/
+ S:	Supported
++F:	arch/avr32/
++F:	include/asm-avr32/
+ 
+ AVR32/AT32AP MACHINE SUPPORT
+ P:	Haavard Skinnemoen
+ M:	hskinnemoen@atmel.com
+ S:	Supported
++F:	arch/avr32/mach-at32ap/
++F:	include/asm-avr32/arch-at32ap/
+ 
+ AX.25 NETWORK LAYER
+ P:	Ralf Baechle
+ M:	ralf@linux-mips.org
+ L:	linux-hams@vger.kernel.org
+ W:	http://www.linux-ax25.org/
+ S:	Maintained
++F:	include/linux/ax25.h
++F:	include/net/ax25.h
++F:	net/ax25/
+ 
+ BACKLIGHT CLASS/SUBSYSTEM
+ P:	Richard Purdie
+ M:	rpurdie@rpsys.net
+ S:	Maintained
++F:	drivers/video/backlight/
++F:	include/linux/backlight.h
+ 
+ BLACKFIN ARCHITECTURE
+ P:	Aubrey Li
+ M:	aubrey.li@analog.com
+ P:	Bernd Schmidt
+ M:	bernd.schmidt@analog.com
+ P:	Bryan Wu
+ M:	bryan.wu@analog.com
+ P:	Grace Pan
+ M:	grace.pan@analog.com
+ P:	Marc Hoffman
+ M:	marc.hoffman@analog.com
+ P:	Michael Hennerich
+ M:	michael.hennerich@analog.com
+ P:	Mike Frysinger
+ M:	michael.frysinger@analog.com
+ P:	Jerry Zeng
+ M:	jerry.zeng@analog.com
+ P:	Jie Zhang
+ M:	jie.zhang@analog.com
+ P:	Robin Getz
+ M:	robin.getz@analog.com
+ P:	Roy Huang
+ M:	roy.huang@analog.com
+ P:	Sonic Zhang
+ M:	sonic.zhang@analog.com
+ P:	Vivi Li
+ M:	vivi.li@analog.com
+ P:	Yi Li
+ M:	yi.li@analog.com
+ L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+ W:	http://blackfin.uclinux.org
+ S:	Supported
++F:	arch/blackfin/
++F:	include/asm-blackfin/
+ 
+ BLACKFIN EMAC DRIVER
+ P:	Bryan Wu
+ M:	bryan.wu@analog.com
+ L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+ W:	http://blackfin.uclinux.org
+ S:	Supported
++F:	drivers/net/bfin_mac.*
+ 
+ BLACKFIN RTC DRIVER
+ P:	Mike Frysinger
+ M:	michael.frysinger@analog.com
+ M:	vapier.adi@gmail.com
+ L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+ W:	http://blackfin.uclinux.org
+ S:	Supported
++F:	drivers/rtc/rtc-bfin.c
+ 
+ BLACKFIN SERIAL DRIVER
+ P:	Aubrey Li
+ M:	aubrey.li@analog.com
+ L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+ W:	http://blackfin.uclinux.org
+ S:	Supported
++F:	drivers/serial/bfin_5xx.c
+ 
+ BLACKFIN WATCHDOG DRIVER
+ P:	Mike Frysinger
+ M:	michael.frysinger@analog.com
+ M:	vapier.adi@gmail.com
+ L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+ W:	http://blackfin.uclinux.org
+ S:	Supported
++F:	drivers/char/watchdog/bfin_wdt.c
+ 
+ BAYCOM/HDLCDRV DRIVERS FOR AX.25
+ P:	Thomas Sailer
+ M:	t.sailer@alumni.ethz.ch
+ L:	linux-hams@vger.kernel.org
+ W:	http://www.baycom.org/~tom/ham/ham.html
+ S:	Maintained
++F:	drivers/net/hamradio/baycom*
+ 
+ BCM43XX WIRELESS DRIVER (SOFTMAC BASED VERSION)
+ P:	Larry Finger
+ M:	Larry.Finger@lwfinger.net
+ P:	Stefano Brivio
+ M:	st3@riseup.net
+ L:	linux-wireless@vger.kernel.org
+ W:	http://bcm43xx.berlios.de/
+ S:	Maintained
++F:	drivers/net/wireless/bcm43xx/
+ 
+ BEFS FILE SYSTEM
+ P:	Sergey S. Kostyliov
+ M:	rathamahata@php4.ru
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	fs/befs/
+ 
+ BFS FILE SYSTEM
+ P:	Tigran A. Aivazian
+ M:	tigran@aivazian.fsnet.co.uk
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	fs/bfs/
+ 
+ BLACKFIN I2C TWI DRIVER
+ P:	Sonic Zhang
+ M:	sonic.zhang@analog.com
+ L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+ W:	http://blackfin.uclinux.org/
+ S:	Supported
++F:	drivers/i2c/busses/i2c-bfin-twi.c
+ 
+ BLOCK LAYER
+ P:	Jens Axboe
+ M:	axboe@kernel.dk
+ L:	linux-kernel@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/axboe/linux-2.6-block.git
+ S:	Maintained
++F:	block/
+ 
+ BLUETOOTH SUBSYSTEM
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ P:	Maxim Krasnyansky
+ M:	maxk@qualcomm.com
+ L:	bluez-devel@lists.sf.net
+ W:	http://bluez.sf.net
+ W:	http://www.bluez.org
+ W:	http://www.holtmann.org/linux/bluetooth/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/holtmann/bluetooth-2.6.git
+ S:	Maintained
++F:	drivers/bluetooth/
++F:	net/bluetooth/
++F:	include/net/bluetooth/
+ 
+ BLUETOOTH RFCOMM LAYER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ P:	Maxim Krasnyansky
+ M:	maxk@qualcomm.com
+ S:	Maintained
++F:	net/bluetooth/rfcomm/
++F:	include/net/bluetooth/rfcomm.h
+ 
+ BLUETOOTH BNEP LAYER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ P:	Maxim Krasnyansky
+ M:	maxk@qualcomm.com
+ S:	Maintained
++F:	net/bluetooth/bnep/
+ 
+ BLUETOOTH CMTP LAYER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ S:	Maintained
++F:	net/bluetooth/cmtp/
+ 
+ BLUETOOTH HIDP LAYER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ S:	Maintained
++F:	net/bluetooth/hidp
+ 
+ BLUETOOTH HCI UART DRIVER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ P:	Maxim Krasnyansky
+ M:	maxk@qualcomm.com
+ S:	Maintained
++F:	drivers/bluetooth/btuart_cs.c
++F:	drivers/bluetooth/hci_bcsp.c
++F:	drivers/bluetooth/hci_h4.c
++F:	drivers/bluetooth/hci_ldisc.c
++F:	drivers/bluetooth/hci_uart.h
+ 
+ BLUETOOTH HCI USB DRIVER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ P:	Maxim Krasnyansky
+ M:	maxk@qualcomm.com
+ S:	Maintained
++F:	drivers/bluetooth/hci_usb.*
+ 
+ BLUETOOTH HCI BCM203X DRIVER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ S:	Maintained
++F:	drivers/bluetooth/bcm203x.c
+ 
+ BLUETOOTH HCI BPA10X DRIVER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ S:	Maintained
++F:	drivers/bluetooth/bpa10x.c
+ 
+ BLUETOOTH HCI BFUSB DRIVER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ S:	Maintained
++F:	drivers/bluetooth/bfusb.c
+ 
+ BLUETOOTH HCI DTL1 DRIVER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ S:	Maintained
++F:	drivers/bluetooth/dtl1_cs.c
+ 
+ BLUETOOTH HCI BLUECARD DRIVER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ S:	Maintained
++F:	drivers/bluetooth/bluecard_cs.c
+ 
+ BLUETOOTH HCI BT3C DRIVER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ S:	Maintained
++F:	drivers/bluetooth/bt3c_cs.c
+ 
+ BLUETOOTH HCI BTUART DRIVER
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ S:	Maintained
++F:	drivers/bluetooth/btuart_cs.c
+ 
+ BLUETOOTH HCI VHCI DRIVER
+ P:	Maxim Krasnyansky
+ M:	maxk@qualcomm.com
+ S:	Maintained
++F:	drivers/bluetooth/hci_vhci.c
+ 
+ BONDING DRIVER
+ P:	Chad Tindel
+ M:	ctindel@users.sourceforge.net
+ P:	Jay Vosburgh
+ M:	fubar@us.ibm.com
+ L:	bonding-devel@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/bonding/
+ S:	Supported
++F:	drivers/net/bonding/
++F:	include/linux/if_bonding.h
+ 
+ BROADBAND PROCESSOR ARCHITECTURE
+ P:	Arnd Bergmann
+ M:	arnd@arndb.de
+ L:	linuxppc-dev@ozlabs.org
+ W:	http://www.penguinppc.org/ppc64/
+ S:	Supported
+ 
+ BROADCOM B44 10/100 ETHERNET DRIVER
+ P:	Gary Zambrano
+ M:	zambrano@broadcom.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	drivers/net/b44.*
+ 
+ BROADCOM BNX2 GIGABIT ETHERNET DRIVER
+ P:	Michael Chan
+ M:	mchan@broadcom.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	drivers/net/bnx2*
+ 
+ BROADCOM TG3 GIGABIT ETHERNET DRIVER
+ P:	Michael Chan
+ M:	mchan@broadcom.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	drivers/net/tg3.*
+ 
+ BSG (block layer generic sg v4 driver)
+ P:	FUJITA Tomonori
+ M:	fujita.tomonori@lab.ntt.co.jp
+ L:	linux-scsi@vger.kernel.org
+ S:	Supported
++F:	block/bsg.c
++F:	include/linux/bsg.h
+ 
+ BTTV VIDEO4LINUX DRIVER
+ P:	Mauro Carvalho Chehab
+ M:	mchehab@infradead.org
++P:	LinuxTV.org Project
+ M:	v4l-dvb-maintainer@linuxtv.org
+ L:	video4linux-list@redhat.com
+ W:	http://linuxtv.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
+ S:	Maintained
++F:	Documentation/video4linux/bttv/
++F:	drivers/media/video/bt8xx/bttv*
+ 
+ CAFE CMOS INTEGRATED CAMERA CONTROLLER DRIVER
+-P:   	Jonathan Corbet
++P:	Jonathan Corbet
+ M:	corbet@lwn.net
+ L:	video4linux-list@redhat.com
+ S:	Maintained
++F:	Documentation/video4linux/cafe_ccic
++F:	drivers/media/video/cafe_ccic*
+ 
+ CALGARY x86-64 IOMMU
+ P:	Muli Ben-Yehuda
+ M:	muli@il.ibm.com
+ P:	Jon D. Mason
+ M:	jdmason@kudzu.us
+ L:	linux-kernel@vger.kernel.org
+ L:	discuss@x86-64.org
+ S:	Maintained
++F:	arch/x86_64/kernel/pci-calgary.c
++F:	arch/x86_64/kernel/tce.c
++F:	include/asm-x86_64/calgary.h
++F:	include/asm-x86_64/tce.h
++F:	include/asm-x86_64/rio.h
+ 
+ CFAG12864B LCD DRIVER
+ P:	Miguel Ojeda Sandonis
+ M:	maxextreme@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://auxdisplay.googlepages.com/
+ S:	Maintained
++F:	Documentation/auxdisplay/cfag12864b
++F:	drivers/auxdisplay/cfag12864b.c
++F:	include/linux/cfag12864b.h
+ 
+ CFAG12864BFB LCD FRAMEBUFFER DRIVER
+ P:	Miguel Ojeda Sandonis
+ M:	maxextreme@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://auxdisplay.googlepages.com/
+ S:	Maintained
++F:	Documentation/auxdisplay/cfag12864b
++F:	drivers/auxdisplay/cfag12864bfb.c
++F:	include/linux/cfag12864b.h
+ 
+ CFG80211 and NL80211
+ P:	Johannes Berg
+ M:	johannes@sipsolutions.net
+ L:	linux-wireless@vger.kernel.org
+ S:	Maintained
++F:	include/linux/nl80211.h
++F:	include/net/cfg80211.h
++F:	net/wireless/core.*
++F:	net/wireless/sysfs.*
++F:	net/wireless/radiotap.c
+ 
+ CHECKPATCH
+ P:	Andy Whitcroft
+ M:	apw@shadowen.org
+ P:	Randy Dunlap
+ M:	rdunlap@xenotime.net
+ P:	Joel Schopp
+ M:	jschopp@austin.ibm.com
+ S:	Supported
++F:	scripts/checkpatch.pl
+ 
+ COMMON INTERNET FILE SYSTEM (CIFS)
+ P:	Steve French
+ M:	sfrench@samba.org
+ L:	linux-cifs-client@lists.samba.org
+ L:	samba-technical@lists.samba.org
+ W:	http://us1.samba.org/samba/Linux_CIFS_client.html
+ T:	git kernel.org:/pub/scm/linux/kernel/git/sfrench/cifs-2.6.git
+ S:	Supported
++F:	fs/cifs/
+ 
+ CONFIGFS
+ P:	Joel Becker
+ M:	joel.becker@oracle.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	fs/configfs/
++F:	include/linux/configfs.h
+ 
+ CIRRUS LOGIC EP93XX ETHERNET DRIVER
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/arm/ep93xx_eth.c
+ 
+ CIRRUS LOGIC GENERIC FBDEV DRIVER
+ P:	Jeff Garzik
+ M:	jgarzik@pobox.com
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+ S:	Odd Fixes
+ 
+ CIRRUS LOGIC EP93XX OHCI USB HOST DRIVER
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/usb/host/ohci-ep93xx.c
+ 
+ CIRRUS LOGIC CS4280/CS461x SOUNDDRIVER
+-P:	Cirrus Logic Corporation (kernel 2.2 driver)
+-M:	Cirrus Logic Corporation, Thomas Woller <twoller@crystal.cirrus.com>
+-P:	Nils Faerber (port to kernel 2.4)
+-M:	Nils Faerber <nils@kernelconcepts.de>
++P:	Nils Faerber
++M:	nils@kernelconcepts.de
+ S:	Maintained
++F:	Documentation/input/cs461x.txt
++F:	sound/pci/cs46xx/
+ 
+ CODA FILE SYSTEM
+ P:	Jan Harkes
+ M:	jaharkes@cs.cmu.edu
+ M:	coda@cs.cmu.edu
+ L:	codalist@coda.cs.cmu.edu
+ W:	http://www.coda.cs.cmu.edu/
+ S:	Maintained
++F:	fs/coda/
++F:	include/linux/coda*.h
+ 
+ COMPACTPCI HOTPLUG CORE
+ P:	Scott Murray
+ M:	scottm@somanetworks.com
+ M:	scott@spiteful.org
+ L:	pcihpd-discuss@lists.sourceforge.net
+ S:	Supported
++F:	drivers/pci/hotplug/cpci_hotplug*
+ 
+ COMPACTPCI HOTPLUG ZIATECH ZT5550 DRIVER
+ P:	Scott Murray
+ M:	scottm@somanetworks.com
+ M:	scott@spiteful.org
+ L:	pcihpd-discuss@lists.sourceforge.net
+ S:	Supported
++F:	drivers/pci/hotplug/cpci_zt5550.*
+ 
+ COMPACTPCI HOTPLUG GENERIC DRIVER
+ P:	Scott Murray
+ M:	scottm@somanetworks.com
+ M:	scott@spiteful.org
+ L:	pcihpd-discuss@lists.sourceforge.net
+ S:	Supported
++F:	drivers/pci/hotplug/cpcihp_generic.c
+ 
+ COMPUTONE INTELLIPORT MULTIPORT CARD
+ P:	Michael H. Warfield
+ M:	mhw@wittsend.com
+ W:	http://www.wittsend.com/computone.html
+ S:	Maintained
++F:	Documentation/computone.txt
++F:	drivers/char/ip2/
+ 
+ CONEXANT ACCESSRUNNER USB DRIVER
+ P:	Simon Arlott
+ M:	cxacru@fire.lp0.eu
+ L:	accessrunner-general@lists.sourceforge.net
+ W:	http://accessrunner.sourceforge.net/
+ S:	Maintained
++F:	drivers/usb/atm/cxacru.c
+ 
+ CORETEMP HARDWARE MONITORING DRIVER
+ P:	Rudolf Marek
+ M:	r.marek@assembler.cz
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/coretemp
++F:	drivers/hwmon/coretemp.c
+ 
+ COSA/SRP SYNC SERIAL DRIVER
+ P:	Jan "Yenya" Kasprzak
+ M:	kas@fi.muni.cz
+ W:	http://www.fi.muni.cz/~kas/cosa/
+ S:	Maintained
+ 
+ CPU FREQUENCY DRIVERS
+ P:	Dave Jones
+ M:	davej@codemonkey.org.uk
+ L:	cpufreq@lists.linux.org.uk
+ W:	http://www.codemonkey.org.uk/projects/cpufreq/
+ T:	git kernel.org/pub/scm/linux/kernel/git/davej/cpufreq.git
+ S:	Maintained
++F:	arch/i386/kernel/cpu/cpufreq/
++F:	drivers/cpufreq/
++F:	include/linux/cpufreq.h
+ 
+ CPUID/MSR DRIVER
+ P:	H. Peter Anvin
+ M:	hpa@zytor.com
+ S:	Maintained
++F:	arch/i386/kernel/cpuid.c
++F:	arch/i386/kernel/msr.c
+ 
+ CPUSETS
+ P:	Paul Jackson
+ P:	Simon Derr
+ M:	pj@sgi.com
+ M:	simon.derr@bull.net
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.bullopensource.org/cpuset/
+ S:	Supported
++F:	Documentation/cpusets.txt
++F:	include/linux/cpuset.h
++F:	kernel/cpuset.c
+ 
+ CRAMFS FILESYSTEM
+ W:	http://sourceforge.net/projects/cramfs/
+ S:	Orphan
+ 
+ CRIS PORT
+ P:	Mikael Starvik
+ M:	starvik@axis.com
+ L:	dev-etrax@axis.com
+ W:	http://developer.axis.com
+ S:	Maintained
++F:	arch/cris/
++F:	include/asm-cris/
+ 
+ CRYPTO API
+ P:	Herbert Xu
+ M:	herbert@gondor.apana.org.au
+ P:	David S. Miller
+ M:	davem@davemloft.net
+ L:	linux-crypto@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+ S:	Maintained
++F:	crypto/
+ 
+ CS5535 Audio ALSA driver
+ P:	Jaya Kumar
+ M:	jayakumar.alsa@gmail.com
+ S:	Maintained
++F:	sound/pci/cs5535audio/
+ 
+ CYBERPRO FB DRIVER
+ P:	Russell King
+ M:	rmk@arm.linux.org.uk
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
++F:	drivers/video/cyber2000fb.*
+ 
+ CYBLAFB FRAMEBUFFER DRIVER
+ P:	Knut Petersen
+ M:	Knut_Petersen@t-online.de
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
++F:	drivers/video/cyblafb.c
+ 
+ CYCLADES 2X SYNC CARD DRIVER
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
+ W:	http://oops.ghostprotocols.net:81/blog
+ S:	Maintained
++F:	drivers/net/wan/cycx*
+ 
+ CYCLADES ASYNC MUX DRIVER
+ W:	http://www.cyclades.com/
+ S:	Orphan
+ 
+ CYCLADES PC300 DRIVER
+ W:	http://www.cyclades.com/
+ S:	Orphan
++F:	drivers/net/wan/pc300*
+ 
+ DAMA SLAVE for AX.25
+ P:	Joerg Reuter
+ M:	jreuter@yaina.de
+ W:	http://yaina.de/jreuter/
+ W:	http://www.qsl.net/dl1bke/
+ L:	linux-hams@vger.kernel.org
+ S:	Maintained
++F:	net/ax25/af_ax25.c
++F:	net/ax25/ax25_dev.c
++F:	net/ax25/ax25_ds_*
++F:	net/ax25/ax25_in.c
++F:	net/ax25/ax25_out.c
++F:	net/ax25/ax25_timer.c
++F:	net/ax25/sysctl_net_ax25.c
+ 
+ DC395x SCSI driver
+ P:	Oliver Neukum
+ M:	oliver@neukum.name
+ P:	Ali Akcaagac
+ M:	aliakc@web.de
+ P:	Jamie Lenehan
+ M:	lenehan@twibble.org
+ W:	http://twibble.org/dist/dc395x/
+ L:	dc395x@twibble.org
+ L:	http://lists.twibble.org/mailman/listinfo/dc395x/
+ S:	Maintained
++F:	Documentation/scsi/dc395x.txt
++F:	drivres/scsi/dc395x.*
+ 
+ DC390/AM53C974 SCSI driver
+ P:	Kurt Garloff
+ M:	garloff@suse.de
+ W:	http://www.garloff.de/kurt/linux/dc390/
+ P:	Guennadi Liakhovetski
+ M:	g.liakhovetski@gmx.de
+ S:	Maintained
++F:	drivers/scsi/tmscsim.*
+ 
+ DCCP PROTOCOL
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
+ L:	dccp@vger.kernel.org
+ W:	http://linux-net.osdl.org/index.php/DCCP
+ S:	Maintained
++F:	include/linux/dccp.h
++F:	include/linux/tfrc.h
++F:	net/dccp/
+ 
+ DECnet NETWORK LAYER
+ P:	Patrick Caulfield
+ M:	patrick@tykepenguin.com
+ W:	http://linux-decnet.sourceforge.net
+ L:	linux-decnet-user@lists.sourceforge.net
+ S:	Maintained
++F:	Documentation/networking/decnet.txt
++F:	net/decnet/
+ 
+ DEFXX FDDI NETWORK DRIVER
+ P:	Maciej W. Rozycki
+ M:	macro@linux-mips.org
+ S:	Maintained
++F:	drivers/net/defxx.*
+ 
+ DELL LAPTOP SMM DRIVER
+ P:	Massimo Dal Zotto
+ M:	dz@debian.org
+ W:	http://www.debian.org/~dz/i8k/
+ S:	Maintained
++F:	drivers/char/i8k.c
++F:	include/linux/i8k.h
+ 
+ DELL SYSTEMS MANAGEMENT BASE DRIVER (dcdbas)
+ P:	Doug Warzecha
+ M:	Douglas_Warzecha@dell.com
+ S:	Maintained
++F:	Documentation/dcdbas.txt
++F:	drivers/firmware/dcdbas.*
+ 
+ DEVICE-MAPPER  (LVM)
+ P:	Alasdair Kergon
+ L:	dm-devel@redhat.com
+ W:	http://sources.redhat.com/dm
+ S:	Maintained
++F:	Documentation/device-mapper/
++F:	drivers/md/dm*
++F:	drivers/md/kcopyd*
++F:	include/linux/device-mapper.h
++F:	include/linux/dm-ioctl.h
+ 
+ DEVICE NUMBER REGISTRY
+ P:	Torben Mathiasen
+ M:	device@lanana.org
+ W:	http://lanana.org/docs/device-list/index.html
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
+ 
+ DIGI INTL. EPCA DRIVER
+ P:	Digi International, Inc
+ M:	Eng.Linux@digi.com
+ L:	Eng.Linux@digi.com
+ W:	http://www.digi.com
+ S:	Orphaned
+ 
+ DIGI RIGHTSWITCH NETWORK DRIVER
+ P:	Rick Richardson
+ L:	netdev@vger.kernel.org
+ W:	http://www.digi.com
+ S:	Orphaned
+ 
+ DIRECTORY NOTIFICATION
+ P:	Stephen Rothwell
+ M:	sfr@canb.auug.org.au
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	fs/dnotify.c
++F:	include/linux/dnotify.h
+ 
+ DISK GEOMETRY AND PARTITION HANDLING
+ P:	Andries Brouwer
+ M:	aeb@cwi.nl
+ W:	http://www.win.tue.nl/~aeb/linux/Large-Disk.html
+ W:	http://www.win.tue.nl/~aeb/linux/zip/zip-1.html
+ W:	http://www.win.tue.nl/~aeb/partitions/partition_types-1.html
+ S:	Maintained
+ 
+ DISKQUOTA:
+ P:	Jan Kara
+ M:	jack@suse.cz
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
+ 
+ DISTRIBUTED LOCK MANAGER
+ P:	Patrick Caulfield
+ M:	pcaulfie@redhat.com
+ P:	David Teigland
+ M:	teigland@redhat.com
+ L:	cluster-devel@redhat.com
+ W:	http://sources.redhat.com/cluster/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git
+ T:	git kernel.org:/pub/scm/linux/kernel/git/steve/gfs2-2.6-nmw.git
+ S:	Supported
++F:	fs/dlm/
+ 
+ DAVICOM FAST ETHERNET (DMFE) NETWORK DRIVER
+ P:	Tobias Ringstrom
+ M:	tori@unhappy.mine.nu
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	Documentation/networking/dmfe.txt
++F:	drivers/net/tulip/dmfe.c
+ 
+ DMA GENERIC OFFLOAD ENGINE SUBSYSTEM
+ P:	Shannon Nelson
+ M:	shannon.nelson@intel.com
+ P:	Dan Williams
+ M:	dan.j.williams@intel.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	drivers/dma/
++F:	include/linux/dma*
+ 
+ DME1737 HARDWARE MONITOR DRIVER
+ P:	Juerg Haefliger
+ M:	juergh@gmail.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/dme1737
++F:	drivers/hwmon/dme1737.c
+ 
+ DOCBOOK FOR DOCUMENTATION
+ P:	Randy Dunlap
+ M:	rdunlap@xenotime.net
+ S:	Maintained
+ 
+ DOCKING STATION DRIVER
+ P:	Kristen Carlson Accardi
+ M:	kristen.c.accardi@intel.com
+ L:	linux-acpi@vger.kernel.org
+ S:	Supported
++F:	drivers/acpi/dock.c
+ 
+ DOUBLETALK DRIVER
+ P:	James R. Van Zandt
+ M:	jrv@vanzandt.mv.com
+ L:	blinux-list@redhat.com
+ S:	Maintained
++F:	drivers/char/dtlk.c
++F:	include/linux/dtlk.h
+ 
+ DRIVER CORE, KOBJECTS, AND SYSFS
+ P:	Greg Kroah-Hartman
+ M:	gregkh@suse.de
+ L:	linux-kernel@vger.kernel.org
+ T:	quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+ S:	Supported
++F:	Documentation/kobject.txt
++F:	drivers/base/core.c
++F:	fs/sysfs/
++F:	include/linux/kobj*
++F:	lib/kobj*
+ 
+ DRM DRIVERS
+ P:	David Airlie
+ M:	airlied@linux.ie
+ L:	dri-devel@lists.sourceforge.net
+ T:	git kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+ S:	Maintained
++F:	drivers/char/drm/
+ 
+ DSCC4 DRIVER
+ P:	Francois Romieu
+ M:	romieu@fr.zoreil.com
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/wan/dscc4.c
+ 
+ DVB SUBSYSTEM AND DRIVERS
+ P:	LinuxTV.org Project
+ M:	v4l-dvb-maintainer@linuxtv.org
+-L: 	linux-dvb@linuxtv.org (subscription required)
++L:	linux-dvb@linuxtv.org (subscribers-only)
+ W:	http://linuxtv.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
+ S:	Maintained
++F:	Documentation/dvb/
++F:	drivers/media/dvb/
++F:	drivers/media/common/saa7146*.c
++F:	include/linux/dvb/
+ 
+ EATA-DMA SCSI DRIVER
+ P:	Michael Neuffer
+-L:	linux-eata@i-connect.net, linux-scsi@vger.kernel.org
++L:	linux-eata@i-connect.net
++L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/eata*
+ 
+ EATA ISA/EISA/PCI SCSI DRIVER
+ P:	Dario Ballabio
+ M:	ballabio_dario@emc.com
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/eata*
+ 
+ EATA-PIO SCSI DRIVER
+ P:	Michael Neuffer
+ M:	mike@i-Connect.Net
+-L:	linux-eata@i-connect.net, linux-scsi@vger.kernel.org
++L:	linux-eata@i-connect.net
++L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/eata*
+ 
+ EBTABLES
+ P:	Bart De Schuymer
+ M:	bart.de.schuymer@pandora.be
+ L:	ebtables-user@lists.sourceforge.net
+ L:	ebtables-devel@lists.sourceforge.net
+ W:	http://ebtables.sourceforge.net/
+ S:	Maintained
++F:	include/linux/netfilter_bridge/ebt_*.h
++F:	net/bridge/netfilter/ebt*.c
+ 
+ ECRYPT FILE SYSTEM
+-P:	Mike Halcrow, Phillip Hellewell
+-M:	mhalcrow@us.ibm.com, phillip@hellewell.homeip.net
++P:	Mike Halcrow
++M:	mhalcrow@us.ibm.com
++P:	Phillip Hellewell
++M:	phillip@hellewell.homeip.net
+ L:	ecryptfs-devel@lists.sourceforge.net
+ W:	http://ecryptfs.sourceforge.net/
+ S:	Supported
++F:	fs/ecryptfs/
+ 
+ EDAC-CORE
+ P:	Doug Thompson
+ M:	dougthompson@xmission.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Supported
++F:	Documentation/drivers/edac/edac.txt
++F:	drivers/edac/edac_*
++F:	include/linux/edac.h
+ 
+ EDAC-E752X
+ P:	Mark Gross
+ P:	Doug Thompson
+ M:	mark.gross@intel.com
+ M:	dougthompson@xmission.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/e752x_edac.c
+ 
+ EDAC-E7XXX
+ P:	Doug Thompson
+ M:	dougthompson@xmission.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
+ 
+ EDAC-I82443BXGX
+ P:	Tim Small
+ M:	tim@buttersideup.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/i82443bxgx_edac.c
+ 
+ EDAC-I3000
+ P:	Jason Uhlenkott
+ M:	juhlenko@akamai.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/i3000_edac.c
+ 
+ EDAC-I5000
+ P:	Doug Thompson
+ M:	dougthompson@xmission.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/i5000_edac.c
+ 
+ EDAC-I82975X
+ P:	Ranganathan Desikan
+ P:	Arvind R.
+ M:	rdesikan@jetzbroadband.com
+ M:	arvind@acarlab.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/i82975x_edac.c
+ 
+ EDAC-PASEMI
+ P:	Egor Martovetsky
+ M:	egor@pasemi.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/pasemi_edac.c
+ 
+ EDAC-R82600
+ P:	Tim Small
+ M:	tim@buttersideup.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/r82600_edac.c
+ 
+ EEPRO100 NETWORK DRIVER
+ P:	Andrey V. Savochkin
+ M:	saw@saw.sw.com.sg
+ S:	Maintained
++F:	drivers/net/eepro100.c
+ 
+ EFS FILESYSTEM
+ W:	http://aeschi.ch.eu.org/efs/
+ S:	Orphan
++F:	fs/efs/
+ 
+ EHCA (IBM GX bus InfiniBand adapter) DRIVER:
+ P:	Hoang-Nam Nguyen
+ M:	hnguyen@de.ibm.com
+ P:	Christoph Raisch
+ M:	raisch@de.ibm.com
+ L:	general@lists.openfabrics.org
+ S:	Supported
++F:	drivers/infiniband/hw/ehca/
+ 
+ EMULEX LPFC FC SCSI DRIVER
+ P:	James Smart
+ M:	james.smart@emulex.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://sourceforge.net/projects/lpfcxxxx
+ S:	Supported
++F:	drivers/scsi/lpfc/
+ 
+ EPSON 1355 FRAMEBUFFER DRIVER
+ P:	Christopher Hoover
+-M:	ch@murgatroid.com, ch@hpl.hp.com
++M:	ch@murgatroid.com
++P:	Christopher Hoover
++M:	ch@hpl.hp.com
+ S:	Maintained
++F:	drivers/video/epson1355fb.c
+ 
+ ETHEREXPRESS-16 NETWORK DRIVER
+ P:	Philip Blundell
+ M:	philb@gnu.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/eexpress.*
+ 
+ ETHERNET BRIDGE
+ P:	Stephen Hemminger
+ M:	shemminger@linux-foundation.org
+ L:	bridge@lists.linux-foundation.org
+ W:	http://bridge.sourceforge.net/
+ S:	Maintained
+ 
+ ETHERTEAM 16I DRIVER
+ P:	Mika Kuoppala
+ M:	miku@iki.fi
+ S:	Maintained
++F:	drivers/net/eth16i.c
+ 
+ EXT2 FILE SYSTEM
+ L:	linux-ext4@vger.kernel.org
+ S:	Maintained
++F:	fs/ext2/
++F:	include/linux/ext2*
+ 
+ EXT3 FILE SYSTEM
+-P:	Stephen Tweedie, Andrew Morton
+-M:	sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com
++P:	Stephen Tweedie
++M:	sct@redhat.com
++P:	Andrew Morton
++M:	akpm@linux-foundation.org
++P:	Andreas Dilger
++M:	adilger@clusterfs.com
+ L:	linux-ext4@vger.kernel.org
+ S:	Maintained
++F:	fs/ext3/
++F:	include/linux/ext3*
+ 
+ EXT4 FILE SYSTEM
+-P:	Stephen Tweedie, Andrew Morton
+-M:	sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com
++P:	Ted Ts'o
++M:	tytso@mit.edu
++P:	Mingming Cao
++M:	cmm@us.ibm.com
++P:	Andreas Dilger
++M:	adilger@clusterfs.com
++P:	Dave Kleikamp
++M:	shaggy@austin.ibm.com
++P:	Eric Sandeen
++M:	sandeen@redhat.com
+ L:	linux-ext4@vger.kernel.org
+ S:	Maintained
++F:	fs/ext4/
++F:	include/linux/ext4*
+ 
+ F71805F HARDWARE MONITORING DRIVER
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/f71805f
++F:	drivers/hwmon/f71805f.c
+ 
+ FARSYNC SYNCHRONOUS DRIVER
+ P:	Kevin Curtis
+ M:	kevin.curtis@farsite.co.uk
+ W:	http://www.farsite.co.uk/
+ S:	Supported
++F:	drivers/net/wan/farsync.*
+ 
+ FAULT INJECTION SUPPORT
+ P:	Akinobu Mita
+ M:	akinobu.mita@gmail.com
+ S:	Supported
++F:	Documentation/fault-injection/
++F:	lib/fault-inject.c
+ 
+ FRAMEBUFFER LAYER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+ W:	http://linux-fbdev.sourceforge.net/
+ S:	Maintained
++F:	Documentation/fb/
++F:	drivers/video/fb*
++F:	include/linux/fb.h
+ 
+ FREESCALE SOC FS_ENET DRIVER
+ P:	Pantelis Antoniou
+ M:	pantelis.antoniou@gmail.com
+ P:	Vitaly Bordug
+ M:	vbordug@ru.mvista.com
+ L:	linuxppc-embedded@ozlabs.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/fs_enet/
++F:	include/linus/fs_enet_pd.h
+ 
+ FREESCALE HIGHSPEED USB DEVICE DRIVER
+ P:	Li Yang
+ M:	leoli@freescale.com
+ L:	linux-usb-devel@lists.sourceforge.net
+ L:	linuxppc-embedded@ozlabs.org
+ S:	Maintained
++F:	drivers/usb/gadget/fsl_usb2_udc.c
+ 
+ FREESCALE QUICC ENGINE UCC ETHERNET DRIVER
+ P:	Li Yang
+ M:	leoli@freescale.com
+ L:	netdev@vger.kernel.org
+ L:	linuxppc-embedded@ozlabs.org
+ S:	Maintained
++F:	drivers/net/ucc_geth*
+ 
+ FILE LOCKING (flock() and fcntl()/lockf())
+ P:	Matthew Wilcox
+ M:	matthew@wil.cx
+ L:	linux-fsdevel@vger.kernel.org
+ S:	Maintained
++F:	include/linux/fcntl.h
++F:	include/linux/fs.h
++F:	fs/fcntl.c
++F:	fs/locks.c
+ 
+ FILESYSTEMS (VFS and infrastructure)
+ P:	Alexander Viro
+ M:	viro@zeniv.linux.org.uk
+ S:	Maintained
++F:	fs/*
+ 
+ FIREWIRE SUBSYSTEM
+-P:	Kristian Hoegsberg, Stefan Richter
+-M:	krh@redhat.com, stefanr@s5r6.in-berlin.de
++P:	Kristian Hoegsberg
++M:	krh@redhat.com
++P:	Stefan Richter
++M:	stefanr@s5r6.in-berlin.de
+ L:	linux1394-devel@lists.sourceforge.net
+ W:	http://www.linux1394.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
+ S:	Maintained
++F:	drivers/firewire/
++F:	include/linux/firewire-*.h
+ 
+ FIRMWARE LOADER (request_firmware)
+ L:	linux-kernel@vger.kernel.org
+ S:	Orphan
+ 
+ FPU EMULATOR
+ P:	Bill Metzenthen
+ M:	billm@suburbia.net
+ W:	http://suburbia.net/~billm/floating-point/emulator/
+ S:	Maintained
++F:	arch/i386/math-emu/
+ 
+ FRAME RELAY DLCI/FRAD (Sangoma drivers too)
+ P:	Mike McLagan
+ M:	mike.mclagan@linux.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/wan/dlci.c
++F:	drivers/net/wan/sdla.c
+ 
+ FREEVXFS FILESYSTEM
+ P:	Christoph Hellwig
+ M:	hch@infradead.org
+ W:	ftp://ftp.openlinux.org/pub/people/hch/vxfs
+ S:	Maintained
++F:	fs/freevxfs/
+ 
+ FUJITSU FR-V (FRV) PORT
+ P:	David Howells
+ M:	dhowells@redhat.com
+ S:	Maintained
++F:	arch/frv/
++F:	include/asm-frv/
+ 
+ FUSE: FILESYSTEM IN USERSPACE
+ P:	Miklos Szeredi
+ M:	miklos@szeredi.hu
+ L:	fuse-devel@lists.sourceforge.net
+ W:	http://fuse.sourceforge.net/
+ S:	Maintained
++F:	fs/fuse/
++F:	include/linux/fuse.h
+ 
+ FUTURE DOMAIN TMC-16x0 SCSI DRIVER (16-bit)
+ P:	Rik Faith
+ M:	faith@cs.unc.edu
+ L:	linux-scsi@vger.kernel.org
+ S:	Odd fixes (e.g., new signatures)
++F:	drivers/scsi/fdomain.*
++F:	drivers/scsi/pcmcia/fdomain_stub.c
+ 
+ GDT SCSI DISK ARRAY CONTROLLER DRIVER
+ P:	Achim Leubner
+ M:	achim_leubner@adaptec.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.icp-vortex.com/
+ S:	Supported
++F:	drivers/scsi/gdt*
+ 
+ GENERIC GPIO I2C DRIVER
+ P:	Haavard Skinnemoen
+ M:	hskinnemoen@atmel.com
+ S:	Supported
++F:	drivers/i2c/busses/i2c-gpio.c
++F:	include/linux/i2c-gpio.h
+ 
+ GENERIC HDLC DRIVER, N2, C101, PCI200SYN and WANXL DRIVERS
+ P:	Krzysztof Halasa
+ M:	khc@pm.waw.pl
+ W:	http://www.kernel.org/pub/linux/utils/net/hdlc/
+ S:	Maintained
++F:	Documentation/networking/generic-hdlc.txt
++F:	drivers/net/wan/c101.c
++F:	drivers/net/wan/hd6457x.c
++F:	drivers/net/wan/hdlc*
++F:	drivers/net/wan/n2.c
++F:	drivers/net/wan/pc300too.c
++F:	drivers/net/wan/pci200syn.c
++F:	drivers/net/wan/wanxl*
+ 
+ GFS2 FILE SYSTEM
+ P:	Steven Whitehouse
+ M:	swhiteho@redhat.com
+ L:	cluster-devel@redhat.com
+ W:	http://sources.redhat.com/cluster/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git
+ T:	git kernel.org:/pub/scm/linux/kernel/git/steve/gfs2-2.6-nmw.git
+ S:	Supported
++F:	Documentation/filesystems/gfs2.txt
++F:	fs/gfs2/
++F:	include/linux/gfs2_ondisk.h
++F:	include/linux/lm_interface.h
+ 
+ GIGASET ISDN DRIVERS
+ P:	Hansjoerg Lipp
+ M:	hjlipp@web.de
+ P:	Tilman Schmidt
+ M:	tilman@imap.cc
+ L:	gigaset307x-common@lists.sourceforge.net
+ W:	http://gigaset307x.sourceforge.net/
+ S:	Maintained
++F:	Documentation/isdn/README.gigaset
++F:	drivers/isdn/gigaset/
++F:	include/linux/gigaset_dev.h
+ 
+ HARDWARE MONITORING
+ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
+ W:	http://www.lm-sensors.org/
+ T:	git lm-sensors.org:/kernel/mhoffman/hwmon-2.6.git
+ S:	Maintained
++F:	drivers/hwmon/
+ 
+ HARDWARE RANDOM NUMBER GENERATOR CORE
+ P:	Michael Buesch
+ M:	mb@bu3sch.de
+ S:	Maintained
++F:	Documentation/hw_random.txt
++F:	drivers/char/hw_random/
++F:	include/linux/hw_random.h
+ 
+ HARD DRIVE ACTIVE PROTECTION SYSTEM (HDAPS) DRIVER
+ P:	Robert Love
+ M:	rlove@rlove.org
+ M:	linux-kernel@vger.kernel.org
+ W:	http://www.kernel.org/pub/linux/kernel/people/rml/hdaps/
+ S:	Maintained
++F:	drivers/hwmon/hdaps.c
+ 
+ HARMONY SOUND DRIVER
+ P:	Kyle McMartin
+ M:	kyle@parisc-linux.org
+ W:	http://www.parisc-linux.org/~kyle/harmony/
+ L:	parisc-linux@lists.parisc-linux.org
+ S:	Maintained
++F:	sound/parisc/harmony.*
+ 
+ HAYES ESP SERIAL DRIVER
+ P:	Andrew J. Robinson
+ M:	arobinso@nyx.net
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.nyx.net/~arobinso
+ S:	Maintained
++F:	drivers/char/esp.c
+ 
+ HFS FILESYSTEM
+ P:	Roman Zippel
+ M:	zippel@linux-m68k.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/filesystems/hfs.txt
++F:	fs/hfs/
+ 
+ HGA FRAMEBUFFER DRIVER
+ P:	Ferenc Bakonyi
+ M:	fero@drama.obuda.kando.hu
+ L:	linux-nvidia@lists.surfsouth.com
+ W:	http://drama.obuda.kando.hu/~fero/cgi-bin/hgafb.shtml
+ S:	Maintained
++F:	drivers/video/hgafb.c
++
++HIBERNATION (aka Software Suspend, aka swsusp)
++P:	Pavel Machek
++M:	pavel@suse.cz
++P:	Rafael J. Wysocki
++M:	rjw@sisk.pl
++L:	linux-pm@lists.linux-foundation.org
++S:	Supported
++F:	Documentation/power/
++F:	arch/i386/power/
++F:	arch/x86_64/kernel/suspend_asm.S
++F:	arch/x86_64/kernel/suspend.c
++F:	drivers/base/power/
++F:	kernel/power/
++F:	include/linux/suspend.h
++F:	include/linux/freezer.h
++F:	include/linux/pm.h
++F:	include/asm-*/suspend.h
+ 
+ HID CORE LAYER
+ P:	Jiri Kosina
+ M:	jkosina@suse.cz
+ L:	linux-input@atrey.karlin.mff.cuni.cz
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jikos/hid.git
+ S:	Maintained
++F:	drivers/hid/
++F:	include/linux/hid*
+ 
+ HIGH-RESOLUTION TIMERS, CLOCKEVENTS, DYNTICKS
+ P:	Thomas Gleixner
+ M:	tglx@linutronix.de
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/hrtimer/
++F:	Documentation/hrtimers/
++F:	kernel/hrtimer.c
++F:	include/linux/hrtimer.h
+ 
+ HIGH-SPEED SCC DRIVER FOR AX.25
+ P:	Klaus Kudielka
+ M:	klaus.kudielka@ieee.org
+ L:	linux-hams@vger.kernel.org
+ W:	http://www.nt.tuwien.ac.at/~kkudielk/Linux/
+ S:	Maintained
++F:	drivers/net/hamradio/dmascc.c
++F:	drivers/net/hamradio/scc.c
+ 
+ HIGHPOINT ROCKETRAID 3xxx RAID DRIVER
+ P:	HighPoint Linux Team
+ M:	linux@highpoint-tech.com
+ W:	http://www.highpoint-tech.com
+ S:	Supported
++F:	Documentation/scsi/hptiop.txt
++F:	drivers/scsi/hptiop.c
+ 
+ HIPPI
+ P:	Jes Sorensen
+ M:	jes@trained-monkey.org
+ L:	linux-hippi@sunsite.dk
+ S:	Maintained
++F:	include/linux/hippidevice.h
++F:	include/linux/if_hippi.h
++F:	net/802/hippi.c
+ 
+ HEWLETT-PACKARD FIBRE CHANNEL 64-bit/66MHz PCI non-intelligent HBA
+ P:	Chirag Kantharia
+ M:	chirag.kantharia@hp.com
+ L:	iss_storagedev@hp.com
+ S:	Maintained
+ 
+ HEWLETT-PACKARD SMART2 RAID DRIVER
+ P:	Chirag Kantharia
+ M:	chirag.kantharia@hp.com
+ L:	iss_storagedev@hp.com
+ S:	Maintained
+ 
+ HEWLETT-PACKARD SMART CISS RAID DRIVER (cciss)
+ P:	Mike Miller
+ M:	mike.miller@hp.com
+ L:	iss_storagedev@hp.com
+ S:	Supported
++F:	Documentation/cciss.txt
++F:	drivers/block/cciss*
++F:	include/linux/cciss_ioctl.h
+ 
+ HOST AP DRIVER
+ P:	Jouni Malinen
+ M:	j@w1.fi
+ L:	hostap@shmoo.com (subscribers-only)
+ L:	linux-wireless@vger.kernel.org
+ W:	http://hostap.epitest.fi/
+ S:	Maintained
++F:	drivers/net/wireless/hostap/
+ 
+ HP100:	Driver for HP 10/100 Mbit/s Voice Grade Network Adapter Series
+ P:	Jaroslav Kysela
+ M:	perex@suse.cz
+ S:	Maintained
++F:	drivers/net/hp100.*
+ 
+ HPET:	High Precision Event Timers driver (hpet.c)
+ P:	Clemens Ladisch
+ M:	clemens@ladisch.de
+ S:	Maintained
++F:	Documentation/hpet.txt
++F:	drivers/char/hpet.c
++F:	include/linux/hpet.h
+ 
+ HPET:	i386
+ P:	Venkatesh Pallipadi (Venki)
+ M:	venkatesh.pallipadi@intel.com
+ S:	Maintained
++F:	arch/i386/kernel/hpet.c
++F:	include/asm-i386/hpet.h
+ 
+ HPET:	x86_64
+ P:	Andi Kleen and Vojtech Pavlik
+ M:	andi@firstfloor.org and vojtech@suse.cz
+ S:	Maintained
++F:	arch/x86_64/kernel/hpet.c
++F:	include/asm-x86_64/hpet.h
+ 
+ HPET:	ACPI hpet.c
+ P:	Bob Picco
+ M:	bob.picco@hp.com
+ S:	Maintained
++F:	drivers/char/hpet.c
+ 
+ HPFS FILESYSTEM
+ P:	Mikulas Patocka
+ M:	mikulas@artax.karlin.mff.cuni.cz
+ W:	http://artax.karlin.mff.cuni.cz/~mikulas/vyplody/hpfs/index-e.cgi
+ S:	Maintained
++F:	fs/hpfs/
+ 
+ HUGETLB FILESYSTEM
+ P:	William Irwin
+ M:	wli@holomorphy.com
+ S:	Maintained
++F:	fs/hugetlbfs/
+ 
+ I2C/SMBUS STUB DRIVER
+ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
+ 
+ I2C SUBSYSTEM
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+ L:	i2c@lm-sensors.org
+ T:	quilt http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/
+ S:	Maintained
++F:	Documentation/i2c/
++F:	drivers/i2c/
++F:	include/linux/i2c.h
++F:	include/linux/i2c-dev.h
++F:	include/linux/i2c-id.h
+ 
+ I2C-TINY-USB DRIVER
+ P:	Till Harbaum
+ M:	till@harbaum.org
+ L:	i2c@lm-sensors.org
+ T:	http://www.harbaum.org/till/i2c_tiny_usb
+ S:	Maintained
++F:	drivers/i2c/busses/i2c-tiny-usb.c
+ 
+ i386 BOOT CODE
+ P:	H. Peter Anvin
+ M:	hpa@zytor.com
+ L:	Linux-Kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/i386/boot.txt
++F:	arch/i386/boot/
++F:	arch/i386/kernel/*boot*
++F:	arch/i386/mm/boot*
++F:	include/asm-i386/*boot*
+ 
+ i386 SETUP CODE / CPU ERRATA WORKAROUNDS
+ P:	H. Peter Anvin
+ M:	hpa@zytor.com
+ T:	git.kernel.org:/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git
+ S:	Maintained
++F:	arch/i386/kernel/setup.c
++F:	include/asm-i386/setup.h
+ 
+ IA64 (Itanium) PLATFORM
+ P:	Tony Luck
+ M:	tony.luck@intel.com
+ L:	linux-ia64@vger.kernel.org
+ W:	http://www.ia64-linux.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
+ S:	Maintained
++F:	arch/ia64/
++F:	include/asm-ia64/*
+ 
+ SN-IA64 (Itanium) SUB-PLATFORM
+ P:	Jes Sorensen
+ M:	jes@sgi.com
+ L:	linux-altix@sgi.com
+ L:	linux-ia64@vger.kernel.org
+ W:	http://www.sgi.com/altix
+ S:	Maintained
++F:	arch/ia64/sn/
+ 
+ IBM MCA SCSI SUBSYSTEM DRIVER
+ P:	Michael Lang
+ M:	langa2@kph.uni-mainz.de
+ W:	http://www.uni-mainz.de/~langm000/linux.html
+ S:	Maintained
++F:	drivers/scsi/ibmmca.c
+ 
+ IBM Power Linux RAID adapter
+ P:	Brian King
+ M:	brking@us.ibm.com
+ S:	Supported
++F:	drivers/scsi/ipr.*
+ 
+ IBM ServeRAID RAID DRIVER
+ P:	Jack Hammer
+ P:	Dave Jeffery
+ M:	ipslinux@adaptec.com
+ W:	http://www.developer.ibm.com/welcome/netfinity/serveraid.html
+ S:	Supported
++F:	drivers/scsi/ips.*
+ 
+ IDE SUBSYSTEM
+ P:	Bartlomiej Zolnierkiewicz
+ M:	bzolnier@gmail.com
+ L:	linux-ide@vger.kernel.org
+ T:	quilt kernel.org/pub/linux/kernel/people/bart/pata-2.6/
+ S:	Maintained
++F:	Documentation/ide.txt
++F:	drivers/ide/
++F:	include/linux/ide.h
+ 
+ IDE/ATAPI CDROM DRIVER
+ P:	Alan Cox
+ M:	alan@lxorguk.ukuu.org.uk
+ L:	linux-ide@vger.kernel.org
+ S:	Maintained
++F:	Documentation/cdrom/ide-cd
++F:	drivers/ide/ide-cd.*
+ 
+ IDE/ATAPI FLOPPY DRIVERS
+ P:	Paul Bristow
+-M:	Paul Bristow <paul@paulbristow.net>
++M:	aul@paulbristow.net
+ W:	http://paulbristow.net/linux/idefloppy.html
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/ide/ide-floppy.c
+ 
+ IDE/ATAPI TAPE DRIVERS
+ P:	Gadi Oxman
+-M:	Gadi Oxman <gadio@netvision.net.il>
++M:	gadio@netvision.net.il
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/ide/ide-tape.c
+ 
+ IEEE 1394 SUBSYSTEM
+ P:	Ben Collins
+ M:	ben.collins@ubuntu.com
+ P:	Stefan Richter
+ M:	stefanr@s5r6.in-berlin.de
+ L:	linux1394-devel@lists.sourceforge.net
+ W:	http://www.linux1394.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
+ S:	Maintained
++F:	drivers/ieee1394/
+ 
+ IEEE 1394 RAW I/O DRIVER (raw1394)
+ P:	Dan Dennedy
+ M:	dan@dennedy.org
+ P:	Stefan Richter
+ M:	stefanr@s5r6.in-berlin.de
+ L:	linux1394-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/ieee1394/raw1394*
+ 
+ IMS TWINTURBO FRAMEBUFFER DRIVER
+-P:	Paul Mundt
+-M:	lethal@chaoticdreams.org
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+-S:	Maintained
++S:	Orphan
++F:	drivers/video/imsttfb.c
+ 
+ INFINIBAND SUBSYSTEM
+ P:	Roland Dreier
+ M:	rolandd@cisco.com
+ P:	Sean Hefty
+ M:	mshefty@ichips.intel.com
+ P:	Hal Rosenstock
+ M:	hal.rosenstock@gmail.com 
+ L:	general@lists.openfabrics.org
+ W:	http://www.openib.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git
+ S:	Supported
++F:	Documentation/infiniband/
++F:	drivers/infiniband/
++F:	include/linux/if_infiniband.h
+ 
+ INPUT (KEYBOARD, MOUSE, JOYSTICK, TOUCHSCREEN) DRIVERS
+ P:	Dmitry Torokhov
+ M:	dmitry.torokhov@gmail.com
+ M:	dtor@mail.ru
+ L:	linux-input@atrey.karlin.mff.cuni.cz
+ L:	linux-joystick@atrey.karlin.mff.cuni.cz
+ T:	git kernel.org:/pub/scm/linux/kernel/git/dtor/input.git
+ S:	Maintained
+ 
+ INOTIFY
+ P:	John McCutchan
+ M:	ttb@tentacle.dhs.org
+ P:	Robert Love
+ M:	rml@novell.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/filesystems/inotify.txt
++F:	fs/inotify*
+ 
+ INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)
+ P:	Sylvain Meyer
+ M:	sylvain.meyer@worldonline.fr
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
++F:	Documentation/fb/intelfb.txt
++F:	drivers/video/intelfb/
+ 
+ INTEL 810/815 FRAMEBUFFER DRIVER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
++F:	drivers/video/i810/
+ 
+ INTEL APIC/IOAPIC, LOWLEVEL X86 SMP SUPPORT
+ P:	Ingo Molnar
+ M:	mingo@redhat.com
+ S:	Maintained
++F:	Documentation/i386/IO-APIC.txt
++F:	arch/i386/kernel/*apic*
++F:	include/asm-i386/*apic*
+ 
+ INTEL I8XX RANDOM NUMBER GENERATOR SUPPORT
+ P:	Jeff Garzik
+ M:	jgarzik@pobox.com
+ W:	http://sourceforge.net/projects/gkernel/
+ S:	Maintained
++F:	drivers/char/hw_random/intel-rng.c
+ 
+ INTEL IA32 MICROCODE UPDATE SUPPORT
+ P:	Tigran Aivazian
+ M:	tigran@aivazian.fsnet.co.uk
+ S:	Maintained
+ 
+ INTEL I/OAT DMA DRIVER
+ P:	Shannon Nelson
+ M:	shannon.nelson@intel.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
+ 
+ INTEL IOP-ADMA DMA DRIVER
+ P:	Dan Williams
+ M:	dan.j.williams@intel.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	drivers/dma/ioatdma*
+ 
+ INTEL IXP4XX RANDOM NUMBER GENERATOR SUPPORT
+ P:	Deepak Saxena
+ M:	dsaxena@plexity.net
+ S:	Maintained
++F:	drivers/char/hw_random/ixp4xx-rng.c
+ 
+ INTEL IXP2000 ETHERNET DRIVER
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/ixp2000/
+ 
+ INTEL PRO/100 ETHERNET SUPPORT
+ P:	John Ronciak
+ M:	john.ronciak@intel.com
+ P:	Jesse Brandeburg
+ M:	jesse.brandeburg@intel.com
+ P:	Jeff Kirsher
+ M:	jeffrey.t.kirsher@intel.com
+ P:	Auke Kok
+ M:	auke-jan.h.kok@intel.com
+ L:	e1000-devel@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/e1000/
+ S:	Supported
++F:	drivers/net/e100.c
+ 
+ INTEL PRO/1000 GIGABIT ETHERNET SUPPORT
+ P:	Jeb Cramer
+ M:	cramerj@intel.com
+ P:	John Ronciak
+ M:	john.ronciak@intel.com
+ P:	Jesse Brandeburg
+ M:	jesse.brandeburg@intel.com
+ P:	Jeff Kirsher
+ M:	jeffrey.t.kirsher@intel.com
+ P:	Auke Kok
+ M:	auke-jan.h.kok@intel.com
+ L:	e1000-devel@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/e1000/
+ S:	Supported
++F:	drivers/net/e1000/
+ 
+ INTEL PRO/10GbE SUPPORT
+ P:	Jeff Kirsher
+ M:	jeffrey.t.kirsher@intel.com
+ P:	Ayyappan Veeraiyan
+ M:	ayyappan.veeraiyan@intel.com
+ P:	John Ronciak
+ M:	john.ronciak@intel.com
+ P:	Jesse Brandeburg
+ M:	jesse.brandeburg@intel.com
+ P:	Auke Kok
+ M:	auke-jan.h.kok@intel.com
+ L:	e1000-devel@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/e1000/
+ S:	Supported
++F:	drivers/net/ixgb/
+ 
+ INTEL PRO/WIRELESS 2100 NETWORK CONNECTION SUPPORT
+ P:	Yi Zhu
+ M:	yi.zhu@intel.com
+ P:	James Ketrenos
+ M:	jketreno@linux.intel.com
+ L:	linux-wireless@vger.kernel.org
+ L:	ipw2100-devel@lists.sourceforge.net
+ L:	http://lists.sourceforge.net/mailman/listinfo/ipw2100-devel
+ W:	http://ipw2100.sourceforge.net
+ S:	Supported
++F:	Documentation/networking/README.ipw2100
++F:	drivers/net/wireless/ipw2100.*
+ 
+ INTEL PRO/WIRELESS 2915ABG NETWORK CONNECTION SUPPORT
+ P:	Yi Zhu
+ M:	yi.zhu@intel.com
+ P:	James Ketrenos
+ M:	jketreno@linux.intel.com
+ L:	linux-wireless@vger.kernel.org
+ L:	ipw2100-devel@lists.sourceforge.net
+ L:	http://lists.sourceforge.net/mailman/listinfo/ipw2100-devel
+ W:	http://ipw2200.sourceforge.net
+ S:	Supported
++F:	drivers/net/wireless/ipw2200.*
+ 
+ IOC3 DRIVER
+ P:	Ralf Baechle
+ M:	ralf@linux-mips.org
+ L:	linux-mips@linux-mips.org
+ S:	Maintained
++F:	drivers/net/ioc3-eth.c
++
++IOC3 SERIAL DRIVER
++P:	Pat Gefre
++M:	pfg@sgi.com
++L:	linux-mips@linux-mips.org
++S:	Maintained
++F:	drivers/serial/ioc3_serial.c
+ 
+ IP MASQUERADING:
+ P:	Juanjo Ciarlante
+ M:	jjciarla@raiz.uncu.edu.ar
+ S:	Maintained
++F:	net/ipv4/netfilter/ipt_MASQUERADE.c
+ 
+ IPATH DRIVER:
+ P:	Arthur Jones
+ M:	infinipath@qlogic.com
+ L:	general@lists.openfabrics.org
+ T:	git git://git.qlogic.com/ipath-linux-2.6
+ S:	Supported
++F:	drivers/infiniband/hw/ipath/
+ 
+ IPMI SUBSYSTEM
+ P:	Corey Minyard
+ M:	minyard@acm.org
+ L:	openipmi-developer@lists.sourceforge.net
+ W:	http://openipmi.sourceforge.net/
+ S:	Supported
++F:	Documentation/IPMI.txt
++F:	drivers/char/ipmi/
++F:	include/linux/ipmi*
+ 
+ IPX NETWORK LAYER
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	include/linux/ipx.h
++F:	include/net/ipx.h
++F:	net/ipx/
+ 
+ IRDA SUBSYSTEM
+ P:	Samuel Ortiz
+ M:	samuel@sortiz.org
+ L:	irda-users@lists.sourceforge.net (subscribers-only)
+ W:	http://irda.sourceforge.net/
+ S:	Maintained
++F:	Documentation/networking/irda.txt
++F:	drivers/net/irda/
++F:	include/net/irda/
++F:	net/irda/
+ 
+ ISAPNP
+ P:	Jaroslav Kysela
+ M:	perex@suse.cz
+ S:	Maintained
++F:	Documentation/isapnp.txt
++F:	drivers/pnp/isapnp/
++F:	include/linux/isapnp.h
+ 
+ ISDN SUBSYSTEM
+ P:	Karsten Keil
+ M:	kkeil@suse.de
+ P:	Kai Germaschewski
+ M:	kai.germaschewski@gmx.de
+ L:	isdn4linux@listserv.isdn4linux.de
+ W:	http://www.isdn4linux.de
+ T:	git kernel.org:/pub/scm/linux/kernel/kkeil/isdn-2.6.git
+ S:	Maintained
++F:	Documentation/isdn/
++F:	drivers/isdn/
++F:	include/linux/isdn.h
++F:	include/linux/isdn/
+ 
+ ISDN SUBSYSTEM (Eicon active card driver)
+ P:	Armin Schindler
+ M:	mac@melware.de
+ L:	isdn4linux@listserv.isdn4linux.de
+ W:	http://www.melware.de
+ S:	Maintained
++F:	drivers/isdn/hardware/eicon/
++
++IVTV VIDEO4LINUX DRIVER
++P:	Hans Verkuil
++M:	hverkuil@xs4all.nl
++L:	ivtv-devel@ivtvdriver.org
++L:	ivtv-users@ivtvdriver.org
++L:	video4linux-list@redhat.com
++W:	http://www.ivtvdriver.org
++S:	Maintained
++F:	Documentation/video4linux/README.ivtv
++F:	drivers/media/video/ivtv/
+ 
+ JOURNALLING FLASH FILE SYSTEM V2 (JFFS2)
+ P:	David Woodhouse
+ M:	dwmw2@infradead.org
+ L:	jffs-dev@axis.com
+ W:	http://sources.redhat.com/jffs2/
+ S:	Maintained
++F:	fs/jffs2/
++F:	include/linux/jffs2.h
++F:	include/mtd/jffs2-user.h
+ 
+ JFS FILESYSTEM
+ P:	Dave Kleikamp
+ M:	shaggy@austin.ibm.com
+ L:	jfs-discussion@lists.sourceforge.net
+ W:	http://jfs.sourceforge.net/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git
+ S:	Supported
++F:	Documentation/filesystems/jfs.txt
++F:	fs/jfs/
+ 
+ JOURNALLING LAYER FOR BLOCK DEVICES (JBD)
+-P:	Stephen Tweedie, Andrew Morton
+-M:	sct@redhat.com, akpm@linux-foundation.org
++P:	Stephen Tweedie
++M:	sct@redhat.com
++P:	Andrew Morton
++M:	akpm@linux-foundation.org
+ L:	linux-ext4@vger.kernel.org
+ S:	Maintained
++F:	fs/jbd*/
++F:	include/linux/ext*jbd*.h
++F:	include/linux/jbd*.h
+ 
+ K8TEMP HARDWARE MONITORING DRIVER
+ P:	Rudolf Marek
+ M:	r.marek@assembler.cz
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/k8temp
++F:	drivers/hwmon/k8temp.c
+ 
+ KCONFIG
+ P:	Roman Zippel
+ M:	zippel@linux-m68k.org
+ L:	kbuild-devel@lists.sourceforge.net
+ S:	Maintained
++F:	Documentation/kbuild/kconfig-language.txt
++F:	scripts/kconfig/
+ 
+ KDUMP
+ P:	Vivek Goyal
+ M:	vgoyal@in.ibm.com
+ P:	Haren Myneni
+ M:	hbabu@us.ibm.com
+ L:	kexec@lists.infradead.org
+ L:	linux-kernel@vger.kernel.org
+ W:	http://lse.sourceforge.net/kdump/
+ S:	Maintained
++F:	Documentation/kdump
+ 
+ KERNEL AUTOMOUNTER (AUTOFS)
+ P:	H. Peter Anvin
+ M:	hpa@zytor.com
+ L:	autofs@linux.kernel.org
+ S:	Odd Fixes
++F:	fs/autofs/
+ 
+ KERNEL AUTOMOUNTER v4 (AUTOFS4)
+ P:	Ian Kent
+ M:	raven@themaw.net
+ L:	autofs@linux.kernel.org
+ S:	Maintained
++F:	fs/autofs4/
+ 
+ KERNEL BUILD (kbuild: Makefile, scripts/Makefile.*)
+ P:	Kai Germaschewski
+ M:	kai@germaschewski.name
+ P:	Sam Ravnborg
+ M:	sam@ravnborg.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/sam/kbuild.git
+ S:	Maintained
++F:	Documentation/kbuild/
++F:	Makefile
++F:	scripts/Makefile.*
+ 
+ KERNEL JANITORS
+ P:	Several
+ L:	kernel-janitors@vger.kernel.org
+ W:	http://www.kerneljanitors.org/
+ S:	Maintained
+ 
+ KERNEL NFSD
+ P:	J. Bruce Fields
+ M:	bfields@fieldses.org
+ P:	Neil Brown
+ M:	neilb@suse.de
+ L:	nfs@lists.sourceforge.net
+ W:	http://nfs.sourceforge.net/
+ S:	Supported
++F:	fs/nfsd/
++F:	include/linux/nfsd/
+ 
+ KERNEL VIRTUAL MACHINE (KVM)
+ P:	Avi Kivity
+ M:	avi@qumranet.com
+ L:	kvm-devel@lists.sourceforge.net
+ W:	kvm.sourceforge.net
+ S:	Supported
++F:	drivers/kvm/
++F:	include/linux/kvm*
+ 
+ KEXEC
+ P:	Eric Biederman
+ M:	ebiederm@xmission.com
+ W:	http://www.xmission.com/~ebiederm/files/kexec/
+ L:	linux-kernel@vger.kernel.org
+ L:	kexec@lists.infradead.org
+ S:	Maintained
++F:	include/linux/kexec.h
++F:	kernel/kexec.c
+ 
+ KPROBES
+ P:	Prasanna S Panchamukhi
+ M:	prasanna@in.ibm.com
+ P:	Ananth N Mavinakayanahalli
+ M:	ananth@in.ibm.com
+ P:	Anil S Keshavamurthy
+ M:	anil.s.keshavamurthy@intel.com
+ P:	David S. Miller
+ M:	davem@davemloft.net
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/kprobes.txt
++F:	include/linux/kprobes.h
++F:	kernel/kprobes.c
+ 
+ KS0108 LCD CONTROLLER DRIVER
+ P:	Miguel Ojeda Sandonis
+ M:	maxextreme@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://auxdisplay.googlepages.com/
+ S:	Maintained
++F:	Documentation/auxdisplay/ks0108
++F:	drivers/auxdisplay/ks0108.c
++F:	include/linux/ks0108.h
+ 
+ LAPB module
+ L:	linux-x25@vger.kernel.org
+ S:	Orphan
+ 
+ LASI 53c700 driver for PARISC
+ P:	James E.J. Bottomley
+ M:	James.Bottomley@HansenPartnership.com
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	Documentation/scsi/53c700.txt
++F:	drivers/scsi/53c700*
+ 
+ LED SUBSYSTEM
+ P:	Richard Purdie
+ M:	rpurdie@rpsys.net
+ S:	Maintained
++F:	drivers/leds/
++F:	include/linux/leds.h
+ 
+ LEGO USB Tower driver
+ P:	Juergen Stuber
+ M:	starblue@users.sourceforge.net
+ L:	legousb-devel@lists.sourceforge.net
+ W:	http://legousb.sourceforge.net/
+ S:	Maintained
++F:	drivers/usb/misc/legousbtower.c
+ 
+ LINUX FOR IBM pSERIES (RS/6000)
+ P:	Paul Mackerras
+ M:	paulus@au.ibm.com
+ W:	http://www.ibm.com/linux/ltc/projects/ppc
+ S:	Supported
++F:	arch/powerpc/boot/rs6000.h
++F:	arch/ppc/boot/include/rs6000.h
+ 
+ LINUX FOR NCR VOYAGER
+ P:	James Bottomley
+ M:	James.Bottomley@HansenPartnership.com
+ W:	http://www.hansenpartnership.com/voyager
+ S:	Maintained
++F:	Documentation/voyager.txt
++F:	arch/i386/boot/voyager.c
++F:	arch/i386/mach-voyager/
++F:	include/asm-i386/mach-voyager/
++F:	include/asm-i386/voyager.h
+ 
+ LINUX FOR POWERPC
+ P:	Paul Mackerras
+ M:	paulus@samba.org
+ W:	http://www.penguinppc.org/
+ L:	linuxppc-dev@ozlabs.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/paulus/powerpc.git
+ S:	Supported
++F:	arch/powerpc/
++F:	arch/ppc/
++F:	include/asm-powerpc/
++F:	include/asm-ppc/
+ 
+ LINUX FOR POWER MACINTOSH
+ P:	Benjamin Herrenschmidt
+ M:	benh@kernel.crashing.org
+ W:	http://www.penguinppc.org/
+ L:	linuxppc-dev@ozlabs.org
+ S:	Maintained
++F:	arch/powerpc/platforms/powermac
++F:	include/asm-powerpc/pmac_*
+ 
+ LINUX FOR POWERPC EMBEDDED MPC52XX
+ P:	Sylvain Munaut
+ M:	tnt@246tNt.com
+ W:	http://www.246tNt.com/mpc52xx/
+ W:	http://www.penguinppc.org/
+ L:	linuxppc-dev@ozlabs.org
+ L:	linuxppc-embedded@ozlabs.org
+ S:	Maintained
++F:	arch/powerpc/platforms/52xx/
++F:	include/asm-powerpc/mpc52xx.h
+ 
+ LINUX FOR POWERPC EMBEDDED PPC4XX
+ P:	Matt Porter
+ M:	mporter@kernel.crashing.org
+ W:	http://www.penguinppc.org/
+ L:	linuxppc-embedded@ozlabs.org
+ S:	Maintained
+ 
+ LINUX FOR POWERPC BOOT CODE
+ P:	Tom Rini
+ M:	trini@kernel.crashing.org
+ W:	http://www.penguinppc.org/
+ L:	linuxppc-embedded@ozlabs.org
+ S:	Maintained
++F:	arch/ppc/boot/
+ 
+ LINUX FOR POWERPC EMBEDDED PPC8XX
+ P:	Marcelo Tosatti
+ M:	marcelo@kvack.org
+ W:	http://www.penguinppc.org/
+ L:	linuxppc-embedded@ozlabs.org
+ S:	Maintained
++F:	arch/ppc/syslib/ppc8xx*
+ 
+ LINUX FOR POWERPC EMBEDDED PPC83XX AND PPC85XX
+ P:	Kumar Gala
+ M:	galak@kernel.crashing.org
+ W:	http://www.penguinppc.org/
+ L:	linuxppc-embedded@ozlabs.org
+ S:	Maintained
++F:	arch/ppc/syslib/ppc83xx_*
+ 
+ LINUX FOR POWERPC PA SEMI PWRFICIENT
+ P:	Olof Johansson
+ M:	olof@lixom.net
+ W:	http://www.pasemi.com/
+ L:	linuxppc-dev@ozlabs.org
+ S:	Supported
++F:	arch/powerpc/platforms/pasemi/
+ 
+ LLC (802.2)
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
+ S:	Maintained
++F:	include/linux/llc.h
++F:	include/net/llc*
++F:	net/llc/
+ 
+ LINUX FOR 64BIT POWERPC
+ P:	Paul Mackerras
+ M:	paulus@samba.org
+ M:	paulus@au.ibm.com
+ P:	Anton Blanchard
+ M:	anton@samba.org
+ M:	anton@au.ibm.com
+ W:	http://www.penguinppc.org/ppc64/
+ L:	linuxppc-dev@ozlabs.org
+ S:	Supported
++F:	arch/powerpc/
++F:	include/asm-powerpc/
+ 
+ LINUX SECURITY MODULE (LSM) FRAMEWORK
+ P:	Chris Wright
+ M:	chrisw@sous-sol.org
+ L:	linux-security-module@vger.kernel.org
+ W:	http://lsm.immunix.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/chrisw/lsm-2.6.git
+ S:	Supported
+ 
+ LM83 HARDWARE MONITOR DRIVER
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/lm83
++F:	drivers/hwmon/lm83.c
+ 
+ LM90 HARDWARE MONITOR DRIVER
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/lm90
++F:	drivers/hwmon/lm90.c
+ 
+ LOGICAL DISK MANAGER SUPPORT (LDM, Windows 2000/XP/Vista Dynamic Disks)
+ P:	Richard Russon (FlatCap)
+ M:	ldm@flatcap.org
+ L:	linux-ntfs-dev@lists.sourceforge.net
+ W:	http://www.linux-ntfs.org/content/view/19/37/
+ S:	Maintained
++F:	Documentation/ldm.txt
++F:	fs/partitions/ldm.*
+ 
+ LSILOGIC MPT FUSION DRIVERS (FC/SAS/SPI)
+ P:	Eric Moore
+ M:	Eric.Moore@lsi.com
+ M:	support@lsi.com
+ L:	mpt_linux_developer@lsi.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.lsilogic.com/support
+ S:	Supported
++F:	drivers/message/fusion/
+ 
+ LSILOGIC/SYMBIOS/NCR 53C8XX and 53C1010 PCI-SCSI drivers
+ P:	Matthew Wilcox
+ M:	matthew@wil.cx
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/sym53c8xx_2/
+ 
+ M32R ARCHITECTURE
+ P:	Hirokazu Takata
+ M:	takata@linux-m32r.org
+ L:	linux-m32r@ml.linux-m32r.org
+ L:	linux-m32r-ja@ml.linux-m32r.org (in Japanese)
+ W:	http://www.linux-m32r.org/
+ S:	Maintained
++F:	arch/m32r/
++F:	include/asm-m32r/
+ 
+ M68K ARCHITECTURE
+ P:	Geert Uytterhoeven
+ M:	geert@linux-m68k.org
+ P:	Roman Zippel
+ M:	zippel@linux-m68k.org
+ L:	linux-m68k@lists.linux-m68k.org
+ W:	http://www.linux-m68k.org/
+ W:	http://linux-m68k-cvs.ubb.ca/
+ S:	Maintained
++F:	arch/m68k/
++F:	include/asm-m68k/
+ 
+ M68K ON APPLE MACINTOSH
+ P:	Joshua Thompson
+ M:	funaho@jurai.org
+ W:	http://www.mac.linux-m68k.org/
+ L:	linux-mac68k@mac.linux-m68k.org
+ S:	Maintained
+ 
+ M68K ON HP9000/300
+ P:	Philip Blundell
+ M:	philb@gnu.org
+ W:	http://www.tazenda.demon.co.uk/phil/linux-hp
+ S:	Maintained
++F:	arch/m68k/hp300/
++F:	include/asm-m68k/hp*
+ 
+ MAC80211
+ P:	Jiri Benc
+ M:	jbenc@suse.cz
+ P:	Michael Wu
+ M:	flamingice@sourmilk.net
+ L:	linux-wireless@vger.kernel.org
+ W:	http://linuxwireless.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jbenc/mac80211.git
+ S:	Maintained
++F:	net/mac80211/
++F:	Documentation/networking/mac80211-injection.txt
++F:	include/net/mac80211.h
+ 
+ MACVLAN DRIVER
+ P:	Patrick McHardy
+ M:	kaber@trash.net
+ L:	netdev@vger.kernel.org
+ S:	Maintained
+-
+-MARVELL YUKON / SYSKONNECT DRIVER
+-P:	Mirko Lindner
+-M: 	mlindner@syskonnect.de
+-P:	Ralph Roesler
+-M: 	rroesler@syskonnect.de
+-W: 	http://www.syskonnect.com
+-S: 	Supported
++F:	drivers/net/macvlan.c
++F:	include/linux/if_macvlan.h
+ 
+ MAN-PAGES: MANUAL PAGES FOR LINUX -- Sections 2, 3, 4, 5, and 7
+ P:	Michael Kerrisk
+ M:	mtk-manpages@gmx.net
+ W:	ftp://ftp.kernel.org/pub/linux/docs/manpages
+ S:	Maintained
+ 
+ MARVELL MV643XX ETHERNET DRIVER
+ P:	Dale Farnsworth
+ M:	dale@farnsworth.org
+ P:	Manish Lachwani
+ M:	mlachwani@mvista.com
+ L:	netdev@vger.kernel.org
+ S:	Odd Fixes for 2.4; Maintained for 2.6.
++F:	drivers/net/mv643xx_eth.*
++F:	include/linux/mv643xx.h
+ 
+ MATROX FRAMEBUFFER DRIVER
+ P:	Petr Vandrovec
+ M:	vandrove@vc.cvut.cz
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
++F:	drivers/video/matrox/matroxfb_*
++F:	include/linux/matroxfb.h
+ 
+ MAX6650 HARDWARE MONITOR AND FAN CONTROLLER DRIVER
+ P:	Hans J. Koch
+ M:	hjk@linutronix.de
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/max6650
++F:	drivers/hwmon/max6650.c
+ 
+ MEGARAID SCSI DRIVERS
+ P:	Neela Syam Kolli
+ M:	megaraidlinux@lsi.com
+ S:	linux-scsi@vger.kernel.org
+ W:	http://megaraid.lsilogic.com
+ S:	Maintained
++F:	Documentation/scsi/megaraid.txt
++F:	drivers/scsi/megaraid.*
++F:	drivers/scsi/megaraid/
+ 
+ MEMORY MANAGEMENT
+ L:	linux-mm@kvack.org
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.linux-mm.org
+ S:	Maintained
++F:	include/linux/mm.h
++F:	mm/
+ 
+ MEMORY TECHNOLOGY DEVICES (MTD)
+ P:	David Woodhouse
+ M:	dwmw2@infradead.org
+ W:	http://www.linux-mtd.infradead.org/
+ L:	linux-mtd@lists.infradead.org
+ T:	git git://git.infradead.org/mtd-2.6.git
+ S:	Maintained
++F:	drivers/mtd/
++F:	include/linux/mtd/
++F:	include/mtd/
+ 
+ UNSORTED BLOCK IMAGES (UBI)
+ P:	Artem Bityutskiy
+ M:	dedekind@infradead.org
+ W:	http://www.linux-mtd.infradead.org/
+ L:	linux-mtd@lists.infradead.org
+ T:	git git://git.infradead.org/~dedekind/ubi-2.6.git
+ S:	Maintained
++F:	drivers/mtd/ubi
++F:	include/linux/mtd/ubi.h
++F:	include/mtd/ubi-*
+ 
+ MICROTEK X6 SCANNER
+ P:	Oliver Neukum
+ M:	oliver@neukum.name
+ S:	Maintained
++F:	drivers/usb/image/microtek.*
+ 
+ MIPS
+ P:	Ralf Baechle
+ M:	ralf@linux-mips.org
+ W:	http://www.linux-mips.org/
+ L:	linux-mips@linux-mips.org
+ T:	git www.linux-mips.org:/pub/scm/linux.git
+ S:	Supported
++F:	Documentation/mips/
++F:	arch/mips/
++F:	include/asm-mips/
+ 
+ MISCELLANEOUS MCA-SUPPORT
+ P:	James Bottomley
+ M:	jejb@steeleye.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/ia64/mca.txt
++F:	Documentation/mca.txt
++F:	drivers/mca/
++F:	include/linux/mca*
+ 
+ MODULE SUPPORT
+ P:	Rusty Russell
+ M:	rusty@rustcorp.com.au
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	include/linux/module.h
++F:	kernel/module.c
+ 
+ MOTION EYE VAIO PICTUREBOOK CAMERA DRIVER
+ P:	Stelian Pop
+ M:	stelian@popies.net
+ W:	http://popies.net/meye/
+ S:	Maintained
++F:	Documentation/video4linux/meye.txt
++F:	drivers/media/video/meye.*
++F:	include/linux/meye.h
+ 
+ MOTOROLA IMX MMC/SD HOST CONTROLLER INTERFACE DRIVER
+ P:	Pavel Pisa
+ M:	ppisa@pikron.com
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ W:	http://mmc.drzeus.cx/wiki/Controllers/Freescale/SDHC
+ S:	Maintained
++F:	drivers/mmc/host/imxmmc.*
+ 
+ MOUSE AND MISC DEVICES [GENERAL]
+ P:	Alessandro Rubini
+ M:	rubini@ipvvis.unipv.it
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/input/mouse/
++F:	include/linux/gpio_mouse.h
+ 
+ MOXA SMARTIO/INDUSTIO SERIAL CARD (MXSER 2.0)
+ P:	Jiri Slaby
+ M:	jirislaby@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/moxa-smartio
++F:	drivers/char/mxser_new.*
+ 
+ MSI LAPTOP SUPPORT
+ P:	Lennart Poettering
+ M:	mzxreary@0pointer.de
+ L:	https://tango.0pointer.de/mailman/listinfo/s270-linux
+ W:	http://0pointer.de/lennart/tchibo.html
+ S:	Maintained
++F:	drivers/misc/msi-laptop.c
+ 
+ MTRR AND SIMILAR SUPPORT [i386]
+ P:	Richard Gooch
+ M:	rgooch@atnf.csiro.au
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.atnf.csiro.au/~rgooch/linux/kernel-patches.html
+ S:	Maintained
++F:	Documentation/mtrr.txt
++F:	arch/i386/kernel/cpu/mtrr/
++F:	include/asm-i386/mtrr.h
+ 
+ MULTIMEDIA CARD (MMC) AND SECURE DIGITAL (SD) SUBSYSTEM
+ P:	Pierre Ossman
+ M:	drzeus-mmc@drzeus.cx
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/mmc/
++F:	include/linux/mmc/
+ 
+ MULTISOUND SOUND DRIVER
+ P:	Andrew Veliath
+ M:	andrewtv@usa.net
+ S:	Maintained
++F:	Documentation/sound/oss/MultiSound
++F:	sound/oss/msnd*
+ 
+ MULTITECH MULTIPORT CARD (ISICOM)
+ P:	Jiri Slaby
+ M:	jirislaby@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/char/isicom.c
++F:	include/linux/isicom.h
+ 
+ NATSEMI ETHERNET DRIVER (DP8381x)
+-P: 	Tim Hockin
++P:	Tim Hockin
+ M:	thockin@hockin.org
+ S:	Maintained
++F:	drivers/net/natsemi.c
+ 
+ NCP FILESYSTEM
+ P:	Petr Vandrovec
+ M:	vandrove@vc.cvut.cz
+ L:	linware@sh.cvut.cz
+ S:	Maintained
++F:	fs/ncpfs/
+ 
+ NCR DUAL 700 SCSI DRIVER (MICROCHANNEL)
+ P:	James E.J. Bottomley
+ M:	James.Bottomley@HansenPartnership.com
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/NCR_D700.*
+ 
+ NETEM NETWORK EMULATOR
+ P:	Stephen Hemminger
+ M:	shemminger@linux-foundation.org
+ L:	netem@lists.linux-foundation.org
+ S:	Maintained
++F:	net/sched/sch_netem.c
+ 
+ NETFILTER/IPTABLES/IPCHAINS
+ P:	Rusty Russell
+ P:	Marc Boucher
+ P:	James Morris
+ P:	Harald Welte
+ P:	Jozsef Kadlecsik
+ P:	Patrick McHardy
+ M:	kaber@trash.net
+ L:	netfilter-devel@lists.netfilter.org
+ L:	netfilter@lists.netfilter.org (subscribers-only)
+ L:	coreteam@netfilter.org
+ W:	http://www.netfilter.org/
+ W:	http://www.iptables.org/
+ S:	Supported
++F:	include/linux/netfilter*
++F:	include/linux/netfilter/
++F:	include/net/netfilter/
++F:	net/*/netfilter.c
++F:	net/*/netfilter/
++F:	net/netfilter/
+ 
+ NETLABEL
+ P:	Paul Moore
+ M:	paul.moore@hp.com
+ W:	http://netlabel.sf.net
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	Documentation/netlabel
++F:	include/net/netlabel.h
++F:	net/netlabel/
+ 
+ NETROM NETWORK LAYER
+ P:	Ralf Baechle
+ M:	ralf@linux-mips.org
+ L:	linux-hams@vger.kernel.org
+ W:	http://www.linux-ax25.org/
+ S:	Maintained
++F:	include/linux/netrom.h
++F:	include/net/netrom.h
++F:	net/netrom/
+ 
+ NETWORK BLOCK DEVICE (NBD)
+ P:	Paul Clements
+ M:	Paul.Clements@steeleye.com
+ S:	Maintained
++F:	Documentation/nbd.txt
++F:	drivers/block/nbd.c
++F:	include/linux/nbd.h
+ 
+ NETWORK DEVICE DRIVERS
+ P:	Andrew Morton
+ M:	akpm@linux-foundation.org
+ P:	Jeff Garzik
+ M:	jgarzik@pobox.com
+ L:	netdev@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
+ S:	Maintained
++F:	drivers/net/
+ 
+ NETWORKING [GENERAL]
+ P:	Networking Team
+ M:	netdev@vger.kernel.org
+ L:	netdev@vger.kernel.org
+ W:	http://linux-net.osdl.org/
+ S:	Maintained
++F:	net/
++F:	include/net/
+ 
+ NETWORKING [IPv4/IPv6]
+ P:	David S. Miller
+ M:	davem@davemloft.net
+ P:	Alexey Kuznetsov
+ M:	kuznet@ms2.inr.ac.ru
+ P:	Pekka Savola (ipv6)
+ M:	pekkas@netcore.fi
+ P:	James Morris
+ M:	jmorris@namei.org
+ P:	Hideaki YOSHIFUJI
+ M:	yoshfuji@linux-ipv6.org
+ P:	Patrick McHardy
+ M:	kaber@coreworks.de
+ L:	netdev@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git
+ S:	Maintained
++F:	net/ipv4/
++F:	net/ipv6/
++F:	include/net/ip*
+ 
+ NETWORKING [WIRELESS]
+ P:	John W. Linville
+ M:	linville@tuxdriver.com
+ L:	linux-wireless@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/linville/wireless-2.6.git
+ S:	Maintained
++F:	net/ieee80211/
++F:	include/net/ieee80211*
+ 
+ NETXEN (1/10) GbE SUPPORT
+ P:	Amit S. Kale
+ M:	amitkale@netxen.com
+ L:	netdev@vger.kernel.org
+ W:	http://www.netxen.com
+ S:	Supported
++F:	drivers/net/netxen/
+ 
+ IPVS
+ P:	Wensong Zhang
+ M:	wensong@linux-vs.org
+ P:	Simon Horman
+ M:	horms@verge.net.au
+ P:	Julian Anastasov
+ M:	ja@ssi.bg
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	Documentation/networking/ipvs-sysctl.txt
++F:	net/ipv4/ipvs
+ 
+ NFS CLIENT
+ P:	Trond Myklebust
+ M:	trond.myklebust@fys.uio.no
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	fs/lockd/
++F:	fs/nfs/
++F:	fs/nfs_common/
++F:	net/sunrpc/
++F:	include/linux/lockd/
++F:	include/linux/nfs*
++F:	include/linux/sunrpc/
+ 
+ NI5010 NETWORK DRIVER
+ P:	Jan-Pascal van Best
+ M:	janpascal@vanbest.org
+ P:	Andreas Mohr
+ M:	andi@lisas.de
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/ni5010.*
+ 
+ NINJA SCSI-3 / NINJA SCSI-32Bi (16bit/CardBus) PCMCIA SCSI HOST ADAPTER DRIVER
+ P:	YOKOTA Hiroshi
+ M:	yokota@netlab.is.tsukuba.ac.jp
+ W:	http://www.netlab.is.tsukuba.ac.jp/~yokota/izumi/ninja/
+ S:	Maintained
++F:	Documentation/scsi/NinjaSCSI.txt
++F:	drivers/scsi/pcmcia/nsp_*
+ 
+ NINJA SCSI-32Bi/UDE PCI/CARDBUS SCSI HOST ADAPTER DRIVER
+ P:	GOTO Masanori
+ M:	gotom@debian.or.jp
+ P:	YOKOTA Hiroshi
+ M:	yokota@netlab.is.tsukuba.ac.jp
+ W:	http://www.netlab.is.tsukuba.ac.jp/~yokota/izumi/ninja/
+ S:	Maintained
++F:	Documentation/scsi/NinjaSCSI.txt
++F:	drivers/scsi/nsp32*
+ 
+ NTFS FILESYSTEM
+ P:	Anton Altaparmakov
+ M:	aia21@cantab.net
+ L:	linux-ntfs-dev@lists.sourceforge.net
+ L:	linux-kernel@vger.kernel.org
+ W:	http://linux-ntfs.sf.net/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/aia21/ntfs-2.6.git
+ S:	Maintained
++F:	Documentation/filesystems/ntfs.txt
++F:	fs/ntfs/
+ 
+ NVIDIA (rivafb and nvidiafb) FRAMEBUFFER DRIVER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
++F:	drivers/video/riva/
++F:	drivers/video/nvidia/
+ 
+ NETERION (S2IO) Xframe 10GbE DRIVER
+ P:	Ramkrishna Vepa
+ M:	ram.vepa@neterion.com
+ P:	Rastapur Santosh
+ M:	santosh.rastapur@neterion.com
+ P:	Sivakumar Subramani
+ M:	sivakumar.subramani@neterion.com
+ P:	Sreenivasa Honnur
+ M:	sreenivasa.honnur@neterion.com
+ L:	netdev@vger.kernel.org
+ W:	http://trac.neterion.com/cgi-bin/trac.cgi/wiki/TitleIndex?anonymous
+ S:	Supported
++F:	Documentation/networking/s2io.txt
++F:	drivers/net/s2io*
+ 
+ OPENCORES I2C BUS DRIVER
+ P:	Peter Korsgaard
+ M:	jacmet@sunsite.dk
+ L:	i2c@lm-sensors.org
+ S:	Maintained
++F:	Documentation/i2c/busses/i2c-ocores
++F:	drivers/i2c/busses/i2c-ocores.c
+ 
+ ORACLE CLUSTER FILESYSTEM 2 (OCFS2)
+ P:	Mark Fasheh
+ M:	mark.fasheh@oracle.com
+ P:	Kurt Hackel
+ M:	kurt.hackel@oracle.com
+ L:	ocfs2-devel@oss.oracle.com
+ W:	http://oss.oracle.com/projects/ocfs2/
+ S:	Supported
++F:	Documentation/filesystems/ocfs2.txt
++F:	Documentation/filesystems/dlmfs.txt
++F:	fs/ocfs2/
+ 
+ OLYMPIC NETWORK DRIVER
+ P:	Peter De Shrijver
+ M:	p2@ace.ulyssis.student.kuleuven.ac.be
+ P:	Mike Phillips
+ M:	mikep@linuxtr.net
+ L:	netdev@vger.kernel.org
+-L:	linux-tr@linuxtr.net
+ W:	http://www.linuxtr.net
+ S:	Maintained
++F:	Documentation/networking/olympic.txt
++F:	drivers/net/tokenring/olympic.*
+ 
+ OMNIKEY CARDMAN 4000 DRIVER
+ P:	Harald Welte
+ M:	laforge@gnumonks.org
+ S:	Maintained
++F:	drivers/char/pcmcia/cm4000_cs.c
++F:	include/linux/cm4000_cs.h
+ 
+ OMNIKEY CARDMAN 4040 DRIVER
+ P:	Harald Welte
+ M:	laforge@gnumonks.org
+ S:	Maintained
++F:	drivers/char/pcmcia/cm4040_cs.*
+ 
+ OMNIVISION OV7670 SENSOR DRIVER
+-P:   	Jonathan Corbet
++P:	Jonathan Corbet
+ M:	corbet@lwn.net
+ L:	video4linux-list@redhat.com
+ S:	Maintained
++F:	drivers/media/video/ov7670.c
+ 
+ ONENAND FLASH DRIVER
+ P:	Kyungmin Park
+ M:	kyungmin.park@samsung.com
+ L:	linux-mtd@lists.infradead.org
+ S:	Maintained
++F:	drivers/mtd/onenand/
++F:	include/linux/mtd/onenand*.h
+ 
+ ONSTREAM SCSI TAPE DRIVER
+ P:	Willem Riede
+ M:	osst@riede.org
+ L:	osst-users@lists.sourceforge.net
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/osst*
++F:	drivers/scsi/st.c
+ 
+ OPROFILE
+ P:	Philippe Elie
+ M:	phil.el@wanadoo.fr
+ L:	oprofile-list@lists.sf.net
+ S:	Maintained
++F:	arch/*/oprofile/
++F:	drivers/oprofile/
++F:	include/linux/oprofile.h
+ 
+ ORINOCO DRIVER
+ P:	Pavel Roskin
+ M:	proski@gnu.org
+ P:	David Gibson
+ M:	hermes@gibson.dropbear.id.au
+ L:	linux-wireless@vger.kernel.org
+ L:	orinoco-users@lists.sourceforge.net
+ L:	orinoco-devel@lists.sourceforge.net
+ W:	http://www.nongnu.org/orinoco/
+ S:	Maintained
++F:	drivers/net/wireless/orinoco*
+ 
+ PA SEMI ETHERNET DRIVER
+ P:	Olof Johansson
+ M:	olof@lixom.net
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/pasemi_mac.*
+ 
+ PA SEMI SMBUS DRIVER
+ P:	Olof Johansson
+ M:	olof@lixom.net
+ L:	i2c@lm-sensors.org
+ S:	Maintained
++F:	drivers/i2c/busses/i2c-pasemi.c
+ 
+ PARALLEL PORT SUPPORT
+ L:	linux-parport@lists.infradead.org (subscribers-only)
+ S:	Orphan
+ 
+ PARIDE DRIVERS FOR PARALLEL PORT IDE DEVICES
+ P:	Tim Waugh
+ M:	tim@cyberelk.net
+ L:	linux-parport@lists.infradead.org (subscribers-only)
+ W:	http://www.torque.net/linux-pp.html
+ S:	Maintained
++F:	Documentation/paride.txt
++F:	drivers/block/paride/
+ 
+ PARISC ARCHITECTURE
+ P:	Matthew Wilcox
+ M:	matthew@wil.cx
+ P:	Grant Grundler
+ M:	grundler@parisc-linux.org
+ P:	Kyle McMartin
+ M:	kyle@parisc-linux.org
+ L:	parisc-linux@parisc-linux.org
+ W:	http://www.parisc-linux.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/kyle/parisc-2.6.git
+ T:	cvs cvs.parisc-linux.org:/var/cvs/linux-2.6
+ S:	Maintained
++F:	arch/parisc/
++F:	include/asm-parisc/
+ 
+ PARAVIRT_OPS INTERFACE
+ P:	Jeremy Fitzhardinge
+ M:	jeremy@xensource.com
+ P:	Chris Wright
+ M:	chrisw@sous-sol.org
+ P:	Zachary Amsden
+ M:	zach@vmware.com
+ P:	Rusty Russell
+ M:	rusty@rustcorp.com.au
+ L:	virtualization@lists.osdl.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	arch/i386/kernel/paravirt.c
++F:	include/asm-i386/paravirt.h
++F:	include/asm-um/paravirt.h
+ 
+ PC87360 HARDWARE MONITORING DRIVER
+ P:	Jim Cromie
+ M:	jim.cromie@gmail.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/pc87360
++F:	drivers/hwmon/pc87360.c
+ 
+ PC8736x GPIO DRIVER
+ P:	Jim Cromie
+ M:	jim.cromie@gmail.com
+ S:	Maintained
++F:	drivers/char/pc8736x_gpio.c
+ 
+ PCI ERROR RECOVERY
+ P:	Linas Vepstas
+ M:	linas@austin.ibm.com
+ L:	linux-kernel@vger.kernel.org
+ L:	linux-pci@atrey.karlin.mff.cuni.cz
+ S:	Supported
++F:	Documentation/pci-error-recovery.txt
++F:	Documentation/powerpc/eeh-pci-error-recovery.txt
+ 
+ PCI SOUND DRIVERS (ES1370, ES1371 and SONICVIBES)
+ P:	Thomas Sailer
+ M:	sailer@ife.ee.ethz.ch
+ L:	linux-sound@vger.kernel.org
+ W:	http://www.ife.ee.ethz.ch/~sailer/linux/pciaudio.html
+ S:	Maintained
++F:	sound/pci/ens1370.c
++F:	sound/pci/ens1371.c
++F:	sound/pci/sonicvibes.c
+ 
+ PCI SUBSYSTEM
+ P:	Greg Kroah-Hartman
+ M:	gregkh@suse.de
+ L:	linux-kernel@vger.kernel.org
+ L:	linux-pci@atrey.karlin.mff.cuni.cz
+ T:	quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+ S:	Supported
++F:	Documentation/pci.txt
++F:	drivers/pci/
++F:	include/linux/pci*
+ 
+ PCI HOTPLUG CORE
+-P: 	Kristen Carlson Accardi
++P:	Kristen Carlson Accardi
+ M:	kristen.c.accardi@intel.com
+ S:	Supported
++F:	drivers/pci/hotplug/
++F:	drivers/pci/hotplug.c
++F:	include/linux/pci_hotplug.h
+ 
+ PCIE HOTPLUG DRIVER
+ P:	Kristen Carlson Accardi
+ M:	kristen.c.accardi@intel.com
+ L:	pcihpd-discuss@lists.sourceforge.net
+ S:	Supported
++F:	drivers/pci/pcie/
+ 
+ PCMCIA SUBSYSTEM
+ P:	Linux PCMCIA Team
+ L:	linux-pcmcia@lists.infradead.org
+-L:	http://lists.infradead.org/mailman/listinfo/linux-pcmcia
++W:	http://lists.infradead.org/mailman/listinfo/linux-pcmcia
+ T:	git kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
+ S:	Maintained
++F:	Documentation/pcmcia/
++F:	drivers/*/pcmcia/
++F:	drivers/pcmcia/
++F:	include/pcmcia/
++F:	sound/pcmcia/
+ 
+ PCNET32 NETWORK DRIVER
+ P:	Don Fry
+ M:	pcnet32@verizon.net
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/pcnet32.c
+ 
+ PER-TASK DELAY ACCOUNTING
+ P:	Shailabh Nagar
+ M:	nagar@watson.ibm.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	include/linux/delayacct.h
++F:	kernel/delayacct.c
+ 
+ PERSONALITY HANDLING
+ P:	Christoph Hellwig
+ M:	hch@infradead.org
+ L:	linux-abi-devel@lists.sourceforge.net
+ S:	Maintained
++F:	include/linux/personality.h
+ 
+ PHRAM MTD DRIVER
+ P:	Jörn Engel
+ M:	joern@wh.fh-wedel.de
+ L:	linux-mtd@lists.infradead.org
+ S:	Maintained
++F:	drivers/mtd/devices/phram.c
+ 
+ PKTCDVD DRIVER
+ P:	Peter Osterlund
+ M:	petero2@telia.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/block/pktcdvd.c
++F:	include/linux/pktcdvd.h
+ 
+ POSIX CLOCKS and TIMERS
+ P:	Thomas Gleixner
+ M:	tglx@linutronix.de
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	fs/timerfd.c
++F:	include/linux/timer*
++F:	kernel/*timer*
+ 
+ POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS
+ P:	Anton Vorontsov
+ M:	cbou@mail.ru
+ P:	David Woodhouse
+ M:	dwmw2@infradead.org
+ L:	linux-kernel@vger.kernel.org
+ L:	kernel-discuss@handhelds.org
+ T:	git git.infradead.org/battery-2.6.git
+ S:	Maintained
++F:	include/linux/power_supply.h
++F:	drivers/power/power_supply*
+ 
+ POWERPC 4xx EMAC DRIVER
+ P:	Eugene Surovegin
+ M:	ebs@ebshome.net
+ W:	http://kernel.ebshome.net/emac/
+ L:	linuxppc-embedded@ozlabs.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/ibm_emac/
+ 
+ PNP SUPPORT
+ P:	Adam Belay
+ M:	ambx1@neo.rr.com
+ S:	Maintained
++F:	drivers/pnp/
+ 
+ PNXxxxx I2C DRIVER
+ P:	Vitaly Wool
+ M:	vitalywool@gmail.com
+ L:	i2c@lm-sensors.org
+ S:	Maintained
++F:	drivers/i2c/busses/i2c-pnx.c
+ 
+ PPP PROTOCOL DRIVERS AND COMPRESSORS
+ P:	Paul Mackerras
+ M:	paulus@samba.org
+ L:	linux-ppp@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/ppp_*
+ 
+ PPP OVER ATM (RFC 2364)
+ P:	Mitchell Blank Jr
+ M:	mitch@sfgoth.com
+ S:	Maintained
++F:	net/atm/pppoatm.c
++F:	include/linux/atmppp.h
+ 
+ PPP OVER ETHERNET
+ P:	Michal Ostrowski
+ M:	mostrows@speakeasy.net
+ S:	Maintained
++F:	drivers/net/pppoe.c
++F:	drivers/net/pppox.c
+ 
+ PPP OVER L2TP
+ P:	James Chapman
+ M:	jchapman@katalix.com
+ S:	Maintained
++F:	drivers/net/pppol2tp.c
++F:	include/linux/if_pppol2tp.h
+ 
+ PREEMPTIBLE KERNEL
+ P:	Robert Love
+ M:	rml@tech9.net
+ L:	linux-kernel@vger.kernel.org
+ L:	kpreempt-tech@lists.sourceforge.net
+ W:	ftp://ftp.kernel.org/pub/linux/kernel/people/rml/preempt-kernel
+ S:	Supported
++F:	Documentation/preempt-locking.txt
++F:	include/linux/preempt.h
+ 
+ PRISM54 WIRELESS DRIVER
+ P:	Luis R. Rodriguez
+ M:	mcgrof@gmail.com
+ L:	linux-wireless@vger.kernel.org
+ W:	http://prism54.org
+ S:	Maintained
++F:	drivers/net/wireless/prism54/
+ 
+ PROMISE DC4030 CACHING DISK CONTROLLER DRIVER
+ P:	Peter Denison
+ M:	promise@pnd-pc.demon.co.uk
+ W:	http://www.pnd-pc.demon.co.uk/promise/
+ S:	Maintained
+ 
+ PROMISE SATA TX2/TX4 CONTROLLER LIBATA DRIVER
+ P:	Mikael Pettersson
+ M:	mikpe@it.uu.se
+ L:	linux-ide@vger.kernel.org
+ S:	Maintained
++F:	drivers/ata/sata_promise.*
+ 
+ PS3 NETWORK SUPPORT
+ P:	Masakazu Mokuno
+ M:	mokuno@sm.sony.co.jp
+ L:	netdev@vger.kernel.org
+ L:	cbe-oss-dev@ozlabs.org
+ S:	Supported
++F:	drivers/net/ps3_gelic_net.*
+ 
+ PS3 PLATFORM SUPPORT
+ P:	Geoff Levand
+ M:	geoffrey.levand@am.sony.com
+ L:	linuxppc-dev@ozlabs.org
+ L:	cbe-oss-dev@ozlabs.org
+ S:	Supported
++F:	arch/powerpc/boot/ps3*
++F:	arch/powerpc/platforms/ps3/
++F:	drivers/*/ps3*
++F:	drivers/ps3/
++F:	drivers/usb/host/*ps3.c
++F:	include/asm-powerpc/ps3*
++F:	include/asm-powerpc/lv1call.h
+ 
+ PVRUSB2 VIDEO4LINUX DRIVER
+ P:	Mike Isely
+ M:	isely@pobox.com
+ L:	pvrusb2@isely.net	(subscribers-only)
+ L:	video4linux-list@redhat.com
+ W:	http://www.isely.net/pvrusb2/
+ S:	Maintained
++F:	Documentation/video4linux/README.pvrusb2
++F:	drivers/media/video/pvrusb2/
+ 
+ PXA2xx SUPPORT
+ P:	Nicolas Pitre
+ M:	nico@cam.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+ S:	Maintained
++F:	drivers/pcmcia/pxa2xx*
++F:	drivers/spi/pxa2xx*
++F:	drivers/usb/gadget/pxa2xx*
++F:	sound/soc/pxa/pxa2xx*
+ 
+ PXA MMCI DRIVER
+ S:	Orphan
+ 
+ QLOGIC QLA2XXX FC-SCSI DRIVER
+ P:	Andrew Vasquez
+ M:	linux-driver@qlogic.com
+ L:	linux-scsi@vger.kernel.org
+ S:	Supported
++F:	Documentation/scsi/LICENSE.qla2xxx
++F:	drivers/scsi/qla2xxx/
+ 
+ QLOGIC QLA3XXX NETWORK DRIVER
+ P:	Ron Mercer
+ M:	linux-driver@qlogic.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	Documentation/networking/LICENSE.qla3xxx
++F:	drivers/net/qla3xxx.*
+ 
+ QNX4 FILESYSTEM
+ P:	Anders Larsen
+ M:	al@alarsen.net
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.alarsen.net/linux/qnx4fs/
+ S:	Maintained
++F:	fs/qnx4
++F:	include/linux/qnx4_fs.h
++F:	include/linux/qnxtypes.h
+ 
+ RADEON FRAMEBUFFER DISPLAY DRIVER
+ P:	Benjamin Herrenschmidt
+ M:	benh@kernel.crashing.org
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
++F:	drivers/video/aty/radeon*
++F:	include/linux/radeonfb.h
+ 
+ RAGE128 FRAMEBUFFER DISPLAY DRIVER
+ P:	Paul Mackerras
+ M:	paulus@samba.org
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
++F:	drivers/video/aty/aty128fb.c
+ 
+ RAYLINK/WEBGEAR 802.11 WIRELESS LAN DRIVER
+ P:	Corey Thomas
+ M:	corey@world.std.com
+ L:	linux-wireless@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/wireless/ray*
+ 
+ RANDOM NUMBER DRIVER
+ P:	Matt Mackall
+ M:	mpm@selenic.com
+ S:	Maintained
++F:	drivers/char/random.c
+ 
+ RAPIDIO SUBSYSTEM
+ P:	Matt Porter
+ M:	mporter@kernel.crashing.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/rapidio/
+ 
+ READ-COPY UPDATE (RCU)
+ P:	Dipankar Sarma
+ M:	dipankar@in.ibm.com
+ W:	http://www.rdrop.com/users/paulmck/rclock/
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	Documentation/RCU/rcu.txt
++F:	Documentation/RCU/rcuref.txt
++F:	include/linux/rcupdate.h
++F:	include/linux/srcu.h
++F:	kernel/rcupdate.c
+ 
+ RCUTORTURE MODULE
+ P:	Josh Triplett
+ M:	josh@freedesktop.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/RCU/torture.txt
++F:	kernel/rcutorture.c
+ 
+ REAL TIME CLOCK DRIVER
+ P:	Paul Gortmaker
+ M:	p_gortmaker@yahoo.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/rtc.txt
++F:	drivers/rtc/
++F:	include/linux/rtc.h
+ 
+ REAL TIME CLOCK (RTC) SUBSYSTEM
+ P:	Alessandro Zummo
+ M:	a.zummo@towertech.it
+ L:	rtc-linux@googlegroups.com
+ S:	Maintained
++F:	Documentation/rtc.txt
++F:	drivers/rtc/
++F:	include/linux/rtc.h
+ 
+ REISERFS FILE SYSTEM
+ P:	Hans Reiser
+ M:	reiserfs-dev@namesys.com
+ L:	reiserfs-devel@vger.kernel.org
+ W:	http://www.namesys.com
+ S:	Supported
++F:	fs/reiserfs/
+ 
+ ROCKETPORT DRIVER
+ P:	Comtrol Corp.
+ W:	http://www.comtrol.com
+ S:	Maintained
++F:	Documentation/rocket.txt
++F:	drivers/char/rocket*
+ 
+ ROSE NETWORK LAYER
+ P:	Ralf Baechle
+ M:	ralf@linux-mips.org
+ L:	linux-hams@vger.kernel.org
+ W:	http://www.linux-ax25.org/
+ S:	Maintained
++F:	include/linux/rose.h
++F:	include/net/rose.h
++F:	net/rose/
+ 
+ RISCOM8 DRIVER
+ S:	Orphan
+ 
+ RTL818X WIRELESS DRIVER
+ P:	Michael Wu
+ M:	flamingice@sourmilk.net
+ P:	Andrea Merello
+ M:	andreamrl@tiscali.it
+ L:	linux-wireless@vger.kernel.org
+ W:	http://linuxwireless.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mwu/mac80211-drivers.git
+ S:	Maintained
++F:	drivers/net/wireless/rtl818*
+ 
+ S3 SAVAGE FRAMEBUFFER DRIVER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+ L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
++F:	drivers/video/savage/
+ 
+ S390
+ P:	Martin Schwidefsky
+ M:	schwidefsky@de.ibm.com
+ P:	Heiko Carstens
+ M:	heiko.carstens@de.ibm.com
+ M:	linux390@de.ibm.com
+ L:	linux-s390@vger.kernel.org
+ W:	http://www.ibm.com/developerworks/linux/linux390/
+ S:	Supported
++F:	arch/s390/
++F:	include/asm-s390/
+ 
+ S390 NETWORK DRIVERS
+ P:	Frank Pavlic
+ M:	fpavlic@de.ibm.com
+ M:	linux390@de.ibm.com
+ L:	linux-s390@vger.kernel.org
+ W:	http://www.ibm.com/developerworks/linux/linux390/
+ S:	Supported
++F:	drivers/s390/net/
+ 
+ S390 ZFCP DRIVER
+ P:	Swen Schillig
+ M:	swen@vnet.ibm.com
+ M:	linux390@de.ibm.com
+ L:	linux-s390@vger.kernel.org
+ W:	http://www.ibm.com/developerworks/linux/linux390/
+ S:	Supported
++F:	Documentation/s390/zfcpdump.txt
++F:	drivers/s390/scsi/zfcp_*
+ 
+ SAA7146 VIDEO4LINUX-2 DRIVER
+ P:	Michael Hunold
+ M:	michael@mihu.de
+ W:	http://www.mihu.de/linux/saa7146
+ S:	Maintained
++F:	drivers/media/common/saa7146*
++F:	drivers/media/video/*7146*
++F:	include/media/*7146*
+ 
+ SC1200 WDT DRIVER
+ P:	Zwane Mwaikambo
+ M:	zwane@arm.linux.org.uk
+ S:	Maintained
++F:	drivers/char/watchdog/sc1200wdt.c
+ 
+ SCHEDULER
+ P:	Ingo Molnar
+ M:	mingo@elte.hu
+ P:	Robert Love    [the preemptible kernel bits]
+ M:	rml@tech9.net
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	kernel/sched*
+ 
+ SCSI CDROM DRIVER
+ P:	Jens Axboe
+ M:	axboe@kernel.dk
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.kernel.dk
+ S:	Maintained
++F:	drivers/scsi/sr*
+ 
+ SCSI SG DRIVER
+ P:	Doug Gilbert
+ M:	dgilbert@interlog.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.torque.net/sg
+ S:	Maintained
++F:	drivers/scsi/sg.c
++F:	include/scsi/sg.h
+ 
+ SCSI SUBSYSTEM
+ P:	James E.J. Bottomley
+ M:	James.Bottomley@SteelEye.com
+ L:	linux-scsi@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+ S:	Maintained
++F:	drivers/scsi/
++F:	include/scsi/
+ 
+ SCSI TAPE DRIVER
+ P:	Kai Mäkisara
+ M:	Kai.Makisara@kolumbus.fi
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	Documentation/scsi/st.txt
++F:	drivers/scsi/st*
+ 
+ SCTP PROTOCOL
+ P:	Vlad Yasevich
+ M:	vladislav.yasevich@hp.com
+ P:	Sridhar Samudrala
+ M:	sri@us.ibm.com
+ L:	lksctp-developers@lists.sourceforge.net
+ W:	http://lksctp.sourceforge.net
+ S:	Supported
++F:	Documentation/networking/sctp.txt
++F:	include/linux/sctp.h
++F:	include/net/sctp/
++F:	net/sctp/
+ 
+ SCx200 CPU SUPPORT
+ P:	Jim Cromie
+ M:	jim.cromie@gmail.com
+ S:	Odd Fixes
++F:	Documentation/i2c/busses/scx200_acb
++F:	arch/i386/kernel/scx200.c
++F:	drivers/char/watchdog/scx200_wdt.c
++F:	drivers/i2c/busses/scx200*
++F:	drivers/mtd/maps/scx200_docflash.c
++F:	include/linux/scx200.h
+ 
+ SCx200 GPIO DRIVER
+ P:	Jim Cromie
+ M:	jim.cromie@gmail.com
+ S:	Maintained
++F:	drivers/char/scx200_gpio.c
++F:	include/linux/scx200_gpio.h
+ 
+ SCx200 HRT CLOCKSOURCE DRIVER
+ P:	Jim Cromie
+ M:	jim.cromie@gmail.com
+ S:	Maintained
++F:	drivers/clocksource/scx200_hrt.c
+ 
+ SECURITY CONTACT
+ P:	Security Officers
+ M:	security@kernel.org
+ S:	Supported
+ 
+ SELINUX SECURITY MODULE
+ P:	Stephen Smalley
+ M:	sds@tycho.nsa.gov
+ P:	James Morris
+ M:	jmorris@namei.org
+ P:	Eric Paris
+ M:	eparis@parisplace.org
+-L:	linux-kernel@vger.kernel.org (kernel issues)
+-L: 	selinux@tycho.nsa.gov (subscribers-only, general discussion)
++L:	linux-kernel@vger.kernel.org
++L:	selinux@tycho.nsa.gov (subscribers-only)
+ W:	http://www.nsa.gov/selinux
+ S:	Supported
++F:	include/linux/selinux*
++F:	security/selinux/
+ 
+ SENSABLE PHANTOM
+ P:	Jiri Slaby
+ M:	jirislaby@gmail.com
+ S:	Maintained
++F:	drivers/misc/phantom.c
++F:	include/linux/phantom.h
+ 
+ SERIAL ATA (SATA) SUBSYSTEM:
+ P:	Jeff Garzik
+ M:	jgarzik@pobox.com
+ L:	linux-ide@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+ S:	Supported
++F:	drivers/ata/
++X:	drivers/ata/sata_promise.*
+ 
+ SGI SN-IA64 (Altix) SERIAL CONSOLE DRIVER
+ P:	Pat Gefre
+ M:	pfg@sgi.com
+ L:	linux-ia64@vger.kernel.org
+ S:	Supported
++F:	Documentation/ia64/serial.txt
+ 
+ SGI VISUAL WORKSTATION 320 AND 540
+ P:	Andrey Panin
+ M:	pazke@donpac.ru
+ L:	linux-visws-devel@lists.sf.net
+ W:	http://linux-visws.sf.net
+ S:	Maintained for 2.6.
+ 
+ SIMTEC EB110ATX (Chalice CATS)
+ P:	Ben Dooks
+ P:	Vincent Sanders
+ M:	support@simtec.co.uk
+ W:	http://www.simtec.co.uk/products/EB110ATX/
+ S:	Supported
++F:	arch/arm/mach-ebsa110/
++F:	include/asm-arm/arch-ebsa110/
+ 
+ SIMTEC EB2410ITX (BAST)
+ P:	Ben Dooks
+ P:	Vincent Sanders
+ M:	support@simtec.co.uk
+ W:	http://www.simtec.co.uk/products/EB2410ITX/
+ S:	Supported
++F:	Documentation/arm/Samsung-S3C24XX/EB2410ITX.txt
++F:	arch/arm/mach-s3c2410/
++F:	drivers/*/*s3c2410*
++F:	drivers/*/*/*s3c2410*
++F:	include/asm-arm/arch-s3c2410/
+ 
+ SIS 190 ETHERNET DRIVER
+ P:	Francois Romieu
+ M:	romieu@fr.zoreil.com
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/sis190.c
+ 
+ SIS 5513 IDE CONTROLLER DRIVER
+ P:	Lionel Bouton
+ M:	Lionel.Bouton@inet6.fr
+ W:	http://inet6.dyn.dhs.org/sponsoring/sis5513/index.html
+ W:	http://gyver.homeip.net/sis5513/index.html
+ S:	Maintained
++F:	drivers/ide/pci/sis5513.c
+ 
+ SIS 900/7016 FAST ETHERNET DRIVER
+ P:	Daniele Venzano
+ M:	venza@brownhat.org
+ W:	http://www.brownhat.org/sis900.html
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/sis900.*
+ 
+ SIS 96X I2C/SMBUS DRIVER
+ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/i2c/busses/i2c-sis96x
++F:	drivers/i2c/busses/i2c-sis96x.c
+ 
+ SIS FRAMEBUFFER DRIVER
+ P:	Thomas Winischhofer
+ M:	thomas@winischhofer.net
+ W:	http://www.winischhofer.net/linuxsisvga.shtml
+ S:	Maintained
++F:	Documentation/fb/sisfb.txt
++F:	drivers/video/sis/
++F:	include/video/sisfb.h
+ 
+ SIS USB2VGA DRIVER
+ P:	Thomas Winischhofer
+ M:	thomas@winischhofer.net
+ W:	http://www.winischhofer.at/linuxsisusbvga.shtml
+ S:	Maintained
++F:	drivers/usb/misc/sisusbvga/
+ 
+-SLAB ALLOCATOR
++SLAB/SLOB/SLUB ALLOCATORS
+ P:	Christoph Lameter
+ M:	clameter@sgi.com
+ P:	Pekka Enberg
+ M:	penberg@cs.helsinki.fi
+ L:	linux-mm@kvack.org
+ S:	Maintained
++F:	include/linux/sl?b*.h
++F:	mm/sl?b.c
+ 
+ SMC91x ETHERNET DRIVER
+ P:	Nicolas Pitre
+ M:	nico@cam.org
+ S:	Maintained
++F:	drivers/net/smc91x.*
+ 
+ SMSC47B397 HARDWARE MONITOR DRIVER
+ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/smsc47b397
++F:	drivers/hwmon/smsc47b397.c
+ 
+ SOFTMAC LAYER (IEEE 802.11)
+ P:	Johannes Berg
+ M:	johannes@sipsolutions.net
+ P:	Joe Jezak
+ M:	josejx@gentoo.org
+ P:	Daniel Drake
+ M:	dsd@gentoo.org
+ W:	http://softmac.sipsolutions.net/
+ L:	linux-wireless@vger.kernel.org
+ S:	Maintained
++F:	include/net/ieee80211softmac*
++F:	net/ieee80211/softmac/
+ 
+ SOFTWARE RAID (Multiple Disks) SUPPORT
+ P:	Ingo Molnar
+ M:	mingo@redhat.com
+ P:	Neil Brown
+ M:	neilb@suse.de
+ L:	linux-raid@vger.kernel.org
+ S:	Supported
+-
+-HIBERNATION (aka Software Suspend, aka swsusp):
+-P:	Pavel Machek
+-M:	pavel@suse.cz
+-P:	Rafael J. Wysocki
+-M:	rjw@sisk.pl
+-L:	linux-pm@lists.linux-foundation.org
+-S:	Supported
++F:	drivers/md/
++F:	include/linux/raid/
+ 
+ SUSPEND TO RAM:
+ P:	Pavel Machek
+ M:	pavel@suse.cz
+ P:	Rafael J. Wysocki
+ M:	rjw@sisk.pl
+ L:	linux-pm@lists.linux-foundation.org
+ S:	Maintained
++F:	Documentation/power/
++F:	arch/i386/kernel/acpi/
++F:	arch/x86_64/kernel/acpi/
++F:	arch/x86_64/kernel/suspend.c
++F:	drivers/base/power/
++F:	kernel/power/
++F:	include/linux/suspend.h
++F:	include/linux/freezer.h
++F:	include/linux/pm.h
++F:	include/asm-*/suspend.h
+ 
+ SONIC NETWORK DRIVER
+ P:	Thomas Bogendoerfer
+ M:	tsbogend@alpha.franken.de
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/sonic.*
+ 
+ SONY VAIO CONTROL DEVICE DRIVER
+ P:	Mattia Dongili
+ M:	malattia@linux.it
+ L:	linux-acpi@vger.kernel.org
+ W:	http://www.linux.it/~malattia/wiki/index.php/Sony_drivers
+ S:	Maintained
++F:	drivers/char/sonypi.c
++F:	drivers/misc/sony-laptop.c
+ 
+ SOUND
+ P:	Jaroslav Kysela
+ M:	perex@suse.cz
+ L:	alsa-devel@alsa-project.org (subscribers-only)
+ S:	Maintained
++F:	sound/
+ 
+ SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEMENT
+ P:	Liam Girdwood
+ M:	liam.girdwood@wolfsonmicro.com
+ L:	alsa-devel@alsa-project.org (subscribers-only)
+ S:	Supported
++F:	sound/soc/
+ 
+ SPI SUBSYSTEM
+ P:	David Brownell
+ M:	dbrownell@users.sourceforge.net
+ L:	spi-devel-general@lists.sourceforge.net
+ S:	Maintained
++F:	Documentation/spi/
++F:	drivers/spi/
++F:	include/linux/spi/
+ 
+ STABLE BRANCH:
+ P:	Greg Kroah-Hartman
+ M:	greg@kroah.com
+ P:	Chris Wright
+ M:	chrisw@sous-sol.org
+ L:	stable@kernel.org
+ S:	Maintained
+ 
+ TPM DEVICE DRIVER
+ P:	Kylene Hall
+ M:	kjhall@us.ibm.com
+ W:	http://tpmdd.sourceforge.net
+ P:	Marcel Selhorst
+ M:	tpm@selhorst.net
+ W:	http://www.prosec.rub.de/tpm/
+ L:	tpmdd-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/char/tpm/
+ 
+ Telecom Clock Driver for MCPL0010
+ P:	Mark Gross
+ M:	mark.gross@intel.com
+ S:	Supported
+ 
+ TENSILICA XTENSA PORT (xtensa):
+ P:	Chris Zankel
+ M:	chris@zankel.net
+ S:	Maintained
++F:	arch/xtensa/
++F:	include/asm-xtensa/
+ 
+ THINKPAD ACPI EXTRAS DRIVER
+ P:	Henrique de Moraes Holschuh
+ M:	ibm-acpi@hmh.eng.br
+ L:	ibm-acpi-devel@lists.sourceforge.net
+ W:	http://ibm-acpi.sourceforge.net
+ W:	http://thinkwiki.org/wiki/Ibm-acpi
+ T:	git repo.or.cz/linux-2.6/linux-acpi-2.6/ibm-acpi-2.6.git
+ S:	Maintained
+ 
+ UltraSPARC (sparc64):
+ P:	David S. Miller
+ M:	davem@davemloft.net
+ L:	sparclinux@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git
+ S:	Maintained
++F:	arch/sparc64/
++F:	include/asm-sparc64/
+ 
+ SHARP LH SUPPORT (LH7952X & LH7A40X)
+ P:	Marc Singer
+ M:	elf@buici.com
+ W:	http://projects.buici.com/arm
+ L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+ S:	Maintained
++F:	Documentation/arm/Sharp-LH/ADC-LH7-Touchscreen
++F:	arch/arm/mach-lh7a40x/
++F:	drivers/serial/serial_lh7a40x.c
++F:	drivers/*/*/*lh7a40*
++F:	include/asm-arm/arch-lh7a40x/
+ 
+ SHPC HOTPLUG DRIVER
+ P:	Kristen Carlson Accardi
+ M:	kristen.c.accardi@intel.com
+ L:	pcihpd-discuss@lists.sourceforge.net
+ S:	Supported
++F:	drivers/pci/hotplug/shpchp*
+ 
+ SECURE DIGITAL HOST CONTROLLER INTERFACE DRIVER
+ P:	Pierre Ossman
+ M:	drzeus-sdhci@drzeus.cx
+ L:	sdhci-devel@list.drzeus.cx
+ W:	http://mmc.drzeus.cx/wiki/Linux/Drivers/sdhci
+ S:	Maintained
++F:	drivers/mmc/host/sdhci.*
+ 
+ SKGE, SKY2 10/100/1000 GIGABIT ETHERNET DRIVERS
+ P:	Stephen Hemminger
+ M:	shemminger@linux-foundation.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/skge.*
++F:	drivers/net/sky2.*
+ 
+ SOEKRIS NET48XX LED SUPPORT
+ P:	Chris Boot
+ M:	bootc@bootc.net
+ S:	Maintained
++F:	drivers/leds/leds-net48xx.c
+ 
+ SPARC (sparc32):
+ P:	William L. Irwin
+ M:	wli@holomorphy.com
+ L:	sparclinux@vger.kernel.org
+ S:	Maintained
++F:	arch/sparc/
++F:	include/asm-sparc/
+ 
+ SPECIALIX IO8+ MULTIPORT SERIAL CARD DRIVER
+ P:	Roger Wolff
+ M:	R.E.Wolff@BitWizard.nl
+ L:	linux-kernel@vger.kernel.org ?
+ S:	Supported
++F:	drivers/char/specialix*
+ 
+ SPIDERNET NETWORK DRIVER for CELL
+ P:	Linas Vepstas
+ M:	linas@austin.ibm.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	Documentation/networking/spider_net.txt
++F:	drivers/net/spider_net*
+ 
+ SRM (Alpha) environment access
+ P:	Jan-Benedict Glaw
+ M:	jbglaw@lug-owl.de
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	arch/alpha/kernel/srm_env.c
+ 
+ STARFIRE/DURALAN NETWORK DRIVER
+ P:	Ion Badulescu
+ M:	ionut@cs.columbia.edu
+ S:	Maintained
++F:	drivers/net/starfire*
+ 
+ STARMODE RADIO IP (STRIP) PROTOCOL DRIVER
+ W:	http://mosquitonet.Stanford.EDU/strip.html
+ S:	Unsupported ?
++F:	drivers/net/wireless/strip.c
++F:	include/linux/if_strip.h
+ 
+ STRADIS MPEG-2 DECODER DRIVER
+ P:	Nathan Laredo
+ M:	laredo@gnu.org
+ W:	http://www.stradis.com/
+ S:	Maintained
++F:	drivers/media/video/stradis.c
+ 
+ SUPERH (sh)
+ P:	Paul Mundt
+ M:	lethal@linux-sh.org
+ L:	linuxsh-dev@lists.sourceforge.net (subscribers-only)
+ W:	http://www.linux-sh.org
+ S:	Maintained
++F:	arch/sh/
++F:	include/asm-sh/
+ 
+ SUPERH64 (sh64)
+ P:	Paul Mundt
+ M:	lethal@linux-sh.org
+ L:	linuxsh-shmedia-dev@lists.sourceforge.net
+ W:	http://www.linux-sh.org
+ S:	Maintained
++F:	arch/sh64/
++F:	include/asm-sh64/
+ 
+ SUN3/3X
+ P:	Sam Creasey
+ M:	sammy@sammy.net
+ W:	http://sammy.net/sun3/
+ S:	Maintained
++F:	arch/m68k/kernel/*sun3*
++F:	arch/m68k/sun3/
++F:	include/asm-m68k/sun3-head.h
+ 
+ SVGA HANDLING
+ P:	Martin Mares
+ M:	mj@ucw.cz
+-L:	linux-video@atrey.karlin.mff.cuni.cz
++L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/svga.txt
++F:	arch/i386/boot/video*
+ 
+ SYSV FILESYSTEM
+ P:	Christoph Hellwig
+ M:	hch@infradead.org
+ S:	Maintained
++F:	Documentation/filesystems/sysv-fs.txt
++F:	fs/sysv/
++F:	include/linux/sysv_fs.h
+ 
+ TC CLASSIFIER
+ P:	Jamal Hadi Salim
+ M:	hadi@cyberus.ca
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	include/linux/pkt_cls.h
++F:	include/net/pkt_cls.h
++F:	net/sched/
+ 
+ TCP LOW PRIORITY MODULE
+ P:	Wong Hoi Sing, Edison
+ M:	hswong3i@gmail.com
+ P:	Hung Hing Lun, Mike
+ M:	hlhung3i@gmail.com
+ W:	http://tcp-lp-mod.sourceforge.net/
+ S:	Maintained
++F:	net/ipv4/tcp_lp.c
+ 
+ TI FLASH MEDIA INTERFACE DRIVER
+-P:      Alex Dubov
+-M:      oakad@yahoo.com
+-S:      Maintained
++P:	Alex Dubov
++M:	oakad@yahoo.com
++S:	Maintained
++F:	drivers/misc/tifm*
++F:	drivers/mmc/host/tifm_sd.c
+ 
+ TI OMAP MMC INTERFACE DRIVER
+ P:	Carlos Aguiar, Anderson Briglia and Syed Khasim
+ M:	linux-omap-open-source@linux.omap.com 
+ W:	http://linux.omap.com
+ W:	http://www.muru.com/linux/omap/
+ S:	Maintained
+ 
+ TI OMAP RANDOM NUMBER GENERATOR SUPPORT
+ P:	Deepak Saxena
+ M:	dsaxena@plexity.net
+ S:	Maintained
++F:	drivers/char/hw_random/omap-rng.c
+ 
+ TASKSTATS STATISTICS INTERFACE
+ P:	Shailabh Nagar
+ M:	nagar@watson.ibm.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/accounting/taskstats*
++F:	include/linux/taskstats*
++F:	kernel/taskstats.c
+ 
+ TI PARALLEL LINK CABLE DRIVER
+ P:	Romain Lievin
+ M:	roms@lpg.ticalc.org
+ S:	Maintained
++F:	Documentation/tipar.txt
++F:	drivers/char/tipar.c
++F:	include/linux/ticable.h
+ 
+ TIPC NETWORK LAYER
+ P:	Per Liden
+ M:	per.liden@ericsson.com
+ P:	Jon Maloy
+ M:	jon.maloy@ericsson.com
+ P:	Allan Stephens
+ M:	allan.stephens@windriver.com
+ L:	tipc-discussion@lists.sourceforge.net
+ W:	http://tipc.sourceforge.net/
+ W:	http://tipc.cslab.ericsson.net/
+ T:	git tipc.cslab.ericsson.net:/pub/git/tipc.git
+ S:	Maintained
++F:	include/linux/tipc*.h
++F:	include/net/tipc/
++F:	net/tipc/
+ 
+ TLAN NETWORK DRIVER
+ P:	Samuel Chessman
+ M:	chessman@tux.org
+ L:	tlan-devel@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/tlan/
+ S:	Maintained
++F:	Documentation/networking/tlan.txt
++F:	drivers/net/tlan.*
+ 
+ TOKEN-RING NETWORK DRIVER
+ P:	Mike Phillips
+ M:	mikep@linuxtr.net
+ L:	netdev@vger.kernel.org
+-L:	linux-tr@linuxtr.net
+ W:	http://www.linuxtr.net
+ S:	Maintained
++F:	drivers/net/tokenring/
++F:	net/802/tr.c
+ 
+ TOSHIBA ACPI EXTRAS DRIVER
+ P:	John Belmonte
+ M:	toshiba_acpi@memebeam.org
+ W:	http://memebeam.org/toys/ToshibaAcpiDriver
+ S:	Maintained
++F:	drivers/acpi/toshiba_acpi.c
+ 
+ TOSHIBA SMM DRIVER
+ P:	Jonathan Buzzard
+ M:	jonathan@buzzard.org.uk
+ L:	tlinux-users@tce.toshiba-dme.co.jp
+ W:	http://www.buzzard.org.uk/toshiba/
+ S:	Maintained
++F:	drivers/char/toshiba.c
++F:	include/linux/toshiba.h
+ 
+ TRIDENT 4DWAVE/SIS 7018 PCI AUDIO CORE
+ P:	Muli Ben-Yehuda
+ M:	mulix@mulix.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	sound/oss/trident*
+ 
+ TRIVIAL PATCHES
+ P:	Adrian Bunk
+ M:	trivial@kernel.org
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.kernel.org/pub/linux/kernel/people/bunk/trivial/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/bunk/trivial.git
+ S:	Maintained
+ 
+ TMS380 TOKEN-RING NETWORK DRIVER
+ P:	Adam Fritzler
+ M:	mid@auk.cx
+-L:	linux-tr@linuxtr.net
++L:	netdev@vger.kernel.org
+ W:	http://www.auk.cx/tms380tr/
+ S:	Maintained
++F:	Documentation/networking/tms380tr.txt
++F:	drivers/net/tokenring/tms380tr.*
+ 
+ TULIP NETWORK DRIVER
+ L:	tulip-users@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/tulip/
+ S:	Orphan
++F:	drivers/net/tulip/
+ 
+ TUN/TAP driver
+ P:	Maxim Krasnyansky
+ M:	maxk@qualcomm.com
+ L:	vtun@office.satix.net
+ W:	http://vtun.sourceforge.net/tun
+ S:	Maintained
++F:	Documentation/networking/tuntap.txt
++F:	arch/um/os-Linux/drivers/
+ 
+ TURBOCHANNEL SUBSYSTEM
+ P:	Maciej W. Rozycki
+ M:	macro@linux-mips.org
+ S:	Maintained
++F:	drivers/tc/
++F:	include/linux/tc.h
+ 
+ U14-34F SCSI DRIVER
+ P:	Dario Ballabio
+ M:	ballabio_dario@emc.com
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/u14-34f.c
+ 
+ UDF FILESYSTEM
+ P:	Ben Fennema
+ M:	bfennema@falcon.csc.calpoly.edu
+ W:	http://linux-udf.sourceforge.net
+ S:	Maintained
++F:	Documentation/filesystems/udf.txt
++F:	fs/udf/
+ 
+ UNIFORM CDROM DRIVER
+ P:	Jens Axboe
+ M:	axboe@kernel.dk
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.kernel.dk
+ S:	Maintained
++F:	Documentation/cdrom/
++F:	drivers/cdrom/cdrom.c
++F:	include/linux/cdrom.h
+ 
+ USB ACM DRIVER
+ P:	Oliver Neukum
+ M:	oliver@neukum.name
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
++F:	Documentation/usb/acm.txt
++F:	drivers/usb/class/cdc-acm.*
+ 
+ USB BLOCK DRIVER (UB ub)
+ P:	Pete Zaitcev
+ M:	zaitcev@redhat.com
+ L:	linux-kernel@vger.kernel.org
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Supported
++F:	drivers/block/ub.c
+ 
+ USB CDC ETHERNET DRIVER
+ P:	Greg Kroah-Hartman
+ M:	greg@kroah.com
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
+ W:	http://www.kroah.com/linux-usb/
++F:	drivers/net/usb/cdc_*.c
++F:	include/linux/usb/cdc.h
+ 
+ USB DAVICOM DM9601 DRIVER
+ P:	Peter Korsgaard
+ M:	jacmet@sunsite.dk
+ L:	netdev@vger.kernel.org
+ W:	http://www.linux-usb.org/usbnet
+ S:	Maintained
++F:	drivers/net/usb/dm9601.c
+ 
+ USB EHCI DRIVER
+ P:	David Brownell
+ M:	dbrownell@users.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Odd Fixes
++F:	Documentation/usb/ehci.txt
++F:	drivers/usb/host/ehci*
+ 
+ USB ET61X[12]51 DRIVER
+ P:	Luca Risolia
+ M:	luca.risolia@studio.unibo.it
+ L:	linux-usb-devel@lists.sourceforge.net
+ L:	video4linux-list@redhat.com
+ W:	http://www.linux-projects.org
+ S:	Maintained
++F:	drivers/media/video/et61x251/
+ 
+ USB GADGET/PERIPHERAL SUBSYSTEM
+ P:	David Brownell
+ M:	dbrownell@users.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ W:	http://www.linux-usb.org/gadget
+ S:	Maintained
++F:	drivers/usb/gadget/
++F:	include/linux/usb/gadget*
+ 
+ USB HID/HIDBP DRIVERS (USB KEYBOARDS, MICE, REMOTE CONTROLS, ...)
+ P:	Jiri Kosina
+ M:	jkosina@suse.cz
+ L:	linux-usb-devel@lists.sourceforge.net
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jikos/hid.git
+ S:	Maintained
+-
+-USB HUB DRIVER
+-P:	Johannes Erdfelt
+-M:	johannes@erdfelt.com
+-L:	linux-usb-users@lists.sourceforge.net
+-L:	linux-usb-devel@lists.sourceforge.net
+-S:	Maintained
++F:	Documentation/usb/hiddev.txt
++F:	drivers/hid/usbhid/
+ 
+ USB ISP116X DRIVER
+ P:	Olav Kongas
+ M:	ok@artecdesign.ee
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/usb/host/isp116x*
++F:	include/linux/usb/isp116x.h
+ 
+ USB KAWASAKI LSI DRIVER
+ P:	Oliver Neukum
+ M:	oliver@neukum.name
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/usb/serial/kl5kusb105.*
+ 
+ USB MASS STORAGE DRIVER
+ P:	Matthew Dharm
+ M:	mdharm-usb@one-eyed-alien.net
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	usb-storage@lists.one-eyed-alien.net
+ S:	Maintained
+ W:	http://www.one-eyed-alien.net/~mdharm/linux-usb/
++F:	drivers/usb/storage/
+ 
+ USB OHCI DRIVER
+ P:	David Brownell
+ M:	dbrownell@users.sourceforge.net
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Odd Fixes
++F:	Documentation/usb/ohci.txt
++F:	drivers/usb/host/ohci*
+ 
+ USB OPTION-CARD DRIVER
+ P:	Matthias Urlichs
+ M:	smurf@smurf.noris.de
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/usb/serial/option.c
+ 
+ USB OV511 DRIVER
+ P:	Mark McClelland
+ M:	mmcclell@bigfoot.com
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ W:	http://alpha.dyndns.org/ov511/
+ S:	Maintained
++F:	drivers/media/video/ov511.*
+ 
+ USB PEGASUS DRIVER
+ P:	Petko Manolov
+ M:	petkan@users.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ L:	netdev@vger.kernel.org
+ W:	http://pegasus2.sourceforge.net/
+ S:	Maintained
++F:	drivers/net/usb/pegasus.*
+ 
+ USB PRINTER DRIVER (usblp)
+ P:	Pete Zaitcev
+ M:	zaitcev@redhat.com
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Supported
++F:	drivers/usb/class/usblp.c
+ 
+ USB RTL8150 DRIVER
+ P:	Petko Manolov
+ M:	petkan@users.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ L:	netdev@vger.kernel.org
+ W:	http://pegasus2.sourceforge.net/
+ S:	Maintained
++F:	drivers/net/usb/rtl8150.c
+ 
+ USB SE401 DRIVER
+ P:	Jeroen Vreeken
+ M:	pe1rxq@amsat.org
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ W:	http://www.chello.nl/~j.vreeken/se401/
+ S:	Maintained
+ 
+ USB SERIAL CYBERJACK DRIVER
+ P:	Matthias Bruestle and Harald Welte
+ M:	support@reiner-sct.com
+ W:	http://www.reiner-sct.de/support/treiber_cyberjack.php
+ S:	Maintained
++F:	drivers/usb/serial/cyberjack.c
+ 
+ USB SERIAL DIGI ACCELEPORT DRIVER
+-P:	Peter Berger and Al Borchers
++P:	Peter Berger
+ M:	pberger@brimson.com
++P:	Al Borchers
+ M:	alborchers@steinerpoint.com
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/usb/serial/digi_acceleport.c
+ 
+ USB SERIAL DRIVER
+ P:	Greg Kroah-Hartman
+ M:	gregkh@suse.de
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Supported
++F:	Documentation/usb/usb-serial.txt
++F:	drivers/usb/serial/generic.c
++F:	drivers/usb/serial/usb-serial.c
++F:	include/linux/usb/serial.h
+ 
+ USB SERIAL BELKIN F5U103 DRIVER
+ P:	William Greathouse
+ M:	wgreathouse@smva.com
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/usb/serial/belkin_sa.*
+ 
+ USB SERIAL CYPRESS M8 DRIVER
+ P:	Lonnie Mendez
+ M:	dignome@gmail.com
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
+ W:	http://geocities.com/i0xox0i
+ W:	http://firstlight.net/cvs
++F:	drivers/usb/serial/cypress_m8.*
+ 
+ USB SERIAL CYBERJACK PINPAD/E-COM DRIVER
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/usb/serial/cyberjack.c
+ 
+ USB AUERSWALD DRIVER
+ P:	Wolfgang Muees
+ M:	wolfgang@iksw-muees.de
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/usb/misc/auerswald.c
+ 
+ USB SERIAL EMPEG EMPEG-CAR MARK I/II DRIVER
+ P:	Gary Brubaker
+ M:	xavyer@ix.netcom.com
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/usb/serial/empeg.c
+ 
+ USB SERIAL KEYSPAN DRIVER
+ P:	Greg Kroah-Hartman
+ M:	greg@kroah.com
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ W:	http://www.kroah.com/linux/
+ S:	Maintained
++F:	drivers/usb/serial/*keyspan*
+ 
+ USB SERIAL WHITEHEAT DRIVER
+ P:	Support Department
+ M:	support@connecttech.com
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ W:	http://www.connecttech.com
+ S:	Supported
++F:	drivers/usb/serial/whiteheat*
+ 
+ USB SN9C1xx DRIVER
+ P:	Luca Risolia
+ M:	luca.risolia@studio.unibo.it
+ L:	linux-usb-devel@lists.sourceforge.net
+ L:	video4linux-list@redhat.com
+ W:	http://www.linux-projects.org
+ S:	Maintained
++F:	Documentation/video4linux/sn9c102.txt
++F:	drivers/media/video/sn9c102/
+ 
+ USB SUBSYSTEM
+ P:	Greg Kroah-Hartman
+ M:	gregkh@suse.de
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ W:	http://www.linux-usb.org
+ T:	quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+ S:	Supported
++F:	Documentation/usb/
++F:	drivers/net/usb/
++F:	drivers/usb/
++F:	include/linux/usb.h
++F:	include/linux/usb/
+ 
+ USB UHCI DRIVER
+ P:	Alan Stern
+ M:	stern@rowland.harvard.edu
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
++F:	Documentation/usb/uhci.txt
++F:	drivers/usb/host/uhci*
+ 
+ USB "USBNET" DRIVER FRAMEWORK
+ P:	David Brownell
+ M:	dbrownell@users.sourceforge.net
+ L:	netdev@vger.kernel.org
+ W:	http://www.linux-usb.org/usbnet
+ S:	Maintained
++F:	drivers/net/usb/usbnet.*
+ 
+ USB W996[87]CF DRIVER
+ P:	Luca Risolia
+ M:	luca.risolia@studio.unibo.it
+ L:	linux-usb-devel@lists.sourceforge.net
+ L:	video4linux-list@redhat.com
+ W:	http://www.linux-projects.org
+ S:	Maintained
++F:	Documentation/video4linux/w9968cf.txt
++F:	drivers/media/video/w996*
+ 
+ USB ZC0301 DRIVER
+ P:	Luca Risolia
+ M:	luca.risolia@studio.unibo.it
+ L:	linux-usb-devel@lists.sourceforge.net
+ L:	video4linux-list@redhat.com
+ W:	http://www.linux-projects.org
+ S:	Maintained
++F:	Documentation/video4linux/zc0301.txt
++F:	drivers/media/video/zc0301/
+ 
+ USB ZD1201 DRIVER
+ P:	Jeroen Vreeken
+ M:	pe1rxq@amsat.org
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ W:	http://linux-lc100020.sourceforge.net
+ S:	Maintained
++F:	drivers/net/wireless/zd1201.*
+ 
+ USB ZR364XX DRIVER
+ P:	Antoine Jacquet
+ M:	royale@zerezo.com
+ L:	linux-usb-devel@lists.sourceforge.net
+ L:	video4linux-list@redhat.com
+ W:	http://royale.zerezo.com/zr364xx/
+ S:	Maintained
++F:	Documentation/video4linux/zr364xx.txt
++F:	drivers/media/video/zr364xx.c
+ 
+ USER-MODE LINUX
+ P:	Jeff Dike
+ M:	jdike@karaya.com
+ L:	user-mode-linux-devel@lists.sourceforge.net
+ L:	user-mode-linux-user@lists.sourceforge.net
+ W:	http://user-mode-linux.sourceforge.net
+ S:	Maintained
++F:	Documentation/uml/UserModeLinux-HOWTO.txt
++F:	arch/um/
++F:	include/asm-um/
++F:	fs/hostfs/
++F:	fs/hppfs/
+ 
+ FAT/VFAT/MSDOS FILESYSTEM:
+ P:	OGAWA Hirofumi
+ M:	hirofumi@mail.parknet.co.jp
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/filesystems/vfat.txt
++F:	fs/fat/
++F:	fs/msdos/
++F:	fs/vfat/
+ 
+ VIA 82Cxxx AUDIO DRIVER (old OSS driver)
+ P:	Jeff Garzik
+ S:	Odd fixes
++F:	sound/oss/via82cxxx_audio.c
+ 
+ VIA RHINE NETWORK DRIVER
+ P:	Roger Luethi
+ M:	rl@hellgate.ch
+ S:	Maintained
++F:	drivers/net/via-rhine.c
+ 
+ VIAPRO SMBUS DRIVER
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+ L:	i2c@lm-sensors.org
+ S:	Maintained
++F:	Documentation/i2c/busses/i2c-viapro
++F:	drivers/i2c/busses/i2c-viapro.c
+ 
+ VIA VELOCITY NETWORK DRIVER
+ P:	Francois Romieu
+ M:	romieu@fr.zoreil.com
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/via-velocity.*
+ 
+ UCLINUX (AND M68KNOMMU)
+ P:	Greg Ungerer
+ M:	gerg@uclinux.org
+ W:	http://www.uclinux.org/
+ L:	uclinux-dev@uclinux.org  (subscribers-only)
+ S:	Maintained
++F:	arch/m68knommu/
++F:	include/asm-m68knommu/
+ 
+ UCLINUX FOR NEC V850
+ P:	Miles Bader
+ 
+ UCLINUX FOR RENESAS H8/300
+ P:	Yoshinori Sato
+ M:	ysato@users.sourceforge.jp
+ W:	http://uclinux-h8.sourceforge.jp/
+ S:	Supported
+ 
+ UFS FILESYSTEM
+ P:	Evgeniy Dushistov
+ M:	dushistov@mail.ru
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/filesystems/ufs.txt
++F:	fs/ufs/
+ 
+ USB DIAMOND RIO500 DRIVER
+ P:	Cesar Miquel
+ M:	miquel@df.uba.ar
+ L:	rio500-users@lists.sourceforge.net
+ W:	http://rio500.sourceforge.net
+ S:	Maintained
++F:	drivers/usb/misc/rio500*
+ 
+ VIDEO FOR LINUX
+ P:	Mauro Carvalho Chehab
+ M:	mchehab@infradead.org
++P:	LinuxTV.org Project
+ M:	v4l-dvb-maintainer@linuxtv.org
+ L:	video4linux-list@redhat.com
+ W:	http://linuxtv.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
+ S:	Maintained
++F:	Documentation/video4linux/
++F:	drivers/media/video/
++F:	drivers/media/radio/
++F:	include/linux/video_decoder.h
++F:	include/linux/videodev.h
++F:	include/linux/videodev2.h
++F:	include/media/
+ 
+ VT1211 HARDWARE MONITOR DRIVER
+ P:	Juerg Haefliger
+ M:	juergh@gmail.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/vt1211
++F:	drivers/hwmon/vt1211.c
+ 
+ VT8231 HARDWARE MONITOR DRIVER
+ P:	Roger Lucas
+ M:	roger@planbit.co.uk
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	drivers/hwmon/vt8231.c
+ 
+ W1 DALLAS'S 1-WIRE BUS
+ P:	Evgeniy Polyakov
+ M:	johnpol@2ka.mipt.ru
+ S:	Maintained
++F:	Documentation/w1/
++F:	drivers/w1/
+ 
+ W83791D HARDWARE MONITORING DRIVER
+ P:	Charles Spirakis
+ M:	bezaur@gmail.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/w83791d
++F:	drivers/hwmon/w83791d.c
+ 
+ W83793 HARDWARE MONITORING DRIVER
+ P:	Rudolf Marek
+ M:	r.marek@assembler.cz
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/w83793
++F:	drivers/hwmon/w83793.c
+ 
+ W83L51xD SD/MMC CARD INTERFACE DRIVER
+ P:	Pierre Ossman
+ M:	drzeus-wbsd@drzeus.cx
+ L:	linux-kernel@vger.kernel.org
+ W:	http://projects.drzeus.cx/wbsd
+ S:	Maintained
++F:	drivers/mmc/host/wbsd.*
+ 
+ WATCHDOG DEVICE DRIVERS
+ P:	Wim Van Sebroeck
+ M:	wim@iguana.be
+ T:	git kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+ S:	Maintained
++F:	Documentation/watchdog/
++F:	drivers/char/watchdog/
++F:	include/linux/watchdog.h
+ 
+ WAVELAN NETWORK DRIVER & WIRELESS EXTENSIONS
+ P:	Jean Tourrilhes
+ M:	jt@hpl.hp.com
+ L:	linux-wireless@vger.kernel.org
+ W:	http://www.hpl.hp.com/personal/Jean_Tourrilhes/Linux/
+ S:	Maintained
++F:	Documentation/networking/wavelan.txt
++F:	drivers/net/wireless/wavelan*
+ 
+ WD7000 SCSI DRIVER
+ P:	Miroslav Zagorac
+ M:	zaga@fly.cc.fer.hr
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/wd7000.c
+ 
+ WISTRON LAPTOP BUTTON DRIVER
+ P:	Miloslav Trmac
+ M:	mitr@volny.cz
+ S:	Maintained
++F:	drivers/input/misc/wistron_btns.c
+ 
+ WL3501 WIRELESS PCMCIA CARD DRIVER
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
+ L:	linux-wireless@vger.kernel.org
+ W:	http://oops.ghostprotocols.net:81/blog
+ S:	Maintained
++F:	drivers/net/wireless/wl3501*
+ 
+ X.25 NETWORK LAYER
+ P:	Henner Eisen
+ M:	eis@baty.hanse.de
+ L:	linux-x25@vger.kernel.org
+ S:	Maintained
++F:	Documentation/networking/x25*
++F:	include/net/x25*
++F:	net/x25/
+ 
+ XEN HYPERVISOR INTERFACE
+ P:	Jeremy Fitzhardinge
+ M:	jeremy@xensource.com
+ P:	Chris Wright
+ M:	chrisw@sous-sol.org
+ L:	virtualization@lists.osdl.org
+ L:	xen-devel@lists.xensource.com
+ S:	Supported
++F:	arch/i386/xen/
++F:	drivers/*/xen-*front.c
++F:	drivers/xen/
++F:	include/asm-i386/xen/
++F:	include/xen/
+ 
+ XFS FILESYSTEM
+ P:	Silicon Graphics Inc
+ P:	Tim Shimmin
+ M:	xfs-masters@oss.sgi.com
+ L:	xfs@oss.sgi.com
+ W:	http://oss.sgi.com/projects/xfs
+ T:	git git://oss.sgi.com:8090/xfs/xfs-2.6.git
+ S:	Supported
++F:	Documentation/filesystems/xfs.txt
++F:	fs/xfs/
+ 
+ XILINX UARTLITE SERIAL DRIVER
+ P:	Peter Korsgaard
+ M:	jacmet@sunsite.dk
+ L:	linux-serial@vger.kernel.org
+ S:	Maintained
++F:	drivers/serial/uartlite.c
+ 
+ X86 3-LEVEL PAGING (PAE) SUPPORT
+ P:	Ingo Molnar
+ M:	mingo@redhat.com
+ S:	Maintained
+ 
+ X86-64 port
+ P:	Andi Kleen
+ M:	ak@suse.de
+ L:	discuss@x86-64.org
+ W:	http://www.x86-64.org
+ T:	quilt ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt-current
+ S:	Maintained
++F:	Documentation/x86_64/
++F:	arch/x86_64/
++F:	include/asm-x86_64/
+ 
+ YAM DRIVER FOR AX.25
+ P:	Jean-Paul Roubelat
+ M:	jpr@f6fbb.org
+ L:	linux-hams@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/hamradio/yam*
++F:	include/linux/yam.h
+ 
+ YEALINK PHONE DRIVER
+ P:	Henk Vergonet
+ M:	Henk.Vergonet@gmail.com
+ L:	usbb2k-api-dev@nongnu.org
+ S:	Maintained
++F:	Documentation/input/yealink.txt
++F:	drivers/input/misc/yealink.*
++F:	drivers/input/misc/map_to_7segment.h
+ 
+ Z8530 DRIVER FOR AX.25
+ P:	Joerg Reuter
+ M:	jreuter@yaina.de
+ W:	http://yaina.de/jreuter/
+ W:	http://www.qsl.net/dl1bke/
+ L:	linux-hams@vger.kernel.org
+ S:	Maintained
++F:	Documentation/networking/z8530drv.txt
++F:	drivers/net/*scc.c
++F:	drivers/net/hamradio/z8530.h
+ 
+ ZD1211RW WIRELESS DRIVER
+ P:	Daniel Drake
+ M:	dsd@gentoo.org
+ P:	Ulrich Kunitz
+ M:	kune@deine-taler.de
+ W:	http://zd1211.ath.cx/wiki/DriverRewrite
+ L:	linux-wireless@vger.kernel.org
+ L:	zd1211-devs@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
++F:	drivers/net/wireless/zd1211rw/
+ 
+ ZF MACHZ WATCHDOG
+ P:	Fernando Fuganti
+ M:	fuganti@netbank.com.br
+ W:	http://cvs.conectiva.com.br/drivers/ZFL-watchdog/
+ S:	Maintained
++F:	drivers/char/watchdog/machzwd.c
+ 
+ ZR36067 VIDEO FOR LINUX DRIVER
+ P:	Ronald Bultje
+ M:	rbultje@ronald.bitfreak.net
+ L:	mjpeg-users@lists.sourceforge.net
+ W:	http://mjpeg.sourceforge.net/driver-zoran/
+ S:	Maintained
+-
+-ZR36120 VIDEO FOR LINUX DRIVER
+-P:	Pauline Middelink
+-M:	middelin@polyware.nl
+-W:	http://www.polyware.nl/~middelin/En/hobbies.html
+-W:	http://www.polyware.nl/~middelin/hobbies.html
+-S:	Maintained
++F:	drivers/media/video/zoran_*
+ 
+ ZS DECSTATION Z85C30 SERIAL DRIVER
+ P:	Maciej W. Rozycki
+ M:	macro@linux-mips.org
+ S:	Maintained
++F:	drivers/serial/zs.*
+ 
+ THE REST
+ P:	Linus Torvalds
+ S:	Buried alive in reporters
 
---Boundary-01=_LrpxGIopXkH3w14
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-This is related to thread "2.6.22-rc: regression: no irda0 interface (2.6.2=
-1=20
-was OK), smsc does not find chip" but it is already way too overloaded.
-
-In 2.6.23 smsc-ircc2 fails to initialize IrDA controller. Apparently becaus=
-e=20
-it by default is using the same IO port as ttyS3 and this is now claimed by=
-=20
-8250.
-
-2.6.22:
-
-[  469.821782] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ=20
-sharing enabled
-[  469.853873] Yenta: ISA IRQ mask 0x04b8, PCI irq 11
-[  469.853890] Socket status: 30000007
-[  469.858814] ACPI: PCI Interrupt Link [LNKH] enabled at IRQ 11
-[  469.858836] ACPI: PCI Interrupt 0000:00:06.0[A] -> Link [LNKH] -> GSI 11=
-=20
-(level, low) -> IRQ 11
-[  469.973485] 00:09: ttyS0 at I/O 0x3f8 (irq =3D 4) is a 16550A
-[  470.233276] pccard: PCMCIA card inserted into slot 0
-[  470.262099] NET: Registered protocol family 23
-[  470.306381] Detected unconfigured Toshiba laptop with ALi ISA bridge SMS=
-C=20
-IrDA chip, pre-configuring device.
-[  470.306415] Activated ALi 1533 ISA bridge port 0x02e8.
-[  470.306427] Activated ALi 1533 ISA bridge port 0x02f8.
-[  470.306649] found SMC SuperIO Chip (devid=3D0x5a rev=3D00 base=3D0x002e)=
-:=20
-LPC47N227
-[  470.306681] smsc_superio_flat(): fir: 0x2f8, sir: 0x2e8, dma: 03, irq: 7=
-,=20
-mode: 0x0e
-[  470.306716] SMsC IrDA Controller found
-[  470.306719]  IrCC version 2.0, firport 0x2f8, sirport 0x2e8 dma=3D3, irq=
-=3D7
-[  470.306917] No transceiver found. Defaulting to Fast pin select
-[  470.307472] IrDA: Registered device irda0
-
-2.6.23:
-
-[  527.077955] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ=20
-sharing enabled
-[  527.078628] serial8250: ttyS0 at I/O 0x3f8 (irq =3D 4) is a 16550A
-[  527.080142] serial8250: ttyS3 at I/O 0x2e8 (irq =3D 3) is a 16550A
-[  527.129869] usbcore: registered new device driver usb
-[  527.153849] e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
-[  527.153867] e100: Copyright(c) 1999-2006 Intel Corporation
-[  527.155556] ACPI: PCI Interrupt Link [LNKD] enabled at IRQ 11
-[  527.155570] ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKD] -> GSI 11=
-=20
-(level, low) -> IRQ 11
-[  527.350234] e100: eth0: e100_probe: addr 0xf7efd000, irq 11, MAC addr=20
-00:00:39:D7:14:A1
-[  527.350406] Yenta: CardBus bridge found at 0000:00:10.0 [12a3:ab01]
-[  527.350466] Yenta: Using CSCINT to route CSC interrupts to PCI
-[  527.350474] Yenta: Routing CardBus interrupts to PCI
-[  527.350489] Yenta TI: socket 0000:00:10.0, mfunc 0x01000002, devctl 0x60
-[  527.420546] 00:09: ttyS0 at I/O 0x3f8 (irq =3D 4) is a 16550A
-[  527.443070] ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHC=
-I)=20
-Driver
-[  527.580072] Yenta: ISA IRQ mask 0x0000, PCI irq 11
-[  527.580091] Socket status: 30000059
-[  527.630514] NET: Registered protocol family 23
-[  527.704313] Yenta: CardBus bridge found at 0000:00:11.0 [1179:0001]
-[  527.774824] Detected unconfigured Toshiba laptop with ALi ISA bridge SMS=
-C=20
-IrDA chip, pre-configuring device.
-[  527.774863] Activated ALi 1533 ISA bridge port 0x02e8.
-[  527.774878] Activated ALi 1533 ISA bridge port 0x02f8.
-[  527.775087] found SMC SuperIO Chip (devid=3D0x5a rev=3D00 base=3D0x002e)=
-:=20
-LPC47N227
-[  527.775121] smsc_superio_flat(): fir: 0x2f8, sir: 0x2e8, dma: 03, irq: 7=
-,=20
-mode: 0x0e
-[  527.775145] smsc_ircc_present: can't get sir_base of 0x2e8
-
-I attach full dmesg from 2.6.22 and 2.6.23 as well as kernel config. The=20
-following is on 2.6.23:
-
-{pts/1}% lspnp -vvv
-00:00 PNP0c01 System board
-    state =3D active
-    allocated resources:
-        mem 0x0-0x9ffff
-        mem 0xe0000-0xeffff
-        mem 0xf0000-0xfffff
-        mem 0x100000-0x1ef5ffff
-
-00:01 PNP0a03 PCI bus
-    state =3D active
-    allocated resources:
-        io 0xcf8-0xcff
-
-00:02 PNP0200 AT DMA controller
-    state =3D active
-    allocated resources:
-        io 0x0-0xf
-        io 0x81-0x83
-        io 0x87-0x87
-        io 0x89-0x8b
-        io 0x8f-0x8f
-        io 0xc0-0xdf
-        dma 4
-
-00:03 PNP0800 AT speaker
-    state =3D active
-    allocated resources:
-        io 0x61-0x61
-
-00:04 PNP0c04 Math coprocessor
-    state =3D active
-    allocated resources:
-        io 0xf0-0xff
-        irq 13
-
-00:05 PNP0303 IBM enhanced keyboard (101/102-key, PS/2 mouse support)
-    state =3D active
-    allocated resources:
-        io 0x60-0x60
-        io 0x64-0x64
-        irq 1
-
-00:06 PNP0f13 PS/2 port for PS/2-style mice
-    state =3D active
-    allocated resources:
-        irq 12
-
-00:07 PNP0b00 AT real-time clock
-    state =3D active
-    allocated resources:
-        io 0x70-0x71
-        irq 8
-
-00:08 PNP0c02 Motherboard resources
-    state =3D active
-    allocated resources:
-        io 0x2e-0x2f
-        io 0x62-0x62
-        io 0x66-0x66
-        io 0x80-0x80
-        io 0x84-0x86
-        io 0x88-0x88
-        io 0x8c-0x8e
-        io 0x92-0x92
-
-00:09 PNP0501 16550A-compatible serial port
-    state =3D active
-    allocated resources:
-        io 0x3f8-0x3ff
-        irq 4
-    possible resources:
-        irq 3,4,5,6,7,10,11 High-Edge
-        Dependent: 01 - Priority acceptable
-           port 0x3f8-0x3f8, align 0x0, size 0x8, 16-bit address decoding
-        Dependent: 02 - Priority acceptable
-           port 0x2f8-0x2f8, align 0x0, size 0x8, 16-bit address decoding
-        Dependent: 03 - Priority acceptable
-           port 0x2e8-0x2e8, align 0x0, size 0x8, 16-bit address decoding
-        Dependent: 04 - Priority acceptable
-           port 0x3e8-0x3e8, align 0x0, size 0x8, 16-bit address decoding
-
-00:0a SMCf010 SMC Fast Infrared Port
-    state =3D active
-    allocated resources:
-        io 0x2e8-0x2ef
-        io 0x100-0x107
-        irq 5
-        dma 1
-    possible resources:
-        port 0x100-0x130, align 0xf, size 0x8, 16-bit address decoding
-        irq 3,4,5,6,7,10,11 High-Edge
-        dma 1,2,3 16-bit compatible
-        Dependent: 01 - Priority acceptable
-           port 0x3f8-0x3f8, align 0x0, size 0x8, 16-bit address decoding
-        Dependent: 02 - Priority acceptable
-           port 0x2e8-0x2e8, align 0x0, size 0x8, 16-bit address decoding
-        Dependent: 03 - Priority acceptable
-           port 0x2f8-0x2f8, align 0x0, size 0x8, 16-bit address decoding
-        Dependent: 04 - Priority acceptable
-           port 0x3e8-0x3e8, align 0x0, size 0x8, 16-bit address decoding
-
-00:0b PNP0401 ECP printer port
-    state =3D active
-    allocated resources:
-        io 0x378-0x37a
-        io 0x778-0x77a
-        irq 7
-        dma 3
-    possible resources:
-        dma 1,2,3 8-bit compatible
-        Dependent: 01 - Priority acceptable
-           port 0x378-0x378, align 0x0, size 0x3, 16-bit address decoding
-           port 0x778-0x778, align 0x0, size 0x3, 16-bit address decoding
-           irq 7 High-Edge
-        Dependent: 02 - Priority acceptable
-           port 0x278-0x278, align 0x0, size 0x3, 16-bit address decoding
-           port 0x678-0x678, align 0x0, size 0x3, 16-bit address decoding
-           irq 5 High-Edge
-        Dependent: 03 - Priority acceptable
-           port 0x3bc-0x3bc, align 0x0, size 0x3, 16-bit address decoding
-           port 0x7bc-0x7bc, align 0x0, size 0x3, 16-bit address decoding
-           irq 7 High-Edge
-
-{pts/1}% lspci -nn
-00:00.0 Host bridge [0600]: ALi Corporation M1644/M1644T Northbridge+Triden=
-t=20
-[10b9:1644] (rev 01)
-00:01.0 PCI bridge [0604]: ALi Corporation PCI to AGP Controller [10b9:5247]
-00:02.0 USB Controller [0c03]: ALi Corporation USB 1.1 Controller [10b9:523=
-7]=20
-(rev 03)
-00:04.0 IDE interface [0101]: ALi Corporation M5229 IDE [10b9:5229] (rev c3)
-00:06.0 Multimedia audio controller [0401]: ALi Corporation M5451 PCI AC-Li=
-nk=20
-Controller Audio Device [10b9:5451] (rev 01)
-00:07.0 ISA bridge [0601]: ALi Corporation M1533/M1535 PCI to ISA Bridge=20
-[Aladdin IV/V/V+] [10b9:1533]
-00:08.0 Bridge [0680]: ALi Corporation M7101 Power Management Controller [P=
-MU]=20
-[10b9:7101]
-00:0a.0 Ethernet controller [0200]: Intel Corporation 82557/8/9 Ethernet Pr=
-o=20
-100 [8086:1229] (rev 08)
-00:10.0 CardBus bridge [0607]: Texas Instruments PCI1410 PC card Cardbus=20
-Controller [104c:ac50] (rev 01)
-00:11.0 CardBus bridge [0607]: Toshiba America Info Systems ToPIC100 PCI to=
-=20
-Cardbus Bridge with ZV Support [1179:0617] (rev 32)
-00:11.1 CardBus bridge [0607]: Toshiba America Info Systems ToPIC100 PCI to=
-=20
-Cardbus Bridge with ZV Support [1179:0617] (rev 32)
-00:12.0 System peripheral [0880]: Toshiba America Info Systems SD TypA=20
-Controller [1179:0805] (rev 03)
-01:00.0 VGA compatible controller [0300]: Trident Microsystems CyberBlade=20
-XPAi1 [1023:8820] (rev 82)
-
---Boundary-01=_LrpxGIopXkH3w14
-Content-Type: text/plain;
-  charset="us-ascii";
-  name="dmesg.2.6.22"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="dmesg.2.6.22"
-
-[    0.000000] Linux version 2.6.22-2avb (bor@cooker) (gcc version 4.2.1 20070704 (prerelease) (4.2.1-3mdv2008.0)) #23 Sat Jul 14 21:04:49 MSD 2007
-[    0.000000] BIOS-provided physical RAM map:
-[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-[    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-[    0.000000]  BIOS-e820: 00000000000e0000 - 00000000000eee00 (reserved)
-[    0.000000]  BIOS-e820: 00000000000eee00 - 00000000000ef000 (ACPI NVS)
-[    0.000000]  BIOS-e820: 00000000000ef000 - 0000000000100000 (reserved)
-[    0.000000]  BIOS-e820: 0000000000100000 - 000000001ef60000 (usable)
-[    0.000000]  BIOS-e820: 000000001ef60000 - 000000001ef70000 (ACPI data)
-[    0.000000]  BIOS-e820: 000000001ef70000 - 0000000020000000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
-[    0.000000] 495MB LOWMEM available.
-[    0.000000] Entering add_active_range(0, 0, 126816) 0 entries of 256 used
-[    0.000000] Zone PFN ranges:
-[    0.000000]   DMA             0 ->     4096
-[    0.000000]   Normal       4096 ->   126816
-[    0.000000] early_node_map[1] active PFN ranges
-[    0.000000]     0:        0 ->   126816
-[    0.000000] On node 0 totalpages: 126816
-[    0.000000]   DMA zone: 32 pages used for memmap
-[    0.000000]   DMA zone: 0 pages reserved
-[    0.000000]   DMA zone: 4064 pages, LIFO batch:0
-[    0.000000]   Normal zone: 958 pages used for memmap
-[    0.000000]   Normal zone: 121762 pages, LIFO batch:31
-[    0.000000] DMI 2.3 present.
-[    0.000000] ACPI: RSDP 000F0090, 0014 (r0 TOSHIB)
-[    0.000000] ACPI: RSDT 1EF60000, 0028 (r1 TOSHIB 750        970814 TASM  4010000)
-[    0.000000] ACPI: FACP 1EF60054, 0084 (r2 TOSHIB 750        970814 TASM  4010000)
-[    0.000000] ACPI: DSDT 1EF600D8, 68DA (r1 TOSHIB 4000     20020417 MSFT  100000A)
-[    0.000000] ACPI: FACS 000EEE00, 0040
-[    0.000000] ACPI: PM-Timer IO Port: 0xee08
-[    0.000000] Allocating PCI resources starting at 30000000 (gap: 20000000:dff80000)
-[    0.000000] swsusp: Registered nosave memory region: 000000000009f000 - 00000000000a0000
-[    0.000000] swsusp: Registered nosave memory region: 00000000000a0000 - 00000000000e0000
-[    0.000000] swsusp: Registered nosave memory region: 00000000000e0000 - 00000000000ee000
-[    0.000000] swsusp: Registered nosave memory region: 00000000000ee000 - 00000000000ef000
-[    0.000000] swsusp: Registered nosave memory region: 00000000000ef000 - 0000000000100000
-[    0.000000] Built 1 zonelists.  Total pages: 125826
-[    0.000000] Kernel command line: BOOT_IMAGE=2.6.22-2avb root=LABEL=/ resume=LABEL=swap splash=silent vga=791 1
-[    0.000000] Enabling fast FPU save and restore... done.
-[    0.000000] Enabling unmasked SIMD FPU exception support... done.
-[    0.000000] Initializing CPU#0
-[    0.000000] PID hash table entries: 2048 (order: 11, 8192 bytes)
-[    0.000000] Detected 747.774 MHz processor.
-[  454.052896] Console: colour dummy device 80x25
-[  454.053095] Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
-[  454.053111] ... MAX_LOCKDEP_SUBCLASSES:    8
-[  454.053120] ... MAX_LOCK_DEPTH:          30
-[  454.053129] ... MAX_LOCKDEP_KEYS:        2048
-[  454.053138] ... CLASSHASH_SIZE:           1024
-[  454.053147] ... MAX_LOCKDEP_ENTRIES:     8192
-[  454.053157] ... MAX_LOCKDEP_CHAINS:      16384
-[  454.053166] ... CHAINHASH_SIZE:          8192
-[  454.053175]  memory used by lock dependency info: 992 kB
-[  454.053186]  per task-struct memory footprint: 1200 bytes
-[  454.053197] ------------------------
-[  454.053205] | Locking API testsuite:
-[  454.053215] ----------------------------------------------------------------------------
-[  454.053229]                                  | spin |wlock |rlock |mutex | wsem | rsem |
-[  454.053244]   --------------------------------------------------------------------------
-[  454.053291]                      A-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  454.056214]                  A-B-B-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  454.058374]              A-B-B-C-C-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  454.060582]              A-B-C-A-B-C deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  454.062789]          A-B-B-C-C-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  454.065052]          A-B-C-D-B-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  454.067317]          A-B-C-D-B-C-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  454.069585]                     double unlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  454.071698]                   initialize held:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  454.073804]                  bad unlock order:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  454.075955]   --------------------------------------------------------------------------
-[  454.075969]               recursive read-lock:             |  ok  |             |  ok  |
-[  454.076685]            recursive read-lock #2:             |  ok  |             |  ok  |
-[  454.077399]             mixed read-write-lock:             |  ok  |             |  ok  |
-[  454.078120]             mixed write-read-lock:             |  ok  |             |  ok  |
-[  454.078839]   --------------------------------------------------------------------------
-[  454.078854]      hard-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
-[  454.079922]      soft-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
-[  454.080995]      hard-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
-[  454.082058]      soft-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
-[  454.083122]        sirq-safe-A => hirqs-on/12:  ok  |  ok  |  ok  |
-[  454.084188]        sirq-safe-A => hirqs-on/21:  ok  |  ok  |  ok  |
-[  454.085252]          hard-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
-[  454.086314]          soft-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
-[  454.087380]          hard-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
-[  454.088443]          soft-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
-[  454.089507]     hard-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
-[  454.090597]     soft-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
-[  454.091684]     hard-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
-[  454.092768]     soft-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
-[  454.093855]     hard-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
-[  454.094939]     soft-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
-[  454.096023]     hard-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
-[  454.097105]     soft-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
-[  454.098188]     hard-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
-[  454.099261]     soft-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
-[  454.100335]     hard-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
-[  454.101414]     soft-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
-[  454.102497]     hard-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
-[  454.103585]     soft-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
-[  454.104677]     hard-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
-[  454.105764]     soft-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
-[  454.106852]     hard-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
-[  454.107935]     soft-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
-[  454.109022]     hard-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
-[  454.110101]     soft-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
-[  454.111186]     hard-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
-[  454.112265]     soft-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
-[  454.113354]     hard-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
-[  454.114434]     soft-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
-[  454.115519]       hard-irq lock-inversion/123:  ok  |  ok  |  ok  |
-[  454.116604]       soft-irq lock-inversion/123:  ok  |  ok  |  ok  |
-[  454.117694]       hard-irq lock-inversion/132:  ok  |  ok  |  ok  |
-[  454.118778]       soft-irq lock-inversion/132:  ok  |  ok  |  ok  |
-[  454.119868]       hard-irq lock-inversion/213:  ok  |  ok  |  ok  |
-[  454.120952]       soft-irq lock-inversion/213:  ok  |  ok  |  ok  |
-[  454.122041]       hard-irq lock-inversion/231:  ok  |  ok  |  ok  |
-[  454.123121]       soft-irq lock-inversion/231:  ok  |  ok  |  ok  |
-[  454.124208]       hard-irq lock-inversion/312:  ok  |  ok  |  ok  |
-[  454.125290]       soft-irq lock-inversion/312:  ok  |  ok  |  ok  |
-[  454.126380]       hard-irq lock-inversion/321:  ok  |  ok  |  ok  |
-[  454.127461]       soft-irq lock-inversion/321:  ok  |  ok  |  ok  |
-[  454.128546]       hard-irq read-recursion/123:  ok  |
-[  454.128915]       soft-irq read-recursion/123:  ok  |
-[  454.129285]       hard-irq read-recursion/132:  ok  |
-[  454.129653]       soft-irq read-recursion/132:  ok  |
-[  454.130024]       hard-irq read-recursion/213:  ok  |
-[  454.130392]       soft-irq read-recursion/213:  ok  |
-[  454.130762]       hard-irq read-recursion/231:  ok  |
-[  454.131130]       soft-irq read-recursion/231:  ok  |
-[  454.131500]       hard-irq read-recursion/312:  ok  |
-[  454.131869]       soft-irq read-recursion/312:  ok  |
-[  454.132239]       hard-irq read-recursion/321:  ok  |
-[  454.132608]       soft-irq read-recursion/321:  ok  |
-[  454.132979] -------------------------------------------------------
-[  454.132991] Good, all 218 testcases passed! |
-[  454.133001] ---------------------------------
-[  454.134608] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
-[  454.137484] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
-[  454.242754] Memory: 496732k/507264k available (1728k kernel code, 9908k reserved, 789k data, 180k init, 0k highmem)
-[  454.242827] virtual kernel memory layout:
-[  454.242831]     fixmap  : 0xffff8000 - 0xfffff000   (  28 kB)
-[  454.242836]     vmalloc : 0xdf800000 - 0xffff6000   ( 519 MB)
-[  454.242840]     lowmem  : 0xc0000000 - 0xdef60000   ( 495 MB)
-[  454.242844]       .init : 0xc0378000 - 0xc03a5000   ( 180 kB)
-[  454.242849]       .data : 0xc02b0045 - 0xc0375564   ( 789 kB)
-[  454.242853]       .text : 0xc0100000 - 0xc02b0045   (1728 kB)
-[  454.242889] Checking if this processor honours the WP bit even in supervisor mode... Ok.
-[  454.243138] SLUB: Genslabs=22, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1
-[  454.326535] Calibrating delay using timer specific routine.. 1497.72 BogoMIPS (lpj=2495565)
-[  454.326733] Mount-cache hash table entries: 512
-[  454.327675] CPU: After generic identify, caps: 0383f9ff 00000000 00000000 00000000 00000000 00000000 00000000
-[  454.327714] CPU: L1 I cache: 16K, L1 D cache: 16K
-[  454.327728] CPU: L2 cache: 256K
-[  454.327745] CPU: After all inits, caps: 0383f9ff 00000000 00000000 00000040 00000000 00000000 00000000
-[  454.327781] Compat vDSO mapped to ffffe000.
-[  454.327837] CPU: Intel Pentium III (Coppermine) stepping 0a
-[  454.327862] Checking 'hlt' instruction... OK.
-[  454.340215] ACPI: Core revision 20070126
-[  454.348340] ACPI: setting ELCR to 0200 (from 0a00)
-[  454.350418] NET: Registered protocol family 16
-[  454.351551] ACPI: bus type pci registered
-[  454.352570] PCI: PCI BIOS revision 2.10 entry at 0xfe5ae, last bus=5
-[  454.352584] PCI: Using configuration type 1
-[  454.352594] Setting up standard PCI resources
-[  454.371274] ACPI: Interpreter enabled
-[  454.371329] ACPI: (supports S0 S3 S4 S5)
-[  454.371428] ACPI: Using PIC for interrupt routing
-[  454.399495] ACPI: PCI Root Bridge [PCI0] (0000:00)
-[  454.399633] PCI: Probing PCI hardware (bus 00)
-[  454.400823] PCI quirk: region ee00-ee3f claimed by ali7101 ACPI
-[  454.400852] PCI quirk: region ef00-ef1f claimed by ali7101 SMB
-[  454.402558] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-[  454.403005] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCI1._PRT]
-[  454.423492] ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 10 *11)
-[  454.424116] ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 10 *11)
-[  454.424696] ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 10 *11)
-[  454.425278] ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 10 *11)
-[  454.425858] ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 6 7 10 *11)
-[  454.426456] ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 10 *11)
-[  454.427530] ACPI: Power Resource [PFAN] (off)
-[  454.427590] Linux Plug and Play Support v0.97 (c) Adam Belay
-[  454.427710] pnp: PnP ACPI init
-[  454.427825] ACPI: bus type pnp registered
-[  454.445953] pnp: Device 00:0a activated.
-[  454.446013]  00:0a: SMCf010 not responding at SIR 0x100, FIR 0x2e8; auto-configuring
-[  454.447561] pnp: Device 00:0a disabled.
-[  454.452934] pnp: Device 00:0a activated.
-[  454.452961]  00:0a: not responding at SIR 0x100, FIR 0x2e8; swapping SIR/FIR and reconfiguring
-[  454.454480] pnp: Device 00:0a disabled.
-[  454.460882] pnp: Device 00:0a activated.
-[  454.460908]  00:0a: responds at SIR 0x2e8, FIR 0x100
-[  454.468418] pnp: PnP ACPI: found 12 devices
-[  454.468457] ACPI: ACPI bus type pnp unregistered
-[  454.468775] PCI: Using ACPI for IRQ routing
-[  454.468793] PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
-[  454.479753] pnp: 00:00: iomem range 0x0-0x9ffff could not be reserved
-[  454.479781] pnp: 00:00: iomem range 0xe0000-0xeffff could not be reserved
-[  454.479809] Time: tsc clocksource has been installed.
-[  454.479843] pnp: 00:00: iomem range 0xf0000-0xfffff could not be reserved
-[  454.479860] pnp: 00:00: iomem range 0x100000-0x1ef5ffff could not be reserved
-[  454.511880] PCI: Bridge: 0000:00:01.0
-[  454.511901]   IO window: disabled.
-[  454.511921]   MEM window: f7f00000-fdffffff
-[  454.511937]   PREFETCH window: 48000000-480fffff
-[  454.511958] PCI: Bus 2, cardbus bridge: 0000:00:10.0
-[  454.511969]   IO window: 00001000-000010ff
-[  454.511984]   IO window: 00001400-000014ff
-[  454.512000]   PREFETCH window: 30000000-33ffffff
-[  454.512015]   MEM window: 34000000-37ffffff
-[  454.512030] PCI: Bus 6, cardbus bridge: 0000:00:11.0
-[  454.512041]   IO window: 00001800-000018ff
-[  454.512056]   IO window: 00001c00-00001cff
-[  454.512071]   PREFETCH window: 38000000-3bffffff
-[  454.512087]   MEM window: 3c000000-3fffffff
-[  454.512102] PCI: Bus 10, cardbus bridge: 0000:00:11.1
-[  454.512113]   IO window: 00002000-000020ff
-[  454.512128]   IO window: 00002400-000024ff
-[  454.512143]   PREFETCH window: 40000000-43ffffff
-[  454.512159]   MEM window: 44000000-47ffffff
-[  454.512198] PCI: Setting latency timer of device 0000:00:01.0 to 64
-[  454.512242] PCI: Enabling device 0000:00:10.0 (0000 -> 0003)
-[  454.513650] ACPI: PCI Interrupt Link [LNKC] enabled at IRQ 11
-[  454.513674] PCI: setting IRQ 11 as level-triggered
-[  454.513683] ACPI: PCI Interrupt 0000:00:10.0[A] -> Link [LNKC] -> GSI 11 (level, low) -> IRQ 11
-[  454.513739] PCI: Enabling device 0000:00:11.0 (0000 -> 0003)
-[  454.514715] ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 11
-[  454.514729] ACPI: PCI Interrupt 0000:00:11.0[A] -> Link [LNKA] -> GSI 11 (level, low) -> IRQ 11
-[  454.514782] PCI: Enabling device 0000:00:11.1 (0000 -> 0003)
-[  454.515753] ACPI: PCI Interrupt Link [LNKB] enabled at IRQ 11
-[  454.515767] ACPI: PCI Interrupt 0000:00:11.1[B] -> Link [LNKB] -> GSI 11 (level, low) -> IRQ 11
-[  454.515860] NET: Registered protocol family 2
-[  454.546640] IP route cache hash table entries: 4096 (order: 2, 16384 bytes)
-[  454.547056] TCP established hash table entries: 16384 (order: 7, 720896 bytes)
-[  454.553561] TCP bind hash table entries: 16384 (order: 7, 720896 bytes)
-[  454.560358] TCP: Hash tables configured (established 16384 bind 16384)
-[  454.560519] TCP reno registered
-[  454.570660] checking if image is initramfs... it is
-[  454.691147] Freeing initrd memory: 487k freed
-[  454.693770] audit: initializing netlink socket (disabled)
-[  454.693912] audit(1187418596.239:1): initialized
-[  454.711080] io scheduler noop registered
-[  454.711131] io scheduler anticipatory registered
-[  454.711142] io scheduler deadline registered
-[  454.711593] io scheduler cfq registered (default)
-[  454.711688] Activating ISA DMA hang workarounds.
-[  454.711736] Boot video device is 0000:01:00.0
-[  454.712389] vesafb: framebuffer at 0xfc000000, mapped to 0xdf880000, using 3072k, total 16384k
-[  454.712422] vesafb: mode is 1024x768x16, linelength=2048, pages=9
-[  454.712435] vesafb: protected mode interface info at c000:775e
-[  454.712449] vesafb: pmi: set display start = c00c777f, set palette = c00c77e2
-[  454.712461] vesafb: scrolling: redraw
-[  454.712474] vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-[  454.782216] Console: switching to colour frame buffer device 128x48
-[  454.844812] fb0: VESA VGA frame buffer device
-[  455.013026] Switched to high resolution mode on CPU 0
-[  455.124523] Real Time Clock Driver v1.12ac
-[  455.129956] RAMDISK driver initialized: 16 RAM disks of 32000K size 1024 blocksize
-[  455.132730] PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:PS2M] at 0x60,0x64 irq 1,12
-[  455.138794] serio: i8042 KBD port at 0x60,0x64 irq 1
-[  455.139485] serio: i8042 AUX port at 0x60,0x64 irq 12
-[  455.141336] mice: PS/2 mouse device common for all mice
-[  455.143109] TCP cubic registered
-[  455.145148] NET: Registered protocol family 1
-[  455.145747] Using IPI Shortcut mode
-[  455.148390] BIOS EDD facility v0.16 2004-Jun-25, 1 devices found
-[  455.151190] Freeing unused kernel memory: 180k freed
-[  455.152220] Write protecting the kernel read-only data: 634k
-[  455.176830] Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-[  455.177728] ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-[  455.213269] input: AT Translated Set 2 keyboard as /class/input/input0
-[  455.260197] ALI15X3: IDE controller at PCI slot 0000:00:04.0
-[  455.286166] ACPI: Unable to derive IRQ for device 0000:00:04.0
-[  455.311675] ACPI: PCI Interrupt 0000:00:04.0[A]: no GSI
-[  455.337003] ALI15X3: chipset revision 195
-[  455.361958] ALI15X3: not 100% native mode: will probe irqs later
-[  455.387129]     ide0: BM-DMA at 0xeff0-0xeff7, BIOS settings: hda:DMA, hdb:pio
-[  455.412844]     ide1: BM-DMA at 0xeff8-0xefff, BIOS settings: hdc:DMA, hdd:pio
-[  455.438281] Probing IDE interface ide0...
-[  455.713120] hda: IC25N020ATDA04-0, ATA DISK drive
-[  456.376103] hda: host side 80-wire cable detection failed, limiting max speed to UDMA33
-[  456.402067] hda: selected mode 0x42
-[  456.402473] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-[  456.445689] Probing IDE interface ide1...
-[  457.146137] hdc: TOSHIBA DVD-ROM SD-C2502, ATAPI CD/DVD-ROM drive
-[  457.812439] hdc: selected mode 0x42
-[  457.842595] ide1 at 0x170-0x177,0x376 on irq 15
-[  457.902744] hda: max request size: 128KiB
-[  457.929855] hda: 39070080 sectors (20003 MB) w/1806KiB Cache, CHS=38760/16/63, UDMA(33)
-[  457.957183] hda: cache flushes not supported
-[  457.984289]  hda: hda1 hda2
-[  458.444880] swsusp: Marking nosave pages: 000000000009f000 - 0000000000100000
-[  458.444909] swsusp: Basic memory bitmaps created
-[  458.479945] swsusp: Basic memory bitmaps freed
-[  458.606715] ReiserFS: hda2: found reiserfs format "3.6" with standard journal
-[  458.632119] ReiserFS: hda2: using ordered data mode
-[  458.670897] ReiserFS: hda2: journal params: device hda2, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
-[  458.731019] ReiserFS: hda2: checking transaction log (hda2)
-[  458.801190] ReiserFS: hda2: Using r5 hash to sort names
-[  468.494806] Linux agpgart interface v0.102 (c) Dave Jones
-[  468.649217] agpgart: Detected ALi M1644 chipset
-[  468.659092] agpgart: AGP aperture is 64M @ 0xf0000000
-[  468.844432] usbcore: registered new interface driver usbfs
-[  468.844734] usbcore: registered new interface driver hub
-[  468.844931] usbcore: registered new device driver usb
-[  468.941897] e100: Intel(R) PRO/100 Network Driver, 3.5.17-k4-NAPI
-[  468.941915] e100: Copyright(c) 1999-2006 Intel Corporation
-[  468.943660] ACPI: PCI Interrupt Link [LNKD] enabled at IRQ 11
-[  468.943676] ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKD] -> GSI 11 (level, low) -> IRQ 11
-[  468.971232] e100: eth0: e100_probe: addr 0xf7efd000, irq 11, MAC addr 00:00:39:D7:14:A1
-[  469.062113] ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
-[  469.063726] ACPI: PCI Interrupt Link [LNKG] enabled at IRQ 11
-[  469.063740] ACPI: PCI Interrupt 0000:00:02.0[A] -> Link [LNKG] -> GSI 11 (level, low) -> IRQ 11
-[  469.063796] ohci_hcd 0000:00:02.0: OHCI Host Controller
-[  469.065730] ohci_hcd 0000:00:02.0: new USB bus registered, assigned bus number 1
-[  469.065819] ohci_hcd 0000:00:02.0: irq 11, io mem 0xf7eff000
-[  469.120031] usb usb1: configuration #1 chosen from 1 choice
-[  469.120299] hub 1-0:1.0: USB hub found
-[  469.120399] hub 1-0:1.0: 3 ports detected
-[  469.251131] hdc: ATAPI 24X DVD-ROM drive, 128kB Cache, UDMA(33)
-[  469.251167] Uniform CD-ROM driver Revision: 3.20
-[  469.372416] Yenta: CardBus bridge found at 0000:00:10.0 [12a3:ab01]
-[  469.372473] Yenta: Using CSCINT to route CSC interrupts to PCI
-[  469.372480] Yenta: Routing CardBus interrupts to PCI
-[  469.372493] Yenta TI: socket 0000:00:10.0, mfunc 0x01000002, devctl 0x60
-[  469.600542] Yenta: ISA IRQ mask 0x0000, PCI irq 11
-[  469.600559] Socket status: 30000059
-[  469.601548] Yenta: CardBus bridge found at 0000:00:11.0 [1179:0001]
-[  469.727436] Yenta: ISA IRQ mask 0x04b8, PCI irq 11
-[  469.727451] Socket status: 30000007
-[  469.728202] Yenta: CardBus bridge found at 0000:00:11.1 [1179:0001]
-[  469.821782] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
-[  469.853873] Yenta: ISA IRQ mask 0x04b8, PCI irq 11
-[  469.853890] Socket status: 30000007
-[  469.858814] ACPI: PCI Interrupt Link [LNKH] enabled at IRQ 11
-[  469.858836] ACPI: PCI Interrupt 0000:00:06.0[A] -> Link [LNKH] -> GSI 11 (level, low) -> IRQ 11
-[  469.973485] 00:09: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-[  470.233276] pccard: PCMCIA card inserted into slot 0
-[  470.262099] NET: Registered protocol family 23
-[  470.306381] Detected unconfigured Toshiba laptop with ALi ISA bridge SMSC IrDA chip, pre-configuring device.
-[  470.306415] Activated ALi 1533 ISA bridge port 0x02e8.
-[  470.306427] Activated ALi 1533 ISA bridge port 0x02f8.
-[  470.306649] found SMC SuperIO Chip (devid=0x5a rev=00 base=0x002e): LPC47N227
-[  470.306681] smsc_superio_flat(): fir: 0x2f8, sir: 0x2e8, dma: 03, irq: 7, mode: 0x0e
-[  470.306716] SMsC IrDA Controller found
-[  470.306719]  IrCC version 2.0, firport 0x2f8, sirport 0x2e8 dma=3, irq=7
-[  470.306917] No transceiver found. Defaulting to Fast pin select
-[  470.307472] IrDA: Registered device irda0
-[  473.989949] cs: IO port probe 0x100-0x3af: excluding 0x200-0x207 0x220-0x22f 0x330-0x337 0x378-0x37f 0x388-0x38f
-[  473.992920] cs: IO port probe 0x3e0-0x4ff: excluding 0x408-0x40f 0x480-0x48f 0x4d0-0x4d7
-[  473.994213] cs: IO port probe 0x820-0x8ff: clean.
-[  473.995382] cs: IO port probe 0xc00-0xcf7: clean.
-[  473.997303] cs: IO port probe 0xa00-0xaff: clean.
-[  474.497205] cs: IO port probe 0x100-0x3af: excluding 0x200-0x207 0x220-0x22f 0x330-0x337 0x378-0x37f 0x388-0x38f
-[  474.581749] cs: IO port probe 0x100-0x3af: excluding 0x200-0x207 0x220-0x22f 0x330-0x337 0x378-0x37f 0x388-0x38f
-[  474.584744] cs: IO port probe 0x3e0-0x4ff: excluding 0x408-0x40f 0x480-0x48f 0x4d0-0x4d7
-[  474.586181] cs: IO port probe 0x820-0x8ff: clean.
-[  474.587357] cs: IO port probe 0xc00-0xcf7: clean.
-[  474.589289] cs: IO port probe 0xa00-0xaff: clean.
-[  474.748538] cs: IO port probe 0x3e0-0x4ff: excluding 0x408-0x40f 0x480-0x48f 0x4d0-0x4d7
-[  474.749995] cs: IO port probe 0x820-0x8ff: clean.
-[  474.751165] cs: IO port probe 0xc00-0xcf7: clean.
-[  474.753157] cs: IO port probe 0xa00-0xaff: clean.
-[  474.754675] cs: memory probe 0xa0000000-0xa0ffffff: clean.
-[  474.766676] pcmcia: registering new device pcmcia0.0
-[  474.908200] wlags49_h1_cs v7.18 for PCMCIA, 03/31/2004 14:31:00 by Agere Systems, http://www.agere.com
-[  474.908222] *** Modified for kernel 2.6 by Andrey Borzenkov <arvidjaar@mail.ru> $Revision: 39 $
-[  474.908230] *** Station Mode (STA) Support: YES
-[  474.908236] *** Access Point Mode (AP) Support: YES
-[  475.398523] eth1: PRI 31 variant 2 version 9.48
-[  475.398589] eth1: NIC 5 variant 2 version 1.02
-[  475.402475] eth1: Wireless, io_addr 0x100, irq 11, mac_address 00:02:2D:26:95:6C
-[  475.932640] Toshiba System Managment Mode driver v1.11 26/9/2001
-[  476.105201] Non-volatile memory driver v1.2
-[  476.188733] input: ImPS/2 Generic Wheel Mouse as /class/input/input1
-[  477.158353] ACPI: AC Adapter [ADP1] (on-line)
-[  477.217724] ACPI: Battery Slot [BAT1] (battery present)
-[  477.217890] ACPI: Battery Slot [BAT2] (battery absent)
-[  477.279914] input: Power Button (FF) as /class/input/input2
-[  477.401588] ACPI: Power Button (FF) [PWRF]
-[  477.427500] input: Lid Switch as /class/input/input3
-[  477.498262] ACPI: Lid Switch [LID]
-[  477.609351] ACPI: Transitioning device [FAN] to D3
-[  477.609371] ACPI: Transitioning device [FAN] to D3
-[  477.609398] ACPI: Fan [FAN] (off)
-[  477.676144] ACPI: CPU0 (power states: C1[C1] C2[C2])
-[  477.706972] ACPI: Thermal Zone [THRM] (62 C)
-[  477.756372] toshiba_acpi: Toshiba Laptop ACPI Extras version 0.18
-[  477.756393] toshiba_acpi:     HCI method: \_SB_.VALD.GHCI
-[  477.794415] ACPI: Video Device [VGA] (multi-head: yes  rom: yes  post: no)
-[   23.693330] Marking TSC unstable due to: possible TSC halt in C2.
-[   23.696664] Time: acpi_pm clocksource has been installed.
-[   23.739997] device-mapper: ioctl: 4.11.0-ioctl (2006-10-12) initialised: dm-devel@redhat.com
-[   23.769997] Clocksource tsc unstable (delta = -80351081 ns)
-[   24.509997] loop: module loaded
-[   28.773330] Adding 500432k swap on /dev/hda1.  Priority:-1 extents:1 across:500432k
-
---Boundary-01=_LrpxGIopXkH3w14
-Content-Type: text/plain;
-  charset="us-ascii";
-  name="dmesg.2.6.23"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="dmesg.2.6.23"
-
-[    0.000000] Linux version 2.6.23-rc3-2avb (bor@cooker) (gcc version 4.2.1 20070802 (prerelease) (4.2.1-4mdv2008.0)) #6 Fri Aug 17 20:47:10 MSD 2007
-[    0.000000] BIOS-provided physical RAM map:
-[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-[    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-[    0.000000]  BIOS-e820: 00000000000e0000 - 00000000000eee00 (reserved)
-[    0.000000]  BIOS-e820: 00000000000eee00 - 00000000000ef000 (ACPI NVS)
-[    0.000000]  BIOS-e820: 00000000000ef000 - 0000000000100000 (reserved)
-[    0.000000]  BIOS-e820: 0000000000100000 - 000000001ef60000 (usable)
-[    0.000000]  BIOS-e820: 000000001ef60000 - 000000001ef70000 (ACPI data)
-[    0.000000]  BIOS-e820: 000000001ef70000 - 0000000020000000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
-[    0.000000] 495MB LOWMEM available.
-[    0.000000] Entering add_active_range(0, 0, 126816) 0 entries of 256 used
-[    0.000000] Zone PFN ranges:
-[    0.000000]   DMA             0 ->     4096
-[    0.000000]   Normal       4096 ->   126816
-[    0.000000] Movable zone start PFN for each node
-[    0.000000] early_node_map[1] active PFN ranges
-[    0.000000]     0:        0 ->   126816
-[    0.000000] On node 0 totalpages: 126816
-[    0.000000]   DMA zone: 32 pages used for memmap
-[    0.000000]   DMA zone: 0 pages reserved
-[    0.000000]   DMA zone: 4064 pages, LIFO batch:0
-[    0.000000]   Normal zone: 958 pages used for memmap
-[    0.000000]   Normal zone: 121762 pages, LIFO batch:31
-[    0.000000]   Movable zone: 0 pages used for memmap
-[    0.000000] DMI 2.3 present.
-[    0.000000] ACPI: RSDP 000F0090, 0014 (r0 TOSHIB)
-[    0.000000] ACPI: RSDT 1EF60000, 0028 (r1 TOSHIB 750        970814 TASM  4010000)
-[    0.000000] ACPI: FACP 1EF60054, 0084 (r2 TOSHIB 750        970814 TASM  4010000)
-[    0.000000] ACPI: DSDT 1EF600D8, 68DA (r1 TOSHIB 4000     20020417 MSFT  100000A)
-[    0.000000] ACPI: FACS 000EEE00, 0040
-[    0.000000] ACPI: PM-Timer IO Port: 0xee08
-[    0.000000] Allocating PCI resources starting at 30000000 (gap: 20000000:dff80000)
-[    0.000000] swsusp: Registered nosave memory region: 000000000009f000 - 00000000000a0000
-[    0.000000] swsusp: Registered nosave memory region: 00000000000a0000 - 00000000000e0000
-[    0.000000] swsusp: Registered nosave memory region: 00000000000e0000 - 00000000000ee000
-[    0.000000] swsusp: Registered nosave memory region: 00000000000ee000 - 00000000000ef000
-[    0.000000] swsusp: Registered nosave memory region: 00000000000ef000 - 0000000000100000
-[    0.000000] Built 1 zonelists in Zone order.  Total pages: 125826
-[    0.000000] Kernel command line: BOOT_IMAGE=2.6.23-rc3-2avb root=LABEL=/ resume=LABEL=swap splash=silent vga=791 1
-[    0.000000] Enabling fast FPU save and restore... done.
-[    0.000000] Enabling unmasked SIMD FPU exception support... done.
-[    0.000000] Initializing CPU#0
-[    0.000000] PID hash table entries: 2048 (order: 11, 8192 bytes)
-[    0.000000] Detected 747.681 MHz processor.
-[  511.946977] Console: colour dummy device 80x25
-[  511.947007] console [tty0] enabled
-[  511.947202] Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
-[  511.947217] ... MAX_LOCKDEP_SUBCLASSES:    8
-[  511.947226] ... MAX_LOCK_DEPTH:          30
-[  511.947235] ... MAX_LOCKDEP_KEYS:        2048
-[  511.947244] ... CLASSHASH_SIZE:           1024
-[  511.947253] ... MAX_LOCKDEP_ENTRIES:     8192
-[  511.947262] ... MAX_LOCKDEP_CHAINS:      16384
-[  511.947271] ... CHAINHASH_SIZE:          8192
-[  511.947280]  memory used by lock dependency info: 1024 kB
-[  511.947290]  per task-struct memory footprint: 1680 bytes
-[  511.947301] ------------------------
-[  511.947309] | Locking API testsuite:
-[  511.947318] ----------------------------------------------------------------------------
-[  511.947333]                                  | spin |wlock |rlock |mutex | wsem | rsem |
-[  511.947348]   --------------------------------------------------------------------------
-[  511.947388]                      A-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  511.950334]                  A-B-B-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  511.952530]              A-B-B-C-C-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  511.954771]              A-B-C-A-B-C deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  511.957014]          A-B-B-C-C-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  511.959330]          A-B-C-D-B-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  511.961642]          A-B-C-D-B-C-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  511.963960]                     double unlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  511.966086]                   initialize held:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  511.968199]                  bad unlock order:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[  511.970384]   --------------------------------------------------------------------------
-[  511.970399]               recursive read-lock:             |  ok  |             |  ok  |
-[  511.971119]            recursive read-lock #2:             |  ok  |             |  ok  |
-[  511.971839]             mixed read-write-lock:             |  ok  |             |  ok  |
-[  511.972563]             mixed write-read-lock:             |  ok  |             |  ok  |
-[  511.973285]   --------------------------------------------------------------------------
-[  511.973300]      hard-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
-[  511.974376]      soft-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
-[  511.975457]      hard-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
-[  511.976526]      soft-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
-[  511.977598]        sirq-safe-A => hirqs-on/12:  ok  |  ok  |  ok  |
-[  511.978671]        sirq-safe-A => hirqs-on/21:  ok  |  ok  |  ok  |
-[  511.979741]          hard-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
-[  511.980810]          soft-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
-[  511.981886]          hard-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
-[  511.982954]          soft-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
-[  511.984026]     hard-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
-[  511.985124]     soft-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
-[  511.986225]     hard-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
-[  511.987323]     soft-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
-[  511.988420]     hard-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
-[  511.989520]     soft-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
-[  511.990622]     hard-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
-[  511.991720]     soft-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
-[  511.992818]     hard-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
-[  511.993897]     soft-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
-[  511.994980]     hard-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
-[  511.996074]     soft-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
-[  511.997170]     hard-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
-[  511.998266]     soft-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
-[  511.999368]     hard-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
-[  512.000462]     soft-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
-[  512.001564]     hard-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
-[  512.002660]     soft-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
-[  512.003762]     hard-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
-[  512.004856]     soft-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
-[  512.005953]     hard-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
-[  512.007048]     soft-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
-[  512.008151]     hard-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
-[  512.009244]     soft-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
-[  512.010340]       hard-irq lock-inversion/123:  ok  |  ok  |  ok  |
-[  512.011438]       soft-irq lock-inversion/123:  ok  |  ok  |  ok  |
-[  512.012540]       hard-irq lock-inversion/132:  ok  |  ok  |  ok  |
-[  512.013635]       soft-irq lock-inversion/132:  ok  |  ok  |  ok  |
-[  512.014736]       hard-irq lock-inversion/213:  ok  |  ok  |  ok  |
-[  512.015833]       soft-irq lock-inversion/213:  ok  |  ok  |  ok  |
-[  512.016936]       hard-irq lock-inversion/231:  ok  |  ok  |  ok  |
-[  512.018033]       soft-irq lock-inversion/231:  ok  |  ok  |  ok  |
-[  512.019138]       hard-irq lock-inversion/312:  ok  |  ok  |  ok  |
-[  512.020237]       soft-irq lock-inversion/312:  ok  |  ok  |  ok  |
-[  512.021345]       hard-irq lock-inversion/321:  ok  |  ok  |  ok  |
-[  512.022439]       soft-irq lock-inversion/321:  ok  |  ok  |  ok  |
-[  512.023543]       hard-irq read-recursion/123:  ok  |
-[  512.023916]       soft-irq read-recursion/123:  ok  |
-[  512.024292]       hard-irq read-recursion/132:  ok  |
-[  512.024666]       soft-irq read-recursion/132:  ok  |
-[  512.025042]       hard-irq read-recursion/213:  ok  |
-[  512.025417]       soft-irq read-recursion/213:  ok  |
-[  512.025791]       hard-irq read-recursion/231:  ok  |
-[  512.026165]       soft-irq read-recursion/231:  ok  |
-[  512.026541]       hard-irq read-recursion/312:  ok  |
-[  512.026913]       soft-irq read-recursion/312:  ok  |
-[  512.027288]       hard-irq read-recursion/321:  ok  |
-[  512.027662]       soft-irq read-recursion/321:  ok  |
-[  512.028038] -------------------------------------------------------
-[  512.028050] Good, all 218 testcases passed! |
-[  512.028059] ---------------------------------
-[  512.029682] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
-[  512.032578] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
-[  512.137481] Memory: 495708k/507264k available (1765k kernel code, 10896k reserved, 807k data, 184k init, 0k highmem)
-[  512.137555] virtual kernel memory layout:
-[  512.137559]     fixmap  : 0xffff6000 - 0xfffff000   (  36 kB)
-[  512.137563]     vmalloc : 0xdf800000 - 0xffff4000   ( 519 MB)
-[  512.137567]     lowmem  : 0xc0000000 - 0xdef60000   ( 495 MB)
-[  512.137571]       .init : 0xc0386000 - 0xc03b4000   ( 184 kB)
-[  512.137576]       .data : 0xc02b9473 - 0xc0383464   ( 807 kB)
-[  512.137580]       .text : 0xc0100000 - 0xc02b9473   (1765 kB)
-[  512.137615] Checking if this processor honours the WP bit even in supervisor mode... Ok.
-[  512.137874] SLUB: Genslabs=22, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1
-[  512.221276] Calibrating delay using timer specific routine.. 1498.37 BogoMIPS (lpj=2496600)
-[  512.221492] Mount-cache hash table entries: 512
-[  512.222634] CPU: After generic identify, caps: 0383f9ff 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[  512.222679] CPU: L1 I cache: 16K, L1 D cache: 16K
-[  512.222713] CPU: L2 cache: 256K
-[  512.222730] CPU: After all inits, caps: 0383f9ff 00000000 00000000 00000040 00000000 00000000 00000000 00000000
-[  512.222771] Compat vDSO mapped to ffffe000.
-[  512.222834] CPU: Intel Pentium III (Coppermine) stepping 0a
-[  512.222861] Checking 'hlt' instruction... OK.
-[  512.236016] Early unpacking initramfs... done
-[  512.346360] ACPI: Core revision 20070126
-[  512.347103] ACPI: Looking for DSDT in initramfs... error, file /DSDT.aml not found.
-[  512.355384] ACPI: setting ELCR to 0200 (from 0a00)
-[  512.358704] NET: Registered protocol family 16
-[  512.360609] ACPI: bus type pci registered
-[  512.362434] PCI: PCI BIOS revision 2.10 entry at 0xfe5ae, last bus=5
-[  512.362468] PCI: Using configuration type 1
-[  512.362478] Setting up standard PCI resources
-[  512.376422] ACPI: EC: Look up EC in DSDT
-[  512.388147] ACPI: Interpreter enabled
-[  512.388192] ACPI: (supports S0 S3)
-[  512.388317] ACPI: Using PIC for interrupt routing
-[  512.423276] ACPI: PCI Root Bridge [PCI0] (0000:00)
-[  512.424920] PCI quirk: region ee00-ee3f claimed by ali7101 ACPI
-[  512.424954] PCI quirk: region ef00-ef1f claimed by ali7101 SMB
-[  512.427197] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-[  512.427730] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCI1._PRT]
-[  512.450899] ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 10 *11)
-[  512.451643] ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 10 *11)
-[  512.452285] ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 10 *11)
-[  512.452922] ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 10 *11)
-[  512.453561] ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 6 7 10 *11)
-[  512.454200] ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 10 *11)
-[  512.455533] ACPI: Power Resource [PFAN] (off)
-[  512.455887] Linux Plug and Play Support v0.97 (c) Adam Belay
-[  512.456141] pnp: PnP ACPI init
-[  512.456281] ACPI: bus type pnp registered
-[  512.476243] pnp: Device 00:0a activated.
-[  512.476301]  00:0a: SMCf010 not responding at SIR 0x100, FIR 0x2e8; auto-configuring
-[  512.477861] pnp: Device 00:0a disabled.
-[  512.483492] pnp: Device 00:0a activated.
-[  512.483520]  00:0a: not responding at SIR 0x100, FIR 0x2e8; swapping SIR/FIR and reconfiguring
-[  512.485056] pnp: Device 00:0a disabled.
-[  512.491652] pnp: Device 00:0a activated.
-[  512.491679]  00:0a: responds at SIR 0x2e8, FIR 0x100
-[  512.499789] pnp: PnP ACPI: found 12 devices
-[  512.499826] ACPI: ACPI bus type pnp unregistered
-[  512.500842] PCI: Using ACPI for IRQ routing
-[  512.500865] PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
-[  512.527808] Time: tsc clocksource has been installed.
-[  512.534792] pnp: 00:00: iomem range 0x0-0x9ffff could not be reserved
-[  512.534814] pnp: 00:00: iomem range 0xe0000-0xeffff could not be reserved
-[  512.534830] pnp: 00:00: iomem range 0xf0000-0xfffff could not be reserved
-[  512.534847] pnp: 00:00: iomem range 0x100000-0x1ef5ffff could not be reserved
-[  512.567696] PCI: Bridge: 0000:00:01.0
-[  512.567735]   IO window: disabled.
-[  512.567758]   MEM window: f7f00000-fdffffff
-[  512.567776]   PREFETCH window: 48000000-480fffff
-[  512.567820] PCI: Bus 2, cardbus bridge: 0000:00:10.0
-[  512.567833]   IO window: 00001000-000010ff
-[  512.567850]   IO window: 00001400-000014ff
-[  512.567867]   PREFETCH window: 30000000-33ffffff
-[  512.567883]   MEM window: 34000000-37ffffff
-[  512.567900] PCI: Bus 6, cardbus bridge: 0000:00:11.0
-[  512.567910]   IO window: 00001800-000018ff
-[  512.567926]   IO window: 00001c00-00001cff
-[  512.567943]   PREFETCH window: 38000000-3bffffff
-[  512.567960]   MEM window: 3c000000-3fffffff
-[  512.567977] PCI: Bus 10, cardbus bridge: 0000:00:11.1
-[  512.567987]   IO window: 00002000-000020ff
-[  512.568003]   IO window: 00002400-000024ff
-[  512.568020]   PREFETCH window: 40000000-43ffffff
-[  512.568037]   MEM window: 44000000-47ffffff
-[  512.568081] PCI: Setting latency timer of device 0000:00:01.0 to 64
-[  512.568147] PCI: Enabling device 0000:00:10.0 (0000 -> 0003)
-[  512.569552] ACPI: PCI Interrupt Link [LNKC] enabled at IRQ 11
-[  512.569575] PCI: setting IRQ 11 as level-triggered
-[  512.569584] ACPI: PCI Interrupt 0000:00:10.0[A] -> Link [LNKC] -> GSI 11 (level, low) -> IRQ 11
-[  512.569652] PCI: Enabling device 0000:00:11.0 (0000 -> 0003)
-[  512.570705] ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 11
-[  512.570719] ACPI: PCI Interrupt 0000:00:11.0[A] -> Link [LNKA] -> GSI 11 (level, low) -> IRQ 11
-[  512.570783] PCI: Enabling device 0000:00:11.1 (0000 -> 0003)
-[  512.571871] ACPI: PCI Interrupt Link [LNKB] enabled at IRQ 11
-[  512.571888] ACPI: PCI Interrupt 0000:00:11.1[B] -> Link [LNKB] -> GSI 11 (level, low) -> IRQ 11
-[  512.571987] NET: Registered protocol family 2
-[  512.604696] IP route cache hash table entries: 4096 (order: 2, 16384 bytes)
-[  512.605243] TCP established hash table entries: 16384 (order: 7, 589824 bytes)
-[  512.611665] TCP bind hash table entries: 16384 (order: 7, 589824 bytes)
-[  512.617711] TCP: Hash tables configured (established 16384 bind 16384)
-[  512.618039] TCP reno registered
-[  512.628603] checking if image is initramfs... it is
-[  512.823711] Freeing initrd memory: 1094k freed
-[  512.827466] audit: initializing netlink socket (disabled)
-[  512.827635] audit(1187418750.689:1): initialized
-[  512.852100] io scheduler noop registered
-[  512.852155] io scheduler anticipatory registered
-[  512.852167] io scheduler deadline registered
-[  512.852710] io scheduler cfq registered (default)
-[  512.852811] Activating ISA DMA hang workarounds.
-[  512.852863] Boot video device is 0000:01:00.0
-[  512.853774] vesafb: framebuffer at 0xfc000000, mapped to 0xdf880000, using 3072k, total 16384k
-[  512.853810] vesafb: mode is 1024x768x16, linelength=2048, pages=9
-[  512.853822] vesafb: protected mode interface info at c000:775e
-[  512.853835] vesafb: pmi: set display start = c00c777f, set palette = c00c77e2
-[  512.853847] vesafb: scrolling: redraw
-[  512.853860] vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-[  512.923960] Console: switching to colour frame buffer device 128x48
-[  512.986685] fb0: VESA VGA frame buffer device
-[  513.067710] Switched to high resolution mode on CPU 0
-[  513.205175] Real Time Clock Driver v1.12ac
-[  513.211656] RAMDISK driver initialized: 16 RAM disks of 32000K size 1024 blocksize
-[  513.215248] PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:PS2M] at 0x60,0x64 irq 1,12
-[  513.221362] serio: i8042 KBD port at 0x60,0x64 irq 1
-[  513.222071] serio: i8042 AUX port at 0x60,0x64 irq 12
-[  513.224137] mice: PS/2 mouse device common for all mice
-[  513.225455] TCP cubic registered
-[  513.226615] NET: Registered protocol family 1
-[  513.227219] Using IPI Shortcut mode
-[  513.228835] BIOS EDD facility v0.16 2004-Jun-25, 6 devices found
-[  513.232248] Freeing unused kernel memory: 184k freed
-[  513.233159] Write protecting the kernel read-only data: 653k
-[  513.263516] Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-[  513.264476] ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-[  513.293580] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input0
-[  513.349168] ALI15X3: IDE controller at PCI slot 0000:00:04.0
-[  513.375781] ACPI: Unable to derive IRQ for device 0000:00:04.0
-[  513.401869] ACPI: PCI Interrupt 0000:00:04.0[A]: no GSI
-[  513.427790] ALI15X3: chipset revision 195
-[  513.453346] ALI15X3: not 100% native mode: will probe irqs later
-[  513.479152]     ide0: BM-DMA at 0xeff0-0xeff7, BIOS settings: hda:DMA, hdb:pio
-[  513.505467]     ide1: BM-DMA at 0xeff8-0xefff, BIOS settings: hdc:DMA, hdd:pio
-[  513.531468] Probing IDE interface ide0...
-[  513.804308] hda: IC25N020ATDA04-0, ATA DISK drive
-[  514.467211] hda: host side 80-wire cable detection failed, limiting max speed to UDMA33
-[  514.493782] hda: selected mode 0x42
-[  514.494311] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-[  514.538500] Probing IDE interface ide1...
-[  515.240478] hdc: TOSHIBA DVD-ROM SD-C2502, ATAPI CD/DVD-ROM drive
-[  515.906706] hdc: selected mode 0x42
-[  515.917997] ide1 at 0x170-0x177,0x376 on irq 15
-[  516.010525] hda: max request size: 128KiB
-[  516.037740] hda: 39070080 sectors (20003 MB) w/1806KiB Cache, CHS=38760/16/63, UDMA(33)
-[  516.065050] hda: cache flushes not supported
-[  516.092271]  hda: hda1 hda2
-[  516.498683] swsusp: Marking nosave pages: 000000000009f000 - 0000000000100000
-[  516.498714] swsusp: Basic memory bitmaps created
-[  516.534500] swsusp: Basic memory bitmaps freed
-[  516.663810] ReiserFS: hda2: found reiserfs format "3.6" with standard journal
-[  516.689397] ReiserFS: hda2: using ordered data mode
-[  516.720150] ReiserFS: hda2: journal params: device hda2, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
-[  516.780556] ReiserFS: hda2: checking transaction log (hda2)
-[  516.850414] ReiserFS: hda2: Using r5 hash to sort names
-[  526.225192] PCI: Enabling device 0000:00:08.0 (0000 -> 0001)
-[  526.225569] ALi_M1535: initialized. timeout=60 sec (nowayout=0)
-[  526.749085] Linux agpgart interface v0.102
-[  526.989915] agpgart: Detected ALi M1644 chipset
-[  527.001619] agpgart: AGP aperture is 64M @ 0xf0000000
-[  527.023664] hdc: ATAPI 24X DVD-ROM drive, 128kB Cache, UDMA(33)
-[  527.023707] Uniform CD-ROM driver Revision: 3.20
-[  527.063375] usbcore: registered new interface driver usbfs
-[  527.063674] usbcore: registered new interface driver hub
-[  527.077955] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
-[  527.078628] serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-[  527.080142] serial8250: ttyS3 at I/O 0x2e8 (irq = 3) is a 16550A
-[  527.129869] usbcore: registered new device driver usb
-[  527.153849] e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
-[  527.153867] e100: Copyright(c) 1999-2006 Intel Corporation
-[  527.155556] ACPI: PCI Interrupt Link [LNKD] enabled at IRQ 11
-[  527.155570] ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKD] -> GSI 11 (level, low) -> IRQ 11
-[  527.350234] e100: eth0: e100_probe: addr 0xf7efd000, irq 11, MAC addr 00:00:39:D7:14:A1
-[  527.350406] Yenta: CardBus bridge found at 0000:00:10.0 [12a3:ab01]
-[  527.350466] Yenta: Using CSCINT to route CSC interrupts to PCI
-[  527.350474] Yenta: Routing CardBus interrupts to PCI
-[  527.350489] Yenta TI: socket 0000:00:10.0, mfunc 0x01000002, devctl 0x60
-[  527.420546] 00:09: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-[  527.443070] ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
-[  527.580072] Yenta: ISA IRQ mask 0x0000, PCI irq 11
-[  527.580091] Socket status: 30000059
-[  527.630514] NET: Registered protocol family 23
-[  527.704313] Yenta: CardBus bridge found at 0000:00:11.0 [1179:0001]
-[  527.774824] Detected unconfigured Toshiba laptop with ALi ISA bridge SMSC IrDA chip, pre-configuring device.
-[  527.774863] Activated ALi 1533 ISA bridge port 0x02e8.
-[  527.774878] Activated ALi 1533 ISA bridge port 0x02f8.
-[  527.775087] found SMC SuperIO Chip (devid=0x5a rev=00 base=0x002e): LPC47N227
-[  527.775121] smsc_superio_flat(): fir: 0x2f8, sir: 0x2e8, dma: 03, irq: 7, mode: 0x0e
-[  527.775145] smsc_ircc_present: can't get sir_base of 0x2e8
-[  527.837344] Yenta: ISA IRQ mask 0x04b8, PCI irq 11
-[  527.837364] Socket status: 30000007
-[  527.906777] Yenta: CardBus bridge found at 0000:00:11.1 [1179:0001]
-[  528.033384] Yenta: ISA IRQ mask 0x04b8, PCI irq 11
-[  528.033402] Socket status: 30000007
-[  528.042128] ACPI: PCI Interrupt Link [LNKG] enabled at IRQ 11
-[  528.042150] ACPI: PCI Interrupt 0000:00:02.0[A] -> Link [LNKG] -> GSI 11 (level, low) -> IRQ 11
-[  528.042211] ohci_hcd 0000:00:02.0: OHCI Host Controller
-[  528.046259] ohci_hcd 0000:00:02.0: new USB bus registered, assigned bus number 1
-[  528.046357] ohci_hcd 0000:00:02.0: irq 11, io mem 0xf7eff000
-[  528.102951] usb usb1: configuration #1 chosen from 1 choice
-[  528.103303] hub 1-0:1.0: USB hub found
-[  528.103438] hub 1-0:1.0: 3 ports detected
-[  528.275998] ACPI: PCI Interrupt Link [LNKH] enabled at IRQ 11
-[  528.276020] ACPI: PCI Interrupt 0000:00:06.0[A] -> Link [LNKH] -> GSI 11 (level, low) -> IRQ 11
-[  528.355917] pccard: PCMCIA card inserted into slot 0
-[  532.210162] cs: IO port probe 0x100-0x3af: excluding 0x200-0x207 0x220-0x22f 0x2f8-0x2ff 0x330-0x337 0x378-0x37f 0x388-0x38f
-[  532.214075] cs: IO port probe 0x100-0x3af: excluding 0x200-0x207 0x220-0x22f 0x2f8-0x2ff 0x330-0x337 0x378-0x37f 0x388-0x38f
-[  532.217297] cs: IO port probe 0x3e0-0x4ff: excluding 0x408-0x40f 0x480-0x48f 0x4d0-0x4d7
-[  532.218853] cs: IO port probe 0x3e0-0x4ff: excluding 0x408-0x40f 0x480-0x48f 0x4d0-0x4d7
-[  532.225223] cs: IO port probe 0x820-0x8ff: clean.
-[  532.226550] cs: IO port probe 0xc00-0xcf7: clean.
-[  532.231621] cs: IO port probe 0x820-0x8ff: clean.
-[  532.232940] cs: IO port probe 0xc00-0xcf7: clean.
-[  532.269084] cs: IO port probe 0xa00-0xaff: clean.
-[  532.270873] cs: memory probe 0xa0000000-0xa0ffffff: clean.
-[  532.283757] cs: IO port probe 0xa00-0xaff: clean.
-[  532.465077] pcmcia: registering new device pcmcia0.0
-[  532.907159] cs: IO port probe 0x100-0x3af: excluding 0x200-0x207 0x220-0x22f 0x2f8-0x2ff 0x330-0x337 0x378-0x37f 0x388-0x38f
-[  532.928118] cs: IO port probe 0x3e0-0x4ff: excluding 0x408-0x40f 0x480-0x48f 0x4d0-0x4d7
-[  532.929579] cs: IO port probe 0x820-0x8ff: clean.
-[  532.981120] cs: IO port probe 0xc00-0xcf7: clean.
-[  532.983443] cs: IO port probe 0xa00-0xaff: clean.
-[  533.178476] wlags49_h1_cs v7.18 for PCMCIA, 03/31/2004 14:31:00 by Agere Systems, http://www.agere.com
-[  533.178495] *** Modified for kernel 2.6 by Andrey Borzenkov <arvidjaar@mail.ru> $Revision: 39 $
-[  533.178504] *** Station Mode (STA) Support: YES
-[  533.178509] *** Access Point Mode (AP) Support: YES
-[  533.949306] eth1: PRI 31 variant 2 version 9.48
-[  533.949377] eth1: NIC 5 variant 2 version 1.02
-[  533.994831] eth1: Wireless, io_addr 0x100, irq 11, mac_address 00:02:2D:26:95:6C
-[  535.164369] SCSI subsystem initialized
-[  535.308000] libata version 2.21 loaded.
-[  535.360714] input: ImPS/2 Generic Wheel Mouse as /devices/platform/i8042/serio1/input/input1
-[  535.466029] Toshiba System Managment Mode driver v1.11 26/9/2001
-[  535.653328] Non-volatile memory driver v1.2
-[  536.859592] ACPI: AC Adapter [ADP1] (on-line)
-[  536.900170] ACPI: Battery Slot [BAT1] (battery present)
-[  536.900367] ACPI: Battery Slot [BAT2] (battery absent)
-[  536.958727] input: Power Button (FF) as /devices/virtual/input/input2
-[  536.960157] ACPI: Power Button (FF) [PWRF]
-[  536.962563] input: Lid Switch as /devices/virtual/input/input3
-[  536.977515] ACPI: Lid Switch [LID]
-[  537.073923] ACPI: Transitioning device [FAN] to D3
-[  537.073940] ACPI: Transitioning device [FAN] to D3
-[  537.073960] ACPI: Fan [FAN] (off)
-[  537.210383] ACPI: CPU0 (power states: C1[C1] C2[C2])
-[  537.297469] ACPI: Thermal Zone [THRM] (58 C)
-[  537.383972] toshiba_acpi: Toshiba Laptop ACPI Extras version 0.18
-[  537.383995] toshiba_acpi:     HCI method: \_SB_.VALD.GHCI
-[  537.509934] ACPI: Video Device [VGA] (multi-head: yes  rom: yes  post: no)
-[  537.779131] Marking TSC unstable due to: possible TSC halt in C2.
-[  537.782438] Time: acpi_pm clocksource has been installed.
-[  537.805900] device-mapper: ioctl: 4.11.0-ioctl (2006-10-12) initialised: dm-devel@redhat.com
-[  538.133922] loop: module loaded
-[  538.431262] Clocksource tsc unstable (delta = -81870346 ns)
-[  540.428965] Adding 500432k swap on /dev/hda1.  Priority:-1 extents:1 across:500432k
-
---Boundary-01=_LrpxGIopXkH3w14
-Content-Type: text/plain;
-  charset="us-ascii";
-  name="config-2.6.22-2avb"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="config-2.6.22-2avb"
-
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.22
-# Sat Jul 14 21:00:53 2007
-#
-CONFIG_X86_32=y
-CONFIG_GENERIC_TIME=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_X86=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_QUICKLIST=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_DMI=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-
-#
-# Code maturity level options
-#
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-
-#
-# General setup
-#
-CONFIG_LOCALVERSION=""
-# CONFIG_LOCALVERSION_AUTO is not set
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-# CONFIG_IPC_NS is not set
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_POSIX_MQUEUE=y
-CONFIG_BSD_PROCESS_ACCT=y
-CONFIG_BSD_PROCESS_ACCT_V3=y
-# CONFIG_TASKSTATS is not set
-# CONFIG_UTS_NS is not set
-CONFIG_AUDIT=y
-CONFIG_AUDITSYSCALL=y
-# CONFIG_IKCONFIG is not set
-CONFIG_LOG_BUF_SHIFT=17
-# CONFIG_SYSFS_DEPRECATED is not set
-CONFIG_RELAY=y
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_INITRAMFS_SOURCE=""
-# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-CONFIG_SYSCTL=y
-CONFIG_EMBEDDED=y
-# CONFIG_UID16 is not set
-# CONFIG_SYSCTL_SYSCALL is not set
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-# CONFIG_KALLSYMS_EXTRA_PASS is not set
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_ANON_INODES=y
-CONFIG_EPOLL=y
-CONFIG_SIGNALFD=y
-CONFIG_TIMERFD=y
-CONFIG_EVENTFD=y
-CONFIG_SHMEM=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_SLUB_DEBUG=y
-# CONFIG_SLAB is not set
-CONFIG_SLUB=y
-# CONFIG_SLOB is not set
-CONFIG_RT_MUTEXES=y
-# CONFIG_TINY_SHMEM is not set
-CONFIG_BASE_SMALL=0
-
-#
-# Loadable module support
-#
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_MODULE_FORCE_UNLOAD=y
-CONFIG_MODVERSIONS=y
-# CONFIG_MODULE_SRCVERSION_ALL is not set
-CONFIG_KMOD=y
-
-#
-# Block layer
-#
-CONFIG_BLOCK=y
-# CONFIG_LBD is not set
-# CONFIG_BLK_DEV_IO_TRACE is not set
-# CONFIG_LSF is not set
-
-#
-# IO Schedulers
-#
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-# CONFIG_DEFAULT_AS is not set
-# CONFIG_DEFAULT_DEADLINE is not set
-CONFIG_DEFAULT_CFQ=y
-# CONFIG_DEFAULT_NOOP is not set
-CONFIG_DEFAULT_IOSCHED="cfq"
-
-#
-# Processor type and features
-#
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_HIGH_RES_TIMERS=y
-# CONFIG_SMP is not set
-CONFIG_X86_PC=y
-# CONFIG_X86_ELAN is not set
-# CONFIG_X86_VOYAGER is not set
-# CONFIG_X86_NUMAQ is not set
-# CONFIG_X86_SUMMIT is not set
-# CONFIG_X86_BIGSMP is not set
-# CONFIG_X86_VISWS is not set
-# CONFIG_X86_GENERICARCH is not set
-# CONFIG_X86_ES7000 is not set
-# CONFIG_PARAVIRT is not set
-# CONFIG_M386 is not set
-# CONFIG_M486 is not set
-# CONFIG_M586 is not set
-# CONFIG_M586TSC is not set
-# CONFIG_M586MMX is not set
-# CONFIG_M686 is not set
-# CONFIG_MPENTIUMII is not set
-CONFIG_MPENTIUMIII=y
-# CONFIG_MPENTIUMM is not set
-# CONFIG_MCORE2 is not set
-# CONFIG_MPENTIUM4 is not set
-# CONFIG_MK6 is not set
-# CONFIG_MK7 is not set
-# CONFIG_MK8 is not set
-# CONFIG_MCRUSOE is not set
-# CONFIG_MEFFICEON is not set
-# CONFIG_MWINCHIPC6 is not set
-# CONFIG_MWINCHIP2 is not set
-# CONFIG_MWINCHIP3D is not set
-# CONFIG_MGEODEGX1 is not set
-# CONFIG_MGEODE_LX is not set
-# CONFIG_MCYRIXIII is not set
-# CONFIG_MVIAC3_2 is not set
-# CONFIG_MVIAC7 is not set
-# CONFIG_X86_GENERIC is not set
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=5
-CONFIG_X86_XADD=y
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-# CONFIG_ARCH_HAS_ILOG2_U32 is not set
-# CONFIG_ARCH_HAS_ILOG2_U64 is not set
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_MODEL=4
-CONFIG_HPET_TIMER=y
-CONFIG_HPET_EMULATE_RTC=y
-# CONFIG_PREEMPT_NONE is not set
-CONFIG_PREEMPT_VOLUNTARY=y
-# CONFIG_PREEMPT is not set
-# CONFIG_X86_UP_APIC is not set
-# CONFIG_X86_MCE is not set
-CONFIG_VM86=y
-CONFIG_TOSHIBA=m
-# CONFIG_I8K is not set
-CONFIG_X86_REBOOTFIXUPS=y
-CONFIG_MICROCODE=m
-CONFIG_MICROCODE_OLD_INTERFACE=y
-CONFIG_X86_MSR=m
-CONFIG_X86_CPUID=m
-
-#
-# Firmware Drivers
-#
-CONFIG_EDD=y
-# CONFIG_DELL_RBU is not set
-# CONFIG_DCDBAS is not set
-CONFIG_NOHIGHMEM=y
-# CONFIG_HIGHMEM4G is not set
-# CONFIG_HIGHMEM64G is not set
-CONFIG_VMSPLIT_3G=y
-# CONFIG_VMSPLIT_3G_OPT is not set
-# CONFIG_VMSPLIT_2G is not set
-# CONFIG_VMSPLIT_2G_OPT is not set
-# CONFIG_VMSPLIT_1G is not set
-CONFIG_PAGE_OFFSET=0xC0000000
-CONFIG_ARCH_FLATMEM_ENABLE=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-# CONFIG_DISCONTIGMEM_MANUAL is not set
-# CONFIG_SPARSEMEM_MANUAL is not set
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_SPARSEMEM_STATIC=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-# CONFIG_RESOURCES_64BIT is not set
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_NR_QUICK=1
-# CONFIG_MATH_EMULATION is not set
-CONFIG_MTRR=y
-# CONFIG_EFI is not set
-CONFIG_SECCOMP=y
-# CONFIG_HZ_100 is not set
-# CONFIG_HZ_250 is not set
-CONFIG_HZ_300=y
-# CONFIG_HZ_1000 is not set
-CONFIG_HZ=300
-# CONFIG_KEXEC is not set
-CONFIG_PHYSICAL_START=0x100000
-# CONFIG_RELOCATABLE is not set
-CONFIG_PHYSICAL_ALIGN=0x100000
-# CONFIG_COMPAT_VDSO is not set
-
-#
-# Power management options (ACPI, APM)
-#
-CONFIG_PM=y
-# CONFIG_PM_LEGACY is not set
-# CONFIG_PM_DEBUG is not set
-# CONFIG_PM_SYSFS_DEPRECATED is not set
-CONFIG_SOFTWARE_SUSPEND=y
-CONFIG_PM_STD_PARTITION=""
-
-#
-# ACPI (Advanced Configuration and Power Interface) Support
-#
-CONFIG_ACPI=y
-CONFIG_ACPI_SLEEP=y
-CONFIG_ACPI_SLEEP_PROC_FS=y
-# CONFIG_ACPI_SLEEP_PROC_SLEEP is not set
-# CONFIG_ACPI_PROCFS is not set
-CONFIG_ACPI_AC=m
-CONFIG_ACPI_BATTERY=m
-CONFIG_ACPI_BUTTON=m
-CONFIG_ACPI_VIDEO=m
-CONFIG_ACPI_FAN=m
-# CONFIG_ACPI_DOCK is not set
-CONFIG_ACPI_PROCESSOR=m
-CONFIG_ACPI_THERMAL=m
-# CONFIG_ACPI_ASUS is not set
-CONFIG_ACPI_TOSHIBA=m
-# CONFIG_ACPI_CUSTOM_DSDT is not set
-CONFIG_ACPI_BLACKLIST_YEAR=0
-# CONFIG_ACPI_DEBUG is not set
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_X86_PM_TIMER=y
-# CONFIG_ACPI_CONTAINER is not set
-# CONFIG_ACPI_SBS is not set
-# CONFIG_APM is not set
-
-#
-# CPU Frequency scaling
-#
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_TABLE=y
-# CONFIG_CPU_FREQ_DEBUG is not set
-CONFIG_CPU_FREQ_STAT=y
-CONFIG_CPU_FREQ_STAT_DETAILS=y
-# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
-CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=m
-CONFIG_CPU_FREQ_GOV_POWERSAVE=m
-CONFIG_CPU_FREQ_GOV_USERSPACE=y
-CONFIG_CPU_FREQ_GOV_ONDEMAND=m
-CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
-
-#
-# CPUFreq processor drivers
-#
-CONFIG_X86_ACPI_CPUFREQ=m
-# CONFIG_X86_POWERNOW_K6 is not set
-# CONFIG_X86_POWERNOW_K7 is not set
-# CONFIG_X86_POWERNOW_K8 is not set
-# CONFIG_X86_GX_SUSPMOD is not set
-# CONFIG_X86_SPEEDSTEP_CENTRINO is not set
-# CONFIG_X86_SPEEDSTEP_ICH is not set
-# CONFIG_X86_SPEEDSTEP_SMI is not set
-# CONFIG_X86_P4_CLOCKMOD is not set
-# CONFIG_X86_CPUFREQ_NFORCE2 is not set
-# CONFIG_X86_LONGRUN is not set
-# CONFIG_X86_LONGHAUL is not set
-# CONFIG_X86_E_POWERSAVER is not set
-
-#
-# shared options
-#
-# CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
-# CONFIG_X86_SPEEDSTEP_LIB is not set
-
-#
-# Bus options (PCI, PCMCIA, EISA, MCA, ISA)
-#
-CONFIG_PCI=y
-# CONFIG_PCI_GOBIOS is not set
-# CONFIG_PCI_GOMMCONFIG is not set
-# CONFIG_PCI_GODIRECT is not set
-CONFIG_PCI_GOANY=y
-CONFIG_PCI_BIOS=y
-CONFIG_PCI_DIRECT=y
-CONFIG_PCI_MMCONFIG=y
-# CONFIG_PCIEPORTBUS is not set
-# CONFIG_ARCH_SUPPORTS_MSI is not set
-# CONFIG_PCI_DEBUG is not set
-CONFIG_ISA_DMA_API=y
-CONFIG_ISA=y
-# CONFIG_EISA is not set
-# CONFIG_MCA is not set
-# CONFIG_SCx200 is not set
-
-#
-# PCCARD (PCMCIA/CardBus) support
-#
-CONFIG_PCCARD=m
-# CONFIG_PCMCIA_DEBUG is not set
-CONFIG_PCMCIA=m
-CONFIG_PCMCIA_LOAD_CIS=y
-# CONFIG_PCMCIA_IOCTL is not set
-CONFIG_CARDBUS=y
-
-#
-# PC-card bridges
-#
-CONFIG_YENTA=m
-CONFIG_YENTA_O2=y
-CONFIG_YENTA_RICOH=y
-CONFIG_YENTA_TI=y
-CONFIG_YENTA_ENE_TUNE=y
-CONFIG_YENTA_TOSHIBA=y
-# CONFIG_PD6729 is not set
-# CONFIG_I82092 is not set
-# CONFIG_I82365 is not set
-# CONFIG_TCIC is not set
-CONFIG_PCMCIA_PROBE=y
-CONFIG_PCCARD_NONSTATIC=m
-# CONFIG_HOTPLUG_PCI is not set
-
-#
-# Executable file formats
-#
-CONFIG_BINFMT_ELF=y
-CONFIG_BINFMT_AOUT=m
-CONFIG_BINFMT_MISC=m
-
-#
-# Networking
-#
-CONFIG_NET=y
-
-#
-# Networking options
-#
-CONFIG_PACKET=m
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-CONFIG_XFRM_USER=m
-# CONFIG_XFRM_SUB_POLICY is not set
-# CONFIG_XFRM_MIGRATE is not set
-CONFIG_NET_KEY=m
-# CONFIG_NET_KEY_MIGRATE is not set
-CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
-CONFIG_IP_ADVANCED_ROUTER=y
-CONFIG_ASK_IP_FIB_HASH=y
-# CONFIG_IP_FIB_TRIE is not set
-CONFIG_IP_FIB_HASH=y
-CONFIG_IP_MULTIPLE_TABLES=y
-# CONFIG_IP_ROUTE_MULTIPATH is not set
-# CONFIG_IP_ROUTE_VERBOSE is not set
-# CONFIG_IP_PNP is not set
-# CONFIG_NET_IPIP is not set
-# CONFIG_NET_IPGRE is not set
-# CONFIG_IP_MROUTE is not set
-# CONFIG_ARPD is not set
-# CONFIG_SYN_COOKIES is not set
-# CONFIG_INET_AH is not set
-# CONFIG_INET_ESP is not set
-# CONFIG_INET_IPCOMP is not set
-# CONFIG_INET_XFRM_TUNNEL is not set
-# CONFIG_INET_TUNNEL is not set
-# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-# CONFIG_INET_XFRM_MODE_BEET is not set
-# CONFIG_INET_DIAG is not set
-# CONFIG_TCP_CONG_ADVANCED is not set
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-# CONFIG_TCP_MD5SIG is not set
-# CONFIG_IPV6 is not set
-# CONFIG_INET6_XFRM_TUNNEL is not set
-# CONFIG_INET6_TUNNEL is not set
-# CONFIG_NETWORK_SECMARK is not set
-# CONFIG_NETFILTER is not set
-# CONFIG_IP_DCCP is not set
-# CONFIG_IP_SCTP is not set
-# CONFIG_TIPC is not set
-# CONFIG_ATM is not set
-# CONFIG_BRIDGE is not set
-# CONFIG_VLAN_8021Q is not set
-# CONFIG_DECNET is not set
-# CONFIG_LLC2 is not set
-# CONFIG_IPX is not set
-# CONFIG_ATALK is not set
-# CONFIG_X25 is not set
-# CONFIG_LAPB is not set
-# CONFIG_ECONET is not set
-# CONFIG_WAN_ROUTER is not set
-
-#
-# QoS and/or fair queueing
-#
-# CONFIG_NET_SCHED is not set
-
-#
-# Network testing
-#
-# CONFIG_NET_PKTGEN is not set
-# CONFIG_NET_TCPPROBE is not set
-# CONFIG_HAMRADIO is not set
-CONFIG_IRDA=m
-
-#
-# IrDA protocols
-#
-CONFIG_IRLAN=m
-CONFIG_IRNET=m
-CONFIG_IRCOMM=m
-CONFIG_IRDA_ULTRA=y
-
-#
-# IrDA options
-#
-CONFIG_IRDA_CACHE_LAST_LSAP=y
-CONFIG_IRDA_FAST_RR=y
-# CONFIG_IRDA_DEBUG is not set
-
-#
-# Infrared-port device drivers
-#
-
-#
-# SIR device drivers
-#
-# CONFIG_IRTTY_SIR is not set
-
-#
-# Dongle support
-#
-# CONFIG_KINGSUN_DONGLE is not set
-
-#
-# Old SIR device drivers
-#
-# CONFIG_IRPORT_SIR is not set
-
-#
-# Old Serial dongle support
-#
-
-#
-# FIR device drivers
-#
-# CONFIG_USB_IRDA is not set
-# CONFIG_SIGMATEL_FIR is not set
-# CONFIG_NSC_FIR is not set
-# CONFIG_WINBOND_FIR is not set
-# CONFIG_TOSHIBA_FIR is not set
-CONFIG_SMC_IRCC_FIR=m
-# CONFIG_ALI_FIR is not set
-# CONFIG_VLSI_FIR is not set
-# CONFIG_VIA_FIR is not set
-# CONFIG_MCS_FIR is not set
-CONFIG_BT=m
-CONFIG_BT_L2CAP=m
-# CONFIG_BT_SCO is not set
-CONFIG_BT_RFCOMM=m
-CONFIG_BT_RFCOMM_TTY=y
-CONFIG_BT_BNEP=m
-# CONFIG_BT_BNEP_MC_FILTER is not set
-# CONFIG_BT_BNEP_PROTO_FILTER is not set
-# CONFIG_BT_HIDP is not set
-
-#
-# Bluetooth device drivers
-#
-CONFIG_BT_HCIUSB=m
-# CONFIG_BT_HCIUSB_SCO is not set
-# CONFIG_BT_HCIUART is not set
-# CONFIG_BT_HCIBCM203X is not set
-# CONFIG_BT_HCIBPA10X is not set
-# CONFIG_BT_HCIBFUSB is not set
-# CONFIG_BT_HCIDTL1 is not set
-# CONFIG_BT_HCIBT3C is not set
-# CONFIG_BT_HCIBLUECARD is not set
-# CONFIG_BT_HCIBTUART is not set
-# CONFIG_BT_HCIVHCI is not set
-# CONFIG_AF_RXRPC is not set
-CONFIG_FIB_RULES=y
-
-#
-# Wireless
-#
-CONFIG_CFG80211=m
-CONFIG_WIRELESS_EXT=y
-# CONFIG_MAC80211 is not set
-# CONFIG_IEEE80211 is not set
-# CONFIG_RFKILL is not set
-
-#
-# Device Drivers
-#
-
-#
-# Generic Driver Options
-#
-# CONFIG_STANDALONE is not set
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_FW_LOADER=m
-# CONFIG_DEBUG_DRIVER is not set
-# CONFIG_DEBUG_DEVRES is not set
-# CONFIG_SYS_HYPERVISOR is not set
-
-#
-# Connector - unified userspace <-> kernelspace linker
-#
-CONFIG_CONNECTOR=m
-# CONFIG_MTD is not set
-
-#
-# Parallel port support
-#
-# CONFIG_PARPORT is not set
-
-#
-# Plug and Play support
-#
-CONFIG_PNP=y
-# CONFIG_PNP_DEBUG is not set
-
-#
-# Protocols
-#
-# CONFIG_ISAPNP is not set
-# CONFIG_PNPBIOS is not set
-CONFIG_PNPACPI=y
-
-#
-# Block devices
-#
-# CONFIG_BLK_DEV_FD is not set
-# CONFIG_BLK_DEV_XD is not set
-# CONFIG_BLK_CPQ_DA is not set
-# CONFIG_BLK_CPQ_CISS_DA is not set
-# CONFIG_BLK_DEV_DAC960 is not set
-# CONFIG_BLK_DEV_UMEM is not set
-# CONFIG_BLK_DEV_COW_COMMON is not set
-CONFIG_BLK_DEV_LOOP=m
-CONFIG_BLK_DEV_CRYPTOLOOP=m
-CONFIG_BLK_DEV_NBD=m
-# CONFIG_BLK_DEV_SX8 is not set
-# CONFIG_BLK_DEV_UB is not set
-CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_RAM_COUNT=16
-CONFIG_BLK_DEV_RAM_SIZE=32000
-CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
-CONFIG_CDROM_PKTCDVD=y
-CONFIG_CDROM_PKTCDVD_BUFFERS=8
-# CONFIG_CDROM_PKTCDVD_WCACHE is not set
-# CONFIG_ATA_OVER_ETH is not set
-
-#
-# Misc devices
-#
-# CONFIG_IBM_ASM is not set
-# CONFIG_PHANTOM is not set
-# CONFIG_SGI_IOC4 is not set
-# CONFIG_TIFM_CORE is not set
-# CONFIG_MSI_LAPTOP is not set
-# CONFIG_SONY_LAPTOP is not set
-# CONFIG_THINKPAD_ACPI is not set
-CONFIG_IDE=m
-CONFIG_IDE_MAX_HWIFS=4
-CONFIG_BLK_DEV_IDE=m
-
-#
-# Please see Documentation/ide.txt for help/info on IDE drives
-#
-# CONFIG_BLK_DEV_IDE_SATA is not set
-# CONFIG_BLK_DEV_HD_IDE is not set
-CONFIG_BLK_DEV_IDEDISK=m
-# CONFIG_IDEDISK_MULTI_MODE is not set
-# CONFIG_BLK_DEV_IDECS is not set
-# CONFIG_BLK_DEV_DELKIN is not set
-CONFIG_BLK_DEV_IDECD=m
-# CONFIG_BLK_DEV_IDETAPE is not set
-# CONFIG_BLK_DEV_IDEFLOPPY is not set
-# CONFIG_BLK_DEV_IDESCSI is not set
-CONFIG_BLK_DEV_IDEACPI=y
-# CONFIG_IDE_TASK_IOCTL is not set
-# CONFIG_IDE_PROC_FS is not set
-
-#
-# IDE chipset support/bugfixes
-#
-CONFIG_IDE_GENERIC=m
-# CONFIG_BLK_DEV_CMD640 is not set
-# CONFIG_BLK_DEV_IDEPNP is not set
-CONFIG_BLK_DEV_IDEPCI=y
-CONFIG_IDEPCI_SHARE_IRQ=y
-# CONFIG_IDEPCI_PCIBUS_ORDER is not set
-# CONFIG_BLK_DEV_OFFBOARD is not set
-# CONFIG_BLK_DEV_GENERIC is not set
-# CONFIG_BLK_DEV_OPTI621 is not set
-# CONFIG_BLK_DEV_RZ1000 is not set
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-# CONFIG_BLK_DEV_IDEDMA_FORCED is not set
-# CONFIG_IDEDMA_ONLYDISK is not set
-# CONFIG_BLK_DEV_AEC62XX is not set
-CONFIG_BLK_DEV_ALI15X3=m
-# CONFIG_WDC_ALI15X3 is not set
-# CONFIG_BLK_DEV_AMD74XX is not set
-# CONFIG_BLK_DEV_ATIIXP is not set
-# CONFIG_BLK_DEV_CMD64X is not set
-# CONFIG_BLK_DEV_TRIFLEX is not set
-# CONFIG_BLK_DEV_CY82C693 is not set
-# CONFIG_BLK_DEV_CS5520 is not set
-# CONFIG_BLK_DEV_CS5530 is not set
-# CONFIG_BLK_DEV_CS5535 is not set
-# CONFIG_BLK_DEV_HPT34X is not set
-# CONFIG_BLK_DEV_HPT366 is not set
-# CONFIG_BLK_DEV_JMICRON is not set
-# CONFIG_BLK_DEV_SC1200 is not set
-# CONFIG_BLK_DEV_PIIX is not set
-# CONFIG_BLK_DEV_IT8213 is not set
-# CONFIG_BLK_DEV_IT821X is not set
-# CONFIG_BLK_DEV_NS87415 is not set
-# CONFIG_BLK_DEV_PDC202XX_OLD is not set
-# CONFIG_BLK_DEV_PDC202XX_NEW is not set
-# CONFIG_BLK_DEV_SVWKS is not set
-# CONFIG_BLK_DEV_SIIMAGE is not set
-# CONFIG_BLK_DEV_SIS5513 is not set
-# CONFIG_BLK_DEV_SLC90E66 is not set
-# CONFIG_BLK_DEV_TRM290 is not set
-# CONFIG_BLK_DEV_VIA82CXXX is not set
-# CONFIG_BLK_DEV_TC86C001 is not set
-# CONFIG_IDE_ARM is not set
-# CONFIG_IDE_CHIPSETS is not set
-CONFIG_BLK_DEV_IDEDMA=y
-# CONFIG_IDEDMA_IVB is not set
-# CONFIG_BLK_DEV_HD is not set
-
-#
-# SCSI device support
-#
-# CONFIG_RAID_ATTRS is not set
-CONFIG_SCSI=m
-CONFIG_SCSI_TGT=m
-# CONFIG_SCSI_NETLINK is not set
-CONFIG_SCSI_PROC_FS=y
-
-#
-# SCSI support type (disk, tape, CD-ROM)
-#
-CONFIG_BLK_DEV_SD=m
-# CONFIG_CHR_DEV_ST is not set
-# CONFIG_CHR_DEV_OSST is not set
-CONFIG_BLK_DEV_SR=m
-CONFIG_BLK_DEV_SR_VENDOR=y
-CONFIG_CHR_DEV_SG=m
-# CONFIG_CHR_DEV_SCH is not set
-
-#
-# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-#
-CONFIG_SCSI_MULTI_LUN=y
-CONFIG_SCSI_CONSTANTS=y
-CONFIG_SCSI_LOGGING=y
-# CONFIG_SCSI_SCAN_ASYNC is not set
-CONFIG_SCSI_WAIT_SCAN=m
-
-#
-# SCSI Transports
-#
-CONFIG_SCSI_SPI_ATTRS=m
-# CONFIG_SCSI_FC_ATTRS is not set
-CONFIG_SCSI_ISCSI_ATTRS=m
-# CONFIG_SCSI_SAS_ATTRS is not set
-# CONFIG_SCSI_SAS_LIBSAS is not set
-
-#
-# SCSI low-level drivers
-#
-# CONFIG_ISCSI_TCP is not set
-# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
-# CONFIG_SCSI_3W_9XXX is not set
-# CONFIG_SCSI_7000FASST is not set
-# CONFIG_SCSI_ACARD is not set
-# CONFIG_SCSI_AHA152X is not set
-# CONFIG_SCSI_AHA1542 is not set
-# CONFIG_SCSI_AACRAID is not set
-# CONFIG_SCSI_AIC7XXX is not set
-# CONFIG_SCSI_AIC7XXX_OLD is not set
-# CONFIG_SCSI_AIC79XX is not set
-# CONFIG_SCSI_AIC94XX is not set
-# CONFIG_SCSI_DPT_I2O is not set
-# CONFIG_SCSI_ADVANSYS is not set
-# CONFIG_SCSI_IN2000 is not set
-# CONFIG_SCSI_ARCMSR is not set
-# CONFIG_MEGARAID_NEWGEN is not set
-# CONFIG_MEGARAID_LEGACY is not set
-# CONFIG_MEGARAID_SAS is not set
-# CONFIG_SCSI_HPTIOP is not set
-# CONFIG_SCSI_BUSLOGIC is not set
-# CONFIG_SCSI_DMX3191D is not set
-# CONFIG_SCSI_DTC3280 is not set
-# CONFIG_SCSI_EATA is not set
-# CONFIG_SCSI_FUTURE_DOMAIN is not set
-# CONFIG_SCSI_GDTH is not set
-# CONFIG_SCSI_GENERIC_NCR5380 is not set
-# CONFIG_SCSI_GENERIC_NCR5380_MMIO is not set
-# CONFIG_SCSI_IPS is not set
-# CONFIG_SCSI_INITIO is not set
-# CONFIG_SCSI_INIA100 is not set
-# CONFIG_SCSI_NCR53C406A is not set
-# CONFIG_SCSI_STEX is not set
-# CONFIG_SCSI_SYM53C8XX_2 is not set
-# CONFIG_SCSI_PAS16 is not set
-# CONFIG_SCSI_PSI240I is not set
-# CONFIG_SCSI_QLOGIC_FAS is not set
-# CONFIG_SCSI_QLOGIC_1280 is not set
-# CONFIG_SCSI_QLA_FC is not set
-# CONFIG_SCSI_QLA_ISCSI is not set
-# CONFIG_SCSI_LPFC is not set
-# CONFIG_SCSI_SEAGATE is not set
-# CONFIG_SCSI_SYM53C416 is not set
-# CONFIG_SCSI_DC395x is not set
-# CONFIG_SCSI_DC390T is not set
-# CONFIG_SCSI_T128 is not set
-# CONFIG_SCSI_U14_34F is not set
-# CONFIG_SCSI_ULTRASTOR is not set
-# CONFIG_SCSI_NSP32 is not set
-# CONFIG_SCSI_DEBUG is not set
-# CONFIG_SCSI_SRP is not set
-
-#
-# PCMCIA SCSI adapter support
-#
-# CONFIG_PCMCIA_AHA152X is not set
-# CONFIG_PCMCIA_FDOMAIN is not set
-# CONFIG_PCMCIA_NINJA_SCSI is not set
-# CONFIG_PCMCIA_QLOGIC is not set
-# CONFIG_PCMCIA_SYM53C500 is not set
-# CONFIG_ATA is not set
-
-#
-# Old CD-ROM drivers (not SCSI, not IDE)
-#
-# CONFIG_CD_NO_IDESCSI is not set
-
-#
-# Multi-device support (RAID and LVM)
-#
-CONFIG_MD=y
-CONFIG_BLK_DEV_MD=m
-CONFIG_MD_LINEAR=m
-CONFIG_MD_RAID0=m
-CONFIG_MD_RAID1=m
-CONFIG_MD_RAID10=m
-CONFIG_MD_RAID456=m
-CONFIG_MD_RAID5_RESHAPE=y
-CONFIG_MD_MULTIPATH=m
-CONFIG_MD_FAULTY=m
-CONFIG_BLK_DEV_DM=m
-# CONFIG_DM_DEBUG is not set
-CONFIG_DM_CRYPT=m
-CONFIG_DM_SNAPSHOT=m
-CONFIG_DM_MIRROR=m
-CONFIG_DM_ZERO=m
-CONFIG_DM_MULTIPATH=m
-CONFIG_DM_MULTIPATH_EMC=m
-# CONFIG_DM_DELAY is not set
-
-#
-# Fusion MPT device support
-#
-# CONFIG_FUSION is not set
-# CONFIG_FUSION_SPI is not set
-# CONFIG_FUSION_FC is not set
-# CONFIG_FUSION_SAS is not set
-
-#
-# IEEE 1394 (FireWire) support
-#
-# CONFIG_FIREWIRE is not set
-# CONFIG_IEEE1394 is not set
-
-#
-# I2O device support
-#
-# CONFIG_I2O is not set
-# CONFIG_MACINTOSH_DRIVERS is not set
-
-#
-# Network device support
-#
-CONFIG_NETDEVICES=y
-CONFIG_DUMMY=m
-CONFIG_BONDING=m
-# CONFIG_EQUALIZER is not set
-CONFIG_TUN=m
-# CONFIG_NET_SB1000 is not set
-# CONFIG_ARCNET is not set
-# CONFIG_PHYLIB is not set
-
-#
-# Ethernet (10 or 100Mbit)
-#
-CONFIG_NET_ETHERNET=y
-CONFIG_MII=m
-# CONFIG_HAPPYMEAL is not set
-# CONFIG_SUNGEM is not set
-# CONFIG_CASSINI is not set
-# CONFIG_NET_VENDOR_3COM is not set
-# CONFIG_LANCE is not set
-# CONFIG_NET_VENDOR_SMC is not set
-# CONFIG_NET_VENDOR_RACAL is not set
-
-#
-# Tulip family network device support
-#
-# CONFIG_NET_TULIP is not set
-# CONFIG_AT1700 is not set
-# CONFIG_DEPCA is not set
-# CONFIG_HP100 is not set
-# CONFIG_NET_ISA is not set
-CONFIG_NET_PCI=y
-# CONFIG_PCNET32 is not set
-# CONFIG_AMD8111_ETH is not set
-# CONFIG_ADAPTEC_STARFIRE is not set
-# CONFIG_AC3200 is not set
-# CONFIG_APRICOT is not set
-# CONFIG_B44 is not set
-# CONFIG_FORCEDETH is not set
-# CONFIG_CS89x0 is not set
-# CONFIG_DGRS is not set
-# CONFIG_EEPRO100 is not set
-CONFIG_E100=m
-# CONFIG_FEALNX is not set
-# CONFIG_NATSEMI is not set
-# CONFIG_NE2K_PCI is not set
-# CONFIG_8139CP is not set
-# CONFIG_8139TOO is not set
-# CONFIG_SIS900 is not set
-# CONFIG_EPIC100 is not set
-# CONFIG_SUNDANCE is not set
-# CONFIG_TLAN is not set
-# CONFIG_VIA_RHINE is not set
-# CONFIG_SC92031 is not set
-# CONFIG_NETDEV_1000 is not set
-# CONFIG_NETDEV_10000 is not set
-# CONFIG_TR is not set
-
-#
-# Wireless LAN
-#
-# CONFIG_WLAN_PRE80211 is not set
-CONFIG_WLAN_80211=y
-# CONFIG_PCMCIA_RAYCS is not set
-# CONFIG_IPW2100 is not set
-# CONFIG_IPW2200 is not set
-# CONFIG_LIBERTAS is not set
-# CONFIG_AIRO is not set
-# CONFIG_HERMES is not set
-# CONFIG_ATMEL is not set
-# CONFIG_AIRO_CS is not set
-# CONFIG_PCMCIA_WL3501 is not set
-# CONFIG_PRISM54 is not set
-# CONFIG_USB_ZD1201 is not set
-# CONFIG_HOSTAP is not set
-
-#
-# USB Network Adapters
-#
-# CONFIG_USB_CATC is not set
-# CONFIG_USB_KAWETH is not set
-# CONFIG_USB_PEGASUS is not set
-# CONFIG_USB_RTL8150 is not set
-# CONFIG_USB_USBNET_MII is not set
-# CONFIG_USB_USBNET is not set
-# CONFIG_NET_PCMCIA is not set
-# CONFIG_WAN is not set
-# CONFIG_FDDI is not set
-# CONFIG_HIPPI is not set
-CONFIG_PPP=m
-CONFIG_PPP_MULTILINK=y
-CONFIG_PPP_FILTER=y
-CONFIG_PPP_ASYNC=m
-CONFIG_PPP_SYNC_TTY=m
-CONFIG_PPP_DEFLATE=m
-CONFIG_PPP_BSDCOMP=m
-CONFIG_PPP_MPPE=m
-CONFIG_PPPOE=m
-# CONFIG_SLIP is not set
-CONFIG_SLHC=m
-# CONFIG_NET_FC is not set
-CONFIG_SHAPER=m
-CONFIG_NETCONSOLE=m
-CONFIG_NETPOLL=y
-# CONFIG_NETPOLL_TRAP is not set
-CONFIG_NET_POLL_CONTROLLER=y
-
-#
-# ISDN subsystem
-#
-# CONFIG_ISDN is not set
-
-#
-# Telephony Support
-#
-# CONFIG_PHONE is not set
-
-#
-# Input device support
-#
-CONFIG_INPUT=y
-# CONFIG_INPUT_FF_MEMLESS is not set
-# CONFIG_INPUT_POLLDEV is not set
-
-#
-# Userland interfaces
-#
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_PSAUX=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-CONFIG_INPUT_JOYDEV=m
-CONFIG_INPUT_TSDEV=m
-CONFIG_INPUT_TSDEV_SCREEN_X=240
-CONFIG_INPUT_TSDEV_SCREEN_Y=320
-CONFIG_INPUT_EVDEV=m
-# CONFIG_INPUT_EVBUG is not set
-
-#
-# Input Device Drivers
-#
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-# CONFIG_KEYBOARD_SUNKBD is not set
-# CONFIG_KEYBOARD_LKKBD is not set
-# CONFIG_KEYBOARD_XTKBD is not set
-# CONFIG_KEYBOARD_NEWTON is not set
-# CONFIG_KEYBOARD_STOWAWAY is not set
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=m
-# CONFIG_MOUSE_PS2_ALPS is not set
-# CONFIG_MOUSE_PS2_LOGIPS2PP is not set
-# CONFIG_MOUSE_PS2_SYNAPTICS is not set
-# CONFIG_MOUSE_PS2_LIFEBOOK is not set
-# CONFIG_MOUSE_PS2_TRACKPOINT is not set
-# CONFIG_MOUSE_PS2_TOUCHKIT is not set
-# CONFIG_MOUSE_SERIAL is not set
-# CONFIG_MOUSE_APPLETOUCH is not set
-# CONFIG_MOUSE_INPORT is not set
-# CONFIG_MOUSE_LOGIBM is not set
-# CONFIG_MOUSE_PC110PAD is not set
-# CONFIG_MOUSE_VSXXXAA is not set
-# CONFIG_INPUT_JOYSTICK is not set
-# CONFIG_INPUT_TABLET is not set
-# CONFIG_INPUT_TOUCHSCREEN is not set
-CONFIG_INPUT_MISC=y
-CONFIG_INPUT_PCSPKR=m
-# CONFIG_INPUT_WISTRON_BTNS is not set
-# CONFIG_INPUT_ATLAS_BTNS is not set
-# CONFIG_INPUT_ATI_REMOTE is not set
-# CONFIG_INPUT_ATI_REMOTE2 is not set
-# CONFIG_INPUT_KEYSPAN_REMOTE is not set
-# CONFIG_INPUT_POWERMATE is not set
-# CONFIG_INPUT_YEALINK is not set
-CONFIG_INPUT_UINPUT=m
-
-#
-# Hardware I/O ports
-#
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-CONFIG_SERIO_SERPORT=y
-# CONFIG_SERIO_CT82C710 is not set
-# CONFIG_SERIO_PCIPS2 is not set
-CONFIG_SERIO_LIBPS2=y
-CONFIG_SERIO_RAW=m
-# CONFIG_GAMEPORT is not set
-
-#
-# Character devices
-#
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_VT_HW_CONSOLE_BINDING=y
-# CONFIG_SERIAL_NONSTANDARD is not set
-
-#
-# Serial drivers
-#
-CONFIG_SERIAL_8250=m
-# CONFIG_SERIAL_8250_PCI is not set
-CONFIG_SERIAL_8250_PNP=m
-CONFIG_SERIAL_8250_CS=m
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-CONFIG_SERIAL_8250_EXTENDED=y
-# CONFIG_SERIAL_8250_MANY_PORTS is not set
-CONFIG_SERIAL_8250_SHARE_IRQ=y
-# CONFIG_SERIAL_8250_DETECT_IRQ is not set
-# CONFIG_SERIAL_8250_RSA is not set
-
-#
-# Non-8250 serial port support
-#
-CONFIG_SERIAL_CORE=m
-# CONFIG_SERIAL_JSM is not set
-CONFIG_UNIX98_PTYS=y
-CONFIG_LEGACY_PTYS=y
-CONFIG_LEGACY_PTY_COUNT=256
-
-#
-# IPMI
-#
-# CONFIG_IPMI_HANDLER is not set
-CONFIG_WATCHDOG=y
-# CONFIG_WATCHDOG_NOWAYOUT is not set
-
-#
-# Watchdog Device Drivers
-#
-CONFIG_SOFT_WATCHDOG=m
-# CONFIG_ACQUIRE_WDT is not set
-# CONFIG_ADVANTECH_WDT is not set
-CONFIG_ALIM1535_WDT=m
-# CONFIG_ALIM7101_WDT is not set
-# CONFIG_SC520_WDT is not set
-# CONFIG_EUROTECH_WDT is not set
-# CONFIG_IB700_WDT is not set
-# CONFIG_IBMASR is not set
-# CONFIG_WAFER_WDT is not set
-# CONFIG_I6300ESB_WDT is not set
-# CONFIG_ITCO_WDT is not set
-# CONFIG_SC1200_WDT is not set
-# CONFIG_PC87413_WDT is not set
-# CONFIG_60XX_WDT is not set
-# CONFIG_SBC8360_WDT is not set
-# CONFIG_CPU5_WDT is not set
-# CONFIG_SMSC37B787_WDT is not set
-# CONFIG_W83627HF_WDT is not set
-# CONFIG_W83697HF_WDT is not set
-# CONFIG_W83877F_WDT is not set
-# CONFIG_W83977F_WDT is not set
-# CONFIG_MACHZ_WDT is not set
-# CONFIG_SBC_EPX_C3_WATCHDOG is not set
-
-#
-# ISA-based Watchdog Cards
-#
-# CONFIG_PCWATCHDOG is not set
-# CONFIG_MIXCOMWD is not set
-# CONFIG_WDT is not set
-
-#
-# PCI-based Watchdog Cards
-#
-# CONFIG_PCIPCWATCHDOG is not set
-# CONFIG_WDTPCI is not set
-
-#
-# USB-based Watchdog Cards
-#
-# CONFIG_USBPCWATCHDOG is not set
-CONFIG_HW_RANDOM=y
-CONFIG_HW_RANDOM_INTEL=m
-# CONFIG_HW_RANDOM_AMD is not set
-# CONFIG_HW_RANDOM_GEODE is not set
-# CONFIG_HW_RANDOM_VIA is not set
-CONFIG_NVRAM=m
-CONFIG_RTC=y
-# CONFIG_DTLK is not set
-# CONFIG_R3964 is not set
-# CONFIG_APPLICOM is not set
-# CONFIG_SONYPI is not set
-CONFIG_AGP=m
-CONFIG_AGP_ALI=m
-# CONFIG_AGP_ATI is not set
-# CONFIG_AGP_AMD is not set
-# CONFIG_AGP_AMD64 is not set
-# CONFIG_AGP_INTEL is not set
-# CONFIG_AGP_NVIDIA is not set
-# CONFIG_AGP_SIS is not set
-# CONFIG_AGP_SWORKS is not set
-# CONFIG_AGP_VIA is not set
-# CONFIG_AGP_EFFICEON is not set
-# CONFIG_DRM is not set
-
-#
-# PCMCIA character devices
-#
-# CONFIG_SYNCLINK_CS is not set
-# CONFIG_CARDMAN_4000 is not set
-# CONFIG_CARDMAN_4040 is not set
-# CONFIG_MWAVE is not set
-# CONFIG_PC8736x_GPIO is not set
-# CONFIG_NSC_GPIO is not set
-# CONFIG_CS5535_GPIO is not set
-CONFIG_RAW_DRIVER=m
-CONFIG_MAX_RAW_DEVS=256
-CONFIG_HPET=y
-# CONFIG_HPET_RTC_IRQ is not set
-CONFIG_HPET_MMAP=y
-CONFIG_HANGCHECK_TIMER=m
-
-#
-# TPM devices
-#
-# CONFIG_TCG_TPM is not set
-# CONFIG_TELCLOCK is not set
-CONFIG_DEVPORT=y
-CONFIG_I2C=m
-CONFIG_I2C_BOARDINFO=y
-CONFIG_I2C_CHARDEV=m
-
-#
-# I2C Algorithms
-#
-CONFIG_I2C_ALGOBIT=m
-CONFIG_I2C_ALGOPCF=m
-CONFIG_I2C_ALGOPCA=m
-
-#
-# I2C Hardware Bus support
-#
-CONFIG_I2C_ALI1535=m
-# CONFIG_I2C_ALI1563 is not set
-# CONFIG_I2C_ALI15X3 is not set
-# CONFIG_I2C_AMD756 is not set
-# CONFIG_I2C_AMD8111 is not set
-# CONFIG_I2C_ELEKTOR is not set
-# CONFIG_I2C_I801 is not set
-# CONFIG_I2C_I810 is not set
-# CONFIG_I2C_PIIX4 is not set
-# CONFIG_I2C_NFORCE2 is not set
-# CONFIG_I2C_OCORES is not set
-# CONFIG_I2C_PARPORT_LIGHT is not set
-# CONFIG_I2C_PROSAVAGE is not set
-# CONFIG_I2C_SAVAGE4 is not set
-# CONFIG_I2C_SIMTEC is not set
-# CONFIG_SCx200_ACB is not set
-# CONFIG_I2C_SIS5595 is not set
-# CONFIG_I2C_SIS630 is not set
-# CONFIG_I2C_SIS96X is not set
-CONFIG_I2C_STUB=m
-# CONFIG_I2C_TINY_USB is not set
-# CONFIG_I2C_VIA is not set
-# CONFIG_I2C_VIAPRO is not set
-# CONFIG_I2C_VOODOO3 is not set
-# CONFIG_I2C_PCA_ISA is not set
-
-#
-# Miscellaneous I2C Chip support
-#
-# CONFIG_SENSORS_DS1337 is not set
-# CONFIG_SENSORS_DS1374 is not set
-CONFIG_SENSORS_EEPROM=m
-# CONFIG_SENSORS_PCF8574 is not set
-# CONFIG_SENSORS_PCA9539 is not set
-# CONFIG_SENSORS_PCF8591 is not set
-# CONFIG_SENSORS_MAX6875 is not set
-# CONFIG_I2C_DEBUG_CORE is not set
-# CONFIG_I2C_DEBUG_ALGO is not set
-# CONFIG_I2C_DEBUG_BUS is not set
-# CONFIG_I2C_DEBUG_CHIP is not set
-
-#
-# SPI support
-#
-# CONFIG_SPI is not set
-# CONFIG_SPI_MASTER is not set
-
-#
-# Dallas's 1-wire bus
-#
-# CONFIG_W1 is not set
-CONFIG_HWMON=m
-# CONFIG_HWMON_VID is not set
-# CONFIG_SENSORS_ABITUGURU is not set
-# CONFIG_SENSORS_AD7418 is not set
-# CONFIG_SENSORS_ADM1021 is not set
-# CONFIG_SENSORS_ADM1025 is not set
-# CONFIG_SENSORS_ADM1026 is not set
-# CONFIG_SENSORS_ADM1029 is not set
-# CONFIG_SENSORS_ADM1031 is not set
-# CONFIG_SENSORS_ADM9240 is not set
-# CONFIG_SENSORS_K8TEMP is not set
-# CONFIG_SENSORS_ASB100 is not set
-# CONFIG_SENSORS_ATXP1 is not set
-# CONFIG_SENSORS_DS1621 is not set
-# CONFIG_SENSORS_F71805F is not set
-# CONFIG_SENSORS_FSCHER is not set
-# CONFIG_SENSORS_FSCPOS is not set
-# CONFIG_SENSORS_GL518SM is not set
-# CONFIG_SENSORS_GL520SM is not set
-# CONFIG_SENSORS_CORETEMP is not set
-# CONFIG_SENSORS_IT87 is not set
-# CONFIG_SENSORS_LM63 is not set
-# CONFIG_SENSORS_LM75 is not set
-# CONFIG_SENSORS_LM77 is not set
-# CONFIG_SENSORS_LM78 is not set
-# CONFIG_SENSORS_LM80 is not set
-# CONFIG_SENSORS_LM83 is not set
-# CONFIG_SENSORS_LM85 is not set
-# CONFIG_SENSORS_LM87 is not set
-CONFIG_SENSORS_LM90=m
-# CONFIG_SENSORS_LM92 is not set
-# CONFIG_SENSORS_MAX1619 is not set
-# CONFIG_SENSORS_MAX6650 is not set
-# CONFIG_SENSORS_PC87360 is not set
-# CONFIG_SENSORS_PC87427 is not set
-# CONFIG_SENSORS_SIS5595 is not set
-# CONFIG_SENSORS_SMSC47M1 is not set
-# CONFIG_SENSORS_SMSC47M192 is not set
-# CONFIG_SENSORS_SMSC47B397 is not set
-# CONFIG_SENSORS_VIA686A is not set
-# CONFIG_SENSORS_VT1211 is not set
-# CONFIG_SENSORS_VT8231 is not set
-# CONFIG_SENSORS_W83781D is not set
-# CONFIG_SENSORS_W83791D is not set
-# CONFIG_SENSORS_W83792D is not set
-# CONFIG_SENSORS_W83793 is not set
-# CONFIG_SENSORS_W83L785TS is not set
-# CONFIG_SENSORS_W83627HF is not set
-# CONFIG_SENSORS_W83627EHF is not set
-# CONFIG_SENSORS_HDAPS is not set
-# CONFIG_SENSORS_APPLESMC is not set
-# CONFIG_HWMON_DEBUG_CHIP is not set
-
-#
-# Multifunction device drivers
-#
-# CONFIG_MFD_SM501 is not set
-
-#
-# Multimedia devices
-#
-# CONFIG_VIDEO_DEV is not set
-# CONFIG_DVB_CORE is not set
-# CONFIG_DAB is not set
-
-#
-# Graphics support
-#
-CONFIG_BACKLIGHT_LCD_SUPPORT=y
-CONFIG_BACKLIGHT_CLASS_DEVICE=m
-CONFIG_LCD_CLASS_DEVICE=m
-# CONFIG_BACKLIGHT_PROGEAR is not set
-
-#
-# Display device support
-#
-# CONFIG_DISPLAY_SUPPORT is not set
-# CONFIG_VGASTATE is not set
-CONFIG_FB=y
-CONFIG_FIRMWARE_EDID=y
-# CONFIG_FB_DDC is not set
-CONFIG_FB_CFB_FILLRECT=y
-CONFIG_FB_CFB_COPYAREA=y
-CONFIG_FB_CFB_IMAGEBLIT=y
-# CONFIG_FB_SYS_FILLRECT is not set
-# CONFIG_FB_SYS_COPYAREA is not set
-# CONFIG_FB_SYS_IMAGEBLIT is not set
-# CONFIG_FB_SYS_FOPS is not set
-CONFIG_FB_DEFERRED_IO=y
-# CONFIG_FB_SVGALIB is not set
-# CONFIG_FB_MACMODES is not set
-# CONFIG_FB_BACKLIGHT is not set
-CONFIG_FB_MODE_HELPERS=y
-CONFIG_FB_TILEBLITTING=y
-
-#
-# Frame buffer hardware drivers
-#
-# CONFIG_FB_CIRRUS is not set
-# CONFIG_FB_PM2 is not set
-# CONFIG_FB_CYBER2000 is not set
-# CONFIG_FB_ARC is not set
-# CONFIG_FB_ASILIANT is not set
-# CONFIG_FB_IMSTT is not set
-# CONFIG_FB_VGA16 is not set
-CONFIG_FB_VESA=y
-# CONFIG_FB_HECUBA is not set
-# CONFIG_FB_HGA is not set
-# CONFIG_FB_S1D13XXX is not set
-# CONFIG_FB_NVIDIA is not set
-# CONFIG_FB_RIVA is not set
-# CONFIG_FB_I810 is not set
-# CONFIG_FB_LE80578 is not set
-# CONFIG_FB_INTEL is not set
-# CONFIG_FB_MATROX is not set
-# CONFIG_FB_RADEON is not set
-# CONFIG_FB_ATY128 is not set
-# CONFIG_FB_ATY is not set
-# CONFIG_FB_S3 is not set
-# CONFIG_FB_SAVAGE is not set
-# CONFIG_FB_SIS is not set
-# CONFIG_FB_NEOMAGIC is not set
-# CONFIG_FB_KYRO is not set
-# CONFIG_FB_3DFX is not set
-# CONFIG_FB_VOODOO1 is not set
-# CONFIG_FB_VT8623 is not set
-# CONFIG_FB_CYBLA is not set
-# CONFIG_FB_TRIDENT is not set
-# CONFIG_FB_ARK is not set
-# CONFIG_FB_PM3 is not set
-# CONFIG_FB_GEODE is not set
-# CONFIG_FB_VIRTUAL is not set
-
-#
-# Console display driver support
-#
-CONFIG_VGA_CONSOLE=y
-# CONFIG_VGACON_SOFT_SCROLLBACK is not set
-CONFIG_VIDEO_SELECT=y
-# CONFIG_MDA_CONSOLE is not set
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_FRAMEBUFFER_CONSOLE=y
-# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
-CONFIG_FONTS=y
-CONFIG_FONT_8x8=y
-CONFIG_FONT_8x16=y
-# CONFIG_FONT_6x11 is not set
-# CONFIG_FONT_7x14 is not set
-# CONFIG_FONT_PEARL_8x8 is not set
-# CONFIG_FONT_ACORN_8x8 is not set
-# CONFIG_FONT_MINI_4x6 is not set
-# CONFIG_FONT_SUN8x16 is not set
-# CONFIG_FONT_SUN12x22 is not set
-# CONFIG_FONT_10x18 is not set
-CONFIG_LOGO=y
-CONFIG_LOGO_LINUX_MONO=y
-CONFIG_LOGO_LINUX_VGA16=y
-CONFIG_LOGO_LINUX_CLUT224=y
-
-#
-# Sound
-#
-CONFIG_SOUND=m
-
-#
-# Advanced Linux Sound Architecture
-#
-CONFIG_SND=m
-CONFIG_SND_TIMER=m
-CONFIG_SND_PCM=m
-CONFIG_SND_RAWMIDI=m
-CONFIG_SND_SEQUENCER=m
-CONFIG_SND_SEQ_DUMMY=m
-CONFIG_SND_OSSEMUL=y
-CONFIG_SND_MIXER_OSS=m
-CONFIG_SND_PCM_OSS=m
-CONFIG_SND_PCM_OSS_PLUGINS=y
-CONFIG_SND_SEQUENCER_OSS=y
-CONFIG_SND_RTCTIMER=m
-CONFIG_SND_SEQ_RTCTIMER_DEFAULT=y
-# CONFIG_SND_DYNAMIC_MINORS is not set
-CONFIG_SND_SUPPORT_OLD_API=y
-CONFIG_SND_VERBOSE_PROCFS=y
-# CONFIG_SND_VERBOSE_PRINTK is not set
-# CONFIG_SND_DEBUG is not set
-
-#
-# Generic devices
-#
-CONFIG_SND_MPU401_UART=m
-CONFIG_SND_AC97_CODEC=m
-CONFIG_SND_DUMMY=m
-CONFIG_SND_VIRMIDI=m
-CONFIG_SND_MTPAV=m
-CONFIG_SND_SERIAL_U16550=m
-CONFIG_SND_MPU401=m
-
-#
-# ISA devices
-#
-# CONFIG_SND_ADLIB is not set
-# CONFIG_SND_AD1816A is not set
-# CONFIG_SND_AD1848 is not set
-# CONFIG_SND_ALS100 is not set
-# CONFIG_SND_AZT2320 is not set
-# CONFIG_SND_CMI8330 is not set
-# CONFIG_SND_CS4231 is not set
-# CONFIG_SND_CS4232 is not set
-# CONFIG_SND_CS4236 is not set
-# CONFIG_SND_DT019X is not set
-# CONFIG_SND_ES968 is not set
-# CONFIG_SND_ES1688 is not set
-# CONFIG_SND_ES18XX is not set
-# CONFIG_SND_GUSCLASSIC is not set
-# CONFIG_SND_GUSEXTREME is not set
-# CONFIG_SND_GUSMAX is not set
-# CONFIG_SND_INTERWAVE is not set
-# CONFIG_SND_INTERWAVE_STB is not set
-# CONFIG_SND_OPL3SA2 is not set
-# CONFIG_SND_OPTI92X_AD1848 is not set
-# CONFIG_SND_OPTI92X_CS4231 is not set
-# CONFIG_SND_OPTI93X is not set
-# CONFIG_SND_MIRO is not set
-# CONFIG_SND_SB8 is not set
-# CONFIG_SND_SB16 is not set
-# CONFIG_SND_SBAWE is not set
-# CONFIG_SND_SGALAXY is not set
-# CONFIG_SND_SSCAPE is not set
-# CONFIG_SND_WAVEFRONT is not set
-
-#
-# PCI devices
-#
-# CONFIG_SND_AD1889 is not set
-# CONFIG_SND_ALS300 is not set
-# CONFIG_SND_ALS4000 is not set
-CONFIG_SND_ALI5451=m
-# CONFIG_SND_ATIIXP is not set
-# CONFIG_SND_ATIIXP_MODEM is not set
-# CONFIG_SND_AU8810 is not set
-# CONFIG_SND_AU8820 is not set
-# CONFIG_SND_AU8830 is not set
-# CONFIG_SND_AZT3328 is not set
-# CONFIG_SND_BT87X is not set
-# CONFIG_SND_CA0106 is not set
-# CONFIG_SND_CMIPCI is not set
-# CONFIG_SND_CS4281 is not set
-# CONFIG_SND_CS46XX is not set
-# CONFIG_SND_CS5535AUDIO is not set
-# CONFIG_SND_DARLA20 is not set
-# CONFIG_SND_GINA20 is not set
-# CONFIG_SND_LAYLA20 is not set
-# CONFIG_SND_DARLA24 is not set
-# CONFIG_SND_GINA24 is not set
-# CONFIG_SND_LAYLA24 is not set
-# CONFIG_SND_MONA is not set
-# CONFIG_SND_MIA is not set
-# CONFIG_SND_ECHO3G is not set
-# CONFIG_SND_INDIGO is not set
-# CONFIG_SND_INDIGOIO is not set
-# CONFIG_SND_INDIGODJ is not set
-# CONFIG_SND_EMU10K1 is not set
-# CONFIG_SND_EMU10K1X is not set
-# CONFIG_SND_ENS1370 is not set
-# CONFIG_SND_ENS1371 is not set
-# CONFIG_SND_ES1938 is not set
-# CONFIG_SND_ES1968 is not set
-# CONFIG_SND_FM801 is not set
-# CONFIG_SND_HDA_INTEL is not set
-# CONFIG_SND_HDSP is not set
-# CONFIG_SND_HDSPM is not set
-# CONFIG_SND_ICE1712 is not set
-# CONFIG_SND_ICE1724 is not set
-# CONFIG_SND_INTEL8X0 is not set
-# CONFIG_SND_INTEL8X0M is not set
-# CONFIG_SND_KORG1212 is not set
-# CONFIG_SND_MAESTRO3 is not set
-# CONFIG_SND_MIXART is not set
-# CONFIG_SND_NM256 is not set
-# CONFIG_SND_PCXHR is not set
-# CONFIG_SND_RIPTIDE is not set
-# CONFIG_SND_RME32 is not set
-# CONFIG_SND_RME96 is not set
-# CONFIG_SND_RME9652 is not set
-# CONFIG_SND_SONICVIBES is not set
-# CONFIG_SND_TRIDENT is not set
-# CONFIG_SND_VIA82XX is not set
-# CONFIG_SND_VIA82XX_MODEM is not set
-# CONFIG_SND_VX222 is not set
-# CONFIG_SND_YMFPCI is not set
-CONFIG_SND_AC97_POWER_SAVE=y
-
-#
-# USB devices
-#
-# CONFIG_SND_USB_AUDIO is not set
-# CONFIG_SND_USB_USX2Y is not set
-# CONFIG_SND_USB_CAIAQ is not set
-
-#
-# PCMCIA devices
-#
-# CONFIG_SND_VXPOCKET is not set
-# CONFIG_SND_PDAUDIOCF is not set
-
-#
-# System on Chip audio support
-#
-# CONFIG_SND_SOC is not set
-
-#
-# Open Sound System
-#
-# CONFIG_SOUND_PRIME is not set
-CONFIG_AC97_BUS=m
-
-#
-# HID Devices
-#
-CONFIG_HID=m
-# CONFIG_HID_DEBUG is not set
-
-#
-# USB Input Devices
-#
-CONFIG_USB_HID=m
-# CONFIG_USB_HIDINPUT_POWERBOOK is not set
-# CONFIG_HID_FF is not set
-# CONFIG_USB_HIDDEV is not set
-
-#
-# USB HID Boot Protocol drivers
-#
-CONFIG_USB_KBD=m
-CONFIG_USB_MOUSE=m
-
-#
-# USB support
-#
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_USB=m
-# CONFIG_USB_DEBUG is not set
-
-#
-# Miscellaneous USB options
-#
-CONFIG_USB_DEVICEFS=y
-# CONFIG_USB_DEVICE_CLASS is not set
-CONFIG_USB_DYNAMIC_MINORS=y
-CONFIG_USB_SUSPEND=y
-# CONFIG_USB_OTG is not set
-
-#
-# USB Host Controller Drivers
-#
-# CONFIG_USB_EHCI_HCD is not set
-# CONFIG_USB_ISP116X_HCD is not set
-CONFIG_USB_OHCI_HCD=m
-# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
-# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
-CONFIG_USB_OHCI_LITTLE_ENDIAN=y
-# CONFIG_USB_UHCI_HCD is not set
-# CONFIG_USB_SL811_HCD is not set
-
-#
-# USB Device Class drivers
-#
-CONFIG_USB_ACM=m
-CONFIG_USB_PRINTER=m
-
-#
-# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-#
-
-#
-# may also be needed; see USB_STORAGE Help for more information
-#
-CONFIG_USB_STORAGE=m
-# CONFIG_USB_STORAGE_DEBUG is not set
-CONFIG_USB_STORAGE_DATAFAB=y
-CONFIG_USB_STORAGE_FREECOM=y
-# CONFIG_USB_STORAGE_ISD200 is not set
-CONFIG_USB_STORAGE_DPCM=y
-CONFIG_USB_STORAGE_USBAT=y
-CONFIG_USB_STORAGE_SDDR09=y
-CONFIG_USB_STORAGE_SDDR55=y
-CONFIG_USB_STORAGE_JUMPSHOT=y
-CONFIG_USB_STORAGE_ALAUDA=y
-CONFIG_USB_STORAGE_KARMA=y
-# CONFIG_USB_LIBUSUAL is not set
-
-#
-# USB Imaging devices
-#
-# CONFIG_USB_MDC800 is not set
-# CONFIG_USB_MICROTEK is not set
-# CONFIG_USB_MON is not set
-
-#
-# USB port drivers
-#
-
-#
-# USB Serial Converter support
-#
-CONFIG_USB_SERIAL=m
-CONFIG_USB_SERIAL_GENERIC=y
-# CONFIG_USB_SERIAL_AIRCABLE is not set
-# CONFIG_USB_SERIAL_AIRPRIME is not set
-# CONFIG_USB_SERIAL_ARK3116 is not set
-# CONFIG_USB_SERIAL_BELKIN is not set
-# CONFIG_USB_SERIAL_WHITEHEAT is not set
-# CONFIG_USB_SERIAL_DIGI_ACCELEPORT is not set
-# CONFIG_USB_SERIAL_CP2101 is not set
-# CONFIG_USB_SERIAL_CYPRESS_M8 is not set
-# CONFIG_USB_SERIAL_EMPEG is not set
-# CONFIG_USB_SERIAL_FTDI_SIO is not set
-# CONFIG_USB_SERIAL_FUNSOFT is not set
-# CONFIG_USB_SERIAL_VISOR is not set
-# CONFIG_USB_SERIAL_IPAQ is not set
-# CONFIG_USB_SERIAL_IR is not set
-# CONFIG_USB_SERIAL_EDGEPORT is not set
-# CONFIG_USB_SERIAL_EDGEPORT_TI is not set
-# CONFIG_USB_SERIAL_GARMIN is not set
-# CONFIG_USB_SERIAL_IPW is not set
-# CONFIG_USB_SERIAL_KEYSPAN_PDA is not set
-# CONFIG_USB_SERIAL_KEYSPAN is not set
-# CONFIG_USB_SERIAL_KLSI is not set
-# CONFIG_USB_SERIAL_KOBIL_SCT is not set
-# CONFIG_USB_SERIAL_MCT_U232 is not set
-# CONFIG_USB_SERIAL_MOS7720 is not set
-# CONFIG_USB_SERIAL_MOS7840 is not set
-# CONFIG_USB_SERIAL_NAVMAN is not set
-CONFIG_USB_SERIAL_PL2303=m
-# CONFIG_USB_SERIAL_HP4X is not set
-# CONFIG_USB_SERIAL_SAFE is not set
-# CONFIG_USB_SERIAL_SIERRAWIRELESS is not set
-# CONFIG_USB_SERIAL_TI is not set
-# CONFIG_USB_SERIAL_CYBERJACK is not set
-# CONFIG_USB_SERIAL_XIRCOM is not set
-# CONFIG_USB_SERIAL_OPTION is not set
-# CONFIG_USB_SERIAL_OMNINET is not set
-# CONFIG_USB_SERIAL_DEBUG is not set
-
-#
-# USB Miscellaneous drivers
-#
-# CONFIG_USB_EMI62 is not set
-# CONFIG_USB_EMI26 is not set
-# CONFIG_USB_ADUTUX is not set
-# CONFIG_USB_AUERSWALD is not set
-# CONFIG_USB_RIO500 is not set
-# CONFIG_USB_LEGOTOWER is not set
-# CONFIG_USB_LCD is not set
-# CONFIG_USB_BERRY_CHARGE is not set
-# CONFIG_USB_LED is not set
-# CONFIG_USB_CYPRESS_CY7C63 is not set
-# CONFIG_USB_CYTHERM is not set
-# CONFIG_USB_PHIDGET is not set
-# CONFIG_USB_IDMOUSE is not set
-# CONFIG_USB_FTDI_ELAN is not set
-# CONFIG_USB_APPLEDISPLAY is not set
-# CONFIG_USB_LD is not set
-# CONFIG_USB_TRANCEVIBRATOR is not set
-# CONFIG_USB_IOWARRIOR is not set
-# CONFIG_USB_TEST is not set
-
-#
-# USB DSL modem support
-#
-
-#
-# USB Gadget Support
-#
-# CONFIG_USB_GADGET is not set
-# CONFIG_MMC is not set
-
-#
-# LED devices
-#
-# CONFIG_NEW_LEDS is not set
-
-#
-# LED drivers
-#
-
-#
-# LED Triggers
-#
-
-#
-# InfiniBand support
-#
-# CONFIG_INFINIBAND is not set
-
-#
-# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
-#
-# CONFIG_EDAC is not set
-
-#
-# Real Time Clock
-#
-# CONFIG_RTC_CLASS is not set
-
-#
-# DMA Engine support
-#
-# CONFIG_DMA_ENGINE is not set
-
-#
-# DMA Clients
-#
-
-#
-# DMA Devices
-#
-
-#
-# Virtualization
-#
-# CONFIG_KVM is not set
-
-#
-# File systems
-#
-CONFIG_EXT2_FS=m
-CONFIG_EXT2_FS_XATTR=y
-CONFIG_EXT2_FS_POSIX_ACL=y
-CONFIG_EXT2_FS_SECURITY=y
-# CONFIG_EXT2_FS_XIP is not set
-CONFIG_EXT3_FS=m
-CONFIG_EXT3_FS_XATTR=y
-CONFIG_EXT3_FS_POSIX_ACL=y
-CONFIG_EXT3_FS_SECURITY=y
-# CONFIG_EXT4DEV_FS is not set
-CONFIG_JBD=m
-# CONFIG_JBD_DEBUG is not set
-CONFIG_FS_MBCACHE=m
-CONFIG_REISERFS_FS=m
-# CONFIG_REISERFS_CHECK is not set
-CONFIG_REISERFS_PROC_INFO=y
-CONFIG_REISERFS_FS_XATTR=y
-CONFIG_REISERFS_FS_POSIX_ACL=y
-CONFIG_REISERFS_FS_SECURITY=y
-# CONFIG_JFS_FS is not set
-CONFIG_FS_POSIX_ACL=y
-# CONFIG_XFS_FS is not set
-# CONFIG_GFS2_FS is not set
-# CONFIG_OCFS2_FS is not set
-# CONFIG_MINIX_FS is not set
-# CONFIG_ROMFS_FS is not set
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-# CONFIG_QUOTA is not set
-CONFIG_DNOTIFY=y
-# CONFIG_AUTOFS_FS is not set
-CONFIG_AUTOFS4_FS=m
-CONFIG_FUSE_FS=m
-CONFIG_GENERIC_ACL=y
-
-#
-# CD-ROM/DVD Filesystems
-#
-CONFIG_ISO9660_FS=m
-CONFIG_JOLIET=y
-CONFIG_ZISOFS=y
-CONFIG_UDF_FS=m
-CONFIG_UDF_NLS=y
-
-#
-# DOS/FAT/NT Filesystems
-#
-CONFIG_FAT_FS=m
-CONFIG_MSDOS_FS=m
-CONFIG_VFAT_FS=m
-CONFIG_FAT_DEFAULT_CODEPAGE=866
-CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-CONFIG_NTFS_FS=m
-# CONFIG_NTFS_DEBUG is not set
-# CONFIG_NTFS_RW is not set
-
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_TMPFS_POSIX_ACL=y
-# CONFIG_HUGETLBFS is not set
-# CONFIG_HUGETLB_PAGE is not set
-CONFIG_RAMFS=y
-CONFIG_CONFIGFS_FS=m
-
-#
-# Miscellaneous filesystems
-#
-# CONFIG_ADFS_FS is not set
-# CONFIG_AFFS_FS is not set
-# CONFIG_ECRYPT_FS is not set
-# CONFIG_HFS_FS is not set
-# CONFIG_HFSPLUS_FS is not set
-# CONFIG_BEFS_FS is not set
-# CONFIG_BFS_FS is not set
-# CONFIG_EFS_FS is not set
-# CONFIG_CRAMFS is not set
-CONFIG_SQUASHFS=m
-# CONFIG_SQUASHFS_EMBEDDED is not set
-CONFIG_SQUASHFS_FRAGMENT_CACHE_SIZE=3
-# CONFIG_SQUASHFS_VMALLOC is not set
-# CONFIG_VXFS_FS is not set
-# CONFIG_HPFS_FS is not set
-# CONFIG_QNX4FS_FS is not set
-# CONFIG_SYSV_FS is not set
-# CONFIG_UFS_FS is not set
-
-#
-# Network File Systems
-#
-CONFIG_NFS_FS=m
-CONFIG_NFS_V3=y
-CONFIG_NFS_V3_ACL=y
-CONFIG_NFS_V4=y
-CONFIG_NFS_DIRECTIO=y
-CONFIG_NFSD=m
-CONFIG_NFSD_V2_ACL=y
-CONFIG_NFSD_V3=y
-CONFIG_NFSD_V3_ACL=y
-CONFIG_NFSD_V4=y
-CONFIG_NFSD_TCP=y
-CONFIG_LOCKD=m
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=m
-CONFIG_NFS_ACL_SUPPORT=m
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=m
-CONFIG_SUNRPC_GSS=m
-# CONFIG_SUNRPC_BIND34 is not set
-CONFIG_RPCSEC_GSS_KRB5=m
-# CONFIG_RPCSEC_GSS_SPKM3 is not set
-# CONFIG_SMB_FS is not set
-CONFIG_CIFS=m
-CONFIG_CIFS_STATS=y
-CONFIG_CIFS_STATS2=y
-# CONFIG_CIFS_WEAK_PW_HASH is not set
-# CONFIG_CIFS_XATTR is not set
-# CONFIG_CIFS_DEBUG2 is not set
-# CONFIG_CIFS_EXPERIMENTAL is not set
-# CONFIG_NCP_FS is not set
-CONFIG_CODA_FS=m
-# CONFIG_CODA_FS_OLD_API is not set
-# CONFIG_AFS_FS is not set
-# CONFIG_9P_FS is not set
-
-#
-# Partition Types
-#
-CONFIG_PARTITION_ADVANCED=y
-# CONFIG_ACORN_PARTITION is not set
-# CONFIG_OSF_PARTITION is not set
-# CONFIG_AMIGA_PARTITION is not set
-# CONFIG_ATARI_PARTITION is not set
-# CONFIG_MAC_PARTITION is not set
-CONFIG_MSDOS_PARTITION=y
-CONFIG_BSD_DISKLABEL=y
-# CONFIG_MINIX_SUBPARTITION is not set
-CONFIG_SOLARIS_X86_PARTITION=y
-CONFIG_UNIXWARE_DISKLABEL=y
-CONFIG_LDM_PARTITION=y
-# CONFIG_LDM_DEBUG is not set
-# CONFIG_SGI_PARTITION is not set
-# CONFIG_ULTRIX_PARTITION is not set
-# CONFIG_SUN_PARTITION is not set
-# CONFIG_KARMA_PARTITION is not set
-# CONFIG_EFI_PARTITION is not set
-# CONFIG_SYSV68_PARTITION is not set
-
-#
-# Native Language Support
-#
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="utf8"
-CONFIG_NLS_CODEPAGE_437=m
-CONFIG_NLS_CODEPAGE_737=m
-CONFIG_NLS_CODEPAGE_775=m
-CONFIG_NLS_CODEPAGE_850=m
-CONFIG_NLS_CODEPAGE_852=m
-CONFIG_NLS_CODEPAGE_855=m
-CONFIG_NLS_CODEPAGE_857=m
-CONFIG_NLS_CODEPAGE_860=m
-CONFIG_NLS_CODEPAGE_861=m
-CONFIG_NLS_CODEPAGE_862=m
-CONFIG_NLS_CODEPAGE_863=m
-CONFIG_NLS_CODEPAGE_864=m
-CONFIG_NLS_CODEPAGE_865=m
-CONFIG_NLS_CODEPAGE_866=m
-CONFIG_NLS_CODEPAGE_869=m
-CONFIG_NLS_CODEPAGE_936=m
-CONFIG_NLS_CODEPAGE_950=m
-CONFIG_NLS_CODEPAGE_932=m
-CONFIG_NLS_CODEPAGE_949=m
-CONFIG_NLS_CODEPAGE_874=m
-CONFIG_NLS_ISO8859_8=m
-CONFIG_NLS_CODEPAGE_1250=m
-CONFIG_NLS_CODEPAGE_1251=m
-CONFIG_NLS_ASCII=m
-CONFIG_NLS_ISO8859_1=m
-CONFIG_NLS_ISO8859_2=m
-CONFIG_NLS_ISO8859_3=m
-CONFIG_NLS_ISO8859_4=m
-CONFIG_NLS_ISO8859_5=m
-CONFIG_NLS_ISO8859_6=m
-CONFIG_NLS_ISO8859_7=m
-CONFIG_NLS_ISO8859_9=m
-CONFIG_NLS_ISO8859_13=m
-CONFIG_NLS_ISO8859_14=m
-CONFIG_NLS_ISO8859_15=m
-CONFIG_NLS_KOI8_R=m
-CONFIG_NLS_KOI8_U=m
-CONFIG_NLS_UTF8=m
-
-#
-# Distributed Lock Manager
-#
-# CONFIG_DLM is not set
-
-#
-# Instrumentation Support
-#
-CONFIG_PROFILING=y
-CONFIG_OPROFILE=m
-CONFIG_KPROBES=y
-
-#
-# Kernel hacking
-#
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_PRINTK_TIME=y
-CONFIG_ENABLE_MUST_CHECK=y
-CONFIG_MAGIC_SYSRQ=y
-# CONFIG_UNUSED_SYMBOLS is not set
-# CONFIG_DEBUG_FS is not set
-# CONFIG_HEADERS_CHECK is not set
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DEBUG_SHIRQ=y
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_SCHEDSTATS=y
-CONFIG_TIMER_STATS=y
-# CONFIG_DEBUG_RT_MUTEXES is not set
-# CONFIG_RT_MUTEX_TESTER is not set
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_LOCK_ALLOC=y
-CONFIG_PROVE_LOCKING=y
-CONFIG_LOCKDEP=y
-# CONFIG_DEBUG_LOCKDEP is not set
-CONFIG_TRACE_IRQFLAGS=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-CONFIG_DEBUG_LOCKING_API_SELFTESTS=y
-CONFIG_STACKTRACE=y
-# CONFIG_DEBUG_KOBJECT is not set
-CONFIG_DEBUG_BUGVERBOSE=y
-# CONFIG_DEBUG_INFO is not set
-# CONFIG_DEBUG_VM is not set
-# CONFIG_DEBUG_LIST is not set
-CONFIG_FRAME_POINTER=y
-CONFIG_FORCED_INLINING=y
-# CONFIG_RCU_TORTURE_TEST is not set
-# CONFIG_LKDTM is not set
-# CONFIG_FAULT_INJECTION is not set
-# CONFIG_EARLY_PRINTK is not set
-CONFIG_DEBUG_STACKOVERFLOW=y
-# CONFIG_DEBUG_STACK_USAGE is not set
-
-#
-# Page alloc debug is incompatible with Software Suspend on i386
-#
-CONFIG_DEBUG_RODATA=y
-# CONFIG_4KSTACKS is not set
-CONFIG_DOUBLEFAULT=y
-
-#
-# Security options
-#
-CONFIG_KEYS=y
-CONFIG_KEYS_DEBUG_PROC_KEYS=y
-# CONFIG_SECURITY is not set
-
-#
-# Cryptographic options
-#
-CONFIG_CRYPTO=y
-CONFIG_CRYPTO_ALGAPI=m
-CONFIG_CRYPTO_BLKCIPHER=m
-CONFIG_CRYPTO_HASH=m
-CONFIG_CRYPTO_MANAGER=m
-CONFIG_CRYPTO_HMAC=m
-CONFIG_CRYPTO_XCBC=m
-CONFIG_CRYPTO_NULL=m
-CONFIG_CRYPTO_MD4=m
-CONFIG_CRYPTO_MD5=m
-CONFIG_CRYPTO_SHA1=m
-CONFIG_CRYPTO_SHA256=m
-CONFIG_CRYPTO_SHA512=m
-CONFIG_CRYPTO_WP512=m
-CONFIG_CRYPTO_TGR192=m
-CONFIG_CRYPTO_GF128MUL=m
-CONFIG_CRYPTO_ECB=m
-CONFIG_CRYPTO_CBC=m
-CONFIG_CRYPTO_PCBC=m
-CONFIG_CRYPTO_LRW=m
-# CONFIG_CRYPTO_CRYPTD is not set
-CONFIG_CRYPTO_DES=m
-CONFIG_CRYPTO_FCRYPT=m
-CONFIG_CRYPTO_BLOWFISH=m
-CONFIG_CRYPTO_TWOFISH=m
-CONFIG_CRYPTO_TWOFISH_COMMON=m
-CONFIG_CRYPTO_TWOFISH_586=m
-CONFIG_CRYPTO_SERPENT=m
-CONFIG_CRYPTO_AES=m
-CONFIG_CRYPTO_AES_586=m
-CONFIG_CRYPTO_CAST5=m
-CONFIG_CRYPTO_CAST6=m
-CONFIG_CRYPTO_TEA=m
-CONFIG_CRYPTO_ARC4=m
-CONFIG_CRYPTO_KHAZAD=m
-CONFIG_CRYPTO_ANUBIS=m
-CONFIG_CRYPTO_DEFLATE=m
-CONFIG_CRYPTO_MICHAEL_MIC=m
-CONFIG_CRYPTO_CRC32C=m
-CONFIG_CRYPTO_CAMELLIA=m
-CONFIG_CRYPTO_TEST=m
-
-#
-# Hardware crypto devices
-#
-# CONFIG_CRYPTO_DEV_PADLOCK is not set
-# CONFIG_CRYPTO_DEV_GEODE is not set
-
-#
-# Library routines
-#
-CONFIG_BITREVERSE=y
-CONFIG_CRC_CCITT=m
-CONFIG_CRC16=m
-# CONFIG_CRC_ITU_T is not set
-CONFIG_CRC32=y
-CONFIG_LIBCRC32C=m
-CONFIG_AUDIT_GENERIC=y
-CONFIG_ZLIB_INFLATE=m
-CONFIG_ZLIB_DEFLATE=m
-CONFIG_PLIST=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_X86_BIOS_REBOOT=y
-CONFIG_KTIME_SCALAR=y
-
---Boundary-01=_LrpxGIopXkH3w14
-Content-Type: text/plain;
-  charset="us-ascii";
-  name="config-2.6.23-rc3-2avb"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="config-2.6.23-rc3-2avb"
-
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.23-rc3
-# Fri Aug 17 20:28:46 2007
-#
-CONFIG_X86_32=y
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CMOS_UPDATE=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_X86=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_QUICKLIST=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_DMI=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-
-#
-# General setup
-#
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-# CONFIG_LOCALVERSION_AUTO is not set
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_POSIX_MQUEUE=y
-CONFIG_BSD_PROCESS_ACCT=y
-CONFIG_BSD_PROCESS_ACCT_V3=y
-# CONFIG_TASKSTATS is not set
-# CONFIG_USER_NS is not set
-CONFIG_AUDIT=y
-CONFIG_AUDITSYSCALL=y
-# CONFIG_IKCONFIG is not set
-CONFIG_LOG_BUF_SHIFT=17
-# CONFIG_SYSFS_DEPRECATED is not set
-CONFIG_RELAY=y
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_INITRAMFS_SOURCE=""
-# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-CONFIG_SYSCTL=y
-CONFIG_EMBEDDED=y
-# CONFIG_UID16 is not set
-# CONFIG_SYSCTL_SYSCALL is not set
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-# CONFIG_KALLSYMS_EXTRA_PASS is not set
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_ANON_INODES=y
-CONFIG_EPOLL=y
-CONFIG_SIGNALFD=y
-CONFIG_TIMERFD=y
-CONFIG_EVENTFD=y
-CONFIG_SHMEM=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_SLUB_DEBUG=y
-# CONFIG_SLAB is not set
-CONFIG_SLUB=y
-# CONFIG_SLOB is not set
-CONFIG_RT_MUTEXES=y
-# CONFIG_TINY_SHMEM is not set
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_MODULE_FORCE_UNLOAD=y
-CONFIG_MODVERSIONS=y
-# CONFIG_MODULE_SRCVERSION_ALL is not set
-CONFIG_KMOD=y
-CONFIG_BLOCK=y
-# CONFIG_LBD is not set
-# CONFIG_BLK_DEV_IO_TRACE is not set
-# CONFIG_LSF is not set
-# CONFIG_BLK_DEV_BSG is not set
-
-#
-# IO Schedulers
-#
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-# CONFIG_DEFAULT_AS is not set
-# CONFIG_DEFAULT_DEADLINE is not set
-CONFIG_DEFAULT_CFQ=y
-# CONFIG_DEFAULT_NOOP is not set
-CONFIG_DEFAULT_IOSCHED="cfq"
-
-#
-# Processor type and features
-#
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_HIGH_RES_TIMERS=y
-# CONFIG_SMP is not set
-CONFIG_X86_PC=y
-# CONFIG_X86_ELAN is not set
-# CONFIG_X86_VOYAGER is not set
-# CONFIG_X86_NUMAQ is not set
-# CONFIG_X86_SUMMIT is not set
-# CONFIG_X86_BIGSMP is not set
-# CONFIG_X86_VISWS is not set
-# CONFIG_X86_GENERICARCH is not set
-# CONFIG_X86_ES7000 is not set
-# CONFIG_PARAVIRT is not set
-# CONFIG_M386 is not set
-# CONFIG_M486 is not set
-# CONFIG_M586 is not set
-# CONFIG_M586TSC is not set
-# CONFIG_M586MMX is not set
-# CONFIG_M686 is not set
-# CONFIG_MPENTIUMII is not set
-CONFIG_MPENTIUMIII=y
-# CONFIG_MPENTIUMM is not set
-# CONFIG_MCORE2 is not set
-# CONFIG_MPENTIUM4 is not set
-# CONFIG_MK6 is not set
-# CONFIG_MK7 is not set
-# CONFIG_MK8 is not set
-# CONFIG_MCRUSOE is not set
-# CONFIG_MEFFICEON is not set
-# CONFIG_MWINCHIPC6 is not set
-# CONFIG_MWINCHIP2 is not set
-# CONFIG_MWINCHIP3D is not set
-# CONFIG_MGEODEGX1 is not set
-# CONFIG_MGEODE_LX is not set
-# CONFIG_MCYRIXIII is not set
-# CONFIG_MVIAC3_2 is not set
-# CONFIG_MVIAC7 is not set
-# CONFIG_X86_GENERIC is not set
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=5
-CONFIG_X86_XADD=y
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-# CONFIG_ARCH_HAS_ILOG2_U32 is not set
-# CONFIG_ARCH_HAS_ILOG2_U64 is not set
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=4
-CONFIG_HPET_TIMER=y
-CONFIG_HPET_EMULATE_RTC=y
-# CONFIG_PREEMPT_NONE is not set
-CONFIG_PREEMPT_VOLUNTARY=y
-# CONFIG_PREEMPT is not set
-# CONFIG_X86_UP_APIC is not set
-# CONFIG_X86_MCE is not set
-CONFIG_VM86=y
-CONFIG_TOSHIBA=m
-# CONFIG_I8K is not set
-CONFIG_X86_REBOOTFIXUPS=y
-CONFIG_MICROCODE=m
-CONFIG_MICROCODE_OLD_INTERFACE=y
-CONFIG_X86_MSR=m
-CONFIG_X86_CPUID=m
-
-#
-# Firmware Drivers
-#
-CONFIG_EDD=y
-# CONFIG_DELL_RBU is not set
-# CONFIG_DCDBAS is not set
-CONFIG_DMIID=y
-CONFIG_NOHIGHMEM=y
-# CONFIG_HIGHMEM4G is not set
-# CONFIG_HIGHMEM64G is not set
-CONFIG_VMSPLIT_3G=y
-# CONFIG_VMSPLIT_3G_OPT is not set
-# CONFIG_VMSPLIT_2G is not set
-# CONFIG_VMSPLIT_2G_OPT is not set
-# CONFIG_VMSPLIT_1G is not set
-CONFIG_PAGE_OFFSET=0xC0000000
-# CONFIG_X86_PAE is not set
-CONFIG_ARCH_FLATMEM_ENABLE=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-# CONFIG_DISCONTIGMEM_MANUAL is not set
-# CONFIG_SPARSEMEM_MANUAL is not set
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_SPARSEMEM_STATIC=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-# CONFIG_RESOURCES_64BIT is not set
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_NR_QUICK=1
-CONFIG_VIRT_TO_BUS=y
-# CONFIG_MATH_EMULATION is not set
-CONFIG_MTRR=y
-# CONFIG_EFI is not set
-CONFIG_SECCOMP=y
-# CONFIG_HZ_100 is not set
-# CONFIG_HZ_250 is not set
-CONFIG_HZ_300=y
-# CONFIG_HZ_1000 is not set
-CONFIG_HZ=300
-# CONFIG_KEXEC is not set
-CONFIG_PHYSICAL_START=0x100000
-# CONFIG_RELOCATABLE is not set
-CONFIG_PHYSICAL_ALIGN=0x100000
-# CONFIG_COMPAT_VDSO is not set
-
-#
-# Power management options (ACPI, APM)
-#
-CONFIG_PM=y
-# CONFIG_PM_LEGACY is not set
-# CONFIG_PM_DEBUG is not set
-CONFIG_PM_SLEEP=y
-CONFIG_SUSPEND=y
-CONFIG_HIBERNATION=y
-CONFIG_PM_STD_PARTITION=""
-CONFIG_ACPI=y
-CONFIG_ACPI_SLEEP=y
-# CONFIG_ACPI_PROCFS is not set
-CONFIG_ACPI_AC=m
-CONFIG_ACPI_BATTERY=m
-CONFIG_ACPI_BUTTON=m
-CONFIG_ACPI_VIDEO=m
-CONFIG_ACPI_FAN=m
-# CONFIG_ACPI_DOCK is not set
-CONFIG_ACPI_PROCESSOR=m
-CONFIG_ACPI_THERMAL=m
-# CONFIG_ACPI_ASUS is not set
-CONFIG_ACPI_TOSHIBA=m
-# CONFIG_ACPI_CUSTOM_DSDT is not set
-CONFIG_ACPI_CUSTOM_DSDT_INITRD=y
-CONFIG_ACPI_BLACKLIST_YEAR=0
-# CONFIG_ACPI_DEBUG is not set
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_X86_PM_TIMER=y
-# CONFIG_ACPI_CONTAINER is not set
-# CONFIG_ACPI_SBS is not set
-# CONFIG_APM is not set
-
-#
-# CPU Frequency scaling
-#
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_TABLE=y
-# CONFIG_CPU_FREQ_DEBUG is not set
-CONFIG_CPU_FREQ_STAT=y
-CONFIG_CPU_FREQ_STAT_DETAILS=y
-# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
-CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=m
-CONFIG_CPU_FREQ_GOV_POWERSAVE=m
-CONFIG_CPU_FREQ_GOV_USERSPACE=y
-CONFIG_CPU_FREQ_GOV_ONDEMAND=m
-CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
-
-#
-# CPUFreq processor drivers
-#
-CONFIG_X86_ACPI_CPUFREQ=m
-# CONFIG_X86_POWERNOW_K6 is not set
-# CONFIG_X86_POWERNOW_K7 is not set
-# CONFIG_X86_POWERNOW_K8 is not set
-# CONFIG_X86_GX_SUSPMOD is not set
-# CONFIG_X86_SPEEDSTEP_CENTRINO is not set
-# CONFIG_X86_SPEEDSTEP_ICH is not set
-# CONFIG_X86_SPEEDSTEP_SMI is not set
-# CONFIG_X86_P4_CLOCKMOD is not set
-# CONFIG_X86_CPUFREQ_NFORCE2 is not set
-# CONFIG_X86_LONGRUN is not set
-# CONFIG_X86_LONGHAUL is not set
-# CONFIG_X86_E_POWERSAVER is not set
-
-#
-# shared options
-#
-# CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
-# CONFIG_X86_SPEEDSTEP_LIB is not set
-
-#
-# Bus options (PCI, PCMCIA, EISA, MCA, ISA)
-#
-CONFIG_PCI=y
-# CONFIG_PCI_GOBIOS is not set
-# CONFIG_PCI_GOMMCONFIG is not set
-# CONFIG_PCI_GODIRECT is not set
-CONFIG_PCI_GOANY=y
-CONFIG_PCI_BIOS=y
-CONFIG_PCI_DIRECT=y
-CONFIG_PCI_MMCONFIG=y
-# CONFIG_PCIEPORTBUS is not set
-# CONFIG_ARCH_SUPPORTS_MSI is not set
-# CONFIG_PCI_DEBUG is not set
-CONFIG_ISA_DMA_API=y
-CONFIG_ISA=y
-# CONFIG_EISA is not set
-# CONFIG_MCA is not set
-# CONFIG_SCx200 is not set
-
-#
-# PCCARD (PCMCIA/CardBus) support
-#
-CONFIG_PCCARD=m
-# CONFIG_PCMCIA_DEBUG is not set
-CONFIG_PCMCIA=m
-CONFIG_PCMCIA_LOAD_CIS=y
-# CONFIG_PCMCIA_IOCTL is not set
-CONFIG_CARDBUS=y
-
-#
-# PC-card bridges
-#
-CONFIG_YENTA=m
-CONFIG_YENTA_O2=y
-CONFIG_YENTA_RICOH=y
-CONFIG_YENTA_TI=y
-CONFIG_YENTA_ENE_TUNE=y
-CONFIG_YENTA_TOSHIBA=y
-# CONFIG_PD6729 is not set
-# CONFIG_I82092 is not set
-# CONFIG_I82365 is not set
-# CONFIG_TCIC is not set
-CONFIG_PCMCIA_PROBE=y
-CONFIG_PCCARD_NONSTATIC=m
-# CONFIG_HOTPLUG_PCI is not set
-
-#
-# Executable file formats
-#
-CONFIG_BINFMT_ELF=y
-CONFIG_BINFMT_AOUT=m
-CONFIG_BINFMT_MISC=m
-
-#
-# Networking
-#
-CONFIG_NET=y
-
-#
-# Networking options
-#
-CONFIG_PACKET=m
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-CONFIG_XFRM_USER=m
-# CONFIG_XFRM_SUB_POLICY is not set
-# CONFIG_XFRM_MIGRATE is not set
-CONFIG_NET_KEY=m
-# CONFIG_NET_KEY_MIGRATE is not set
-CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
-CONFIG_IP_ADVANCED_ROUTER=y
-CONFIG_ASK_IP_FIB_HASH=y
-# CONFIG_IP_FIB_TRIE is not set
-CONFIG_IP_FIB_HASH=y
-CONFIG_IP_MULTIPLE_TABLES=y
-# CONFIG_IP_ROUTE_MULTIPATH is not set
-# CONFIG_IP_ROUTE_VERBOSE is not set
-# CONFIG_IP_PNP is not set
-# CONFIG_NET_IPIP is not set
-# CONFIG_NET_IPGRE is not set
-# CONFIG_IP_MROUTE is not set
-# CONFIG_ARPD is not set
-# CONFIG_SYN_COOKIES is not set
-# CONFIG_INET_AH is not set
-# CONFIG_INET_ESP is not set
-# CONFIG_INET_IPCOMP is not set
-# CONFIG_INET_XFRM_TUNNEL is not set
-# CONFIG_INET_TUNNEL is not set
-# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-# CONFIG_INET_XFRM_MODE_BEET is not set
-# CONFIG_INET_DIAG is not set
-# CONFIG_TCP_CONG_ADVANCED is not set
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-# CONFIG_TCP_MD5SIG is not set
-# CONFIG_IPV6 is not set
-# CONFIG_INET6_XFRM_TUNNEL is not set
-# CONFIG_INET6_TUNNEL is not set
-# CONFIG_NETWORK_SECMARK is not set
-# CONFIG_NETFILTER is not set
-# CONFIG_IP_DCCP is not set
-# CONFIG_IP_SCTP is not set
-# CONFIG_TIPC is not set
-# CONFIG_ATM is not set
-# CONFIG_BRIDGE is not set
-# CONFIG_VLAN_8021Q is not set
-# CONFIG_DECNET is not set
-# CONFIG_LLC2 is not set
-# CONFIG_IPX is not set
-# CONFIG_ATALK is not set
-# CONFIG_X25 is not set
-# CONFIG_LAPB is not set
-# CONFIG_ECONET is not set
-# CONFIG_WAN_ROUTER is not set
-
-#
-# QoS and/or fair queueing
-#
-# CONFIG_NET_SCHED is not set
-
-#
-# Network testing
-#
-# CONFIG_NET_PKTGEN is not set
-# CONFIG_NET_TCPPROBE is not set
-# CONFIG_HAMRADIO is not set
-CONFIG_IRDA=m
-
-#
-# IrDA protocols
-#
-CONFIG_IRLAN=m
-CONFIG_IRNET=m
-CONFIG_IRCOMM=m
-CONFIG_IRDA_ULTRA=y
-
-#
-# IrDA options
-#
-CONFIG_IRDA_CACHE_LAST_LSAP=y
-CONFIG_IRDA_FAST_RR=y
-# CONFIG_IRDA_DEBUG is not set
-
-#
-# Infrared-port device drivers
-#
-
-#
-# SIR device drivers
-#
-# CONFIG_IRTTY_SIR is not set
-
-#
-# Dongle support
-#
-# CONFIG_KINGSUN_DONGLE is not set
-
-#
-# Old SIR device drivers
-#
-# CONFIG_IRPORT_SIR is not set
-
-#
-# Old Serial dongle support
-#
-
-#
-# FIR device drivers
-#
-# CONFIG_USB_IRDA is not set
-# CONFIG_SIGMATEL_FIR is not set
-# CONFIG_NSC_FIR is not set
-# CONFIG_WINBOND_FIR is not set
-# CONFIG_TOSHIBA_FIR is not set
-CONFIG_SMC_IRCC_FIR=m
-# CONFIG_ALI_FIR is not set
-# CONFIG_VLSI_FIR is not set
-# CONFIG_VIA_FIR is not set
-# CONFIG_MCS_FIR is not set
-CONFIG_BT=m
-CONFIG_BT_L2CAP=m
-# CONFIG_BT_SCO is not set
-CONFIG_BT_RFCOMM=m
-CONFIG_BT_RFCOMM_TTY=y
-CONFIG_BT_BNEP=m
-# CONFIG_BT_BNEP_MC_FILTER is not set
-# CONFIG_BT_BNEP_PROTO_FILTER is not set
-# CONFIG_BT_HIDP is not set
-
-#
-# Bluetooth device drivers
-#
-CONFIG_BT_HCIUSB=m
-# CONFIG_BT_HCIUSB_SCO is not set
-# CONFIG_BT_HCIUART is not set
-# CONFIG_BT_HCIBCM203X is not set
-# CONFIG_BT_HCIBPA10X is not set
-# CONFIG_BT_HCIBFUSB is not set
-# CONFIG_BT_HCIDTL1 is not set
-# CONFIG_BT_HCIBT3C is not set
-# CONFIG_BT_HCIBLUECARD is not set
-# CONFIG_BT_HCIBTUART is not set
-# CONFIG_BT_HCIVHCI is not set
-# CONFIG_AF_RXRPC is not set
-CONFIG_FIB_RULES=y
-
-#
-# Wireless
-#
-CONFIG_CFG80211=m
-CONFIG_WIRELESS_EXT=y
-# CONFIG_MAC80211 is not set
-# CONFIG_IEEE80211 is not set
-# CONFIG_RFKILL is not set
-# CONFIG_NET_9P is not set
-
-#
-# Device Drivers
-#
-
-#
-# Generic Driver Options
-#
-# CONFIG_STANDALONE is not set
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_FW_LOADER=m
-# CONFIG_DEBUG_DRIVER is not set
-# CONFIG_DEBUG_DEVRES is not set
-# CONFIG_SYS_HYPERVISOR is not set
-CONFIG_CONNECTOR=m
-# CONFIG_MTD is not set
-# CONFIG_PARPORT is not set
-CONFIG_PNP=y
-# CONFIG_PNP_DEBUG is not set
-
-#
-# Protocols
-#
-# CONFIG_ISAPNP is not set
-# CONFIG_PNPBIOS is not set
-CONFIG_PNPACPI=y
-CONFIG_BLK_DEV=y
-# CONFIG_BLK_DEV_FD is not set
-# CONFIG_BLK_DEV_XD is not set
-# CONFIG_BLK_CPQ_DA is not set
-# CONFIG_BLK_CPQ_CISS_DA is not set
-# CONFIG_BLK_DEV_DAC960 is not set
-# CONFIG_BLK_DEV_UMEM is not set
-# CONFIG_BLK_DEV_COW_COMMON is not set
-CONFIG_BLK_DEV_LOOP=m
-CONFIG_BLK_DEV_CRYPTOLOOP=m
-CONFIG_BLK_DEV_NBD=m
-# CONFIG_BLK_DEV_SX8 is not set
-# CONFIG_BLK_DEV_UB is not set
-CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_RAM_COUNT=16
-CONFIG_BLK_DEV_RAM_SIZE=32000
-CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
-CONFIG_CDROM_PKTCDVD=y
-CONFIG_CDROM_PKTCDVD_BUFFERS=8
-# CONFIG_CDROM_PKTCDVD_WCACHE is not set
-# CONFIG_ATA_OVER_ETH is not set
-CONFIG_MISC_DEVICES=y
-# CONFIG_IBM_ASM is not set
-# CONFIG_PHANTOM is not set
-# CONFIG_EEPROM_93CX6 is not set
-# CONFIG_SGI_IOC4 is not set
-# CONFIG_TIFM_CORE is not set
-# CONFIG_MSI_LAPTOP is not set
-# CONFIG_SONY_LAPTOP is not set
-# CONFIG_THINKPAD_ACPI is not set
-CONFIG_IDE=m
-CONFIG_IDE_MAX_HWIFS=4
-CONFIG_BLK_DEV_IDE=m
-
-#
-# Please see Documentation/ide.txt for help/info on IDE drives
-#
-# CONFIG_BLK_DEV_IDE_SATA is not set
-# CONFIG_BLK_DEV_HD_IDE is not set
-CONFIG_BLK_DEV_IDEDISK=m
-# CONFIG_IDEDISK_MULTI_MODE is not set
-# CONFIG_BLK_DEV_IDECS is not set
-# CONFIG_BLK_DEV_DELKIN is not set
-CONFIG_BLK_DEV_IDECD=m
-# CONFIG_BLK_DEV_IDETAPE is not set
-# CONFIG_BLK_DEV_IDEFLOPPY is not set
-# CONFIG_BLK_DEV_IDESCSI is not set
-CONFIG_BLK_DEV_IDEACPI=y
-# CONFIG_IDE_TASK_IOCTL is not set
-CONFIG_IDE_PROC_FS=y
-
-#
-# IDE chipset support/bugfixes
-#
-CONFIG_IDE_GENERIC=m
-# CONFIG_BLK_DEV_CMD640 is not set
-# CONFIG_BLK_DEV_IDEPNP is not set
-CONFIG_BLK_DEV_IDEPCI=y
-CONFIG_IDEPCI_SHARE_IRQ=y
-# CONFIG_IDEPCI_PCIBUS_ORDER is not set
-# CONFIG_BLK_DEV_OFFBOARD is not set
-# CONFIG_BLK_DEV_GENERIC is not set
-# CONFIG_BLK_DEV_OPTI621 is not set
-# CONFIG_BLK_DEV_RZ1000 is not set
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-# CONFIG_BLK_DEV_IDEDMA_FORCED is not set
-# CONFIG_IDEDMA_ONLYDISK is not set
-# CONFIG_BLK_DEV_AEC62XX is not set
-CONFIG_BLK_DEV_ALI15X3=m
-# CONFIG_WDC_ALI15X3 is not set
-# CONFIG_BLK_DEV_AMD74XX is not set
-# CONFIG_BLK_DEV_ATIIXP is not set
-# CONFIG_BLK_DEV_CMD64X is not set
-# CONFIG_BLK_DEV_TRIFLEX is not set
-# CONFIG_BLK_DEV_CY82C693 is not set
-# CONFIG_BLK_DEV_CS5520 is not set
-# CONFIG_BLK_DEV_CS5530 is not set
-# CONFIG_BLK_DEV_CS5535 is not set
-# CONFIG_BLK_DEV_HPT34X is not set
-# CONFIG_BLK_DEV_HPT366 is not set
-# CONFIG_BLK_DEV_JMICRON is not set
-# CONFIG_BLK_DEV_SC1200 is not set
-# CONFIG_BLK_DEV_PIIX is not set
-# CONFIG_BLK_DEV_IT8213 is not set
-# CONFIG_BLK_DEV_IT821X is not set
-# CONFIG_BLK_DEV_NS87415 is not set
-# CONFIG_BLK_DEV_PDC202XX_OLD is not set
-# CONFIG_BLK_DEV_PDC202XX_NEW is not set
-# CONFIG_BLK_DEV_SVWKS is not set
-# CONFIG_BLK_DEV_SIIMAGE is not set
-# CONFIG_BLK_DEV_SIS5513 is not set
-# CONFIG_BLK_DEV_SLC90E66 is not set
-# CONFIG_BLK_DEV_TRM290 is not set
-# CONFIG_BLK_DEV_VIA82CXXX is not set
-# CONFIG_BLK_DEV_TC86C001 is not set
-# CONFIG_IDE_ARM is not set
-# CONFIG_IDE_CHIPSETS is not set
-CONFIG_BLK_DEV_IDEDMA=y
-# CONFIG_IDEDMA_IVB is not set
-# CONFIG_BLK_DEV_HD is not set
-
-#
-# SCSI device support
-#
-# CONFIG_RAID_ATTRS is not set
-CONFIG_SCSI=m
-CONFIG_SCSI_DMA=y
-CONFIG_SCSI_TGT=m
-# CONFIG_SCSI_NETLINK is not set
-CONFIG_SCSI_PROC_FS=y
-
-#
-# SCSI support type (disk, tape, CD-ROM)
-#
-CONFIG_BLK_DEV_SD=m
-# CONFIG_CHR_DEV_ST is not set
-# CONFIG_CHR_DEV_OSST is not set
-CONFIG_BLK_DEV_SR=m
-CONFIG_BLK_DEV_SR_VENDOR=y
-CONFIG_CHR_DEV_SG=m
-# CONFIG_CHR_DEV_SCH is not set
-
-#
-# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-#
-CONFIG_SCSI_MULTI_LUN=y
-CONFIG_SCSI_CONSTANTS=y
-CONFIG_SCSI_LOGGING=y
-# CONFIG_SCSI_SCAN_ASYNC is not set
-CONFIG_SCSI_WAIT_SCAN=m
-
-#
-# SCSI Transports
-#
-CONFIG_SCSI_SPI_ATTRS=m
-# CONFIG_SCSI_FC_ATTRS is not set
-CONFIG_SCSI_ISCSI_ATTRS=m
-# CONFIG_SCSI_SAS_LIBSAS is not set
-CONFIG_SCSI_LOWLEVEL=y
-# CONFIG_ISCSI_TCP is not set
-# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
-# CONFIG_SCSI_3W_9XXX is not set
-# CONFIG_SCSI_7000FASST is not set
-# CONFIG_SCSI_ACARD is not set
-# CONFIG_SCSI_AHA152X is not set
-# CONFIG_SCSI_AHA1542 is not set
-# CONFIG_SCSI_AACRAID is not set
-# CONFIG_SCSI_AIC7XXX is not set
-# CONFIG_SCSI_AIC7XXX_OLD is not set
-# CONFIG_SCSI_AIC79XX is not set
-# CONFIG_SCSI_AIC94XX is not set
-# CONFIG_SCSI_DPT_I2O is not set
-# CONFIG_SCSI_ADVANSYS is not set
-# CONFIG_SCSI_IN2000 is not set
-# CONFIG_SCSI_ARCMSR is not set
-# CONFIG_MEGARAID_NEWGEN is not set
-# CONFIG_MEGARAID_LEGACY is not set
-# CONFIG_MEGARAID_SAS is not set
-# CONFIG_SCSI_HPTIOP is not set
-# CONFIG_SCSI_BUSLOGIC is not set
-# CONFIG_SCSI_DMX3191D is not set
-# CONFIG_SCSI_DTC3280 is not set
-# CONFIG_SCSI_EATA is not set
-# CONFIG_SCSI_FUTURE_DOMAIN is not set
-# CONFIG_SCSI_GDTH is not set
-# CONFIG_SCSI_GENERIC_NCR5380 is not set
-# CONFIG_SCSI_GENERIC_NCR5380_MMIO is not set
-# CONFIG_SCSI_IPS is not set
-# CONFIG_SCSI_INITIO is not set
-# CONFIG_SCSI_INIA100 is not set
-# CONFIG_SCSI_NCR53C406A is not set
-# CONFIG_SCSI_STEX is not set
-# CONFIG_SCSI_SYM53C8XX_2 is not set
-# CONFIG_SCSI_IPR is not set
-# CONFIG_SCSI_PAS16 is not set
-# CONFIG_SCSI_PSI240I is not set
-# CONFIG_SCSI_QLOGIC_FAS is not set
-# CONFIG_SCSI_QLOGIC_1280 is not set
-# CONFIG_SCSI_QLA_FC is not set
-# CONFIG_SCSI_QLA_ISCSI is not set
-# CONFIG_SCSI_LPFC is not set
-# CONFIG_SCSI_SEAGATE is not set
-# CONFIG_SCSI_SYM53C416 is not set
-# CONFIG_SCSI_DC395x is not set
-# CONFIG_SCSI_DC390T is not set
-# CONFIG_SCSI_T128 is not set
-# CONFIG_SCSI_U14_34F is not set
-# CONFIG_SCSI_ULTRASTOR is not set
-# CONFIG_SCSI_NSP32 is not set
-# CONFIG_SCSI_DEBUG is not set
-# CONFIG_SCSI_SRP is not set
-# CONFIG_SCSI_LOWLEVEL_PCMCIA is not set
-CONFIG_ATA=m
-# CONFIG_ATA_NONSTANDARD is not set
-CONFIG_ATA_ACPI=y
-# CONFIG_SATA_AHCI is not set
-# CONFIG_SATA_SVW is not set
-# CONFIG_ATA_PIIX is not set
-# CONFIG_SATA_MV is not set
-# CONFIG_SATA_NV is not set
-# CONFIG_PDC_ADMA is not set
-# CONFIG_SATA_QSTOR is not set
-# CONFIG_SATA_PROMISE is not set
-# CONFIG_SATA_SX4 is not set
-# CONFIG_SATA_SIL is not set
-# CONFIG_SATA_SIL24 is not set
-# CONFIG_SATA_SIS is not set
-# CONFIG_SATA_ULI is not set
-# CONFIG_SATA_VIA is not set
-# CONFIG_SATA_VITESSE is not set
-# CONFIG_SATA_INIC162X is not set
-CONFIG_PATA_ALI=m
-# CONFIG_PATA_AMD is not set
-# CONFIG_PATA_ARTOP is not set
-# CONFIG_PATA_ATIIXP is not set
-# CONFIG_PATA_CMD640_PCI is not set
-# CONFIG_PATA_CMD64X is not set
-# CONFIG_PATA_CS5520 is not set
-# CONFIG_PATA_CS5530 is not set
-# CONFIG_PATA_CS5535 is not set
-# CONFIG_PATA_CYPRESS is not set
-# CONFIG_PATA_EFAR is not set
-# CONFIG_ATA_GENERIC is not set
-# CONFIG_PATA_HPT366 is not set
-# CONFIG_PATA_HPT37X is not set
-# CONFIG_PATA_HPT3X2N is not set
-# CONFIG_PATA_HPT3X3 is not set
-# CONFIG_PATA_IT821X is not set
-# CONFIG_PATA_IT8213 is not set
-# CONFIG_PATA_JMICRON is not set
-# CONFIG_PATA_LEGACY is not set
-# CONFIG_PATA_TRIFLEX is not set
-# CONFIG_PATA_MARVELL is not set
-# CONFIG_PATA_MPIIX is not set
-# CONFIG_PATA_OLDPIIX is not set
-# CONFIG_PATA_NETCELL is not set
-# CONFIG_PATA_NS87410 is not set
-# CONFIG_PATA_OPTI is not set
-# CONFIG_PATA_OPTIDMA is not set
-# CONFIG_PATA_PCMCIA is not set
-# CONFIG_PATA_PDC_OLD is not set
-# CONFIG_PATA_QDI is not set
-# CONFIG_PATA_RADISYS is not set
-# CONFIG_PATA_RZ1000 is not set
-# CONFIG_PATA_SC1200 is not set
-# CONFIG_PATA_SERVERWORKS is not set
-# CONFIG_PATA_PDC2027X is not set
-# CONFIG_PATA_SIL680 is not set
-# CONFIG_PATA_SIS is not set
-# CONFIG_PATA_VIA is not set
-# CONFIG_PATA_WINBOND is not set
-# CONFIG_PATA_WINBOND_VLB is not set
-# CONFIG_PATA_PLATFORM is not set
-CONFIG_MD=y
-CONFIG_BLK_DEV_MD=m
-CONFIG_MD_LINEAR=m
-CONFIG_MD_RAID0=m
-CONFIG_MD_RAID1=m
-CONFIG_MD_RAID10=m
-CONFIG_MD_RAID456=m
-CONFIG_MD_RAID5_RESHAPE=y
-CONFIG_MD_MULTIPATH=m
-CONFIG_MD_FAULTY=m
-CONFIG_BLK_DEV_DM=m
-# CONFIG_DM_DEBUG is not set
-CONFIG_DM_CRYPT=m
-CONFIG_DM_SNAPSHOT=m
-CONFIG_DM_MIRROR=m
-CONFIG_DM_ZERO=m
-CONFIG_DM_MULTIPATH=m
-CONFIG_DM_MULTIPATH_EMC=m
-# CONFIG_DM_MULTIPATH_RDAC is not set
-# CONFIG_DM_DELAY is not set
-
-#
-# Fusion MPT device support
-#
-# CONFIG_FUSION is not set
-# CONFIG_FUSION_SPI is not set
-# CONFIG_FUSION_FC is not set
-# CONFIG_FUSION_SAS is not set
-
-#
-# IEEE 1394 (FireWire) support
-#
-# CONFIG_FIREWIRE is not set
-# CONFIG_IEEE1394 is not set
-# CONFIG_I2O is not set
-# CONFIG_MACINTOSH_DRIVERS is not set
-CONFIG_NETDEVICES=y
-# CONFIG_NETDEVICES_MULTIQUEUE is not set
-CONFIG_DUMMY=m
-CONFIG_BONDING=m
-# CONFIG_MACVLAN is not set
-# CONFIG_EQUALIZER is not set
-CONFIG_TUN=m
-# CONFIG_NET_SB1000 is not set
-# CONFIG_ARCNET is not set
-# CONFIG_PHYLIB is not set
-CONFIG_NET_ETHERNET=y
-CONFIG_MII=m
-# CONFIG_HAPPYMEAL is not set
-# CONFIG_SUNGEM is not set
-# CONFIG_CASSINI is not set
-# CONFIG_NET_VENDOR_3COM is not set
-# CONFIG_LANCE is not set
-# CONFIG_NET_VENDOR_SMC is not set
-# CONFIG_NET_VENDOR_RACAL is not set
-# CONFIG_NET_TULIP is not set
-# CONFIG_AT1700 is not set
-# CONFIG_DEPCA is not set
-# CONFIG_HP100 is not set
-# CONFIG_NET_ISA is not set
-CONFIG_NET_PCI=y
-# CONFIG_PCNET32 is not set
-# CONFIG_AMD8111_ETH is not set
-# CONFIG_ADAPTEC_STARFIRE is not set
-# CONFIG_AC3200 is not set
-# CONFIG_APRICOT is not set
-# CONFIG_B44 is not set
-# CONFIG_FORCEDETH is not set
-# CONFIG_CS89x0 is not set
-# CONFIG_DGRS is not set
-# CONFIG_EEPRO100 is not set
-CONFIG_E100=m
-# CONFIG_FEALNX is not set
-# CONFIG_NATSEMI is not set
-# CONFIG_NE2K_PCI is not set
-# CONFIG_8139CP is not set
-# CONFIG_8139TOO is not set
-# CONFIG_SIS900 is not set
-# CONFIG_EPIC100 is not set
-# CONFIG_SUNDANCE is not set
-# CONFIG_TLAN is not set
-# CONFIG_VIA_RHINE is not set
-# CONFIG_SC92031 is not set
-# CONFIG_NETDEV_1000 is not set
-# CONFIG_NETDEV_10000 is not set
-# CONFIG_TR is not set
-
-#
-# Wireless LAN
-#
-# CONFIG_WLAN_PRE80211 is not set
-CONFIG_WLAN_80211=y
-# CONFIG_PCMCIA_RAYCS is not set
-# CONFIG_IPW2100 is not set
-# CONFIG_IPW2200 is not set
-# CONFIG_LIBERTAS is not set
-# CONFIG_AIRO is not set
-# CONFIG_HERMES is not set
-# CONFIG_ATMEL is not set
-# CONFIG_AIRO_CS is not set
-# CONFIG_PCMCIA_WL3501 is not set
-# CONFIG_PRISM54 is not set
-# CONFIG_USB_ZD1201 is not set
-# CONFIG_HOSTAP is not set
-
-#
-# USB Network Adapters
-#
-# CONFIG_USB_CATC is not set
-# CONFIG_USB_KAWETH is not set
-# CONFIG_USB_PEGASUS is not set
-# CONFIG_USB_RTL8150 is not set
-# CONFIG_USB_USBNET_MII is not set
-# CONFIG_USB_USBNET is not set
-# CONFIG_NET_PCMCIA is not set
-# CONFIG_WAN is not set
-# CONFIG_FDDI is not set
-# CONFIG_HIPPI is not set
-CONFIG_PPP=m
-CONFIG_PPP_MULTILINK=y
-CONFIG_PPP_FILTER=y
-CONFIG_PPP_ASYNC=m
-CONFIG_PPP_SYNC_TTY=m
-CONFIG_PPP_DEFLATE=m
-CONFIG_PPP_BSDCOMP=m
-CONFIG_PPP_MPPE=m
-CONFIG_PPPOE=m
-# CONFIG_PPPOL2TP is not set
-# CONFIG_SLIP is not set
-CONFIG_SLHC=m
-# CONFIG_NET_FC is not set
-CONFIG_SHAPER=m
-CONFIG_NETCONSOLE=m
-CONFIG_NETPOLL=y
-# CONFIG_NETPOLL_TRAP is not set
-CONFIG_NET_POLL_CONTROLLER=y
-# CONFIG_ISDN is not set
-# CONFIG_PHONE is not set
-
-#
-# Input device support
-#
-CONFIG_INPUT=y
-# CONFIG_INPUT_FF_MEMLESS is not set
-# CONFIG_INPUT_POLLDEV is not set
-
-#
-# Userland interfaces
-#
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_PSAUX=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-CONFIG_INPUT_JOYDEV=m
-CONFIG_INPUT_TSDEV=m
-CONFIG_INPUT_TSDEV_SCREEN_X=240
-CONFIG_INPUT_TSDEV_SCREEN_Y=320
-CONFIG_INPUT_EVDEV=m
-# CONFIG_INPUT_EVBUG is not set
-
-#
-# Input Device Drivers
-#
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-# CONFIG_KEYBOARD_SUNKBD is not set
-# CONFIG_KEYBOARD_LKKBD is not set
-# CONFIG_KEYBOARD_XTKBD is not set
-# CONFIG_KEYBOARD_NEWTON is not set
-# CONFIG_KEYBOARD_STOWAWAY is not set
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=m
-# CONFIG_MOUSE_PS2_ALPS is not set
-# CONFIG_MOUSE_PS2_LOGIPS2PP is not set
-# CONFIG_MOUSE_PS2_SYNAPTICS is not set
-# CONFIG_MOUSE_PS2_LIFEBOOK is not set
-# CONFIG_MOUSE_PS2_TRACKPOINT is not set
-# CONFIG_MOUSE_PS2_TOUCHKIT is not set
-# CONFIG_MOUSE_SERIAL is not set
-# CONFIG_MOUSE_APPLETOUCH is not set
-# CONFIG_MOUSE_INPORT is not set
-# CONFIG_MOUSE_LOGIBM is not set
-# CONFIG_MOUSE_PC110PAD is not set
-# CONFIG_MOUSE_VSXXXAA is not set
-# CONFIG_INPUT_JOYSTICK is not set
-# CONFIG_INPUT_TABLET is not set
-# CONFIG_INPUT_TOUCHSCREEN is not set
-CONFIG_INPUT_MISC=y
-CONFIG_INPUT_PCSPKR=m
-# CONFIG_INPUT_WISTRON_BTNS is not set
-# CONFIG_INPUT_ATLAS_BTNS is not set
-# CONFIG_INPUT_ATI_REMOTE is not set
-# CONFIG_INPUT_ATI_REMOTE2 is not set
-# CONFIG_INPUT_KEYSPAN_REMOTE is not set
-# CONFIG_INPUT_POWERMATE is not set
-# CONFIG_INPUT_YEALINK is not set
-CONFIG_INPUT_UINPUT=m
-
-#
-# Hardware I/O ports
-#
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-CONFIG_SERIO_SERPORT=y
-# CONFIG_SERIO_CT82C710 is not set
-# CONFIG_SERIO_PCIPS2 is not set
-CONFIG_SERIO_LIBPS2=y
-CONFIG_SERIO_RAW=m
-# CONFIG_GAMEPORT is not set
-
-#
-# Character devices
-#
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_VT_HW_CONSOLE_BINDING=y
-# CONFIG_SERIAL_NONSTANDARD is not set
-
-#
-# Serial drivers
-#
-CONFIG_SERIAL_8250=m
-CONFIG_FIX_EARLYCON_MEM=y
-# CONFIG_SERIAL_8250_PCI is not set
-CONFIG_SERIAL_8250_PNP=m
-CONFIG_SERIAL_8250_CS=m
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-CONFIG_SERIAL_8250_EXTENDED=y
-# CONFIG_SERIAL_8250_MANY_PORTS is not set
-CONFIG_SERIAL_8250_SHARE_IRQ=y
-# CONFIG_SERIAL_8250_DETECT_IRQ is not set
-# CONFIG_SERIAL_8250_RSA is not set
-
-#
-# Non-8250 serial port support
-#
-CONFIG_SERIAL_CORE=m
-# CONFIG_SERIAL_JSM is not set
-CONFIG_UNIX98_PTYS=y
-CONFIG_LEGACY_PTYS=y
-CONFIG_LEGACY_PTY_COUNT=256
-# CONFIG_IPMI_HANDLER is not set
-CONFIG_WATCHDOG=y
-# CONFIG_WATCHDOG_NOWAYOUT is not set
-
-#
-# Watchdog Device Drivers
-#
-CONFIG_SOFT_WATCHDOG=m
-# CONFIG_ACQUIRE_WDT is not set
-# CONFIG_ADVANTECH_WDT is not set
-CONFIG_ALIM1535_WDT=m
-# CONFIG_ALIM7101_WDT is not set
-# CONFIG_SC520_WDT is not set
-# CONFIG_EUROTECH_WDT is not set
-# CONFIG_IB700_WDT is not set
-# CONFIG_IBMASR is not set
-# CONFIG_WAFER_WDT is not set
-# CONFIG_I6300ESB_WDT is not set
-# CONFIG_ITCO_WDT is not set
-# CONFIG_SC1200_WDT is not set
-# CONFIG_PC87413_WDT is not set
-# CONFIG_60XX_WDT is not set
-# CONFIG_SBC8360_WDT is not set
-# CONFIG_CPU5_WDT is not set
-# CONFIG_SMSC37B787_WDT is not set
-# CONFIG_W83627HF_WDT is not set
-# CONFIG_W83697HF_WDT is not set
-# CONFIG_W83877F_WDT is not set
-# CONFIG_W83977F_WDT is not set
-# CONFIG_MACHZ_WDT is not set
-# CONFIG_SBC_EPX_C3_WATCHDOG is not set
-
-#
-# ISA-based Watchdog Cards
-#
-# CONFIG_PCWATCHDOG is not set
-# CONFIG_MIXCOMWD is not set
-# CONFIG_WDT is not set
-
-#
-# PCI-based Watchdog Cards
-#
-# CONFIG_PCIPCWATCHDOG is not set
-# CONFIG_WDTPCI is not set
-
-#
-# USB-based Watchdog Cards
-#
-# CONFIG_USBPCWATCHDOG is not set
-CONFIG_HW_RANDOM=y
-CONFIG_HW_RANDOM_INTEL=m
-# CONFIG_HW_RANDOM_AMD is not set
-# CONFIG_HW_RANDOM_GEODE is not set
-# CONFIG_HW_RANDOM_VIA is not set
-CONFIG_NVRAM=m
-CONFIG_RTC=y
-# CONFIG_DTLK is not set
-# CONFIG_R3964 is not set
-# CONFIG_APPLICOM is not set
-# CONFIG_SONYPI is not set
-CONFIG_AGP=m
-CONFIG_AGP_ALI=m
-# CONFIG_AGP_ATI is not set
-# CONFIG_AGP_AMD is not set
-# CONFIG_AGP_AMD64 is not set
-# CONFIG_AGP_INTEL is not set
-# CONFIG_AGP_NVIDIA is not set
-# CONFIG_AGP_SIS is not set
-# CONFIG_AGP_SWORKS is not set
-# CONFIG_AGP_VIA is not set
-# CONFIG_AGP_EFFICEON is not set
-# CONFIG_DRM is not set
-
-#
-# PCMCIA character devices
-#
-# CONFIG_SYNCLINK_CS is not set
-# CONFIG_CARDMAN_4000 is not set
-# CONFIG_CARDMAN_4040 is not set
-# CONFIG_MWAVE is not set
-# CONFIG_PC8736x_GPIO is not set
-# CONFIG_NSC_GPIO is not set
-# CONFIG_CS5535_GPIO is not set
-CONFIG_RAW_DRIVER=m
-CONFIG_MAX_RAW_DEVS=256
-CONFIG_HPET=y
-# CONFIG_HPET_RTC_IRQ is not set
-CONFIG_HPET_MMAP=y
-CONFIG_HANGCHECK_TIMER=m
-# CONFIG_TCG_TPM is not set
-# CONFIG_TELCLOCK is not set
-CONFIG_DEVPORT=y
-CONFIG_I2C=m
-CONFIG_I2C_BOARDINFO=y
-CONFIG_I2C_CHARDEV=m
-
-#
-# I2C Algorithms
-#
-CONFIG_I2C_ALGOBIT=m
-CONFIG_I2C_ALGOPCF=m
-CONFIG_I2C_ALGOPCA=m
-
-#
-# I2C Hardware Bus support
-#
-CONFIG_I2C_ALI1535=m
-# CONFIG_I2C_ALI1563 is not set
-# CONFIG_I2C_ALI15X3 is not set
-# CONFIG_I2C_AMD756 is not set
-# CONFIG_I2C_AMD8111 is not set
-# CONFIG_I2C_ELEKTOR is not set
-# CONFIG_I2C_I801 is not set
-# CONFIG_I2C_I810 is not set
-# CONFIG_I2C_PIIX4 is not set
-# CONFIG_I2C_NFORCE2 is not set
-# CONFIG_I2C_OCORES is not set
-# CONFIG_I2C_PARPORT_LIGHT is not set
-# CONFIG_I2C_PROSAVAGE is not set
-# CONFIG_I2C_SAVAGE4 is not set
-# CONFIG_I2C_SIMTEC is not set
-# CONFIG_SCx200_ACB is not set
-# CONFIG_I2C_SIS5595 is not set
-# CONFIG_I2C_SIS630 is not set
-# CONFIG_I2C_SIS96X is not set
-# CONFIG_I2C_TAOS_EVM is not set
-CONFIG_I2C_STUB=m
-# CONFIG_I2C_TINY_USB is not set
-# CONFIG_I2C_VIA is not set
-# CONFIG_I2C_VIAPRO is not set
-# CONFIG_I2C_VOODOO3 is not set
-# CONFIG_I2C_PCA_ISA is not set
-
-#
-# Miscellaneous I2C Chip support
-#
-# CONFIG_SENSORS_DS1337 is not set
-# CONFIG_SENSORS_DS1374 is not set
-# CONFIG_DS1682 is not set
-CONFIG_SENSORS_EEPROM=m
-# CONFIG_SENSORS_PCF8574 is not set
-# CONFIG_SENSORS_PCA9539 is not set
-# CONFIG_SENSORS_PCF8591 is not set
-# CONFIG_SENSORS_MAX6875 is not set
-# CONFIG_SENSORS_TSL2550 is not set
-# CONFIG_I2C_DEBUG_CORE is not set
-# CONFIG_I2C_DEBUG_ALGO is not set
-# CONFIG_I2C_DEBUG_BUS is not set
-# CONFIG_I2C_DEBUG_CHIP is not set
-
-#
-# SPI support
-#
-# CONFIG_SPI is not set
-# CONFIG_SPI_MASTER is not set
-# CONFIG_W1 is not set
-CONFIG_POWER_SUPPLY=m
-# CONFIG_POWER_SUPPLY_DEBUG is not set
-# CONFIG_PDA_POWER is not set
-# CONFIG_BATTERY_DS2760 is not set
-CONFIG_HWMON=m
-# CONFIG_HWMON_VID is not set
-# CONFIG_SENSORS_ABITUGURU is not set
-# CONFIG_SENSORS_ABITUGURU3 is not set
-# CONFIG_SENSORS_AD7418 is not set
-# CONFIG_SENSORS_ADM1021 is not set
-# CONFIG_SENSORS_ADM1025 is not set
-# CONFIG_SENSORS_ADM1026 is not set
-# CONFIG_SENSORS_ADM1029 is not set
-# CONFIG_SENSORS_ADM1031 is not set
-# CONFIG_SENSORS_ADM9240 is not set
-# CONFIG_SENSORS_K8TEMP is not set
-# CONFIG_SENSORS_ASB100 is not set
-# CONFIG_SENSORS_ATXP1 is not set
-# CONFIG_SENSORS_DS1621 is not set
-# CONFIG_SENSORS_F71805F is not set
-# CONFIG_SENSORS_FSCHER is not set
-# CONFIG_SENSORS_FSCPOS is not set
-# CONFIG_SENSORS_GL518SM is not set
-# CONFIG_SENSORS_GL520SM is not set
-# CONFIG_SENSORS_CORETEMP is not set
-# CONFIG_SENSORS_IT87 is not set
-# CONFIG_SENSORS_LM63 is not set
-# CONFIG_SENSORS_LM75 is not set
-# CONFIG_SENSORS_LM77 is not set
-# CONFIG_SENSORS_LM78 is not set
-# CONFIG_SENSORS_LM80 is not set
-# CONFIG_SENSORS_LM83 is not set
-# CONFIG_SENSORS_LM85 is not set
-# CONFIG_SENSORS_LM87 is not set
-CONFIG_SENSORS_LM90=m
-# CONFIG_SENSORS_LM92 is not set
-# CONFIG_SENSORS_LM93 is not set
-# CONFIG_SENSORS_MAX1619 is not set
-# CONFIG_SENSORS_MAX6650 is not set
-# CONFIG_SENSORS_PC87360 is not set
-# CONFIG_SENSORS_PC87427 is not set
-# CONFIG_SENSORS_SIS5595 is not set
-# CONFIG_SENSORS_DME1737 is not set
-# CONFIG_SENSORS_SMSC47M1 is not set
-# CONFIG_SENSORS_SMSC47M192 is not set
-# CONFIG_SENSORS_SMSC47B397 is not set
-# CONFIG_SENSORS_THMC50 is not set
-# CONFIG_SENSORS_VIA686A is not set
-# CONFIG_SENSORS_VT1211 is not set
-# CONFIG_SENSORS_VT8231 is not set
-# CONFIG_SENSORS_W83781D is not set
-# CONFIG_SENSORS_W83791D is not set
-# CONFIG_SENSORS_W83792D is not set
-# CONFIG_SENSORS_W83793 is not set
-# CONFIG_SENSORS_W83L785TS is not set
-# CONFIG_SENSORS_W83627HF is not set
-# CONFIG_SENSORS_W83627EHF is not set
-# CONFIG_SENSORS_HDAPS is not set
-# CONFIG_SENSORS_APPLESMC is not set
-# CONFIG_HWMON_DEBUG_CHIP is not set
-
-#
-# Multifunction device drivers
-#
-# CONFIG_MFD_SM501 is not set
-
-#
-# Multimedia devices
-#
-# CONFIG_VIDEO_DEV is not set
-# CONFIG_DVB_CORE is not set
-# CONFIG_DAB is not set
-
-#
-# Graphics support
-#
-CONFIG_BACKLIGHT_LCD_SUPPORT=y
-CONFIG_LCD_CLASS_DEVICE=m
-CONFIG_BACKLIGHT_CLASS_DEVICE=m
-# CONFIG_BACKLIGHT_PROGEAR is not set
-
-#
-# Display device support
-#
-# CONFIG_DISPLAY_SUPPORT is not set
-# CONFIG_VGASTATE is not set
-CONFIG_VIDEO_OUTPUT_CONTROL=m
-CONFIG_FB=y
-CONFIG_FIRMWARE_EDID=y
-# CONFIG_FB_DDC is not set
-CONFIG_FB_CFB_FILLRECT=y
-CONFIG_FB_CFB_COPYAREA=y
-CONFIG_FB_CFB_IMAGEBLIT=y
-# CONFIG_FB_SYS_FILLRECT is not set
-# CONFIG_FB_SYS_COPYAREA is not set
-# CONFIG_FB_SYS_IMAGEBLIT is not set
-# CONFIG_FB_SYS_FOPS is not set
-CONFIG_FB_DEFERRED_IO=y
-# CONFIG_FB_SVGALIB is not set
-# CONFIG_FB_MACMODES is not set
-# CONFIG_FB_BACKLIGHT is not set
-CONFIG_FB_MODE_HELPERS=y
-CONFIG_FB_TILEBLITTING=y
-
-#
-# Frame buffer hardware drivers
-#
-# CONFIG_FB_CIRRUS is not set
-# CONFIG_FB_PM2 is not set
-# CONFIG_FB_CYBER2000 is not set
-# CONFIG_FB_ARC is not set
-# CONFIG_FB_ASILIANT is not set
-# CONFIG_FB_IMSTT is not set
-# CONFIG_FB_VGA16 is not set
-CONFIG_FB_VESA=y
-# CONFIG_FB_HECUBA is not set
-# CONFIG_FB_HGA is not set
-# CONFIG_FB_S1D13XXX is not set
-# CONFIG_FB_NVIDIA is not set
-# CONFIG_FB_RIVA is not set
-# CONFIG_FB_I810 is not set
-# CONFIG_FB_LE80578 is not set
-# CONFIG_FB_INTEL is not set
-# CONFIG_FB_MATROX is not set
-# CONFIG_FB_RADEON is not set
-# CONFIG_FB_ATY128 is not set
-# CONFIG_FB_ATY is not set
-# CONFIG_FB_S3 is not set
-# CONFIG_FB_SAVAGE is not set
-# CONFIG_FB_SIS is not set
-# CONFIG_FB_NEOMAGIC is not set
-# CONFIG_FB_KYRO is not set
-# CONFIG_FB_3DFX is not set
-# CONFIG_FB_VOODOO1 is not set
-# CONFIG_FB_VT8623 is not set
-# CONFIG_FB_CYBLA is not set
-# CONFIG_FB_TRIDENT is not set
-# CONFIG_FB_ARK is not set
-# CONFIG_FB_PM3 is not set
-# CONFIG_FB_GEODE is not set
-# CONFIG_FB_VIRTUAL is not set
-
-#
-# Console display driver support
-#
-CONFIG_VGA_CONSOLE=y
-# CONFIG_VGACON_SOFT_SCROLLBACK is not set
-CONFIG_VIDEO_SELECT=y
-# CONFIG_MDA_CONSOLE is not set
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_FRAMEBUFFER_CONSOLE=y
-CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
-# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
-CONFIG_FONTS=y
-CONFIG_FONT_8x8=y
-CONFIG_FONT_8x16=y
-# CONFIG_FONT_6x11 is not set
-# CONFIG_FONT_7x14 is not set
-# CONFIG_FONT_PEARL_8x8 is not set
-# CONFIG_FONT_ACORN_8x8 is not set
-# CONFIG_FONT_MINI_4x6 is not set
-# CONFIG_FONT_SUN8x16 is not set
-# CONFIG_FONT_SUN12x22 is not set
-# CONFIG_FONT_10x18 is not set
-CONFIG_LOGO=y
-CONFIG_LOGO_LINUX_MONO=y
-CONFIG_LOGO_LINUX_VGA16=y
-CONFIG_LOGO_LINUX_CLUT224=y
-
-#
-# Sound
-#
-CONFIG_SOUND=m
-
-#
-# Advanced Linux Sound Architecture
-#
-CONFIG_SND=m
-CONFIG_SND_TIMER=m
-CONFIG_SND_PCM=m
-CONFIG_SND_RAWMIDI=m
-CONFIG_SND_SEQUENCER=m
-CONFIG_SND_SEQ_DUMMY=m
-CONFIG_SND_OSSEMUL=y
-CONFIG_SND_MIXER_OSS=m
-CONFIG_SND_PCM_OSS=m
-CONFIG_SND_PCM_OSS_PLUGINS=y
-CONFIG_SND_SEQUENCER_OSS=y
-CONFIG_SND_RTCTIMER=m
-CONFIG_SND_SEQ_RTCTIMER_DEFAULT=y
-# CONFIG_SND_DYNAMIC_MINORS is not set
-CONFIG_SND_SUPPORT_OLD_API=y
-CONFIG_SND_VERBOSE_PROCFS=y
-# CONFIG_SND_VERBOSE_PRINTK is not set
-# CONFIG_SND_DEBUG is not set
-
-#
-# Generic devices
-#
-CONFIG_SND_MPU401_UART=m
-CONFIG_SND_AC97_CODEC=m
-CONFIG_SND_DUMMY=m
-CONFIG_SND_VIRMIDI=m
-CONFIG_SND_MTPAV=m
-CONFIG_SND_SERIAL_U16550=m
-CONFIG_SND_MPU401=m
-
-#
-# ISA devices
-#
-# CONFIG_SND_ADLIB is not set
-# CONFIG_SND_AD1816A is not set
-# CONFIG_SND_AD1848 is not set
-# CONFIG_SND_ALS100 is not set
-# CONFIG_SND_AZT2320 is not set
-# CONFIG_SND_CMI8330 is not set
-# CONFIG_SND_CS4231 is not set
-# CONFIG_SND_CS4232 is not set
-# CONFIG_SND_CS4236 is not set
-# CONFIG_SND_DT019X is not set
-# CONFIG_SND_ES968 is not set
-# CONFIG_SND_ES1688 is not set
-# CONFIG_SND_ES18XX is not set
-# CONFIG_SND_GUSCLASSIC is not set
-# CONFIG_SND_GUSEXTREME is not set
-# CONFIG_SND_GUSMAX is not set
-# CONFIG_SND_INTERWAVE is not set
-# CONFIG_SND_INTERWAVE_STB is not set
-# CONFIG_SND_OPL3SA2 is not set
-# CONFIG_SND_OPTI92X_AD1848 is not set
-# CONFIG_SND_OPTI92X_CS4231 is not set
-# CONFIG_SND_OPTI93X is not set
-# CONFIG_SND_MIRO is not set
-# CONFIG_SND_SB8 is not set
-# CONFIG_SND_SB16 is not set
-# CONFIG_SND_SBAWE is not set
-# CONFIG_SND_SGALAXY is not set
-# CONFIG_SND_SSCAPE is not set
-# CONFIG_SND_WAVEFRONT is not set
-
-#
-# PCI devices
-#
-# CONFIG_SND_AD1889 is not set
-# CONFIG_SND_ALS300 is not set
-# CONFIG_SND_ALS4000 is not set
-CONFIG_SND_ALI5451=m
-# CONFIG_SND_ATIIXP is not set
-# CONFIG_SND_ATIIXP_MODEM is not set
-# CONFIG_SND_AU8810 is not set
-# CONFIG_SND_AU8820 is not set
-# CONFIG_SND_AU8830 is not set
-# CONFIG_SND_AZT3328 is not set
-# CONFIG_SND_BT87X is not set
-# CONFIG_SND_CA0106 is not set
-# CONFIG_SND_CMIPCI is not set
-# CONFIG_SND_CS4281 is not set
-# CONFIG_SND_CS46XX is not set
-# CONFIG_SND_CS5530 is not set
-# CONFIG_SND_CS5535AUDIO is not set
-# CONFIG_SND_DARLA20 is not set
-# CONFIG_SND_GINA20 is not set
-# CONFIG_SND_LAYLA20 is not set
-# CONFIG_SND_DARLA24 is not set
-# CONFIG_SND_GINA24 is not set
-# CONFIG_SND_LAYLA24 is not set
-# CONFIG_SND_MONA is not set
-# CONFIG_SND_MIA is not set
-# CONFIG_SND_ECHO3G is not set
-# CONFIG_SND_INDIGO is not set
-# CONFIG_SND_INDIGOIO is not set
-# CONFIG_SND_INDIGODJ is not set
-# CONFIG_SND_EMU10K1 is not set
-# CONFIG_SND_EMU10K1X is not set
-# CONFIG_SND_ENS1370 is not set
-# CONFIG_SND_ENS1371 is not set
-# CONFIG_SND_ES1938 is not set
-# CONFIG_SND_ES1968 is not set
-# CONFIG_SND_FM801 is not set
-# CONFIG_SND_HDA_INTEL is not set
-# CONFIG_SND_HDSP is not set
-# CONFIG_SND_HDSPM is not set
-# CONFIG_SND_ICE1712 is not set
-# CONFIG_SND_ICE1724 is not set
-# CONFIG_SND_INTEL8X0 is not set
-# CONFIG_SND_INTEL8X0M is not set
-# CONFIG_SND_KORG1212 is not set
-# CONFIG_SND_MAESTRO3 is not set
-# CONFIG_SND_MIXART is not set
-# CONFIG_SND_NM256 is not set
-# CONFIG_SND_PCXHR is not set
-# CONFIG_SND_RIPTIDE is not set
-# CONFIG_SND_RME32 is not set
-# CONFIG_SND_RME96 is not set
-# CONFIG_SND_RME9652 is not set
-# CONFIG_SND_SONICVIBES is not set
-# CONFIG_SND_TRIDENT is not set
-# CONFIG_SND_VIA82XX is not set
-# CONFIG_SND_VIA82XX_MODEM is not set
-# CONFIG_SND_VX222 is not set
-# CONFIG_SND_YMFPCI is not set
-CONFIG_SND_AC97_POWER_SAVE=y
-
-#
-# USB devices
-#
-# CONFIG_SND_USB_AUDIO is not set
-# CONFIG_SND_USB_USX2Y is not set
-# CONFIG_SND_USB_CAIAQ is not set
-
-#
-# PCMCIA devices
-#
-# CONFIG_SND_VXPOCKET is not set
-# CONFIG_SND_PDAUDIOCF is not set
-
-#
-# System on Chip audio support
-#
-# CONFIG_SND_SOC is not set
-
-#
-# SoC Audio support for SuperH
-#
-
-#
-# Open Sound System
-#
-# CONFIG_SOUND_PRIME is not set
-CONFIG_AC97_BUS=m
-CONFIG_HID_SUPPORT=y
-CONFIG_HID=m
-# CONFIG_HID_DEBUG is not set
-
-#
-# USB Input Devices
-#
-CONFIG_USB_HID=m
-# CONFIG_USB_HIDINPUT_POWERBOOK is not set
-# CONFIG_HID_FF is not set
-# CONFIG_USB_HIDDEV is not set
-
-#
-# USB HID Boot Protocol drivers
-#
-CONFIG_USB_KBD=m
-CONFIG_USB_MOUSE=m
-CONFIG_USB_SUPPORT=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_USB=m
-# CONFIG_USB_DEBUG is not set
-
-#
-# Miscellaneous USB options
-#
-CONFIG_USB_DEVICEFS=y
-# CONFIG_USB_DEVICE_CLASS is not set
-CONFIG_USB_DYNAMIC_MINORS=y
-CONFIG_USB_SUSPEND=y
-CONFIG_USB_PERSIST=y
-# CONFIG_USB_OTG is not set
-
-#
-# USB Host Controller Drivers
-#
-# CONFIG_USB_EHCI_HCD is not set
-# CONFIG_USB_ISP116X_HCD is not set
-CONFIG_USB_OHCI_HCD=m
-# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
-# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
-CONFIG_USB_OHCI_LITTLE_ENDIAN=y
-# CONFIG_USB_UHCI_HCD is not set
-# CONFIG_USB_SL811_HCD is not set
-# CONFIG_USB_R8A66597_HCD is not set
-
-#
-# USB Device Class drivers
-#
-CONFIG_USB_ACM=m
-CONFIG_USB_PRINTER=m
-
-#
-# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-#
-
-#
-# may also be needed; see USB_STORAGE Help for more information
-#
-CONFIG_USB_STORAGE=m
-# CONFIG_USB_STORAGE_DEBUG is not set
-CONFIG_USB_STORAGE_DATAFAB=y
-CONFIG_USB_STORAGE_FREECOM=y
-# CONFIG_USB_STORAGE_ISD200 is not set
-CONFIG_USB_STORAGE_DPCM=y
-CONFIG_USB_STORAGE_USBAT=y
-CONFIG_USB_STORAGE_SDDR09=y
-CONFIG_USB_STORAGE_SDDR55=y
-CONFIG_USB_STORAGE_JUMPSHOT=y
-CONFIG_USB_STORAGE_ALAUDA=y
-CONFIG_USB_STORAGE_KARMA=y
-# CONFIG_USB_LIBUSUAL is not set
-
-#
-# USB Imaging devices
-#
-# CONFIG_USB_MDC800 is not set
-# CONFIG_USB_MICROTEK is not set
-# CONFIG_USB_MON is not set
-
-#
-# USB port drivers
-#
-
-#
-# USB Serial Converter support
-#
-CONFIG_USB_SERIAL=m
-CONFIG_USB_SERIAL_GENERIC=y
-# CONFIG_USB_SERIAL_AIRCABLE is not set
-# CONFIG_USB_SERIAL_AIRPRIME is not set
-# CONFIG_USB_SERIAL_ARK3116 is not set
-# CONFIG_USB_SERIAL_BELKIN is not set
-# CONFIG_USB_SERIAL_WHITEHEAT is not set
-# CONFIG_USB_SERIAL_DIGI_ACCELEPORT is not set
-# CONFIG_USB_SERIAL_CP2101 is not set
-# CONFIG_USB_SERIAL_CYPRESS_M8 is not set
-# CONFIG_USB_SERIAL_EMPEG is not set
-# CONFIG_USB_SERIAL_FTDI_SIO is not set
-# CONFIG_USB_SERIAL_FUNSOFT is not set
-# CONFIG_USB_SERIAL_VISOR is not set
-# CONFIG_USB_SERIAL_IPAQ is not set
-# CONFIG_USB_SERIAL_IR is not set
-# CONFIG_USB_SERIAL_EDGEPORT is not set
-# CONFIG_USB_SERIAL_EDGEPORT_TI is not set
-# CONFIG_USB_SERIAL_GARMIN is not set
-# CONFIG_USB_SERIAL_IPW is not set
-# CONFIG_USB_SERIAL_KEYSPAN_PDA is not set
-# CONFIG_USB_SERIAL_KEYSPAN is not set
-# CONFIG_USB_SERIAL_KLSI is not set
-# CONFIG_USB_SERIAL_KOBIL_SCT is not set
-# CONFIG_USB_SERIAL_MCT_U232 is not set
-# CONFIG_USB_SERIAL_MOS7720 is not set
-# CONFIG_USB_SERIAL_MOS7840 is not set
-# CONFIG_USB_SERIAL_NAVMAN is not set
-CONFIG_USB_SERIAL_PL2303=m
-# CONFIG_USB_SERIAL_OTI6858 is not set
-# CONFIG_USB_SERIAL_HP4X is not set
-# CONFIG_USB_SERIAL_SAFE is not set
-# CONFIG_USB_SERIAL_SIERRAWIRELESS is not set
-# CONFIG_USB_SERIAL_TI is not set
-# CONFIG_USB_SERIAL_CYBERJACK is not set
-# CONFIG_USB_SERIAL_XIRCOM is not set
-# CONFIG_USB_SERIAL_OPTION is not set
-# CONFIG_USB_SERIAL_OMNINET is not set
-# CONFIG_USB_SERIAL_DEBUG is not set
-
-#
-# USB Miscellaneous drivers
-#
-# CONFIG_USB_EMI62 is not set
-# CONFIG_USB_EMI26 is not set
-# CONFIG_USB_ADUTUX is not set
-# CONFIG_USB_AUERSWALD is not set
-# CONFIG_USB_RIO500 is not set
-# CONFIG_USB_LEGOTOWER is not set
-# CONFIG_USB_LCD is not set
-# CONFIG_USB_BERRY_CHARGE is not set
-# CONFIG_USB_LED is not set
-# CONFIG_USB_CYPRESS_CY7C63 is not set
-# CONFIG_USB_CYTHERM is not set
-# CONFIG_USB_PHIDGET is not set
-# CONFIG_USB_IDMOUSE is not set
-# CONFIG_USB_FTDI_ELAN is not set
-# CONFIG_USB_APPLEDISPLAY is not set
-# CONFIG_USB_LD is not set
-# CONFIG_USB_TRANCEVIBRATOR is not set
-# CONFIG_USB_IOWARRIOR is not set
-# CONFIG_USB_TEST is not set
-
-#
-# USB DSL modem support
-#
-
-#
-# USB Gadget Support
-#
-# CONFIG_USB_GADGET is not set
-# CONFIG_MMC is not set
-# CONFIG_NEW_LEDS is not set
-# CONFIG_INFINIBAND is not set
-# CONFIG_EDAC is not set
-# CONFIG_RTC_CLASS is not set
-
-#
-# DMA Engine support
-#
-# CONFIG_DMA_ENGINE is not set
-
-#
-# DMA Clients
-#
-
-#
-# DMA Devices
-#
-# CONFIG_VIRTUALIZATION is not set
-
-#
-# Userspace I/O
-#
-# CONFIG_UIO is not set
-
-#
-# File systems
-#
-CONFIG_EXT2_FS=m
-CONFIG_EXT2_FS_XATTR=y
-CONFIG_EXT2_FS_POSIX_ACL=y
-CONFIG_EXT2_FS_SECURITY=y
-# CONFIG_EXT2_FS_XIP is not set
-CONFIG_EXT3_FS=m
-CONFIG_EXT3_FS_XATTR=y
-CONFIG_EXT3_FS_POSIX_ACL=y
-CONFIG_EXT3_FS_SECURITY=y
-# CONFIG_EXT4DEV_FS is not set
-CONFIG_JBD=m
-# CONFIG_JBD_DEBUG is not set
-CONFIG_FS_MBCACHE=m
-CONFIG_REISERFS_FS=m
-# CONFIG_REISERFS_CHECK is not set
-CONFIG_REISERFS_PROC_INFO=y
-CONFIG_REISERFS_FS_XATTR=y
-CONFIG_REISERFS_FS_POSIX_ACL=y
-CONFIG_REISERFS_FS_SECURITY=y
-# CONFIG_JFS_FS is not set
-CONFIG_FS_POSIX_ACL=y
-# CONFIG_XFS_FS is not set
-# CONFIG_GFS2_FS is not set
-# CONFIG_OCFS2_FS is not set
-# CONFIG_MINIX_FS is not set
-# CONFIG_ROMFS_FS is not set
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-# CONFIG_QUOTA is not set
-CONFIG_DNOTIFY=y
-# CONFIG_AUTOFS_FS is not set
-CONFIG_AUTOFS4_FS=m
-CONFIG_FUSE_FS=m
-CONFIG_GENERIC_ACL=y
-
-#
-# CD-ROM/DVD Filesystems
-#
-CONFIG_ISO9660_FS=m
-CONFIG_JOLIET=y
-CONFIG_ZISOFS=y
-CONFIG_UDF_FS=m
-CONFIG_UDF_NLS=y
-
-#
-# DOS/FAT/NT Filesystems
-#
-CONFIG_FAT_FS=m
-CONFIG_MSDOS_FS=m
-CONFIG_VFAT_FS=m
-CONFIG_FAT_DEFAULT_CODEPAGE=866
-CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-CONFIG_NTFS_FS=m
-# CONFIG_NTFS_DEBUG is not set
-# CONFIG_NTFS_RW is not set
-
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_TMPFS_POSIX_ACL=y
-# CONFIG_HUGETLBFS is not set
-# CONFIG_HUGETLB_PAGE is not set
-CONFIG_RAMFS=y
-CONFIG_CONFIGFS_FS=m
-
-#
-# Miscellaneous filesystems
-#
-# CONFIG_ADFS_FS is not set
-# CONFIG_AFFS_FS is not set
-# CONFIG_ECRYPT_FS is not set
-# CONFIG_HFS_FS is not set
-# CONFIG_HFSPLUS_FS is not set
-# CONFIG_BEFS_FS is not set
-# CONFIG_BFS_FS is not set
-# CONFIG_EFS_FS is not set
-# CONFIG_CRAMFS is not set
-CONFIG_SQUASHFS=m
-# CONFIG_SQUASHFS_EMBEDDED is not set
-CONFIG_SQUASHFS_FRAGMENT_CACHE_SIZE=3
-# CONFIG_SQUASHFS_VMALLOC is not set
-# CONFIG_VXFS_FS is not set
-# CONFIG_HPFS_FS is not set
-# CONFIG_QNX4FS_FS is not set
-# CONFIG_SYSV_FS is not set
-# CONFIG_UFS_FS is not set
-
-#
-# Network File Systems
-#
-CONFIG_NFS_FS=m
-CONFIG_NFS_V3=y
-CONFIG_NFS_V3_ACL=y
-CONFIG_NFS_V4=y
-CONFIG_NFS_DIRECTIO=y
-CONFIG_NFSD=m
-CONFIG_NFSD_V2_ACL=y
-CONFIG_NFSD_V3=y
-CONFIG_NFSD_V3_ACL=y
-CONFIG_NFSD_V4=y
-CONFIG_NFSD_TCP=y
-CONFIG_LOCKD=m
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=m
-CONFIG_NFS_ACL_SUPPORT=m
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=m
-CONFIG_SUNRPC_GSS=m
-# CONFIG_SUNRPC_BIND34 is not set
-CONFIG_RPCSEC_GSS_KRB5=m
-# CONFIG_RPCSEC_GSS_SPKM3 is not set
-# CONFIG_SMB_FS is not set
-CONFIG_CIFS=m
-CONFIG_CIFS_STATS=y
-CONFIG_CIFS_STATS2=y
-# CONFIG_CIFS_WEAK_PW_HASH is not set
-# CONFIG_CIFS_XATTR is not set
-# CONFIG_CIFS_DEBUG2 is not set
-# CONFIG_CIFS_EXPERIMENTAL is not set
-# CONFIG_NCP_FS is not set
-CONFIG_CODA_FS=m
-# CONFIG_CODA_FS_OLD_API is not set
-# CONFIG_AFS_FS is not set
-
-#
-# Partition Types
-#
-CONFIG_PARTITION_ADVANCED=y
-# CONFIG_ACORN_PARTITION is not set
-# CONFIG_OSF_PARTITION is not set
-# CONFIG_AMIGA_PARTITION is not set
-# CONFIG_ATARI_PARTITION is not set
-# CONFIG_MAC_PARTITION is not set
-CONFIG_MSDOS_PARTITION=y
-CONFIG_BSD_DISKLABEL=y
-# CONFIG_MINIX_SUBPARTITION is not set
-CONFIG_SOLARIS_X86_PARTITION=y
-CONFIG_UNIXWARE_DISKLABEL=y
-CONFIG_LDM_PARTITION=y
-# CONFIG_LDM_DEBUG is not set
-# CONFIG_SGI_PARTITION is not set
-# CONFIG_ULTRIX_PARTITION is not set
-# CONFIG_SUN_PARTITION is not set
-# CONFIG_KARMA_PARTITION is not set
-# CONFIG_EFI_PARTITION is not set
-# CONFIG_SYSV68_PARTITION is not set
-
-#
-# Native Language Support
-#
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="utf8"
-CONFIG_NLS_CODEPAGE_437=m
-# CONFIG_NLS_CODEPAGE_737 is not set
-CONFIG_NLS_CODEPAGE_775=m
-# CONFIG_NLS_CODEPAGE_850 is not set
-# CONFIG_NLS_CODEPAGE_852 is not set
-CONFIG_NLS_CODEPAGE_855=m
-# CONFIG_NLS_CODEPAGE_857 is not set
-# CONFIG_NLS_CODEPAGE_860 is not set
-# CONFIG_NLS_CODEPAGE_861 is not set
-# CONFIG_NLS_CODEPAGE_862 is not set
-# CONFIG_NLS_CODEPAGE_863 is not set
-# CONFIG_NLS_CODEPAGE_864 is not set
-# CONFIG_NLS_CODEPAGE_865 is not set
-CONFIG_NLS_CODEPAGE_866=m
-# CONFIG_NLS_CODEPAGE_869 is not set
-# CONFIG_NLS_CODEPAGE_936 is not set
-# CONFIG_NLS_CODEPAGE_950 is not set
-# CONFIG_NLS_CODEPAGE_932 is not set
-# CONFIG_NLS_CODEPAGE_949 is not set
-# CONFIG_NLS_CODEPAGE_874 is not set
-# CONFIG_NLS_ISO8859_8 is not set
-# CONFIG_NLS_CODEPAGE_1250 is not set
-CONFIG_NLS_CODEPAGE_1251=m
-CONFIG_NLS_ASCII=m
-# CONFIG_NLS_ISO8859_1 is not set
-# CONFIG_NLS_ISO8859_2 is not set
-# CONFIG_NLS_ISO8859_3 is not set
-# CONFIG_NLS_ISO8859_4 is not set
-CONFIG_NLS_ISO8859_5=m
-# CONFIG_NLS_ISO8859_6 is not set
-# CONFIG_NLS_ISO8859_7 is not set
-# CONFIG_NLS_ISO8859_9 is not set
-# CONFIG_NLS_ISO8859_13 is not set
-# CONFIG_NLS_ISO8859_14 is not set
-CONFIG_NLS_ISO8859_15=m
-CONFIG_NLS_KOI8_R=m
-# CONFIG_NLS_KOI8_U is not set
-CONFIG_NLS_UTF8=m
-
-#
-# Distributed Lock Manager
-#
-# CONFIG_DLM is not set
-CONFIG_INSTRUMENTATION=y
-CONFIG_PROFILING=y
-CONFIG_OPROFILE=m
-CONFIG_KPROBES=y
-
-#
-# Kernel hacking
-#
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_PRINTK_TIME=y
-CONFIG_ENABLE_MUST_CHECK=y
-CONFIG_MAGIC_SYSRQ=y
-# CONFIG_UNUSED_SYMBOLS is not set
-# CONFIG_DEBUG_FS is not set
-# CONFIG_HEADERS_CHECK is not set
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DEBUG_SHIRQ=y
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_SCHED_DEBUG=y
-CONFIG_SCHEDSTATS=y
-CONFIG_TIMER_STATS=y
-# CONFIG_SLUB_DEBUG_ON is not set
-# CONFIG_DEBUG_RT_MUTEXES is not set
-# CONFIG_RT_MUTEX_TESTER is not set
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_LOCK_ALLOC=y
-CONFIG_PROVE_LOCKING=y
-CONFIG_LOCKDEP=y
-CONFIG_LOCK_STAT=y
-# CONFIG_DEBUG_LOCKDEP is not set
-CONFIG_TRACE_IRQFLAGS=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-CONFIG_DEBUG_LOCKING_API_SELFTESTS=y
-CONFIG_STACKTRACE=y
-# CONFIG_DEBUG_KOBJECT is not set
-CONFIG_DEBUG_BUGVERBOSE=y
-# CONFIG_DEBUG_INFO is not set
-# CONFIG_DEBUG_VM is not set
-# CONFIG_DEBUG_LIST is not set
-CONFIG_FRAME_POINTER=y
-CONFIG_FORCED_INLINING=y
-# CONFIG_RCU_TORTURE_TEST is not set
-# CONFIG_LKDTM is not set
-# CONFIG_FAULT_INJECTION is not set
-# CONFIG_EARLY_PRINTK is not set
-CONFIG_DEBUG_STACKOVERFLOW=y
-# CONFIG_DEBUG_STACK_USAGE is not set
-
-#
-# Page alloc debug is incompatible with Software Suspend on i386
-#
-CONFIG_DEBUG_RODATA=y
-# CONFIG_4KSTACKS is not set
-CONFIG_DOUBLEFAULT=y
-
-#
-# Security options
-#
-CONFIG_KEYS=y
-CONFIG_KEYS_DEBUG_PROC_KEYS=y
-# CONFIG_SECURITY is not set
-CONFIG_XOR_BLOCKS=m
-CONFIG_ASYNC_CORE=m
-CONFIG_ASYNC_MEMCPY=m
-CONFIG_ASYNC_XOR=m
-CONFIG_CRYPTO=y
-CONFIG_CRYPTO_ALGAPI=m
-CONFIG_CRYPTO_BLKCIPHER=m
-CONFIG_CRYPTO_HASH=m
-CONFIG_CRYPTO_MANAGER=m
-CONFIG_CRYPTO_HMAC=m
-CONFIG_CRYPTO_XCBC=m
-CONFIG_CRYPTO_NULL=m
-CONFIG_CRYPTO_MD4=m
-CONFIG_CRYPTO_MD5=m
-CONFIG_CRYPTO_SHA1=m
-CONFIG_CRYPTO_SHA256=m
-CONFIG_CRYPTO_SHA512=m
-CONFIG_CRYPTO_WP512=m
-CONFIG_CRYPTO_TGR192=m
-CONFIG_CRYPTO_GF128MUL=m
-CONFIG_CRYPTO_ECB=m
-CONFIG_CRYPTO_CBC=m
-CONFIG_CRYPTO_PCBC=m
-CONFIG_CRYPTO_LRW=m
-# CONFIG_CRYPTO_CRYPTD is not set
-CONFIG_CRYPTO_DES=m
-CONFIG_CRYPTO_FCRYPT=m
-CONFIG_CRYPTO_BLOWFISH=m
-CONFIG_CRYPTO_TWOFISH=m
-CONFIG_CRYPTO_TWOFISH_COMMON=m
-CONFIG_CRYPTO_TWOFISH_586=m
-CONFIG_CRYPTO_SERPENT=m
-CONFIG_CRYPTO_AES=m
-CONFIG_CRYPTO_AES_586=m
-CONFIG_CRYPTO_CAST5=m
-CONFIG_CRYPTO_CAST6=m
-CONFIG_CRYPTO_TEA=m
-CONFIG_CRYPTO_ARC4=m
-CONFIG_CRYPTO_KHAZAD=m
-CONFIG_CRYPTO_ANUBIS=m
-CONFIG_CRYPTO_DEFLATE=m
-CONFIG_CRYPTO_MICHAEL_MIC=m
-CONFIG_CRYPTO_CRC32C=m
-CONFIG_CRYPTO_CAMELLIA=m
-CONFIG_CRYPTO_TEST=m
-# CONFIG_CRYPTO_HW is not set
-
-#
-# Library routines
-#
-CONFIG_BITREVERSE=y
-CONFIG_CRC_CCITT=m
-CONFIG_CRC16=m
-# CONFIG_CRC_ITU_T is not set
-CONFIG_CRC32=y
-CONFIG_CRC7=m
-CONFIG_LIBCRC32C=m
-CONFIG_AUDIT_GENERIC=y
-CONFIG_ZLIB_INFLATE=m
-CONFIG_ZLIB_DEFLATE=m
-CONFIG_PLIST=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_X86_BIOS_REBOOT=y
-CONFIG_KTIME_SCALAR=y
-
---Boundary-01=_LrpxGIopXkH3w14--
-
---nextPart34928498.DP1s2lMd4K
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGxprLR6LMutpd94wRAjwIAJ9xwK/xIm9VFjO3SEoV6/cx4kWxVACgwjIG
-pIuTIig8egg+UB0cpjYv4fg=
-=Dihq
------END PGP SIGNATURE-----
-
---nextPart34928498.DP1s2lMd4K--
