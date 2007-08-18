@@ -1,53 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbXHRFfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753707AbXHRFqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbXHRFfj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 01:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbXHRFfc
+	id S1753707AbXHRFqZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 01:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbXHRFqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 01:35:32 -0400
-Received: from 1wt.eu ([62.212.114.60]:1733 "EHLO 1wt.eu"
+	Sat, 18 Aug 2007 01:46:13 -0400
+Received: from 1wt.eu ([62.212.114.60]:1736 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751033AbXHRFfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 01:35:31 -0400
-Date: Sat, 18 Aug 2007 07:28:05 +0200
+	id S1751218AbXHRFpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 01:45:54 -0400
+Date: Sat, 18 Aug 2007 07:38:12 +0200
 From: Willy Tarreau <w@1wt.eu>
-To: Xu Yang <risingsunxy@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel 2.6.19 porting
-Message-ID: <20070818052805.GO6002@1wt.eu>
-References: <ab40e9c0708170924h5b958423jcd0e82e211ca8463@mail.gmail.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Marvell 88E8056 gigabit ethernet controller
+Message-ID: <20070818053812.GP6002@1wt.eu>
+References: <424491.59139.qm@web38906.mail.mud.yahoo.com> <20070817170341.7f2645fa@freepuppy.rosehill.hemminger.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ab40e9c0708170924h5b958423jcd0e82e211ca8463@mail.gmail.com>
+In-Reply-To: <20070817170341.7f2645fa@freepuppy.rosehill.hemminger.net>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 06:24:17PM +0200, Xu Yang wrote:
-> Hi everyone,
+On Fri, Aug 17, 2007 at 05:03:41PM -0700, Stephen Hemminger wrote:
+> On Fri, 17 Aug 2007 05:42:13 -0700 (PDT)
+> Kevin E <kevin360@yahoo.com> wrote:
 > 
-> I have built up a software virtual prototype system with ARM11MPCORE.
-> my system is similar with realview_eb_mpcore. but my system is
-> simpler, which has only a mpcore , uart0, console,timer0_1, and
-> memorys.
+> > Hi all,
+> > 
+> > 	I've read where the onboard Marvell lan controller on
+> > some Gigabyte boards don't work.  I've got two systems
+> > using the same Gigabyte board, on one the LAN works on
+> > the other it dies like described by others.  Here's
+> > the systems:
+> > 
+> > 
+> > Working system:
+> > Gigabyte 965P-DS3 rev 3.3  (BIOS F10)
+> > Core2 Q6600
+> > 2GB Corsair XMS2 memory
+> > kernel 2.6.22.3
+> > 
+> > lspci for LAN controller:
+> > 04:00.0 Ethernet controller: Marvell Technology Group
+> > Ltd. 88E8056 PCI-E Gigabit Ethernet Controller (rev
+> > 14)
+> > 
+> > 
+> > Broken system:
+> > Gigabyte 965P-DS3 rev 3.3  (BIOS F10)
+> > Core2 E4400
+> > 2GB Corsair XMS2 memory
+> > kernel 2.6.22.3
+> > 
+> > lspci for LAN controller:
+> > 03:00.0 Ethernet controller: Marvell Technology Group
+> > Ltd. Unknown device 4364 (rev 12)
+> > 
+> > 
+> > 	The BIOS for the two systems are setup the same and
+> > the config for the kernels are the same too.  I've
+> > actually tried taking the kernel from the working
+> > system and booting it on the broken one but still the
+> > LAN dies after a couple of seconds.  The working
+> > system has one card plugged in (nvidia based PCI-X
+> > video card), I've taken that card and plugged into the
+> > broken system, booted the same kernel, and it still
+> > dies after a while.
+> > 
+> > 	I will gladly provide any info needed if it can help
+> > in getting this chipset working on the Gigabyte
+> > boards.
+> > 
+> > 	Thanks,
+> > 	Kevin
 > 
-> I want to run kernel 2.6.19 on it. I have done some modification, and
-> now I can just print out some information onto the console, and stuck
-> at
-> 
-> <7>Calibrating delay loop...
-> 
-> Could you guys give me some suggestion that what other adaptions
-> should I do according to my system?
+> I maintain the sky2 driver, and have one of the (buggy) Gigabyte motherboards.
+> It is interesting that the problem seems to track with video card.
 
-it's likely that one of your timers is not working. Adding a few
-of printk() in the calibration function should help you.
+No Stephen, look again, he says that moving the video card into the broken
+system does not change anything.
 
-> any suggestion is welcome:)
+> Are you using the Nvidia binary driver?
+> The video card in the system I have troubles with is:
+> 	ATI Technologies Inc RV370 [Radeon X300SE]
+> 
+> Surprisingly, using other PCI-E cards with same driver (different Marvell chips)
+> has no problem.  Vendor version of sk98lin driver has same failure mode
+> on the buggy hardware.
+> 
+> You might want to look at lspci -vvv output on two system to see if there
+> are differences. Perhaps there is a CPU speed dependency?
 
-If you upgrade to a more recent kernel (eg: 2.6.22), you'll get
-more feedback because it's fresher in people's mind.
+I don't understand why the working one is on PCI bus 3 while the other
+is on PCI bus 4. It's just as if the chip embedded a PCI bridge. Maybe
+those chips are just cheaper dual-channel controllers with one faulty
+controller disabled. It would also explain why the PCI ID is different.
 
 Willy
 
