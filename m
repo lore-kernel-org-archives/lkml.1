@@ -1,62 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbXHRWtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbXHRXLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758909AbXHRWtF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Aug 2007 18:49:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbXHRWsl
+	id S1758942AbXHRXLN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Aug 2007 19:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755814AbXHRXLB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Aug 2007 18:48:41 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:32883 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753709AbXHRWsj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Aug 2007 18:48:39 -0400
-Date: Sat, 18 Aug 2007 15:41:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Satyam Sharma <satyam@infradead.org>, Christoph Lameter <clameter@sgi.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <20070818215409.GC7628@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.0.999.0708181526270.30176@woody.linux-foundation.org>
-References: <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com>
- <46C516BA.60700@yahoo.com.au> <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org>
- <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au>
- <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com>
- <alpine.LFD.0.999.0708180709060.3666@enigma.security.iitk.ac.in>
- <alpine.LFD.0.999.0708172110400.30176@woody.linux-foundation.org>
- <20070818215409.GC7628@linux.vnet.ibm.com>
+	Sat, 18 Aug 2007 19:11:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58550 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754003AbXHRXLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Aug 2007 19:11:00 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] exec: simplify ->sighand switching
+In-Reply-To: Oleg Nesterov's message of  Saturday, 18 August 2007 21:39:47 +0400 <20070818173947.GA209@tv-sign.ru>
+Emacs: don't cry -- it won't help.
+Message-Id: <20070818231053.6CE474D05C6@magilla.localdomain>
+Date: Sat, 18 Aug 2007 16:10:53 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> There is no any reason to do recalc_sigpending() after changing ->sighand.
+> To begin with, recalc_sigpending() does not take ->sighand into account.
+
+I agree.  I think that call dates from before some other cleanups in that
+code, when ->signal was changed there.  At the time, it was the most
+conservative change to leave recalc_sigpending in case the side effects it
+used to have were desireable (we've since decided to change those anyway).
 
 
-On Sat, 18 Aug 2007, Paul E. McKenney wrote:
-> 
-> One of the gcc guys claimed that he thought that the two-instruction
-> sequence would be faster on some x86 machines.  I pointed out that
-> there might be a concern about code size.  I chose not to point out
-> that people might also care about the other x86 machines.  ;-)
-
-Some (very few) x86 uarchs do tend to prefer "load-store" like code 
-generation, and doing a "mov [mem],reg + op reg" instead of "op [mem]" can 
-actually be faster on some of them. Not any that are relevant today, 
-though.
-
-Also, that has nothing to do with volatile, and should be controlled by 
-optimization flags (like -mtune). In fact, I thought there was a separate 
-flag to do that (ie something like "-mload-store"), but I can't find it, 
-so maybe that's just my fevered brain..
-
-			Linus
+Thanks,
+Roland
