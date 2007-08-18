@@ -1,18 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbXHRBIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbXHRBYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756628AbXHRBIi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Aug 2007 21:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbXHRBI0
+	id S1755928AbXHRBYd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Aug 2007 21:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbXHRBYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Aug 2007 21:08:26 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:53352 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751033AbXHRBIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Aug 2007 21:08:24 -0400
-Date: Fri, 17 Aug 2007 18:08:18 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Fri, 17 Aug 2007 21:24:21 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33480 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751522AbXHRBYT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Aug 2007 21:24:19 -0400
+Date: Fri, 17 Aug 2007 18:24:15 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Nick Piggin <nickpiggin@yahoo.com.au>,
        Paul Mackerras <paulus@samba.org>,
        Segher Boessenkool <segher@kernel.crashing.org>,
@@ -20,37 +23,51 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
        netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
        jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       satyam@infradead.org, clameter@sgi.com, schwidefsky@de.ibm.com,
+       satyam@infradead.org, schwidefsky@de.ibm.com,
        Chris Snook <csnook@redhat.com>, davem@davemloft.net,
        wensong@linux-vs.org, wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070818010818.GQ8464@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <46C516BA.60700@yahoo.com.au> <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org> <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <20070818010818.GQ8464@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com>
+References: <20070815234021.GA28775@gondor.apana.org.au>
+ <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au>
+ <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au>
+ <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <46C516BA.60700@yahoo.com.au>
+ <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org>
+ <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au>
+ <20070818010818.GQ8464@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070818000913.GA25585@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 18, 2007 at 08:09:13AM +0800, Herbert Xu wrote:
-> On Fri, Aug 17, 2007 at 04:59:12PM -0700, Paul E. McKenney wrote:
-> >
-> > gcc bugzilla bug #33102, for whatever that ends up being worth.  ;-)
+On Fri, 17 Aug 2007, Paul E. McKenney wrote:
+
+> On Sat, Aug 18, 2007 at 08:09:13AM +0800, Herbert Xu wrote:
+> > On Fri, Aug 17, 2007 at 04:59:12PM -0700, Paul E. McKenney wrote:
+> > >
+> > > gcc bugzilla bug #33102, for whatever that ends up being worth.  ;-)
+> > 
+> > I had totally forgotten that I'd already filed that bug more
+> > than six years ago until they just closed yours as a duplicate
+> > of mine :)
+> > 
+> > Good luck in getting it fixed!
 > 
-> I had totally forgotten that I'd already filed that bug more
-> than six years ago until they just closed yours as a duplicate
-> of mine :)
+> Well, just got done re-opening it for the third time.  And a local
+> gcc community member advised me not to give up too easily.  But I
+> must admit that I am impressed with the speed that it was identified
+> as duplicate.
 > 
-> Good luck in getting it fixed!
+> Should be entertaining!  ;-)
 
-Well, just got done re-opening it for the third time.  And a local
-gcc community member advised me not to give up too easily.  But I
-must admit that I am impressed with the speed that it was identified
-as duplicate.
+Right. ROTFL... volatile actually breaks atomic_t instead of making it 
+safe. x++ becomes a register load, increment and a register store. Without 
+volatile we can increment the memory directly. It seems that volatile 
+requires that the variable is loaded into a register first and then 
+operated upon. Understandable when you think about volatile being used to 
+access memory mapped I/O registers where a RMW operation could be 
+problematic.
 
-Should be entertaining!  ;-)
-
-						Thanx, Paul
+See http://gcc.gnu.org/bugzilla/show_bug.cgi?id=3506
