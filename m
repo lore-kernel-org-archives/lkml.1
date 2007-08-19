@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbXHSI5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755713AbXHSI5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754055AbXHSI5U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 04:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbXHSI5F
+	id S1755713AbXHSI5g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 04:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbXHSI5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 04:57:05 -0400
-Received: from ausmtp06.au.ibm.com ([202.81.18.155]:51875 "EHLO
-	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbXHSI4c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 04:56:32 -0400
-Message-ID: <46C805B0.1000300@linux.vnet.ibm.com>
-Date: Sun, 19 Aug 2007 14:26:16 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Michael Neuling <mikey@neuling.org>, Jay Lan <jlan@engr.sgi.com>,
-       Benjamin@ozlabs.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/2] Add scaled time to taskstats based process accounting
-References: <20070816070922.37B5370074@localhost.localdomain> <46C3FC41.4000609@linux.vnet.ibm.com> <19998.1187312981@neuling.org> <20070817115951.e1368a7d.akpm@linux-foundation.org>
-In-Reply-To: <20070817115951.e1368a7d.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 19 Aug 2007 04:57:06 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:47684 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752052AbXHSI4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 04:56:41 -0400
+Date: Sun, 19 Aug 2007 12:57:07 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + proc-export-a-processes-resource-limits-via-proc-pid.patch added to -mm tree
+Message-ID: <20070819085707.GB83@tv-sign.ru>
+References: <20070817222228.GA783@tv-sign.ru> <20070818115816.GA23555@hmsreliant.think-freely.org> <20070818125926.GA74@tv-sign.ru> <20070818185529.GA25372@hmsreliant.think-freely.org> <20070818190351.GA98@tv-sign.ru> <20070818232352.GA25994@hmsreliant.think-freely.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070818232352.GA25994@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->>  
->>  	unsigned int rt_priority;
->> -	cputime_t utime, stime;
->> +	cputime_t utime, stime, utimescaled, stimescaled;
-> 
-> Adding 8 or 16 bytes to the task_struct for all architectures for something
-> which only powerpc uses?
-> 
-> Is there any prospect that other CPUs can use this?
-> 
+On 08/18, Neil Horman wrote:
+>
+> +static int proc_pid_limits(struct task_struct *task, char *buffer)
+> +{
+> +	unsigned int i;
+> +	int count = 0;
+> +	unsigned long flags;
+> +	char *bufptr = buffer;
+> +
+> +	struct rlimit rlim[RLIM_NLIMITS];
+> +
+> +	rcu_read_lock();
+> +	lock_task_sighand(task,&flags);
+> +	if (task->signal == NULL){
+> +		unlock_task_sighand(task, &flags);
+> +		rcu_read_unlock();
+> +		return 0;
+> +	}
+> +	memcpy(rlim, task->signal->rlim, sizeof(struct rlimit) * RLIM_NLIMITS);
+> +	unlock_task_sighand(task, &flags);
+> +	rcu_read_unlock();
 
-Hi, Andrew,
+No, no. If lock_task_sighand() fails, ->signal _should be_ == NULL, but the
+"if (task->signal == NULL)" check is not reliable, we don't have any barriers
+to serialize with __exit_signal().
 
-There is definitely the prospect for other architectures to use this
-feature
+More importantly, it is very wrong to do unlock_task_sighand() in that case,
+this means NULL pointer dereference.
 
-x86 provides the APERF and MPERF model specific registers.
-The ratio of APERF to MPERF gives the current scaled load on the
-system (acpi-cpufreq, get_measured_perf()) I have been looking at
-exploiting this functionality for x-series, but ran into a problem;
-as per the specification, APERF and MPERF are to be reset to 0
-upon reading them. As a result, I am still figuring out a good
-way to share the data amongst the ondemand governor and utimescaled
-statistics.
+What we need is:
 
-I think for now, we can
+	rcu_read_lock();
+	if (!lock_task_sighand(task, &flags)) {
+		rcu_read_unlock();
+		return 0;
+	}
+	memcpy(rlim, task->signal->rlim, sizeof(rlim));
+	unlock_task_sighand(task, &flags);
+	rcu_read_unlock();
 
-1. Put utimescaled and stimescaled under an #ifdef for ARCH_POWERPC
-2. Add utimescaled and stimescaled and add a big fat comment stating
-   that work for other architectures is on it's way.
+No need to check ->signal != NULL if lock_task_sighand() succeeds.
 
-In either case, I think the functionality is useful and can be
-exploited by other architectures. The powerpc port is complete and
-I think the implementation would provide a good reference for
-other implementations to follow.
+Oleg.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
