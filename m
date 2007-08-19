@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbXHSTZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbXHSTcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755712AbXHSTZN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 15:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbXHSTZA
+	id S1755955AbXHSTcZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 15:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbXHSTcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 15:25:00 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:61487 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752226AbXHSTZA (ORCPT
+	Sun, 19 Aug 2007 15:32:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56296
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752193AbXHSTcN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 15:25:00 -0400
-Date: Sun, 19 Aug 2007 15:24:56 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-Subject: Git tree for old kernels
-In-reply-to: <9e4733910707221349s462aa11bj714956f7cdc72aac@mail.gmail.com>
-X-X-Sender: nico@xanadu.home
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Git Mailing List <git@vger.kernel.org>
-Message-id: <alpine.LFD.0.999.0708191453030.16727@xanadu.home>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=us-ascii
-Content-transfer-encoding: 7BIT
-References: <9e4733910707221349s462aa11bj714956f7cdc72aac@mail.gmail.com>
+	Sun, 19 Aug 2007 15:32:13 -0400
+Date: Sun, 19 Aug 2007 12:32:12 -0700 (PDT)
+Message-Id: <20070819.123212.13769462.davem@davemloft.net>
+To: felix@chelsio.com
+Cc: sean.hefty@intel.com, netdev@vger.kernel.org, rdreier@cisco.com,
+       general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
+       jeff@garzik.org
+Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate
+ PS_TCPportsfrom the host TCP port space.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <8A71B368A89016469F72CD08050AD334018E208F@maui.asicdesigners.com>
+References: <000001c7e22e$b7b90f00$29c8180a@amr.corp.intel.com>
+	<20070819.002337.06589160.davem@davemloft.net>
+	<8A71B368A89016469F72CD08050AD334018E208F@maui.asicdesigners.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jul 2007, Jon Smirl wrote:
+From: "Felix Marti" <felix@chelsio.com>
+Date: Sun, 19 Aug 2007 10:33:31 -0700
 
-> Continuing on with kernel archeology for embedded systems, any
-> interest in making a git tree with all of the kernel versions from the
-> beginning up to the start of the current git tree?
+> I know that you don't agree that TSO has drawbacks, as outlined by
+> Roland, but its history showing something else: the addition of TSO
+> took a fair amount of time and network performance was erratic for
+> multiple kernel revisions and the TSO code is sprinkled across the
+> network stack.
 
-I just put the archive I've gathered so far in a Git tree on kernel.org:
+This thing you call "sprinkled" is a necessity of any hardware
+offload when it is possible for a packet to later get "steered"
+to a device which cannot perform the offload.
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/nico/archive.git
+Therefore we need a software implementation of TSO so that those
+packets can still get output to the non-TSO-capable device.
 
-It is also available through gitweb from:
+We do the same thing for checksum offloading.
 
-    http://git.kernel.org/?p=linux/kernel/git/nico/archive.git
+And for free we can use the software offloading mechanism to
+get batching to arbitrary network devices, even those which cannot
+do TSO.
 
-It currently stops at Linux v1.0. I would like to continue populating 
-this archive up to the current "Linux kernel history" Git repository 
-from Thomas Gleixner which currently doesn't go further back than 
-v2.4.0.  This is however extremely time consuming to track down old 
-mailing list and newsgroup archives in order to find announcements to 
-serve as commit log material.  Therefore I'd be really glad if people 
-could help me find those and send me copies of relevant announcements.  
-The content of the current archive should give a good idea of what I'm 
-looking for.
+What benefits does RDMA infrastructure give to non-RDMA capable
+devices?  None?  I see, that's great.
 
-Also, the following items are currently missing and apparently vanished 
-from the surface of the planet:
+And again the TSO bugs and issues are being overstated and, also for
+the second time, these issues are more indicative of my bad
+programming skills then they are of intrinsic issues of TSO.  The
+TSO implementation was looking for a good design, and it took me
+a while to find it because I personally suck.
 
- - v0.02 sources
+Face it, stateless offloads are always going to be better in the long
+term.  And this is proven.
 
- - v0.03 sources and announcement
-
- - v0.10 announcement
-
- - v0.96 sources
-
- - sources for v0.99.13{abcdefghij} (got k, don't know where the serie
-   ends) as well as announcements for all of them
-
- - all announcements for v0.99.14{a-z} except for pl14r
-
- - announcements for pl15c to pl15j, 1.0-pre1, and ALPHA-1.0.
-
-If you happen to have any of those please drop me a note.
-
-Otherwise the archive appears fairly complete with almost 3 years of 
-Linux development history captured in a 3MB pack file.
-
-
-Nicolas
+You RDMA folks really do live in some kind of fantasy land.
