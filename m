@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbXHSXMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbXHSXSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755965AbXHSXMV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 19:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbXHSXMI
+	id S1756144AbXHSXSy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 19:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbXHSXSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 19:12:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39846
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750910AbXHSXMH (ORCPT
+	Sun, 19 Aug 2007 19:18:45 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:49568 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751705AbXHSXSo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 19:12:07 -0400
-Date: Sun, 19 Aug 2007 16:12:06 -0700 (PDT)
-Message-Id: <20070819.161206.94555994.davem@davemloft.net>
-To: andi@firstfloor.org
-Cc: felix@chelsio.com, jeff@garzik.org, netdev@vger.kernel.org,
-       rdreier@cisco.com, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate
- PS_TCPportsfrom the host TCP port space.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <p73hcmv14wo.fsf@bingen.suse.de>
-References: <20070819.123212.13769462.davem@davemloft.net>
-	<8A71B368A89016469F72CD08050AD334018E209C@maui.asicdesigners.com>
-	<p73hcmv14wo.fsf@bingen.suse.de>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 19 Aug 2007 19:18:44 -0400
+Message-ID: <46C8CFCF.9000606@snapgear.com>
+Date: Mon, 20 Aug 2007 09:18:39 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+MIME-Version: 1.0
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: trivial@kernel.org, linux-kernel@vger.kernel.org,
+       Bryan Wu <bryan.wu@analog.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Greg Ungerer <gerg@uclinux.org>, Paul Mundt <lethal@linux-sh.org>,
+       Miles Bader <uclinux-v850@lsi.nec.co.jp>
+Subject: Re: [PATCH trivial] include/asm-*/system.h: remove unused set_rmb(),
+ set_wmb() macros
+References: <tkrat.eb667dbcda37eb9d@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.eb667dbcda37eb9d@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
-Date: 20 Aug 2007 01:27:35 +0200
 
-> "Felix Marti" <felix@chelsio.com> writes:
+Stefan Richter wrote:
+> These don't appear anywhere else in the kernel anymore.
 > 
-> > what benefits does the TSO infrastructure give the
-> > non-TSO capable devices?
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Cc: Bryan Wu <bryan.wu@analog.com>
+> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+> Cc: Greg Ungerer <gerg@uclinux.org>
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: Miles Bader <uclinux-v850@lsi.nec.co.jp>
+> ---
+>  include/asm-blackfin/system.h  |    4 +---
+>  include/asm-h8300/system.h     |    3 +--
+>  include/asm-m68knommu/system.h |    3 +--
+>  include/asm-sh64/system.h      |    3 +--
+>  include/asm-v850/system.h      |    3 +--
+>  5 files changed, 5 insertions(+), 11 deletions(-)
 > 
-> It improves performance on software queueing devices between guests
-> and hypervisors. This is a more and more important application these
-> days.  Even when the system running the Hypervisor has a non TSO
-> capable device in the end it'll still save CPU cycles this way. Right now
-> virtualized IO tends to much more CPU intensive than direct IO so any
-> help it can get is beneficial.
-> 
-> It also makes loopback faster, although given that's probably not that
-> useful.
-> 
-> And a lot of the "TSO infrastructure" was needed for zero copy TX anyways,
-> which benefits most reasonable modern NICs (anything with hardware 
-> checksumming)
+> Index: linux/include/asm-blackfin/system.h
+> Index: linux/include/asm-m68knommu/system.h
+> ===================================================================
+> --- linux.orig/include/asm-m68knommu/system.h
+> +++ linux/include/asm-m68knommu/system.h
 
-And also, you can enable TSO generation for a non-TSO-hw device and
-get all of the segmentation overhead reduction gains which works out
-as a pure win as long as the device can at a minimum do checksumming.
+Acked-by: Greg Ungerer <gerg@uclinux.org>
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+Secure Computing Corporation                PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
