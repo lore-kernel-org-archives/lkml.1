@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbXHSMa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbXHSMbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbXHSMa2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 08:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbXHSMaS
+	id S1753976AbXHSMbp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 08:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbXHSMbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 08:30:18 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:58161 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751064AbXHSMaR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 08:30:17 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sun, 19 Aug 2007 08:22:18 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Joe Perches <joe@perches.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: tracking MAINTAINERS versus tracking SUBSYSTEMS
-In-Reply-To: <1187483578.4200.51.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0708190818280.7224@localhost.localdomain>
-References: <Pine.LNX.4.64.0708181311490.10387@localhost.localdomain>
- <1187483578.4200.51.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sun, 19 Aug 2007 08:31:37 -0400
+Received: from main.gmane.org ([80.91.229.2]:46542 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751845AbXHSMbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 08:31:36 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Benny Amorsen <benny+usenet@amorsen.dk>
+Subject: Re: [OT] Re: The vi editor causes brain damage
+Date: Sun, 19 Aug 2007 14:31:21 +0200
+Message-ID: <m37inr1zae.fsf@ursa.amorsen.dk>
+References: <964583.28477.qm@web52504.mail.re2.yahoo.com> <46C7EE0A.2030601@gmail.com> <20070819072135.GQ6002@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: hd5b9080a.c45-01-12.sta.perspektivbredband.net
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+Cancel-Lock: sha1:J/2gi0UbdkGNUYXtrwXG+i5uuuw=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Aug 2007, Joe Perches wrote:
+>>>>> "WT" == Willy Tarreau <w@1wt.eu> writes:
 
-> On Sat, 2007-08-18 at 13:35 -0400, Robert P. J. Day wrote:
-> >   $ show_subsystem drivers/bluetooth/bpa10x.c
-> >   BLUETOOTH
->
-> "what's a subsystem"? I'm not sure there is an appropriate
-> definition. If there is an appropriate definition, why should anyone
-> care what subsystem a particular file is in?
+WT> Under unix, the shell resolves "*" and passes the 10000 file names
+WT> to the "rm" command. Now, execve() may fail because 10000 names in
+WT> arguments can require too much memory. That's why find and xargs
+WT> were invented!
 
-i'm confused -- i thought that was sort of the whole purpose of this
-exercise, to match parts of the kernel source tree against the
-maintainer for those parts, and to do that via the defined
-"subsystem" which is currently used in MAINTAINERS.
+It would be very handy if the argument memory space was expanded.
+Many years ago I hit the limit regularly on Solaris, and going to
+Linux with its comparatively large limit was a joy. Now it happens to
+me quite often on Linux as well.
 
-you can, of course, banish the concept of a subsystem entirely and
-work purely from a file and directory perspective, but i think the
-notion of the kernel tree being composed of subsystems is a useful
-idea.  that's just my opinion, though.
+What are the primary problems with expanding it? It used to be
+swappable memory, is that still the case?
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
 
-http://crashcourse.ca
-========================================================================
+/Benny
+
+
