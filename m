@@ -1,175 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbXHSPGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbXHSPQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755742AbXHSPGe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 11:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbXHSPGZ
+	id S1755616AbXHSPQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 11:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbXHSPQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 11:06:25 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:40069 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751255AbXHSPGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 11:06:24 -0400
-Date: Sun, 19 Aug 2007 19:08:22 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Daniel Pittman <daniel@rimspace.net>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Kirill Korotaev <dev@sw.ru>,
-       Pavel Emelyanov <xemul@sw.ru>, Roland McGrath <roland@redhat.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Cc: containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: [RFC,PATCH] fix /sbin/init signal handling
-Message-ID: <20070819150822.GA7772@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Sun, 19 Aug 2007 11:16:47 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:6707 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753505AbXHSPQp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 11:16:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=EDEkTfJqRfx0Z3RLQbZtL8HJ9IK30lugplGFmtzWYjcldDA9aBb3S7uBofAmjiU67IJ2LO7Q6ELOwKB4jU5WCpclK6rrq71DS6LhViWtgZUUkg/V2fxGIcZ3j32jwxFGP8Z2TyQG335SsVmDRWpBb7dCHzt7WtA9+2SwNYz0Xb8=
+Message-ID: <46C85ED8.5080801@gmail.com>
+Date: Sun, 19 Aug 2007 17:16:40 +0200
+From: Maciek Rutecki <maciej.rutecki@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Mark Lord <liml@rtr.ca>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>, htejun@gmail.com,
+       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org, rjw@sisk.pl
+Subject: Re: SATA error while resume
+References: <46C80999.1060700@gmail.com> <46C852DE.8040701@rtr.ca>
+In-Reply-To: <46C852DE.8040701@rtr.ca>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Not for inclusion yet, against 2.6.23-rc2, untested)
+Mark Lord pisze:
 
-Currently, /sbin/init is protected from unhandled signals by the
-"current == child_reaper(current)" check in get_signal_to_deliver().
-This is not enough, we have multiple problems:
+> 
+> Looks like a bad sector in the swap partition.
+> You can probably repair it by using this sequence of commands:
+> 
+> swapoff /dev/sdX    <--- replace sdX with actual swap partition dev name
+> sync
+> cat /dev/zero > /dev/sdX
+> mkswap /dev/sdX
+> swapon /dev/sdX
+> 
+> If it recurs after doing that, then it's time for a new drive.
+> 
+> -ml
+> -
 
-	- this doesn't work for multi-threaded inits, and we can't
-	  fix this by simply making this check group-wide.
+rutek:/home/maciek# swapoff /dev/sda6
+rutek:/home/maciek# sync
+rutek:/home/maciek# cat /dev/zero > /dev/sda6
+cat: błąd zapisu: Błąd wejścia/wyjścia (write error, after few minutes,
+probably sda6 is full)
 
-	- /sbin/init and kernel threads are not protected from
-	  handle_stop_signal(). Minor problem, but not good and
-	  allows to "steal" SIGCONT or change ->signal->flags.
+rutek:/home/maciek# dd if=/dev/zero of=/dev/sda6
+dd: zapis do `/dev/sda6': Błąd wejścia/wyjścia
+5992177+0 przeczytanych recordów
+5992176+0 zapisanych recordów
+skopiowane 3067994112 bajtów (3,1 GB), 298,159 sekund, 10,3 MB/s
+rutek:/home/maciek# mkswap /dev/sda6
+Setting up swapspace version 1, size = 3067990 kB
+no label, UUID=2061df6e-d385-4367-9a4c-c8431e57b73a
+rutek:/home/maciek# swapon /dev/sda6
 
-	- /sbin/init is not protected from __group_complete_signal(),
-	  sig_fatal() can set SIGNAL_GROUP_EXIT and block exec(), kill
-	  sub-threads, set ->group_stop_count, etc.
 
-Also, with support for multiple pid namespaces, we need an ability to
-actually kill the sub-namespace's init from the parent namespace. In
-this case it is not possible (without painful and intrusive changes)
-to make the "should we honor this signal" decision on the receiver's
-side.
+dmesg:
+Adding 2996080k swap on /dev/sda6.  Priority:-2 extents:1 across:2996080k
 
-Hopefully this patch (adds 43 bytes to kernel/signal.o) can solve
-these problems.
+Also I try:
+dd if==/dev/sda... of=/dev/null for all partitions
+Test disk with bios utility and smartctl. Use autotest (bash shared
+mapping and disktest). No errors/warnings. Only (sometimes) while system
+resume from suspend to disk. Disk 10 months old...
 
-Notes:
+Regards
+-- 
+Maciej Rutecki
+http://www.unixy.pl
 
-	- Blocked signals are never ignored, so init still can receive
-	  a pending blocked signal after sigprocmask(SIG_UNBLOCK).
-	  Easy to fix, but probably we can ignore this issue.
-
-	- this patch allows us to simplify de_thread() playing games
-	  with pid_ns->child_reaper.
-
-(Side note: the current behaviour of things like force_sig_info_fault()
- is not very good, init should not ignore these signals and go to the
- endless loop. Exit + panic is imho better, easy to chamge)
-
-Oleg.
-
---- t/kernel/signal.c~INITSIGS	2007-08-19 14:39:35.000000000 +0400
-+++ t/kernel/signal.c	2007-08-19 19:00:27.000000000 +0400
-@@ -39,11 +39,35 @@
- 
- static struct kmem_cache *sigqueue_cachep;
- 
-+static int sig_init_ignore(struct task_struct *tsk)
-+{
-+	// Currently this check is a bit racy with exec(),
-+	// we can _simplify_ de_thread and close the race.
-+	if (likely(!is_init(tsk->group_leader)))
-+		return 0;
-+
-+	// ---------------- Multiple pid namespaces ----------------
-+	// if (current is from tsk's parent pid_ns && !in_interrupt())
-+	//	return 0;
-+
-+	return 1;
-+}
-+
-+static int sig_task_ignore(struct task_struct *tsk, int sig)
-+{
-+	void __user * handler = tsk->sighand->action[sig-1].sa.sa_handler;
-+
-+	if (handler == SIG_IGN)
-+		return 1;
-+
-+	if (handler != SIG_DFL)
-+		return 0;
-+
-+	return sig_kernel_ignore(sig) || sig_init_ignore(tsk);
-+}
- 
- static int sig_ignored(struct task_struct *t, int sig)
- {
--	void __user * handler;
--
- 	/*
- 	 * Tracers always want to know about signals..
- 	 */
-@@ -58,10 +82,7 @@ static int sig_ignored(struct task_struc
- 	if (sigismember(&t->blocked, sig))
- 		return 0;
- 
--	/* Is it explicitly or implicitly ignored? */
--	handler = t->sighand->action[sig-1].sa.sa_handler;
--	return   handler == SIG_IGN ||
--		(handler == SIG_DFL && sig_kernel_ignore(sig));
-+	return sig_task_ignore(t, sig);
- }
- 
- /*
-@@ -569,6 +590,9 @@ static void handle_stop_signal(int sig, 
- 		 */
- 		return;
- 
-+	if (sig_init_ignore(p))
-+		return;
-+
- 	if (sig_kernel_stop(sig)) {
- 		/*
- 		 * This is a stop signal.  Remove SIGCONT from all queues.
-@@ -1841,14 +1865,6 @@ relock:
- 		if (sig_kernel_ignore(signr)) /* Default is nothing. */
- 			continue;
- 
--		/*
--		 * Init of a pid space gets no signals it doesn't want from
--		 * within that pid space. It can of course get signals from
--		 * its parent pid space.
--		 */
--		if (current == child_reaper(current))
--			continue;
--
- 		if (sig_kernel_stop(signr)) {
- 			/*
- 			 * The default action is to stop all threads in
-@@ -2300,13 +2316,10 @@ int do_sigaction(int sig, struct k_sigac
- 	k = &current->sighand->action[sig-1];
- 
- 	spin_lock_irq(&current->sighand->siglock);
--	if (signal_pending(current)) {
--		/*
--		 * If there might be a fatal signal pending on multiple
--		 * threads, make sure we take it before changing the action.
--		 */
-+	if (current->signal->flags & SIGNAL_GROUP_EXIT) {
- 		spin_unlock_irq(&current->sighand->siglock);
--		return -ERESTARTNOINTR;
-+		/* The return value doesn't matter, SIGKILL is pending */
-+		return -EINTR;
- 	}
- 
- 	if (oact)
-@@ -2327,8 +2340,7 @@ int do_sigaction(int sig, struct k_sigac
- 		 *   (for example, SIGCHLD), shall cause the pending signal to
- 		 *   be discarded, whether or not it is blocked"
- 		 */
--		if (act->sa.sa_handler == SIG_IGN ||
--		   (act->sa.sa_handler == SIG_DFL && sig_kernel_ignore(sig))) {
-+		if (sig_task_ignore(current, sig)) {
- 			struct task_struct *t = current;
- 			sigemptyset(&mask);
- 			sigaddset(&mask, sig);
 
