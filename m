@@ -1,39 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbXHSPRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbXHSPcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756828AbXHSPRg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 11:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbXHSPRY
+	id S1755186AbXHSPcQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 11:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbXHSPcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 11:17:24 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:52269 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756364AbXHSPRD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 11:17:03 -0400
-Date: Sun, 19 Aug 2007 19:19:50 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + proc-export-a-processes-resource-limits-via-proc-pid.patch added to -mm tree
-Message-ID: <20070819151950.GA7787@tv-sign.ru>
-References: <20070817222228.GA783@tv-sign.ru> <20070818115816.GA23555@hmsreliant.think-freely.org> <20070818125926.GA74@tv-sign.ru> <20070818185529.GA25372@hmsreliant.think-freely.org> <20070818190351.GA98@tv-sign.ru> <20070818232352.GA25994@hmsreliant.think-freely.org> <20070819085707.GB83@tv-sign.ru> <20070819130319.GA25178@hmsreliant.think-freely.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070819130319.GA25178@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.11
+	Sun, 19 Aug 2007 11:32:06 -0400
+Received: from web52509.mail.re2.yahoo.com ([206.190.48.192]:48104 "HELO
+	web52509.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751196AbXHSPcF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 11:32:05 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=biHBZACfhH8QCtUBlPpmy/u3/O1w6x1zBwImKefXriIDzIrZo7V8XU8JbBFIidJ/JiPluqkg4ahrHOgJJojdBd0J8V62KN5wMFkLN9+iWiufSdn6Nbm1ZRf0Z3h1KEjJru+55T+DrHKuyXrjfETFOUIaLMmRYqnS0HJrQrEe3GM=;
+X-YMail-OSG: DQPFJKkVM1myt2NkoaWgJG3Wx4hKqAhu4G3iAEL4EbBS0IUtJgNQLl.cCFs1unthYY4Bf5B5EknhmWNYUyzD.bLs.ivHS4haNDj3TP45yNWzORCnCXaxkum5gAfnNA--
+Date: Sun, 19 Aug 2007 08:32:01 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: The vi editor causes brain damage
+To: Paolo Ornati <ornati@fastwebnet.it>
+Cc: Willy Tarreau <w@1wt.eu>, Jiri Slaby <jirislaby@gmail.com>,
+       Marc Perkel <mperkel@yahoo.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070819164835.010f0e5b@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <828976.87242.qm@web52509.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/19, Neil Horman wrote:
-> Copy That
+
+--- Paolo Ornati <ornati@fastwebnet.it> wrote:
+
+> On Sun, 19 Aug 2007 06:22:37 -0700 (PDT)
+> Marc Perkel <mperkel@yahoo.com> wrote:
 > 
-> Currently, there exists no method for a process to query the resource
-> limits of another process.  They can be inferred via some mechanisms but
-> they cannot be explicitly determined.  Given that this information can be
-> usefull to know during the debugging of an application, I've written this
-> patch which exports all of a processes limits via /proc/<pid>/limits.
+> > 20 years, a million programmers, tens of millions
+> of
+> > users and RM is BROKEN. Am I the only one who has
+> a
+> > problem with this? If so - I'm normal - and Linux
+> is a
+> > cult.
+> 
+> 
+> Fixed in 2.6.23-rc (and not just for "rm"):
+> 
+> commit b6a2fea39318e43fee84fa7b0b90d68bed92d2ba
+> Author: Ollie Wild <aaw@google.com>
+> Date:   Thu Jul 19 01:48:16 2007 -0700
+> 
+>     mm: variable length argument support
+> 
+>     Remove the arg+env limit of MAX_ARG_PAGES by
+> copying the strings
+>     directly from the old mm into the new mm.
+> [...]
+> 
+> -- 
+> 	Paolo Ornati
+> 	Linux 2.6.23-rc3-g2a677896-dirty on x86_64
+> 
 
-Looks good, thanks.
 
-Oleg.
+Good man!
 
+
+
+Marc Perkel
+Junk Email Filter dot com
+http://www.junkemailfilter.com
+
+
+      ____________________________________________________________________________________
+Luggage? GPS? Comic books? 
+Check out fitting gifts for grads at Yahoo! Search
+http://search.yahoo.com/search?fr=oni_on_mail&p=graduation+gifts&cs=bz
