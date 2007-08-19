@@ -1,37 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbXHSF2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752041AbXHSGAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752114AbXHSF2h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 01:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbXHSF22
+	id S1752041AbXHSGAR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 02:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbXHSGAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 01:28:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35655
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750738AbXHSF22 (ORCPT
+	Sun, 19 Aug 2007 02:00:05 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:37891 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750711AbXHSGAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 01:28:28 -0400
-Date: Sat, 18 Aug 2007 22:28:27 -0700 (PDT)
-Message-Id: <20070818.222827.40574674.davem@davemloft.net>
-To: viro@ftp.linux.org.uk
-Cc: torvalds@linux-foundation.org, shemminger@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] missing return in bridge sysfs code
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070819035126.GS21089@ftp.linux.org.uk>
-References: <20070819035126.GS21089@ftp.linux.org.uk>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 19 Aug 2007 02:00:01 -0400
+Message-ID: <46C7DB4C.1020600@vmware.com>
+Date: Sat, 18 Aug 2007 22:55:24 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] x86: skip paravirt patching when appropriate
+References: <20070809241.425881000@suse.de> <20070809124132.C794A14F3B@wotan.suse.de> <46C637B7.30200@goop.org> <200708181149.48217.ak@suse.de> <20070818203230.GV3672@sequoia.sous-sol.org> <alpine.LFD.0.999.0708181355280.30176@woody.linux-foundation.org> <20070818213141.GW3672@sequoia.sous-sol.org> <20070818222821.GX3672@sequoia.sous-sol.org>
+In-Reply-To: <20070818222821.GX3672@sequoia.sous-sol.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sun, 19 Aug 2007 04:51:26 +0100
+Chris Wright wrote:
+> * Chris Wright (chrisw@sous-sol.org) wrote:
+>   
+>> Now that I understand the problem, I do have a very simple (slightly
+>> overkill) fix for paravirt patching.  This can be cleaned up to avoid
+>> the copies when they aren't needed, but that will take a little more
+>> auditing of the various patchers.  If you still prefer a revert I've
+>> got one handy, and we can re-visit this all post .23.
+>>     
+>
+> This one avoids the patching when necessary, but needs some validation on
+> VMI (and Zach's not avail today).  I'll resend when I know it's working
+> for all paravirt patchers.
+>   
 
-> 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Looks like it's already in -git.  I tested with your fix and hit a 
+different bug.  Bisecting, will handle.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-Thanks for catching this Al.
+Zach
