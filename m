@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756344AbXHSQdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbXHSQgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756344AbXHSQdO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 12:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbXHSQdA
+	id S1756568AbXHSQgS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 12:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbXHSQgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 12:33:00 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53748 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754034AbXHSQc7 (ORCPT
+	Sun, 19 Aug 2007 12:36:10 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:56480 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753882AbXHSQgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 12:32:59 -0400
-Date: Sun, 19 Aug 2007 09:32:21 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Kevin E <kevin360@yahoo.com>
-Cc: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Marvell 88E8056 gigabit ethernet controller
-Message-ID: <20070819093221.4d3291e9@freepuppy.rosehill.hemminger.net>
-In-Reply-To: <283388.84897.qm@web38905.mail.mud.yahoo.com>
-References: <20070818121714.GA28247@1wt.eu>
-	<283388.84897.qm@web38905.mail.mud.yahoo.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 19 Aug 2007 12:36:09 -0400
+X-Greylist: delayed 1280 seconds by postgrey-1.27 at vger.kernel.org; Sun, 19 Aug 2007 12:36:09 EDT
+Message-ID: <46C86B6C.8090209@home.nl>
+Date: Sun, 19 Aug 2007 18:10:20 +0200
+From: Rene Herman <rene.herman@home.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: 7eggert@gmx.de
+CC: Mike Mohr <akihana@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: group ownership of tun devices -- nonfunctional?
+References: <8Tpwf-3Nb-1@gated-at.bofh.it> <E1IMnHK-00012c-VC@be1.lrz>
+In-Reply-To: <E1IMnHK-00012c-VC@be1.lrz>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Aug 2007 06:59:08 -0700 (PDT)
-Kevin E <kevin360@yahoo.com> wrote:
+On 08/19/2007 06:05 PM, Bodo Eggert wrote:
 
-> --- Willy Tarreau <w@1wt.eu> wrote:
+> IMHO the check is broken:
 > 
-> > OK, in this trace, both controllers are on the same
-> > bus. The broken
-> > one has 'Capabilities: [100] Advanced Error
-> > Reporting' the other
-> > does not have, and the bridge to this bus has two
-> > more capabilities :
-> > 'Capabilities: [100] Virtual Channel' and
-> > 'Capabilities: [180] Unknown (5)'.
-> > 
-> > I don't know whether it can jutify a different
-> > behaviour. Also, maybe this
-> > is caused by a minuscule difference in the BIOS
-> > setup ?
+> +               if (((tun->owner != -1 &&
+> +                     current->euid != tun->owner) ||
+> +                    (tun->group != -1 &&
+> +                     current->egid != tun->group)) &&
+> +                    !capable(CAP_NET_ADMIN))
+>                         return -EPERM;
 > 
+> It should be something like:
+> 
+> +               if (!((tun->owner == tun->owner) ||
+> +                     (tun->group == tun->group) ||
 
-The working board has a different version of the Marvell chip:
+???
 
-$ grep Marvell working-MB 
-04:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8056 PCI-E Gigabit Ethernet Controller (rev 14)
-$ grep Marvell broken-MB 
-04:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8056 PCI-E Gigabit Ethernet Controller (rev 12)
+> +                     capable(CAP_NET_ADMIN)))
+>                         return -EPERM;
+> 
+> Please verify and forward to the maintainers if my guess appears to be correct.
 
-Not sure if that completely explains the problem because the broken chip on my
-system is:
-06:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8056 PCI-E Gigabit Ethernet Controller (rev 14)
-
-I don't know what the differences are between versions.
+Rene.
