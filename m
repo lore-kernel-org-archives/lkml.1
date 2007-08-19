@@ -1,226 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbXHSH47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbXHSH53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752585AbXHSH47 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 03:56:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXHSHzz
+	id S1756393AbXHSH53 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 03:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXHSHz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 03:55:55 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:50432 "HELO ustc.edu.cn"
+	Sun, 19 Aug 2007 03:55:57 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:50430 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751280AbXHSHzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751252AbXHSHzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 19 Aug 2007 03:55:52 -0400
-Message-ID: <387510147.93529@ustc.edu.cn>
+Message-ID: <387510147.18695@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070819075547.562443204@mail.ustc.edu.cn>
-References: <20070819075410.411207640@mail.ustc.edu.cn>
+Message-Id: <20070819075410.411207640@mail.ustc.edu.cn>
 User-Agent: quilt/0.46-1
-Date: Sun, 19 Aug 2007 15:54:12 +0800
+Date: Sun, 19 Aug 2007 15:54:10 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
-Cc: Matt Mackall <mpm@selenic.com>, Al Viro <viro@ftp.linux.org.uk>
+Cc: Matt Mackall <mpm@selenic.com>
 Cc: John Berthels <jjberthels@gmail.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] maps: address based vma walking
-Content-Disposition: inline; filename=maps-enable-address-based-pos.patch
+Subject: [PATCH 0/4] process memory footprint info in proc/<pid>/[s|p]maps v2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Split large vmas into page groups of proc_maps_private.batch_size bytes, and
-iterate them one by one for seqfile->show.
+Andrew,
 
-This allows us to export large scale process address space information via the
-seqfile interface. The old behavior of walking one vma at a time can be
-achieved by setting the batching size to ~0UL.
+Inspired by Matt Mackall's pagemap patches and ideas, I worked up these
+textual interfaces that achieve the same goals. The patches run OK
+under different sized reads.
 
-The conversion to address based walking makes the code more
-- clean:  code size is one half
-- fast:   rbtree faster than lists
-- stable: won't miss/dup vma in case of vma insertion/deletion
+1) Add PSS into the existing /proc/<pid>/smaps:
+        [PATCH 1/4] maps: PSS(proportional set size) accounting in smaps
 
-Cc: Matt Mackall <mpm@selenic.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
----
- fs/proc/task_mmu.c      |  101 ++++++++++++--------------------------
- include/linux/proc_fs.h |    7 +-
+2) Create /proc/<pid>/pmaps for page granularity mmap footprints:
+        [PATCH 2/4] maps: address based vma walking
+        [PATCH 3/4] maps: introduce generic_maps_open()
+        [PATCH 4/4] maps: /proc/<pid>/pmaps interface - memory maps in granularity of pages
+
+ fs/proc/base.c          |    7 
+ fs/proc/internal.h      |    1 
+ fs/proc/task_mmu.c      |  359 +++++++++++++++++++++++++++++---------
+ fs/seq_file.c           |    1 
+ include/linux/proc_fs.h |    7 
  mm/mempolicy.c          |    2 
- 3 files changed, 36 insertions(+), 74 deletions(-)
+ 6 files changed, 288 insertions(+), 89 deletions(-)
 
---- linux-2.6.23-rc2-mm2.orig/include/linux/proc_fs.h
-+++ linux-2.6.23-rc2-mm2/include/linux/proc_fs.h
-@@ -283,9 +283,10 @@ static inline struct proc_dir_entry *PDE
- struct proc_maps_private {
- 	struct pid *pid;
- 	struct task_struct *task;
--#ifdef CONFIG_MMU
--	struct vm_area_struct *tail_vma;
--#endif
-+	struct mm_struct *mm;
-+	/* walk min(batch_size, remaining_size_of(vma)) bytes at a time */
-+	unsigned long batch_size;
-+	unsigned long addr;
- };
- 
- #endif /* _LINUX_PROC_FS_H */
---- linux-2.6.23-rc2-mm2.orig/mm/mempolicy.c
-+++ linux-2.6.23-rc2-mm2/mm/mempolicy.c
-@@ -1937,7 +1937,5 @@ out:
- 	seq_putc(m, '\n');
- 	kfree(md);
- 
--	if (m->count < m->size)
--		m->version = (vma != priv->tail_vma) ? vma->vm_start : 0;
- 	return 0;
- }
---- linux-2.6.23-rc2-mm2.orig/fs/proc/task_mmu.c
-+++ linux-2.6.23-rc2-mm2/fs/proc/task_mmu.c
-@@ -115,99 +115,63 @@ static void pad_len_spaces(struct seq_fi
- 	seq_printf(m, "%*c", len, ' ');
- }
- 
--static void vma_stop(struct proc_maps_private *priv, struct vm_area_struct *vma)
-+static void *seek_vma_addr(struct seq_file *m,
-+			   struct vm_area_struct *vma, loff_t *pos)
- {
--	if (vma && vma != priv->tail_vma) {
--		struct mm_struct *mm = vma->vm_mm;
--		up_read(&mm->mmap_sem);
--		mmput(mm);
-+	struct proc_maps_private *priv = m->private;
-+	unsigned long addr = *pos;
-+
-+	if (addr & 1) { /* time for next batch */
-+		if (vma->vm_end - addr < priv->batch_size) {
-+			vma = vma->vm_next;
-+			if (!vma || vma == get_gate_vma(priv->task))
-+				return NULL;
-+		} else
-+			addr = (addr + priv->batch_size) & ~1;
- 	}
-+	if (addr < vma->vm_start)
-+	    addr = vma->vm_start;
-+
-+	*pos = priv->addr = addr;
-+	return vma;
- }
- 
- static void *m_start(struct seq_file *m, loff_t *pos)
- {
- 	struct proc_maps_private *priv = m->private;
--	unsigned long last_addr = m->version;
--	struct mm_struct *mm;
--	struct vm_area_struct *vma, *tail_vma = NULL;
--	loff_t l = *pos;
--
--	/* Clear the per syscall fields in priv */
--	priv->task = NULL;
--	priv->tail_vma = NULL;
--
--	/*
--	 * We remember last_addr rather than next_addr to hit with
--	 * mmap_cache most of the time. We have zero last_addr at
--	 * the beginning and also after lseek. We will have -1 last_addr
--	 * after the end of the vmas.
--	 */
--
--	if (last_addr == -1UL)
--		return NULL;
-+	struct vm_area_struct *vma;
- 
-+	priv->mm = NULL;
- 	priv->task = get_pid_task(priv->pid, PIDTYPE_PID);
- 	if (!priv->task)
- 		return NULL;
- 
--	mm = get_task_mm(priv->task);
--	if (!mm)
-+	priv->mm = get_task_mm(priv->task);
-+	if (!priv->mm)
- 		return NULL;
- 
--	priv->tail_vma = tail_vma = get_gate_vma(priv->task);
--	down_read(&mm->mmap_sem);
-+	down_read(&priv->mm->mmap_sem);
- 
--	/* Start with last addr hint */
--	if (last_addr && (vma = find_vma(mm, last_addr))) {
--		vma = vma->vm_next;
--		goto out;
--	}
--
--	/*
--	 * Check the vma index is within the range and do
--	 * sequential scan until m_index.
--	 */
--	vma = NULL;
--	if ((unsigned long)l < mm->map_count) {
--		vma = mm->mmap;
--		while (l-- && vma)
--			vma = vma->vm_next;
--		goto out;
--	}
--
--	if (l != mm->map_count)
--		tail_vma = NULL; /* After gate vma */
--
--out:
--	if (vma)
--		return vma;
-+	vma = find_vma(priv->mm, *pos);
-+	if (!vma || vma == get_gate_vma(priv->task))
-+		return NULL;
- 
--	/* End of vmas has been reached */
--	m->version = (tail_vma != NULL)? 0: -1UL;
--	up_read(&mm->mmap_sem);
--	mmput(mm);
--	return tail_vma;
-+	return seek_vma_addr(m, vma, pos);
- }
- 
- static void *m_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	struct proc_maps_private *priv = m->private;
--	struct vm_area_struct *vma = v;
--	struct vm_area_struct *tail_vma = priv->tail_vma;
--
- 	(*pos)++;
--	if (vma && (vma != tail_vma) && vma->vm_next)
--		return vma->vm_next;
--	vma_stop(priv, vma);
--	return (vma != tail_vma)? tail_vma: NULL;
-+	return seek_vma_addr(m, v, pos);
- }
- 
- static void m_stop(struct seq_file *m, void *v)
- {
- 	struct proc_maps_private *priv = m->private;
--	struct vm_area_struct *vma = v;
--
--	vma_stop(priv, vma);
-+	if (priv->mm) {
-+		up_read(&priv->mm->mmap_sem);
-+		mmput(priv->mm);
-+	}
- 	if (priv->task)
- 		put_task_struct(priv->task);
- }
-@@ -220,6 +184,7 @@ static int do_maps_open(struct inode *in
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
- 	if (priv) {
- 		priv->pid = proc_pid(inode);
-+		priv->batch_size = ~0;
- 		ret = seq_open(file, ops);
- 		if (!ret) {
- 			struct seq_file *m = file->private_data;
-@@ -291,8 +256,6 @@ static int show_map(struct seq_file *m, 
- 	}
- 	seq_putc(m, '\n');
- 
--	if (m->count < m->size)  /* vma is copied successfully */
--		m->version = (vma != get_gate_vma(task))? vma->vm_start: 0;
- 	return 0;
- }
- 
+In this new version, offset and len are changed to use hexical numbers.
 
+Thank you,
+Fengguang
 -- 
+
+An example output:
+
+# cat /proc/`pidof init`/pmaps
+00400000-00409000 r-xp 00000000 08:01 1058732                            /sbin/init
+0       8       YRAU___ 1
+00608000-00609000 rw-p 00008000 08:01 1058732                            /sbin/init
+8       1       Y_A_P__ 1
+00609000-0062a000 rw-p 00609000 00:00 0                                  [heap]
+609     5       Y_A_P__ 1
+2b7d6e277000-2b7d6e294000 r-xp 00000000 08:01 1563879                    /lib/ld-2.6.so
+0       1       YRAU___ 63
+1       4       YRAU___ 41
+5       2       YRAU___ 55
+7       1       YRAU___ 50
+8       1       YRAU___ 55
+9       1       YRAU___ 81
+a       1       YRAU___ 57
+b       2       YRAU___ 55
+d       2       YRAU___ 81
+f       1       YRAU___ 55
+10      1       YRAU___ 43
+13      1       YRAU___ 81
+14      1       YRAU___ 42
+15      1       YRAU___ 81
+16      1       YRAU___ 56
+17      1       YRAU___ 81
+1a      1       YRAU___ 55
+2b7d6e294000-2b7d6e297000 rw-p 2b7d6e294000 00:00 0
+2b7d6e294       3       Y_A_P__ 1
+2b7d6e493000-2b7d6e495000 rw-p 0001c000 08:01 1563879                    /lib/ld-2.6.so
+1c      2       Y_A_P__ 1
+2b7d6e495000-2b7d6e4d0000 r-xp 00000000 08:01 1400920                    /lib/libsepol.so.1
+0       1       YRAU___ 5
+1       2       YRAU___ 3
+3       1       YRAU___ 5
+4       1       YRAU___ 3
+30      1       YRAU___ 3
+2b7d6e4d0000-2b7d6e6d0000 ---p 0003b000 08:01 1400920                    /lib/libsepol.so.1
+2b7d6e6d0000-2b7d6e6d1000 rw-p 0003b000 08:01 1400920                    /lib/libsepol.so.1
+3b      1       Y_A_P__ 1
+2b7d6e6d1000-2b7d6e6db000 rw-p 2b7d6e6d1000 00:00 0
+2b7d6e6db000-2b7d6e6f1000 r-xp 00000000 08:01 1400922                    /lib/libselinux.so.1
+0       1       YRAU___ 9
+1       3       YRAU___ 5
+4       1       YRAU___ 4
+a       1       YRAU___ 4
+c       1       YRAU___ 3
+f       1       YRAU___ 4
+10      1       YRAU___ 3
+12      2       YRAU___ 4
+2b7d6e6f1000-2b7d6e8f0000 ---p 00016000 08:01 1400922                    /lib/libselinux.so.1
+2b7d6e8f0000-2b7d6e8f2000 rw-p 00015000 08:01 1400922                    /lib/libselinux.so.1
+15      2       Y_A_P__ 1
+2b7d6e8f2000-2b7d6e8f3000 rw-p 2b7d6e8f2000 00:00 0
+2b7d6e8f2       1       Y_A_P__ 1
+2b7d6e8f3000-2b7d6ea40000 r-xp 00000000 08:01 1564031                    /lib/libc-2.6.so
+0       2       YRAU___ 81
+2       1       YRAU___ 80
+3       1       YRAU___ 81
+4       1       YRAU___ 72
+5       1       YRAU___ 77
+6       1       YRAU___ 79
+7       1       YRAU___ 73
+8       1       YRAU___ 79
+9       1       YRAU___ 78
+a       1       YRAU___ 77
+b       1       YRAU___ 72
+c       1       YRAU___ 75
+d       1       YRAU___ 81
+e       1       YRAU___ 72
+f       1       YRAU___ 78
+10      1       YRAU___ 81
+11      1       YRAU___ 78
+12      1       YRAU___ 80
+13      1       YRAU___ 78
+14      2       YRAU___ 81
+16      1       YRAU___ 49
+17      6       YRAU___ 41
+1d      1       YRAU___ 80
+2a      1       YRAU___ 44
+2b      1       YRAU___ 69
+2c      1       YRAU___ 28
+31      1       YRAU___ 79
+32      1       YRAU___ 49
+33      1       YRAU___ 73
+34      1       YRAU___ 57
+35      1       YRAU___ 67
+42      1       YRAU___ 77
+43      3       YRAU___ 78
+46      1       YRAU___ 77
+47      1       YRAU___ 70
+48      1       YRAU___ 15
+4d      1       YRAU___ 78
+5f      1       YRAU___ 78
+60      1       YRAU___ 75
+61      1       YRAU___ 72
+62      1       YRAU___ 67
+63      1       YRAU___ 59
+68      1       YRAU___ 63
+69      1       YRAU___ 61
+6a      1       YRAU___ 63
+6b      1       YRAU___ 75
+6c      1       YRAU___ 76
+6d      1       YRAU___ 81
+6e      1       YRAU___ 77
+6f      1       YRAU___ 79
+70      1       YRAU___ 44
+71      1       YRAU___ 79
+72      1       YRAU___ 78
+73      1       YRAU___ 79
+74      1       YRAU___ 46
+75      1       YRAU___ 78
+76      1       YRAU___ 60
+78      1       YRAU___ 79
+79      1       YRAU___ 81
+7a      1       YRAU___ 80
+7e      1       YRAU___ 41
+8a      1       YRAU___ 36
+8b      1       YRAU___ 72
+8c      1       YRAU___ 28
+8d      1       YRAU___ 21
+91      2       YRAU___ 19
+99      1       YRAU___ 62
+9a      1       YRAU___ 76
+9b      1       YRAU___ 72
+c4      1       YRAU___ 80
+c5      1       YRAU___ 82
+c6      1       YRAU___ 81
+cb      1       YRAU___ 42
+cc      1       YRAU___ 79
+cd      1       YRAU___ 26
+cf      1       YRAU___ 12
+d0      1       YRAU___ 77
+d1      1       YRAU___ 38
+d2      1       YRAU___ 45
+d3      1       YRAU___ 66
+d4      1       YRAU___ 71
+e0      1       YRAU___ 52
+106     1       YRAU___ 33
+107     1       YRAU___ 14
+108     1       YRAU___ 63
+109     1       YRAU___ 57
+10b     1       YRAU___ 70
+10c     1       YRAU___ 63
+118     1       YRAU___ 65
+119     1       YRAU___ 78
+11a     1       YRAU___ 69
+11b     1       YRAU___ 68
+11e     2       YRAU___ 62
+120     1       YRAU___ 74
+121     1       YRAU___ 42
+125     1       YRAU___ 17
+2b7d6ea40000-2b7d6ec40000 ---p 0014d000 08:01 1564031                    /lib/libc-2.6.so
+2b7d6ec40000-2b7d6ec43000 r--p 0014d000 08:01 1564031                    /lib/libc-2.6.so
+14d     3       Y_A_P__ 1
+2b7d6ec43000-2b7d6ec45000 rw-p 00150000 08:01 1564031                    /lib/libc-2.6.so
+150     2       Y_A_P__ 1
+2b7d6ec45000-2b7d6ec4b000 rw-p 2b7d6ec45000 00:00 0
+2b7d6ec45       6       Y_A_P__ 1
+2b7d6ec4b000-2b7d6ec4d000 r-xp 00000000 08:01 1564037                    /lib/libdl-2.6.so
+0       1       YRAU___ 51
+1       1       YRAU___ 39
+2b7d6ec4d000-2b7d6ee4d000 ---p 00002000 08:01 1564037                    /lib/libdl-2.6.so
+2b7d6ee4d000-2b7d6ee4f000 rw-p 00002000 08:01 1564037                    /lib/libdl-2.6.so
+2       2       Y_A_P__ 1
+2b7d6ee4f000-2b7d6ee50000 rw-p 2b7d6ee4f000 00:00 0
+2b7d6ee4f       1       Y_A_P__ 1
+7fff3c81d000-7fff3c832000 rw-p 7ffffffea000 00:00 0                      [stack]
+7fffffffa       1       Y_A_P__ 1
+7fffffffc       2       Y_A_P__ 1
+7fffffffe       1       YRA_P__ 1
+7fff3c9fe000-7fff3ca00000 r-xp 7fff3c9fe000 00:00 0                      [vdso]
+0       1       YR_____ 55
