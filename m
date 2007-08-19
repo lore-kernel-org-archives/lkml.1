@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbXHSQFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbXHSQZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755957AbXHSQFo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 12:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXHSQFe
+	id S1755639AbXHSQZc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 12:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbXHSQZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 12:05:34 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:61169 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753882AbXHSQFe (ORCPT
+	Sun, 19 Aug 2007 12:25:20 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:57984 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753435AbXHSQZS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 12:05:34 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: group ownership of tun devices -- nonfunctional?
-To: Mike Mohr <akihana@gmail.com>, linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Sun, 19 Aug 2007 18:05:26 +0200
-References: <8Tpwf-3Nb-1@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Sun, 19 Aug 2007 12:25:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Mz5ggfx+JO2qTOv3PN3jHzlZFQwAWPblJL0o/YrSqHKo641Z+A/AHPdi8jBVjqr0rjd9yuE1dy2lrjgcQya9UcU7hLtofPLuyPCsmKWSuADq098jiTIzjK1L6D/GXvKb9mvGYzwXj+CBd2qE8IycNTdNcZZoMnd8Jqi4cYFANec=
+Message-ID: <46C86EE8.1020803@gmail.com>
+Date: Sun, 19 Aug 2007 18:25:12 +0200
+From: Maciek Rutecki <maciej.rutecki@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1IMnHK-00012c-VC@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/UT8Eapi+CiGp+gUcuvwN0aFpoAglposO7xJO
- tDVpsVShcv5pFEoKmrfBL/viZrcwItpZCwNSBnKOESZ1ZcajVt
- ga0FQ3sKwjgziVKbLKwuQ==
+To: Tejun Heo <htejun@gmail.com>
+CC: Mark Lord <liml@rtr.ca>, Linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org, rjw@sisk.pl
+Subject: Re: SATA error while resume
+References: <46C80999.1060700@gmail.com> <46C852DE.8040701@rtr.ca> <46C85ED8.5080801@gmail.com> <46C8666F.4080603@gmail.com>
+In-Reply-To: <46C8666F.4080603@gmail.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Mohr <akihana@gmail.com> wrote:
+Tejun Heo pisze:
 
-(intentionally not snipping much)
-
-> Per the post here:
-> 
-> http://lkml.org/lkml/2007/6/18/228
-> 
-> it appears that the group ownership patch has made it into .23.  I am
-> using these patches, amongst which the kernel component appears to be
-> identical:
-> 
-> http://sigxcpu.org/unsorted-patches/0001-allow-tun-ownership-by-group.patch
-> http://sigxcpu.org/unsorted-patches/tunctl_gid.diff
-> 
-> I can create devices that are owned by my user account (tunctl -u
-> `whoami` -t tap0) and it works fine.  However, if I use group
-> permissions with -g it stops working.  In all cases, if I pass -g
-> <group>, the interface is created correctly but it is unusable as a
-> non-root user.
-> 
-> So my question is: am I doing something wrong?  If I am, I don't see
-> it.  Assuming then that I am not doing anything wrong on my end, I
-> assume then that there is something missing from the kernel patch I
-> applied.  I read over it and I can't see any issues, especially
-> considering that tunctl comes back without error (even with -g) and
-> creates an interface.
-> 
-> Just wondering if this was an issue that should be looked into--
+> Hmmmm... Does Power-Off_Retract_Count increase after suspend/resume cycle?
+>
 
 
-IMHO the check is broken:
+No.
 
-+               if (((tun->owner != -1 &&
-+                     current->euid != tun->owner) ||
-+                    (tun->group != -1 &&
-+                     current->egid != tun->group)) &&
-+                    !capable(CAP_NET_ADMIN))
-                        return -EPERM;
+Before:
 
-It should be something like:
+rutek:/home/maciek# smartctl -A -d ata /dev/sda  | grep
+Power-Off_Retract_Count
+192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always
+      -       66
 
-+               if (!((tun->owner == tun->owner) ||
-+                     (tun->group == tun->group) ||
-+                     capable(CAP_NET_ADMIN)))
-                        return -EPERM;
 
-Please verify and forward to the maintainers if my guess appears to be correct.
+Tested:
+
+2.6.22.1 OK (double spin down of disk issue).
+
+2.6.23-rc2 with patches [1] (prevent double spin down while suspend to
+disk), also was tested ealier [2] OK
+
+[1] http://www.ussg.iu.edu/hypermail/linux/kernel/0708.0/2655.html
+[2] http://www.ussg.iu.edu/hypermail/linux/kernel/0708.0/2784.html
+
+
+After:
+rutek:/home/maciek# smartctl -A -d ata /dev/sda  | grep
+Power-Off_Retract_Count
+192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always
+      -       66
+
+
 -- 
-Never stand when you can sit, never sit when you can lie down, never stay
-awake when you can sleep.
-
-Friﬂ, Spammer: xxh@n.btxp.7eggert.dyndns.org
+Maciej Rutecki
+http://www.maciek.unixy.pl
