@@ -1,65 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbXHTA3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbXHTAbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbXHTA3h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 20:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXHTA3a
+	id S1757567AbXHTAbY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 20:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXHTAbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 20:29:30 -0400
-Received: from ppsw-2.csi.cam.ac.uk ([131.111.8.132]:41606 "EHLO
-	ppsw-2.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753865AbXHTA33 (ORCPT
+	Sun, 19 Aug 2007 20:31:17 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:37880 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbXHTAbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 20:29:29 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <200708191719.48340.david-b@pacbell.net>
-References: <20070819225546.GV21089@ftp.linux.org.uk> <200708191719.48340.david-b@pacbell.net>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E83C36D0-B72E-4E70-BEF6-4AF54BAD2863@cam.ac.uk>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
+	Sun, 19 Aug 2007 20:31:16 -0400
+X-Greylist: delayed 3745 seconds by postgrey-1.27 at vger.kernel.org; Sun, 19 Aug 2007 20:31:16 EDT
+Message-ID: <46C8D124.4030701@home.nl>
+Date: Mon, 20 Aug 2007 01:24:20 +0200
+From: Rene Herman <rene.herman@home.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Bodo Eggert <7eggert@gmx.de>
+CC: Mike Mohr <akihana@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: group ownership of tun devices -- nonfunctional?
+References: <8Tpwf-3Nb-1@gated-at.bofh.it> <E1IMnHK-00012c-VC@be1.lrz> <46C86B6C.8090209@home.nl> <Pine.LNX.4.58.0708192333170.2426@be1.lrz>
+In-Reply-To: <Pine.LNX.4.58.0708192333170.2426@be1.lrz>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: [PATCH] ptrdiff_t is not uintptr_t, damnit
-Date: Mon, 20 Aug 2007 01:29:21 +0100
-To: David Brownell <david-b@pacbell.net>
-X-Mailer: Apple Mail (2.752.3)
+X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 08/19/2007 11:42 PM, Bodo Eggert wrote:
 
-On 20 Aug 2007, at 01:19, David Brownell wrote:
-> On Sunday 19 August 2007, Al Viro wrote:
->> is wrong; for one thing, it's a bad C (it's what uintptr_t is for;  
->> in general
->> we are not even promised that ptrdiff_t is large enough to hold a  
->> pointer,
->
-> ISTR we don't *have* a uintptr_t on all architectures, or that would
-> be the appropriate thing to use in these 32/64 bit ABI scenarios.
->
->
->> Use unsigned long or uintptr_t instead.
->
-> I suspect you mean "unsigned long long"...
+> On Sun, 19 Aug 2007, Rene Herman wrote:
+> 
+>> On 08/19/2007 06:05 PM, Bodo Eggert wrote:
+>>
+>>> IMHO the check is broken:
+>>>
+>>> +               if (((tun->owner != -1 &&
+>>> +                     current->euid != tun->owner) ||
+>>> +                    (tun->group != -1 &&
+>>> +                     current->egid != tun->group)) &&
+>>> +                    !capable(CAP_NET_ADMIN))
+>>>                         return -EPERM;
+>>>
+>>> It should be something like:
+>>>
+>>> +               if (!((tun->owner == tun->owner) ||
+>>> +                     (tun->group == tun->group) ||
+>> ???
+> 
+> Argh, I edited asuming the same order of variables. Substitute 
+> current->e{uid,gid} for one of the sides.
 
-No he doesn't.  "unsigned long" is guaranteed to be large enough to  
-hold a pointer (at least on Linux anyway).
+Okay. Just had to ask. That looked so odd...
 
-On a 32-bit arch "unsigned long" is 32-bit and pointers are 32-bit.
+>>> +                     capable(CAP_NET_ADMIN)))
+>>>                         return -EPERM;
+> 
+> The intended semantics is If the user is not
+>  * the allowed user
+> or
+>  * member of the allowed group
+> or
+>  * cabable of CAP_NET_ADMIN
+> then error out. I'm asuming
 
-On a 64-bit archi "unsigned long" is 64-bit and pointers are 64-bit.
+There is a short description of the desired semantics in the link that was 
+posted:
 
-Best regards,
+http://lkml.org/lkml/2007/6/18/228
 
-	Anton
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
+===
+The user now is allowed to send packages if either his euid or his egid
+matches the one specified via tunctl (via -u or -g respecitvely). If both
+gid and uid are set via tunctl, both have to match.
+===
 
+Paraphrasing the original code above, it's saying:
 
+if ((owner_is_set && does_not_match) || (group_is_set && does_not_match))
+	bugger_off_unless(CAP_NET_ADMIN);
+
+or reverting the logic:
+
+if ((owner_is_unset || does_match) && (group_is_unset || does_match))
+	good_to_go();
+
+which probably matches the intention -- we're good to go only if the 
+credentials that are set also match.
+
+Rene.
