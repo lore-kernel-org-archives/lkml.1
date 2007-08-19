@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbXHSXEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbXHSXFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756704AbXHSXEy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 19:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbXHSXEo
+	id S1757530AbXHSXFh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 19:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbXHSXF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 19:04:44 -0400
-Received: from server2.corp.notserp.com ([64.71.152.20]:4806 "EHLO
-	server2.corp.notserp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751318AbXHSXEo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 19:04:44 -0400
-In-Reply-To: <20070819113400.12f5570c@localhost>
-References: <20070818121714.GA28247@1wt.eu> <283388.84897.qm@web38905.mail.mud.yahoo.com> <20070819093221.4d3291e9@freepuppy.rosehill.hemminger.net> <2456F7EB-000C-4B71-B002-64340DD17BA8@linuxmontreal.com> <20070819113400.12f5570c@localhost>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <172AD054-448D-4085-82EE-AAEE77C0640F@linuxmontreal.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+	Sun, 19 Aug 2007 19:05:29 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1612 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753092AbXHSXF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 19:05:28 -0400
+Subject: Re: convert #include "linux/..." to #include <linux/...> [PATCH]s
+	follow
+From: Joe Perches <joe@perches.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <Pine.LNX.4.64.0708200031560.19577@fbirervta.pbzchgretzou.qr>
+References: <1187561864.4200.136.camel@localhost>
+	 <Pine.LNX.4.64.0708200031560.19577@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain
+Date: Sun, 19 Aug 2007 16:05:23 -0700
+Message-Id: <1187564724.4200.170.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-From: Eric Preston <developer@linuxmontreal.com>
-Subject: Re: Marvell 88E8056 gigabit ethernet controller
-Date: Sun, 19 Aug 2007 19:04:37 -0400
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-08-20 at 00:33 +0200, Jan Engelhardt wrote:
+> Not only that. All directories in include should be checked against
+> (e.g. <net/*>)
 
-On 19-Aug-07, at 2:34 PM, Stephen Hemminger wrote:
+Should any file in include/ have a line like:
 
-> The driver prints some chip version info at startup, that might
-> be helpful in disambiguating good/bad versions:
->
-> 	dmesg | grep sky2
+	#include "[path/]file"
 
-sky2 0000:03:00.0: v1.16 addr 0xfa000000 irq 16 Yukon-EC Ultra (0xb4)  
-rev 2
-sky2 eth0: addr XX:XX:XX:XX:XX
-sky2 eth0: enabling interface
-sky2 eth0: ram buffer 0K
-sky2 eth0: disabling interface
+Shouldn't these all be
 
--E
+	#include <path/file>
 
----
-Eric Preston, RHCA, RHCSS, RHCE
-Open Source Software Consultant // Administrator, Developer, Trainer
-514-312-7072
-
+?
 
