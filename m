@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbXHSQhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbXHSQmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756801AbXHSQhx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 12:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbXHSQhq
+	id S1756551AbXHSQmV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 12:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbXHSQmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 12:37:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45837 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752317AbXHSQhp (ORCPT
+	Sun, 19 Aug 2007 12:42:11 -0400
+Received: from web38905.mail.mud.yahoo.com ([209.191.125.111]:26196 "HELO
+	web38905.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753910AbXHSQmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 12:37:45 -0400
-Date: Sun, 19 Aug 2007 01:04:30 -0400
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org, jh@suse.cz
-Subject: Re: [PATCH] x86-64: memset optimization
-Message-ID: <20070819010430.2c8c31fc@oldman.hemminger.net>
-In-Reply-To: <200708182055.11277.ak@suse.de>
-References: <20070817163446.3e63f208@freepuppy.rosehill.hemminger.net>
-	<200708181146.24399.ak@suse.de>
-	<20070818075602.34350b25@freepuppy.rosehill.hemminger.net>
-	<200708182055.11277.ak@suse.de>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Sun, 19 Aug 2007 12:42:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=paMQJPXq6sTZ5d68sTeoh39hfvf/65dNkxkixtiGosvdHo3RNTt+AEUF2+8Dz1onuyX7BV5E6Vzcqmevo8Ax3FdbWvHhg6ds7vzuNHhWKmV3bmZ79VWkrUIR8lNbgHYEHc+TKKdMfTvl2EouEk8GKebUiId6ddIgUjRfdmNC23o=;
+X-YMail-OSG: uH.B0uwVM1kWTHSKBeTdxhERJAdkPxiu4G0e00ze6Wwm0oxVOmwM3.R1ELnbjoj1oIgJCQQ9uX_qy9eg9n0e04JtZ1_V3BDuy.CwT9Bpvnbuo.POK6ximfbSfVX3kQ--
+Date: Sun, 19 Aug 2007 09:42:08 -0700 (PDT)
+From: Kevin E <kevin360@yahoo.com>
+Subject: Re: Marvell 88E8056 gigabit ethernet controller
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20070819093221.4d3291e9@freepuppy.rosehill.hemminger.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <623107.14278.qm@web38905.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Aug 2007 20:55:11 +0200
-Andi Kleen <ak@suse.de> wrote:
 
-> 
-> > The problem is that on x86-64 you are overriding memset() 
-> 
-> I don't.  You must be looking at old source
-> 
-> asm-x86_64/string.h 2.6.23rc3:
-> 
-> #define __HAVE_ARCH_MEMSET
-> void *memset(void *s, int c, size_t n);
-> 
-> I wanted to do the same on i386 too, but there were some minor obstacles.
-> The problem is that the out of line fallback i386 memset is currently
-> quite dumb and needs to be rewritten to expand the fill char on its
-> own like the x86-64 version. Probably best would be just to port
-> the x86-64 version. I just hadn't had time for that.
-> 
-> [Patches welcome, but if you do ask me for my old memset test harness]
-> 
-> -Andi
+--- Stephen Hemminger
+<shemminger@linux-foundation.org> wrote:
 
-I am looking at current source, built with current (non-experimental) GCC
-from Fedora Core 7. If I dissassemble ether_setup, which is
+> The working board has a different version of the
+> Marvell chip:
+> 
+> $ grep Marvell working-MB 
+> 04:00.0 Ethernet controller: Marvell Technology
+> Group Ltd. 88E8056 PCI-E Gigabit Ethernet Controller
+> (rev 14)
+> $ grep Marvell broken-MB 
+> 04:00.0 Ethernet controller: Marvell Technology
+> Group Ltd. 88E8056 PCI-E Gigabit Ethernet Controller
+> (rev 12)
+> 
+> Not sure if that completely explains the problem
+> because the broken chip on my
+> system is:
+> 06:00.0 Ethernet controller: Marvell Technology
+> Group Ltd. 88E8056 PCI-E Gigabit Ethernet Controller
+> (rev 14)
+> 
+> I don't know what the differences are between
+> versions.
 
-void ether_setup(struct net_device *dev)
-{
-...
+Since I have a rev 14 that works and you have a rev 14
+that doesn't work, is there any other info I can
+provide to you that would maybe help in figuring out
+how you can get your board working?
 
-	memset(dev->broadcast, 0xFF, ETH_ALEN);
-}
 
-I see a tail recursion (jmp) to memset which is the code in arch/x86_64/lib/memset.S
 
+       
+____________________________________________________________________________________
+Looking for a deal? Find great prices on flights and hotels with Yahoo! FareChase.
+http://farechase.yahoo.com/
