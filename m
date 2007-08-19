@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbXHSIi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbXHSIpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754093AbXHSIi2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 04:38:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbXHSIiU
+	id S1753992AbXHSIpr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 04:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbXHSIph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 04:38:20 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:37151 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751730AbXHSIiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 04:38:19 -0400
-Date: Sun, 19 Aug 2007 12:38:27 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC,PATCH 5/5] exec: RT sub-thread can livelock and monopolize CPU on exec
-Message-ID: <20070819083827.GA83@tv-sign.ru>
-References: <20070818174001.GA218@tv-sign.ru> <20070818232525.9B7554D05C6@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 19 Aug 2007 04:45:37 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:28670 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbXHSIpg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 04:45:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Hu5SmbWHL+LqSknTZGRG47FwLk7zekr07azM4tBv/dUYW/2Gvg1aFPQ2BaVyvnnCDL+Oc7HKfrJXx9vIn2qLjevg/CB2xCVTt2Arnykdo4LkjsAU7vKbfbFeS6wAjtdhQ+4z+ODha64MNchNRo0VwUIMIaTzbJn4ZsBgU0bjjaI=
+Message-ID: <34d269d40708190145m7a17ed35g190f0a5fabc4776e@mail.gmail.com>
+Date: Sun, 19 Aug 2007 02:45:33 -0600
+From: "Alex Hunsaker" <badalex@gmail.com>
+To: astarikovskiy@suse.de, len.brown@intel.com
+Subject: [ACPI] Regression 2.6.23-rc3 fails to boot (acpi)
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070818232525.9B7554D05C6@magilla.localdomain>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/18, Roland McGrath wrote:
->
-> Maybe it can use wait_task_inactive, which IIUC is being changed to address
-> the same RT issue.
+Hangs on boot with:
+ACPI: EC: GPE = 0x4, I/O: command/status = 0x66, data = 0x62
+ACPI: Interpreter enabled
+ACPI: (supports S0 S3)
+ACPI: Using PIC for interrupt routing
+ACIP: EC: GPE = 0x4, I/O: command/status = 0x66, data = 0x62
 
-The group_leader can sleep before it enters exit_notify(). In that case
-wait_task_inactive() returns, and we still need some polling to wait for
-EXIT_ZOMBIE.
+2.6.23-rc2 is ok
+2.6.23-rc3 bad
+2.6.23-rc3-latest (7c010de7506954e973abfab5c5999c5a97f7a73e) bad
 
-> OTOH, notify_count exists only for this.  So maybe the
-> better way is to clean that whole mechanism up somehow.
+git-bisect narrowed it down to:
 
-Yes sure. But in any case I think we should avoid polling, we need some
-notification from exit_notify().
+7c010de7506954e973abfab5c5999c5a97f7a73e
+ACPI: EC: Switch from boot_ec as soon as we find its desc in DSDT.
+Alexey Starikovskiy [Fri, 3 Aug 2007 21:57:53 +0000 (17:57 -0400)]
+Some ASUS laptops fail to use boot time EC
+and need to eventually switch to one described in DSDT.
 
-> The exit.c changes
-> in your patch seem to be making it more mysterious rather than less so.
+http://bugzilla.kernel.org/show_bug.cgi?id=8709
 
-I completely agree.
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+Signed-off-by: Len Brown <len.brown@intel.com>
 
-Oleg.
-
+Reverting the above commit fixes the problem.
