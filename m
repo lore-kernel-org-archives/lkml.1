@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbXHSOSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755289AbXHSOYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576AbXHSOSW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 10:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbXHSOSM
+	id S1755289AbXHSOYU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 10:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbXHSOYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 10:18:12 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58668 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751255AbXHSOSL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 10:18:11 -0400
-Date: Sun, 19 Aug 2007 16:17:32 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Andreas Schwab <schwab@suse.de>,
-       Alan Modra <alan@linuxcare.com.au>,
-       David Mosberger-Tang <davidm@hpl.hp.com>
-Subject: sched.c: why -fno-omit-frame-pointer?
-Message-ID: <20070819141732.GD32595@stusta.de>
+	Sun, 19 Aug 2007 10:24:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35419 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751255AbXHSOYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 10:24:10 -0400
+Date: Sun, 19 Aug 2007 22:24:01 +0800
+From: Eugene Teo <eugeneteo@kernel.sg>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix tsk->exit_state usage (resend)
+Message-ID: <20070819142401.GA27823@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.sg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel/sched.c gets compiled with -fno-omit-frame-pointer, and this was 
-already done in kernel 1.0 (sic).
+tsk->exit_state can only be 0, EXIT_ZOMBIE, or EXIT_DEAD. A non-zero test
+is the same as tsk->exit_state & (EXIT_ZOMBIE | EXIT_DEAD), so just testing
+tsk->exit_state is sufficient.
 
-Later, it has been modified to be this way only on some architectures.
+Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+---
+ fs/proc/array.c |    3 +--
+ kernel/fork.c   |    2 +-
+ kernel/sched.c  |    2 +-
+ 3 files changed, 3 insertions(+), 4 deletions(-)
 
-It might not be an earthshaking amount, but removing it saves some 
-bytes, and there's no visible breakage when running the modified kernel 
-on i386.
-
-$ ls -la kernel/sched.o*
--rw-rw-r-- 1 bunk bunk 25600 2007-08-19 16:10 kernel/sched.o
--rw-rw-r-- 1 bunk bunk 26084 2007-08-19 16:03 kernel/sched.o.old
-$ size kernel/sched.o*
-   text    data     bss     dec     hex filename
-  11835     184    2000   14019    36c3 kernel/sched.o
-  12321     184    2000   14505    38a9 kernel/sched.o.old
-$ 
-
-Is the -fno-omit-frame-pointer still required for some reason, or is 
-this a relict that could be removed?
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 965625a..babb24d 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -145,8 +145,7 @@ static inline const char *get_task_state(struct task_struct *tsk)
+ 					    TASK_UNINTERRUPTIBLE |
+ 					    TASK_STOPPED |
+ 					    TASK_TRACED)) |
+-			(tsk->exit_state & (EXIT_ZOMBIE |
+-					    EXIT_DEAD));
++					   tsk->exit_state;
+ 	const char **p = &task_state_array[0];
+ 
+ 	while (state) {
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 7332e23..56d1b8b 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -115,7 +115,7 @@ EXPORT_SYMBOL(free_task);
+ 
+ void __put_task_struct(struct task_struct *tsk)
+ {
+-	WARN_ON(!(tsk->exit_state & (EXIT_DEAD | EXIT_ZOMBIE)));
++	WARN_ON(!tsk->exit_state);
+ 	WARN_ON(atomic_read(&tsk->usage));
+ 	WARN_ON(tsk == current);
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 45e17b8..8c27f08 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5190,7 +5190,7 @@ static void migrate_dead(unsigned int dead_cpu, struct task_struct *p)
+ 	struct rq *rq = cpu_rq(dead_cpu);
+ 
+ 	/* Must be exiting, otherwise would be on tasklist. */
+-	BUG_ON(p->exit_state != EXIT_ZOMBIE && p->exit_state != EXIT_DEAD);
++	BUG_ON(!p->exit_state);
+ 
+ 	/* Cannot have done final schedule yet: would have vanished. */
+ 	BUG_ON(p->state == TASK_DEAD);
 
