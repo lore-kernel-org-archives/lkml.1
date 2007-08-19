@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbXHSULX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbXHSUOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757598AbXHSULX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 16:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbXHSUKy
+	id S1756535AbXHSUOX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 16:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbXHSUOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 16:10:54 -0400
-Received: from il.qumranet.com ([82.166.9.18]:42593 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757197AbXHSUKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 16:10:38 -0400
-Message-ID: <46C8A3BB.5020505@qumranet.com>
-Date: Sun, 19 Aug 2007 23:10:35 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       kvm-devel@lists.sourceforge.net,
-       Laurent Vivier <Laurent.Vivier@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       cotte@de.ibm.com
-Subject: Re: List stripping out cc's
-References: <46BC8B39.6050202@bull.net> <200708131615.42643.borntraeger@de.ibm.com> <46C06885.3020908@qumranet.com> <200708131626.36275.borntraeger@de.ibm.com> <46C06CA2.8010303@qumranet.com> <20070813204023.GA10283@osiris.ibm.com> <46C80E40.9@qumranet.com> <46C89FCA.3010802@garzik.org>
-In-Reply-To: <46C89FCA.3010802@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 19 Aug 2007 16:14:15 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:55166 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754386AbXHSUOP (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 16:14:15 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Marc Perkel <mperkel@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: The vi editor causes brain damage
+In-Reply-To: Your message of "Sat, 18 Aug 2007 22:20:34 PDT."
+             <964583.28477.qm@web52504.mail.re2.yahoo.com>
+From: Valdis.Kletnieks@vt.edu
+References: <964583.28477.qm@web52504.mail.re2.yahoo.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1187554454_3025P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Sun, 19 Aug 2007 23:10:35 +0300 (IDT)
+Date: Sun, 19 Aug 2007 16:14:14 -0400
+Message-ID: <15512.1187554454@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Avi Kivity wrote:
->> Heiko Carstens wrote:
->>>>  The only thing remotely relevant in the list config is that
->>>> 'Filter out  duplicate messages to list members (if possible)' is
->>>> set as a default for  new members.  Maybe this means that if a cc
->>>> is also part of the list, that  cc is stripped (which seems a wierd
->>>> implementation; I'd have expected that  cc be kept and just one
->>>> copy sent out).
->>>>
->>>>  Anybody have a clue?
->>>>     
->>>
->>> I got also removed when I was cc'ed. IIRC that started when I
->>> subscribed to
->>> the list. So it looks like people who are subscribed to the list get
->>> removed from the cc list.
->>> That's very annoying btw. ;)
->>>   
->>
->> I think I see what is happening.  The list gets a message that you
->> are copied on.  It sees you have opted not to receive duplicates, it
->> strips you from the cc list, since it knows that you will receive
->> another copy by direct routing (outside the list).
->
-> Well, there is also /quite/ the problem with the Mail-Followup-To
-> header, which causes most mailers to ignore the preferences of the
-> community in favor of the preferences of the message author -- which
-> totally screws up traditional To/CC handling on LKML.
->
+--==_Exmh_1187554454_3025P
+Content-Type: text/plain; charset=us-ascii
 
-Sorry, this was about kvm-devel, not lkml -- I should have taken
-linux-kernel off the cc list here to avoid increasing confusion. 
-Somehow that felt wrong in an email about the evils of stripping out the
-cc list.
+On Sat, 18 Aug 2007 22:20:34 PDT, Marc Perkel said:
+> Let me give you and example of the difference between
+> Linux open source world brain damaged thinking and
+> what it's like out here in the real world.
+> 
+> Go to a directory with 10k files and type:
+> 
+> rm *
+> 
+> What do you get?
+> 
+> /bin/rm: Argument list too long
 
-I don't think there's an issue with M-F-T: here.
+Given that you don't even understand that this message is issued by the
+*shell* and not /bin/rm, and *why* it issues that sort of error message
+when an argument string expands to be bigger than MAX_ARGV, and the fact
+that there are extant patches to increase that to essentially any reasonable
+size, why should we listen to you when you proclaim that you have any sort
+of enlightenment about systems design?
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
+--==_Exmh_1187554454_3025P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGyKSWcC3lWbTT17ARAnITAKCXc8p4SxeM3cEAwd/BXb25/LAF1wCgt5Wo
+vnHx42B6sfvE7U6diFSNM84=
+=6vmy
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1187554454_3025P--
