@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbXHSPcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755685AbXHSPiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbXHSPcQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 11:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbXHSPcG
+	id S1755685AbXHSPiA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 11:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbXHSPhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 11:32:06 -0400
-Received: from web52509.mail.re2.yahoo.com ([206.190.48.192]:48104 "HELO
-	web52509.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751196AbXHSPcF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 11:32:05 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=biHBZACfhH8QCtUBlPpmy/u3/O1w6x1zBwImKefXriIDzIrZo7V8XU8JbBFIidJ/JiPluqkg4ahrHOgJJojdBd0J8V62KN5wMFkLN9+iWiufSdn6Nbm1ZRf0Z3h1KEjJru+55T+DrHKuyXrjfETFOUIaLMmRYqnS0HJrQrEe3GM=;
-X-YMail-OSG: DQPFJKkVM1myt2NkoaWgJG3Wx4hKqAhu4G3iAEL4EbBS0IUtJgNQLl.cCFs1unthYY4Bf5B5EknhmWNYUyzD.bLs.ivHS4haNDj3TP45yNWzORCnCXaxkum5gAfnNA--
-Date: Sun, 19 Aug 2007 08:32:01 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: The vi editor causes brain damage
-To: Paolo Ornati <ornati@fastwebnet.it>
-Cc: Willy Tarreau <w@1wt.eu>, Jiri Slaby <jirislaby@gmail.com>,
-       Marc Perkel <mperkel@yahoo.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070819164835.010f0e5b@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <828976.87242.qm@web52509.mail.re2.yahoo.com>
+	Sun, 19 Aug 2007 11:37:50 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1329 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751698AbXHSPht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 11:37:49 -0400
+Subject: Re: tracking MAINTAINERS versus tracking SUBSYSTEMS
+From: Joe Perches <joe@perches.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0708190818280.7224@localhost.localdomain>
+References: <Pine.LNX.4.64.0708181311490.10387@localhost.localdomain>
+	 <1187483578.4200.51.camel@localhost>
+	 <Pine.LNX.4.64.0708190818280.7224@localhost.localdomain>
+Content-Type: text/plain
+Date: Sun, 19 Aug 2007 08:37:45 -0700
+Message-Id: <1187537866.4200.97.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2007-08-19 at 08:22 -0400, Robert P. J. Day wrote:
+> On Sat, 18 Aug 2007, Joe Perches wrote:
+> > On Sat, 2007-08-18 at 13:35 -0400, Robert P. J. Day wrote:
+> > >   $ show_subsystem drivers/bluetooth/bpa10x.c
+> > >   BLUETOOTH
+> > "what's a subsystem"? I'm not sure there is an appropriate
+> > definition. If there is an appropriate definition, why should anyone
+> > care what subsystem a particular file is in?
+> i'm confused -- i thought that was sort of the whole purpose of this
+> exercise, to match parts of the kernel source tree against the
+> maintainer for those parts, and to do that via the defined
+> "subsystem" which is currently used in MAINTAINERS.
 
---- Paolo Ornati <ornati@fastwebnet.it> wrote:
+What I did was for patch submission.
 
-> On Sun, 19 Aug 2007 06:22:37 -0700 (PDT)
-> Marc Perkel <mperkel@yahoo.com> wrote:
-> 
-> > 20 years, a million programmers, tens of millions
-> of
-> > users and RM is BROKEN. Am I the only one who has
-> a
-> > problem with this? If so - I'm normal - and Linux
-> is a
-> > cult.
-> 
-> 
-> Fixed in 2.6.23-rc (and not just for "rm"):
-> 
-> commit b6a2fea39318e43fee84fa7b0b90d68bed92d2ba
-> Author: Ollie Wild <aaw@google.com>
-> Date:   Thu Jul 19 01:48:16 2007 -0700
-> 
->     mm: variable length argument support
-> 
->     Remove the arg+env limit of MAX_ARG_PAGES by
-> copying the strings
->     directly from the old mm into the new mm.
-> [...]
-> 
-> -- 
-> 	Paolo Ornati
-> 	Linux 2.6.23-rc3-g2a677896-dirty on x86_64
-> 
+That script should probably be named "get_patch_cc_list".
+It does now by default use git to find and include the
+most frequent signatories.
 
+I think that descriptions of subsystems are not
+particularly useful.  The file hierarchy should
+effectively do that.  I think a tool to inform a
+"list of interested parties" when a file is touched
+is useful though.
 
-Good man!
+If there is to be a subsystem definition, I think it
+needs to be hierarchical with things like specific
+net drivers not a subsystem, but an element of the
+subsystem net:drivers (or drivers:net or both).
 
+If these elements are bundled together into a single
+"subsystem" descriptor file you will run into the "hot"
+file problem that Linus described.
 
+cheers,  Joe
 
-Marc Perkel
-Junk Email Filter dot com
-http://www.junkemailfilter.com
-
-
-      ____________________________________________________________________________________
-Luggage? GPS? Comic books? 
-Check out fitting gifts for grads at Yahoo! Search
-http://search.yahoo.com/search?fr=oni_on_mail&p=graduation+gifts&cs=bz
