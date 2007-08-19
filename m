@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757246AbXHSNbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbXHSNmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757246AbXHSNbx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 09:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbXHSNbl
+	id S1754891AbXHSNmV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 09:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbXHSNmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 09:31:41 -0400
-Received: from mba.ocn.ne.jp ([122.1.175.29]:60758 "EHLO smtp.mba.ocn.ne.jp"
+	Sun, 19 Aug 2007 09:42:11 -0400
+Received: from 1wt.eu ([62.212.114.60]:1747 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753402AbXHSNbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 09:31:40 -0400
-Date: Sun, 19 Aug 2007 22:32:56 +0900 (JST)
-Message-Id: <20070819.223256.72707398.anemo@mba.ocn.ne.jp>
-To: a.zummo@towertech.it
-Cc: linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com,
-       dbrownell@users.sourceforge.net, ralf@linux-mips.org,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Torsten Ertbjerg Rasmussen <tr@newtec.dk>
-Subject: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware (take 2)
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	id S1752839AbXHSNmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 09:42:10 -0400
+Date: Sun, 19 Aug 2007 15:33:02 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Marc Perkel <mperkel@yahoo.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: The vi editor causes brain damage
+Message-ID: <20070819133302.GA13719@1wt.eu>
+References: <20070819072135.GQ6002@1wt.eu> <952949.96475.qm@web52503.mail.re2.yahoo.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <952949.96475.qm@web52503.mail.re2.yahoo.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The rtc-ds1742 platform driver name doesn't match its module name,
-which might prevents it from properly hotplugging.  There is only two
-in-tree user of its driver, which are fixed by this patch too.
+On Sun, Aug 19, 2007 at 06:22:37AM -0700, Marc Perkel wrote:
+> The important point that you are missing here is that
+> the Linux world is willing to live with an rm command
+> that is broken and the Windows and DOS world isn't.
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
- arch/mips/jmr3927/rbhma3100/setup.c                |    2 +-
- .../toshiba_rbtx4927/toshiba_rbtx4927_setup.c      |    2 +-
- drivers/rtc/rtc-ds1742.c                           |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+The important point you are missing is that it is not the rm command
+which is broken. Either it's *all* commands or it's *your* way of
+thinking how they should work.
 
-diff --git a/arch/mips/jmr3927/rbhma3100/setup.c b/arch/mips/jmr3927/rbhma3100/setup.c
-index fde56e8..ffae163 100644
---- a/arch/mips/jmr3927/rbhma3100/setup.c
-+++ b/arch/mips/jmr3927/rbhma3100/setup.c
-@@ -427,7 +427,7 @@ static int __init jmr3927_rtc_init(void)
- 		.flags	= IORESOURCE_MEM,
- 	};
- 	struct platform_device *dev;
--	dev = platform_device_register_simple("ds1742", -1, &res, 1);
-+	dev = platform_device_register_simple("rtc-ds1742", -1, &res, 1);
- 	return IS_ERR(dev) ? PTR_ERR(dev) : 0;
- }
- device_initcall(jmr3927_rtc_init);
-diff --git a/arch/mips/tx4927/toshiba_rbtx4927/toshiba_rbtx4927_setup.c b/arch/mips/tx4927/toshiba_rbtx4927/toshiba_rbtx4927_setup.c
-index 3e84237..91bd3d1 100644
---- a/arch/mips/tx4927/toshiba_rbtx4927/toshiba_rbtx4927_setup.c
-+++ b/arch/mips/tx4927/toshiba_rbtx4927/toshiba_rbtx4927_setup.c
-@@ -969,7 +969,7 @@ static int __init toshiba_rbtx4927_rtc_init(void)
- 		.flags	= IORESOURCE_MEM,
- 	};
- 	struct platform_device *dev =
--		platform_device_register_simple("ds1742", -1, &res, 1);
-+		platform_device_register_simple("rtc-ds1742", -1, &res, 1);
- 	return IS_ERR(dev) ? PTR_ERR(dev) : 0;
- }
- device_initcall(toshiba_rbtx4927_rtc_init);
-diff --git a/drivers/rtc/rtc-ds1742.c b/drivers/rtc/rtc-ds1742.c
-index b2e5481..5562830 100644
---- a/drivers/rtc/rtc-ds1742.c
-+++ b/drivers/rtc/rtc-ds1742.c
-@@ -251,7 +251,7 @@ static struct platform_driver ds1742_rtc_driver = {
- 	.probe		= ds1742_rtc_probe,
- 	.remove		= __devexit_p(ds1742_rtc_remove),
- 	.driver		= {
--		.name	= "ds1742",
-+		.name	= "rtc-ds1742",
- 		.owner	= THIS_MODULE,
- 	},
- };
+I could play your game and say the "type" command is broken under
+DOS. Why can't I do "type *" under DOS while I can do "cat *" under
+linux ? For the exact same reason : the "*" is not processed at
+the same place. Unix initially chose to process it in the caller,
+and DOS later chose to process it in the callee. Neither is right,
+neither is wrong, those are just two different approaches which may
+be justified in their context. Having discovered DOS at 1.25 which
+did not even support directories, I certainly can say that missing
+globbing was not a problem at this time!
+
+> This isn't about the rm command it's about programming
+> standards. It's about that the Linux community isn't
+> committed to getting it right.
+
+It has nothing to do with programming standards, the rm command works
+exactly like all others. Touch does the same, mv does the same, etc...
+Educate yourself before stating idiocies like this !
+
+> Just like my thinking outside the box thread when I
+> try to say "this is broken" people don't go fix it.
+> Instead I get an explanation why Linux isn't capable
+> of having an rm command that will delete an unlimited
+> number of files.
+
+$ rm -rf $DIR will remove an unlimited number of files in this directory.
+
+If you want to make a special case of "rm", then implement the special
+case in the command and make it possible to pass it a globbing expression
+just like you can do with find. But this will be useless.
+
+> I bet there are Microsoft people out there laughing at
+> this.
+
+Oh yes, they are surely laughing at you, but at the same time they may
+feel sad to be defended by people puting such stupid statements in public.
+
+> THINK ABOUT IT PEOPLE !!!
+> 
+> 20 years, a million programmers, tens of millions of
+> users and RM is BROKEN. Am I the only one who has a
+> problem with this? If so - I'm normal - and Linux is a
+> cult.
+
+Yes, I really think you're the only one who has this problem. Don't you
+think that among those tens of millions of users, none of them has ever
+had to remove a directory full of files in 20 years ? Please stop taking
+yourself for the center of the world and buy a "unix for newbies" book
+instead of complaining the world is not like you would like it to be.
+
+Willy
+
