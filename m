@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756282AbXHSSFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbXHSSYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756282AbXHSSFo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 14:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbXHSSFh
+	id S1755910AbXHSSYv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 14:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbXHSSYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 14:05:37 -0400
-Received: from mx28.mail.ru ([194.67.23.67]:31543 "EHLO mx28.mail.ru"
+	Sun, 19 Aug 2007 14:24:41 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35599 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753585AbXHSSFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 14:05:36 -0400
-Date: Sun, 19 Aug 2007 22:04:46 +0400
-From: Evgeniy Dushistov <dushistov@mail.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] ufs fix sun state
-Message-ID: <20070819180445.GA1814@rain>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+	id S1752716AbXHSSY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 14:24:29 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: discuss@x86-64.org
+Subject: Re: [discuss] [PATCH] x86-64: memset optimization
+Date: Sun, 19 Aug 2007 20:24:24 +0200
+User-Agent: KMail/1.9.6
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, jh@suse.cz
+References: <20070817163446.3e63f208@freepuppy.rosehill.hemminger.net> <200708182055.11277.ak@suse.de> <20070819010430.2c8c31fc@oldman.hemminger.net>
+In-Reply-To: <20070819010430.2c8c31fc@oldman.hemminger.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200708192024.24864.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Different types of ufs hold state in different places,
-to hide complexity of this, there is ufs_get_fs_state,
-it returns state according to "UFS_SB(sb)->s_flags",
-but during mount ufs_get_fs_state is called,
-before setting s_flags, this cause message for
-ufs types like sun ufs: "fs need fsck",
-and remount in readonly state.
 
-This patch depend on other patches that now in -mm branch.
+> I am looking at current source, built with current (non-experimental) GCC
+> from Fedora Core 7. If I dissassemble ether_setup, which is
+> 
+> void ether_setup(struct net_device *dev)
+> {
+> ...
+> 
+> 	memset(dev->broadcast, 0xFF, ETH_ALEN);
+> }
+> 
+> I see a tail recursion (jmp) to memset which is the code in arch/x86_64/lib/memset.S
 
+That is likely gcc then deciding it can't use an inline memset for some reason.
+It does that for example if it can't figure out the alignment or similar.
+Honza (cc'ed) can probably give you more details why it happens, especially if you
+give him a preprocessed self contained test case.
 
-Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
+A simple example like
+char x[6];
 
----
+f()
+{
+        memset(x, 1, 6);
+}
 
-Index: linux-2.6.23-rc3-git1/fs/ufs/super.c
-===================================================================
---- linux-2.6.23-rc3-git1.orig/fs/ufs/super.c
-+++ linux-2.6.23-rc3-git1/fs/ufs/super.c
-@@ -934,7 +934,7 @@ magic_found:
- 		flags |=  UFS_ST_SUN;
- 	}
- 
--
-+	sbi->s_flags = flags;/*after that line some functions use s_flags*/
- 	ufs_print_super_stuff(sb, usb1, usb2, usb3);
- 
- 	/*
-@@ -1065,8 +1065,6 @@ magic_found:
- 	    UFS_MOUNT_UFSTYPE_44BSD)
- 		uspi->s_maxsymlinklen =
- 		    fs32_to_cpu(sb, usb3->fs_un2.fs_44.fs_maxsymlinklen);
--	
--	sbi->s_flags = flags;
- 
- 	inode = iget(sb, UFS_ROOTINO);
- 	if (!inode || is_bad_inode(inode))
+gives with gcc 4.1:
 
--- 
-/Evgeniy
+        .text
+        .p2align 4,,15
+.globl f
+        .type   f, @function
+f:
+.LFB2:
+        movl    $16843009, x(%rip)
+        movw    $257, x+4(%rip)
+        ret
+.LFE2:
 
+-Andi
