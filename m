@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbXHSNHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbXHSNHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891AbXHSNHQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 09:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbXHSNHE
+	id S1755944AbXHSNHl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 09:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXHSNHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 09:07:04 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50806 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751845AbXHSNHC (ORCPT
+	Sun, 19 Aug 2007 09:07:08 -0400
+Received: from web52501.mail.re2.yahoo.com ([206.190.48.184]:33880 "HELO
+	web52501.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752577AbXHSNHG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 09:07:02 -0400
-Date: Sun, 19 Aug 2007 15:07:01 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Paolo Ornati <ornati@fastwebnet.it>
-cc: Benny Amorsen <benny+usenet@amorsen.dk>, linux-kernel@vger.kernel.org
-Subject: Re: variable length argument support (was: [OT] Re: The vi editor
- causes brain damage)
-In-Reply-To: <20070819143956.5d21aa7d@localhost>
-Message-ID: <Pine.LNX.4.64.0708191505170.6042@fbirervta.pbzchgretzou.qr>
-References: <964583.28477.qm@web52504.mail.re2.yahoo.com> <46C7EE0A.2030601@gmail.com>
- <20070819072135.GQ6002@1wt.eu> <m37inr1zae.fsf@ursa.amorsen.dk>
- <20070819143956.5d21aa7d@localhost>
+	Sun, 19 Aug 2007 09:07:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=rkfsX5VJQNtLOzQVRbsTbYUbngdUg93g+0i1DgSiVNXIDbQ9IDonytPnH1mSnOcKWdooeSxOIefJo4TzAqOmWFD6JAt1gJorw7ebxDLSKxKybUILDfYuyAmruY4spMWEsIp1ZpDbrdnycEc1/VPWuLl2yFnGOAO6SRKINQMMors=;
+X-YMail-OSG: .t1vNAsVM1mmdz_Wk1IXwBJ9ARaX1lywvr2f1G9lFZWZYSVoVBF54rySswoiakVXJK_KLVtpWR0nKBunO83iPH7KX2N01OA7dOcRiDiEcHGl7HdJqA--
+Date: Sun, 19 Aug 2007 06:07:04 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: The vi editor causes brain damage
+To: hotmetal@verizon.net
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200708190024.00910.hotmetal@verizon.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <128488.30208.qm@web52501.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Aug 19 2007 14:39, Paolo Ornati wrote:
->> WT> Under unix, the shell resolves "*" and passes the 10000 file names
->> WT> to the "rm" command. Now, execve() may fail because 10000 names in
->> WT> arguments can require too much memory. That's why find and xargs
->> WT> were invented!
->> 
->> It would be very handy if the argument memory space was expanded.
->> Many years ago I hit the limit regularly on Solaris, and going to
->> Linux with its comparatively large limit was a joy. Now it happens to
->> me quite often on Linux as well.
->> 
->
->done  :)
->
->commit b6a2fea39318e43fee84fa7b0b90d68bed92d2ba
->Author: Ollie Wild <aaw@google.com>
->Date:   Thu Jul 19 01:48:16 2007 -0700
->
->    mm: variable length argument support
->
->    Remove the arg+env limit of MAX_ARG_PAGES by copying the strings
->    directly from the old mm into the new mm.
+--- hotmetal@verizon.net wrote:
 
-Me wonders. Will that make the "checking for maximum length of command line
-arguments" from autotools run forever since execve() will not fail anymore?
+> On Sunday 19 August 2007, Marc Perkel wrote:
+> > > > Let me give you and example of 
+> <snip>
+> > > > brain damaged thinking
+> <snip>
+> > > > out here in the real world.
+> 
+> > I tried Peyote once about 25 years ago and it was
+> > fantastic.
+> 
+> Sounds like it hasn't worn off yet.
+
+Afreed.
 
 
+Marc Perkel
+Junk Email Filter dot com
+http://www.junkemailfilter.com
 
-	Jan
--- 
+
+       
+____________________________________________________________________________________
+Boardwalk for $500? In 2007? Ha! Play Monopoly Here and Now (it's updated for today's economy) at Yahoo! Games.
+http://get.games.yahoo.com/proddesc?gamekey=monopolyherenow  
