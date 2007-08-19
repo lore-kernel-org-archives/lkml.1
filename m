@@ -1,82 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbXHSPQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbXHSPRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755616AbXHSPQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 11:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbXHSPQr
+	id S1756828AbXHSPRg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 11:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbXHSPRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 11:16:47 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:6707 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753505AbXHSPQp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 11:16:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=EDEkTfJqRfx0Z3RLQbZtL8HJ9IK30lugplGFmtzWYjcldDA9aBb3S7uBofAmjiU67IJ2LO7Q6ELOwKB4jU5WCpclK6rrq71DS6LhViWtgZUUkg/V2fxGIcZ3j32jwxFGP8Z2TyQG335SsVmDRWpBb7dCHzt7WtA9+2SwNYz0Xb8=
-Message-ID: <46C85ED8.5080801@gmail.com>
-Date: Sun, 19 Aug 2007 17:16:40 +0200
-From: Maciek Rutecki <maciej.rutecki@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Linux-kernel <linux-kernel@vger.kernel.org>, htejun@gmail.com,
-       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org, rjw@sisk.pl
-Subject: Re: SATA error while resume
-References: <46C80999.1060700@gmail.com> <46C852DE.8040701@rtr.ca>
-In-Reply-To: <46C852DE.8040701@rtr.ca>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sun, 19 Aug 2007 11:17:24 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:52269 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756364AbXHSPRD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 11:17:03 -0400
+Date: Sun, 19 Aug 2007 19:19:50 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + proc-export-a-processes-resource-limits-via-proc-pid.patch added to -mm tree
+Message-ID: <20070819151950.GA7787@tv-sign.ru>
+References: <20070817222228.GA783@tv-sign.ru> <20070818115816.GA23555@hmsreliant.think-freely.org> <20070818125926.GA74@tv-sign.ru> <20070818185529.GA25372@hmsreliant.think-freely.org> <20070818190351.GA98@tv-sign.ru> <20070818232352.GA25994@hmsreliant.think-freely.org> <20070819085707.GB83@tv-sign.ru> <20070819130319.GA25178@hmsreliant.think-freely.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070819130319.GA25178@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord pisze:
-
+On 08/19, Neil Horman wrote:
+> Copy That
 > 
-> Looks like a bad sector in the swap partition.
-> You can probably repair it by using this sequence of commands:
-> 
-> swapoff /dev/sdX    <--- replace sdX with actual swap partition dev name
-> sync
-> cat /dev/zero > /dev/sdX
-> mkswap /dev/sdX
-> swapon /dev/sdX
-> 
-> If it recurs after doing that, then it's time for a new drive.
-> 
-> -ml
-> -
+> Currently, there exists no method for a process to query the resource
+> limits of another process.  They can be inferred via some mechanisms but
+> they cannot be explicitly determined.  Given that this information can be
+> usefull to know during the debugging of an application, I've written this
+> patch which exports all of a processes limits via /proc/<pid>/limits.
 
-rutek:/home/maciek# swapoff /dev/sda6
-rutek:/home/maciek# sync
-rutek:/home/maciek# cat /dev/zero > /dev/sda6
-cat: błąd zapisu: Błąd wejścia/wyjścia (write error, after few minutes,
-probably sda6 is full)
+Looks good, thanks.
 
-rutek:/home/maciek# dd if=/dev/zero of=/dev/sda6
-dd: zapis do `/dev/sda6': Błąd wejścia/wyjścia
-5992177+0 przeczytanych recordów
-5992176+0 zapisanych recordów
-skopiowane 3067994112 bajtów (3,1 GB), 298,159 sekund, 10,3 MB/s
-rutek:/home/maciek# mkswap /dev/sda6
-Setting up swapspace version 1, size = 3067990 kB
-no label, UUID=2061df6e-d385-4367-9a4c-c8431e57b73a
-rutek:/home/maciek# swapon /dev/sda6
-
-
-dmesg:
-Adding 2996080k swap on /dev/sda6.  Priority:-2 extents:1 across:2996080k
-
-Also I try:
-dd if==/dev/sda... of=/dev/null for all partitions
-Test disk with bios utility and smartctl. Use autotest (bash shared
-mapping and disktest). No errors/warnings. Only (sometimes) while system
-resume from suspend to disk. Disk 10 months old...
-
-Regards
--- 
-Maciej Rutecki
-http://www.unixy.pl
-
+Oleg.
 
