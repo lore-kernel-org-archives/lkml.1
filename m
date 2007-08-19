@@ -1,76 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbXHSW2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756016AbXHSWcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106AbXHSW2i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 18:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbXHSW2a
+	id S1756016AbXHSWcR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 18:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXHSWcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 18:28:30 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:59582 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751671AbXHSW22 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 18:28:28 -0400
-Date: Sun, 19 Aug 2007 15:34:22 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Joe Perches <joe@perches.com>
+	Sun, 19 Aug 2007 18:32:04 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1560 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750784AbXHSWcB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 18:32:01 -0400
+Subject: Re: [PATCH 4/5] Documentation/firmware/... convert #include
+	"linux/..." to #include <linux/...>
+From: Joe Perches <joe@perches.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
        Greg Kroah-Hartman <gregkh@suse.de>,
        Markus Rechberger <markus.rechberger@amd.com>
-Subject: Re: [PATCH 4/5] Documentation/firmware/... convert #include
- "linux/..." to #include <linux/...>
-Message-Id: <20070819153422.1e0b54af.randy.dunlap@oracle.com>
-In-Reply-To: <1187561972.4200.143.camel@localhost>
+In-Reply-To: <20070819153422.1e0b54af.randy.dunlap@oracle.com>
 References: <1187561972.4200.143.camel@localhost>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	 <20070819153422.1e0b54af.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Sun, 19 Aug 2007 15:31:57 -0700
+Message-Id: <1187562717.4200.154.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 19 Aug 2007 15:19:32 -0700 Joe Perches wrote:
+On Sun, 2007-08-19 at 15:34 -0700, Randy Dunlap wrote:
+> > -#include "linux/firmware.h"
+> > +#include "firmware.h"
+> I believe that it should be <linux/firmware.h>.
 
-> (untested)
-> 
-> There are several files that 
-> #include "linux/file" not #include <linux/file>
-> #include "asm/file" not #include <asm/file>
-> 
-> Here's a little script that converts them:
-> 
-> egrep -i -r -l --include=*.[ch] \
-> "^[[:space:]]*\#[[:space:]]*include[[:space:]]*\"(linux|asm)/(.*)\"" * \
-> | xargs sed -i -e 's/^[[:space:]]*#[[:space:]]*include[[:space:]]*"\(linux\|asm\)\/\(.*\)"/#include <\1\/\2>/g'
-> 
-> This one is probably wrong.
-> 
-> It should likely keep firmware.h in
-> the same directory as firmware.c
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/Documentation/firmware_class/firmware_sample_driver.c b/Documentation/firmware_class/firmware_sample_driver.c
-> index 6865cbe..754ded2 100644
-> --- a/Documentation/firmware_class/firmware_sample_driver.c
-> +++ b/Documentation/firmware_class/firmware_sample_driver.c
-> @@ -13,7 +13,7 @@
->  #include <linux/device.h>
->  #include <linux/string.h>
->  
-> -#include "linux/firmware.h"
-> +#include "firmware.h"
+OK.
 
-I believe that it should be <linux/firmware.h>.
+That's not my taste though, especially if only
+included by files in the firmware_class directory.
+Less pollution/namespace collision in include/linux
 
->  static struct device ghost_device = {
->  	.bus_id    = "ghost0",
+cheers,  Joe
 
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
