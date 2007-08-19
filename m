@@ -1,36 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbXHSSej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbXHSSlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756817AbXHSSej (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 14:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbXHSSe2
+	id S1756786AbXHSSlP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 14:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbXHSSlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 14:34:28 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60030 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754737AbXHSSe1 (ORCPT
+	Sun, 19 Aug 2007 14:41:04 -0400
+Received: from c-71-193-194-8.hsd1.or.comcast.net ([71.193.194.8]:34153 "EHLO
+	laptopd505.fenrus.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750991AbXHSSlB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 14:34:27 -0400
-Date: Sun, 19 Aug 2007 11:34:00 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Eric Preston <developer@linuxmontreal.com>
-Cc: Kevin E <kevin360@yahoo.com>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Marvell 88E8056 gigabit ethernet controller
-Message-ID: <20070819113400.12f5570c@localhost>
-In-Reply-To: <2456F7EB-000C-4B71-B002-64340DD17BA8@linuxmontreal.com>
-References: <20070818121714.GA28247@1wt.eu>
-	<283388.84897.qm@web38905.mail.mud.yahoo.com>
-	<20070819093221.4d3291e9@freepuppy.rosehill.hemminger.net>
-	<2456F7EB-000C-4B71-B002-64340DD17BA8@linuxmontreal.com>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 19 Aug 2007 14:41:01 -0400
+X-Greylist: delayed 3857 seconds by postgrey-1.27 at vger.kernel.org; Sun, 19 Aug 2007 14:41:01 EDT
+Subject: Re: The vi editor causes brain damage
+From: Arjan van de Ven <arjan@fenrus.demon.nl>
+To: Marc Perkel <mperkel@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <952949.96475.qm@web52503.mail.re2.yahoo.com>
+References: <952949.96475.qm@web52503.mail.re2.yahoo.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Sun, 19 Aug 2007 10:32:07 -0700
+Message-Id: <1187544727.19299.2.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.90 (2.11.90-1.fc8) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The driver prints some chip version info at startup, that might
-be helpful in disambiguating good/bad versions:
 
-	dmesg | grep sky2
+On Sun, 2007-08-19 at 06:22 -0700, Marc Perkel wrote:
+> The important point that you are missing here is that
+> the Linux world is willing to live with an rm command
+> that is broken and the Windows and DOS world isn't.
+
+no the important point is that you're an absolute horrible troll and are
+posting things to the ENTIRELY WRONG MAILING LIST. For some people who
+are new that happens sometimes as accident. You know better.
+
+So please take this elsewhere and try to have better judgement in the
+future as to what mailinglist you want to send your complaints to.
+
+
