@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbXHSHXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbXHSHaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754680AbXHSHXt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 03:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbXHSHXj
+	id S1754294AbXHSHaf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 03:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbXHSHa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 03:23:39 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55083
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750709AbXHSHXi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 03:23:38 -0400
-Date: Sun, 19 Aug 2007 00:23:37 -0700 (PDT)
-Message-Id: <20070819.002337.06589160.davem@davemloft.net>
-To: sean.hefty@intel.com
-Cc: rdreier@cisco.com, jeff@garzik.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP
- portsfrom the host TCP port space.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <000001c7e22e$b7b90f00$29c8180a@amr.corp.intel.com>
-References: <adatzqxwh56.fsf@cisco.com>
-	<20070817.234405.66176298.davem@davemloft.net>
-	<000001c7e22e$b7b90f00$29c8180a@amr.corp.intel.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Sun, 19 Aug 2007 03:30:26 -0400
+Received: from 1wt.eu ([62.212.114.60]:1744 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751347AbXHSHaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 03:30:25 -0400
+Date: Sun, 19 Aug 2007 09:21:36 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Marc Perkel <mperkel@yahoo.com>, linux-kernel@vger.kernel.org
+Subject: [OT] Re: The vi editor causes brain damage
+Message-ID: <20070819072135.GQ6002@1wt.eu>
+References: <964583.28477.qm@web52504.mail.re2.yahoo.com> <46C7EE0A.2030601@gmail.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C7EE0A.2030601@gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Sean Hefty" <sean.hefty@intel.com>
-Date: Sun, 19 Aug 2007 00:01:07 -0700
+On Sun, Aug 19, 2007 at 09:15:22AM +0200, Jiri Slaby wrote:
+> Marc Perkel napsal(a):
+> > Let me give you and example of the difference between
+> > Linux open source world brain damaged thinking and
+> > what it's like out here in the real world.
+> > 
+> > Go to a directory with 10k files and type:
+> > 
+> > rm *
+> > 
+> > What do you get?
+> > 
+> > /bin/rm: Argument list too long
+> 
+> What does this have to do with rm command?
 
-> Millions of Infiniband ports are in operation today.  Over 25% of the top 500
-> supercomputers use Infiniband.  The formation of the OpenFabrics Alliance was
-> pushed and has been continuously funded by an RDMA customer - the US National
-> Labs.  RDMA technologies are backed by Cisco, IBM, Intel, QLogic, Sun, Voltaire,
-> Mellanox, NetApp, AMD, Dell, HP, Oracle, Unisys, Emulex, Hitachi, NEC, Fujitsu,
-> LSI, SGI, Sandia, and at least two dozen other companies.  IDC expects
-> Infiniband adapter revenue to triple between 2006 and 2011, and switch revenue
-> to increase six-fold (combined revenues of 1 billion).
+Nothing, and no more with linux development. Marc confuses shell and rm.
+Under DOS, when he types "del *", the shell calls the builtin function
+"del" and passes it only one argument "*". The del function is then
+responsible for iterating through the files using getfirst/getnext.
 
-Scale these numbers with reality and usage.
+This is also why mostly only builtin shell commands support "*", while
+most external commands do not support it, since they have to re-implement
+the same code to iterate through the files (try "debug c*.com", it will
+not work).
 
-These vendors pour in huge amounts of money into a relatively small
-number of extremely large cluster installations.  Besides the folks
-doing nuke and whole-earth simulations at some government lab, nobody
-cares.  And part of the investment is not being done wholly for smart
-economic reasons, but also largely publicity purposes.
+Under unix, the shell resolves "*" and passes the 10000 file names to
+the "rm" command. Now, execve() may fail because 10000 names in arguments
+can require too much memory. That's why find and xargs were invented!
 
-So present your great Infiniband numbers with that being admitted up
-front, ok?
+The solution is easy : find . -maxdepth 1 | xargs rm
 
-It's relevance to Linux as a general purpose operating system that
-should be "good enough" for %99 of the world is close to NIL.
+So this has nothing to do with rm, nor with rm being open-source, and
+even less with rm being written with vi, and Marc's rant is totally
+wrong and off-topic. Maybe he was drunk when posting, or maybe someone
+used his keyboard to make him look like a complete fool. Or maybe he
+really is.
 
-People have been pouring tons of money and research into doing stupid
-things to make clusters go fast, and in such a way that make zero
-sense for general purpose operating systems, for ages.  RDMA is just
-one such example.
+Willy
+(please do not follow up on this OT thread, responses to /dev/null)
 
-BTW, I find it ironic that you mention memory bandwidth as a retort,
-as Roland's favorite stateless offload devil, TSO, deals explicity
-with lowering the per-packet BUS bandwidth usage of TCP.  LRO
-offloading does likewise.
