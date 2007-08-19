@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757192AbXHSWdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbXHSWgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757192AbXHSWdw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 18:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756808AbXHSWdk
+	id S1756807AbXHSWgo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 18:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbXHSWgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 18:33:40 -0400
-Received: from mx1.suse.de ([195.135.220.2]:50517 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751536AbXHSWdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 18:33:39 -0400
-To: "Felix Marti" <felix@chelsio.com>
-Cc: "David Miller" <davem@davemloft.net>, jeff@garzik.org,
-       netdev@vger.kernel.org, rdreier@cisco.com, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
-References: <000001c7e22e$b7b90f00$29c8180a@amr.corp.intel.com>
-	<20070819.002337.06589160.davem@davemloft.net>
-	<8A71B368A89016469F72CD08050AD334018E208F@maui.asicdesigners.com>
-	<20070819.123212.13769462.davem@davemloft.net>
-	<8A71B368A89016469F72CD08050AD334018E209C@maui.asicdesigners.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 20 Aug 2007 01:27:35 +0200
-In-Reply-To: <8A71B368A89016469F72CD08050AD334018E209C@maui.asicdesigners.com>
-Message-ID: <p73hcmv14wo.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 19 Aug 2007 18:36:36 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:57628 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752248AbXHSWgf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 18:36:35 -0400
+Date: Sun, 19 Aug 2007 15:41:46 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Joe Perches <joe@perches.com>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Markus Rechberger <markus.rechberger@amd.com>
+Subject: Re: [PATCH 4/5] Documentation/firmware/... convert #include
+ "linux/..." to #include <linux/...>
+Message-Id: <20070819154146.337bf347.randy.dunlap@oracle.com>
+In-Reply-To: <1187562717.4200.154.camel@localhost>
+References: <1187561972.4200.143.camel@localhost>
+	<20070819153422.1e0b54af.randy.dunlap@oracle.com>
+	<1187562717.4200.154.camel@localhost>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Felix Marti" <felix@chelsio.com> writes:
+On Sun, 19 Aug 2007 15:31:57 -0700 Joe Perches wrote:
 
-> what benefits does the TSO infrastructure give the
-> non-TSO capable devices?
+> On Sun, 2007-08-19 at 15:34 -0700, Randy Dunlap wrote:
+> > > -#include "linux/firmware.h"
+> > > +#include "firmware.h"
+> > I believe that it should be <linux/firmware.h>.
+> 
+> OK.
+> 
+> That's not my taste though, especially if only
+> included by files in the firmware_class directory.
+> Less pollution/namespace collision in include/linux
 
-It improves performance on software queueing devices between guests
-and hypervisors. This is a more and more important application these
-days.  Even when the system running the Hypervisor has a non TSO
-capable device in the end it'll still save CPU cycles this way. Right now
-virtualized IO tends to much more CPU intensive than direct IO so any
-help it can get is beneficial.
+It's not only included in that directory.
+I find it included in 88 source files throughout the kernel tree.
 
-It also makes loopback faster, although given that's probably not that
-useful.
-
-And a lot of the "TSO infrastructure" was needed for zero copy TX anyways,
-which benefits most reasonable modern NICs (anything with hardware 
-checksumming)
-
--Andi
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
