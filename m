@@ -1,131 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbXHSOz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbXHSPGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755824AbXHSOz2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 10:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbXHSOzS
+	id S1755742AbXHSPGe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 11:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbXHSPGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 10:55:18 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:21676 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753513AbXHSOzQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 10:55:16 -0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-To: bzolnier@gmail.com
-Subject: [PATCH 2/2] pdc202xx_new: switch to using pci_get_slot() (take 2)
-Date: Sun, 19 Aug 2007 18:57:40 +0400
-User-Agent: KMail/1.5
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	Sun, 19 Aug 2007 11:06:25 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:40069 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751255AbXHSPGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 11:06:24 -0400
+Date: Sun, 19 Aug 2007 19:08:22 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Daniel Pittman <daniel@rimspace.net>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Kirill Korotaev <dev@sw.ru>,
+       Pavel Emelyanov <xemul@sw.ru>, Roland McGrath <roland@redhat.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Cc: containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: [RFC,PATCH] fix /sbin/init signal handling
+Message-ID: <20070819150822.GA7772@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200708191857.40309.sshtylyov@ru.mvista.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Switch to using pci_get_slot() in init_setup_pdc20270() to get to the mate chip
-behind DC21150 bridge as there's no need for the driver itself to walk the list
-of the PCI devices (and the driver didn't check the bus # of the found device).
-While at it, make it emit warning about IRQ # being fixed up (just like hpt366.c
-does) and "beautify" this whole function as well as init_setup_pdc20276()...
+(Not for inclusion yet, against 2.6.23-rc2, untested)
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Currently, /sbin/init is protected from unhandled signals by the
+"current == child_reaper(current)" check in get_signal_to_deliver().
+This is not enough, we have multiple problems:
 
----
-This patch is against the current Linus' tree, it has only been compile tested
-since I do not have PDC2027x chips and even less so the fancy RAID card based
-on i960 CPU or having DC21150 PCI bridge, so testing is desirable  if anybody
-has such stuff. :-)
-This version of patch makes sure that both PCI devices behind the i960 CPU have
-the same vendor/device ID.  I'm CCing LKML for a wider tester audience...
+	- this doesn't work for multi-threaded inits, and we can't
+	  fix this by simply making this check group-wide.
 
- drivers/ide/pci/pdc202xx_new.c |   60 +++++++++++++++++++++++------------------
- 1 files changed, 34 insertions(+), 26 deletions(-)
+	- /sbin/init and kernel threads are not protected from
+	  handle_stop_signal(). Minor problem, but not good and
+	  allows to "steal" SIGCONT or change ->signal->flags.
 
-Index: linux-2.6/drivers/ide/pci/pdc202xx_new.c
-===================================================================
---- linux-2.6.orig/drivers/ide/pci/pdc202xx_new.c
-+++ linux-2.6/drivers/ide/pci/pdc202xx_new.c
-@@ -518,44 +518,52 @@ static int __devinit init_setup_pdcnew(s
- 	return ide_setup_pci_device(dev, d);
+	- /sbin/init is not protected from __group_complete_signal(),
+	  sig_fatal() can set SIGNAL_GROUP_EXIT and block exec(), kill
+	  sub-threads, set ->group_stop_count, etc.
+
+Also, with support for multiple pid namespaces, we need an ability to
+actually kill the sub-namespace's init from the parent namespace. In
+this case it is not possible (without painful and intrusive changes)
+to make the "should we honor this signal" decision on the receiver's
+side.
+
+Hopefully this patch (adds 43 bytes to kernel/signal.o) can solve
+these problems.
+
+Notes:
+
+	- Blocked signals are never ignored, so init still can receive
+	  a pending blocked signal after sigprocmask(SIG_UNBLOCK).
+	  Easy to fix, but probably we can ignore this issue.
+
+	- this patch allows us to simplify de_thread() playing games
+	  with pid_ns->child_reaper.
+
+(Side note: the current behaviour of things like force_sig_info_fault()
+ is not very good, init should not ignore these signals and go to the
+ endless loop. Exit + panic is imho better, easy to chamge)
+
+Oleg.
+
+--- t/kernel/signal.c~INITSIGS	2007-08-19 14:39:35.000000000 +0400
++++ t/kernel/signal.c	2007-08-19 19:00:27.000000000 +0400
+@@ -39,11 +39,35 @@
+ 
+ static struct kmem_cache *sigqueue_cachep;
+ 
++static int sig_init_ignore(struct task_struct *tsk)
++{
++	// Currently this check is a bit racy with exec(),
++	// we can _simplify_ de_thread and close the race.
++	if (likely(!is_init(tsk->group_leader)))
++		return 0;
++
++	// ---------------- Multiple pid namespaces ----------------
++	// if (current is from tsk's parent pid_ns && !in_interrupt())
++	//	return 0;
++
++	return 1;
++}
++
++static int sig_task_ignore(struct task_struct *tsk, int sig)
++{
++	void __user * handler = tsk->sighand->action[sig-1].sa.sa_handler;
++
++	if (handler == SIG_IGN)
++		return 1;
++
++	if (handler != SIG_DFL)
++		return 0;
++
++	return sig_kernel_ignore(sig) || sig_init_ignore(tsk);
++}
+ 
+ static int sig_ignored(struct task_struct *t, int sig)
+ {
+-	void __user * handler;
+-
+ 	/*
+ 	 * Tracers always want to know about signals..
+ 	 */
+@@ -58,10 +82,7 @@ static int sig_ignored(struct task_struc
+ 	if (sigismember(&t->blocked, sig))
+ 		return 0;
+ 
+-	/* Is it explicitly or implicitly ignored? */
+-	handler = t->sighand->action[sig-1].sa.sa_handler;
+-	return   handler == SIG_IGN ||
+-		(handler == SIG_DFL && sig_kernel_ignore(sig));
++	return sig_task_ignore(t, sig);
  }
  
--static int __devinit init_setup_pdc20270(struct pci_dev *dev,
--					 ide_pci_device_t *d)
-+static int __devinit init_setup_pdc20270(struct pci_dev *dev, ide_pci_device_t *d)
- {
--	struct pci_dev *findev;
--	int ret;
-+	struct pci_dev *bridge = dev->bus->self;
-+
-+	if (bridge != NULL &&
-+	    bridge->vendor == PCI_VENDOR_ID_DEC &&
-+	    bridge->device == PCI_DEVICE_ID_DEC_21150) {
-+		struct pci_dev *dev2;
+ /*
+@@ -569,6 +590,9 @@ static void handle_stop_signal(int sig, 
+ 		 */
+ 		return;
  
--	if ((dev->bus->self &&
--	     dev->bus->self->vendor == PCI_VENDOR_ID_DEC) &&
--	    (dev->bus->self->device == PCI_DEVICE_ID_DEC_21150)) {
- 		if (PCI_SLOT(dev->devfn) & 2)
- 			return -ENODEV;
++	if (sig_init_ignore(p))
++		return;
++
+ 	if (sig_kernel_stop(sig)) {
+ 		/*
+ 		 * This is a stop signal.  Remove SIGCONT from all queues.
+@@ -1841,14 +1865,6 @@ relock:
+ 		if (sig_kernel_ignore(signr)) /* Default is nothing. */
+ 			continue;
  
--		while ((findev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, findev)) != NULL) {
--			if ((findev->vendor == dev->vendor) &&
--			    (findev->device == dev->device) &&
--			    (PCI_SLOT(findev->devfn) & 2)) {
--				if (findev->irq != dev->irq) {
--					findev->irq = dev->irq;
--				}
--				ret = ide_setup_pci_devices(dev, findev, d);
--				if (ret < 0)
--					pci_dev_put(findev);
--				return ret;
-+		dev2 = pci_get_slot(dev->bus, PCI_DEVFN(PCI_SLOT(dev->devfn) + 2,
-+							PCI_FUNC(dev->devfn)));
-+		if (dev2 != NULL &&
-+		    dev2->vendor == dev->vendor &&
-+		    dev2->device == dev->device) {
-+			int ret;
-+
-+			if (dev2->irq != dev->irq) {
-+				dev2->irq = dev->irq;
-+
-+				printk(KERN_WARNING "%s: PCI config space "
-+				       "interrupt fixed.\n", d->name);
- 			}
-+
-+			ret = ide_setup_pci_devices(dev, dev2, d);
-+			if (ret < 0)
-+				pci_dev_put(dev2);
-+			return ret;
- 		}
+-		/*
+-		 * Init of a pid space gets no signals it doesn't want from
+-		 * within that pid space. It can of course get signals from
+-		 * its parent pid space.
+-		 */
+-		if (current == child_reaper(current))
+-			continue;
+-
+ 		if (sig_kernel_stop(signr)) {
+ 			/*
+ 			 * The default action is to stop all threads in
+@@ -2300,13 +2316,10 @@ int do_sigaction(int sig, struct k_sigac
+ 	k = &current->sighand->action[sig-1];
+ 
+ 	spin_lock_irq(&current->sighand->siglock);
+-	if (signal_pending(current)) {
+-		/*
+-		 * If there might be a fatal signal pending on multiple
+-		 * threads, make sure we take it before changing the action.
+-		 */
++	if (current->signal->flags & SIGNAL_GROUP_EXIT) {
+ 		spin_unlock_irq(&current->sighand->siglock);
+-		return -ERESTARTNOINTR;
++		/* The return value doesn't matter, SIGKILL is pending */
++		return -EINTR;
  	}
- 	return ide_setup_pci_device(dev, d);
- }
  
--static int __devinit init_setup_pdc20276(struct pci_dev *dev,
--					 ide_pci_device_t *d)
-+static int __devinit init_setup_pdc20276(struct pci_dev *dev, ide_pci_device_t *d)
- {
--	if ((dev->bus->self) &&
--	    (dev->bus->self->vendor == PCI_VENDOR_ID_INTEL) &&
--	    ((dev->bus->self->device == PCI_DEVICE_ID_INTEL_I960) ||
--	     (dev->bus->self->device == PCI_DEVICE_ID_INTEL_I960RM))) {
--		printk(KERN_INFO "ide: Skipping Promise PDC20276 "
--			"attached to I2O RAID controller.\n");
-+	struct pci_dev *bridge = dev->bus->self;
-+
-+	if (bridge != NULL &&
-+	    bridge->vendor == PCI_VENDOR_ID_INTEL &&
-+	   (bridge->device == PCI_DEVICE_ID_INTEL_I960 ||
-+	    bridge->device == PCI_DEVICE_ID_INTEL_I960RM)) {
-+
-+		printk(KERN_INFO "%s: attached to I2O RAID controller, "
-+				 "skipping.\n", d->name);
- 		return -ENODEV;
- 	}
- 	return ide_setup_pci_device(dev, d);
+ 	if (oact)
+@@ -2327,8 +2340,7 @@ int do_sigaction(int sig, struct k_sigac
+ 		 *   (for example, SIGCHLD), shall cause the pending signal to
+ 		 *   be discarded, whether or not it is blocked"
+ 		 */
+-		if (act->sa.sa_handler == SIG_IGN ||
+-		   (act->sa.sa_handler == SIG_DFL && sig_kernel_ignore(sig))) {
++		if (sig_task_ignore(current, sig)) {
+ 			struct task_struct *t = current;
+ 			sigemptyset(&mask);
+ 			sigaddset(&mask, sig);
 
