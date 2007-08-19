@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbXHSWqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbXHSWth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757189AbXHSWqQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 18:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbXHSWqE
+	id S1755883AbXHSWth (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 18:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbXHSWt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 18:46:04 -0400
-Received: from server2.corp.notserp.com ([64.71.152.20]:1613 "EHLO
-	server2.corp.notserp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbXHSWqC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 18:46:02 -0400
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <522E9EF6-9A3A-464A-9CE8-C5D263A08B43@linuxmontreal.com>
-Reply-To: netdev@vger.kernel.org
+	Sun, 19 Aug 2007 18:49:29 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1595 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750784AbXHSWt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 18:49:28 -0400
+Subject: Re: convert #include "linux/..." to #include <linux/...> [PATCH]s
+	follow
+From: Joe Perches <joe@perches.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <20070819224425.GU21089@ftp.linux.org.uk>
+References: <1187561864.4200.136.camel@localhost>
+	 <Pine.LNX.4.64.0708200031560.19577@fbirervta.pbzchgretzou.qr>
+	 <20070819224425.GU21089@ftp.linux.org.uk>
+Content-Type: text/plain
+Date: Sun, 19 Aug 2007 15:49:16 -0700
+Message-Id: <1187563756.4200.167.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-From: Eric Preston <developer@linuxmontreal.com>
-Subject: Re: Marvell 88E8056 gigabit ethernet controller 
-Date: Sun, 19 Aug 2007 18:45:55 -0400
-To: linux-kernel@vger.kernel.org
-X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2007-08-19 at 23:44 +0100, Al Viro wrote:
+> Except that some instances are legitimate (e.g. there was a bunch in
+> arch/um, IIRC)...
 
- > The working board has a different version of the Marvell chip:
+I guess it's a good thing that vger seems to have rejected
+that 140KB patch I sent against arch/um and include/asm-um.
 
- > $ grep Marvell working-MB
- > 04:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8056  
-PCI-E Gigabit Ethernet Controller (rev 14)
- > $ grep Marvell broken-MB
- > 04:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8056  
-PCI-E Gigabit Ethernet Controller (rev 12)
-
-Just to add a bit more information, I've just build up a GA-965P-DS3  
-with a Q6600 and the onboard Marvell doesn't seem to be working  
-either with 2.6.21.3, 2.6.23-rc3 or a recent gentoo-sources kernel.
-
-$ grep Marvell lspci
-03:00.0 Ethernet controller: Marvell Technology Group Ltd. Unknown  
-device 4364 (rev 12)
-
-I've attached the lspci -vvv. I haven't had a chance to do much  
-investigation since I just threw an 10/100 in for the time being. Let  
-me know if I can provide any assistance in diagnosing or testing.
-
--E
-
----
-Eric Preston, RHCA, RHCSS, RHCE
-Open Source Software Consultant // Administrator, Developer, Trainer
-514-312-7072
+cheers, Joe
 
