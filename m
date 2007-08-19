@@ -1,98 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751672AbXHSHPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbXHSHPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751672AbXHSHPd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 03:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbXHSHPN
+	id S1754503AbXHSHPq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 03:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbXHSHPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 03:15:13 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:53639 "HELO ustc.edu.cn"
+	Sun, 19 Aug 2007 03:15:14 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:53640 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1753435AbXHSHOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753403AbXHSHOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 19 Aug 2007 03:14:49 -0400
-Message-ID: <387507685.70616@ustc.edu.cn>
+Message-ID: <387507684.32383@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070819071444.629894251@mail.ustc.edu.cn>
-References: <20070819065349.160284305@mail.ustc.edu.cn>
+Message-Id: <20070819065349.160284305@mail.ustc.edu.cn>
 User-Agent: quilt/0.46-1
-Date: Sun, 19 Aug 2007 14:53:51 +0800
+Date: Sun, 19 Aug 2007 14:53:49 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
-Cc: Ken Chen <kenchen@google.com>, Anton Altaparmakov <aia21@cantab.net>,
-       Andrew Morton <akpm@linux-foundation.org>
+Cc: Ken Chen <kenchen@google.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/6] writeback: fix ntfs with sb_has_dirty_inodes()
-Content-Disposition: inline; filename=nfs-dirty-inodes.patch
+Subject: [PATCH 0/6] dirty inode lists time delay/ordering fixes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NTFS's if-condition on dirty inodes is not complete.
-Fix it with sb_has_dirty_inodes().
+Andrew,
 
-Cc: Anton Altaparmakov <aia21@cantab.net>
-Cc: Ken Chen <kenchen@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
----
----
- fs/fs-writeback.c  |   10 +++++++++-
- fs/ntfs/super.c    |    4 ++--
- include/linux/fs.h |    1 +
- 3 files changed, 12 insertions(+), 3 deletions(-)
+Four bug fixes on the dirty inode lists :-)
 
---- linux-2.6.23-rc2-mm2.orig/fs/ntfs/super.c
-+++ linux-2.6.23-rc2-mm2/fs/ntfs/super.c
-@@ -2381,14 +2381,14 @@ static void ntfs_put_super(struct super_
- 	 */
- 	ntfs_commit_inode(vol->mft_ino);
- 	write_inode_now(vol->mft_ino, 1);
--	if (!list_empty(&sb->s_dirty)) {
-+	if (sb_has_dirty_inodes(sb)) {
- 		const char *s1, *s2;
- 
- 		mutex_lock(&vol->mft_ino->i_mutex);
- 		truncate_inode_pages(vol->mft_ino->i_mapping, 0);
- 		mutex_unlock(&vol->mft_ino->i_mutex);
- 		write_inode_now(vol->mft_ino, 1);
--		if (!list_empty(&sb->s_dirty)) {
-+		if (sb_has_dirty_inodes(sb)) {
- 			static const char *_s1 = "inodes";
- 			static const char *_s2 = "";
- 			s1 = _s1;
---- linux-2.6.23-rc2-mm2.orig/include/linux/fs.h
-+++ linux-2.6.23-rc2-mm2/include/linux/fs.h
-@@ -1712,6 +1712,7 @@ extern int bdev_read_only(struct block_d
- extern int set_blocksize(struct block_device *, int);
- extern int sb_set_blocksize(struct super_block *, int);
- extern int sb_min_blocksize(struct super_block *, int);
-+extern int sb_has_dirty_inodes(struct super_block *);
- 
- extern int generic_file_mmap(struct file *, struct vm_area_struct *);
- extern int generic_file_readonly_mmap(struct file *, struct vm_area_struct *);
---- linux-2.6.23-rc2-mm2.orig/fs/fs-writeback.c
-+++ linux-2.6.23-rc2-mm2/fs/fs-writeback.c
-@@ -198,6 +198,14 @@ static void queue_io(struct super_block 
- 	move_expired_inodes(&sb->s_dirty, &sb->s_io, older_than_this);
- }
- 
-+int sb_has_dirty_inodes(struct super_block *sb)
-+{
-+	return !list_empty(&sb->s_dirty) ||
-+	       !list_empty(&sb->s_io) ||
-+	       !list_empty(&sb->s_more_io);
-+}
-+EXPORT_SYMBOL(sb_has_dirty_inodes);
-+
- /*
-  * Write a single inode's dirty pages and inode data out to disk.
-  * If `wait' is set, wait on the writeout.
-@@ -497,7 +505,7 @@ writeback_inodes(struct writeback_contro
- restart:
- 	sb = sb_entry(super_blocks.prev);
- 	for (; sb != sb_entry(&super_blocks); sb = sb_entry(sb->s_list.prev)) {
--		if (!list_empty(&sb->s_dirty) || !list_empty(&sb->s_io)) {
-+		if (sb_has_dirty_inodes(sb)) {
- 			/* we're making our own get_super here */
- 			sb->s_count++;
- 			spin_unlock(&sb_lock);
+They can be put immediately after the patch file named
+writeback-fix-periodic-superblock-dirty-inode-flushing.patch:
 
+[PATCH 1/6] writeback: fix time ordering of the per superblock inode lists 8
+[PATCH 2/6] writeback: fix ntfs with sb_has_dirty_inodes()
+[PATCH 3/6] writeback: remove pages_skipped accounting in __block_write_full_page()
+[PATCH 4/6] writeback: introduce writeback_control.more_io to indicate more io
+
+Also the check_dirty_inode_list.patch should be updated in place:
+[PATCH 5/6] check dirty inode list
+
+And this one is required to avoid warnings from the above debug patch:
+[PATCH 6/6] prevent time-ordering warnings
+
+Although not yet tested in highly parallel write workloads, I'm pretty sure
+that the time ordering bug is gone :)
+
+Thank you,
+Fengguang
 -- 
