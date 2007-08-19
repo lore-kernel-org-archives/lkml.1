@@ -1,50 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbXHSHOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751672AbXHSHPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752938AbXHSHOi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 03:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbXHSHO3
+	id S1751672AbXHSHPd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 03:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbXHSHPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 03:14:29 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:25697 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750967AbXHSHO3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 03:14:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=GziO4UyLJdlmycgw9pHoCOvvjn+GVJycgQkgbiDDRhhSVAgAGPmKJDY+U9/MNZkfdj2JZzZKCeupD4xExE2sPFJzsYlKB30Mv4F848zAfbQSBqmMgAYC3P1ZLHkochboyakEBtHOFkaHgB3an1eUbzSBfcK1RwS9QC1Ama2IrBk=
-Message-ID: <46C7EE0A.2030601@gmail.com>
-Date: Sun, 19 Aug 2007 09:15:22 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Marc Perkel <mperkel@yahoo.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: The vi editor causes brain damage
-References: <964583.28477.qm@web52504.mail.re2.yahoo.com>
-In-Reply-To: <964583.28477.qm@web52504.mail.re2.yahoo.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 19 Aug 2007 03:15:13 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:53639 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753435AbXHSHOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 03:14:49 -0400
+Message-ID: <387507685.70616@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Message-Id: <20070819071444.629894251@mail.ustc.edu.cn>
+References: <20070819065349.160284305@mail.ustc.edu.cn>
+User-Agent: quilt/0.46-1
+Date: Sun, 19 Aug 2007 14:53:51 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Ken Chen <kenchen@google.com>, Anton Altaparmakov <aia21@cantab.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/6] writeback: fix ntfs with sb_has_dirty_inodes()
+Content-Disposition: inline; filename=nfs-dirty-inodes.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marc Perkel napsal(a):
-> Let me give you and example of the difference between
-> Linux open source world brain damaged thinking and
-> what it's like out here in the real world.
-> 
-> Go to a directory with 10k files and type:
-> 
-> rm *
-> 
-> What do you get?
-> 
-> /bin/rm: Argument list too long
+NTFS's if-condition on dirty inodes is not complete.
+Fix it with sb_has_dirty_inodes().
 
-What does this have to do with rm command?
+Cc: Anton Altaparmakov <aia21@cantab.net>
+Cc: Ken Chen <kenchen@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+---
+ fs/fs-writeback.c  |   10 +++++++++-
+ fs/ntfs/super.c    |    4 ++--
+ include/linux/fs.h |    1 +
+ 3 files changed, 12 insertions(+), 3 deletions(-)
+
+--- linux-2.6.23-rc2-mm2.orig/fs/ntfs/super.c
++++ linux-2.6.23-rc2-mm2/fs/ntfs/super.c
+@@ -2381,14 +2381,14 @@ static void ntfs_put_super(struct super_
+ 	 */
+ 	ntfs_commit_inode(vol->mft_ino);
+ 	write_inode_now(vol->mft_ino, 1);
+-	if (!list_empty(&sb->s_dirty)) {
++	if (sb_has_dirty_inodes(sb)) {
+ 		const char *s1, *s2;
+ 
+ 		mutex_lock(&vol->mft_ino->i_mutex);
+ 		truncate_inode_pages(vol->mft_ino->i_mapping, 0);
+ 		mutex_unlock(&vol->mft_ino->i_mutex);
+ 		write_inode_now(vol->mft_ino, 1);
+-		if (!list_empty(&sb->s_dirty)) {
++		if (sb_has_dirty_inodes(sb)) {
+ 			static const char *_s1 = "inodes";
+ 			static const char *_s2 = "";
+ 			s1 = _s1;
+--- linux-2.6.23-rc2-mm2.orig/include/linux/fs.h
++++ linux-2.6.23-rc2-mm2/include/linux/fs.h
+@@ -1712,6 +1712,7 @@ extern int bdev_read_only(struct block_d
+ extern int set_blocksize(struct block_device *, int);
+ extern int sb_set_blocksize(struct super_block *, int);
+ extern int sb_min_blocksize(struct super_block *, int);
++extern int sb_has_dirty_inodes(struct super_block *);
+ 
+ extern int generic_file_mmap(struct file *, struct vm_area_struct *);
+ extern int generic_file_readonly_mmap(struct file *, struct vm_area_struct *);
+--- linux-2.6.23-rc2-mm2.orig/fs/fs-writeback.c
++++ linux-2.6.23-rc2-mm2/fs/fs-writeback.c
+@@ -198,6 +198,14 @@ static void queue_io(struct super_block 
+ 	move_expired_inodes(&sb->s_dirty, &sb->s_io, older_than_this);
+ }
+ 
++int sb_has_dirty_inodes(struct super_block *sb)
++{
++	return !list_empty(&sb->s_dirty) ||
++	       !list_empty(&sb->s_io) ||
++	       !list_empty(&sb->s_more_io);
++}
++EXPORT_SYMBOL(sb_has_dirty_inodes);
++
+ /*
+  * Write a single inode's dirty pages and inode data out to disk.
+  * If `wait' is set, wait on the writeout.
+@@ -497,7 +505,7 @@ writeback_inodes(struct writeback_contro
+ restart:
+ 	sb = sb_entry(super_blocks.prev);
+ 	for (; sb != sb_entry(&super_blocks); sb = sb_entry(sb->s_list.prev)) {
+-		if (!list_empty(&sb->s_dirty) || !list_empty(&sb->s_io)) {
++		if (sb_has_dirty_inodes(sb)) {
+ 			/* we're making our own get_super here */
+ 			sb->s_count++;
+ 			spin_unlock(&sb_lock);
 
 -- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
