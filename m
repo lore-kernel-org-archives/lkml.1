@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbXHSUcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758151AbXHSUd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757505AbXHSUcA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 16:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbXHSUbs
+	id S1758151AbXHSUd0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 16:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757890AbXHSUdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 16:31:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35800 "EHLO mx1.redhat.com"
+	Sun, 19 Aug 2007 16:33:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36513 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754528AbXHSUbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 16:31:46 -0400
+	id S1758787AbXHSUdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 16:33:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: CONFIG_SUSPEND and power consumption
+Date: Sun, 19 Aug 2007 22:42:43 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <20070819153259.2c96b904@hyperion.delvare>
+In-Reply-To: <20070819153259.2c96b904@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC,PATCH 5/5] exec: RT sub-thread can livelock and monopolize CPU on exec
-In-Reply-To: Oleg Nesterov's message of  Monday, 20 August 2007 00:10:12 +0400 <20070819201012.GA113@tv-sign.ru>
-X-Shopping-List: (1) Tempestuous chimerical prescriptions
-   (2) Egregious nougat
-   (3) Mutant configurations
-Message-Id: <20070819203112.8553A4D058C@magilla.localdomain>
-Date: Sun, 19 Aug 2007 13:31:12 -0700 (PDT)
+Content-Disposition: inline
+Message-Id: <200708192242.43819.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ? This becomes a busy-wait loop if the leader sleeps, wait_task_inactive()
-> doesn't sleep/yield in this case. Not good.
+Hi,
 
-Ah, I see.  Yes, you're right, that will not fly.  (I was thinking of the
-apparently forthcoming wait_task_inactive change to avoid yield, but that
-will still busy-wait in fact.)
-
-> This means we should put something in exit_notify(), like this patch does.
-> It could be simplified a bit, we don't in fact need a negative ->notify_count,
-> we can tolerate a false wakeup. We can even skip the "thread_group_leader()"
-> check for the same reason.
+On Sunday, 19 August 2007 15:32, Jean Delvare wrote:
+> Hi all, hi Rafael,
 > 
-> (Of course, we can also add wait_queue_head_t to ->signal, but I don't think
->  you have this in mind).
+> Running kernel 2.6.23-rc3-git1, I noticed yesterday that my CPU (AMD
+> Sempron 2600+) was running at a much lower temperature when
+> CONFIG_SUSPEND was enabled.
 
-I had in mind unifying this need with what's now done by the notify_count
-check that's in __exit_signal.  Aside from those BUG_ON's, I'm not sure
-de_thread really cares whether the other non-leader threads are finished
-self reaping, or only if they are dead.  Adding some field to signal_struct
-for this new mechanism is certainly fine if it goes along with removing a
-word or two from task_struct (notify_count, group_exit_task).  (The single
-other use overloaded on group_exit_task is for a similar need in the
-pre-coredump synchronization.  So maybe that can be done more cleanly too.)
-Any new field could be kept to a single pointer; since it's only needed
-while one given thread is blocking, it can point to something larger on its
-stack if necessary.
+Hm, interesting.
 
-While we are considering cleaning up the exec synchronization, there is a
-long-standing issue it would be nice to address.  That is, the race of a
-group fatal signal with exec.  (I've mentioned this before, but never come
-up with an adequate solution.)  As things are, one thread can be processing
-a fatal signal while another thread does exec (de_thread).  If de_thread
-gets the siglock first and sets SIGNAL_GROUP_EXIT, then the fatal-signal
-thread will see an exit already in process and just drop its signal on the
-floor.  But, it was not an exit at all, but really an exec.  A fatal signal
-from shared_pending should have killed the whole process, but was swallowed.
-This is a POSIX violation, and potentially usable in a racy DoS exploit to
-let a runaway process keep exec'ing and never get killed (though probably not).
+> The temperature difference was quite significant, about 6 degrees Celsius at
+> idle. Measuring the power consumption of my system confirmed that the energy
+> savings were real: with CONFIG_SUSPEND=n, the system consumes 80 W of power
+> (idle), while with CONFIG_SUSPEND=y, the system consumes only 69 W (idle)!
+> Can anyone explain how this works?
 
-An obvious path to a fix for that is to avoid overloading SIGNAL_GROUP_EXIT
-in de_thread.  In coming up with different synchronization method we might
-find a way that cleans that up too.
+I can't.
 
+> I didn't expect CONFIG_SUSPEND to make any difference before actually
+> switching the system to standby or suspend state.
 
-Thanks,
-Roland
+Yes, that's the expected behavior.
+
+> I tried the same trick on two Intel motherboards I use for testing, but
+> this option didn't seem to make any difference in the power consumption
+> for these.
+
+Do you have CONFIG_HIBERNATION set?  If not, please see if setting it instead
+of CONFIG_SUSPEND leads to the same result on the affected box (ie. running
+at lower temperatures).
+
+Greetings,
+Rafael
