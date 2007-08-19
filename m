@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbXHSXFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbXHSXIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757530AbXHSXFh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 19:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbXHSXF3
+	id S1755537AbXHSXIi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 19:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbXHSXI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 19:05:29 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1612 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753092AbXHSXF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 19:05:28 -0400
-Subject: Re: convert #include "linux/..." to #include <linux/...> [PATCH]s
-	follow
-From: Joe Perches <joe@perches.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <Pine.LNX.4.64.0708200031560.19577@fbirervta.pbzchgretzou.qr>
-References: <1187561864.4200.136.camel@localhost>
-	 <Pine.LNX.4.64.0708200031560.19577@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Date: Sun, 19 Aug 2007 16:05:23 -0700
-Message-Id: <1187564724.4200.170.camel@localhost>
+	Sun, 19 Aug 2007 19:08:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35336
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752248AbXHSXI1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 19:08:27 -0400
+Date: Sun, 19 Aug 2007 16:04:28 -0700 (PDT)
+Message-Id: <20070819.160428.76330262.davem@davemloft.net>
+To: felix@chelsio.com
+Cc: sean.hefty@intel.com, netdev@vger.kernel.org, rdreier@cisco.com,
+       general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
+       jeff@garzik.org
+Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate
+ PS_TCPportsfrom the host TCP port space.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <8A71B368A89016469F72CD08050AD334018E209C@maui.asicdesigners.com>
+References: <8A71B368A89016469F72CD08050AD334018E208F@maui.asicdesigners.com>
+	<20070819.123212.13769462.davem@davemloft.net>
+	<8A71B368A89016469F72CD08050AD334018E209C@maui.asicdesigners.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-20 at 00:33 +0200, Jan Engelhardt wrote:
-> Not only that. All directories in include should be checked against
-> (e.g. <net/*>)
+From: "Felix Marti" <felix@chelsio.com>
+Date: Sun, 19 Aug 2007 12:49:05 -0700
 
-Should any file in include/ have a line like:
+> You're not at all addressing the fact that RDMA does solve the
+> memory BW problem and stateless offload doesn't.
 
-	#include "[path/]file"
-
-Shouldn't these all be
-
-	#include <path/file>
-
-?
-
+It does, I just didn't retort to your claims because they were
+so blatantly wrong.
