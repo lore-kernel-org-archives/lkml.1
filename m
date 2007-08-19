@@ -1,41 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbXHSW6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbXHSXBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756568AbXHSW6q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 18:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbXHSW6h
+	id S1756672AbXHSXBk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 19:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbXHSXBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 18:58:37 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51962 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751318AbXHSW6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 18:58:36 -0400
-Date: Sun, 19 Aug 2007 23:58:35 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Joe Perches <joe@perches.com>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: convert #include "linux/..." to #include <linux/...> [PATCH]s follow
-Message-ID: <20070819225835.GW21089@ftp.linux.org.uk>
-References: <1187561864.4200.136.camel@localhost> <Pine.LNX.4.64.0708200031560.19577@fbirervta.pbzchgretzou.qr> <20070819224425.GU21089@ftp.linux.org.uk> <1187563756.4200.167.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187563756.4200.167.camel@localhost>
-User-Agent: Mutt/1.4.1i
+	Sun, 19 Aug 2007 19:01:33 -0400
+Received: from sidhe.atheme.org ([204.15.224.234]:33204 "EHLO sidhe.atheme.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751188AbXHSXBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 19:01:32 -0400
+Message-ID: <46C8CC25.4070807@partiallystapled.com>
+Date: Sun, 19 Aug 2007 19:03:01 -0400
+From: Michael Tharp <gxti@partiallystapled.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070619)
+MIME-Version: 1.0
+To: Marc Perkel <mperkel@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: The vi editor causes brain damage
+References: <952949.96475.qm@web52503.mail.re2.yahoo.com>
+In-Reply-To: <952949.96475.qm@web52503.mail.re2.yahoo.com>
+X-Enigmail-Version: 0.95.3
+OpenPGP: id=94C1C841
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 19, 2007 at 03:49:16PM -0700, Joe Perches wrote:
-> On Sun, 2007-08-19 at 23:44 +0100, Al Viro wrote:
-> > Except that some instances are legitimate (e.g. there was a bunch in
-> > arch/um, IIRC)...
-> 
-> I guess it's a good thing that vger seems to have rejected
-> that 140KB patch I sent against arch/um and include/asm-um.
+Marc Perkel wrote:
+> The important point that you are missing here is that
+> the Linux world is willing to live with an rm command
+> that is broken and the Windows and DOS world isn't.
+> This isn't about the rm command it's about programming
+> standards. It's about that the Linux community isn't
+> committed to getting it right.
 
-It would be a better thing if you
-	* did builds of the patched trees (allmodconfig for uml/i386 and
-uml/amd64 in this case)
-	* figured out that one can send a reference to branch in git tree
-(with summary/shortlog/diffstat) using somewhat less than 140KB...
+Thanks man, you've made my day. I haven't laughed this hard at a mildly
+technical discussion in weeks.
+
+> Just like my thinking outside the box thread when I
+> try to say "this is broken" people don't go fix it.
+> Instead I get an explanation why Linux isn't capable
+> of having an rm command that will delete an unlimited
+> number of files.
+
+Calling something that bas been working for decades broken, and offering
+a vague idea that is not only riddled with usability issues but also
+unimplementable in an even remotely efficient manner, and yet expecting
+people to jump into action and write it for you while deprecating an
+enormous amount of existing code, is something best described as
+surreal. Disregarding peer review and calling it an "attack" is just
+icing on the cake.
+
+> I bet there are Microsoft people out there laughing at
+> this.
+
+Probably at you.
+
+> THINK ABOUT IT PEOPLE !!!
+> 
+> 20 years, a million programmers, tens of millions of
+> users and RM is BROKEN. Am I the only one who has a
+> problem with this? If so - I'm normal - and Linux is a
+> cult.
+
+All hail Linus the great.
+
+-- m. tharp
