@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbXHSHBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbXHSHOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752342AbXHSHBV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 03:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750711AbXHSHBM
+	id S1752938AbXHSHOi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 03:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbXHSHO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 03:01:12 -0400
-Received: from mga03.intel.com ([143.182.124.21]:18142 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750709AbXHSHBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 03:01:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,280,1183359600"; 
-   d="scan'208";a="265103573"
-From: "Sean Hefty" <sean.hefty@intel.com>
-To: "'David Miller'" <davem@davemloft.net>, <rdreier@cisco.com>
-Cc: <jeff@garzik.org>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <general@lists.openfabrics.org>
-References: <adafy2hyc04.fsf@cisco.com><20070817.170033.63993876.davem@davemloft.net><adatzqxwh56.fsf@cisco.com> <20070817.234405.66176298.davem@davemloft.net>
-Subject: RE: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP portsfrom the host TCP port space.
-Date: Sun, 19 Aug 2007 00:01:07 -0700
-Message-ID: <000001c7e22e$b7b90f00$29c8180a@amr.corp.intel.com>
+	Sun, 19 Aug 2007 03:14:29 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:25697 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967AbXHSHO3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 03:14:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=GziO4UyLJdlmycgw9pHoCOvvjn+GVJycgQkgbiDDRhhSVAgAGPmKJDY+U9/MNZkfdj2JZzZKCeupD4xExE2sPFJzsYlKB30Mv4F848zAfbQSBqmMgAYC3P1ZLHkochboyakEBtHOFkaHgB3an1eUbzSBfcK1RwS9QC1Ama2IrBk=
+Message-ID: <46C7EE0A.2030601@gmail.com>
+Date: Sun, 19 Aug 2007 09:15:22 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Marc Perkel <mperkel@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: The vi editor causes brain damage
+References: <964583.28477.qm@web52504.mail.re2.yahoo.com>
+In-Reply-To: <964583.28477.qm@web52504.mail.re2.yahoo.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <20070817.234405.66176298.davem@davemloft.net>
-Thread-Index: AcfhYy/qP0RatVlFTpKHwCY8j0n61wAxKRiQ
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-X-OriginalArrivalTime: 19 Aug 2007 07:01:07.0900 (UTC) FILETIME=[B78A0FC0:01C7E22E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Just be realistic and accept that RDMA is a point in time solution,
->and like any other such technology takes flexibility away from users.
+Marc Perkel napsal(a):
+> Let me give you and example of the difference between
+> Linux open source world brain damaged thinking and
+> what it's like out here in the real world.
+> 
+> Go to a directory with 10k files and type:
+> 
+> rm *
+> 
+> What do you get?
+> 
+> /bin/rm: Argument list too long
 
-All technologies are just point in time solutions.  While management is
-important, shouldn't the customers decide how important it is relative to their
-problems?  Whether some future technology will be better matters little if a
-problem needs to be solved today.
+What does this have to do with rm command?
 
->If you can't see that this is the future, you have my condolences.
->Because frankly, the signs are all around that this is where things
->are going.
-
-Adding a bazillion cores to a processor doesn't do a thing to help memory
-bandwidth.
-
-Millions of Infiniband ports are in operation today.  Over 25% of the top 500
-supercomputers use Infiniband.  The formation of the OpenFabrics Alliance was
-pushed and has been continuously funded by an RDMA customer - the US National
-Labs.  RDMA technologies are backed by Cisco, IBM, Intel, QLogic, Sun, Voltaire,
-Mellanox, NetApp, AMD, Dell, HP, Oracle, Unisys, Emulex, Hitachi, NEC, Fujitsu,
-LSI, SGI, Sandia, and at least two dozen other companies.  IDC expects
-Infiniband adapter revenue to triple between 2006 and 2011, and switch revenue
-to increase six-fold (combined revenues of 1 billion).
-
-Customers see real benefits using channel based architectures.  Do all customers
-need it?  Of course not.  Is it a niche?  Yes, but I would say that about any
-10+ gig network.  That doesn't mean that it hasn't become essential for some
-customers.
-
-- Sean
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
