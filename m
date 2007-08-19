@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755289AbXHSOYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbXHSO0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755289AbXHSOYU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 10:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbXHSOYL
+	id S1755770AbXHSO0V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 10:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbXHSO0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 10:24:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35419 "EHLO mx1.redhat.com"
+	Sun, 19 Aug 2007 10:26:10 -0400
+Received: from rtr.ca ([64.26.128.89]:2128 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751255AbXHSOYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 10:24:10 -0400
-Date: Sun, 19 Aug 2007 22:24:01 +0800
-From: Eugene Teo <eugeneteo@kernel.sg>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix tsk->exit_state usage (resend)
-Message-ID: <20070819142401.GA27823@kernel.sg>
-Reply-To: Eugene Teo <eugeneteo@kernel.sg>
+	id S1751233AbXHSO0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 10:26:06 -0400
+Message-ID: <46C852DE.8040701@rtr.ca>
+Date: Sun, 19 Aug 2007 10:25:34 -0400
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Maciek Rutecki <maciej.rutecki@gmail.com>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>, htejun@gmail.com,
+       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org, rjw@sisk.pl
+Subject: Re: SATA error while resume
+References: <46C80999.1060700@gmail.com>
+In-Reply-To: <46C80999.1060700@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tsk->exit_state can only be 0, EXIT_ZOMBIE, or EXIT_DEAD. A non-zero test
-is the same as tsk->exit_state & (EXIT_ZOMBIE | EXIT_DEAD), so just testing
-tsk->exit_state is sufficient.
+Maciek Rutecki wrote:
+> Kernel: 2.6.23-rc2 witch patches [1], but older and stable versions also
+.. 
+> Sometimes (one in ten, or rarely) I have this error while system resume
+> from suspend to disk:
+..
+> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+> ata1.00: irq_stat 0x40000001
+> ata1.00: cmd 25/00:00:10:0b:f3/00:04:05:00:00/e0 tag 0 cdb 0x0 data
+> 524288 in
+>          res 51/40:a4:6c:0b:f3/00:03:05:00:00/e0 Emask 0x9 (media error)
+> ata1.00: configured for UDMA/100
+> sd 0:0:0:0: [sda] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE,SUGGEST_OK
+> sd 0:0:0:0: [sda] Sense Key : Medium Error [current] [descriptor]
+> Descriptor sense data with sense descriptors (in hex):
+>         72 03 11 04 00 00 00 0c 00 0a 80 00 00 00 00 00
+>         05 f3 0b 6c
+> sd 0:0:0:0: [sda] Add. Sense: Unrecovered read error - auto reallocate
+> failed
+> end_request: I/O error, dev sda, sector 99814252
+> Read-error on swap-device (8:0:99814256)
+...
 
-Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
----
- fs/proc/array.c |    3 +--
- kernel/fork.c   |    2 +-
- kernel/sched.c  |    2 +-
- 3 files changed, 3 insertions(+), 4 deletions(-)
+Looks like a bad sector in the swap partition.
+You can probably repair it by using this sequence of commands:
 
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index 965625a..babb24d 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -145,8 +145,7 @@ static inline const char *get_task_state(struct task_struct *tsk)
- 					    TASK_UNINTERRUPTIBLE |
- 					    TASK_STOPPED |
- 					    TASK_TRACED)) |
--			(tsk->exit_state & (EXIT_ZOMBIE |
--					    EXIT_DEAD));
-+					   tsk->exit_state;
- 	const char **p = &task_state_array[0];
- 
- 	while (state) {
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 7332e23..56d1b8b 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -115,7 +115,7 @@ EXPORT_SYMBOL(free_task);
- 
- void __put_task_struct(struct task_struct *tsk)
- {
--	WARN_ON(!(tsk->exit_state & (EXIT_DEAD | EXIT_ZOMBIE)));
-+	WARN_ON(!tsk->exit_state);
- 	WARN_ON(atomic_read(&tsk->usage));
- 	WARN_ON(tsk == current);
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 45e17b8..8c27f08 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5190,7 +5190,7 @@ static void migrate_dead(unsigned int dead_cpu, struct task_struct *p)
- 	struct rq *rq = cpu_rq(dead_cpu);
- 
- 	/* Must be exiting, otherwise would be on tasklist. */
--	BUG_ON(p->exit_state != EXIT_ZOMBIE && p->exit_state != EXIT_DEAD);
-+	BUG_ON(!p->exit_state);
- 
- 	/* Cannot have done final schedule yet: would have vanished. */
- 	BUG_ON(p->state == TASK_DEAD);
+swapoff /dev/sdX	<--- replace sdX with actual swap partition dev name
+sync
+cat /dev/zero > /dev/sdX
+mkswap /dev/sdX
+swapon /dev/sdX
 
+If it recurs after doing that, then it's time for a new drive.
+
+-ml
