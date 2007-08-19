@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbXHSOla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbXHSOs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbXHSOla (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 10:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbXHSOlU
+	id S1754807AbXHSOs4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 10:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXHSOsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 10:41:20 -0400
-Received: from aa012msr.fastwebnet.it ([85.18.95.72]:53331 "EHLO
-	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752775AbXHSOlU (ORCPT
+	Sun, 19 Aug 2007 10:48:47 -0400
+Received: from aa013msr.fastwebnet.it ([85.18.95.73]:36367 "EHLO
+	aa013msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbXHSOsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 10:41:20 -0400
-Date: Sun, 19 Aug 2007 16:40:59 +0200
+	Sun, 19 Aug 2007 10:48:47 -0400
+Date: Sun, 19 Aug 2007 16:48:35 +0200
 From: Paolo Ornati <ornati@fastwebnet.it>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Benny Amorsen <benny+usenet@amorsen.dk>, linux-kernel@vger.kernel.org
-Subject: Re: variable length argument support (was: [OT] Re: The vi editor
- causes brain damage)
-Message-ID: <20070819164059.41b86c6b@localhost>
-In-Reply-To: <Pine.LNX.4.64.0708191505170.6042@fbirervta.pbzchgretzou.qr>
-References: <964583.28477.qm@web52504.mail.re2.yahoo.com>
-	<46C7EE0A.2030601@gmail.com>
-	<20070819072135.GQ6002@1wt.eu>
-	<m37inr1zae.fsf@ursa.amorsen.dk>
-	<20070819143956.5d21aa7d@localhost>
-	<Pine.LNX.4.64.0708191505170.6042@fbirervta.pbzchgretzou.qr>
+To: Marc Perkel <mperkel@yahoo.com>
+Cc: Willy Tarreau <w@1wt.eu>, Jiri Slaby <jirislaby@gmail.com>,
+       Marc Perkel <mperkel@yahoo.com>, linux-kernel@vger.kernel.org
+Subject: Re: The vi editor causes brain damage
+Message-ID: <20070819164835.010f0e5b@localhost>
+In-Reply-To: <952949.96475.qm@web52503.mail.re2.yahoo.com>
+References: <20070819072135.GQ6002@1wt.eu>
+	<952949.96475.qm@web52503.mail.re2.yahoo.com>
 X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -31,21 +27,26 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 19 Aug 2007 15:07:01 +0200 (CEST)
-Jan Engelhardt <jengelh@computergmbh.de> wrote:
+On Sun, 19 Aug 2007 06:22:37 -0700 (PDT)
+Marc Perkel <mperkel@yahoo.com> wrote:
 
-> >    Remove the arg+env limit of MAX_ARG_PAGES by copying the strings
-> >    directly from the old mm into the new mm.  
-> 
-> Me wonders. Will that make the "checking for maximum length of command line
-> arguments" from autotools run forever since execve() will not fail anymore?
+> 20 years, a million programmers, tens of millions of
+> users and RM is BROKEN. Am I the only one who has a
+> problem with this? If so - I'm normal - and Linux is a
+> cult.
 
-Since I'm running Gentoo and do many compiles I can tell that it
-works  :)
 
-If I remeber correctly it was discussed on LKML and turend out that
-that check is done starting with a "max" len and going down rather than
-starting low and going up.
+Fixed in 2.6.23-rc (and not just for "rm"):
+
+commit b6a2fea39318e43fee84fa7b0b90d68bed92d2ba
+Author: Ollie Wild <aaw@google.com>
+Date:   Thu Jul 19 01:48:16 2007 -0700
+
+    mm: variable length argument support
+
+    Remove the arg+env limit of MAX_ARG_PAGES by copying the strings
+    directly from the old mm into the new mm.
+[...]
 
 -- 
 	Paolo Ornati
