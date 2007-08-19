@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbXHSVmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbXHSVnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755742AbXHSVmR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 17:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbXHSVmH
+	id S1757220AbXHSVnA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 17:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbXHSVmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 17:42:07 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:64794 "EHLO
+	Sun, 19 Aug 2007 17:42:50 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:53958 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbXHSVmF (ORCPT
+	with ESMTP id S1756198AbXHSVmY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 17:42:05 -0400
-Subject: Re: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: david-b@pacbell.net, jengelh@computergmbh.de, a.zummo@towertech.it,
-       linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com,
-       greg@kroah.com
-In-Reply-To: <20070819.215751.25908715.anemo@mba.ocn.ne.jp>
-References: <200708170902.01260.david-b@pacbell.net>
-	 <20070818.011501.41012303.anemo@mba.ocn.ne.jp>
-	 <3ae72650708170932y5369213bq3479708216923edb@mail.gmail.com>
-	 <20070819.215751.25908715.anemo@mba.ocn.ne.jp>
-Content-Type: text/plain
-Date: Sun, 19 Aug 2007 23:45:50 +0200
-Message-Id: <1187559950.4419.79.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18PVdPvvS5QbCo5HWqz2D6xvgg2yTO7Otih+6L
- Ph8YQW7n0zJVuoPaAINSIT+SORwwIXeof3vR9dlJxF2rrOamKY
- TAke7OegDGGAVp/+l2Da4G8juUbvaMk
+	Sun, 19 Aug 2007 17:42:24 -0400
+Date: Sun, 19 Aug 2007 23:42:18 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Rene Herman <rene.herman@home.nl>
+cc: 7eggert@gmx.de, Mike Mohr <akihana@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: group ownership of tun devices -- nonfunctional?
+In-Reply-To: <46C86B6C.8090209@home.nl>
+Message-ID: <Pine.LNX.4.58.0708192333170.2426@be1.lrz>
+References: <8Tpwf-3Nb-1@gated-at.bofh.it> <E1IMnHK-00012c-VC@be1.lrz>
+ <46C86B6C.8090209@home.nl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/K1WfTA4r7ml5bI1Qehnf5ig71GS90X0HmKVz
+ zojT0MrsWh9tINM0iSYW0nqqLyCG/P+wRqpPujpEMe/pnqzH3x
+ 1/GM0kiTX2NoEfpa+DRTQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-08-19 at 21:57 +0900, Atsushi Nemoto wrote:
-> On Fri, 17 Aug 2007 18:32:19 +0200, "Kay Sievers" <kay.sievers@vrfy.org> wrote:
-> > > I guess there are some out-of-tree users of this driver, but fixing
-> > > them is really trivial, so I don't think this is a big compatibility
-> > > problem.
-> > 
-> > Again, the only sane solution is to provide MODALIAS="platform:<name>"
-> > from the platform bus, and adding the aliases to drivers who support
-> > autoloading. Modalias strings are not free-text strings, they are
-> > required to be prefixed by the subsystem.
+On Sun, 19 Aug 2007, Rene Herman wrote:
+
+> On 08/19/2007 06:05 PM, Bodo Eggert wrote:
 > 
-> I guess your objection is to my usage of MODULE_ALIAS, right?
+> > IMHO the check is broken:
+> > 
+> > +               if (((tun->owner != -1 &&
+> > +                     current->euid != tun->owner) ||
+> > +                    (tun->group != -1 &&
+> > +                     current->egid != tun->group)) &&
+> > +                    !capable(CAP_NET_ADMIN))
+> >                         return -EPERM;
+> > 
+> > It should be something like:
+> > 
+> > +               if (!((tun->owner == tun->owner) ||
+> > +                     (tun->group == tun->group) ||
+> 
+> ???
 
-No, I object to the concept of "platform" to disable all uevents by
-default, just to work around its MODALIAS misuse. The rest of the kernel
-works properly, and userspace has a unified way to handle events and
-module loading.
-There is absolutely no reason for "platform" to be different and break
-all reasonable assumptions of module-init-tools, udev and HAL.
+Argh, I edited asuming the same order of variables. Substitute 
+current->e{uid,gid} for one of the sides.
 
-Thanks,
-Kay
+> > +                     capable(CAP_NET_ADMIN)))
+> >                         return -EPERM;
 
+The intended semantics is If the user is not
+ * the allowed user
+or
+ * member of the allowed group
+or
+ * cabable of CAP_NET_ADMIN
+then error out. I'm asuming  
+
+Thinking about it, maybe you should check each group, not just the 
+effective group. In that case, my change would be still wrong. However, 
+I'm not going to fix this anytime soon.
+
+-- 
+Funny quotes:
+15. I drive way too fast to worry about cholesterol.
