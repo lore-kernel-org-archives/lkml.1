@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbXHTA6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758254AbXHTA63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757978AbXHTA6Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 20:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbXHTA6A
+	id S1758254AbXHTA63 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 20:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbXHTA6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 19 Aug 2007 20:58:00 -0400
-Received: from smtp104.sbc.mail.re2.yahoo.com ([68.142.229.101]:31026 "HELO
-	smtp104.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753616AbXHTA57 (ORCPT
+Received: from zeniv.linux.org.uk ([195.92.253.2]:57042 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754135AbXHTA57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 19 Aug 2007 20:57:59 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=RGqFALTwXiNz3+TAiK26Ueq+o2zgRh8efmfgCic95fHZeruTQXVwFjxhthMnYoPRN8ehZVI3pWTdebpdGzWtjF3eZF/YFvcE/9beLITZmD7TQhoifF4t/r7uynGMCL0TpU6QBpbRnd4M//lSaZnHnJbOQSo5v/5XAiQKozvUhrM=  ;
-X-YMail-OSG: df4iGYMVM1lbDM9B31uJrvqrxigSPpkuk79pthqu77IlilTVO4Wqy7.sXerM09pxhRccMC7nvL5YTzWUyCmGIuGqslJvAIevS39wm_7TYEEk4FA_rmLd8vnYgiHy6F6jT_pgb6psptJsnlw-
-From: David Brownell <david-b@pacbell.net>
+Date: Mon, 20 Aug 2007 01:57:43 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
 To: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: [PATCH] ptrdiff_t is not uintptr_t, damnit
-Date: Sun, 19 Aug 2007 17:57:56 -0700
-User-Agent: KMail/1.9.6
-Cc: Al Viro <viro@ftp.linux.org.uk>,
+Cc: David Brownell <david-b@pacbell.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrdiff_t is not uintptr_t, damnit
+Message-ID: <20070820005743.GY21089@ftp.linux.org.uk>
 References: <20070819225546.GV21089@ftp.linux.org.uk> <200708191719.48340.david-b@pacbell.net> <E83C36D0-B72E-4E70-BEF6-4AF54BAD2863@cam.ac.uk>
-In-Reply-To: <E83C36D0-B72E-4E70-BEF6-4AF54BAD2863@cam.ac.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708191757.56520.david-b@pacbell.net>
+In-Reply-To: <E83C36D0-B72E-4E70-BEF6-4AF54BAD2863@cam.ac.uk>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 19 August 2007, Anton Altaparmakov wrote:
-> >
-> > ISTR we don't *have* a uintptr_t on all architectures, or that would
-> > be the appropriate thing to use in these 32/64 bit ABI scenarios.
-> >
-> >
-> >> Use unsigned long or uintptr_t instead.
-> >
-> > I suspect you mean "unsigned long long"...
+On Mon, Aug 20, 2007 at 01:29:21AM +0100, Anton Altaparmakov wrote:
+> Hi,
 > 
-> No he doesn't.  "unsigned long" is guaranteed to be large enough to  
+> On 20 Aug 2007, at 01:19, David Brownell wrote:
+> >On Sunday 19 August 2007, Al Viro wrote:
+> >>is wrong; for one thing, it's a bad C (it's what uintptr_t is for;  
+> >>in general
+> >>we are not even promised that ptrdiff_t is large enough to hold a  
+> >>pointer,
+> >
+> >ISTR we don't *have* a uintptr_t on all architectures, or that would
+> >be the appropriate thing to use in these 32/64 bit ABI scenarios.
+> >
+> >
+> >>Use unsigned long or uintptr_t instead.
+> >
+> >I suspect you mean "unsigned long long"...
+> 
+> No he doesn't.  "unsigned long" is guaranteed to be large enough to  
 > hold a pointer (at least on Linux anyway).
-
-And yet when I used that, I got compiler warnings on some systems.
-
-ISTR that was the first solution I tried, but GCC really wanted to
-issue warnings.  Either about casting 64-bit to pointer, or about
-casting it to "unsigned long", either way lost precision.
-
-
-> On a 32-bit arch "unsigned long" is 32-bit and pointers are 32-bit.
 > 
-> On a 64-bit archi "unsigned long" is 64-bit and pointers are 64-bit.
+> On a 32-bit arch "unsigned long" is 32-bit and pointers are 32-bit.
 
-So with 32 bit userspace "unsigned long long" is the type to use
-when talking to a 64-bit kernel; and with pure 64-bit code, it's
-enough to write "unsigned long".
+... while unsigned long long is 64bit, which is definitely not what
+one wants.  For sparse it's "unsigned long is special".
 
-I'm fairly sure that's the root cause of the pain I recall here;
-but I'd have to run experiments again to verify that.  
-
+FWIW, this patch puts it in linux/types.h as unsigned long.  Eventually
+we might want to switch explicit casts to/from unsigned long in such contexts
+to uintptr_t, but for now we can't start complaining about unsigned long -
+too many places are using it.  I'll see what can be done to get sane
+assistance from sparse in that kind of work...
 
