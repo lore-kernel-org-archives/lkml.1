@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763314AbXHTUll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932221AbXHTUmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763314AbXHTUll (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755293AbXHTUla
+	id S932221AbXHTUmy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758113AbXHTUmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:41:30 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:39593 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750900AbXHTUl2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:41:28 -0400
-Date: Mon, 20 Aug 2007 16:41:26 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [patch 01/23] Fall back on interrupt disable in cmpxchg8b on 80386 and 80486
-Message-ID: <20070820204126.GA22507@Krystal>
-References: <20070820201519.512791382@polymtl.ca> <20070820201822.597720007@polymtl.ca> <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com>
+	Mon, 20 Aug 2007 16:42:38 -0400
+Received: from postel.suug.ch ([194.88.212.233]:52483 "EHLO postel.suug.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759534AbXHTUmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:42:37 -0400
+X-Greylist: delayed 1489 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Aug 2007 16:42:37 EDT
+Date: Mon, 20 Aug 2007 22:18:08 +0200
+From: Thomas Graf <tgraf@suug.ch>
+To: Felix Marti <felix@chelsio.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       jeff@garzik.org, netdev@vger.kernel.org, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org,
+       David Miller <davem@davemloft.net>
+Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
+Message-ID: <20070820201808.GM32236@postel.suug.ch>
+References: <p73y7g6yt3j.fsf@bingen.suse.de> <8A71B368A89016469F72CD08050AD334018E2149@maui.asicdesigners.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:38:26 up 21 days, 20:57,  4 users,  load average: 1.24, 1.87, 1.39
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <8A71B368A89016469F72CD08050AD334018E2149@maui.asicdesigners.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> On Mon, 20 Aug 2007, Mathieu Desnoyers wrote:
-> 
-> > already present in cmpxchg_386_u32 tells much about how this cmpxchg
-> > implementation should not be used in a SMP context. However, the cmpxchg_local
-> > can perfectly use this fallback, since it only needs to be atomic wrt the local
-> > cpu.
-> 
-> Do you have an example where the use of cmpxchg_local is a performance 
-> benefit when actually used in code? cmpxchg is already problematic
-> functionality since it is not available on all platforms.
+* Felix Marti <felix@chelsio.com> 2007-08-20 12:02
+> These graphic adapters provide a wealth of features that you can take
+> advantage of to bring these amazing graphics to life. General purpose
+> CPUs cannot keep up. Chelsio offload devices do the same thing in the
+> realm of networking. - Will there be things you can't do, probably yes,
+> but as I said, there are lots of knobs to turn (and the latest and
+> greatest feature that gets hyped up might not always be the best thing
+> since sliced bread anyway; what happened to BIC love? ;)
 
-Yes, I use it as synchronization mechanism for my buffer management algorithm
-in LTTng. Since I write in per-cpu buffers and want to be as reentrant
-as possible wrt other contexts (dealing with NMI as worse case, but also
-applies to MCE..), I use local_cmpxchg to reserve space in my buffers.
-It is faster than the standard cmpxchg.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+GPUs have almost no influence on system security, the network stack OTOH
+is probably the most vulnerable part of an operating system. Even if all
+vendors would implement all the features collected over the last years
+properly which seems unlikely. Having such an essential and critical
+part depend on the vendor of my network card without being able to even
+verify it properly is truly frightening.
