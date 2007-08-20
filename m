@@ -1,138 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764975AbXHTUdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765370AbXHTUdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764975AbXHTUdU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764571AbXHTU1i
+	id S1765370AbXHTUdn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764560AbXHTU1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:27:38 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55641 "EHLO smtp.polymtl.ca"
+	Mon, 20 Aug 2007 16:27:39 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55649 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764549AbXHTU1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:27:36 -0400
-Message-Id: <20070820202145.502198525@polymtl.ca>
+	id S1762231AbXHTU1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:27:37 -0400
+Message-Id: <20070820202145.844907948@polymtl.ca>
 References: <20070820201902.597091353@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 16:19:04 -0400
+Date: Mon, 20 Aug 2007 16:19:05 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, hch@infradead.org,
-       prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net
-Subject: [patch 02/11] Kprobes - use a mutex to protect the instruction pages list.
-Content-Disposition: inline; filename=kprobes-use-mutex-for-insn-pages.patch
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, prasanna@in.ibm.com,
+       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net
+Subject: [patch 03/11] Kprobes - do not use kprobes mutex in arch code
+Content-Disposition: inline; filename=kprobes-dont-use-kprobes-mutex-in-arch-code.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:21:46 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Protect the instruction pages list by a specific insn pages mutex, called in 
-get_insn_slot() and free_insn_slot(). It makes sure that architectures that does
-not need to call arch_remove_kprobe() does not take an unneeded kprobes mutex.
+Remove the kprobes mutex from kprobes.h, since it does not belong there. Also
+remove all use of this mutex in the architecture specific code, replacing it by
+a proper mutex lock/unlock in the architecture agnostic code.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: hch@infradead.org
 CC: prasanna@in.ibm.com
 CC: ananth@in.ibm.com
 CC: anil.s.keshavamurthy@intel.com
 CC: davem@davemloft.net
 ---
- kernel/kprobes.c |   27 +++++++++++++++++++++------
- 1 file changed, 21 insertions(+), 6 deletions(-)
+ arch/i386/kernel/kprobes.c    |    2 --
+ arch/ia64/kernel/kprobes.c    |    2 --
+ arch/powerpc/kernel/kprobes.c |    2 --
+ arch/s390/kernel/kprobes.c    |    2 --
+ arch/x86_64/kernel/kprobes.c  |    2 --
+ include/linux/kprobes.h       |    2 --
+ kernel/kprobes.c              |    2 ++
+ 7 files changed, 2 insertions(+), 12 deletions(-)
 
+Index: linux-2.6-lttng/include/linux/kprobes.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/kprobes.h	2007-08-07 15:28:05.000000000 -0400
++++ linux-2.6-lttng/include/linux/kprobes.h	2007-08-07 15:28:22.000000000 -0400
+@@ -35,7 +35,6 @@
+ #include <linux/percpu.h>
+ #include <linux/spinlock.h>
+ #include <linux/rcupdate.h>
+-#include <linux/mutex.h>
+ 
+ #ifdef CONFIG_KPROBES
+ #include <asm/kprobes.h>
+@@ -177,7 +176,6 @@ static inline void kretprobe_assert(stru
+ }
+ 
+ extern spinlock_t kretprobe_lock;
+-extern struct mutex kprobe_mutex;
+ extern int arch_prepare_kprobe(struct kprobe *p);
+ extern void arch_arm_kprobe(struct kprobe *p);
+ extern void arch_disarm_kprobe(struct kprobe *p);
+Index: linux-2.6-lttng/arch/i386/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/kernel/kprobes.c	2007-08-07 15:28:05.000000000 -0400
++++ linux-2.6-lttng/arch/i386/kernel/kprobes.c	2007-08-07 15:28:22.000000000 -0400
+@@ -180,9 +180,7 @@ void __kprobes arch_disarm_kprobe(struct
+ 
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
+ {
+-	mutex_lock(&kprobe_mutex);
+ 	free_insn_slot(p->ainsn.insn, (p->ainsn.boostable == 1));
+-	mutex_unlock(&kprobe_mutex);
+ }
+ 
+ static void __kprobes save_previous_kprobe(struct kprobe_ctlblk *kcb)
 Index: linux-2.6-lttng/kernel/kprobes.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2007-07-14 15:47:19.000000000 -0400
-+++ linux-2.6-lttng/kernel/kprobes.c	2007-07-14 15:48:51.000000000 -0400
-@@ -101,6 +101,10 @@ enum kprobe_slot_state {
- 	SLOT_USED = 2,
- };
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-07 15:28:22.000000000 -0400
++++ linux-2.6-lttng/kernel/kprobes.c	2007-08-07 15:28:22.000000000 -0400
+@@ -656,7 +656,9 @@ valid_p:
+ 			list_del_rcu(&p->list);
+ 			kfree(old_p);
+ 		}
++		mutex_lock(&kprobe_mutex);
+ 		arch_remove_kprobe(p);
++		mutex_unlock(&kprobe_mutex);
+ 	} else {
+ 		mutex_lock(&kprobe_mutex);
+ 		if (p->break_handler)
+Index: linux-2.6-lttng/arch/ia64/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/ia64/kernel/kprobes.c	2007-08-07 15:28:05.000000000 -0400
++++ linux-2.6-lttng/arch/ia64/kernel/kprobes.c	2007-08-07 15:28:22.000000000 -0400
+@@ -565,9 +565,7 @@ void __kprobes arch_disarm_kprobe(struct
  
-+/*
-+ * Protects the kprobe_insn_pages list. Can nest into kprobe_mutex.
-+ */
-+static DEFINE_MUTEX(kprobe_insn_mutex);
- static struct hlist_head kprobe_insn_pages;
- static int kprobe_garbage_slots;
- static int collect_garbage_slots(void);
-@@ -137,7 +141,9 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
  {
- 	struct kprobe_insn_page *kip;
- 	struct hlist_node *pos;
-+	kprobe_opcode_t *ret;
+-	mutex_lock(&kprobe_mutex);
+ 	free_insn_slot(p->ainsn.insn, 0);
+-	mutex_unlock(&kprobe_mutex);
+ }
+ /*
+  * We are resuming execution after a single step fault, so the pt_regs
+Index: linux-2.6-lttng/arch/powerpc/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/powerpc/kernel/kprobes.c	2007-08-07 15:28:05.000000000 -0400
++++ linux-2.6-lttng/arch/powerpc/kernel/kprobes.c	2007-08-07 15:28:22.000000000 -0400
+@@ -86,9 +86,7 @@ void __kprobes arch_disarm_kprobe(struct
  
-+	mutex_lock(&kprobe_insn_mutex);
-  retry:
- 	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
- 		if (kip->nused < INSNS_PER_PAGE) {
-@@ -146,7 +152,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
- 				if (kip->slot_used[i] == SLOT_CLEAN) {
- 					kip->slot_used[i] = SLOT_USED;
- 					kip->nused++;
--					return kip->insns + (i * MAX_INSN_SIZE);
-+					ret = kip->insns + (i * MAX_INSN_SIZE);
-+					goto end;
- 				}
- 			}
- 			/* Surprise!  No unused slots.  Fix kip->nused. */
-@@ -160,8 +167,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
- 	}
- 	/* All out of space.  Need to allocate a new page. Use slot 0. */
- 	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
--	if (!kip)
--		return NULL;
-+	if (!kip) {
-+		ret = NULL;
-+		goto end;
-+	}
- 
- 	/*
- 	 * Use module_alloc so this page is within +/- 2GB of where the
-@@ -171,7 +180,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
- 	kip->insns = module_alloc(PAGE_SIZE);
- 	if (!kip->insns) {
- 		kfree(kip);
--		return NULL;
-+		ret = NULL;
-+		goto end;
- 	}
- 	INIT_HLIST_NODE(&kip->hlist);
- 	hlist_add_head(&kip->hlist, &kprobe_insn_pages);
-@@ -179,7 +189,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
- 	kip->slot_used[0] = SLOT_USED;
- 	kip->nused = 1;
- 	kip->ngarbage = 0;
--	return kip->insns;
-+	ret = kip->insns;
-+end:
-+	mutex_unlock(&kprobe_insn_mutex);
-+	return ret;
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
+ {
+-	mutex_lock(&kprobe_mutex);
+ 	free_insn_slot(p->ainsn.insn, 0);
+-	mutex_unlock(&kprobe_mutex);
  }
  
- /* Return 1 if all garbages are collected, otherwise 0. */
-@@ -213,7 +226,7 @@ static int __kprobes collect_garbage_slo
- 	struct kprobe_insn_page *kip;
- 	struct hlist_node *pos, *next;
+ static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+Index: linux-2.6-lttng/arch/s390/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/s390/kernel/kprobes.c	2007-08-07 15:28:05.000000000 -0400
++++ linux-2.6-lttng/arch/s390/kernel/kprobes.c	2007-08-07 15:28:22.000000000 -0400
+@@ -218,9 +218,7 @@ void __kprobes arch_disarm_kprobe(struct
  
--	/* Ensure no-one is preepmted on the garbages */
-+	/* Ensure no-one is preempted on the garbages */
- 	if (check_safety() != 0)
- 		return -EAGAIN;
- 
-@@ -237,6 +250,7 @@ void __kprobes free_insn_slot(kprobe_opc
- 	struct kprobe_insn_page *kip;
- 	struct hlist_node *pos;
- 
-+	mutex_lock(&kprobe_insn_mutex);
- 	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
- 		if (kip->insns <= slot &&
- 		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
-@@ -253,6 +267,7 @@ void __kprobes free_insn_slot(kprobe_opc
- 
- 	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
- 		collect_garbage_slots();
-+	mutex_unlock(&kprobe_insn_mutex);
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
+ {
+-	mutex_lock(&kprobe_mutex);
+ 	free_insn_slot(p->ainsn.insn, 0);
+-	mutex_unlock(&kprobe_mutex);
  }
- #endif
  
+ static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+Index: linux-2.6-lttng/arch/x86_64/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86_64/kernel/kprobes.c	2007-08-07 15:28:06.000000000 -0400
++++ linux-2.6-lttng/arch/x86_64/kernel/kprobes.c	2007-08-07 15:28:22.000000000 -0400
+@@ -219,9 +219,7 @@ void __kprobes arch_disarm_kprobe(struct
+ 
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
+ {
+-	mutex_lock(&kprobe_mutex);
+ 	free_insn_slot(p->ainsn.insn, 0);
+-	mutex_unlock(&kprobe_mutex);
+ }
+ 
+ static void __kprobes save_previous_kprobe(struct kprobe_ctlblk *kcb)
 
 -- 
 Mathieu Desnoyers
