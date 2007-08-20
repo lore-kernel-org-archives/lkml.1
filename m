@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbXHTKLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbXHTKNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756942AbXHTKLt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 06:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbXHTKLk
+	id S1757780AbXHTKNW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 06:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbXHTKNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 06:11:40 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:55421 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752533AbXHTKLj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 06:11:39 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: CONFIG_SUSPEND and power consumption
-Date: Mon, 20 Aug 2007 12:11:34 +0200
-User-Agent: KMail/1.9.7
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
-References: <20070819153259.2c96b904@hyperion.delvare> <200708192242.43819.rjw@sisk.pl> <20070820120258.7d090cc4@hyperion.delvare>
-In-Reply-To: <20070820120258.7d090cc4@hyperion.delvare>
+	Mon, 20 Aug 2007 06:13:13 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33576 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751596AbXHTKNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 06:13:12 -0400
+To: "Felix Marti" <felix@chelsio.com>
+Cc: "David Miller" <davem@davemloft.net>, <sean.hefty@intel.com>,
+       <netdev@vger.kernel.org>, <rdreier@cisco.com>,
+       <general@lists.openfabrics.org>, <linux-kernel@vger.kernel.org>,
+       <jeff@garzik.org>
+Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
+References: <8A71B368A89016469F72CD08050AD334018E20BC@maui.asicdesigners.com>
+	<20070819.174017.77241227.davem@davemloft.net>
+	<8A71B368A89016469F72CD08050AD334018E20BE@maui.asicdesigners.com>
+	<20070819.180540.74750322.davem@davemloft.net>
+	<8A71B368A89016469F72CD08050AD334018E20C1@maui.asicdesigners.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 20 Aug 2007 13:07:06 +0200
+In-Reply-To: <8A71B368A89016469F72CD08050AD334018E20C1@maui.asicdesigners.com>
+Message-ID: <p733aye1n39.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708201211.34698.oliver@neukum.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 20 August 2007 schrieb Jean Delvare:
-> If I rmmod "ehci-hcd" then the power consumption is back to 69 W. This
-> confirms that this is really USB-related. I have to admit that I did
-> not expect an external drive to eat that much power from the system,
-> especially when not used. I am told that VIA chips are notoriously bad
-> at this kind of things. I'll try the same external drive on an Intel
-> system later today.
-> 
-> The last mystery remaining is how USB "activity" can cause my CPU to
-> heat. I would expect the south bridge to heat, not the CPU.
+"Felix Marti" <felix@chelsio.com> writes:
+> > avoidance gains of TSO and LRO are still a very worthwhile savings.
+> So, i.e. with TSO, your saving about 16 headers (let us say 14 + 20 +
+> 20), 864B, when moving ~64KB of payload - looks like very much in the
+> noise to me.
 
-USB, or strictly speaking EHCI, OHCI and UHCI, use DMA. To allow
-that the cache coherency logic has to be active. Therefore your CPU
-cannot go to C3. Therefore it draws more power. The problem we are
-facing in USB is that to get great savings, our coverage has to be perfect.
-One device that cannot be autosuspended and we lose most savings.
+TSO is beneficial for the software again. The linux code currently
+takes several locks and does quite a few function calls for each 
+packet and using larger packets lowers this overhead. At least with
+10GbE saving CPU cycles is still quite important.
 
-	Regards
-		Oliver
+> an option to get 'high performance' 
 
+Shouldn't you qualify that?
+
+It is unlikely you really duplicated all the tuning for corner cases
+that went over many years into good software TCP stacks in your
+hardware.  So e.g. for wide area networks with occasional packet loss
+the software might well perform better.
+
+-Andi
