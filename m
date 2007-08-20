@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757743AbXHTS6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbXHTS6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757743AbXHTS6O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 14:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbXHTS57
+	id S1760028AbXHTS6r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 14:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbXHTS6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 14:57:59 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40529 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752861AbXHTS56 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 14:57:58 -0400
-Date: Mon, 20 Aug 2007 11:57:55 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Joe Perches <joe@perches.com>
-cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org
-Subject: Re: [PATCH 5/5] mm/... convert #include "linux/..." to #include
- <linux/...>
-In-Reply-To: <1187635766.5963.3.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0708201157320.28863@schroedinger.engr.sgi.com>
-References: <1187561983.4200.145.camel@localhost> 
- <Pine.LNX.4.64.0708201106230.25248@schroedinger.engr.sgi.com>
- <1187635766.5963.3.camel@localhost>
+	Mon, 20 Aug 2007 14:58:38 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40481 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752886AbXHTS6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 14:58:38 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: CONFIG_SUSPEND and power consumption
+Date: Mon, 20 Aug 2007 21:08:35 +0200
+User-Agent: KMail/1.9.5
+Cc: Oliver Neukum <oliver@neukum.org>, Jean Delvare <khali@linux-fr.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <20070819153259.2c96b904@hyperion.delvare> <200708201211.34698.oliver@neukum.org> <20070820172907.GC3975@ucw.cz>
+In-Reply-To: <20070820172907.GC3975@ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708202108.35674.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Aug 2007, Joe Perches wrote:
-
-> Maybe.  I think it's just a simple error.
+On Monday, 20 August 2007 19:29, Pavel Machek wrote:
+> Hi!
 > 
-> mm/slab.c has 2 other includes of
+> > > If I rmmod "ehci-hcd" then the power consumption is back to 69 W. This
+> > > confirms that this is really USB-related. I have to admit that I did
+> > > not expect an external drive to eat that much power from the system,
+> > > especially when not used. I am told that VIA chips are notoriously bad
+> > > at this kind of things. I'll try the same external drive on an Intel
+> > > system later today.
+> > > 
+> > > The last mystery remaining is how USB "activity" can cause my CPU to
+> > > heat. I would expect the south bridge to heat, not the CPU.
+> > 
+> > USB, or strictly speaking EHCI, OHCI and UHCI, use DMA. To allow
+> > that the cache coherency logic has to be active. Therefore your CPU
+> > cannot go to C3. Therefore it draws more power. The problem we are
+> > facing in USB is that to get great savings, our coverage has to be perfect.
+> > One device that cannot be autosuspended and we lose most savings.
 > 
-> 	#include <linux/kmalloc_sizes.h>
-> 
-> cheers, Joe
+> Ok.. but CONFIG_USB_SUSPEND should not really have anything to do with
+> CONFIG_SUSPEND (= s2ram). Perhaps it should depend on CONFIG_PM
+> instead?
 
-Ahh. ok.
+CONFIG_USB_SUSPEND doesn't depend on CONFIG_SUSPEND.
 
-Then
-
-Acked-by: Christoph Lameter <clameter@sgi.com>
-
+Greetings,
+Rafael
