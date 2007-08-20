@@ -1,77 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761651AbXHTREF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761810AbXHTRFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761651AbXHTREF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 13:04:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759678AbXHTRDz
+	id S1761810AbXHTRFl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 13:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760535AbXHTRFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 13:03:55 -0400
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:30051 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755740AbXHTRDy (ORCPT
+	Mon, 20 Aug 2007 13:05:33 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:44381 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759734AbXHTRFc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 13:03:54 -0400
-X-IronPort-AV: i="4.19,285,1183359600"; 
-   d="scan'208"; a="393201902:sNHT49862886"
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
-       linux-kernel@vger.kernel.org, jh@suse.cz
-Subject: Re: [discuss] [PATCH] x86-64: memset optimization
-X-Message-Flag: Warning: May contain useful information
-References: <20070817163446.3e63f208@freepuppy.rosehill.hemminger.net>
-	<200708182055.11277.ak@suse.de>
-	<20070819010430.2c8c31fc@oldman.hemminger.net>
-	<200708192024.24864.ak@suse.de>
-	<20070820085253.5f589e58@freepuppy.rosehill.hemminger.net>
-	<1187625068.2577.3.camel@laptopd505.fenrus.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 20 Aug 2007 10:03:46 -0700
-In-Reply-To: <1187625068.2577.3.camel@laptopd505.fenrus.org> (Arjan van de Ven's message of "Mon, 20 Aug 2007 08:51:08 -0700")
-Message-ID: <adamywmw32l.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Mon, 20 Aug 2007 13:05:32 -0400
+Message-ID: <46C9C9C7.8080506@zytor.com>
+Date: Mon, 20 Aug 2007 10:05:11 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Aug 2007 17:03:46.0548 (UTC) FILETIME=[122FA340:01C7E34C]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
+References: <1186990219.22431.37.camel@caritas-dev.intel.com>	 <20070815161642.1bfbbe9c.akpm@linux-foundation.org>	 <46C38AA8.5040202@zytor.com>	 <1187251248.15063.12.camel@caritas-dev.intel.com>	 <m11wdzrwl7.fsf@ebiederm.dsl.xmission.com> <86802c440708191646r1caab5d8yd82c55fd2c8262db@mail.gmail.com>
+In-Reply-To: <86802c440708191646r1caab5d8yd82c55fd2c8262db@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > The problem is with the optimization flags: passing -Os causes the compiler
- > > to be stupid and not inline any memset/memcpy functions.
- > 
- > you get what you ask for.. if you don't want that then don't ask for
- > it ;)
+Yinghai Lu wrote:
+> 
+> someone told me that EFI PEI will be 32 bit ( for mem etc
+> initialization), and after that will be 64 bit, so the Run time
+> service will be 64 bit only, and it will only support 64 bit OS with
+> EFI. and they have another mode to emulate the legacy BIOS to boot
+> 32bit OS.
+> 
 
-Well, the compiler is really being dumb about -Os and in fact it's
-giving bigger code, so I'm not really getting what I ask for.  
+That seems unlikely for e.g. the existing Macs already in the field.
 
-With my gcc at least (x86_64, gcc (GCC) 4.1.3 20070812 (prerelease)
-(Ubuntu 4.1.2-15ubuntu2)) and Andi's example:
+*Sigh.*
 
-#include <string.h>
-
-f(char x[6]) {
-        memset(x, 1, 6);
-}
-
-compiling with -O2 gives
-
-0000000000000000 <f>:
-   0:	c7 07 01 01 01 01    	movl   $0x1010101,(%rdi)
-   6:	66 c7 47 04 01 01    	movw   $0x101,0x4(%rdi)
-   c:	c3                   	retq   
-
-and compiling with -Os gives
-
-0000000000000000 <f>:
-   0:	48 83 ec 08          	sub    $0x8,%rsp
-   4:	ba 06 00 00 00       	mov    $0x6,%edx
-   9:	be 01 00 00 00       	mov    $0x1,%esi
-   e:	e8 00 00 00 00       	callq  13 <f+0x13>
-  13:	5a                   	pop    %rdx
-  14:	c3                   	retq   
-
-so the code gets bigger and worse in every way.
-
- - R.
+	-hpa
