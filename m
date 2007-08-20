@@ -1,75 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbXHTS3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbXHTSfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbXHTS3a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 14:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbXHTS3U
+	id S1754198AbXHTSfB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 14:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbXHTSex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 14:29:20 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:40203 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751157AbXHTS3T (ORCPT
+	Mon, 20 Aug 2007 14:34:53 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43289 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750796AbXHTSew (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 14:29:19 -0400
-Subject: Re: [accounting regression since rc1]  scheduler updates
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20070820180810.GA25160@elte.hu>
-References: <20070812163225.GA11996@elte.hu>
-	 <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu>
-	 <1187629438.8541.40.camel@localhost>  <20070820180810.GA25160@elte.hu>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 20 Aug 2007 20:33:02 +0200
-Message-Id: <1187634782.4028.10.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Aug 2007 14:34:52 -0400
+Date: Mon, 20 Aug 2007 11:34:52 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Miller <davem@davemloft.net>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: SLUB bug on sparc64
+In-Reply-To: <20070817.221758.116352652.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0708201124140.25298@schroedinger.engr.sgi.com>
+References: <20070817.221758.116352652.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-20 at 20:08 +0200, Ingo Molnar wrote:
-> For sched_clock()'s behavior while the virtual CPU is idle: my current 
-> idea for that is the patch below (a loosely analoguous problem exists 
-> with nohz/dynticks): it makes sched_clock() valid across idle periods 
-> too and uses wall-clock time for that.
+On Fri, 17 Aug 2007, David Miller wrote:
 
-Ok, that would mean that sched_clock can just return the virtual cpu
-time and the two hooks starts and stops the idle periods as far as the
-scheduler is concerned. In this case we can use the patch from Jan with
-the new implementation for sched_clock and add the two hooks to the
-places where the cpu-idle notifiers are done (do_monitor_call and
-default_idle). In fact this could be an idle-notifier. Hmm, I take a
-closer look tomorrow when I'm back at the office.
+> When I force SLUB debugging on sparc64, it barfs on early bootup while
+> making the sysfs nodes.  Removing the BUG()'s on the sysfs error
+> returns, and adding some tracing I captured the log below.
+> 
+> BTW, I would recommending removing the BUG() calls, they serve only to
+> force someone hitting them to edit them out and reboot which is
+> absolutely pointless :-) This code can also often run before the
+> console is first enabled, making analysis of the error return that
+> much harder if it BUG()'s instead of trying to continue.
 
-> If a virtual CPU is idle then i think the "real = steal, virtual = 0" 
-> way of thinking about idle looks a bit unnatural to me - wouldnt it be 
-> better to think in terms of "steal = 0, virtual = real" ? Basically a 
-> virtual CPU can idle at "perfect speed", without the host "stealing" any 
-> cycles from it. And with that way of thinking, if s390 passed in the 
-> real-idle-time value to the new callbacks below it would all fall into 
-> place. Hm?
+Not sure what BUG's you are talking about.
 
-How you think about an idle cpu depends on your viewpoint. The source
-for the virtual cpu time on s390 is the cpu timer. This timer is stopped
-when a virtual cpu looses the physical cpu, so it seems natural to me to
-think that real=steal, virtual=0 because the cpu timer is stopped while
-the cpu is idle. The other way of thinking about it is as valid though.
+> The problem seems to be that both tsb_512KB and tsb_1MB are
+> unmergeable, and so are the kmalloc caches of those sizes.  But the
+> "unique name" created for the aliases are identical, always ":%d"
+> where %d is the cache size, so the kobject_add() fails the second
+> time around.
 
-> that way we'd have a meaningful sched_clock() across idle periods too, 
-> useful for tracers, better scheduler debug-statistics, etc.
+Well it seems that they are both mergeable since slabs larger than 64k * 
+sizeof(void) are exempt from unmergeable processing and we get into issues 
+because the merge policy is inconsistent for the larger slabs then.
 
-That would be good.
+Does this patch fix it?
 
--- 
-blue skies,
-  Martin.
+Limit the maximum size of merged slab caches
 
-"Reality continues to ruin my life." - Calvin.
+We always switch off the debugging bits of slabs that are too large
+for free pointer relocation. This means that we may create separate
+caches even if slub_debug is set. Sysfs later thinks they are mergeable
+and thus creates unique ids that may then clash.
 
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-08-20 11:31:13.000000000 -0700
++++ linux-2.6/mm/slub.c	2007-08-20 11:34:12.000000000 -0700
+@@ -209,6 +209,7 @@ static inline void ClearSlabDebug(struct
+  * The page->inuse field is 16 bit thus we have this limitation
+  */
+ #define MAX_OBJECTS_PER_SLAB 65535
++#define MAX_MERGE_SIZE (MAX_OBJECTS_PER_SLAB * sizeof(void))
+ 
+ /* Internal SLUB flags */
+ #define __OBJECT_POISON		0x80000000 /* Poison object */
+@@ -1000,7 +1001,7 @@ static void kmem_cache_open_debug_check(
+ 	 * Debugging or ctor may create a need to move the free
+ 	 * pointer. Fail if this happens.
+ 	 */
+-	if (s->objsize >= 65535 * sizeof(void *)) {
++	if (s->objsize >= MAX_MERGE_SIZE) {
+ 		BUG_ON(s->flags & (SLAB_RED_ZONE | SLAB_POISON |
+ 				SLAB_STORE_USER | SLAB_DESTROY_BY_RCU));
+ 		BUG_ON(s->ctor);
+@@ -2649,6 +2650,12 @@ static int slab_unmergeable(struct kmem_
+ 	if (s->refcount < 0)
+ 		return 1;
+ 
++	/*
++	 * Or a slab that is too large for merging
++	 */
++	if (s->size >= MAX_MERGE_SIZE)
++		return 1;
++
+ 	return 0;
+ }
+ 
+@@ -2668,6 +2675,9 @@ static struct kmem_cache *find_mergeable
+ 	align = calculate_alignment(flags, align, size);
+ 	size = ALIGN(size, align);
+ 
++	if (size >= MAX_MERGE_SIZE)
++		return NULL;
++
+ 	list_for_each_entry(s, &slab_caches, list) {
+ 		if (slab_unmergeable(s))
+ 			continue;
