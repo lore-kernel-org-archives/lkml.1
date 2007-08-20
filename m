@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbXHTSBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753553AbXHTSHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbXHTSBg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 14:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbXHTSBZ
+	id S1753553AbXHTSHE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 14:07:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbXHTSGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 14:01:25 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:44593 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbXHTSBY (ORCPT
+	Mon, 20 Aug 2007 14:06:53 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41635 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751269AbXHTSGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 14:01:24 -0400
-Date: Mon, 20 Aug 2007 14:01:09 -0400
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Nicolas Pitre <nico@cam.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Jon Smirl <jonsmirl@gmail.com>,
-       Git Mailing List <git@vger.kernel.org>
-Subject: Re: Git tree for old kernels
-Message-ID: <20070820180109.GE18377@filer.fsl.cs.sunysb.edu>
-References: <9e4733910707221349s462aa11bj714956f7cdc72aac@mail.gmail.com> <alpine.LFD.0.999.0708191453030.16727@xanadu.home> <20070820171618.GB9869@filer.fsl.cs.sunysb.edu> <alpine.LFD.0.999.0708201334000.16727@xanadu.home>
+	Mon, 20 Aug 2007 14:06:52 -0400
+Date: Mon, 20 Aug 2007 11:06:48 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Joe Perches <joe@perches.com>
+cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org
+Subject: Re: [PATCH 5/5] mm/... convert #include "linux/..." to #include
+ <linux/...>
+In-Reply-To: <1187561983.4200.145.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0708201106230.25248@schroedinger.engr.sgi.com>
+References: <1187561983.4200.145.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708201334000.16727@xanadu.home>
-User-Agent: Mutt/1.5.16 (2007-07-16)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 20, 2007 at 01:40:52PM -0400, Nicolas Pitre wrote:
-> On Mon, 20 Aug 2007, Josef Sipek wrote:
-> 
-> > On Sun, Aug 19, 2007 at 03:24:56PM -0400, Nicolas Pitre wrote:
-> > > On Sun, 22 Jul 2007, Jon Smirl wrote:
-> > > 
-> > > > Continuing on with kernel archeology for embedded systems, any
-> > > > interest in making a git tree with all of the kernel versions from the
-> > > > beginning up to the start of the current git tree?
-> > > 
-> > > I just put the archive I've gathered so far in a Git tree on kernel.org:
-> > > 
-> > >     git://git.kernel.org/pub/scm/linux/kernel/git/nico/archive.git
-> > > 
-> > > It is also available through gitweb from:
-> > > 
-> > >     http://git.kernel.org/?p=linux/kernel/git/nico/archive.git
-> >  
-> > I don't mean to nit-pick but, would it be possible to have the timestamps
-> > for the commits closer to the release dates?
-> 
-> Well, the author timestamp already is, based on the date of the 
-> announcement message used for the commit log, including the timezone.  
-> If you find errors in those please tell me.
+On Sun, 19 Aug 2007, Joe Perches wrote:
 
-Ah ok. Too bad gitweb displays the commit times => throws off some of the
-sorting too.
+> diff --git a/mm/slab.c b/mm/slab.c
+> index a684778..976aeff 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -334,7 +334,7 @@ static __always_inline int index_of(const size_t size)
+>  		return i; \
+>  	else \
+>  		i++;
+> -#include "linux/kmalloc_sizes.h"
+> +#include <linux/kmalloc_sizes.h>
+>  #undef CACHE
+>  		__bad_size();
+>  	} else
 
-/me prods gitweb people
+But I think this was done intentionally to point out that the file 
+includes is *not* a regular include file.
 
-> The commit timestamp, however, is the time when _I_ created the 
-> repository, hence it should not be that interesting.
-
-Too bad that's the date you see all over the place :( 
-
-Jeff.
-
--- 
-NT is to UNIX what a doughnut is to a particle accelerator.
