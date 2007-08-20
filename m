@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbXHTS6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759652AbXHTTAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760028AbXHTS6r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 14:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbXHTS6i
+	id S1759652AbXHTTAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 15:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbXHTTAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 14:58:38 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40481 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752886AbXHTS6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 14:58:38 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: CONFIG_SUSPEND and power consumption
-Date: Mon, 20 Aug 2007 21:08:35 +0200
-User-Agent: KMail/1.9.5
-Cc: Oliver Neukum <oliver@neukum.org>, Jean Delvare <khali@linux-fr.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20070819153259.2c96b904@hyperion.delvare> <200708201211.34698.oliver@neukum.org> <20070820172907.GC3975@ucw.cz>
-In-Reply-To: <20070820172907.GC3975@ucw.cz>
+	Mon, 20 Aug 2007 15:00:23 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:47663 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750826AbXHTTAW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 15:00:22 -0400
+Message-ID: <46C9E4B9.1080900@linux.vnet.ibm.com>
+Date: Tue, 21 Aug 2007 00:30:09 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: schwidefsky@de.ibm.com
+CC: Ingo Molnar <mingo@elte.hu>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [accounting regression since rc1]  scheduler updates
+References: <20070812163225.GA11996@elte.hu> <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu> <1187629438.8541.40.camel@localhost>  <20070820180810.GA25160@elte.hu> <1187634782.4028.10.camel@localhost>
+In-Reply-To: <1187634782.4028.10.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708202108.35674.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 20 August 2007 19:29, Pavel Machek wrote:
-> Hi!
+Martin Schwidefsky wrote:
+> On Mon, 2007-08-20 at 20:08 +0200, Ingo Molnar wrote:
+>> For sched_clock()'s behavior while the virtual CPU is idle: my current 
+>> idea for that is the patch below (a loosely analoguous problem exists 
+>> with nohz/dynticks): it makes sched_clock() valid across idle periods 
+>> too and uses wall-clock time for that.
 > 
-> > > If I rmmod "ehci-hcd" then the power consumption is back to 69 W. This
-> > > confirms that this is really USB-related. I have to admit that I did
-> > > not expect an external drive to eat that much power from the system,
-> > > especially when not used. I am told that VIA chips are notoriously bad
-> > > at this kind of things. I'll try the same external drive on an Intel
-> > > system later today.
-> > > 
-> > > The last mystery remaining is how USB "activity" can cause my CPU to
-> > > heat. I would expect the south bridge to heat, not the CPU.
-> > 
-> > USB, or strictly speaking EHCI, OHCI and UHCI, use DMA. To allow
-> > that the cache coherency logic has to be active. Therefore your CPU
-> > cannot go to C3. Therefore it draws more power. The problem we are
-> > facing in USB is that to get great savings, our coverage has to be perfect.
-> > One device that cannot be autosuspended and we lose most savings.
+> Ok, that would mean that sched_clock can just return the virtual cpu
+> time and the two hooks starts and stops the idle periods as far as the
+> scheduler is concerned. In this case we can use the patch from Jan with
+> the new implementation for sched_clock and add the two hooks to the
+> places where the cpu-idle notifiers are done (do_monitor_call and
+> default_idle). In fact this could be an idle-notifier. Hmm, I take a
+> closer look tomorrow when I'm back at the office.
 > 
-> Ok.. but CONFIG_USB_SUSPEND should not really have anything to do with
-> CONFIG_SUSPEND (= s2ram). Perhaps it should depend on CONFIG_PM
-> instead?
 
-CONFIG_USB_SUSPEND doesn't depend on CONFIG_SUSPEND.
+<snip>
 
-Greetings,
-Rafael
+I am partially responsible for the regression. While working on the
+CPU accounting change, I for some unknown reason always assumed
+that sched_clock() was virtualized. I should have taken a closer look.
+
+Ingo, with this new approach, sched_clock() although not virtualized,
+advances as if it is (due to the idle state change accounting).
+I have one question though, what if the underlying CPU is forcefully
+scheduled out from the virtual CPU?
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
