@@ -1,79 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760698AbXHTWIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbXHTWOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760698AbXHTWIQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 18:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbXHTWH5
+	id S1756716AbXHTWOV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 18:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbXHTWOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 18:07:57 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33756 "EHLO gate.crashing.org"
+	Mon, 20 Aug 2007 18:14:12 -0400
+Received: from ns1.suse.de ([195.135.220.2]:57986 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750979AbXHTWHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 18:07:54 -0400
-In-Reply-To: <46C997B1.1010800@redhat.com>
-References: <20070815234021.GA28775@gondor.apana.org.au> <3694fb2e4ed1e4d9bf873c0d050c911e@kernel.crashing.org> <46C3B50E.7010702@yahoo.com.au> <194369f4c96ea0e24decf8f9197d5bad@kernel.crashing.org> <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <46C516BA.60700@yahoo.com.au> <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org> <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au> <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com> <46C997B1.1010800@redhat.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <417ebba299a7ad3c4b7a31c4f860a814@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       rpjday@mindspring.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, satyam@infradead.org,
-       zlynx@acm.org, schwidefsky@de.ibm.com,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Tue, 21 Aug 2007 00:04:17 +0200
-To: Chris Snook <csnook@redhat.com>
-X-Mailer: Apple Mail (2.623)
+	id S1751228AbXHTWOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 18:14:11 -0400
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 7/7] Switch of PF_MEMALLOC during writeout
+References: <20070820215040.937296148@sgi.com>
+	<20070820215317.441134723@sgi.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 21 Aug 2007 01:08:06 +0200
+In-Reply-To: <20070820215317.441134723@sgi.com>
+Message-ID: <p73ps1hztwp.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Right. ROTFL... volatile actually breaks atomic_t instead of making 
->> it safe. x++ becomes a register load, increment and a register store. 
->> Without volatile we can increment the memory directly. It seems that 
->> volatile requires that the variable is loaded into a register first 
->> and then operated upon. Understandable when you think about volatile 
->> being used to access memory mapped I/O registers where a RMW 
->> operation could be problematic.
->
-> So, if we want consistent behavior, we're pretty much screwed unless 
-> we use inline assembler everywhere?
+Christoph Lameter <clameter@sgi.com> writes:
 
-Nah, this whole argument is flawed -- "without volatile" we still
-*cannot* "increment the memory directly".  On x86, you need a lock
-prefix; on other archs, some other mechanism to make the memory
-increment an *atomic* memory increment.
+> Switch off PF_MEMALLOC during both direct and kswapd reclaim.
+> 
+> This works because we are not holding any locks at that point because
+> reclaim is essentially complete. The write occurs when the memory on
+> the zones is at the high water mark so it is unlikely that writeout
+> will get into trouble. If so then reclaim can be called recursively to
+> reclaim more pages.
 
-And no, RMW on MMIO isn't "problematic" at all, either.
+What would stop multiple recursions in extreme low memory cases? Seems 
+risky to me and risking stack overflow.  Perhaps define another flag to catch that?
 
-An RMW op is a read op, a modify op, and a write op, all rolled
-into one opcode.  But three actual operations.
-
-
-The advantages of asm code for atomic_{read,set} are:
-1) all the other atomic ops are implemented that way already;
-2) you have full control over the asm insns selected, in particular,
-    you can guarantee you *do* get an atomic op;
-3) you don't need to use "volatile <data>" which generates
-    not-all-that-good code on archs like x86, and we want to get rid
-    of it anyway since it is problematic in many ways;
-4) you don't need to use *(volatile <type>*)&<data>, which a) doesn't
-    exist in C; b) isn't documented or supported in GCC; c) has a recent
-    history of bugginess; d) _still uses volatile objects_; e) _still_
-    is problematic in almost all those same ways as in 3);
-5) you can mix atomic and non-atomic accesses to the atomic_t, which
-    you cannot with the other alternatives.
-
-The only disadvantage I know of is potentially slightly worse
-instruction scheduling.  This is a generic asm() problem: GCC
-cannot see what actual insns are inside the asm() block.
-
-
-Segher
-
+-Andi
