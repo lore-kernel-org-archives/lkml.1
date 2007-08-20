@@ -1,43 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762031AbXHTRO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbXHTRPM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762031AbXHTRO2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 13:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760718AbXHTROR
+	id S1762103AbXHTRPM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 13:15:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759982AbXHTRO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 13:14:17 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:57347 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760685AbXHTROQ (ORCPT
+	Mon, 20 Aug 2007 13:14:57 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:1244 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759607AbXHTRO4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 13:14:16 -0400
-Message-ID: <46C9CBDE.6030903@s5r6.in-berlin.de>
-Date: Mon, 20 Aug 2007 19:14:06 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+	Mon, 20 Aug 2007 13:14:56 -0400
+X-IronPort-AV: i="4.19,285,1183348800"; 
+   d="scan'208"; a="37595387:sNHT46471348"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Paul Mundt" <lethal@linux-sh.org>
+Subject: Re: [PATCH 1/1] ensure we don't use bootconsoles after init has been released
+Date: Mon, 20 Aug 2007 13:14:57 -0400
+User-Agent: KMail/1.9.5
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Gerd Hoffmann" <kraxel@redhat.com>
+References: <200708192246.05783.rgetz@blackfin.uclinux.org> <8bd0f97a0708192011m1b957e57je313850a255dcac7@mail.gmail.com> <20070820033143.GA4918@linux-sh.org>
+In-Reply-To: <20070820033143.GA4918@linux-sh.org>
 MIME-Version: 1.0
-To: Xu Yang <risingsunxy@googlemail.com>
-CC: linux-kernel@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: warning in set_irq_chip, ARM port (was Re: bug information)
-References: <ab40e9c0708170911r539f4f63t3659084d52567522@mail.gmail.com>	 <46C6BF3B.2000502@s5r6.in-berlin.de> <ab40e9c0708200625m2a5abd59wd91966c2c82ce12a@mail.gmail.com>
-In-Reply-To: <ab40e9c0708200625m2a5abd59wd91966c2c82ce12a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708201314.57801.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 20 Aug 2007 17:14:53.0277 (UTC) FILETIME=[9F9668D0:01C7E34D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xu Yang wrote:
-> as long as the program jump to the interrupt
-> routine(realview_timer_interrupt) of the timer0, the program can not
-> go further, it only toggles between the gic_* functions, such as
-> gic_ack_irq. gic_mask_irq, handle_level_irq, and so on.
-> 
-> do you have any idea where could be the problem?
+Try #3...
 
-Perhaps post your changes at linux-arm-kernel as patch against mainline,
-ideally 2.6.22(.y) or 2.6.23-rc.  The people there might be in a better
-position to give advice.
--- 
-Stefan Richter
--=====-=-=== =--- =---=
-http://arcgraph.de/sr/
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+ 
+This is a followup to the cleanups for earlyprintk patch from Gerd Hoffmann
+ 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=69331af79cf29e26d1231152a172a1a10c2df511
+ 
+This ensures that a bootconsole is unregistered if it is not replaced.
+The current implementation spews garbage out the bootconsole in this case,
+since the bootconsole structure is normally in the init section, and is
+freed, but still used.
+ 
+Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+CC: Gerd Hoffmann <kraxel@redhat.com>
+CC: Paul Mundt <lethal@linux-sh.org>
+CC: Mike Frysinger <vapier.adi@gmail.com>
+---
+ printk.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+
+Index: linux-2.6.x/kernel/printk.c
+===================================================================
+--- linux-2.6.x/kernel/printk.c
++++ linux-2.6.x/kernel/printk.c
+@@ -1104,6 +1104,19 @@
+ }
+ EXPORT_SYMBOL(unregister_console);
+ 
++static int __init disable_boot_consoles(void)
++{
++	printk(KERN_INFO "here\n");
++
++	if (console_drivers->flags & CON_BOOT) {
++		printk(KERN_INFO "turn off boot console %s%d\n",
++			console_drivers->name, console_drivers->index);
++		return unregister_console(console_drivers);
++	}
++	return 0;
++}
++late_initcall(disable_boot_consoles);
++
+ /**
+  * tty_write_message - write a message to a certain tty, not just the console.
+  * @tty: the destination tty_struct
