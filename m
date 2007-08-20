@@ -1,41 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbXHTKpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758897AbXHTKqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757542AbXHTKpc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 06:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbXHTKpX
+	id S1758897AbXHTKqQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 06:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbXHTKqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 06:45:23 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:47479 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751303AbXHTKpW (ORCPT
+	Mon, 20 Aug 2007 06:46:00 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:49599 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751779AbXHTKqA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 06:45:22 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] [-mm] FS: file name must be unique in the same dir in procfs
-Date: Mon, 20 Aug 2007 12:45:17 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-References: <1187605699.2920.147.camel@acpi-hp.sh.intel.com>
-In-Reply-To: <1187605699.2920.147.camel@acpi-hp.sh.intel.com>
+	Mon, 20 Aug 2007 06:46:00 -0400
+Date: Mon, 20 Aug 2007 11:44:19 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, a.zummo@towertech.it,
+       linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
+Subject: Re: [PATCH] rtc: Make rtc-rs5c348 driver hotplug-aware (take 2)
+Message-ID: <20070820104419.GD4493@linux-mips.org>
+References: <20070819.223210.21590535.anemo@mba.ocn.ne.jp> <200708191849.16648.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708201245.17780.oliver@neukum.org>
+In-Reply-To: <200708191849.16648.david-b@pacbell.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 20 August 2007 schrieb Zhang Rui:
-> Files name must be unique in the same directory.
+On Sun, Aug 19, 2007 at 06:49:16PM -0700, David Brownell wrote:
+
+> On Sunday 19 August 2007, Atsushi Nemoto wrote:
+> > The rtc-rs5c348 SPI driver name doesn't match its module name, which
+> > prevents it from properly hotplugging.  There is only one in-tree user
+> > of its driver, which is fixed by this patch too.
+> > 
+> > Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 > 
-> Bug is reported here: 
-> http://bugzilla.kernel.org/show_bug.cgi?id=8798
+> ACK.
 
-Then I'd say fix the callers. This will paper over bugs.
+Okay, will merge this one.
 
-	Regards
-		Oliver
-
+  Ralf
