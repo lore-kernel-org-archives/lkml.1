@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762128AbXHTRQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762229AbXHTRRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762128AbXHTRQn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 13:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760386AbXHTRQe
+	id S1762229AbXHTRRU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 13:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760777AbXHTRRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 13:16:34 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:43020 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759982AbXHTRQd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 13:16:33 -0400
-Date: Mon, 20 Aug 2007 13:16:19 -0400
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Nicolas Pitre <nico@cam.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Jon Smirl <jonsmirl@gmail.com>,
-       Git Mailing List <git@vger.kernel.org>
-Subject: Re: Git tree for old kernels
-Message-ID: <20070820171618.GB9869@filer.fsl.cs.sunysb.edu>
-References: <9e4733910707221349s462aa11bj714956f7cdc72aac@mail.gmail.com> <alpine.LFD.0.999.0708191453030.16727@xanadu.home>
+	Mon, 20 Aug 2007 13:17:05 -0400
+Received: from ns1.suse.de ([195.135.220.2]:35066 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760310AbXHTRRD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 13:17:03 -0400
+To: "Felix Marti" <felix@chelsio.com>
+Cc: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>, jeff@garzik.org,
+       netdev@vger.kernel.org, rdreier@cisco.com, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org, David Miller <davem@davemloft.net>
+Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
+References: <20070819.174017.77241227.davem@davemloft.net>
+	<8A71B368A89016469F72CD08050AD334018E20BE@maui.asicdesigners.com>
+	<20070820094317.GA14817@2ka.mipt.ru>
+	<8A71B368A89016469F72CD08050AD334018E2115@maui.asicdesigners.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 20 Aug 2007 20:10:56 +0200
+In-Reply-To: <8A71B368A89016469F72CD08050AD334018E2115@maui.asicdesigners.com>
+Message-ID: <p73y7g6yt3j.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708191453030.16727@xanadu.home>
-User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 19, 2007 at 03:24:56PM -0400, Nicolas Pitre wrote:
-> On Sun, 22 Jul 2007, Jon Smirl wrote:
-> 
-> > Continuing on with kernel archeology for embedded systems, any
-> > interest in making a git tree with all of the kernel versions from the
-> > beginning up to the start of the current git tree?
-> 
-> I just put the archive I've gathered so far in a Git tree on kernel.org:
-> 
->     git://git.kernel.org/pub/scm/linux/kernel/git/nico/archive.git
-> 
-> It is also available through gitweb from:
-> 
->     http://git.kernel.org/?p=linux/kernel/git/nico/archive.git
- 
-I don't mean to nit-pick but, would it be possible to have the timestamps
-for the commits closer to the release dates?
+"Felix Marti" <felix@chelsio.com> writes:
 
-I must say, impressive work.
+> What I was referring to is that TSO(/LRO) have their own
+> issues, some eluded to by Roland and me. In fact, customers working on
+> the LSR couldn't use TSO due to the burstiness it introduces
 
-Thanks!
+That was in old kernels where TSO didn't honor the initial cwnd correctly, 
+right? I assume it's long fixed.
 
-Josef 'Jeff' Sipek.
+If not please clarify what the problem was.
 
--- 
-Computer Science is no more about computers than astronomy is about
-telescopes.
-		- Edsger Dijkstra
+> have a look at graphics.
+> Graphics used to be done by the host CPU and now we have dedicated
+> graphics adapters that do a much better job...
+
+Is your off load device as programable as a modern GPU?
+
+> farfetched that offload devices can do a better job at a data-flow
+> problem?
+
+One big difference is that there is no potentially adverse and
+always varying internet between the graphics card and your monitor.
+
+-Andi
