@@ -1,175 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762409AbXHTWy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762457AbXHTWz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762409AbXHTWy6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 18:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760878AbXHTWw4
+	id S1762457AbXHTWz2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 18:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760972AbXHTWxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 18:52:56 -0400
-Received: from mx2.suse.de ([195.135.220.15]:53955 "EHLO mx2.suse.de"
+	Mon, 20 Aug 2007 18:53:00 -0400
+Received: from ns1.suse.de ([195.135.220.2]:60166 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756933AbXHTWwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 18:52:54 -0400
-Message-Id: <20070820225117.839151000@suse.de>
+	id S1760906AbXHTWw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 18:52:59 -0400
+Message-Id: <20070820225122.627806000@suse.de>
 References: <20070820224806.154198000@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 20 Aug 2007 15:48:14 -0700
+Date: Mon, 20 Aug 2007 15:48:15 -0700
 From: tonyj@suse.de
 To: linux-kernel@vger.kernel.org
-Cc: dan.j.williams@intel.com, kay.sievers@vrfy.org
-Subject: [patch 08/14] Convert from class_device to device for DMA engine
+Cc: dbrownell@users.sourceforge.net, kay.sievers@vrfy.org
+Subject: [patch 09/14] Convert from class_device to device for SPI
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -- 
-Content-Disposition: inline; filename=dma.patch
+Content-Disposition: inline; filename=spi.patch
 
-Convert from class_device to device for drivers/dma/dmaengine.  This is
-part of the work to eliminate struct class_device.
+Convert from class_device to device for drivers/spi.  This is part of the work 
+to eliminate struct class_device.
 
 ---
- drivers/dma/dmaengine.c   |   43 ++++++++++++++++++++++---------------------
- include/linux/dmaengine.h |    3 ++-
- 2 files changed, 24 insertions(+), 22 deletions(-)
+ drivers/spi/spi.c         |   36 ++++++++++++++++++------------------
+ drivers/spi/spi_bitbang.c |    2 +-
+ drivers/spi/spi_lm70llp.c |    2 +-
+ include/linux/spi/spi.h   |   12 ++++++------
+ 4 files changed, 26 insertions(+), 26 deletions(-)
 
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -41,12 +41,12 @@
-  * the definition of dma_event_callback in dmaengine.h.
-  *
-  * Each device has a kref, which is initialized to 1 when the device is
-- * registered. A kref_get is done for each class_device registered.  When the
-- * class_device is released, the coresponding kref_put is done in the release
-+ * registered. A kref_get is done for each device registered.  When the
-+ * device is released, the coresponding kref_put is done in the release
-  * method. Every time one of the device's channels is allocated to a client,
-  * a kref_get occurs.  When the channel is freed, the coresponding kref_put
-  * happens. The device's release function does a completion, so
-- * unregister_device does a remove event, class_device_unregister, a kref_put
-+ * unregister_device does a remove event, device_unregister, a kref_put
-  * for the first reference, then waits on the completion for all other
-  * references to finish.
-  *
-@@ -77,9 +77,9 @@ static LIST_HEAD(dma_client_list);
- 
- /* --- sysfs implementation --- */
- 
--static ssize_t show_memcpy_count(struct class_device *cd, char *buf)
-+static ssize_t show_memcpy_count(struct device *dev, struct device_attribute *attr, char *buf)
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -207,7 +207,7 @@ struct spi_device *spi_new_device(struct
+ 				  struct spi_board_info *chip)
  {
--	struct dma_chan *chan = container_of(cd, struct dma_chan, class_dev);
-+	struct dma_chan *chan = to_dma_chan(dev);
- 	unsigned long count = 0;
- 	int i;
+ 	struct spi_device	*proxy;
+-	struct device		*dev = master->cdev.dev;
++	struct device		*dev = master->dev.parent;
+ 	int			status;
  
-@@ -89,9 +89,10 @@ static ssize_t show_memcpy_count(struct 
- 	return sprintf(buf, "%lu\n", count);
+ 	/* NOTE:  caller did any chip->bus_num checks necessary.
+@@ -242,7 +242,7 @@ struct spi_device *spi_new_device(struct
+ 	proxy->modalias = chip->modalias;
+ 
+ 	snprintf(proxy->dev.bus_id, sizeof proxy->dev.bus_id,
+-			"%s.%u", master->cdev.class_id,
++			"%s.%u", master->dev.bus_id,
+ 			chip->chip_select);
+ 	proxy->dev.parent = dev;
+ 	proxy->dev.bus = &spi_bus_type;
+@@ -341,18 +341,18 @@ static void scan_boardinfo(struct spi_ma
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+-static void spi_master_release(struct class_device *cdev)
++static void spi_master_release(struct device *dev)
+ {
+ 	struct spi_master *master;
+ 
+-	master = container_of(cdev, struct spi_master, cdev);
++	master = container_of(dev, struct spi_master, dev);
+ 	kfree(master);
  }
  
--static ssize_t show_bytes_transferred(struct class_device *cd, char *buf)
-+static ssize_t show_bytes_transferred(struct device *dev, struct device_attribute *attr,
-+				      char *buf)
- {
--	struct dma_chan *chan = container_of(cd, struct dma_chan, class_dev);
-+	struct dma_chan *chan = to_dma_chan(dev);
- 	unsigned long count = 0;
- 	int i;
- 
-@@ -101,9 +102,9 @@ static ssize_t show_bytes_transferred(st
- 	return sprintf(buf, "%lu\n", count);
- }
- 
--static ssize_t show_in_use(struct class_device *cd, char *buf)
-+static ssize_t show_in_use(struct device *dev, struct device_attribute *attr, char *buf)
- {
--	struct dma_chan *chan = container_of(cd, struct dma_chan, class_dev);
-+	struct dma_chan *chan = to_dma_chan(dev);
- 	int in_use = 0;
- 
- 	if (unlikely(chan->slow_ref) &&
-@@ -119,7 +120,7 @@ static ssize_t show_in_use(struct class_
- 	return sprintf(buf, "%d\n", in_use);
- }
- 
--static struct class_device_attribute dma_class_attrs[] = {
-+static struct device_attribute dma_attrs[] = {
- 	__ATTR(memcpy_count, S_IRUGO, show_memcpy_count, NULL),
- 	__ATTR(bytes_transferred, S_IRUGO, show_bytes_transferred, NULL),
- 	__ATTR(in_use, S_IRUGO, show_in_use, NULL),
-@@ -128,16 +129,16 @@ static struct class_device_attribute dma
- 
- static void dma_async_device_cleanup(struct kref *kref);
- 
--static void dma_class_dev_release(struct class_device *cd)
-+static void dma_dev_release(struct device *dev)
- {
--	struct dma_chan *chan = container_of(cd, struct dma_chan, class_dev);
-+	struct dma_chan *chan = to_dma_chan(dev);
- 	kref_put(&chan->device->refcount, dma_async_device_cleanup);
- }
- 
- static struct class dma_devclass = {
--	.name            = "dma",
--	.class_dev_attrs = dma_class_attrs,
--	.release = dma_class_dev_release,
-+	.name		= "dma",
-+	.dev_attrs	= dma_attrs,
-+	.dev_release	= dma_dev_release,
+ static struct class spi_master_class = {
+ 	.name		= "spi_master",
+ 	.owner		= THIS_MODULE,
+-	.release	= spi_master_release,
++	.dev_release	= spi_master_release,
  };
  
- /* --- client and device registration --- */
-@@ -384,12 +385,12 @@ int dma_async_device_register(struct dma
- 			continue;
  
- 		chan->chan_id = chancnt++;
--		chan->class_dev.class = &dma_devclass;
--		chan->class_dev.dev = NULL;
--		snprintf(chan->class_dev.class_id, BUS_ID_SIZE, "dma%dchan%d",
-+		chan->dev.class = &dma_devclass;
-+		chan->dev.parent = NULL;
-+		snprintf(chan->dev.bus_id, BUS_ID_SIZE, "dma%dchan%d",
- 		         device->dev_id, chan->chan_id);
+@@ -360,7 +360,7 @@ static struct class spi_master_class = {
+  * spi_alloc_master - allocate SPI master controller
+  * @dev: the controller, possibly using the platform_bus
+  * @size: how much zeroed driver-private data to allocate; the pointer to this
+- *	memory is in the class_data field of the returned class_device,
++ *	memory is in the driver_data field of the returned device,
+  *	accessible with spi_master_get_devdata().
+  * Context: can sleep
+  *
+@@ -386,9 +386,9 @@ struct spi_master *spi_alloc_master(stru
+ 	if (!master)
+ 		return NULL;
  
--		rc = class_device_register(&chan->class_dev);
-+		rc = device_register(&chan->dev);
- 		if (rc) {
- 			chancnt--;
- 			free_percpu(chan->local);
-@@ -416,7 +417,7 @@ err_out:
- 		if (chan->local == NULL)
- 			continue;
- 		kref_put(&device->refcount, dma_async_device_cleanup);
--		class_device_unregister(&chan->class_dev);
-+		device_unregister(&chan->dev);
- 		chancnt--;
- 		free_percpu(chan->local);
- 	}
-@@ -450,7 +451,7 @@ void dma_async_device_unregister(struct 
+-	class_device_initialize(&master->cdev);
+-	master->cdev.class = &spi_master_class;
+-	master->cdev.dev = get_device(dev);
++	device_initialize(&master->dev);
++	master->dev.class = &spi_master_class;
++	master->dev.parent = get_device(dev);
+ 	spi_master_set_devdata(master, &master[1]);
  
- 	list_for_each_entry(chan, &device->channels, device_node) {
- 		dma_clients_notify_removed(chan);
--		class_device_unregister(&chan->class_dev);
-+		device_unregister(&chan->dev);
- 		dma_chan_release(chan);
- 	}
+ 	return master;
+@@ -418,7 +418,7 @@ EXPORT_SYMBOL_GPL(spi_alloc_master);
+ int spi_register_master(struct spi_master *master)
+ {
+ 	static atomic_t		dyn_bus_id = ATOMIC_INIT((1<<15) - 1);
+-	struct device		*dev = master->cdev.dev;
++	struct device		*dev = master->dev.parent;
+ 	int			status = -ENODEV;
+ 	int			dynamic = 0;
  
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -132,7 +132,7 @@ struct dma_chan {
+@@ -443,12 +443,12 @@ int spi_register_master(struct spi_maste
+ 	/* register the device, then userspace will see it.
+ 	 * registration fails if the bus ID is in use.
+ 	 */
+-	snprintf(master->cdev.class_id, sizeof master->cdev.class_id,
++	snprintf(master->dev.bus_id, sizeof master->dev.bus_id,
+ 		"spi%u", master->bus_num);
+-	status = class_device_add(&master->cdev);
++	status = device_add(&master->dev);
+ 	if (status < 0)
+ 		goto done;
+-	dev_dbg(dev, "registered master %s%s\n", master->cdev.class_id,
++	dev_dbg(dev, "registered master %s%s\n", master->dev.bus_id,
+ 			dynamic ? " (dynamic)" : "");
  
- 	/* sysfs */
- 	int chan_id;
--	struct class_device class_dev;
-+	struct device dev;
+ 	/* populate children from any spi device tables */
+@@ -481,8 +481,8 @@ void spi_unregister_master(struct spi_ma
+ {
+ 	int dummy;
  
- 	struct kref refcount;
- 	int slow_ref;
-@@ -142,6 +142,7 @@ struct dma_chan {
- 	struct dma_chan_percpu *local;
+-	dummy = device_for_each_child(master->cdev.dev, NULL, __unregister);
+-	class_device_unregister(&master->cdev);
++	dummy = device_for_each_child(master->dev.parent, NULL, __unregister);
++	device_unregister(&master->dev);
+ }
+ EXPORT_SYMBOL_GPL(spi_unregister_master);
+ 
+@@ -498,13 +498,13 @@ EXPORT_SYMBOL_GPL(spi_unregister_master)
+  */
+ struct spi_master *spi_busnum_to_master(u16 bus_num)
+ {
+-	struct class_device	*cdev;
++	struct device		*dev;
+ 	struct spi_master	*master = NULL;
+ 	struct spi_master	*m;
+ 
+ 	down(&spi_master_class.sem);
+-	list_for_each_entry(cdev, &spi_master_class.children, node) {
+-		m = container_of(cdev, struct spi_master, cdev);
++	list_for_each_entry(dev, &spi_master_class.children, node) {
++		m = container_of(dev, struct spi_master, dev);
+ 		if (m->bus_num == bus_num) {
+ 			master = spi_master_get(m);
+ 			break;
+--- a/drivers/spi/spi_lm70llp.c
++++ b/drivers/spi/spi_lm70llp.c
+@@ -82,7 +82,7 @@ struct spi_lm70llp {
+ 	struct pardevice	*pd;
+ 	struct spi_device	*spidev_lm70;
+ 	struct spi_board_info	info;
+-	struct class_device	*cdev;
++	//struct device		*dev;
  };
  
-+#define to_dma_chan(p) container_of(p, struct dma_chan, dev)
+ /* REVISIT : ugly global ; provides "exclusive open" facility */
+--- a/include/linux/spi/spi.h
++++ b/include/linux/spi/spi.h
+@@ -195,7 +195,7 @@ static inline void spi_unregister_driver
  
- void dma_chan_cleanup(struct kref *kref);
+ /**
+  * struct spi_master - interface to SPI master controller
+- * @cdev: class interface to this driver
++ * @dev: device interface to this driver
+  * @bus_num: board-specific (and often SOC-specific) identifier for a
+  *	given SPI controller.
+  * @num_chipselect: chipselects are used to distinguish individual
+@@ -222,7 +222,7 @@ static inline void spi_unregister_driver
+  * message's completion function when the transaction completes.
+  */
+ struct spi_master {
+-	struct class_device	cdev;
++	struct device	dev;
  
+ 	/* other than negative (== assign one dynamically), bus_num is fully
+ 	 * board-specific.  usually that simplifies to being SOC-specific.
+@@ -268,17 +268,17 @@ struct spi_master {
+ 
+ static inline void *spi_master_get_devdata(struct spi_master *master)
+ {
+-	return class_get_devdata(&master->cdev);
++	return dev_get_drvdata(&master->dev);
+ }
+ 
+ static inline void spi_master_set_devdata(struct spi_master *master, void *data)
+ {
+-	class_set_devdata(&master->cdev, data);
++	dev_set_drvdata(&master->dev, data);
+ }
+ 
+ static inline struct spi_master *spi_master_get(struct spi_master *master)
+ {
+-	if (!master || !class_device_get(&master->cdev))
++	if (!master || !get_device(&master->dev))
+ 		return NULL;
+ 	return master;
+ }
+@@ -286,7 +286,7 @@ static inline struct spi_master *spi_mas
+ static inline void spi_master_put(struct spi_master *master)
+ {
+ 	if (master)
+-		class_device_put(&master->cdev);
++		put_device(&master->dev);
+ }
+ 
+ 
+--- a/drivers/spi/spi_bitbang.c
++++ b/drivers/spi/spi_bitbang.c
+@@ -472,7 +472,7 @@ int spi_bitbang_start(struct spi_bitbang
+ 	/* this task is the only thing to touch the SPI bits */
+ 	bitbang->busy = 0;
+ 	bitbang->workqueue = create_singlethread_workqueue(
+-			bitbang->master->cdev.dev->bus_id);
++			bitbang->master->dev.parent->bus_id);
+ 	if (bitbang->workqueue == NULL) {
+ 		status = -EBUSY;
+ 		goto err1;
 
 -- 
