@@ -1,95 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760756AbXHTQsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761489AbXHTQsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760756AbXHTQsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 12:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760165AbXHTQsE
+	id S1761489AbXHTQsl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760691AbXHTQsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 12:48:04 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52550 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760158AbXHTQsD (ORCPT
+	Mon, 20 Aug 2007 12:48:30 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:44741 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760903AbXHTQs3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 12:48:03 -0400
-Date: Mon, 20 Aug 2007 09:47:27 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: James Corey <ploversegg@yahoo.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.23-rc3 and SKY2 driver issue
-Message-ID: <20070820094727.2b92fad0@freepuppy.rosehill.hemminger.net>
-In-Reply-To: <624025.57129.qm@web90408.mail.mud.yahoo.com>
-References: <20070820090227.6ceb2934@freepuppy.rosehill.hemminger.net>
-	<624025.57129.qm@web90408.mail.mud.yahoo.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+	Mon, 20 Aug 2007 12:48:29 -0400
+Subject: Re: nmi_watchdog=2 regression in 2.6.21
+From: Daniel Walker <dwalker@mvista.com>
+To: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+Cc: eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <20070808142059.GF30805@atjola.homenet>
+References: <1186531609.22044.50.camel@imap.mvista.com>
+	 <20070808142059.GF30805@atjola.homenet>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 20 Aug 2007 09:44:56 -0700
+Message-Id: <1187628296.7732.14.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Aug 2007 09:23:46 -0700 (PDT)
-James Corey <ploversegg@yahoo.com> wrote:
+On Wed, 2007-08-08 at 16:20 +0200, Björn Steinbrink wrote:
+> On 2007.08.07 17:06:49 -0700, Daniel Walker wrote:
+> > 
+> > This patch below hangs my system on boot if I set nmi_watchdog=2 . It
+> > shows the NMI as stuck then the system hangs .. nmi_watchdog=1 works
+> > fine, and the system boots without any watchdog options ..
+> > 
+> > The machine is an Intel allagash development board, and it has two dual
+> > core Pentium-M cpus. I attached the .config I used.
 
-> 
-> --- Stephen Hemminger
-> <shemminger@linux-foundation.org> wrote:
-> 
-> > On Mon, 20 Aug 2007 08:42:21 -0700 (PDT)
-> > James Corey <ploversegg@yahoo.com> wrote:
-> > 
-> > > 
-> > > --- Stephen Hemminger
-> > > <shemminger@linux-foundation.org> wrote:
-> > > 
-> > > > On Thu, 16 Aug 2007 10:25:45 +0200
-> > > > "Michal Piotrowski"
-> > >
-> > > > Please reproduce with a more recent kernel?
-> > > 
-> > > Um, I thought 2.6.23rc WAS pretty recent. :-)
-> > > 
-> > > I'll check if there is something newer in the
-> > > repository now.
-> > > 
-> > 
-> > What is the chip version?  Please send console log:
-> > "dmesg | grep sky2"
-> > 
-> > 
-> > -- 
-> > Stephen Hemminger <shemminger@linux-foundation.org>
-> > 
-> 
-> 
-> Ah ... details.
-> 
-> Machine: 
-> 
-> Dell Optiplex 745
-> 
-> Kernel:
-> 
-> 2.6.23-rc3 #1 SMP Tue Aug 14 19:44:07 EDT 2007 x86_64
-> x86_64 x86_64 GNU/Linux
-> 
-> Card:
-> 
-> D-Link DGE-550SX
-> 
-> # dmesg | grep sky2
-> sky2 0000:04:00.0: v1.16 addr 0xdf9fc000 irq 16
-> Yukon-XL (0xb3) rev 3
-> sky2 eth1: addr 00:17:9a:73:87:60
-> sky2 eth1: enabling interface
-> sky2 eth1: ram buffer 96K
-> sky2 eth1: Link is up at 1000 Mbps, full duplex, flow
-> control none
+Could we put this on the known regressions list? It was added in 2.6.21,
+and still exists in lastest git (as of 15 min. ago) ..
 
-Okay, this is a fiber based card.  Does the error happen right away (ie all packets
-have bad sum), or is it sporadic (ie some magic packet or race in hardware).
-Also are you using regular (1500) or jumbo (9000) mtu?
+Daniel
 
-
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
