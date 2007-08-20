@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761597AbXHTUOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbXHTUS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761597AbXHTUOp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756041AbXHTUOh
+	id S1759601AbXHTUS3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbXHTUST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:14:37 -0400
-Received: from 78-32-9-130.no-dns-yet.enta.net ([78.32.9.130]:35892 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbXHTUOg (ORCPT
+	Mon, 20 Aug 2007 16:18:19 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:47345 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750941AbXHTUSS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:14:36 -0400
-Date: Mon, 20 Aug 2007 21:13:44 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-Message-ID: <20070820201344.GA13059@srcf.ucam.org>
-References: <1186990219.22431.37.camel@caritas-dev.intel.com> <20070815161642.1bfbbe9c.akpm@linux-foundation.org> <46C38AA8.5040202@zytor.com> <1187251248.15063.12.camel@caritas-dev.intel.com> <m11wdzrwl7.fsf@ebiederm.dsl.xmission.com> <86802c440708191646r1caab5d8yd82c55fd2c8262db@mail.gmail.com> <46C9C9C7.8080506@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46C9C9C7.8080506@zytor.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Mon, 20 Aug 2007 16:18:18 -0400
+Subject: Re: [RFC 2/9] Use NOMEMALLOC reclaim to allow reclaim if
+	PF_MEMALLOC is set
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dkegel@google.com, David Miller <davem@davemloft.net>,
+       Nick Piggin <npiggin@suse.de>
+In-Reply-To: <Pine.LNX.4.64.0708201158270.28863@schroedinger.engr.sgi.com>
+References: <20070814153021.446917377@sgi.com>
+	 <20070814153501.305923060@sgi.com> <20070818071035.GA4667@ucw.cz>
+	 <Pine.LNX.4.64.0708201158270.28863@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 20 Aug 2007 22:17:36 +0200
+Message-Id: <1187641056.5337.32.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 20, 2007 at 10:05:11AM -0700, H. Peter Anvin wrote:
-> Yinghai Lu wrote:
-> > 
-> > someone told me that EFI PEI will be 32 bit ( for mem etc
-> > initialization), and after that will be 64 bit, so the Run time
-> > service will be 64 bit only, and it will only support 64 bit OS with
-> > EFI. and they have another mode to emulate the legacy BIOS to boot
-> > 32bit OS.
-> > 
+On Mon, 2007-08-20 at 12:00 -0700, Christoph Lameter wrote:
+> On Sat, 18 Aug 2007, Pavel Machek wrote:
 > 
-> That seems unlikely for e.g. the existing Macs already in the field.
+> > > The reclaim is of particular important to stacked filesystems that may
+> > > do a lot of allocations in the write path. Reclaim will be working
+> > > as long as there are clean file backed pages to reclaim.
+> > 
+> > I don't get it. Lets say that we have stacked filesystem that needs
+> > it. That filesystem is broken today.
+> > 
+> > Now you give it second chance by reclaiming clean pages, but there are
+> > no guarantees that we have any.... so that filesystem is still broken
+> > with your patch...?
+> 
+> There is a guarantee that we have some because the user space program is 
+> executing. Meaning the executable pages can be retrieved. The amount 
+> dirty memory in the system is limited by the dirty_ratio. So the VM can 
+> only get into trouble if there is a sufficient amount of anonymous pages 
+> and all executables have been reclaimed. That is pretty rare.
+> 
+> Plus the same issue can happen today. Writes are usually not completed 
+> during reclaim. If the writes are sufficiently deferred then you have the 
+> same issue now.
 
-In which direction? The existing Macs will boot a 32 (or 16) bit OS 
-using legacy BIOS emulation. I've no idea if their EFI is 32 or 64 bit, 
-though.
+Once we have initiated (disk) writeout we do not need more memory to
+complete it, all we need to do is wait for the completion interrupt.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Networking is different here in that an unbounded amount of net traffic
+needs to be processed in order to find the completion event.
+
