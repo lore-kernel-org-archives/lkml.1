@@ -1,60 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764047AbXHTUea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765350AbXHTUeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764047AbXHTUea (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764244AbXHTU2O
+	id S1765350AbXHTUeu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764542AbXHTU2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:28:14 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55832 "EHLO smtp.polymtl.ca"
+	Mon, 20 Aug 2007 16:28:50 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55987 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764364AbXHTU2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:28:12 -0400
-Message-Id: <20070820202147.932918240@polymtl.ca>
-References: <20070820201902.597091353@polymtl.ca>
+	id S1762645AbXHTU2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:28:48 -0400
+Message-Id: <20070820202704.927923667@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 16:19:10 -0400
+Date: Mon, 20 Aug 2007 16:27:04 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>, prasanna@in.ibm.com,
-       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: [patch 08/11] Text Edit Lock - kprobes i386
-Content-Disposition: inline; filename=text-edit-lock-kprobes-i386.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:21:48 +0000
+Subject: [patch 0/4] Linux Kernel Markers
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:27:58 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make kprobes use text_set instead of text_poke.
+Hi Andrew,
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: prasanna@in.ibm.com
-CC: ananth@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
----
- arch/i386/kernel/kprobes.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Here is the new version of the kernel markers. Changes since last post:
 
-Index: linux-2.6-lttng/arch/i386/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/arch/i386/kernel/kprobes.c	2007-08-19 18:37:43.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/kernel/kprobes.c	2007-08-19 18:38:17.000000000 -0400
-@@ -170,12 +170,12 @@ int __kprobes arch_prepare_kprobe(struct
- 
- void __kprobes arch_arm_kprobe(struct kprobe *p)
- {
--	text_poke(p->addr, ((unsigned char []){BREAKPOINT_INSTRUCTION}), 1);
-+	text_set(p->addr, BREAKPOINT_INSTRUCTION, 1);
- }
- 
- void __kprobes arch_disarm_kprobe(struct kprobe *p)
- {
--	text_poke(p->addr, &p->opcode, 1);
-+	text_set(p->addr, p->opcode, 1);
- }
- 
- void __kprobes arch_remove_kprobe(struct kprobe *p)
+- Documentation fixes.
+
+Applies to 2.6.23-rc2-mm2, in this order:
+
+linux-kernel-markers-architecture-independent-code.patch
+linux-kernel-markers-kconfig-menus.patch
+linux-kernel-markers-documentation.patch
+linux-kernel-markers-port-blktrace-to-markers.patch
+
+Mathieu
 
 -- 
 Mathieu Desnoyers
