@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbXHTCCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758594AbXHTCCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758200AbXHTCCT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 22:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbXHTCCJ
+	id S1758594AbXHTCCz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 22:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXHTCCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 22:02:09 -0400
-Received: from smtp104.sbc.mail.re2.yahoo.com ([68.142.229.101]:45660 "HELO
+	Sun, 19 Aug 2007 22:02:10 -0400
+Received: from smtp104.sbc.mail.re2.yahoo.com ([68.142.229.101]:45667 "HELO
 	smtp104.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751365AbXHTCCI (ORCPT
+	by vger.kernel.org with SMTP id S1752423AbXHTCCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 19 Aug 2007 22:02:08 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=HFnCLa6HImrXrzwHH+8lRbIRDroTzfSJgMbIYE6h+/g8AlPyPGzH3WcfYx/zQEygWRoccZ1dn48s/swPq80zZoGTTHoKl0DFlwAqwTCArdjMWca509hMuAFUDTgeOf2pcBkvtPp+2sirryFGVmQEKwn+Hdu6KNRGhk7UHzTBQx8=  ;
-X-YMail-OSG: s306MVcVM1nMiN5r66msaIFi6AgvnOF_NEAVqpG0qUVJhR5YtIDdezrWvV638lcM1RoAPS27hA--
+  b=NZEycTt3tIyHmnoSyPnigvuUwXDqbQvPVdTKIn1fxR8McJXvRtZ0OOxnwemPKiY8YpSw0KWppXg/onQdF2s+NiJy6Z/Uo0vjtAn8mcCugXoM9LJ1E/yB1DoW049T75qDErRrfC0/V5G9zLFU3RiZIizbJUQshHgX05OS+6IvDcU=  ;
+X-YMail-OSG: _NFrxbYVM1mIr_lIHkQPFfLdUem_fF6fcpB4ZNd.KG05DgBT.oNZPXvjWqhFw1DI9Z9ad2Oo6o4L9XbdMSO6rhsSlJJi0z.DApByAcQ8G1_7ZzOcKNseEGj.nzGv0ks1MyvhvfI8OcSKtvk-
 From: David Brownell <david-b@pacbell.net>
 To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Subject: Re: [PATCH] rtc: Make rtc-rs5c348 driver hotplug-aware (take 2)
-Date: Sun, 19 Aug 2007 18:49:16 -0700
+Subject: Re: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware
+Date: Sun, 19 Aug 2007 19:02:04 -0700
 User-Agent: KMail/1.9.6
-Cc: a.zummo@towertech.it, linux-kernel@vger.kernel.org,
-       rtc-linux@googlegroups.com, ralf@linux-mips.org
-References: <20070819.223210.21590535.anemo@mba.ocn.ne.jp>
-In-Reply-To: <20070819.223210.21590535.anemo@mba.ocn.ne.jp>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, jengelh@computergmbh.de,
+       a.zummo@towertech.it, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com, greg@kroah.com
+References: <200708170902.01260.david-b@pacbell.net> <1187559950.4419.79.camel@lov.localdomain> <200708191848.21410.david-b@pacbell.net>
+In-Reply-To: <200708191848.21410.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708191849.16648.david-b@pacbell.net>
+Message-Id: <200708191902.04966.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 19 August 2007, Atsushi Nemoto wrote:
-> The rtc-rs5c348 SPI driver name doesn't match its module name, which
-> prevents it from properly hotplugging.  There is only one in-tree user
-> of its driver, which is fixed by this patch too.
+On Sunday 19 August 2007, David Brownell wrote:
+> On Sunday 19 August 2007, Kay Sievers wrote:
+> > No, I object to the concept of "platform" to disable all uevents by
+> > default, 
 > 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> Which it certainly doesn't do.
+>
+> Since the $SUBJECT patch doesn't affect a platform driver in any case,
+> all those comments are well off-topic for $SUBJECT.
 
-ACK.
+Sorry, my bad -- I was looking at the wrong files.
+(Kay -- apply cluebat to *my* head, on this point.)
 
-> ---
->  arch/mips/tx4938/toshiba_rbtx4938/setup.c |    2 +-
->  drivers/rtc/rtc-rs5c348.c                 |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/mips/tx4938/toshiba_rbtx4938/setup.c b/arch/mips/tx4938/toshiba_rbtx4938/setup.c
-> index 57f3c70..84ebff7 100644
-> --- a/arch/mips/tx4938/toshiba_rbtx4938/setup.c
-> +++ b/arch/mips/tx4938/toshiba_rbtx4938/setup.c
-> @@ -1115,7 +1115,7 @@ static void __init txx9_spi_init(unsigned long base, int irq)
->  static int __init rbtx4938_spi_init(void)
->  {
->  	struct spi_board_info srtc_info = {
-> -		.modalias = "rs5c348",
-> +		.modalias = "rtc-rs5c348",
->  		.max_speed_hz = 1000000, /* 1.0Mbps @ Vdd 2.0V */
->  		.bus_num = 0,
->  		.chip_select = 16 + SRTC_CS,
-> diff --git a/drivers/rtc/rtc-rs5c348.c b/drivers/rtc/rtc-rs5c348.c
-> index f50f3fc..8394626 100644
-> --- a/drivers/rtc/rtc-rs5c348.c
-> +++ b/drivers/rtc/rtc-rs5c348.c
-> @@ -226,7 +226,7 @@ static int __devexit rs5c348_remove(struct spi_device *spi)
->  
->  static struct spi_driver rs5c348_driver = {
->  	.driver = {
-> -		.name	= "rs5c348",
-> +		.name	= "rtc-rs5c348",
->  		.bus	= &spi_bus_type,
->  		.owner	= THIS_MODULE,
->  	},
-> 
+This is indeed a platform driver.  And v2 of this patch
+doesn't resolve its "won't hotplug" problem.  The simplest
+way to resolve that would be switching to the more widely
+used platform_device_register().
+
 
 
