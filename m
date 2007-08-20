@@ -1,34 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760931AbXHTQC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760697AbXHTQCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760931AbXHTQC3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 12:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760685AbXHTQCD
+	id S1760697AbXHTQCt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760846AbXHTQCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 12:02:03 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:37045 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760015AbXHTQCA (ORCPT
+	Mon, 20 Aug 2007 12:02:17 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:26002 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760830AbXHTQCP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 12:02:00 -0400
+	Mon, 20 Aug 2007 12:02:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=U3AjNcaak4k2ONxRdgKqDPoXaGLx/OGygB3jDXZ8kgSCjizyyjw7IUZB0128yLqVXLV3O642gizrk5KuE0/6saNMTeXpw9LPEE3b0NYZDcSJe0F5/AerFXqfMp+Sqr3c2HY/Se9M9CrxwFb/oIdmIiRFFSoj1teL2V/e5nkbSf0=
-Message-ID: <46C9BAE0.50706@googlemail.com>
-Date: Mon, 20 Aug 2007 18:01:36 +0200
+        b=G3FZ+VMFY3Gzaw4qqFUlk3fVscTDAEunDg3b/fGSR1mY6LpNMAiynXtNAVQr5UCo9GXn6D/aWKTIEDNv7czrkWJGfVU4xeaSNuQJ8aHn+a3euufYwpNoDTSSAt2otUpOtazE8zC3mxb2XrbcfC6WC+TSS+/4jH6AhdmNH8sCLIY=
+Message-ID: <46C9BAEF.9080605@googlemail.com>
+Date: Mon, 20 Aug 2007 18:01:51 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
-       linux-acpi@vger.kernel.org, Plamen Petrov <plamen.petrov@tk.ru.acad.bg>,
-       Michael Sedkowski <sedmich@gmail.com>,
-       Alex Hunsaker <badalex@gmail.com>,
-       Denis Sadykov <denis.m.sadykov@intel.com>, dth <dth@dth.net>,
-       linux-fsdevel@vger.kernel.org,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Andrew Clayton <andrew@digital-domain.net>
-Subject: Re: [2/4] 2.6.23-rc3: known regressions v2
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Stephen Hemminger <shemminger@osdl.org>, Thomas Meyer <thomas@m3y3r.de>,
+       Uwe Bugla <uwe.bugla@gmx.de>, Shish <shish@shishnet.org>,
+       Karl Meyer <adhocrocker@gmail.com>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Parag Warudkar <parag.warudkar@gmail.com>,
+       Zachary Amsden <zach@vmware.com>
+Subject: Re: [3/4] 2.6.23-rc3: known regressions v2
 References: <46C9B6C7.5070704@googlemail.com>
 In-Reply-To: <46C9B6C7.5070704@googlemail.com>
 X-Enigmail-Version: 0.95.3
@@ -59,57 +58,52 @@ Tejun Heo                              3
 
 
 
-ACPI
+Networking
 
-Subject         : 2.6.23-rc3 fails to boot (acpi)
-References      : http://lkml.org/lkml/2007/8/19/31
-Last known good : 2.6.23-rc2
-Submitter       : Alex Hunsaker <badalex@gmail.com>
-Caused-By       : ?
-Handled-By      : ?
-Status          : unknown
-
-Subject         : MCFG bug on hp nx6310
-References      : http://lkml.org/lkml/2007/8/8/252
+Subject         : NETDEV WATCHDOG: eth0: transmit timed out
+References      : http://lkml.org/lkml/2007/8/13/737
 Last known good : ?
-Submitter       : Michael Sedkowski <sedmich@gmail.com>
+Submitter       : Karl Meyer <adhocrocker@gmail.com>
 Caused-By       : ?
-Handled-By      : ?
-Status          : unknown
-
-Subject         : 2.6.23-rc1-git10 hangs on boot - needs "acpi=off"
-References      : http://lkml.org/lkml/2007/8/2/24
-Last known good : ?
-Submitter       : Plamen Petrov <plamen.petrov@tk.ru.acad.bg>
-Caused-By       : ?
-Handled-By      : Len Brown <len.brown@intel.com>
+Handled-By      : Francois Romieu <romieu@fr.zoreil.com>
 Status          : problem is being debugged
 
-
-
-CPUFREQ
-
-Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-References      : http://lkml.org/lkml/2007/7/27/298
-                  http://lkml.org/lkml/2007/7/29/371
+Subject         : Weird network problems with 2.6.23-rc2
+References      : http://lkml.org/lkml/2007/8/11/40
 Last known good : ?
-Submitter       : dth <dth@dth.net>
-Caused-By       : Len Brown <lenb@kernel.org>
-                  commit f79e3185dd0f8650022518d7624c876d8929061b
-Handled-By      : Len Brown <lenb@kernel.org>
-Status          : problem is being debugged
-
-
-
-FS
-
-Subject         : [NFSD OOPS] 2.6.23-rc1-git10
-References      : http://lkml.org/lkml/2007/8/2/462
-Last known good : ?
-Submitter       : Andrew Clayton <andrew@digital-domain.net>
+Submitter       : Shish <shish@shishnet.org>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
+
+Subject         : IP v4 routing is broken
+References      : http://www.stardust.webpages.pl/files/tbf/bugs/bug_report01.txt
+Last known good : 2.6.22-git2
+Submitter       : Uwe Bugla <uwe.bugla@gmx.de>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+Subject         : New wake ups from sky2
+References      : http://lkml.org/lkml/2007/7/20/386
+Last known good : ?
+Submitter       : Thomas Meyer <thomas@m3y3r.de>
+Caused-By       : Stephen Hemminger <shemminger@osdl.org>
+                  commit eb35cf60e462491249166182e3e755d3d5d91a28
+Handled-By      : Stephen Hemminger <shemminger@osdl.org>
+Status          : unknown
+
+
+
+Virtualization
+
+Subject         : CONFIG_VMI broken
+References      : http://lkml.org/lkml/2007/8/14/203
+Last known good : ?
+Submitter       : Parag Warudkar <parag.warudkar@gmail.com>
+Caused-By       : ?
+Handled-By      : Zachary Amsden <zach@vmware.com>
+Status          : problem is being debugged
 
 
 
