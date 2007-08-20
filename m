@@ -1,36 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758686AbXHTIU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbXHTIVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758686AbXHTIU2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 04:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbXHTIUQ
+	id S1758856AbXHTIVm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 04:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbXHTIVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 04:20:16 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:55894 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450AbXHTIUP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 04:20:15 -0400
-Message-ID: <46C94EB1.1070403@s5r6.in-berlin.de>
-Date: Mon, 20 Aug 2007 10:20:01 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.23-rc3-hrt2: tasklets replaced by workqueues?
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Aug 2007 04:21:33 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:34265 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752661AbXHTIVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 04:21:32 -0400
+Date: Mon, 20 Aug 2007 12:20:54 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [Devel] [-mm PATCH 1/9] Memory controller resource counters (v6)
+Message-ID: <20070820082054.GA6926@localhost.sw.ru>
+References: <20070817084228.26003.12568.sendpatchset@balbir-laptop> <20070817084238.26003.7733.sendpatchset@balbir-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070817084238.26003.7733.sendpatchset@balbir-laptop>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Aug 17, 2007 at 02:12:38PM +0530, Balbir Singh wrote:
+> --- /dev/null
+> +++ linux-2.6.23-rc2-mm2-balbir/kernel/res_counter.c
+> +void res_counter_init(struct res_counter *counter)
+> +{
+> +	spin_lock_init(&counter->lock);
+> +	counter->limit = (unsigned long)LONG_MAX;
 
-I've got a driver bug filed against 2.6.23-rc3-hrt2 with an oops beneath
-run_workqueue.  It looks a lot like another bug in mainline with a panic
-beneath run_timer_softirq.  Does -hrt replace tasklets by workqueues?
+why cast?
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8906
-http://bugzilla.kernel.org/show_bug.cgi?id=8646
--- 
-Stefan Richter
--=====-=-=== =--- =---=
-http://arcgraph.de/sr/
+> +int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
+> +{
+> +	if (counter->usage > (counter->limit - val)) {
+
+() aren't needed.
+
+> +		counter->failcnt++;
+> +		return -ENOMEM;
+> +	}
+> +
+> +	counter->usage += val;
+> +	return 0;
+> +}
+> +
+> +int res_counter_charge(struct res_counter *counter, unsigned long val)
+> +{
+> +	int ret;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&counter->lock, flags);
+> +	ret = res_counter_charge_locked(counter, val);
+> +	spin_unlock_irqrestore(&counter->lock, flags);
+> +	return ret;
+> +}
+> +
+> +void res_counter_uncharge_locked(struct res_counter *counter, unsigned long val)
+> +{
+> +	if (WARN_ON(counter->usage < val))
+> +		val = counter->usage;
+
+explicit if and WARN_ON(1) is clearer. I should send a patch banning such
+type of usage soon.
+
+> +
+> +	counter->usage -= val;
+> +}
+> +
+> +void res_counter_uncharge(struct res_counter *counter, unsigned long val)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&counter->lock, flags);
+> +	res_counter_uncharge_locked(counter, val);
+> +	spin_unlock_irqrestore(&counter->lock, flags);
+> +}
+
+> +ssize_t res_counter_write(struct res_counter *counter, int member,
+> +		const char __user *userbuf, size_t nbytes, loff_t *pos)
+> +{
+> +	int ret;
+> +	char *buf, *end;
+> +	unsigned long tmp, *val;
+> +
+> +	buf = kmalloc(nbytes + 1, GFP_KERNEL);
+
+please, switch to fixed buffer, allocating memory depending on size
+told by userspace will beat later. Ditto for other proc writing
+functions.
+
+> +	ret = -ENOMEM;
+> +	if (buf == NULL)
+> +		goto out;
+> +
+> +	buf[nbytes] = '\0';
+> +	ret = -EFAULT;
+> +	if (copy_from_user(buf, userbuf, nbytes))
+> +		goto out_free;
+> +
+> +	ret = -EINVAL;
+> +	tmp = simple_strtoul(buf, &end, 10);
+> +	if (*end != '\0')
+> +		goto out_free;
+> +
+> +	val = res_counter_member(counter, member);
+> +	*val = tmp;
+> +	ret = nbytes;
+> +out_free:
+> +	kfree(buf);
+> +out:
+> +	return ret;
+> +}
+
