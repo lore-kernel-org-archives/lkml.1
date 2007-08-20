@@ -1,45 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759804AbXHTNxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759381AbXHTOIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759804AbXHTNxQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 09:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756171AbXHTNxG
+	id S1759381AbXHTOIW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 10:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbXHTOIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 09:53:06 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:26262 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752925AbXHTNxC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 09:53:02 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: kvm-devel@lists.sourceforge.net
-Subject: Re: [kvm-devel] [PATCH 2/4] Introduce a new fields "gtime" and "cgtime" in task_struct and signal_struct
-Date: Mon, 20 Aug 2007 15:52:57 +0200
-User-Agent: KMail/1.9.7
-Cc: Laurent Vivier <Laurent.Vivier@bull.net>, Ingo Molnar <mingo@elte.hu>,
+	Mon, 20 Aug 2007 10:08:12 -0400
+Received: from il.qumranet.com ([82.166.9.18]:37677 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752302AbXHTOIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 10:08:11 -0400
+Message-ID: <46C9A057.6060303@qumranet.com>
+Date: Mon, 20 Aug 2007 17:08:23 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+CC: Ingo Molnar <mingo@elte.hu>, kvm-devel <kvm-devel@lists.sourceforge.net>,
        linux-kernel <linux-kernel@vger.kernel.org>,
        virtualization <virtualization@lists.linux-foundation.org>
-References: <46C99392.3050205@bull.net>
-In-Reply-To: <46C99392.3050205@bull.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200708201552.57617.borntraeger@de.ibm.com>
+Subject: Re: [kvm-devel] [PATCH 4/4] Modify KVM to update guest time accounting.
+References: <46C993A6.3060001@bull.net> <46C999C8.4080307@qumranet.com> <46C99C05.90701@bull.net>
+In-Reply-To: <46C99C05.90701@bull.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 20. August 2007 schrieb Laurent Vivier:
-> Index: kvm/fs/proc/array.c
-> ===================================================================
-> --- kvm.orig/fs/proc/array.c    2007-08-20 11:11:30.000000000 +0200
-> +++ kvm/fs/proc/array.c 2007-08-20 13:04:03.000000000 +0200
+Laurent Vivier wrote:
+> Avi Kivity wrote:
+>   
+>> Laurent Vivier wrote:
+>>     
+>>> [PATCH 4/4] Modify KVM to update guest time accounting.
+>>>
+>>>   
+>>>       
+>>> Index: kvm/drivers/kvm/kvm.h
+>>> ===================================================================
+>>> --- kvm.orig/drivers/kvm/kvm.h    2007-08-20 13:23:53.000000000 +0200
+>>> +++ kvm/drivers/kvm/kvm.h    2007-08-20 13:23:58.000000000 +0200
+>>> @@ -589,6 +589,17 @@ void kvm_mmu_unload(struct kvm_vcpu *vcp
+>>>  
+>>>  int kvm_hypercall(struct kvm_vcpu *vcpu, struct kvm_run *run);
+>>>  
+>>> +static inline void kvm_guest_enter(void)
+>>> +{
+>>> +#ifdef CONFIG_GUEST_ACCOUNTING
+>>> +    current->flags |= PF_VCPU;
+>>> +#endif
+>>>   
+>>>       
+>> Since you select GUEST_ACCOUNTING, the #ifdef is always true?
+>>     
+>
+> It is just to avoid error if we compile kvm module outside of the kernel, with
+> kernel without support of guest accounting. Can be removed if you want.
+>
+>   
 
-Just a heads up, this patch collides with this fix in mm:
-http://marc.info/?l=linux-mm-commits&m=118737949222362&w=2
+Ah okay.  We take care of the external module in 
+external-module-compat.h (in this case, we can #define PF_VCPU to 0 if 
+it is undefined).
 
-If Ingo accepts this fix, your patch should be adopted in array.c to use 
-cputime_t for gtime as well. Lets see what Ingo thinks.
+>>> +}
+>>> +
+>>> +static inline void kvm_guest_exit(void)
+>>> +{
+>>>   
+>>>       
+>> Missing content?
+>>     
+>
+> No, empty function.
+>
+> It is just to introduce "symmetry" in code, the VCPU code begins with
+> "kvm_guest_start()" and ends with "kvm_guest_exit()". And we have no operation
+> to do in kvm_guest_exit() (the PF_VCPU is cleared by account_system_time()), so
+> "empty function", removed by the optimizer (I hope).
+>   
+
+But what if account_system_time() is not called (because we exited 
+before the timer interrupt hit)?
 
 
-Christian
+-- 
+error compiling committee.c: too many arguments to function
+
