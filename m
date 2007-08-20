@@ -1,56 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765274AbXHTUcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764975AbXHTUdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765274AbXHTUcx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764164AbXHTU1d
+	id S1764975AbXHTUdU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764571AbXHTU1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:27:33 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51998 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764517AbXHTU1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:27:32 -0400
-Date: Mon, 20 Aug 2007 13:27:30 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Pavel Machek <pavel@ucw.cz>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dkegel@google.com, David Miller <davem@davemloft.net>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [RFC 2/9] Use NOMEMALLOC reclaim to allow reclaim if PF_MEMALLOC
- is set
-In-Reply-To: <1187641056.5337.32.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0708201323590.30053@schroedinger.engr.sgi.com>
-References: <20070814153021.446917377@sgi.com>  <20070814153501.305923060@sgi.com>
- <20070818071035.GA4667@ucw.cz>  <Pine.LNX.4.64.0708201158270.28863@schroedinger.engr.sgi.com>
- <1187641056.5337.32.camel@lappy>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 20 Aug 2007 16:27:38 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55641 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764549AbXHTU1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:27:36 -0400
+Message-Id: <20070820202145.502198525@polymtl.ca>
+References: <20070820201902.597091353@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Mon, 20 Aug 2007 16:19:04 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, hch@infradead.org,
+       prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net
+Subject: [patch 02/11] Kprobes - use a mutex to protect the instruction pages list.
+Content-Disposition: inline; filename=kprobes-use-mutex-for-insn-pages.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:21:46 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Aug 2007, Peter Zijlstra wrote:
+Protect the instruction pages list by a specific insn pages mutex, called in 
+get_insn_slot() and free_insn_slot(). It makes sure that architectures that does
+not need to call arch_remove_kprobe() does not take an unneeded kprobes mutex.
 
-> > Plus the same issue can happen today. Writes are usually not completed 
-> > during reclaim. If the writes are sufficiently deferred then you have the 
-> > same issue now.
-> 
-> Once we have initiated (disk) writeout we do not need more memory to
-> complete it, all we need to do is wait for the completion interrupt.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: hch@infradead.org
+CC: prasanna@in.ibm.com
+CC: ananth@in.ibm.com
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
+---
+ kernel/kprobes.c |   27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
 
-We cannot reclaim the page as long as the I/O is not complete. If you 
-have too many anonymous pages and the rest of memory is dirty then you can 
-get into OOM scenarios even without this patch.
+Index: linux-2.6-lttng/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2007-07-14 15:47:19.000000000 -0400
++++ linux-2.6-lttng/kernel/kprobes.c	2007-07-14 15:48:51.000000000 -0400
+@@ -101,6 +101,10 @@ enum kprobe_slot_state {
+ 	SLOT_USED = 2,
+ };
+ 
++/*
++ * Protects the kprobe_insn_pages list. Can nest into kprobe_mutex.
++ */
++static DEFINE_MUTEX(kprobe_insn_mutex);
+ static struct hlist_head kprobe_insn_pages;
+ static int kprobe_garbage_slots;
+ static int collect_garbage_slots(void);
+@@ -137,7 +141,9 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ {
+ 	struct kprobe_insn_page *kip;
+ 	struct hlist_node *pos;
++	kprobe_opcode_t *ret;
+ 
++	mutex_lock(&kprobe_insn_mutex);
+  retry:
+ 	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
+ 		if (kip->nused < INSNS_PER_PAGE) {
+@@ -146,7 +152,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 				if (kip->slot_used[i] == SLOT_CLEAN) {
+ 					kip->slot_used[i] = SLOT_USED;
+ 					kip->nused++;
+-					return kip->insns + (i * MAX_INSN_SIZE);
++					ret = kip->insns + (i * MAX_INSN_SIZE);
++					goto end;
+ 				}
+ 			}
+ 			/* Surprise!  No unused slots.  Fix kip->nused. */
+@@ -160,8 +167,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 	}
+ 	/* All out of space.  Need to allocate a new page. Use slot 0. */
+ 	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
+-	if (!kip)
+-		return NULL;
++	if (!kip) {
++		ret = NULL;
++		goto end;
++	}
+ 
+ 	/*
+ 	 * Use module_alloc so this page is within +/- 2GB of where the
+@@ -171,7 +180,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 	kip->insns = module_alloc(PAGE_SIZE);
+ 	if (!kip->insns) {
+ 		kfree(kip);
+-		return NULL;
++		ret = NULL;
++		goto end;
+ 	}
+ 	INIT_HLIST_NODE(&kip->hlist);
+ 	hlist_add_head(&kip->hlist, &kprobe_insn_pages);
+@@ -179,7 +189,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 	kip->slot_used[0] = SLOT_USED;
+ 	kip->nused = 1;
+ 	kip->ngarbage = 0;
+-	return kip->insns;
++	ret = kip->insns;
++end:
++	mutex_unlock(&kprobe_insn_mutex);
++	return ret;
+ }
+ 
+ /* Return 1 if all garbages are collected, otherwise 0. */
+@@ -213,7 +226,7 @@ static int __kprobes collect_garbage_slo
+ 	struct kprobe_insn_page *kip;
+ 	struct hlist_node *pos, *next;
+ 
+-	/* Ensure no-one is preepmted on the garbages */
++	/* Ensure no-one is preempted on the garbages */
+ 	if (check_safety() != 0)
+ 		return -EAGAIN;
+ 
+@@ -237,6 +250,7 @@ void __kprobes free_insn_slot(kprobe_opc
+ 	struct kprobe_insn_page *kip;
+ 	struct hlist_node *pos;
+ 
++	mutex_lock(&kprobe_insn_mutex);
+ 	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
+ 		if (kip->insns <= slot &&
+ 		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
+@@ -253,6 +267,7 @@ void __kprobes free_insn_slot(kprobe_opc
+ 
+ 	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
+ 		collect_garbage_slots();
++	mutex_unlock(&kprobe_insn_mutex);
+ }
+ #endif
+ 
 
-> Networking is different here in that an unbounded amount of net traffic
-> needs to be processed in order to find the completion event.
-
-Its not that different. Pages are pinned during writeout from reclaim and 
-it is not clear when the write will complete. There are no bounds that I 
-know in reclaim for the writeback of dirty anonymous pages.
-
-But some throttling function like for dirty pages is likely needed for 
-network traffic.
-
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
