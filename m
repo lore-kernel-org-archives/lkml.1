@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759109AbXHTMKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbXHTMMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759109AbXHTMKl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 08:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbXHTMKb
+	id S1759343AbXHTMMI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 08:12:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbXHTML5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 08:10:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47569 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754759AbXHTMK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 08:10:29 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.0.999.0708161550140.30176@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0708161550140.30176@woody.linux-foundation.org> <29015.1187178055@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, sds@tycho.nsa.gov,
-       casey@schaufler-ca.com, linux-fsdevel@vger.kernel.org,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-Subject: Re: Adding a security parameter to VFS functions
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Mon, 20 Aug 2007 13:09:52 +0100
-Message-ID: <11466.1187611792@redhat.com>
+	Mon, 20 Aug 2007 08:11:57 -0400
+Received: from no-dns-yet.demon.co.uk ([83.105.13.114]:32910 "EHLO
+	mailgate.netunix.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755961AbXHTML4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 08:11:56 -0400
+X-Greylist: delayed 1648 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Aug 2007 08:11:56 EDT
+Message-ID: <46C97E7F.3010604@netunix.com>
+Date: Mon, 20 Aug 2007 12:43:59 +0100
+From: Chris Newport <crn@netunix.com>
+Reply-To: crn@netunix.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7) Gecko/20040618
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Markus Dahms <mad@automagically.de>
+CC: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: possible endless loop in PROM initialization
+References: <20070820075949.GA5927@vimes.madsworld.lan> <20070820.010622.41634915.davem@davemloft.net> <20070820105320.GB4911@vimes.madsworld.lan>
+In-Reply-To: <20070820105320.GB4911@vimes.madsworld.lan>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Markus Dahms wrote:
 
-> > Would you object greatly to functions like vfs_mkdir() gaining a security
-> > parameter?  What I'm thinking of is this:
-> ...
-> Why the *hell* would mkdir() be so magical as to need something like that?
+>Hello again,
+>
+>David Miller wrote:
+>  
+>
+>>When we boot the firmware provides a vector of function
+>>pointers, and this is prom_nodeops.  So prom_nodeops->no_nextprop()
+>>is a routine inside the PROM.
+>>    
+>>
+>
+>Thanks. So there is no real chance to fix it but to override this
+>function?
+>The strange thing is that the PROM prompt handles it correctly:
+>
+>| ok devalias scsi /iommu/sbus/espdma/esp
+>| scsi isn't unique
+>  
+>
+Non-unique devalias entries are NASTY. Get rid of them, for example
+your second definition of scsi could be changed to scsidisk.
+You should also check that any nvramrc entries do not cause conflicts,
+it is common for nvramrc entries to refer to devalias entries, so you 
+may need to also change an nvramrc entry to match any devalias change.
 
-If you look again, you'll notice that I said "functions like vfs_mkdir()".  I
-was I using vfs_mkdir() as an example.  I didn't mean to apply this to
-directory creation only.  It would need to apply to all the vfs_*() entry
-points called by nfsd and cachefiles.
+You can disable the use of nvramrc from the OBP prompt with
+setenv if the entry isnon-essential, they are most commonly used
+where there is a mirrored root disk.
 
-David
+
