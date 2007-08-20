@@ -1,92 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760899AbXHTQ2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761282AbXHTQ3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760899AbXHTQ2e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 12:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759630AbXHTQ21
+	id S1761282AbXHTQ3d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759527AbXHTQ3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 12:28:27 -0400
-Received: from mx33.mail.ru ([194.67.23.194]:6476 "EHLO mx33.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758575AbXHTQ20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 12:28:26 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [2.6.23-rc3 possible regression] 8250 claims nonexisting device blocking IO port
-Date: Mon, 20 Aug 2007 20:28:22 +0400
-User-Agent: KMail/1.9.7
-Cc: linux-serial@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-References: <200708181107.56087.arvidjaar@mail.ru> <200708192147.47433.bjorn.helgaas@hp.com>
-In-Reply-To: <200708192147.47433.bjorn.helgaas@hp.com>
+	Mon, 20 Aug 2007 12:29:23 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:17031 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755086AbXHTQ3W convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 12:29:22 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2148326.CPktiLNlLb";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200708202028.22806.arvidjaar@mail.ru>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
+Date: Mon, 20 Aug 2007 09:26:31 -0700
+Message-ID: <8A71B368A89016469F72CD08050AD334018E2108@maui.asicdesigners.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
+thread-index: AcfjEo5Vjt/m7K2TTQCzE0MQOsFM6wAMLJtg
+References: <8A71B368A89016469F72CD08050AD334018E20BC@maui.asicdesigners.com><20070819.174017.77241227.davem@davemloft.net><8A71B368A89016469F72CD08050AD334018E20BE@maui.asicdesigners.com><20070819.180540.74750322.davem@davemloft.net><8A71B368A89016469F72CD08050AD334018E20C1@maui.asicdesigners.com> <p733aye1n39.fsf@bingen.suse.de>
+From: "Felix Marti" <felix@chelsio.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Cc: "David Miller" <davem@davemloft.net>, <sean.hefty@intel.com>,
+       <netdev@vger.kernel.org>, <rdreier@cisco.com>,
+       <general@lists.openfabrics.org>, <linux-kernel@vger.kernel.org>,
+       <jeff@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2148326.CPktiLNlLb
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Monday 20 August 2007, Bjorn Helgaas wrote:
-> On Saturday 18 August 2007 01:07:55 am Andrey Borzenkov wrote:
-> > This is related to thread "2.6.22-rc: regression: no irda0 interface
-> > (2.6.21 was OK), smsc does not find chip" but it is already way too
-> > overloaded.
-> >
-> > In 2.6.23 smsc-ircc2 fails to initialize IrDA controller. Apparently
-> > because it by default is using the same IO port as ttyS3 and this is now
-> > claimed by 8250.
->
-> 8250 should have claimed ttyS3 in 2.6.21 and earlier.  So from
-> the 8250 point of view, 2.6.21 and 2.6.23 should behave the same.
->
 
-I only know that this worked in 2.6.21. I remind that previous regression w=
-as=20
-post-2.6.21 which obviously implies that it did work ...
+> -----Original Message-----
+> From: ak@suse.de [mailto:ak@suse.de] On Behalf Of Andi Kleen
+> Sent: Monday, August 20, 2007 4:07 AM
+> To: Felix Marti
+> Cc: David Miller; sean.hefty@intel.com; netdev@vger.kernel.org;
+> rdreier@cisco.com; general@lists.openfabrics.org; linux-
+> kernel@vger.kernel.org; jeff@garzik.org
+> Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate
+> PS_TCPportsfrom the host TCP port space.
+> 
+> "Felix Marti" <felix@chelsio.com> writes:
+> > > avoidance gains of TSO and LRO are still a very worthwhile
+savings.
+> > So, i.e. with TSO, your saving about 16 headers (let us say 14 + 20
++
+> > 20), 864B, when moving ~64KB of payload - looks like very much in
+the
+> > noise to me.
+> 
+> TSO is beneficial for the software again. The linux code currently
+> takes several locks and does quite a few function calls for each
+> packet and using larger packets lowers this overhead. At least with
+> 10GbE saving CPU cycles is still quite important.
+> 
+> > an option to get 'high performance'
+> 
+> Shouldn't you qualify that?
+> 
+> It is unlikely you really duplicated all the tuning for corner cases
+> that went over many years into good software TCP stacks in your
+> hardware.  So e.g. for wide area networks with occasional packet loss
+> the software might well perform better.
+Yes, it used to be sufficient to submit performance data to show that a
+technology make 'sense'. In fact, I believe it was Alan Cox who once
+said that linux will have a look at offload once an offload device holds
+the land speed record (probably assuming that the day never comes ;).
+For the last few years it has been Chelsio offload devices that have
+been improving their own LSRs (as IO bus speeds have been increasing).
+It is worthwhile to point out that OC-192 doesn't offer full 10Gbps BW
+and the fine-grained (per packet and not per TSO-burst) packet scheduler
+in the offload device played a crucial part in pushing performance to
+the limits of what OC-192 can do. Most other customers use our offload
+products in low-latency cluster environments. - The problem with offload
+devices is that they are not all born equal and there have been a lot of
+poor implementation giving the technology a bad name. I can only speak
+for Chelsio and do claim that we have a solid implementation that scales
+from low-latency clusters environments to LFNs.
 
-=46or reference I attach dmesg from 2.6.21. I do not see any ttyS3 there ...
+Andi, I could present performance numbers, i.e. throughput and CPU
+utilization in function of IO size, number of connections, ... in a
+back-to-back environment and/or in a cluster environment... but what
+will it get me? I'd still get hit by the 'not integrated' hammer :(
 
-> From the smsc-ircc2 point of view, 2.6.21 and 2.6.23 should work
-> the same except for the additional quirk_smc_enable().  If
-> 2.6.23 is worse than 2.6.21, please try removing the body of
-> quirk_smc_enable() and see whether that makes 2.6.23 as good
-> as 2.6.21.
->
-
-This worked in 2.6.22 with the same quirks. I will test without later but I=
-=20
-fail to see how they are related.
-
-> For smsc-ircc2, 2.6.23 is definitely a regression from 2.6.22,
-> because 8250 stayed out of the way in 2.6.22.  But we had to
-> revert 8250 back to the 2.6.21 behavior because the change
-> swapped ttyS0 and ttyS1 on some machines, so we just have to
-> live with that 8250/smsc-ircc2 conflict for the time being.
->
-
-This worked in 2.6.21 and 2.6.22 (and earlier BTW). So if you just had reve=
-rt=20
-to 2.6.21 it would have worked. Something else changed.
-
---nextPart2148326.CPktiLNlLb
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGycEmR6LMutpd94wRAmisAJ9+w5f4hZox1llatLkoO0Q46W9m6wCfbpVk
-F94ZVDoXMTKS7y+AgCJftXM=
-=etGl
------END PGP SIGNATURE-----
-
---nextPart2148326.CPktiLNlLb--
+> 
+> -Andi
