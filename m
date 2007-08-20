@@ -1,50 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760792AbXHTQAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760716AbXHTQCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760792AbXHTQAO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 12:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759807AbXHTP75
+	id S1760716AbXHTQCK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759675AbXHTQBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 11:59:57 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55891 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759763AbXHTP75 (ORCPT
+	Mon, 20 Aug 2007 12:01:54 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:29546 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759617AbXHTQBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 11:59:57 -0400
-Date: Mon, 20 Aug 2007 11:59:55 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Andreas Jellinghaus [c]" <aj@ciphirelabs.com>
-cc: linux-kernel@vger.kernel.org, <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] why was MODALIAS removed from usb kernel
- events? [u]
-In-Reply-To: <200708182132.11336.aj@ciphirelabs.com>
-Message-ID: <Pine.LNX.4.44L0.0708201158110.3626-100000@iolanthe.rowland.org>
+	Mon, 20 Aug 2007 12:01:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=snRhY2q4+FjujnjBjQVfj8Qt/15acCsfSlcHpwv/gXUVWZl86W3aeOoW2KVAbouYF/IIypfYms3Tjt2xAfN1UQfM5hKCqTEhAfXowpdgPxaI2bmPIvjiKuWuRtXUtxoqSHh90TSq8DcGjcXS4xDoxyTcnmxJn4lZ/l1U3AoFj1A=
+Message-ID: <46C9BAD7.8070802@googlemail.com>
+Date: Mon, 20 Aug 2007 18:01:27 +0200
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, Jan Dittmer <jdi@l4x.org>,
+       Christian Zankel <chris@zankel.net>, linux-alpha@vger.kernel.org,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Oliver Falk <oliver@linux-kernel.at>
+Subject: [1/4] 2.6.23-rc3: known regressions v2
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Aug 2007, Andreas Jellinghaus [c] wrote:
+Hi all,
 
-> Am Freitag, 17. August 2007 schrieben Sie:
-> > On Fri, 17 Aug 2007, Andreas Jellinghaus [c] wrote:
-> > > I need some kernel event that has both DEVICE and MODALIAS set.
-> > > up to including kernel 2.6.21 this seems to come from
-> > > drivers/usb/core/driver.c if I read the code correctly, and then
-> > > it was removed.
-> > >
-> > > udevmonitor --kernel --environment shows one event with both on 2.6.21
-> > > plain, but not on 2.6.22 plain.
-> >
-> > Does this patch improve matters?
-> 
-> yes, thanks, it does. can you add PRODUCT as well?
-> remembered too late that my scripts at least use it too.
-> but that one is no big issue, MODALIAS has the same information
-> so I could use that information. but other people might use it.
+Here is a list of some known regressions in 2.6.23-rc3.
 
-I could, but I don't know whether any of this would be accepted for 
-2.6.22.stable.  It might not be too late to get into 2.6.23...
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
-Alan Stern
+List of Aces
 
+Name                    Regressions fixed since 21-Jun-2007
+Adrian Bunk                            9
+Andi Kleen                             5
+Linus Torvalds                         5
+Andrew Morton                          4
+Al Viro                                3
+Cornelia Huck                          3
+Jens Axboe                             3
+Tejun Heo                              3
+
+
+
+Unclassified
+
+Subject         : 8250 claims non existing device blocking IO port
+References      : http://lkml.org/lkml/2007/8/18/20
+Last known good : ?
+Submitter       : Andrey Borzenkov <arvidjaar@mail.ru>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+Subject         : 2.6.23-rc2 cross compile regressions (alpha,xtensa)
+References      : http://lkml.org/lkml/2007/8/6/43
+Last known good : alpha: 2.6.22-git8
+                  xtensa: 2.6.22-git6
+Submitter       : Jan Dittmer <jdi@l4x.org>
+Caused-By       : ?
+Handled-By      : xtensa: Christian Zankel <chris@zankel.net>
+Status          : unknown
+
+Subject         : console is messed up after resume from s2ram or switching to console from X
+References      : http://lkml.org/lkml/2007/8/4/6
+Last known good : ?
+Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+Caused-By       : ?
+Handled-By      : H. Peter Anvin <hpa@zytor.com>
+                  Antonino A. Daplas <adaplas@gmail.com>
+Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
+Status          : problem is being debugged
+
+Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
+References      : http://lkml.org/lkml/2007/7/22/86
+Last known good : ?
+Submitter       : Markus <lists4me@web.de>
+Caused-By       : ?
+Handled-By      : Ingo Molnar <mingo@elte.hu>
+Status          : problem is being debugged
+
+
+
+Alpha
+
+Subject         : -Werror compilation problem - make[1]: *** [arch/alpha/kernel/sys_titan.o] Error 1
+References      : http://lkml.org/lkml/2007/8/6/137
+Last known good : ?
+Submitter       : Oliver Falk <oliver@linux-kernel.at>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
