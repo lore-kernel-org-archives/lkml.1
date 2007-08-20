@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759588AbXHTOaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759649AbXHTOi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759588AbXHTOaH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 10:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760238AbXHTO3r
+	id S1759649AbXHTOi4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 10:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbXHTOiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 10:29:47 -0400
-Received: from posthamster.phnxsoft.com ([195.227.45.4]:1896 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760214AbXHTO3p (ORCPT
+	Mon, 20 Aug 2007 10:38:46 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:56402 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbXHTOip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 10:29:45 -0400
-Message-ID: <46C9A53D.1010307@imap.cc>
-Date: Mon, 20 Aug 2007 16:29:17 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+	Mon, 20 Aug 2007 10:38:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fb/KDyQ4x/98QEyDX0Z/ZexY/vwHkHEXAvSMPvZNSKScIm+U9RaS51X6j+Wi/sLJoMmcjLh5HNIazlE/jcsbR727onbaNRL7rKDKR6a52WUbtvWyoWcgYiRBRv0CdmpT2aWuCHQfWwQ2Wgv/yvnM8WDuUSADtcBJu5HD7CVA7qQ=
+Message-ID: <9a8748490708200738o36374d63ib5c71d5dc8dc9978@mail.gmail.com>
+Date: Mon, 20 Aug 2007 16:38:41 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Anand Jahagirdar" <anandjigar@gmail.com>
+Subject: Re: Fork Bombing Patch
+Cc: "Krzysztof Halasa" <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+In-Reply-To: <25ae38200708200726tdf097b1kcd0269cf11c53bf3@mail.gmail.com>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] MAINTAINERS
-References: <1187420935.4200.16.camel@localhost>
-In-Reply-To: <1187420935.4200.16.camel@localhost>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigD629090B930582C440B39089"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com>
+	 <m3lkcbu3ps.fsf@maximus.localdomain>
+	 <25ae38200708200726tdf097b1kcd0269cf11c53bf3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD629090B930582C440B39089
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+(please don't top-post)
 
-Joe Perches schrieb:
-> Added patterns to describe files maintained.
->=20
-> Signed-off-by: Joe Perches <joe@perches.com>
+On 20/08/07, Anand Jahagirdar <anandjigar@gmail.com> wrote:
+> Hi
+>   I think Its not worth to make it configurable just for one printk
+> statement. am i missing something?
+>
 
-For:
+I think you are missing the fact that there are lots of situations
+where users may hit the configured process limit without that being an
+indication of a fork bomb (or other) attack.
+This means that there will be many systems that will trigger your
+warning where there really is no problem. That's a good reason for a)
+making the message KERN_INFO and b) let administrators somehow disable
+it completely.
 
->  GIGASET ISDN DRIVERS
->  P:	Hansjoerg Lipp
->  M:	hjlipp@web.de
->  P:	Tilman Schmidt
->  M:	tilman@imap.cc
->  L:	gigaset307x-common@lists.sourceforge.net
->  W:	http://gigaset307x.sourceforge.net/
->  S:	Maintained
-> +F:	Documentation/isdn/README.gigaset
-> +F:	drivers/isdn/gigaset/
-> +F:	include/linux/gigaset_dev.h
+Personally I'm wondering if we even want/need this at all.
 
-Acked-by: Tilman Schmidt <tilman@imap.cc>
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
-
-
---------------enigD629090B930582C440B39089
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGyaVHMdB4Whm86/kRAozJAJ9rHt7azmMVEq4Hzf3pCuXmhzUh6ACffHwn
-jmqrw8TkWwcIe7Wogpe0ZPY=
-=/a3D
------END PGP SIGNATURE-----
-
---------------enigD629090B930582C440B39089--
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
