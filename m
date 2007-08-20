@@ -1,139 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbXHTPmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760250AbXHTPqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760041AbXHTPmd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 11:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbXHTPmX
+	id S1760250AbXHTPqh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 11:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759370AbXHTPq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 11:42:23 -0400
-Received: from web90407.mail.mud.yahoo.com ([216.252.100.159]:35677 "HELO
-	web90407.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756705AbXHTPmW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 11:42:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=TAMDJi2nAvEL9xYyDrgSRApFvyqouWoVYqWz5RFDs8PnVDFp4ul7ShNS/xiHrrURDbHB8OpQHED6eP2i9wsxIwd8NqALoHttcH2oS4ZbOUlHtQjQy/V2GD2wfgObXkt9FDhJhvx/ytF6bRml3wD321LGfQ5kk4Y8Xw2JJa9x0ps=;
-X-YMail-OSG: 8qSaEucVM1ldXpcxWHM3otZsdCrjZLFdhD729X41cMyW2A8o80hfDs0K0cRjMZBexneAaZsw9Q2kVsFE9h30kNuikzKYE64g0y7o
-Date: Mon, 20 Aug 2007 08:42:21 -0700 (PDT)
-From: James Corey <ploversegg@yahoo.com>
-Subject: Re: 2.6.23-rc3 and SKY2 driver issue
-To: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
-In-Reply-To: <20070816090556.6a5295e6@oldman>
+	Mon, 20 Aug 2007 11:46:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38353 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759142AbXHTPq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 11:46:28 -0400
+Date: Mon, 20 Aug 2007 17:45:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [accounting regression since rc1]  scheduler updates
+Message-ID: <20070820154529.GA300@elte.hu>
+References: <20070812163225.GA11996@elte.hu> <200708141037.48001.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <370212.9287.qm@web90407.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708141037.48001.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- Stephen Hemminger
-<shemminger@linux-foundation.org> wrote:
+* Christian Borntraeger <borntraeger@de.ibm.com> wrote:
 
-> On Thu, 16 Aug 2007 10:25:45 +0200
-> "Michal Piotrowski"
-> <michal.k.k.piotrowski@gmail.com> wrote:
-> 
-> > [Adding Stephen and netdev to CC]
-> > 
-> > On 15/08/07, James Corey <ploversegg@yahoo.com>
-> wrote:
-> > >
-> > > I tried running a D-link gig card on kernel
-> 2.6.21.1
-> > > and it came up fine, but when I did a sftp of
-> > > an linux dvd ISO to it, the interface would lock
-> > > up hard with the error
-> > >
-> > > eth1: hw csum failure.
-> > >
-> > > Call Trace:
-> > >  <IRQ>  [<ffffffff804d3e31>]
-> > > __skb_checksum_complete_head+0x46/0x5f
-> > >  [<ffffffff804d3e56>]
-> __skb_checksum_complete+0xc/0x11
-> > >  [<ffffffff805046c7>] tcp_v4_rcv+0x157/0x810
-> > >  [<ffffffff804d8a6f>] dev_queue_xmit+0x237/0x260
-> > >  [<ffffffff80229990>]
-> find_busiest_group+0x252/0x684
-> > >  [<ffffffff804ead50>]
-> ip_local_deliver+0xca/0x14c
-> > >  [<ffffffff804eb24a>] ip_rcv+0x478/0x4ba
-> > >  [<ffffffff803ec7d3>] sky2_poll+0x6f9/0x9b9
-> > >  [<ffffffff8022bd5d>]
-> > > run_rebalance_domains+0x13e/0x408
-> > >  [<ffffffff804d877a>] net_rx_action+0xa8/0x166
-> > >  [<ffffffff80235d62>] __do_softirq+0x55/0xc3
-> > >  [<ffffffff8020a4ec>] call_softirq+0x1c/0x28
-> > >  [<ffffffff8020b611>] do_softirq+0x2c/0x7d
-> > >  [<ffffffff8020b8cf>] do_IRQ+0x13e/0x15f
-> > >  [<ffffffff802086ce>] mwait_idle+0x0/0x46
-> > >  [<ffffffff80209871>] ret_from_intr+0x0/0xa
-> > >  <EOI>  [<ffffffff80208710>]
-> mwait_idle+0x42/0x46
-> > >  [<ffffffff80208666>] cpu_idle+0x8c/0xaf
-> > >  [<ffffffff8078174e>] start_kernel+0x2ac/0x2b8
-> > >  [<ffffffff80781140>] _sinittext+0x140/0x144
-> > >
-> > >
-> > > So I tried running the latest snapshot
-> 2.6.23-rc3
-> > > and the almost the same thing happens. Only
-> > > difference is that now the entire box locks up.
-> > > The error is almost the same
-> > >
-> > > eth1: hw csum failure.
-> > >
-> > > Call Trace:
-> > >  <IRQ>  [<ffffffff804779b6>]
-> > > __skb_checksum_complete_head+0x43/0x56
-> > >  [<ffffffff804779d5>]
-> __skb_checksum_complete+0xc/0x11
-> > >  [<ffffffff804a989d>] tcp_v4_rcv+0x14e/0x801
-> > >  [<ffffffff8048ff84>]
-> ip_local_deliver+0xca/0x14c
-> > >  [<ffffffff80490472>] ip_rcv+0x46c/0x4ae
-> > >  [<ffffffff880060f9>]
-> :sky2:sky2_poll+0x72b/0x9c7
-> > >  [<ffffffff8047c934>] net_rx_action+0xa8/0x166
-> > >  [<ffffffff80235ced>] __do_softirq+0x55/0xc4
-> > >  [<ffffffff8020c5cc>] call_softirq+0x1c/0x28
-> > >  [<ffffffff8020d6fd>] do_softirq+0x2c/0x7d
-> > >  [<ffffffff8020d9bb>] do_IRQ+0x13e/0x15f
-> > >  [<ffffffff8020a780>] mwait_idle+0x0/0x48
-> > >  [<ffffffff8020b951>] ret_from_intr+0x0/0xa
-> > >  <EOI>  [<ffffffff880063e7>]
-> > > :sky2:sky2_xmit_frame+0x0/0x41d
-> > >  [<ffffffff8020a7c2>] mwait_idle+0x42/0x48
-> > >  [<ffffffff8020a718>] cpu_idle+0xbd/0xe0
-> > >  [<ffffffff80704a5a>] start_kernel+0x2ac/0x2b8
-> > >  [<ffffffff80704140>] _sinittext+0x140/0x144
-> > >
-> > >
-> > > I see that the new kernel includes some sort of
-> > > SKY2 DEBUG stuff. I would be happy to rerun
-> > > the test with that turned on, given some minor
-> > > direction.
-> > >
-> > 
-> > Regards,
-> > Michal
-> 
-> Please reproduce with a more recent kernel?
+> 1. Jan could finish his sched_clock implementation for s390 and we 
+> would get close to the precise numbers. This would also let CFS make 
+> better decisions. [...]
 
-Um, I thought 2.6.23rc WAS pretty recent. :-)
+i think this is the best option and it should give us the same /proc 
+accuracy on s390 as before, plus improved scheduler precision. (and 
+improved tracing accuracy, etc. etc.) Note that for architectures that 
+already have sched_clock() at least as precise as the stime/utime stats 
+there's no problem - and that seems to include all architectures except 
+s390.
 
-I'll check if there is something newer in the
-repository now.
+could you send that precise sched_clock() patch? It should be an order 
+of magnitude simpler than the high-precision stime/utime tracking you 
+already do, and it's needed for quality scheduling anyway.
 
--J
+> [...] Downside: its not as precise as before as we do some math on the 
+> numbers and it will burn cycles to compute numbers we already have 
+> (utime=sum*utime/stime).
 
+i can see no real downside to it: if all of stime, utime and 
+sum_exec_clock are precise, then the numbers we present via /proc are 
+precise too:
 
+   sum_exec * utime / stime;
 
-       
-____________________________________________________________________________________
-Take the Internet to Go: Yahoo!Go puts the Internet in your pocket: mail, news, photos & more. 
-http://mobile.yahoo.com/go?refer=1GNXIC
+there should be no loss of precision on s390 because the 
+multiplication/division rounding is not accumulating - we keep the 
+precise sum_exec, utime and stime values untouched.
+
+on x86 we dont really want to slow down every irq and syscall event with 
+precise stime/utime stats for 'top' to display. On s390 the 
+multiplication and division is indeed superfluous but it keeps the code 
+generic for arches where utime/stime is less precise and irq-sampled - 
+while the sum is always precise. It also animates architectures that 
+have an imprecise sched_clock() implementation to improve its accuracy. 
+Accessing the /proc files alone is many orders of magnitude more 
+expensive than this simple multiplication and division.
+
+	Ingo
+
