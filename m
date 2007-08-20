@@ -1,83 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbXHTMip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbXHTMo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586AbXHTMip (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 08:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758369AbXHTMhr
+	id S1756988AbXHTMo5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 08:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbXHTMos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 08:37:47 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:43119 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756868AbXHTMgy (ORCPT
+	Mon, 20 Aug 2007 08:44:48 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:55360 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbXHTMos (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 08:36:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=Yu1tm14l422v9+GERanjxzp7YOlRsG0SCX1+Akjxp449Mz/3/8tST1nJTlMWTw5ljgZ0nIilQxYQBYzaExcDNZFmIPCUK4KYVxS2HL8Y/+JOuSmuEhDlT3xRr1SrHk9fRGtUA0HShKopt22Yz1+utRfjlF8BHas51vanP1gWF8Y=
-Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 12/14] sysfs: kill SYSFS_FLAG_REMOVED
-In-Reply-To: <11876133893720-git-send-email-htejun@gmail.com>
-X-Mailer: git-send-email
-Date: Mon, 20 Aug 2007 21:36:30 +0900
-Message-Id: <11876133902374-git-send-email-htejun@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Reply-To: Tejun Heo <htejun@gmail.com>
-To: ebiederm@xmission.com, cornelia.huck@de.ibm.com, greg@kroah.com,
-       linux-kernel@vger.kernel.org, satyam@infradead.org,
-       stern@rowland.harvard.edu, containers@lists.osdl.org, htejun@gmail.com
-Content-Transfer-Encoding: 7BIT
-From: Tejun Heo <htejun@gmail.com>
+	Mon, 20 Aug 2007 08:44:48 -0400
+Date: Mon, 20 Aug 2007 14:44:47 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Bodo Eggert <7eggert@gmx.de>
+cc: Andy Whitcroft <apw@shadowen.org>, Eugene Teo <eugeneteo@kernel.sg>,
+       linux-kernel@vger.kernel.org, auke-jan.h.kok@intel.com
+Subject: Re: [PATCH] Make checkpatch rant about trailing ; at the end of "if"
+  expr
+In-Reply-To: <E1IN5oB-0000qw-6S@be1.lrz>
+Message-ID: <Pine.LNX.4.64.0708201438180.30570@fbirervta.pbzchgretzou.qr>
+References: <8SGSb-2Kk-9@gated-at.bofh.it> <8SJQ6-7pj-13@gated-at.bofh.it>
+ <8T8Oy-3D0-13@gated-at.bofh.it> <E1IN5oB-0000qw-6S@be1.lrz>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-699020219-1888346630-1187613887=:30570"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With sysfs_get_dentry() simplified, there's no user of
-SYSFS_FLAG_REMOVED left.  Kill it.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- fs/sysfs/dir.c        |    5 +----
- include/linux/sysfs.h |    1 -
- 2 files changed, 1 insertions(+), 5 deletions(-)
+---699020219-1888346630-1187613887=:30570
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index c55c811..1752342 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -222,7 +222,7 @@ static void sysfs_deactivate(struct sysfs_dirent *sd)
- 	DECLARE_COMPLETION_ONSTACK(wait);
- 	int v;
- 
--	BUG_ON(sd->s_sibling || !(sd->s_flags & SYSFS_FLAG_REMOVED));
-+	BUG_ON(sd->s_sibling);
- 	sd->s_sibling = (void *)&wait;
- 
- 	/* atomic_add_return() is a mb(), put_active() will always see
-@@ -462,11 +462,8 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-  */
- void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- {
--	BUG_ON(sd->s_flags & SYSFS_FLAG_REMOVED);
--
- 	sysfs_unlink_sibling(sd);
- 
--	sd->s_flags |= SYSFS_FLAG_REMOVED;
- 	sd->s_sibling = acxt->removed;
- 	acxt->removed = sd;
- 
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index c16e4c5..82c31b2 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -83,7 +83,6 @@ struct sysfs_ops {
- #define SYSFS_COPY_NAME		(SYSFS_DIR | SYSFS_KOBJ_LINK)
- 
- #define SYSFS_FLAG_MASK		~SYSFS_TYPE_MASK
--#define SYSFS_FLAG_REMOVED	0x0100
- 
- #ifdef CONFIG_SYSFS
- 
+
+On Aug 20 2007 13:52, Bodo Eggert wrote:
+>> But. The above regex does not seem to handle
+>> 
+>> if ((a = b));
+>> oops;
+>> 
+>> I have tried to come up with a superduper regex that handles multiple
+>> (), but my regex fu seems to stop above two pairs of ().
+>
+>This is because you can't do that using finite regular expressions.
+>
+>Regular expressions are Type-3 grammars, but you'd need a Type-2
+>grammar to express the Dyck language (and you need to parse a Dyck
+>Language, ignoring the non-dyck-parts).
+
+So what about this then...
+
+
+$s = shift @ARGV;
+$r = qr/a(??{ $r })?b/;
+if ($s =~ /^$r$/) {
+	print "Yup, that's good\n";
+} else {
+	print "fail\n";
+}
+
+
+$ perl foo.pl aabbbb
+Not so much
+$ perl foo.pl aaaabbbb
+Yup, that's good
+$ perl foo.pl aaaaabbbb
+Not so much
+
+
+>-- 
+>Your e-mail has been returned due to insufficient voltage. 
+>
+>Friß, Spammer: xVhgayew@6yAk1Uy.7eggert.dyndns.org G2@7eggert.dyndns.org
+> MVt59@gcEE.7eggert.dyndns.org GBwox2uHv@mb.7eggert.dyndns.org
+>-
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+	Jan
 -- 
-1.5.0.3
-
-
+---699020219-1888346630-1187613887=:30570--
