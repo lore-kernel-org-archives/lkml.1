@@ -1,119 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbXHTQzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbXHTQ4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760620AbXHTQzV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 12:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760077AbXHTQzH
+	id S1760636AbXHTQ4V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760322AbXHTQ4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 12:55:07 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:6430 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760252AbXHTQzF convert rfc822-to-8bit (ORCPT
+	Mon, 20 Aug 2007 12:56:09 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:58656 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with SMTP id S1759559AbXHTQ4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 12:55:05 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
-Date: Mon, 20 Aug 2007 09:53:00 -0700
-Message-ID: <8A71B368A89016469F72CD08050AD334018E2115@maui.asicdesigners.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
-thread-index: AcfjDmEUhmr1wVBgTNefZqHzgnR8eAAOI4Qg
-References: <20070819.174017.77241227.davem@davemloft.net> <8A71B368A89016469F72CD08050AD334018E20BE@maui.asicdesigners.com> <20070820094317.GA14817@2ka.mipt.ru>
-From: "Felix Marti" <felix@chelsio.com>
-To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
-Cc: "David Miller" <davem@davemloft.net>, <sean.hefty@intel.com>,
-       <netdev@vger.kernel.org>, <rdreier@cisco.com>,
-       <general@lists.openfabrics.org>, <linux-kernel@vger.kernel.org>,
-       <jeff@garzik.org>
+	Mon, 20 Aug 2007 12:56:08 -0400
+X-Greylist: delayed 379 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Aug 2007 12:56:07 EDT
+Date: Mon, 20 Aug 2007 20:55:30 +0400
+From: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+To: RT <linux-rt-users@vger.kernel.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, kbaidarov@ru.mvista.com
+Subject: [PATCH] kexec: reenable HPET before kexec
+Message-ID: <20070820205530.1ffd5876@windmill.dev.rtsoft.ru>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.19; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, I've faced problem:
+I have two x86_64 kernels with HPET enabled:
+kernel 1 - with PM enabled,
+kernel 2 - with PM disabled.
+When I execute kernel 2 from kernel 1 on pentiumd based PC, kernel 2 hangs
+during boot:
+root@192.168.40.10:~#
+root@192.168.40.10:~# ./kexec.sh ./ko_bzImage_x86_64_nopm
++ kexec -l ././ko_bzImage_x86_64_nopm '--command-line=kdb=on kdb=early
+apic=debug nmi_watchdog=0 console=ttyS0
+,115200 ip=bootp root=/dev/nfs rw'
++ kexec -e
+md: stopping all md devices.
+sd 1:0:0:0: [sda] Synchronizing SCSI cache
+ACPI: PCI interrupt for device 0000:01:00.0 disabled
+Starting new kernel
+Linux version 2.6.23-rc2 (root@pentiumdcge.dev.rtsoft.ru) (gcc version 4.2.0
+(MontaVista 4.2.0-8.0.0.0703430 2
+007-06-22)) #3 SMP PREEMPT Mon Aug 20 20:26:17 MSD 2007
+Command line: kdb=on kdb=early apic=debug nmi_watchdog=0 console=ttyS0,115200
+ip=bootp root=/dev/nfs rw
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000100 - 000000000009fc00 (usable)
+ BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 000000001f790000 (usable)
+ BIOS-e820: 000000001f790000 - 000000001f79e000 (ACPI data)
+ BIOS-e820: 000000001f79e000 - 000000001f7e0000 (ACPI NVS)
+ BIOS-e820: 000000001f7e0000 - 000000001f800000 (reserved)
+ BIOS-e820: 00000000ffb80000 - 0000000100000000 (reserved)
+end_pfn_map = 1048576
+DMI 2.3 present.
+Zone PFN ranges:
+  DMA             1 ->     4096
+  DMA32        4096 ->  1048576
+  Normal    1048576 ->  1048576
+Movable zone start PFN for each node
+early_node_map[2] active PFN ranges
+    0:        1 ->      159
+    0:      256 ->   128912
+Intel MultiProcessor Specification v1.4
+MPTABLE: OEM ID: INTEL    MPTABLE: Product ID:  MPTABLE: APIC at: 0xFEE00000
+Processor #0 (Bootup-CPU)
+Processor #1
+I/O APIC #2 at 0xFEC00000.
+Setting APIC routing to flat
+Processors: 2
+mapped APIC to ffffffffff5fb000 (        fee00000)
+mapped IOAPIC to ffffffffff5fa000 (00000000fec00000)
+Allocating PCI resources starting at 20000000 (gap: 1f800000:e0380000)
+PERCPU: Allocating 31696 bytes of per cpu data
+Built 1 zonelists in Zone order.  Total pages: 125250
+Kernel command line: kdb=on kdb=early apic=debug nmi_watchdog=0
+console=ttyS0,115200 ip=bootp root=/dev/nfs rw
+Initializing CPU#0
+PID hash table entries: 2048 (order: 11, 16384 bytes)
+time.c: Detected 3000.006 MHz processor.
+Console: colour VGA+ 80x25
+console [ttyS0] enabled
+Dentry cache hash table entries: 65536 (order: 7, 524288 bytes)
+Inode-cache hash table entries: 32768 (order: 6, 262144 bytes)
+Checking aperture...
+Memory: 500048k/515648k available (4577k kernel code, 15136k reserved, 1755k
+data, 280k init)
+-------------------------------- kernel hangs here --------------------------
 
+Root case:
+When kernel 1 switches to Local APIC timer It disables HPET.
+When kernel 1 executes kernel 2, HPET isn't reenabled early during boot, because
+PM and ACPI is disabled and kernel 2 doesn't search for HPET in ACPI tables.
+HPET is disabled, so kernel enables PIT timer, but it doesn't work on pentiumd
+(don't know why).
+HPET is disabled, PIT isn't work - IRQ0 isn't triggered jiffies isn't
+incremented so kernel hangs in calibrate_delay().
 
-> -----Original Message-----
-> From: Evgeniy Polyakov [mailto:johnpol@2ka.mipt.ru]
-> Sent: Monday, August 20, 2007 2:43 AM
-> To: Felix Marti
-> Cc: David Miller; sean.hefty@intel.com; netdev@vger.kernel.org;
-> rdreier@cisco.com; general@lists.openfabrics.org; linux-
-> kernel@vger.kernel.org; jeff@garzik.org
-> Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate
-> PS_TCPportsfrom the host TCP port space.
-> 
-> On Sun, Aug 19, 2007 at 05:47:59PM -0700, Felix Marti
-> (felix@chelsio.com) wrote:
-> > [Felix Marti] David and Herbert, so you agree that the user<>kernel
-> > space memory copy overhead is a significant overhead and we want to
-> > enable zero-copy in both the receive and transmit path? - Yes, copy
-> 
-> It depends. If you need to access that data after received, you will
-> get
-> cache miss and performance will not be much better (if any) that with
-> copy.
-Yes, the app will take the cache hits when accessing the data. However,
-the fact remains that if there is a copy in the receive path, you
-require and additional 3x memory BW (which is very significant at these
-high rates and most likely the bottleneck for most current systems)...
-and somebody always has to take the cache miss be it the copy_to_user or
-the app.
-> 
-> > avoidance is mainly an API issue and unfortunately the so widely
-used
-> > (synchronous) sockets API doesn't make copy avoidance easy, which is
-> one
-> > area where protocol offload can help. Yes, some apps can resort to
-> > sendfile() but there are many apps which seem to have trouble
-> switching
-> > to that API... and what about the receive path?
-> 
-> There is number of implementations, and all they are suitable for is
-> to have recvfile(), since this is likely the only case, which can work
-> without cache.
-> 
-> And actually RDMA stack exist and no one said it should be thrown away
-> _until_ it messes with main stack. It started to speal ports. What
-will
-> happen when it gest all port space and no new legal network conection
-> can be opened, although there is no way to show to user who got it?
-> What will happen if hardware RDMA connection got terminated and
-> software
-> could not free the port? Will RDMA request to export connection reset
-> functions out of stack to drop network connections which are on the
-> ports
-> which are supposed to be used by new RDMA connections?
-Yes, RDMA support is there... but we could make it better and easier to
-use. We have a problem today with port sharing and there was a proposal
-to address the issue by tighter integration (see the beginning of the
-thread) but the proposal got shot down immediately... because it is RDMA
-and not for technical reasons. I believe this email threads shows in
-detail how RDMA (a network technology) is treated as bastard child by
-the network folks, well at least by one of them.
-> 
-> RDMA is not a problem, but how it influence to the network stack is.
-> Let's better think about how to work correctly with network stack
-> (since
-> we already have that cr^Wdifferent hardware) instead of saying that
-> others do bad work and do not allow shiny new feature to exist.
-By no means did I want to imply that others do bad work; are you
-referring to me using TSO implementation issues as an example? - If so,
-let me clarify: I understand that the TSO implementation took some time
-to get right. What I was referring to is that TSO(/LRO) have their own
-issues, some eluded to by Roland and me. In fact, customers working on
-the LSR couldn't use TSO due to the burstiness it introduces and had to
-fall-back to our fine grained packet scheduling done in the offload
-device. I am for variety, let us support new technologies that solve
-real problems (lots of folks are buying this stuff for a reason) instead
-of the 'ah, its brain-dead and has no future' attitude... there is
-precedence for offloading the host CPUs: have a look at graphics.
-Graphics used to be done by the host CPU and now we have dedicated
-graphics adapters that do a much better job... so, why is it so
-farfetched that offload devices can do a better job at a data-flow
-problem?
-> 
-> --
-> 	Evgeniy Polyakov
+How solved:
+I reenable HPET timer in machine_kexec() before switching to kernel 2.
+
+Also on some machines I can reproduce bug with i386 kernel from kernel.org, so
+I i386 kernel might be fixed too, so I'm adding lkml to cc. Thanks.
+
+Patch against patch-2.6.23-rc2-rt2.
+
+Signed-off-by: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+
+Index: linux-2.6.23-rc2-kexec-pm/arch/i386/kernel/hpet.c
+===================================================================
+--- linux-2.6.23-rc2-kexec-pm.orig/arch/i386/kernel/hpet.c
++++ linux-2.6.23-rc2-kexec-pm/arch/i386/kernel/hpet.c
+@@ -443,6 +443,22 @@ static __init int hpet_late_init(void)
+ }
+ fs_initcall(hpet_late_init);
+ 
++#ifdef CONFIG_KEXEC
++/*
++ * reenable HPET timer
++ */
++int hpet_reenable(void)
++{
++	if (!is_hpet_capable())
++		return -1;
++
++	if (hpet_clockevent.mode != CLOCK_EVT_MODE_PERIODIC)
++		hpet_legacy_set_mode(CLOCK_EVT_MODE_PERIODIC, &hpet_clockevent);
++
++	return 0;
++}
++#endif
++
+ #ifdef CONFIG_HPET_EMULATE_RTC
+ 
+ /* HPET in LegacyReplacement Mode eats up RTC interrupt line. When, HPET
+Index: linux-2.6.23-rc2-kexec-pm/arch/x86_64/kernel/machine_kexec.c
+===================================================================
+--- linux-2.6.23-rc2-kexec-pm.orig/arch/x86_64/kernel/machine_kexec.c
++++ linux-2.6.23-rc2-kexec-pm/arch/x86_64/kernel/machine_kexec.c
+@@ -14,6 +14,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/mmu_context.h>
+ #include <asm/io.h>
++#include <asm/hpet.h>
+ 
+ #define PAGE_ALIGNED __attribute__ ((__aligned__(PAGE_SIZE)))
+ static u64 kexec_pgd[512] PAGE_ALIGNED;
+@@ -183,6 +184,10 @@ NORET_TYPE void machine_kexec(struct kim
+ 	unsigned long page_list[PAGES_NR];
+ 	void *control_page;
+ 
++#ifdef CONFIG_HPET_TIMER
++	hpet_reenable();
++#endif
++
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	local_irq_disable();
+ 
+Index: linux-2.6.23-rc2-kexec-pm/arch/i386/kernel/machine_kexec.c
+===================================================================
+--- linux-2.6.23-rc2-kexec-pm.orig/arch/i386/kernel/machine_kexec.c
++++ linux-2.6.23-rc2-kexec-pm/arch/i386/kernel/machine_kexec.c
+@@ -19,6 +19,7 @@
+ #include <asm/cpufeature.h>
+ #include <asm/desc.h>
+ #include <asm/system.h>
++#include <asm/hpet.h>
+ 
+ #define PAGE_ALIGNED __attribute__ ((__aligned__(PAGE_SIZE)))
+ static u32 kexec_pgd[1024] PAGE_ALIGNED;
+@@ -106,6 +107,10 @@ NORET_TYPE void machine_kexec(struct kim
+ 	unsigned long page_list[PAGES_NR];
+ 	void *control_page;
+ 
++#ifdef CONFIG_HPET_TIMER
++	hpet_reenable();
++#endif
++
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	local_irq_disable();
+ 
+Index: linux-2.6.23-rc2-kexec-pm/include/asm-i386/hpet.h
+===================================================================
+--- linux-2.6.23-rc2-kexec-pm.orig/include/asm-i386/hpet.h
++++ linux-2.6.23-rc2-kexec-pm/include/asm-i386/hpet.h
+@@ -67,6 +67,9 @@ extern unsigned long hpet_address;
+ extern unsigned long force_hpet_address;
+ extern int is_hpet_enabled(void);
+ extern int hpet_enable(void);
++#ifdef CONFIG_KEXEC
++extern int hpet_reenable(void);
++#endif
+ extern unsigned long hpet_readl(unsigned long a);
+ extern void force_hpet_resume(void);
