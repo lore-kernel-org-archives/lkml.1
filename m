@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbXHTWt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbXHTWuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbXHTWt0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 18:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbXHTWtQ
+	id S1755520AbXHTWuz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 18:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbXHTWus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 18:49:16 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:56170 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751115AbXHTWtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 18:49:15 -0400
-Date: Tue, 21 Aug 2007 07:47:59 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
-       Gerd Hoffmann <kraxel@redhat.com>
-Subject: Re: [PATCH 1/1] ensure we don't use bootconsoles after init has been released
-Message-ID: <20070820224759.GA9360@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Robin Getz <rgetz@blackfin.uclinux.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	torvalds@linux-foundation.org,
-	Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
-	Gerd Hoffmann <kraxel@redhat.com>
-References: <200708192246.05783.rgetz@blackfin.uclinux.org> <8bd0f97a0708192011m1b957e57je313850a255dcac7@mail.gmail.com> <20070820033143.GA4918@linux-sh.org> <200708201522.47591.rgetz@blackfin.uclinux.org>
-MIME-Version: 1.0
+	Mon, 20 Aug 2007 18:50:48 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40587 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750831AbXHTWuq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 18:50:46 -0400
+Date: Mon, 20 Aug 2007 23:48:59 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Chris Snook <csnook@redhat.com>, Christoph Lameter <clameter@sgi.com>,
+       Paul Mackerras <paulus@samba.org>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
+       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
+       rpjday@mindspring.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, satyam@infradead.org,
+       zlynx@acm.org, schwidefsky@de.ibm.com,
+       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070820224859.GA16162@flint.arm.linux.org.uk>
+Mail-Followup-To: Segher Boessenkool <segher@kernel.crashing.org>,
+	Chris Snook <csnook@redhat.com>,
+	Christoph Lameter <clameter@sgi.com>,
+	Paul Mackerras <paulus@samba.org>, heiko.carstens@de.ibm.com,
+	horms@verge.net.au, linux-kernel@vger.kernel.org,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
+	netdev@vger.kernel.org, cfriesen@nortel.com,
+	akpm@linux-foundation.org, rpjday@mindspring.com,
+	Nick Piggin <nickpiggin@yahoo.com.au>, linux-arch@vger.kernel.org,
+	jesper.juhl@gmail.com, satyam@infradead.org, zlynx@acm.org,
+	schwidefsky@de.ibm.com, Herbert Xu <herbert@gondor.apana.org.au>,
+	davem@davemloft.net, Linus Torvalds <torvalds@linux-foundation.org>,
+	wensong@linux-vs.org, wjiang@resilience.com
+References: <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <46C516BA.60700@yahoo.com.au> <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org> <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au> <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com> <46C997B1.1010800@redhat.com> <417ebba299a7ad3c4b7a31c4f860a814@kernel.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708201522.47591.rgetz@blackfin.uclinux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <417ebba299a7ad3c4b7a31c4f860a814@kernel.crashing.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 20, 2007 at 03:22:47PM -0400, Robin Getz wrote:
-> Try #4... (sorry)
->  
-> From: Robin Getz <rgetz@blackfin.uclinux.org>
->  
-> This is a followup to the cleanups for earlyprintk patch from Gerd Hoffmann
->  
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=69331af79cf29e26d1231152a172a1a10c2df511
->  
-> This ensures that a bootconsole is unregistered if it is not replaced.
-> The current implementation spews garbage out the bootconsole in this case,
-> since the bootconsole structure is normally in the init section, and is
-> freed, but still used.
->  
-> Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
-> CC: Gerd Hoffmann <kraxel@redhat.com>
-> CC: Paul Mundt <lethal@linux-sh.org>
-> CC: Mike Frysinger <vapier.adi@gmail.com>
+On Tue, Aug 21, 2007 at 12:04:17AM +0200, Segher Boessenkool wrote:
+> And no, RMW on MMIO isn't "problematic" at all, either.
+> 
+> An RMW op is a read op, a modify op, and a write op, all rolled
+> into one opcode.  But three actual operations.
 
-Looks better, thanks.
+Maybe for some CPUs, but not all.  ARM for instance can't use the
+load exclusive and store exclusive instructions to MMIO space.
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+This means placing atomic_t or bitops into MMIO space is a definite
+no-go on ARM.  It breaks.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
