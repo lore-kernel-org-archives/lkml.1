@@ -1,28 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761794AbXHTQFK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761227AbXHTQIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761794AbXHTQFK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 12:05:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759821AbXHTQEw
+	id S1761227AbXHTQIQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:08:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760172AbXHTQH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 12:04:52 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:14945 "EHLO
+	Mon, 20 Aug 2007 12:07:59 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:16612 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756722AbXHTQEv (ORCPT
+	with ESMTP id S1759821AbXHTQH6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 12:04:51 -0400
-Date: Mon, 20 Aug 2007 09:09:33 -0700
+	Mon, 20 Aug 2007 12:07:58 -0400
+Date: Mon, 20 Aug 2007 09:13:52 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>,
-       Nick Piggin <piggin@cyberone.com.au>, Mel Gorman <mel@skynet.ie>
-Subject: Re: [PATCH] Should GFP_ATOMIC fail when we're below low watermark?
-Message-Id: <20070820090933.09d80d4c.randy.dunlap@oracle.com>
-In-Reply-To: <1187607961.6114.191.camel@twins>
-References: <200708201138.50508.nigel@nigel.suspend2.net>
-	<200708201838.50262.nigel@nigel.suspend2.net>
-	<1187600376.6114.186.camel@twins>
-	<200708202055.03058.nigel@nigel.suspend2.net>
-	<1187607961.6114.191.camel@twins>
+To: sk malik <srikrishanmalik@yahoo.co.in>
+Cc: LKML1 <linux-kernel@vger.kernel.org>
+Subject: Re: Boot hangs on IBM T60
+Message-Id: <20070820091352.43f1f5bd.randy.dunlap@oracle.com>
+In-Reply-To: <885593.28972.qm@web7610.mail.in.yahoo.com>
+References: <885593.28972.qm@web7610.mail.in.yahoo.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -35,69 +30,92 @@ X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Aug 2007 13:06:01 +0200 Peter Zijlstra wrote:
+On Mon, 20 Aug 2007 16:10:11 +0100 (BST) sk malik wrote:
 
-> On Mon, 2007-08-20 at 20:55 +1000, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Monday 20 August 2007 18:59:36 Peter Zijlstra wrote:
-> > > On Mon, 2007-08-20 at 18:38 +1000, Nigel Cunningham wrote:
-> > > > Hi.
-> > > > 
-> > > > On Monday 20 August 2007 12:43:50 Peter Zijlstra wrote:
-> > > > > On Mon, 2007-08-20 at 11:38 +1000, Nigel Cunningham wrote:
-> > > > > > Hi all.
-> > > > > > 
-> > > > > > In current git (and for a while now), an attempt to allocate memory 
-> > with 
-> > > > > > GFP_ATOMIC will fail if we're below the low watermark level. The only 
-> > way 
-> > > > to 
-> > > > > > access that memory that I can see (not that I've looked that hard) is 
-> > to 
-> > > > have 
-> > > > > > PF_MEMALLOC set (ie from kswapd). I'm wondering if this behaviour is 
-> > > > correct. 
-> > > > > > Shouldn't GFP_ATOMIC allocations ignore watermarks too? How about 
-> > > > GFP_KERNEL?
-> > > > > > 
-> > > > > > The following patch is a potential fix for GFP_ATOMIC.
-> > > > > 
-> > > > > Sorry, no.
-> > > > > 
-> > > > > GFP_ATOMIC must fail when below the watermark. GFP_KERNEL has __GFP_WAIT
-> > > > > and hence can sleep and wait for reclaim so that should not be a problem
-> > > > > (usually).
-> > > > > 
-> > > > > GFP_ATOMIC may not access the reserves because the reserves are needed
-> > > > > to get out of OOM deadlocks within the VM. Consider the fact that
-> > > > > freeing memory needs memory - if there is no memory free, you cannot
-> > > > > free memory and you're pretty much stuck.
-> > > > 
-> > > > I guess, then, the question should be whether the watermark values are 
-> > > > appropriate. Do we need high order allocations watermarked if this is the 
-> > > > only purpose, particularly considering that whatever memory is allocated 
-> > for 
-> > > > this purpose is essentially useless 99.9% of the time?
-> > > 
-> > > Could you perhaps explain what you're trying to do? No matter what we
-> > > do, GFP_ATOMIC will fail eventually, there is only so much one can do
-> > > without blocking.
-> > > 
-> > > As for higher order allocations, until we have a full online defrag
-> > > solution those too can fail at any moment (even with __GFP_WAIT).
-> > 
-> > I was just trying to make hibernation more reliable in sitations where there's 
-> > low amounts of memory available. I guess the amount of memory that's reserved 
-> > for this has increased, because some users have been reporting issues that 
-> > hadn't appeared before. No problem. I'll work around it.
+> Hi, all
 > 
-> I think the last time the default reserves were changed was 2.6.12 or
-> there about.
+> It happens very rarely that the system hangs while
+> booting.
 > 
-> Perhaps Mel fiddled with it in .23-rc ?
+> The last message on console is :
+> 
+> Activating device mapper..
+> 
+> I dont' get any oops and the system works without any
+> problem if it boots. :)
+> 
+> uname -a gives
+>  2.6.18.8-0.5-default #1 SMP Fri Jun 22 12:17:53 UTC
+> 2007 i686 i686 i386 GNU/Linux
+> 
+> Let me know if you need more information, with the
+> steps to generate that info. :)
+> 
+> I am pasting a few lines which fall above and below
+> the mapper activation as shown by dmesg for a
+> successful boot.
+> 
+> Thanks 
+> Sri 
+> 
+> Yenta: ISA IRQ mask 0x0cf0, PCI irq 169
+> Socket status: 30000007
+> pcmcia: parent PCI bridge I/O window: 0xa000 - 0xdfff
+> cs: IO port probe 0xa000-0xdfff: clean.
+> pcmcia: parent PCI bridge Memory window: 0xe4300000 -
+> 0xe7ffffff
+> pcmcia: parent PCI bridge Memory window: 0xe0000000 -
+> 0xe3ffffff
+> ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 17 (level,
+> low) -> IRQ 82
+> PCI: Setting latency timer of device 0000:03:00.0 to
+> 64
+> ACPI: PCI Interrupt 0000:00:1b.0[B] -> GSI 17 (level,
+> low) -> IRQ 82
+> PCI: Setting latency timer of device 0000:00:1b.0 to
+> 64
+> ipw3945: Detected Intel PRO/Wireless 3945ABG Network
+> Connection
+> cs: IO port probe 0x100-0x3af: clean.
+> cs: IO port probe 0x3e0-0x4ff: excluding 0x4d0-0x4d7
+> cs: IO port probe 0x820-0x8ff: clean.
+> cs: IO port probe 0xc00-0xcf7: clean.
+> cs: IO port probe 0xa00-0xaff: clean.
+> ipw3945: Radio Frequency Kill Switch is On:
+> Kill switch must be turned off for wireless networking
+> to work.
+> Adding 1004020k swap on /dev/sda7.  Priority:-1
+> extents:1 across:1004020k
+> ##Here I get the "activating device mapper" on
+> console## 
+> device-mapper: ioctl: 4.7.0-ioctl (2006-06-24)
+> initialised: dm-devel@redhat.com
+> loop: loaded (max 8 devices)
+> ReiserFS: sda6: found reiserfs format "3.6" with
+> standard journal
+> ReiserFS: sda6: using ordered data mode
+> reiserfs: using flush barriers
+> ReiserFS: sda6: journal params: device sda6, size
+> 8192, journal first block 18, max trans len 1024, max
+> batch 900, max commit age 30, max trans age 30
+> ReiserFS: sda6: checking transaction log (sda6)
+> ReiserFS: sda6: Using r5 hash to sort names
+> NTFS driver 2.1.27 [Flags: R/W MODULE].
+> NTFS volume version 3.1.
+> ACPI: AC Adapter [AC] (off-line)
+> ACPI: Battery Slot [BAT0] (battery present)
+> ACPI: Power Button (FF) [PWRF]
+> ACPI: Lid Switch [LID]
+> ACPI: Sleep Button (CM) [SLPB]
 
-Could there be a slab vs. slub difference?
+Can you capture the boot log with another machine, either
+via serial console or netconsole?
+(See Documentation/serial-console.txt or
+Documentation/networking/netconsole.txt).
+
+If not, try booting with "initcall_debug" on the kernel boot line
+and post that boot log so we can see the last initcall that was made.
+
 
 ---
 ~Randy
