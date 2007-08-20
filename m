@@ -1,36 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762136AbXHTVaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbXHTVdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762136AbXHTVaK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 17:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbXHTV3x
+	id S1752881AbXHTVdR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 17:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbXHTVdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 17:29:53 -0400
-Received: from gate.crashing.org ([63.228.1.57]:41786 "EHLO gate.crashing.org"
+	Mon, 20 Aug 2007 17:33:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36293 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754175AbXHTV3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 17:29:52 -0400
-In-Reply-To: <20070820202356.GA31712@redhat.com>
-References: <20070820200856.GA4194@redhat.com> <20070820201818.A68C54D05F2@magilla.localdomain> <20070820202356.GA31712@redhat.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4470f8769f958e0b46eea116ae0e1105@kernel.crashing.org>
+	id S1750796AbXHTVdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 17:33:04 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+X-Fcc: ~/Mail/linus
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>, Roland McGrath <roland@redhat.com>
-From: Segher Boessenkool <segher@kernel.crashing.org>
+       Dave Jones <davej@redhat.com>, Paul Mackerras <paulus@samba.org>
 Subject: Re: [POWERPC] Fix for assembler -g
-Date: Mon, 20 Aug 2007 23:29:46 +0200
-To: Dave Jones <davej@redhat.com>
-X-Mailer: Apple Mail (2.623)
+In-Reply-To: Segher Boessenkool's message of  Monday, 20 August 2007 23:28:33 +0200 <7666a3cee89296540b8ade4bedc1e52e@kernel.crashing.org>
+X-Windows: it could be worse, but it'll take time.
+Message-Id: <20070820213259.956EB4D05F4@magilla.localdomain>
+Date: Mon, 20 Aug 2007 14:32:59 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In a way though, good thing, or mainline would have continued to be
-> broken :)
+> But there is no lparmap.o!  lparmap.s is the generated file.
 
-What do I need to do to see this bug, btw?  A special config
-symbol perhaps?
+Yeah, tell that to scripts/Makefile.lib:
+
+	_c_flags       = $(CFLAGS) $(EXTRA_CFLAGS) $(CFLAGS_$(basetarget).o)
+
+What would do what a person expects is $(CFLAGS_$(@F)), I think.
+
+> Maybe the best fix is
+> 
+> 	$(obj)/lparmap.s: CFLAGS += -g0
+
+Whatever works, I don't care.
 
 
-Segher
-
+Thanks,
+Roland
