@@ -1,55 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759649AbXHTOi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbXHTOjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759649AbXHTOi4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 10:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbXHTOiq
+	id S1757477AbXHTOjt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 10:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbXHTOjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 10:38:46 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:56402 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbXHTOip (ORCPT
+	Mon, 20 Aug 2007 10:39:41 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:48604 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbXHTOjk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 10:38:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fb/KDyQ4x/98QEyDX0Z/ZexY/vwHkHEXAvSMPvZNSKScIm+U9RaS51X6j+Wi/sLJoMmcjLh5HNIazlE/jcsbR727onbaNRL7rKDKR6a52WUbtvWyoWcgYiRBRv0CdmpT2aWuCHQfWwQ2Wgv/yvnM8WDuUSADtcBJu5HD7CVA7qQ=
-Message-ID: <9a8748490708200738o36374d63ib5c71d5dc8dc9978@mail.gmail.com>
-Date: Mon, 20 Aug 2007 16:38:41 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Anand Jahagirdar" <anandjigar@gmail.com>
-Subject: Re: Fork Bombing Patch
-Cc: "Krzysztof Halasa" <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
-In-Reply-To: <25ae38200708200726tdf097b1kcd0269cf11c53bf3@mail.gmail.com>
+	Mon, 20 Aug 2007 10:39:40 -0400
+Message-ID: <46C9A7AB.1030003@bull.net>
+Date: Mon, 20 Aug 2007 16:39:39 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com>
-	 <m3lkcbu3ps.fsf@maximus.localdomain>
-	 <25ae38200708200726tdf097b1kcd0269cf11c53bf3@mail.gmail.com>
+To: John Stoffel <john@stoffel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 0/4] Virtual Machine Time Accounting
+References: <46C99371.7070705@bull.net> <18121.39541.790665.686081@stoffel.org>
+In-Reply-To: <18121.39541.790665.686081@stoffel.org>
+X-Enigmail-Version: 0.94.0.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 20/08/2007 16:44:50,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 20/08/2007 16:44:53,
+	Serialize complete at 20/08/2007 16:44:53
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig7C4697859CD76F6581AFFD24"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(please don't top-post)
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig7C4697859CD76F6581AFFD24
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On 20/08/07, Anand Jahagirdar <anandjigar@gmail.com> wrote:
-> Hi
->   I think Its not worth to make it configurable just for one printk
-> statement. am i missing something?
->
+Hi John,
 
-I think you are missing the fact that there are lots of situations
-where users may hit the configured process limit without that being an
-indication of a fork bomb (or other) attack.
-This means that there will be many systems that will trigger your
-warning where there really is no problem. That's a good reason for a)
-making the message KERN_INFO and b) let administrators somehow disable
-it completely.
+John Stoffel wrote:
+>=20
+> Laurent> The aim of these four patches is to introduce Virtual Machine
+> Laurent> time accounting.
+>=20
+> So what does this buy us?  What increased functionality? =20
+>=20
 
-Personally I'm wondering if we even want/need this at all.
+functionnalities:
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+- allow to measure time spent by a CPU in a virtual CPU.
+- allow to display in /proc/state this value by CPU
+- allow to display in /proc/<pid>/state this value by process
+- allow KVM to use these 3 previous functionnalities
+
+> Laurent> [PATCH 1/4] as recent CPUs introduce a third running state,
+> Laurent> after "user" and "system", we need a new field, "guest", in
+> Laurent> cpustat to store the time used by the CPU to run virtual
+> Laurent> CPU. Modify /proc/stat to display this new field.
+>=20
+> What happens when you have multiple guests, is this state cummulative? =
+=20
+
+Yes, like system time and user time are.
+
+> I've glanced over these patches and the #ifdefs are ugly..., esp since
+
+#ifdefs are ugly, I agree... I can remove them.
+But "#ifdef" allows to save space and time (and it is not a beauty show).=
+
+
+> the overhead seems to exist even if you don't run any Guest CPUs.  Or
+> whatever you're doing here.
+
+Can you explain ?
+
+> Please justify this patch more in terms of what it provides and why
+> it's a good thing to have. =20
+
+Well... it provides the time spent by CPUs in virtual CPUs.
+It is usefull only if you run Virtual Machine on your host (like KVM, lgu=
+est,
+kqemu...) to know how many time your CPUs dedicate to virtual machine exe=
+cution.
+It's a good thing to have like user time and system time are good things =
+to
+have... do you use 'top' or 'time' sometime ?
+
+
+Laurent
+--=20
+------------- Laurent.Vivier@bull.net  --------------
+          "Software is hard" - Donald Knuth
+
+
+--------------enig7C4697859CD76F6581AFFD24
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.7 (GNU/Linux)
+
+iD8DBQFGyaeu9Kffa9pFVzwRAqydAKCSG136gnCONpBpMj0/gsaNEcAsJACgjSd4
+HVdzGjIUyh0DKiOBnidtZjU=
+=vVLG
+-----END PGP SIGNATURE-----
+
+--------------enig7C4697859CD76F6581AFFD24--
