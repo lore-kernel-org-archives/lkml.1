@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbXHTMMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757033AbXHTMgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759343AbXHTMMI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 08:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbXHTML5
+	id S1757033AbXHTMgz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 08:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbXHTMgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 08:11:57 -0400
-Received: from no-dns-yet.demon.co.uk ([83.105.13.114]:32910 "EHLO
-	mailgate.netunix.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1755961AbXHTML4 (ORCPT
+	Mon, 20 Aug 2007 08:36:44 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:43119 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbXHTMgn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 08:11:56 -0400
-X-Greylist: delayed 1648 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Aug 2007 08:11:56 EDT
-Message-ID: <46C97E7F.3010604@netunix.com>
-Date: Mon, 20 Aug 2007 12:43:59 +0100
-From: Chris Newport <crn@netunix.com>
-Reply-To: crn@netunix.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7) Gecko/20040618
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Markus Dahms <mad@automagically.de>
-CC: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: possible endless loop in PROM initialization
-References: <20070820075949.GA5927@vimes.madsworld.lan> <20070820.010622.41634915.davem@davemloft.net> <20070820105320.GB4911@vimes.madsworld.lan>
-In-Reply-To: <20070820105320.GB4911@vimes.madsworld.lan>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Aug 2007 08:36:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
+        b=n66SB5WIll428aGXog32IpCAjAQFhZfhcfRTGdZ5N5nqN1Di2v3biaXpKsRXWSHmMXd06yizFqgvZymtIpvC4z6O4HvCFn5C6Suq2CeWnb10B/5tqbSAA7D2Ew5eCtAnZxTkENs5ZhhUasxj4ksiypzWwaQWqrLZDhvCVBpJ84w=
+Cc: Tejun Heo <htejun@gmail.com>
+Subject: [PATCH 01/14] sysfs: fix i_mutex locking in sysfs_get_dentry()
+In-Reply-To: <11876133893720-git-send-email-htejun@gmail.com>
+X-Mailer: git-send-email
+Date: Mon, 20 Aug 2007 21:36:29 +0900
+Message-Id: <11876133893733-git-send-email-htejun@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Reply-To: Tejun Heo <htejun@gmail.com>
+To: ebiederm@xmission.com, cornelia.huck@de.ibm.com, greg@kroah.com,
+       linux-kernel@vger.kernel.org, satyam@infradead.org,
+       stern@rowland.harvard.edu, containers@lists.osdl.org, htejun@gmail.com
+Content-Transfer-Encoding: 7BIT
+From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Markus Dahms wrote:
+lookup_one_len_kern() should be called with the parent's i_mutex
+locked.  Fix it.
 
->Hello again,
->
->David Miller wrote:
->  
->
->>When we boot the firmware provides a vector of function
->>pointers, and this is prom_nodeops.  So prom_nodeops->no_nextprop()
->>is a routine inside the PROM.
->>    
->>
->
->Thanks. So there is no real chance to fix it but to override this
->function?
->The strange thing is that the PROM prompt handles it correctly:
->
->| ok devalias scsi /iommu/sbus/espdma/esp
->| scsi isn't unique
->  
->
-Non-unique devalias entries are NASTY. Get rid of them, for example
-your second definition of scsi could be changed to scsidisk.
-You should also check that any nvramrc entries do not cause conflicts,
-it is common for nvramrc entries to refer to devalias entries, so you 
-may need to also change an nvramrc entry to match any devalias change.
+Spotted by Eric W. Biederman.
 
-You can disable the use of nvramrc from the OBP prompt with
-setenv if the entry isnon-essential, they are most commonly used
-where there is a mirrored root disk.
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/sysfs/dir.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index e4fd8a2..b33af5e 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -130,8 +130,10 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
+ 
+ 		/* look it up */
+ 		parent_dentry = dentry;
++		mutex_lock(&parent_dentry->d_inode->i_mutex);
+ 		dentry = lookup_one_len_kern(cur->s_name, parent_dentry,
+ 					     strlen(cur->s_name));
++		mutex_unlock(&parent_dentry->d_inode->i_mutex);
+ 		dput(parent_dentry);
+ 
+ 		if (IS_ERR(dentry)) {
+-- 
+1.5.0.3
 
 
