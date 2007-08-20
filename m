@@ -1,77 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759967AbXHTPNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760232AbXHTPNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759967AbXHTPNA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 11:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbXHTPMx
+	id S1760232AbXHTPNV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 11:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbXHTPNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 11:12:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57133 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751373AbXHTPMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 11:12:52 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <46C58B4E.4080803@t-online.de>
-References: <46C58B4E.4080803@t-online.de> <23249.1186492623@redhat.com> <46B86FC1.7050601@t-online.de> <46695F6D.5050600@t-online.de> <8772.1186149811@redhat.com> <23350.1186492903@redhat.com>
-To: Bernd Schmidt <bernds_cb1@t-online.de>
-Cc: dhowells@redhat.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Wu, Bryan" <Bryan.Wu@analog.com>
-Subject: Re: [PATCH] NOMMU: Separate out VMAs
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Mon, 20 Aug 2007 16:12:48 +0100
-Message-ID: <16451.1187622768@redhat.com>
+	Mon, 20 Aug 2007 11:13:09 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:55805 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760058AbXHTPNI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 11:13:08 -0400
+Date: Mon, 20 Aug 2007 11:13:06 -0400
+To: Marc Perkel <mperkel@yahoo.com>
+Cc: Al Viro <viro@ftp.linux.org.uk>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Phillip Susi <psusi@cfl.rr.com>, Valdis.Kletnieks@vt.edu,
+       Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: Thinking outside the box on file systems
+Message-ID: <20070820151306.GD9412@csclub.uwaterloo.ca>
+References: <20070818181959.GP21089@ftp.linux.org.uk> <900404.40407.qm@web52501.mail.re2.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <900404.40407.qm@web52501.mail.re2.yahoo.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernd Schmidt <bernds_cb1@t-online.de> wrote:
+On Sat, Aug 18, 2007 at 09:07:05PM -0700, Marc Perkel wrote:
+> No Al, there isn't any shortage of arrogance here.
 
-> In do_mmap_private, I've commented out the logic to free excess pages, as it
-> fragments terribly
+Yes you provide plenty yourself.
 
-I wonder if there's a good heuristic for this.  The problem is that whilst
-not releasing excess pages _may_ seem like a good idea, if your system is
-something like a single persistent app, then it really is not.
+> Let me try to repeat what I'm talking about as simply
+> as I can.
+> 
+> First - I'm describing a kind of functionality and
+> suggesting Linux should have it. I know a lot of it
+> can be done because much of what I'm suggesting is
+> already working in Windows and Netware.
 
-For instance, if such an app allocates a byte over 16MB (perhaps implicitly in
-the binfmt driver), then you'd completely waste a large chunk of RAM.  In the
-16MB+1 case, the wastage would be a byte less than 16MB.
+And how many limitations does windows and netware have that linux
+doesn't have, exactly due to that special functionality?  part of the
+usefulness of permissions on unix is that they are so simple to
+understand and manage.  They are really hard to screw up.  The
+permission systems on windows and netware are much more complex and much
+hardware for people to understand, and hence much easier to get wrong
+causing potential security problems on your system without you realizing
+it.
 
-> and causes a simple
->  while true; do cat /proc/buddyinfo; done
-> loop to go oom.
+> I'm not the one who's going to code it. I'm just
+> saying that it would be nice if Linux had the
+> functionality of other operating systems - and - take
+> it to the next level - match it and do even better.
 
-Are you sure it's not just another leak?
+Many of the bugs of other operating systems would be nice to avoid.  In
+some cases what you may see as a feature is a major cause of problems
+especially performance problems.
 
-> Also, I think you're freeing high-order pages unaligned to
-> their order?
+> As to thinking outside the box, what I'm proposing is
+> outside the box relative to Linux. It's not as
+> original as compared to Windows or Netware which is
+> even better.
 
-Yeah, but some of the pages might still be in use when we want to release
-them.
+How about dropping that stupid phrase.
 
-> In shrink_vma, we must save the mm across calls to remove_vma_from_mm (oops
-> when telnetting into the box).
+> The idea is that Linux is lacking features that other
+> OSs have. What I'm suggesting is that Linux not only
+> match it but to create an even more powerful rights
+> layer that is more powerful than the rest and I'm
+> outlining a concept in the hopes that people would get
+> excited about the concept and want to build on the
+> idea.
 
-I'll have a look, but I don't see that.
+Well so far your system has been shown to be very inefficient (with no
+solution to that proposed by anyone).  Many of the ideas have been shown
+to have been tried in the past and then abandoned due to not working
+very well or having severe scalability problems.
 
-> In do_munmap, we can deal with freeing more than one vma.  I've not touched
-> the rb-tree logic in the shared file case, as I have no idea what it's trying
-> to do given that only exact matches are allowed.
+There are lots of people (very often people currently in university) who
+suffer from the problem of believing anything they think of that isn't
+in current use must be a new unique idea that must be used because no
+one else had thought of it.  In almost every case it is not a new idea,
+and the reason it is not in use is because it didn't work the last time
+someone thought of it and tried it.  Or in some cases it is in use but
+just not in a field the new genious has any knowledge of.
 
-I'd generally rather not do this.  You can't use MAP_FIXED to request adjacent
-regions, so why should you anticipate there would be any?
+> I'm just telling you what I'd like to see. I'm not
+> going to code it. So I'm only going to talk about what
+> is possible. How it's done will be up to any
+> programmers who might be inspired by the idea. If no
+> one is inspired the Linux will continue to be in last
+> place when it comes to file system features relating
+> to fine grain permissions.
 
-> It still does not survive my mmap stress-tester, so I'll keep looking.
+How do you know what is possible?  Could it be that many of the problems
+on netware and windows are caused by their choice of filesystem design?
 
-Thanks.
+> In Linux, for example, users are allowed to delete
+> files that they are prohibited from reading or
+> writing. In Netware if a user can't read or write to
+> the file they won't even be able to see that the file
+> exists, let alone delete it.
 
-> Why do we need vm_regions for anonymous memory?  Wouldn't it be enough to just
-> have a VMA?
+In some cases it makes sense.  After all you are not deleting the file,
+you are delting one hardlink to it and the hardlink is part of the
+directory.  If other directories have hardlinks to the same file, those
+get to stay around.  Hence the permissions make sense.
 
-It makes it simpler to have a common way of allocating memory for both anon
-regions and file regions.
+> In Netware I can move a directory tree into another
+> tree and the objects that have rights in the other
+> tree will have rights to all the new files without
+> having to run utilities on the command line to
+> recursively change the permission afterwards. 
 
-David
+Does netware have hardlinks?  Does it have chroots?  bind mounts?  How
+about the ability to delete open files without causing problems for
+programs that have the files open?
+
+> The point - Linux isn't going to move forward and
+> catch up unless there is a fundamental change in the
+> thinking  behind Linux permissions. There is a
+> cultural lack of innovation here. I discussed this
+> with Andrew Morton and he made some suggestions but
+> there's real hostility towards new concepts here.
+> Something I don't understand. At some point Linux
+> needs to grow beyond just being an evolved Unix clone
+> and that's not going to happen if you don't think
+> differently.
+
+Linux seems to be gaining ground in usage.  Netware on the other hand
+seems just about dead.  What does that say about things?
+
+> I still believe that the VI editor causes brain
+> damage. :)
+
+You should see what word and notepad do to people.
+
+--
+Len Sorensen
