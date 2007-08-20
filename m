@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbXHTAUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756325AbXHTAYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756901AbXHTAUS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 20:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbXHTATw
+	id S1756325AbXHTAYS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 20:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbXHTAYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 20:19:52 -0400
-Received: from smtp101.sbc.mail.re2.yahoo.com ([68.142.229.104]:45274 "HELO
-	smtp101.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754785AbXHTATv (ORCPT
+	Sun, 19 Aug 2007 20:24:10 -0400
+Received: from helios.cs.csubak.edu ([136.168.201.112]:35210 "EHLO
+	helios.cs.csubak.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753697AbXHTAYJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 20:19:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=VSMtiRIrhmwR2Ip+OmMxov0USREShEa98KLzAz2CVuogy5Z2SjDSQszou7BXYpzNHW6YgX/nM7NlM9RVIqniiOE3c47HCErQkEmGESIjgbFPoONW1JmhsJT6YtckNHKrsObL+0OXBWZtByV4vOkY6HZfLe0spMF29GEYu1QAR/s=  ;
-X-YMail-OSG: 4gPXXF0VM1kJxs3QKge7E4dyzyBiIIf0nhqf02jcDeL1WpUmeaEIXGJMkbKSATP3s66I7Dxy_Q--
-From: David Brownell <david-b@pacbell.net>
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] ptrdiff_t is not uintptr_t, damnit
-Date: Sun, 19 Aug 2007 17:19:47 -0700
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20070819225546.GV21089@ftp.linux.org.uk>
-In-Reply-To: <20070819225546.GV21089@ftp.linux.org.uk>
+	Sun, 19 Aug 2007 20:24:09 -0400
+Date: Sun, 19 Aug 2007 17:23:57 -0700 (PDT)
+From: David Griffith <dgriffi@cs.csubak.edu>
+To: Clemens Ladisch <clemens@ladisch.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: MOTU Fastlane USB MIDI interface
+In-Reply-To: <1187331453.13767.1205847147@webmail.messagingengine.com>
+Message-ID: <Pine.GSO.4.55.0708170202270.26403@helios.cs.csubak.edu>
+References: <Pine.GSO.4.55.0708100242000.25856@helios.cs.csubak.edu>  
+ <20070816093703.sndy0gg44gk0o0ko@webmail.df.eu>  
+ <Pine.GSO.4.55.0708160308450.24052@helios.cs.csubak.edu>  
+ <20070816174510.6o8cray64g8kosos@webmail.df.eu>  
+ <Pine.GSO.4.55.0708161417270.9354@helios.cs.csubak.edu>
+ <1187331453.13767.1205847147@webmail.messagingengine.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708191719.48340.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.5 (--)
+X-Spam-Report: ---- Start Spam Filter Report
+	Filter Analysis score is (-2.5/5.0)
+	-0.0 NO_RELAYS              Informational: message was not relayed via SMTP
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.1 AWL                    AWL: From: address is in the auto white-list
+	---- End Spam Filter results
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 19 August 2007, Al Viro wrote:
-> is wrong; for one thing, it's a bad C (it's what uintptr_t is for; in general
-> we are not even promised that ptrdiff_t is large enough to hold a pointer,
+On Fri, 17 Aug 2007, Clemens Ladisch wrote:
 
-ISTR we don't *have* a uintptr_t on all architectures, or that would
-be the appropriate thing to use in these 32/64 bit ABI scenarios.
+> David Griffith wrote:
+> > On Thu, 16 Aug 2007, Clemens Ladisch wrote:
+> > > Please try "amidi -d -p virtual" and playing a .mid file to this port with
+> > > aplaymidi.
+> >
+> > $ aplaymidi -p "virtual" castle2.mid
+> > Invalid port virtual - No such file or directory
+>
+> Sorry, the name of the correspondig sequencer port is different,
+> probably "128:0"; see the output of "aplaymidi -l".
 
+$ aplaymidi -l
+ Port    Client name                      Port name
+ 14:0    Midi Through                     Midi Through Port-0
+ 16:0    Ensoniq AudioPCI                 ES1371
+ 20:0    Fastlane                         Fastlane MIDI A
+ 20:1    Fastlane                         Fastlane MIDI B
 
-> Use unsigned long or uintptr_t instead. 
+$ aplaymidi -p 20:0 casablan.mid
 
-I suspect you mean "unsigned long long"...
+Nothing is written to the Fastlane.  No lights.  Nothing.
 
-- Dave
+-- 
+David Griffith
+dgriffi@cs.csubak.edu
