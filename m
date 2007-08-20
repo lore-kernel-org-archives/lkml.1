@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758446AbXHTCRO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbXHTCYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758446AbXHTCRO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 22:17:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbXHTCQ7
+	id S1757483AbXHTCYI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 22:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbXHTCX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 22:16:59 -0400
-Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:39215 "EHLO
-	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755195AbXHTCQ6 (ORCPT
+	Sun, 19 Aug 2007 22:23:57 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:52316 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752661AbXHTCX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 22:16:58 -0400
-Date: Mon, 20 Aug 2007 11:16:54 +0900 (JST)
-Message-Id: <20070820.111654.63743265.nemoto@toshiba-tops.co.jp>
-To: david-b@pacbell.net
-Cc: kay.sievers@vrfy.org, jengelh@computergmbh.de, a.zummo@towertech.it,
-       linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com,
-       greg@kroah.com
-Subject: Re: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <200708191902.04966.david-b@pacbell.net>
-References: <1187559950.4419.79.camel@lov.localdomain>
-	<200708191848.21410.david-b@pacbell.net>
-	<200708191902.04966.david-b@pacbell.net>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 19 Aug 2007 22:23:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FJHad3caR1Bddl9WyeZW0yg7HobGwPELgBlUFXJg5TrhmmkQtr2+IwESmQJa+hL9sI4xR/25UzPMkezQ4aF3Wy6T2LNnOtTHQhKt1K10lGI5oLSARzsOvG00bFTvael6LlwdeMJE7wfVzdFT6eUV8NfwGbJu+i8cUDIaVaG5ClU=
+Message-ID: <34d269d40708191923i72881e7bl5ef37d2320f6ace@mail.gmail.com>
+Date: Sun, 19 Aug 2007 20:23:54 -0600
+From: "Alex Hunsaker" <badalex@gmail.com>
+To: "Alexey Starikovskiy" <astarikovskiy@suse.de>
+Subject: Re: [ACPI] Regression 2.6.23-rc3 fails to boot (acpi)
+Cc: len.brown@intel.com, linux-kernel@vger.kernel.org
+In-Reply-To: <46C884DF.4080101@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <34d269d40708190145m7a17ed35g190f0a5fabc4776e@mail.gmail.com>
+	 <46C884DF.4080101@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 19 Aug 2007 19:02:04 -0700, David Brownell <david-b@pacbell.net> wrote:
-> This is indeed a platform driver.  And v2 of this patch
-> doesn't resolve its "won't hotplug" problem.  The simplest
-> way to resolve that would be switching to the more widely
-> used platform_device_register().
+On 8/19/07, Alexey Starikovskiy <astarikovskiy@suse.de> wrote:
+> What machine is it?
+> Could you open a bug at bugzilla.kernel.org and append acpidump output
+> to it?
+>
 
-Yes, if the current in-tree users (JMR3927 and RBTX4927 board) really
-wanted to hotplug this driver.  And I believe they won't :-)
+Done, see http://bugzilla.kernel.org/show_bug.cgi?id=8909
 
-I just want to fix a potential problem in rtc-ds1742 driver for
-someone who want to hotplug it.  That's all.
-
----
-Atsushi Nemoto
+> Thanks,
+> Alex.
+>
+> Alex Hunsaker wrote:
+> > Hangs on boot with:
+> > ACPI: EC: GPE = 0x4, I/O: command/status = 0x66, data = 0x62
+> > ACPI: Interpreter enabled
+> > ACPI: (supports S0 S3)
+> > ACPI: Using PIC for interrupt routing
+> > ACIP: EC: GPE = 0x4, I/O: command/status = 0x66, data = 0x62
+> >
+> > 2.6.23-rc2 is ok
+> > 2.6.23-rc3 bad
+> > 2.6.23-rc3-latest (7c010de7506954e973abfab5c5999c5a97f7a73e) bad
+> >
+> > git-bisect narrowed it down to:
+> >
+> > 7c010de7506954e973abfab5c5999c5a97f7a73e
+> > ACPI: EC: Switch from boot_ec as soon as we find its desc in DSDT.
+> > Alexey Starikovskiy [Fri, 3 Aug 2007 21:57:53 +0000 (17:57 -0400)]
+> > Some ASUS laptops fail to use boot time EC
+> > and need to eventually switch to one described in DSDT.
+> >
+> > http://bugzilla.kernel.org/show_bug.cgi?id=8709
+> >
+> > Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+> > Signed-off-by: Len Brown <len.brown@intel.com>
+> >
+> > Reverting the above commit fixes the problem.
+> >
+>
+>
