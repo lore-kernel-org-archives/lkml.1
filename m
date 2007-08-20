@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757658AbXHTBP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbXHTBjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757658AbXHTBP6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 21:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbXHTBPt
+	id S1755501AbXHTBjT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 21:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbXHTBjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 21:15:49 -0400
-Received: from web38903.mail.mud.yahoo.com ([209.191.125.109]:47995 "HELO
-	web38903.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751017AbXHTBPs (ORCPT
+	Sun, 19 Aug 2007 21:39:10 -0400
+Received: from [203.171.70.205] ([203.171.70.205]:49587 "EHLO
+	home.nigel.suspend2.net" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751017AbXHTBjJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 21:15:48 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=zIhPOJeD0olg9UJbKDvMnH2NQEhwRJbfABdWJDOoqYnpIl71iuc0h30vci32o9reRK0EkaVXzmynTodt9rtQUTVhHIVdiU7ljypA5xKFuYNuvcVCzqzhVzTyhVUofcROjSLpmy/6tmooYC2wmVM5osW09yMeTMeQIraieQQNGWY=;
-X-YMail-OSG: o8eD8_sVM1kuR.fugFT9a4eM5MHqkYzdvAsH0shfGZU_.RpbJ.VTYjzyX9L7W1GRcc4OoXgH1JYCGuaOg5NPBh9bKOslM5mtuNFkdH7qKFEL2xsnpW.6JdZJW9lGnA--
-Date: Sun, 19 Aug 2007 18:15:47 -0700 (PDT)
-From: Kevin E <kevin360@yahoo.com>
-Subject: Re: Marvell 88E8056 gigabit ethernet controller
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <2456F7EB-000C-4B71-B002-64340DD17BA8@linuxmontreal.com>
+	Sun, 19 Aug 2007 21:39:09 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Should GFP_ATOMIC fail when we're below low watermark?
+Date: Mon, 20 Aug 2007 11:38:49 +1000
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <573746.86745.qm@web38903.mail.mud.yahoo.com>
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200708201138.50508.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Someone wrote me with a solution to try and so far
-it's working.  They suggested I try the driver up on
-Marvell's website but to make sure I powered off the
-machine completely and when it rebooted to not have
-any of the regular kernel drivers for the Marvell
-chipset to load.  They had found that letting the sky2
-load and then unloading the module would mean the
-vendor's driver wouldn't work.
+Hi all.
 
-So I got down the latest driver package they have
-(10.0.5.3).  At first I couldn't get it compiled
-against kernel 2.6.22.3 that I'm running, but I have
-it compiled with the 2.6.21.5 kernel, which is what
-the machine is running now.  And I'm happy to say that
-it's working fine so far.  I've transfered about 4G
-over the link and it's still working fine.
+In current git (and for a while now), an attempt to allocate memory with 
+GFP_ATOMIC will fail if we're below the low watermark level. The only way to 
+access that memory that I can see (not that I've looked that hard) is to have 
+PF_MEMALLOC set (ie from kswapd). I'm wondering if this behaviour is correct. 
+Shouldn't GFP_ATOMIC allocations ignore watermarks too? How about GFP_KERNEL?
 
-Since Marvell's driver seems to be working for the
-88E8056 chipset and from what I've looked at the code
-it's marked as GPL, could it be rolled into the kernel
-for those of us that have 88E8056 chipsets that are
-working to use? 
+The following patch is a potential fix for GFP_ATOMIC.
 
+Regards,
 
+Nigel
 
-       
-____________________________________________________________________________________
-Moody friends. Drama queens. Your life? Nope! - their life, your story. Play Sims Stories at Yahoo! Games.
-http://sims.yahoo.com/  
+Signed-off-by: Nigel Cunningham <nigel@nigel.suspend2.net>
+
+ page_alloc.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+diff -ruNp 995-gfp-atomic-alloc.patch-old/mm/page_alloc.c 995-gfp-atomic-alloc.patch-new/mm/page_alloc.c
+--- 995-gfp-atomic-alloc.patch-old/mm/page_alloc.c	2007-08-20 11:14:34.000000000 +1000
++++ 995-gfp-atomic-alloc.patch-new/mm/page_alloc.c	2007-08-20 11:11:09.000000000 +1000
+@@ -1286,8 +1286,8 @@ restart:
+ 	/* This allocation should allow future memory freeing. */
+ 
+ rebalance:
+-	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+-			&& !in_interrupt()) {
++	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)) ||
++			(gfp_mask & GFP_ATOMIC)) && !in_interrupt()) {
+ 		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+ nofail_alloc:
+ 			/* go through the zonelist yet again, ignoring mins */
+
+-- 
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
