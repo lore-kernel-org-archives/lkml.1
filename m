@@ -1,94 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762131AbXHTUJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbXHTUJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762131AbXHTUJi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760068AbXHTUJS
+	id S1762311AbXHTUJv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761593AbXHTUJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:09:18 -0400
-Received: from lug-owl.de ([195.71.106.12]:48155 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758162AbXHTUJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:09:16 -0400
-Date: Mon, 20 Aug 2007 22:09:14 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Paul Mundt <lethal@linux-sh.org>, Jon Smirl <jonsmirl@gmail.com>,
-       Git Mailing List <git@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Git tree for old kernels from before the current tree
-Message-ID: <20070820200914.GB11718@lug-owl.de>
-Mail-Followup-To: Nicolas Pitre <nico@cam.org>,
-	Al Viro <viro@ftp.linux.org.uk>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Jan Engelhardt <jengelh@computergmbh.de>,
-	Paul Mundt <lethal@linux-sh.org>, Jon Smirl <jonsmirl@gmail.com>,
-	Git Mailing List <git@vger.kernel.org>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <20070722211314.GA13850@linux-sh.org> <Pine.LNX.4.64.0707222344540.32367@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0707230000170.32367@fbirervta.pbzchgretzou.qr> <46A3D5EA.2050600@zytor.com> <alpine.LFD.0.999.0707230950340.3607@woody.linux-foundation.org> <alpine.LFD.0.999.0707231343350.6355@xanadu.home> <alpine.LFD.0.999.0707231057480.3607@woody.linux-foundation.org> <alpine.LFD.0.999.0707231432560.6355@xanadu.home> <20070723234628.GN21668@ftp.linux.org.uk> <alpine.LFD.0.999.0707231957450.6355@xanadu.home>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cvVnyQ+4j833TQvp"
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707231957450.6355@xanadu.home>
-X-Operating-System: Linux mail 2.6.18-4-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 20 Aug 2007 16:09:28 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59688 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761396AbXHTUJY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:09:24 -0400
+Subject: Re: [PATCH 04/10] mm: slub: add knowledge of reserve pages
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>, Matt Mackall <mpm@selenic.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0708201220500.29092@schroedinger.engr.sgi.com>
+References: <20070806102922.907530000@chello.nl>
+	 <20070806103658.603735000@chello.nl> <1187595513.6114.176.camel@twins>
+	 <Pine.LNX.4.64.0708201211240.20591@sbz-30.cs.Helsinki.FI>
+	 <1187601455.6114.189.camel@twins>
+	 <84144f020708200228v1af5248cx6f6da4a7a35400f3@mail.gmail.com>
+	 <Pine.LNX.4.64.0708201220500.29092@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 20 Aug 2007 22:08:53 +0200
+Message-Id: <1187640533.5337.27.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-08-20 at 12:26 -0700, Christoph Lameter wrote:
+> On Mon, 20 Aug 2007, Pekka Enberg wrote:
+> 
+> > Hi Peter,
+> > 
+> > On Mon, 2007-08-20 at 12:12 +0300, Pekka J Enberg wrote:
+> > > > Any reason why the callers that are actually interested in this don't do
+> > > > page->reserve on their own?
+> > 
+> > On 8/20/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > > because new_slab() destroys the content?
+> > 
+> > Right. So maybe we could move the initialization parts of new_slab()
+> > to __new_slab() so that the callers that are actually interested in
+> > 'reserve' could do allocate_slab(), store page->reserve and do rest of
+> > the initialization with it?
+> 
+> I am still not convinced about this approach and there seems to be 
+> agreement that this is not working on large NUMA. So #ifdef it out? 
+> !CONFIG_NUMA? Some more general approach that does not rely on a single 
+> slab being a reserve?
 
---cvVnyQ+4j833TQvp
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+See the patch I sent earlier today?
 
-On Mon, 2007-07-23 20:10:23 -0400, Nicolas Pitre <nico@cam.org> wrote:
->=20
-> I have sanitized .tgz files that I use to stuff a Git repo with.  I=20
-> recall that some of them were reconstructed through patching an earlier=
-=20
-> or later kernel version because the original ones were corrupted. Some=20
-> patches were retrieved from other archival sites, etc.  Then the result=
-=20
-> was=20
-> cross checked with summary lists like this one:=20
->=20
-> http://www.uwsg.iu.edu/hypermail/linux/kernel/0110.1/1684.html
->=20
-> This was a while ago so I don't remember the exact steps, but that=20
-> wasn't always trivial.
+> The object is to check the alloc flags when having allocated a reserve 
+> slab right?
 
-Some years ago, I also worked on old Linux releases. Have you found
-the tarballs in my directory at kernel.org?
+The initial idea was to make each slab allocation respect the watermarks
+like page allocation does (the page rank thingies, if you remember).
+That is if the slab is allocated from below the ALLOC_MIN|ALLOC_HARDER
+threshold, an ALLOC_MIN|ALLOC_HIGH allocation would get memory, but an
+ALLOC_MIN would not.
 
-MfG, JBG
+Now, we only needed the ALLOC_MIN|ALLOC_HIGH|ALLOC_HARDER <->
+ALLOC_NO_WATERMARKS transition and hence fell back to a binary system
+that is not quite fair wrt to all the other levels but suffices for the
+problem at hand.
 
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-Signature of:             God put me on earth to accomplish a certain numbe=
-r of
-the second  :            things. Right now I am so far behind I will never =
-die.
+So we want to ensure that slab allocations that are _not_ entitled to
+ALLOC_NO_WATERMARK memory will not get objects when a page allocation
+with the same right would fail, even if there is a slab present.
 
---cvVnyQ+4j833TQvp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+>  Adding another flag SlabReserve and keying off on that one may 
+> be the easiest solution.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Trouble with something like that is that page flags are peristent and
+you'd need to clean them when the status flips -> O(n) -> unwanted.
 
-iD8DBQFGyfTqHb1edYOZ4bsRAnzBAJ99jWwaKZ5F/Tyhiq8DTjNa9bEfygCeK+4A
-Og8WeCtJs6xnpbG/dQiEJks=
-=Ax+g
------END PGP SIGNATURE-----
+> I have pending patches here that add per cpu structures. Those will make 
+> that job easier.
 
---cvVnyQ+4j833TQvp--
+Yeah, I've seen earlier versions of those.
+
