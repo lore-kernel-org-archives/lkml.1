@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbXHTIAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbXHTIBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757552AbXHTIAW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 04:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbXHTIAJ
+	id S1758156AbXHTIBc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 04:01:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbXHTIBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 04:00:09 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:60769 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751458AbXHTIAH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 04:00:07 -0400
-Date: Mon, 20 Aug 2007 09:59:49 +0200
-From: Markus Dahms <mad@automagically.de>
-To: sparclinux@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: possible endless loop in PROM initialization
-Message-ID: <20070820075949.GA5927@vimes.madsworld.lan>
+	Mon, 20 Aug 2007 04:01:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56795 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751448AbXHTIBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 04:01:24 -0400
+Message-ID: <46C94A48.4060309@redhat.com>
+Date: Mon, 20 Aug 2007 10:01:12 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Provags-ID: V01U2FsdGVkX18M1ryUfS+ILkvGGkJ44bGtFgcVSRXNRUikC/v
- hAY0v6BVCc1gOPwIiaVUKQm3+OUJ3yI3UVR5yXjfN1dJItmKsW
- Wi2/olDCc/RO6h6sxEQaw==
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+CC: Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Early printk behaviour
+References: <200708152234.06734.rgetz@blackfin.uclinux.org> <8bd0f97a0708160947x3bd308abmc4f3b523e2444586@mail.gmail.com> <46C552FB.4000508@redhat.com> <200708171700.29647.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200708171700.29647.rgetz@blackfin.uclinux.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
+Robin Getz wrote:
 
-while trying to define a non-unique devalias at the Sun PROM prompt
-(the SPARCclassic X has wrong aliases for scsi, disk1, etc. in the
-PROM, at least mine) I fell over a bug resulting in an endless loop
-while booting the kernel.
+>> Hmm, yes, should be doable in generic code.  Check whenever the current
+>> console has CON_BOOT set and if so unregister it.
+> 
+> Something like:
+> 
+> +++ kernel/printk.c     (working copy)
+> +int __init disable_boot_consoles(void)
+> +{
+> +       struct console *con;
+> +
+> +       for (con = console_drivers; con; con = con->next) {
+> +               if (con->flags & CON_BOOT) {
+> +                       printk(KERN_INFO "Unregister BootConsole %s%d\n",
+> +                               con->name, con->index);
+> +                       unregister_console(con);
+> +               }
+> +       }
+> +       return 0;
+> +}
+> +late_initcall(disable_boot_consoles);
 
-The problem is the getting the properties list of the /aliases node.
-As the next element in this list is identified by name and the
-function which retrieves this property always returns the first
-occurrence this goes forever....
+Yep, that should work.  You can drop the loop though.  You can't
+register a boot console if another console exists, and the first
+non-boot console replaces the boot console, thus you never ever have
+more than one console in case the boot console is still active.
 
-I could track down the issue to the function __prom_nextprop() in
-arch/sparc/prom/tree.c, but I am now looking for the definition of
-prom_nodeops->no_nextprop() without success.
+The printk should be all lowercase like the other printk's in the file.
 
-My naive solution would be to return not the first but the last
-occurrence of a property.
+Other than that it loosk fine.
 
-Greetings,
-
-	Markus
+cheers,
+  Gerd
 
