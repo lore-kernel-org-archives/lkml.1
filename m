@@ -1,141 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763483AbXHTW4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbXHTW5D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763483AbXHTW4m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 18:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761358AbXHTWxN
+	id S1753324AbXHTW5D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 18:57:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761531AbXHTWxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 18:53:13 -0400
-Received: from mx2.suse.de ([195.135.220.15]:53975 "EHLO mx2.suse.de"
+	Mon, 20 Aug 2007 18:53:19 -0400
+Received: from mx1.suse.de ([195.135.220.2]:60214 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753731AbXHTWxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 18:53:12 -0400
-Message-Id: <20070820225136.212150000@suse.de>
+	id S1761486AbXHTWxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 18:53:17 -0400
+Message-Id: <20070820225140.739434000@suse.de>
 References: <20070820224806.154198000@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 20 Aug 2007 15:48:18 -0700
+Date: Mon, 20 Aug 2007 15:48:19 -0700
 From: tonyj@suse.de
 To: linux-kernel@vger.kernel.org
-Cc: oakad@yahoo.com, kay.sievers@vrfy.org
-Subject: [patch 12/14] Convert from class_device to device for TI flash media
+Cc: rmk@arm.linux.org.uk, kay.sievers@vrfy.org
+Subject: [patch 13/14] Convert from class_device to device for UCB1x00
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -- 
-Content-Disposition: inline; filename=misc.patch
+Content-Disposition: inline; filename=mfd.patch
 
-Convert from class_device to device for drivers/misc/tifm.  This is
+Convert from class_device to device for drivers/mfd/ucb1x00.  This is
 part of the work to eliminate struct class_device.
 
 ---
- drivers/misc/tifm_7xx1.c |    4 ++--
- drivers/misc/tifm_core.c |   24 ++++++++++++------------
- include/linux/tifm.h     |    2 +-
- 3 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/mfd/ucb1x00-assabet.c |   17 +++++++++--------
+ drivers/mfd/ucb1x00-core.c    |   14 +++++++-------
+ drivers/mfd/ucb1x00.h         |    4 ++--
+ 3 files changed, 18 insertions(+), 17 deletions(-)
 
---- a/drivers/misc/tifm_core.c
-+++ b/drivers/misc/tifm_core.c
-@@ -165,16 +165,16 @@ static struct bus_type tifm_bus_type = {
- 	.resume    = tifm_device_resume
+--- a/drivers/mfd/ucb1x00-assabet.c
++++ b/drivers/mfd/ucb1x00-assabet.c
+@@ -20,7 +20,8 @@
+ #include "ucb1x00.h"
+ 
+ #define UCB1X00_ATTR(name,input)\
+-static ssize_t name##_show(struct class_device *dev, char *buf)	\
++static ssize_t name##_show(struct device *dev, struct device_attribute *attr,
++			   char *buf)	\
+ {								\
+ 	struct ucb1x00 *ucb = classdev_to_ucb1x00(dev);		\
+ 	int val;						\
+@@ -29,7 +30,7 @@ static ssize_t name##_show(struct class_
+ 	ucb1x00_adc_disable(ucb);				\
+ 	return sprintf(buf, "%d\n", val);			\
+ }								\
+-static CLASS_DEVICE_ATTR(name,0444,name##_show,NULL)
++static DEVICE_ATTR(name,0444,name##_show,NULL)
+ 
+ UCB1X00_ATTR(vbatt, UCB_ADC_INP_AD1);
+ UCB1X00_ATTR(vcharger, UCB_ADC_INP_AD0);
+@@ -37,17 +38,17 @@ UCB1X00_ATTR(batt_temp, UCB_ADC_INP_AD2)
+ 
+ static int ucb1x00_assabet_add(struct ucb1x00_dev *dev)
+ {
+-	class_device_create_file(&dev->ucb->cdev, &class_device_attr_vbatt);
+-	class_device_create_file(&dev->ucb->cdev, &class_device_attr_vcharger);
+-	class_device_create_file(&dev->ucb->cdev, &class_device_attr_batt_temp);
++	device_create_file(&dev->ucb->dev, &device_attr_vbatt);
++	device_create_file(&dev->ucb->dev, &device_attr_vcharger);
++	device_create_file(&dev->ucb->dev, &device_attr_batt_temp);
+ 	return 0;
+ }
+ 
+ static void ucb1x00_assabet_remove(struct ucb1x00_dev *dev)
+ {
+-	class_device_remove_file(&dev->ucb->cdev, &class_device_attr_batt_temp);
+-	class_device_remove_file(&dev->ucb->cdev, &class_device_attr_vcharger);
+-	class_device_remove_file(&dev->ucb->cdev, &class_device_attr_vbatt);
++	device_remove_file(&dev->ucb->cdev, &device_attr_batt_temp);
++	device_remove_file(&dev->ucb->cdev, &device_attr_vcharger);
++	device_remove_file(&dev->ucb->cdev, &device_attr_vbatt);
+ }
+ 
+ static struct ucb1x00_driver ucb1x00_assabet_driver = {
+--- a/drivers/mfd/ucb1x00-core.c
++++ b/drivers/mfd/ucb1x00-core.c
+@@ -458,7 +458,7 @@ static int ucb1x00_detect_irq(struct ucb
+ 	return probe_irq_off(mask);
+ }
+ 
+-static void ucb1x00_release(struct class_device *dev)
++static void ucb1x00_release(struct device *dev)
+ {
+ 	struct ucb1x00 *ucb = classdev_to_ucb1x00(dev);
+ 	kfree(ucb);
+@@ -466,7 +466,7 @@ static void ucb1x00_release(struct class
+ 
+ static struct class ucb1x00_class = {
+ 	.name		= "ucb1x00",
+-	.release	= ucb1x00_release,
++	.dev_release	= ucb1x00_release,
  };
  
--static void tifm_free(struct class_device *cdev)
-+static void tifm_free(struct device *dev)
- {
--	struct tifm_adapter *fm = container_of(cdev, struct tifm_adapter, cdev);
-+	struct tifm_adapter *fm = container_of(dev, struct tifm_adapter, dev);
+ static int ucb1x00_probe(struct mcp *mcp)
+@@ -490,9 +490,9 @@ static int ucb1x00_probe(struct mcp *mcp
+ 		goto err_disable;
  
- 	kfree(fm);
+ 
+-	ucb->cdev.class = &ucb1x00_class;
+-	ucb->cdev.dev = &mcp->attached_device;
+-	strlcpy(ucb->cdev.class_id, "ucb1x00", sizeof(ucb->cdev.class_id));
++	ucb->dev.class = &ucb1x00_class;
++	ucb->dev.parent = &mcp->attached_device;
++	strlcpy(ucb->dev.bus_id, "ucb1x00", sizeof(ucb->dev.bus_id));
+ 
+ 	spin_lock_init(&ucb->lock);
+ 	spin_lock_init(&ucb->io_lock);
+@@ -517,7 +517,7 @@ static int ucb1x00_probe(struct mcp *mcp
+ 
+ 	mcp_set_drvdata(mcp, ucb);
+ 
+-	ret = class_device_register(&ucb->cdev);
++	ret = device_register(&ucb->dev);
+ 	if (ret)
+ 		goto err_irq;
+ 
+@@ -554,7 +554,7 @@ static void ucb1x00_remove(struct mcp *m
+ 	mutex_unlock(&ucb1x00_mutex);
+ 
+ 	free_irq(ucb->irq, ucb);
+-	class_device_unregister(&ucb->cdev);
++	device_unregister(&ucb->dev);
  }
  
- static struct class tifm_adapter_class = {
- 	.name    = "tifm_adapter",
--	.release = tifm_free
-+	.dev_release = tifm_free
+ int ucb1x00_register_driver(struct ucb1x00_driver *drv)
+--- a/drivers/mfd/ucb1x00.h
++++ b/drivers/mfd/ucb1x00.h
+@@ -120,7 +120,7 @@ struct ucb1x00 {
+ 	u16			irq_fal_enbl;
+ 	u16			irq_ris_enbl;
+ 	struct ucb1x00_irq	irq_handler[16];
+-	struct class_device	cdev;
++	struct device		dev;
+ 	struct list_head	node;
+ 	struct list_head	devs;
+ };
+@@ -144,7 +144,7 @@ struct ucb1x00_driver {
+ 	int	(*resume)(struct ucb1x00_dev *dev);
  };
  
- struct tifm_adapter *tifm_alloc_adapter(unsigned int num_sockets,
-@@ -185,9 +185,9 @@ struct tifm_adapter *tifm_alloc_adapter(
- 	fm = kzalloc(sizeof(struct tifm_adapter)
- 		     + sizeof(struct tifm_dev*) * num_sockets, GFP_KERNEL);
- 	if (fm) {
--		fm->cdev.class = &tifm_adapter_class;
--		fm->cdev.dev = dev;
--		class_device_initialize(&fm->cdev);
-+		fm->dev.class = &tifm_adapter_class;
-+		fm->dev.parent = dev;
-+		device_initialize(&fm->dev);
- 		spin_lock_init(&fm->lock);
- 		fm->num_sockets = num_sockets;
- 	}
-@@ -208,8 +208,8 @@ int tifm_add_adapter(struct tifm_adapter
- 	if (rc)
- 		return rc;
+-#define classdev_to_ucb1x00(cd)	container_of(cd, struct ucb1x00, cdev)
++#define classdev_to_ucb1x00(cd)	container_of(cd, struct ucb1x00, dev)
  
--	snprintf(fm->cdev.class_id, BUS_ID_SIZE, "tifm%u", fm->id);
--	rc = class_device_add(&fm->cdev);
-+	snprintf(fm->dev.bus_id, BUS_ID_SIZE, "tifm%u", fm->id);
-+	rc = device_add(&fm->dev);
- 	if (rc) {
- 		spin_lock(&tifm_adapter_lock);
- 		idr_remove(&tifm_adapter_idr, fm->id);
-@@ -233,13 +233,13 @@ void tifm_remove_adapter(struct tifm_ada
- 	spin_lock(&tifm_adapter_lock);
- 	idr_remove(&tifm_adapter_idr, fm->id);
- 	spin_unlock(&tifm_adapter_lock);
--	class_device_del(&fm->cdev);
-+	device_del(&fm->dev);
- }
- EXPORT_SYMBOL(tifm_remove_adapter);
- 
- void tifm_free_adapter(struct tifm_adapter *fm)
- {
--	class_device_put(&fm->cdev);
-+	put_device(&fm->dev);
- }
- EXPORT_SYMBOL(tifm_free_adapter);
- 
-@@ -266,9 +266,9 @@ struct tifm_dev *tifm_alloc_device(struc
- 		sock->card_event = tifm_dummy_event;
- 		sock->data_event = tifm_dummy_event;
- 
--		sock->dev.parent = fm->cdev.dev;
-+		sock->dev.parent = fm->dev.parent;
- 		sock->dev.bus = &tifm_bus_type;
--		sock->dev.dma_mask = fm->cdev.dev->dma_mask;
-+		sock->dev.dma_mask = fm->dev.parent->dma_mask;
- 		sock->dev.release = tifm_free_device;
- 
- 		snprintf(sock->dev.bus_id, BUS_ID_SIZE,
---- a/include/linux/tifm.h
-+++ b/include/linux/tifm.h
-@@ -120,7 +120,7 @@ struct tifm_adapter {
- 	struct completion   *finish_me;
- 
- 	struct work_struct  media_switcher;
--	struct class_device cdev;
-+	struct device	    dev;
- 
- 	void                (*eject)(struct tifm_adapter *fm,
- 				     struct tifm_dev *sock);
---- a/drivers/misc/tifm_7xx1.c
-+++ b/drivers/misc/tifm_7xx1.c
-@@ -149,7 +149,7 @@ static void tifm_7xx1_switch_media(struc
- 	socket_change_set = fm->socket_change_set;
- 	fm->socket_change_set = 0;
- 
--	dev_dbg(fm->cdev.dev, "checking media set %x\n",
-+	dev_dbg(fm->dev.parent, "checking media set %x\n",
- 		socket_change_set);
- 
- 	if (!socket_change_set) {
-@@ -164,7 +164,7 @@ static void tifm_7xx1_switch_media(struc
- 		if (sock) {
- 			printk(KERN_INFO
- 			       "%s : demand removing card from socket %u:%u\n",
--			       fm->cdev.class_id, fm->id, cnt);
-+			       fm->dev.bus_id, fm->id, cnt);
- 			fm->sockets[cnt] = NULL;
- 			sock_addr = sock->addr;
- 			spin_unlock_irqrestore(&fm->lock, flags);
+ int ucb1x00_register_driver(struct ucb1x00_driver *);
+ void ucb1x00_unregister_driver(struct ucb1x00_driver *);
 
 -- 
