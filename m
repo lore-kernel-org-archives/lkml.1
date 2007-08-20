@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759652AbXHTTAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760710AbXHTTA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759652AbXHTTAa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 15:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbXHTTAX
+	id S1760710AbXHTTA7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 15:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbXHTTAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 15:00:23 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:47663 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750826AbXHTTAW (ORCPT
+	Mon, 20 Aug 2007 15:00:51 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44831 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753491AbXHTTAt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 15:00:22 -0400
-Message-ID: <46C9E4B9.1080900@linux.vnet.ibm.com>
-Date: Tue, 21 Aug 2007 00:30:09 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Mon, 20 Aug 2007 15:00:49 -0400
+Date: Mon, 20 Aug 2007 12:00:49 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pavel Machek <pavel@ucw.cz>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC 2/9] Use NOMEMALLOC reclaim to allow reclaim if PF_MEMALLOC
+ is set
+In-Reply-To: <20070818071035.GA4667@ucw.cz>
+Message-ID: <Pine.LNX.4.64.0708201158270.28863@schroedinger.engr.sgi.com>
+References: <20070814153021.446917377@sgi.com> <20070814153501.305923060@sgi.com>
+ <20070818071035.GA4667@ucw.cz>
 MIME-Version: 1.0
-To: schwidefsky@de.ibm.com
-CC: Ingo Molnar <mingo@elte.hu>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [accounting regression since rc1]  scheduler updates
-References: <20070812163225.GA11996@elte.hu> <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu> <1187629438.8541.40.camel@localhost>  <20070820180810.GA25160@elte.hu> <1187634782.4028.10.camel@localhost>
-In-Reply-To: <1187634782.4028.10.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Schwidefsky wrote:
-> On Mon, 2007-08-20 at 20:08 +0200, Ingo Molnar wrote:
->> For sched_clock()'s behavior while the virtual CPU is idle: my current 
->> idea for that is the patch below (a loosely analoguous problem exists 
->> with nohz/dynticks): it makes sched_clock() valid across idle periods 
->> too and uses wall-clock time for that.
+On Sat, 18 Aug 2007, Pavel Machek wrote:
+
+> > The reclaim is of particular important to stacked filesystems that may
+> > do a lot of allocations in the write path. Reclaim will be working
+> > as long as there are clean file backed pages to reclaim.
 > 
-> Ok, that would mean that sched_clock can just return the virtual cpu
-> time and the two hooks starts and stops the idle periods as far as the
-> scheduler is concerned. In this case we can use the patch from Jan with
-> the new implementation for sched_clock and add the two hooks to the
-> places where the cpu-idle notifiers are done (do_monitor_call and
-> default_idle). In fact this could be an idle-notifier. Hmm, I take a
-> closer look tomorrow when I'm back at the office.
+> I don't get it. Lets say that we have stacked filesystem that needs
+> it. That filesystem is broken today.
 > 
+> Now you give it second chance by reclaiming clean pages, but there are
+> no guarantees that we have any.... so that filesystem is still broken
+> with your patch...?
 
-<snip>
+There is a guarantee that we have some because the user space program is 
+executing. Meaning the executable pages can be retrieved. The amount 
+dirty memory in the system is limited by the dirty_ratio. So the VM can 
+only get into trouble if there is a sufficient amount of anonymous pages 
+and all executables have been reclaimed. That is pretty rare.
 
-I am partially responsible for the regression. While working on the
-CPU accounting change, I for some unknown reason always assumed
-that sched_clock() was virtualized. I should have taken a closer look.
+Plus the same issue can happen today. Writes are usually not completed 
+during reclaim. If the writes are sufficiently deferred then you have the 
+same issue now.
 
-Ingo, with this new approach, sched_clock() although not virtualized,
-advances as if it is (due to the idle state change accounting).
-I have one question though, what if the underlying CPU is forcefully
-scheduled out from the virtual CPU?
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
