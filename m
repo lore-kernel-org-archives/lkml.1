@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759478AbXHTNdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759694AbXHTNf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759478AbXHTNdS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 09:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756755AbXHTNdF
+	id S1759694AbXHTNf3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 09:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757161AbXHTNfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 09:33:05 -0400
-Received: from spirit.analogic.com ([204.178.40.4]:1887 "EHLO
-	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751658AbXHTNdE convert rfc822-to-8bit (ORCPT
+	Mon, 20 Aug 2007 09:35:14 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:3865 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756416AbXHTNfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 09:33:04 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 20 Aug 2007 13:32:59.0842 (UTC) FILETIME=[A0297220:01C7E32E]
-Content-class: urn:content-classes:message
-Subject: Re: Thinking outside the box on file systems
-Date: Mon, 20 Aug 2007 09:32:58 -0400
-Message-ID: <Pine.LNX.4.61.0708200925240.6530@chaos.analogic.com>
-In-Reply-To: <465458.84259.qm@web52505.mail.re2.yahoo.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Thinking outside the box on file systems
-Thread-Index: AcfjLqAzZ9/Vlw+UQ+2t+NIDkqs16g==
-References: <465458.84259.qm@web52505.mail.re2.yahoo.com>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Marc Perkel" <mperkel@yahoo.com>
-Cc: "Brennan Ashton" <comphappy@gmail.com>, "Nix" <nix@esperi.org.uk>,
-       "Al Viro" <viro@ftp.linux.org.uk>, "Kyle Moffett" <mrmacman_g4@mac.com>,
-       "Phillip Susi" <psusi@cfl.rr.com>,
-       "Michael Tharp" <gxti@partiallystapled.com>,
-       "LKML Kernel" <linux-kernel@vger.kernel.org>,
-       "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
-       "Al Viro" <viro@zeniv.linux.org.uk>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+	Mon, 20 Aug 2007 09:35:11 -0400
+Date: Mon, 20 Aug 2007 21:32:07 +0800
+From: Herbert Xu <herbert.xu@redhat.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <piggin@cyberone.com.au>,
+       Satyam Sharma <satyam@infradead.org>, Paul Mackerras <paulus@samba.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070820133207.GA13835@gondor.apana.org.au>
+References: <18117.6495.397597.582736@cargo.ozlabs.ibm.com> <20070817035342.GA14744@gondor.apana.org.au> <alpine.LFD.0.999.0708171142550.3666@enigma.security.iitk.ac.in> <46C55E90.7010407@yahoo.com.au> <alpine.LFD.0.999.0708171431150.3666@enigma.security.iitk.ac.in> <46C56ADF.8010501@cyberone.com.au> <alpine.LFD.0.999.0708171612440.3666@enigma.security.iitk.ac.in> <46C59717.4020108@cyberone.com.au> <alpine.LFD.0.999.0708170929580.30176@woody.linux-foundation.org> <46C993DF.4080400@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C993DF.4080400@redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Aug 20, 2007 at 09:15:11AM -0400, Chris Snook wrote:
+> Linus Torvalds wrote:
+> >So the only reason to add back "volatile" to the atomic_read() sequence is 
+> >not to fix bugs, but to _hide_ the bugs better. They're still there, they 
+> >are just a lot harder to trigger, and tend to be a lot subtler.
+> 
+> What about barrier removal?  With consistent semantics we could optimize a 
+> fair amount of code.  Whether or not that constitutes "premature" 
+> optimization is open to debate, but there's no question we could reduce our 
+> register wiping in some places.
 
-On Mon, 20 Aug 2007, Marc Perkel wrote:
+If you've been reading all of Linus's emails you should be
+thinking about adding memory barriers, and not removing
+compiler barriers.
 
->
-[Snipped...]
->
-> What's the point? People are openly hostile to new
-> ideas here. I started out nice and laid out my ideas
-> and you have a bunch of morons who attack anything
-> new.
+He's just told you that code of the kind
 
-[Snopped...]
+	while (!atomic_read(cond))
+		;
 
->
-> Marc Perkel
-> Junk Email Filter dot com
-> http://www.junkemailfilter.com
->
+	do_something()
 
-No. You started out by saying you have this great idea
-that you want somebody else to develop. This met with
-strong resistance of course, because linux-kernel
-developers don't work for you.
-
-If you were to create some new "thinking out-of-the-box"
-file system, you could include it into Linux just as all
-the other file-systems have been included (it started
-with minix). If it was truly useful, it might even get
-included into the main-line distributions if you
-maintained it.
-
-People are not openly hostile to new ideas. They are openly
-hostile to being abused.
+probably needs a memory barrier (not just compiler) so that
+do_something() doesn't see stale cache content that occured
+before cond flipped.
 
 Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
