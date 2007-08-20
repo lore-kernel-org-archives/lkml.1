@@ -1,62 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763304AbXHTUY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763844AbXHTUYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763304AbXHTUY1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762122AbXHTUTW
+	id S1763844AbXHTUYn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbXHTUTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:19:22 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:53810 "EHLO smtp.polymtl.ca"
+	Mon, 20 Aug 2007 16:19:24 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:53814 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762386AbXHTUTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:19:18 -0400
-Message-Id: <20070820201831.618314545@polymtl.ca>
+	id S1762397AbXHTUTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:19:19 -0400
+Message-Id: <20070820201828.970445797@polymtl.ca>
 References: <20070820201519.512791382@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 16:15:41 -0400
+Date: Mon, 20 Aug 2007 16:15:35 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com
-Subject: [patch 22/23] Add cmpxchg_local to v850
-Content-Disposition: inline; filename=add-cmpxchg-local-to-v850.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:18:32 +0000
+Cc: Gunnar Larisch <gl@denx.de>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com,
+       benh@kernel.crashing.org
+Subject: [patch 16/23] Add cmpxchg_local to ppc
+Content-Disposition: inline; filename=add-cmpxchg-local-to-ppc.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:18:29 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new generic cmpxchg_local (disables interrupt). Also use the generic
-cmpxchg as fallback if SMP is not set.
+Add a local processor version of cmpxchg for ppc.
 
+Implements __cmpxchg_u32_local and uses it for 32 bits cmpxchg_local.
+It uses the non NMI safe cmpxchg_local_generic for 1, 2 and 8 bytes
+cmpxchg_local.
+
+From: Gunnar Larisch <gl@denx.de>
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Signed-off-by: Gunnar Larisch <gl@denx.de>
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: clameter@sgi.com
+CC: benh@kernel.crashing.org
 ---
- include/asm-v850/system.h |   15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ include/asm-ppc/system.h |   49 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 48 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/include/asm-v850/system.h
+Index: linux-2.6-lttng/include/asm-ppc/system.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-v850/system.h	2007-07-23 11:28:45.000000000 -0400
-+++ linux-2.6-lttng/include/asm-v850/system.h	2007-07-23 11:28:57.000000000 -0400
-@@ -104,6 +104,21 @@ static inline unsigned long __xchg (unsi
- 	return tmp;
+--- linux-2.6-lttng.orig/include/asm-ppc/system.h	2007-08-07 14:31:51.000000000 -0400
++++ linux-2.6-lttng/include/asm-ppc/system.h	2007-08-07 15:03:51.000000000 -0400
+@@ -208,12 +208,34 @@ __cmpxchg_u32(volatile unsigned int *p, 
+ 	return prev;
  }
  
++static __inline__ unsigned long
++__cmpxchg_u32_local(volatile unsigned int *p, unsigned int old,
++	unsigned int new)
++{
++	unsigned int prev;
++
++	__asm__ __volatile__ ("\n\
++1:	lwarx	%0,0,%2 \n\
++	cmpw	0,%0,%3 \n\
++	bne	2f \n"
++	PPC405_ERR77(0,%2)
++"	stwcx.	%4,0,%2 \n\
++	bne-	1b\n"
++"2:"
++	: "=&r" (prev), "=m" (*p)
++	: "r" (p), "r" (old), "r" (new), "m" (*p)
++	: "cc", "memory");
++
++	return prev;
++}
++
+ /* This function doesn't exist, so you'll get a linker error
+    if something tries to do an invalid cmpxchg().  */
+ extern void __cmpxchg_called_with_bad_pointer(void);
+ 
+ static __inline__ unsigned long
+-__cmpxchg(volatile void *ptr, unsigned long old, unsigned long new, int size)
++__cmpxchg(volatile void *ptr, unsigned long old, unsigned long new,
++	unsigned int size)
+ {
+ 	switch (size) {
+ 	case 4:
+@@ -235,6 +257,31 @@ __cmpxchg(volatile void *ptr, unsigned l
+ 				    (unsigned long)_n_, sizeof(*(ptr))); \
+   })
+ 
 +#include <asm-generic/cmpxchg-local.h>
++
++static inline unsigned long __cmpxchg_local(volatile void *ptr,
++				      unsigned long old,
++				      unsigned long new, int size)
++{
++	switch (size) {
++	case 4:
++		return __cmpxchg_u32_local(ptr, old, new);
++	default:
++		return __cmpxchg_local_generic(ptr, old, new, size);
++	}
++
++	return old;
++}
 +
 +/*
 + * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
 + * them available.
 + */
-+#define cmpxchg_local(ptr,o,n)					  	    \
-+     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
++#define cmpxchg_local(ptr,o,n)					  	\
++     (__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
 +			   	 (unsigned long)(n), sizeof(*(ptr)))
 +#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
 +
-+#ifndef CONFIG_SMP
-+#include <asm-generic/cmpxchg.h>
-+#endif
-+
  #define arch_align_stack(x) (x)
  
- #endif /* __V850_SYSTEM_H__ */
+ #endif /* __KERNEL__ */
 
 -- 
 Mathieu Desnoyers
