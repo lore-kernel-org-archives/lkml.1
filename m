@@ -1,90 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbXHTUJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761597AbXHTUOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762311AbXHTUJv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761593AbXHTUJ2
+	id S1761597AbXHTUOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756041AbXHTUOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:09:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59688 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761396AbXHTUJY (ORCPT
+	Mon, 20 Aug 2007 16:14:37 -0400
+Received: from 78-32-9-130.no-dns-yet.enta.net ([78.32.9.130]:35892 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007AbXHTUOg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:09:24 -0400
-Subject: Re: [PATCH 04/10] mm: slub: add knowledge of reserve pages
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>, Matt Mackall <mpm@selenic.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0708201220500.29092@schroedinger.engr.sgi.com>
-References: <20070806102922.907530000@chello.nl>
-	 <20070806103658.603735000@chello.nl> <1187595513.6114.176.camel@twins>
-	 <Pine.LNX.4.64.0708201211240.20591@sbz-30.cs.Helsinki.FI>
-	 <1187601455.6114.189.camel@twins>
-	 <84144f020708200228v1af5248cx6f6da4a7a35400f3@mail.gmail.com>
-	 <Pine.LNX.4.64.0708201220500.29092@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 20 Aug 2007 22:08:53 +0200
-Message-Id: <1187640533.5337.27.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Aug 2007 16:14:36 -0400
+Date: Mon, 20 Aug 2007 21:13:44 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Message-ID: <20070820201344.GA13059@srcf.ucam.org>
+References: <1186990219.22431.37.camel@caritas-dev.intel.com> <20070815161642.1bfbbe9c.akpm@linux-foundation.org> <46C38AA8.5040202@zytor.com> <1187251248.15063.12.camel@caritas-dev.intel.com> <m11wdzrwl7.fsf@ebiederm.dsl.xmission.com> <86802c440708191646r1caab5d8yd82c55fd2c8262db@mail.gmail.com> <46C9C9C7.8080506@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C9C9C7.8080506@zytor.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-20 at 12:26 -0700, Christoph Lameter wrote:
-> On Mon, 20 Aug 2007, Pekka Enberg wrote:
+On Mon, Aug 20, 2007 at 10:05:11AM -0700, H. Peter Anvin wrote:
+> Yinghai Lu wrote:
+> > 
+> > someone told me that EFI PEI will be 32 bit ( for mem etc
+> > initialization), and after that will be 64 bit, so the Run time
+> > service will be 64 bit only, and it will only support 64 bit OS with
+> > EFI. and they have another mode to emulate the legacy BIOS to boot
+> > 32bit OS.
+> > 
 > 
-> > Hi Peter,
-> > 
-> > On Mon, 2007-08-20 at 12:12 +0300, Pekka J Enberg wrote:
-> > > > Any reason why the callers that are actually interested in this don't do
-> > > > page->reserve on their own?
-> > 
-> > On 8/20/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > because new_slab() destroys the content?
-> > 
-> > Right. So maybe we could move the initialization parts of new_slab()
-> > to __new_slab() so that the callers that are actually interested in
-> > 'reserve' could do allocate_slab(), store page->reserve and do rest of
-> > the initialization with it?
-> 
-> I am still not convinced about this approach and there seems to be 
-> agreement that this is not working on large NUMA. So #ifdef it out? 
-> !CONFIG_NUMA? Some more general approach that does not rely on a single 
-> slab being a reserve?
+> That seems unlikely for e.g. the existing Macs already in the field.
 
-See the patch I sent earlier today?
+In which direction? The existing Macs will boot a 32 (or 16) bit OS 
+using legacy BIOS emulation. I've no idea if their EFI is 32 or 64 bit, 
+though.
 
-> The object is to check the alloc flags when having allocated a reserve 
-> slab right?
-
-The initial idea was to make each slab allocation respect the watermarks
-like page allocation does (the page rank thingies, if you remember).
-That is if the slab is allocated from below the ALLOC_MIN|ALLOC_HARDER
-threshold, an ALLOC_MIN|ALLOC_HIGH allocation would get memory, but an
-ALLOC_MIN would not.
-
-Now, we only needed the ALLOC_MIN|ALLOC_HIGH|ALLOC_HARDER <->
-ALLOC_NO_WATERMARKS transition and hence fell back to a binary system
-that is not quite fair wrt to all the other levels but suffices for the
-problem at hand.
-
-So we want to ensure that slab allocations that are _not_ entitled to
-ALLOC_NO_WATERMARK memory will not get objects when a page allocation
-with the same right would fail, even if there is a slab present.
-
->  Adding another flag SlabReserve and keying off on that one may 
-> be the easiest solution.
-
-Trouble with something like that is that page flags are peristent and
-you'd need to clean them when the status flips -> O(n) -> unwanted.
-
-> I have pending patches here that add per cpu structures. Those will make 
-> that job easier.
-
-Yeah, I've seen earlier versions of those.
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
