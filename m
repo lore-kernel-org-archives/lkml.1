@@ -1,92 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbXHTAbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757667AbXHTAeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbXHTAbY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 20:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXHTAbR
+	id S1757667AbXHTAeV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 20:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbXHTAeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 20:31:17 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:37880 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbXHTAbQ (ORCPT
+	Sun, 19 Aug 2007 20:34:11 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:23520 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753865AbXHTAeJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 20:31:16 -0400
-X-Greylist: delayed 3745 seconds by postgrey-1.27 at vger.kernel.org; Sun, 19 Aug 2007 20:31:16 EDT
-Message-ID: <46C8D124.4030701@home.nl>
-Date: Mon, 20 Aug 2007 01:24:20 +0200
-From: Rene Herman <rene.herman@home.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 19 Aug 2007 20:34:09 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Bodo Eggert <7eggert@gmx.de>
-CC: Mike Mohr <akihana@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: group ownership of tun devices -- nonfunctional?
-References: <8Tpwf-3Nb-1@gated-at.bofh.it> <E1IMnHK-00012c-VC@be1.lrz> <46C86B6C.8090209@home.nl> <Pine.LNX.4.58.0708192333170.2426@be1.lrz>
-In-Reply-To: <Pine.LNX.4.58.0708192333170.2426@be1.lrz>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
+Date: Sun, 19 Aug 2007 17:32:39 -0700
+Message-ID: <8A71B368A89016469F72CD08050AD334018E20BC@maui.asicdesigners.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
+thread-index: Acfitauj4bczRtddSdi5qDdrw4QJvgACmrHw
+References: <8A71B368A89016469F72CD08050AD334018E208F@maui.asicdesigners.com><20070819.123212.13769462.davem@davemloft.net><8A71B368A89016469F72CD08050AD334018E209C@maui.asicdesigners.com> <20070819.160428.76330262.davem@davemloft.net>
+From: "Felix Marti" <felix@chelsio.com>
+To: "David Miller" <davem@davemloft.net>
+Cc: <sean.hefty@intel.com>, <netdev@vger.kernel.org>, <rdreier@cisco.com>,
+       <general@lists.openfabrics.org>, <linux-kernel@vger.kernel.org>,
+       <jeff@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/19/2007 11:42 PM, Bodo Eggert wrote:
 
-> On Sun, 19 Aug 2007, Rene Herman wrote:
+
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net]
+> Sent: Sunday, August 19, 2007 4:04 PM
+> To: Felix Marti
+> Cc: sean.hefty@intel.com; netdev@vger.kernel.org; rdreier@cisco.com;
+> general@lists.openfabrics.org; linux-kernel@vger.kernel.org;
+> jeff@garzik.org
+> Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate
+> PS_TCPportsfrom the host TCP port space.
 > 
->> On 08/19/2007 06:05 PM, Bodo Eggert wrote:
->>
->>> IMHO the check is broken:
->>>
->>> +               if (((tun->owner != -1 &&
->>> +                     current->euid != tun->owner) ||
->>> +                    (tun->group != -1 &&
->>> +                     current->egid != tun->group)) &&
->>> +                    !capable(CAP_NET_ADMIN))
->>>                         return -EPERM;
->>>
->>> It should be something like:
->>>
->>> +               if (!((tun->owner == tun->owner) ||
->>> +                     (tun->group == tun->group) ||
->> ???
+> From: "Felix Marti" <felix@chelsio.com>
+> Date: Sun, 19 Aug 2007 12:49:05 -0700
 > 
-> Argh, I edited asuming the same order of variables. Substitute 
-> current->e{uid,gid} for one of the sides.
-
-Okay. Just had to ask. That looked so odd...
-
->>> +                     capable(CAP_NET_ADMIN)))
->>>                         return -EPERM;
+> > You're not at all addressing the fact that RDMA does solve the
+> > memory BW problem and stateless offload doesn't.
 > 
-> The intended semantics is If the user is not
->  * the allowed user
-> or
->  * member of the allowed group
-> or
->  * cabable of CAP_NET_ADMIN
-> then error out. I'm asuming
-
-There is a short description of the desired semantics in the link that was 
-posted:
-
-http://lkml.org/lkml/2007/6/18/228
-
-===
-The user now is allowed to send packages if either his euid or his egid
-matches the one specified via tunctl (via -u or -g respecitvely). If both
-gid and uid are set via tunctl, both have to match.
-===
-
-Paraphrasing the original code above, it's saying:
-
-if ((owner_is_set && does_not_match) || (group_is_set && does_not_match))
-	bugger_off_unless(CAP_NET_ADMIN);
-
-or reverting the logic:
-
-if ((owner_is_unset || does_match) && (group_is_unset || does_match))
-	good_to_go();
-
-which probably matches the intention -- we're good to go only if the 
-credentials that are set also match.
-
-Rene.
+> It does, I just didn't retort to your claims because they were
+> so blatantly wrong.
+[Felix Marti] Hmmm, interesting... I guess it is impossible to even have
+a discussion on the subject.
