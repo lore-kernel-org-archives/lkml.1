@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760685AbXHTV7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762053AbXHTV76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760685AbXHTV7f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 17:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbXHTV70
+	id S1762053AbXHTV76 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 17:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbXHTV7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 17:59:26 -0400
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:35914 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751313AbXHTV70 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 17:59:26 -0400
-Date: Mon, 20 Aug 2007 17:54:13 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [patch 01/23] Fall back on interrupt disable in cmpxchg8b on 80386 and 80486
-Message-ID: <20070820215413.GA28452@Krystal>
-References: <20070820201519.512791382@polymtl.ca> <20070820201822.597720007@polymtl.ca> <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com> <20070820204126.GA22507@Krystal> <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com> <20070820212922.GA27011@Krystal> <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
+	Mon, 20 Aug 2007 17:59:48 -0400
+Received: from ns.suse.de ([195.135.220.2]:57093 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753758AbXHTV7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 17:59:48 -0400
+Date: Mon, 20 Aug 2007 14:42:01 -0700
+From: Greg KH <gregkh@suse.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions v2
+Message-ID: <20070820214201.GA6516@suse.de>
+References: <46C9BAF7.1050409@googlemail.com> <Pine.LNX.4.44L0.0708201649400.8219-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:54:03 up 21 days, 22:12,  4 users,  load average: 0.29, 0.28, 0.35
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.44L0.0708201649400.8219-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> On Mon, 20 Aug 2007, Mathieu Desnoyers wrote:
+On Mon, Aug 20, 2007 at 04:52:47PM -0400, Alan Stern wrote:
+> On Mon, 20 Aug 2007, Michal Piotrowski wrote:
 > 
-> > I'm digging in the slub with cmpxchg_local patch... first detail:
-> > slab_alloc seems to have a return path that does not reenable
-> > preemption... I'll keep you posted when I finish the 2.6.23-rc2-mm2
-> > port.
+> > Subject         : USB-related oops in sysfs with linux v2.6.23-rc3-50-g28e8351
+> > References      : http://lkml.org/lkml/2007/8/15/144
+> > Last known good : ?
+> > Submitter       : Florin Iucha <florin@iucha.net>
+> > Caused-By       : ?
+> > Handled-By      : ?
+> > Status          : problem is being debugged
 > 
-> I have a patchset here if that would help you?
+> A patch was submitted and confirmed to fix the problem:
 > 
+> 	http://marc.info/?l=linux-kernel&m=118729528713044&w=2
+> 
+> The patch hasn't been merged yet.  (And incidentally, it wasn't really
+> an oops -- it was just a warning and stack dump.)
 
-Sure, I'd like to give it a try.
+Yes, it's just a warning, and it's in my queue to go to Linus for
+2.6.23.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+thanks,
+
+greg k-h
