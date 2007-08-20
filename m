@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbXHTQNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761235AbXHTQOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761541AbXHTQNV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 12:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759700AbXHTQNJ
+	id S1761235AbXHTQOu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760252AbXHTQOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 12:13:09 -0400
-Received: from gw.goop.org ([64.81.55.164]:58635 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759537AbXHTQNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 12:13:07 -0400
-Message-ID: <46C9BD8F.4070807@goop.org>
-Date: Mon, 20 Aug 2007 09:13:03 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Laurent Vivier <Laurent.Vivier@bull.net>
-CC: John Stoffel <john@stoffel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 0/4] Virtual Machine Time Accounting
-References: <46C99371.7070705@bull.net> <18121.39541.790665.686081@stoffel.org> <46C9A7AB.1030003@bull.net>
-In-Reply-To: <46C9A7AB.1030003@bull.net>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 20 Aug 2007 12:14:44 -0400
+Received: from xenotime.net ([66.160.160.81]:48109 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759781AbXHTQOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 12:14:43 -0400
+Date: Mon, 20 Aug 2007 09:21:25 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Marc Perkel <mperkel@yahoo.com>
+Cc: Brennan Ashton <comphappy@gmail.com>, Nix <nix@esperi.org.uk>,
+       Al Viro <viro@ftp.linux.org.uk>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       Michael Tharp <gxti@partiallystapled.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [OT] Re: Thinking outside the box on file systems
+Message-Id: <20070820092125.937d6d2f.rdunlap@xenotime.net>
+In-Reply-To: <465458.84259.qm@web52505.mail.re2.yahoo.com>
+References: <b2d05de20708200047s6da64412tf6c5afc0b8dea540@mail.gmail.com>
+	<465458.84259.qm@web52505.mail.re2.yahoo.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Laurent Vivier wrote:
-> functionnalities:
->
-> - allow to measure time spent by a CPU in a virtual CPU.
-> - allow to display in /proc/state this value by CPU
-> - allow to display in /proc/<pid>/state this value by process
-> - allow KVM to use these 3 previous functionnalities
->   
+On Mon, 20 Aug 2007 04:18:21 -0700 (PDT) Marc Perkel wrote:
 
-So, currently time spent in a kvm guest is accumulated as qemu-kvm
-usertime, right?  Given that qemu knows when its running in qemu vs
-guest context, couldn't it provide the breakdown between user and guest
-time (ditto lguest)?
+> My rant on VI is to make a point. That point being
+> that when you use an editor that totally sucks then
+> it's going to cause you to write code that sucks. It
+> going to lower your standards. It's going to create a
+> culture where poorly done work is considered
+> acceptable. When you use an editor as poor as vi then
+> the idea that rm * doesn't work becomes acceptable and
+> justifiable, as demonstrated here by people who
+> ACTUALLY DEFENDED IT.
 
-    J
+so enlighten us.  What editor do you use/suggest/push?
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
