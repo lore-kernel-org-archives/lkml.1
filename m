@@ -1,44 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764138AbXHTUZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764202AbXHTU0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764138AbXHTUZv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763115AbXHTUWQ
+	id S1764202AbXHTU0W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762695AbXHTUWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:22:16 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54439 "EHLO smtp.polymtl.ca"
+	Mon, 20 Aug 2007 16:22:22 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54456 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763090AbXHTUWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:22:15 -0400
-Message-Id: <20070820201902.597091353@polymtl.ca>
+	id S1762816AbXHTUWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:22:20 -0400
+Message-Id: <20070820202146.658620557@polymtl.ca>
+References: <20070820201902.597091353@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 16:19:02 -0400
+Date: Mon, 20 Aug 2007 16:19:07 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [patch 00/11] Text Edit Lock / text poke
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:21:45 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: [patch 05/11] Text Edit Lock - Architecture Independent Code
+Content-Disposition: inline; filename=text-edit-lock-architecture-independent-code.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:21:47 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+This is an architecture independant synchronization around kernel text
+modifications through use of a global mutex.
 
-This new version includes a rewrite of the i386 and x86_64 text edit lock using
-text poke. I clear and set the WP cr0 bit instead of changing the page
-attributes when patching RO code.
+A mutex has been chosen so that kprobes, the main user of this, can sleep during
+memory allocation between the memory read of the instructions it must replace
+and the memory write of the breakpoint.
 
-It applies to 2.6.23-rc2-mm2 in this order:
+Other user of this interface: immediate values.
 
-kprobes-use-mutex-for-insn-pages.patch
-kprobes-dont-use-kprobes-mutex-in-arch-code.patch
-kprobes-declare-kprobes-mutex-static.patch
-text-edit-lock-architecture-independent-code.patch
-text-edit-lock-alternative-i386-and-x86_64.patch
-text-edit-lock-kprobes-architecture-independent.patch
-text-edit-lock-kprobes-i386.patch
-text-edit-lock-kprobes-x86_64.patch
-text-edit-lock-i386-standardize-debug-rodata.patch
-text-edit-lock-x86_64-standardize-debug-rodata.patch
+Paravirt and alternatives are always done when SMP is inactive, so there is no
+need to use locks.
 
-Mathieu
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <andi@firstfloor.org>
+---
+ include/linux/memory.h |    7 +++++++
+ mm/memory.c            |   34 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 41 insertions(+)
+
+Index: linux-2.6-lttng/include/linux/memory.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/memory.h	2007-08-09 14:52:47.000000000 -0400
++++ linux-2.6-lttng/include/linux/memory.h	2007-08-09 15:22:49.000000000 -0400
+@@ -86,4 +86,11 @@ extern int remove_memory_block(unsigned 
+ 	register_memory_notifier(&fn##_mem_nb);			\
+ }
+ 
++/*
++ * Take and release the kernel text modification lock, used for code patching.
++ * Users of this lock can sleep.
++ */
++extern void kernel_text_lock(void);
++extern void kernel_text_unlock(void);
++
+ #endif /* _LINUX_MEMORY_H_ */
+Index: linux-2.6-lttng/mm/memory.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/memory.c	2007-08-09 15:21:10.000000000 -0400
++++ linux-2.6-lttng/mm/memory.c	2007-08-09 16:38:51.000000000 -0400
+@@ -50,6 +50,8 @@
+ #include <linux/delayacct.h>
+ #include <linux/init.h>
+ #include <linux/writeback.h>
++#include <linux/kprobes.h>
++#include <linux/mutex.h>
+ 
+ #include <asm/pgalloc.h>
+ #include <asm/uaccess.h>
+@@ -84,6 +86,12 @@ EXPORT_SYMBOL(high_memory);
+ 
+ int randomize_va_space __read_mostly = 1;
+ 
++/*
++ * mutex protecting text section modification (dynamic code patching).
++ * some users need to sleep (allocating memory...) while they hold this lock.
++ */
++static DEFINE_MUTEX(text_mutex);
++
+ static int __init disable_randmaps(char *s)
+ {
+ 	randomize_va_space = 0;
+@@ -2758,3 +2766,29 @@ int access_process_vm(struct task_struct
+ 	return buf - old_buf;
+ }
+ EXPORT_SYMBOL_GPL(access_process_vm);
++
++/**
++ * kernel_text_lock     -   Take the kernel text modification lock
++ *
++ * Insures mutual write exclusion of kernel and modules text live text
++ * modification. Should be used for code patching.
++ * Users of this lock can sleep.
++ */
++void __kprobes kernel_text_lock(void)
++{
++	mutex_lock(&text_mutex);
++}
++EXPORT_SYMBOL_GPL(kernel_text_lock);
++
++/**
++ * kernel_text_unlock   -   Release the kernel text modification lock
++ *
++ * Insures mutual write exclusion of kernel and modules text live text
++ * modification. Should be used for code patching.
++ * Users of this lock can sleep.
++ */
++void __kprobes kernel_text_unlock(void)
++{
++	mutex_unlock(&text_mutex);
++}
++EXPORT_SYMBOL_GPL(kernel_text_unlock);
 
 -- 
 Mathieu Desnoyers
