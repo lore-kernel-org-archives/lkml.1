@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbXHTJmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759004AbXHTJoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758787AbXHTJmA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 05:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbXHTJlu
+	id S1759004AbXHTJoV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 05:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbXHTJoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 05:41:50 -0400
-Received: from baros.cubic.ch ([213.239.213.98]:54248 "EHLO baros.cubic.ch"
+	Mon, 20 Aug 2007 05:44:11 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:34698 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752523AbXHTJlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 05:41:50 -0400
-Message-ID: <46C961D8.7010005@cubic.ch>
-Date: Mon, 20 Aug 2007 11:41:44 +0200
-From: Tim Tassonis <timtas@cubic.ch>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: The vi editor causes brain damage
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1750982AbXHTJoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 05:44:09 -0400
+Date: Mon, 20 Aug 2007 13:43:18 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Felix Marti <felix@chelsio.com>
+Cc: David Miller <davem@davemloft.net>, sean.hefty@intel.com,
+       netdev@vger.kernel.org, rdreier@cisco.com,
+       general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
+       jeff@garzik.org
+Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
+Message-ID: <20070820094317.GA14817@2ka.mipt.ru>
+References: <20070819.174017.77241227.davem@davemloft.net> <8A71B368A89016469F72CD08050AD334018E20BE@maui.asicdesigners.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8A71B368A89016469F72CD08050AD334018E20BE@maui.asicdesigners.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marc
+On Sun, Aug 19, 2007 at 05:47:59PM -0700, Felix Marti (felix@chelsio.com) wrote:
+> [Felix Marti] David and Herbert, so you agree that the user<>kernel
+> space memory copy overhead is a significant overhead and we want to
+> enable zero-copy in both the receive and transmit path? - Yes, copy
 
-> Before everyone gets pissed off and freaks out why
-> don't you ponder the question why rm won't delete all
-> the files in the directory. If you can't grasp that
-> then you're brain damaged.
-> 
-> Think big people. Say NO to vi!
+It depends. If you need to access that data after received, you will get
+cache miss and performance will not be much better (if any) that with
+copy.
 
-At first I thought you've got a point here: you definitely _do_ suffer 
-from brain damage. Then again, I know too many people without brain 
-damage that are using vi, so it must me something else.
+> avoidance is mainly an API issue and unfortunately the so widely used
+> (synchronous) sockets API doesn't make copy avoidance easy, which is one
+> area where protocol offload can help. Yes, some apps can resort to
+> sendfile() but there are many apps which seem to have trouble switching
+> to that API... and what about the receive path?
 
-Maybe a car accindent, or your mother drinking a bottle of vodka per day 
-in your pregnancy?
+There is number of implementations, and all they are suitable for is 
+to have recvfile(), since this is likely the only case, which can work 
+without cache.
 
+And actually RDMA stack exist and no one said it should be thrown away
+_until_ it messes with main stack. It started to speal ports. What will
+happen when it gest all port space and no new legal network conection
+can be opened, although there is no way to show to user who got it?
+What will happen if hardware RDMA connection got terminated and software
+could not free the port? Will RDMA request to export connection reset
+functions out of stack to drop network connections which are on the ports
+which are supposed to be used by new RDMA connections?
 
-Regards
-Tim
+RDMA is not a problem, but how it influence to the network stack is.
+Let's better think about how to work correctly with network stack (since
+we already have that cr^Wdifferent hardware) instead of saying that
+others do bad work and do not allow shiny new feature to exist.
 
+-- 
+	Evgeniy Polyakov
