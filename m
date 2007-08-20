@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761546AbXHTT0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761955AbXHTT0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761546AbXHTT0U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 15:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbXHTT0N
+	id S1761955AbXHTT0s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 15:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760333AbXHTT0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 15:26:13 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42620 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751463AbXHTT0M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 15:26:12 -0400
-Date: Mon, 20 Aug 2007 12:26:09 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>, Matt Mackall <mpm@selenic.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-Subject: Re: [PATCH 04/10] mm: slub: add knowledge of reserve pages
-In-Reply-To: <84144f020708200228v1af5248cx6f6da4a7a35400f3@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0708201220500.29092@schroedinger.engr.sgi.com>
-References: <20070806102922.907530000@chello.nl>  <20070806103658.603735000@chello.nl>
- <1187595513.6114.176.camel@twins>  <Pine.LNX.4.64.0708201211240.20591@sbz-30.cs.Helsinki.FI>
-  <1187601455.6114.189.camel@twins> <84144f020708200228v1af5248cx6f6da4a7a35400f3@mail.gmail.com>
+	Mon, 20 Aug 2007 15:26:38 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37681 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754252AbXHTT0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 15:26:38 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+IXVUBu5CIsYBh7iYeUjvNXmNTmJ4B61j8GKgL12
+	qRZIgV/2Ss8OQQ
+Date: Mon, 20 Aug 2007 21:26:35 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [OT] 6 days lkml mbox archives anyone, please?
+In-Reply-To: <Pine.LNX.4.60.0708201944250.4694@poirot.grange>
+Message-ID: <Pine.LNX.4.60.0708202122460.4694@poirot.grange>
+References: <Pine.LNX.4.60.0708201944250.4694@poirot.grange>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Aug 2007, Pekka Enberg wrote:
+On Mon, 20 Aug 2007, Guennadi Liakhovetski wrote:
 
-> Hi Peter,
-> 
-> On Mon, 2007-08-20 at 12:12 +0300, Pekka J Enberg wrote:
-> > > Any reason why the callers that are actually interested in this don't do
-> > > page->reserve on their own?
-> 
-> On 8/20/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > because new_slab() destroys the content?
-> 
-> Right. So maybe we could move the initialization parts of new_slab()
-> to __new_slab() so that the callers that are actually interested in
-> 'reserve' could do allocate_slab(), store page->reserve and do rest of
-> the initialization with it?
+> Because of gmx.de, which I until yesterday used for all mailing lists, 
+> including vger, I lost 6 days of lkml traffic. I would be very greatful if 
+> anyone could send me those 6 days - 21-23 July and 17-19 August in mbox 
+> format. Please, if you're going to do it, first ask if I haven't got the 
+> files from someone else yet:-)
 
-I am still not convinced about this approach and there seems to be 
-agreement that this is not working on large NUMA. So #ifdef it out? 
-!CONFIG_NUMA? Some more general approach that does not rely on a single 
-slab being a reserve?
+Thanks a lot to all who answered so far - I've got all the missing mails, 
+and I've been pointed out to 
+http://userweb.kernel.org/~akpm/lkml-mbox-archives/ again...
 
-The object is to check the alloc flags when having allocated a reserve 
-slab right? Adding another flag SlabReserve and keying off on that one may 
-be the easiest solution.
-
-I have pending patches here that add per cpu structures. Those will make 
-that job easier.
-
-> As for the __GFP_WAIT handling, I *think* we can move the interrupt
-> enable/disable to allocate_slab()... Christoph?
-
-The reason the enable/disable is in new_slab is to minimize interrupt 
-holdoff time. If we move it to allocate slab then the slab preparation is 
-done with interrupts disabled.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
