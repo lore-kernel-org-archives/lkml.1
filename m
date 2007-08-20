@@ -1,327 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760678AbXHTQkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760889AbXHTQoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760678AbXHTQkG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 12:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759963AbXHTQj4
+	id S1760889AbXHTQoc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759963AbXHTQoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 12:39:56 -0400
-Received: from re01.intra2net.com ([82.165.28.202]:1554 "EHLO
-	re01.intra2net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759790AbXHTQjz (ORCPT
+	Mon, 20 Aug 2007 12:44:24 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:35278 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbXHTQoX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 12:39:55 -0400
-X-Greylist: delayed 1897 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Aug 2007 12:39:54 EDT
-From: Thomas Jarosch <thomas.jarosch@intra2net.com>
-Organization: Intra2net AG
-To: linux-kernel@vger.kernel.org
-Subject: Kernel oops during netfilter memory allocation
-Date: Mon, 20 Aug 2007 18:08:08 +0200
-User-Agent: KMail/1.9.6
-Cc: netfilter-devel@lists.netfilter.org
+	Mon, 20 Aug 2007 12:44:23 -0400
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] Refine FAT chmod checks
+References: <Pine.LNX.4.64.0708201500490.30570@fbirervta.pbzchgretzou.qr>
+	<87ps1i6xrh.fsf@duaron.myhome.or.jp>
+	<Pine.LNX.4.64.0708201803080.5333@fbirervta.pbzchgretzou.qr>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Tue, 21 Aug 2007 01:44:18 +0900
+In-Reply-To: <Pine.LNX.4.64.0708201803080.5333@fbirervta.pbzchgretzou.qr> (Jan Engelhardt's message of "Mon\, 20 Aug 2007 18\:12\:11 +0200 \(CEST\)")
+Message-ID: <87absm6tr1.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_oxbyGo0uDEikItZ"
-Message-Id: <200708201808.08880.thomas.jarosch@intra2net.com>
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_oxbyGo0uDEikItZ
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Jan Engelhardt <jengelh@computergmbh.de> writes:
 
-Hey there,
+> On Aug 21 2007 00:17, OGAWA Hirofumi wrote:
+>>Jan Engelhardt <jengelh@computergmbh.de> writes:
+>>> when a vfat filesystem is mounted without the quiet option, chown fails, 
+>>> but chmod still succeeds. I think that is wrong.
+>>
+>>Could you explain why this is wrong more?
+>
+> Suppose a vfat filesystem is mounted with umask=0 and [not-quiet].
+> Then all files will have mode 0777. Trying to change the owner will
+> fail, because fat does not know about owners or groups. chmod 0770,
+> on the other hand, will succeed, even though fat does not know about
+> the permission triplet [user/group/other].
+>
+> So this patch changes fat's not-quiet behavior so that only UNIX
+> modes are accepted that can be mapped lossless between the fat disk
+> format and the local system. There is only one attribute, and that is
+> the readonly attribute, which is mapped to the UNIX write permission
+> bit(s). chmod 0555 is therefore valid (taking away the +w bits <=>
+> setting the readonly attribute). Since chmod 0775 and chmod 0755 is
+> an ambiguous case as to whether to set or clear the readonly bit,
+> these modes are also denied.
 
-I'm currently debugging a kernel oops with kernel 2.6.21.7 that occurs
-from time to time with our netfilter accounting module ipt_ACCOUNT 
-(http://www.intra2net.com/de/produkte/opensource/ipt_account/).
+I see. Sounds sane. We would be able to see what happen in real world.
+However, implementation is really right?
 
-What basically happens is that the module allocates memory
-inside an interrupt handler like many other netfilter modules do.
-Except that it does it very often if you have a large, busy network.
+> @@ -186,16 +222,19 @@ int fat_notify_change(struct dentry *den
+>  	if (((attr->ia_valid & ATTR_UID) &&
+>  	     (attr->ia_uid != sbi->options.fs_uid)) ||
+>  	    ((attr->ia_valid & ATTR_GID) &&
+> -	     (attr->ia_gid != sbi->options.fs_gid)) ||
+> -	    ((attr->ia_valid & ATTR_MODE) &&
+> -	     (attr->ia_mode & ~MSDOS_VALID_MODE)))
+> +	     (attr->ia_gid != sbi->options.fs_gid)))
+>  		error = -EPERM;
+> -
+>  	if (error) {
+>  		if (sbi->options.quiet)
+>  			error = 0;
+>  		goto out;
+>  	}
+> +
+> +	if (error == 0 && (attr->ia_valid & ATTR_MODE))
+> +		if ((error = check_mode(sbi, attr->ia_mode)) != 0 &&
+> +		    sbi->options.quiet)
+> +			error = 0;
 
-To me it looks like I found a bug in the kernel memory handler.
-I've written a minimalistic netfilter module ipt_CRASH that
-just allocates and frees memory to demonstrate the problem.
+This test is really here? The error is always "0", and it seems
+anybody doesn't check after that.
 
-Here's a screenshot of the oops:
-http://img231.imageshack.us/img231/9064/kerneloopsiptcrashzb1.jpg
+And please separate the check like following
 
-Another shot of it with a "tainted" kernel:
-http://img529.imageshack.us/img529/6681/kerneloopsey1.jpg
+	error = check_mode(sbi, attr->ia_mode);
+	if (error && sbi->options.quiet)
+		error = 0;
 
-I would have included the backtrace as text, but unfortunately
-the USB serial console dies before it outputs anything useful.
-
-You need a fast machine with lots of RAM to reproduce it, I used a 3 Ghz 
-machine with 3 GB of RAM. ipt_CRASH allocates and frees memory for every 
-packet, a packet generator like "sendip" might help:
-http://www.earth.li/projectpurple/progs/sendip.html
-
-The machine dies after 15-30 minutes or as soon as I try to reboot it.
-
-Please CC: answers, I'm only on netfilter-devel.
-
-Thanks in advance,
-Thomas
-
---Boundary-00=_oxbyGo0uDEikItZ
-Content-Type: application/x-shellscript;
-  name="crashit.sh"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="crashit.sh"
-
-#!/bin/sh
-
-while /bin/true; do
-    for IP in `seq 2 255` ; do
-	./sendip -p ipv4 -is 172.16.$IP.99 -id 172.16.1.124 -p udp -us 600 -ud 600 -d "x" 172.16.1.124
-    done
-done
-
---Boundary-00=_oxbyGo0uDEikItZ
-Content-Type: text/x-csrc;
-  charset="iso-8859-1";
-  name="libipt_CRASH.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="libipt_CRASH.c"
-
-/* Shared library add-on to iptables to add CRASH support.
-   Author: Intra2net AG <opensource@intra2net.com>
-   Licensed under the GPL v2.
-*/
-
-#include <stdio.h>
-#include <netdb.h>
-#include <string.h>
-#include <stdlib.h>
-#include <syslog.h>
-#include <getopt.h>
-#include <iptables.h>
-#include <linux/netfilter_ipv4/ip_tables.h>
-#include <linux/netfilter_ipv4/ipt_CRASH.h>
-
-static struct option opts[] = {
-    { .name = 0 }
-};
-
-/* Function which prints out usage message. */
-static void help(void)
-{
-    printf(
-"CRASH v%s options:\n", IPTABLES_VERSION);
-}
-
-/* Initialize the target. */
-static void
-init(struct ipt_entry_target *t, unsigned int *nfcache)
-{
-    /* Can't cache this */
-    *nfcache |= NFC_UNKNOWN;
-}
-
-/* Function which parses command options; returns true if it
-   ate an option */
-static int
-parse(int c, char **argv, int invert, unsigned int *flags,
-      const struct ipt_entry *entry,
-      struct ipt_entry_target **target)
-{
-    return 0;
-}
-
-/* Final check; nothing. */
-static void final_check(unsigned int flags)
-{
-}
-
-static void print_it(const struct ipt_ip *ip,
-                     const struct ipt_entry_target *target, char do_prefix)
-{
-    if (!do_prefix)
-        printf("CRASH ");
-}
-
-/* Prints out the targinfo. */
-static void
-print(const struct ipt_ip *ip,
-      const struct ipt_entry_target *target,
-      int numeric)
-{
-    print_it (ip, target, 0);
-}
-
-/* Saves the union ipt_targinfo in parsable form to stdout. */
-static void
-save(const struct ipt_ip *ip, const struct ipt_entry_target *target)
-{
-    print_it(ip, target, 1);
-}
-
-static
-struct iptables_target crash
-= {
-    .next          = NULL,
-    .name          = "CRASH",
-    .version       = IPTABLES_VERSION,
-    .size          = IPT_ALIGN(sizeof(struct ipt_crash_info)),
-    .userspacesize = IPT_ALIGN(sizeof(struct ipt_crash_info)),
-    .help          = &help,
-    .init          = &init,
-    .parse         = &parse,
-    .final_check   = &final_check,
-    .print         = &print,
-    .save          = &save,
-    .extra_opts    = opts
-};
-
-void _init(void)
-{
-    register_target(&crash);
-}
-
---Boundary-00=_oxbyGo0uDEikItZ
-Content-Type: text/x-csrc;
-  charset="iso-8859-1";
-  name="ipt_CRASH.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="ipt_CRASH.c"
-
-/***************************************************************************
- *   Copyright (C) 2007 by Intra2net AG                                    *
- *   opensource@intra2net.com                                              *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License                  *
- *   version 2 as published by the Free Software Foundation;               *
- *                                                                         *
- ***************************************************************************/
-
-#include <linux/module.h>
-#include <linux/version.h>
-#include <linux/skbuff.h>
-#include <linux/ip.h>
-#include <net/icmp.h>
-#include <net/udp.h>
-#include <net/tcp.h>
-#include <linux/netfilter_ipv4/ip_tables.h>
-#include <linux/netfilter_ipv4/ipt_CRASH.h>
-#include <asm/semaphore.h>
-#include <linux/kernel.h>
-#include <linux/mm.h>
-#include <linux/string.h>
-#include <linux/spinlock.h>
-#include <asm/uaccess.h>
-
-/* Spinlock used during memory allocation */
-static DEFINE_SPINLOCK(ipt_crash_lock);
-
-static unsigned int ipt_crash_target(struct sk_buff **pskb,
-                                   const struct net_device *in,
-                                   const struct net_device *out,
-                                   unsigned int hooknum,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,17)
-                                   const struct xt_target *target,
-#endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)
-                                   const void *targinfo)
-#else
-                                   const void *targinfo,
-                                   void *userinfo)
-#endif
-{
-    char *data;
-
-    spin_lock_bh(&ipt_crash_lock);
-
-    if ((data = (char *)get_zeroed_page(GFP_ATOMIC)) == NULL) {
-        printk("ipt_CRASH: Out of memory!\n");
-    } else {
-        // Fill memory with pattern
-        int i, j = 123;
-        for (i = 0; i < PAGE_SIZE; i++) {
-            data[i] = j;
-            j++;
-        }
-
-        free_page((unsigned long)data);
-    }
-
-    spin_unlock_bh(&ipt_crash_lock);
-
-    return IPT_CONTINUE;
-}
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21)
-static struct xt_target xt_crash_reg = {
-#else
-static struct ipt_target ipt_crash_reg = {
-#endif
-    .name = "CRASH",
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21)
-    .family = AF_INET,
-#endif
-    .target = ipt_crash_target,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,17)
-    .targetsize = sizeof(struct ipt_crash_info),
-#endif
-    .me = THIS_MODULE
-};
-
-static int __init init(void)
-{
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21)
-    if (xt_register_target(&xt_crash_reg))
-#else
-    if (ipt_register_target(&ipt_crash_reg))
-#endif
-        return -EINVAL;
-
-    return 0;
-}
-
-static void __exit fini(void)
-{
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21)
-    xt_unregister_target(&xt_crash_reg);
-#else
-    ipt_unregister_target(&ipt_crash_reg);
-#endif
-}
-
-module_init(init);
-module_exit(fini);
-MODULE_LICENSE("GPL");
-
---Boundary-00=_oxbyGo0uDEikItZ
-Content-Type: text/x-chdr;
-  charset="iso-8859-1";
-  name="ipt_CRASH.h"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="ipt_CRASH.h"
-
-/***************************************************************************
- *   Copyright (C) 2004-2005 by Intra2net AG                               *
- *   opensource@intra2net.com                                              *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License                  *
- *   version 2 as published by the Free Software Foundation;               *
- *                                                                         *
- ***************************************************************************/
-
-#ifndef _IPT_CRASH_H
-#define _IPT_CRASH_H
-
-/* Structure for the userspace part of ipt_CRASH */
-struct ipt_crash_info {
-};
-
-#endif /*_IPT_CRASH_H*/
-
---Boundary-00=_oxbyGo0uDEikItZ--
+>  	error = inode_setattr(inode, attr);
+>  	if (error)
+>  		goto out;
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
