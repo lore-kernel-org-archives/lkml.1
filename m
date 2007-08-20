@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbXHTCNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758446AbXHTCRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758218AbXHTCNS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 22:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXHTCNJ
+	id S1758446AbXHTCRO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 22:17:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbXHTCQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 22:13:09 -0400
-Received: from uni20mr.unity.ncsu.edu ([152.1.2.39]:56005 "EHLO
-	uni20mr.unity.ncsu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755058AbXHTCNI (ORCPT
+	Sun, 19 Aug 2007 22:16:59 -0400
+Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:39215 "EHLO
+	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755195AbXHTCQ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 22:13:08 -0400
-X-Greylist: delayed 1048 seconds by postgrey-1.27 at vger.kernel.org; Sun, 19 Aug 2007 22:13:08 EDT
-Message-ID: <46C8F495.60105@ncsu.edu>
-Date: Sun, 19 Aug 2007 21:55:33 -0400
-From: Casey Dahlin <cjdahlin@ncsu.edu>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Michael Tharp <gxti@partiallystapled.com>
-CC: Marc Perkel <mperkel@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: Re: The vi editor causes brain damage
-References: <952949.96475.qm@web52503.mail.re2.yahoo.com> <46C8CC25.4070807@partiallystapled.com>
-In-Reply-To: <46C8CC25.4070807@partiallystapled.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 19 Aug 2007 22:16:58 -0400
+Date: Mon, 20 Aug 2007 11:16:54 +0900 (JST)
+Message-Id: <20070820.111654.63743265.nemoto@toshiba-tops.co.jp>
+To: david-b@pacbell.net
+Cc: kay.sievers@vrfy.org, jengelh@computergmbh.de, a.zummo@towertech.it,
+       linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com,
+       greg@kroah.com
+Subject: Re: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <200708191902.04966.david-b@pacbell.net>
+References: <1187559950.4419.79.camel@lov.localdomain>
+	<200708191848.21410.david-b@pacbell.net>
+	<200708191902.04966.david-b@pacbell.net>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.0.283055, Antispam-Data: 2007.8.19.182023
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tharp wrote:
-> Marc Perkel wrote:
->   
->> The important point that you are missing here is that
->> the Linux world is willing to live with an rm command
->> that is broken and the Windows and DOS world isn't.
->> This isn't about the rm command it's about programming
->> standards. It's about that the Linux community isn't
->> committed to getting it right.
->>     
-I wonder, do these sorts of people email random celebrities and tell 
-them they suck? If not, why do they think emailing a developer mailing 
-list about how much they hate their product, work ethics, and general 
-way of life is more socially acceptable?
+On Sun, 19 Aug 2007 19:02:04 -0700, David Brownell <david-b@pacbell.net> wrote:
+> This is indeed a platform driver.  And v2 of this patch
+> doesn't resolve its "won't hotplug" problem.  The simplest
+> way to resolve that would be switching to the more widely
+> used platform_device_register().
+
+Yes, if the current in-tree users (JMR3927 and RBTX4927 board) really
+wanted to hotplug this driver.  And I believe they won't :-)
+
+I just want to fix a potential problem in rtc-ds1742 driver for
+someone who want to hotplug it.  That's all.
+
+---
+Atsushi Nemoto
