@@ -1,143 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760232AbXHTPNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759556AbXHTPRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760232AbXHTPNV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 11:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbXHTPNJ
+	id S1759556AbXHTPRw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 11:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758043AbXHTPRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 11:13:09 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:55805 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760058AbXHTPNI (ORCPT
+	Mon, 20 Aug 2007 11:17:45 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:50719 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755002AbXHTPRo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 11:13:08 -0400
-Date: Mon, 20 Aug 2007 11:13:06 -0400
-To: Marc Perkel <mperkel@yahoo.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Phillip Susi <psusi@cfl.rr.com>, Valdis.Kletnieks@vt.edu,
-       Michael Tharp <gxti@partiallystapled.com>, alan <alan@clueserver.org>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: Thinking outside the box on file systems
-Message-ID: <20070820151306.GD9412@csclub.uwaterloo.ca>
-References: <20070818181959.GP21089@ftp.linux.org.uk> <900404.40407.qm@web52501.mail.re2.yahoo.com>
+	Mon, 20 Aug 2007 11:17:44 -0400
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] Refine FAT chmod checks
+References: <Pine.LNX.4.64.0708201500490.30570@fbirervta.pbzchgretzou.qr>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Tue, 21 Aug 2007 00:17:38 +0900
+In-Reply-To: <Pine.LNX.4.64.0708201500490.30570@fbirervta.pbzchgretzou.qr> (Jan Engelhardt's message of "Mon\, 20 Aug 2007 15\:03\:04 +0200 \(CEST\)")
+Message-ID: <87ps1i6xrh.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <900404.40407.qm@web52501.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 18, 2007 at 09:07:05PM -0700, Marc Perkel wrote:
-> No Al, there isn't any shortage of arrogance here.
+Jan Engelhardt <jengelh@computergmbh.de> writes:
 
-Yes you provide plenty yourself.
+> when a vfat filesystem is mounted without the quiet option, chown fails, 
+> but chmod still succeeds. I think that is wrong.
 
-> Let me try to repeat what I'm talking about as simply
-> as I can.
-> 
-> First - I'm describing a kind of functionality and
-> suggesting Linux should have it. I know a lot of it
-> can be done because much of what I'm suggesting is
-> already working in Windows and Netware.
+Could you explain why this is wrong more?
 
-And how many limitations does windows and netware have that linux
-doesn't have, exactly due to that special functionality?  part of the
-usefulness of permissions on unix is that they are so simple to
-understand and manage.  They are really hard to screw up.  The
-permission systems on windows and netware are much more complex and much
-hardware for people to understand, and hence much easier to get wrong
-causing potential security problems on your system without you realizing
-it.
+Thanks.
 
-> I'm not the one who's going to code it. I'm just
-> saying that it would be nice if Linux had the
-> functionality of other operating systems - and - take
-> it to the next level - match it and do even better.
+> [fs/fat/]: Refine FAT chmod checks
+>
+> Prohibit mode changes in non-quiet mode that cannot be stored reliably
+> with the on-disk format.
+>
+> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+>
+> ---
+>  fs/fat/file.c |   47 +++++++++++++++++++++++++++++++++++++++++++----
+>  1 file changed, 43 insertions(+), 4 deletions(-)
+>
+> Index: linux-2.6.22/fs/fat/file.c
+> ===================================================================
+> --- linux-2.6.22.orig/fs/fat/file.c
+> +++ linux-2.6.22/fs/fat/file.c
+> @@ -155,6 +155,42 @@ out:
+>  	return err;
+>  }
+>  
+> +static int check_mode(const struct msdos_sb_info *sbi, mode_t mode)
+> +{
+> +	mode_t req = mode & ~S_IFMT;
+> +
+> +	/*
+> +	 * Of the r and x bits, all (subject to umask) must be present. Of the
+> +	 * w bits, either all (subject to umask) or none must be present.
+> +	 */
+> +
+> +	if (S_ISREG(mode)) {
+> +		req &= ~sbi->options.fs_fmask;
+> +
+> +		if ((req & (S_IRUGO | S_IXUGO)) !=
+> +		    ((S_IRUGO | S_IXUGO) & ~sbi->options.fs_fmask))
+> +			return -EPERM;
+> +
+> +		if ((req & S_IWUGO) != 0 &&
+> +		    (req & S_IWUGO) != (S_IWUGO & ~sbi->options.fs_fmask))
+> +			return -EPERM;
+> +	} else if (S_ISDIR(mode)) {
+> +		req &= ~sbi->options.fs_dmask;
+> +
+> +		if ((req & (S_IRUGO | S_IXUGO)) !=
+> +		    ((S_IRUGO | S_IXUGO) & ~sbi->options.fs_dmask))
+> +			return -EPERM;
+> +
+> +		if ((req & S_IWUGO) != 0 &&
+> +		    (req & S_IWUGO) != (S_IWUGO & ~sbi->options.fs_dmask))
+> +			return -EPERM;
+> +	} else {
+> +		return -EPERM;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  int fat_notify_change(struct dentry *dentry, struct iattr *attr)
+>  {
+>  	struct msdos_sb_info *sbi = MSDOS_SB(dentry->d_sb);
+> @@ -186,16 +222,19 @@ int fat_notify_change(struct dentry *den
+>  	if (((attr->ia_valid & ATTR_UID) &&
+>  	     (attr->ia_uid != sbi->options.fs_uid)) ||
+>  	    ((attr->ia_valid & ATTR_GID) &&
+> -	     (attr->ia_gid != sbi->options.fs_gid)) ||
+> -	    ((attr->ia_valid & ATTR_MODE) &&
+> -	     (attr->ia_mode & ~MSDOS_VALID_MODE)))
+> +	     (attr->ia_gid != sbi->options.fs_gid)))
+>  		error = -EPERM;
+> -
+>  	if (error) {
+>  		if (sbi->options.quiet)
+>  			error = 0;
+>  		goto out;
+>  	}
+> +
+> +	if (error == 0 && (attr->ia_valid & ATTR_MODE))
+> +		if ((error = check_mode(sbi, attr->ia_mode)) != 0 &&
+> +		    sbi->options.quiet)
+> +			error = 0;
 
-Many of the bugs of other operating systems would be nice to avoid.  In
-some cases what you may see as a feature is a major cause of problems
-especially performance problems.
+This test is really here? error is always "0", and anybody doesn't
+check after that.
 
-> As to thinking outside the box, what I'm proposing is
-> outside the box relative to Linux. It's not as
-> original as compared to Windows or Netware which is
-> even better.
+>  	error = inode_setattr(inode, attr);
+>  	if (error)
+>  		goto out;
 
-How about dropping that stupid phrase.
-
-> The idea is that Linux is lacking features that other
-> OSs have. What I'm suggesting is that Linux not only
-> match it but to create an even more powerful rights
-> layer that is more powerful than the rest and I'm
-> outlining a concept in the hopes that people would get
-> excited about the concept and want to build on the
-> idea.
-
-Well so far your system has been shown to be very inefficient (with no
-solution to that proposed by anyone).  Many of the ideas have been shown
-to have been tried in the past and then abandoned due to not working
-very well or having severe scalability problems.
-
-There are lots of people (very often people currently in university) who
-suffer from the problem of believing anything they think of that isn't
-in current use must be a new unique idea that must be used because no
-one else had thought of it.  In almost every case it is not a new idea,
-and the reason it is not in use is because it didn't work the last time
-someone thought of it and tried it.  Or in some cases it is in use but
-just not in a field the new genious has any knowledge of.
-
-> I'm just telling you what I'd like to see. I'm not
-> going to code it. So I'm only going to talk about what
-> is possible. How it's done will be up to any
-> programmers who might be inspired by the idea. If no
-> one is inspired the Linux will continue to be in last
-> place when it comes to file system features relating
-> to fine grain permissions.
-
-How do you know what is possible?  Could it be that many of the problems
-on netware and windows are caused by their choice of filesystem design?
-
-> In Linux, for example, users are allowed to delete
-> files that they are prohibited from reading or
-> writing. In Netware if a user can't read or write to
-> the file they won't even be able to see that the file
-> exists, let alone delete it.
-
-In some cases it makes sense.  After all you are not deleting the file,
-you are delting one hardlink to it and the hardlink is part of the
-directory.  If other directories have hardlinks to the same file, those
-get to stay around.  Hence the permissions make sense.
-
-> In Netware I can move a directory tree into another
-> tree and the objects that have rights in the other
-> tree will have rights to all the new files without
-> having to run utilities on the command line to
-> recursively change the permission afterwards. 
-
-Does netware have hardlinks?  Does it have chroots?  bind mounts?  How
-about the ability to delete open files without causing problems for
-programs that have the files open?
-
-> The point - Linux isn't going to move forward and
-> catch up unless there is a fundamental change in the
-> thinking  behind Linux permissions. There is a
-> cultural lack of innovation here. I discussed this
-> with Andrew Morton and he made some suggestions but
-> there's real hostility towards new concepts here.
-> Something I don't understand. At some point Linux
-> needs to grow beyond just being an evolved Unix clone
-> and that's not going to happen if you don't think
-> differently.
-
-Linux seems to be gaining ground in usage.  Netware on the other hand
-seems just about dead.  What does that say about things?
-
-> I still believe that the VI editor causes brain
-> damage. :)
-
-You should see what word and notepad do to people.
-
---
-Len Sorensen
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
