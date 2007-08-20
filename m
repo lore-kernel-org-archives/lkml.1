@@ -1,134 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761585AbXHTRCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761651AbXHTREF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761585AbXHTRCP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 13:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760433AbXHTRCA
+	id S1761651AbXHTREF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 13:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759678AbXHTRDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 13:02:00 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:35725 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756468AbXHTRB7 (ORCPT
+	Mon, 20 Aug 2007 13:03:55 -0400
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:30051 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755740AbXHTRDy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 13:01:59 -0400
-Message-ID: <46C9C8D4.9080108@linux.vnet.ibm.com>
-Date: Mon, 20 Aug 2007 22:31:08 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Mon, 20 Aug 2007 13:03:54 -0400
+X-IronPort-AV: i="4.19,285,1183359600"; 
+   d="scan'208"; a="393201902:sNHT49862886"
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
+       linux-kernel@vger.kernel.org, jh@suse.cz
+Subject: Re: [discuss] [PATCH] x86-64: memset optimization
+X-Message-Flag: Warning: May contain useful information
+References: <20070817163446.3e63f208@freepuppy.rosehill.hemminger.net>
+	<200708182055.11277.ak@suse.de>
+	<20070819010430.2c8c31fc@oldman.hemminger.net>
+	<200708192024.24864.ak@suse.de>
+	<20070820085253.5f589e58@freepuppy.rosehill.hemminger.net>
+	<1187625068.2577.3.camel@laptopd505.fenrus.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 20 Aug 2007 10:03:46 -0700
+In-Reply-To: <1187625068.2577.3.camel@laptopd505.fenrus.org> (Arjan van de Ven's message of "Mon, 20 Aug 2007 08:51:08 -0700")
+Message-ID: <adamywmw32l.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jay Lan <jlan@engr.sgi.com>, Jonathan Lim <jlim@sgi.com>
-Subject: Re: [PATCH] Add all thread stats for TASKSTATS_CMD_ATTR_TGID
-References: <3d8471ca0708020653l575db8cam464a3cffce68fb26@mail.gmail.com> <20070802120427.270e5589.akpm@linux-foundation.org> <20070819213435.72b287ad@localhost.localdomain>
-In-Reply-To: <20070819213435.72b287ad@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 20 Aug 2007 17:03:46.0548 (UTC) FILETIME=[122FA340:01C7E34C]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guillaume Chazarain wrote:
-> TASKSTATS_CMD_ATTR_TGID used to return only the delay accounting stats,
-> not the basic and extended accounting. With this patch,
-> TASKSTATS_CMD_ATTR_TGID returns also the min, max or sum (depending on
-> the semantic of the field) of the accounting info for all threads of a
-> thread group. This makes TASKSTATS_CMD_ATTR_TGID usable in a similar
-> fashion to TASKSTATS_CMD_ATTR_PID, for commands like iotop -P
-> (http://guichaz.free.fr/misc/iotop.py).
-> 
-> Changelog since V1 (http://lkml.org/lkml/2007/8/2/185):
-> - Update combined stats of exited threads in fill_tgid_exit() as
-> suggested by Balbir Singh.
-> - Very light cleanup of fill_tgid_exit() by the way.
-> - bacct fields are also combined for all threads.
-> - Instead of assuming memory stats are identical for all threads, we
-> take the max of all threads (hiwater_rss and hiwater_vm).
-> 
-> Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
-> Cc: Balbir Singh <balbir@in.ibm.com>
-> Cc: Jay Lan <jlan@engr.sgi.com>
-> Cc: Jonathan Lim <jlim@sgi.com>
-> ---
-> 
->  kernel/taskstats.c |   15 ++++++++++-----
->  kernel/tsacct.c    |   43 ++++++++++++++++++++++---------------------
->  2 files changed, 32 insertions(+), 26 deletions(-)
-> 
-> diff -r 73eff559debc kernel/taskstats.c
-> --- a/kernel/taskstats.c	Sat Aug 18 17:15:17 2007 -0700
-> +++ b/kernel/taskstats.c	Sun Aug 19 17:20:15 2007 +0200
-> @@ -246,6 +246,8 @@ static int fill_tgid(pid_t tgid, struct 
-> 
->  		stats->nvcsw += tsk->nvcsw;
->  		stats->nivcsw += tsk->nivcsw;
-> +		bacct_add_tsk(stats, tsk);
-> +		xacct_add_tsk(stats, tsk);
+ > > The problem is with the optimization flags: passing -Os causes the compiler
+ > > to be stupid and not inline any memset/memcpy functions.
+ > 
+ > you get what you ask for.. if you don't want that then don't ask for
+ > it ;)
 
-I'm afraid this is still not good enough. bacct_add_tsk() will assign
-values and do nothing in the loop (HINT: no summation). Ideally,
-we should split up bacct_add_tsk(), so that the initialization
-code is split up from values that can summed.
+Well, the compiler is really being dumb about -Os and in fact it's
+giving bigger code, so I'm not really getting what I ask for.  
 
->  	} while_each_thread(first, tsk);
-> 
->  	unlock_task_sighand(first, &flags);
-> @@ -265,21 +267,24 @@ static void fill_tgid_exit(struct task_s
->  static void fill_tgid_exit(struct task_struct *tsk)
->  {
->  	unsigned long flags;
-> +	struct taskstats *tg_stats;
-> 
->  	spin_lock_irqsave(&tsk->sighand->siglock, flags);
-> -	if (!tsk->signal->stats)
-> +	tg_stats = tsk->signal->stats;
-> +	if (!tg_stats)
->  		goto ret;
-> 
->  	/*
->  	 * Each accounting subsystem calls its functions here to
->  	 * accumalate its per-task stats for tsk, into the per-tgid structure
->  	 *
-> -	 *	per-task-foo(tsk->signal->stats, tsk);
-> -	 */
-> -	delayacct_add_tsk(tsk->signal->stats, tsk);
-> +	 *	per-task-foo(tg_stats, tsk);
-> +	 */
-> +	bacct_add_tsk(tg_stats, tsk);
+With my gcc at least (x86_64, gcc (GCC) 4.1.3 20070812 (prerelease)
+(Ubuntu 4.1.2-15ubuntu2)) and Andi's example:
 
-Ditto.. see above
+#include <string.h>
 
-> +	xacct_add_tsk(tg_stats, tsk);
-> +	delayacct_add_tsk(tg_stats, tsk);
->  ret:
->  	spin_unlock_irqrestore(&tsk->sighand->siglock, flags);
-> -	return;
->  }
-> 
->  static int add_del_listener(pid_t pid, cpumask_t *maskp, int isadd)
-> diff -r 73eff559debc kernel/tsacct.c
-> --- a/kernel/tsacct.c	Sat Aug 18 17:15:17 2007 -0700
-> +++ b/kernel/tsacct.c	Sun Aug 19 17:20:43 2007 +0200
-> @@ -38,8 +38,9 @@ void bacct_add_tsk(struct taskstats *sta
->  	/* rebase elapsed time to usec */
->  	ac_etime = timespec_to_ns(&ts);
->  	do_div(ac_etime, NSEC_PER_USEC);
-> -	stats->ac_etime = ac_etime;
-> -	stats->ac_btime = get_seconds() - ts.tv_sec;
-> +	stats->ac_etime = max_t(u64, stats->ac_etime, ac_etime);
-> +	stats->ac_btime = min_t(u32, stats->ac_btime,
-> +				get_seconds() - ts.tv_sec);
+f(char x[6]) {
+        memset(x, 1, 6);
+}
 
-I am not sure why we get the max value, ideally we should
-be summing up utime, stime into the stats structure.
+compiling with -O2 gives
 
+0000000000000000 <f>:
+   0:	c7 07 01 01 01 01    	movl   $0x1010101,(%rdi)
+   6:	66 c7 47 04 01 01    	movw   $0x101,0x4(%rdi)
+   c:	c3                   	retq   
 
-Could you please write a simple test case and ensure that the
-summed up stats are indeed correct for TGID's?
+and compiling with -Os gives
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+0000000000000000 <f>:
+   0:	48 83 ec 08          	sub    $0x8,%rsp
+   4:	ba 06 00 00 00       	mov    $0x6,%edx
+   9:	be 01 00 00 00       	mov    $0x1,%esi
+   e:	e8 00 00 00 00       	callq  13 <f+0x13>
+  13:	5a                   	pop    %rdx
+  14:	c3                   	retq   
+
+so the code gets bigger and worse in every way.
+
+ - R.
