@@ -1,395 +1,638 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762763AbXHTUsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762357AbXHTUu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762763AbXHTUsp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbXHTUse
+	id S1762357AbXHTUu5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbXHTUuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:48:34 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:42373 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751283AbXHTUsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:48:31 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: jgarzik@pobox.com
-Subject: sata_via: write errors on PATA drive connected to VT6421
-Date: Mon, 20 Aug 2007 22:42:06 +0200
-User-Agent: KMail/1.9.7
+	Mon, 20 Aug 2007 16:50:46 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:1834 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751974AbXHTUum (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:50:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=S0aVeCY/WJPVAUniaSv5s1u/poF7aLGl/gBul3Yfrgw/cbTOXSjwgYEOwRvPe6uvwoTooCLbKc60DhkEXJQ36JtMcbc1/kDxsLq34Xjj+S5k2+qNtiuulovenk6Aik6g2rxb+bIh7n0bCdiTRrZQKsk/6jW0sKMLzySiBNpxe1c=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git patches] IDE fixes
+Date: Mon, 20 Aug 2007 22:49:35 +0200
+User-Agent: KMail/1.9.6
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_fyfyGKFD+nGaZP5"
-Message-Id: <200708202242.07290.linux@rainbow-software.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708202249.35120.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_fyfyGKFD+nGaZP5
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hello,
-I've built a new machine with VT6421 add-on card that has two SATA and one 
-PATA port:
+Please pull from:
 
-sata_via 0000:00:0a.0: version 2.2
-sata_via 0000:00:0a.0: routed to hard irq line 12
-scsi0 : sata_via
-scsi1 : sata_via
-scsi2 : sata_via
-ata1: SATA max UDMA/133 cmd 0x00016300 ctl 0x0001630a bmdma 0x00016700 irq 12
-ata2: SATA max UDMA/133 cmd 0x00016400 ctl 0x0001640a bmdma 0x00016708 irq 12
-ata3: PATA max UDMA/133 cmd 0x00016500 ctl 0x0001650a bmdma 0x00016710 irq 12
+master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git/
+
+to receive the following updates:
+
+ arch/cris/arch-v10/drivers/Kconfig |    1 +
+ arch/cris/arch-v32/drivers/Kconfig |    1 +
+ drivers/ide/Kconfig                |   12 ++++++++-
+ drivers/ide/cris/ide-cris.c        |    2 +
+ drivers/ide/ide-disk.c             |   18 ++++++++++++++
+ drivers/ide/ide-dma.c              |   45 ++++++++----------------------------
+ drivers/ide/ide-iops.c             |   45 ++++++++++++++++++++++++++++++++----
+ drivers/ide/pci/cs5530.c           |    8 +++++-
+ drivers/ide/pci/hpt34x.c           |    6 +---
+ drivers/ide/pci/ns87415.c          |    9 -------
+ drivers/ide/pci/pdc202xx_new.c     |   10 ++++++-
+ drivers/ide/pci/pdc202xx_old.c     |    9 ++++--
+ drivers/ide/pci/triflex.c          |    3 ++
+ drivers/ide/ppc/pmac.c             |   14 ++--------
+ include/linux/ide.h                |    4 +-
+ 15 files changed, 113 insertions(+), 74 deletions(-)
 
 
-The SATA port works fine with Samsung 500GB HDD:
+Bartlomiej Zolnierkiewicz (12):
+      ide: fix hidden dependencies on CONFIG_IDE_GENERIC
+      ide-cris: fix ->set_pio_mode method to set transfer mode on the device
+      ide: config_drive_for_dma() fixes
+      ide-pmac: fix drive->init_speed reporting
+      ide: add cable detection for early UDMA66 devices (take 3)
+      ide: ide_config_drive_speed() bugfixes
+      cs5530: add missing ->dma_base check
+      pdc202xx_new: add missing ->dma_base check
+      pdc202xx_old: add missing ->dma_base check
+      triflex: add missing ->dma_base check
+      hpt34x: fix CONFIG_HPT34X_AUTODMA=n handling
+      ide-disk: workaround for buggy HPA support on ST340823A (take 3)
 
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ata1.00: ATA-8: SAMSUNG HD501LJ, CR100-10, max UDMA7
-ata1.00: 976773168 sectors, multi 16: LBA48 NCQ (depth 0/32)
-ata1.00: configured for UDMA/133
+Tejun Heo (1):
+      ide: make CONFIG_IDE_GENERIC default to N
 
-But there are write problems with the PATA port with Seagate 250GB HDD:
 
-ata3.00: ATA-7: ST3250823A, 3.03, max UDMA/100
-ata3.00: 488397168 sectors, multi 16: LBA48
-ata3.00: configured for UDMA/100
-
-Reading works but writing any longer data stream causes errors like this:
-
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd 35/00:40:97:c6:87/00:01:16:00:00/e0 tag 0 cdb 0x0 data 163840 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3: soft resetting port
-ata3.00: configured for UDMA/100
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd 35/00:00:df:d1:87/00:04:16:00:00/e0 tag 0 cdb 0x0 data 524288 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3: soft resetting port
-ata3.00: configured for UDMA/100
-ata3: EH complete
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-
-The transfer mode decreases from UDMA/100 to UDMA/66 and then UDMA/33 but it 
-doesn't help at all. The drive itself is fine, the problems also appear with 
-4.3GB Seagate drive. But there are no problems with WD 700MB drive (PIO 
-mode). I think that it's some kind of UDMA problem.
-
-Kernel is 2.6.22.3, older 2.6.21.5 was also affected. Complete dmesg output is 
-attached.
-
--- 
-Ondrej Zary
-
---Boundary-00=_fyfyGKFD+nGaZP5
-Content-Type: text/plain;
-  charset="us-ascii";
-  name="sata_via-error.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="sata_via-error.txt"
-
-Linux version 2.6.22.3-router2 (rainbow@pentium) (gcc version 4.1.2) #3 Mon Aug 20 19:16:29 CEST 2007
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 00000000000a0000 (usable)
- BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 0000000002000000 (usable)
- BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
-32MB LOWMEM available.
-Entering add_active_range(0, 0, 8192) 0 entries of 256 used
-Zone PFN ranges:
-  DMA             0 ->     4096
-  Normal       4096 ->     8192
-early_node_map[1] active PFN ranges
-    0:        0 ->     8192
-On node 0 totalpages: 8192
-  DMA zone: 32 pages used for memmap
-  DMA zone: 0 pages reserved
-  DMA zone: 4064 pages, LIFO batch:0
-  Normal zone: 32 pages used for memmap
-  Normal zone: 4064 pages, LIFO batch:0
-DMI not present or invalid.
-Allocating PCI resources starting at 10000000 (gap: 02000000:fdff0000)
-Built 1 zonelists.  Total pages: 8128
-Kernel command line: auto BOOT_IMAGE=Linux26223 ro root=821
-Initializing CPU#0
-PID hash table entries: 128 (order: 7, 512 bytes)
-Detected 133.130 MHz processor.
-Console: colour VGA+ 80x25
-Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)
-Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
-Memory: 29668k/32768k available (1594k kernel code, 2716k reserved, 537k data, 132k init, 0k highmem)
-virtual kernel memory layout:
-    fixmap  : 0xffffc000 - 0xfffff000   (  12 kB)
-    vmalloc : 0xc2800000 - 0xffffa000   ( 983 MB)
-    lowmem  : 0xc0000000 - 0xc2000000   (  32 MB)
-      .init : 0xc0318000 - 0xc0339000   ( 132 kB)
-      .data : 0xc028e8de - 0xc03150dc   ( 537 kB)
-      .text : 0xc0100000 - 0xc028e8de   (1594 kB)
-Checking if this processor honours the WP bit even in supervisor mode... Ok.
-Calibrating delay using timer specific routine.. 266.63 BogoMIPS (lpj=1333176)
-Mount-cache hash table entries: 512
-CPU: After generic identify, caps: 008001bf 00000000 00000000 00000000 00000000 00000000 00000000
-Intel Pentium with F0 0F bug - workaround enabled.
-
-CPU: After all inits, caps: 008001bf 00000000 00000000 00000000 00000000 00000000 00000000
-Compat vDSO mapped to ffffe000.
-CPU: Intel Pentium MMX stepping 03
-Checking 'hlt' instruction... OK.
-NET: Registered protocol family 16
-PCI: PCI BIOS revision 2.10 entry at 0xfad90, last bus=0
-PCI: Using configuration type 1
-Setting up standard PCI resources
-Linux Plug and Play Support v0.97 (c) Adam Belay
-PnPBIOS: Scanning system for PnP BIOS support...
-PnPBIOS: Found PnP BIOS installation structure at 0xc00fbaf0
-PnPBIOS: PnP BIOS version 1.0, entry 0xf0000:0xbb18, dseg 0xf0000
-PnPBIOS: 14 nodes reported by PnP BIOS; 14 recorded by driver
-SCSI subsystem initialized
-libata version 2.21 loaded.
-PCI: Probing PCI hardware
-PCI: Probing PCI hardware (bus 00)
-pnp: 00:07: iomem range 0xe0000-0xfffff could not be reserved
-pnp: 00:07: iomem range 0x0-0x9ffff could not be reserved
-pnp: 00:07: iomem range 0xfffe0000-0xffffffff could not be reserved
-pnp: 00:07: iomem range 0x100000-0x1ffffff could not be reserved
-pnp: 00:09: ioport range 0x208-0x20f has been reserved
-NET: Registered protocol family 2
-Time: tsc clocksource has been installed.
-IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
-TCP established hash table entries: 1024 (order: 1, 8192 bytes)
-TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
-TCP: Hash tables configured (established 1024 bind 1024)
-TCP reno registered
-Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered (default)
-io scheduler cfq registered
-Activating ISA DMA hang workarounds.
-Boot video device is 0000:00:08.0
-isapnp: Scanning for PnP cards...
-isapnp: Card '3Com 3C509B EtherLink III'
-isapnp: 1 Plug & Play card detected total
-lp: driver loaded but no devices found
-Real Time Clock Driver v1.12ac
-Non-volatile memory driver v1.2
-ppdev: user-space parallel port driver
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
-00:0a: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-00:0d: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-parport_pc 00:0c: reported by Plug and Play BIOS
-parport0: PC-style at 0x378 (0x778), irq 7, dma 3 [PCSPP,TRISTATE,COMPAT,ECP,DMA]
-lp0: using parport0 (interrupt-driven).
-loop: module loaded
-3c59x: Donald Becker and others.
-0000:00:09.0: 3Com PCI 3c905C Tornado at c2800000.
-ne.c:v1.10 9/23/94 Donald Becker (becker@scyld.com)
-Last modified Nov 1, 2000 by Paul Gortmaker
-NE*000 ethercard probe at 0x300: 00 40 33 25 7b fa
-eth1: NE2000 found at 0x300, using IRQ 3.
-pnp: Device 01:01.00 activated.
-eth2: 3c5x9 found at 0x220, BNC port, address  00 a0 24 be 47 3f, IRQ 5.
-3c509.c:1.19b 08Nov2002 becker@scyld.com
-sata_via 0000:00:0a.0: version 2.2
-sata_via 0000:00:0a.0: routed to hard irq line 12
-scsi0 : sata_via
-scsi1 : sata_via
-scsi2 : sata_via
-ata1: SATA max UDMA/133 cmd 0x00016300 ctl 0x0001630a bmdma 0x00016700 irq 12
-ata2: SATA max UDMA/133 cmd 0x00016400 ctl 0x0001640a bmdma 0x00016708 irq 12
-ata3: PATA max UDMA/133 cmd 0x00016500 ctl 0x0001650a bmdma 0x00016710 irq 12
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ata1.00: ATA-8: SAMSUNG HD501LJ, CR100-10, max UDMA7
-ata1.00: 976773168 sectors, multi 16: LBA48 NCQ (depth 0/32)
-ata1.00: configured for UDMA/133
-ata2: SATA link down (SStatus 0 SControl 310)
-ata3.00: ATA-7: ST3250823A, 3.03, max UDMA/100
-ata3.00: 488397168 sectors, multi 16: LBA48 
-ata3.00: configured for UDMA/100
-scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HD501LJ  CR10 PQ: 0 ANSI: 5
-sd 0:0:0:0: [sda] 976773168 512-byte hardware sectors (500108 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 0:0:0:0: [sda] 976773168 512-byte hardware sectors (500108 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
- sda: sda1 sda2
-sd 0:0:0:0: [sda] Attached SCSI disk
-sd 0:0:0:0: Attached scsi generic sg0 type 0
-scsi 2:0:0:0: Direct-Access     ATA      ST3250823A       3.03 PQ: 0 ANSI: 5
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
- sdb: sdb1
-sd 2:0:0:0: [sdb] Attached SCSI disk
-sd 2:0:0:0: Attached scsi generic sg1 type 0
-pata_via 0000:00:07.1: version 0.3.1
-scsi3 : pata_via
-scsi4 : pata_via
-ata4: PATA max UDMA/33 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x00016000 irq 14
-ata5: PATA max UDMA/33 cmd 0x00010170 ctl 0x00010376 bmdma 0x00016008 irq 15
-ata4.00: ATA-0: WDC AC21000H, 21.15T71, max MWDMA2
-ata4.00: 2116800 sectors, multi 16: LBA 
-ata4.00: configured for MWDMA2
-scsi 3:0:0:0: Direct-Access     ATA      WDC AC21000H     21.1 PQ: 0 ANSI: 5
-sd 3:0:0:0: [sdc] 2116800 512-byte hardware sectors (1084 MB)
-sd 3:0:0:0: [sdc] Write Protect is off
-sd 3:0:0:0: [sdc] Mode Sense: 00 3a 00 00
-sd 3:0:0:0: [sdc] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
-sd 3:0:0:0: [sdc] 2116800 512-byte hardware sectors (1084 MB)
-sd 3:0:0:0: [sdc] Write Protect is off
-sd 3:0:0:0: [sdc] Mode Sense: 00 3a 00 00
-sd 3:0:0:0: [sdc] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
- sdc: sdc1 sdc2
-sd 3:0:0:0: [sdc] Attached SCSI disk
-sd 3:0:0:0: Attached scsi generic sg2 type 0
-PNP: PS/2 Controller [PNP0303] at 0x60,0x64 irq 1
-PNP: PS/2 controller doesn't have AUX irq; using default 12
-serio: i8042 KBD port at 0x60,0x64 irq 1
-input: PC Speaker as /class/input/input0
-md: raid1 personality registered for level 1
-Netfilter messages via NETLINK v0.30.
-nf_conntrack version 0.5.0 (256 buckets, 2048 max)
-ip_tables: (C) 2000-2006 Netfilter Core Team
-TCP cubic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-Using IPI Shortcut mode
-input: AT Translated Set 2 keyboard as /class/input/input1
-md: Autodetecting RAID arrays.
-md: autorun ...
-md: considering sdb1 ...
-md:  adding sdb1 ...
-md:  adding sda2 ...
-md: created md0
-md: bind<sda2>
-md: bind<sdb1>
-md: running: <sdb1><sda2>
-raid1: raid set md0 active with 2 out of 2 mirrors
-md: ... autorun DONE.
-kjournald starting.  Commit interval 5 seconds
-EXT3-fs: mounted filesystem with ordered data mode.
-VFS: Mounted root (ext3 filesystem) readonly.
-Freeing unused kernel memory: 132k freed
-Adding 124984k swap on /dev/sdc2.  Priority:-1 extents:1 across:124984k
-EXT3 FS on sdc1, internal journal
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sda1, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on md0, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-eth0: Setting Rx mode to 1 addresses.
-PM: Writing back config space on device 0000:00:09.0 at offset 1 (was 82100007, writing 2100007)
-eth1:  setting full-duplex.
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd 35/00:40:97:c6:87/00:01:16:00:00/e0 tag 0 cdb 0x0 data 163840 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3: soft resetting port
-ata3.00: configured for UDMA/100
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd 35/00:00:df:d1:87/00:04:16:00:00/e0 tag 0 cdb 0x0 data 524288 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3: soft resetting port
-ata3.00: configured for UDMA/100
-ata3: EH complete
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd 35/00:f0:6f:5a:88/00:03:16:00:00/e0 tag 0 cdb 0x0 data 516096 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3: soft resetting port
-ata3.00: configured for UDMA/100
-ata3: EH complete
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-ata3.00: limiting speed to UDMA/66:PIO4
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd 35/00:00:c7:0e:89/00:04:16:00:00/e0 tag 0 cdb 0x0 data 524288 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3: soft resetting port
-ata3.00: configured for UDMA/66
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd 35/00:00:07:14:89/00:04:16:00:00/e0 tag 0 cdb 0x0 data 524288 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3: soft resetting port
-ata3.00: configured for UDMA/66
-ata3: EH complete
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd 35/00:00:1f:dd:89/00:04:16:00:00/e0 tag 0 cdb 0x0 data 524288 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3: soft resetting port
-ata3.00: configured for UDMA/66
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd 35/00:00:07:e5:89/00:04:16:00:00/e0 tag 0 cdb 0x0 data 524288 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3: soft resetting port
-ata3.00: configured for UDMA/66
-ata3: EH complete
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd 35/00:00:87:fb:a6/00:04:19:00:00/e0 tag 0 cdb 0x0 data 524288 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3: soft resetting port
-ata3.00: configured for UDMA/66
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd 35/00:00:e7:07:a7/00:04:19:00:00/e0 tag 0 cdb 0x0 data 524288 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3: soft resetting port
-ata3.00: configured for UDMA/66
-ata3: EH complete
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 2:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-
---Boundary-00=_fyfyGKFD+nGaZP5--
+diff --git a/arch/cris/arch-v10/drivers/Kconfig b/arch/cris/arch-v10/drivers/Kconfig
+index e7e724b..03e2e68 100644
+--- a/arch/cris/arch-v10/drivers/Kconfig
++++ b/arch/cris/arch-v10/drivers/Kconfig
+@@ -548,6 +548,7 @@ config ETRAX_IDE
+ 	select BLK_DEV_IDEDISK
+ 	select BLK_DEV_IDECD
+ 	select BLK_DEV_IDEDMA
++	select IDE_GENERIC
+ 	help
+ 	  Enable this to get support for ATA/IDE.
+ 	  You can't use parallel ports or SCSI ports
+diff --git a/arch/cris/arch-v32/drivers/Kconfig b/arch/cris/arch-v32/drivers/Kconfig
+index 1d859c1..cc6ba54 100644
+--- a/arch/cris/arch-v32/drivers/Kconfig
++++ b/arch/cris/arch-v32/drivers/Kconfig
+@@ -592,6 +592,7 @@ config ETRAX_IDE
+ 	select BLK_DEV_IDEDISK
+ 	select BLK_DEV_IDECD
+ 	select BLK_DEV_IDEDMA
++	select IDE_GENERIC
+ 	help
+ 	  Enables the ETRAX IDE driver.
+ 
+diff --git a/drivers/ide/Kconfig b/drivers/ide/Kconfig
+index e049f65..7adb61b 100644
+--- a/drivers/ide/Kconfig
++++ b/drivers/ide/Kconfig
+@@ -304,9 +304,9 @@ comment "IDE chipset support/bugfixes"
+ 
+ config IDE_GENERIC
+ 	tristate "generic/default IDE chipset support"
+-	default y
++	default H8300
+ 	help
+-	  If unsure, say Y.
++	  If unsure, say N.
+ 
+ config BLK_DEV_CMD640
+ 	bool "CMD640 chipset bugfix/support"
+@@ -345,6 +345,7 @@ config BLK_DEV_CMD640_ENHANCED
+ config BLK_DEV_IDEPNP
+ 	bool "PNP EIDE support"
+ 	depends on PNP
++	select IDE_GENERIC
+ 	help
+ 	  If you have a PnP (Plug and Play) compatible EIDE card and
+ 	  would like the kernel to automatically detect and activate
+@@ -834,6 +835,7 @@ config BLK_DEV_IDE_AU1XXX_SEQTS_PER_RQ
+ 
+ config IDE_ARM
+ 	def_bool ARM && (ARCH_CLPS7500 || ARCH_RPC || ARCH_SHARK)
++	select IDE_GENERIC
+ 
+ config BLK_DEV_IDE_ICSIDE
+ 	tristate "ICS IDE interface support"
+@@ -867,6 +869,7 @@ config BLK_DEV_IDE_BAST
+ config BLK_DEV_GAYLE
+ 	bool "Amiga Gayle IDE interface support"
+ 	depends on AMIGA
++	select IDE_GENERIC
+ 	help
+ 	  This is the IDE driver for the Amiga Gayle IDE interface. It supports
+ 	  both the `A1200 style' and `A4000 style' of the Gayle IDE interface,
+@@ -898,6 +901,7 @@ config BLK_DEV_IDEDOUBLER
+ config BLK_DEV_BUDDHA
+ 	bool "Buddha/Catweasel/X-Surf IDE interface support (EXPERIMENTAL)"
+ 	depends on ZORRO && EXPERIMENTAL
++	select IDE_GENERIC
+ 	help
+ 	  This is the IDE driver for the IDE interfaces on the Buddha, 
+ 	  Catweasel and X-Surf expansion boards.  It supports up to two interfaces 
+@@ -910,6 +914,7 @@ config BLK_DEV_BUDDHA
+ config BLK_DEV_FALCON_IDE
+ 	bool "Falcon IDE interface support"
+ 	depends on ATARI
++	select IDE_GENERIC
+ 	help
+ 	  This is the IDE driver for the builtin IDE interface on the Atari
+ 	  Falcon. Say Y if you have a Falcon and want to use IDE devices (hard
+@@ -919,6 +924,7 @@ config BLK_DEV_FALCON_IDE
+ config BLK_DEV_MAC_IDE
+ 	bool "Macintosh Quadra/Powerbook IDE interface support"
+ 	depends on MAC
++	select IDE_GENERIC
+ 	help
+ 	  This is the IDE driver for the builtin IDE interface on some m68k
+ 	  Macintosh models. It supports both the `Quadra style' (used in
+@@ -932,6 +938,7 @@ config BLK_DEV_MAC_IDE
+ config BLK_DEV_Q40IDE
+ 	bool "Q40/Q60 IDE interface support"
+ 	depends on Q40
++	select IDE_GENERIC
+ 	help
+ 	  Enable the on-board IDE controller in the Q40/Q60.  This should
+ 	  normally be on; disable it only if you are running a custom hard
+@@ -940,6 +947,7 @@ config BLK_DEV_Q40IDE
+ config BLK_DEV_MPC8xx_IDE
+ 	bool "MPC8xx IDE support"
+ 	depends on 8xx && IDE=y && BLK_DEV_IDE=y
++	select IDE_GENERIC
+ 	help
+ 	  This option provides support for IDE on Motorola MPC8xx Systems.
+ 	  Please see 'Type of MPC8xx IDE interface' for details.
+diff --git a/drivers/ide/cris/ide-cris.c b/drivers/ide/cris/ide-cris.c
+index fbfea46..04636f7 100644
+--- a/drivers/ide/cris/ide-cris.c
++++ b/drivers/ide/cris/ide-cris.c
+@@ -718,6 +718,8 @@ static void tune_cris_ide(ide_drive_t *drive, u8 pio)
+ 	}
+ 
+ 	cris_ide_set_speed(TYPE_PIO, setup, strobe, hold);
++
++	(void)ide_config_drive_speed(drive, XFER_PIO_0 + pio);
+ }
+ 
+ static int speed_cris_ide(ide_drive_t *drive, u8 speed)
+diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
+index 5ce4216..eba1adb 100644
+--- a/drivers/ide/ide-disk.c
++++ b/drivers/ide/ide-disk.c
+@@ -481,6 +481,15 @@ static inline int idedisk_supports_lba48(const struct hd_driveid *id)
+ 	       && id->lba_capacity_2;
+ }
+ 
++/*
++ * Some disks report total number of sectors instead of
++ * maximum sector address.  We list them here.
++ */
++static const struct drive_list_entry hpa_list[] = {
++	{ "ST340823A",	NULL },
++	{ NULL,		NULL }
++};
++
+ static void idedisk_check_hpa(ide_drive_t *drive)
+ {
+ 	unsigned long long capacity, set_max;
+@@ -492,6 +501,15 @@ static void idedisk_check_hpa(ide_drive_t *drive)
+ 	else
+ 		set_max = idedisk_read_native_max_address(drive);
+ 
++	if (ide_in_drive_list(drive->id, hpa_list)) {
++		/*
++		 * Since we are inclusive wrt to firmware revisions do this
++		 * extra check and apply the workaround only when needed.
++		 */
++		if (set_max == capacity + 1)
++			set_max--;
++	}
++
+ 	if (set_max <= capacity)
+ 		return;
+ 
+diff --git a/drivers/ide/ide-dma.c b/drivers/ide/ide-dma.c
+index 5fe1d72..ff644a5 100644
+--- a/drivers/ide/ide-dma.c
++++ b/drivers/ide/ide-dma.c
+@@ -135,25 +135,6 @@ static const struct drive_list_entry drive_blacklist [] = {
+ };
+ 
+ /**
+- *	ide_in_drive_list	-	look for drive in black/white list
+- *	@id: drive identifier
+- *	@drive_table: list to inspect
+- *
+- *	Look for a drive in the blacklist and the whitelist tables
+- *	Returns 1 if the drive is found in the table.
+- */
+-
+-int ide_in_drive_list(struct hd_driveid *id, const struct drive_list_entry *drive_table)
+-{
+-	for ( ; drive_table->id_model ; drive_table++)
+-		if ((!strcmp(drive_table->id_model, id->model)) &&
+-		    (!drive_table->id_firmware ||
+-		     strstr(id->fw_rev, drive_table->id_firmware)))
+-			return 1;
+-	return 0;
+-}
+-
+-/**
+  *	ide_dma_intr	-	IDE DMA interrupt handler
+  *	@drive: the drive the interrupt is for
+  *
+@@ -349,9 +330,17 @@ EXPORT_SYMBOL_GPL(ide_destroy_dmatable);
+  
+ static int config_drive_for_dma (ide_drive_t *drive)
+ {
++	ide_hwif_t *hwif = drive->hwif;
+ 	struct hd_driveid *id = drive->id;
+ 
+-	if ((id->capability & 1) && drive->hwif->autodma) {
++	/* consult the list of known "bad" drives */
++	if (__ide_dma_bad_drive(drive))
++		return -1;
++
++	if (drive->media != ide_disk && hwif->atapi_dma == 0)
++		return -1;
++
++	if ((id->capability & 1) && drive->autodma) {
+ 		/*
+ 		 * Enable DMA on any drive that has
+ 		 * UltraDMA (mode 0/1/2/3/4/5/6) enabled
+@@ -514,20 +503,6 @@ int __ide_dma_on (ide_drive_t *drive)
+ EXPORT_SYMBOL(__ide_dma_on);
+ 
+ /**
+- *	__ide_dma_check		-	check DMA setup
+- *	@drive: drive to check
+- *
+- *	Don't use - due for extermination
+- */
+- 
+-int __ide_dma_check (ide_drive_t *drive)
+-{
+-	return config_drive_for_dma(drive);
+-}
+-
+-EXPORT_SYMBOL(__ide_dma_check);
+-
+-/**
+  *	ide_dma_setup	-	begin a DMA phase
+  *	@drive: target device
+  *
+@@ -1021,7 +996,7 @@ void ide_setup_dma (ide_hwif_t *hwif, unsigned long dma_base, unsigned int num_p
+ 	if (!hwif->dma_host_on)
+ 		hwif->dma_host_on = &ide_dma_host_on;
+ 	if (!hwif->ide_dma_check)
+-		hwif->ide_dma_check = &__ide_dma_check;
++		hwif->ide_dma_check = &config_drive_for_dma;
+ 	if (!hwif->dma_setup)
+ 		hwif->dma_setup = &ide_dma_setup;
+ 	if (!hwif->dma_exec_cmd)
+diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
+index 92578b6..f4cd270 100644
+--- a/drivers/ide/ide-iops.c
++++ b/drivers/ide/ide-iops.c
+@@ -565,6 +565,36 @@ int ide_wait_stat (ide_startstop_t *startstop, ide_drive_t *drive, u8 good, u8 b
+ 
+ EXPORT_SYMBOL(ide_wait_stat);
+ 
++/**
++ *	ide_in_drive_list	-	look for drive in black/white list
++ *	@id: drive identifier
++ *	@drive_table: list to inspect
++ *
++ *	Look for a drive in the blacklist and the whitelist tables
++ *	Returns 1 if the drive is found in the table.
++ */
++
++int ide_in_drive_list(struct hd_driveid *id, const struct drive_list_entry *drive_table)
++{
++	for ( ; drive_table->id_model; drive_table++)
++		if ((!strcmp(drive_table->id_model, id->model)) &&
++		    (!drive_table->id_firmware ||
++		     strstr(id->fw_rev, drive_table->id_firmware)))
++			return 1;
++	return 0;
++}
++
++EXPORT_SYMBOL_GPL(ide_in_drive_list);
++
++/*
++ * Early UDMA66 devices don't set bit14 to 1, only bit13 is valid.
++ * We list them here and depend on the device side cable detection for them.
++ */
++static const struct drive_list_entry ivb_list[] = {
++	{ "QUANTUM FIREBALLlct10 05"	, "A03.0900"	},
++	{ NULL				, NULL		}
++};
++
+ /*
+  *  All hosts that use the 80c ribbon must use!
+  *  The name is derived from upper byte of word 93 and the 80c ribbon.
+@@ -573,11 +603,16 @@ u8 eighty_ninty_three (ide_drive_t *drive)
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
+ 	struct hd_driveid *id = drive->id;
++	int ivb = ide_in_drive_list(id, ivb_list);
+ 
+ 	if (hwif->cbl == ATA_CBL_PATA40_SHORT)
+ 		return 1;
+ 
+-	if (hwif->cbl != ATA_CBL_PATA80)
++	if (ivb)
++		printk(KERN_DEBUG "%s: skipping word 93 validity check\n",
++				  drive->name);
++
++	if (hwif->cbl != ATA_CBL_PATA80 && !ivb)
+ 		goto no_80w;
+ 
+ 	/* Check for SATA but only if we are ATA5 or higher */
+@@ -587,11 +622,11 @@ u8 eighty_ninty_three (ide_drive_t *drive)
+ 	/*
+ 	 * FIXME:
+ 	 * - change master/slave IDENTIFY order
+-	 * - force bit13 (80c cable present) check
++	 * - force bit13 (80c cable present) check also for !ivb devices
+ 	 *   (unless the slave device is pre-ATA3)
+ 	 */
+ #ifndef CONFIG_IDEDMA_IVB
+-	if (id->hw_config & 0x4000)
++	if ((id->hw_config & 0x4000) || (ivb && (id->hw_config & 0x2000)))
+ #else
+ 	if (id->hw_config & 0x6000)
+ #endif
+@@ -795,7 +830,7 @@ int ide_config_drive_speed (ide_drive_t *drive, u8 speed)
+ 		hwif->OUTB(drive->ctl | 2, IDE_CONTROL_REG);
+ 	hwif->OUTB(speed, IDE_NSECTOR_REG);
+ 	hwif->OUTB(SETFEATURES_XFER, IDE_FEATURE_REG);
+-	hwif->OUTB(WIN_SETFEATURES, IDE_COMMAND_REG);
++	hwif->OUTBSYNC(drive, WIN_SETFEATURES, IDE_COMMAND_REG);
+ 	if ((IDE_CONTROL_REG) && (drive->quirk_list == 2))
+ 		hwif->OUTB(drive->ctl, IDE_CONTROL_REG);
+ 	udelay(1);
+@@ -822,7 +857,7 @@ int ide_config_drive_speed (ide_drive_t *drive, u8 speed)
+ 	 */
+ 	for (i = 0; i < 10; i++) {
+ 		udelay(1);
+-		if (OK_STAT((stat = hwif->INB(IDE_STATUS_REG)), DRIVE_READY, BUSY_STAT|DRQ_STAT|ERR_STAT)) {
++		if (OK_STAT((stat = hwif->INB(IDE_STATUS_REG)), drive->ready_stat, BUSY_STAT|DRQ_STAT|ERR_STAT)) {
+ 			error = 0;
+ 			break;
+ 		}
+diff --git a/drivers/ide/pci/cs5530.c b/drivers/ide/pci/cs5530.c
+index acaf71f..e5949b1 100644
+--- a/drivers/ide/pci/cs5530.c
++++ b/drivers/ide/pci/cs5530.c
+@@ -1,5 +1,5 @@
+ /*
+- * linux/drivers/ide/pci/cs5530.c		Version 0.73	Mar 10 2007
++ * linux/drivers/ide/pci/cs5530.c		Version 0.74	Jul 28 2007
+  *
+  * Copyright (C) 2000			Andre Hedrick <andre@linux-ide.org>
+  * Copyright (C) 2000			Mark Lord <mlord@pobox.com>
+@@ -207,6 +207,9 @@ static unsigned int __devinit init_chipset_cs5530 (struct pci_dev *dev, const ch
+ 	struct pci_dev *master_0 = NULL, *cs5530_0 = NULL;
+ 	unsigned long flags;
+ 
++	if (pci_resource_start(dev, 4) == 0)
++		return -EFAULT;
++
+ 	dev = NULL;
+ 	while ((dev = pci_get_device(PCI_VENDOR_ID_CYRIX, PCI_ANY_ID, dev)) != NULL) {
+ 		switch (dev->device) {
+@@ -325,6 +328,9 @@ static void __devinit init_hwif_cs5530 (ide_hwif_t *hwif)
+ 			/* needs autotuning later */
+ 	}
+ 
++	if (hwif->dma_base == 0)
++		return;
++
+ 	hwif->atapi_dma = 1;
+ 	hwif->ultra_mask = 0x07;
+ 	hwif->mwdma_mask = 0x07;
+diff --git a/drivers/ide/pci/hpt34x.c b/drivers/ide/pci/hpt34x.c
+index 19778c5..cb8fe56 100644
+--- a/drivers/ide/pci/hpt34x.c
++++ b/drivers/ide/pci/hpt34x.c
+@@ -89,11 +89,7 @@ static int hpt34x_config_drive_xfer_rate (ide_drive_t *drive)
+ 	drive->init_speed = 0;
+ 
+ 	if (ide_tune_dma(drive))
+-#ifndef CONFIG_HPT34X_AUTODMA
+ 		return -1;
+-#else
+-		return 0;
+-#endif
+ 
+ 	if (ide_use_fast_pio(drive))
+ 		hpt34x_tune_drive(drive, 255);
+@@ -160,9 +156,11 @@ static void __devinit init_hwif_hpt34x(ide_hwif_t *hwif)
+ 	if (!hwif->dma_base)
+ 		return;
+ 
++#ifdef CONFIG_HPT34X_AUTODMA
+ 	hwif->ultra_mask = 0x07;
+ 	hwif->mwdma_mask = 0x07;
+ 	hwif->swdma_mask = 0x07;
++#endif
+ 
+ 	hwif->ide_dma_check = &hpt34x_config_drive_xfer_rate;
+ 	if (!noautodma)
+diff --git a/drivers/ide/pci/ns87415.c b/drivers/ide/pci/ns87415.c
+index 09941f3..465c935 100644
+--- a/drivers/ide/pci/ns87415.c
++++ b/drivers/ide/pci/ns87415.c
+@@ -187,14 +187,6 @@ static int ns87415_ide_dma_setup(ide_drive_t *drive)
+ 	return 1;
+ }
+ 
+-static int ns87415_ide_dma_check (ide_drive_t *drive)
+-{
+-	if (drive->media != ide_disk)
+-		return -1;
+-
+-	return __ide_dma_check(drive);
+-}
+-
+ static void __devinit init_hwif_ns87415 (ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = hwif->pci_dev;
+@@ -266,7 +258,6 @@ static void __devinit init_hwif_ns87415 (ide_hwif_t *hwif)
+ 
+ 	outb(0x60, hwif->dma_status);
+ 	hwif->dma_setup = &ns87415_ide_dma_setup;
+-	hwif->ide_dma_check = &ns87415_ide_dma_check;
+ 	hwif->ide_dma_end = &ns87415_ide_dma_end;
+ 
+ 	if (!noautodma)
+diff --git a/drivers/ide/pci/pdc202xx_new.c b/drivers/ide/pci/pdc202xx_new.c
+index 8a66a28..f6db2f3 100644
+--- a/drivers/ide/pci/pdc202xx_new.c
++++ b/drivers/ide/pci/pdc202xx_new.c
+@@ -378,6 +378,9 @@ static unsigned int __devinit init_chipset_pdcnew(struct pci_dev *dev, const cha
+ 	int f, r;
+ 	u8 pll_ctl0, pll_ctl1;
+ 
++	if (dma_base == 0)
++		return -EFAULT;
++
+ #ifdef CONFIG_PPC_PMAC
+ 	apple_kiwi_init(dev);
+ #endif
+@@ -494,15 +497,18 @@ static void __devinit init_hwif_pdc202new(ide_hwif_t *hwif)
+ 	hwif->speedproc = &pdcnew_tune_chipset;
+ 	hwif->resetproc = &pdcnew_reset;
+ 
++	hwif->err_stops_fifo = 1;
++
+ 	hwif->drives[0].autotune = hwif->drives[1].autotune = 1;
+ 
++	if (hwif->dma_base == 0)
++		return;
++
+ 	hwif->atapi_dma  = 1;
+ 
+ 	hwif->ultra_mask = hwif->cds->udma_mask;
+ 	hwif->mwdma_mask = 0x07;
+ 
+-	hwif->err_stops_fifo = 1;
+-
+ 	hwif->ide_dma_check = &pdcnew_config_drive_xfer_rate;
+ 
+ 	if (hwif->cbl != ATA_CBL_PATA40_SHORT)
+diff --git a/drivers/ide/pci/pdc202xx_old.c b/drivers/ide/pci/pdc202xx_old.c
+index fbcb0bb..e19a891 100644
+--- a/drivers/ide/pci/pdc202xx_old.c
++++ b/drivers/ide/pci/pdc202xx_old.c
+@@ -1,5 +1,5 @@
+ /*
+- *  linux/drivers/ide/pci/pdc202xx_old.c	Version 0.50	Mar 3, 2007
++ *  linux/drivers/ide/pci/pdc202xx_old.c	Version 0.51	Jul 27, 2007
+  *
+  *  Copyright (C) 1998-2002		Andre Hedrick <andre@linux-ide.org>
+  *  Copyright (C) 2006-2007		MontaVista Software, Inc.
+@@ -337,15 +337,18 @@ static void __devinit init_hwif_pdc202xx(ide_hwif_t *hwif)
+ 
+ 	hwif->speedproc = &pdc202xx_tune_chipset;
+ 
++	hwif->err_stops_fifo = 1;
++
+ 	hwif->drives[0].autotune = hwif->drives[1].autotune = 1;
+ 
++	if (hwif->dma_base == 0)
++		return;
++
+ 	hwif->ultra_mask = hwif->cds->udma_mask;
+ 	hwif->mwdma_mask = 0x07;
+ 	hwif->swdma_mask = 0x07;
+ 	hwif->atapi_dma = 1;
+ 
+-	hwif->err_stops_fifo = 1;
+-
+ 	hwif->ide_dma_check = &pdc202xx_config_drive_xfer_rate;
+ 	hwif->dma_lost_irq = &pdc202xx_dma_lost_irq;
+ 	hwif->dma_timeout = &pdc202xx_dma_timeout;
+diff --git a/drivers/ide/pci/triflex.c b/drivers/ide/pci/triflex.c
+index 024bbfa..098692a 100644
+--- a/drivers/ide/pci/triflex.c
++++ b/drivers/ide/pci/triflex.c
+@@ -115,6 +115,9 @@ static void __devinit init_hwif_triflex(ide_hwif_t *hwif)
+ 	hwif->tuneproc = &triflex_tune_drive;
+ 	hwif->speedproc = &triflex_tune_chipset;
+ 
++	if (hwif->dma_base == 0)
++		return;
++
+ 	hwif->atapi_dma  = 1;
+ 	hwif->mwdma_mask = 0x07;
+ 	hwif->swdma_mask = 0x07;
+diff --git a/drivers/ide/ppc/pmac.c b/drivers/ide/ppc/pmac.c
+index 33630ad..4b13cd9 100644
+--- a/drivers/ide/ppc/pmac.c
++++ b/drivers/ide/ppc/pmac.c
+@@ -604,6 +604,9 @@ out:
+ 				drive->id->dma_1word |= 0x0101; break;
+ 			default: break;
+ 		}
++		if (!drive->init_speed)
++			drive->init_speed = command;
++		drive->current_speed = command;
+ 	}
+ 	enable_irq(hwif->irq);
+ 	return result;
+@@ -986,7 +989,6 @@ pmac_ide_tune_chipset (ide_drive_t *drive, byte speed)
+ 		return ret;
+ 		
+ 	pmac_ide_do_update_timings(drive);	
+-	drive->current_speed = speed;
+ 
+ 	return 0;
+ }
+@@ -1737,11 +1739,6 @@ pmac_ide_mdma_enable(ide_drive_t *drive, u16 mode)
+ 	/* Apply timings to controller */
+ 	*timings = timing_local[0];
+ 	*timings2 = timing_local[1];
+-	
+-	/* Set speed info in drive */
+-	drive->current_speed = mode;	
+-	if (!drive->init_speed)
+-		drive->init_speed = mode;
+ 
+ 	return 1;
+ }
+@@ -1793,11 +1790,6 @@ pmac_ide_udma_enable(ide_drive_t *drive, u16 mode)
+ 	*timings = timing_local[0];
+ 	*timings2 = timing_local[1];
+ 
+-	/* Set speed info in drive */
+-	drive->current_speed = mode;	
+-	if (!drive->init_speed)
+-		drive->init_speed = mode;
+-
+ 	return 1;
+ }
+ 
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index d71d012..c792b4f 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1285,13 +1285,14 @@ void ide_init_sg_cmd(ide_drive_t *, struct request *);
+ #define BAD_DMA_DRIVE		0
+ #define GOOD_DMA_DRIVE		1
+ 
+-#ifdef CONFIG_BLK_DEV_IDEDMA
+ struct drive_list_entry {
+ 	const char *id_model;
+ 	const char *id_firmware;
+ };
+ 
+ int ide_in_drive_list(struct hd_driveid *, const struct drive_list_entry *);
++
++#ifdef CONFIG_BLK_DEV_IDEDMA
+ int __ide_dma_bad_drive(ide_drive_t *);
+ int __ide_dma_good_drive(ide_drive_t *);
+ u8 ide_max_dma_mode(ide_drive_t *);
+@@ -1312,7 +1313,6 @@ void ide_dma_host_off(ide_drive_t *);
+ void ide_dma_off_quietly(ide_drive_t *);
+ void ide_dma_host_on(ide_drive_t *);
+ extern int __ide_dma_on(ide_drive_t *);
+-extern int __ide_dma_check(ide_drive_t *);
+ extern int ide_dma_setup(ide_drive_t *);
+ extern void ide_dma_start(ide_drive_t *);
+ extern int __ide_dma_end(ide_drive_t *);
