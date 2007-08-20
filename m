@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbXHTMhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbXHTMiL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbXHTMhs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 08:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757347AbXHTMhd
+	id S1759339AbXHTMiL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 08:38:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757482AbXHTMhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 08:37:33 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:43119 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752856AbXHTMgq (ORCPT
+	Mon, 20 Aug 2007 08:37:35 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:23504 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755443AbXHTMgs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 08:36:46 -0400
+	Mon, 20 Aug 2007 08:36:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=HyJ3mzwNKYt1ZmTDGv/uqwNwVJPUuFdSkobZ0L04zgUIipxnDpT+DMchj94sT6IZnGtsEnfQALN/lOZ/ypDeOa9fprNQy6/u3M2hA3K3u/XFBTC2DcxtyNP0bp0T5ec34Dx3oRwQtkTKsYv+2M/9852X5MZIta/Rz2DUkN48Uk0=
-Subject: [PATCHSET] Sysfs cleanups from Eric W. Biederman
-In-Reply-To: 
-X-Mailer: git-send-email
-Date: Mon, 20 Aug 2007 21:36:29 +0900
-Message-Id: <11876133893720-git-send-email-htejun@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Reply-To: Tejun Heo <htejun@gmail.com>
-To: ebiederm@xmission.com, cornelia.huck@de.ibm.com, greg@kroah.com,
-       linux-kernel@vger.kernel.org, satyam@infradead.org,
-       stern@rowland.harvard.edu, containers@lists.osdl.org, htejun@gmail.com
-Content-Transfer-Encoding: 7BIT
-From: Tejun Heo <htejun@gmail.com>
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=oby6wX8TZFW9aFW2jQDLAbnXOXd70xcxtGTQSe0ZB+bCMLC2CW10Qy1lUcntZwDMAj23hR3E9vq3CudqMJj5t1mJlUe86N40n6Ae+cAavm6oL5fHYDsTTqSgDLhtVPjeVf8wZvyZIwkduZykU9xHnUaepSc73bKdGrn5p5CrToQ=
+Message-ID: <6278d2220708200536r786ee72ere7522547c375a428@mail.gmail.com>
+Date: Mon, 20 Aug 2007 13:36:46 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Dave Airlie" <airlied@gmail.com>
+Subject: Re: uncached page allocator
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, all.
+On 20 Aug, 01:50, "Dave Airlie" <airlied@gmail.com> wrote:
+> Hi all,
+>
+> I've started doing some work with using the new DRM memory manager
+> from TG for pixmaps in the X server using Intel 9xx series hardware.
+>
+> The intel hardware pretty much requires pages to be uncached for the
+> GPU to access them. It can use cached memory for some operations but
+> it isn't very useful and my attempts to use it ended in a lot of
+> crashiness..
 
-This is subset of Eric W. Biederman's "Sysfs cleanups & tagged
-directory support" patchset[1] with the following modifications.
+Write-combining access seems the correct thing here, followed by a
+wmb(). Uncached writing would be horrendously slow.
 
-* fix-i_mutex-locking-in-sysfs_get_dentry patch is added at the top
-  and #14-Don_t-use-lookup_one_len_kern and
-  #15-vfs-Remove-lookup_one_len_kern are dropped.  This is because #14
-  contained had a bug where it might created dentry/inode for an
-  already deleted sysfs_dirent.  I think it's benefitial to keep
-  single lookup path.
+[snip]
+> So after all that I'd like to have some sort of uncached page list I
+> can allocate pages from
 
-* Rewrote simplify-sysfs_get_dentry patch and
-  #08-Implement-__sysfs_get_dentry,
-  #09-Move-sysfs_get_dentry-below-__sysfs_get_dentry and
-  #10-Rewrite-sysfs_get_dentry-in-terms-of-__sysfs_get_dentry are
-  omitted as __sysfs_get_dentry() isn't used by anyone.
+This is exactly what Intel's PAT mechanism exists for - just mark the
+desired access type (index) on the pages you've been allocated.
 
-* #16, 19-25 are omitted as it isn't clear yet how the tagged entry
-  support will end up.
+It's documented in the Intel Architecture Software Design manuals, but
+Linux's support is lacking in certain areas [discussions on LKML],
+which a number of developers have been trying to move forward.
 
-* readdir simplification fixed.
+Quite a few significant graphics/HPC etc vendors are forced to use it
+without this complete support, so it would be good to get this
+additional impetus involved...
 
-* sysfs_mutex double locking fixed.
-
-The patchset is on top of the current -gregkh.
-
-Thanks.
-
---
-tejun
-
-[1] http://thread.gmane.org/gmane.linux.kernel/564287/focus=519
-
-
+Daniel
+-- 
+Daniel J Blueman
