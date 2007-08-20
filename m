@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761489AbXHTQsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760793AbXHTQx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761489AbXHTQsl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 12:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760691AbXHTQsa
+	id S1760793AbXHTQx2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760077AbXHTQxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 12:48:30 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:44741 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760903AbXHTQs3 (ORCPT
+	Mon, 20 Aug 2007 12:53:20 -0400
+Received: from baldrick.fusednetworks.co.uk ([83.142.228.48]:57630 "EHLO
+	baldrick.fusednetworks.co.uk" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759941AbXHTQxU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 12:48:29 -0400
-Subject: Re: nmi_watchdog=2 regression in 2.6.21
-From: Daniel Walker <dwalker@mvista.com>
-To: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-Cc: eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-In-Reply-To: <20070808142059.GF30805@atjola.homenet>
-References: <1186531609.22044.50.camel@imap.mvista.com>
-	 <20070808142059.GF30805@atjola.homenet>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 20 Aug 2007 09:44:56 -0700
-Message-Id: <1187628296.7732.14.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 8bit
+	Mon, 20 Aug 2007 12:53:20 -0400
+Message-ID: <46C9C6FB.2010609@bootc.net>
+Date: Mon, 20 Aug 2007 17:53:15 +0100
+From: Chris Boot <bootc@bootc.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: Panic with XFS on RHEL5 (2.6.18-8.1.8.el5)
+References: <46C6C145.70506@abacustree.com> <yw1xr6m1ja7o.fsf@thrashbarg.mansr.com> <46C6FF93.4040509@bootc.net> <yw1xmywokfik.fsf@thrashbarg.mansr.com> <46C71E1B.40702@bootc.net>
+In-Reply-To: <46C71E1B.40702@bootc.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-08 at 16:20 +0200, Björn Steinbrink wrote:
-> On 2007.08.07 17:06:49 -0700, Daniel Walker wrote:
-> > 
-> > This patch below hangs my system on boot if I set nmi_watchdog=2 . It
-> > shows the NMI as stuck then the system hangs .. nmi_watchdog=1 works
-> > fine, and the system boots without any watchdog options ..
-> > 
-> > The machine is an Intel allagash development board, and it has two dual
-> > core Pentium-M cpus. I attached the .config I used.
+Chris Boot wrote:
+>>> I'll probably just try and recompile the kernel with 8k stacks and see
+>>> how it goes. Screw the support, we're unlikely to get it anyway. :-P
+>>>     
+>>
+>> Please report how this works out.
+>>   
+>
+> I will. This will probably be on Monday now, since the machine isn't 
+> accepting SysRq requests over the serial console. :-(
 
-Could we put this on the known regressions list? It was added in 2.6.21,
-and still exists in lastest git (as of 15 min. ago) ..
+OK, with the recompiled kernel this appears to work just fine now. I've 
+been pounding the box all day with rsyncs, VMware VMs, plenty of web 
+serving (inc. SVN) and so far it's holding up just fine. Cheers for the 
+diagnosis.
 
-Daniel
+Many thanks,
+Chris
 
