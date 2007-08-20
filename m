@@ -1,111 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764111AbXHTUwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765536AbXHTUwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764111AbXHTUwa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760409AbXHTUvf
+	id S1765536AbXHTUwp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763140AbXHTUvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:51:35 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:32785 "EHLO smtp.polymtl.ca"
+	Mon, 20 Aug 2007 16:51:37 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:32816 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760272AbXHTUve (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:51:34 -0400
-Message-Id: <20070820201824.157312965@polymtl.ca>
+	id S1761857AbXHTUvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:51:36 -0400
+Message-Id: <20070820201828.584607454@polymtl.ca>
 References: <20070820201519.512791382@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 16:15:24 -0400
+Date: Mon, 20 Aug 2007 16:15:34 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com,
-       michael.frysinger@analog.com
-Subject: [patch 05/23] Add cmpxchg_local to blackfin, replace __cmpxchg by generic cmpxchg
-Content-Disposition: inline; filename=add-cmpxchg-local-to-blackfin.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:51:11 +0000
+       parisc-linux@parisc-linux.org
+Subject: [patch 15/23] Add cmpxchg_local to parisc
+Content-Disposition: inline; filename=add-cmpxchg-local-to-parisc.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:51:17 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Use the new generic cmpxchg_local (disables interrupt). Also use the generic
-cmpxchg as fallback if SMP is not set since nobody seems to know why __cmpxchg
-has been implemented in assembly in the first place thather than in plain C.
+cmpxchg as fallback if SMP is not set.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: clameter@sgi.com
-CC: michael.frysinger@analog.com
+CC: parisc-linux@parisc-linux.org
 ---
- include/asm-blackfin/system.h |   59 ++++++++----------------------------------
- 1 file changed, 12 insertions(+), 47 deletions(-)
+ include/asm-parisc/atomic.h |   29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-blackfin/system.h
+Index: linux-2.6-lttng/include/asm-parisc/atomic.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-blackfin/system.h	2007-08-07 14:31:52.000000000 -0400
-+++ linux-2.6-lttng/include/asm-blackfin/system.h	2007-08-07 14:47:31.000000000 -0400
-@@ -176,55 +176,20 @@ static inline unsigned long __xchg(unsig
- 	return tmp;
- }
+--- linux-2.6-lttng.orig/include/asm-parisc/atomic.h	2007-07-20 19:44:40.000000000 -0400
++++ linux-2.6-lttng/include/asm-parisc/atomic.h	2007-07-20 19:44:47.000000000 -0400
+@@ -122,6 +122,35 @@ __cmpxchg(volatile void *ptr, unsigned l
+ 				    (unsigned long)_n_, sizeof(*(ptr))); \
+   })
  
 +#include <asm-generic/cmpxchg-local.h>
 +
- /*
-- * Atomic compare and exchange.  Compare OLD with MEM, if identical,
-- * store NEW in MEM.  Return the initial value in MEM.  Success is
-- * indicated by comparing RETURN with OLD.
++static inline unsigned long __cmpxchg_local(volatile void *ptr,
++				      unsigned long old,
++				      unsigned long new_, int size)
++{
++	switch (size) {
++#ifdef CONFIG_64BIT
++	case 8:	return __cmpxchg_u64((unsigned long *)ptr, old, new_);
++#endif
++	case 4:	return __cmpxchg_u32(ptr, old, new_);
++	default:
++		return __cmpxchg_local_generic(ptr, old, new_, size);
++	}
++}
++
++/*
 + * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
 + * them available.
-  */
--static inline unsigned long __cmpxchg(volatile void *ptr, unsigned long old,
--				      unsigned long new, int size)
--{
--	unsigned long tmp = 0;
--	unsigned long flags = 0;
--
--	local_irq_save(flags);
--
--	switch (size) {
--	case 1:
--		__asm__ __volatile__
--			("%0 = b%3 (z);\n\t"
--			 "CC = %1 == %0;\n\t"
--			 "IF !CC JUMP 1f;\n\t"
--			 "b%3 = %2;\n\t"
--			 "1:\n\t"
--			 : "=&d" (tmp) : "d" (old), "d" (new), "m" (*__xg(ptr)) : "memory");
--		break;
--	case 2:
--		__asm__ __volatile__
--			("%0 = w%3 (z);\n\t"
--			 "CC = %1 == %0;\n\t"
--			 "IF !CC JUMP 1f;\n\t"
--			 "w%3 = %2;\n\t"
--			 "1:\n\t"
--			 : "=&d" (tmp) : "d" (old), "d" (new), "m" (*__xg(ptr)) : "memory");
--		break;
--	case 4:
--		__asm__ __volatile__
--			("%0 = %3;\n\t"
--			 "CC = %1 == %0;\n\t"
--			 "IF !CC JUMP 1f;\n\t"
--			 "%3 = %2;\n\t"
--			 "1:\n\t"
--			 : "=&d" (tmp) : "d" (old), "d" (new), "m" (*__xg(ptr)) : "memory");
--		break;
--	}
--	local_irq_restore(flags);
--	return tmp;
--}
--
--#define cmpxchg(ptr,o,n)\
--        ((__typeof__(*(ptr)))__cmpxchg((ptr),(unsigned long)(o),\
--                                        (unsigned long)(n),sizeof(*(ptr))))
-+#define cmpxchg_local(ptr,o,n)					  	    \
-+     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
++ */
++#define cmpxchg_local(ptr,o,n)					  	\
++     (__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
 +			   	 (unsigned long)(n), sizeof(*(ptr)))
++#ifdef CONFIG_64BIT
++#define cmpxchg64_local(ptr,o,n) cmpxchg_local((ptr), (o), (n))
++#else
 +#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
-+
-+#ifndef CONFIG_SMP
-+#include <asm-generic/cmpxchg.h>
 +#endif
- 
- #define prepare_to_switch()     do { } while(0)
- 
++
+ /* Note that we need not lock read accesses - aligned word writes/reads
+  * are atomic, so a reader never sees unconsistent values.
+  *
 
 -- 
 Mathieu Desnoyers
