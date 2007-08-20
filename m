@@ -1,54 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760710AbXHTTA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760514AbXHTTBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760710AbXHTTA7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 15:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbXHTTAv
+	id S1760514AbXHTTBX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 15:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbXHTTBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 15:00:51 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44831 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753491AbXHTTAt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 15:00:49 -0400
-Date: Mon, 20 Aug 2007 12:00:49 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pavel Machek <pavel@ucw.cz>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dkegel@google.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [RFC 2/9] Use NOMEMALLOC reclaim to allow reclaim if PF_MEMALLOC
- is set
-In-Reply-To: <20070818071035.GA4667@ucw.cz>
-Message-ID: <Pine.LNX.4.64.0708201158270.28863@schroedinger.engr.sgi.com>
-References: <20070814153021.446917377@sgi.com> <20070814153501.305923060@sgi.com>
- <20070818071035.GA4667@ucw.cz>
+	Mon, 20 Aug 2007 15:01:10 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40496 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753515AbXHTTBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 15:01:08 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@suspend2.net
+Subject: Re: [PATCH] Should GFP_ATOMIC fail when we're below low watermark?
+Date: Mon, 20 Aug 2007 21:11:13 +0200
+User-Agent: KMail/1.9.5
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
+References: <200708201138.50508.nigel@nigel.suspend2.net> <1187600376.6114.186.camel@twins> <200708202055.03058.nigel@nigel.suspend2.net>
+In-Reply-To: <200708202055.03058.nigel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708202111.14185.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Aug 2007, Pavel Machek wrote:
-
-> > The reclaim is of particular important to stacked filesystems that may
-> > do a lot of allocations in the write path. Reclaim will be working
-> > as long as there are clean file backed pages to reclaim.
+On Monday, 20 August 2007 12:55, Nigel Cunningham wrote:
+> Hi.
 > 
-> I don't get it. Lets say that we have stacked filesystem that needs
-> it. That filesystem is broken today.
+> On Monday 20 August 2007 18:59:36 Peter Zijlstra wrote:
+> > On Mon, 2007-08-20 at 18:38 +1000, Nigel Cunningham wrote:
+> > > Hi.
+> > > 
+> > > On Monday 20 August 2007 12:43:50 Peter Zijlstra wrote:
+> > > > On Mon, 2007-08-20 at 11:38 +1000, Nigel Cunningham wrote:
+> > > > > Hi all.
+> > > > > 
+> > > > > In current git (and for a while now), an attempt to allocate memory 
+> with 
+> > > > > GFP_ATOMIC will fail if we're below the low watermark level. The only 
+> way 
+> > > to 
+> > > > > access that memory that I can see (not that I've looked that hard) is 
+> to 
+> > > have 
+> > > > > PF_MEMALLOC set (ie from kswapd). I'm wondering if this behaviour is 
+> > > correct. 
+> > > > > Shouldn't GFP_ATOMIC allocations ignore watermarks too? How about 
+> > > GFP_KERNEL?
+> > > > > 
+> > > > > The following patch is a potential fix for GFP_ATOMIC.
+> > > > 
+> > > > Sorry, no.
+> > > > 
+> > > > GFP_ATOMIC must fail when below the watermark. GFP_KERNEL has __GFP_WAIT
+> > > > and hence can sleep and wait for reclaim so that should not be a problem
+> > > > (usually).
+> > > > 
+> > > > GFP_ATOMIC may not access the reserves because the reserves are needed
+> > > > to get out of OOM deadlocks within the VM. Consider the fact that
+> > > > freeing memory needs memory - if there is no memory free, you cannot
+> > > > free memory and you're pretty much stuck.
+> > > 
+> > > I guess, then, the question should be whether the watermark values are 
+> > > appropriate. Do we need high order allocations watermarked if this is the 
+> > > only purpose, particularly considering that whatever memory is allocated 
+> for 
+> > > this purpose is essentially useless 99.9% of the time?
+> > 
+> > Could you perhaps explain what you're trying to do? No matter what we
+> > do, GFP_ATOMIC will fail eventually, there is only so much one can do
+> > without blocking.
+> > 
+> > As for higher order allocations, until we have a full online defrag
+> > solution those too can fail at any moment (even with __GFP_WAIT).
 > 
-> Now you give it second chance by reclaiming clean pages, but there are
-> no guarantees that we have any.... so that filesystem is still broken
-> with your patch...?
+> I was just trying to make hibernation more reliable in sitations where there's 
+> low amounts of memory available. I guess the amount of memory that's reserved 
+> for this has increased, because some users have been reporting issues that 
+> hadn't appeared before. No problem. I'll work around it.
 
-There is a guarantee that we have some because the user space program is 
-executing. Meaning the executable pages can be retrieved. The amount 
-dirty memory in the system is limited by the dirty_ratio. So the VM can 
-only get into trouble if there is a sufficient amount of anonymous pages 
-and all executables have been reclaimed. That is pretty rare.
+Can you please point me to these reports, BTW?
 
-Plus the same issue can happen today. Writes are usually not completed 
-during reclaim. If the writes are sufficiently deferred then you have the 
-same issue now.
-
+Greetings,
+Rafael
