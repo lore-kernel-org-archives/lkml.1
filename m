@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763636AbXHTUX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763304AbXHTUY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763636AbXHTUX5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762412AbXHTUTV
+	id S1763304AbXHTUY1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762122AbXHTUTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:19:21 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:53811 "EHLO smtp.polymtl.ca"
+	Mon, 20 Aug 2007 16:19:22 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:53810 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762389AbXHTUTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762386AbXHTUTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Aug 2007 16:19:18 -0400
-Message-Id: <20070820201829.440612821@polymtl.ca>
+Message-Id: <20070820201831.618314545@polymtl.ca>
 References: <20070820201519.512791382@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 16:15:36 -0400
+Date: Mon, 20 Aug 2007 16:15:41 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com,
-       schwidefsky@de.ibm.com, linux390@de.ibm.com
-Subject: [patch 17/23] Add cmpxchg_local to s390
-Content-Disposition: inline; filename=add-cmpxchg-local-to-s390.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:18:30 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com
+Subject: [patch 22/23] Add cmpxchg_local to v850
+Content-Disposition: inline; filename=add-cmpxchg-local-to-v850.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:18:32 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the standard __cmpxchg for every type that can be updated atomically.
-Use the new generic cmpxchg_local (disables interrupt) for other types.
+Use the new generic cmpxchg_local (disables interrupt). Also use the generic
+cmpxchg as fallback if SMP is not set.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: clameter@sgi.com
-CC: schwidefsky@de.ibm.com
-CC: linux390@de.ibm.com
 ---
- include/asm-s390/system.h |   34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ include/asm-v850/system.h |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-s390/system.h
+Index: linux-2.6-lttng/include/asm-v850/system.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-s390/system.h	2007-08-10 16:16:21.000000000 -0400
-+++ linux-2.6-lttng/include/asm-s390/system.h	2007-08-10 19:35:46.000000000 -0400
-@@ -353,6 +353,40 @@ __cmpxchg(volatile void *ptr, unsigned l
- 
- #include <linux/irqflags.h>
+--- linux-2.6-lttng.orig/include/asm-v850/system.h	2007-07-23 11:28:45.000000000 -0400
++++ linux-2.6-lttng/include/asm-v850/system.h	2007-07-23 11:28:57.000000000 -0400
+@@ -104,6 +104,21 @@ static inline unsigned long __xchg (unsi
+ 	return tmp;
+ }
  
 +#include <asm-generic/cmpxchg-local.h>
-+
-+static inline unsigned long __cmpxchg_local(volatile void *ptr,
-+				      unsigned long old,
-+				      unsigned long new, int size)
-+{
-+	switch (size) {
-+	case 1:
-+	case 2:
-+	case 4:
-+#ifdef __s390x__
-+	case 8:
-+#endif
-+		return __cmpxchg(ptr, old, new, size);
-+	default:
-+		return __cmpxchg_local_generic(ptr, old, new, size);
-+	}
-+
-+	return old;
-+}
 +
 +/*
 + * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
 + * them available.
 + */
-+#define cmpxchg_local(ptr,o,n)						\
-+     (__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
++#define cmpxchg_local(ptr,o,n)					  	    \
++     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
 +			   	 (unsigned long)(n), sizeof(*(ptr)))
-+#ifdef __s390x__
-+#define cmpxchg64_local(ptr,o,n) cmpxchg_local((ptr),(o),(n))
-+#else
 +#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
++
++#ifndef CONFIG_SMP
++#include <asm-generic/cmpxchg.h>
 +#endif
 +
- /*
-  * Use to set psw mask except for the first byte which
-  * won't be changed by this function.
+ #define arch_align_stack(x) (x)
+ 
+ #endif /* __V850_SYSTEM_H__ */
 
 -- 
 Mathieu Desnoyers
