@@ -1,71 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbXHTI7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbXHTJDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756312AbXHTI7s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 04:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbXHTI7j
+	id S1756755AbXHTJDb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 05:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbXHTJDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 04:59:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59781 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751877AbXHTI7i (ORCPT
+	Mon, 20 Aug 2007 05:03:24 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:50614 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbXHTJDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 04:59:38 -0400
-Subject: Re: [PATCH] Should GFP_ATOMIC fail when we're below low watermark?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200708201838.50262.nigel@nigel.suspend2.net>
-References: <200708201138.50508.nigel@nigel.suspend2.net>
-	 <1187577830.6114.140.camel@twins>
-	 <200708201838.50262.nigel@nigel.suspend2.net>
-Content-Type: text/plain
-Date: Mon, 20 Aug 2007 10:59:36 +0200
-Message-Id: <1187600376.6114.186.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 20 Aug 2007 05:03:23 -0400
+Message-ID: <46C9587F.8000402@linux.vnet.ibm.com>
+Date: Mon, 20 Aug 2007 14:31:51 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@sw.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [Devel] [-mm PATCH 1/9] Memory controller resource counters (v6)
+References: <20070817084228.26003.12568.sendpatchset@balbir-laptop> <20070817084238.26003.7733.sendpatchset@balbir-laptop> <20070820082054.GA6926@localhost.sw.ru>
+In-Reply-To: <20070820082054.GA6926@localhost.sw.ru>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-20 at 18:38 +1000, Nigel Cunningham wrote:
-> Hi.
+Alexey Dobriyan wrote:
+> On Fri, Aug 17, 2007 at 02:12:38PM +0530, Balbir Singh wrote:
+>> --- /dev/null
+>> +++ linux-2.6.23-rc2-mm2-balbir/kernel/res_counter.c
+>> +void res_counter_init(struct res_counter *counter)
+>> +{
+>> +	spin_lock_init(&counter->lock);
+>> +	counter->limit = (unsigned long)LONG_MAX;
 > 
-> On Monday 20 August 2007 12:43:50 Peter Zijlstra wrote:
-> > On Mon, 2007-08-20 at 11:38 +1000, Nigel Cunningham wrote:
-> > > Hi all.
-> > > 
-> > > In current git (and for a while now), an attempt to allocate memory with 
-> > > GFP_ATOMIC will fail if we're below the low watermark level. The only way 
-> to 
-> > > access that memory that I can see (not that I've looked that hard) is to 
-> have 
-> > > PF_MEMALLOC set (ie from kswapd). I'm wondering if this behaviour is 
-> correct. 
-> > > Shouldn't GFP_ATOMIC allocations ignore watermarks too? How about 
-> GFP_KERNEL?
-> > > 
-> > > The following patch is a potential fix for GFP_ATOMIC.
-> > 
-> > Sorry, no.
-> > 
-> > GFP_ATOMIC must fail when below the watermark. GFP_KERNEL has __GFP_WAIT
-> > and hence can sleep and wait for reclaim so that should not be a problem
-> > (usually).
-> > 
-> > GFP_ATOMIC may not access the reserves because the reserves are needed
-> > to get out of OOM deadlocks within the VM. Consider the fact that
-> > freeing memory needs memory - if there is no memory free, you cannot
-> > free memory and you're pretty much stuck.
+> why cast?
 > 
-> I guess, then, the question should be whether the watermark values are 
-> appropriate. Do we need high order allocations watermarked if this is the 
-> only purpose, particularly considering that whatever memory is allocated for 
-> this purpose is essentially useless 99.9% of the time?
 
-Could you perhaps explain what you're trying to do? No matter what we
-do, GFP_ATOMIC will fail eventually, there is only so much one can do
-without blocking.
+These patches come from Pavel. They add to readability since
+limit is unsigned long.
 
-As for higher order allocations, until we have a full online defrag
-solution those too can fail at any moment (even with __GFP_WAIT).
+>> +int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
+>> +{
+>> +	if (counter->usage > (counter->limit - val)) {
+> 
+> () aren't needed.
+> 
 
+it makes the code more readable
+
+>> +	if (WARN_ON(counter->usage < val))
+>> +		val = counter->usage;
+> 
+> explicit if and WARN_ON(1) is clearer. I should send a patch banning such
+> type of usage soon.
+> 
+
+We had a WARN_ON(1) before, but we changed it in v2 or v3 based on review
+comments from Dave. I think WARN_ON(cond) is more readable than
+WARN_ON(1) for the same reason as BUG_ON(cond) vs BUG_ON(1)
+
+>> +	buf = kmalloc(nbytes + 1, GFP_KERNEL);
+> 
+> please, switch to fixed buffer, allocating memory depending on size
+> told by userspace will beat later. Ditto for other proc writing
+> functions.
+> 
+
+I agree with you in part, but the size of user input is not fixed.
+Setting a fixed limit seems artificial, I'll see how this can be improved.
+
+
+Thanks for the detailed review comments,
+
+-- 
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
