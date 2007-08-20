@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbXHTTrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbXHTTyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbXHTTrU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 15:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbXHTTrM
+	id S1758673AbXHTTyT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 15:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbXHTTyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 15:47:12 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2177 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750941AbXHTTrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 15:47:10 -0400
-Subject: Re: tracking MAINTAINERS versus tracking SUBSYSTEMS
-From: Joe Perches <joe@perches.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <46C9EC1F.3070004@redhat.com>
-References: <Pine.LNX.4.64.0708181311490.10387@localhost.localdomain>
-	 <1187483578.4200.51.camel@localhost>  <46C9EC1F.3070004@redhat.com>
-Content-Type: text/plain
-Date: Mon, 20 Aug 2007 12:46:54 -0700
-Message-Id: <1187639214.5963.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Aug 2007 15:54:06 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:34240 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752856AbXHTTyE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 15:54:04 -0400
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: Marc Perkel <mperkel@yahoo.com>, Brennan Ashton <comphappy@gmail.com>,
+       Al Viro <viro@ftp.linux.org.uk>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       Michael Tharp <gxti@partiallystapled.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: Thinking outside the box on file systems
+References: <465458.84259.qm@web52505.mail.re2.yahoo.com>
+	<46C9B2A9.1010904@aitel.hist.no>
+From: Nix <nix@esperi.org.uk>
+Emacs: the prosecution rests its case.
+Date: Mon, 20 Aug 2007 20:52:45 +0100
+In-Reply-To: <46C9B2A9.1010904@aitel.hist.no> (Helge Hafting's message of "Mon, 20 Aug 2007 17:26:33 +0200")
+Message-ID: <87tzqum19u.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-DCC-CTc-dcc2-Metrics: hades 1031; Body=9 Fuz1=9 Fuz2=9
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-20 at 15:31 -0400, Chris Snook wrote:
-> Until I can pass a patch or source file as an argument to a script and get out 
-> the URL of the git tree it needs to go into on the path to Linus's tree, 
-> MAINTAINERS is inadequate. If I ask for the MAINTAINER info of 
-> drivers/net/atl1/atl1_main.c, I should get back myself, my co-maintainer, our 
-> sourceforge URL, our mailing list address, etc. There should also be a 
-> mechanism, either as part of MAINTAINERS or something else, that will tell me 
-> that atl1 is part of the netdev subsystem, which is discussed on 
-> netdev@vger.kernel.org, maintained by Jeff Garzik, and has the appropriate URI 
-> for the netdev GIT tree.
+On 20 Aug 2007, Helge Hafting stated:
+> Shooting down bad ideas saves tremendous amounts of work,
+> killing an idea at the discussion stage means the idea never
+> got to the much more labor-intensive implementation stage.
+>
+> This don't mean that all new ideas are killed, only the bad ones.
 
-Finding a specific "List" or "Web" or "Tree" from a file is
-a pretty easy extension to the current get_maintainer script.
+Even the good ones pretty much never start out perfect[1]. It always
+takes some criticism and fixing before the code is right, let alone
+the design.
 
-The git_maintainer script could easily be modified to take
-a filename rather than a patch file as input too.
+(Of course part of the problem with this idea is that it was so vague
+that the only problems there *could* be with it were huge gaping ones:
+you can't have subtle problems with an idea with no subtle elements.
+Unfortunately it had a lot of those, and fixing them without junking
+the whole idea would be hard. No, I haven't thought about how to do
+it: Marc might like to, though, what with it being his idea and all.)
 
-There is no specific "parent" information in MAINTAINERS.
-Are you suggesting there should be?
-
-Still, it's easy to use directory parentage.
-Is that good enough?
-
-For instance:
-
-ATL1 has this maintainer block:
-
-        ATL1 ETHERNET DRIVER
-        P: Jay Cliburn
-        M: jcliburn@gmail.com
-        P: Chris Snook
-        M: csnook@redhat.com
-        L: atl1-devel@lists.sourceforge.net
-        W: http://sourceforge.net/projects/atl1
-        W: http://atl1.sourceforge.net
-        S: Maintained
-        F: drivers/net/atl1/
-        
-and NETWORK DEVICE DRIVERS has:
-
-        NETWORK DEVICE DRIVERS
-        P: Andrew Morton
-        M: akpm@linux-foundation.org
-        P: Jeff Garzik
-        M: jgarzik@pobox.com
-        L: netdev@vger.kernel.org
-        T: git kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
-        S: Maintained
-        F: drivers/net/
-        
-So, NETWORK DEVICE DRIVERS would be CC'd on any change
-to ATL1 (or any other driver in drivers/net/...)
-
-Of course the same lookup could apply to L: or T:
-
-cheers,  Joe
-
-
+[1] except mingo's. mingo has the Perfect Design Mojo. How this came
+    to pass, mere mortals may not speculate.
