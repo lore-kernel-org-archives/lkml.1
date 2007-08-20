@@ -1,53 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760603AbXHTR31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbXHTRdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760603AbXHTR31 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 13:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbXHTR3T
+	id S1760785AbXHTRdE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 13:33:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756421AbXHTRcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 13:29:19 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2612 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750720AbXHTR3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 13:29:19 -0400
-Date: Mon, 20 Aug 2007 17:29:07 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Jean Delvare <khali@linux-fr.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: CONFIG_SUSPEND and power consumption
-Message-ID: <20070820172907.GC3975@ucw.cz>
-References: <20070819153259.2c96b904@hyperion.delvare> <200708192242.43819.rjw@sisk.pl> <20070820120258.7d090cc4@hyperion.delvare> <200708201211.34698.oliver@neukum.org>
-Mime-Version: 1.0
+	Mon, 20 Aug 2007 13:32:54 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33704 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755322AbXHTRcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 13:32:53 -0400
+To: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+Cc: RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kexec: reenable HPET before kexec
+References: <20070820205530.1ffd5876@windmill.dev.rtsoft.ru>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 20 Aug 2007 20:26:38 +0200
+In-Reply-To: <20070820205530.1ffd5876@windmill.dev.rtsoft.ru>
+Message-ID: <p73tzquysdd.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708201211.34698.oliver@neukum.org>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Konstantin Baydarov <kbaidarov@ru.mvista.com> writes:
 
-> > If I rmmod "ehci-hcd" then the power consumption is back to 69 W. This
-> > confirms that this is really USB-related. I have to admit that I did
-> > not expect an external drive to eat that much power from the system,
-> > especially when not used. I am told that VIA chips are notoriously bad
-> > at this kind of things. I'll try the same external drive on an Intel
-> > system later today.
-> > 
-> > The last mystery remaining is how USB "activity" can cause my CPU to
-> > heat. I would expect the south bridge to heat, not the CPU.
-> 
-> USB, or strictly speaking EHCI, OHCI and UHCI, use DMA. To allow
-> that the cache coherency logic has to be active. Therefore your CPU
-> cannot go to C3. Therefore it draws more power. The problem we are
-> facing in USB is that to get great savings, our coverage has to be perfect.
-> One device that cannot be autosuspended and we lose most savings.
+> Hi, I've faced problem:
+> I have two x86_64 kernels with HPET enabled:
 
-Ok.. but CONFIG_USB_SUSPEND should not really have anything to do with
-CONFIG_SUSPEND (= s2ram). Perhaps it should depend on CONFIG_PM
-instead?
-							Pavel
+Is this for a standard kernel or for a RT kernel?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-Andi
