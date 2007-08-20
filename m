@@ -1,129 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759155AbXHTNOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbXHTNQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759155AbXHTNOm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 09:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759240AbXHTNOM
+	id S1756408AbXHTNQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 09:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXHTNQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 09:14:12 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39504 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759121AbXHTNOK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 09:14:10 -0400
-Message-ID: <46C993A6.3060001@bull.net>
-Date: Mon, 20 Aug 2007 15:14:14 +0200
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+	Mon, 20 Aug 2007 09:16:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38646 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756021AbXHTNQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 09:16:40 -0400
+Message-ID: <46C993DF.4080400@redhat.com>
+Date: Mon, 20 Aug 2007 09:15:11 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: [PATCH 4/4] Modify KVM to update guest time accounting.
-X-Enigmail-Version: 0.94.0.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 20/08/2007 15:19:21,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 20/08/2007 15:19:23,
-	Serialize complete at 20/08/2007 15:19:23
-Content-Type: multipart/mixed;
- boundary="------------000401040104060802040001"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Nick Piggin <piggin@cyberone.com.au>, Satyam Sharma <satyam@infradead.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi> <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com> <18117.1287.779351.836552@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0708161953310.30176@woody.linux-foundation.org> <18117.6495.397597.582736@cargo.ozlabs.ibm.com> <20070817035342.GA14744@gondor.apana.org.au> <alpine.LFD.0.999.0708171142550.3666@enigma.security.iitk.ac.in> <46C55E90.7010407@yahoo.com.au> <alpine.LFD.0.999.0708171431150.3666@enigma.security.iitk.ac.in> <46C56ADF.8010501@cyberone.com.au> <alpine.LFD.0.999.0708171612440.3666@enigma.security.iitk.ac.in> <46C59717.4020108@cyberone.com.au> <alpine.LFD.0.999.0708170929580.30176@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708170929580.30176@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000401040104060802040001
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=ISO-8859-1
+Linus Torvalds wrote:
+> So the only reason to add back "volatile" to the atomic_read() sequence is 
+> not to fix bugs, but to _hide_ the bugs better. They're still there, they 
+> are just a lot harder to trigger, and tend to be a lot subtler.
 
-[PATCH 4/4] Modify KVM to update guest time accounting.
+What about barrier removal?  With consistent semantics we could optimize a fair 
+amount of code.  Whether or not that constitutes "premature" optimization is 
+open to debate, but there's no question we could reduce our register wiping in 
+some places.
 
-Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
--- 
-------------- Laurent.Vivier@bull.net  --------------
-          "Software is hard" - Donald Knuth
-
---------------000401040104060802040001
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
- name="kvm_account_guest"
-Content-Disposition: inline;
- filename="kvm_account_guest"
-
-Index: kvm/drivers/kvm/kvm.h
-===================================================================
---- kvm.orig/drivers/kvm/kvm.h	2007-08-20 13:23:53.000000000 +0200
-+++ kvm/drivers/kvm/kvm.h	2007-08-20 13:23:58.000000000 +0200
-@@ -589,6 +589,17 @@ void kvm_mmu_unload(struct kvm_vcpu *vcp
- 
- int kvm_hypercall(struct kvm_vcpu *vcpu, struct kvm_run *run);
- 
-+static inline void kvm_guest_enter(void)
-+{
-+#ifdef CONFIG_GUEST_ACCOUNTING
-+	current->flags |= PF_VCPU;
-+#endif
-+}
-+
-+static inline void kvm_guest_exit(void)
-+{
-+}
-+
- static inline int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
- 				     u32 error_code)
- {
-Index: kvm/drivers/kvm/svm.c
-===================================================================
---- kvm.orig/drivers/kvm/svm.c	2007-08-20 13:23:53.000000000 +0200
-+++ kvm/drivers/kvm/svm.c	2007-08-20 13:23:58.000000000 +0200
-@@ -1404,6 +1404,7 @@ again:
- 	clgi();
- 
- 	vcpu->guest_mode = 1;
-+	kvm_guest_enter();
- 	if (vcpu->requests)
- 		if (test_and_clear_bit(KVM_TLB_FLUSH, &vcpu->requests))
- 		    svm_flush_tlb(vcpu);
-@@ -1536,6 +1537,7 @@ again:
- #endif
- 		: "cc", "memory" );
- 
-+	kvm_guest_exit();
- 	vcpu->guest_mode = 0;
- 
- 	if (vcpu->fpu_active) {
-Index: kvm/drivers/kvm/vmx.c
-===================================================================
---- kvm.orig/drivers/kvm/vmx.c	2007-08-20 13:23:53.000000000 +0200
-+++ kvm/drivers/kvm/vmx.c	2007-08-20 13:23:58.000000000 +0200
-@@ -2078,6 +2078,7 @@ again:
- 	local_irq_disable();
- 
- 	vcpu->guest_mode = 1;
-+	kvm_guest_enter();
- 	if (vcpu->requests)
- 		if (test_and_clear_bit(KVM_TLB_FLUSH, &vcpu->requests))
- 		    vmx_flush_tlb(vcpu);
-@@ -2198,6 +2199,7 @@ again:
- 		[cr2]"i"(offsetof(struct kvm_vcpu, cr2))
- 	      : "cc", "memory" );
- 
-+	kvm_guest_exit();
- 	vcpu->guest_mode = 0;
- 	local_irq_enable();
- 
-Index: kvm/drivers/kvm/Kconfig
-===================================================================
---- kvm.orig/drivers/kvm/Kconfig	2007-08-20 13:36:58.000000000 +0200
-+++ kvm/drivers/kvm/Kconfig	2007-08-20 13:37:36.000000000 +0200
-@@ -13,6 +13,7 @@ config KVM
- 	depends on X86 && EXPERIMENTAL
- 	select PREEMPT_NOTIFIERS
- 	select ANON_INODES
-+	select GUEST_ACCOUNTING
- 	---help---
- 	  Support hosting fully virtualized guest machines using hardware
- 	  virtualization extensions.  You will need a fairly recent
-
---------------000401040104060802040001--
+	-- Chris
