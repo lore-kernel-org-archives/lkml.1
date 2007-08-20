@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762909AbXHTXEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbXHTXPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762909AbXHTXEX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 19:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbXHTXEK
+	id S1756673AbXHTXPL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 19:15:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbXHTXO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 19:04:10 -0400
-Received: from gate.crashing.org ([63.228.1.57]:60220 "EHLO gate.crashing.org"
+	Mon, 20 Aug 2007 19:14:58 -0400
+Received: from ozlabs.org ([203.10.76.45]:34222 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751099AbXHTXEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 19:04:08 -0400
-In-Reply-To: <20070820224859.GA16162@flint.arm.linux.org.uk>
-References: <46C505B2.6030704@yahoo.com.au> <18117.4848.695269.72976@cargo.ozlabs.ibm.com> <46C516BA.60700@yahoo.com.au> <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org> <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au> <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com> <46C997B1.1010800@redhat.com> <417ebba299a7ad3c4b7a31c4f860a814@kernel.crashing.org> <20070820224859.GA16162@flint.arm.linux.org.uk>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2bdb04581125f22122f1d230e991ea92@kernel.crashing.org>
+	id S1752248AbXHTXO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 19:14:58 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Cc: Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       rpjday@mindspring.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, satyam@infradead.org,
-       zlynx@acm.org, schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Tue, 21 Aug 2007 01:02:01 +0200
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-X-Mailer: Apple Mail (2.623)
+Message-ID: <18122.8295.69788.435555@cargo.ozlabs.ibm.com>
+Date: Tue, 21 Aug 2007 09:14:47 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [POWERPC] Fix for assembler -g
+In-Reply-To: <20070820201818.A68C54D05F2@magilla.localdomain>
+References: <20070820200856.GA4194@redhat.com>
+	<20070820201818.A68C54D05F2@magilla.localdomain>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> And no, RMW on MMIO isn't "problematic" at all, either.
->>
->> An RMW op is a read op, a modify op, and a write op, all rolled
->> into one opcode.  But three actual operations.
->
-> Maybe for some CPUs, but not all.  ARM for instance can't use the
-> load exclusive and store exclusive instructions to MMIO space.
+Roland McGrath writes:
 
-Sure, your CPU doesn't have RMW instructions -- how to emulate
-those if you don't have them is a totally different thing.
+> Hmm.  Check the V=1 make output to see that the lparmap.c really got the -g0.
+> The log says it didn't.  Oops!  It looks like the patch that got committed is
+> the one that sets CFLAGS_lparmap.s, but really it needs to set
+> CFLAGS_lparmap.o instead (go kbuild).  Did I post the wrong one?  (It's only
+> one letter different.)  Sorry about that!  (I committed the right one to
+> Fedora, which you'd think would help Dave, but no.)
 
+Stephen Rothwell has posted a patch which makes this all moot by
+eliminating the #include of the .s file.  I'm going to put that in my
+tree shortly.
 
-Segher
-
+Paul.
