@@ -1,119 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbXHTQDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761005AbXHTQD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761509AbXHTQDn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 12:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761080AbXHTQCo
+	id S1761005AbXHTQD6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761204AbXHTQCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 12:02:44 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:5567 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761030AbXHTQCm (ORCPT
+	Mon, 20 Aug 2007 12:02:54 -0400
+Received: from mailout08.sul.t-online.de ([194.25.134.20]:50488 "EHLO
+	mailout08.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761184AbXHTQCw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 12:02:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=iG4XvcmiytQWt3MgBx/AaTAhyy9d1QlQ/RZwwaiGMvHYpw8iZHjyl8dRXGXOtmrygmA4DjvMaFK/nO11PZoV/2euj+9PPhvUKECaIQ99npKd2oiw/LalyZ/+TlOVBlYesdi85F7PrdQK7Ie2dQqR2TAhTiPmMuwec8rMsc5xhv8=
-Message-ID: <46C9BB09.30102@googlemail.com>
-Date: Mon, 20 Aug 2007 18:02:17 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 20 Aug 2007 12:02:52 -0400
+Message-ID: <46C9BB01.7050008@t-online.de>
+Date: Mon, 20 Aug 2007 18:02:09 +0200
+From: Bernd Schmidt <bernds_cb1@t-online.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070810)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Bob Tracy <rct@gherkin.frus.com>, linux-usb-devel@lists.sourceforge.net,
-       Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>, Dan Zwell <dzwell@gmail.com>,
-       Florin Iucha <florin@iucha.net>, Roman Jarosz <kedgedev@centrum.cz>,
-       kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>,
-       Paolo Ornati <ornati@fastwebnet.it>
-Subject: Re: [2/2] 2.6.23-rc3: known regressions with patches v2
-References: <46C9BA30.9020101@googlemail.com>
-In-Reply-To: <46C9BA30.9020101@googlemail.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-2
+To: David Howells <dhowells@redhat.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Wu, Bryan" <Bryan.Wu@analog.com>
+Subject: Re: [PATCH] NOMMU: Separate out VMAs
+References: <46C58B4E.4080803@t-online.de> <23249.1186492623@redhat.com> <46B86FC1.7050601@t-online.de> <46695F6D.5050600@t-online.de> <8772.1186149811@redhat.com> <23350.1186492903@redhat.com> <16451.1187622768@redhat.com>
+In-Reply-To: <16451.1187622768@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+X-ID: rxpe9-ZaYeb6ZS41qy2mAz4qsxk3D59JlBFyXcm1BMxx6dkWbJmbEa
+X-TOI-MSGID: 31eb829e-5953-4b3a-b217-1984eea16f75
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+David Howells wrote:
+> Bernd Schmidt <bernds_cb1@t-online.de> wrote:
+> 
+>> In do_mmap_private, I've commented out the logic to free excess pages, as it
+>> fragments terribly
+> 
+> I wonder if there's a good heuristic for this.  The problem is that whilst
+> not releasing excess pages _may_ seem like a good idea, if your system is
+> something like a single persistent app, then it really is not.
+> 
+> For instance, if such an app allocates a byte over 16MB (perhaps implicitly in
+> the binfmt driver), then you'd completely waste a large chunk of RAM.  In the
+> 16MB+1 case, the wastage would be a byte less than 16MB.
 
-Here is a list of some known regressions in 2.6.23-rc3
-with patches available.
-
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
-
-List of Aces
-
-Name                    Regressions fixed since 21-Jun-2007
-Adrian Bunk                            9
-Andi Kleen                             5
-Linus Torvalds                         5
-Andrew Morton                          4
-Al Viro                                3
-Cornelia Huck                          3
-Jens Axboe                             3
-Tejun Heo                              3
-
+I think it would be good to have a mechanism to group free pages by 
+purpose - so that if we break up a high-order page in order to allocate 
+memory for process A, then the remaining pages remain in a special pool 
+that the allocator will prefer to hand out only to process A.
 
 
-Alpha
+>> Also, I think you're freeing high-order pages unaligned to
+>> their order?
+> 
+> Yeah, but some of the pages might still be in use when we want to release
+> them.
 
-Subject         : 2.6.23-rc3 won't boot on alpha
-References      : http://lkml.org/lkml/2007/8/14/487
-Last known good : ?
-Submitter       : Bob Tracy <rct@gherkin.frus.com>
-Caused-By       : ?
-Handled-By      : ?
-Patch           : http://lkml.org/lkml/2007/8/14/259 ?
-Status          : patch available
+Not following you here.  Is it valid to free an order-2 page that's not 
+aligned at order-2?
 
+>> In do_munmap, we can deal with freeing more than one vma.  I've not touched
+>> the rb-tree logic in the shared file case, as I have no idea what it's trying
+>> to do given that only exact matches are allowed.
+> 
+> I'd generally rather not do this.  You can't use MAP_FIXED to request adjacent
+> regions, so why should you anticipate there would be any?
 
-
-USB
-
-Subject         : USB hard disk broken in 2.6.23-rc3
-References      : http://bugzilla.kernel.org/show_bug.cgi?id=8892
-Last known good : ?
-Submitter       : Roman Jarosz <kedgedev@centrum.cz>
-Caused-By       : ?
-Handled-By      : Alan Stern <stern@rowland.harvard.edu>
-Patch           : http://bugzilla.kernel.org/attachment.cgi?id=12432
-Status          : patch was suggested
-
-Subject         : USB hard disk problem due to "usb-storage: implement autosuspend" patch
-References      : http://lkml.org/lkml/2007/8/9/329
-Last known good : ?
-Submitter       : Dan Zwell <dzwell@gmail.com>
-Caused-By       : Alan Stern <stern@rowland.harvard.edu>
-                  commit 8dfe4b14869fd185ca25ee88b02ada58a3005eaf
-Handled-By      : Alan Stern <stern@rowland.harvard.edu>
-Patch           : http://lkml.org/lkml/2007/8/10/195
-Status          : patch available
+Adjacent regions can happen by accident, and the uClibc malloc will try 
+to merge free areas when they are adjacent - there's a lot of 
+special-case code in there to prevent this on uClinux systems by 
+essentially duplicating VMA tracking.  That's something we want to 
+avoid, because it eats performance (especially in threaded apps due to 
+additional locking).
 
 
-
-Virtualization
-
-Subject         : WARNING: at arch/x86_64/kernel/smp.c:379 smp_call_function_single()
-References      : http://lkml.org/lkml/2007/8/10/117
-Last known good : ?
-Submitter       : Paolo Ornati <ornati@fastwebnet.it>
-Caused-By       : Avi Kivity <avi@qumranet.com>
-                  commit cec9ad279b66793bee0b5009b7ca311060061efd
-Handled-By      : Avi Kivity <avi@qumranet.com>
-Patch           : http://lkml.org/lkml/2007/8/19/38
-Status          : patch available
-
-
-
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
+Bernd
+-- 
+This footer brought to you by insane German lawmakers.
+Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
+Sitz der Gesellschaft Muenchen, Registergericht Muenchen HRB 40368
+Geschaeftsfuehrer Thomas Wessel, William A. Martin, Margaret Seif
