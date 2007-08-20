@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbXHTIuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbXHTI7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbXHTIuk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 04:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbXHTIub
+	id S1756312AbXHTI7s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 04:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbXHTI7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 04:50:31 -0400
-Received: from mx1.wp.pl ([212.77.101.5]:9022 "EHLO mx1.wp.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752902AbXHTIub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 04:50:31 -0400
-Date: Mon, 20 Aug 2007 10:50:28 +0200
-From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
-To: Markus Dahms <mad@automagically.de>
-Cc: sparclinux <sparclinux@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: Odp: possible endless loop in PROM initialization
-Message-ID: <46c955d43d407@wp.pl>
-References: <20070820075949.GA5927@vimes.madsworld.lan>
-In-reply-to: <20070820075949.GA5927@vimes.madsworld.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-X-Mailer: Interfejs WWW poczty Wirtualnej Polski
-Organization: Poczta Wirtualnej Polski S.A. http://www.wp.pl/
-X-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1) Gecko/20061025 Firefox/2.0
-X-WP-IP: 83.17.101.58
-X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
-X-WP-SPAM: NO 0000000                                      
+	Mon, 20 Aug 2007 04:59:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59781 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbXHTI7i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 04:59:38 -0400
+Subject: Re: [PATCH] Should GFP_ATOMIC fail when we're below low watermark?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200708201838.50262.nigel@nigel.suspend2.net>
+References: <200708201138.50508.nigel@nigel.suspend2.net>
+	 <1187577830.6114.140.camel@twins>
+	 <200708201838.50262.nigel@nigel.suspend2.net>
+Content-Type: text/plain
+Date: Mon, 20 Aug 2007 10:59:36 +0200
+Message-Id: <1187600376.6114.186.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dnia 20-08-2007 o godz. 9:59 Markus Dahms napisa³(a):
-> Hey,
+On Mon, 2007-08-20 at 18:38 +1000, Nigel Cunningham wrote:
+> Hi.
 > 
-> while trying to define a non-unique devalias at the Sun PROM prompt
-> (the SPARCclassic X has wrong aliases for scsi, disk1, etc. in the
-> PROM, at least mine) I fell over a bug resulting in an endless loop
-> while booting the kernel.
+> On Monday 20 August 2007 12:43:50 Peter Zijlstra wrote:
+> > On Mon, 2007-08-20 at 11:38 +1000, Nigel Cunningham wrote:
+> > > Hi all.
+> > > 
+> > > In current git (and for a while now), an attempt to allocate memory with 
+> > > GFP_ATOMIC will fail if we're below the low watermark level. The only way 
+> to 
+> > > access that memory that I can see (not that I've looked that hard) is to 
+> have 
+> > > PF_MEMALLOC set (ie from kswapd). I'm wondering if this behaviour is 
+> correct. 
+> > > Shouldn't GFP_ATOMIC allocations ignore watermarks too? How about 
+> GFP_KERNEL?
+> > > 
+> > > The following patch is a potential fix for GFP_ATOMIC.
+> > 
+> > Sorry, no.
+> > 
+> > GFP_ATOMIC must fail when below the watermark. GFP_KERNEL has __GFP_WAIT
+> > and hence can sleep and wait for reclaim so that should not be a problem
+> > (usually).
+> > 
+> > GFP_ATOMIC may not access the reserves because the reserves are needed
+> > to get out of OOM deadlocks within the VM. Consider the fact that
+> > freeing memory needs memory - if there is no memory free, you cannot
+> > free memory and you're pretty much stuck.
 > 
-> The problem is the getting the properties list of the /aliases
-node.
-> As the next element in this list is identified by name and the
-> function which retrieves this property always returns the first
-> occurrence this goes forever....
->
+> I guess, then, the question should be whether the watermark values are 
+> appropriate. Do we need high order allocations watermarked if this is the 
+> only purpose, particularly considering that whatever memory is allocated for 
+> this purpose is essentially useless 99.9% of the time?
 
-Could you give name of the function which contains this endless loop?
-When I looked into the tree.c file for the first time I thought
-it had a bug
-in handling the prom_nextprop, but later I concluded that this is ok.
-Maybe there is a bug there after all.
+Could you perhaps explain what you're trying to do? No matter what we
+do, GFP_ATOMIC will fail eventually, there is only so much one can do
+without blocking.
 
-Regards,
-Krzysztof
-
-----------------------------------------------------
-Wielka siatkówka we wrze¶niu w Starych Jab³onkach
-zobacz gwiazdy siatkówki pla¿owej na ¿ywo! 
-Mistrzostwa ¦wiata w siatkówce pla¿owej 5-9.09.2007
-Kliknij: http://klik.wp.pl/?adr=http%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fstarejablonki.html&sid=1262
-
+As for higher order allocations, until we have a full online defrag
+solution those too can fail at any moment (even with __GFP_WAIT).
 
