@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbXHTV4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760685AbXHTV7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760613AbXHTV4A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 17:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbXHTVxY
+	id S1760685AbXHTV7f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 17:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbXHTV70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 17:53:24 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59796 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751559AbXHTVxS (ORCPT
+	Mon, 20 Aug 2007 17:59:26 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:35914 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751313AbXHTV70 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 17:53:18 -0400
-Message-Id: <20070820215317.441134723@sgi.com>
-References: <20070820215040.937296148@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 14:50:47 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Cc: dkegel@google.com
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: David Miller <davem@davemloft.net>
-Cc: Nick Piggin <npiggin@suse.de>
-Subject: [RFC 7/7] Switch of PF_MEMALLOC during writeout
-Content-Disposition: inline; filename=nopfmemalloc
+	Mon, 20 Aug 2007 17:59:26 -0400
+Date: Mon, 20 Aug 2007 17:54:13 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [patch 01/23] Fall back on interrupt disable in cmpxchg8b on 80386 and 80486
+Message-ID: <20070820215413.GA28452@Krystal>
+References: <20070820201519.512791382@polymtl.ca> <20070820201822.597720007@polymtl.ca> <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com> <20070820204126.GA22507@Krystal> <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com> <20070820212922.GA27011@Krystal> <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:54:03 up 21 days, 22:12,  4 users,  load average: 0.29, 0.28, 0.35
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Switch off PF_MEMALLOC during both direct and kswapd reclaim.
+* Christoph Lameter (clameter@sgi.com) wrote:
+> On Mon, 20 Aug 2007, Mathieu Desnoyers wrote:
+> 
+> > I'm digging in the slub with cmpxchg_local patch... first detail:
+> > slab_alloc seems to have a return path that does not reenable
+> > preemption... I'll keep you posted when I finish the 2.6.23-rc2-mm2
+> > port.
+> 
+> I have a patchset here if that would help you?
+> 
 
-This works because we are not holding any locks at that point because
-reclaim is essentially complete. The write occurs when the memory on
-the zones is at the high water mark so it is unlikely that writeout
-will get into trouble. If so then reclaim can be called recursively to
-reclaim more pages.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- mm/vmscan.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-Index: linux-2.6/mm/vmscan.c
-===================================================================
---- linux-2.6.orig/mm/vmscan.c	2007-08-19 23:53:47.000000000 -0700
-+++ linux-2.6/mm/vmscan.c	2007-08-19 23:55:29.000000000 -0700
-@@ -1227,8 +1227,16 @@ out:
- 
- 		zone->prev_priority = priority;
- 	}
-+
-+	/*
-+	 * Trigger writeout. Drop PF_MEMALLOC for writeback
-+	 * since we are holding no locks. Callbacks into
-+	 * reclaim should be fine
-+	 */
-+	current->flags &= ~PF_MEMALLOC;
- 	nr_reclaimed += shrink_page_list(&laundry, &sc, NULL);
- 	release_lru_pages(&laundry);
-+	current->flags |= PF_MEMALLOC;
- 	return ret;
- }
- 
-@@ -1406,8 +1414,10 @@ out:
- 
- 		goto loop_again;
- 	}
-+	current->flags &= ~PF_MEMALLOC;
- 	nr_reclaimed += shrink_page_list(&laundry, &sc, NULL);
- 	release_lru_pages(&laundry);
-+	current->flags |= PF_MEMALLOC;
- 	return nr_reclaimed;
- }
- 
+Sure, I'd like to give it a try.
 
 -- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
