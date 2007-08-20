@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbXHTKeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbXHTKiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757036AbXHTKeb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 06:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750839AbXHTKeX
+	id S1757570AbXHTKiQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 06:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbXHTKh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 06:34:23 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:59968 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751284AbXHTKeW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 06:34:22 -0400
-Date: Mon, 20 Aug 2007 12:34:17 +0200
-From: Markus Dahms <mad@automagically.de>
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: sparclinux <sparclinux@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: Odp: possible endless loop in PROM initialization
-Message-ID: <20070820103417.GA4911@vimes.madsworld.lan>
-References: <20070820075949.GA5927@vimes.madsworld.lan> <46c955d43d407@wp.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46c955d43d407@wp.pl>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Provags-ID: V01U2FsdGVkX1+9+Gh671EIDuiqs/1U4PsXTstVqxWLtSG8kKt
- ZVHOm3uJ2WCF7u+9Ta6ZeYl8nGpTyoA3nUbTCGgcZXLSVkunIu
- KOyT7VJDMaYaagPk1zywA==
+	Mon, 20 Aug 2007 06:37:59 -0400
+Received: from [192.55.52.93] ([192.55.52.93]:46744 "EHLO mga11.intel.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750908AbXHTKh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 06:37:58 -0400
+X-Greylist: delayed 582 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Aug 2007 06:37:58 EDT
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,284,1183359600"; 
+   d="scan'208";a="285141940"
+Subject: [PATCH] [-mm] FS: file name must be unique in the same dir in
+	procfs
+From: Zhang Rui <rui.zhang@intel.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Content-Type: text/plain
+Date: Mon, 20 Aug 2007 18:28:19 +0800
+Message-Id: <1187605699.2920.147.camel@acpi-hp.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Helt wrote,
-> Could you give name of the function which contains this endless loop?
-> When I looked into the tree.c file for the first time I thought
-> it had a bug
-> in handling the prom_nextprop, but later I concluded that this is ok.
-> Maybe there is a bug there after all.
+Files name must be unique in the same directory.
 
-if I understood it correctly the following functions are called in this
-order:
+Bug is reported here: 
+http://bugzilla.kernel.org/show_bug.cgi?id=8798
 
-* prom_init()                    # arch/sparc/kernel/head.S
-[...]
-* create_node()                  # arch/sparc/kernel/prom.c
-* build_prop_list()              # arch/sparc/kernel/prom.c
-* build_one_prop()               # arch/sparc/kernel/prom.c
-* prom_nextprop()                # arch/sparc/prom/tree.c
-* __prom_nextprop()              # arch/sparc/prom/tree.c
-* prom_nodeops->no_nextprop()    # PROM
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ fs/proc/generic.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-And this loops while getting the attributes/properties of the /aliases
-node.
-
-Greetings,
-
-	Markus
+Index: linux-2.6.23-rc3/fs/proc/generic.c
+===================================================================
+--- linux-2.6.23-rc3.orig/fs/proc/generic.c
++++ linux-2.6.23-rc3/fs/proc/generic.c
+@@ -523,6 +523,7 @@ static const struct inode_operations pro
+ 
+ static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp)
+ {
++	struct proc_dir_entry * tmp = NULL;
+ 	unsigned int i;
+ 	
+ 	i = get_inode_number();
+@@ -547,6 +548,13 @@ static int proc_register(struct proc_dir
+ 	}
+ 
+ 	spin_lock(&proc_subdir_lock);
++	for(tmp = dir->subdir; tmp; tmp = tmp->next)
++		if(!strcmp(dp->name, tmp->name)) {
++			spin_unlock(&proc_subdir_lock);
++			release_inode_number(i);
++			return -EEXIST;
++		}
++
+ 	dp->next = dir->subdir;
+ 	dp->parent = dir;
+ 	dir->subdir = dp;
