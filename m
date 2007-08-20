@@ -1,69 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbXHTUrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763912AbXHTUr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbXHTUrI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:47:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbXHTUqw
+	id S1763912AbXHTUr3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759687AbXHTUq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:46:52 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:46347 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401AbXHTUqv (ORCPT
+	Mon, 20 Aug 2007 16:46:57 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47520 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753299AbXHTUq4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:46:51 -0400
-Date: Mon, 20 Aug 2007 16:46:49 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-Subject: Re: Git tree for old kernels from before the current tree
-In-reply-to: <20070820200914.GB11718@lug-owl.de>
-X-X-Sender: nico@xanadu.home
-To: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Paul Mundt <lethal@linux-sh.org>, Jon Smirl <jonsmirl@gmail.com>,
-       Git Mailing List <git@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.0.999.0708201643450.16727@xanadu.home>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=us-ascii
-Content-transfer-encoding: 7BIT
-References: <20070722211314.GA13850@linux-sh.org>
- <Pine.LNX.4.64.0707222344540.32367@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.64.0707230000170.32367@fbirervta.pbzchgretzou.qr>
- <46A3D5EA.2050600@zytor.com>
- <alpine.LFD.0.999.0707230950340.3607@woody.linux-foundation.org>
- <alpine.LFD.0.999.0707231343350.6355@xanadu.home>
- <alpine.LFD.0.999.0707231057480.3607@woody.linux-foundation.org>
- <alpine.LFD.0.999.0707231432560.6355@xanadu.home>
- <20070723234628.GN21668@ftp.linux.org.uk>
- <alpine.LFD.0.999.0707231957450.6355@xanadu.home>
- <20070820200914.GB11718@lug-owl.de>
+	Mon, 20 Aug 2007 16:46:56 -0400
+Date: Mon, 20 Aug 2007 13:46:54 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [patch 01/23] Fall back on interrupt disable in cmpxchg8b on
+ 80386 and 80486
+In-Reply-To: <20070820204126.GA22507@Krystal>
+Message-ID: <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com>
+References: <20070820201519.512791382@polymtl.ca> <20070820201822.597720007@polymtl.ca>
+ <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com>
+ <20070820204126.GA22507@Krystal>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Aug 2007, Jan-Benedict Glaw wrote:
+On Mon, 20 Aug 2007, Mathieu Desnoyers wrote:
 
-> On Mon, 2007-07-23 20:10:23 -0400, Nicolas Pitre <nico@cam.org> wrote:
-> > 
-> > I have sanitized .tgz files that I use to stuff a Git repo with.  I 
-> > recall that some of them were reconstructed through patching an earlier 
-> > or later kernel version because the original ones were corrupted. Some 
-> > patches were retrieved from other archival sites, etc.  Then the result 
-> > was 
-> > cross checked with summary lists like this one: 
-> > 
-> > http://www.uwsg.iu.edu/hypermail/linux/kernel/0110.1/1684.html
-> > 
-> > This was a while ago so I don't remember the exact steps, but that 
-> > wasn't always trivial.
-> 
-> Some years ago, I also worked on old Linux releases. Have you found
-> the tarballs in my directory at kernel.org?
+> Yes, I use it as synchronization mechanism for my buffer management algorithm
+> in LTTng. Since I write in per-cpu buffers and want to be as reentrant
+> as possible wrt other contexts (dealing with NMI as worse case, but also
+> applies to MCE..), I use local_cmpxchg to reserve space in my buffers.
+> It is faster than the standard cmpxchg.
 
-No, I didn't know about them.
+Ok I have seen these numbers in the OLS papers but I could not reproduce 
+them in SLUB.
 
->From a quick look, I think I already captured everything you have prior 
-v1.0 though.
-
-
-Nicolas
