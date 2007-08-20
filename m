@@ -1,39 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbXHTIqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbXHTIuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757447AbXHTIqK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 04:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbXHTIp6
+	id S1758548AbXHTIuk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 04:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbXHTIub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 04:45:58 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:48666 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751450AbXHTIp6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 04:45:58 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: HTC as USB gprs/edge modem on linux
-Date: Mon, 20 Aug 2007 10:45:54 +0200
-User-Agent: KMail/1.9.7
-Cc: bizu <bizu@burlesk.fr>, linux-kernel@vger.kernel.org
-References: <c929dccd5f4f0fec6ad55e93caafae43@127.0.0.1> <46C8BFAF.50604@googlemail.com>
-In-Reply-To: <46C8BFAF.50604@googlemail.com>
+	Mon, 20 Aug 2007 04:50:31 -0400
+Received: from mx1.wp.pl ([212.77.101.5]:9022 "EHLO mx1.wp.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752902AbXHTIub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 04:50:31 -0400
+Date: Mon, 20 Aug 2007 10:50:28 +0200
+From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
+To: Markus Dahms <mad@automagically.de>
+Cc: sparclinux <sparclinux@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: Odp: possible endless loop in PROM initialization
+Message-ID: <46c955d43d407@wp.pl>
+References: <20070820075949.GA5927@vimes.madsworld.lan>
+In-reply-to: <20070820075949.GA5927@vimes.madsworld.lan>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200708201045.54301.oliver@neukum.org>
+X-Mailer: Interfejs WWW poczty Wirtualnej Polski
+Organization: Poczta Wirtualnej Polski S.A. http://www.wp.pl/
+X-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1) Gecko/20061025 Firefox/2.0
+X-WP-IP: 83.17.101.58
+X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
+X-WP-SPAM: NO 0000000                                      
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 20 August 2007 schrieb Michal Piotrowski:
-> This patch (against 2.6.23-rc3-git2) disables auto-suspend for this device.
+Dnia 20-08-2007 o godz. 9:59 Markus Dahms napisa³(a):
+> Hey,
+> 
+> while trying to define a non-unique devalias at the Sun PROM prompt
+> (the SPARCclassic X has wrong aliases for scsi, disk1, etc. in the
+> PROM, at least mine) I fell over a bug resulting in an endless loop
+> while booting the kernel.
+> 
+> The problem is the getting the properties list of the /aliases
+node.
+> As the next element in this list is identified by name and the
+> function which retrieves this property always returns the first
+> occurrence this goes forever....
+>
 
-Why would you want that? Not every log that has "autosuspend" in it
-is a power management quirk. These devices simply need a patch to
-be recognised as rndis devices.
+Could you give name of the function which contains this endless loop?
+When I looked into the tree.c file for the first time I thought
+it had a bug
+in handling the prom_nextprop, but later I concluded that this is ok.
+Maybe there is a bug there after all.
 
-	Regards
-		Oliver
+Regards,
+Krzysztof
+
+----------------------------------------------------
+Wielka siatkówka we wrze¶niu w Starych Jab³onkach
+zobacz gwiazdy siatkówki pla¿owej na ¿ywo! 
+Mistrzostwa ¦wiata w siatkówce pla¿owej 5-9.09.2007
+Kliknij: http://klik.wp.pl/?adr=http%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fstarejablonki.html&sid=1262
+
 
