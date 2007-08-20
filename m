@@ -1,83 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763527AbXHTUZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764138AbXHTUZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763527AbXHTUZb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762771AbXHTUUx
+	id S1764138AbXHTUZv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763115AbXHTUWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:20:53 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51061 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761160AbXHTUUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:20:52 -0400
-Date: Mon, 20 Aug 2007 22:19:10 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Oliver Neukum <oliver@neukum.org>, Jean Delvare <khali@linux-fr.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: CONFIG_SUSPEND and power consumption
-Message-ID: <20070820201910.GA5877@elf.ucw.cz>
-References: <20070819153259.2c96b904@hyperion.delvare> <200708201211.34698.oliver@neukum.org> <20070820172907.GC3975@ucw.cz> <200708202108.35674.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708202108.35674.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Mon, 20 Aug 2007 16:22:16 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54439 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763090AbXHTUWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:22:15 -0400
+Message-Id: <20070820201902.597091353@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Mon, 20 Aug 2007 16:19:02 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 00/11] Text Edit Lock / text poke
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:21:45 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi Andrew,
 
-> > > > If I rmmod "ehci-hcd" then the power consumption is back to 69 W. This
-> > > > confirms that this is really USB-related. I have to admit that I did
-> > > > not expect an external drive to eat that much power from the system,
-> > > > especially when not used. I am told that VIA chips are notoriously bad
-> > > > at this kind of things. I'll try the same external drive on an Intel
-> > > > system later today.
-> > > > 
-> > > > The last mystery remaining is how USB "activity" can cause my CPU to
-> > > > heat. I would expect the south bridge to heat, not the CPU.
-> > > 
-> > > USB, or strictly speaking EHCI, OHCI and UHCI, use DMA. To allow
-> > > that the cache coherency logic has to be active. Therefore your CPU
-> > > cannot go to C3. Therefore it draws more power. The problem we are
-> > > facing in USB is that to get great savings, our coverage has to be perfect.
-> > > One device that cannot be autosuspended and we lose most savings.
-> > 
-> > Ok.. but CONFIG_USB_SUSPEND should not really have anything to do with
-> > CONFIG_SUSPEND (= s2ram). Perhaps it should depend on CONFIG_PM
-> > instead?
-> 
-> CONFIG_USB_SUSPEND doesn't depend on CONFIG_SUSPEND.
+This new version includes a rewrite of the i386 and x86_64 text edit lock using
+text poke. I clear and set the WP cr0 bit instead of changing the page
+attributes when patching RO code.
 
-Strange... what is going on here, then?
+It applies to 2.6.23-rc2-mm2 in this order:
 
-config USB_SUSPEND
-        bool "USB selective suspend/resume and wakeup (EXPERIMENTAL)"
-        depends on USB && PM && EXPERIMENTAL
-        help
-          If you say Y here, you can use driver calls or the sysfs
-          "power/state" file to suspend or resume individual USB
-          peripherals.
+kprobes-use-mutex-for-insn-pages.patch
+kprobes-dont-use-kprobes-mutex-in-arch-code.patch
+kprobes-declare-kprobes-mutex-static.patch
+text-edit-lock-architecture-independent-code.patch
+text-edit-lock-alternative-i386-and-x86_64.patch
+text-edit-lock-kprobes-architecture-independent.patch
+text-edit-lock-kprobes-i386.patch
+text-edit-lock-kprobes-x86_64.patch
+text-edit-lock-i386-standardize-debug-rodata.patch
+text-edit-lock-x86_64-standardize-debug-rodata.patch
 
-          Also, USB "remote wakeup" signaling is supported, whereby
-some
-          USB devices (like keyboards and network adapters) can wake
-up
-          their parent hub.  That wakeup cascades up the USB tree, and
-          could wake the system from states like suspend-to-RAM.
+Mathieu
 
-          If you are unsure about this, say N here.
-
-config USB_OTG
-        bool
-        depends on USB && EXPERIMENTAL
-        select USB_SUSPEND
-        default n
-
-hmmm, it looks like USB_OTG can be selected without CONFIG_PM, but it
-selects USB_SUSPEND. Is that okay?
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
