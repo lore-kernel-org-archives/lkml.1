@@ -1,288 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764382AbXHTUbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764829AbXHTUbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764382AbXHTUbZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764402AbXHTU1L
+	id S1764829AbXHTUbt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764189AbXHTU1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:27:11 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55534 "EHLO smtp.polymtl.ca"
+	Mon, 20 Aug 2007 16:27:18 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55557 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764022AbXHTU1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:27:09 -0400
-Message-Id: <20070820202538.765121428@polymtl.ca>
-References: <20070820202355.684760993@polymtl.ca>
+	id S1764428AbXHTU1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:27:16 -0400
+Message-Id: <20070820202646.555561265@polymtl.ca>
+References: <20070820202600.116795129@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 16:24:01 -0400
+Date: Mon, 20 Aug 2007 16:26:02 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: [patch 6/8] Immediate Values - Powerpc Optimization
-Content-Disposition: inline; filename=immediate-values-powerpc-optimization.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:25:39 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 2/2] Sort module list by pointer address to get coherent sleepable seq_file iterators
+Content-Disposition: inline; filename=module.c-sort-module-list.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:26:47 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PowerPC optimization of the immediate values which uses a li instruction,
-patched with an immediate value.
+A race that appears both in /proc/modules and in kallsyms: if, between the
+seq file reads, the process is put to sleep and at this moment a module is
+or removed from the module list, the listing will skip an amount of
+modules/symbols corresponding to the amount of elements present in the unloaded
+module, but at the current position in the list if the iteration is located
+after the removed module.
+
+The cleanest way I found to deal with this problem is to sort the module list.
+We can then keep the old struct module * as the old iterator, knowing the it may
+be removed between the seq file reads, but we only use it as "get next". If it
+is not present in the module list, the next pointer will be used.
+
+By doing this, removing a given module will now only fuzz the output related to
+this specific module, not any random module anymore. Since modprobe uses
+/proc/modules, it might be important to make sure multiple concurrent running
+modprobes won't interfere with each other.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Christoph Hellwig <hch@infradead.org>
 ---
- arch/powerpc/kernel/Makefile    |    1 
- arch/powerpc/kernel/immediate.c |  103 ++++++++++++++++++++++++++++++++
- include/asm-powerpc/immediate.h |  127 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 231 insertions(+)
+ kernel/module.c |   28 +++++++++++++++++++++++-----
+ 1 file changed, 23 insertions(+), 5 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
+Index: linux-2.6-lttng/kernel/module.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/asm-powerpc/immediate.h	2007-08-07 13:33:13.000000000 -0400
-@@ -0,0 +1,127 @@
-+#ifndef _ASM_POWERPC_IMMEDIATE_H
-+#define _ASM_POWERPC_IMMEDIATE_H
-+
-+/*
-+ * Immediate values. PowerPC architecture optimizations.
-+ *
-+ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+#include <asm/asm-compat.h>
-+
-+struct module;
-+
-+struct __immediate {
-+	long var;		/* Identifier variable of the immediate value */
-+	long immediate;		/*
-+				 * Pointer to the memory location that holds
-+				 * the immediate value within the load immediate
-+				 * instruction.
-+				 */
-+	long size;		/* Type size. */
-+};
-+
-+/**
-+ * immediate_read - read immediate variable
-+ * @var: pointer of type immediate_*_t
-+ *
-+ * Reads the value of @var.
-+ * Optimized version of the immediate.
-+ * Do not use in __init and __exit functions. Use _immediate_read() instead.
-+ * Makes sure the 2 bytes update will be atomic by aligning the immediate
-+ * value. Use a normal memory read for the 4 bytes immediate because there is no
-+ * way to atomically update it without using a seqlock read side, which would
-+ * cost more in term of total i-cache and d-cache space than a simple memory
-+ * read.
-+ */
-+#define immediate_read(var)						\
-+	({								\
-+		__typeof__((var)->value) value;				\
-+		switch (sizeof(value)) {				\
-+		case 1:							\
-+			asm (	".section __immediate, \"a\", @progbits;\n\t" \
-+					PPC_LONG "%1, ((0f)+3), 1;\n\t"	\
-+					".previous;\n\t"		\
-+					"0:\n\t"			\
-+					"li %0,%2;\n\t"			\
-+				: "=r" (value)				\
-+				: "i" (&(var)->value),			\
-+				  "i" (0));				\
-+			break;						\
-+		case 2:							\
-+			asm (	".section __immediate, \"a\", @progbits;\n\t" \
-+					PPC_LONG "%1, ((0f)+2), 2;\n\t"	\
-+					".previous;\n\t"		\
-+					".align 2\n\t"			\
-+					"0:\n\t"			\
-+					"li %0,%2;\n\t"			\
-+				: "=r" (value)				\
-+				: "i" (&(var)->value),			\
-+				  "i" (0));				\
-+			break;						\
-+		default:						\
-+			value = (var)->value;				\
-+			break;						\
-+		};							\
-+		value;							\
-+	})
-+
-+/**
-+ * immediate_set - set immediate variable (with locking)
-+ * @var: pointer of type immediate_*_t
-+ * @i: required value
-+ *
-+ * Sets the value of @var, taking the module_mutex if required by
-+ * the architecture.
-+ */
-+#define immediate_set(var, i) \
-+	(var)->value = (i); \
-+	immediate_update(1);
-+
-+/**
-+ * _immediate_set - set immediate variable (without locking)
-+ * @var: pointer of type immediate_*_t
-+ * @i: required value
-+ *
-+ * Sets the value of @var. Must be called with module_mutex held.
-+ */
-+#define _immediate_set(var, i) \
-+	(var)->value = (i); \
-+	immediate_update(0);
-+
-+/**
-+ * immediate_set_early - set immediate variable at early boot
-+ * @var: pointer of type immediate_*_t
-+ * @i: required value
-+ *
-+ * Sets the value of @var. Should be used for early boot updates.
-+ */
-+#define immediate_set_early(var, i) \
-+	(var)->value = (i); \
-+	immediate_update_early();
-+
-+/**
-+ * immediate_if - if () statement depending on an immediate value
-+ * @var: pointer of type immediate_*_t
-+ *
-+ * Use as an if () statement depending on an immediate value.
-+ * Do not use in __init and __exit functions. Use _immediate_if() instead.
-+ * Branch depending on an immediate value. Could eventually be optimized further
-+ * by improving gcc to give the ability to patch a jump instruction instead of
-+ * the value it depends on.
-+ */
-+#define immediate_if(var)	if (unlikely(immediate_read(var)))
-+
-+/*
-+ * Internal update functions.
-+ */
-+extern void immediate_update(int lock);
-+extern void module_immediate_setup(struct module *mod);
-+extern void immediate_update_early(void);
-+extern int arch_immediate_update(const struct __immediate *immediate);
-+extern void arch_immediate_update_early(const struct __immediate *immediate);
-+
-+#endif /* _ASM_POWERPC_IMMEDIATE_H */
-Index: linux-2.6-lttng/arch/powerpc/kernel/Makefile
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/kernel/Makefile	2007-08-07 13:32:35.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/kernel/Makefile	2007-08-07 13:32:53.000000000 -0400
-@@ -103,3 +103,4 @@ obj-$(CONFIG_PPC64)		+= $(obj64-y)
+--- linux-2.6-lttng.orig/kernel/module.c	2007-08-12 10:05:39.000000000 -0400
++++ linux-2.6-lttng/kernel/module.c	2007-08-12 10:22:05.000000000 -0400
+@@ -63,8 +63,10 @@ extern int module_sysfs_initialized;
+ /* If this is set, the section belongs in the init part of the module */
+ #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
  
- extra-$(CONFIG_PPC_FPU)		+= fpu.o
- extra-$(CONFIG_PPC64)		+= entry_64.o
-+obj-$(CONFIG_IMMEDIATE)		+= immediate.o
-Index: linux-2.6-lttng/arch/powerpc/kernel/immediate.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/arch/powerpc/kernel/immediate.c	2007-08-07 13:33:20.000000000 -0400
-@@ -0,0 +1,103 @@
+-/* List of modules, protected by module_mutex or preempt_disable
+- * (add/delete uses stop_machine). */
 +/*
-+ * Powerpc optimized immediate values enabling/disabling.
-+ *
-+ * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ * List of modules, protected by module_mutex or preempt_disable
++ * (add/delete uses stop_machine). Sorted by ascending list node address.
 + */
+ DEFINE_MUTEX(module_mutex);
+ LIST_HEAD(modules);
+ static DECLARE_MUTEX(notify_mutex);
+@@ -2134,10 +2136,24 @@ nomodsectinfo:
+ /*
+  * link the module with the whole machine is stopped with interrupts off
+  * - this defends against kallsyms not taking locks
++ * We sort the modules by struct module pointer address to permit correct
++ * iteration over modules of, at least, kallsyms for preemptible operations,
++ * such as read(). Sorting by struct module pointer address is equivalent to
++ * sort by list node address.
+  */
+ static int __link_module(void *_mod)
+ {
+-	struct module *mod = _mod;
++	struct module *mod = _mod, *iter;
 +
-+#include <linux/module.h>
-+#include <linux/immediate.h>
-+#include <linux/string.h>
-+#include <linux/kprobes.h>
-+#include <asm/cacheflush.h>
-+#include <asm/page.h>
-+
-+#define LI_OPCODE_LEN	2
-+
-+/**
-+ * arch_immediate_update - update one immediate value
-+ * @immediate: pointer of type const struct __immediate to update
-+ *
-+ * Update one immediate value. Must be called with immediate_mutex held.
-+ */
-+int arch_immediate_update(const struct __immediate *immediate)
-+{
-+#ifdef CONFIG_KPROBES
-+	kprobe_opcode_t *insn;
-+	/*
-+	 * Fail if a kprobe has been set on this instruction.
-+	 * (TODO: we could eventually do better and modify all the (possibly
-+	 * nested) kprobes for this site if kprobes had an API for this.
-+	 */
-+	switch (immediate->size) {
-+		case 1:	/* The uint8_t points to the 3rd byte of the
-+			 * instruction */
-+			insn = (void*)(immediate->immediate - 1 - LI_OPCODE_LEN);
-+			break;
-+		case 2:	insn = (void*)(immediate->immediate - LI_OPCODE_LEN);
-+			break;
-+		default:
-+		return -EINVAL;
++	list_for_each_entry_reverse(iter, &modules, list) {
++		BUG_ON(iter == mod);	/* Should never be in the list twice */
++		if (iter < mod) {
++			/* We belong to the location right after iter. */
++			list_add(&mod->list, &iter->list);
++			return 0;
++		}
 +	}
-+
-+	if (unlikely(*insn == BREAKPOINT_INSTRUCTION)) {
-+		printk(KERN_WARNING "Immediate value in conflict with kprobe. "
-+				    "Variable at %p, "
-+				    "instruction at %p, size %lu\n",
-+				    (void*)immediate->immediate,
-+				    (void*)immediate->var, immediate->size);
-+		return -EBUSY;
-+	}
-+#endif
-+
-+	/*
-+	 * If the variable and the instruction have the same value, there is
-+	 * nothing to do.
-+	 */
-+	switch (immediate->size) {
-+		case 1:	if (*(uint8_t*)immediate->immediate
-+					== *(uint8_t*)immediate->var)
-+				return 0;
-+			break;
-+		case 2:	if (*(uint16_t*)immediate->immediate
-+					== *(uint16_t*)immediate->var)
-+				return 0;
-+			break;
-+		default:return -EINVAL;
-+	}
-+	memcpy((void*)immediate->immediate, (void*)immediate->var,
-+			immediate->size);
-+	flush_icache_range((unsigned long)immediate->immediate,
-+				immediate->size);
-+	return 0;
-+}
-+
-+/**
-+ * arch_immediate_update_early - update one immediate value at boot time
-+ * @immediate: pointer of type const struct __immediate to update
-+ *
-+ * Update one immediate value at boot time.
-+ * We can use flush_icache_range, since the cpu identification has been done in
-+ * the early_init stage.
-+ */
-+void __init arch_immediate_update_early(const struct __immediate *immediate)
-+{
-+	/*
-+	 * If the variable and the instruction have the same value, there is
-+	 * nothing to do.
-+	 */
-+	switch (immediate->size) {
-+		case 1:	if (*(uint8_t*)immediate->immediate
-+					== *(uint8_t*)immediate->var)
-+				return;
-+			break;
-+		case 2:	if (*(uint16_t*)immediate->immediate
-+					== *(uint16_t*)immediate->var)
-+				return;
-+			break;
-+		default:return;
-+	}
-+	memcpy((void*)immediate->immediate, (void*)immediate->var,
-+			immediate->size);
-+	flush_icache_range((unsigned long)immediate->immediate,
-+				immediate->size);
-+}
++	/* We should be added at the head of the list */
+ 	list_add(&mod->list, &modules);
+ 	return 0;
+ }
+@@ -2402,12 +2418,14 @@ unsigned long module_kallsyms_lookup_nam
+ static void *m_start(struct seq_file *m, loff_t *pos)
+ {
+ 	mutex_lock(&module_mutex);
+-	return seq_list_start(&modules, *pos);
++	if (!*pos)
++		m->private = NULL;
++	return seq_sorted_list_start(&modules, m->private);
+ }
+ 
+ static void *m_next(struct seq_file *m, void *p, loff_t *pos)
+ {
+-	return seq_list_next(p, &modules, pos);
++	return seq_sorted_list_next(p, &modules, &m->private);
+ }
+ 
+ static void m_stop(struct seq_file *m, void *p)
 
 -- 
 Mathieu Desnoyers
