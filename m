@@ -1,64 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbXHTLxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759155AbXHTLyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757308AbXHTLxN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 07:53:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbXHTLw5
+	id S1759155AbXHTLyX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 07:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbXHTLyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 07:52:57 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:61779 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751066AbXHTLw4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 07:52:56 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH] Make checkpatch rant about trailing ; at the end of "if"  expr
-To: Jan Engelhardt <jengelh@computergmbh.de>,
-       Andy Whitcroft <apw@shadowen.org>, Eugene Teo <eugeneteo@kernel.sg>,
-       linux-kernel@vger.kernel.org, auke-jan.h.kok@intel.com
-Reply-To: 7eggert@gmx.de
-Date: Mon, 20 Aug 2007 13:52:35 +0200
-References: <8SGSb-2Kk-9@gated-at.bofh.it> <8SJQ6-7pj-13@gated-at.bofh.it> <8T8Oy-3D0-13@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Mon, 20 Aug 2007 07:54:16 -0400
+Received: from baros.cubic.ch ([213.239.213.98]:45109 "EHLO baros.cubic.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750926AbXHTLyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 07:54:15 -0400
+Message-ID: <46C980E5.2050805@cubic.ch>
+Date: Mon, 20 Aug 2007 13:54:13 +0200
+From: Tim Tassonis <timtas@cubic.ch>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1IN5oB-0000qw-6S@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/Rc0z5qn0412+Hq9DPtBoolSj8MUE/Iiqta6d
- VbutD6QXwlbCtxO3or6POfZR4+2qI/k4VrpfJXnCXV7I2mXYSV
- 8qUQ3q0FYke59BBzJBl+Q==
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Thinking outside the box on file systems
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> On Aug 16 2007 10:21, Andy Whitcroft wrote:
+Hi Marc
 
->>> +           if ($line =~ /\bif\s*\([^\)]*\)\s*\;/) {
->>
->>Heh, you are the second person to suggest this check today, do I detect
->>some ripped out hair due to one of these!
->>
->>I've taken this idea and expanded it to cover if, for and while which
->>can all suffer from this.  Using the relative indent to work out which
->>are valid combinations:
+> What's the point? People are openly hostile to new
+> ideas here. I started out nice and laid out my ideas
+> and you have a bunch of morons who attack anything
+> new.
+
+If you think using subjects like "Thinking out of the box" (implicitely 
+calling everybody else narrow-minded) and "vi causes brain damage" is 
+starting out nice, you also got a serious communication problem.
+
+> Look at the reality of the situation. Linux is free
+> and yey it can't compete with operating systems that
+> are paid for. Maybe the reason is that when someone
+> point out the something is broken all yopu get is
+> justification and excuses and insults.
+
+Funny, even Microsoft acknoledges that Linux can very well compete, as 
+does your beloved Novell that just recently bought Suse. Maybe you 
+haven't noticed yet that you're the only one left that thinks Linux 
+can't compete.
+
+> Think about it. Why did it take 20 years for Linux to
+> fix the RM problem? If you type RM * you expect the
+> files to be gone, not some stupid error that I'm
+> trying to delete too many files.
+
+Well, it's not a stupid error, this is called a limit. Other people have 
+already explained to you how the UNIX shell works, so I'm not going to 
+repeat it again.
+
+That said, I even would admit that I have been bitten by this limit 
+before (deleting a few thousand bounced mail in a spool directory),
+
 > 
-> But. The above regex does not seem to handle
-> 
-> if ((a = b));
-> oops;
-> 
-> I have tried to come up with a superduper regex that handles multiple
-> (), but my regex fu seems to stop above two pairs of ().
+> So who's fault is that? I say it's a problem with
+> Linux culture. If something is broken you have to
+> justify it instead of fixing it.
 
-This is because you can't do that using finite regular expressions.
+I use Linux since the mid 90's and remember thousands and thousands of 
+bugs fixed and limits removed. But you must be here longer and have the 
+better view of how "the Linux culture" really works.
 
-Regular expressions are Type-3 grammars, but you'd need a Type-2
-grammar to express the Dyck language (and you need to parse a Dyck
-Language, ignoring the non-dyck-parts).
--- 
-Your e-mail has been returned due to insufficient voltage. 
+> You guys are trying to may the RM problem MY FAULT
+> because I didn't say it nicely. We'll it doesn't have
+> to be said nicely. If something is broken then it
+> needs fixed regardless of who and how it is pointed
+> out.
 
-Friß, Spammer: xVhgayew@6yAk1Uy.7eggert.dyndns.org G2@7eggert.dyndns.org
- MVt59@gcEE.7eggert.dyndns.org GBwox2uHv@mb.7eggert.dyndns.org
+Nobody denied the limit, you were just pointed out that you don't have a 
+fucking clue what the behavior actually means and where the limit lies.
+And calling other people brain-damaged at the same time...
+
+  > So wat does it tell you when something like this is
+> left broken for so long? What it tells me is that the
+> development process is broken.
+
+Well, it tells _me_:
+- It is a limit and not a bug
+- The limit is not severe, not many people constantly have to delete 
+millions of files in the directory without deleting the directory itself
+- the limit can be worked around by "find . |xargs \rm"
+
+But, as you proved again and again, you're the expert.
+
+> My rant on VI is to make a point. That point being
+> that when you use an editor that totally sucks then
+> it's going to cause you to write code that sucks. It
+> going to lower your standards. It's going to create a
+> culture where poorly done work is considered
+> acceptable. When you use an editor as poor as vi then
+> the idea that rm * doesn't work becomes acceptable and
+> justifiable, as demonstrated here by people who
+> ACTUALLY DEFENDED IT.
+
+You might have wanted to make this point. But all you really showed is 
+that you're an arrogant, ignorant loudmouth, takling about things you 
+have no clue about. I bet you haven't written a single line of decent 
+code in your life.
+
+Kind regards
+Tim
+
