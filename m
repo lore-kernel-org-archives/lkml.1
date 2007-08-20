@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761341AbXHTUJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762131AbXHTUJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761341AbXHTUJX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbXHTUJJ
+	id S1762131AbXHTUJi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760068AbXHTUJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:09:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34443 "EHLO mx1.redhat.com"
+	Mon, 20 Aug 2007 16:09:18 -0400
+Received: from lug-owl.de ([195.71.106.12]:48155 "EHLO lug-owl.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751023AbXHTUJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:09:08 -0400
-Date: Mon, 20 Aug 2007 16:08:56 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Roland McGrath <roland@redhat.com>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [POWERPC] Fix for assembler -g
-Message-ID: <20070820200856.GA4194@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Roland McGrath <roland@redhat.com>,
-	Paul Mackerras <paulus@samba.org>
-References: <200708181959.l7IJxJ5q020206@hera.kernel.org>
+	id S1758162AbXHTUJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:09:16 -0400
+Date: Mon, 20 Aug 2007 22:09:14 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: Nicolas Pitre <nico@cam.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Paul Mundt <lethal@linux-sh.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Git Mailing List <git@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Git tree for old kernels from before the current tree
+Message-ID: <20070820200914.GB11718@lug-owl.de>
+Mail-Followup-To: Nicolas Pitre <nico@cam.org>,
+	Al Viro <viro@ftp.linux.org.uk>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Jan Engelhardt <jengelh@computergmbh.de>,
+	Paul Mundt <lethal@linux-sh.org>, Jon Smirl <jonsmirl@gmail.com>,
+	Git Mailing List <git@vger.kernel.org>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <20070722211314.GA13850@linux-sh.org> <Pine.LNX.4.64.0707222344540.32367@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0707230000170.32367@fbirervta.pbzchgretzou.qr> <46A3D5EA.2050600@zytor.com> <alpine.LFD.0.999.0707230950340.3607@woody.linux-foundation.org> <alpine.LFD.0.999.0707231343350.6355@xanadu.home> <alpine.LFD.0.999.0707231057480.3607@woody.linux-foundation.org> <alpine.LFD.0.999.0707231432560.6355@xanadu.home> <20070723234628.GN21668@ftp.linux.org.uk> <alpine.LFD.0.999.0707231957450.6355@xanadu.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="cvVnyQ+4j833TQvp"
 Content-Disposition: inline
-In-Reply-To: <200708181959.l7IJxJ5q020206@hera.kernel.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <alpine.LFD.0.999.0707231957450.6355@xanadu.home>
+X-Operating-System: Linux mail 2.6.18-4-686 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 18, 2007 at 07:59:19PM +0000, Linux Kernel wrote:
- > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=55a910a81d0c3014abc20b9efa73c595b3e68339
- > Commit:     55a910a81d0c3014abc20b9efa73c595b3e68339
- > Parent:     aa1cf632bd6f998cb4567ccf1a9d2e5daaa9fb44
- > Author:     Roland McGrath <roland@redhat.com>
- > AuthorDate: Sat Aug 11 09:03:11 2007 +1000
- > Committer:  Paul Mackerras <paulus@samba.org>
- > CommitDate: Wed Aug 15 15:12:50 2007 +1000
- > 
- >     [POWERPC] Fix for assembler -g
- >     
- >     ppc64 does the unusual thing of using #include on a compiler-generated
- >     assembly file (lparmap.s) from an assembly source file (head_64.S).
- >     This runs afoul of my recent patch to pass -gdwarf2 to the assembler
- >     under CONFIG_DEBUG_INFO.  This patch avoids the problem by disabling
- >     DWARF generation (-g0) when producing lparmap.s.
- >     
- >     Signed-off-by: Roland McGrath <roland@redhat.com>
- >     Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-I'm still seeing failures with this.
-http://koji.fedoraproject.org/koji/getfile?taskID=110854&name=build.log
-shows..
+--cvVnyQ+4j833TQvp
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-lparmap.c: Assembler messages:
-lparmap.c:84: Error: file number 1 already allocated
-make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
+On Mon, 2007-07-23 20:10:23 -0400, Nicolas Pitre <nico@cam.org> wrote:
+>=20
+> I have sanitized .tgz files that I use to stuff a Git repo with.  I=20
+> recall that some of them were reconstructed through patching an earlier=
+=20
+> or later kernel version because the original ones were corrupted. Some=20
+> patches were retrieved from other archival sites, etc.  Then the result=
+=20
+> was=20
+> cross checked with summary lists like this one:=20
+>=20
+> http://www.uwsg.iu.edu/hypermail/linux/kernel/0110.1/1684.html
+>=20
+> This was a while ago so I don't remember the exact steps, but that=20
+> wasn't always trivial.
 
-Anything I can provide to help diagnose this?
+Some years ago, I also worked on old Linux releases. Have you found
+the tarballs in my directory at kernel.org?
 
-	Dave
+MfG, JBG
 
--- 
-http://www.codemonkey.org.uk
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:             God put me on earth to accomplish a certain numbe=
+r of
+the second  :            things. Right now I am so far behind I will never =
+die.
+
+--cvVnyQ+4j833TQvp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGyfTqHb1edYOZ4bsRAnzBAJ99jWwaKZ5F/Tyhiq8DTjNa9bEfygCeK+4A
+Og8WeCtJs6xnpbG/dQiEJks=
+=Ax+g
+-----END PGP SIGNATURE-----
+
+--cvVnyQ+4j833TQvp--
