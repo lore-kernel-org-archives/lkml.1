@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765215AbXHTUd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764047AbXHTUea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765215AbXHTUd6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764600AbXHTU1m
+	id S1764047AbXHTUea (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764244AbXHTU2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:27:42 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55681 "EHLO smtp.polymtl.ca"
+	Mon, 20 Aug 2007 16:28:14 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55832 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764030AbXHTU1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:27:41 -0400
-Message-Id: <20070820202146.263958314@polymtl.ca>
+	id S1764364AbXHTU2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:28:12 -0400
+Message-Id: <20070820202147.932918240@polymtl.ca>
 References: <20070820201902.597091353@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 16:19:06 -0400
+Date: Mon, 20 Aug 2007 16:19:10 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, hch@infradead.org,
-       prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net
-Subject: [patch 04/11] Kprobes - declare kprobe_mutex static
-Content-Disposition: inline; filename=kprobes-declare-kprobes-mutex-static.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:21:46 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andi Kleen <andi@firstfloor.org>, prasanna@in.ibm.com,
+       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net
+Subject: [patch 08/11] Text Edit Lock - kprobes i386
+Content-Disposition: inline; filename=text-edit-lock-kprobes-i386.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:21:48 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since it will not be used by other kernel objects, it makes sense to declare it
-static.
+Make kprobes use text_set instead of text_poke.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: hch@infradead.org
+CC: Andi Kleen <andi@firstfloor.org>
 CC: prasanna@in.ibm.com
 CC: ananth@in.ibm.com
 CC: anil.s.keshavamurthy@intel.com
 CC: davem@davemloft.net
 ---
- kernel/kprobes.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/i386/kernel/kprobes.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-lttng/kernel/kprobes.c
+Index: linux-2.6-lttng/arch/i386/kernel/kprobes.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-19 09:09:15.000000000 -0400
-+++ linux-2.6-lttng/kernel/kprobes.c	2007-08-19 17:18:07.000000000 -0400
-@@ -68,7 +68,7 @@ static struct hlist_head kretprobe_inst_
- /* NOTE: change this value only with kprobe_mutex held */
- static bool kprobe_enabled;
+--- linux-2.6-lttng.orig/arch/i386/kernel/kprobes.c	2007-08-19 18:37:43.000000000 -0400
++++ linux-2.6-lttng/arch/i386/kernel/kprobes.c	2007-08-19 18:38:17.000000000 -0400
+@@ -170,12 +170,12 @@ int __kprobes arch_prepare_kprobe(struct
  
--DEFINE_MUTEX(kprobe_mutex);		/* Protects kprobe_table */
-+static DEFINE_MUTEX(kprobe_mutex);	/* Protects kprobe_table */
- DEFINE_SPINLOCK(kretprobe_lock);	/* Protects kretprobe_inst_table */
- static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
+ void __kprobes arch_arm_kprobe(struct kprobe *p)
+ {
+-	text_poke(p->addr, ((unsigned char []){BREAKPOINT_INSTRUCTION}), 1);
++	text_set(p->addr, BREAKPOINT_INSTRUCTION, 1);
+ }
  
+ void __kprobes arch_disarm_kprobe(struct kprobe *p)
+ {
+-	text_poke(p->addr, &p->opcode, 1);
++	text_set(p->addr, p->opcode, 1);
+ }
+ 
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
 
 -- 
 Mathieu Desnoyers
