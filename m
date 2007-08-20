@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbXHTBrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757861AbXHTBsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbXHTBrK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 21:47:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbXHTBqz
+	id S1757861AbXHTBsc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 21:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbXHTBsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 21:46:55 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:1594 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752174AbXHTBqx convert rfc822-to-8bit (ORCPT
+	Sun, 19 Aug 2007 21:48:24 -0400
+Received: from smtp113.sbc.mail.re2.yahoo.com ([68.142.229.92]:26615 "HELO
+	smtp113.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751663AbXHTBsX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 21:46:53 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Sun, 19 Aug 2007 21:48:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=NeF9uFiOnkEQAjIw8gfTijgWgSi8ImQJlS5mn9cozGFFsoBgfypToHxyyP/MoUhncZgUmC13OOhUjvP184smWXqzS+WNt57k5J9riPchKxfP/cv0iihda3qUjLuO0HYKxh41N9ZRcbjgEO/5uQvbvkvmDsc+BPKuhc1nBQ3sunY=  ;
+X-YMail-OSG: rvX02rgVM1lphiB_edVS3wsTHfLQElC3F9bb.lFIW.iY0ga5tfVyhy4kmWNyw5Ug.sV6G6XFwA--
+From: David Brownell <david-b@pacbell.net>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Subject: Re: [PATCH] rtc: Make rtc-ds1742 driver hotplug-aware
+Date: Sun, 19 Aug 2007 18:48:20 -0700
+User-Agent: KMail/1.9.6
+Cc: Kay Sievers <kay.sievers@vrfy.org>, jengelh@computergmbh.de,
+       a.zummo@towertech.it, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com, greg@kroah.com
+References: <200708170902.01260.david-b@pacbell.net> <20070819.215751.25908715.anemo@mba.ocn.ne.jp> <1187559950.4419.79.camel@lov.localdomain>
+In-Reply-To: <1187559950.4419.79.camel@lov.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
-Date: Sun, 19 Aug 2007 18:45:24 -0700
-Message-ID: <8A71B368A89016469F72CD08050AD334018E20C2@maui.asicdesigners.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
-thread-index: AcfisNOH4sy1Ov+yQUinpjObdkRWNQAGnKDg
-References: <000001c7e22e$b7b90f00$29c8180a@amr.corp.intel.com><20070819.002337.06589160.davem@davemloft.net><8A71B368A89016469F72CD08050AD334018E208F@maui.asicdesigners.com><20070819.123212.13769462.davem@davemloft.net><8A71B368A89016469F72CD08050AD334018E209C@maui.asicdesigners.com> <p73hcmv14wo.fsf@bingen.suse.de>
-From: "Felix Marti" <felix@chelsio.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Cc: "David Miller" <davem@davemloft.net>, <jeff@garzik.org>,
-       <netdev@vger.kernel.org>, <rdreier@cisco.com>,
-       <linux-kernel@vger.kernel.org>, <general@lists.openfabrics.org>
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708191848.21410.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 19 August 2007, Kay Sievers wrote:
+> No, I object to the concept of "platform" to disable all uevents by
+> default, 
 
+Which it certainly doesn't do.
 
-> -----Original Message-----
-> From: ak@suse.de [mailto:ak@suse.de] On Behalf Of Andi Kleen
-> Sent: Sunday, August 19, 2007 4:28 PM
-> To: Felix Marti
-> Cc: David Miller; jeff@garzik.org; netdev@vger.kernel.org;
-> rdreier@cisco.com; linux-kernel@vger.kernel.org;
-> general@lists.openfabrics.org
-> Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate
-> PS_TCPportsfrom the host TCP port space.
-> 
-> "Felix Marti" <felix@chelsio.com> writes:
-> 
-> > what benefits does the TSO infrastructure give the
-> > non-TSO capable devices?
-> 
-> It improves performance on software queueing devices between guests
-> and hypervisors. This is a more and more important application these
-> days.  Even when the system running the Hypervisor has a non TSO
-> capable device in the end it'll still save CPU cycles this way. Right
-> now
-> virtualized IO tends to much more CPU intensive than direct IO so any
-> help it can get is beneficial.
-> 
-> It also makes loopback faster, although given that's probably not that
-> useful.
-> 
-> And a lot of the "TSO infrastructure" was needed for zero copy TX
-> anyways,
-> which benefits most reasonable modern NICs (anything with hardware
-> checksumming)
-Hi Andi, yes, you're right. I should have chosen my example more
-carefully.
-
-> 
-> -Andi
+Since the $SUBJECT patch doesn't affect a platform driver in any case,
+all those comments are well off-topic for $SUBJECT.
