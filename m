@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751563AbXHTEIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751958AbXHTERR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751563AbXHTEIy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 00:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbXHTEIo
+	id S1751958AbXHTERR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 00:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbXHTERH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 00:08:44 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:32426 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbXHTEIo (ORCPT
+	Mon, 20 Aug 2007 00:17:07 -0400
+Received: from smtp121.sbc.mail.re3.yahoo.com ([66.196.96.94]:37240 "HELO
+	smtp121.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750899AbXHTERG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 00:08:44 -0400
-X-IronPort-AV: i="4.19,283,1183348800"; 
-   d="scan'208"; a="48903371:sNHT33240452"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH 1/1] ensure we don't use bootconsoles after init has been released
-Date: Mon, 20 Aug 2007 00:08:45 -0400
-User-Agent: KMail/1.9.5
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Gerd Hoffmann" <kraxel@redhat.com>,
-       "Mike Frysinger" <vapier.adi@gmail.com>
-References: <200708192246.05783.rgetz@blackfin.uclinux.org> <8bd0f97a0708192011m1b957e57je313850a255dcac7@mail.gmail.com>
-In-Reply-To: <8bd0f97a0708192011m1b957e57je313850a255dcac7@mail.gmail.com>
+	Mon, 20 Aug 2007 00:17:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=xO5FUbF5gQx9FCFkHRFVNTbLmgZ82mjUcCMB8oovdQLcLIibsxPzsSQhxVarwmdF1JGetzRN2v4w9vjQNHycOTjfmp3o2JnvljvaaFsX8lNlh2D3aAkZzj2LASl04ozfIIsvRjkRPkldR2eIaIr40GDazsad79I2lmKN19VqA+Y=  ;
+X-YMail-OSG: 9uWvo6kVM1mLkuBRgiQRrTWkpikwqkrpRButr9pCvVJRZTteuEja18_C1FujfHu6XwHm9i7zOw--
+From: David Brownell <david-b@pacbell.net>
+To: Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] ptrdiff_t is not uintptr_t, damnit
+Date: Sun, 19 Aug 2007 21:17:00 -0700
+User-Agent: KMail/1.9.6
+Cc: Satyam Sharma <satyam@infradead.org>, Anton Altaparmakov <aia21@cam.ac.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <20070819225546.GV21089@ftp.linux.org.uk> <200708192026.24596.david-b@pacbell.net> <20070820034043.GZ21089@ftp.linux.org.uk>
+In-Reply-To: <20070820034043.GZ21089@ftp.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708200008.45327.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 20 Aug 2007 04:08:42.0137 (UTC) FILETIME=[CB65A890:01C7E2DF]
+Message-Id: <200708192117.00759.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robin Getz <rgetz@blackfin.uclinux.org>
- 
-This is a followup to the cleanups for earlyprintk patch from Gerd Hoffmann
- 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=69331af79cf29e26d1231152a172a1a10c2df511
- 
-This ensures that a bootconsole is unregistered if it is not replaced.
-The current implementation spews garbage out the bootconsole in this case,
-since the bootconsole structure is normally in the init section, and is
-freed, but still used.
- 
-Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
- 
----
+On Sunday 19 August 2007, Al Viro wrote:
+> On Sun, Aug 19, 2007 at 08:26:24PM -0700, David Brownell wrote:
+> 
+> > ISTR the warning was the other way around:   about "cast from integer
+> > to pointer of a different size".  The __u64 came from userspace and
+> > the kernel pointer was only 32 bits.  Not really truncation, but GCC
+> > could not know that directly ... ergo the extra non-pointer cast.
+> 
+> And?  Cast to integer type with the size equal to that of pointer.
+> unsigned long is just that on all supported targets.
 
-linux-2.6.x-old/kernel/printk.c |   15 +++++++++++++++
-1 file changed, 15 insertions(+)
+Some tool kept warning about that.  Presumably then-current sparse.
+I've certainly heard the conventional "unsigned long fits pointers"
+wisdom, but tools disagreed.  (Does ANSI C guarantee that?  I'd think
+not, or uintptr_t would not be needed.)
 
-Index: linux-2.6.x-old/kernel/printk.c
-===================================================================
---- linux-2.6.x-old/kernel/printk.c	(revision 3583)
-+++ linux-2.6.x-old/kernel/printk.c	(working copy)
-@@ -1104,6 +1104,21 @@
- }
- EXPORT_SYMBOL(unregister_console);
- 
-+static int __init disable_boot_consoles(void)
-+{
-+	struct console *con;
-+
-+	for (con = console_drivers; con; con = con->next) {
-+		if (con->flags & CON_BOOT) {
-+			printk(KERN_INFO "Turn off boot console %s%d\n",
-+				con->name, con->index);
-+			unregister_console(con);
-+		}
-+	}
-+	return 0;
-+}
-+late_initcall(disable_boot_consoles);
-+
- /**
-  * tty_write_message - write a message to a certain tty, not just the console.
-  * @tty: the destination tty_struct
+And ptrdiff_t was the closest relevant data type that passed both
+gcc and sparse, since uintptr_t didn't previously exist everywhere.
+
+
+> More interesting question is whether you want an error returned when
+> pointers are 32bit and value doesn't fit into that...
+
+Either access_ok() or copy_from_user() reports an error if the
+pointer part of that u64 (N LSBs) is bad.
+
+As a general policy, I think the other part is undefined and
+irrelevant to the kernel ... it's a kind of explicit padding,
+and padding isn't valdated.  (At most it's zeroed to prevent
+a covert channel, but that's not relevent here.)
+
+- Dave
+
