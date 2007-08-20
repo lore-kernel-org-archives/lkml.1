@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760622AbXHTP7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760792AbXHTQAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760622AbXHTP7Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 11:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759929AbXHTP7Q
+	id S1760792AbXHTQAO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759807AbXHTP75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 11:59:16 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:33638 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759704AbXHTP7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 11:59:15 -0400
-Date: Mon, 20 Aug 2007 20:01:57 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] do_sigaction: don't worry about signal_pending()
-Message-ID: <20070820160157.GA1279@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Mon, 20 Aug 2007 11:59:57 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55891 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759763AbXHTP75 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 11:59:57 -0400
+Date: Mon, 20 Aug 2007 11:59:55 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Andreas Jellinghaus [c]" <aj@ciphirelabs.com>
+cc: linux-kernel@vger.kernel.org, <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] why was MODALIAS removed from usb kernel
+ events? [u]
+In-Reply-To: <200708182132.11336.aj@ciphirelabs.com>
+Message-ID: <Pine.LNX.4.44L0.0708201158110.3626-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-do_sigaction() returns -ERESTARTNOINTR if signal_pending(). The comment says:
+On Sat, 18 Aug 2007, Andreas Jellinghaus [c] wrote:
 
-	* If there might be a fatal signal pending on multiple
-	* threads, make sure we take it before changing the action.
-	
-I think this is not needed. We should only worry about SIGNAL_GROUP_EXIT case,
-bit it implies a pending SIGKILL which can't be cleared by do_sigaction.
+> Am Freitag, 17. August 2007 schrieben Sie:
+> > On Fri, 17 Aug 2007, Andreas Jellinghaus [c] wrote:
+> > > I need some kernel event that has both DEVICE and MODALIAS set.
+> > > up to including kernel 2.6.21 this seems to come from
+> > > drivers/usb/core/driver.c if I read the code correctly, and then
+> > > it was removed.
+> > >
+> > > udevmonitor --kernel --environment shows one event with both on 2.6.21
+> > > plain, but not on 2.6.22 plain.
+> >
+> > Does this patch improve matters?
+> 
+> yes, thanks, it does. can you add PRODUCT as well?
+> remembered too late that my scripts at least use it too.
+> but that one is no big issue, MODALIAS has the same information
+> so I could use that information. but other people might use it.
 
-Kill this special case.
+I could, but I don't know whether any of this would be accepted for 
+2.6.22.stable.  It might not be too late to get into 2.6.23...
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- t/kernel/signal.c~SA_NOPEND	2007-08-20 19:40:31.000000000 +0400
-+++ t/kernel/signal.c	2007-08-20 19:43:41.000000000 +0400
-@@ -2300,15 +2300,6 @@ int do_sigaction(int sig, struct k_sigac
- 	k = &current->sighand->action[sig-1];
- 
- 	spin_lock_irq(&current->sighand->siglock);
--	if (signal_pending(current)) {
--		/*
--		 * If there might be a fatal signal pending on multiple
--		 * threads, make sure we take it before changing the action.
--		 */
--		spin_unlock_irq(&current->sighand->siglock);
--		return -ERESTARTNOINTR;
--	}
--
- 	if (oact)
- 		*oact = *k;
- 
+Alan Stern
 
