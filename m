@@ -1,269 +1,474 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764847AbXHTU33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764904AbXHTU3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764847AbXHTU33 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762856AbXHTU0P
+	id S1764904AbXHTU3s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763963AbXHTU0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:26:15 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55252 "EHLO smtp.polymtl.ca"
+	Mon, 20 Aug 2007 16:26:17 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55251 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763792AbXHTU0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763790AbXHTU0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Aug 2007 16:26:12 -0400
-Message-Id: <20070820202539.221228095@polymtl.ca>
+Message-Id: <20070820202537.049618646@polymtl.ca>
 References: <20070820202355.684760993@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 16:24:02 -0400
+Date: Mon, 20 Aug 2007 16:23:57 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 7/8] Immediate Values - Documentation
-Content-Disposition: inline; filename=immediate-values-documentation.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:25:39 +0000
+Subject: [patch 2/8] Immediate Values - Architecture Independent Code
+Content-Disposition: inline; filename=immediate-values-architecture-independent-code.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:25:37 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Immediate values are used as read mostly variables that are rarely updated. They
+use code patching to modify the values inscribed in the instruction stream. It
+provides a way to save precious cache lines that would otherwise have to be used
+by these variables.
+
+There is a generic _immediate_read() version, which uses standard global
+variables, and optimized per architecture immediate_read() implementations,
+which use a load immediate to remove a data cache hit. When the immediate values
+functionnality is disabled in the kernel, it falls back to global variables.
+
+It adds a new rodata section "__immediate" to place the pointers to the enable
+value. Immediate values activation functions sits in kernel/immediate.c.
+
+Immediate values refer to the memory address of a previously declared integer.
+This integer holds the information about the state of the immediate values
+associated, and must be accessed through the API found in linux/immediate.h.
+
+At module load time, each immediate value is checked to see if it must be
+enabled. It would be the case if the variable they refer to is exported from
+another module and already enabled.
+
+In the early stages of start_kernel(), the immediate values are updated to
+reflect the state of the variable they refer to.
+
+* Why should this be merged *
+
+It improves performances on heavy memory I/O workloads.
+
+An interesting result shows the potential this infrastructure has by
+showing the slowdown a simple system call such as getppid() suffers when it is
+used under heavy user-space cache trashing:
+
+Random walk L1 and L2 trashing surrounding a getppid() call:
+(note: in this test, do_syscal_trace was taken at each system call, see
+Documentation/immediate.txt in these patches for details)
+- No memory pressure :   getppid() takes  1573 cycles
+- With memory pressure : getppid() takes 15589 cycles
+
+We therefore have a slowdown of 10 times just to get the kernel variables from
+memory. Another test on the same architecture (Intel P4) measured the memory
+latency to be 559 cycles. Therefore, each cache line removed from the hot path
+would improve the syscall time of 3.5% in these conditions.
+
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- Documentation/immediate.txt |  232 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 232 insertions(+)
+ include/asm-generic/vmlinux.lds.h |    7 ++
+ include/linux/immediate.h         |  119 +++++++++++++++++++++++++++++++++++
+ include/linux/module.h            |    6 +
+ init/main.c                       |    2 
+ kernel/Makefile                   |    1 
+ kernel/immediate.c                |  128 ++++++++++++++++++++++++++++++++++++++
+ kernel/module.c                   |   16 ++++
+ 7 files changed, 279 insertions(+)
 
-Index: linux-2.6-lttng/Documentation/immediate.txt
+Index: linux-2.6-lttng/include/linux/immediate.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/Documentation/immediate.txt	2007-08-20 15:55:26.000000000 -0400
-@@ -0,0 +1,232 @@
-+		        Using the Immediate Values
++++ linux-2.6-lttng/include/linux/immediate.h	2007-08-07 13:30:21.000000000 -0400
+@@ -0,0 +1,119 @@
++#ifndef _LINUX_IMMEDIATE_H
++#define _LINUX_IMMEDIATE_H
 +
-+			    Mathieu Desnoyers
++/*
++ * Immediate values, can be updated at runtime and save cache lines.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
 +
++#ifdef CONFIG_IMMEDIATE
++#include <asm/immediate.h>
++#else
++/*
++ * Generic immediate values: a simple, standard, memory load.
++ */
 +
-+This document introduces Immediate Values and their use.
++struct module;
 +
-+* Purpose of immediate values
++/**
++ * immediate_read - read immediate variable
++ * @var: pointer of type immediate_*_t
++ *
++ * Reads the value of @var.
++ */
++#define immediate_read(var)		_immediate_read(var)
 +
-+An immediate value is used to compile into the kernel variables that sits within
-+the instruction stream. They are meant to be rarely updated but read often.
-+Using immediate values for these variables will save cache lines.
++/**
++ * immediate_set - set immediate variable (with locking)
++ * @var: pointer of type immediate_*_t
++ * @i: required value
++ *
++ * Sets the value of @var, taking the module_mutex if required by
++ * the architecture.
++ */
++#define immediate_set(var, i)		((var)->value = (i))
 +
-+This infrastructure is specialized in supporting dynamic patching of the values
-+in the instruction stream when multiple CPUs are running without disturbing the
-+normal system behavior.
++/**
++ * _immediate_set - set immediate variable (without locking)
++ * @var: pointer of type immediate_*_t
++ * @i: required value
++ *
++ * Sets the value of @var. Must be called with module_mutex held.
++ */
++#define _immediate_set(var, i)		immediate_set(var, i)
 +
-+Compiling code meant to be rarely enabled at runtime can be done using
-+immediate_if() as condition surrounding the code.
++/**
++ * immediate_set_early - set immediate variable at early boot
++ * @var: pointer of type immediate_*_t
++ * @i: required value
++ *
++ * Sets the value of @var. Should be used for early boot updates.
++ */
++#define immediate_set_early(var, i)	immediate_set(var, i)
 +
-+* Usage
++/**
++ * immediate_if - if () statement depending on an immediate value
++ * @var: pointer of type immediate_*_t
++ *
++ * Use as an if () statement depending on an immediate value.
++ */
++#define immediate_if(var)		if (immediate_read(var))
 +
-+In order to use the macro immediate, you should include linux/immediate.h.
++/*
++ * Internal update functions.
++ */
++static inline void module_immediate_setup(struct module *mod) { }
++static inline void immediate_update_early(void) { }
++#endif
 +
++/**
++ * DEFINE_IMMEDIATE_TYPE - Define an immediate type
++ * @type: type that the immediate should hold
++ * @name: name of the immediate type
++ *
++ * Define new immediate types. Naming scheme is immediate_*_t.
++ * Always access these types with the provided functions.
++ */
++#define DEFINE_IMMEDIATE_TYPE(type, name) \
++	typedef struct { type value; } name
++
++/*
++ * Standard pre-defined immediate types.
++ */
++DEFINE_IMMEDIATE_TYPE(char, immediate_char_t);
++DEFINE_IMMEDIATE_TYPE(short, immediate_short_t);
++DEFINE_IMMEDIATE_TYPE(int, immediate_int_t);
++DEFINE_IMMEDIATE_TYPE(long, immediate_long_t);
++DEFINE_IMMEDIATE_TYPE(void*, immediate_void_ptr_t);
++
++/**
++ * IMMEDIATE_INIT - Static initialization of an immediate variable
++ * @i: required value
++ *
++ * Use this macro to initialize an immediate value to an initial static
++ * value.
++ */
++#define IMMEDIATE_INIT(i)		{ (i) }
++
++/**
++ * _immediate_read - Read immediate value with standard memory load.
++ * @var: pointer of type immediate_*_t
++ *
++ * Force a data read of the immediate value instead of the immediate value
++ * based mechanism. Useful for __init and __exit section data read.
++ */
++#define _immediate_read(var)		(var)->value
++
++/*
++ * _immediate_if - if () statement depending on immediate value (memory load)
++ * @var: pointer of type immediate_*_t
++ *
++ * Force the use of a normal if () statement depending on an immediate value.
++ */
++#define _immediate_if(var)		if (_immediate_read(var))
++
++#endif
+Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-08-07 13:28:12.000000000 -0400
++++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-08-07 13:29:55.000000000 -0400
+@@ -122,6 +122,13 @@
+ 		VMLINUX_SYMBOL(__stop___kcrctab_gpl_future) = .;	\
+ 	}								\
+ 									\
++	/* Immediate values: pointers */				\
++	__immediate : AT(ADDR(__immediate) - LOAD_OFFSET) {		\
++		VMLINUX_SYMBOL(__start___immediate) = .;		\
++		*(__immediate)						\
++		VMLINUX_SYMBOL(__stop___immediate) = .;			\
++	}								\
++									\
+ 	/* Kernel symbol table: strings */				\
+         __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
+ 		*(__ksymtab_strings)					\
+Index: linux-2.6-lttng/include/linux/module.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/module.h	2007-08-07 13:29:52.000000000 -0400
++++ linux-2.6-lttng/include/linux/module.h	2007-08-07 13:29:55.000000000 -0400
+@@ -15,6 +15,7 @@
+ #include <linux/stringify.h>
+ #include <linux/kobject.h>
+ #include <linux/moduleparam.h>
 +#include <linux/immediate.h>
+ #include <asm/local.h>
+ 
+ #include <asm/module.h>
+@@ -374,6 +375,11 @@ struct module
+ 	/* The command line arguments (may be mangled).  People like
+ 	   keeping pointers to this stuff */
+ 	char *args;
 +
-+immediate_char_t this_immediate;
-+EXPORT_SYMBOL(this_immediate);
++#ifdef CONFIG_IMMEDIATE
++	const struct __immediate *immediate;
++	unsigned int num_immediate;
++#endif
+ };
+ #ifndef MODULE_ARCH_INIT
+ #define MODULE_ARCH_INIT {}
+Index: linux-2.6-lttng/kernel/module.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/module.c	2007-08-07 13:29:52.000000000 -0400
++++ linux-2.6-lttng/kernel/module.c	2007-08-07 13:29:55.000000000 -0400
+@@ -33,6 +33,7 @@
+ #include <linux/cpu.h>
+ #include <linux/moduleparam.h>
+ #include <linux/errno.h>
++#include <linux/immediate.h>
+ #include <linux/err.h>
+ #include <linux/vermagic.h>
+ #include <linux/notifier.h>
+@@ -1719,6 +1720,7 @@ static struct module *load_module(void _
+ 	unsigned int unusedcrcindex;
+ 	unsigned int unusedgplindex;
+ 	unsigned int unusedgplcrcindex;
++	unsigned int immediateindex = 0;
+ 	struct module *mod;
+ 	long err = 0;
+ 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
+@@ -1815,6 +1817,9 @@ static struct module *load_module(void _
+ #ifdef ARCH_UNWIND_SECTION_NAME
+ 	unwindex = find_sec(hdr, sechdrs, secstrings, ARCH_UNWIND_SECTION_NAME);
+ #endif
++#ifdef CONFIG_IMMEDIATE
++	immediateindex = find_sec(hdr, sechdrs, secstrings, "__immediate");
++#endif
+ 
+ 	/* Don't keep modinfo section */
+ 	sechdrs[infoindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
+@@ -1825,6 +1830,8 @@ static struct module *load_module(void _
+ #endif
+ 	if (unwindex)
+ 		sechdrs[unwindex].sh_flags |= SHF_ALLOC;
++	if (immediateindex)
++		sechdrs[immediateindex].sh_flags |= SHF_ALLOC;
+ 
+ 	/* Check module struct version now, before we try to use module. */
+ 	if (!check_modstruct_version(sechdrs, versindex, mod)) {
+@@ -1965,6 +1972,13 @@ static struct module *load_module(void _
+ 	mod->gpl_future_syms = (void *)sechdrs[gplfutureindex].sh_addr;
+ 	if (gplfuturecrcindex)
+ 		mod->gpl_future_crcs = (void *)sechdrs[gplfuturecrcindex].sh_addr;
++#ifdef CONFIG_IMMEDIATE
++	if (immediateindex) {
++		mod->immediate = (void *)sechdrs[immediateindex].sh_addr;
++		mod->num_immediate =
++			sechdrs[immediateindex].sh_size / sizeof(*mod->immediate);
++	}
++#endif
+ 
+ 	mod->unused_syms = (void *)sechdrs[unusedindex].sh_addr;
+ 	if (unusedcrcindex)
+@@ -2031,6 +2045,8 @@ static struct module *load_module(void _
+ 	 }
+ #endif
+ 
++	module_immediate_setup(mod);
 +
+ 	err = module_finalize(hdr, sechdrs, mod);
+ 	if (err < 0)
+ 		goto cleanup;
+Index: linux-2.6-lttng/kernel/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/kernel/Makefile	2007-08-07 13:28:12.000000000 -0400
++++ linux-2.6-lttng/kernel/Makefile	2007-08-07 13:29:55.000000000 -0400
+@@ -57,6 +57,7 @@ obj-$(CONFIG_RELAY) += relay.o
+ obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
+ obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
+ obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
++obj-$(CONFIG_IMMEDIATE) += immediate.o
+ 
+ ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
+ # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+Index: linux-2.6-lttng/kernel/immediate.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/kernel/immediate.c	2007-08-07 13:30:27.000000000 -0400
+@@ -0,0 +1,128 @@
++/*
++ * Copyright (C) 2007 Mathieu Desnoyers
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/immediate.h>
++#include <linux/memory.h>
 +
-+Add, in your code :
++extern const struct __immediate __start___immediate[];
++extern const struct __immediate __stop___immediate[];
 +
-+Use immediate_set(&this_immediate) to set the immediate value.
++/*
++ * modules_mutex nests inside immediate_mutex. immediate_mutex protects builtin
++ * immediates and module immediates.
++ */
++static DEFINE_MUTEX(immediate_mutex);
 +
-+Use immediate_read(&this_immediate) to read the immediate value.
++/*
++ * Sets a range of immediates to a enabled state : set the enable bit.
++ */
++static inline void _immediate_update_range(const struct __immediate *begin,
++		const struct __immediate *end)
++{
++	const struct __immediate *iter;
++	int ret;
 +
-+The immediate mechanism supports inserting multiple instances of the same
-+immediate. Immediate values can be put in inline functions, inlined static
-+functions, and unrolled loops.
++	for (iter = begin; iter < end; iter++) {
++		mutex_lock(&immediate_mutex);
++		kernel_text_lock();
++		ret = arch_immediate_update(iter);
++		kernel_text_unlock();
++		if (ret)
++			printk(KERN_WARNING "Invalid immediate value. "
++					    "Variable at %p, "
++					    "instruction at %p, size %lu\n",
++					    (void*)iter->immediate,
++					    (void*)iter->var, iter->size);
++		mutex_unlock(&immediate_mutex);
++	}
++}
 +
-+If you have to read the immediate values from a function declared as __init or
-+__exit, you should explicitly use _immediate_read(), which will fall back on a
-+global variable read. Failing to do so will leave a reference to the __init
-+section after it is freed (it would generate a modpost warning).
++#ifdef CONFIG_MODULES
++/**
++ * module_immediate_setup - Update immediate values in a module
++ * @mod: pointer to the struct module
++ *
++ * Setup the immediate according to the variable upon which it depends.  Called
++ * by load_module with module_mutex held. This mutex protects against concurrent
++ * modifications to modules'immediates. Therefore, since
++ * module_immediate_setup() does not modify builtin immediates, it does not need
++ * to take the immediate_mutex.
++ */
++void module_immediate_setup(struct module *mod)
++{
++	_immediate_update_range(mod->immediate,
++				mod->immediate+mod->num_immediate);
++}
 +
-+The prefered idiom to dynamically enable compiled-in code is to use
-+immediate_if (&this_immediate), which may eventually use gcc improvements to
-+provide a jump instruction patching based condition instead of a immediate value
-+feeding a conditional jump. You should use _immediate_if () instead of
-+immediate_if () in functions marked __init or __exit.
++/*
++ * immediate mutex nests inside the modules mutex.
++ */
++static inline void immediate_update_modules(int lock)
++{
++	struct module *mod;
 +
-+immediate_set_early() should be used only at early kernel boot time, before SMP
-+is activated.
++	if (lock)
++		mutex_lock(&module_mutex);
++	list_for_each_entry(mod, &modules, list) {
++		if (mod->taints)
++			continue;
++		_immediate_update_range(mod->immediate,
++			mod->immediate + mod->num_immediate);
++	}
++	if (lock)
++		mutex_unlock(&module_mutex);
++}
++#else
++static inline void immediate_update_modules(int lock) { }
++#endif
 +
-+If you need to declare your own immediate types (for instance, a pointer to
-+struct task_struct), use:
++/**
++ * immediate_update - update all immediate values in the kernel
++ * @lock: should a module_mutex be taken ?
++ *
++ * Iterate on the kernel core and modules to update the immediate values.
++ */
++void immediate_update(int lock)
++{
++	/* Core kernel immediates */
++	_immediate_update_range(__start___immediate, __stop___immediate);
++	/* immediates in modules. */
++	immediate_update_modules(lock);
++}
++EXPORT_SYMBOL_GPL(immediate_update);
 +
-+DEFINE_IMMEDIATE_TYPE(struct task_struct*, immediate_task_struct_ptr_t);
++static void __init immediate_update_early_range(const struct __immediate *begin,
++		const struct __immediate *end)
++{
++	const struct __immediate *iter;
 +
-+and declare your variable with:
-+immediate_task_struct_ptr_t myptr;
++	for (iter = begin; iter < end; iter++)
++		arch_immediate_update_early(iter);
++}
 +
-+You can choose to set an initial static value to the immediate by using, for
-+instance:
-+
-+immediate_task_struct_ptr_t myptr = IMMEDIATE_INIT(10);
-+
-+
-+* Optimization for a given architecture
-+
-+One can implement optimized immediate values for a given architecture by
-+replacing asm-$ARCH/immediate.h.
-+
-+* Performance improvement
-+
-+* Memory hit for a data-based branch
-+
-+Here are the results on a 3GHz Pentium 4:
-+
-+number of tests : 100
-+number of branches per test : 100000
-+memory hit cycles per iteration (mean) : 636.611
-+L1 cache hit cycles per iteration (mean) : 89.6413
-+instruction stream based test, cycles per iteration (mean) : 85.3438
-+Just getting the pointer from a modulo on a pseudo-random value, doing
-+  noting with it, cycles per iteration (mean) : 77.5044
-+
-+So:
-+Base case:                      77.50 cycles
-+instruction stream based test:  +7.8394 cycles
-+L1 cache hit based test:        +12.1369 cycles
-+Memory load based test:         +559.1066 cycles
-+
-+So let's say we have a ping flood coming at
-+(14014 packets transmitted, 14014 received, 0% packet loss, time 1826ms)
-+7674 packets per second. If we put 2 markers for irq entry/exit, it
-+brings us to 15348 markers sites executed per second.
-+
-+(15348 exec/s) * (559 cycles/exec) / (3G cycles/s) = 0.0029
-+We therefore have a 0.29% slowdown just on this case.
-+
-+Compared to this, the instruction stream based test will cause a
-+slowdown of:
-+
-+(15348 exec/s) * (7.84 cycles/exec) / (3G cycles/s) = 0.00004
-+For a 0.004% slowdown.
-+
-+If we plan to use this for memory allocation, spinlock, and all sort of
-+very high event rate tracing, we can assume it will execute 10 to 100
-+times more sites per second, which brings us to 0.4% slowdown with the
-+instruction stream based test compared to 29% slowdown with the memory
-+load based test on a system with high memory pressure.
-+
-+
-+
-+* Markers impact under heavy memory load
-+
-+Running a kernel with my LTTng instrumentation set, in a test that
-+generates memory pressure (from userspace) by trashing L1 and L2 caches
-+between calls to getppid() (note: syscall_trace is active and calls
-+a marker upon syscall entry and syscall exit; markers are disarmed).
-+This test is done in user-space, so there are some delays due to IRQs
-+coming and to the scheduler. (UP 2.6.22-rc6-mm1 kernel, task with -20
-+nice level)
-+
-+My first set of results : Linear cache trashing, turned out not to be
-+very interesting, because it seems like the linearity of the memset on a
-+full array is somehow detected and it does not "really" trash the
-+caches.
-+
-+Now the most interesting result : Random walk L1 and L2 trashing
-+surrounding a getppid() call.
-+
-+- Markers compiled out (but syscall_trace execution forced)
-+number of tests : 10000
-+No memory pressure
-+Reading timestamps takes 108.033 cycles
-+getppid : 1681.4 cycles
-+With memory pressure
-+Reading timestamps takes 102.938 cycles
-+getppid : 15691.6 cycles
-+
-+
-+- With the immediate values based markers:
-+number of tests : 10000
-+No memory pressure
-+Reading timestamps takes 108.006 cycles
-+getppid : 1681.84 cycles
-+With memory pressure
-+Reading timestamps takes 100.291 cycles
-+getppid : 11793 cycles
-+
-+
-+- With global variables based markers:
-+number of tests : 10000
-+No memory pressure
-+Reading timestamps takes 107.999 cycles
-+getppid : 1669.06 cycles
-+With memory pressure
-+Reading timestamps takes 102.839 cycles
-+getppid : 12535 cycles
-+
-+The result is quite interesting in that the kernel is slower without
-+markers than with markers. I explain it by the fact that the data
-+accessed is not layed out in the same manner in the cache lines when the
-+markers are compiled in or out. It seems that it aligns the function's
-+data better to compile-in the markers in this case.
-+
-+But since the interesting comparison is between the immediate values and
-+global variables based markers, and because they share the same memory
-+layout, except for the movl being replaced by a movz, we see that the
-+global variable based markers (2 markers) adds 742 cycles to each system
-+call (syscall entry and exit are traced and memory locations for both
-+global variables lie on the same cache line).
-+
-+
-+- Test redone with less iterations, but with error estimates
-+
-+10 runs of 100 iterations each: Tests done on a 3GHz P4. Here I run getppid with
-+syscall trace inactive, comparing memory pressure and w/o memory pressure.
-+(sorry, my system is not setup to execute syscall_trace this time, but it will
-+make the point anyway).
-+
-+No memory pressure
-+Reading timestamps:     150.92 cycles,     std dev.    1.01 cycles
-+getppid:               1462.09 cycles,     std dev.   18.87 cycles
-+
-+With memory pressure
-+Reading timestamps:     578.22 cycles,     std dev.  269.51 cycles
-+getppid:              17113.33 cycles,     std dev. 1655.92 cycles
-+
-+
-+Now for memory read timing: (10 runs, branches per test: 100000)
-+Memory read based branch:
-+                       644.09 cycles,      std dev.   11.39 cycles
-+L1 cache hit based branch:
-+                        88.16 cycles,      std dev.    1.35 cycles
-+
-+
-+So, now that we have the raw results, let's calculate:
-+
-+Memory read:
-+644.09±11.39 - 88.16±1.35 = 555.93±11.46 cycles
-+
-+Getppid without memory pressure:
-+1462.09±18.87 - 150.92±1.01 = 1311.17±18.90 cycles
-+
-+Getppid with memory pressure:
-+17113.33±1655.92 - 578.22±269.51 = 16535.11±1677.71 cycles
-+
-+Therefore, if we add 2 markers not based on immediate values to the getppid
-+code, which would add 2 memory reads, we would add
-+2 * 555.93±12.74 = 1111.86±25.48 cycles
-+
-+Therefore,
-+
-+1111.86±25.48 / 16535.11±1677.71 = 0.0672
-+ relative error: sqrt(((25.48/1111.86)^2)+((1677.71/16535.11)^2))
-+                     = 0.1040
-+ absolute error: 0.1040 * 0.0672 = 0.0070
-+
-+Therefore: 0.0672±0.0070 * 100% = 6.72±0.70 %
-+
-+We can therefore affirm that adding 2 markers to getppid, on a system with high
-+memory pressure, would have a performance hit of at least 6.0% on the system
-+call time, all within the uncertainty limits of these tests. The same applies to
-+other kernel code paths. The smaller those code paths are, the highest the
-+impact ratio will be.
-+
-+Therefore, not only is it interesting to use the immediate values to dynamically
-+activate dormant code such as the markers, but I think it should also be
-+considered as a replacement for many of the "read mostly" static variables.
++/**
++ * immediate_update_early - Update immediate values at boot time
++ *
++ * Update the immediate values to the state of the variables they refer to. It
++ * is done before SMP is active, at the very beginning of start_kernel().
++ */
++void __init immediate_update_early(void)
++{
++	immediate_update_early_range(__start___immediate, __stop___immediate);
++}
+Index: linux-2.6-lttng/init/main.c
+===================================================================
+--- linux-2.6-lttng.orig/init/main.c	2007-08-07 13:28:12.000000000 -0400
++++ linux-2.6-lttng/init/main.c	2007-08-07 13:29:55.000000000 -0400
+@@ -56,6 +56,7 @@
+ #include <linux/pid_namespace.h>
+ #include <linux/device.h>
+ #include <linux/kthread.h>
++#include <linux/immediate.h>
+ 
+ #include <asm/io.h>
+ #include <asm/bugs.h>
+@@ -521,6 +522,7 @@ asmlinkage void __init start_kernel(void
+ 	unwind_init();
+ 	lockdep_init();
+ 	container_init_early();
++	immediate_update_early();
+ 
+ 	local_irq_disable();
+ 	early_boot_irqs_off();
 
 -- 
 Mathieu Desnoyers
