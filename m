@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbXHTTyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760594AbXHTTzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758673AbXHTTyT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 15:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbXHTTyG
+	id S1760594AbXHTTzg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 15:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXHTTz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 15:54:06 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:34240 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752856AbXHTTyE (ORCPT
+	Mon, 20 Aug 2007 15:55:27 -0400
+Received: from intcomgrp.com ([216.54.13.120]:41851 "EHLO
+	beta.support.intcomgrp.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750950AbXHTTz1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 15:54:04 -0400
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Cc: Marc Perkel <mperkel@yahoo.com>, Brennan Ashton <comphappy@gmail.com>,
-       Al Viro <viro@ftp.linux.org.uk>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Phillip Susi <psusi@cfl.rr.com>,
-       Michael Tharp <gxti@partiallystapled.com>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: Thinking outside the box on file systems
-References: <465458.84259.qm@web52505.mail.re2.yahoo.com>
-	<46C9B2A9.1010904@aitel.hist.no>
-From: Nix <nix@esperi.org.uk>
-Emacs: the prosecution rests its case.
-Date: Mon, 20 Aug 2007 20:52:45 +0100
-In-Reply-To: <46C9B2A9.1010904@aitel.hist.no> (Helge Hafting's message of "Mon, 20 Aug 2007 17:26:33 +0200")
-Message-ID: <87tzqum19u.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+	Mon, 20 Aug 2007 15:55:27 -0400
+X-Greylist: delayed 365 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Aug 2007 15:55:26 EDT
+Message-ID: <46C9F06C.4090301@beta.intcomgrp.com>
+Date: Mon, 20 Aug 2007 15:50:04 -0400
+From: James Kosin <jkosin@beta.intcomgrp.com>
+Organization: International Communications Group, Inc.
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-CTc-dcc2-Metrics: hades 1031; Body=9 Fuz1=9 Fuz2=9
+To: linux-kernel@vger.kernel.org
+Subject: IDE Tape Spec(s)
+X-Enigmail-Version: 0.95.3
+OpenPGP: id=7BB59129
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20 Aug 2007, Helge Hafting stated:
-> Shooting down bad ideas saves tremendous amounts of work,
-> killing an idea at the discussion stage means the idea never
-> got to the much more labor-intensive implementation stage.
->
-> This don't mean that all new ideas are killed, only the bad ones.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+ 
+Hi,
 
-Even the good ones pretty much never start out perfect[1]. It always
-takes some criticism and fixing before the code is right, let alone
-the design.
+Anyone have a good Specification for IDE Tape drives and the Linux Kernel?
 
-(Of course part of the problem with this idea is that it was so vague
-that the only problems there *could* be with it were huge gaping ones:
-you can't have subtle problems with an idea with no subtle elements.
-Unfortunately it had a lot of those, and fixing them without junking
-the whole idea would be hard. No, I haven't thought about how to do
-it: Marc might like to, though, what with it being his idea and all.)
+I've had a problem with the ide_tape module and I am going to have to
+track the problem myself.
 
-[1] except mingo's. mingo has the Perfect Design Mojo. How this came
-    to pass, mere mortals may not speculate.
+The tape drive in use is an HP T-20 IDE tape drive connected to the
+IDE interface.
+
+Please Reply to and copy my email address, I'm not a member of this list.
+
+Thanks,
+James Kosin
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+ 
+iD8DBQFGyfBskNLDmnu1kSkRAnaXAJ9m4NTWuhlatGVjwzTJrje6yFb/WQCfUINu
+/UCB+MRpflfmPX0JJ5PYfis=
+=cVqj
+-----END PGP SIGNATURE-----
+
+-- 
+Scanned by ClamAV - http://www.clamav.net
+
