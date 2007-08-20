@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764625AbXHTU1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764327AbXHTU2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764625AbXHTU1q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762371AbXHTUWu
+	id S1764327AbXHTU2H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:28:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbXHTUYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:22:50 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54552 "EHLO smtp.polymtl.ca"
+	Mon, 20 Aug 2007 16:24:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39421 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763352AbXHTUWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:22:49 -0400
-Message-Id: <20070820202148.584813347@polymtl.ca>
-References: <20070820201902.597091353@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 16:19:11 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>, prasanna@in.ibm.com,
-       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: [patch 09/11] Text Edit Lock - kprobes x86_64
-Content-Disposition: inline; filename=text-edit-lock-kprobes-x86_64.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:21:49 +0000
+	id S1762874AbXHTUX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:23:59 -0400
+Date: Mon, 20 Aug 2007 16:23:56 -0400
+From: Dave Jones <davej@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [POWERPC] Fix for assembler -g
+Message-ID: <20070820202356.GA31712@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Roland McGrath <roland@redhat.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Paul Mackerras <paulus@samba.org>
+References: <20070820200856.GA4194@redhat.com> <20070820201818.A68C54D05F2@magilla.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070820201818.A68C54D05F2@magilla.localdomain>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make kprobes use text_set instead of text_poke.
+On Mon, Aug 20, 2007 at 01:18:18PM -0700, Roland McGrath wrote:
+ > > I'm still seeing failures with this.
+ > > http://koji.fedoraproject.org/koji/getfile?taskID=110854&name=build.log
+ > > shows..
+ > > 
+ > > lparmap.c: Assembler messages:
+ > > lparmap.c:84: Error: file number 1 already allocated
+ > > make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
+ > > 
+ > > Anything I can provide to help diagnose this?
+ > 
+ > Hmm.  Check the V=1 make output to see that the lparmap.c really got the -g0.
+ > The log says it didn't.  Oops!  It looks like the patch that got committed is
+ > the one that sets CFLAGS_lparmap.s, but really it needs to set
+ > CFLAGS_lparmap.o instead (go kbuild).  Did I post the wrong one?  (It's only
+ > one letter different.)  Sorry about that!  (I committed the right one to
+ > Fedora, which you'd think would help Dave, but no.)
+ 
+Ahh, my eyes missed that the one upstream was subtley different, so I
+dropped the one you committed to Fedora without trying it.
+In a way though, good thing, or mainline would have continued to be
+broken :)
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: prasanna@in.ibm.com
-CC: ananth@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
----
- arch/x86_64/kernel/kprobes.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6-lttng/arch/x86_64/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/arch/x86_64/kernel/kprobes.c	2007-08-19 21:56:42.000000000 -0400
-+++ linux-2.6-lttng/arch/x86_64/kernel/kprobes.c	2007-08-19 22:27:54.000000000 -0400
-@@ -209,12 +209,12 @@ static void __kprobes arch_copy_kprobe(s
- 
- void __kprobes arch_arm_kprobe(struct kprobe *p)
- {
--	text_poke(p->addr, ((unsigned char []){BREAKPOINT_INSTRUCTION}), 1);
-+	text_set(p->addr, BREAKPOINT_INSTRUCTION, 1);
- }
- 
- void __kprobes arch_disarm_kprobe(struct kprobe *p)
- {
--	text_poke(p->addr, &p->opcode, 1);
-+	text_set(p->addr, p->opcode, 1);
- }
- 
- void __kprobes arch_remove_kprobe(struct kprobe *p)
+	Dave
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+http://www.codemonkey.org.uk
