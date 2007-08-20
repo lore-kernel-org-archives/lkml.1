@@ -1,61 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760309AbXHTPdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbXHTPmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760309AbXHTPdc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 11:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756705AbXHTPdZ
+	id S1760041AbXHTPmd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 11:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbXHTPmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 11:33:25 -0400
-Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:1633 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756231AbXHTPdY (ORCPT
+	Mon, 20 Aug 2007 11:42:23 -0400
+Received: from web90407.mail.mud.yahoo.com ([216.252.100.159]:35677 "HELO
+	web90407.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756705AbXHTPmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 11:33:24 -0400
-Date: Mon, 20 Aug 2007 17:34:50 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: CONFIG_SUSPEND and power consumption
-Message-ID: <20070820173450.4ad178a9@hyperion.delvare>
-In-Reply-To: <200708201211.34698.oliver@neukum.org>
-References: <20070819153259.2c96b904@hyperion.delvare>
-	<200708192242.43819.rjw@sisk.pl>
-	<20070820120258.7d090cc4@hyperion.delvare>
-	<200708201211.34698.oliver@neukum.org>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
+	Mon, 20 Aug 2007 11:42:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=TAMDJi2nAvEL9xYyDrgSRApFvyqouWoVYqWz5RFDs8PnVDFp4ul7ShNS/xiHrrURDbHB8OpQHED6eP2i9wsxIwd8NqALoHttcH2oS4ZbOUlHtQjQy/V2GD2wfgObXkt9FDhJhvx/ytF6bRml3wD321LGfQ5kk4Y8Xw2JJa9x0ps=;
+X-YMail-OSG: 8qSaEucVM1ldXpcxWHM3otZsdCrjZLFdhD729X41cMyW2A8o80hfDs0K0cRjMZBexneAaZsw9Q2kVsFE9h30kNuikzKYE64g0y7o
+Date: Mon, 20 Aug 2007 08:42:21 -0700 (PDT)
+From: James Corey <ploversegg@yahoo.com>
+Subject: Re: 2.6.23-rc3 and SKY2 driver issue
+To: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
+In-Reply-To: <20070816090556.6a5295e6@oldman>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <370212.9287.qm@web90407.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Aug 2007 12:11:34 +0200, Oliver Neukum wrote:
-> Am Montag 20 August 2007 schrieb Jean Delvare:
-> > If I rmmod "ehci-hcd" then the power consumption is back to 69 W. This
-> > confirms that this is really USB-related. I have to admit that I did
-> > not expect an external drive to eat that much power from the system,
-> > especially when not used. I am told that VIA chips are notoriously bad
-> > at this kind of things. I'll try the same external drive on an Intel
-> > system later today.
-> > 
-> > The last mystery remaining is how USB "activity" can cause my CPU to
-> > heat. I would expect the south bridge to heat, not the CPU.
+
+--- Stephen Hemminger
+<shemminger@linux-foundation.org> wrote:
+
+> On Thu, 16 Aug 2007 10:25:45 +0200
+> "Michal Piotrowski"
+> <michal.k.k.piotrowski@gmail.com> wrote:
 > 
-> USB, or strictly speaking EHCI, OHCI and UHCI, use DMA. To allow
-> that the cache coherency logic has to be active. Therefore your CPU
-> cannot go to C3. Therefore it draws more power. The problem we are
-> facing in USB is that to get great savings, our coverage has to be perfect.
-> One device that cannot be autosuspended and we lose most savings.
+> > [Adding Stephen and netdev to CC]
+> > 
+> > On 15/08/07, James Corey <ploversegg@yahoo.com>
+> wrote:
+> > >
+> > > I tried running a D-link gig card on kernel
+> 2.6.21.1
+> > > and it came up fine, but when I did a sftp of
+> > > an linux dvd ISO to it, the interface would lock
+> > > up hard with the error
+> > >
+> > > eth1: hw csum failure.
+> > >
+> > > Call Trace:
+> > >  <IRQ>  [<ffffffff804d3e31>]
+> > > __skb_checksum_complete_head+0x46/0x5f
+> > >  [<ffffffff804d3e56>]
+> __skb_checksum_complete+0xc/0x11
+> > >  [<ffffffff805046c7>] tcp_v4_rcv+0x157/0x810
+> > >  [<ffffffff804d8a6f>] dev_queue_xmit+0x237/0x260
+> > >  [<ffffffff80229990>]
+> find_busiest_group+0x252/0x684
+> > >  [<ffffffff804ead50>]
+> ip_local_deliver+0xca/0x14c
+> > >  [<ffffffff804eb24a>] ip_rcv+0x478/0x4ba
+> > >  [<ffffffff803ec7d3>] sky2_poll+0x6f9/0x9b9
+> > >  [<ffffffff8022bd5d>]
+> > > run_rebalance_domains+0x13e/0x408
+> > >  [<ffffffff804d877a>] net_rx_action+0xa8/0x166
+> > >  [<ffffffff80235d62>] __do_softirq+0x55/0xc3
+> > >  [<ffffffff8020a4ec>] call_softirq+0x1c/0x28
+> > >  [<ffffffff8020b611>] do_softirq+0x2c/0x7d
+> > >  [<ffffffff8020b8cf>] do_IRQ+0x13e/0x15f
+> > >  [<ffffffff802086ce>] mwait_idle+0x0/0x46
+> > >  [<ffffffff80209871>] ret_from_intr+0x0/0xa
+> > >  <EOI>  [<ffffffff80208710>]
+> mwait_idle+0x42/0x46
+> > >  [<ffffffff80208666>] cpu_idle+0x8c/0xaf
+> > >  [<ffffffff8078174e>] start_kernel+0x2ac/0x2b8
+> > >  [<ffffffff80781140>] _sinittext+0x140/0x144
+> > >
+> > >
+> > > So I tried running the latest snapshot
+> 2.6.23-rc3
+> > > and the almost the same thing happens. Only
+> > > difference is that now the entire box locks up.
+> > > The error is almost the same
+> > >
+> > > eth1: hw csum failure.
+> > >
+> > > Call Trace:
+> > >  <IRQ>  [<ffffffff804779b6>]
+> > > __skb_checksum_complete_head+0x43/0x56
+> > >  [<ffffffff804779d5>]
+> __skb_checksum_complete+0xc/0x11
+> > >  [<ffffffff804a989d>] tcp_v4_rcv+0x14e/0x801
+> > >  [<ffffffff8048ff84>]
+> ip_local_deliver+0xca/0x14c
+> > >  [<ffffffff80490472>] ip_rcv+0x46c/0x4ae
+> > >  [<ffffffff880060f9>]
+> :sky2:sky2_poll+0x72b/0x9c7
+> > >  [<ffffffff8047c934>] net_rx_action+0xa8/0x166
+> > >  [<ffffffff80235ced>] __do_softirq+0x55/0xc4
+> > >  [<ffffffff8020c5cc>] call_softirq+0x1c/0x28
+> > >  [<ffffffff8020d6fd>] do_softirq+0x2c/0x7d
+> > >  [<ffffffff8020d9bb>] do_IRQ+0x13e/0x15f
+> > >  [<ffffffff8020a780>] mwait_idle+0x0/0x48
+> > >  [<ffffffff8020b951>] ret_from_intr+0x0/0xa
+> > >  <EOI>  [<ffffffff880063e7>]
+> > > :sky2:sky2_xmit_frame+0x0/0x41d
+> > >  [<ffffffff8020a7c2>] mwait_idle+0x42/0x48
+> > >  [<ffffffff8020a718>] cpu_idle+0xbd/0xe0
+> > >  [<ffffffff80704a5a>] start_kernel+0x2ac/0x2b8
+> > >  [<ffffffff80704140>] _sinittext+0x140/0x144
+> > >
+> > >
+> > > I see that the new kernel includes some sort of
+> > > SKY2 DEBUG stuff. I would be happy to rerun
+> > > the test with that turned on, given some minor
+> > > direction.
+> > >
+> > 
+> > Regards,
+> > Michal
+> 
+> Please reproduce with a more recent kernel?
 
-Ah, OK, thanks for the clarification, it explains a lot.
+Um, I thought 2.6.23rc WAS pretty recent. :-)
 
-I've made some more tests on two Intel boards and another VIA board.
-The bottom line is that both VIA boards see a bump in power consumption
-when plugging my USB 2.0 hard disk drive (10 W on one board, 4 W on the
-other) while none of the Intel boards exhibit any change in power
-consumption. I wonder if I should blame VIA for eating extra power when
-the disk is plugged, or thank them for saving power when it's not. Or
-maybe I am looking at things the wrong way, and I should thank AMD for
-saving more power in C3 than Intel does?
+I'll check if there is something newer in the
+repository now.
 
--- 
-Jean Delvare
+-J
+
+
+
+       
+____________________________________________________________________________________
+Take the Internet to Go: Yahoo!Go puts the Internet in your pocket: mail, news, photos & more. 
+http://mobile.yahoo.com/go?refer=1GNXIC
