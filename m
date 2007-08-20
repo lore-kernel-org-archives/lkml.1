@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761544AbXHTQIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbXHTQM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761544AbXHTQIa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 12:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760899AbXHTQIL
+	id S1760965AbXHTQM1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759601AbXHTQMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 12:08:11 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34886 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760869AbXHTQIJ (ORCPT
+	Mon, 20 Aug 2007 12:12:14 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:60085 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755002AbXHTQMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 12:08:09 -0400
-From: akepner@sgi.com
-Date: Mon, 20 Aug 2007 09:07:09 -0700
-To: Jes Sorensen <jes@sgi.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-Message-ID: <20070820160709.GA28963@sgi.com>
-References: <20070818002746.GU1813@sgi.com> <46C94FD5.6000006@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46C94FD5.6000006@sgi.com>
-User-Agent: Mutt/1.4.1i
+	Mon, 20 Aug 2007 12:12:13 -0400
+Date: Mon, 20 Aug 2007 18:12:11 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] Refine FAT chmod checks
+In-Reply-To: <87ps1i6xrh.fsf@duaron.myhome.or.jp>
+Message-ID: <Pine.LNX.4.64.0708201803080.5333@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0708201500490.30570@fbirervta.pbzchgretzou.qr>
+ <87ps1i6xrh.fsf@duaron.myhome.or.jp>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 20, 2007 at 10:24:53AM +0200, Jes Sorensen wrote:
+Hi,
 
-> I'm a little concerned about changing the API for the dma_ foo
-> functions, which are defined cross platform. If you want to change
-> that, I think it will require updating the documentation explaining
-> it.
+On Aug 21 2007 00:17, OGAWA Hirofumi wrote:
+>Jan Engelhardt <jengelh@computergmbh.de> writes:
+>> when a vfat filesystem is mounted without the quiet option, chown fails, 
+>> but chmod still succeeds. I think that is wrong.
+>
+>Could you explain why this is wrong more?
 
-Good idea. I'll post a documentation patchette.
+Suppose a vfat filesystem is mounted with umask=0 and [not-quiet].
+Then all files will have mode 0777. Trying to change the owner will
+fail, because fat does not know about owners or groups. chmod 0770,
+on the other hand, will succeed, even though fat does not know about
+the permission triplet [user/group/other].
 
-> 
-> Regarding ARCH_DOES_POSTED_DMA, is that sufficient as a #define or
-> does it have to be run-time tested? (does it do anything at this
-> stage). I ask since not all ia64 platforms do posted DMA.
-> 
+So this patch changes fat's not-quiet behavior so that only UNIX
+modes are accepted that can be mapped lossless between the fat disk
+format and the local system. There is only one attribute, and that is
+the readonly attribute, which is mapped to the UNIX write permission
+bit(s). chmod 0555 is therefore valid (taking away the +w bits <=>
+setting the readonly attribute). Since chmod 0775 and chmod 0755 is
+an ambiguous case as to whether to set or clear the readonly bit,
+these modes are also denied.
 
-I think a #define is exactly what we want here. 
+Does that help?
 
-The newly #define-ed function (for now, and maybe forever) does 
-nothing except on IA64_SGI_SN2, which does posted DMA. 
 
+
+have a nice day,
+	Jan
 -- 
-Arthur
-
