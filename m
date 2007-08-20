@@ -1,35 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932233AbXHTUiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932395AbXHTUjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932233AbXHTUiv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765472AbXHTUd7
+	id S932395AbXHTUjW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765613AbXHTUe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:33:59 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:36251 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765461AbXHTUd5 (ORCPT
+	Mon, 20 Aug 2007 16:34:56 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:63622 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765612AbXHTUex (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:33:57 -0400
-Date: Mon, 20 Aug 2007 22:33:55 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Thomas Graf <tgraf@suug.ch>
-Cc: Felix Marti <felix@chelsio.com>, Andi Kleen <andi@firstfloor.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, jeff@garzik.org,
-       netdev@vger.kernel.org, rdreier@cisco.com, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org, David Miller <davem@davemloft.net>
-Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
-Message-ID: <20070820203355.GA21244@one.firstfloor.org>
-References: <p73y7g6yt3j.fsf@bingen.suse.de> <8A71B368A89016469F72CD08050AD334018E2149@maui.asicdesigners.com> <20070820201808.GM32236@postel.suug.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 20 Aug 2007 16:34:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=grzaSji6xvuUkp5vpqvIiguQV11tS6CBj3hvOa3mDxSNT4/myqoSTK+n/K3cn5yjb1nOVTnQwHyZOMpdbfraY8mewehtlywwi/C7JHQHE5pEzESr5AXJyRfcshY8TU+mZ24f3qenSFrlt8R9iynOvVZsFeG/iuaPWqF7MkuSr3M=
+Message-ID: <5d6222a80708201334q27fc6cbcr7ce6a9d7147437a2@mail.gmail.com>
+Date: Mon, 20 Aug 2007 17:34:49 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "laurent.vivier@bull.net" <laurent.vivier@bull.net>
+Subject: =?ISO-8859-1?Q?Re:_R=E9f._:_Re:_[PATCH_0/4]_Vi?= =?ISO-8859-1?Q?rtual_Machine_Time_Accounting?=
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>, "John Stoffel" <john@stoffel.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       virtualization <virtualization@lists.linux-foundation.org>
+In-Reply-To: <OF945F7B1F.FF4B4672-ONC125733D.006266E7-C125733D.00626843@frec.bull.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070820201808.GM32236@postel.suug.ch>
-User-Agent: Mutt/1.4.2.1i
+References: <OF945F7B1F.FF4B4672-ONC125733D.006266E7-C125733D.00626843@frec.bull.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> GPUs have almost no influence on system security, 
+> by doing this at kernel level, we can:
+> - measure exactly the guest time,
+> - move this part of system time to user time (as you think it should be
+> user time),
+> - have consistency between system, user and guest time,
+> - report values in /proc/state and /proc/<pid>/state, at system wide level
+>
+> I'm not sure we can measure the guest time at the qemu user level.
+>
+> Perhaps Rusty can say what he thinks about this ?
+>
+Even if we cannot _now_, isn't that an easier, and safer change? (and
+I don't think we lose anything by design).
 
-Unless you use direct rendering from user space.
+Although I don't know KVM to a that deep level, I think it should be
+possible to keep the virtual cpus in different process (or threads),
+and take the accounting time from there. Perfectly possible to know
+the time we spent running (user time), and the time the hypervisor
+spent doing things on our behalf (system time).
 
--Andi
+$0.02.
+
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
+
+"The less confident you are, the more serious you have to act."
