@@ -1,111 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbXHTLct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbXHTLqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758673AbXHTLct (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 07:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbXHTLck
+	id S1757530AbXHTLqK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 07:46:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755814AbXHTLpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 07:32:40 -0400
-Received: from hu-out-0506.google.com ([72.14.214.232]:25889 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756065AbXHTLcj (ORCPT
+	Mon, 20 Aug 2007 07:45:55 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:54847 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755223AbXHTLpz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 07:32:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=I3DHy9QPkOUWZ3U3ozyrFlBEdQ+tWL7VyEhXmqSU8osKnKy2uNrI3GS5MVhZMICyLItyhOgmMh/Iy4GjtIzfx7I2sHHmj2B90WzXrFUTq2Ujd3iotSwFnHSbY0TCqivGIiIJcg0j+TLn4Hky9yqZgI6Y2ltx3oBNRtgW9HfL7mY=
-Date: Mon, 20 Aug 2007 15:32:07 +0400
-From: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc3-hrt2 stall during boot on ASUS F3T (x86_64)
-Message-ID: <20070820153207.278df810@localhost>
-In-Reply-To: <1187602270.7007.173.camel@chaos>
-References: <20070820104455.0dc7fe3d@localhost>
- <1187592717.6114.170.camel@twins>
- <1187596481.7007.169.camel@chaos>
- <20070820123559.3582f3bc@localhost>
- <1187602270.7007.173.camel@chaos>
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Aug 2007 07:45:55 -0400
+Date: Mon, 20 Aug 2007 13:45:44 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Rene Herman <rene.herman@home.nl>
+cc: Bodo Eggert <7eggert@gmx.de>, Mike Mohr <akihana@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: group ownership of tun devices -- nonfunctional?
+In-Reply-To: <46C8D124.4030701@home.nl>
+Message-ID: <Pine.LNX.4.58.0708201324570.2672@be1.lrz>
+References: <8Tpwf-3Nb-1@gated-at.bofh.it> <E1IMnHK-00012c-VC@be1.lrz>
+ <46C86B6C.8090209@home.nl> <Pine.LNX.4.58.0708192333170.2426@be1.lrz>
+ <46C8D124.4030701@home.nl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX19/HWbmjA5RqaEzBN0GDCRJUJkXstQ3WvYUZq7
+ iFzmk0+RI78NP63vKJ0fzAgfr5y5aHwu9q3OAQMnADUry6J52X
+ rOUzuWRt/r6nf0Wgoqc2Q==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Aug 2007 11:31:10 +0200
-Thomas Gleixner <tglx@linutronix.de> wrote:
+On Mon, 20 Aug 2007, Rene Herman wrote:
+> On 08/19/2007 11:42 PM, Bodo Eggert wrote:
 
-> On Mon, 2007-08-20 at 12:35 +0400, Mikhail Kshevetskiy wrote:
-> > > > >   at 73.442744: I do nothing, the kernel continue to boot after 168 sec
-> > > > > 
-> > > > >   at 243.497822: After 2 hours i press and hold "shift" button to continue booting 
-> > > > > 
-> > > > > The dmesg output and my kernel configuration are listed below. 
-> > > > > 
-> > > > > I test i386 version of the same kernel with very similar configuration, it boot normally.
-> > > 
-> > > Can you please add "noapictimer" to the kernel command line ?
-> >
-> > This helps, thank you.
-> > Why it is not required for i386 kernel?
-> > Is it possible to fix this problem without disabling of apic timer?
+> > The intended [my me] semantics is If the user is not
+> >  * the allowed user
+> > or
+> >  * member of the allowed group
+> > or
+> >  * cabable of CAP_NET_ADMIN
+> > then error out. I'm asuming
 > 
-> Probably, but we need more information about the breakage. I assume that
-> the 64 bit kernel does something different with the power states on idle
+> There is a short description of the desired semantics in the link that was 
+> posted:
 > 
-> Can you please provide the output of /proc/acpi/processor/CPU0/power for
-> both the 32 and the 64 bit kernel ?
+> http://lkml.org/lkml/2007/6/18/228
 > 
-> 	tglx
+> ===
+> The user now is allowed to send packages if either his euid or his egid
+> matches the one specified via tunctl (via -u or -g respecitvely). If both
+> gid and uid are set via tunctl, both have to match.
+> ===
 > 
+> Paraphrasing the original code above, it's saying:
 > 
+> if ((owner_is_set && does_not_match) || (group_is_set && does_not_match))
+> 	bugger_off_unless(CAP_NET_ADMIN);
+> 
+> or reverting the logic:
+> 
+> if ((owner_is_unset || does_match) && (group_is_unset || does_match))
+> 	good_to_go();
+> 
+> which probably matches the intention -- we're good to go only if the 
+> credentials that are set also match.
 
+Maybe there are valid reasons to do it this way, but I think having it the 
+way I described would be less confusing.
 
-2.6.22.3 (x86_64)
-====================================
-kl@aspid:~$ cat /proc/acpi/processor/P001/power 
-active state:            C0
-max_cstate:              C8
-bus master activity:     00000000
-maximum allowed latency: 8000 usec
-states:
-
-2.6.23-rc3-hrt2 (x86_64, noapictimer)
-====================================
-kl@aspid:~$ cat /proc/acpi/processor/P001/power
-active state:            C0
-max_cstate:              C8
-bus master activity:     00000000
-maximum allowed latency: 8000 usec
-states:
-    C1:                  type[C1] promotion[--] demotion[--] latency[000] usage[00000000] duration[00000000000000000000]
-
-2.6.23-rc3-hrt2 (x86_64)
-====================================
-kl@aspid:~$ cat /proc/acpi/processor/P001/power
-active state:            C0
-max_cstate:              C8
-bus master activity:     00000000
-maximum allowed latency: 8000 usec
-states:
-    C1:                  type[C1] promotion[--] demotion[--] latency[000] usage[00000000] duration[00000000000000000000]
-
-2.6.22.1 (i386)
-====================================
-kl@aspid:~$ cat /proc/acpi/processor/P001/power
-active state:            C0
-max_cstate:              C8
-bus master activity:     00000000
-maximum allowed latency: 8000 usec
-states:
-
-2.6.23-rc3-hrt2 (i386)
-====================================
-kl@aspid:~$ cat /proc/acpi/processor/P001/power
-active state:            C0
-max_cstate:              C8
-bus master activity:     00000000
-maximum allowed latency: 8000 usec
-states:
-    C1:                  type[C1] promotion[--] demotion[--] latency[000] usage[00000000] duration[00000000000000000000]
+-- 
+       ¤ Bill of Spammer-Rights ¤
+1. We have the right to assassinate you.
+2. You have the right to be assassinated.
+3. You have the right to resist, but it is futile.
