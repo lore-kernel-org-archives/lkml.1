@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761666AbXHTUB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761341AbXHTUJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761666AbXHTUB6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbXHTUBt
+	id S1761341AbXHTUJX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbXHTUJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:01:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58403 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750941AbXHTUBs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:01:48 -0400
-Date: Mon, 20 Aug 2007 16:55:19 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PATCHES] V4L/DVB fixes
-Message-Id: <1187640017.565.24.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.90-1mdv2008.0 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 20 Aug 2007 16:09:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34443 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751023AbXHTUJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:09:08 -0400
+Date: Mon, 20 Aug 2007 16:08:56 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Roland McGrath <roland@redhat.com>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [POWERPC] Fix for assembler -g
+Message-ID: <20070820200856.GA4194@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Roland McGrath <roland@redhat.com>,
+	Paul Mackerras <paulus@samba.org>
+References: <200708181959.l7IJxJ5q020206@hera.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708181959.l7IJxJ5q020206@hera.kernel.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Sat, Aug 18, 2007 at 07:59:19PM +0000, Linux Kernel wrote:
+ > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=55a910a81d0c3014abc20b9efa73c595b3e68339
+ > Commit:     55a910a81d0c3014abc20b9efa73c595b3e68339
+ > Parent:     aa1cf632bd6f998cb4567ccf1a9d2e5daaa9fb44
+ > Author:     Roland McGrath <roland@redhat.com>
+ > AuthorDate: Sat Aug 11 09:03:11 2007 +1000
+ > Committer:  Paul Mackerras <paulus@samba.org>
+ > CommitDate: Wed Aug 15 15:12:50 2007 +1000
+ > 
+ >     [POWERPC] Fix for assembler -g
+ >     
+ >     ppc64 does the unusual thing of using #include on a compiler-generated
+ >     assembly file (lparmap.s) from an assembly source file (head_64.S).
+ >     This runs afoul of my recent patch to pass -gdwarf2 to the assembler
+ >     under CONFIG_DEBUG_INFO.  This patch avoids the problem by disabling
+ >     DWARF generation (-g0) when producing lparmap.s.
+ >     
+ >     Signed-off-by: Roland McGrath <roland@redhat.com>
+ >     Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
+I'm still seeing failures with this.
+http://koji.fedoraproject.org/koji/getfile?taskID=110854&name=build.log
+shows..
 
-For the following:
+lparmap.c: Assembler messages:
+lparmap.c:84: Error: file number 1 already allocated
+make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
 
-   - A few ivtv fixes;
-   - Updates firmware location for tda10046;
-   - Some fixes for OLPC camera;
-   - Sets the proper frequency limits on dvb-pll.
+Anything I can provide to help diagnose this?
 
-Cheers,
-Mauro.
+	Dave
 
----
-
- Documentation/dvb/get_dvb_firmware    |   24 +++++++++++-----------
- drivers/media/dvb/frontends/dvb-pll.c |    2 +-
- drivers/media/video/cafe_ccic.c       |   35 ++++++++++++++++++++++++++++++--
- drivers/media/video/ivtv/ivtv-ioctl.c |    3 +-
- drivers/media/video/ov7670.c          |    5 +++-
- include/linux/videodev2.h             |    2 -
- 6 files changed, 51 insertions(+), 20 deletions(-)
-
-Andreas Arens (1):
-      V4L/DVB (6016): get_dvb_firmware: update script for new location of tda10046 firmware
-
-Chris Ball (1):
-      V4L/DVB (6026): Avoid powering up the camera on resume
-
-Hans Verkuil (3):
-      V4L/DVB (5968): videodev2.h: remove superfluous FBUF GLOBAL_INV_ALPHA support
-      V4L/DVB (5967): ivtv: fix VIDIOC_S_FBUF:new OSD values where never set
-      V4L/DVB (5969): ivtv: report ivtv version in status log
-
-Jonathan Corbet (1):
-      V4L/DVB (6027): Get rid of an ill-behaved msleep in i2c write
-
-Marcelo Tosatti (1):
-      V4L/DVB (6028): Turn an unnecessary mdelay() into msleep().
-
-Trent Piepho (1):
-      V4L/DVB (5991): dvb-pll: Set minimum and maximum frequency properly
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
-
+-- 
+http://www.codemonkey.org.uk
