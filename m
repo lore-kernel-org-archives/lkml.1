@@ -1,34 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760716AbXHTQCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760931AbXHTQC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760716AbXHTQCK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 12:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759675AbXHTQBy
+	id S1760931AbXHTQC3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 12:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760685AbXHTQCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 12:01:54 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:29546 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759617AbXHTQBx (ORCPT
+	Mon, 20 Aug 2007 12:02:03 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:37045 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760015AbXHTQCA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 12:01:53 -0400
+	Mon, 20 Aug 2007 12:02:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=snRhY2q4+FjujnjBjQVfj8Qt/15acCsfSlcHpwv/gXUVWZl86W3aeOoW2KVAbouYF/IIypfYms3Tjt2xAfN1UQfM5hKCqTEhAfXowpdgPxaI2bmPIvjiKuWuRtXUtxoqSHh90TSq8DcGjcXS4xDoxyTcnmxJn4lZ/l1U3AoFj1A=
-Message-ID: <46C9BAD7.8070802@googlemail.com>
-Date: Mon, 20 Aug 2007 18:01:27 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=U3AjNcaak4k2ONxRdgKqDPoXaGLx/OGygB3jDXZ8kgSCjizyyjw7IUZB0128yLqVXLV3O642gizrk5KuE0/6saNMTeXpw9LPEE3b0NYZDcSJe0F5/AerFXqfMp+Sqr3c2HY/Se9M9CrxwFb/oIdmIiRFFSoj1teL2V/e5nkbSf0=
+Message-ID: <46C9BAE0.50706@googlemail.com>
+Date: Mon, 20 Aug 2007 18:01:36 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>, Jan Dittmer <jdi@l4x.org>,
-       Christian Zankel <chris@zankel.net>, linux-alpha@vger.kernel.org,
-       Andrey Borzenkov <arvidjaar@mail.ru>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Oliver Falk <oliver@linux-kernel.at>
-Subject: [1/4] 2.6.23-rc3: known regressions v2
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       linux-acpi@vger.kernel.org, Plamen Petrov <plamen.petrov@tk.ru.acad.bg>,
+       Michael Sedkowski <sedmich@gmail.com>,
+       Alex Hunsaker <badalex@gmail.com>,
+       Denis Sadykov <denis.m.sadykov@intel.com>, dth <dth@dth.net>,
+       linux-fsdevel@vger.kernel.org,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Andrew Clayton <andrew@digital-domain.net>
+Subject: Re: [2/4] 2.6.23-rc3: known regressions v2
+References: <46C9B6C7.5070704@googlemail.com>
+In-Reply-To: <46C9B6C7.5070704@googlemail.com>
 X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
@@ -57,51 +59,54 @@ Tejun Heo                              3
 
 
 
-Unclassified
+ACPI
 
-Subject         : 8250 claims non existing device blocking IO port
-References      : http://lkml.org/lkml/2007/8/18/20
-Last known good : ?
-Submitter       : Andrey Borzenkov <arvidjaar@mail.ru>
+Subject         : 2.6.23-rc3 fails to boot (acpi)
+References      : http://lkml.org/lkml/2007/8/19/31
+Last known good : 2.6.23-rc2
+Submitter       : Alex Hunsaker <badalex@gmail.com>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : 2.6.23-rc2 cross compile regressions (alpha,xtensa)
-References      : http://lkml.org/lkml/2007/8/6/43
-Last known good : alpha: 2.6.22-git8
-                  xtensa: 2.6.22-git6
-Submitter       : Jan Dittmer <jdi@l4x.org>
+Subject         : MCFG bug on hp nx6310
+References      : http://lkml.org/lkml/2007/8/8/252
+Last known good : ?
+Submitter       : Michael Sedkowski <sedmich@gmail.com>
 Caused-By       : ?
-Handled-By      : xtensa: Christian Zankel <chris@zankel.net>
+Handled-By      : ?
 Status          : unknown
 
-Subject         : console is messed up after resume from s2ram or switching to console from X
-References      : http://lkml.org/lkml/2007/8/4/6
+Subject         : 2.6.23-rc1-git10 hangs on boot - needs "acpi=off"
+References      : http://lkml.org/lkml/2007/8/2/24
 Last known good : ?
-Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+Submitter       : Plamen Petrov <plamen.petrov@tk.ru.acad.bg>
 Caused-By       : ?
-Handled-By      : H. Peter Anvin <hpa@zytor.com>
-                  Antonino A. Daplas <adaplas@gmail.com>
-Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
-Status          : problem is being debugged
-
-Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
-References      : http://lkml.org/lkml/2007/7/22/86
-Last known good : ?
-Submitter       : Markus <lists4me@web.de>
-Caused-By       : ?
-Handled-By      : Ingo Molnar <mingo@elte.hu>
+Handled-By      : Len Brown <len.brown@intel.com>
 Status          : problem is being debugged
 
 
 
-Alpha
+CPUFREQ
 
-Subject         : -Werror compilation problem - make[1]: *** [arch/alpha/kernel/sys_titan.o] Error 1
-References      : http://lkml.org/lkml/2007/8/6/137
+Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
+References      : http://lkml.org/lkml/2007/7/27/298
+                  http://lkml.org/lkml/2007/7/29/371
 Last known good : ?
-Submitter       : Oliver Falk <oliver@linux-kernel.at>
+Submitter       : dth <dth@dth.net>
+Caused-By       : Len Brown <lenb@kernel.org>
+                  commit f79e3185dd0f8650022518d7624c876d8929061b
+Handled-By      : Len Brown <lenb@kernel.org>
+Status          : problem is being debugged
+
+
+
+FS
+
+Subject         : [NFSD OOPS] 2.6.23-rc1-git10
+References      : http://lkml.org/lkml/2007/8/2/462
+Last known good : ?
+Submitter       : Andrew Clayton <andrew@digital-domain.net>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
