@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbXHTAT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbXHTAUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbXHTAT4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 20:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbXHTATq
+	id S1756901AbXHTAUS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 20:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbXHTATw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 20:19:46 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2354 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751705AbXHTATp (ORCPT
+	Sun, 19 Aug 2007 20:19:52 -0400
+Received: from smtp101.sbc.mail.re2.yahoo.com ([68.142.229.104]:45274 "HELO
+	smtp101.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754785AbXHTATv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 20:19:45 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: felix@chelsio.com (Felix Marti)
-Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
-Cc: davem@davemloft.net, sean.hefty@intel.com, netdev@vger.kernel.org,
-       rdreier@cisco.com, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org, jeff@garzik.org
-Organization: Core
-In-Reply-To: <8A71B368A89016469F72CD08050AD334018E208F@maui.asicdesigners.com>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1IMuyW-0002FV-00@gondolin.me.apana.org.au>
-Date: Mon, 20 Aug 2007 08:18:32 +0800
+	Sun, 19 Aug 2007 20:19:51 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=VSMtiRIrhmwR2Ip+OmMxov0USREShEa98KLzAz2CVuogy5Z2SjDSQszou7BXYpzNHW6YgX/nM7NlM9RVIqniiOE3c47HCErQkEmGESIjgbFPoONW1JmhsJT6YtckNHKrsObL+0OXBWZtByV4vOkY6HZfLe0spMF29GEYu1QAR/s=  ;
+X-YMail-OSG: 4gPXXF0VM1kJxs3QKge7E4dyzyBiIIf0nhqf02jcDeL1WpUmeaEIXGJMkbKSATP3s66I7Dxy_Q--
+From: David Brownell <david-b@pacbell.net>
+To: Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] ptrdiff_t is not uintptr_t, damnit
+Date: Sun, 19 Aug 2007 17:19:47 -0700
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <20070819225546.GV21089@ftp.linux.org.uk>
+In-Reply-To: <20070819225546.GV21089@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708191719.48340.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Felix Marti <felix@chelsio.com> wrote:
->
-> [Felix Marti] Aren't you confusing memory and bus BW here? - RDMA 
-> enables DMA from/to application buffers removing the user-to-kernel/
-> kernel-to-user memory copy with is a significant overhead at the 
-> rates we're talking about: memory copy at 20Gbps (10Gbps in and 10Gbps 
-> out) requires 60Gbps of BW on most common platforms. So, receiving and
-> transmitting at 10Gbps with LRO and TSO requires 80Gbps of system 
-> memory BW (which is beyond what most systems can do) whereas RDMA can 
-> do with 20Gbps!
+On Sunday 19 August 2007, Al Viro wrote:
+> is wrong; for one thing, it's a bad C (it's what uintptr_t is for; in general
+> we are not even promised that ptrdiff_t is large enough to hold a pointer,
 
-Actually this is false.  TSO only requires a copy if the user
-chooses to use the sendmsg interface instead of sendpage.  The
-same is true for RDMA really.  Except that instead of having to
-switch your application to sendfile/splice, you're switching it
-to RDMA.
+ISTR we don't *have* a uintptr_t on all architectures, or that would
+be the appropriate thing to use in these 32/64 bit ABI scenarios.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+
+> Use unsigned long or uintptr_t instead. 
+
+I suspect you mean "unsigned long long"...
+
+- Dave
