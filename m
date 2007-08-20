@@ -1,355 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762813AbXHTUxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764055AbXHTUyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762813AbXHTUxk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762189AbXHTUvl
+	id S1764055AbXHTUyO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763427AbXHTUvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:51:41 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:32828 "EHLO smtp.polymtl.ca"
+	Mon, 20 Aug 2007 16:51:43 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:32839 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763264AbXHTUvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763372AbXHTUvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Aug 2007 16:51:40 -0400
-Message-Id: <20070820202147.058082590@polymtl.ca>
-References: <20070820201902.597091353@polymtl.ca>
+Message-Id: <20070820202539.654317037@polymtl.ca>
+References: <20070820202355.684760993@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 16:19:08 -0400
+Date: Mon, 20 Aug 2007 16:24:03 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu
-Subject: [patch 06/11] Text Edit Lock - Alternative code for i386 and x86_64
-Content-Disposition: inline; filename=text-edit-lock-alternative-i386-and-x86_64.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:51:19 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 8/8] Scheduler Profiling - Use Immediate Values
+Content-Disposition: inline; filename=profiling-use-immediate-values.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:51:24 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a memcpy that should be a text_poke (in apply_alternatives).
-
-Use kernel_wp_save/kernel_wp_restore in text_poke to support DEBUG_RODATA
-correctly and so the CPU HOTPLUG special case can be removed.
-
-clflush all the cachelines touched by text_poke.
-
-Add text_set(), which is basically a memset-like text_poke.
-
-Add text_poke_early and text_set_early, for alternatives and paravirt boot-time
-and module load time patching.
+Use immediate values with lower d-cache hit in optimized version as a
+condition for scheduler profiling call.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: pageexec@freemail.hu
 ---
- arch/i386/kernel/alternative.c   |  106 ++++++++++++++++++++++++++++++---------
- arch/i386/kernel/paravirt.c      |    6 +-
- include/asm-i386/alternative.h   |   40 ++++++++++++++
- include/asm-x86_64/alternative.h |   38 +++++++++++++
- 4 files changed, 161 insertions(+), 29 deletions(-)
+ drivers/kvm/svm.c       |    2 +-
+ drivers/kvm/vmx.c       |    2 +-
+ include/linux/profile.h |   10 ++++------
+ kernel/profile.c        |   38 ++++++++++++++++++++++++++------------
+ kernel/sched.c          |    3 ++-
+ 5 files changed, 34 insertions(+), 21 deletions(-)
 
-Index: linux-2.6-lttng/arch/i386/kernel/alternative.c
+Index: linux-2.6-lttng/kernel/profile.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/i386/kernel/alternative.c	2007-08-19 21:58:29.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/kernel/alternative.c	2007-08-19 23:44:49.000000000 -0400
-@@ -14,6 +14,66 @@
- #ifdef CONFIG_HOTPLUG_CPU
- static int smp_alt_once;
+--- linux-2.6-lttng.orig/kernel/profile.c	2007-08-19 16:45:04.000000000 -0400
++++ linux-2.6-lttng/kernel/profile.c	2007-08-19 18:43:52.000000000 -0400
+@@ -42,9 +42,6 @@ int (*timer_hook)(struct pt_regs *) __re
+ static atomic_t *prof_buffer;
+ static unsigned long prof_len, prof_shift;
  
-+/*
-+ * Warning:
-+ * When you use this code to patch more than one byte of an instruction
-+ * you need to make sure that other CPUs cannot execute this code in parallel.
-+ * Also no thread must be currently preempted in the middle of these
-+ * instructions.  And on the local CPU you need to be protected again NMI or MCE
-+ * handlers seeing an inconsistent instruction while you patch.
-+ * Warning: read_cr0 is modified by paravirt, this is why we have _early
-+ * versions. They are not in the __init section because they can be used at
-+ * module load time.
-+ */
-+static inline void text_sync(void *addr, size_t len)
-+{
-+	void *faddr;
-+
-+	sync_core();
-+	/* Not strictly needed, but can speed CPU recovery up. */
-+	if (cpu_has_clflush)
-+		for (faddr = addr; faddr < addr + len;
-+				faddr += boot_cpu_data.x86_clflush_size)
-+			asm("clflush (%0) " :: "r" (faddr) : "memory");
-+}
-+
-+void * text_poke_early(void *addr, const void *opcode,
-+					size_t len)
-+{
-+	memcpy(addr, opcode, len);
-+	text_sync(addr, len);
-+	return addr;
-+}
-+
-+void * text_set_early(void *addr, int c, size_t len)
-+{
-+	memset(addr, c, len);
-+	text_sync(addr, len);
-+	return addr;
-+}
-+
-+void * __kprobes text_poke(void *addr, const void *opcode, size_t len)
-+{
-+	unsigned long cr0;
-+
-+	kernel_wp_save(cr0);
-+	memcpy(addr, opcode, len);
-+	kernel_wp_restore(cr0);
-+	text_sync(addr, len);
-+	return addr;
-+}
-+
-+void * __kprobes text_set(void *addr, int c, size_t len)
-+{
-+	unsigned long cr0;
-+
-+	kernel_wp_save(cr0);
-+	memset(addr, c, len);
-+	kernel_wp_restore(cr0);
-+	text_sync(addr, len);
-+	return addr;
-+}
-+
- static int __init bootonly(char *str)
- {
- 	smp_alt_once = 1;
-@@ -148,7 +208,7 @@ static unsigned char** find_nop_table(vo
- 
- #endif /* CONFIG_X86_64 */
- 
--static void nop_out(void *insns, unsigned int len)
-+static void nop_out_early(void *insns, unsigned int len)
- {
- 	unsigned char **noptable = find_nop_table();
- 
-@@ -156,12 +216,28 @@ static void nop_out(void *insns, unsigne
- 		unsigned int noplen = len;
- 		if (noplen > ASM_NOP_MAX)
- 			noplen = ASM_NOP_MAX;
--		text_poke(insns, noptable[noplen], noplen);
-+		text_poke_early(insns, noptable[noplen], noplen);
- 		insns += noplen;
- 		len -= noplen;
- 	}
- }
- 
-+/*
-+ * Only atomic nop outs should be allowed when not doing early patching.
-+ * It means the size must be writable atomically and the address must be aligned
-+ * in a way that permits an atomic write.
-+ */
-+static void nop_out(void *insns, unsigned int len)
-+{
-+	unsigned char **noptable = find_nop_table();
-+
-+	BUG_ON(len > sizeof(long));
-+	BUG_ON((((long)insns + len - 1) | ~(sizeof(long) - 1))
-+		- ((long)insns | ~(sizeof(long) - 1)));
-+	text_poke(insns, noptable[len], len);
-+}
-+
-+
- extern struct alt_instr __alt_instructions[], __alt_instructions_end[];
- extern u8 *__smp_locks[], *__smp_locks_end[];
- 
-@@ -191,9 +267,9 @@ void apply_alternatives(struct alt_instr
- 				__FUNCTION__, a->instr, instr);
- 		}
- #endif
--		memcpy(instr, a->replacement, a->replacementlen);
-+		text_poke_early(instr, a->replacement, a->replacementlen);
- 		diff = a->instrlen - a->replacementlen;
--		nop_out(instr + a->replacementlen, diff);
-+		nop_out_early(instr + a->replacementlen, diff);
- 	}
- }
- 
-@@ -208,7 +284,7 @@ static void alternatives_smp_lock(u8 **s
- 			continue;
- 		if (*ptr > text_end)
- 			continue;
--		text_poke(*ptr, ((unsigned char []){0xf0}), 1); /* add lock prefix */
-+		text_set(*ptr, 0xf0, 1); /* add lock prefix */
- 	};
- }
- 
-@@ -364,7 +440,7 @@ void apply_paravirt(struct paravirt_patc
- 		BUG_ON(used > p->len);
- 
- 		/* Pad the rest with nops */
--		nop_out(p->instr + used, p->len - used);
-+		nop_out_early(p->instr + used, p->len - used);
- 	}
- }
- extern struct paravirt_patch_site __start_parainstructions[],
-@@ -421,21 +497,3 @@ void __init alternative_instructions(voi
- 	restart_mce();
- #endif
- }
+-int prof_on __read_mostly;
+-EXPORT_SYMBOL_GPL(prof_on);
 -
--/*
-- * Warning:
-- * When you use this code to patch more than one byte of an instruction
-- * you need to make sure that other CPUs cannot execute this code in parallel.
-- * Also no thread must be currently preempted in the middle of these instructions.
-- * And on the local CPU you need to be protected again NMI or MCE handlers
-- * seeing an inconsistent instruction while you patch.
-- */
--void __kprobes text_poke(void *addr, unsigned char *opcode, int len)
--{
--	memcpy(addr, opcode, len);
--	sync_core();
--	/* Not strictly needed, but can speed CPU recovery up. Ignore cross cacheline
--	   case. */
--	if (cpu_has_clflush)
--		asm("clflush (%0) " :: "r" (addr) : "memory");
--}
-Index: linux-2.6-lttng/include/asm-i386/alternative.h
+ static cpumask_t prof_cpu_mask = CPU_MASK_ALL;
+ #ifdef CONFIG_SMP
+ static DEFINE_PER_CPU(struct profile_hit *[2], cpu_profile_hits);
+@@ -52,6 +49,14 @@ static DEFINE_PER_CPU(int, cpu_profile_f
+ static DEFINE_MUTEX(profile_flip_mutex);
+ #endif /* CONFIG_SMP */
+ 
++/* Immediate values */
++immediate_char_t sleep_profiling __read_mostly,
++			sched_profiling __read_mostly,
++			kvm_profiling __read_mostly,
++			cpu_profiling __read_mostly;
++EXPORT_SYMBOL_GPL(kvm_profiling);
++EXPORT_SYMBOL_GPL(cpu_profiling);
++
+ static int __init profile_setup(char * str)
+ {
+ 	static char __initdata schedstr[] = "schedule";
+@@ -60,7 +65,7 @@ static int __init profile_setup(char * s
+ 	int par;
+ 
+ 	if (!strncmp(str, sleepstr, strlen(sleepstr))) {
+-		prof_on = SLEEP_PROFILING;
++		immediate_set_early(&sleep_profiling, 1);
+ 		if (str[strlen(sleepstr)] == ',')
+ 			str += strlen(sleepstr) + 1;
+ 		if (get_option(&str, &par))
+@@ -69,7 +74,7 @@ static int __init profile_setup(char * s
+ 			"kernel sleep profiling enabled (shift: %ld)\n",
+ 			prof_shift);
+ 	} else if (!strncmp(str, schedstr, strlen(schedstr))) {
+-		prof_on = SCHED_PROFILING;
++		immediate_set_early(&sched_profiling, 1);
+ 		if (str[strlen(schedstr)] == ',')
+ 			str += strlen(schedstr) + 1;
+ 		if (get_option(&str, &par))
+@@ -78,7 +83,7 @@ static int __init profile_setup(char * s
+ 			"kernel schedule profiling enabled (shift: %ld)\n",
+ 			prof_shift);
+ 	} else if (!strncmp(str, kvmstr, strlen(kvmstr))) {
+-		prof_on = KVM_PROFILING;
++		immediate_set_early(&kvm_profiling, 1);
+ 		if (str[strlen(kvmstr)] == ',')
+ 			str += strlen(kvmstr) + 1;
+ 		if (get_option(&str, &par))
+@@ -88,7 +93,7 @@ static int __init profile_setup(char * s
+ 			prof_shift);
+ 	} else if (get_option(&str, &par)) {
+ 		prof_shift = par;
+-		prof_on = CPU_PROFILING;
++		immediate_set_early(&cpu_profiling, 1);
+ 		printk(KERN_INFO "kernel profiling enabled (shift: %ld)\n",
+ 			prof_shift);
+ 	}
+@@ -99,7 +104,10 @@ __setup("profile=", profile_setup);
+ 
+ void __init profile_init(void)
+ {
+-	if (!prof_on) 
++	if (!_immediate_read(&sleep_profiling) &&
++		!_immediate_read(&sched_profiling) &&
++		!_immediate_read(&kvm_profiling) &&
++		!_immediate_read(&cpu_profiling))
+ 		return;
+  
+ 	/* only text is profiled */
+@@ -288,7 +296,7 @@ void profile_hits(int type, void *__pc, 
+ 	int i, j, cpu;
+ 	struct profile_hit *hits;
+ 
+-	if (prof_on != type || !prof_buffer)
++	if (!prof_buffer)
+ 		return;
+ 	pc = min((pc - (unsigned long)_stext) >> prof_shift, prof_len - 1);
+ 	i = primary = (pc & (NR_PROFILE_GRP - 1)) << PROFILE_GRPSHIFT;
+@@ -398,7 +406,7 @@ void profile_hits(int type, void *__pc, 
+ {
+ 	unsigned long pc;
+ 
+-	if (prof_on != type || !prof_buffer)
++	if (!prof_buffer)
+ 		return;
+ 	pc = ((unsigned long)__pc - (unsigned long)_stext) >> prof_shift;
+ 	atomic_add(nr_hits, &prof_buffer[min(pc, prof_len - 1)]);
+@@ -555,7 +563,10 @@ static int __init create_hash_tables(voi
+ 	}
+ 	return 0;
+ out_cleanup:
+-	prof_on = 0;
++	immediate_set_early(&sleep_profiling, 0);
++	immediate_set_early(&sched_profiling, 0);
++	immediate_set_early(&kvm_profiling, 0);
++	immediate_set_early(&cpu_profiling, 0);
+ 	smp_mb();
+ 	on_each_cpu(profile_nop, NULL, 0, 1);
+ 	for_each_online_cpu(cpu) {
+@@ -582,7 +593,10 @@ static int __init create_proc_profile(vo
+ {
+ 	struct proc_dir_entry *entry;
+ 
+-	if (!prof_on)
++	if (!_immediate_read(&sleep_profiling) &&
++		!_immediate_read(&sched_profiling) &&
++		!_immediate_read(&kvm_profiling) &&
++		!_immediate_read(&cpu_profiling))
+ 		return 0;
+ 	if (create_hash_tables())
+ 		return -1;
+Index: linux-2.6-lttng/include/linux/profile.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-i386/alternative.h	2007-08-19 21:58:29.000000000 -0400
-+++ linux-2.6-lttng/include/asm-i386/alternative.h	2007-08-19 22:15:02.000000000 -0400
-@@ -4,6 +4,7 @@
- #include <asm/types.h>
- #include <linux/stddef.h>
- #include <linux/types.h>
-+#include <asm/processor-flags.h>
+--- linux-2.6-lttng.orig/include/linux/profile.h	2007-08-19 16:45:04.000000000 -0400
++++ linux-2.6-lttng/include/linux/profile.h	2007-08-19 18:43:52.000000000 -0400
+@@ -7,10 +7,12 @@
+ #include <linux/init.h>
+ #include <linux/cpumask.h>
+ #include <linux/cache.h>
++#include <linux/immediate.h>
  
- struct alt_instr {
- 	u8 *instr; 		/* original instruction */
-@@ -149,6 +150,43 @@ apply_paravirt(struct paravirt_patch_sit
- #define __parainstructions_end	NULL
- #endif
+ #include <asm/errno.h>
  
--extern void text_poke(void *addr, unsigned char *opcode, int len);
-+/*
-+ * Clear and restore the kernel write-protection flag on the local CPU.
-+ * Allows the kernel to edit read-only pages.
-+ * Side-effect: any interrupt handler running between save and restore will have
-+ * the ability to write to read-only pages.
-+ *
-+ * Warning:
-+ * Code patching in the UP case is safe if NMIs and MCE handlers are stopped and
-+ * no thread can be preempted in the instructions being modified (no iret to an
-+ * invalid instruction possible) or if the instructions are changed from a
-+ * consistent state to another consistent state atomically.
-+ * More care must be taken when modifying code in the SMP case because of
-+ * Intel's errata.
-+ * On the local CPU you need to be protected again NMI or MCE handlers seeing an
-+ * inconsistent instruction while you patch.
-+ */
-+
-+extern void *text_poke(void *addr, const void *opcode, size_t len);
-+extern void *text_set(void *addr, int c, size_t len);
-+extern void *text_poke_early(void *addr, const void *opcode, size_t len);
-+extern void *text_set_early(void *addr, int c, size_t len);
-+
-+#define kernel_wp_save(cr0)					\
-+	do {							\
-+		typecheck(unsigned long, cr0);			\
-+		preempt_disable();				\
-+		cr0 = read_cr0();				\
-+		if (cpu_data[smp_processor_id()].wp_works_ok)	\
-+			write_cr0(cr0 & ~X86_CR0_WP);		\
-+	} while (0)
-+
-+#define kernel_wp_restore(cr0)					\
-+	do {							\
-+		typecheck(unsigned long, cr0);			\
-+		if (cpu_data[smp_processor_id()].wp_works_ok)	\
-+			write_cr0(cr0);				\
-+		preempt_enable();				\
-+	} while (0)
+-extern int prof_on __read_mostly;
++extern immediate_char_t sleep_profiling, sched_profiling, kvm_profiling,
++		cpu_profiling;
  
- #endif /* _I386_ALTERNATIVE_H */
-Index: linux-2.6-lttng/include/asm-x86_64/alternative.h
+ #define CPU_PROFILING	1
+ #define SCHED_PROFILING	2
+@@ -35,11 +37,7 @@ void profile_hits(int, void *ip, unsigne
+  */
+ static inline void profile_hit(int type, void *ip)
+ {
+-	/*
+-	 * Speedup for the common (no profiling enabled) case:
+-	 */
+-	if (unlikely(prof_on == type))
+-		profile_hits(type, ip, 1);
++	profile_hits(type, ip, 1);
+ }
+ 
+ #ifdef CONFIG_PROC_FS
+Index: linux-2.6-lttng/kernel/sched.c
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-x86_64/alternative.h	2007-08-19 21:58:29.000000000 -0400
-+++ linux-2.6-lttng/include/asm-x86_64/alternative.h	2007-08-19 22:15:02.000000000 -0400
-@@ -5,6 +5,7 @@
+--- linux-2.6-lttng.orig/kernel/sched.c	2007-08-19 16:45:04.000000000 -0400
++++ linux-2.6-lttng/kernel/sched.c	2007-08-19 18:43:52.000000000 -0400
+@@ -3395,7 +3395,8 @@ static inline void schedule_debug(struct
+ 	if (unlikely(in_atomic_preempt_off()) && unlikely(!prev->exit_state))
+ 		__schedule_bug(prev);
  
- #include <linux/types.h>
- #include <linux/stddef.h>
-+#include <asm/processor-flags.h>
+-	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
++	immediate_if (&sched_profiling)
++		profile_hit(SCHED_PROFILING, __builtin_return_address(0));
  
- /*
-  * Alternative inline assembly for SMP.
-@@ -154,6 +155,41 @@ apply_paravirt(struct paravirt_patch *st
- #define __parainstructions_end NULL
- #endif
- 
--extern void text_poke(void *addr, unsigned char *opcode, int len);
-+/*
-+ * Clear and restore the kernel write-protection flag on the local CPU.
-+ * Allows the kernel to edit read-only pages.
-+ * Side-effect: any interrupt handler running between save and restore will have
-+ * the ability to write to read-only pages.
-+ *
-+ * Warning:
-+ * Code patching in the UP case is safe if NMIs and MCE handlers are stopped and
-+ * no thread can be preempted in the instructions being modified (no iret to an
-+ * invalid instruction possible) or if the instructions are changed from a
-+ * consistent state to another consistent state atomically.
-+ * More care must be taken when modifying code in the SMP case because of
-+ * Intel's errata.
-+ * On the local CPU you need to be protected again NMI or MCE handlers seeing an
-+ * inconsistent instruction while you patch.
-+ */
-+
-+extern void *text_poke(void *addr, const void *opcode, size_t len);
-+extern void *text_set(void *addr, int c, size_t len);
-+extern void *text_poke_early(void *addr, const void *opcode, size_t len);
-+extern void *text_set_early(void *addr, int c, size_t len);
-+
-+#define kernel_wp_save(cr0)					\
-+	do {							\
-+		typecheck(unsigned long, cr0);			\
-+		preempt_disable();				\
-+		cr0 = read_cr0();				\
-+		write_cr0(cr0 & ~X86_CR0_WP);			\
-+	} while (0)
-+
-+#define kernel_wp_restore(cr0)					\
-+	do {							\
-+		typecheck(unsigned long, cr0);			\
-+		write_cr0(cr0);					\
-+		preempt_enable();				\
-+	} while (0)
- 
- #endif /* _X86_64_ALTERNATIVE_H */
-Index: linux-2.6-lttng/arch/i386/kernel/paravirt.c
+ 	schedstat_inc(this_rq(), sched_cnt);
+ }
+Index: linux-2.6-lttng/drivers/kvm/svm.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/i386/kernel/paravirt.c	2007-08-19 21:58:29.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/kernel/paravirt.c	2007-08-19 22:15:02.000000000 -0400
-@@ -145,7 +145,7 @@ unsigned paravirt_patch_call(void *targe
- 	b.opcode = 0xe8; /* call */
- 	b.delta = delta;
- 	BUILD_BUG_ON(sizeof(b) != 5);
--	text_poke(call, (unsigned char *)&b, 5);
-+	text_poke_early(call, (unsigned char *)&b, 5);
+--- linux-2.6-lttng.orig/drivers/kvm/svm.c	2007-08-19 16:45:04.000000000 -0400
++++ linux-2.6-lttng/drivers/kvm/svm.c	2007-08-19 18:43:52.000000000 -0400
+@@ -1562,7 +1562,7 @@ again:
+ 	/*
+ 	 * Profile KVM exit RIPs:
+ 	 */
+-	if (unlikely(prof_on == KVM_PROFILING))
++	immediate_if (&kvm_profiling)
+ 		profile_hit(KVM_PROFILING,
+ 			(void *)(unsigned long)svm->vmcb->save.rip);
  
- 	return 5;
- }
-@@ -161,7 +161,7 @@ unsigned paravirt_patch_jmp(void *target
+Index: linux-2.6-lttng/drivers/kvm/vmx.c
+===================================================================
+--- linux-2.6-lttng.orig/drivers/kvm/vmx.c	2007-08-19 16:45:04.000000000 -0400
++++ linux-2.6-lttng/drivers/kvm/vmx.c	2007-08-19 18:43:52.000000000 -0400
+@@ -2220,7 +2220,7 @@ again:
+ 	/*
+ 	 * Profile KVM exit RIPs:
+ 	 */
+-	if (unlikely(prof_on == KVM_PROFILING))
++	immediate_if (&kvm_profiling)
+ 		profile_hit(KVM_PROFILING, (void *)vmcs_readl(GUEST_RIP));
  
- 	b.opcode = 0xe9;	/* jmp */
- 	b.delta = delta;
--	text_poke(jmp, (unsigned char *)&b, 5);
-+	text_poke_early(jmp, (unsigned char *)&b, 5);
- 
- 	return 5;
- }
-@@ -198,7 +198,7 @@ unsigned paravirt_patch_insns(void *site
- 	if (insn_len > len || start == NULL)
- 		insn_len = len;
- 	else
--		memcpy(site, start, insn_len);
-+		text_poke_early(site, start, insn_len);
- 
- 	return insn_len;
- }
+ 	r = kvm_handle_exit(kvm_run, vcpu);
 
 -- 
 Mathieu Desnoyers
