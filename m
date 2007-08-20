@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758707AbXHTIdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbXHTIg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758707AbXHTIdn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 04:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbXHTIde
+	id S1757395AbXHTIg4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 04:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbXHTIgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 04:33:34 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34493 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751840AbXHTIdd (ORCPT
+	Mon, 20 Aug 2007 04:36:39 -0400
+Received: from hu-out-0506.google.com ([72.14.214.239]:44822 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755831AbXHTIgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 04:33:33 -0400
-Date: Mon, 20 Aug 2007 09:41:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Dave Airlie" <airlied@gmail.com>
-Cc: dri-devel <dri-devel@lists.sourceforge.net>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: uncached page allocator
-Message-ID: <20070820094125.209e0811@the-village.bc.nu>
-In-Reply-To: <21d7e9970708191745h3b579f3bp72f138e089c624da@mail.gmail.com>
-References: <21d7e9970708191745h3b579f3bp72f138e089c624da@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 20 Aug 2007 04:36:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=UWEymQ+XCXw+KlE3DGfQwsYiro84zO4DPd1UXjkD8QJLnv/ZtnTY7Wc0+rIQ22pSWlYf0D+m/jzBXwWSyjewe2Ba6B356wFhp+e/DeCfAQOr1DQsy9BMfmynQiA8Wc8YxuqaL7xU9hp7sljpGvJ4HuXnrDSItwOdFZ2tROP1h+8=
+Date: Mon, 20 Aug 2007 12:35:59 +0400
+From: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc3-hrt2 stall during boot on ASUS F3T (x86_64)
+Message-ID: <20070820123559.3582f3bc@localhost>
+In-Reply-To: <1187596481.7007.169.camel@chaos>
+References: <20070820104455.0dc7fe3d@localhost>
+	<1187592717.6114.170.camel@twins>
+	<1187596481.7007.169.camel@chaos>
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> allocate pixmap gets cached memory
-> copy data into the pixmap
-> pre-use from hardware we flush the cache lines and tlb
-> use the pixmap in hardware
-> pre-free we need to set the page back to cached so we flush the tlb
-> free the memory.
+On Mon, 20 Aug 2007 09:54:41 +0200
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> Now the big issue here on SMP is that the cache and/or tlb flushes
-> require IPIs and they are very noticeable on the profiles,
+> On Mon, 2007-08-20 at 08:51 +0200, Peter Zijlstra wrote:
+> > On Mon, 2007-08-20 at 10:44 +0400, Mikhail Kshevetskiy wrote:
+> > > There are at list two serious delays:
+> > > 
+> > >   at 73.442744: I do nothing, the kernel continue to boot after 168 sec
+> > > 
+> > >   at 243.497822: After 2 hours i press and hold "shift" button to continue booting 
+> > > 
+> > > The dmesg output and my kernel configuration are listed below. 
+> > > 
+> > > I test i386 version of the same kernel with very similar configuration, it boot normally.
+> 
+> Can you please add "noapictimer" to the kernel command line ?
+> 
+> 	tglx
+> 
+> 
 
-Blame intel ;)
+This helps, thank you.
+Why it is not required for i386 kernel?
+Is it possible to fix this problem without disabling of apic timer?
 
-> Any other ideas and suggestions?
+Mikhail Kshevetskiy
 
-Without knowing exactly what you are doing:
-
-- Copies to uncached memory are very expensive on an x86 processor
-(so it might be faster not to write and flush)
-- Its not clear from your description how intelligent your transfer
-system is.
-
-
-I'd expect for example that the process was something like
-
-	Parse pending commands until either
-	1. Queue empties
-	2. A time target passes
-
-	For each command we need to shove a pixmap over add it
-	to the buffer to transfer
-
-	Do a single CLFLUSH and maybe IPI
-
-	Fire up the command queue
-
-	Keep the buffers hanging around until there is memory pressure
-	if we may reuse that pixmap
-
-Can you clarify that ?
-
-If the hugepage anti-frag stuff ever gets merged this would also help as
-you could possibly grab a huge page from the allocator for this purpose
-and have to flip only one TLB entry.
-
-Alan
