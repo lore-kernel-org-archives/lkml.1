@@ -1,36 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbXHTA1B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757520AbXHTA1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757754AbXHTA1B (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Aug 2007 20:27:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757244AbXHTA0m
+	id S1757520AbXHTA1r (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Aug 2007 20:27:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbXHTA1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Aug 2007 20:26:42 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:59730 "EHLO snapgear.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755270AbXHTA0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Aug 2007 20:26:41 -0400
-Date: Mon, 20 Aug 2007 10:25:26 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200708200025.l7K0PQKH009376@goober>
-To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: include linux/fs.h for do_pip()
-Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
+	Sun, 19 Aug 2007 20:27:39 -0400
+Received: from ppsw-2.csi.cam.ac.uk ([131.111.8.132]:41265 "EHLO
+	ppsw-2.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753689AbXHTA1i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Aug 2007 20:27:38 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <20070819225546.GV21089@ftp.linux.org.uk>
+References: <20070819225546.GV21089@ftp.linux.org.uk>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C0FCB07A-EE48-4ABB-96A7-470C53C86A38@cam.ac.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+Subject: Re: [PATCH] ptrdiff_t is not uintptr_t, damnit
+Date: Mon, 20 Aug 2007 01:27:13 +0100
+To: Al Viro <viro@ftp.linux.org.uk>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Include linux/fs.h to get the prototype for do_pipe().
+On 19 Aug 2007, at 23:55, Al Viro wrote:
+> Use of ptrdiff_t in
+>
+> -                       if (!access_ok(VERIFY_WRITE, u_tmp->rx_buf,  
+> u_tmp->len))
+> +                       if (!access_ok(VERIFY_WRITE, (u8 __user *)
+> +                                               (ptrdiff_t) u_tmp- 
+> >rx_buf,
+> +                                               u_tmp->len))
+>
+> is wrong; for one thing, it's a bad C (it's what uintptr_t is for;  
+> in general
+> we are not even promised that ptrdiff_t is large enough to hold a  
+> pointer,
+> just enough to hold a difference between two pointers within the  
+> same object).
+> For another, it confuses the fsck out of sparse.
+>
+> Use unsigned long or uintptr_t instead.  There are several places  
+> misusing
+> ptrdiff_t (one - in a very odd way; WTF did that cast to __user  
+> ptrdiff_t
+> in ntfs expect to happen, anyway?)   Fixed...
 
-Signed-off-by: Greg Ungerer <gerg@uclinux.org>
----
+My current NTFS code has this already fixed.  I used unsigned long  
+instead of uintptr_t though...  Feel free to apply this though as I  
+have no idea when I will have time/permission to push an update  
+upstream...
 
-diff -Naur ORG.linux-2.6.23-rc3/arch/m68knommu/kernel/sys_m68k.c linux-2.6.23-rc3/arch/m68knommu/kernel/sys_m68k.c
---- ORG.linux-2.6.23-rc3/arch/m68knommu/kernel/sys_m68k.c	2007-07-09 09:32:17.000000000 +1000
-+++ linux-2.6.23-rc3/arch/m68knommu/kernel/sys_m68k.c	2007-08-14 16:17:27.000000000 +1000
-@@ -18,6 +18,7 @@
- #include <linux/mman.h>
- #include <linux/file.h>
- #include <linux/utsname.h>
-+#include <linux/fs.h>
- 
- #include <asm/setup.h>
- #include <asm/uaccess.h>
+And what the cast was doing I can't remember.  I may well have just  
+copied it from the VFS or I was perhaps trying to silence a warning  
+and this happened to work...  But yes I noticed that more recent  
+versions of sparse complained about it and fixed it with an unsigned  
+long cast.
+
+Best regards,
+
+	Anton
+
+>
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+> diff --git a/drivers/scsi/aacraid/commctrl.c b/drivers/scsi/aacraid/ 
+> commctrl.c
+> index 72b0393..1e6d7a9 100644
+> --- a/drivers/scsi/aacraid/commctrl.c
+> +++ b/drivers/scsi/aacraid/commctrl.c
+> @@ -391,7 +391,7 @@ static int close_getadapter_fib(struct aac_dev  
+> * dev, void __user *arg)
+>  		/*
+>  		 *	Extract the fibctx from the input parameters
+>  		 */
+> -		if (fibctx->unique == (u32)(ptrdiff_t)arg) /* We found a winner */
+> +		if (fibctx->unique == (u32)(uintptr_t)arg) /* We found a winner */
+>  			break;
+>  		entry = entry->next;
+>  		fibctx = NULL;
+> @@ -590,7 +590,7 @@ static int aac_send_raw_srb(struct aac_dev*  
+> dev, void __user * arg)
+>  				}
+>  				addr = (u64)upsg->sg[i].addr[0];
+>  				addr += ((u64)upsg->sg[i].addr[1]) << 32;
+> -				sg_user[i] = (void __user *)(ptrdiff_t)addr;
+> +				sg_user[i] = (void __user *)(uintptr_t)addr;
+>  				sg_list[i] = p; // save so we can clean up later
+>  				sg_indx = i;
+>
+> @@ -633,7 +633,7 @@ static int aac_send_raw_srb(struct aac_dev*  
+> dev, void __user * arg)
+>  					rcode = -ENOMEM;
+>  					goto cleanup;
+>  				}
+> -				sg_user[i] = (void __user *)(ptrdiff_t)usg->sg[i].addr;
+> +				sg_user[i] = (void __user *)(uintptr_t)usg->sg[i].addr;
+>  				sg_list[i] = p; // save so we can clean up later
+>  				sg_indx = i;
+>
+> @@ -664,7 +664,7 @@ static int aac_send_raw_srb(struct aac_dev*  
+> dev, void __user * arg)
+>  		if (actual_fibsize64 == fibsize) {
+>  			struct user_sgmap64* usg = (struct user_sgmap64 *)upsg;
+>  			for (i = 0; i < upsg->count; i++) {
+> -				u64 addr;
+> +				uintptr_t addr;
+>  				void* p;
+>  				/* Does this really need to be GFP_DMA? */
+>  				p = kmalloc(usg->sg[i].count,GFP_KERNEL|__GFP_DMA);
+> @@ -676,7 +676,7 @@ static int aac_send_raw_srb(struct aac_dev*  
+> dev, void __user * arg)
+>  				}
+>  				addr = (u64)usg->sg[i].addr[0];
+>  				addr += ((u64)usg->sg[i].addr[1]) << 32;
+> -				sg_user[i] = (void __user *)(ptrdiff_t)addr;
+> +				sg_user[i] = (void __user *)addr;
+>  				sg_list[i] = p; // save so we can clean up later
+>  				sg_indx = i;
+>
+> @@ -704,7 +704,7 @@ static int aac_send_raw_srb(struct aac_dev*  
+> dev, void __user * arg)
+>  					rcode = -ENOMEM;
+>  					goto cleanup;
+>  				}
+> -				sg_user[i] = (void __user *)(ptrdiff_t)upsg->sg[i].addr;
+> +				sg_user[i] = (void __user *)(uintptr_t)upsg->sg[i].addr;
+>  				sg_list[i] = p; // save so we can clean up later
+>  				sg_indx = i;
+>
+> diff --git a/drivers/scsi/aacraid/comminit.c b/drivers/scsi/aacraid/ 
+> comminit.c
+> index 3009ad8..8736813 100644
+> --- a/drivers/scsi/aacraid/comminit.c
+> +++ b/drivers/scsi/aacraid/comminit.c
+> @@ -110,7 +110,7 @@ static int aac_alloc_comm(struct aac_dev *dev,  
+> void **commaddr, unsigned long co
+>  	/*
+>  	 *	Align the beginning of Headers to commalign
+>  	 */
+> -	align = (commalign - ((ptrdiff_t)(base) & (commalign - 1)));
+> +	align = (commalign - ((uintptr_t)(base) & (commalign - 1)));
+>  	base = base + align;
+>  	phys = phys + align;
+>  	/*
+> diff --git a/drivers/scsi/aacraid/dpcsup.c b/drivers/scsi/aacraid/ 
+> dpcsup.c
+> index fcd25f7..e6032ff 100644
+> --- a/drivers/scsi/aacraid/dpcsup.c
+> +++ b/drivers/scsi/aacraid/dpcsup.c
+> @@ -254,7 +254,7 @@ unsigned int aac_intr_normal(struct aac_dev *  
+> dev, u32 Index)
+>  			kfree (fib);
+>  			return 1;
+>  		}
+> -		memcpy(hw_fib, (struct hw_fib *)(((ptrdiff_t)(dev->regs.sa)) +
+> +		memcpy(hw_fib, (struct hw_fib *)(((uintptr_t)(dev->regs.sa)) +
+>  		  (index & ~0x00000002L)), sizeof(struct hw_fib));
+>  		INIT_LIST_HEAD(&fib->fiblink);
+>  		fib->type = FSAFS_NTC_FIB_CONTEXT;
+> diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
+> index c55459c..b3518ca 100644
+> --- a/drivers/spi/spidev.c
+> +++ b/drivers/spi/spidev.c
+> @@ -184,14 +184,14 @@ static int spidev_message(struct spidev_data  
+> *spidev,
+>  		if (u_tmp->rx_buf) {
+>  			k_tmp->rx_buf = buf;
+>  			if (!access_ok(VERIFY_WRITE, (u8 __user *)
+> -						(ptrdiff_t) u_tmp->rx_buf,
+> +						(uintptr_t) u_tmp->rx_buf,
+>  						u_tmp->len))
+>  				goto done;
+>  		}
+>  		if (u_tmp->tx_buf) {
+>  			k_tmp->tx_buf = buf;
+>  			if (copy_from_user(buf, (const u8 __user *)
+> -						(ptrdiff_t) u_tmp->tx_buf,
+> +						(uintptr_t) u_tmp->tx_buf,
+>  					u_tmp->len))
+>  				goto done;
+>  		}
+> @@ -224,7 +224,7 @@ static int spidev_message(struct spidev_data  
+> *spidev,
+>  	for (n = n_xfers, u_tmp = u_xfers; n; n--, u_tmp++) {
+>  		if (u_tmp->rx_buf) {
+>  			if (__copy_to_user((u8 __user *)
+> -					(ptrdiff_t) u_tmp->rx_buf, buf,
+> +					(uintptr_t) u_tmp->rx_buf, buf,
+>  					u_tmp->len)) {
+>  				status = -EFAULT;
+>  				goto done;
+> diff --git a/fs/ntfs/file.c b/fs/ntfs/file.c
+> index ffcc504..a9103ce 100644
+> --- a/fs/ntfs/file.c
+> +++ b/fs/ntfs/file.c
+> @@ -362,7 +362,7 @@ static inline void ntfs_fault_in_pages_readable 
+> (const char __user *uaddr,
+>  	volatile char c;
+>
+>  	/* Set @end to the first byte outside the last page we care  
+> about. */
+> -	end = (const char __user*)PAGE_ALIGN((ptrdiff_t __user)uaddr +  
+> bytes);
+> +	end = (const char __user*)PAGE_ALIGN((uintptr_t)uaddr + bytes);
+>
+>  	while (!__get_user(c, uaddr) && (uaddr += PAGE_SIZE, uaddr < end))
+>  		;
+> diff --git a/include/linux/types.h b/include/linux/types.h
+> index 0351bf2..efdec19 100644
+> --- a/include/linux/types.h
+> +++ b/include/linux/types.h
+> @@ -40,6 +40,8 @@ typedef __kernel_gid32_t	gid_t;
+>  typedef __kernel_uid16_t        uid16_t;
+>  typedef __kernel_gid16_t        gid16_t;
+>
+> +typedef unsigned long		uintptr_t;
+> +
+>  #ifdef CONFIG_UID16
+>  /* This is defined by include/asm-{arch}/posix_types.h */
+>  typedef __kernel_old_uid_t	old_uid_t;
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+Best regards,
+
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
+
+
