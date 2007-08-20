@@ -1,111 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761339AbXHTRA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761585AbXHTRCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761339AbXHTRA1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 13:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760407AbXHTRAR
+	id S1761585AbXHTRCP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 13:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760433AbXHTRCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 13:00:17 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:36068 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755740AbXHTRAP (ORCPT
+	Mon, 20 Aug 2007 13:02:00 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:35725 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756468AbXHTRB7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 13:00:15 -0400
-Subject: Re: [accounting regression since rc1]  scheduler updates
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20070820154529.GA300@elte.hu>
-References: <20070812163225.GA11996@elte.hu>
-	 <200708141037.48001.borntraeger@de.ibm.com>  <20070820154529.GA300@elte.hu>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 20 Aug 2007 19:03:58 +0200
-Message-Id: <1187629438.8541.40.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Mon, 20 Aug 2007 13:01:59 -0400
+Message-ID: <46C9C8D4.9080108@linux.vnet.ibm.com>
+Date: Mon, 20 Aug 2007 22:31:08 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Guillaume Chazarain <guichaz@yahoo.fr>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jay Lan <jlan@engr.sgi.com>, Jonathan Lim <jlim@sgi.com>
+Subject: Re: [PATCH] Add all thread stats for TASKSTATS_CMD_ATTR_TGID
+References: <3d8471ca0708020653l575db8cam464a3cffce68fb26@mail.gmail.com> <20070802120427.270e5589.akpm@linux-foundation.org> <20070819213435.72b287ad@localhost.localdomain>
+In-Reply-To: <20070819213435.72b287ad@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-20 at 17:45 +0200, Ingo Molnar wrote: 
-> * Christian Borntraeger <borntraeger@de.ibm.com> wrote:
+Guillaume Chazarain wrote:
+> TASKSTATS_CMD_ATTR_TGID used to return only the delay accounting stats,
+> not the basic and extended accounting. With this patch,
+> TASKSTATS_CMD_ATTR_TGID returns also the min, max or sum (depending on
+> the semantic of the field) of the accounting info for all threads of a
+> thread group. This makes TASKSTATS_CMD_ATTR_TGID usable in a similar
+> fashion to TASKSTATS_CMD_ATTR_PID, for commands like iotop -P
+> (http://guichaz.free.fr/misc/iotop.py).
 > 
-> > 1. Jan could finish his sched_clock implementation for s390 and we 
-> > would get close to the precise numbers. This would also let CFS make 
-> > better decisions. [...]
+> Changelog since V1 (http://lkml.org/lkml/2007/8/2/185):
+> - Update combined stats of exited threads in fill_tgid_exit() as
+> suggested by Balbir Singh.
+> - Very light cleanup of fill_tgid_exit() by the way.
+> - bacct fields are also combined for all threads.
+> - Instead of assuming memory stats are identical for all threads, we
+> take the max of all threads (hiwater_rss and hiwater_vm).
 > 
-> i think this is the best option and it should give us the same /proc 
-> accuracy on s390 as before, plus improved scheduler precision. (and 
-> improved tracing accuracy, etc. etc.) Note that for architectures that 
-> already have sched_clock() at least as precise as the stime/utime stats 
-> there's no problem - and that seems to include all architectures except 
-> s390.
-
-For far we have used the TOD clock for sched_clock. This clocks measures
-real time with an accuracy of 1usec or better. The [us]time accounting
-with CONFIG_VIRT_CPU_ACCOUNTING=y is done using the CPU timer. This
-timer measures virtual time with an accuracy of 1usec of better. Without
-CONFIG_VIRT_CPU_ACCOUNTING the [us]time accounting is done with HZ
-ticks. Which means that sched_clock() is at least as precise as [us]time
-on s390 as well, only that we distinguish between real time / virtual
-time if the improved accounting is used.
-
-> could you send that precise sched_clock() patch? It should be an order 
-> of magnitude simpler than the high-precision stime/utime tracking you 
-> already do, and it's needed for quality scheduling anyway.
-
-Sure if you can explain what it should do. This is still unclear to me,
-for a non-idle CPU the virtual cpu time should be used but for an idle
-CPU the real time should be used ? That seems rather ill-defined to me.
-On s390 we have three times to consider, real time, virtual cpu time and
-steal time. For a given period we have real = virtual + steal. And if a
-cpu is idle we have real = steal, virtual = 0. My best interpretation of
-what you want is that sched_clock should progress with virtual cpu time
-if the current process is not idle and with the real time if it is. No ?
-
-> > [...] Downside: its not as precise as before as we do some math on the 
-> > numbers and it will burn cycles to compute numbers we already have 
-> > (utime=sum*utime/stime).
+> Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+> Cc: Balbir Singh <balbir@in.ibm.com>
+> Cc: Jay Lan <jlan@engr.sgi.com>
+> Cc: Jonathan Lim <jlim@sgi.com>
+> ---
 > 
-> i can see no real downside to it: if all of stime, utime and 
-> sum_exec_clock are precise, then the numbers we present via /proc are 
-> precise too:
+>  kernel/taskstats.c |   15 ++++++++++-----
+>  kernel/tsacct.c    |   43 ++++++++++++++++++++++---------------------
+>  2 files changed, 32 insertions(+), 26 deletions(-)
 > 
->    sum_exec * utime / stime;
+> diff -r 73eff559debc kernel/taskstats.c
+> --- a/kernel/taskstats.c	Sat Aug 18 17:15:17 2007 -0700
+> +++ b/kernel/taskstats.c	Sun Aug 19 17:20:15 2007 +0200
+> @@ -246,6 +246,8 @@ static int fill_tgid(pid_t tgid, struct 
 > 
-> there should be no loss of precision on s390 because the 
-> multiplication/division rounding is not accumulating - we keep the 
-> precise sum_exec, utime and stime values untouched.
+>  		stats->nvcsw += tsk->nvcsw;
+>  		stats->nivcsw += tsk->nivcsw;
+> +		bacct_add_tsk(stats, tsk);
+> +		xacct_add_tsk(stats, tsk);
 
-But then sched_clock() has to return the virtual cpu time only,
-otherwise it will be hard to make sum_exec exact, wouldn't it?
-And why should we jump through all these loops to come up with values
-that are only as good as the values we already have?
+I'm afraid this is still not good enough. bacct_add_tsk() will assign
+values and do nothing in the loop (HINT: no summation). Ideally,
+we should split up bacct_add_tsk(), so that the initialization
+code is split up from values that can summed.
 
-> on x86 we dont really want to slow down every irq and syscall event with 
-> precise stime/utime stats for 'top' to display. On s390 the 
-> multiplication and division is indeed superfluous but it keeps the code 
-> generic for arches where utime/stime is less precise and irq-sampled - 
-> while the sum is always precise. It also animates architectures that 
-> have an imprecise sched_clock() implementation to improve its accuracy. 
-> Accessing the /proc files alone is many orders of magnitude more 
-> expensive than this simple multiplication and division.
+>  	} while_each_thread(first, tsk);
+> 
+>  	unlock_task_sighand(first, &flags);
+> @@ -265,21 +267,24 @@ static void fill_tgid_exit(struct task_s
+>  static void fill_tgid_exit(struct task_struct *tsk)
+>  {
+>  	unsigned long flags;
+> +	struct taskstats *tg_stats;
+> 
+>  	spin_lock_irqsave(&tsk->sighand->siglock, flags);
+> -	if (!tsk->signal->stats)
+> +	tg_stats = tsk->signal->stats;
+> +	if (!tg_stats)
+>  		goto ret;
+> 
+>  	/*
+>  	 * Each accounting subsystem calls its functions here to
+>  	 * accumalate its per-task stats for tsk, into the per-tgid structure
+>  	 *
+> -	 *	per-task-foo(tsk->signal->stats, tsk);
+> -	 */
+> -	delayacct_add_tsk(tsk->signal->stats, tsk);
+> +	 *	per-task-foo(tg_stats, tsk);
+> +	 */
+> +	bacct_add_tsk(tg_stats, tsk);
 
-Yes, I can understand why you don't want to have the exact cpu
-accounting scheme on x86 since it will slow down every context switch
-quite a bit (that includes user <-> kernel, softirq <-> hardirq <->
-process context, ..). On s390 the cost is acceptable, for an empty
-system call it is about 40 additional cycles for the precise accounting.
+Ditto.. see above
+
+> +	xacct_add_tsk(tg_stats, tsk);
+> +	delayacct_add_tsk(tg_stats, tsk);
+>  ret:
+>  	spin_unlock_irqrestore(&tsk->sighand->siglock, flags);
+> -	return;
+>  }
+> 
+>  static int add_del_listener(pid_t pid, cpumask_t *maskp, int isadd)
+> diff -r 73eff559debc kernel/tsacct.c
+> --- a/kernel/tsacct.c	Sat Aug 18 17:15:17 2007 -0700
+> +++ b/kernel/tsacct.c	Sun Aug 19 17:20:43 2007 +0200
+> @@ -38,8 +38,9 @@ void bacct_add_tsk(struct taskstats *sta
+>  	/* rebase elapsed time to usec */
+>  	ac_etime = timespec_to_ns(&ts);
+>  	do_div(ac_etime, NSEC_PER_USEC);
+> -	stats->ac_etime = ac_etime;
+> -	stats->ac_btime = get_seconds() - ts.tv_sec;
+> +	stats->ac_etime = max_t(u64, stats->ac_etime, ac_etime);
+> +	stats->ac_btime = min_t(u32, stats->ac_btime,
+> +				get_seconds() - ts.tv_sec);
+
+I am not sure why we get the max value, ideally we should
+be summing up utime, stime into the stats structure.
+
+
+Could you please write a simple test case and ensure that the
+summed up stats are indeed correct for TGID's?
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
