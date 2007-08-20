@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbXHTVe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760562AbXHTVgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756903AbXHTVe6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 17:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXHTVev
+	id S1760562AbXHTVgg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 17:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbXHTVg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 17:34:51 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:55774 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751101AbXHTVeu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 17:34:50 -0400
-Subject: Re: [PATCH] kexec: reenable HPET before kexec
-From: Daniel Walker <dwalker@mvista.com>
-To: Konstantin Baydarov <kbaidarov@ru.mvista.com>
-Cc: RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <46CA035A.5050202@ru.mvista.com>
-References: <20070820205530.1ffd5876@windmill.dev.rtsoft.ru>
-	 <46CA035A.5050202@ru.mvista.com>
-Content-Type: text/plain
-Date: Mon, 20 Aug 2007 14:31:04 -0700
-Message-Id: <1187645464.7732.43.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Mon, 20 Aug 2007 17:36:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37249 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751693AbXHTVg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 17:36:27 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+X-Fcc: ~/Mail/linus
+Cc: Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [POWERPC] Fix for assembler -g
+In-Reply-To: Segher Boessenkool's message of  Monday, 20 August 2007 23:29:46 +0200 <4470f8769f958e0b46eea116ae0e1105@kernel.crashing.org>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20070820213554.2885D4D05F4@magilla.localdomain>
+Date: Mon, 20 Aug 2007 14:35:54 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-21 at 01:10 +0400, Konstantin Baydarov wrote:
-> Konstantin Baydarov wrote:
-> > Hi, I've faced problem:
-> > I have two x86_64 kernels with HPET enabled:
-> > kernel 1 - with PM enabled,
-> > kernel 2 - with PM disabled.
-> >   
-> Forgot to say that it's RT kernel, version is 2.6.23-rc2-rt2.
+> > In a way though, good thing, or mainline would have continued to be
+> > broken :)
+> 
+> What do I need to do to see this bug, btw?  A special config
+> symbol perhaps?
 
-It was in your original email ..  Are you saying this it is not a
-problem in plain 2.6.23-rc2? I thought I read that it was a problem on
-i386 ..
+CONFIG_DEBUG_INFO=y
+and pass-g-to-assembler-under-config_debug_info.patch from -mm
 
-Daniel
+
+Thanks,
+Roland
 
