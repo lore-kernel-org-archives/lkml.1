@@ -1,138 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759619AbXHTOWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759817AbXHTOYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759619AbXHTOWQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 10:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756601AbXHTOWB
+	id S1759817AbXHTOYx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 10:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756722AbXHTOYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 10:22:01 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:41067 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756177AbXHTOWA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 10:22:00 -0400
-Message-ID: <46C9A38D.6090509@bull.net>
-Date: Mon, 20 Aug 2007 16:22:05 +0200
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+	Mon, 20 Aug 2007 10:24:44 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:3404 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757259AbXHTOYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 10:24:43 -0400
+Message-ID: <46C9A433.7050509@cfl.rr.com>
+Date: Mon, 20 Aug 2007 10:24:51 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [kvm-devel] [PATCH 4/4] Modify KVM to update guest time	accounting.
-References: <46C993A6.3060001@bull.net> <46C999C8.4080307@qumranet.com>	<46C99C05.90701@bull.net> <46C9A057.6060303@qumranet.com>
-In-Reply-To: <46C9A057.6060303@qumranet.com>
-X-Enigmail-Version: 0.94.0.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 20/08/2007 16:27:13,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 20/08/2007 16:27:14,
-	Serialize complete at 20/08/2007 16:27:14
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4CA1BD24A2EA73E7114FD475"
+To: Kyle Moffett <mrmacman_g4@mac.com>
+CC: Valdis.Kletnieks@vt.edu, Michael Tharp <gxti@partiallystapled.com>,
+       alan <alan@clueserver.org>, Marc Perkel <mperkel@yahoo.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: Thinking outside the box on file systems
+References: <106259.96671.qm@web52501.mail.re2.yahoo.com> <Pine.LNX.4.64.0708141546510.22494@blackbox.fnordora.org> <46C2F96D.5030908@partiallystapled.com> <20070815133021.GB9412@csclub.uwaterloo.ca> <ECFEFFF7-0210-4D16-B508-5284FCE58B28@mac.com> <46C33934.7060802@cfl.rr.com> <DE34FF90-3143-4978-BBC5-3CF74B8C3C07@mac.com> <46C3644C.9020102@cfl.rr.com> <87EEB1B3-7FFA-472C-B539-1A7AA2843869@mac.com> <46C37AD4.5060006@cfl.rr.com> <A93D7AFB-6883-48E4-96A9-CAD76E39132E@mac.com> <46C4689C.8020702@cfl.rr.com> <5D526964-3F46-4B6D-A12A-437A7EF5E0D8@mac.com> <46C5BC79.9090204@cfl.rr.com> <1942.1187365183@turing-police.cc.vt.edu> <46C5F09C.2050600@cfl.rr.com> <DDABDE40-EDA1-421A-A3D9-2CE48802A125@mac.com>
+In-Reply-To: <DDABDE40-EDA1-421A-A3D9-2CE48802A125@mac.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Aug 2007 14:24:51.0759 (UTC) FILETIME=[DF024BF0:01C7E335]
+X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1021-15368.001
+X-TM-AS-Result: No--6.096500-5.000000-2
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4CA1BD24A2EA73E7114FD475
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Kyle Moffett wrote:
+> One last comment:
+> 
+> 50ms to update in-memory dentries would be FRIGGING TERRIBLE!!!  Using 
+> Perl, an interpreted language, the following script takes 3.39s to run 
+> on one of my lower-end systems:
+> 
+> for (0 .. 10000) {
+>     mkdir "a-$_";
+>     mkdir "b-$_";
+>     rename "a-$_", "b-$_";
+> }
+> 
+> It's not even deleting things afterwards so it's populating a directory 
+> with ten thousand entries.  We can easily calculate 10,000/3.39 = 2,949 
+> entries per second, or 0.339 milliseconds per entry.
+> 
+> When I change it to rmdir things instead, the runtime goes down to 2.89s 
+> == 3460 entries/sec == 0.289 milliseconds per entry.
+> 
+> If such a scheme even increases the overhead of a directory rename by a 
+> hundredth of a millisecond on that box it would easily be a 2-3% 
+> performance hit.  Given that people tend to kill for 1% performance 
+> boosts, that's not likely to be a good idea.
 
-Avi Kivity wrote:
-> Laurent Vivier wrote:
->> Avi Kivity wrote:
->>  =20
->>> Laurent Vivier wrote:
->>>    =20
->>>> [PATCH 4/4] Modify KVM to update guest time accounting.
->>>>
->>>>  =20
->>>>      =20
->>>> Index: kvm/drivers/kvm/kvm.h
->>>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->>>> --- kvm.orig/drivers/kvm/kvm.h    2007-08-20 13:23:53.000000000 +020=
-0
->>>> +++ kvm/drivers/kvm/kvm.h    2007-08-20 13:23:58.000000000 +0200
->>>> @@ -589,6 +589,17 @@ void kvm_mmu_unload(struct kvm_vcpu *vcp
->>>> =20
->>>>  int kvm_hypercall(struct kvm_vcpu *vcpu, struct kvm_run *run);
->>>> =20
->>>> +static inline void kvm_guest_enter(void)
->>>> +{
->>>> +#ifdef CONFIG_GUEST_ACCOUNTING
->>>> +    current->flags |=3D PF_VCPU;
->>>> +#endif
->>>>  =20
->>>>      =20
->>> Since you select GUEST_ACCOUNTING, the #ifdef is always true?
->>>    =20
->> It is just to avoid error if we compile kvm module outside of the kern=
-el, with
->> kernel without support of guest accounting. Can be removed if you want=
-=2E
->>
->>  =20
->=20
-> Ah okay.  We take care of the external module in=20
-> external-module-compat.h (in this case, we can #define PF_VCPU to 0 if =
+The question is how many dentries are cached at the time?  And it looks 
+like you are just renaming, not moving, so there would be no need to 
+recompute the acls at all.
 
-> it is undefined).
-
-OK
-
->>>> +}
->>>> +
->>>> +static inline void kvm_guest_exit(void)
->>>> +{
->>>>  =20
->>>>      =20
->>> Missing content?
->>>    =20
->> No, empty function.
->>
->> It is just to introduce "symmetry" in code, the VCPU code begins with
->> "kvm_guest_start()" and ends with "kvm_guest_exit()". And we have no o=
-peration
->> to do in kvm_guest_exit() (the PF_VCPU is cleared by account_system_ti=
-me()), so
->> "empty function", removed by the optimizer (I hope).
->>  =20
->=20
-> But what if account_system_time() is not called (because we exited=20
-> before the timer interrupt hit)?
-
-account_system_time() is called by the scheduler on tick. If we clear PF_=
-VCPU in
-kvm_guest_exit(), the flag is always cleared when account_system_time() i=
-s
-executed, so we account "0", if we call account_system_time() directly fr=
-om
-kvm_guest_exit() we account "1", so we subtract 1 to system time, and we =
-have
-perhaps not used 1 tick in system: in my opinion this implies wrong resul=
-ts.
-
-Laurent
---=20
-------------- Laurent.Vivier@bull.net  --------------
-          "Software is hard" - Donald Knuth
-
-
---------------enig4CA1BD24A2EA73E7114FD475
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.7 (GNU/Linux)
-
-iD8DBQFGyaON9Kffa9pFVzwRAiZBAKCjIrPZ45pCUxY3DBByFsTxzjdE0wCfYUVe
-m6tAzCpP/yiMXV1etLLs1EQ=
-=IQR8
------END PGP SIGNATURE-----
-
---------------enig4CA1BD24A2EA73E7114FD475--
