@@ -1,37 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765980AbXHTUi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932233AbXHTUiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765980AbXHTUi0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762017AbXHTUcH
+	id S932233AbXHTUiv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765472AbXHTUd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:32:07 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52401 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755284AbXHTUcG (ORCPT
+	Mon, 20 Aug 2007 16:33:59 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36251 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765461AbXHTUd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:32:06 -0400
-Date: Mon, 20 Aug 2007 13:32:05 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [patch 01/23] Fall back on interrupt disable in cmpxchg8b on
- 80386 and 80486
-In-Reply-To: <20070820201822.597720007@polymtl.ca>
-Message-ID: <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com>
-References: <20070820201519.512791382@polymtl.ca> <20070820201822.597720007@polymtl.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 20 Aug 2007 16:33:57 -0400
+Date: Mon, 20 Aug 2007 22:33:55 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Thomas Graf <tgraf@suug.ch>
+Cc: Felix Marti <felix@chelsio.com>, Andi Kleen <andi@firstfloor.org>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, jeff@garzik.org,
+       netdev@vger.kernel.org, rdreier@cisco.com, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org, David Miller <davem@davemloft.net>
+Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCPportsfrom the host TCP port space.
+Message-ID: <20070820203355.GA21244@one.firstfloor.org>
+References: <p73y7g6yt3j.fsf@bingen.suse.de> <8A71B368A89016469F72CD08050AD334018E2149@maui.asicdesigners.com> <20070820201808.GM32236@postel.suug.ch>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070820201808.GM32236@postel.suug.ch>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Aug 2007, Mathieu Desnoyers wrote:
+> GPUs have almost no influence on system security, 
 
-> already present in cmpxchg_386_u32 tells much about how this cmpxchg
-> implementation should not be used in a SMP context. However, the cmpxchg_local
-> can perfectly use this fallback, since it only needs to be atomic wrt the local
-> cpu.
+Unless you use direct rendering from user space.
 
-Do you have an example where the use of cmpxchg_local is a performance 
-benefit when actually used in code? cmpxchg is already problematic
-functionality since it is not available on all platforms.
+-Andi
