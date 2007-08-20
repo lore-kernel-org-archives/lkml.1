@@ -1,35 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762864AbXHTUcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765071AbXHTUcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762864AbXHTUcP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 16:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764435AbXHTU1S
+	id S1765071AbXHTUcg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 16:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764089AbXHTU1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 16:27:18 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55558 "EHLO smtp.polymtl.ca"
+	Mon, 20 Aug 2007 16:27:20 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55563 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764432AbXHTU1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 16:27:16 -0400
-Message-Id: <20070820202600.116795129@polymtl.ca>
+	id S1763001AbXHTU1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 16:27:18 -0400
+Message-Id: <20070820202646.157114500@polymtl.ca>
+References: <20070820202600.116795129@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Aug 2007 16:26:00 -0400
+Date: Mon, 20 Aug 2007 16:26:01 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [patch 0/2] Sort module list
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 1/2] Seq_file add support for sorted list
+Content-Disposition: inline; filename=seq_file_sorted.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 20 Aug 2007 20:26:46 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Add support for sorted list in seq_file. It aims at changing the way
+/proc/modules and kallsyms iterates on the module list to remove a race between
+module unload and module/symbol listing.
 
-Here is a repost of the "sort module list patch", needed by the Linux Kernel
-Markers.
+The list is sorted by ascending list_head pointer address.
 
-Applies to 2.6.23-rc2-mm2, in the following order:
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ fs/seq_file.c            |   40 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/seq_file.h |   20 ++++++++++++++++++++
+ 2 files changed, 60 insertions(+)
 
-seq_file_sorted.patch
-module.c-sort-module-list.patch
-
-Mathieu
+Index: linux-2.6-lttng/fs/seq_file.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/seq_file.c	2007-07-25 01:40:13.000000000 -0400
++++ linux-2.6-lttng/fs/seq_file.c	2007-07-25 02:47:55.000000000 -0400
+@@ -485,3 +485,43 @@ struct list_head *seq_list_next(void *v,
+ }
+ 
+ EXPORT_SYMBOL(seq_list_next);
++
++struct list_head *seq_sorted_list_start(struct list_head *head, void *pos)
++{
++	struct list_head *lh;
++
++	list_for_each(lh, head)
++		if ((void*)lh >= pos)
++			return lh;
++	return NULL;
++}
++
++EXPORT_SYMBOL(seq_sorted_list_start);
++
++struct list_head *seq_sorted_list_start_head(struct list_head *head, void *pos)
++{
++	struct list_head *lh;
++
++	if (!pos)
++		return head;
++	list_for_each(lh, head)
++		if ((void*)lh >= pos)
++			return lh->prev;
++	return NULL;
++}
++
++EXPORT_SYMBOL(seq_sorted_list_start_head);
++
++struct list_head *seq_sorted_list_next(void *p, struct list_head *head,
++		void **ppos)
++{
++	struct list_head *lh;
++	void *next;
++
++	lh = ((struct list_head *)p)->next;
++	next = (lh == head) ? NULL : lh;
++	*ppos = next ? next : (void*)-1UL;
++	return next;
++}
++
++EXPORT_SYMBOL(seq_sorted_list_next);
+Index: linux-2.6-lttng/include/linux/seq_file.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/seq_file.h	2007-07-25 01:40:13.000000000 -0400
++++ linux-2.6-lttng/include/linux/seq_file.h	2007-07-25 02:41:22.000000000 -0400
+@@ -61,5 +61,25 @@ extern struct list_head *seq_list_start_
+ extern struct list_head *seq_list_next(void *v, struct list_head *head,
+ 		loff_t *ppos);
+ 
++/*
++ * Helpers for iteration over a list sorted by ascending head pointer address.
++ * To be used in contexts where preemption cannot be disabled to insure to
++ * continue iteration on a modified list starting at the same location where it
++ * stopped, or at a following location. It insures that the lost information
++ * will only be in elements added/removed from the list between iterations.
++ * void *pos is only used to get the next list element and may not be a valid
++ * list_head anymore when given to seq_sorted_list_start() or
++ * seq_sorted_list_start_head().
++ */
++extern struct list_head *seq_sorted_list_start(struct list_head *head,
++		void *pos);
++extern struct list_head *seq_sorted_list_start_head(struct list_head *head,
++		void *pos);
++/*
++ * next must be called with an existing p node
++ */
++extern struct list_head *seq_sorted_list_next(void *p, struct list_head *head,
++		void **ppos);
++
+ #endif
+ #endif
 
 -- 
 Mathieu Desnoyers
