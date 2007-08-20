@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbXHTGGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbXHTGPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752502AbXHTGGf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 02:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbXHTGG1
+	id S1752866AbXHTGPb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 02:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXHTGPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 02:06:27 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:14382 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbXHTGG0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 02:06:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=krY/cmB/+HF5cb1Rp5jbsmXuifUD/RXxhEmuTHeT7caemDcRQnnI3VxMeq9eKG0Oe3aXBx47NhqBFP9o4oMQGwuwGSirCbn2rNkTU/qUGfa6h28ks1A7fnBtbldFG1UmVYiZd0IfUeSa9CHM2XlXuuH0QSA0XkLmhKV4ByjoW1c=
-Message-ID: <d970ff420708192306gfe0628dn192f01e8301f2b39@mail.gmail.com>
-Date: Mon, 20 Aug 2007 03:06:25 -0300
-From: Alemao <xcarandiru@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: usb & udev
+	Mon, 20 Aug 2007 02:15:23 -0400
+Received: from gw.goop.org ([64.81.55.164]:41783 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751152AbXHTGPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 02:15:22 -0400
+Message-ID: <46C9317C.2080509@goop.org>
+Date: Sun, 19 Aug 2007 23:15:24 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       patches@x86-64.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] [5/12] x86_64: Make patching more robust, fix paravirt
+ issue
+References: <20070809241.425881000@suse.de> <20070809124132.C794A14F3B@wotan.suse.de> <46C637B7.30200@goop.org> <1187574628.19435.29.camel@localhost.localdomain> <20070820020732.GA3672@sequoia.sous-sol.org>
+In-Reply-To: <20070820020732.GA3672@sequoia.sous-sol.org>
+X-Enigmail-Version: 0.95.2
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Chris Wright wrote:
+> That did get backed out (at least the part that broke paravirt patching)
+> in 602033ed5907a59ce86f709082a35be047743a86.  Linus' tree should be
+> working fine right now with d34fda4a84c18402640a1a2342d6e6d9829e6db7
+> committed, and can be further refined with the patch below that's just
+> waiting on some further testing.
+>   
 
-When I plug my board with the FT232R chip from FTDI (USB to serial) a
-module named usbserial.ko and ftdi_sio.ko is inserted automatically.
+I don't think this is necessary.  It isn't worth complicating the
+interface to avoid the memcpy.
 
-I saw in udev rules that this is the line responsible for doing that:
-
-# Load drivers that match kernel-supplied alias
-ENV{MODALIAS}=="?*",                    RUN+="/sbin/modprobe -Q $env{MODALIAS}"
-
-What I want to know is who send this for udev? usbcore module?
-
-The variable $env{MODALIAS} is something like this:
-
-                 usb:v0403p6001d0600dc00dsc00dp00icFFiscFFipFF
-
-v0403 is the vendor ID, p6001 is the product ID, but the others? I
-didnt find anything about this in modprobe or udev docs....
-
-Thanks,
-
--- 
-Alemao
+    J
