@@ -1,64 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759817AbXHTOYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760078AbXHTOZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759817AbXHTOYx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 10:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756722AbXHTOYo
+	id S1760078AbXHTOZN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 10:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759711AbXHTOYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 10:24:44 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:3404 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757259AbXHTOYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 10:24:43 -0400
-Message-ID: <46C9A433.7050509@cfl.rr.com>
-Date: Mon, 20 Aug 2007 10:24:51 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Mon, 20 Aug 2007 10:24:52 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:49276 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759445AbXHTOYu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 10:24:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cCP2Cu1aKxR0WGML+YeOWObcXZlkl7AQG/NAOvFevcEtIFoPnIGA1oaIPcCYXIzkCLY1f+n0RTeHxO5WMlNPn+fRJlqNJLVBxF5ejIzvAqU1tZgwl/au61V8+dkHCwsW9yWPEm8lUd9F+bQqIGQObu+ENv59dtgf7Wr+16FXu+s=
+Message-ID: <25ae38200708200724sbce2749m7eb27565d7c84e5e@mail.gmail.com>
+Date: Mon, 20 Aug 2007 19:54:49 +0530
+From: "Anand Jahagirdar" <anandjigar@gmail.com>
+To: "Chris Snook" <csnook@redhat.com>
+Subject: Re: Fork Bombing Patch
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46C4BC46.7000305@redhat.com>
 MIME-Version: 1.0
-To: Kyle Moffett <mrmacman_g4@mac.com>
-CC: Valdis.Kletnieks@vt.edu, Michael Tharp <gxti@partiallystapled.com>,
-       alan <alan@clueserver.org>, Marc Perkel <mperkel@yahoo.com>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: Thinking outside the box on file systems
-References: <106259.96671.qm@web52501.mail.re2.yahoo.com> <Pine.LNX.4.64.0708141546510.22494@blackbox.fnordora.org> <46C2F96D.5030908@partiallystapled.com> <20070815133021.GB9412@csclub.uwaterloo.ca> <ECFEFFF7-0210-4D16-B508-5284FCE58B28@mac.com> <46C33934.7060802@cfl.rr.com> <DE34FF90-3143-4978-BBC5-3CF74B8C3C07@mac.com> <46C3644C.9020102@cfl.rr.com> <87EEB1B3-7FFA-472C-B539-1A7AA2843869@mac.com> <46C37AD4.5060006@cfl.rr.com> <A93D7AFB-6883-48E4-96A9-CAD76E39132E@mac.com> <46C4689C.8020702@cfl.rr.com> <5D526964-3F46-4B6D-A12A-437A7EF5E0D8@mac.com> <46C5BC79.9090204@cfl.rr.com> <1942.1187365183@turing-police.cc.vt.edu> <46C5F09C.2050600@cfl.rr.com> <DDABDE40-EDA1-421A-A3D9-2CE48802A125@mac.com>
-In-Reply-To: <DDABDE40-EDA1-421A-A3D9-2CE48802A125@mac.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Aug 2007 14:24:51.0759 (UTC) FILETIME=[DF024BF0:01C7E335]
-X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1021-15368.001
-X-TM-AS-Result: No--6.096500-5.000000-2
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Disposition: inline
+References: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com>
+	 <46C4BC46.7000305@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
-> One last comment:
-> 
-> 50ms to update in-memory dentries would be FRIGGING TERRIBLE!!!  Using 
-> Perl, an interpreted language, the following script takes 3.39s to run 
-> on one of my lower-end systems:
-> 
-> for (0 .. 10000) {
->     mkdir "a-$_";
->     mkdir "b-$_";
->     rename "a-$_", "b-$_";
-> }
-> 
-> It's not even deleting things afterwards so it's populating a directory 
-> with ten thousand entries.  We can easily calculate 10,000/3.39 = 2,949 
-> entries per second, or 0.339 milliseconds per entry.
-> 
-> When I change it to rmdir things instead, the runtime goes down to 2.89s 
-> == 3460 entries/sec == 0.289 milliseconds per entry.
-> 
-> If such a scheme even increases the overhead of a directory rename by a 
-> hundredth of a millisecond on that box it would easily be a 2-3% 
-> performance hit.  Given that people tend to kill for 1% performance 
-> boosts, that's not likely to be a good idea.
+Hi
+   As Per the Previous Discussion of my Patch,I think insted of using
+KERN_CRIT,it is better to lower the priority level to KERN_WARNING.
+thats why i used KERN_WARNING.it will warn administrator and its
+administrator responsibility to take whatever action he want to take.
 
-The question is how many dentries are cached at the time?  And it looks 
-like you are just renaming, not moving, so there would be no need to 
-recompute the acls at all.
+anand
 
+On 8/17/07, Chris Snook <csnook@redhat.com> wrote:
+> Anand Jahagirdar wrote:
+> > Hello All
+> >            I have searched for Maintainers List to get the correct
+> > Maintainer for my patch. But i am not getting exact maintainer to
+> > which i should forward my patch. Will any body please tell me,to which
+> > maintainer i should forward my patch for its inclusion?
+> >
+> > Summery of the Patch:
+> >
+> > This patch Warns the administrator about the fork bombing attack
+> > (whenever any user is crossing its process limit). I have used
+> > printk_ratelimit function in this patch. This function helps to
+> > prevent flooding of syslog and prints message as per the values set by
+> > root user in following files:-
+> >
+> > 1) /proc/sys/kernel/printk_ratelimit:- This file contains value for,
+> > how many times message should be printed in syslog.
+> >
+> > 2) /proc/sys/kernel/printk_ratelimit_burst: - This file contains value
+> > for, after how much time message should be repeated.
+> >
+> > This patch is really helpful for administrator/root user from security
+> > point of view. They can take action against attacker by looking at
+> > syslog messages related with fork bombing attack.
+> >
+> > Added comments will definitely help developers.
+> >
+> > Signed-Off-by: Anand Jahagirdar <anandjigar@gmail.com>
+> >
+> >
+> > ------------------------------------------------------------------------
+> >
+> > Index: root/Desktop/a1/linux-2.6.17.tar.bz2_FILES/linux-2.6.17/kernel/fork.c
+> > ===================================================================
+> > --- root.orig/Desktop/a1/linux-2.6.17.tar.bz2_FILES/linux-2.6.17/kernel/fork.c        2007-06-26 20:40:06.000000000 +0530
+> > +++ root/Desktop/a1/linux-2.6.17.tar.bz2_FILES/linux-2.6.17/kernel/fork.c     2007-06-26 20:41:41.000000000 +0530
+> > @@ -957,12 +957,19 @@
+> >
+> >       retval = -EAGAIN;
+> >
+> > -
+> > +        /*
+> > +         * following code does not allow Non Root User to cross its process
+> > +         * limit and it alerts administrator about user Nearing the process limit.
+> > +         */
+> > +
+> >               if (atomic_read(&p->user->processes) >= p->signal->rlim[RLIMIT_NPROC].rlim_cur)
+> >               if (!capable(CAP_SYS_ADMIN) && !capable(CAP_SYS_RESOURCE) &&
+> > -                             p->user != &root_user)
+> > +                             p->user != &root_user)  {
+> > +                        if (printk_ratelimit())
+> > +                                printk(KERN_WARNING "User with uid %u is Nearing the process limit\n",p->user->uid);
+> > +
+> >                        goto bad_fork_free;
+> > -
+> > +             }
+> >
+> >       atomic_inc(&p->user->__count);
+> >       atomic_inc(&p->user->processes);
+>
+> 1) The printk is misleading.  We're hitting this condition because the
+> user has hit the limit, not merely approached it.
+>
+> 2) This should probably be KERN_INFO.  The kernel itself is not in any
+> danger because of this condition.
+>
+> 3) You should only be printing a warning if the user's hard limit is
+> exceeded, not the soft limit.  While these default to the same value,
+> applications are free to deliberately lower their soft limit to
+> self-manage their resource utilization.  It's even perfectly valid (if
+> uncommon) to lower the limit and deliberately keep your process count
+> right at that limit by forking opportunistically.  If an application is
+> doing this, you don't need or want to spam the message logs.  So, check
+> to see if p->signal->rlim[RLIMIT_NPROC].rlim_cur ==
+> p->signal->rlim[RLIMIT_NPROC].rlim_max before spewing this out into the log.
+>
+> 4) Even with the printk_ratelimit, lowering the priority to KERN_INFO,
+> and only logging when the hard limit is reached, an unprivileged user
+> can still spam the system logs.  Perhaps a sysctl is in order?
+>
+>        -- Chris
+>
