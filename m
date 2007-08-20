@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761327AbXHTTPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761595AbXHTTW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761327AbXHTTPS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 15:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbXHTTPE
+	id S1761595AbXHTTW7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 15:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758470AbXHTTWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 15:15:04 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45998 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754224AbXHTTPD (ORCPT
+	Mon, 20 Aug 2007 15:22:49 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:42774 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753108AbXHTTWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 15:15:03 -0400
-Date: Mon, 20 Aug 2007 12:15:01 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dkegel@google.com, David Miller <davem@davemloft.net>,
-       Daniel Phillips <phillips@google.com>
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-In-Reply-To: <1187581894.6114.169.camel@twins>
-Message-ID: <Pine.LNX.4.64.0708201210440.29092@schroedinger.engr.sgi.com>
-References: <20070814142103.204771292@sgi.com>  <20070815122253.GA15268@wotan.suse.de>
- <1187183526.6114.45.camel@twins>  <20070816032921.GA32197@wotan.suse.de>
- <1187581894.6114.169.camel@twins>
+	Mon, 20 Aug 2007 15:22:48 -0400
+X-IronPort-AV: i="4.19,285,1183348800"; 
+   d="scan'208"; a="37604301:sNHT50877911"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Andrew Morton" <akpm@linux-foundation.org>, torvalds@linux-foundation.org
+Subject: Re: [PATCH 1/1] ensure we don't use bootconsoles after init has been released
+Date: Mon, 20 Aug 2007 15:22:47 -0400
+User-Agent: KMail/1.9.5
+Cc: "Paul Mundt" <lethal@linux-sh.org>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
+       "Gerd Hoffmann" <kraxel@redhat.com>
+References: <200708192246.05783.rgetz@blackfin.uclinux.org> <8bd0f97a0708192011m1b957e57je313850a255dcac7@mail.gmail.com> <20070820033143.GA4918@linux-sh.org>
+In-Reply-To: <20070820033143.GA4918@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708201522.47591.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 20 Aug 2007 19:22:42.0962 (UTC) FILETIME=[7B137720:01C7E35F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Aug 2007, Peter Zijlstra wrote:
+Try #4... (sorry)
+ 
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+ 
+This is a followup to the cleanups for earlyprintk patch from Gerd Hoffmann
+ 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=69331af79cf29e26d1231152a172a1a10c2df511
+ 
+This ensures that a bootconsole is unregistered if it is not replaced.
+The current implementation spews garbage out the bootconsole in this case,
+since the bootconsole structure is normally in the init section, and is
+freed, but still used.
+ 
+Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+CC: Gerd Hoffmann <kraxel@redhat.com>
+CC: Paul Mundt <lethal@linux-sh.org>
+CC: Mike Frysinger <vapier.adi@gmail.com>
+---
 
-> > > <> What Christoph is proposing is doing recursive reclaim and not
-> > > initiating writeout. This will only work _IFF_ there are clean pages
-> > > about. Which in the general case need not be true (memory might be
-> > > packed with anonymous pages - consider an MPI cluster doing computation
-> > > stuff). So this gets us a workload dependant solution - which IMHO is
-> > > bad!
-> > 
-> > Although you will quite likely have at least a couple of MB worth of
-> > clean program text. The important part of recursive reclaim is that it
-> > doesn't so easily allow reclaim to blow all memory reserves (including
-> > interrupt context). Sure you still have theoretical deadlocks, but if
-> > I understand correctly, they are going to be lessened. I would be
-> > really interested to see if even just these recursive reclaim patches
-> > eliminate the problem in practice.
-> 
-> were we much bothered by the buffered write deadlock? - why accept a
-> known deadlock if a solid solution is quite attainable?
+ kernel/printk.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Buffered write deadlock? How does that exactly occur? Memory allocation in 
-the writeout path while we hold locks?
-
-There are many worst case scenarios in the current reclaim implementation 
-that are not addressed and we so far have not addressed these because the 
-code is very sensitive and it is not clear that the complexity introduced 
-by these changes is offset by the benefits gained.
+Index: linux-2.6.x/kernel/printk.c
+===================================================================
+--- linux-2.6.x/kernel/printk.c	(revision 3583)
++++ linux-2.6.x/kernel/printk.c	(working copy)
+@@ -1104,6 +1104,17 @@
+ }
+ EXPORT_SYMBOL(unregister_console);
+ 
++static int __init disable_boot_consoles(void)
++{
++	if (console_drivers->flags & CON_BOOT) {
++		printk(KERN_INFO "turn off boot console %s%d\n",
++			console_drivers->name, console_drivers->index);
++		return unregister_console(console_drivers);
++	}
++	return 0;
++}
++late_initcall(disable_boot_consoles);
++
+ /**
+  * tty_write_message - write a message to a certain tty, not just the console.
+  * @tty: the destination tty_struct
