@@ -1,101 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbXHUHS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbXHUHUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758866AbXHUHS4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 03:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbXHUHSs
+	id S1759537AbXHUHUA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 03:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbXHUHTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 03:18:48 -0400
-Received: from ns.miraclelinux.com ([219.118.163.66]:1071 "EHLO
-	mail.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbXHUHSr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 03:18:47 -0400
-X-Greylist: delayed 1160 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Aug 2007 03:18:47 EDT
-Message-ID: <46CA8D4D.70201@miraclelinux.com>
-Date: Tue, 21 Aug 2007 15:59:25 +0900
-From: Kiyoshi Sasaki <ksasaki@miraclelinux.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: on the system with companion host controller, error -71 returns
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
-X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.8.20.233228
+	Tue, 21 Aug 2007 03:19:52 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:26072 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751471AbXHUHTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 03:19:51 -0400
+Date: Tue, 21 Aug 2007 11:19:38 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: sam@ravnborg.org, akpm@osdl.org
+Cc: jesper.juhl@gmail.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] ver_linux is [censored]
+Message-ID: <20070821071938.GA17761@localhost.sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Commit 4a645d5ea65baaa5736bcb566673bf4a351b2ad8 broke ver_linux
+on etch which glibc has 3-digit version number. Patch replaces awk
+wanking with more robust sed wanking.
 
-I see below errors in dmesg on ICH6/ICH7 machine:
+Tested on gentoo, etch, centos 4.2.
 
-usb 1-1: device not accepting address 2, error -71
-or
-usb 1-1: device descriptor read/all, error -71
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
 
-I'm trying to debug it, but by now I can't make it.
-Can you give me your help ?
+ scripts/ver_linux |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-----
-
-On ICH6/ICH7, in case load sequence is uhci first and ehci second,
-each controller is initialized/registered in usb_add_hcd() like below.
-
-uhci_hcd 0000:00:1d.0: UHCI Host Controller
-uhci_hcd 0000:00:1d.1: UHCI Host Controller
-uhci_hcd 0000:00:1d.2: UHCI Host Controller
-uhci_hcd 0000:00:1d.3: UHCI Host Controller
-ehci_hcd 0000:00:1d.7: EHCI Host Controller
-
-And on ehci_hcd turn, usb_add_hcd() calls ehci_run() to start ehci.
-In ehci_run(), it sets Configure Flag (CF) to 1 for enabling full
-USB 2.0 functionality.
-
-static int ehci_run (struct usb_hcd *hcd)
-{
-...
-        /*
-         * Start, enabling full USB 2.0 functionality ... usb 1.1 devices
-         * are explicitly handed to companion controller(s), so no TT is
-         * involved with the root hub.  (Except where one is integrated,
-         * and there's no companion controller unless maybe for USB OTG.)
-         */
-        hcd->state = HC_STATE_RUNNING;
-        writel (FLAG_CF, &ehci->regs->configured_flag);
-...
-}
-
-On the other hand, uhci tries to get device information using
-hub_set_address() and usb_get_device_descriptor().
-These functions send URB, and URB is processed like below.
-This is done asynchronously.
-
-- uhci_irq()
-  - uhci_scan_schedule()
-    - uhci_scan_qh()
-      - uhci_result_common()
-        - uhci_map_status()
-
-uhci_map_status() checks td_status. And the flag is TD_CTRL_STALLED
-|TD_CTRL_CRCTIMEO, and return with error.
-So, hub_set_address() and usb_get_device_descriptor() return -71.
-
-After some debugging, I found if hub_set_address() and
-usb_get_device_descriptor() is called before CF becomes 1,
-no error returns. Conversely, if these are called even just after
-CF becomes 1, error -71 returns.
-CF becomes 1 means "writel (FLAG_CF, &ehci->regs->configured_flag)".
-
-To avoid this error, my silly idea is
-
-1) before set CF to 1, wait some asynchronous uhci processing
-2) load ehci first and uhci second
-
-But for 1), simple msleep() will not work well, and need to
-control khubd and so on, so this seems not smart.
+--- a/scripts/ver_linux
++++ b/scripts/ver_linux
+@@ -65,9 +65,9 @@ isdnctrl 2>&1 | grep version | awk \
+ showmount --version 2>&1 | grep nfs-utils | awk \
+ 'NR==1{print "nfs-utils             ", $NF}'
+ 
+-ls -l `ldd /bin/sh | awk '/libc/{print $3}'` | sed \
+--e 's/\.so$//' | sed -e 's/>//' | \
+-awk -F'[.-]' '{print "Linux C Library        "$(NF-1)"."$NF}'
++echo -n "Linux C Library        "
++ls -l `ldd /bin/sh | awk '/libc/{print $3}'` 	| \
++	sed -e 's/.*libc-//' -e 's/\.so$//'
+ 
+ ldd -v > /dev/null 2>&1 && ldd -v || ldd --version |head -n 1 | awk \
+ 'NR==1{print "Dynamic linker (ldd)  ", $NF}'
 
 
-Do you have any idea to fix this issue ?
-
--- 
-
-Kiyoshi Sasaki <ksasaki@miraclelinux.com>
