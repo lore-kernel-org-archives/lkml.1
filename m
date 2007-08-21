@@ -1,478 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbXHUJ0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbXHUJ1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754041AbXHUJ0Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 05:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbXHUJ0R
+	id S1756561AbXHUJ1F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 05:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbXHUJ0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 05:26:17 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:44022 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751382AbXHUJ0Q (ORCPT
+	Tue, 21 Aug 2007 05:26:54 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:64803 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbXHUJ0x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 05:26:16 -0400
-X-Sasl-enc: /rRpPqvJ3iSWh16/uytSV1bjoyNmEwKWvHauPldFIshO 1187688373
-Subject: [PATCH] autofs4: reinstate negatitive timeout of mount fails
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>
-Content-Type: text/plain
-Date: Tue, 21 Aug 2007 17:26:09 +0800
-Message-Id: <1187688369.3318.12.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Tue, 21 Aug 2007 05:26:53 -0400
+Message-ID: <012101c7e3d5$492d4030$b4fefea9@andrey>
+From: "Andrey Kamchatnikov" <andrey.kamchatnikov@tec-venture.de>
+To: <linux-kernel@vger.kernel.org>
+Subject: SDRAM problem
+Date: Tue, 21 Aug 2007 11:25:58 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-Provags-ID: V01U2FsdGVkX18DM6XaUT0GnQ4henkA5DEAdnY3whCGS37WIvi
+ 5AuYayRWwiD0+utIQeKAEMeXybmU3dLuUR12UpL/uBUdXw/gzO
+ h8BSwq+d8Vrm4Z0LaDoSW9dyUbgpxZHbxkD3O/1j0AxTsCcIaQ
+ P2A==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 Hi,
 
-Due to a change to fs/dcache.c:d_lookup() in the 2.6 kernel whereby only
-hashed dentrys are returned the negative caching of mount failures
-stopped working in the autofs4 module for nobrowse mount (ie. directory
-created at mount time and removed at umount or following a mount
-failure).
+I have CPU - Intel PXA255, Linux-2.6.17, 4 SDRAM 2Mx16x4 (32Mb at one CS, 
+32MB at another). The problem is that there is a gap in 32Mb between two 
+SDRAMs. If I write in booting string mem=64M and work with a file bigger 
+then 20Mb, then Linux crash has occured. As I understand correct, the second 
+SDRAM is not available.
 
-This patch keeps track of the dentrys from mount fails in order to be
-able check the timeout since the last fail and return the appropriate
-status. In addition the timeout value is settable at load time as a
-module option and via sysfs using the module
-parameter /sys/module/autofs4/parameters/negative_timeout.
+I tried in the boot command line the next strings: "mem=32M at 0xa0000000 
+mem=32M at 0xa4000000",
+"mem=32M@0xa0000000 mem=32M@0xa4000000"
 
-Signed-off-by: Ian Kent <raven@themaw.net>
+I tried also to add to mashine start routine:
 
----
---- linux-2.6.23-rc2-mm2/fs/autofs4/init.c.negative-timeout	2007-07-09 07:32:17.000000000 +0800
-+++ linux-2.6.23-rc2-mm2/fs/autofs4/init.c	2007-08-21 15:44:34.000000000 +0800
-@@ -14,6 +14,10 @@
- #include <linux/init.h>
- #include "autofs_i.h"
- 
-+unsigned int negative_timeout = AUTOFS_NEGATIVE_TIMEOUT;
-+module_param(negative_timeout, uint, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(negative_timeout, "Cache mount fails negatively for this many seconds");
-+
- static int autofs_get_sb(struct file_system_type *fs_type,
- 	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
- {
---- linux-2.6.23-rc2-mm2/fs/autofs4/inode.c.negative-timeout	2007-08-17 11:52:33.000000000 +0800
-+++ linux-2.6.23-rc2-mm2/fs/autofs4/inode.c	2007-08-21 15:44:34.000000000 +0800
-@@ -46,6 +46,7 @@ struct autofs_info *autofs4_init_ino(str
- 	ino->inode = NULL;
- 	ino->dentry = NULL;
- 	ino->size = 0;
-+	ino->negative_timeout = negative_timeout;
- 
- 	INIT_LIST_HEAD(&ino->rehash);
- 
-@@ -98,11 +99,24 @@ void autofs4_free_ino(struct autofs_info
- static void autofs4_force_release(struct autofs_sb_info *sbi)
- {
- 	struct dentry *this_parent = sbi->sb->s_root;
--	struct list_head *next;
-+	struct list_head *p, *next;
- 
- 	if (!sbi->sb->s_root)
- 		return;
- 
-+	/* Cleanup the negative dentry cache */
-+	spin_lock(&sbi->rehash_lock);
-+	list_for_each_safe(p, next, &sbi->rehash_list) {
-+		struct autofs_info *ino;
-+		struct dentry *dentry;
-+		ino = list_entry(p, struct autofs_info, rehash);
-+		dentry = ino->dentry;
-+		spin_unlock(&sbi->rehash_lock);
-+		dput(ino->dentry);
-+		spin_lock(&sbi->rehash_lock);
-+	}
-+	spin_unlock(&sbi->rehash_lock);
-+
- 	spin_lock(&dcache_lock);
- repeat:
- 	next = this_parent->d_subdirs.next;
---- linux-2.6.23-rc2-mm2/fs/autofs4/autofs_i.h.negative-timeout	2007-08-17 11:52:33.000000000 +0800
-+++ linux-2.6.23-rc2-mm2/fs/autofs4/autofs_i.h	2007-08-21 15:44:34.000000000 +0800
-@@ -40,6 +40,14 @@
- #define DPRINTK(fmt,args...) do {} while(0)
- #endif
- 
-+/*
-+ * If the daemon returns a negative response (AUTOFS_IOC_FAIL) then we keep
-+ * the negative response cached for up to the time given here, although
-+ * the time can be shorter if the kernel throws the dcache entry away.
-+ */
-+#define AUTOFS_NEGATIVE_TIMEOUT	60	/* default 1 minute */
-+extern unsigned int negative_timeout;
-+
- /* Unified info structure.  This is pointed to by both the dentry and
-    inode structures.  Each file in the filesystem has an instance of this
-    structure.  It holds a reference to the dentry, so dentries are never
-@@ -52,8 +60,16 @@ struct autofs_info {
- 
- 	int		flags;
- 
-+	/*
-+	 * Two types of unhashed dentry can exist on this list.
-+	 * Negative dentrys from failed mounts and positive dentrys
-+	 * resulting from a race between expire and mount. This 
-+	 * fact is used when looking for dentrys in the list.
-+	 */
- 	struct list_head rehash;
- 
-+	unsigned int negative_timeout;
-+
- 	struct autofs_sb_info *sbi;
- 	unsigned long last_used;
- 	atomic_t count;
---- linux-2.6.23-rc2-mm2/fs/autofs4/root.c.negative-timeout	2007-08-17 11:53:38.000000000 +0800
-+++ linux-2.6.23-rc2-mm2/fs/autofs4/root.c	2007-08-21 15:44:34.000000000 +0800
-@@ -238,6 +238,125 @@ out:
- 	return dcache_readdir(file, dirent, filldir);
- }
- 
-+static int autofs4_compare_dentry(struct dentry *parent, struct dentry *dentry, struct qstr *name)
-+{
-+	unsigned int len = name->len;
-+	unsigned int hash = name->hash;
-+	const unsigned char *str = name->name;
-+	struct qstr *qstr = &dentry->d_name;
-+
-+	if (dentry->d_name.hash != hash)
-+		return 0;
-+	if (dentry->d_parent != parent)
-+		return 0;
-+
-+	if (qstr->len != len)
-+		return 0;
-+	if (memcmp(qstr->name, str, len))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static struct dentry *autofs4_lookup_dentry(struct autofs_sb_info *sbi, struct dentry *dentry)
-+{
-+	struct dentry *parent = dentry->d_parent;
-+	struct qstr *name = &dentry->d_name;
-+	struct list_head *p, *head;
-+
-+	head = &sbi->rehash_list;
-+	list_for_each(p, head) {
-+		struct autofs_info *ino;
-+		struct dentry *this;
-+
-+		ino = list_entry(p, struct autofs_info, rehash);
-+		this = ino->dentry;
-+
-+		spin_lock(&this->d_lock);
-+
-+		if (!autofs4_compare_dentry(parent, this, name))
-+			goto next;
-+
-+		if (d_unhashed(this)) {
-+			spin_unlock(&this->d_lock);
-+			return this;
-+		}
-+next:
-+		spin_unlock(&this->d_lock);
-+	}
-+
-+	return NULL;
-+}
-+
-+static struct dentry *autofs4_lookup_negative(struct autofs_sb_info *sbi, struct dentry *dentry)
-+{
-+	struct dentry *parent = dentry->d_parent;
-+	struct qstr *name = &dentry->d_name;
-+	struct list_head *p, *head;
-+
-+	spin_lock(&sbi->rehash_lock);
-+	head = &sbi->rehash_list;
-+	list_for_each(p, head) {
-+		struct autofs_info *ino;
-+		struct dentry *this;
-+
-+		ino = list_entry(p, struct autofs_info, rehash);
-+		this = ino->dentry;
-+
-+		spin_lock(&this->d_lock);
-+
-+		if (this->d_inode)
-+			goto next;
-+
-+		if (!autofs4_compare_dentry(parent, this, name))
-+			goto next;
-+
-+		if (d_unhashed(this)) {
-+			if (autofs4_oz_mode(sbi)) {
-+				spin_unlock(&this->d_lock);
-+				spin_unlock(&sbi->rehash_lock);
-+				return this;
-+			}
-+			/*
-+			 * If d_time is non-zero we've had a mount fail.
-+			 * Check if it's time to forget about it, return
-+			 * fail if not.
-+			 */
-+			if (this->d_time) {
-+				struct autofs_info *p_ino;
-+				unsigned long neg_timeout;
-+
-+				neg_timeout = this->d_time - get_seconds();
-+				if (neg_timeout <= ino->negative_timeout) {
-+					spin_unlock(&this->d_lock);
-+					spin_unlock(&sbi->rehash_lock);
-+					return ERR_PTR(-ENOENT);
-+				}
-+				/* Negative cache timeout */
-+				this->d_time = 0;
-+				list_del_init(&ino->rehash);
-+				spin_unlock(&this->d_lock);
-+				spin_unlock(&sbi->rehash_lock);
-+				if (atomic_dec_and_test(&ino->count)) {
-+					p_ino = autofs4_dentry_ino(this->d_parent);
-+					if (p_ino && this->d_parent != this)
-+						atomic_dec(&p_ino->count);
-+				}
-+				dput(this);
-+				return NULL;
-+			}
-+			spin_unlock(&this->d_lock);
-+			spin_unlock(&sbi->rehash_lock);
-+			return this;
-+		}
-+next:
-+		spin_unlock(&this->d_lock);
-+	}
-+	spin_unlock(&sbi->rehash_lock);
-+
-+	return NULL;
-+}
-+
- static int try_to_fill_dentry(struct dentry *dentry, int flags)
- {
- 	struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
-@@ -282,7 +401,27 @@ static int try_to_fill_dentry(struct den
- 
- 		/* Turn this into a real negative dentry? */
- 		if (status == -ENOENT) {
-+			if (!ino) {
-+				ino = autofs4_init_ino(ino, sbi, S_IFDIR | 0555);
-+				if (ino == NULL)
-+					return -ENOSPC;
-+				dentry->d_fsdata = ino;
-+			}
-+			spin_lock(&sbi->rehash_lock);
-+			if (!autofs4_lookup_dentry(sbi, dentry)) {
-+				struct autofs_info *p_ino;
-+				ino->dentry = dget(dentry);
-+				atomic_inc(&ino->count);
-+				p_ino = autofs4_dentry_ino(dentry->d_parent);
-+				if (p_ino && dentry->d_parent != dentry)
-+					atomic_inc(&p_ino->count);
-+				list_add(&ino->rehash, &sbi->rehash_list);
-+			}
-+			spin_unlock(&sbi->rehash_lock);
-+			/* Set time at which we forget about this mount fial */
- 			spin_lock(&dentry->d_lock);
-+			ino->negative_timeout = negative_timeout;
-+			dentry->d_time = get_seconds() + negative_timeout;
- 			dentry->d_flags &= ~DCACHE_AUTOFS_PENDING;
- 			spin_unlock(&dentry->d_lock);
- 			return status;
-@@ -305,6 +444,11 @@ static int try_to_fill_dentry(struct den
- 
- 		if (status) {
- 			spin_lock(&dentry->d_lock);
-+			/* Set time at which we forget about this mount fial */
-+			if (status == -ENOENT) {
-+				ino->negative_timeout = negative_timeout;
-+				dentry->d_time = get_seconds() + negative_timeout;
-+			}
- 			dentry->d_flags &= ~DCACHE_AUTOFS_PENDING;
- 			spin_unlock(&dentry->d_lock);
- 			return status;
-@@ -316,6 +460,7 @@ static int try_to_fill_dentry(struct den
- 		ino->last_used = jiffies;
- 
- 	spin_lock(&dentry->d_lock);
-+	dentry->d_time = 0;
- 	dentry->d_flags &= ~DCACHE_AUTOFS_PENDING;
- 	spin_unlock(&dentry->d_lock);
- 	return status;
-@@ -339,6 +484,19 @@ static void *autofs4_follow_link(struct 
- 	if (oz_mode || !lookup_type)
- 		goto done;
- 
-+	/* Check for cached mount fail, reset d_time if timed out */
-+	spin_lock(&dentry->d_lock);
-+	if (dentry->d_time) {
-+		unsigned long neg_timeout = dentry->d_time - get_seconds();
-+		if (neg_timeout <= ino->negative_timeout) {
-+			spin_unlock(&dentry->d_lock);
-+			status = -ENOENT;
-+			goto out_error;
-+		}
-+		dentry->d_time = 0;
-+	}
-+	spin_unlock(&dentry->d_lock);
-+
- 	/* If an expire request is pending wait for it. */
- 	if (ino && (ino->flags & AUTOFS_INF_EXPIRING)) {
- 		DPRINTK("waiting for active request %p name=%.*s",
-@@ -426,9 +584,28 @@ static int autofs4_revalidate(struct den
- 		return status;
- 	}
- 
--	/* Negative dentry.. invalidate if "old" */
--	if (dentry->d_inode == NULL)
--		return 0;
-+	/* Check for cached mount fail, reset d_time if timed out */
-+	spin_lock(&dentry->d_lock);
-+	if (!dentry->d_inode || dentry->d_time) {
-+		struct autofs_info *ino = autofs4_dentry_ino(dentry);
-+		unsigned long neg_timeout = dentry->d_time - get_seconds();
-+		/*
-+		 * If d_time is non-zero we've had a mount fail. Check if
-+		 * it's time to forget about it, return fail if not.
-+		 */
-+		if (dentry->d_time && (neg_timeout <= ino->negative_timeout)) {
-+			spin_unlock(&dentry->d_lock);
-+			return 1;
-+		}
-+		/* Negative timeout has expired */
-+		dentry->d_time = 0;
-+
-+		if (!dentry->d_inode) {
-+			spin_unlock(&dentry->d_lock);
-+			return 0;
-+		}
-+	}
-+	spin_unlock(&dentry->d_lock);
- 
- 	/* Check for a non-mountpoint directory with no contents */
- 	spin_lock(&dcache_lock);
-@@ -497,9 +674,6 @@ static struct dentry_operations autofs4_
- 
- static struct dentry *autofs4_lookup_unhashed(struct autofs_sb_info *sbi, struct dentry *parent, struct qstr *name)
- {
--	unsigned int len = name->len;
--	unsigned int hash = name->hash;
--	const unsigned char *str = name->name;
- 	struct list_head *p, *head;
- 
- 	spin_lock(&dcache_lock);
-@@ -508,7 +682,6 @@ static struct dentry *autofs4_lookup_unh
- 	list_for_each(p, head) {
- 		struct autofs_info *ino;
- 		struct dentry *dentry;
--		struct qstr *qstr;
- 
- 		ino = list_entry(p, struct autofs_info, rehash);
- 		dentry = ino->dentry;
-@@ -519,20 +692,10 @@ static struct dentry *autofs4_lookup_unh
- 		if (!dentry->d_inode)
- 			goto next;
- 
--		qstr = &dentry->d_name;
--
--		if (dentry->d_name.hash != hash)
--			goto next;
--		if (dentry->d_parent != parent)
--			goto next;
--
--		if (qstr->len != len)
--			goto next;
--		if (memcmp(qstr->name, str, len))
-+		if (!autofs4_compare_dentry(parent, dentry, name))
- 			goto next;
- 
- 		if (d_unhashed(dentry)) {
--			struct autofs_info *ino = autofs4_dentry_ino(dentry);
- 			struct inode *inode = dentry->d_inode;
- 
- 			list_del_init(&ino->rehash);
-@@ -568,7 +731,7 @@ next:
- static struct dentry *autofs4_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
- {
- 	struct autofs_sb_info *sbi;
--	struct dentry *unhashed;
-+	struct dentry *unhashed, *negative = NULL;
- 	int oz_mode;
- 
- 	DPRINTK("name = %.*s",
-@@ -587,6 +750,22 @@ static struct dentry *autofs4_lookup(str
- 	unhashed = autofs4_lookup_unhashed(sbi, dentry->d_parent, &dentry->d_name);
- 	if (!unhashed) {
- 		/*
-+		 * Negative caching of failed "nobrowse" autofs mounts
-+		 * require that we keep the unhashed, negative dentrys
-+		 * around so we can use them to check failure status. We
-+		 * use the rehash_list list in the super bloxk for this
-+		 * purpose. This isn't needed for "browse" or direct mounts
-+		 * as the dentrys are always positive so the info is always
-+		 * available.
-+		 */
-+		negative = autofs4_lookup_negative(sbi, dentry);
-+		if (negative) {
-+			if (IS_ERR(negative))
-+				return negative;
-+			dentry = negative;
-+			goto found;
-+		}
-+		/*
- 		 * Mark the dentry incomplete but don't hash it. We do this 
- 		 * to serialize our inode creation operations (symlink and
- 		 * mkdir) which prevents deadlock during the callback to
-@@ -599,6 +778,7 @@ static struct dentry *autofs4_lookup(str
- 		 */
- 		dentry->d_op = &autofs4_root_dentry_operations;
- 
-+		dentry->d_time = 0;
- 		dentry->d_fsdata = NULL;
- 		d_instantiate(dentry, NULL);
- 	} else {
-@@ -621,7 +801,7 @@ static struct dentry *autofs4_lookup(str
- 		}
- 		dentry = unhashed;
- 	}
--
-+found:
- 	if (!oz_mode) {
- 		spin_lock(&dentry->d_lock);
- 		dentry->d_flags |= DCACHE_AUTOFS_PENDING;
-@@ -682,7 +862,7 @@ static struct dentry *autofs4_lookup(str
- 		return dentry;
- 	}
- 
--	if (unhashed)
-+	if (unhashed || negative)
- 		return dentry;
- 
- 	return NULL;
-@@ -779,7 +959,9 @@ static int autofs4_dir_unlink(struct ino
- 
- 	spin_lock(&dcache_lock);
- 	spin_lock(&sbi->rehash_lock);
--	list_add(&ino->rehash, &sbi->rehash_list);
-+	dentry->d_time = 0;
-+	if (!autofs4_lookup_dentry(sbi, dentry))
-+		list_add(&ino->rehash, &sbi->rehash_list);
- 	spin_unlock(&sbi->rehash_lock);
- 	spin_lock(&dentry->d_lock);
- 	__d_drop(dentry);
-@@ -807,7 +989,9 @@ static int autofs4_dir_rmdir(struct inod
- 		return -ENOTEMPTY;
- 	}
- 	spin_lock(&sbi->rehash_lock);
--	list_add(&ino->rehash, &sbi->rehash_list);
-+	dentry->d_time = 0;
-+	if (!autofs4_lookup_dentry(sbi, dentry))
-+		list_add(&ino->rehash, &sbi->rehash_list);
- 	spin_unlock(&sbi->rehash_lock);
- 	spin_lock(&dentry->d_lock);
- 	__d_drop(dentry);
+static void __init fixup_my(struct machine_desc *desc,
+                struct tag *tags, char **cmdline, struct meminfo *mi)
+{
+        mi->bank[0].start = 0xa0000000;
+        mi->bank[0].size = (32*1024*1024);
+        mi->bank[0].node = 0;
 
+        mi->bank[1].start = 0xa4000000;
+        mi->bank[1].size = (32*1024*1024);
+        mi->bank[1].node = 1;
+
+        mi->nr_banks=2;
+}
+
+MACHINE_START(My, MACHINE_NAME)
+        .phys_io        = PXA_PHYS_IO_BASE,
+        .io_pg_offst    = (PXA_IO_BASE >> 18) & 0xfffc,
+        .fixup          = fixup_my,
+        .boot_params    = PHYS_OFFSET+0x1000,
+        .map_io         = my_map_io,
+        .init_irq       = pxa_init_irq,
+        .timer          = &pxa_timer,
+        .init_machine   = my_init,
+MACHINE_END
+
+but did not get any successful results. My board loaded completly, correctly 
+recognizes 64MB memory but available only 32MB (see next strings below):
+
+Memory: 32MB 32MB = 64MB total
+Memory: 29660KB available (2248K code, 415K data, 100K init)
+
+
+I have read somewhere about ARCH_DISCONTIGMEM_ENABLE flag, which must be 
+activated. But loading stoped at the next string (see below)
+
+RedBoot> fis load linux
+RedBoot> exec
+Using base address 0xa0108000 and length 0x00180000
+Uncompressing 
+Linux....................................................................................... 
+done, booting the kernel.
+Linux version 2.6.17-my (root@linux) (gcc-Version 3.4.3) #1180 Fri Aug 10 
+09:17:33 CEST 2007
+CPU: XScale-PXA255 [69052d06] revision 6 (ARMv5TE)
+Machine: My Board
+Warning: bad configuration page, trying to continue
+Ignoring unrecognised tag 0x00000000
+Memory policy: ECC disabled, Data cache writeback
+Memory clock: 99.53MHz (*27)
+Run Mode clock: 199.07MHz (*2)
+Turbo Mode clock: 199.07MHz (*1.0, inactive)
+CPU0: D VIVT undefined 5 cache
+CPU0: I cache: 32768 bytes, associativity 32, 32 byte lines, 32 sets
+CPU0: D cache: 32768 bytes, associativity 32, 32 byte lines, 32 sets
+Built 2 zonelists
+Kernel command line: init=/linuxrc root=1f02 rootfstype=jffs2 ro 
+console=ttyS2,38400
+PID hash table entries: 512 (order: 9, 2048 bytes)
+Console: colour dummy device 80x30
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+....
+
+Could someone please  help how to make the second SDRAM workable?
+
+Thanks,
+
+Andy
 
