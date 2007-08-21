@@ -1,53 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbXHULyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759194AbXHULzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757685AbXHULyq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 07:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbXHULyj
+	id S1759194AbXHULzU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 07:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbXHULzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 07:54:39 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:3325 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750815AbXHULyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 07:54:38 -0400
-Date: Tue, 21 Aug 2007 13:54:51 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Mike Galbraith <efault@gmx.de>
-cc: Ingo Molnar <mingo@elte.hu>, Willy Tarreau <w@1wt.eu>,
-       Michael Chang <thenewme91@gmail.com>,
+	Tue, 21 Aug 2007 07:55:06 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:21717 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752393AbXHULzD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 07:55:03 -0400
+Subject: Re: [accounting regression since rc1]  scheduler updates
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-In-Reply-To: <1187681583.6183.25.camel@Homer.simpson.net>
-Message-ID: <Pine.LNX.4.64.0708211252280.1817@scrub.home>
-References: <Pine.LNX.4.64.0708011955430.1817@scrub.home>  <20070801190556.GA1199@elte.hu>
-  <Pine.LNX.4.64.0708100037460.1817@scrub.home>  <20070810054948.GA5908@elte.hu>
-  <Pine.LNX.4.64.0708101459530.1817@scrub.home> 
- <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com> 
- <Pine.LNX.4.64.0708101919270.1817@scrub.home>  <20070810194705.GH6002@1wt.eu>
-  <Pine.LNX.4.64.0708102235320.1817@scrub.home>  <20070810213630.GA13910@elte.hu>
- <20070811003052.GA18812@elte.hu>  <Pine.LNX.4.64.0708191936110.1817@scrub.home>
- <1187681583.6183.25.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20070821113611.GB2390@elte.hu>
+References: <20070812163225.GA11996@elte.hu>
+	 <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu>
+	 <200708211017.02998.borntraeger@de.ibm.com> <20070821084243.GB1144@elte.hu>
+	 <1187687476.7623.8.camel@localhost> <20070821093434.GB12025@elte.hu>
+	 <1187692696.24279.7.camel@localhost>  <20070821113611.GB2390@elte.hu>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Tue, 21 Aug 2007 13:58:45 +0200
+Message-Id: <1187697526.24279.20.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tue, 21 Aug 2007, Mike Galbraith wrote:
-
-> I thought this was history.  With your config, I was finally able to
-> reproduce the anomaly (only with your proggy though), and Ingo's patch
-> does indeed fix it here.
+On Tue, 2007-08-21 at 13:36 +0200, Ingo Molnar wrote:
+> * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
 > 
-> Freshly reproduced anomaly and patch verification, running 2.6.23-rc3
-> with your config, both with and without Ingo's patch reverted:
+> > > Wouldnt it be more consistent if a virtual box would not show any 
+> > > dependency on external load? (i.e. it would slow down all of its 
+> > > internal functionality transparently, without exposing it via /proc. 
+> > > The only way to observe that would be the TOD interfaces: 
+> > > gettimeofday and real-time clock driven POSIX timers. Even 
+> > > timer_list could be driven via virtual time - although that would 
+> > > probably break user expectations, right?) Or would 
+> > > accounting-in-virtual-time break user expectations too? (most of the 
+> > > other hypervisors let guests account in virtual time.
+> > 
+> > No, imho it is less consistent if the virtual box shows virtual time. 
+> > If you look at the top output as a user and it shows that some process 
+> > used x% of cpu what does it tell you? [...]
+> 
+> it tells me something really important: that the virtual box's scheduler 
+> gave this task as much CPU time as it could.
 
-I did update to 2.6.23-rc3-git1 first, but I ended up reverting the patch, 
-as I didn't notice it had been applied already. Sorry about that.
-With this patch the underflows are gone, but there are still the 
-overflows, so the questions from the last mail still remain.
+So? As far as accounting is concerned the user doesn't care one bit what
+the scheduler decided. The user cares how much cpu was used. If you want
+to know how much of the cputime available to the virtual box was used
+for a process you just have to add/subtract the steal time. Your have
+the complete picture what happened. You cannot get the complete picture
+if you have do process accounting based on the TOD clock, you never know
+how much cpu was actually spent for a process.
 
-bye, Roman
+> > [...] With virtual cpus next to nothing, you have to normalize the 
+> > numbers with the %steal while the process was running. But even then 
+> > it still is not a good number because the %steal changes while a 
+> > process is running. The only good solution is to use virtual time for 
+> > all cputime values.
+> 
+> the steal percentage is really a concept one step higher in the 
+> scheduling hierarchy. You should be running top (or an equivalent tool) 
+> in the _hypervisor_ context if you want to know about how much time each 
+> virtual box gets. 'mixing' that information with the 'internal' task 
+> statistics of the virtual box is less consistent IMO and leads to the 
+> loss of information. (with the 'mixing' method there's no way to tell 
+> whether a task got all CPU time it asked for - and _that_ is which an 
+> admin is interested in just as much as the time allocation between 
+> virtual boxes.)
+
+Not really. If I look at a process I want to know how much cpu it used.
+Not virtual but real cpu. And we learned this the hard way, trying to do
+accounting with numbers that have to get normalized by numbers from the
+hypervisor is just plain broken.
+
+> so in say KVM you determine the steal percentage by looking at 'top' 
+> output in the hypervisor context. (or looking at steal% in the internal 
+> top output) Looking at 'top' in the guest tells you everything internal 
+> to that guest, without mixing external scheduling information into it.
+
+The information about accounting numbers that are internal to the guest
+is 99.99% useless. You always have to take the external scheduling into
+account. We choose to do the accounting in a way that does not require
+additional steps to get to useful numbers.
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
