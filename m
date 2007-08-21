@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757835AbXHUHa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759787AbXHUHdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757835AbXHUHa1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 03:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbXHUHaO
+	id S1759787AbXHUHdT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 03:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbXHUHdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 03:30:14 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:64694 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759AbXHUHaM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 03:30:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=muBDaQxmgLtPWwt14DydY4to5ppsJeFn/8uiNJ0sRDbbSVVm56K26YuHlu+kuk0dM/ULrVcVbTgMHXwr4iaLtx6O8OBGNFA7La8DUZ1eCzyN6khOydYkaLFwLCabyrCIBQkbxexaHl4G+BpKlAs4KmGiSjpOMhV9pnNCcat0CEE=
-Message-ID: <5d6222a80708210030w26294b0dq4bd1977fcb3bc6f4@mail.gmail.com>
-Date: Tue, 21 Aug 2007 04:30:10 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: [PATCH] [5/12] x86_64: Make patching more robust, fix paravirt issue
-Cc: "Chris Wright" <chrisw@sous-sol.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>, "Andi Kleen" <ak@suse.de>,
-       patches@x86-64.org, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <46C9317C.2080509@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 21 Aug 2007 03:33:10 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55986 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751082AbXHUHdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 03:33:08 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX186XyFGOVw6U1h1VKx100aDOp+ek2UXNhGuRGihKe
+	re4mByG7OKGVaV
+Subject: Re: CFS review
+From: Mike Galbraith <efault@gmx.de>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Willy Tarreau <w@1wt.eu>,
+       Michael Chang <thenewme91@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0708191936110.1817@scrub.home>
+References: <Pine.LNX.4.64.0708011955430.1817@scrub.home>
+	 <20070801190556.GA1199@elte.hu>
+	 <Pine.LNX.4.64.0708100037460.1817@scrub.home>
+	 <20070810054948.GA5908@elte.hu>
+	 <Pine.LNX.4.64.0708101459530.1817@scrub.home>
+	 <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com>
+	 <Pine.LNX.4.64.0708101919270.1817@scrub.home>
+	 <20070810194705.GH6002@1wt.eu>
+	 <Pine.LNX.4.64.0708102235320.1817@scrub.home>
+	 <20070810213630.GA13910@elte.hu> <20070811003052.GA18812@elte.hu>
+	 <Pine.LNX.4.64.0708191936110.1817@scrub.home>
+Content-Type: text/plain
+Date: Tue, 21 Aug 2007 09:33:03 +0200
+Message-Id: <1187681583.6183.25.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070809241.425881000@suse.de>
-	 <20070809124132.C794A14F3B@wotan.suse.de> <46C637B7.30200@goop.org>
-	 <1187574628.19435.29.camel@localhost.localdomain>
-	 <20070820020732.GA3672@sequoia.sous-sol.org>
-	 <46C9317C.2080509@goop.org>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/20/07, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> Chris Wright wrote:
-> > That did get backed out (at least the part that broke paravirt patching)
-> > in 602033ed5907a59ce86f709082a35be047743a86.  Linus' tree should be
-> > working fine right now with d34fda4a84c18402640a1a2342d6e6d9829e6db7
-> > committed, and can be further refined with the patch below that's just
-> > waiting on some further testing.
-> >
->
-> I don't think this is necessary.  It isn't worth complicating the
-> interface to avoid the memcpy.
->
->     J
-Damn,
+On Tue, 2007-08-21 at 00:19 +0200, Roman Zippel wrote: 
+> Hi,
+> 
+> On Sat, 11 Aug 2007, Ingo Molnar wrote:
+> 
+> > the only relevant thing that comes to mind at the moment is that last 
+> > week Peter noticed a buggy aspect of sleeper bonuses (in that we do not 
+> > rate-limit their output, hence we 'waste' them instead of redistributing 
+> > them), and i've got the small patch below in my queue to fix that - 
+> > could you give it a try?
+> 
+> It doesn't make much of a difference.
 
-I can't believe I've just lost a night tracking the issue, without
-seeing the discussion here ;-)
-I came out to this very same conclusion, and was about to send a patch
-that fixes it, by doing a memcpy before starting the instruction
-replacement.
+I thought this was history.  With your config, I was finally able to
+reproduce the anomaly (only with your proggy though), and Ingo's patch
+does indeed fix it here.
 
-(I wouldn't say anything, as this is solved, but my night have to get
-some value, after all! ;-)
+Freshly reproduced anomaly and patch verification, running 2.6.23-rc3
+with your config, both with and without Ingo's patch reverted:
 
-So I'm with Jeremy. We don't lose too much by putting a memcpy there,
-this code is not exactly critical. It also seems cleaner, and less
-error prone. I have a patch ready here, but I think by this time, you
-guys have too ;-)
+6561 root      20   0  1696  492  404 S 32.0  0.0   0:30.83 0 lt
+6562 root      20   0  1696  336  248 R 32.0  0.0   0:30.79 0 lt
+6563 root      20   0  1696  336  248 R 32.0  0.0   0:30.80 0 lt
+6564 root      20   0  2888 1236 1028 R  4.6  0.1   0:05.26 0 sh
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+6507 root      20   0  2888 1236 1028 R 25.8  0.1   0:30.75 0 sh
+6504 root      20   0  1696  492  404 R 24.4  0.0   0:29.26 0 lt
+6505 root      20   0  1696  336  248 R 24.4  0.0   0:29.26 0 lt
+6506 root      20   0  1696  336  248 R 24.4  0.0   0:29.25 0 lt
 
-"The less confident you are, the more serious you have to act."
+	-Mike
+
