@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbXHURTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbXHURgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932086AbXHURTS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 13:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759193AbXHURTJ
+	id S1761533AbXHURgz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 13:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757956AbXHURgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 13:19:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57693 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759473AbXHURTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 13:19:07 -0400
-Message-ID: <46CB1E7B.7050700@redhat.com>
-Date: Tue, 21 Aug 2007 13:18:51 -0400
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070718)
+	Tue, 21 Aug 2007 13:36:45 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:57062 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757574AbXHURgo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 13:36:44 -0400
+Date: Tue, 21 Aug 2007 19:35:50 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@o2.pl>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: RFC: drop support for gcc < 4.0
+Message-ID: <20070821173550.GC30705@stusta.de>
+References: <20070821132038.GA22254@ff.dom.local> <20070821093103.3c097d4a.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Robin Lee Powell <rlpowell@digitalkingdom.org>
-CC: John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org
-Subject: Re: NFS hang + umount -f: better behaviour requested.
-References: <20070820225415.GL3956@digitalkingdom.org> <18123.5699.405125.137517@stoffel.org> <46CB1A78.7040102@redhat.com> <20070821171423.GQ3956@digitalkingdom.org>
-In-Reply-To: <20070821171423.GQ3956@digitalkingdom.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070821093103.3c097d4a.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Lee Powell wrote:
-> On Tue, Aug 21, 2007 at 01:01:44PM -0400, Peter Staubach wrote:
->   
->> John Stoffel wrote:
->>     
->>> Robin> I'm bringing this up again (I know it's been mentioned here
->>> Robin> before) because I had been told that NFS support had gotten
->>> Robin> better in Linux recently, so I have been (for my $dayjob)
->>> Robin> testing the behaviour of NFS (autofs NFS, specifically) under
->>> Robin> Linux with hard,intr and using iptables to simulate a hang.
->>>
->>> So why are you mouting with hard,intr semantics?  At my current
->>> SysAdmin job, we mount everything (solaris included) with
->>> 'soft,intr' and it works well.  If an NFS server goes down,
->>> clients don't hang for large periods of time. 
->>>       
->> Wow!  That's _really_ a bad idea.  NFS READ operations which
->> timeout can lead to executables which mysteriously fail, file
->> corruption, etc.  NFS WRITE operations which fail may or may not
->> lead to file corruption.
->>
->> Anything writable should _always_ be mounted "hard" for safety
->> purposes.  Readonly mounted file systems _may_ be mounted "soft",
->> depending upon what is located on them.
->>     
->
-> Does write + tcp make this any different?
+On Tue, Aug 21, 2007 at 09:31:03AM -0700, Randy Dunlap wrote:
+> On Tue, 21 Aug 2007 15:20:38 +0200 Jarek Poplawski wrote:
+> 
+> > Here are some more of, probably well-known, warnings with attached
+> > testing-only .config.
+> >...
+> > drivers/pci/msi.c:686: warning: weak declaration of `arch_msi_check_device' after first use results in unspecified behavior
+> > drivers/pci/msi.c:698: warning: weak declaration of `arch_setup_msi_irqs' after first use results in unspecified behavior
+> > drivers/pci/msi.c:718: warning: weak declaration of `arch_teardown_msi_irqs' after first use results in unspecified behavior
+> >...
+> 
+> What gcc version?  I don't get the arch_ warnings in drivers/pci/msi.c.
 
-Nope...
+Obviously a gcc <= 3.4 [1], and therefore no unit-at-a-time.
 
-TCP may make a difference if the problem is related to the network
-being slow or lossy, but will not affect anything if the server
-is just slow or down.  Even if TCP would have eventually gotten
-all of the packets in a request or response through, the client
-may time out, cease waiting, and corruption may occur again.
+You can reproduce it with a more recent gcc when adding 
+-fno-unit-at-a-time to the CFLAGS.
 
-       ps
+And it's becoming a real maintainance problem that not only this problem 
+but also other problems like some section mismatches [2] are only 
+present without unit-at-a-time.
+
+Currently we support 6 different stable gcc release series, and it might 
+be the right time to consider dropping support for the older ones.
+
+Are there any architectures still requiring a gcc < 4.0 ?
+
+> ~Randy
+
+cu
+Adrian
+
+[1] unit-at-a-time was added in gcc 3.4, but on gcc 3.4 we disable it on
+    i386 due to stack usage problems
+[2] example: static __init function with exactly one caller, and this
+             caller is non-__init
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
