@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbXHUAFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760015AbXHUAJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756569AbXHUAFz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 20:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbXHUAFY
+	id S1760015AbXHUAJR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 20:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbXHUAJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 20:05:24 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:60561 "EHLO e6.ny.us.ibm.com"
+	Mon, 20 Aug 2007 20:09:07 -0400
+Received: from ozlabs.org ([203.10.76.45]:36578 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751528AbXHUAFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 20:05:22 -0400
-Date: Mon, 20 Aug 2007 17:05:18 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, ak@suse.de, netdev@vger.kernel.org,
-       cfriesen@nortel.com, akpm@linux-foundation.org, rpjday@mindspring.com,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-arch@vger.kernel.org,
-       jesper.juhl@gmail.com, satyam@infradead.org, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070821000518.GC7292@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <46C516BA.60700@yahoo.com.au> <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org> <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au> <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com> <46C997B1.1010800@redhat.com> <417ebba299a7ad3c4b7a31c4f860a814@kernel.crashing.org> <20070820224859.GA16162@flint.arm.linux.org.uk> <2bdb04581125f22122f1d230e991ea92@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2bdb04581125f22122f1d230e991ea92@kernel.crashing.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1751314AbXHUAJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 20:09:06 -0400
+Subject: Re: [patch 2/2] Sort module list by pointer address to get
+	coherent sleepable seq_file iterators
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070820202646.555561265@polymtl.ca>
+References: <20070820202600.116795129@polymtl.ca>
+	 <20070820202646.555561265@polymtl.ca>
+Content-Type: text/plain
+Date: Tue, 21 Aug 2007 10:08:29 +1000
+Message-Id: <1187654910.19435.147.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 21, 2007 at 01:02:01AM +0200, Segher Boessenkool wrote:
-> >>And no, RMW on MMIO isn't "problematic" at all, either.
-> >>
-> >>An RMW op is a read op, a modify op, and a write op, all rolled
-> >>into one opcode.  But three actual operations.
-> >
-> >Maybe for some CPUs, but not all.  ARM for instance can't use the
-> >load exclusive and store exclusive instructions to MMIO space.
+On Mon, 2007-08-20 at 16:26 -0400, Mathieu Desnoyers wrote:
+> plain text document attachment (module.c-sort-module-list.patch)
+> A race that appears both in /proc/modules and in kallsyms: if, between the
+> seq file reads, the process is put to sleep and at this moment a module is
+> or removed from the module list, the listing will skip an amount of
+> modules/symbols corresponding to the amount of elements present in the unloaded
+> module, but at the current position in the list if the iteration is located
+> after the removed module.
 > 
-> Sure, your CPU doesn't have RMW instructions -- how to emulate
-> those if you don't have them is a totally different thing.
+> The cleanest way I found to deal with this problem is to sort the module list.
+> We can then keep the old struct module * as the old iterator, knowing the it may
+> be removed between the seq file reads, but we only use it as "get next". If it
+> is not present in the module list, the next pointer will be used.
+> 
+> By doing this, removing a given module will now only fuzz the output related to
+> this specific module, not any random module anymore. Since modprobe uses
+> /proc/modules, it might be important to make sure multiple concurrent running
+> modprobes won't interfere with each other.
 
-I thought that ARM's load exclusive and store exclusive instructions
-were its equivalent of LL and SC, which RISC machines typically use to
-build atomic sequences of instructions -- and which normally cannot be
-applied to MMIO space.
+You've reduced, but not eliminated, the problem.  A new module inserted
+is quite likely to reuse the same address.
 
-						Thanx, Paul
+I don't have a real problem with this patch, but I'm wondering if the
+problem is theoretical or demonstrated.
+
+Rusty.
+
+
