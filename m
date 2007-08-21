@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbXHUGy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbXHUGyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760741AbXHUGy1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 02:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760216AbXHUGw5
+	id S1761392AbXHUGyr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 02:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbXHUGxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:52:57 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:44165 "EHLO
+	Tue, 21 Aug 2007 02:53:15 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:44190 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756450AbXHUGwz (ORCPT
+	with ESMTP id S1759333AbXHUGxN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:52:55 -0400
-Date: Mon, 20 Aug 2007 23:54:21 -0700
+	Tue, 21 Aug 2007 02:53:13 -0400
+Date: Mon, 20 Aug 2007 23:54:50 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,61 +21,53 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Len Brown <len.brown@intel.com>, Bob Moore <robert.moore@intel.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 06/20] sky2: check drop truncated packets
-Message-ID: <20070821065421.GG5275@kroah.com>
+Subject: [patch 08/20] ACPICA: Fixed possible corruption of global GPE list
+Message-ID: <20070821065450.GI5275@kroah.com>
 References: <20070821064251.972690753@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sky2-stable-trunc.patch"
+Content-Disposition: inline; filename="acpica-fixed-possible-corruption-of-global-gpe-list.patch"
 In-Reply-To: <20070821065210.GA5275@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Stephen Hemminger <shemminger@linux-foundation.org>
+From: Bob Moore <robert.moore@intel.com>
 
-Backport of commit 71749531f2d1954137a1a77422ef4ff29eb102dd
+ACPICA: Fixed possible corruption of global GPE list
 
-If packet larger than MTU is received, the driver uses hardware to
-truncate the packet. Use the status registers to catch/drop them.
+Fixed a problem in acpi_ev_delete_gpe_xrupt where the global interrupt
+list could be corrupted if the interrupt being removed was at
+the head of the list. Reported by Linn Crosetto.
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Signed-off-by: Bob Moore <robert.moore@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/sky2.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/acpi/events/evgpeblk.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -2065,6 +2065,9 @@ static struct sk_buff *sky2_receive(stru
- 	if (!(status & GMR_FS_RX_OK))
- 		goto resubmit;
- 
-+	if (status >> 16 != length)
-+		goto len_mismatch;
+--- a/drivers/acpi/events/evgpeblk.c
++++ b/drivers/acpi/events/evgpeblk.c
+@@ -586,6 +586,10 @@ acpi_ev_delete_gpe_xrupt(struct acpi_gpe
+ 	flags = acpi_os_acquire_lock(acpi_gbl_gpe_lock);
+ 	if (gpe_xrupt->previous) {
+ 		gpe_xrupt->previous->next = gpe_xrupt->next;
++	} else {
++		/* No previous, update list head */
 +
- 	if (length < copybreak)
- 		skb = receive_copy(sky2, re, length);
- 	else
-@@ -2074,6 +2077,11 @@ resubmit:
++		acpi_gbl_gpe_xrupt_list_head = gpe_xrupt->next;
+ 	}
  
- 	return skb;
- 
-+len_mismatch:
-+	/* Truncation of overlength packets
-+	   causes PHY length to not match MAC length */
-+	++sky2->net_stats.rx_length_errors;
-+
- error:
- 	++sky2->net_stats.rx_errors;
- 	if (status & GMR_FS_RX_FF_OV) {
+ 	if (gpe_xrupt->next) {
 
 -- 
