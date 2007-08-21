@@ -1,98 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbXHUPXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbXHUP3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932200AbXHUPXU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 11:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759453AbXHUPXI
+	id S1761477AbXHUP3k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 11:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbXHUP3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 11:23:08 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:37987 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760778AbXHUPXF (ORCPT
+	Tue, 21 Aug 2007 11:29:31 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:23229 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751476AbXHUP3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 11:23:05 -0400
-Message-ID: <46CB034B.1070904@suse.de>
-Date: Tue, 21 Aug 2007 19:22:51 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: WANG Cong <xiyou.wangcong@gmail.com>, Jarek Poplawski <jarkao2@o2.pl>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       len.brown@intel.com, Andrew Morton <akpm@osdl.org>
-Subject: Re: [Git Patch] ACPI: Fix a warning of discarding qualifiers from
- pointer target type
-References: <20070821132038.GA22254@ff.dom.local> <20070821150714.GA7591@hacking> <46CB0169.7090207@suse.de> <20070821151820.GB21089@ftp.linux.org.uk>
-In-Reply-To: <20070821151820.GB21089@ftp.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Aug 2007 11:29:30 -0400
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dkegel@google.com, David Miller <davem@davemloft.net>,
+       Daniel Phillips <phillips@google.com>
+In-Reply-To: <20070821002830.GB8414@wotan.suse.de>
+References: <20070814142103.204771292@sgi.com>
+	 <20070815122253.GA15268@wotan.suse.de> <1187183526.6114.45.camel@twins>
+	 <20070816032921.GA32197@wotan.suse.de> <1187581894.6114.169.camel@twins>
+	 <20070821002830.GB8414@wotan.suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ZNJWDQnY3kzIDRTM3ekU"
+Date: Tue, 21 Aug 2007 17:29:27 +0200
+Message-Id: <1187710167.6114.258.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Tue, Aug 21, 2007 at 07:14:49PM +0400, Alexey Starikovskiy wrote:
->   
->> WANG Cong wrote:
->>     
->>> Fix this warning:
->>>
->>> drivers/acpi/ec.c: In function `acpi_ec_ecdt_probe':
->>> drivers/acpi/ec.c:873: warning: passing arg 1 of `acpi_get_devices' discards qualifiers from pointer target type
->>>
->>> (I don't know whether this fix hits the real problem.)
->>>   
->>>       
->> It is safe to give acpi_get_devices() const string, as it should not
->> modify it in any condition.
->>     
->
->   
-Yes, that is the proper solution with a single drawback:
-it touches ACPICA dual-licensed code and would take ages to commit,
-and Len would probably ask you to give permission to re-license it under
-BSD.
 
-Regards,
-Alex.
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
-> diff --git a/drivers/acpi/namespace/nsxfeval.c b/drivers/acpi/namespace/nsxfeval.c
-> index ab65b2c..f39fbc6 100644
-> --- a/drivers/acpi/namespace/nsxfeval.c
-> +++ b/drivers/acpi/namespace/nsxfeval.c
-> @@ -540,7 +540,7 @@ acpi_ns_get_device_callback(acpi_handle obj_handle,
->   ******************************************************************************/
->  
->  acpi_status
-> -acpi_get_devices(char *HID,
-> +acpi_get_devices(const char *HID,
->  		 acpi_walk_callback user_function,
->  		 void *context, void **return_value)
->  {
-> diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
-> index b5cca5d..3d7ab9e 100644
-> --- a/include/acpi/acpixf.h
-> +++ b/include/acpi/acpixf.h
-> @@ -130,7 +130,7 @@ acpi_walk_namespace(acpi_object_type type,
->  		    void *context, void **return_value);
->  
->  acpi_status
-> -acpi_get_devices(char *HID,
-> +acpi_get_devices(const char *HID,
->  		 acpi_walk_callback user_function,
->  		 void *context, void **return_value);
->  
-> diff --git a/include/acpi/acstruct.h b/include/acpi/acstruct.h
-> index aeb4498..8848265 100644
-> --- a/include/acpi/acstruct.h
-> +++ b/include/acpi/acstruct.h
-> @@ -146,7 +146,7 @@ struct acpi_init_walk_info {
->  struct acpi_get_devices_info {
->  	acpi_walk_callback user_function;
->  	void *context;
-> -	char *hid;
-> +	const char *hid;
->  };
->  
->  union acpi_aml_operands {
->   
+--=-ZNJWDQnY3kzIDRTM3ekU
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+[ now with CCs ]
+
+On Tue, 2007-08-21 at 02:28 +0200, Nick Piggin wrote:
+
+> I do of course. There is one thing to have a real lock deadlock
+> in some core path, and another to have this memory deadlock in a
+> known-to-be-dodgy configuration (Linus said last year that he didn't
+> want to go out of our way to support this, right?)... But if you can
+> solve it without impacting fastpaths etc. then I don't see any
+> objection to it.
+
+That has been my intention, getting the problem solved without touching
+fast paths and with minimal changes to how things are currently done.
+
+> I don't mean for correctness, but for throughput. If you're doing a
+> lot of network operations right near the memory limit, then it could
+> be possible that these deadlock paths get triggered relatively often.
+> With Christoph's patches, I think it would tend to be less.
+
+Christoph's patches all rely on file backed memory being predominant.
+[ and to a certain degree fully ignore anonymous memory loads :-( ]
+
+Whereas quite a few realistic loads strive to minimise these - I'll
+again fall back to my MPI cluster example, they would want to use so
+much anonymous memory to preform their calculations that everything
+except the hot paths of code are present in memory. In these scenarios 1
+MB of text would already be a lot.
+
+> > > How are your deadlock patches going anyway? AFAIK they are mostly a n=
+etwork
+> > > issue and I haven't been keeping up with them for a while.=20
+> >=20
+> > They really do rely on some VM interaction too, network does not have
+> > enough information to break out of the deadlock on its own.
+>=20
+> The thing I don't much like about your patches is the addition of more
+> of these global reserve type things in the allocators. They kind of
+> suck (not your code, just the concept of them in general -- ie. including
+> the PF_MEMALLOC reserve). I'd like to eventually reach a model where
+> reclaimable memory from a given subsystem is always backed by enough
+> resources to be able to reclaim it. What stopped you from going that
+> route with the network subsystem? (too much churn, or something
+> fundamental?)
+
+I'm wanting to keep the patches as non-intrusive as possible, exactly
+because some people consider this a fringe functionality. Doing as you
+say does sound like a noble goal, but would require massive overhauls.
+
+Also, I'm not quite sure how this would apply to networking. It
+generally doesn't have much reclaimable memory sitting around, and it
+heavily relies on kmalloc so an alloc/free cycle accounting system would
+quickly involve a lot of the things I'm already doing.
+
+(also one advantage of keeping it all in the buddy allocator is that it
+can more easily form larger order pages)
+
+--=-ZNJWDQnY3kzIDRTM3ekU
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGywTXXA2jU0ANEf4RAppFAJ0V/mw9mDGzP+eCcHKqZudcAMOWRACbByj7
+JZLUK76DwTil61gpPo6ommw=
+=weiH
+-----END PGP SIGNATURE-----
+
+--=-ZNJWDQnY3kzIDRTM3ekU--
 
