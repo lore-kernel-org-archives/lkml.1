@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761895AbXHURHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762245AbXHURJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761895AbXHURHd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 13:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758543AbXHURHY
+	id S1762245AbXHURJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 13:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759457AbXHURJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 13:07:24 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35484 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757666AbXHURHX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 13:07:23 -0400
-Date: Tue, 21 Aug 2007 10:07:13 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Kevin E <kevin360@yahoo.com>
-Cc: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [RFT] sky2: yukon-ec-u phy power problems
-Message-ID: <20070821100713.2867dce3@freepuppy.rosehill.hemminger.net>
-In-Reply-To: <623107.14278.qm@web38905.mail.mud.yahoo.com>
-References: <20070819093221.4d3291e9@freepuppy.rosehill.hemminger.net>
-	<623107.14278.qm@web38905.mail.mud.yahoo.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Aug 2007 13:09:21 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:40115 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757755AbXHURJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 13:09:20 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: sata_via: write errors on PATA drive connected to VT6421
+Date: Tue, 21 Aug 2007 19:09:30 +0200
+User-Agent: KMail/1.9.7
+Cc: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200708202242.07290.linux@rainbow-software.org> <20070821132731.6bf10b50@the-village.bc.nu>
+In-Reply-To: <20070821132731.6bf10b50@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708211909.30652.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sky2 driver clears some bits in the PHY control register, that cause
-the PHY interface to get changed.  Some of these deal with voltage and power
-savings as well. This may explain some of the failures on Gigabyte DS-3 motherboard.
+On Tuesday 21 August 2007 14:27:31 Alan Cox wrote:
+> > The transfer mode decreases from UDMA/100 to UDMA/66 and then UDMA/33 but
+> > it doesn't help at all. The drive itself is fine, the problems also
+> > appear with
+>
+> Does it settle at UDMA33 or keep going down lower ?
 
-The clue to possible problem was looking at why loading/unloading sky2 would
-break vendor sk98lin driver (ie what registers changed).
+It does not go below UDMA33. 
+dd if=/dev/zero of=some.file bs=131072 count=1024 takes 526 seconds (amazing 
+transfer rate 255KB/s) with system being unresponsive most of the time.
 
+Commenting out the UDMA support in sata_via.c (.udma_mask and .set_dmamode for 
+PATA port) causes the driver to run in PIO4 mode which seems to work without 
+errors but slowly (3MB/s with 100% CPU load).
 
---- a/drivers/net/sky2.c	2007-08-21 09:53:41.000000000 -0700
-+++ b/drivers/net/sky2.c	2007-08-21 09:53:43.000000000 -0700
-@@ -696,8 +696,8 @@ static void sky2_mac_init(struct sky2_hw
- 	int i;
- 	const u8 *addr = hw->dev[port]->dev_addr;
- 
--	sky2_write32(hw, SK_REG(port, GPHY_CTRL), GPC_RST_SET);
--	sky2_write32(hw, SK_REG(port, GPHY_CTRL), GPC_RST_CLR);
-+	sky2_write8(hw, SK_REG(port, GPHY_CTRL), GPC_RST_SET);
-+	sky2_write8(hw, SK_REG(port, GPHY_CTRL), GPC_RST_CLR);
- 
- 	sky2_write8(hw, SK_REG(port, GMAC_CTRL), GMC_RST_CLR);
- 
+-- 
+Ondrej Zary
