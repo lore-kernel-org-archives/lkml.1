@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759195AbXHUGlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbXHUGpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759195AbXHUGlU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 02:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbXHUGlJ
+	id S1759412AbXHUGpk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 02:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbXHUGpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:41:09 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:3307 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754867AbXHUGlI (ORCPT
+	Tue, 21 Aug 2007 02:45:33 -0400
+Received: from mx1.ciphirelabs.net ([217.72.114.64]:40354 "EHLO
+	mx.dmz.ciphirelabs.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755033AbXHUGpc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:41:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Z2TRcSr1WgoLlv4WjlsN/Ic3BRe/B5KZX3Hd1yu+smc86dZ5gqM1+dUOCutklI0mT0QVFNn1HnOsEN3CBrhBsxVyXEnTOwAF/16YN8ERl98J3liFYz8Onk9AwxE6Lge9Ygh0cASmEc8Yan8OxQfB9SUvVZHpHovS3myX1JzXM/g=
-Message-ID: <4ae3c140708202341x13c8accfq5ad6f747c216dffe@mail.gmail.com>
-Date: Tue, 21 Aug 2007 02:41:07 -0400
-From: "Xin Zhao" <uszhaoxin@gmail.com>
-To: "Kevin Hao" <haokexin@gmail.com>
-Subject: Re: How Linux /proc filesystem convert a fd to the actual pathname?
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <8dd980de0708202303l2d3be5bj6682a98df4a40d99@mail.gmail.com>
+	Tue, 21 Aug 2007 02:45:32 -0400
+From: "Andreas Jellinghaus [c]" <aj@ciphirelabs.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-usb-devel] why was MODALIAS removed from usb kernel events? [u]
+Date: Tue, 21 Aug 2007 08:45:05 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+References: <Pine.LNX.4.44L0.0708201158110.3626-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0708201158110.3626-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="ansi_x3.4-1968"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4ae3c140708201958x3c88b317o2ba9be64177978f5@mail.gmail.com>
-	 <8dd980de0708202303l2d3be5bj6682a98df4a40d99@mail.gmail.com>
+Message-Id: <200708210845.05385.aj@ciphirelabs.com>
+X-Ciphire-Security: plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks! That perfectly answered my question.
+Am Montag, 20. August 2007 schrieb Alan Stern:
+> I could, but I don't know whether any of this would be accepted for
+> 2.6.22.stable.  It might not be too late to get into 2.6.23...
 
--x
+even without it is a first step. I hope it gets accepted into both,
+as 2.6.22 broke kernel<->user space interfaces and those should
+never change (or only after a long time with announcement, time
+for switching to a new one etc).
 
-On 8/21/07, Kevin Hao <haokexin@gmail.com> wrote:
-> > I am curious how Linux convert an fd to the pathname?  Does it
-> > recursively walk back from current dentry to the root?
-> Using d_path.
-> > Can someone point me to the right place in the kernel where this
-> > functionality is implemented?
->
- may be the function you want.
->
+Thanks for your work!
+
+Regards, Andreas
