@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760259AbXHUHVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759522AbXHUHZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760259AbXHUHVS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 03:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbXHUHVI
+	id S1759522AbXHUHZW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 03:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbXHUHZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 03:21:08 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:35420 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755045AbXHUHVH (ORCPT
+	Tue, 21 Aug 2007 03:25:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39141 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753479AbXHUHZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 03:21:07 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [accounting regression since rc1]  scheduler updates
-Date: Tue, 21 Aug 2007 09:20:54 +0200
-User-Agent: KMail/1.9.7
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-References: <20070812163225.GA11996@elte.hu> <1187634782.4028.10.camel@localhost> <20070820190509.GA3714@elte.hu>
-In-Reply-To: <20070820190509.GA3714@elte.hu>
+	Tue, 21 Aug 2007 03:25:07 -0400
+Date: Tue, 21 Aug 2007 00:24:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Stuart_Hayes@Dell.com" <Stuart_Hayes@dell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Exner <dex@dragonslave.de>
+Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
+In-Reply-To: <alpine.LFD.0.999.0708202348460.30176@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0708210016420.30176@woody.linux-foundation.org>
+References: <46C098FD.1030601@googlemail.com>
+ <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0708202255130.30176@woody.linux-foundation.org>
+ <200708202334.38261.david-b@pacbell.net>
+ <alpine.LFD.0.999.0708202348460.30176@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708210920.54565.borntraeger@de.ibm.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 20. August 2007 schrieb Ingo Molnar:
-> ok. Just to make it sure wrt. release-management: you said s390 
-> sched_clock() is currently at least as precise as stime/utime - so this 
-> would suggest that there is no regression over v2.6.22? Regardless of 
-
-On current git s390 has a sched_clock implementaton based on real time. That 
-means we have no knowledge about steal time. E.g. if you only get 50% of your 
-physial cpu from the hypervisor on 2.6.22 a single cpu bound process has 50% 
-in top while on 2.6.23-rc top shows 100%, so yes, there is a regression.
-
-Christian
 
 
+On Mon, 20 Aug 2007, Linus Torvalds wrote:
+> 
+> On Mon, 20 Aug 2007, David Brownell wrote:
+> > 
+> > Try disabling USB_SUSPEND ... the rather aggressive powersave
+> > mechanism (autosuspend defaulting to always ON) has made lots
+> > of trouble.  I think that default will change...
+> 
+> It's already disabled - so that's not it.
 
+Side note: after reverting 196705c9bb I can't get the mouse to skip any 
+more on that mac mini. But since the bad behaviour wasn't 100% reliable to 
+begin with, that's not really a guarantee of anything. Two out of three 
+kids are off on camp this week, so that machine probably won't be getting 
+a lot of testing ;/
+
+That's with an all-intel chipset, no VIA or Broadcom anywhere.
+
+I do find it interesting that VIA apparently ignores the INACTIVE bit: it 
+implies that Windows probably doesn't use it, which in turn implies that 
+nobody has ever tested it in any real life situation. So I would not be 
+shocked to hear that others have problems too.
+
+But as mentioned, the mouse behaviour was flaky (but very noticeable and 
+irritating when it did happen), so it's hard to be sure my quick testing 
+really was convincing. Which is why it's even harder to bisect ;(.
+
+			Linus
