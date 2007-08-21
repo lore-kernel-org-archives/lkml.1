@@ -1,112 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760105AbXHUGxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760790AbXHUGxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760105AbXHUGxZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 02:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759922AbXHUGwk
+	id S1760790AbXHUGxn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 02:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759975AbXHUGwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:52:40 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:44135 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759511AbXHUGwi (ORCPT
+	Tue, 21 Aug 2007 02:52:45 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44711 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759963AbXHUGwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:52:38 -0400
-Date: Mon, 20 Aug 2007 23:54:08 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 04/20] sky2: carrier management
-Message-ID: <20070821065408.GE5275@kroah.com>
-References: <20070821064251.972690753@blue.kroah.org>
+	Tue, 21 Aug 2007 02:52:43 -0400
+Date: Mon, 20 Aug 2007 23:52:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Stuart_Hayes@Dell.com" <Stuart_Hayes@dell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Exner <dex@dragonslave.de>
+Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
+In-Reply-To: <200708202334.38261.david-b@pacbell.net>
+Message-ID: <alpine.LFD.0.999.0708202348460.30176@woody.linux-foundation.org>
+References: <46C098FD.1030601@googlemail.com>
+ <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0708202255130.30176@woody.linux-foundation.org>
+ <200708202334.38261.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sky2-carrier-mgmt.patch"
-In-Reply-To: <20070821065210.GA5275@kroah.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
 
-------------------
-From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-backport of commit 55d7b4e6ed6ad3ec5e5e30b3b4515a0a6a53e344
+On Mon, 20 Aug 2007, David Brownell wrote:
+> 
+> Try disabling USB_SUSPEND ... the rather aggressive powersave
+> mechanism (autosuspend defaulting to always ON) has made lots
+> of trouble.  I think that default will change...
 
-Make sky2 handle carrier similar to other drivers,
-eliminate some possible races in carrier state transistions.
+It's already disabled - so that's not it.
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/net/sky2.c |   11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
-
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -1234,6 +1234,8 @@ static int sky2_up(struct net_device *de
- 	if (netif_msg_ifup(sky2))
- 		printk(KERN_INFO PFX "%s: enabling interface\n", dev->name);
- 
-+	netif_carrier_off(dev);
-+
- 	/* must be power of 2 */
- 	sky2->tx_le = pci_alloc_consistent(hw->pdev,
- 					   TX_RING_SIZE *
-@@ -1573,7 +1575,6 @@ static int sky2_down(struct net_device *
- 
- 	/* Stop more packets from being queued */
- 	netif_stop_queue(dev);
--	netif_carrier_off(dev);
- 
- 	/* Disable port IRQ */
- 	imask = sky2_read32(hw, B0_IMSK);
-@@ -1625,6 +1626,8 @@ static int sky2_down(struct net_device *
- 
- 	sky2_phy_power(hw, port, 0);
- 
-+	netif_carrier_off(dev);
-+
- 	/* turn off LED's */
- 	sky2_write16(hw, B0_Y2LED, LED_STAT_OFF);
- 
-@@ -1689,7 +1692,6 @@ static void sky2_link_up(struct sky2_por
- 	gm_phy_write(hw, port, PHY_MARV_INT_MASK, PHY_M_DEF_MSK);
- 
- 	netif_carrier_on(sky2->netdev);
--	netif_wake_queue(sky2->netdev);
- 
- 	/* Turn on link LED */
- 	sky2_write8(hw, SK_REG(port, LNK_LED_REG),
-@@ -1741,7 +1743,6 @@ static void sky2_link_down(struct sky2_p
- 	gma_write16(hw, port, GM_GP_CTRL, reg);
- 
- 	netif_carrier_off(sky2->netdev);
--	netif_stop_queue(sky2->netdev);
- 
- 	/* Turn on link LED */
- 	sky2_write8(hw, SK_REG(port, LNK_LED_REG), LINKLED_OFF);
-@@ -3493,10 +3494,6 @@ static __devinit struct net_device *sky2
- 	memcpy_fromio(dev->dev_addr, hw->regs + B2_MAC_1 + port * 8, ETH_ALEN);
- 	memcpy(dev->perm_addr, dev->dev_addr, dev->addr_len);
- 
--	/* device is off until link detection */
--	netif_carrier_off(dev);
--	netif_stop_queue(dev);
--
- 	return dev;
- }
- 
-
--- 
+		Linus
