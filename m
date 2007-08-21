@@ -1,144 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759996AbXHUMzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbXHUM52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759996AbXHUMzl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 08:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbXHUMzd
+	id S1760091AbXHUM52 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 08:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbXHUM5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 08:55:33 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:37625 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with SMTP id S1756252AbXHUMzc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 08:55:32 -0400
-Date: Tue, 21 Aug 2007 17:01:41 +0400
-From: Konstantin Baydarov <kbaidarov@ru.mvista.com>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kexec: reenable HPET before kexec
-Message-ID: <20070821170141.70a95dac@windmill.dev.rtsoft.ru>
-In-Reply-To: <1187645464.7732.43.camel@imap.mvista.com>
-References: <20070820205530.1ffd5876@windmill.dev.rtsoft.ru>
-	<46CA035A.5050202@ru.mvista.com>
-	<1187645464.7732.43.camel@imap.mvista.com>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.19; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Aug 2007 08:57:20 -0400
+Received: from iucha.net ([209.98.146.184]:43106 "EHLO mail.iucha.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752690AbXHUM5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 08:57:19 -0400
+Date: Tue, 21 Aug 2007 07:57:18 -0500
+From: Florin Iucha <florin@iucha.net>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: linux-usb-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
+	v2.6.23-rc3-50-g28e8351
+Message-ID: <20070821125718.GH10422@iucha.net>
+References: <20070815133147.GA7124@iucha.net> <Pine.LNX.4.64.0708151647540.2460@twin.jikos.cz> <20070815145313.GC7124@iucha.net> <Pine.LNX.4.64.0708151656070.2460@twin.jikos.cz> <20070821115115.GD10422@iucha.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="xs+9IvWevLaxKUtW"
+Content-Disposition: inline
+In-Reply-To: <20070821115115.GD10422@iucha.net>
+X-GPG-Key: http://iucha.net/florin_iucha.gpg
+X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Aug 2007 14:31:04 -0700
-Daniel Walker <dwalker@mvista.com> wrote:
 
-> On Tue, 2007-08-21 at 01:10 +0400, Konstantin Baydarov wrote:
-> 
-> It was in your original email ..  Are you saying this it is not a
-> problem in plain 2.6.23-rc2? I thought I read that it was a problem on
-> i386 ..
-> 
-> Daniel
-> 
+--xs+9IvWevLaxKUtW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I can reproduce bug with plain 2.6.23-rc3 i386 kernel, without RT patch,
-on pentiumd.
-So I fixed this issue the same way as I fixed RT kernel. The side effect
-of this fix is that when kernel 2 executes both Local APIC timer and HPET
-are enabled and produce timer interrupts:
-root@192.168.40.10:~# cat /proc/interrupts
-           CPU0       CPU1
-  0:       5643          0   IO-APIC-edge      timer
-  1:          8          0   IO-APIC-edge      i8042
-  2:          0          0    XT-PIC-XT        cascade
-  4:        303        181   IO-APIC-edge      serial
-  6:          3          0   IO-APIC-edge      floppy
- 12:          4          0   IO-APIC-edge      i8042
- 14:         11          0   IO-APIC-edge      ide0
- 17:       5701         16   IO-APIC-fasteoi   uhci_hcd:usb3, eth0
- 18:          0          0   IO-APIC-fasteoi   uhci_hcd:usb4
- 19:          0          0   IO-APIC-fasteoi   uhci_hcd:usb5
- 20:         38          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
- 23:          3          0   IO-APIC-fasteoi   libata
-NMI:          0          0
-LOC:       5525       5489
-ERR:          0
-MIS:          0
-root@192.168.40.10:~#
+On Tue, Aug 21, 2007 at 06:51:15AM -0500, Florin Iucha wrote:
+> On Wed, Aug 15, 2007 at 04:58:33PM +0200, Jiri Kosina wrote:
+> > On Wed, 15 Aug 2007, Florin Iucha wrote:
+> >=20
+> > > [See my message to Alan]: It happened twice, within 15 minutes of=20
+> > > boot+login, with 2.6.23-rc3-$whatever .  I does not happen with=20
+> > > 2.6.2[123](-rc*)?  After the two incidents, I rebooted in 2.6.23-rc2 =
+and=20
+> > > it is working for an hour now.
+> >=20
+> > It is not immediately clear what might be causing this, 2.6.23-rc3 didn=
+'t=20
+> > get any USB nor HID updates at all compared to 2.6.23-rc2.
+> >=20
+> > Could you please enable USB and HID debugging to see whether we can see=
+=20
+> > anything spurious in the logs at the time the keyboard gets stuck?
+>=20
+> Jiri,
+>=20
+> I have enabled USB debugging and I see a bunch (=3D46) of these messages:
+>=20
+>    [  $timestamp] usb 1-9: usb auto-suspend
+>    [  $timestamp] usb 1-9: usb auto-resume
+>    [  $timestamp] ehci_hcd 0000:00:02.1: GetStatus port 9 status 001005 P=
+OWER sig=3Dse0 PE CONNECT
+>    [  $timestamp] usb 1-9: finish resume
+>=20
+> The messages continued to be logged, even after the keyboard has
+> become unresponsive.
 
-IRQ0 and LOC values practically the same.
+[snip]
 
-Also I didn't see this bug on linux-rt-users@vger.kernel.org, maybe I should
-resend it?
+> Do you need me to build a -rc2 with USB debug enabled to compare and
+> contrast?
 
-Patch against 2.6.23-rc3.
+With 2.6.23-rc2 and USB_DEBUG enabled, I see the same messages but no
+keyboard "dissapearance".
 
-Signed-off-by: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+I have rebuilt 2.6.23-rc3 with 'CONFIG_USB_EHCI_HCD=3Dm' and
+'CONFIG_USB_SUSPEND is not set' and will use it for a while, to see if=20
+the keyboard/usb behaves or not.
 
- arch/i386/kernel/hpet.c          |   15 +++++++++++++++
- arch/i386/kernel/machine_kexec.c |    5 +++++
- include/asm-i386/hpet.h          |    3 +++
- 3 files changed, 23 insertions(+)
+Regards,
+florin
 
-Index: linux-2.6.23-rc3-i386/arch/i386/kernel/hpet.c
-===================================================================
---- linux-2.6.23-rc3-i386.orig/arch/i386/kernel/hpet.c
-+++ linux-2.6.23-rc3-i386/arch/i386/kernel/hpet.c
-@@ -340,6 +340,21 @@ out_nohpet:
- 	return 0;
- }
- 
-+#ifdef CONFIG_KEXEC
-+/*
-+ * reenable HPET timer
-+ */
-+int hpet_reenable(void)
-+{
-+	if (!is_hpet_capable())
-+		return -1;
-+
-+	if (hpet_clockevent.mode != CLOCK_EVT_MODE_PERIODIC)
-+		hpet_set_mode(CLOCK_EVT_MODE_PERIODIC, &hpet_clockevent);
-+
-+	return 0;
-+}
-+#endif
- 
- #ifdef CONFIG_HPET_EMULATE_RTC
- 
-Index: linux-2.6.23-rc3-i386/arch/i386/kernel/machine_kexec.c
-===================================================================
---- linux-2.6.23-rc3-i386.orig/arch/i386/kernel/machine_kexec.c
-+++ linux-2.6.23-rc3-i386/arch/i386/kernel/machine_kexec.c
-@@ -19,6 +19,7 @@
- #include <asm/cpufeature.h>
- #include <asm/desc.h>
- #include <asm/system.h>
-+#include <asm/hpet.h>
- 
- #define PAGE_ALIGNED __attribute__ ((__aligned__(PAGE_SIZE)))
- static u32 kexec_pgd[1024] PAGE_ALIGNED;
-@@ -109,6 +110,10 @@ NORET_TYPE void machine_kexec(struct kim
- 	/* Interrupts aren't acceptable while we reboot */
- 	local_irq_disable();
- 
-+#ifdef CONFIG_HPET_TIMER
-+	hpet_reenable();
-+#endif
-+
- 	control_page = page_address(image->control_code_page);
- 	memcpy(control_page, relocate_kernel, PAGE_SIZE);
- 
-Index: linux-2.6.23-rc3-i386/include/asm-i386/hpet.h
-===================================================================
---- linux-2.6.23-rc3-i386.orig/include/asm-i386/hpet.h
-+++ linux-2.6.23-rc3-i386/include/asm-i386/hpet.h
-@@ -66,6 +66,9 @@
- extern unsigned long hpet_address;
- extern int is_hpet_enabled(void);
- extern int hpet_enable(void);
-+#ifdef CONFIG_KEXEC
-+extern int hpet_reenable(void);
-+#endif
- 
- #ifdef CONFIG_HPET_EMULATE_RTC
- 
+--=20
+Bruce Schneier expects the Spanish Inquisition.
+      http://geekz.co.uk/schneierfacts/fact/163
+
+--xs+9IvWevLaxKUtW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGyuEuND0rFCN2b1sRAt94AKCcWIELPwKMGxtdwKOzo362qTPS6QCfYT8a
+7jXC8sCR5JYYbUlhyTkzSVg=
+=x6wR
+-----END PGP SIGNATURE-----
+
+--xs+9IvWevLaxKUtW--
