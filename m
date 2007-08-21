@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759132AbXHVADe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759394AbXHVAET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759132AbXHVADe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 20:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbXHVADZ
+	id S1759394AbXHVAET (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 20:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756190AbXHVAEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 20:03:25 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:35314 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752914AbXHVADZ (ORCPT
+	Tue, 21 Aug 2007 20:04:11 -0400
+Received: from tayrelbas01.tay.hp.com ([161.114.80.244]:38179 "EHLO
+	tayrelbas01.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754548AbXHVAEK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 20:03:25 -0400
-Date: Tue, 21 Aug 2007 20:03:23 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [PATCH] SLUB use cmpxchg_local
-Message-ID: <20070822000323.GG29691@Krystal>
-References: <20070820215413.GA28452@Krystal> <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com> <20070821173849.GA8360@Krystal> <Pine.LNX.4.64.0708211404290.3082@schroedinger.engr.sgi.com> <20070821231216.GA29691@Krystal> <Pine.LNX.4.64.0708211614370.6062@schroedinger.engr.sgi.com> <20070821233938.GD29691@Krystal> <Pine.LNX.4.64.0708211640430.6225@schroedinger.engr.sgi.com> <20070821234702.GE29691@Krystal> <Pine.LNX.4.64.0708211649260.6886@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
+	Tue, 21 Aug 2007 20:04:10 -0400
+X-Greylist: delayed 875 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Aug 2007 20:04:10 EDT
+Date: Tue, 21 Aug 2007 17:49:07 -0600
+From: Alex Chiang <achiang@hp.com>
+To: gregkh@suse.de
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH] Add missing PCI capability IDs
+Message-ID: <20070821234907.GP27128@ldl.fc.hp.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708211649260.6886@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:57:15 up 23 days, 16 min,  3 users,  load average: 0.81, 0.55, 0.42
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> On Tue, 21 Aug 2007, Mathieu Desnoyers wrote:
-> 
-> > Are you running a UP or SMP kernel ? If you run a UP kernel, the
-> > cmpxchg_local and cmpxchg are identical.
-> 
-> UP.
-> 
-> > Oh, and if you run your tests at boot time, the alternatives code may
-> > have removed the lock prefix, therefore making cmpxchg and cmpxchg_local
-> > exactly the same.
-> 
-> Tests were run at boot time.
-> 
-> That still does not explain kmalloc not showing improvements.
-> 
 
-Hrm, weird.. because it should. Here are the numbers I posted
-previously:
+These IDs are in pciutils, but haven't been added to the kernel
+yet.
 
+Signed-off-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+---
 
-The measurements I get (in cycles):
-             enable interrupts (STI)   disable interrupts (CLI)   local CMPXCHG
-IA32 (P4)    112                        82                         26
-x86_64 AMD64 125                       102                         19
-
-So both AMD64 and IA32 should be improved.
-
-So why those improvements are not shown in your test ? A few possible
-causes:
-
-- Do you have any CONFIG_DEBUG_* options activated ? smp_processor_id()
-  may end up being more expensive in these cases.
-- Rounding error.. you seem to round at 0.1ms, but I keep the values in
-  cycles. The times that you get (1.1ms) seems strangely higher than
-  mine, which are under 1000 cycles on a 3GHz system (less than 333ns).
-  I guess there is both a ms - ns error there and/or not enough
-  precision in your numbers.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
+index 495d368..1ef8712 100644
+--- a/include/linux/pci_regs.h
++++ b/include/linux/pci_regs.h
+@@ -202,8 +202,12 @@
+ #define  PCI_CAP_ID_CHSWP	0x06	/* CompactPCI HotSwap */
+ #define  PCI_CAP_ID_PCIX	0x07	/* PCI-X */
+ #define  PCI_CAP_ID_HT		0x08	/* HyperTransport */
+-#define  PCI_CAP_ID_VNDR	0x09	/* Vendor specific capability */
++#define  PCI_CAP_ID_VNDR	0x09	/* Vendor specific */
++#define  PCI_CAP_ID_DBG		0x0A	/* Debug port */
++#define  PCI_CAP_ID_CCRC	0x0B	/* CompactPCI Central Resource Control */
+ #define  PCI_CAP_ID_SHPC 	0x0C	/* PCI Standard Hot-Plug Controller */
++#define  PCI_CAP_ID_SSVID	0x0D	/* Bridge subsystem vendor/device ID */
++#define  PCI_CAP_ID_AGP3	0x0E	/* AGP Target PCI-PCI bridge */
+ #define  PCI_CAP_ID_EXP 	0x10	/* PCI Express */
+ #define  PCI_CAP_ID_MSIX	0x11	/* MSI-X */
+ #define PCI_CAP_LIST_NEXT	1	/* Next capability in the list */
