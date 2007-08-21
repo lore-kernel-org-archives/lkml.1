@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbXHUWYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbXHUWYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbXHUWYV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 18:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbXHUWYM
+	id S1757441AbXHUWYs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 18:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbXHUWYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 18:24:12 -0400
-Received: from dax.msoe.edu ([155.92.194.41]:34838 "EHLO mx.msoe.edu"
+	Tue, 21 Aug 2007 18:24:38 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:55854 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752962AbXHUWYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 18:24:10 -0400
-X-Greylist: delayed 1213 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Aug 2007 18:24:10 EDT
-Message-ID: <39877.198.169.188.225.1187733834.squirrel@myweb.msoe.edu>
-In-Reply-To: <20070821171018.C964B5F778@attila.bofh.it>
-References: <1187716018.731090.165620@j4g2000prf.googlegroups.com>
-    <20070821171018.C964B5F778@attila.bofh.it>
-Date: Tue, 21 Aug 2007 17:03:54 -0500 (CDT)
-Subject: Restricting CDC-ACM devices
-From: "Nate" <stoddarn@msoe.edu>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.10a
+	id S1754371AbXHUWYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 18:24:37 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, bryan.wu@analog.com
+Subject: [PATCH] Add stack checking for Blackfin
+Date: Tue, 21 Aug 2007 18:24:57 -0400
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-MSOE-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
-X-MSOE-MailScanner-From: stoddarn@msoe.edu
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708211824.58432.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I would like to use the cdc-acm driver in the Linux kernel (2.6.22-rc1),
-but restrict the access to only my VID/PID devices.  Is there an easy way
-to do with without modifying cdc-acm.c?
+Simply fill out the bits in checkstack.pl for Blackfin.  I thought I already
+sent this, but I don't see it in -mm anywhere ...
 
-In a past prototype I made a simple wrapper driver for usb serial by
-adding my VID/PID numbers to the wrapper driver's id_table.  Then when
-that usb driver was accessed on connection, the driver just pointed to the
-usb_serial_* functions (probe, disconnect, etc).  I tried to do the same
-with the cdc-acm driver, but the cdc-acm driver's probe function was
-called before my driver's probe.  I noticed that the cdc-amc driver will
-attach when it detects the two CDC-ACM interfaces, so I removed the
-cdc-acm driver with "make menuconfig".  This didn't work because the
-cdc-acm functions I was attempting to call from my driver do not exist.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+CC: Bryan Wu <bryan.wu@analog.com>
+---
+ scripts/checkstack.pl |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-Thanks for the help,
--Nate
-
-
+diff --git a/scripts/checkstack.pl b/scripts/checkstack.pl
+index f7844f6..9226381 100755
+--- a/scripts/checkstack.pl
++++ b/scripts/checkstack.pl
+@@ -73,6 +73,9 @@ my (@stack, $re, $x, $xs);
+ 		#     pair for larger users. -- PFM.
+ 		#a00048e0:       d4fc40f0        addi.l  r15,-240,r15
+ 		$re = qr/.*addi\.l.*r15,-(([0-9]{2}|[3-9])[0-9]{2}),r15/o;
++	} elsif ($arch =~ /^blackfin$/) {
++		#   0:   00 e8 38 01     LINK 0x4e0;
++		$re = qr/.*[[:space:]]LINK[[:space:]]*(0x$x{1,8})/o;
+ 	} else {
+ 		print("wrong or unknown architecture\n");
+ 		exit
+-- 
+1.5.3.rc5
