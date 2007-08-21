@@ -1,195 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762224AbXHUHKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761283AbXHUHLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762224AbXHUHKj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 03:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbXHUHKZ
+	id S1761283AbXHUHLn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 03:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbXHUHLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 03:10:25 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:58812 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758662AbXHUHKW (ORCPT
+	Tue, 21 Aug 2007 03:11:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52027
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751223AbXHUHLf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 03:10:22 -0400
-Date: Tue, 21 Aug 2007 00:10:19 -0700
-From: sukadev@us.ibm.com
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Daniel Pittman <daniel@rimspace.net>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Kirill Korotaev <dev@sw.ru>,
-       Pavel Emelyanov <xemul@sw.ru>, Roland McGrath <roland@redhat.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC,PATCH] fix /sbin/init signal handling
-Message-ID: <20070821071019.GA8641@us.ibm.com>
-References: <20070819150822.GA7772@tv-sign.ru>
+	Tue, 21 Aug 2007 03:11:35 -0400
+Date: Tue, 21 Aug 2007 00:11:34 -0700 (PDT)
+Message-Id: <20070821.001134.58787844.davem@davemloft.net>
+To: jesper.juhl@gmail.com
+Cc: samuel@sortiz.org, linux-kernel@vger.kernel.org, dagb@cs.uit.no,
+       jt@hpl.hp.com
+Subject: Re: [PATCH] IRDA: Avoid a label defined but not used warning in
+ irda_init()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200708172322.34105.jesper.juhl@gmail.com>
+References: <200708172322.34105.jesper.juhl@gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070819150822.GA7772@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg,
+From: Jesper Juhl <jesper.juhl@gmail.com>
+Date: Fri, 17 Aug 2007 23:22:33 +0200
 
-I am still reviewing this patch and will try to plug in the multiple
-pid ns code and play with it some more in the next couple of days.
+> Hi,
+> 
+> Easily avoidable compiler warnings bug me.
+> 
+> 
+> Building irmod without CONFIG_SYSCTL currently results in : 
+>  net/irda/irmod.c:132: warning: label 'out_err_2' defined but not used
+> 
+> But that can easily be avoided by simply moving the label inside 
+> the existing "#ifdef CONFIG_SYSCTL" one line above it.
+> 
+> This patch moves the label and buys us one less warning with no 
+> ill effects.
+> 
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-But am curious why we need the in_interrupt() check and that too only
-for the container-init process.
-
-Also, maybe a dumb que, are the checks for SIG_IGN and SIG_DFL required
-both on sender side and the receiver side (get_signal_to_deliver())
-
-Thanks,
-
-Sukadev
-
-
-Oleg Nesterov [oleg@tv-sign.ru] wrote:
-| (Not for inclusion yet, against 2.6.23-rc2, untested)
-| 
-| Currently, /sbin/init is protected from unhandled signals by the
-| "current == child_reaper(current)" check in get_signal_to_deliver().
-| This is not enough, we have multiple problems:
-| 
-| 	- this doesn't work for multi-threaded inits, and we can't
-| 	  fix this by simply making this check group-wide.
-| 
-| 	- /sbin/init and kernel threads are not protected from
-| 	  handle_stop_signal(). Minor problem, but not good and
-| 	  allows to "steal" SIGCONT or change ->signal->flags.
-| 
-| 	- /sbin/init is not protected from __group_complete_signal(),
-| 	  sig_fatal() can set SIGNAL_GROUP_EXIT and block exec(), kill
-| 	  sub-threads, set ->group_stop_count, etc.
-| 
-| Also, with support for multiple pid namespaces, we need an ability to
-| actually kill the sub-namespace's init from the parent namespace. In
-| this case it is not possible (without painful and intrusive changes)
-| to make the "should we honor this signal" decision on the receiver's
-| side.
-| 
-| Hopefully this patch (adds 43 bytes to kernel/signal.o) can solve
-| these problems.
-| 
-| Notes:
-| 
-| 	- Blocked signals are never ignored, so init still can receive
-| 	  a pending blocked signal after sigprocmask(SIG_UNBLOCK).
-| 	  Easy to fix, but probably we can ignore this issue.
-| 
-| 	- this patch allows us to simplify de_thread() playing games
-| 	  with pid_ns->child_reaper.
-| 
-| (Side note: the current behaviour of things like force_sig_info_fault()
-|  is not very good, init should not ignore these signals and go to the
-|  endless loop. Exit + panic is imho better, easy to chamge)
-| 
-| Oleg.
-| 
-| --- t/kernel/signal.c~INITSIGS	2007-08-19 14:39:35.000000000 +0400
-| +++ t/kernel/signal.c	2007-08-19 19:00:27.000000000 +0400
-| @@ -39,11 +39,35 @@
-| 
-|  static struct kmem_cache *sigqueue_cachep;
-| 
-| +static int sig_init_ignore(struct task_struct *tsk)
-| +{
-| +	// Currently this check is a bit racy with exec(),
-| +	// we can _simplify_ de_thread and close the race.
-| +	if (likely(!is_init(tsk->group_leader)))
-| +		return 0;
-| +
-| +	// ---------------- Multiple pid namespaces ----------------
-| +	// if (current is from tsk's parent pid_ns && !in_interrupt())
-| +	//	return 0;
-| +
-| +	return 1;
-| +}
-| +
-| +static int sig_task_ignore(struct task_struct *tsk, int sig)
-| +{
-| +	void __user * handler = tsk->sighand->action[sig-1].sa.sa_handler;
-| +
-| +	if (handler == SIG_IGN)
-| +		return 1;
-| +
-| +	if (handler != SIG_DFL)
-| +		return 0;
-| +
-| +	return sig_kernel_ignore(sig) || sig_init_ignore(tsk);
-| +}
-| 
-|  static int sig_ignored(struct task_struct *t, int sig)
-|  {
-| -	void __user * handler;
-| -
-|  	/*
-|  	 * Tracers always want to know about signals..
-|  	 */
-| @@ -58,10 +82,7 @@ static int sig_ignored(struct task_struc
-|  	if (sigismember(&t->blocked, sig))
-|  		return 0;
-| 
-| -	/* Is it explicitly or implicitly ignored? */
-| -	handler = t->sighand->action[sig-1].sa.sa_handler;
-| -	return   handler == SIG_IGN ||
-| -		(handler == SIG_DFL && sig_kernel_ignore(sig));
-| +	return sig_task_ignore(t, sig);
-|  }
-| 
-|  /*
-| @@ -569,6 +590,9 @@ static void handle_stop_signal(int sig, 
-|  		 */
-|  		return;
-| 
-| +	if (sig_init_ignore(p))
-| +		return;
-| +
-|  	if (sig_kernel_stop(sig)) {
-|  		/*
-|  		 * This is a stop signal.  Remove SIGCONT from all queues.
-| @@ -1841,14 +1865,6 @@ relock:
-|  		if (sig_kernel_ignore(signr)) /* Default is nothing. */
-|  			continue;
-| 
-| -		/*
-| -		 * Init of a pid space gets no signals it doesn't want from
-| -		 * within that pid space. It can of course get signals from
-| -		 * its parent pid space.
-| -		 */
-| -		if (current == child_reaper(current))
-| -			continue;
-| -
-|  		if (sig_kernel_stop(signr)) {
-|  			/*
-|  			 * The default action is to stop all threads in
-| @@ -2300,13 +2316,10 @@ int do_sigaction(int sig, struct k_sigac
-|  	k = &current->sighand->action[sig-1];
-| 
-|  	spin_lock_irq(&current->sighand->siglock);
-| -	if (signal_pending(current)) {
-| -		/*
-| -		 * If there might be a fatal signal pending on multiple
-| -		 * threads, make sure we take it before changing the action.
-| -		 */
-| +	if (current->signal->flags & SIGNAL_GROUP_EXIT) {
-|  		spin_unlock_irq(&current->sighand->siglock);
-| -		return -ERESTARTNOINTR;
-| +		/* The return value doesn't matter, SIGKILL is pending */
-| +		return -EINTR;
-|  	}
-| 
-|  	if (oact)
-| @@ -2327,8 +2340,7 @@ int do_sigaction(int sig, struct k_sigac
-|  		 *   (for example, SIGCHLD), shall cause the pending signal to
-|  		 *   be discarded, whether or not it is blocked"
-|  		 */
-| -		if (act->sa.sa_handler == SIG_IGN ||
-| -		   (act->sa.sa_handler == SIG_DFL && sig_kernel_ignore(sig))) {
-| +		if (sig_task_ignore(current, sig)) {
-|  			struct task_struct *t = current;
-|  			sigemptyset(&mask);
-|  			sigaddset(&mask, sig);
+Applied, thanks Jesper.
