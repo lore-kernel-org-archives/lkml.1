@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759422AbXHUNu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759847AbXHUOBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759422AbXHUNu0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 09:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbXHUNuO
+	id S1759847AbXHUOBT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 10:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757271AbXHUOA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 09:50:14 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59379 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753344AbXHUNuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 09:50:13 -0400
-Date: Tue, 21 Aug 2007 12:14:04 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: david@lang.hm, nigel@nigel.suspend2.net,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: [linux-pm] Re: [PATH 1/1] Kexec jump - v2 - kexec jump
-Message-ID: <20070821101404.GA1704@elf.ucw.cz>
-References: <1184483639.1898.99.camel@caritas-dev.intel.com> <20070731095101.GA1774@elf.ucw.cz> <1185954978.1363.23.camel@caritas-dev.intel.com> <20070816102635.GA2039@elf.ucw.cz> <1187331349.28497.9.camel@caritas-dev.intel.com>
+	Tue, 21 Aug 2007 10:00:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33828 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754113AbXHUOAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 10:00:54 -0400
+Message-ID: <46CAED8B.9030006@redhat.com>
+Date: Tue, 21 Aug 2007 09:50:03 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187331349.28497.9.camel@caritas-dev.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: David Miller <davem@davemloft.net>
+CC: torvalds@linux-foundation.org, piggin@cyberone.com.au,
+       satyam@infradead.org, herbert@gondor.apana.org.au, paulus@samba.org,
+       clameter@sgi.com, ilpo.jarvinen@helsinki.fi, paulmck@linux.vnet.ibm.com,
+       stefanr@s5r6.in-berlin.de, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+References: <alpine.LFD.0.999.0708170929580.30176@woody.linux-foundation.org>	<46C993DF.4080400@redhat.com>	<alpine.LFD.0.999.0708202244520.30176@woody.linux-foundation.org> <20070821.000404.39159401.davem@davemloft.net>
+In-Reply-To: <20070821.000404.39159401.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> On Thu, 2007-08-16 at 12:26 +0200, Pavel Machek wrote:
-> > Ping... is there some next version?
-> > 
-> > I'm stuck at the tools side currently. kexec-1.101 just won't load the
-> > kernel properly, and kexec-testing from git does not know -j option. I
-> > tried hand-patching it, but got lots of scary rejects.
-> > 
-> > Is there chance for a patch against kexec-testing?
+David Miller wrote:
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Mon, 20 Aug 2007 22:46:47 -0700 (PDT)
 > 
-> I have some other work to do recently. So the next version will delay
-> for some while. :(
+>> Ie a "barrier()" is likely _cheaper_ than the code generation downside 
+>> from using "volatile".
+> 
+> Assuming GCC were ever better about the code generation badness
+> with volatile that has been discussed here, I much prefer
+> we tell GCC "this memory piece changed" rather than "every
+> piece of memory has changed" which is what the barrier() does.
+> 
+> I happened to have been scanning a lot of assembler lately to
+> track down a gcc-4.2 miscompilation on sparc64, and the barriers
+> do hurt quite a bit in some places.  Instead of keeping unrelated
+> variables around cached in local registers, it reloads everything.
 
-Ok, I got it to work -- thanks a lot.
+Moore's law is definitely working against us here.  Register counts, 
+pipeline depths, core counts, and clock multipliers are all increasing 
+in the long run.  At some point in the future, barrier() will be 
+universally regarded as a hammer too big for most purposes.  Whether or 
+not removing it now constitutes premature optimization is arguable, but 
+I think we should allow such optimization to happen (or not happen) in 
+architecture-dependent code, and provide a consistent API that doesn't 
+require the use of such things in arch-independent code where it might 
+turn into a totally superfluous performance killer depending on what 
+hardware it gets compiled for.
 
-Yes, acpi=off is mandatory. Unfortunately, thinkpad x60 does not boot
-with acpi=off (should we add another test to linux firmware kit?
-Machines should still boot in acpi=off mode...). acpi=off noapic
-nolapic nosmp makes it boot, and that in turn makes kjump work.
-
-Screen is not refreshed on kjump back to original kernel, but I guess
-that's to be expected. I did not play with framebuffer, yet.
-
-Maybe it is time to move kjump functionality into -mm and
-kexec-testing?
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	-- Chris
