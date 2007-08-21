@@ -1,103 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761588AbXHUQvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761999AbXHUQwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761588AbXHUQvp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 12:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759789AbXHUQve
+	id S1761999AbXHUQwL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 12:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761806AbXHUQvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 12:51:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35508 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759459AbXHUQvc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 12:51:32 -0400
-Date: Tue, 21 Aug 2007 09:43:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Chris Snook <csnook@redhat.com>
-cc: David Miller <davem@davemloft.net>, piggin@cyberone.com.au,
-       satyam@infradead.org, herbert@gondor.apana.org.au, paulus@samba.org,
-       clameter@sgi.com, ilpo.jarvinen@helsinki.fi, paulmck@linux.vnet.ibm.com,
-       stefanr@s5r6.in-berlin.de, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <46CAED8B.9030006@redhat.com>
-Message-ID: <alpine.LFD.0.999.0708210922290.30176@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0708170929580.30176@woody.linux-foundation.org>
- <46C993DF.4080400@redhat.com> <alpine.LFD.0.999.0708202244520.30176@woody.linux-foundation.org>
- <20070821.000404.39159401.davem@davemloft.net>
- <46CAED8B.9030006@redhat.com>
+	Tue, 21 Aug 2007 12:51:55 -0400
+Received: from mga11.intel.com ([192.55.52.93]:8556 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759810AbXHUQvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 12:51:54 -0400
+X-Greylist: delayed 569 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Aug 2007 12:51:54 EDT
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,290,1183359600"; 
+   d="scan'208";a="285911770"
+From: Shannon Nelson <shannon.nelson@intel.com>
+Subject: [PATCH -mm] IOAT: Fix ioat_dma descriptor cache miss (in -mm)
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: shannon.nelson@intel.com, dan.j.williams@intel.com
+Date: Tue, 21 Aug 2007 09:42:06 -0700
+Message-ID: <20070821164206.21821.27046.stgit@localhost.localdomain>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(we've fixed it in 2.6.23-rc3, let's get the same fix into -mm)
+
+The layout for struct ioat_desc_sw is non-optimal and causes an extra
+cache hit for every descriptor processed.  By tightening up the struct
+layout and removing one item, we pull in the fields that get used in
+the speedpath and get a little better performance.
 
 
-On Tue, 21 Aug 2007, Chris Snook wrote:
-> 
-> Moore's law is definitely working against us here.  Register counts, pipeline
-> depths, core counts, and clock multipliers are all increasing in the long run.
-> At some point in the future, barrier() will be universally regarded as a
-> hammer too big for most purposes.
+Before:
+-------
+struct ioat_desc_sw {
+	struct ioat_dma_descriptor * hw;                 /*     0     8 */
+	struct list_head           node;                 /*     8    16 */
+	int                        tx_cnt;               /*    24     4 */
 
-Note that "barrier()" is purely a compiler barrier. It has zero impact on 
-the CPU pipeline itself, and also has zero impact on anything that gcc 
-knows isn't visible in memory (ie local variables that don't have their 
-address taken), so barrier() really is pretty cheap.
+	/* XXX 4 bytes hole, try to pack */
 
-Now, it's possible that gcc messes up in some circumstances, and that the 
-memory clobber will cause gcc to also do things like flush local registers 
-unnecessarily to their stack slots, but quite frankly, if that happens, 
-it's a gcc problem, and I also have to say that I've not seen that myself.
+	dma_addr_t                 src;                  /*    32     8 */
+	__u32                      src_len;              /*    40     4 */
 
-So in a very real sense, "barrier()" will just make sure that there is a 
-stronger sequence point for the compiler where things are stable. In most 
-cases it has absolutely zero performance impact - apart from the 
--intended- impact of making sure that the compiler doesn't re-order or 
-cache stuff around it.
+	/* XXX 4 bytes hole, try to pack */
 
-And sure, we could make it more finegrained, and also introduce a 
-per-variable barrier, but the fact is, people _already_ have problems with 
-thinking about these kinds of things, and adding new abstraction issues 
-with subtle semantics is the last thing we want.
+	dma_addr_t                 dst;                  /*    48     8 */
+	__u32                      dst_len;              /*    56     4 */
 
-So I really think you'd want to show a real example of real code that 
-actually gets noticeably slower or bigger.
+	/* XXX 4 bytes hole, try to pack */
 
-In removing "volatile", we have shown that. It may not have made a big 
-difference on powerpc, but it makes a real difference on x86 - and more 
-importantly, it removes something that people clearly don't know how it 
-works, and incorrectly expect to just fix bugs.
+	/* --- cacheline 1 boundary (64 bytes) --- */
+	struct dma_async_tx_descriptor async_tx;         /*    64   144 */
+	/* --- cacheline 3 boundary (192 bytes) was 16 bytes ago --- */
 
-[ There are *other* barriers - the ones that actually add memory barriers 
-  to the CPU - that really can be quite expensive. The good news is that 
-  the expense is going down rather than up: both Intel and AMD are not 
-  only removing the need for some of them (ie "smp_rmb()" will become a 
-  compiler-only barrier), but we're _also_ seeing the whole "pipeline 
-  flush" approach go away, and be replaced by the CPU itself actually 
-  being better - so even the actual CPU pipeline barriers are getting
-  cheaper, not more expensive. ]
+	/* size: 208, cachelines: 4 */
+	/* sum members: 196, holes: 3, sum holes: 12 */
+	/* last cacheline: 16 bytes */
+};	/* definitions: 1 */
 
-For example, did anybody even _test_ how expensive "barrier()" is? Just 
-as a lark, I did
 
-	#undef barrier
-	#define barrier() do { } while (0)
+After:
+------
 
-in kernel/sched.c (which only has three of them in it, but hey, that's 
-more than most files), and there were _zero_ code generation downsides. 
-One instruction was moved (and a few line numbers changed), so it wasn't 
-like the assembly language was identical, but the point is, barrier() 
-simply doesn't have the same kinds of downsides that "volatile" has.
+struct ioat_desc_sw {
+	struct ioat_dma_descriptor * hw;                 /*     0     8 */
+	struct list_head           node;                 /*     8    16 */
+	int                        tx_cnt;               /*    24     4 */
+	__u32                      len;                  /*    28     4 */
+	dma_addr_t                 src;                  /*    32     8 */
+	dma_addr_t                 dst;                  /*    40     8 */
+	struct dma_async_tx_descriptor async_tx;         /*    48   144 */
+	/* --- cacheline 3 boundary (192 bytes) --- */
 
-(That may not be true on other architectures or in other source files, of 
-course. This *does* depend on code generation details. But anybody who 
-thinks that "barrier()" is fundamentally expensive is simply incorrect. It 
-is *fundamnetally* a no-op).
+	/* size: 192, cachelines: 3 */
+};	/* definitions: 1 */
 
-		Linus
+
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+---
+
+ drivers/dma/ioat_dma.c |    9 ++++-----
+ drivers/dma/ioatdma.h  |    3 +--
+ 2 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+index 55f4179..c4c7343 100644
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -432,9 +432,8 @@ static struct dma_async_tx_descriptor *ioat_dma_prep_memcpy(
+ 	new->async_tx.ack = 0; /* client is in control of this ack */
+ 	new->async_tx.cookie = -EBUSY;
+ 
+-	pci_unmap_len_set(new, src_len, orig_len);
+-	pci_unmap_len_set(new, dst_len, orig_len);
+-	spin_unlock_bh(&ioat_chan->desc_lock);
++	pci_unmap_len_set(new, len, orig_len);
++	spin_unlock_bh(&ioat_chan->desc_lock);:w
+ 
+ 	return new ? &new->async_tx : NULL;
+ }
+@@ -518,11 +517,11 @@ static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *ioat_chan)
+ 			 */
+ 			pci_unmap_page(ioat_chan->device->pdev,
+ 					pci_unmap_addr(desc, dst),
+-					pci_unmap_len(desc, dst_len),
++					pci_unmap_len(desc, len),
+ 					PCI_DMA_FROMDEVICE);
+ 			pci_unmap_page(ioat_chan->device->pdev,
+ 					pci_unmap_addr(desc, src),
+-					pci_unmap_len(desc, src_len),
++					pci_unmap_len(desc, len),
+ 					PCI_DMA_TODEVICE);
+ 		}
+ 
+diff --git a/drivers/dma/ioatdma.h b/drivers/dma/ioatdma.h
+index bab2a72..d59c90b 100644
+--- a/drivers/dma/ioatdma.h
++++ b/drivers/dma/ioatdma.h
+@@ -123,10 +123,9 @@ struct ioat_desc_sw {
+ 	struct ioat_dma_descriptor *hw;
+ 	struct list_head node;
+ 	int tx_cnt;
++	DECLARE_PCI_UNMAP_LEN(len)
+ 	DECLARE_PCI_UNMAP_ADDR(src)
+-	DECLARE_PCI_UNMAP_LEN(src_len)
+ 	DECLARE_PCI_UNMAP_ADDR(dst)
+-	DECLARE_PCI_UNMAP_LEN(dst_len)
+ 	struct dma_async_tx_descriptor async_tx;
+ };
+ 
