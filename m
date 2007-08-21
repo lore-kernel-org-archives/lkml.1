@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757670AbXHUVMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbXHUVNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757670AbXHUVMT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 17:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbXHUVMI
+	id S1758557AbXHUVNt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 17:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbXHUVNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 17:12:08 -0400
-Received: from mga02.intel.com ([134.134.136.20]:49412 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753523AbXHUVMG convert rfc822-to-8bit (ORCPT
+	Tue, 21 Aug 2007 17:13:41 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:36471 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751376AbXHUVNl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 17:12:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,291,1183359600"; 
-   d="scan'208";a="281942672"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH][2.6.23-rc2-mm2] small fix for ia64 icache sync patch
-Date: Tue, 21 Aug 2007 14:12:02 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A023B2254@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <20070821201507.36641d76.kamezawa.hiroyu@jp.fujitsu.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH][2.6.23-rc2-mm2] small fix for ia64 icache sync patch
-Thread-Index: Acfj5EExdWOpgY1ZT+azIo9x5nKKiAAUpVGg
-References: <20070821201507.36641d76.kamezawa.hiroyu@jp.fujitsu.com>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, <linux-ia64@vger.kernel.org>
-X-OriginalArrivalTime: 21 Aug 2007 21:12:03.0314 (UTC) FILETIME=[EBC37D20:01C7E437]
+	Tue, 21 Aug 2007 17:13:41 -0400
+Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water
+	marks
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com>
+References: <20070820215040.937296148@sgi.com>
+	 <1187692586.6114.211.camel@twins>
+	 <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Tue, 21 Aug 2007 23:13:32 +0200
+Message-Id: <1187730812.5463.12.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	if (pte_present(pteval) &&// swap out ?
-> +	    pte_exec(pteval) &&    // flush only new executable page.
-> 	    pte_user(pteval) &&    // ignore kernel page
-> 	    (!pte_present(*ptep) ||// do_no_page or swap in, migration,
-> 		pte_pfn(*ptep) != pte_pfn(pteval))) // do_wp_page(), page copy
+On Tue, 2007-08-21 at 13:48 -0700, Christoph Lameter wrote:
+> On Tue, 21 Aug 2007, Peter Zijlstra wrote:
+> 
+> > This almost insta-OOMs with anonymous workloads.
+> 
+> What does the workload do? So writeout needs to begin earlier. There are 
+> likely issues with throttling.
 
-David Mosberger was concerned about the increase in code
-size from this inline function.  We can reduce the bloat
-a bit by defining a macro that tests for "present &&
-executable && user-mode" in one go:
+The workload is a single program mapping 256M of anonymous memory and
+cycling through it with writes ran on a 128M setup.
 
-#define pte_pux(pte)            ((pte_val(pte) & (_PAGE_P|_PAGE_PL_MASK|_PAGE_AR_RX)) == \
-                                        (_PAGE_P|_PAGE_PL_3|_PAGE_AR_RX))
+It quickly ends up with all of memory in the laundry list and then
+recursing into __alloc_pages which will fail to make progress and OOMs.
 
-Perhaps there is a better name than "pte_pux"?  I don't know whether
-the code that this generates is faster, but it is smaller (bloat
-is only 3k instead of 4k).
+But aside from the numerous issues with the patch set as presented, I'm
+not seeing the seeing the big picture, why are you doing this.
 
-One last cleanup needed ... don't use C-99/C++ style comments.
+Anonymous pages are a there to stay, and we cannot tell people how to
+use them. So we need some free or freeable pages in order to avoid the
+vm deadlock that arises from all memory dirty.
 
--Tony
+Currently we keep them free, this has the advantage that the buddy
+allocator can at least try to coalese them.
+
+'Optimizing' this by switching to freeable pages has mainly
+disadvantages IMHO, finding them scrambles LRU order and complexifies
+relcaim and all that for a relatively small gain in space for clean
+pagecache pages.
+
+Please, stop writing patches and write down a solid proposal of how you
+envision the VM working in the various scenarios and why its better than
+the current approach.
+
