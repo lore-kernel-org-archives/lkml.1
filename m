@@ -1,166 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761995AbXHUBZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759954AbXHUBmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761995AbXHUBZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 21:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbXHUBZr
+	id S1759954AbXHUBmG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 21:42:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbXHUBlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 21:25:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56609 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760812AbXHUBZ1 (ORCPT
+	Mon, 20 Aug 2007 21:41:55 -0400
+Received: from smtp115.sbc.mail.re3.yahoo.com ([66.196.96.88]:23083 "HELO
+	smtp115.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754315AbXHUBly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 21:25:27 -0400
-Date: Tue, 21 Aug 2007 07:08:14 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-cc: NeilBrown <neilb@suse.de>, Jan Engelhardt <jengelh@computergmbh.de>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH 002 of 6] Introduce rq_for_each_segment replacing
- rq_for_each_bio
-In-Reply-To: <Pine.LNX.4.62.0708201313260.6197@pademelon.sonytel.be>
-Message-ID: <alpine.LFD.0.999.0708210523470.2774@enigma.security.iitk.ac.in>
-References: <20070816211551.11839.patches@notabene> <1070816112100.12182@suse.de>
- <Pine.LNX.4.62.0708170910120.8381@pademelon.sonytel.be>
- <alpine.LFD.0.999.0708181953560.29105@enigma.security.iitk.ac.in>
- <Pine.LNX.4.64.0708181628350.5186@fbirervta.pbzchgretzou.qr>
- <alpine.LFD.0.999.0708182016000.29105@enigma.security.iitk.ac.in>
- <Pine.LNX.4.62.0708201313260.6197@pademelon.sonytel.be>
+	Mon, 20 Aug 2007 21:41:54 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=GmRx3eo4SMyFG/TrXscB5fbeISMVtu8jkz1ToT0ZHy6W1kyMaMbylf47wl2hCq8q9/X0Nz1SSYBCMvjFCsLuk/8K3IaJPq4wvumeKhrUiAvTlJ7nh3OKScTKcSl1oaBiu2WUE9sIMjWhKH2T1gryODrEs+rE03wjwr5bqpF0dYc=  ;
+X-YMail-OSG: 0z2VC_cVM1ndrXgg1s6CZ3MUo3mx2uZw1ibf4PlFIbVuAJma8ouE_N70c01sJI9xco61zfGIBojh3GeqD13YhYet7aDaN7OXzJvlo4Dk.6vWV7pqPUAINQqXzdIAQ8F9CmYSEjtRcyF8sA--
+From: David Brownell <david-b@pacbell.net>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
+Date: Mon, 20 Aug 2007 18:41:51 -0700
+User-Agent: KMail/1.9.6
+Cc: linux-usb-devel@lists.sourceforge.net,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       "Stuart_Hayes@Dell.com" <Stuart_Hayes@dell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Exner <dex@dragonslave.de>
+References: <46C098FD.1030601@googlemail.com> <46C09C11.3070105@googlemail.com>
+In-Reply-To: <46C09C11.3070105@googlemail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-1933216916-1187656638=:2774"
-Content-ID: <alpine.LFD.0.999.0708210701560.2774@enigma.security.iitk.ac.in>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200708201841.51366.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Monday 13 August 2007, Michal Piotrowski wrote:
+> Subject         : EHCI Regression in 2.6.23-rc2
+> References      : http://lkml.org/lkml/2007/8/10/81
+> Last known good : ?
+> Submitter       : Daniel Exner <dex@dragonslave.de>
+> Caused-By       : Stuart_Hayes@Dell.com <Stuart_Hayes@Dell.com>
+>                   commit 196705c9bbc03540429b0f7cf9ee35c2f928a534
+> Handled-By      : ?
+> Status          : unknown
 
---464262402-1933216916-1187656638=:2774
-Content-Type: TEXT/PLAIN; CHARSET=iso-2022-jp
-Content-ID: <alpine.LFD.0.999.0708210701561.2774@enigma.security.iitk.ac.in>
+Fixed I believe by Stuart's patch:
 
-Hi Geert,
+http://marc.info/?l=linux-usb-devel&m=118765934722610&w=2
 
-
-On Mon, 20 Aug 2007, Geert Uytterhoeven wrote:
-
-> On Sat, 18 Aug 2007, Satyam Sharma wrote:
-> > On Sat, 18 Aug 2007, Jan Engelhardt wrote:
-> > > On Aug 18 2007 20:07, Satyam Sharma wrote:
-> > > >On Fri, 17 Aug 2007, Geert Uytterhoeven wrote:
-> > > >> On Thu, 16 Aug 2007, NeilBrown wrote:
-> > > >> [...]
-> > > >> >  		dev_dbg(&dev->sbd.core,
-> > > >> >  			"%s:%u: bio %u: %u segs %u sectors from %lu\n",
-                                                                        ^^^
-
-> > > >> > -			__func__, __LINE__, i, bio_segments(bio),
-> > > >> > -			bio_sectors(bio), sector);
-> > > >> > -		bio_for_each_segment(bvec, bio, j) {
-> > > >> > +			__func__, __LINE__, i, bio_segments(iter.bio),
-> > > >> > +			bio_sectors(iter.bio),
-> > > >> > +			(unsigned long)iter.bio->bi_sector);
-                                ^^^^^^^^^^^^^^^          ^^^^^^^^^
-
-> > > >> Superfluous cast: PS3 is 64-bit only, and casts are evil.
-> > > 
-> > > bi_sector is sector_t. The cast is ok, because printf will warn, and rightfully
-> > > so since sector_t may just change its shape underneath.
-> > 
-> > Oh yeah, that's why the _cast_ _is_ needed in the first place, by the way.
-> > I was mentioning why the cast itself should be (unsigned long long) otoh.
-> 
-> On 64-bit platforms, sector_t (which is either u64 or unsigned long, depending
-> on CONFIG_LBD) is unsigned long, so there's no need for a cast. Hence there's
-> no compiler warning to be silenced by adding the cast.
-
-This is turning rather funny :-)
-
-* Why the printk() conversion specifier must be "%llu"?
-
-When reusing parts of this code (such as this debug message) for another
-32-bit driver (we certainly seem to care about this, as per your reply),
-the largest size of sector_t can be "unsigned long long", thereby causing
-truncated output, and the following warning:
-
-warning: format $B!F(J%lu$B!G(J expects type $B!F(Jlong unsigned int$B!G(J, but argument 2 has
-type $B!F(Jsector_t$B!G(J
-
-Therefore, let us not depend on the fact that this driver is being used
-only for 64-bit platforms as of now (especially since this is in drivers/
-and not in arch/) and rather make the printk() specifier as "%llu".
-
-[ Sadly, I had to repeat most of my previous mail, which Jan Engelhardt
-appears to have snipped. ]
-
-* Why we require an explicit (unsigned long long) cast?
-
-Having made the above change (and say we don't have an explicit cast
-there), that line now becomes:
-
-	printk("... %llu\n", ..., iter.bio->bi_sector);
-
-Now if we build this code with CONFIG_LBD=n, sector_t becomes just an
-"unsigned long" (whereas printk specifier is the larger "%llu") thereby
-causing:
-
-warning: format $B!F(J%llu$B!G(J expects type $B!F(Jlong long unsigned int$B!G(J, but argument
-2 has type $B!F(Jsector_t$B!G(J
-
-Therefore, let us shut this up with an explicit (unsigned long long) cast,
-as is done in most other existing code in the kernel where we want to get
-bi_sector printed out, which would correctly convert the value to the
-larger integer type (even negative ones, due to sign-extension) and print
-it out.
-
-
-> On the other hand, adding a cast may hide bugs:
->   - cast to unsigned long long: When sector_t is changed to an even larger
->     type, it will be silently truncated as well.
-
-IMHO, this is not a valid enough reason, given the above (BTW if/when that
-happens, we'll have to update the printk conversion specifer as well).
-
-Personally, I'd say code that assumes "sizeof(unsigned long long) ==
-sizeof(unsigned long)", and also that assumes "sizeof(unsigned long) ==
-sizeof(sector_t)" -- both assumptions _are_ made by the above code --
-is not good taste, even if both may be true for PS3 platform. So unless
-we decide "nobody except that platform would ever build this driver
-anyway", I'd suggest to make the printk specifier as "%llu" and use an
-explicit (unsigned long long) cast. Therefore (on top of this series):
-
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
-
----
-
-diff -ruNp a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
---- a/drivers/block/ps3disk.c	2007-08-21 06:52:34.000000000 +0530
-+++ b/drivers/block/ps3disk.c	2007-08-21 06:56:07.000000000 +0530
-@@ -100,10 +100,10 @@ static void ps3disk_scatter_gather(struc
- 	rq_for_each_segment(bvec, req, iter) {
- 		unsigned long flags;
- 		dev_dbg(&dev->sbd.core,
--			"%s:%u: bio %u: %u segs %u sectors from %lu\n",
-+			"%s:%u: bio %u: %u segs %u sectors from %llu\n",
- 			__func__, __LINE__, i, bio_segments(iter.bio),
- 			bio_sectors(iter.bio),
--			(unsigned long)iter.bio->bi_sector);
-+			(unsigned long long)iter.bio->bi_sector);
- 
- 		size = bvec->bv_len;
- 		buf = bvec_kmap_irq(bvec, flags);
-@@ -142,8 +142,9 @@ static int ps3disk_submit_request_sg(str
- 
- 	start_sector = req->sector * priv->blocking_factor;
- 	sectors = req->nr_sectors * priv->blocking_factor;
--	dev_dbg(&dev->sbd.core, "%s:%u: %s %lu sectors starting at %lu\n",
--		__func__, __LINE__, op, sectors, start_sector);
-+	dev_dbg(&dev->sbd.core, "%s:%u: %s %llu sectors starting at %llu\n",
-+		__func__, __LINE__, op, (unsigned long long)sectors,
-+		(unsigned long long)start_sector);
- 
- 	if (write) {
- 		ps3disk_scatter_gather(dev, req, 1);
---464262402-1933216916-1187656638=:2774--
