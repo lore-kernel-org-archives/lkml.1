@@ -1,34 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932092AbXHUPEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932162AbXHUPEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932092AbXHUPEh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 11:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761885AbXHUPEJ
+	id S932162AbXHUPEz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 11:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762133AbXHUPEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 11:04:09 -0400
-Received: from ns2.suse.de ([195.135.220.15]:47841 "EHLO mx2.suse.de"
+	Tue, 21 Aug 2007 11:04:44 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:55259 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761790AbXHUPEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 11:04:08 -0400
-Date: Tue, 21 Aug 2007 08:02:31 -0700
-From: Tony Jones <tonyj@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: rmk@arm.linux.org.uk, kay.sievers@vrfy.org
-Subject: Re: [patch 13/14] Convert from class_device to device for UCB1x00
-Message-ID: <20070821150231.GK26519@suse.de>
-References: <20070820224806.154198000@suse.de> <20070820225140.739434000@suse.de>
+	id S1761778AbXHUPEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 11:04:43 -0400
+Date: Tue, 21 Aug 2007 16:04:40 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC 3/7] shrink_page_list: Support isolating dirty pages on laundry list
+Message-ID: <20070821150440.GK11329@skynet.ie>
+References: <20070820215040.937296148@sgi.com> <20070820215316.526397437@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070820225140.739434000@suse.de>
+In-Reply-To: <20070820215316.526397437@sgi.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 20, 2007 at 03:48:19PM -0700, tonyj@suse.de wrote:
-> -- 
-> Content-Disposition: inline; filename=mfd.patch
+On (20/08/07 14:50), Christoph Lameter didst pronounce:
+> If a laundry list is specified then do not write out pages but put
+> dirty pages on a laundry list for later processing.
 > 
-> Convert from class_device to device for drivers/mfd/ucb1x00.  This is
-> part of the work to eliminate struct class_device.
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
+> ---
+>  mm/vmscan.c |   23 ++++++++++++++++++-----
+>  1 file changed, 18 insertions(+), 5 deletions(-)
+> 
+> Index: linux-2.6/mm/vmscan.c
+> ===================================================================
+> --- linux-2.6.orig/mm/vmscan.c	2007-08-19 23:13:28.000000000 -0700
+> +++ linux-2.6/mm/vmscan.c	2007-08-19 23:27:00.000000000 -0700
+> @@ -380,16 +380,22 @@ cannot_free:
+>  }
+>  
+>  /*
+> - * shrink_page_list() returns the number of reclaimed pages
+> + * shrink_page_list() returns the number of reclaimed pages.
+> + *
+> + * If laundry is specified then dirty pages are put onto the
+> + * laundry list and no writes are triggered.
+>   */
+>  static unsigned long shrink_page_list(struct list_head *page_list,
+> -					struct scan_control *sc)
+> +		struct scan_control *sc, struct list_head *laundry)
+>  {
+>  	LIST_HEAD(ret_pages);
+>  	struct pagevec freed_pvec;
+>  	int pgactivate = 0;
+>  	unsigned long nr_reclaimed = 0;
+>  
+> +	if (list_empty(page_list))
+> +		return 0;
+> +
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
+This needs a comment to explain why shrink_page_list() would be called
+with an empty list.
+
+>  	cond_resched();
+>  
+>  	pagevec_init(&freed_pvec, 1);
+> @@ -407,10 +413,11 @@ static unsigned long shrink_page_list(st
+>  		if (TestSetPageLocked(page))
+>  			goto keep;
+>  
+> -		VM_BUG_ON(PageActive(page));
+> -
+
+This needs explanation in the leader. It implies that later you expect active
+and inactive pages to be passed to shrink_page. i.e. We now need to keep an
+eye out for where shrink_active_list() is sending pages to shrink_page_list()
+instead of simply rotating the active list to the inactive.
+
+>  		sc->nr_scanned++;
+>  
+> +		if (PageActive(page))
+> +			goto keep_locked;
+> +
+>  		if (!sc->may_swap && page_mapped(page))
+>  			goto keep_locked;
+>  
+> @@ -506,6 +513,12 @@ static unsigned long shrink_page_list(st
+>  			if (!may_write_to_queue(mapping->backing_dev_info))
+>  				goto keep_locked;
+>  
+> +			if (laundry) {
+> +				list_add(&page->lru, laundry);
+> +				unlock_page(page);
+> +				continue;
+> +			}
+
+This needs a comment. What you are doing is explained in the leader but
+it may not help a future reader of the code.
+
+Also, with laundry specified there is no longer a check for PagePrivate
+to see if the buffers can be freed and got rid of. According to the
+comments in the next code block;
+
+                 * We do this even if the page is PageDirty().
+                 * try_to_release_page() does not perform I/O, but it is
+                 * possible for a page to have PageDirty set, but it is actually
+                 * clean (all its buffers are clean)
+
+Is this intentional?
+
+> +
+>  			/* Page is dirty, try to write it out here */
+>  			switch(pageout(page, mapping)) {
+>  			case PAGE_ACTIVATE:
+> @@ -817,7 +830,7 @@ static unsigned long shrink_inactive_lis
+>  		spin_unlock_irq(&zone->lru_lock);
+>  
+>  		nr_scanned += nr_scan;
+> -		nr_freed = shrink_page_list(&page_list, sc);
+> +		nr_freed = shrink_page_list(&page_list, sc, NULL);
+>  		nr_reclaimed += nr_freed;
+>  		local_irq_disable();
+>  		if (current_is_kswapd()) {
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
