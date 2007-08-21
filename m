@@ -1,50 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761977AbXHUHKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762224AbXHUHKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761977AbXHUHKB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 03:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759883AbXHUHJp
+	id S1762224AbXHUHKj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 03:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbXHUHKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 03:09:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47118 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759734AbXHUHJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 03:09:44 -0400
-Date: Tue, 21 Aug 2007 09:09:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [accounting regression since rc1]  scheduler updates
-Message-ID: <20070821070922.GA16695@elte.hu>
-References: <20070812163225.GA11996@elte.hu> <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu> <1187629438.8541.40.camel@localhost> <20070820180810.GA25160@elte.hu> <p73lkc5zl2m.fsf@bingen.suse.de>
-MIME-Version: 1.0
+	Tue, 21 Aug 2007 03:10:25 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:58812 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758662AbXHUHKW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 03:10:22 -0400
+Date: Tue, 21 Aug 2007 00:10:19 -0700
+From: sukadev@us.ibm.com
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Daniel Pittman <daniel@rimspace.net>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Kirill Korotaev <dev@sw.ru>,
+       Pavel Emelyanov <xemul@sw.ru>, Roland McGrath <roland@redhat.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH] fix /sbin/init signal handling
+Message-ID: <20070821071019.GA8641@us.ibm.com>
+References: <20070819150822.GA7772@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <p73lkc5zl2m.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070819150822.GA7772@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
+X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Oleg,
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+I am still reviewing this patch and will try to plug in the multiple
+pid ns code and play with it some more in the next couple of days.
 
-> You should just be using idle notifiers instead instead of adding more 
-> and more custom hooks (like NOHZ has already) x86-64 still has them 
-> and there is a old patch around to add them to i386.
+But am curious why we need the in_interrupt() check and that too only
+for the container-init process.
 
-these are specially placed callbacks that we want to call from certain 
-ACPI codepaths but not from all of them.
+Also, maybe a dumb que, are the checks for SIG_IGN and SIG_DFL required
+both on sender side and the receiver side (get_signal_to_deliver())
 
-	Ingo
+Thanks,
+
+Sukadev
+
+
+Oleg Nesterov [oleg@tv-sign.ru] wrote:
+| (Not for inclusion yet, against 2.6.23-rc2, untested)
+| 
+| Currently, /sbin/init is protected from unhandled signals by the
+| "current == child_reaper(current)" check in get_signal_to_deliver().
+| This is not enough, we have multiple problems:
+| 
+| 	- this doesn't work for multi-threaded inits, and we can't
+| 	  fix this by simply making this check group-wide.
+| 
+| 	- /sbin/init and kernel threads are not protected from
+| 	  handle_stop_signal(). Minor problem, but not good and
+| 	  allows to "steal" SIGCONT or change ->signal->flags.
+| 
+| 	- /sbin/init is not protected from __group_complete_signal(),
+| 	  sig_fatal() can set SIGNAL_GROUP_EXIT and block exec(), kill
+| 	  sub-threads, set ->group_stop_count, etc.
+| 
+| Also, with support for multiple pid namespaces, we need an ability to
+| actually kill the sub-namespace's init from the parent namespace. In
+| this case it is not possible (without painful and intrusive changes)
+| to make the "should we honor this signal" decision on the receiver's
+| side.
+| 
+| Hopefully this patch (adds 43 bytes to kernel/signal.o) can solve
+| these problems.
+| 
+| Notes:
+| 
+| 	- Blocked signals are never ignored, so init still can receive
+| 	  a pending blocked signal after sigprocmask(SIG_UNBLOCK).
+| 	  Easy to fix, but probably we can ignore this issue.
+| 
+| 	- this patch allows us to simplify de_thread() playing games
+| 	  with pid_ns->child_reaper.
+| 
+| (Side note: the current behaviour of things like force_sig_info_fault()
+|  is not very good, init should not ignore these signals and go to the
+|  endless loop. Exit + panic is imho better, easy to chamge)
+| 
+| Oleg.
+| 
+| --- t/kernel/signal.c~INITSIGS	2007-08-19 14:39:35.000000000 +0400
+| +++ t/kernel/signal.c	2007-08-19 19:00:27.000000000 +0400
+| @@ -39,11 +39,35 @@
+| 
+|  static struct kmem_cache *sigqueue_cachep;
+| 
+| +static int sig_init_ignore(struct task_struct *tsk)
+| +{
+| +	// Currently this check is a bit racy with exec(),
+| +	// we can _simplify_ de_thread and close the race.
+| +	if (likely(!is_init(tsk->group_leader)))
+| +		return 0;
+| +
+| +	// ---------------- Multiple pid namespaces ----------------
+| +	// if (current is from tsk's parent pid_ns && !in_interrupt())
+| +	//	return 0;
+| +
+| +	return 1;
+| +}
+| +
+| +static int sig_task_ignore(struct task_struct *tsk, int sig)
+| +{
+| +	void __user * handler = tsk->sighand->action[sig-1].sa.sa_handler;
+| +
+| +	if (handler == SIG_IGN)
+| +		return 1;
+| +
+| +	if (handler != SIG_DFL)
+| +		return 0;
+| +
+| +	return sig_kernel_ignore(sig) || sig_init_ignore(tsk);
+| +}
+| 
+|  static int sig_ignored(struct task_struct *t, int sig)
+|  {
+| -	void __user * handler;
+| -
+|  	/*
+|  	 * Tracers always want to know about signals..
+|  	 */
+| @@ -58,10 +82,7 @@ static int sig_ignored(struct task_struc
+|  	if (sigismember(&t->blocked, sig))
+|  		return 0;
+| 
+| -	/* Is it explicitly or implicitly ignored? */
+| -	handler = t->sighand->action[sig-1].sa.sa_handler;
+| -	return   handler == SIG_IGN ||
+| -		(handler == SIG_DFL && sig_kernel_ignore(sig));
+| +	return sig_task_ignore(t, sig);
+|  }
+| 
+|  /*
+| @@ -569,6 +590,9 @@ static void handle_stop_signal(int sig, 
+|  		 */
+|  		return;
+| 
+| +	if (sig_init_ignore(p))
+| +		return;
+| +
+|  	if (sig_kernel_stop(sig)) {
+|  		/*
+|  		 * This is a stop signal.  Remove SIGCONT from all queues.
+| @@ -1841,14 +1865,6 @@ relock:
+|  		if (sig_kernel_ignore(signr)) /* Default is nothing. */
+|  			continue;
+| 
+| -		/*
+| -		 * Init of a pid space gets no signals it doesn't want from
+| -		 * within that pid space. It can of course get signals from
+| -		 * its parent pid space.
+| -		 */
+| -		if (current == child_reaper(current))
+| -			continue;
+| -
+|  		if (sig_kernel_stop(signr)) {
+|  			/*
+|  			 * The default action is to stop all threads in
+| @@ -2300,13 +2316,10 @@ int do_sigaction(int sig, struct k_sigac
+|  	k = &current->sighand->action[sig-1];
+| 
+|  	spin_lock_irq(&current->sighand->siglock);
+| -	if (signal_pending(current)) {
+| -		/*
+| -		 * If there might be a fatal signal pending on multiple
+| -		 * threads, make sure we take it before changing the action.
+| -		 */
+| +	if (current->signal->flags & SIGNAL_GROUP_EXIT) {
+|  		spin_unlock_irq(&current->sighand->siglock);
+| -		return -ERESTARTNOINTR;
+| +		/* The return value doesn't matter, SIGKILL is pending */
+| +		return -EINTR;
+|  	}
+| 
+|  	if (oact)
+| @@ -2327,8 +2340,7 @@ int do_sigaction(int sig, struct k_sigac
+|  		 *   (for example, SIGCHLD), shall cause the pending signal to
+|  		 *   be discarded, whether or not it is blocked"
+|  		 */
+| -		if (act->sa.sa_handler == SIG_IGN ||
+| -		   (act->sa.sa_handler == SIG_DFL && sig_kernel_ignore(sig))) {
+| +		if (sig_task_ignore(current, sig)) {
+|  			struct task_struct *t = current;
+|  			sigemptyset(&mask);
+|  			sigaddset(&mask, sig);
