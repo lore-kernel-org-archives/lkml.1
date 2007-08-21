@@ -1,80 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759512AbXHULgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbXHULhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759512AbXHULgg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 07:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbXHULgY
+	id S1757127AbXHULhb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 07:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbXHULhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 07:36:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55556 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752523AbXHULgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 07:36:23 -0400
-Date: Tue, 21 Aug 2007 13:36:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [accounting regression since rc1]  scheduler updates
-Message-ID: <20070821113611.GB2390@elte.hu>
-References: <20070812163225.GA11996@elte.hu> <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu> <200708211017.02998.borntraeger@de.ibm.com> <20070821084243.GB1144@elte.hu> <1187687476.7623.8.camel@localhost> <20070821093434.GB12025@elte.hu> <1187692696.24279.7.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187692696.24279.7.camel@localhost>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4972]
+	Tue, 21 Aug 2007 07:37:24 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:63518 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750815AbXHULhX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 07:37:23 -0400
+Subject: Re: [linux-usb-devel] why was MODALIAS removed from usb kernel
+	events? [u]
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Greg KH <greg@kroah.com>
+Cc: "Andreas Jellinghaus [c]" <aj@ciphirelabs.com>,
+       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+In-Reply-To: <20070821073656.GA6691@kroah.com>
+References: <200708171622.05115.aj@ciphirelabs.com>
+	 <20070821073656.GA6691@kroah.com>
+Content-Type: text/plain
+Date: Tue, 21 Aug 2007 13:41:08 +0200
+Message-Id: <1187696468.2489.10.camel@lov.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18uPka7ZMMxxwjK3+k03fpTVuGstMwsCgGeRJ3
+ 0solV6CtGDxgzxwq9L9+Wu+8iUO29eJ+GDRqdELit11rxVWqrv
+ pKClc5+8Orcdn58jpMiGX+h90vNOmlR
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-
-> > Wouldnt it be more consistent if a virtual box would not show any 
-> > dependency on external load? (i.e. it would slow down all of its 
-> > internal functionality transparently, without exposing it via /proc. 
-> > The only way to observe that would be the TOD interfaces: 
-> > gettimeofday and real-time clock driven POSIX timers. Even 
-> > timer_list could be driven via virtual time - although that would 
-> > probably break user expectations, right?) Or would 
-> > accounting-in-virtual-time break user expectations too? (most of the 
-> > other hypervisors let guests account in virtual time.
+On Tue, 2007-08-21 at 00:36 -0700, Greg KH wrote: 
+> On Fri, Aug 17, 2007 at 04:22:04PM +0200, Andreas Jellinghaus [c] wrote:
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9f8b17e643fe6aa505629658445849397bda4e4f
+> > 
+> > removes MODALIAS from one of the events,
 > 
-> No, imho it is less consistent if the virtual box shows virtual time. 
-> If you look at the top output as a user and it shows that some process 
-> used x% of cpu what does it tell you? [...]
+> Which event?
+> 
+> If you enable CONFIG_USB_DEVICE_CLASS, does everything work the same
+> again?
+> 
+> > this breaks user space applications like openct - everything that
+> > depends on getting an event that has both the DEVICE= path to the usb
+> > device and any information on the interface, so it can check if the
+> > device is something it supports (in case of openct: smart card reader,
+> > i.e. bInterfaceClass 0b).
+> 
+> What specific udev rule are you matching against here that is now
+> broken?
+> 
+> > The text does not mention MODALIAS nor the reason for it's removal.
+> 
+> The reason is we don't need the usb_device class anymore, but we still
+> provide for the compatibility if you have an old distro with old udev
+> rules that is expecting it (only rule we ran into was the one for the
+> usbfs /dev nodes, but there might be more.)
+> 
+> confused,
 
-it tells me something really important: that the virtual box's scheduler 
-gave this task as much CPU time as it could.
+Hmm, I'm a bit confused too. :)
 
-> [...] With virtual cpus next to nothing, you have to normalize the 
-> numbers with the %steal while the process was running. But even then 
-> it still is not a good number because the %steal changes while a 
-> process is running. The only good solution is to use virtual time for 
-> all cputime values.
+The subject says MODALIAS was removed, but I don't think that it ever
+was there for a usb-device event. And sure, it's still there for a
+usb-interface event.
 
-the steal percentage is really a concept one step higher in the 
-scheduling hierarchy. You should be running top (or an equivalent tool) 
-in the _hypervisor_ context if you want to know about how much time each 
-virtual box gets. 'mixing' that information with the 'internal' task 
-statistics of the virtual box is less consistent IMO and leads to the 
-loss of information. (with the 'mixing' method there's no way to tell 
-whether a task got all CPU time it asked for - and _that_ is which an 
-admin is interested in just as much as the time allocation between 
-virtual boxes.)
+Andreas, do I read this right, you miss:
+  DEVICE, PRODUCT, TYPE
+in the usb-interface event, and they only exist in the usb-device event?
 
-so in say KVM you determine the steal percentage by looking at 'top' 
-output in the hypervisor context. (or looking at steal% in the internal 
-top output) Looking at 'top' in the guest tells you everything internal 
-to that guest, without mixing external scheduling information into it.
+And MODALIAS is not what you miss, and the subject of the mail is
+misleading?
 
-	Ingo
+Note:
+DEVICE only exists when USB_DEVICE_CLASS=y, because it unfortunately is
+prefixed with the /proc mount path, which doesn't exist when the /proc
+device node support is not compiled in, so nothing should depend on the
+existence of DEVICE. Most of the recent distros don't mount or configure
+usbfs anymore, but use /dev/bus/usb/ device nodes, which can handle
+access control lists for local users.
+
+Is this patch fixing your problem?
+
+
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: usb: add PRODUCT, TYPE to usb-interface events
+
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+---
+
+ message.c |   24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/drivers/usb/core/message.c b/drivers/usb/core/message.c
+index b6bd05e..3b57d53 100644
+--- a/drivers/usb/core/message.c
++++ b/drivers/usb/core/message.c
+@@ -1358,6 +1358,30 @@ static int usb_if_uevent(struct device *dev, char **envp, int num_envp,
+ 	usb_dev = interface_to_usbdev(intf);
+ 	alt = intf->cur_altsetting;
+ 
++#ifdef CONFIG_USB_DEVICEFS
++	if (add_uevent_var(envp, num_envp, &i,
++			   buffer, buffer_size, &length,
++			   "DEVICE=/proc/bus/usb/%03d/%03d",
++			   usb_dev->bus->busnum, usb_dev->devnum))
++		return -ENOMEM;
++#endif
++
++	if (add_uevent_var(envp, num_envp, &i,
++			   buffer, buffer_size, &length,
++			   "PRODUCT=%x/%x/%x",
++			   le16_to_cpu(usb_dev->descriptor.idVendor),
++			   le16_to_cpu(usb_dev->descriptor.idProduct),
++			   le16_to_cpu(usb_dev->descriptor.bcdDevice)))
++		return -ENOMEM;
++
++	if (add_uevent_var(envp, num_envp, &i,
++			   buffer, buffer_size, &length,
++			   "TYPE=%d/%d/%d",
++			   usb_dev->descriptor.bDeviceClass,
++			   usb_dev->descriptor.bDeviceSubClass,
++			   usb_dev->descriptor.bDeviceProtocol))
++		return -ENOMEM;
++
+ 	if (add_uevent_var(envp, num_envp, &i,
+ 		   buffer, buffer_size, &length,
+ 		   "INTERFACE=%d/%d/%d",
+
