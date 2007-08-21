@@ -1,119 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762075AbXHUG4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762179AbXHUG5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762075AbXHUG4x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 02:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761275AbXHUGyc
+	id S1762179AbXHUG5Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 02:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761303AbXHUGyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:54:32 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:44263 "EHLO
+	Tue, 21 Aug 2007 02:54:39 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:44279 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759991AbXHUGya (ORCPT
+	with ESMTP id S1761280AbXHUGyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:54:30 -0400
-Date: Mon, 20 Aug 2007 23:55:27 -0700
+	Tue, 21 Aug 2007 02:54:38 -0400
+Date: Mon, 20 Aug 2007 23:55:32 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Timo Jantunen <jeti@iki.fi>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Jeff Garzik <jeff@garzik.org>, su henry <henry.su.ati@gmail.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 12/20] forcedeth: fix random hang in forcedeth driver when
-	using netconsole
-Message-ID: <20070821065527.GM5275@kroah.com>
+Subject: [patch 13/20] libata: add ATI SB700 device IDs to AHCI driver
+Message-ID: <20070821065532.GN5275@kroah.com>
 References: <20070821064251.972690753@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="forcedeth-fix-random-hang-in-forcedeth-driver-when-using-netconsole.patch"
+Content-Disposition: inline; filename="libata-add-ati-sb700-device-ids-to-ahci-driver.patch"
 In-Reply-To: <20070821065210.GA5275@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Timo Jantunen <jeti@iki.fi>
+From: su henry <henry.su.ati@gmail.com>
 
-If the forcedeth driver receives too much work in an interrupt, it
-assumes it has a broken hardware with stuck IRQ. It works around the
-problem by disabling interrupts on the nic but makes a printk while
-holding device spinlog - which isn't smart thing to do if you have
-netconsole on the same nic.
+The SATA controller device ID is different according to
+the onchip SATA type set in the system BIOS:
+Device                              Device ID
+SATA in IDE mode             0x4390
+SATA in AHCI mode           0x4391
+SATA in non-raid5 driver     0x4392
+SATA in raid5 driver           0x4393
 
-This patch moves the printk's out of the spinlock protected area.
+Although the device ID is different, they use the same AHCI driver
+.The attached file is the patch for adding these device
+IDs for ATI SB700.
 
-
-Without this patch the machine hangs hard. With this patch everything
-still works even when there is significant increase on CPU usage while
-using the nic.
-
-Signed-off-by: Timo Jantunen <jeti@iki.fi>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: su henry <henry.su.ati@gmail.com>
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- drivers/net/forcedeth.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/ata/ahci.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/drivers/net/forcedeth.c
-+++ b/drivers/net/forcedeth.c
-@@ -3067,8 +3067,8 @@ static irqreturn_t nv_nic_irq(int foo, v
- 				np->nic_poll_irq = np->irqmask;
- 				mod_timer(&np->nic_poll, jiffies + POLL_WAIT);
- 			}
--			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq.\n", dev->name, i);
- 			spin_unlock(&np->lock);
-+			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq.\n", dev->name, i);
- 			break;
- 		}
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -399,7 +399,10 @@ static const struct pci_device_id ahci_p
  
-@@ -3185,8 +3185,8 @@ static irqreturn_t nv_nic_irq_optimized(
- 				np->nic_poll_irq = np->irqmask;
- 				mod_timer(&np->nic_poll, jiffies + POLL_WAIT);
- 			}
--			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq.\n", dev->name, i);
- 			spin_unlock(&np->lock);
-+			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq.\n", dev->name, i);
- 			break;
- 		}
+ 	/* ATI */
+ 	{ PCI_VDEVICE(ATI, 0x4380), board_ahci_sb600 }, /* ATI SB600 */
+-	{ PCI_VDEVICE(ATI, 0x4390), board_ahci_sb600 }, /* ATI SB700 */
++	{ PCI_VDEVICE(ATI, 0x4390), board_ahci_sb600 }, /* ATI SB700 IDE */
++	{ PCI_VDEVICE(ATI, 0x4391), board_ahci_sb600 }, /* ATI SB700 AHCI */
++	{ PCI_VDEVICE(ATI, 0x4392), board_ahci_sb600 }, /* ATI SB700 nraid5 */
++	{ PCI_VDEVICE(ATI, 0x4393), board_ahci_sb600 }, /* ATI SB700 raid5 */
  
-@@ -3232,8 +3232,8 @@ static irqreturn_t nv_nic_irq_tx(int foo
- 				np->nic_poll_irq |= NVREG_IRQ_TX_ALL;
- 				mod_timer(&np->nic_poll, jiffies + POLL_WAIT);
- 			}
--			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq_tx.\n", dev->name, i);
- 			spin_unlock_irqrestore(&np->lock, flags);
-+			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq_tx.\n", dev->name, i);
- 			break;
- 		}
- 
-@@ -3347,8 +3347,8 @@ static irqreturn_t nv_nic_irq_rx(int foo
- 				np->nic_poll_irq |= NVREG_IRQ_RX_ALL;
- 				mod_timer(&np->nic_poll, jiffies + POLL_WAIT);
- 			}
--			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq_rx.\n", dev->name, i);
- 			spin_unlock_irqrestore(&np->lock, flags);
-+			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq_rx.\n", dev->name, i);
- 			break;
- 		}
- 	}
-@@ -3420,8 +3420,8 @@ static irqreturn_t nv_nic_irq_other(int 
- 				np->nic_poll_irq |= NVREG_IRQ_OTHER;
- 				mod_timer(&np->nic_poll, jiffies + POLL_WAIT);
- 			}
--			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq_other.\n", dev->name, i);
- 			spin_unlock_irqrestore(&np->lock, flags);
-+			printk(KERN_DEBUG "%s: too many iterations (%d) in nv_nic_irq_other.\n", dev->name, i);
- 			break;
- 		}
- 
+ 	/* VIA */
+ 	{ PCI_VDEVICE(VIA, 0x3349), board_ahci_vt8251 }, /* VIA VT8251 */
 
 -- 
