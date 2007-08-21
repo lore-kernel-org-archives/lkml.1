@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbXHUVKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757670AbXHUVMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757931AbXHUVKj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 17:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbXHUVKb
+	id S1757670AbXHUVMT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 17:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbXHUVMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 17:10:31 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52308 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753739AbXHUVKb (ORCPT
+	Tue, 21 Aug 2007 17:12:08 -0400
+Received: from mga02.intel.com ([134.134.136.20]:49412 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753523AbXHUVMG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 17:10:31 -0400
-Date: Tue, 21 Aug 2007 14:10:30 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [PATCH] SLUB use cmpxchg_local
-In-Reply-To: <20070821174424.GB8360@Krystal>
-Message-ID: <Pine.LNX.4.64.0708211409370.3082@schroedinger.engr.sgi.com>
-References: <20070820201519.512791382@polymtl.ca> <20070820201822.597720007@polymtl.ca>
- <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com>
- <20070820204126.GA22507@Krystal> <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com>
- <20070820212922.GA27011@Krystal> <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
- <20070820215413.GA28452@Krystal> <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
- <20070821173849.GA8360@Krystal> <20070821174424.GB8360@Krystal>
+	Tue, 21 Aug 2007 17:12:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,291,1183359600"; 
+   d="scan'208";a="281942672"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH][2.6.23-rc2-mm2] small fix for ia64 icache sync patch
+Date: Tue, 21 Aug 2007 14:12:02 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A023B2254@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20070821201507.36641d76.kamezawa.hiroyu@jp.fujitsu.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH][2.6.23-rc2-mm2] small fix for ia64 icache sync patch
+Thread-Index: Acfj5EExdWOpgY1ZT+azIo9x5nKKiAAUpVGg
+References: <20070821201507.36641d76.kamezawa.hiroyu@jp.fujitsu.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "LKML" <linux-kernel@vger.kernel.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, <linux-ia64@vger.kernel.org>
+X-OriginalArrivalTime: 21 Aug 2007 21:12:03.0314 (UTC) FILETIME=[EBC37D20:01C7E437]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Aug 2007, Mathieu Desnoyers wrote:
+> +	if (pte_present(pteval) &&// swap out ?
+> +	    pte_exec(pteval) &&    // flush only new executable page.
+> 	    pte_user(pteval) &&    // ignore kernel page
+> 	    (!pte_present(*ptep) ||// do_no_page or swap in, migration,
+> 		pte_pfn(*ptep) != pte_pfn(pteval))) // do_wp_page(), page copy
 
-> If you are interested in the raw numbers:
-> 
-> The (very basic) test module follows. Make sure you change get_cycles()
-> for get_cycles_sync() if you plan to run this on x86_64.
+David Mosberger was concerned about the increase in code
+size from this inline function.  We can reduce the bloat
+a bit by defining a macro that tests for "present &&
+executable && user-mode" in one go:
 
-Which test is which? Would you be able to format this in a way that we can 
-easily read it?
+#define pte_pux(pte)            ((pte_val(pte) & (_PAGE_P|_PAGE_PL_MASK|_PAGE_AR_RX)) == \
+                                        (_PAGE_P|_PAGE_PL_3|_PAGE_AR_RX))
+
+Perhaps there is a better name than "pte_pux"?  I don't know whether
+the code that this generates is faster, but it is smaller (bloat
+is only 3k instead of 4k).
+
+One last cleanup needed ... don't use C-99/C++ style comments.
+
+-Tony
