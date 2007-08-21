@@ -1,91 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762013AbXHUPvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762615AbXHUPv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762013AbXHUPvG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 11:51:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759522AbXHUPux
+	id S1762615AbXHUPv5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 11:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759895AbXHUPvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 11:50:53 -0400
-Received: from web36609.mail.mud.yahoo.com ([209.191.85.26]:31058 "HELO
-	web36609.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759501AbXHUPuw (ORCPT
+	Tue, 21 Aug 2007 11:51:48 -0400
+Received: from ms-smtp-06.texas.rr.com ([24.93.47.45]:61949 "EHLO
+	ms-smtp-06.texas.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755645AbXHUPvr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 11:50:52 -0400
-X-YMail-OSG: aHWGbHEVM1kO50wso8K2.xvSQAOzyTx8fDXeEk9Lref3qURM8qz6r3zvblR9kr3qzPTgvM9oTg--
-X-RocketYMMF: rancidfat
-Date: Tue, 21 Aug 2007 08:50:48 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
-To: Kyle Moffett <mrmacman_g4@mac.com>, Valdis.Kletnieks@vt.edu
-Cc: casey@schaufler-ca.com, Pavel Machek <pavel@ucw.cz>,
-       linux-security-module@vger.kernel.org,
-       LKML Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <09E2BAC3-B26D-41BD-AE7B-51A59BC21CE4@mac.com>
+	Tue, 21 Aug 2007 11:51:47 -0400
+From: Dave McCracken <dave.mccracken@oracle.com>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
+Date: Tue, 21 Aug 2007 10:51:35 -0500
+User-Agent: KMail/1.9.7
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+References: <20070820215040.937296148@sgi.com>
+In-Reply-To: <20070820215040.937296148@sgi.com>
+Organization: Oracle Corp
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <583405.53562.qm@web36609.mail.mud.yahoo.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200708211051.36569.dave.mccracken@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 20 August 2007, Christoph Lameter wrote:
+> 1. First reclaiming non dirty pages. Dirty pages are deferred until reclaim
+>    has reestablished the high marks. Then all the dirty pages (the laundry)
+>    is written out.
 
---- Kyle Moffett <mrmacman_g4@mac.com> wrote:
+I don't buy it.  What happens when there aren't enough clean pages in the 
+system to achieve the high water mark?  I'm guessing we'd get a quick OOM (as 
+observed by Peter).
 
-> On Aug 19, 2007, at 17:12:41, Valdis.Kletnieks@vt.edu wrote:
-> > On Sat, 18 Aug 2007 01:29:58 EDT, Kyle Moffett said:
-> >> If you can show me a security system other than SELinux which is  
-> >> sufficiently flexible to secure those 2 million lines of code  
-> >> along with the other 50 million lines of code found in various  
-> >> pieces of software on my Debian box then I'll go put on my dunce  
-> >> hat and sit in the corner.
-> >
-> > /me hands Kyle a dunce cap. :)
-> >
-> > Unfortunately, I have to agree that both AppArmor and Smack have at  
-> > least the potential of qualifying as "securing the 2M lines of code".
-> >
-> > The part that Kyle forgot was what most evals these days call the  
-> > "protection profile" - What's the threat model, who are you  
-> > defending against, and just how good a job does it have to do?   
-> > I'll posit that for a computer that is (a) not networked, (b)  
-> > doesn't process sensitive information, and (c) has reasonable  
-> > physical security, a security policy of "return(permitted);" for  
-> > everything may be quite sufficient.
-> 
-> Well, in this case the "box" I want to secure will eventually be  
-> running multi-user X on a multi-level-with-IPsec network.  For that  
-> kind of protection profile, there is presently no substitute for  
-> SELinux with some X11 patches.  AppArmor certainly doesn't meet the  
-> confidentiality requirements (no data labelling), and SMACK has no  
-> way of doing the very tight per-syscall security requirements we have  
-> to meet.
+> 2. Reclaim is essentially complete during the writeout phase. So we remove
+>    PF_MEMALLOC and allow recursive reclaim if we still run into trouble
+>    during writeout.
 
-And what requirements would those be? Seriously, I've done
-Common Criteria and TCSEC evaluations on systems with less
-flexibility and granularity than Smack that included X, NFSv3,
-NIS, clusters, and all sorts of spiffy stuff. I mean, if the
-requirement is anything short of "runs SELinux" I have good
-reason to believe that a Smack based system is up to it.
+You're assuming the system is static and won't allocate new pages behind your 
+back.  We could be back to critically low memory before the write happens.
 
-> I didn't make this clear initially but that is the kind of  
-> system I'm talking about wanting to secure some 50 million lines of  
-> code on.
+More broadly, we need to be proactive about getting dirty pages cleaned before 
+they consume the system.  Deferring the write just makes it harder to keep 
+up.
 
-Cool. SELinux provides one approach to dealing with that, and the
-huge multiuser general purpose machine chuck full of legacy software
-hits the SELinux sweet spot. 
-
-> > (Of course, I also have boxes where "the SELinux reference policy  
-> > with all the MCS extensions plus all the LSPP work" is someplace  
-> > I'm trying to get to).
-> 
-> Well, for some of the systems we distribute, "all the MCS extensions  
-> plus all the LSPP work" is nowhere near enough security; we need full- 
-> fledged multi-level-security, role-based-access-control, and specific  
-> per-daemon MAC restrictions.
-
-Sounds like more of what SELinux is good for.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+Dave McCracken
