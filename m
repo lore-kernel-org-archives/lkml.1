@@ -1,117 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761635AbXHUPHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761844AbXHUPHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761635AbXHUPHG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 11:07:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758716AbXHUPGy
+	id S1761844AbXHUPHz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 11:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760755AbXHUPHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 11:06:54 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:59374 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759349AbXHUPGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 11:06:52 -0400
-Date: Tue, 21 Aug 2007 16:06:50 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dkegel@google.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [RFC 5/7] Laundry handling for direct reclaim
-Message-ID: <20070821150650.GL11329@skynet.ie>
-References: <20070820215040.937296148@sgi.com> <20070820215316.994224842@sgi.com>
+	Tue, 21 Aug 2007 11:07:43 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:10099 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760381AbXHUPHm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 11:07:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=PBHsKHYRu84O36E3UKAopwVR5tMbL3qAMsfuMVORVFMFJw1KK8Z8Y8kv70fFwEJlNUxIPMs90xk6ceU9pJnvIALEGsuzg13xhfpUXngAWezrq+sdqMDXlLaA7PdLTndClpVVvMSMqPbbJbGnIo2822TEOX1U+yUJ/y83KQs3NG4=
+Date: Tue, 21 Aug 2007 23:07:14 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       astarikovskiy@suse.de, len.brown@intel.com,
+       Andrew Morton <akpm@osdl.org>
+Subject: [Git Patch] ACPI: Fix a warning of discarding qualifiers from
+	pointer target type
+Message-ID: <20070821150714.GA7591@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20070821132038.GA22254@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070820215316.994224842@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+In-Reply-To: <20070821132038.GA22254@ff.dom.local>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (20/08/07 14:50), Christoph Lameter didst pronounce:
-> Direct reclaim collects a global laundry list in try_to_free_pages().
-> 
-> Pages are only written back after a reclaim pass is complete.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> ---
->  mm/vmscan.c |   12 +++++++++---
->  1 file changed, 9 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6/mm/vmscan.c
-> ===================================================================
-> --- linux-2.6.orig/mm/vmscan.c	2007-08-19 23:30:15.000000000 -0700
-> +++ linux-2.6/mm/vmscan.c	2007-08-19 23:53:43.000000000 -0700
-> @@ -1099,7 +1099,7 @@ static unsigned long shrink_zone(int pri
->   * scan then give up on it.
->   */
->  static unsigned long shrink_zones(int priority, struct zone **zones,
-> -					struct scan_control *sc)
-> +			struct scan_control *sc, struct list_head *laundry)
->  {
->  	unsigned long nr_reclaimed = 0;
->  	int i;
-> @@ -1121,7 +1121,7 @@ static unsigned long shrink_zones(int pr
->  
->  		sc->all_unreclaimable = 0;
->  
-> -		nr_reclaimed += shrink_zone(priority, zone, sc, NULL);
-> +		nr_reclaimed += shrink_zone(priority, zone, sc, laundry);
->  	}
->  	return nr_reclaimed;
->  }
-> @@ -1156,6 +1156,7 @@ unsigned long try_to_free_pages(struct z
->  		.swappiness = vm_swappiness,
->  		.order = order,
->  	};
-> +	LIST_HEAD(laundry);
 
-Why is the laundry not made part of the scan_control?
+Fix this warning:
 
->  
->  	count_vm_event(ALLOCSTALL);
->  
-> @@ -1170,16 +1171,19 @@ unsigned long try_to_free_pages(struct z
->  	}
->  
->  	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
-> +
->  		sc.nr_scanned = 0;
->  		if (!priority)
->  			disable_swap_token();
-> -		nr_reclaimed += shrink_zones(priority, zones, &sc);
-> +		nr_reclaimed += shrink_zones(priority, zones, &sc, &laundry);
->  		shrink_slab(sc.nr_scanned, gfp_mask, lru_pages);
->  		if (reclaim_state) {
->  			nr_reclaimed += reclaim_state->reclaimed_slab;
->  			reclaim_state->reclaimed_slab = 0;
->  		}
-> +
->  		total_scanned += sc.nr_scanned;
-> +
->  		if (nr_reclaimed >= sc.swap_cluster_max) {
->  			ret = 1;
->  			goto out;
-> @@ -1223,6 +1227,8 @@ out:
->  
->  		zone->prev_priority = priority;
->  	}
-> +	nr_reclaimed += shrink_page_list(&laundry, &sc, NULL);
-> +	release_lru_pages(&laundry);
->  	return ret;
->  }
->  
-> 
-> -- 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+drivers/acpi/ec.c: In function `acpi_ec_ecdt_probe':
+drivers/acpi/ec.c:873: warning: passing arg 1 of `acpi_get_devices' discards qualifiers from pointer target type
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+(I don't know whether this fix hits the real problem.)
+
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+
+---
+ drivers/acpi/ec.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.23-rc3-git3/drivers/acpi/ec.c
+===================================================================
+--- linux-2.6.23-rc3-git3.orig/drivers/acpi/ec.c
++++ linux-2.6.23-rc3-git3/drivers/acpi/ec.c
+@@ -869,8 +869,8 @@ int __init acpi_ec_ecdt_probe(void)
+ 		boot_ec->handle = ACPI_ROOT_OBJECT;
+ 	} else {
+ 		printk(KERN_DEBUG PREFIX "Look up EC in DSDT\n");
+-		status = acpi_get_devices(ec_device_ids[0].id, ec_parse_device,
+-						boot_ec, NULL);
++		status = acpi_get_devices((char *)ec_device_ids[0].id,
++						ec_parse_device, boot_ec, NULL);
+ 		if (ACPI_FAILURE(status))
+ 			goto error;
+ 	}
