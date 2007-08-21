@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759096AbXHUGdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759443AbXHUGhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759096AbXHUGdb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 02:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbXHUGdX
+	id S1759443AbXHUGhH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 02:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbXHUGg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:33:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60138 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755714AbXHUGdW (ORCPT
+	Tue, 21 Aug 2007 02:36:56 -0400
+Received: from smtp122.sbc.mail.re3.yahoo.com ([66.196.96.95]:35980 "HELO
+	smtp122.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752539AbXHUGgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:33:22 -0400
-Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
-From: Arjan van de Ven <arjan@infradead.org>
+	Tue, 21 Aug 2007 02:36:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=sbGc2dYpR5zmncT7ykNYueEuyZ9WVORIjoj3QNSIcGmZtnsQgD8aAf0L/QbCFdM45IwVXKL2OGyt1PMxC+knKyktjjt7V2jEYwEGXKjLNGATliZrFpxvGn3N0Qbde+R44a3ahN0uYHopBemzKwL/rtJEpYFfGQ7K8ID3TDmiLvA=  ;
+X-YMail-OSG: .rEYTSIVM1kAfVYBZEDTxDkTScSDlfYB.UvrYj44HgalhzslyXGsTL5_u6VJt_5fGJiH_80vUw--
+From: David Brownell <david-b@pacbell.net>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Brownell <david-b@pacbell.net>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
+Date: Mon, 20 Aug 2007 23:34:37 -0700
+User-Agent: KMail/1.9.6
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
        linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
        LKML <linux-kernel@vger.kernel.org>,
        "Stuart_Hayes@Dell.com" <Stuart_Hayes@dell.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Daniel Exner <dex@dragonslave.de>
-In-Reply-To: <alpine.LFD.0.999.0708202325350.30176@woody.linux-foundation.org>
-References: <46C098FD.1030601@googlemail.com>
-	 <200708202102.58508.david-b@pacbell.net>
-	 <alpine.LFD.0.999.0708202106290.30176@woody.linux-foundation.org>
-	 <200708202148.45575.david-b@pacbell.net>
-	 <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org>
-	 <1187675488.2676.3.camel@laptopd505.fenrus.org>
-	 <1187676254.2676.6.camel@laptopd505.fenrus.org>
-	 <alpine.LFD.0.999.0708202325350.30176@woody.linux-foundation.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Mon, 20 Aug 2007 23:28:05 -0700
-Message-Id: <1187677685.2676.12.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.90 (2.11.90-1.fc8) 
+References: <46C098FD.1030601@googlemail.com> <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708202255130.30176@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708202255130.30176@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200708202334.38261.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2007-08-20 at 23:26 -0700, Linus Torvalds wrote:
+On Monday 20 August 2007, Linus Torvalds wrote:
 > 
-> On Mon, 20 Aug 2007, Arjan van de Ven wrote:
+> On Mon, 20 Aug 2007, Linus Torvalds wrote:
 > > 
-> > untested patch to add this to cpufreq; this is probably a good idea in
-> > general even if using the latency framework doesn't end up being used
-> > for fixing this regression...
-> > 
-> > 
-> > --- linux-2.6.23-rc2/drivers/cpufreq/cpufreq.c.org	2007-08-20 22:58:32.000000000 -0700
-> > +++ linux-2.6.23-rc2/drivers/cpufreq/cpufreq.c	2007-08-20 23:02:21.000000000 -0700
-> > @@ -1604,6 +1604,12 @@ static int __cpufreq_set_policy(struct c
-> >  	if (ret)
-> >  		goto error_out;
-> >  
-> > +
-> > +	if (system_latency_constraint() < policy->cpuinfo.transition_latency) {
+> > Ok. But in the meantime, I really think we should just revert the code 
+> > that causes a known regression.
 > 
-> That looks broken. "system_latency_constraint()" is in us, but 
-> transition_latency is in ns, afaik.
-> 
-> But adding a "/ 1000" to turn the ns into us, and it migth even work.
+> Side note: one reason I'm interested in this is that my mac mini (now used 
+> by the kids) has had a very flaky USB mouse lately. Is it related? I have 
+> no idea, and probably not, but as a result I'm very interested in any USB 
+> regressions. There's *something* rotten with that mouse, and while it 
+> could be the mouse itself going bad, I think it started happening only 
+> after updating that machine to 2.6.23-rc1.
 
+Try disabling USB_SUSPEND ... the rather aggressive powersave
+mechanism (autosuspend defaulting to always ON) has made lots
+of trouble.  I think that default will change...
 
-eh woops yes indeed.
-Shows me for not testing; I'll do that tomorrow when I'm more awake
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+- Dave
