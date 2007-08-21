@@ -1,90 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758433AbXHULgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759512AbXHULgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758433AbXHULgR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 07:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXHULf7
+	id S1759512AbXHULgg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 07:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbXHULgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 07:35:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59777 "EHLO mx1.redhat.com"
+	Tue, 21 Aug 2007 07:36:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55556 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753748AbXHULf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 07:35:57 -0400
-Date: Tue, 21 Aug 2007 07:35:51 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Timothy Shimmin <tes@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       xfs-oss <xfs@oss.sgi.com>
-Subject: Re: [PATCH 2/4] Fix mainline filesystems to handle ATTR_KILL_ bits
- correctly
-Message-Id: <20070821073551.dac4a5dd.jlayton@redhat.com>
-In-Reply-To: <46CA798C.1020101@sgi.com>
-References: <200708202053.l7KKrMYv017763@dantu.rdu.redhat.com>
-	<46CA798C.1020101@sgi.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752523AbXHULgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 07:36:23 -0400
+Date: Tue, 21 Aug 2007 13:36:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [accounting regression since rc1]  scheduler updates
+Message-ID: <20070821113611.GB2390@elte.hu>
+References: <20070812163225.GA11996@elte.hu> <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu> <200708211017.02998.borntraeger@de.ibm.com> <20070821084243.GB1144@elte.hu> <1187687476.7623.8.camel@localhost> <20070821093434.GB12025@elte.hu> <1187692696.24279.7.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1187692696.24279.7.camel@localhost>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4972]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Aug 2007 15:35:08 +1000
-Timothy Shimmin <tes@sgi.com> wrote:
 
-> Jeff Layton wrote:
-> > This should fix all of the filesystems in the mainline kernels to handle
-> > ATTR_KILL_SUID and ATTR_KILL_SGID correctly. For most of them, this is
-> > just a matter of making sure that they call generic_attrkill early in
-> > the setattr inode op.
-> > 
-> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> > ---
-> >  fs/xfs/linux-2.6/xfs_iops.c               |    5 ++++-
-> > --- a/fs/xfs/linux-2.6/xfs_iops.c
-> > +++ b/fs/xfs/linux-2.6/xfs_iops.c
-> > @@ -651,12 +651,15 @@ xfs_vn_setattr(
-> >  	struct iattr	*attr)
-> >  {
-> >  	struct inode	*inode = dentry->d_inode;
-> > -	unsigned int	ia_valid = attr->ia_valid;
-> > +	unsigned int	ia_valid;
-> >  	bhv_vnode_t	*vp = vn_from_inode(inode);
-> >  	bhv_vattr_t	vattr = { 0 };
-> >  	int		flags = 0;
-> >  	int		error;
-> >  
-> > +	generic_attrkill(inode->i_mode, attr);
-> > +	ia_valid = attr->ia_valid;
-> > +
-> >  	if (ia_valid & ATTR_UID) {
-> >  		vattr.va_mask |= XFS_AT_UID;
-> >  		vattr.va_uid = attr->ia_uid;
+* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+
+> > Wouldnt it be more consistent if a virtual box would not show any 
+> > dependency on external load? (i.e. it would slow down all of its 
+> > internal functionality transparently, without exposing it via /proc. 
+> > The only way to observe that would be the TOD interfaces: 
+> > gettimeofday and real-time clock driven POSIX timers. Even 
+> > timer_list could be driven via virtual time - although that would 
+> > probably break user expectations, right?) Or would 
+> > accounting-in-virtual-time break user expectations too? (most of the 
+> > other hypervisors let guests account in virtual time.
 > 
-> Looks reasonable to me for XFS.
-> Acked-by: Tim Shimmin <tes@sgi.com>
-> 
-> So before, this clearing would happen directly in notify_change()
-> and now this won't happen until notify_change() calls i_op->setattr
-> which for a particular fs it can call generic_attrkill() to do it.
-> So I guess for the cases where i_op->setattr is called outside of
-> via notify_change, we don't normally have ATTR_KILL_SUID/SGID
-> set so that nothing will happen there?
+> No, imho it is less consistent if the virtual box shows virtual time. 
+> If you look at the top output as a user and it shows that some process 
+> used x% of cpu what does it tell you? [...]
 
-Right. If neither ATTR_KILL bit is set then generic_attrkill is a
-noop.
+it tells me something really important: that the virtual box's scheduler 
+gave this task as much CPU time as it could.
 
-> I guess just wondering the effect with having the code on all
-> setattr's. (I'm not familiar with the code path)
-> 
+> [...] With virtual cpus next to nothing, you have to normalize the 
+> numbers with the %steal while the process was running. But even then 
+> it still is not a good number because the %steal changes while a 
+> process is running. The only good solution is to use virtual time for 
+> all cputime values.
 
-These bits are referenced in very few places in the current kernel
-tree -- mostly in the VFS layer. The *only* place I see that they
-actually get interpreted into a mode change is in notify_change. So
-places that call setattr ops w/o going through notify_change are
-not likely to have those bits set.
+the steal percentage is really a concept one step higher in the 
+scheduling hierarchy. You should be running top (or an equivalent tool) 
+in the _hypervisor_ context if you want to know about how much time each 
+virtual box gets. 'mixing' that information with the 'internal' task 
+statistics of the virtual box is less consistent IMO and leads to the 
+loss of information. (with the 'mixing' method there's no way to tell 
+whether a task got all CPU time it asked for - and _that_ is which an 
+admin is interested in just as much as the time allocation between 
+virtual boxes.)
 
-But hypothetically, if a fs did set ATTR_KILL_* and call setattr
-directly, then the setattr would now include a mode change that
-clears setuid or setgid bits where it may not have before.
+so in say KVM you determine the steal percentage by looking at 'top' 
+output in the hypervisor context. (or looking at steal% in the internal 
+top output) Looking at 'top' in the guest tells you everything internal 
+to that guest, without mixing external scheduling information into it.
 
--- 
-Jeff Layton <jlayton@redhat.com>
+	Ingo
