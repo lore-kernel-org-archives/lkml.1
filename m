@@ -1,87 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbXHUM3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758469AbXHUMle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759510AbXHUM3P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 08:29:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbXHUM3A
+	id S1758469AbXHUMle (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 08:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbXHUMl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 08:29:00 -0400
-Received: from iucha.net ([209.98.146.184]:50669 "EHLO mail.iucha.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753463AbXHUM3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 08:29:00 -0400
-Date: Tue, 21 Aug 2007 07:28:59 -0500
-From: Florin Iucha <florin@iucha.net>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: linux-usb-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
-	v2.6.23-rc3-50-g28e8351
-Message-ID: <20070821122859.GF10422@iucha.net>
-References: <20070815133147.GA7124@iucha.net> <Pine.LNX.4.64.0708151647540.2460@twin.jikos.cz> <20070815145313.GC7124@iucha.net> <Pine.LNX.4.64.0708151656070.2460@twin.jikos.cz> <20070821115115.GD10422@iucha.net> <Pine.LNX.4.64.0708211402000.2460@twin.jikos.cz>
+	Tue, 21 Aug 2007 08:41:26 -0400
+Received: from mx1.ciphirelabs.net ([217.72.114.64]:59864 "EHLO
+	mx.dmz.ciphirelabs.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752690AbXHUMlZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 08:41:25 -0400
+From: "Andreas Jellinghaus [c]" <aj@ciphirelabs.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [linux-usb-devel] why was MODALIAS removed from usb kernel events? [u]
+Date: Tue, 21 Aug 2007 14:41:14 +0200
+User-Agent: KMail/1.9.6
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+References: <200708171622.05115.aj@ciphirelabs.com> <20070821073656.GA6691@kroah.com> <1187696468.2489.10.camel@lov.localdomain>
+In-Reply-To: <1187696468.2489.10.camel@lov.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="tMbDGjvJuJijemkf"
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708211402000.2460@twin.jikos.cz>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200708211441.15645.aj@ciphirelabs.com>
+X-Ciphire-Security: plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+thanks, the patch works great!
+would be nice if it could be send to the stable team as well
+(I think a number of distributions want to use 2.6.22 as base
+for there next release, and I would be happy if users had the patch
+in it).
 
---tMbDGjvJuJijemkf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+sorry for creating confusion: initially I thought MODALIAS had been removed,
+as I looked at the event with DEVICE and in 2.6.21 it has MODALIAS= and in 
+2.6.22 it doesn't. that was wrong, I should have looked at the MODALIAS event
+to find out that DEVICE, TYPE and PRODUCT where missing. sorry again.
 
-On Tue, Aug 21, 2007 at 02:04:26PM +0200, Jiri Kosina wrote:
-> > I have enabled USB debugging and I see a bunch (=3D46) of these message=
-s:
->=20
-> >    [  $timestamp] usb 1-9: usb auto-suspend
-> >    [  $timestamp] usb 1-9: usb auto-resume
-> >    [  $timestamp] ehci_hcd 0000:00:02.1: GetStatus port 9 status 001005=
- POWER sig=3Dse0 PE CONNECT
-> >    [  $timestamp] usb 1-9: finish resume
-> > The messages continued to be logged, even after the keyboard has
-> > become unresponsive.
->=20
-> I guess that this is the card reader being suspended and resumed=20
-> afterwards. Do you by any chance see any improvement when you
->=20
-> - rmmod ehci_hcd
+> Andreas, do I read this right, you miss:
+>   DEVICE, PRODUCT, TYPE
+> in the usb-interface event, and they only exist in the usb-device event?
 
-It's built-in.  Should I build it as a module?  This machine has only
-usb 2.0 ports.  If I rmmod it, will my USB keyboard still work?
+yes, in 2.6.21 two events have DEVICE (one of them has also MODALIAS), in 
+2.6.22 one event has DEVICE and PRODUCT and TYPE, the other one MODALIAS,
+no event has both. your patch fixes this, thanks!
 
-[The card reader is one of those that fit into a 3.5" bay, connected
-straight to the motherboard controller, so it's a bit of a pain to
-disconnect.]
+> +#ifdef CONFIG_USB_DEVICEFS
 
-> - disable USB_AUTOSUSPEND
+does this depend on USB_CLASS_DEVICE? i.e. will it break if USB_CLASS_DEVICE
+is turned off? a migration plan / what shall I do so my code still works
+when that is done, would be very nice. and enough time so I can get new
+versions out to the users. so far the kernel was faster and I got bug reports
+about openct not working with 2.6.22 :(
 
-You mean CONFIG_USB_SUSPEND?
-
-florin
-
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
-
---tMbDGjvJuJijemkf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGytqLND0rFCN2b1sRAjGUAJ9ZWv0KWNaQ8PCHOqRmq04B8TRYOACfSZUO
-pQdjhemhdoAixwg4KD6oKM0=
-=gypn
------END PGP SIGNATURE-----
-
---tMbDGjvJuJijemkf--
+Regards, Andreas
