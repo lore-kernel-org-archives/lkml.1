@@ -1,58 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbXHUHeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbXHUHq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760645AbXHUHeE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 03:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbXHUHdx
+	id S1760731AbXHUHq1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 03:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759534AbXHUHp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 03:33:53 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53414 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426AbXHUHdw (ORCPT
+	Tue, 21 Aug 2007 03:45:57 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:42721 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757340AbXHUHpv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 03:33:52 -0400
-Date: Tue, 21 Aug 2007 00:36:56 -0700
-From: Greg KH <greg@kroah.com>
-To: "Andreas Jellinghaus [c]" <aj@ciphirelabs.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] why was MODALIAS removed from usb kernel
-	events? [u]
-Message-ID: <20070821073656.GA6691@kroah.com>
-References: <200708171622.05115.aj@ciphirelabs.com>
+	Tue, 21 Aug 2007 03:45:51 -0400
+Message-ID: <46CA9831.4080309@bull.net>
+Date: Tue, 21 Aug 2007 09:45:53 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708171622.05115.aj@ciphirelabs.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Glauber de Oliveira Costa <glommer@gmail.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, John Stoffel <john@stoffel.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: =?ISO-8859-1?Q?R=E9f=2E_=3A_Re=3A_=5BPATCH_0/4=5D_?=
+ =?ISO-8859-1?Q?Virtual_Machine_Time_Accounting?=
+References: <OF945F7B1F.FF4B4672-ONC125733D.006266E7-C125733D.00626843@frec.bull.fr> <5d6222a80708201334q27fc6cbcr7ce6a9d7147437a2@mail.gmail.com>
+In-Reply-To: <5d6222a80708201334q27fc6cbcr7ce6a9d7147437a2@mail.gmail.com>
+X-Enigmail-Version: 0.94.0.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 21/08/2007 09:51:05,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 21/08/2007 09:51:06,
+	Serialize complete at 21/08/2007 09:51:06
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig4E28FF2019D37A8E3FBFDFA8"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 17, 2007 at 04:22:04PM +0200, Andreas Jellinghaus [c] wrote:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9f8b17e643fe6aa505629658445849397bda4e4f
-> 
-> removes MODALIAS from one of the events,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4E28FF2019D37A8E3FBFDFA8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Which event?
+Glauber de Oliveira Costa wrote:
+>> by doing this at kernel level, we can:
+>> - measure exactly the guest time,
+>> - move this part of system time to user time (as you think it should b=
+e
+>> user time),
+>> - have consistency between system, user and guest time,
+>> - report values in /proc/state and /proc/<pid>/state, at system wide l=
+evel
+>>
+>> I'm not sure we can measure the guest time at the qemu user level.
+>>
+>> Perhaps Rusty can say what he thinks about this ?
+>>
+> Even if we cannot _now_, isn't that an easier, and safer change? (and
+> I don't think we lose anything by design).
 
-If you enable CONFIG_USB_DEVICE_CLASS, does everything work the same
-again?
+Could you explain ? How should I do this ?
+I'm _sure_ it is not easier to do that at qemu level.
 
-> this breaks user space applications like openct - everything that
-> depends on getting an event that has both the DEVICE= path to the usb
-> device and any information on the interface, so it can check if the
-> device is something it supports (in case of openct: smart card reader,
-> i.e. bInterfaceClass 0b).
+I don't like to patch kernel (it is the last thing I do to solve a proble=
+m: I
+know there is always at least one guy to not agree the patch :-P ) but in=
+ this
+case I think this is the best way to do that.
 
-What specific udev rule are you matching against here that is now
-broken?
+I think the virtualization notion should be introduced at the kernel leve=
+l, at
+least in the kernel statistics: it is generic, it can be used by other
+virtualization tools. As I said, until know CPUs have got only two states=
 
-> The text does not mention MODALIAS nor the reason for it's removal.
+reflected in statistics by "user time" and "system time". Since recently,=
+ they
+have introduced a third state, the virtual CPU, that, in my opinion, shou=
+ld be
+also reflected in the CPU statistics as the "guest time".
 
-The reason is we don't need the usb_device class anymore, but we still
-provide for the compatibility if you have an old distro with old udev
-rules that is expecting it (only rule we ran into was the one for the
-usbfs /dev nodes, but there might be more.)
+>=20
+> Although I don't know KVM to a that deep level, I think it should be
+> possible to keep the virtual cpus in different process (or threads),
+> and take the accounting time from there. Perfectly possible to know
+> the time we spent running (user time), and the time the hypervisor
+> spent doing things on our behalf (system time).
 
-confused,
+But we have always user time accounted as system time. CPU stats are wron=
+g if we
+do not modify the kernel. Can you live with wrong statistics ? (yes, I th=
+ink,
+you can, but perhaps someone else not)
 
-greg k-h
+Laurent
+--=20
+------------- Laurent.Vivier@bull.net  --------------
+          "Software is hard" - Donald Knuth
+
+
+--------------enig4E28FF2019D37A8E3FBFDFA8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.7 (GNU/Linux)
+
+iD8DBQFGypg19Kffa9pFVzwRAh/rAJ4gRO+jIoCW3YunaSuWka1NIDRGTACfYcPO
+ITXJR0IHlYzs5DNekLzHEaA=
+=kv8o
+-----END PGP SIGNATURE-----
+
+--------------enig4E28FF2019D37A8E3FBFDFA8--
