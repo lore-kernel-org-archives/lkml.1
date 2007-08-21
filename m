@@ -1,38 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbXHUED6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbXHUEQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbXHUED6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 00:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbXHUEDt
+	id S1753412AbXHUEQk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 00:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbXHUEQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 00:03:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33385 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750742AbXHUEDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 00:03:48 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Arkadiusz Miskiewicz <arekm@maven.pl>, shaohua.li@intel.com
-Subject: Re: resume from ram much slower
-Date: Tue, 21 Aug 2007 00:03:34 -0400
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200708101848.37222.arekm@maven.pl>
-In-Reply-To: <200708101848.37222.arekm@maven.pl>
+	Tue, 21 Aug 2007 00:16:30 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47153 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750808AbXHUEQ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 00:16:29 -0400
+Date: Mon, 20 Aug 2007 21:15:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Stuart_Hayes@Dell.com" <Stuart_Hayes@dell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Exner <dex@dragonslave.de>
+Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
+In-Reply-To: <200708202102.58508.david-b@pacbell.net>
+Message-ID: <alpine.LFD.0.999.0708202106290.30176@woody.linux-foundation.org>
+References: <46C098FD.1030601@googlemail.com> <200708201841.51366.david-b@pacbell.net>
+ <alpine.LFD.0.999.0708201853020.30176@woody.linux-foundation.org>
+ <200708202102.58508.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708210003.34481.lenb@kernel.org>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Starting 1-2 weeks ago I have very long resume from
-> ram times. It takes more than 1 min to resume.
-
-Do you see any difference with "pnpacpi=off"?
-
-thanks,
--Len
 
 
+On Mon, 20 Aug 2007, David Brownell wrote:
+> 
+> MMF basically means the "Transaction Translating" (TT) hub had data
+> for the host, but the host didn't collect it in time ... so that some
+> data was lost.
+> 
+> Unfortunately, that's the type of fault that's especially hard to
+> recover from.
+
+Fair enough. However, it still seems particularly idiotic to
+ - penalize everybody
+ - mix up two totally unrelated areas (cpufreq and USB) for a bug that is 
+   extremely rare and could be handled differently.
+
+For example, if it really ends up being practically impossible to recover 
+from split transaction errors, I would still suggest reverting that horrid 
+commit, and then just black-listing the known-broken EHCI controllers and 
+simply not *do* any split transactions on them. That way there's no 
+complexity.
+
+As far as I know, split transactions aren't required anyway, they are just 
+a performance optimization.
+
+Basically, we not only know that the commit has caused problems, it's 
+fundamentally ugly, fragile, and not very maintainable, and the whole 
+reason for doing it is pretty dubious.
+
+Why not just admit that certain hardware is broken (and the vendor isn't 
+worth even bothering to be polite with, since they try to screw us every 
+chance they get) and cannot reliably do split transactions? Problem 
+solved, no real downside, and nobody will even *notice*.
+
+			Linus
