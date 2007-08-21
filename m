@@ -1,72 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbXHUWch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbXHUWnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756831AbXHUWch (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 18:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbXHUWc1
+	id S1756064AbXHUWnb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 18:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbXHUWnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 18:32:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56991 "EHLO
+	Tue, 21 Aug 2007 18:43:23 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:57700 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751206AbXHUWc1 (ORCPT
+	with ESMTP id S1753736AbXHUWnW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 18:32:27 -0400
-Date: Tue, 21 Aug 2007 15:32:25 -0700 (PDT)
+	Tue, 21 Aug 2007 18:43:22 -0400
+Date: Tue, 21 Aug 2007 15:43:21 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Rik van Riel <riel@redhat.com>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
-       dkegel@google.com, akpm@linux-foundation.org,
-       Nick Piggin <npiggin@suse.de>, ak@suse.de, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
-In-Reply-To: <46CB5C89.2070807@redhat.com>
-Message-ID: <Pine.LNX.4.64.0708211521260.5728@schroedinger.engr.sgi.com>
+In-Reply-To: <1187734144.5463.35.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0708211532560.5728@schroedinger.engr.sgi.com>
 References: <20070820215040.937296148@sgi.com>  <1187692586.6114.211.camel@twins>
-  <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com>
- <1187730812.5463.12.camel@lappy> <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com>
- <46CB5C89.2070807@redhat.com>
+  <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com> 
+ <1187730812.5463.12.camel@lappy>  <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com>
+ <1187734144.5463.35.camel@lappy>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Aug 2007, Rik van Riel wrote:
+On Wed, 22 Aug 2007, Peter Zijlstra wrote:
 
-> Christoph Lameter wrote:
+> Also, all I want is for slab to honour gfp flags like page allocation
+> does, nothing more, nothing less.
 > 
-> > I want general improvements to reclaim to address the issues that you see
-> > and other issues related to reclaim instead of the strange code that makes
-> > PF_MEMALLOC allocs compete for allocations from a single slab and putting
-> > logic into the kernel to decide which allocs to fail. We can reclaim after
-> > all. Its just a matter of finding the right way to do this. 
+> (well, actually slightly less, since I'm only really interrested in the
+> ALLOC_MIN|ALLOC_HIGH|ALLOC_HARDER -> ALLOC_NO_WATERMARKS transition and
+> not all higher ones)
+
+I am still not sure what that brings you. There may be multiple 
+PF_MEMALLOC going on at the same time. On a large system with N cpus
+there may be more than N of these that can steal objects from one another. 
+
+A NUMA system will be shot anyways if memory gets that problematic to 
+handle since the OS cannot effectively place memory if all zones are 
+overallocated so that only a few pages are left.
+
+
+> I want slab to fail when a similar page alloc would fail, no magic.
+
+Yes I know. I do not want allocations to fail but that reclaim occurs in 
+order to avoid failing any allocation. We need provisions that 
+make sure that we never get into such a bad memory situation that would
+cause severe slowless and usually end up in a livelock anyways.
+
+> > > Anonymous pages are a there to stay, and we cannot tell people how to
+> > > use them. So we need some free or freeable pages in order to avoid the
+> > > vm deadlock that arises from all memory dirty.
+> > 
+> > No one is trying to abolish Anonymous pages. Free memory is readily 
+> > available on demand if one calls reclaim. Your scheme introduces complex 
+> > negotiations over a few scraps of memory when large amounts of memory 
+> > would still be readily available if one would do the right thing and call 
+> > into reclaim.
 > 
-> The simplest way of achieving that would be to allow
-> recursion of the page reclaim code, under the condition
-> that the second level call can only reclaim clean pages,
-> while the "outer" call does what the VM does today.
+> This is the thing I contend, there need not be large amounts of memory
+> around. In my test prog the hot code path fits into a single page, the
+> rest can be anonymous.
 
-Yes that is what the precursor to this patchset does.
+Thats a bit extreme.... We need to make sure that there are larger amounts 
+of memory around. Pages are used for all shorts of short term uses (like 
+slab shrinking etc etc.). If memory is that low that a single page matters
+then we are in very bad shape anyways.
 
-See http://marc.info/?l=linux-mm&m=118710207203449&w=2
+> > Sounds like you would like to change the way we handle memory in general 
+> > in the VM? Reclaim (and thus finding freeable pages) is basic to Linux 
+> > memory management.
+> 
+> Not quite, currently we have free pages in the reserves, if you want to
+> replace some (or all) of that by freeable pages then that is a change.
 
-This one did not even come up to the level of the earlier one. Sigh.
+We have free pages primarily to optimize the allocation. Meaning we do not 
+have to run reclaim on every call. We want to use all of memory. The 
+reserves are there for the case that we cannot call into reclaim. The easy 
+solution if that is problematic is to enhance the reclaim to work in the
+critical situations that we care about.
 
-The way forward may be:
 
-1. Like in the earlier patchset allow reentry to reclaim under 
-   PF_MEMALLOC if we are out of all memory.
+> > Sorry I just got into this a short time ago and I may need a few cycles 
+> > to get this all straight. An approach that uses memory instead of 
+> > ignoring available memory is certainly better.
+> 
+> Sure if and when possible. There will always be need to fall back to the
+> reserves.
 
-2. Do the laundry as here but do not write out laundry directly.
-   Instead move laundry to a new lru style list in the zone structure.
-   This will allow the recursive reclaim to also trigger writeout
-   of pages (what this patchset was supposed to accomplish).
+Maybe. But we can certainly avoid that as much as possible which would 
+also increase our ability to use all available memory instead of leaving 
+some of it unused./
 
-3. Perform writeback only from kswapd. Make other threads
-   wait on kswapd if memory is low, we can wait and writeback still
-   has to progress.
+> A bit off-topic, re that reclaim from atomic context:
+> Currently we try to hold spinlocks only for short periods of time so
+> that reclaim can be preempted, if you run all of reclaim from a
+> non-preemptible context you get very large preemption latencies and if
+> done from int context it'd also generate large int latencies.
 
-4. Then allow reclaim of GFP_ATOMIC allocs (see
-   http://marc.info/?l=linux-kernel&m=118710595617696&w=2). Atomic
-   reclaim can then also put pages onto the zone laundry lists from where
-   it is going to be picked up and written out by kswapd ASAP. This one
-   may be tricky so maybe keep this separate.
+If you call into the page allocator from an interrupt context then you are 
+already in bad shape since we may check pcps lists and then potentially 
+have to traverse the zonelists and check all sorts of things. If we 
+would implement atomic reclaim then the reserves may become a latency 
+optimizations. At least we will not fail anymore if the reserves are out.
 
