@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbXHUKUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755751AbXHUKZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756501AbXHUKUs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 06:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbXHUKUl
+	id S1755751AbXHUKZp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 06:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbXHUKZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 06:20:41 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52131 "EHLO mx2.mail.elte.hu"
+	Tue, 21 Aug 2007 06:25:38 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:46417 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753534AbXHUKUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 06:20:40 -0400
-Date: Tue, 21 Aug 2007 12:20:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [accounting regression since rc1]  scheduler updates
-Message-ID: <20070821102023.GA24111@elte.hu>
-References: <20070812163225.GA11996@elte.hu> <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu> <1187629438.8541.40.camel@localhost> <20070820180810.GA25160@elte.hu> <p73lkc5zl2m.fsf@bingen.suse.de> <20070821070922.GA16695@elte.hu> <20070821100717.GA692@one.firstfloor.org>
+	id S1751389AbXHUKZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 06:25:37 -0400
+Date: Tue, 21 Aug 2007 11:25:35 +0100
+To: Andi Kleen <ak@suse.de>
+Cc: Christoph Lameter <clameter@sgi.com>, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 6/6] Do not use FASTCALL for __alloc_pages_nodemask()
+Message-ID: <20070821102535.GF29794@skynet.ie>
+References: <20070817201647.14792.2690.sendpatchset@skynet.skynet.ie> <20070817201848.14792.58117.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0708171406520.9635@schroedinger.engr.sgi.com> <200708181451.47219.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070821100717.GA692@one.firstfloor.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.0.3
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.2358]
+In-Reply-To: <200708181451.47219.ak@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andi Kleen <andi@firstfloor.org> wrote:
-
-> On Tue, Aug 21, 2007 at 09:09:22AM +0200, Ingo Molnar wrote:
+On (18/08/07 14:51), Andi Kleen didst pronounce:
+> On Friday 17 August 2007 23:07:33 Christoph Lameter wrote:
+> > On Fri, 17 Aug 2007, Mel Gorman wrote:
 > > 
-> > * Andi Kleen <andi@firstfloor.org> wrote:
+> > > Opinions as to why FASTCALL breaks on one machine are welcome.
 > > 
-> > > You should just be using idle notifiers instead instead of adding 
-> > > more and more custom hooks (like NOHZ has already) x86-64 still 
-> > > has them and there is a old patch around to add them to i386.
-> > 
-> > these are specially placed callbacks that we want to call from 
-> > certain ACPI codepaths but not from all of them.
+> > Could we get rid of FASTCALL? AFAIK the compiler should automatically 
+> > choose the right calling convention?
 > 
-> Because you believe TSC only stops in C2 and C3? That's not correct on 
-> all systems.
+> It was a nop for some time because register parameters are always enabled
+> on i386 and AFAIK no other architectures ever used it. Some out of tree
+> trees some to disable register parameters though, but that's not 
+> really a concern.
+> 
 
-i know there are some incredibly broken (but rare) boxes where the bios 
-will report it only knows C1 and do C2? Is that the case you are 
-referring to, or is there something else too?
+You're right. It now makes even less sense why it was a PPC64 machine that
+exhibited the problem. It should have made no difference at all.
 
-	Ingo
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
