@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbXHUU7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbXHUU7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755200AbXHUU7e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 16:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbXHUU7Z
+	id S1757235AbXHUU7t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 16:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbXHUU71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 21 Aug 2007 16:59:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51573 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752794AbXHUU7Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 21 Aug 2007 16:59:25 -0400
-Received: from gate.crashing.org ([63.228.1.57]:41937 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752066AbXHUU7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 16:59:23 -0400
-In-Reply-To: <5d6222a80708211341s63f8c1eau922f018e66db49f4@mail.gmail.com>
-References: <20070821132038.GA22254@ff.dom.local> <20070821093103.3c097d4a.randy.dunlap@oracle.com> <20070821173550.GC30705@stusta.de> <20070821182505.GA20968@puku.stupidest.org> <5d6222a80708211341s63f8c1eau922f018e66db49f4@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <ea37408ece5ef8d2382ad551f74912eb@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, "Jarek Poplawski" <jarkao2@o2.pl>,
-       "Adrian Bunk" <bunk@kernel.org>, "Chris Wedgwood" <cw@f00f.org>,
-       linux-arch@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: RFC: drop support for gcc < 4.0
-Date: Tue, 21 Aug 2007 22:56:52 +0200
-To: "Glauber de Oliveira Costa" <glommer@gmail.com>
-X-Mailer: Apple Mail (2.623)
+Date: Tue, 21 Aug 2007 13:59:24 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Rik van Riel <riel@redhat.com>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
+In-Reply-To: <46CB01B7.3050201@redhat.com>
+Message-ID: <Pine.LNX.4.64.0708211355430.3082@schroedinger.engr.sgi.com>
+References: <20070820215040.937296148@sgi.com> <46CB01B7.3050201@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Last time I tried a mips build, it would fail the compile unless I was
-> using _exactly_ 3.4.4 (I didn't tried older versions, but did try
-> 3.4.6, for ex.).
+On Tue, 21 Aug 2007, Rik van Riel wrote:
 
-If 3.4.4 works where 3.4.6 doesn't, you should report this as a
-bug; either here, or to the GCC team (but please be aware that the
-3.4 series isn't supported anymore), or to whoever built that
-compiler for you.
+> Christoph Lameter wrote:
+> 
+> > 1. First reclaiming non dirty pages. Dirty pages are deferred until reclaim
+> >    has reestablished the high marks. Then all the dirty pages (the laundry)
+> >    is written out.
+> 
+> That sounds like a horrendously bad idea.  While one process
+> is busy freeing all the non dirty pages, other processes can
+> allocate those pages, leaving you with no memory to free up
+> the dirty pages!
 
-> So I also think the 3.4 series will still have to be
-> around for a while.
+What is preventing that from occurring right now? If the dirty pags are 
+aligned in the right way you can have the exact same situation.
+ 
+> Also, writing out all the dirty pages at once seems like it
+> could hurt latency quite badly, especially on large systems.
 
-Huh?  3.4 doesn't work for you, so that's why it should stay
-a supported compiler?
-
-
-Segher
+We only write back the dirty pages that we are about to reclaim not all of 
+them. The bigger batching occurs if we go through multiple priorities. 
+Plus writeback in the sync reclaim case is stopped if the device becomes 
+contended anyways.
 
