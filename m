@@ -1,57 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761983AbXHUSoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761080AbXHUSpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761983AbXHUSoe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 14:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758593AbXHUSo1
+	id S1761080AbXHUSpR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 14:45:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760071AbXHUSo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 14:44:27 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:57895 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758393AbXHUSo0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 14:44:26 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Software based ECC ?
-To: Folkert van Heusden <folkert@vanheusden.com>, Valdis.Kletnieks@vt.edu,
-       roland <devzero@web.de>, linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Tue, 21 Aug 2007 20:44:01 +0200
-References: <8QK3R-kc-9@gated-at.bofh.it> <8QSuw-4J2-9@gated-at.bofh.it> <8RoXy-3NJ-13@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1INYht-0000Xw-Ay@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19PA7WmRTDCs3JW2++YGIGogQN4tkOX3JWfdPC
- T9tA7RrZo4U5zpLeMW36Lzrz8vh4Nh+YP38/TuGAmsaPNi/a1Y
- jFiG00FIybqlAkmQR7BzQ==
+	Tue, 21 Aug 2007 14:44:59 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:55674 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758593AbXHUSo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 14:44:58 -0400
+Date: Tue, 21 Aug 2007 22:45:16 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: taoyue <yue.tao@windriver.com>
+Cc: linux-kernel@vger.kernel.org, Mark Zhan <rongkai.zhan@windriver.com>,
+       Bruce Ashfield <bruce.ashfield@windriver.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [BUG]: posix timer: slab error 'double free'
+Message-ID: <20070821184516.GA139@tv-sign.ru>
+References: <46CB0BE8.8010903@windriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46CB0BE8.8010903@windriver.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Folkert van Heusden <folkert@vanheusden.com> wrote:
+(maintainers cc'ed)
 
->> > http://pdos.csail.mit.edu/papers/softecc:ddopson-meng
-softecc_ddopson-meng.pdf
->> > "SoftECC : A System for Software Memory Integrity Checking"
->> 
->> Personally, I'd recommend just shelling out the bucks for hardware ECC if
->> the reliability matters.
+On 08/21, taoyue wrote:
+>
+> I write a simple stress test program for posix timer subsystem, to 
+> reproduce the problem in the lastest mainline kernel.
+> My test program creates 200 threads, and each thread does the following job:
+>
+> Please see my test program in the attachemnt "posix_timer_test.c". You 
+> can compile my test program via the following command line:
+
+Now we have a testcase. Great, thanks a lot!
+
+Unfortunately, I can't use it because my /lib/libc-2.3.3.so doesn't implement
+SIGEV_THREAD (this is a user-space thing).
+
+However,
+
+> [<c0103941>] show_trace_log_lvl+0x1a/0x30
+> [<c0104593>] show_trace+0x12/0x14
+> [<c01045ab>] dump_stack+0x16/0x18
+> [<c015637b>] __slab_error+0x26/0x28
+> [<c0156bbf>] cache_free_debugcheck+0x1d9/0x298
+> [<c0156eaa>] kmem_cache_free+0x66/0xb5
+> [<c0122f4d>] __sigqueue_free+0x2f/0x32
+> [<c0123147>] __dequeue_signal+0xdc/0x174
+> [<c0124960>] dequeue_signal+0xbb/0x149
+> [<c012569e>] sys_rt_sigtimedwait+0x7f/0x240
+> [<c01029e6>] syscall_call+0x7/0xb
+
+This is very nice trace, which says loudly that sigqueue_free() is racy
+wrt collect_signal(). Very old bug, very small window.
+
+I'll try to send the "right" fix tomorrow after sleep, but in the meanwhile,
+could you please try the patch at the end?
+
+(I am _not_ sure this can explain all problems you were seeing, though).
+
+> And I also apply the four patches from Oleg Nesterov from lkml:
 > 
-> a question and an idea: Q: is ecc guaranteed to detect all bitflips?
+> http://lkm.org/lkml/2007/8/12/193
+> http://lkm.org/lkml/2007/8/12/194
+> http://lkm.org/lkml/2007/8/12/195
+> http://lkm.org/lkml/2007/8/12/196
+         ^^^
+        (should be lkml)
 
-It's guaranteed not to.
+Please drop them, except the first one. They have nothing to do with
+these problems, and in fact you apllied the wrong versions.
 
-Having n extra bits, you can detect n-bit-flips and correct n/2-bit-flips
-(provided you use an optimal code).
+Thanks!
 
-These extra bits can flip, too, so if you have m >= 1 data bits and any
-finite number n of extra bits, it's possible to have an undetectable
-n+1-bit-flip.
--- 
-If you can't remember, then the claymore IS pointed at you. 
+Oleg.
 
-Friß, Spammer: W@2fzbe.7eggert.dyndns.org k@-.7eggert.dyndns.org
- Rtc@Ytzq.7eggert.dyndns.org 9qKSiPo@ZesTis.7eggert.dyndns.org
+--- t/kernel/signal.c~	2007-08-21 22:29:25.000000000 +0400
++++ t/kernel/signal.c	2007-08-21 22:30:05.000000000 +0400
+@@ -1305,7 +1305,7 @@ void sigqueue_free(struct sigqueue *q)
+ 	 * If the signal is still pending remove it from the
+ 	 * pending queue.
+ 	 */
+-	if (unlikely(!list_empty(&q->list))) {
++	if (1) {
+ 		spinlock_t *lock = &current->sighand->siglock;
+ 		read_lock(&tasklist_lock);
+ 		spin_lock_irqsave(lock, flags);
+
