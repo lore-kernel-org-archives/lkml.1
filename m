@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757582AbXHUW3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbXHUWch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757582AbXHUW3d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 18:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbXHUW3Y
+	id S1756831AbXHUWch (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 18:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbXHUWc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 18:29:24 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:39058 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752631AbXHUW3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 18:29:23 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch] add some Blackfin specific checks to checkpatch.pl
-Date: Tue, 21 Aug 2007 18:29:59 -0400
-User-Agent: KMail/1.9.7
-Cc: LKML <linux-kernel@vger.kernel.org>, bryan.wu@analog.com, apw@shadowen.org
+	Tue, 21 Aug 2007 18:32:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56991 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751206AbXHUWc1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 18:32:27 -0400
+Date: Tue, 21 Aug 2007 15:32:25 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Rik van Riel <riel@redhat.com>
+cc: Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
+       dkegel@google.com, akpm@linux-foundation.org,
+       Nick Piggin <npiggin@suse.de>, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
+In-Reply-To: <46CB5C89.2070807@redhat.com>
+Message-ID: <Pine.LNX.4.64.0708211521260.5728@schroedinger.engr.sgi.com>
+References: <20070820215040.937296148@sgi.com>  <1187692586.6114.211.camel@twins>
+  <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com>
+ <1187730812.5463.12.camel@lappy> <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com>
+ <46CB5C89.2070807@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708211829.59975.vapier@gentoo.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check for a few common errors in Blackfin-specific code wrt MMR loading in
-assembly and doing core/system syncs.
+On Tue, 21 Aug 2007, Rik van Riel wrote:
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-CC: Bryan Wu <bryan.wu@analog.com>
-CC: Andy Whitcroft <apw@shadowen.org>
----
- scripts/checkpatch.pl |   20 ++++++++++++++++++++
- 1 files changed, 20 insertions(+), 0 deletions(-)
+> Christoph Lameter wrote:
+> 
+> > I want general improvements to reclaim to address the issues that you see
+> > and other issues related to reclaim instead of the strange code that makes
+> > PF_MEMALLOC allocs compete for allocations from a single slab and putting
+> > logic into the kernel to decide which allocs to fail. We can reclaim after
+> > all. Its just a matter of finding the right way to do this. 
+> 
+> The simplest way of achieving that would be to allow
+> recursion of the page reclaim code, under the condition
+> that the second level call can only reclaim clean pages,
+> while the "outer" call does what the VM does today.
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index dae7d30..ead9675 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -486,9 +486,29 @@ sub process {
- 			WARN("line over 80 characters\n" . $herecurr);
- 		}
- 
-+# Blackfin: use hi/lo macros
-+		if ($line =~ /\.[lL][[:space:]]*=.*&[[:space:]]*0x[fF][fF][fF][fF]/) {
-+			my $herevet = "$here\n" . cat_vet($line) . "\n";
-+			ERROR("use the LO() macro, not (... & 0xFFFF)\n" . $herevet);
-+		}
-+		if ($line =~ /\.[hH][[:space:]]*=.*>>[[:space:]]*16/) {
-+			my $herevet = "$here\n" . cat_vet($line) . "\n";
-+			ERROR("use the HI() macro, not (... >> 16)\n" . $herevet);
-+		}
-+
- # check we are in a valid source file *.[hc] if not then ignore this hunk
- 		next if ($realfile !~ /\.[hc]$/);
- 
-+# Blackfin: don't use __builtin_bfin_[cs]sync
-+		if ($line =~ /__builtin_bfin_csync/) {
-+			my $herevet = "$here\n" . cat_vet($line) . "\n";
-+			ERROR("use the CSYNC() macro in asm/blackfin.h\n" . $herevet);
-+		}
-+		if ($line =~ /__builtin_bfin_ssync/) {
-+			my $herevet = "$here\n" . cat_vet($line) . "\n";
-+			ERROR("use the SSYNC() macro in asm/blackfin.h\n" . $herevet);
-+		}
-+
- # at the beginning of a line any tabs must come first and anything
- # more than 8 must use tabs.
- 		if ($line=~/^\+\s* \t\s*\S/ or $line=~/^\+\s*        \s*/) {
--- 
-1.5.3.rc5
+Yes that is what the precursor to this patchset does.
+
+See http://marc.info/?l=linux-mm&m=118710207203449&w=2
+
+This one did not even come up to the level of the earlier one. Sigh.
+
+The way forward may be:
+
+1. Like in the earlier patchset allow reentry to reclaim under 
+   PF_MEMALLOC if we are out of all memory.
+
+2. Do the laundry as here but do not write out laundry directly.
+   Instead move laundry to a new lru style list in the zone structure.
+   This will allow the recursive reclaim to also trigger writeout
+   of pages (what this patchset was supposed to accomplish).
+
+3. Perform writeback only from kswapd. Make other threads
+   wait on kswapd if memory is low, we can wait and writeback still
+   has to progress.
+
+4. Then allow reclaim of GFP_ATOMIC allocs (see
+   http://marc.info/?l=linux-kernel&m=118710595617696&w=2). Atomic
+   reclaim can then also put pages onto the zone laundry lists from where
+   it is going to be picked up and written out by kswapd ASAP. This one
+   may be tricky so maybe keep this separate.
+
