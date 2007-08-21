@@ -1,68 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758433AbXHULa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758433AbXHULgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758433AbXHULa7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 07:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbXHULav
+	id S1758433AbXHULgR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 07:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXHULf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 07:30:51 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50081 "EHLO mx2.mail.elte.hu"
+	Tue, 21 Aug 2007 07:35:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59777 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752394AbXHULav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 07:30:51 -0400
-Date: Tue, 21 Aug 2007 13:30:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [accounting regression since rc1]  scheduler updates
-Message-ID: <20070821113037.GA2390@elte.hu>
-References: <20070812163225.GA11996@elte.hu> <200708211243.15223.borntraeger@de.ibm.com> <20070821111544.GA32064@elte.hu> <200708211324.13442.borntraeger@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708211324.13442.borntraeger@de.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4806]
+	id S1753748AbXHULf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 07:35:57 -0400
+Date: Tue, 21 Aug 2007 07:35:51 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Timothy Shimmin <tes@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       xfs-oss <xfs@oss.sgi.com>
+Subject: Re: [PATCH 2/4] Fix mainline filesystems to handle ATTR_KILL_ bits
+ correctly
+Message-Id: <20070821073551.dac4a5dd.jlayton@redhat.com>
+In-Reply-To: <46CA798C.1020101@sgi.com>
+References: <200708202053.l7KKrMYv017763@dantu.rdu.redhat.com>
+	<46CA798C.1020101@sgi.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 21 Aug 2007 15:35:08 +1000
+Timothy Shimmin <tes@sgi.com> wrote:
 
-* Christian Borntraeger <borntraeger@de.ibm.com> wrote:
-
-> Am Dienstag, 21. August 2007 schrieb Ingo Molnar:
-> > you mean to revert b27f03d4bd? I'd really like to see this fixed for 
-> > real for s390 + CONFIG_VIRT_CPU_ACCOUNTING=y. (which seems to be the 
-> > only case affected)
+> Jeff Layton wrote:
+> > This should fix all of the filesystems in the mainline kernels to handle
+> > ATTR_KILL_SUID and ATTR_KILL_SGID correctly. For most of them, this is
+> > just a matter of making sure that they call generic_attrkill early in
+> > the setattr inode op.
+> > 
+> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > ---
+> >  fs/xfs/linux-2.6/xfs_iops.c               |    5 ++++-
+> > --- a/fs/xfs/linux-2.6/xfs_iops.c
+> > +++ b/fs/xfs/linux-2.6/xfs_iops.c
+> > @@ -651,12 +651,15 @@ xfs_vn_setattr(
+> >  	struct iattr	*attr)
+> >  {
+> >  	struct inode	*inode = dentry->d_inode;
+> > -	unsigned int	ia_valid = attr->ia_valid;
+> > +	unsigned int	ia_valid;
+> >  	bhv_vnode_t	*vp = vn_from_inode(inode);
+> >  	bhv_vattr_t	vattr = { 0 };
+> >  	int		flags = 0;
+> >  	int		error;
+> >  
+> > +	generic_attrkill(inode->i_mode, attr);
+> > +	ia_valid = attr->ia_valid;
+> > +
+> >  	if (ia_valid & ATTR_UID) {
+> >  		vattr.va_mask |= XFS_AT_UID;
+> >  		vattr.va_uid = attr->ia_uid;
 > 
-> Not a complete revert, but an ifdef-workaround. I wrote this patch last week 
-> and you were on cc:
-> http://marc.info/?l=linux-mm-commits&m=118737949222362&w=2
+> Looks reasonable to me for XFS.
+> Acked-by: Tim Shimmin <tes@sgi.com>
 > 
-> This patch should fix s390 and let everybody else use your new code. 
-> If you are conviced that we get a better solution before 2.6.23 hits 
-> the street, thats fine with me.
+> So before, this clearing would happen directly in notify_change()
+> and now this won't happen until notify_change() calls i_op->setattr
+> which for a particular fs it can call generic_attrkill() to do it.
+> So I guess for the cases where i_op->setattr is called outside of
+> via notify_change, we don't normally have ATTR_KILL_SUID/SGID
+> set so that nothing will happen there?
 
-what do you think about the rq_clock() #ifdef i did in the previous mail 
-plus you making sched_clock() virtual? That way you can keep 
-scheduler_tick() driven by real-time, although that generally will cause 
-artifacts with SMP load-balancing too. (that was true in the past too)
+Right. If neither ATTR_KILL bit is set then generic_attrkill is a
+noop.
 
-but i dont mind your patch either - it's really the architecture's 
-choice how visible it wants to make external load to the task stats of 
-its virtual machines. I think it is more logical to say that 100% CPU 
-time displayed in 'top' means that the task got all the CPU time it 
-asked for from the virtual machine. (and if you are curious about how 
-much time was stolen from the virtual box altogether you look at the 
-stolen-time stats in isolation.)
+> I guess just wondering the effect with having the code on all
+> setattr's. (I'm not familiar with the code path)
+> 
 
-	Ingo
+These bits are referenced in very few places in the current kernel
+tree -- mostly in the VFS layer. The *only* place I see that they
+actually get interpreted into a mode change is in notify_change. So
+places that call setattr ops w/o going through notify_change are
+not likely to have those bits set.
+
+But hypothetically, if a fs did set ATTR_KILL_* and call setattr
+directly, then the setattr would now include a mode change that
+clears setuid or setgid bits where it may not have before.
+
+-- 
+Jeff Layton <jlayton@redhat.com>
