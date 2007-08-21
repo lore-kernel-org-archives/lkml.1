@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759022AbXHUG2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbXHUGaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759022AbXHUG2p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 02:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbXHUG2j
+	id S1758845AbXHUGaY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 02:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbXHUGaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:28:39 -0400
-Received: from nn7.de ([85.214.94.156]:44890 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753860AbXHUG2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:28:38 -0400
-Subject: Bad pte = e900b50d, process = ???
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
+	Tue, 21 Aug 2007 02:30:11 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60113 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753909AbXHUGaI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 02:30:08 -0400
+Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Brownell <david-b@pacbell.net>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Stuart_Hayes@Dell.com" <Stuart_Hayes@dell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Exner <dex@dragonslave.de>
+In-Reply-To: <alpine.LFD.0.999.0708202316430.30176@woody.linux-foundation.org>
+References: <46C098FD.1030601@googlemail.com>
+	 <200708202102.58508.david-b@pacbell.net>
+	 <alpine.LFD.0.999.0708202106290.30176@woody.linux-foundation.org>
+	 <200708202148.45575.david-b@pacbell.net>
+	 <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org>
+	 <1187675488.2676.3.camel@laptopd505.fenrus.org>
+	 <alpine.LFD.0.999.0708202316430.30176@woody.linux-foundation.org>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 21 Aug 2007 08:18:41 +0200
-Message-Id: <1187677121.18257.15.camel@localhost>
+Organization: Intel International BV
+Date: Mon, 20 Aug 2007 23:24:47 -0700
+Message-Id: <1187677487.2676.10.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+X-Mailer: Evolution 2.11.90 (2.11.90-1.fc8) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear all,
 
-I suddenly got flodded with
+On Mon, 2007-08-20 at 23:25 -0700, Linus Torvalds wrote:
 
-Bad pte = e900b50d, process = ???, vm_flags = 100173, vaddr = bfc87ee2
- [<c0146ae9>] vm_normal_page+0x3e/0x53
- [<c0146f6a>] follow_page+0x90/0x147
- [<c01483d3>] get_user_pages+0x20f/0x261
- [<c0148e7c>] access_process_vm+0x7e/0x163
- [<c014a8af>] vma_merge+0x171/0x17f
- [<c0189509>] proc_pid_cmdline+0x57/0xe7
- [<c0189f73>] proc_info_read+0x4a/0x9c
- [<c0189f29>] proc_info_read+0x0/0x9c
- [<c0157a56>] vfs_read+0xa6/0x128
- [<c0157dc0>] sys_read+0x41/0x67
- [<c0103ce6>] syscall_call+0x7/0xb
- =======================
+> Do we actually have the latency information for these things? Especially 
+> since I assume a number of people use the specialized direct-hw-access 
+> cpufreq drivers..
+> 
+> I realize that we *have* "transition_latency" at the cpufreq layer, and it 
+> is supposed to be in ns, but I wonder how likely it is to bear any 
+> relationship to reality, considering that I don't think it's really used 
+> for anything.. (yeah, it affects the heuristics, but I don't think it has 
+> any _hard_ meaning, so I'd worry that it's not necessarily something that 
+> people have tried to make accurate).
 
-until the machine become unresponsive... 
+trusting the bios to be accurate for all machines is generally a ...
+well... it's like trusting politicians in election week.
 
-Has anyone seen this before/what are the reasons for this ?
+But it's sort of the best we got; at the same time, what are the odds
+that the time is more than an order of magnitude off? if the latency of
+the cpu is so large that the requirement ehci puts in is orders of
+magnitude more strict, a bit inaccurate data from the bios doesn't
+matter all that much. And worst case we make a table with quirks somehow
+(probably on cpu vendor/model I suppose)
 
-This is on kernel 2.6.22.1...
-
-Soeren
 -- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
