@@ -1,103 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbXHUT7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbXHUUAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752524AbXHUT7z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 15:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbXHUT7p
+	id S1752891AbXHUUAk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 16:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXHUUAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 15:59:45 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:40403 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbXHUT7o (ORCPT
+	Tue, 21 Aug 2007 16:00:32 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:42664 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751053AbXHUUAb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 15:59:44 -0400
-Date: Tue, 21 Aug 2007 13:05:15 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: akepner@sgi.com
-Cc: Jes Sorensen <jes@sgi.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       rdreier@cisco.com, linux-ia64 <linux-ia64@vger.kernel.org>,
-       James.Bottomley@HansenPartnership.com
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-Message-Id: <20070821130515.6e745b17.randy.dunlap@oracle.com>
-In-Reply-To: <20070821193522.GD5592@sgi.com>
-References: <20070818002746.GU1813@sgi.com>
-	<46C94FD5.6000006@sgi.com>
-	<20070821193522.GD5592@sgi.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 21 Aug 2007 16:00:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Q3e7jG93OVcGtlXjX+afXbpziIP0xkrEldBYGwEWnHdc8fD72r4wNOoKoojQAEgcd7YVTcF7cGpg6UpnAVf0ZJmoYUWeZtwIJ8gbr5jiM5HWMkxlLoXS3g6DaoZKsDPNv1prCbSRN4xwpTOWt1fHtGVqHkmc9wZj9zh7aFZC70Y=
+Message-ID: <5dc6fd9e0708211300p6a9e4c8o911e812293538f4c@mail.gmail.com>
+Date: Tue, 21 Aug 2007 13:00:30 -0700
+From: "Hex Star" <hexstar@gmail.com>
+To: "=?ISO-8859-1?Q?Ismail_D=F6nmez?=" <ismail@pardus.org.tr>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Trouble booting with new 2.6.22.3 kernel
+In-Reply-To: <200708212256.59281.ismail@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <5dc6fd9e0708211219p679116a4n48765e72e2253ddc@mail.gmail.com>
+	 <5dc6fd9e0708211226k3f931579x6f8b3ab275f93c35@mail.gmail.com>
+	 <5dc6fd9e0708211227k22f9e214vd8132913214716b3@mail.gmail.com>
+	 <200708212256.59281.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Aug 2007 12:35:22 -0700 akepner@sgi.com wrote:
+On 8/21/07, Ismail Dönmez <ismail@pardus.org.tr> wrote:
+> Well also the filesystem module for the root fs ( / ) should not be a module
+> as you won't be able mount root at startup hence causing a panic.
 
-> 
-> > I'm a little concerned about changing the API for the dma_ foo
-> > functions, which are defined cross platform. If you want to change
-> > that, I think it will require updating the documentation explaining
-> > it.....
-> 
-> What do you think of the following? (And is there anyone else 
-> I should be cc-ing for review?)
+Thanks, I have made sure that it is built in along with ata_piix
+...however now I get this error:
 
-probably the document's author (cc added)
+[ 24.891879] ata_piix 0000:00:1f.2:invalid map value 0
 
+But why do I get this error, if I run this script (which shows the
+modules my system currently relies on):
 
-> Document semantics of dma_flags_set_dmaflush()
-> 
-> Signed-off-by: Arthur Kepner <akepner@sgi.com>
-> --
->  DMA-API.txt |   22 ++++++++++++++++++++++
->  1 files changed, 22 insertions(+)
-> 
-> diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
-> index cc7a8c3..e117b72 100644
-> --- a/Documentation/DMA-API.txt
-> +++ b/Documentation/DMA-API.txt
-> @@ -392,6 +392,28 @@ Notes:  You must do this:
->  
->  See also dma_map_single().
->  
-> +int
-> +dma_flags_set_dmaflush(int dir)
-> +
-> +Amend dir (one of the enum dma_data_direction values), with a platform-
+#!/bin/bash
+#
+# find_all_modules.sh
+#
+for i in `find /sys/ -name modalias -exec cat {} \;`; do
+    /sbin/modprobe --config /dev/null --show-depends $i ;
+done | rev | cut -f 1 -d '/' | rev | sort -u
 
-no comma.
+It outputs:
 
-> +specific "dmaflush" attribute. Unless the platform supports "posted DMA" 
+FATAL: Module pci:v00008086d00002448sv00000000sd00000000bc06sc04i01 not found.
+FATAL: Module pci:v00008086d000027A3sv00000000sd00000000bc11sc01i00 not found.
+FATAL: Module eisa not found.
+FATAL: Module serial8250 not found.
+agpgart.ko
+appleir.ko
+ata_generic.ko
+ata_piix.ko
+ath_hal.ko
+ath_pci.ko
+bluetooth.ko
+ehci-hcd.ko
+evbug.ko
+evdev.ko
+generic.ko
+hci_usb.ko
+hid.ko
+i2c-algo-bit.ko
+i2c-core.ko
+i2c-i801.ko
+ieee1394.ko
+intel-agp.ko
+intelfb.ko
+intel-rng.ko
+iTCO_vendor_support.ko
+iTCO_wdt.ko
+libata.ko
+ohci1394.ko
+pci_hotplug.ko
+pcspkr.ko
+scsi_mod.ko
+shpchp.ko
+sky2.ko
+snd-hda-codec.ko
+snd-hda-intel.ko
+snd.ko
+snd-page-alloc.ko
+snd-pcm.ko
+snd-timer.ko
+soundcore.ko
+tsdev.ko
+uhci-hcd.ko
+usbcore.ko
+usbhid.ko
+usbkbd.ko
+usbmouse.ko
+vesafb.ko
+wlan.ko
+xpad.ko
 
-add comma after "posted DMA" and drop lots of trailing spaces.
-
-> +this is a no-op. 
-> +
-> +On platforms that support posted DMA, dma_flags_set_dmaflush() causes 
-> +device writes to the associated memory region to flush in-flight DMA. 
-> +This can be important, for example, when (DMA) writes to the memory 
-> +region indicate that DMA of data is complete. If DMA of data and DMA of 
-> +the completion indication race, as they can do when the platform supports 
-> +posted DMA, then the completion indication may arrive in host memory 
-> +ahead of some data.
-> +
-> +To prevent this, you might map the memory region used for completion 
-> +indications as follows:
-> +
-> +	int count, flags = dma_flags_set_dmaflush(DMA_BIDIRECTIONAL);
-> +	.....
-> +	count = dma_map_sg(dev, sglist, nents, flags);
-> +
->  
->  Part II - Advanced dma_ usage
->  -----------------------------
-> -- 
-> Arthur
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+which shows that ata_piix is the controller for the hd correct? Is
+this a bug or is there some special parameter I have to configure to
+make this work? Thanks! :)
