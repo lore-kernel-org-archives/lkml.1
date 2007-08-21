@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762585AbXHUPaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761701AbXHUPdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762585AbXHUPaA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 11:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760589AbXHUP3t
+	id S1761701AbXHUPdq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 11:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760173AbXHUPdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 11:29:49 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1233 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761645AbXHUP3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 11:29:46 -0400
-Date: Tue, 21 Aug 2007 17:29:36 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Andres Salomon <dilinger@queued.net>
-cc: kbuild-devel@lists.sourceforge.net, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kconfig: add *_silentdefconfig feature for config targets
-In-Reply-To: <20070820204020.7cde776e.dilinger@queued.net>
-Message-ID: <Pine.LNX.4.64.0708211717180.1817@scrub.home>
-References: <20070820204020.7cde776e.dilinger@queued.net>
+	Tue, 21 Aug 2007 11:33:38 -0400
+Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:54366 "EHLO
+	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759870AbXHUPdi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 11:33:38 -0400
+X-Greylist: delayed 1770 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Aug 2007 11:33:37 EDT
+Date: Tue, 21 Aug 2007 11:04:06 -0400
+From: Jan Harkes <jaharkes@cs.cmu.edu>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 2/4] Fix mainline filesystems to handle ATTR_KILL_ bits
+	correctly
+Message-ID: <20070821150406.GA30675@cs.cmu.edu>
+Mail-Followup-To: Jeff Layton <jlayton@redhat.com>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <200708202053.l7KKrMYv017763@dantu.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708202053.l7KKrMYv017763@dantu.rdu.redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Aug 20, 2007 at 04:53:22PM -0400, Jeff Layton wrote:
+> This should fix all of the filesystems in the mainline kernels to handle
+> ATTR_KILL_SUID and ATTR_KILL_SGID correctly. For most of them, this is
+> just a matter of making sure that they call generic_attrkill early in
+> the setattr inode op.
+> 
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
 
-On Mon, 20 Aug 2007, Andres Salomon wrote:
+Coda part looks fine to me. Couldn't test it beyond 'it compiles and
+doesn't oops', because our userspace client unconditionally strips
+setuid/setgid bits anyways.
 
-> AFAICT, there is nothing similar when using *_defconfig; one must copy
-> a .config manually, and then run silentoldconfig.  Simply running the
-> associated _defconfig will quietly update the config (which may silently
-> drop config options).  This patch adds a *_silentdefconfig target, with
-> semantics similar to silentoldconfig.  It will take the defconfig from
-> arch/$(ARCH)/configs/$x_defconfig, check for changes, and if there are
-> none, write out a .config.  If there have been changes and stdin is
-> valid, it will prompt for updates.  If there have been changes and
-> stdin is not valid, it will bail out with an error.
+Acked-by: Jan Harkes <jaharkes@cs.cmu.edu>
 
-I would really like to avoid another input mode.
-I think it be better to implement this as a combination of "-s -D 
-<default>" and the silent mode is adjusted to read another config instead 
-of .config if defconfig_file is set.
-
-> A few things to note:
->   - Using getopt() in scripts/kconfig/conf.c would likely simplify things,
->     but that's a much larger patch.  Is there a reason we don't use it?
-
-Not really.
-
->   - To make it truly silent, I had to change conf_write() to accept an
->     additional arg.  The alternative is to not have conf_write spit out
->     any information when it writes a file.  Personally, I don't see the need
->     for it to spit out information, but I figured I'd take the more cautious
->     route.  If folks don't care, I can update this patch to remove it.
-
-I rather want to keep this print. The .config is already only written, 
-when it has to be in this mode and then I also want to be notified about 
-it.
-
->   - We seem to switch between using _() and not using it for strings; I'm
->     assuming that we don't actually care about i18n in conf.c, and that the
->     _() stuff was just copied from elsewhere.  If that's not the case, I
->     can update the patch to wrap strings properly.
-
-I try to keep this uptodate, but I don't really check for this.
-
-bye, Roman
