@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759787AbXHUHdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbXHUHeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759787AbXHUHdT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 03:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbXHUHdK
+	id S1760645AbXHUHeE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 03:34:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbXHUHdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 03:33:10 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55986 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751082AbXHUHdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 03:33:08 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX186XyFGOVw6U1h1VKx100aDOp+ek2UXNhGuRGihKe
-	re4mByG7OKGVaV
-Subject: Re: CFS review
-From: Mike Galbraith <efault@gmx.de>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Willy Tarreau <w@1wt.eu>,
-       Michael Chang <thenewme91@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0708191936110.1817@scrub.home>
-References: <Pine.LNX.4.64.0708011955430.1817@scrub.home>
-	 <20070801190556.GA1199@elte.hu>
-	 <Pine.LNX.4.64.0708100037460.1817@scrub.home>
-	 <20070810054948.GA5908@elte.hu>
-	 <Pine.LNX.4.64.0708101459530.1817@scrub.home>
-	 <b14e81f00708100954w71e953fcm8a5cca464e4b27df@mail.gmail.com>
-	 <Pine.LNX.4.64.0708101919270.1817@scrub.home>
-	 <20070810194705.GH6002@1wt.eu>
-	 <Pine.LNX.4.64.0708102235320.1817@scrub.home>
-	 <20070810213630.GA13910@elte.hu> <20070811003052.GA18812@elte.hu>
-	 <Pine.LNX.4.64.0708191936110.1817@scrub.home>
-Content-Type: text/plain
-Date: Tue, 21 Aug 2007 09:33:03 +0200
-Message-Id: <1187681583.6183.25.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Tue, 21 Aug 2007 03:33:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53414 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752426AbXHUHdw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 03:33:52 -0400
+Date: Tue, 21 Aug 2007 00:36:56 -0700
+From: Greg KH <greg@kroah.com>
+To: "Andreas Jellinghaus [c]" <aj@ciphirelabs.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] why was MODALIAS removed from usb kernel
+	events? [u]
+Message-ID: <20070821073656.GA6691@kroah.com>
+References: <200708171622.05115.aj@ciphirelabs.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708171622.05115.aj@ciphirelabs.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-21 at 00:19 +0200, Roman Zippel wrote: 
-> Hi,
+On Fri, Aug 17, 2007 at 04:22:04PM +0200, Andreas Jellinghaus [c] wrote:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9f8b17e643fe6aa505629658445849397bda4e4f
 > 
-> On Sat, 11 Aug 2007, Ingo Molnar wrote:
-> 
-> > the only relevant thing that comes to mind at the moment is that last 
-> > week Peter noticed a buggy aspect of sleeper bonuses (in that we do not 
-> > rate-limit their output, hence we 'waste' them instead of redistributing 
-> > them), and i've got the small patch below in my queue to fix that - 
-> > could you give it a try?
-> 
-> It doesn't make much of a difference.
+> removes MODALIAS from one of the events,
 
-I thought this was history.  With your config, I was finally able to
-reproduce the anomaly (only with your proggy though), and Ingo's patch
-does indeed fix it here.
+Which event?
 
-Freshly reproduced anomaly and patch verification, running 2.6.23-rc3
-with your config, both with and without Ingo's patch reverted:
+If you enable CONFIG_USB_DEVICE_CLASS, does everything work the same
+again?
 
-6561 root      20   0  1696  492  404 S 32.0  0.0   0:30.83 0 lt
-6562 root      20   0  1696  336  248 R 32.0  0.0   0:30.79 0 lt
-6563 root      20   0  1696  336  248 R 32.0  0.0   0:30.80 0 lt
-6564 root      20   0  2888 1236 1028 R  4.6  0.1   0:05.26 0 sh
+> this breaks user space applications like openct - everything that
+> depends on getting an event that has both the DEVICE= path to the usb
+> device and any information on the interface, so it can check if the
+> device is something it supports (in case of openct: smart card reader,
+> i.e. bInterfaceClass 0b).
 
-6507 root      20   0  2888 1236 1028 R 25.8  0.1   0:30.75 0 sh
-6504 root      20   0  1696  492  404 R 24.4  0.0   0:29.26 0 lt
-6505 root      20   0  1696  336  248 R 24.4  0.0   0:29.26 0 lt
-6506 root      20   0  1696  336  248 R 24.4  0.0   0:29.25 0 lt
+What specific udev rule are you matching against here that is now
+broken?
 
-	-Mike
+> The text does not mention MODALIAS nor the reason for it's removal.
 
+The reason is we don't need the usb_device class anymore, but we still
+provide for the compatibility if you have an old distro with old udev
+rules that is expecting it (only rule we ran into was the one for the
+usbfs /dev nodes, but there might be more.)
+
+confused,
+
+greg k-h
