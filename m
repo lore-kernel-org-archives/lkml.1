@@ -1,63 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbXHUJsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbXHUJwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551AbXHUJsa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 05:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbXHUJsW
+	id S1756918AbXHUJwx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 05:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbXHUJwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 05:48:22 -0400
-Received: from ozlabs.org ([203.10.76.45]:59603 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754578AbXHUJsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 05:48:21 -0400
+	Tue, 21 Aug 2007 05:52:45 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:52245 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754159AbXHUJwo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 05:52:44 -0400
+Date: Tue, 21 Aug 2007 11:52:42 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Satyam Sharma <satyam@infradead.org>
+cc: NeilBrown <neilb@suse.de>, Jan Engelhardt <jengelh@computergmbh.de>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>
+Subject: Re: [PATCH 002 of 6] Introduce rq_for_each_segment replacing
+ rq_for_each_bio
+In-Reply-To: <alpine.LFD.0.999.0708211500100.2774@enigma.security.iitk.ac.in>
+Message-ID: <Pine.LNX.4.62.0708211148040.6982@pademelon.sonytel.be>
+References: <20070816211551.11839.patches@notabene> <1070816112100.12182@suse.de>
+ <Pine.LNX.4.62.0708170910120.8381@pademelon.sonytel.be>
+ <alpine.LFD.0.999.0708181953560.29105@enigma.security.iitk.ac.in>
+ <Pine.LNX.4.64.0708181628350.5186@fbirervta.pbzchgretzou.qr>
+ <alpine.LFD.0.999.0708182016000.29105@enigma.security.iitk.ac.in>
+ <Pine.LNX.4.62.0708201313260.6197@pademelon.sonytel.be>
+ <alpine.LFD.0.999.0708210523470.2774@enigma.security.iitk.ac.in>
+ <Pine.LNX.4.62.0708210904220.11703@pademelon.sonytel.be>
+ <alpine.LFD.0.999.0708211500100.2774@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18122.46304.556919.568565@cargo.ozlabs.ibm.com>
-Date: Tue, 21 Aug 2007 19:48:16 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com
-Subject: Re: [accounting regression since rc1]  scheduler updates
-In-Reply-To: <20070821093434.GB12025@elte.hu>
-References: <20070812163225.GA11996@elte.hu>
-	<200708141037.48001.borntraeger@de.ibm.com>
-	<20070820154529.GA300@elte.hu>
-	<200708211017.02998.borntraeger@de.ibm.com>
-	<20070821084243.GB1144@elte.hu>
-	<1187687476.7623.8.camel@localhost>
-	<20070821093434.GB12025@elte.hu>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-2078517362-1187689962=:6982"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> my feeling is that it gives us generally higher-quality scheduling if we 
-> drive all things scheduler via virtual time. Do you agree with that?
+---584337861-2078517362-1187689962=:6982
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-On PowerPC at least, while we can measure virtual time, there is no
-hardware facility for getting an interrupt after a certain amount of
-virtual time has elapsed, but there is a facility to get an interrupt
-after an elapsed real-time interval.  So sched_clock() could easily
-change to measure virtual time, but I don't see how to make
-scheduler_tick() be driven off virtual time.  It sounds like s390 is
-the same.
-
-> it seems you'd like accounting to be sensitive to 'external load' - i.e. 
-> you'd like an 'internal' top to show the 'real' CPU accounting, right? 
+On Tue, 21 Aug 2007, Satyam Sharma wrote:
+> On Tue, 21 Aug 2007, Geert Uytterhoeven wrote:
+> > On Tue, 21 Aug 2007, Satyam Sharma wrote:
+> > > 
+> > > This is turning rather funny :-)
+> > > 
+> > > * Why the printk() conversion specifier must be "%llu"?
+> > > 
+> > > When reusing parts of this code (such as this debug message) for another
+> > > 32-bit driver (we certainly seem to care about this, as per your reply),
+> > > the largest size of sector_t can be "unsigned long long", thereby causing
+> > > truncated output, and the following warning:
+> > > 
+> > > warning: format ???lu???expects type ???ong unsigned int??? but argument 2 has
+> > > type ???ector_t?
+> > 
+> > You will get a warning, so you will know.
 > 
-> Wouldnt it be more consistent if a virtual box would not show any 
-> dependency on external load? (i.e. it would slow down all of its 
-> internal functionality transparently, without exposing it via /proc. The 
+> Ah. So you'd much rather prefer that code in drivers/ make assumptions:
+> sizeof(long) == sizeof(long long), and, sizeof(long) == sizeof(sector_t),
+> hmmm?
 
-The tools that use the data in /proc get unhappy if user time + system
-time + hardirq time + softirq time + idle time + stolen time doesn't
-add up to real time.  The way we handle that is by making stolen time
-represent the time taken away by the hypervisor (and on PowerPC with
-SMT, the time taken by the other thread too).
+If it's code for a PS3-specific driver that cannot work in 32-bit mode, yes.
 
-Paul.
+> > > Therefore, let us not depend on the fact that this driver is being used
+> > > only for 64-bit platforms as of now (especially since this is in drivers/
+> > > and not in arch/) and rather make the printk() specifier as "%llu".
+> > > 
+> > > [ Sadly, I had to repeat most of my previous mail, which Jan Engelhardt
+> > > appears to have snipped. ]
+> > 
+> > [ and you dropped the cell mailing list from the CC list ]
+> 
+> I don't enjoy getting "this is a subscriber-only list" notifications,
+> thank you.
+
+IC.
+
+> > > * Why we require an explicit (unsigned long long) cast?
+> > > 
+> > > Having made the above change (and say we don't have an explicit cast
+> > > there), that line now becomes:
+> > > 
+> > > 	printk("... %llu\n", ..., iter.bio->bi_sector);
+> > > 
+> > > Now if we build this code with CONFIG_LBD=n, sector_t becomes just an
+> > > "unsigned long" (whereas printk specifier is the larger "%llu") thereby
+> > > causing:
+> > > 
+> > > warning: format ???llu???expects type ???ong long unsigned int??? but argument
+> > > 2 has type ???ector_t?
+> > > 
+> > > Therefore, let us shut this up with an explicit (unsigned long long) cast,
+> > > as is done in most other existing code in the kernel where we want to get
+> > > bi_sector printed out, which would correctly convert the value to the
+> > > larger integer type (even negative ones, due to sign-extension) and print
+> > > it out.
+> > > 
+> > > > On the other hand, adding a cast may hide bugs:
+> > > >   - cast to unsigned long long: When sector_t is changed to an even larger
+>           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > > >     type, it will be silently truncated as well.
+>           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > > 
+> > > IMHO, this is not a valid enough reason, given the above (BTW if/when that
+> > > happens, we'll have to update the printk conversion specifer as well).
+> > > 
+> > > Personally, I'd say code that assumes "sizeof(unsigned long long) ==
+> > > sizeof(unsigned long)", and also that assumes "sizeof(unsigned long) ==
+> > > sizeof(sector_t)" -- both assumptions _are_ made by the above code --
+> > > is not good taste, even if both may be true for PS3 platform. So unless
+> > > we decide "nobody except that platform would ever build this driver
+> > > anyway", I'd suggest to make the printk specifier as "%llu" and use an
+> > > explicit (unsigned long long) cast. Therefore (on top of this series):
+> > 
+> > Adding such a cast makes it impossible for the compiler to detect (and warn us)
+> > if something has changed.
+> 
+> Change as in increase in size, right? Did you even read the mail? The only
+
+Yes. Yes.
+
+> argument you had given against the cast to (unsigned long long) was what
+> has been underlined above, which was bogus, considering we would have to
+> change the "%lu" specifier in the printk() also, when that happens
+> (otherwise suffer silent truncation).
+
+Not silent truncation. Without a cast, the compiler will warn.
+
+> But looks like you /are/ deciding "nobody except PS3 platform would ever
+> build this driver anyway" ... so okay, the current code, will all it's
+> non-portable assumptions, is okay.
+
+OK, thx.
+The driver uses the PS3-specific hypervisor interface, which is 64-bit.
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-2078517362-1187689962=:6982--
