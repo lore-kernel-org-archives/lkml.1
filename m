@@ -1,95 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760786AbXHUQaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760552AbXHUQoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760786AbXHUQaL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 12:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758528AbXHUQ3x
+	id S1760552AbXHUQoH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 12:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbXHUQn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 12:29:53 -0400
-Received: from styx.suse.cz ([82.119.242.94]:57075 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757625AbXHUQ3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 12:29:52 -0400
-Date: Tue, 21 Aug 2007 18:48:15 +0200
-From: Jan Kara <jack@suse.cz>
-To: Josef Bacik <jbacik@redhat.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix panic in jbd by adding locks
-Message-ID: <20070821164815.GI18718@duck.suse.cz>
-References: <20070814152255.GB24127@dhcp-243-37.rdu.redhat.com> <20070815113737.GC7642@atrey.karlin.mff.cuni.cz> <20070815121704.GL24127@dhcp-243-37.rdu.redhat.com> <20070816160835.GB26703@atrey.karlin.mff.cuni.cz> <20070816163744.GB10817@dhcp-243-37.rdu.redhat.com> <20070820152021.GF3784@duck.suse.cz> <20070821154311.GE27557@dhcp-243-37.rdu.redhat.com>
+	Tue, 21 Aug 2007 12:43:56 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:44141 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753336AbXHUQnz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 12:43:55 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070821154311.GE27557@dhcp-243-37.rdu.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18123.5699.405125.137517@stoffel.org>
+Date: Tue, 21 Aug 2007 12:43:47 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Robin Lee Powell <rlpowell@digitalkingdom.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: NFS hang + umount -f: better behaviour requested.
+In-Reply-To: <20070820225415.GL3956@digitalkingdom.org>
+References: <20070820225415.GL3956@digitalkingdom.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 21-08-07 11:43:12, Josef Bacik wrote:
-> On Mon, Aug 20, 2007 at 05:20:21PM +0200, Jan Kara wrote:
-> >   OK, thanks. So record probably points to an already freed memory which has
-> > been overwritten by garbage...
-> > 
-> > > >   Thanks for details. I'm still not convinced. What they essentially
-> > > > write is that slab cache revoke_record_cache is not guarded by any spin
-> > > > lock. It's not and that should be fine as slab caches are SMP safe by
-> > > > themselves.
-> > > 
-> > > No its the list_del thats not gaurded, so the hash list gets screwed up outside
-> > > of a lock.  If there are other problems that need to be addressed then ok, but I
-> > > still think that we should be protecting all of the list traversal/changing
-> > > should be protected by the lock.  Thank you,
-> >   But the traversal in journal_write_revoke_records() *is* in fact guarded
-> > by the commit logic in journal_commit_transaction() handling code - it
-> > doesn't allow anybody to mess with revoke lists when a transaction is
-> > committing. So there's no need to guard the hash list again in
-> > journal_write_revoke_records() by the spinlock. And if the logic does not
-> > work and lets somebody modify revoke lists during commit, we have more
-> > serious problems than hash list corruption. That's why I'm trying to find
-> > out where's the real culprit of the Oops. But so far I cannot find out how
-> > the corruption can happen...
-> 
-> I should note here I'm not trying to be argumentative, I just want to
-> understand.  Ok so journal_commit_transaction() will make sure all the
-  I also just want to understand how the oops can happen :).
 
-> handle_t's are removed and such before processing the revoke lists, but right
-> before we process the revoke lists we set the journals running transaction to
-> NULL, which means we can continue on our merry way.  AFAICS the revoke lists are
-> per journal, not per transaction, so once we give up the j_state_lock after
-> having made sure the handle_t's had done their thing, we set the
-> running_transaction to NULL letting people continue to do their thing, and since
-> the revoke table is on a per journal basis, its completely valid for a new
-> transaction to be started, a handle to be added to it, journal_cancel_revoke()
-> to be run against that handle while still in journal_commit_transaction().  It
-> wouldn't necessarily be a handle_t from the transaction we are in the middle of
-> committing, it would be from a new transaction, and since the revoke list is per
-> journal, both the transaction thats currently being committed and the new
-> transaction would have access to the same revoke list, hence the race.  Is this
-> correct?  If not let me know because I want to understand this code better.
-  The trick is, there are in fact two revoke tables. So the commit code
-does the following:
-  1) It waits until all handles of the running transaction are released
-(this is the while loop waiting checking t_updates).
-  2) It does some cleanup of unused buffers.
-  3) Switches revoke tables - i.e. journal->j_revoke now points to a
-freshly initialized table, the table of the committing transaction is kept
-hidden.
-  4) Transaction state is changed to FLUSH, journal->j_running_transaction
-is set to NULL, etc.
-  5) Data writeout is performed.
-  6) Saved revoke hash table is written.
+Robin> I'm bringing this up again (I know it's been mentioned here
+Robin> before) because I had been told that NFS support had gotten
+Robin> better in Linux recently, so I have been (for my $dayjob)
+Robin> testing the behaviour of NFS (autofs NFS, specifically) under
+Robin> Linux with hard,intr and using iptables to simulate a hang.
 
-  After 3), journal_revoke() and journal_revoke_cancel() access the new
-hash table and thus have no influence on journal_write_revoke_records(). It
-could possibly be that the pointer to the old hash table would be stored in
-some local variable - but all the places where we store a pointer to the
-hash table seem to be contained inside journal_start(), journal_stop()
-pairs (all functions working with hash tables take a transaction handle
-as an argument) and because all handles were released at some point in time,
-we know that this should not happen either.
-  I hope it is clearer now. If you still have any questions, please ask.
+So why are you mouting with hard,intr semantics?  At my current
+SysAdmin job, we mount everything (solaris included) with 'soft,intr'
+and it works well.  If an NFS server goes down, clients don't hang for
+large periods of time. 
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Robin> fuser hangs, as far as I can tell indefinately, as does
+Robin> lsof. umount -f returns after a long time with "busy", umount
+Robin> -l works after a long time but leaves the system in a very
+Robin> unfortunate state such that I have to kill things by hand and
+Robin> manually edit /etc/mtab to get autofs to work again.
+
+Robin> The "correct solution" to this situation according to
+Robin> http://nfs.sourceforge.net/ is cycles of "kill processes" and
+Robin> "umount -f".  This has two problems:  1.  It sucks.  2.  If fuser
+Robin> and lsof both hand (and they do: fuser has been on
+Robin> "stat("/home/rpowell/"," for > 30 minutes now), I have no way to
+Robin> pick which processes to kill.
+
+Robin> I've read every man page I could find, and the only nfs option
+Robin> that semes even vaguely helpful is "soft", but everything that
+Robin> mentions "soft" also says to never use it.
+
+I think the man pages are out of date, or ignoring reality.  Try
+mounting with soft,intr and see how it works for you.  I think you'll
+be happy.  
+
+Robin> This is the single worst aspect of adminning a Linux system that I,
+Robin> as a carreer sysadmin, have to deal with.  In fact, it's really the
+Robin> only one I even dislike. At my current work place, we've lost
+Robin> multiple person-days to this issue, having to go around and reboot
+Robin> every Linux box that was hanging off a down NFS server.
+
+Robin> I know many other admins who also really want Solaris style
+Robin> "umount -f"; I'm sure if I passed the hat I could get a decent
+Robin> bounty together for this feature; let me know if you're interested.
+
+Robin> Thanks.
+
+Robin> -Robin
+
+Robin> -- 
+Robin> http://www.digitalkingdom.org/~rlpowell/ *** http://www.lojban.org/
+Robin> Reason #237 To Learn Lojban: "Homonyms: Their Grate!"
+Robin> Proud Supporter of the Singularity Institute - http://singinst.org/
+Robin> -
+Robin> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+Robin> the body of a message to majordomo@vger.kernel.org
+Robin> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Robin> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+Robin> !DSPAM:46ca1d9676791030010506!
