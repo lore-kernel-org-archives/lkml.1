@@ -1,78 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbXHUJHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbXHUJMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbXHUJHo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 05:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbXHUJHd
+	id S1754591AbXHUJMS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 05:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbXHUJMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 05:07:33 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:16598 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752633AbXHUJHc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 05:07:32 -0400
-Subject: Re: [accounting regression since rc1]  scheduler updates
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20070821084243.GB1144@elte.hu>
-References: <20070812163225.GA11996@elte.hu>
-	 <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu>
-	 <200708211017.02998.borntraeger@de.ibm.com> <20070821084243.GB1144@elte.hu>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Tue, 21 Aug 2007 11:11:16 +0200
-Message-Id: <1187687476.7623.8.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Aug 2007 05:12:09 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:38152 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752272AbXHUJMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 05:12:07 -0400
+Date: Tue, 21 Aug 2007 10:12:02 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Lee.Schermerhorn@hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 5/6] Filter based on a nodemask as well as a gfp_mask
+Message-ID: <20070821091202.GE29794@skynet.ie>
+References: <20070817201647.14792.2690.sendpatchset@skynet.skynet.ie> <20070817201828.14792.57905.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0708171417510.9635@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708171417510.9635@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-21 at 10:42 +0200, Ingo Molnar wrote:
-> * Christian Borntraeger <borntraeger@de.ibm.com> wrote:
+On (17/08/07 14:29), Christoph Lameter didst pronounce:
+> On Fri, 17 Aug 2007, Mel Gorman wrote:
 > 
-> > Am Montag, 20. August 2007 schrieb Ingo Molnar:
-> > > could you send that precise sched_clock() patch? It should be an order 
-> > > of magnitude simpler than the high-precision stime/utime tracking you 
-> > > already do, and it's needed for quality scheduling anyway.
-> > 
-> > I have a question about that. I just played with sched_clock, and even 
-> > when I intentionally slow down sched_clock by a factor of 2, my cpu 
-> > bound process gets 100 % in top. If this is intentional, I dont 
-> > understand how a virtualized sched_clock would fix the accounting 
-> > change?
+> > @@ -696,6 +696,16 @@ static inline struct zonelist *node_zone
+> >  	return &NODE_DATA(nid)->node_zonelist;
+> >  }
+> >  
+> > +static inline int zone_in_nodemask(unsigned long zone_addr,
+> > +				nodemask_t *nodes)
+> > +{
+> > +#ifdef CONFIG_NUMA
+> > +	return node_isset(zonelist_zone(zone_addr)->node, *nodes);
+> > +#else
+> > +	return 1;
+> > +#endif /* CONFIG_NUMA */
+> > +}
+> > +
 > 
-> hm, does on s390 scheduler_tick() get driven in virtual time or in real 
-> time? The very latest scheduler code will enforce a minimum rate of 
-> sched_clock() across two scheduler_tick() calls (in rc3 and later 
-> kernels). If sched_clock() "slows down" but scheduler_tick() still has a 
-> real-time frequency then that impacts the quality of scheduling. So 
-> scheduler_tick() and sched_clock() must really have the same behavior 
-> (either both are virtual or both are real), so that scheduling becomes 
-> invariant to steal-time.
+> This is dereferencind the zone in a filtering operation. I wonder if
+> we could encode the node in the zone_addr as well? x86_64 aligns zones on
+> page boundaries. So we have 10 bits left after taking 2 for the zone id.
+> 
 
-scheduler_tick() is based on the HZ timer which uses the TOD clock =
-real time. sched_clock() currently uses the TOD clock as well so in
-regard to the new scheduler we currently do not have a problem. We have
-a problem with cpu time accounting, the change to the /proc code breaks
-the precise accounting on s390. To solve the cpu time accounting we need
-to change sched_clock() to the cpu timer = virtual time. To change the
-scheduler_tick() as well requires another patch and I fear it would
-complicate things in the s390 backend.
+I had considered it but not gotten around to an implementation. A quick
+look shows that it is likely to be a win on x86_64 and ppc64 as in those
+places NODES_SHIFT is small enough to fit into the lower bits of the
+zone addresses. It does not appear to be the case on IA-64 though. The
+INTERNODE_CACHE_SHIFT will be around 7 but the NODES_SHIFT defaults to
+10 so it will not fit.
 
-And if you say that the scheduling becomes invariant to steal-time, how
-is the cpu time accounting via sum_exec supposed to work if it does not
-take steal-time into account ?
+I'll try it out anyway.
+
+> > -int cpuset_zonelist_valid_mems_allowed(struct zonelist *zl)
+> > +int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask)
+> >  {
+> > -	int i;
+> > -
+> > -	for (i = 0; zl->_zones[i]; i++) {
+> > -		int nid = zone_to_nid(zonelist_zone(zl->_zones[i]));
+> > +	int nid;
+> >  
+> > +	for_each_node_mask(nid, *nodemask)
+> >  		if (node_isset(nid, current->mems_allowed))
+> >  			return 1;
+> > -	}
+> > +
+> >  	return 0;
+> 
+> Hmmm... This is equivalent to
+> 
+> nodemask_t temp;
+> 
+> nodes_and(temp, nodemask, current->mems_allowed);
+> return !nodes_empty(temp);
+> 
+> which avoids the loop over all nodes.
+> 
+
+Good point. I've replaced the code with your version.
+
+> > -	}
+> > -	if (num == 0) {
+> > -		kfree(zl);
+> > -		return ERR_PTR(-EINVAL);
+> > +	for_each_node_mask(nd, *nodemask) {
+> > +		struct zone *z = &NODE_DATA(nd)->node_zones[k];
+> > +		if (z->present_pages > 0)
+> > +			return 1;
+> 
+> Here you could use an and with the N_HIGH_MEMORY or N_NORMAL_MEMORY 
+> nodemask.
+> 
+
+I'm basing against 2.6.23-rc3 at the moment. I'll add an additional
+patch later to use the N_HIGH_MEMORy and N_NORMAL_MEMORY nodemasks.
+
+> > @@ -1149,12 +1125,19 @@ unsigned slab_node(struct mempolicy *pol
+> >  	case MPOL_INTERLEAVE:
+> >  		return interleave_nodes(policy);
+> >  
+> > -	case MPOL_BIND:
+> > +	case MPOL_BIND: {
+> 
+> No { } needed.
+> 
+> >  		/*
+> >  		 * Follow bind policy behavior and start allocation at the
+> >  		 * first node.
+> >  		 */
+> > -		return zone_to_nid(zonelist_zone(policy->v.zonelist->_zones[0]));
+> > +		struct zonelist *zonelist;
+> > +		unsigned long *z;
+
+Without the {}, it would fail to compile here
+
+> > +		enum zone_type highest_zoneidx = gfp_zone(GFP_KERNEL);
+> > +		zonelist = &NODE_DATA(numa_node_id())->node_zonelist;
+> > +		z = first_zones_zonelist(zonelist, &policy->v.nodes,
+> > +							highest_zoneidx);
+> > +		return zone_to_nid(zonelist_zone(*z));
+> > +	}
+> >  
+> >  	case MPOL_PREFERRED:
+> >  		if (policy->v.preferred_node >= 0)
+> 
+> > @@ -1330,14 +1314,6 @@ struct mempolicy *__mpol_copy(struct mem
+> >  	}
+> >  	*new = *old;
+> >  	atomic_set(&new->refcnt, 1);
+> > -	if (new->policy == MPOL_BIND) {
+> > -		int sz = ksize(old->v.zonelist);
+> > -		new->v.zonelist = kmemdup(old->v.zonelist, sz, GFP_KERNEL);
+> > -		if (!new->v.zonelist) {
+> > -			kmem_cache_free(policy_cache, new);
+> > -			return ERR_PTR(-ENOMEM);
+> > -		}
+> > -	}
+> >  	return new;
+> 
+> That is a good optimization.
+> 
+
+Thanks
+
+> > @@ -1680,32 +1647,6 @@ void mpol_rebind_policy(struct mempolicy
+> >  						*mpolmask, *newmask);
+> >  		*mpolmask = *newmask;
+> >  		break;
+> > -	case MPOL_BIND: {
+> > -		nodemask_t nodes;
+> > -		unsigned long *z;
+> > -		struct zonelist *zonelist;
+> > -
+> > -		nodes_clear(nodes);
+> > -		for (z = pol->v.zonelist->_zones; *z; z++)
+> > -			node_set(zone_to_nid(zonelist_zone(*z)), nodes);
+> > -		nodes_remap(tmp, nodes, *mpolmask, *newmask);
+> > -		nodes = tmp;
+> > -
+> > -		zonelist = bind_zonelist(&nodes);
+> > -
+> > -		/* If no mem, then zonelist is NULL and we keep old zonelist.
+> > -		 * If that old zonelist has no remaining mems_allowed nodes,
+> > -		 * then zonelist_policy() will "FALL THROUGH" to MPOL_DEFAULT.
+> > -		 */
+> > -
+> > -		if (!IS_ERR(zonelist)) {
+> > -			/* Good - got mem - substitute new zonelist */
+> > -			kfree(pol->v.zonelist);
+> > -			pol->v.zonelist = zonelist;
+> > -		}
+> > -		*mpolmask = *newmask;
+> > -		break;
+> > -	}
+> 
+> Simply dropped? We still need to recalculate the node_mask depending on 
+> the new cpuset environment!
+> 
+
+It's not simply dropped. The previous patch chunk made the MPOL_BIND case
+falls through to take the same action as MPOL_INTERLEAVE. Is that wrong?
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
