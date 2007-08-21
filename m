@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbXHUUl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbXHUUlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752131AbXHUUl2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 16:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbXHUUkp
+	id S1754701AbXHUUlo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 16:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbXHUUlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 16:40:45 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:40605 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752131AbXHUUkk (ORCPT
+	Tue, 21 Aug 2007 16:41:10 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:54706 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754775AbXHUUlI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 16:40:40 -0400
+	Tue, 21 Aug 2007 16:41:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=dXYpx2vqqYEo0D6FX1E+HkyeeSIpQiDdfd56kz+nt188ntQCER1tNrOucyKhREyFrtNEFBly/9BuColnSgVzyCEFQQs0Bxxo6tovJF9ux0rro6gimx0WI8gMY4rUQnZ+etssEyTyHM9/QT3K/neaT+uG5A8BtDwSKXRRaJNypLs=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 2/4] hpt366: UltraDMA filter for SATA cards (take 2)
-Date: Tue, 21 Aug 2007 22:36:10 +0200
-User-Agent: KMail/1.9.6
-Cc: rah@bash.sh, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200708192300.35564.sshtylyov@ru.mvista.com>
-In-Reply-To: <200708192300.35564.sshtylyov@ru.mvista.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cN4tXoYMxt/nrUp0m8GRowxotWIePfjMMlyUXlSbA+oCc1bAnsrAPg191j7/xlp63WkmmT4ozcxwCUqsoSPewHIxmCy3GrPYXtIBuP3NwfUZnU2dFopbUyY+WfXhUtyRqfywpVBMpwhGD9/XpDuRjCQzWXtYb9u9IDJ7vrNpstA=
+Message-ID: <5d6222a80708211341s63f8c1eau922f018e66db49f4@mail.gmail.com>
+Date: Tue, 21 Aug 2007 17:41:04 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Chris Wedgwood" <cw@f00f.org>
+Subject: Re: RFC: drop support for gcc < 4.0
+Cc: "Adrian Bunk" <bunk@kernel.org>, "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jarek Poplawski" <jarkao2@o2.pl>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-mips@linux-mips.org
+In-Reply-To: <20070821182505.GA20968@puku.stupidest.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200708212236.10803.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070821132038.GA22254@ff.dom.local>
+	 <20070821093103.3c097d4a.randy.dunlap@oracle.com>
+	 <20070821173550.GC30705@stusta.de>
+	 <20070821182505.GA20968@puku.stupidest.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 19 August 2007, Sergei Shtylyov wrote:
-> The Marvell bridge chips used on HighPoint SATA cards do not seem to support
-> the UltraDMA modes 1, 2, and 3 as well as any MWDMA modes, so the driver needs
-> to account for this in the udma_filter() method.  In order to achieve that, do
-> the following changes:
-> 
-> - install the method for all chips, not only HPT36x/370 and impove the code
->   formatting by killing the extra tabs while at it;
+On 8/21/07, Chris Wedgwood <cw@f00f.org> wrote:
+> On Tue, Aug 21, 2007 at 07:35:50PM +0200, Adrian Bunk wrote:
+>
+> > Are there any architectures still requiring a gcc < 4.0 ?
+>
+> Yes, sadly in some places (embedded) there are people with older
+> compiler who want newer kernels.
 
-s/impove/improve/
+Last time I tried a mips build, it would fail the compile unless I was
+using _exactly_ 3.4.4 (I didn't tried older versions, but did try
+3.4.6, for ex.). So I also think the 3.4 series will still have to be
+around for a while.
 
-> - add to the end of the 'switch' statement in the method cases for HPT372[AN]
->   and HPT374 chips upon which the known SATA cards are based;
-> 
-> - use hwif->ultra_mask as a default mask for the ide_dma_filter() method to
->   behave correctly;
-> 
-> - move the HPT370[A] cases below the HPT36x case for consistency.
-> 
-> While at it, replace the explicit UltraDMA mode masks with ATA_UDMA* constants
-> all over the driver...
-> 
-> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
 
-applied
-
-> ---
-> This is against the current Linus tree and unfortunately I was able to only
-> compile test it since that tree gives MODPOST warning and dies early on bootup.
-
-Is this still case?  Not an IDE problem but definitely needs fixing especially
-given that we are already in -rc3...
-
-> Will hopefully finish with the patch series next weekend...
+"The less confident you are, the more serious you have to act."
