@@ -1,67 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbXHUEQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbXHUERZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753412AbXHUEQk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 00:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbXHUEQa
+	id S1755536AbXHUERZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 00:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXHUERM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 00:16:30 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47153 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750808AbXHUEQ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 00:16:29 -0400
-Date: Mon, 20 Aug 2007 21:15:58 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Stuart_Hayes@Dell.com" <Stuart_Hayes@dell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Exner <dex@dragonslave.de>
-Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
-In-Reply-To: <200708202102.58508.david-b@pacbell.net>
-Message-ID: <alpine.LFD.0.999.0708202106290.30176@woody.linux-foundation.org>
-References: <46C098FD.1030601@googlemail.com> <200708201841.51366.david-b@pacbell.net>
- <alpine.LFD.0.999.0708201853020.30176@woody.linux-foundation.org>
- <200708202102.58508.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 21 Aug 2007 00:17:12 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:47041 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753923AbXHUERK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 00:17:10 -0400
+Date: Tue, 21 Aug 2007 09:46:30 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hch@infradead.org,
+       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net
+Subject: Re: [patch 02/11] Kprobes - use a mutex to protect the instruction pages list.
+Message-ID: <20070821041630.GA9226@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20070820201902.597091353@polymtl.ca> <20070820202145.502198525@polymtl.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070820202145.502198525@polymtl.ca>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 20 Aug 2007, David Brownell wrote:
+On Mon, Aug 20, 2007 at 04:19:04PM -0400, Mathieu Desnoyers wrote:
+> Protect the instruction pages list by a specific insn pages mutex, called in 
+> get_insn_slot() and free_insn_slot(). It makes sure that architectures that does
+> not need to call arch_remove_kprobe() does not take an unneeded kprobes mutex.
 > 
-> MMF basically means the "Transaction Translating" (TT) hub had data
-> for the host, but the host didn't collect it in time ... so that some
-> data was lost.
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+
+Thanks Mathieu.
+
+> CC: hch@infradead.org
+> CC: prasanna@in.ibm.com
+> CC: ananth@in.ibm.com
+> CC: anil.s.keshavamurthy@intel.com
+> CC: davem@davemloft.net
+> ---
+>  kernel/kprobes.c |   27 +++++++++++++++++++++------
+>  1 file changed, 21 insertions(+), 6 deletions(-)
 > 
-> Unfortunately, that's the type of fault that's especially hard to
-> recover from.
-
-Fair enough. However, it still seems particularly idiotic to
- - penalize everybody
- - mix up two totally unrelated areas (cpufreq and USB) for a bug that is 
-   extremely rare and could be handled differently.
-
-For example, if it really ends up being practically impossible to recover 
-from split transaction errors, I would still suggest reverting that horrid 
-commit, and then just black-listing the known-broken EHCI controllers and 
-simply not *do* any split transactions on them. That way there's no 
-complexity.
-
-As far as I know, split transactions aren't required anyway, they are just 
-a performance optimization.
-
-Basically, we not only know that the commit has caused problems, it's 
-fundamentally ugly, fragile, and not very maintainable, and the whole 
-reason for doing it is pretty dubious.
-
-Why not just admit that certain hardware is broken (and the vendor isn't 
-worth even bothering to be polite with, since they try to screw us every 
-chance they get) and cannot reliably do split transactions? Problem 
-solved, no real downside, and nobody will even *notice*.
-
-			Linus
+> Index: linux-2.6-lttng/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/kernel/kprobes.c	2007-07-14 15:47:19.000000000 -0400
+> +++ linux-2.6-lttng/kernel/kprobes.c	2007-07-14 15:48:51.000000000 -0400
+> @@ -101,6 +101,10 @@ enum kprobe_slot_state {
+>  	SLOT_USED = 2,
+>  };
+> 
+> +/*
+> + * Protects the kprobe_insn_pages list. Can nest into kprobe_mutex.
+> + */
+> +static DEFINE_MUTEX(kprobe_insn_mutex);
+>  static struct hlist_head kprobe_insn_pages;
+>  static int kprobe_garbage_slots;
+>  static int collect_garbage_slots(void);
+> @@ -137,7 +141,9 @@ kprobe_opcode_t __kprobes *get_insn_slot
+>  {
+>  	struct kprobe_insn_page *kip;
+>  	struct hlist_node *pos;
+> +	kprobe_opcode_t *ret;
+> 
+> +	mutex_lock(&kprobe_insn_mutex);
+>   retry:
+>  	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
+>  		if (kip->nused < INSNS_PER_PAGE) {
+> @@ -146,7 +152,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
+>  				if (kip->slot_used[i] == SLOT_CLEAN) {
+>  					kip->slot_used[i] = SLOT_USED;
+>  					kip->nused++;
+> -					return kip->insns + (i * MAX_INSN_SIZE);
+> +					ret = kip->insns + (i * MAX_INSN_SIZE);
+> +					goto end;
+>  				}
+>  			}
+>  			/* Surprise!  No unused slots.  Fix kip->nused. */
+> @@ -160,8 +167,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
+>  	}
+>  	/* All out of space.  Need to allocate a new page. Use slot 0. */
+>  	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
+> -	if (!kip)
+> -		return NULL;
+> +	if (!kip) {
+> +		ret = NULL;
+> +		goto end;
+> +	}
+> 
+>  	/*
+>  	 * Use module_alloc so this page is within +/- 2GB of where the
+> @@ -171,7 +180,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
+>  	kip->insns = module_alloc(PAGE_SIZE);
+>  	if (!kip->insns) {
+>  		kfree(kip);
+> -		return NULL;
+> +		ret = NULL;
+> +		goto end;
+>  	}
+>  	INIT_HLIST_NODE(&kip->hlist);
+>  	hlist_add_head(&kip->hlist, &kprobe_insn_pages);
+> @@ -179,7 +189,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
+>  	kip->slot_used[0] = SLOT_USED;
+>  	kip->nused = 1;
+>  	kip->ngarbage = 0;
+> -	return kip->insns;
+> +	ret = kip->insns;
+> +end:
+> +	mutex_unlock(&kprobe_insn_mutex);
+> +	return ret;
+>  }
+> 
+>  /* Return 1 if all garbages are collected, otherwise 0. */
+> @@ -213,7 +226,7 @@ static int __kprobes collect_garbage_slo
+>  	struct kprobe_insn_page *kip;
+>  	struct hlist_node *pos, *next;
+> 
+> -	/* Ensure no-one is preepmted on the garbages */
+> +	/* Ensure no-one is preempted on the garbages */
+>  	if (check_safety() != 0)
+>  		return -EAGAIN;
+> 
+> @@ -237,6 +250,7 @@ void __kprobes free_insn_slot(kprobe_opc
+>  	struct kprobe_insn_page *kip;
+>  	struct hlist_node *pos;
+> 
+> +	mutex_lock(&kprobe_insn_mutex);
+>  	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
+>  		if (kip->insns <= slot &&
+>  		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
+> @@ -253,6 +267,7 @@ void __kprobes free_insn_slot(kprobe_opc
+> 
+>  	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
+>  		collect_garbage_slots();
+> +	mutex_unlock(&kprobe_insn_mutex);
+>  }
+>  #endif
+> 
+> 
+> -- 
+> Mathieu Desnoyers
+> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
