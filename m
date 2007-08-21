@@ -1,120 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762749AbXHUG7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762404AbXHUHAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762749AbXHUG7g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 02:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760366AbXHUGzk
+	id S1762404AbXHUHAX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 03:00:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761894AbXHUG6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:55:40 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:44367 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761097AbXHUGzj (ORCPT
+	Tue, 21 Aug 2007 02:58:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47570
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1761667AbXHUG6G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:55:39 -0400
-Date: Mon, 20 Aug 2007 23:56:05 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, cebbert@redhat.com,
-       patches@x86-64.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andi Kleen <ak@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 19/20] i386: Fix double fault handler
-Message-ID: <20070821065605.GT5275@kroah.com>
-References: <20070821064251.972690753@blue.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="i386-fix-double-fault-handler.patch"
-In-Reply-To: <20070821065210.GA5275@kroah.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Tue, 21 Aug 2007 02:58:06 -0400
+Date: Mon, 20 Aug 2007 23:58:04 -0700 (PDT)
+Message-Id: <20070820.235804.85409183.davem@davemloft.net>
+To: rdreier@cisco.com
+Cc: tom@opengridcomputing.com, jeff@garzik.org, swise@opengridcomputing.com,
+       mshefty@ichips.intel.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports
+ from the host TCP port space.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <adalkc5u1o9.fsf@cisco.com>
+References: <adatzqxwh56.fsf@cisco.com>
+	<20070817.234405.66176298.davem@davemloft.net>
+	<adalkc5u1o9.fsf@cisco.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 20 Aug 2007 18:16:54 -0700
 
--stable review patch.  If anyone has any objections, please let us know.
+> And direct data placement really does give you a factor of two at
+> least, because otherwise you're stuck receiving the data in one
+> buffer, looking at some of the data at least, and then figuring out
+> where to copy it.  And memory bandwidth is if anything becoming more
+> valuable; maybe LRO + header splitting + page remapping tricks can get
+> you somewhere but as NCPUS grows then it seems the TLB shootdown cost
+> of page flipping is only going to get worse.
 
-------------------
-From: Chuck Ebbert <cebbert@redhat.com>
+As Herbert has said already, people can code for this just like
+they have to code for RDMA.
 
-The new percpu code has apparently broken the doublefault handler
-when CONFIG_DEBUG_SPINLOCK is set. Doublefault is handled by
-a hardware task, making the check
+There is no fundamental difference from converting an application
+to sendfile or similar.
 
-        SPIN_BUG_ON(lock->owner == current, lock, "recursion");
+The only thing this needs is a
+"recvmsg_I_dont_care_where_the_data_is()" call.  There are no alignment
+issues unless you are trying to push this data directly into the
+page cache.
 
-fault because it uses the FS register to access the percpu data
-for current, and that register is zero in the new TSS. (The trace
-I saw was on 2.6.20 where it was GS, but it looks like this will
-still happen with FS on 2.6.22.)
+Couple this with a card that makes sure that on a per-page basis, only
+data for a particular flow (or group of flows) will accumulate.
 
-Initializing FS in the doublefault_tss should fix it.
+People already make cards that can do stuff like this, it can be done
+statelessly with an on-chip dynamically maintained flow table.
 
-AK: Also fix broken ptr_ok() and turn printks into KERN_EMERG
-AK: And add a PANIC prefix to make clear the system will hang
-AK: (e.g. x86-64 will recover)
-
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-
----
- arch/i386/kernel/doublefault.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
-
---- a/arch/i386/kernel/doublefault.c
-+++ b/arch/i386/kernel/doublefault.c
-@@ -13,7 +13,7 @@
- static unsigned long doublefault_stack[DOUBLEFAULT_STACKSIZE];
- #define STACK_START (unsigned long)(doublefault_stack+DOUBLEFAULT_STACKSIZE)
- 
--#define ptr_ok(x) ((x) > PAGE_OFFSET && (x) < PAGE_OFFSET + 0x1000000)
-+#define ptr_ok(x) ((x) > PAGE_OFFSET && (x) < PAGE_OFFSET + MAXMEM)
- 
- static void doublefault_fn(void)
- {
-@@ -23,23 +23,23 @@ static void doublefault_fn(void)
- 	store_gdt(&gdt_desc);
- 	gdt = gdt_desc.address;
- 
--	printk("double fault, gdt at %08lx [%d bytes]\n", gdt, gdt_desc.size);
-+	printk(KERN_EMERG "PANIC: double fault, gdt at %08lx [%d bytes]\n", gdt, gdt_desc.size);
- 
- 	if (ptr_ok(gdt)) {
- 		gdt += GDT_ENTRY_TSS << 3;
- 		tss = *(u16 *)(gdt+2);
- 		tss += *(u8 *)(gdt+4) << 16;
- 		tss += *(u8 *)(gdt+7) << 24;
--		printk("double fault, tss at %08lx\n", tss);
-+		printk(KERN_EMERG "double fault, tss at %08lx\n", tss);
- 
- 		if (ptr_ok(tss)) {
- 			struct i386_hw_tss *t = (struct i386_hw_tss *)tss;
- 
--			printk("eip = %08lx, esp = %08lx\n", t->eip, t->esp);
-+			printk(KERN_EMERG "eip = %08lx, esp = %08lx\n", t->eip, t->esp);
- 
--			printk("eax = %08lx, ebx = %08lx, ecx = %08lx, edx = %08lx\n",
-+			printk(KERN_EMERG "eax = %08lx, ebx = %08lx, ecx = %08lx, edx = %08lx\n",
- 				t->eax, t->ebx, t->ecx, t->edx);
--			printk("esi = %08lx, edi = %08lx\n",
-+			printk(KERN_EMERG "esi = %08lx, edi = %08lx\n",
- 				t->esi, t->edi);
- 		}
- 	}
-@@ -63,6 +63,7 @@ struct tss_struct doublefault_tss __cach
- 		.cs		= __KERNEL_CS,
- 		.ss		= __KERNEL_DS,
- 		.ds		= __USER_DS,
-+		.fs		= __KERNEL_PERCPU,
- 
- 		.__cr3		= __pa(swapper_pg_dir)
- 	}
-
--- 
+And best yet it doesn't turn off every feature in the networking nor
+bypass it for the actual protocol processing.
