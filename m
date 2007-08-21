@@ -1,109 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbXHUMVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759729AbXHUMV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758877AbXHUMVi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 08:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbXHUMVb
+	id S1759729AbXHUMV4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 08:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759373AbXHUMVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 08:21:31 -0400
-Received: from mx1.ciphirelabs.net ([217.72.114.64]:55066 "EHLO
-	mx.dmz.ciphirelabs.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751368AbXHUMVb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 08:21:31 -0400
-From: "Andreas Jellinghaus [c]" <aj@ciphirelabs.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [linux-usb-devel] why was MODALIAS removed from usb kernel events? [u]
-Date: Tue, 21 Aug 2007 14:21:16 +0200
-User-Agent: KMail/1.9.6
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-References: <200708171622.05115.aj@ciphirelabs.com> <20070821073656.GA6691@kroah.com> <1187696468.2489.10.camel@lov.localdomain>
-In-Reply-To: <1187696468.2489.10.camel@lov.localdomain>
+	Tue, 21 Aug 2007 08:21:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45307 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751368AbXHUMVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 08:21:45 -0400
+Date: Tue, 21 Aug 2007 14:21:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [accounting regression since rc1]  scheduler updates
+Message-ID: <20070821122125.GA7910@elte.hu>
+References: <20070812163225.GA11996@elte.hu> <200708211324.13442.borntraeger@de.ibm.com> <20070821113037.GA2390@elte.hu> <200708211358.52916.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708211421.16800.aj@ciphirelabs.com>
-X-Ciphire-Security: plain
+In-Reply-To: <200708211358.52916.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 21. August 2007 schrieb Kay Sievers:
-> The subject says MODALIAS was removed, but I don't think that it ever
-> was there for a usb-device event. And sure, it's still there for a
-> usb-interface event.
->
-> Andreas, do I read this right, you miss:
->   DEVICE, PRODUCT, TYPE
-> in the usb-interface event, and they only exist in the usb-device event?
->
-> And MODALIAS is not what you miss, and the subject of the mail is
-> misleading?
 
-I'm coming from a different side, as I know not much about the kernel 
-internals. but if I run "udevmonitor --kernel --environment" and then
-plug in some usb device (e.g. my smart card reader):
- - on 2.6.21 there are two events with DEVICE and the second has DEVICE
-   and MODALIAS set. thats what I need.
- - on 2.6.22 there are two events: one has DEVICE and one has MODALIAS,
-   but neither has both. this breaks openct. 
+* Christian Borntraeger <borntraeger@de.ibm.com> wrote:
 
-PRODUCT and TYPE are also missing from the event that has MODALIAS in 2.6.22.
+> > but i dont mind your patch either - it's really the architecture's 
+> > choice how visible it wants to make external load to the task stats 
+> > of its virtual machines. I think it is more logical to say that 100% 
+> > CPU time displayed in 'top' means that the task got all the CPU time 
+> > it asked for from the virtual machine. (and if you are curious about 
+> > how much time was stolen from the virtual box altogether you look at 
+> > the stolen-time stats in isolation.)
+> 
+> Well, as I said we started with the same approach (virtual cpu) but we 
+> learned that these numbers have no meaning at all because the 
+> hypervisor does have different scheduling timeslices and having 100% 
+> inside the guest can still result in almost nothing if the system is 
+> really loaded.
 
-> Note:
-> DEVICE only exists when USB_DEVICE_CLASS=y,
+hm, i think i must have used the wrong terminology, so let me describe 
+what i mean, so that we can argue this more efficiently ;-)
 
-yes, I tested with 2.6.22 with that turned on. if setting this to no breaks
-openct, then we should not easily deprecate it. instead we first need a 
-migration plan, than we need enough time to get a new version of openct to 
-every user that works with the new and the old kernel, and only after that is 
-done we can deprecate it, suggest to turn it of, and even later remove it.
-please keep such a timing, many other parts of the kernel follow these rules
-too. Documentation/feature-removal-schedule.txt should be updated to contain
-exact information how long we can count on USB_DEVICE_CLASS=y etc.
+What i call "real time sched_clock()" is a sched_clock() that returns 
+the GTOD (the real time) of the hypervisor. I.e. sched_clock() advances 
+by 1 billion units every wall-clock second, in each guest.
 
-> because it unfortunately is 
-> prefixed with the /proc mount path, which doesn't exist when the /proc
-> device node support is not compiled in
+A "virtual time sched_clock()" is a sched_clock() that returns only the 
+amount of time the virtual CPU was executed by the hypervisor. I.e. on a 
+3 times overloaded hypervisor with 3 guests it will advance 333 million 
+nanoseconds per 1 wall-clock second, in each guest. (it is 'virtual' 
+because the clock slows down as load goes up. In CFS-speak the virtual 
+clock is the "fair-clock".)
 
-I'm fine with that. people have used that one for years, and they still should 
-have it. if you suggest people should use /dev/bus/usb instead, we need the 
-same plan: migration plan first, enough time to adjust the software and get 
-it to the users, then deprecation plan and later a removeal. maybe add an 
-entry to feature-removal-schedule.txt too? even if only to let everyone
-incl. distribution makers know, that /dev/bus/usb is not an instant 
-replacement for /proc/bus/usb, even if it seems so for some software.
+to me the right scheme for sched_clock() is the virtual variant: to 
+return the load-scaled nanoseconds. That way CFS will be able to 
+schedule fairly even if time has been "stolen" from a task [by virtue of 
+the hypervisor scheduling away the guest context without giving any 
+notice about this to the guest kernel] - because sched_clock() measures 
+the virtual time that got allocated to that guest by the hypervisor.
 
-> so nothing should depend on the existence of DEVICE. 
-well, first I need the migration plan: so far I could depend on it,
-please give me the new thing that I can depend on. it needs to work
-with old kernels too (something like a 6month to 2year window of kernel,
-we shouldn't force people to upgrade and downgrade kernel and other
-apps unless it is absolutely necessary).
+[ here i'm assuming precise host and precise guest statistics (which is 
+  naturally the case if both are Linux), and in that context the virtual 
+  numbers very much make sense, and whether 'top' displays 100% for a 
+  sole CPU-bound task should be mostly a matter of tooling. ]
 
-all discussions I remember ended nowhere: there is no alternative
-for the combination of DEVICE and MODALIAS. I tried /dev/bus/usb
-and sysfs, but it didn't work out because of timing and race conditions
-and other problems you summed up as "there is no sane way" ...
-but maybe I got this wrong, so I'm asking once more: DEVICE plus MODALIAS
-is working fine for me, but I'm happy to migrate. what is the plan,
-what shall I do instead? and what is the minimum kernel and udev etc.
-required for this alternative to work? and how long can I count on the
-old style still to work?
-
-> Most of the recent distros don't mount or configure 
-> usbfs anymore, but use /dev/bus/usb/ device nodes, which can handle
-> access control lists for local users.
-
-that would be a huge problem, as I know no alternative to DEVICE with
-/proc/bus/usb. the kernel tells me about new /proc/bus/usb devices,
-but who tells me about any /dev/bus/usb device? as far as I know: no one.
-please correct me if I'm wrong, I would be real happy to migrate to a working 
-new solution, if it fixes the problem and gives me time for new adventures.
-
-> Is this patch fixing your problem?
-
-will give it a try and respond later. thanks!
-
-Regards, Andreas
+	Ingo
