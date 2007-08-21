@@ -1,161 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbXHUJwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757318AbXHUJzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756918AbXHUJwx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 05:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbXHUJwp
+	id S1757318AbXHUJzU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 05:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbXHUJzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 05:52:45 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:52245 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754159AbXHUJwo (ORCPT
+	Tue, 21 Aug 2007 05:55:08 -0400
+Received: from rs02.intra2net.com ([81.169.173.116]:4781 "EHLO
+	rs02.intra2net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753548AbXHUJzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 05:52:44 -0400
-Date: Tue, 21 Aug 2007 11:52:42 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Satyam Sharma <satyam@infradead.org>
-cc: NeilBrown <neilb@suse.de>, Jan Engelhardt <jengelh@computergmbh.de>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>
-Subject: Re: [PATCH 002 of 6] Introduce rq_for_each_segment replacing
- rq_for_each_bio
-In-Reply-To: <alpine.LFD.0.999.0708211500100.2774@enigma.security.iitk.ac.in>
-Message-ID: <Pine.LNX.4.62.0708211148040.6982@pademelon.sonytel.be>
-References: <20070816211551.11839.patches@notabene> <1070816112100.12182@suse.de>
- <Pine.LNX.4.62.0708170910120.8381@pademelon.sonytel.be>
- <alpine.LFD.0.999.0708181953560.29105@enigma.security.iitk.ac.in>
- <Pine.LNX.4.64.0708181628350.5186@fbirervta.pbzchgretzou.qr>
- <alpine.LFD.0.999.0708182016000.29105@enigma.security.iitk.ac.in>
- <Pine.LNX.4.62.0708201313260.6197@pademelon.sonytel.be>
- <alpine.LFD.0.999.0708210523470.2774@enigma.security.iitk.ac.in>
- <Pine.LNX.4.62.0708210904220.11703@pademelon.sonytel.be>
- <alpine.LFD.0.999.0708211500100.2774@enigma.security.iitk.ac.in>
+	Tue, 21 Aug 2007 05:55:05 -0400
+X-Greylist: delayed 1261 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Aug 2007 05:55:04 EDT
+From: Thomas Jarosch <thomas.jarosch@intra2net.com>
+Organization: Intra2net AG
+To: linux-kernel@vger.kernel.org
+Subject: Re: Kernel oops during netfilter memory allocation
+Date: Tue, 21 Aug 2007 11:33:55 +0200
+User-Agent: KMail/1.9.6
+References: <200708201808.08880.thomas.jarosch@intra2net.com> <20070820193103.GC2488@martell.zuzino.mipt.ru>
+In-Reply-To: <20070820193103.GC2488@martell.zuzino.mipt.ru>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, netfilter-devel@lists.netfilter.org
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-2078517362-1187689962=:6982"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708211133.56261.thomas.jarosch@intra2net.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Monday, 20. August 2007, Alexey Dobriyan wrote:
+> 	kernel BUG at arch/i386/mm/highmem.c:38
+>
+> Try this.
+>
+> commit b8c1c5da1520977cb55a358f20fc09567d40cad9
+> tree c762e6ad77297beed0978337ce2f5b0c50add739
+> parent 01e457cfcd5b6b6f18d0bb8cec0c5d43df56557e
+> author Andrew Morton <akpm@linux-foundation.org> 1185303760 -0700
+> committer Linus Torvalds <torvalds@woody.linux-foundation.org> 1185305099
+> -0700
+>
+> slab: correctly handle __GFP_ZERO
+>
+> Use the correct local variable when calling into the page allocator.  Local
+> `flags' can have __GFP_ZERO set, which causes us to pass __GFP_ZERO into
+> the page allocator, possibly from illegal contexts.  The page allocator
+> will later do prep_zero_page()->kmap_atomic(..., KM_USER0) from irq
+> contexts and will then go BUG.
 
----584337861-2078517362-1187689962=:6982
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Thanks for the patch. Unfortunately it didn't cure the problem.
+After some searching I found one of those rare serial port brackets
+in the attic, so I am now able to get a dump from the serial console.
 
-On Tue, 21 Aug 2007, Satyam Sharma wrote:
-> On Tue, 21 Aug 2007, Geert Uytterhoeven wrote:
-> > On Tue, 21 Aug 2007, Satyam Sharma wrote:
-> > > 
-> > > This is turning rather funny :-)
-> > > 
-> > > * Why the printk() conversion specifier must be "%llu"?
-> > > 
-> > > When reusing parts of this code (such as this debug message) for another
-> > > 32-bit driver (we certainly seem to care about this, as per your reply),
-> > > the largest size of sector_t can be "unsigned long long", thereby causing
-> > > truncated output, and the following warning:
-> > > 
-> > > warning: format ???lu???expects type ???ong unsigned int??? but argument 2 has
-> > > type ???ector_t?
-> > 
-> > You will get a warning, so you will know.
-> 
-> Ah. So you'd much rather prefer that code in drivers/ make assumptions:
-> sizeof(long) == sizeof(long long), and, sizeof(long) == sizeof(sector_t),
-> hmmm?
+Here's the output with the patch applied:
 
-If it's code for a PS3-specific driver that cannot work in 32-bit mode, yes.
+------------[ cut here ]------------
+kernel BUG at arch/i386/mm/highmem.c:38!
+invalid opcode: 0000 [#1]
+Modules linked in: ipt_CRASH(U) deflate zlib_deflate twofish twofish_common 
+serpent blowfish des cbc ecb blkcipher aes xcbc sha256 crypto_null xfrm_user 
+xfrm4_tunnel tunnel4 ipcomp esp4 ah4 af_key dummy tg3 e1000 iptable_mangle 
+ipt_iprange xt_CONNMARK ipt_REDIRECT ipt_MASQUERADE iptable_nat xt_conntrack 
+xt_connmark ipt_LOG xt_limit xt_TCPMSS ipt_REJECT ipt_recent 
+nf_conntrack_ipv4 xt_state ipt_ACCOUNT xt_tcpudp xt_condition xt_policy 
+xt_multiport iptable_filter ip_tables x_tables nf_nat_tftp nf_nat_sip 
+nf_nat_irc nf_nat_pptp nf_nat_proto_gre nf_nat_ftp nf_nat nf_conntrack_tftp 
+nf_conntrack_socks nf_conntrack_sip nf_conntrack_irc nf_conntrack_pptp 
+nf_conntrack_proto_gre nf_conntrack_ftp nf_conntrack nfnetlink ext3 jbd 
+mbcache reiserfs sr_mod cdrom sg ata_piix libata generic
+CPU:    0
+EIP:    0060:[<c0114425>]    Not tainted VLI
+EFLAGS: 00010286   (2.6.21-1.i2n #4)
+EIP is at kmap_atomic+0x24/0x88
+eax: 0000000c   ebx: c0002ee4   ecx: c16fa5e0   edx: 00000003
+esi: 00000003   edi: 00000001   ebp: c16fa5e0   esp: f7723a98
+ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+Process pop3.monitor (pid: 3015, ti=f7722000 task=dfdc3530 task.ti=f7722000)
+Stack: c16fa5e0 00000000 c013c01b 00000001 00000044 00000044 00000001 00000000
+       00028220 c036dea4 c036dc04 00000000 00000001 f7723b78 00000001 00000286
+       00008220 00008220 c036dea0 dfdc3530 c013c0fa 00000044 00000002 f79da4b4
+Call Trace:
+ [<c013c01b>] get_page_from_freelist+0x1e6/0x273
+ [<c013c0fa>] __alloc_pages+0x52/0x286
+ [<f8890194>] nf_conntrack_tcp_update+0x1068/0x10e8 [nf_conntrack]
+ [<c013c394>] get_zeroed_page+0x2c/0x3a
+ [<f89f8000>] ipt_crash_target+0x0/0x48 [ipt_CRASH]
+ [<f89f8012>] ipt_crash_target+0x12/0x48 [ipt_CRASH]
+ [<f893b360>] ipt_do_table+0x27b/0x2d3 [ip_tables]
+ [<c029085c>] nf_iterate+0x38/0x6a
+ [<c0290986>] nf_hook_slow+0x4d/0xb5
+ [<c0295336>] ip_local_deliver_finish+0x0/0x166
+ [<c0295983>] ip_local_deliver+0x6f/0x1e0
+ [<c0295336>] ip_local_deliver_finish+0x0/0x166
+ [<c02958e7>] ip_rcv+0x3ad/0x3da
+ [<c0295140>] ip_rcv_finish+0x0/0x1f6
+ [<c027f42c>] netif_receive_skb+0x217/0x260
+ [<c027ba46>] __alloc_skb+0x49/0xf7
+ [<f89b4f8c>] e1000_read_pci_cfg+0x5eb/0x1903 [e1000]
+ [<f89b4c42>] e1000_read_pci_cfg+0x2a1/0x1903 [e1000]
+ [<f89b3f8f>] e1000_reinit_locked+0x1aba/0x24cc [e1000]
+ [<c013c0fa>] __alloc_pages+0x52/0x286
+ [<f89f8000>] ipt_crash_target+0x0/0x48 [ipt_CRASH]
+ [<c0280a80>] net_rx_action+0x52/0x10e
+ [<c011ae94>] __do_softirq+0x35/0x75
+ [<c011aef6>] do_softirq+0x22/0x26
+ [<c01061ef>] do_IRQ+0x5c/0x71
+ [<c010460f>] common_interrupt+0x23/0x28
+ [<c01a31be>] __copy_to_user_ll+0xcb/0xd6
+ [<c01384f4>] file_read_actor+0x6b/0xca
+ [<c0138c48>] do_generic_mapping_read+0x172/0x40a
+ [<c013a90a>] generic_file_aio_read+0x150/0x182
+ [<c0138489>] file_read_actor+0x0/0xca
+ [<c0157b18>] do_path_lookup+0x14a/0x19a
+ [<c015156b>] get_empty_filp+0x4f/0xcc
+ [<c0150613>] do_sync_read+0xc7/0x10a
+ [<c0125574>] autoremove_wake_function+0x0/0x35
+ [<c0107979>] sys_mmap2+0x6f/0xb7
+ [<c015054c>] do_sync_read+0x0/0x10a
+ [<c0150d76>] vfs_read+0x88/0x10a
+ [<c0151098>] sys_read+0x41/0x67
+ [<c0103c66>] syscall_call+0x7/0xb
+ =======================
+Code: c8 e9 f9 c4 02 00 c3 56 89 c1 53 89 d6 89 e0 25 00 e0 ff ff ff 40 14 8b 
+1d b4 f7 3e c0 8d 04 95 00 00 00 00 29 c3 83 3b 00 74 04 <0f> 0b eb fe 8b 01 
+c1 e8 1e 69 c0 44 01 00 00 05 c0 da 36 c0 8b
+EIP: [<c0114425>] kmap_atomic+0x24/0x88 SS:ESP 0068:f7723a98
+Kernel panic - not syncing: Fatal exception in interrupt
+------------------------------------
 
-> > > Therefore, let us not depend on the fact that this driver is being used
-> > > only for 64-bit platforms as of now (especially since this is in drivers/
-> > > and not in arch/) and rather make the printk() specifier as "%llu".
-> > > 
-> > > [ Sadly, I had to repeat most of my previous mail, which Jan Engelhardt
-> > > appears to have snipped. ]
-> > 
-> > [ and you dropped the cell mailing list from the CC list ]
-> 
-> I don't enjoy getting "this is a subscriber-only list" notifications,
-> thank you.
 
-IC.
+I've replaced the Intel e1000 card with a bulk Realtek 8139 card just to make 
+sure it's not related to the e1000 driver. Here's the backtrace:
 
-> > > * Why we require an explicit (unsigned long long) cast?
-> > > 
-> > > Having made the above change (and say we don't have an explicit cast
-> > > there), that line now becomes:
-> > > 
-> > > 	printk("... %llu\n", ..., iter.bio->bi_sector);
-> > > 
-> > > Now if we build this code with CONFIG_LBD=n, sector_t becomes just an
-> > > "unsigned long" (whereas printk specifier is the larger "%llu") thereby
-> > > causing:
-> > > 
-> > > warning: format ???llu???expects type ???ong long unsigned int??? but argument
-> > > 2 has type ???ector_t?
-> > > 
-> > > Therefore, let us shut this up with an explicit (unsigned long long) cast,
-> > > as is done in most other existing code in the kernel where we want to get
-> > > bi_sector printed out, which would correctly convert the value to the
-> > > larger integer type (even negative ones, due to sign-extension) and print
-> > > it out.
-> > > 
-> > > > On the other hand, adding a cast may hide bugs:
-> > > >   - cast to unsigned long long: When sector_t is changed to an even larger
->           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > > >     type, it will be silently truncated as well.
->           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > > 
-> > > IMHO, this is not a valid enough reason, given the above (BTW if/when that
-> > > happens, we'll have to update the printk conversion specifer as well).
-> > > 
-> > > Personally, I'd say code that assumes "sizeof(unsigned long long) ==
-> > > sizeof(unsigned long)", and also that assumes "sizeof(unsigned long) ==
-> > > sizeof(sector_t)" -- both assumptions _are_ made by the above code --
-> > > is not good taste, even if both may be true for PS3 platform. So unless
-> > > we decide "nobody except that platform would ever build this driver
-> > > anyway", I'd suggest to make the printk specifier as "%llu" and use an
-> > > explicit (unsigned long long) cast. Therefore (on top of this series):
-> > 
-> > Adding such a cast makes it impossible for the compiler to detect (and warn us)
-> > if something has changed.
-> 
-> Change as in increase in size, right? Did you even read the mail? The only
+------------[ cut here ]------------
+kernel BUG at arch/i386/mm/highmem.c:38!
+invalid opcode: 0000 [#1]
+Modules linked in: ipt_CRASH(U) iptable_filter ip_tables x_tables 8139too mii 
+deflate zlib_deflate twofish twofish_common serpent blowfish des cbc ecb blkc
+CPU:    0
+EIP:    0060:[<c0114425>]    Not tainted VLI
+EFLAGS: 00010286   (2.6.21-1.i2n #4)
+EIP is at kmap_atomic+0x24/0x88
+eax: 0000000c   ebx: c0002ee4   ecx: c167b2c0   edx: 00000003
+esi: 00000003   edi: 00000001   ebp: c167b2c0   esp: f7a73c74
+ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+Process imap.monitor (pid: 3181, ti=f7a72000 task=dfc8ea30 task.ti=f7a72000)
+Stack: c167b2c0 00000000 c013c01b 00000001 00000044 00000002 00000001 00000000
+       00028220 c036dea4 c036dc04 00000000 00000001 00000000 00000001 dfdfde40
+       00008220 00008220 c036dea0 dfc8ea30 c013c0fa 00000044 c013c0fa 00000044
+Call Trace:
+ [<c013c01b>] get_page_from_freelist+0x1e6/0x273
+ [<c013c0fa>] __alloc_pages+0x52/0x286
+ [<c013c0fa>] __alloc_pages+0x52/0x286
+ [<c013a66b>] filemap_nopage+0x156/0x2a5
+ [<c013c394>] get_zeroed_page+0x2c/0x3a
+ [<f8933000>] ipt_crash_target+0x0/0x48 [ipt_CRASH]
+ [<f8933012>] ipt_crash_target+0x12/0x48 [ipt_CRASH]
+ [<f893b360>] ipt_do_table+0x27b/0x2d3 [ip_tables]
+ [<c029085c>] nf_iterate+0x38/0x6a
+ [<c0290986>] nf_hook_slow+0x4d/0xb5
+ [<c0295336>] ip_local_deliver_finish+0x0/0x166
+ [<c0295983>] ip_local_deliver+0x6f/0x1e0
+ [<c0295336>] ip_local_deliver_finish+0x0/0x166
+ [<c02958e7>] ip_rcv+0x3ad/0x3da
+ [<c027f42c>] netif_receive_skb+0x217/0x260
+ [<c027ba46>] __alloc_skb+0x49/0xf7
+ [<f8a4540c>] init_module+0xc140c/0xc22b0 [8139too]
+ [<c0280a80>] net_rx_action+0x52/0x10e
+ [<c011ae94>] __do_softirq+0x35/0x75
+ [<c011aef6>] do_softirq+0x22/0x26
+ [<c01061ef>] do_IRQ+0x5c/0x71
+ [<c010460f>] common_interrupt+0x23/0x28
+ [<c0142282>] __handle_mm_fault+0x1aa/0x7a6
+ [<c0113922>] do_page_fault+0x20d/0x4d3
+ [<c0113715>] do_page_fault+0x0/0x4d3
+ [<c02ca89c>] error_code+0x74/0x7c
+ =======================
+Code: c8 e9 f9 c4 02 00 c3 56 89 c1 53 89 d6 89 e0 25 00 e0 ff ff ff 40 14 8b 
+1d b4 f7 3e c0 8d 04 95 00 00 00 00 29 c3 83 3b 00 74 04 <0f> 0b eb fe 8b 01
+EIP: [<c0114425>] kmap_atomic+0x24/0x88 SS:ESP 0068:f7a73c74
+Kernel panic - not syncing: Fatal exception in interrupt
+------------------------------------
 
-Yes. Yes.
+I can't trigger the bug by force if I boot the system with mem=512m.
 
-> argument you had given against the cast to (unsigned long long) was what
-> has been underlined above, which was bogus, considering we would have to
-> change the "%lu" specifier in the printk() also, when that happens
-> (otherwise suffer silent truncation).
+Anything I could try?
 
-Not silent truncation. Without a cast, the compiler will warn.
-
-> But looks like you /are/ deciding "nobody except PS3 platform would ever
-> build this driver anyway" ... so okay, the current code, will all it's
-> non-portable assumptions, is okay.
-
-OK, thx.
-The driver uses the PS3-specific hypervisor interface, which is 64-bit.
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-2078517362-1187689962=:6982--
+Thomas
