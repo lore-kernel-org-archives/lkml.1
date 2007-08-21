@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbXHUL7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbXHUMEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758022AbXHUL7x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 07:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbXHUL7o
+	id S1757068AbXHUMEr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 08:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbXHUMEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 07:59:44 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:14124 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750871AbXHUL7o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 07:59:44 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [accounting regression since rc1]  scheduler updates
-Date: Tue, 21 Aug 2007 13:58:52 +0200
-User-Agent: KMail/1.9.7
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-References: <20070812163225.GA11996@elte.hu> <200708211324.13442.borntraeger@de.ibm.com> <20070821113037.GA2390@elte.hu>
-In-Reply-To: <20070821113037.GA2390@elte.hu>
+	Tue, 21 Aug 2007 08:04:39 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:39778 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750742AbXHUMEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 08:04:38 -0400
+Date: Tue, 21 Aug 2007 14:04:26 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Florin Iucha <florin@iucha.net>
+cc: linux-usb-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
+ v2.6.23-rc3-50-g28e8351
+In-Reply-To: <20070821115115.GD10422@iucha.net>
+Message-ID: <Pine.LNX.4.64.0708211402000.2460@twin.jikos.cz>
+References: <20070815133147.GA7124@iucha.net> <Pine.LNX.4.64.0708151647540.2460@twin.jikos.cz>
+ <20070815145313.GC7124@iucha.net> <Pine.LNX.4.64.0708151656070.2460@twin.jikos.cz>
+ <20070821115115.GD10422@iucha.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708211358.52916.borntraeger@de.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> what do you think about the rq_clock() #ifdef i did in the previous mail 
-> plus you making sched_clock() virtual? That way you can keep 
-> scheduler_tick() driven by real-time, although that generally will cause 
-> artifacts with SMP load-balancing too. (that was true in the past too)
+On Tue, 21 Aug 2007, Florin Iucha wrote:
 
-I just has a test run with a virtual sched_clock and your patch. 
-Unfortunately, it doesnt work. top shows 100% for a cpu bound process, but 
-steal time shows about 5% stolen cpu.
+> I have enabled USB debugging and I see a bunch (=46) of these messages:
 
-This brings me to another problem: runtime.
-Let me give an example. You get 90% cpu from your hipervisor in a shared 
-environment. If you now start a cpu bound task that gets the full cpu for 
-lets say 10 minutes. I REALLY want to see 9 minutes in ps and top because my 
-department might pay for used cpu cycles. 
+>    [  $timestamp] usb 1-9: usb auto-suspend
+>    [  $timestamp] usb 1-9: usb auto-resume
+>    [  $timestamp] ehci_hcd 0000:00:02.1: GetStatus port 9 status 001005 POWER sig=se0 PE CONNECT
+>    [  $timestamp] usb 1-9: finish resume
+> The messages continued to be logged, even after the keyboard has
+> become unresponsive.
 
-> 
-> but i dont mind your patch either - it's really the architecture's 
-> choice how visible it wants to make external load to the task stats of 
-> its virtual machines. I think it is more logical to say that 100% CPU 
-> time displayed in 'top' means that the task got all the CPU time it 
-> asked for from the virtual machine. (and if you are curious about how 
-> much time was stolen from the virtual box altogether you look at the 
-> stolen-time stats in isolation.)
+I guess that this is the card reader being suspended and resumed 
+afterwards. Do you by any chance see any improvement when you
 
-Well, as I said we started with the same approach (virtual cpu) but we learned 
-that these numbers have no meaning at all because the hypervisor does have 
-different scheduling timeslices and having 100% inside the guest can still 
-result in almost nothing if the system is really loaded.
+- rmmod ehci_hcd
+- disable USB_AUTOSUSPEND
 
+please? Thanks,
 
-Christian
+-- 
+Jiri Kosina
