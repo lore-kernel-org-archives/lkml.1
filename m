@@ -1,113 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758616AbXHUKet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbXHUKgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758616AbXHUKet (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 06:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbXHUKed
+	id S1758106AbXHUKgt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 06:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbXHUKgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 06:34:33 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:10710 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756221AbXHUKeb (ORCPT
+	Tue, 21 Aug 2007 06:36:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57740 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752204AbXHUKgk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 06:34:31 -0400
-Subject: Re: [accounting regression since rc1]  scheduler updates
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20070821093434.GB12025@elte.hu>
-References: <20070812163225.GA11996@elte.hu>
-	 <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu>
-	 <200708211017.02998.borntraeger@de.ibm.com> <20070821084243.GB1144@elte.hu>
-	 <1187687476.7623.8.camel@localhost>  <20070821093434.GB12025@elte.hu>
+	Tue, 21 Aug 2007 06:36:40 -0400
+Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water
+	marks
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070820215040.937296148@sgi.com>
+References: <20070820215040.937296148@sgi.com>
 Content-Type: text/plain
-Organization: IBM Corporation
-Date: Tue, 21 Aug 2007 12:38:16 +0200
-Message-Id: <1187692696.24279.7.camel@localhost>
+Date: Tue, 21 Aug 2007 12:36:26 +0200
+Message-Id: <1187692586.6114.211.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-21 at 11:34 +0200, Ingo Molnar wrote:
-> * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+On Mon, 2007-08-20 at 14:50 -0700, Christoph Lameter wrote:
+> One of the problems with reclaim writeout is that it occurs when memory in a
+> zone is low. A particular bad problem can occur if memory in a zone is
+> already low and now the first page that we encounter during reclaim is dirty.
+> So the writeout function is called without the filesystem or device having
+> much of a reserve that would allow further allocations. Triggering writeout
+> of dirty pages early does not improve the memory situation since the actual
+> writeout of the page is a relatively long process. The call to writepage
+> will therefore not improve the low memory situation but make it worse
+> because extra memory may be needed to get the device to write the page.
 > 
-> > > hm, does on s390 scheduler_tick() get driven in virtual time or in 
-> > > real time? The very latest scheduler code will enforce a minimum 
-> > > rate of sched_clock() across two scheduler_tick() calls (in rc3 and 
-> > > later kernels). If sched_clock() "slows down" but scheduler_tick() 
-> > > still has a real-time frequency then that impacts the quality of 
-> > > scheduling. So scheduler_tick() and sched_clock() must really have 
-> > > the same behavior (either both are virtual or both are real), so 
-> > > that scheduling becomes invariant to steal-time.
-> > 
-> > scheduler_tick() is based on the HZ timer which uses the TOD clock = 
-> > real time. sched_clock() currently uses the TOD clock as well so in 
-> > regard to the new scheduler we currently do not have a problem. We 
-> > have a problem with cpu time accounting, the change to the /proc code 
-> > breaks the precise accounting on s390. To solve the cpu time 
-> > accounting we need to change sched_clock() to the cpu timer = virtual 
-> > time. To change the scheduler_tick() as well requires another patch 
-> > and I fear it would complicate things in the s390 backend.
+> This patchset fixes that issue by:
 > 
-> my feeling is that it gives us generally higher-quality scheduling if we 
-> drive all things scheduler via virtual time. Do you agree with that?
-
-Yes, I'm in favour of converting sched_clock to use virtual time. It
-makes sense to me.
-
-> > And if you say that the scheduling becomes invariant to steal-time, 
-> > how is the cpu time accounting via sum_exec supposed to work if it 
-> > does not take steal-time into account ?
+> 1. First reclaiming non dirty pages. Dirty pages are deferred until reclaim
+>    has reestablished the high marks. Then all the dirty pages (the laundry)
+>    is written out.
 > 
-> right now there are two distinct and independent things: scheduler 
-> behavior (the scheduling decisions the scheduler makes) and accounting 
-> behavior.
-> 
-> the 'invariant' i mentioned only covers scheduler behavior, not 
-> accounting behavior. Accounting is separate in theory, but coupled in 
-> practice now via sum_exec_runtime.
+> 2. Reclaim is essentially complete during the writeout phase. So we remove
+>    PF_MEMALLOC and allow recursive reclaim if we still run into trouble
+>    during writeout.
 
-Hmm, ok. But the fact is that right now the accounting via
-sum_exec_runtime is broken in regard to virtual cpus, isn't it?
-
-> Before we do a patch to decouple them again, lets make sure we agree on 
-> the direction to take here. There are two ways to account within a 
-> virtual machine: either in real time or in virtual time.
-> 
-> it seems you'd like accounting to be sensitive to 'external load' - i.e. 
-> you'd like an 'internal' top to show the 'real' CPU accounting, right? 
-
-Yes, we want utime and stime represent the time spent on the physical
-cpu. To make up for the missing time the steal time field has been
-introduced.
-
-> Wouldnt it be more consistent if a virtual box would not show any 
-> dependency on external load? (i.e. it would slow down all of its 
-> internal functionality transparently, without exposing it via /proc. The 
-> only way to observe that would be the TOD interfaces: gettimeofday and 
-> real-time clock driven POSIX timers. Even timer_list could be driven via 
-> virtual time - although that would probably break user expectations, 
-> right?) Or would accounting-in-virtual-time break user expectations too? 
-> (most of the other hypervisors let guests account in virtual time.
-
-No, imho it is less consistent if the virtual box shows virtual time. If
-you look at the top output as a user and it shows that some process used
-x% of cpu what does it tell you? With virtual cpus next to nothing, you
-have to normalize the numbers with the %steal while the process was
-running. But even then it still is not a good number because the %steal
-changes while a process is running. The only good solution is to use
-virtual time for all cputime values.
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
+This almost insta-OOMs with anonymous workloads.
 
 
