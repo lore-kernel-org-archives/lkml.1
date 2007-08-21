@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbXHUOpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760169AbXHUOvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbXHUOpH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 10:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757253AbXHUOov
+	id S1760169AbXHUOvw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 10:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757074AbXHUOvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 10:44:51 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42512 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756336AbXHUOou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 10:44:50 -0400
-In-Reply-To: <20070821070555.GA32036@flint.arm.linux.org.uk>
-References: <46C516BA.60700@yahoo.com.au> <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org> <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au> <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com> <46C997B1.1010800@redhat.com> <417ebba299a7ad3c4b7a31c4f860a814@kernel.crashing.org> <20070820224859.GA16162@flint.arm.linux.org.uk> <2bdb04581125f22122f1d230e991ea92@kernel.crashing.org> <20070821070555.GA32036@flint.arm.linux.org.uk>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0e3d1956b0b85feb2bdbdba07fad6a08@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       rpjday@mindspring.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, satyam@infradead.org,
-       zlynx@acm.org, schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Tue, 21 Aug 2007 16:39:15 +0200
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-X-Mailer: Apple Mail (2.623)
+	Tue, 21 Aug 2007 10:51:43 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:52903 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757241AbXHUOvm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 10:51:42 -0400
+Date: Tue, 21 Aug 2007 10:51:41 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jiri Kosina <jikos@jikos.cz>
+cc: Florin Iucha <florin@iucha.net>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Greg KH <gregkh@suse.de>, <linux-usb-devel@lists.sourceforge.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
+ v2.6.23-rc3-50-g28e8351
+In-Reply-To: <Pine.LNX.4.64.0708211402000.2460@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.44L0.0708211050570.4137-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>> And no, RMW on MMIO isn't "problematic" at all, either.
->>>>
->>>> An RMW op is a read op, a modify op, and a write op, all rolled
->>>> into one opcode.  But three actual operations.
->>>
->>> Maybe for some CPUs, but not all.  ARM for instance can't use the
->>> load exclusive and store exclusive instructions to MMIO space.
->>
->> Sure, your CPU doesn't have RMW instructions -- how to emulate
->> those if you don't have them is a totally different thing.
->
-> Let me say it more clearly: On ARM, it is impossible to perform atomic
-> operations on MMIO space.
+On Tue, 21 Aug 2007, Jiri Kosina wrote:
 
-It's all completely beside the point, see the other subthread, but...
+> On Tue, 21 Aug 2007, Florin Iucha wrote:
+> 
+> > I have enabled USB debugging and I see a bunch (=46) of these messages:
+> 
+> >    [  $timestamp] usb 1-9: usb auto-suspend
+> >    [  $timestamp] usb 1-9: usb auto-resume
+> >    [  $timestamp] ehci_hcd 0000:00:02.1: GetStatus port 9 status 001005 POWER sig=se0 PE CONNECT
+> >    [  $timestamp] usb 1-9: finish resume
+> > The messages continued to be logged, even after the keyboard has
+> > become unresponsive.
+> 
+> I guess that this is the card reader being suspended and resumed 
+> afterwards. Do you by any chance see any improvement when you
 
-Yeah, you can't do LL/SC to MMIO space; ARM isn't alone in that.
-You could still implement atomic operations on MMIO space by taking
-a lock elsewhere, in normal cacheable memory space.  Why you would
-do this is a separate question, you probably don't want it :-)
+FYI, the card reader suspend/resume problem should be fixed by this 
+patch:
 
+	http://marc.info/?l=linux-usb-devel&m=118764229910761&w=2
 
-Segher
+Alan Stern
 
