@@ -1,110 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbXHUWnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbXHUWwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756064AbXHUWnb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 18:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbXHUWnX
+	id S1755898AbXHUWwT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 18:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbXHUWwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 18:43:23 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:57700 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753736AbXHUWnW (ORCPT
+	Tue, 21 Aug 2007 18:52:04 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36627 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752910AbXHUWwB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 18:43:22 -0400
-Date: Tue, 21 Aug 2007 15:43:21 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
-In-Reply-To: <1187734144.5463.35.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0708211532560.5728@schroedinger.engr.sgi.com>
-References: <20070820215040.937296148@sgi.com>  <1187692586.6114.211.camel@twins>
-  <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com> 
- <1187730812.5463.12.camel@lappy>  <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com>
- <1187734144.5463.35.camel@lappy>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 21 Aug 2007 18:52:01 -0400
+Date: Wed, 22 Aug 2007 00:00:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: =?UTF-8?B?Sm9zw6k=?= Luis =?UTF-8?B?UGF0acOxbyBBbmRyw6lz?= 
+	<jopan@alumni.uv.es>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Problems with IDE on linux 2.6.22.X
+Message-ID: <20070822000003.6c561407@the-village.bc.nu>
+In-Reply-To: <46CB626F.8020801@gmail.com>
+References: <200708212149.12912.jopan@alumni.uv.es>
+	<46CB626F.8020801@gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007, Peter Zijlstra wrote:
+> "Intel ESB, ICH, PIIX3, PIIX4 PATA/SATA support"
 
-> Also, all I want is for slab to honour gfp flags like page allocation
-> does, nothing more, nothing less.
-> 
-> (well, actually slightly less, since I'm only really interrested in the
-> ALLOC_MIN|ALLOC_HIGH|ALLOC_HARDER -> ALLOC_NO_WATERMARKS transition and
-> not all higher ones)
+Not for the newer chips. You want ATA/SATA (PIIX and possibly AHCI)
+support from the new drivers, SCSI disk and SCSI cd.
 
-I am still not sure what that brings you. There may be multiple 
-PF_MEMALLOC going on at the same time. On a large system with N cpus
-there may be more than N of these that can steal objects from one another. 
+> where you may need to boot with a "libata.atapi_enabled=0" kernel parameter.
 
-A NUMA system will be shot anyways if memory gets that problematic to 
-handle since the OS cannot effectively place memory if all zones are 
-overallocated so that only a few pages are left.
+Why deliberately disable atapi when you need atapi ?
 
-
-> I want slab to fail when a similar page alloc would fail, no magic.
-
-Yes I know. I do not want allocations to fail but that reclaim occurs in 
-order to avoid failing any allocation. We need provisions that 
-make sure that we never get into such a bad memory situation that would
-cause severe slowless and usually end up in a livelock anyways.
-
-> > > Anonymous pages are a there to stay, and we cannot tell people how to
-> > > use them. So we need some free or freeable pages in order to avoid the
-> > > vm deadlock that arises from all memory dirty.
-> > 
-> > No one is trying to abolish Anonymous pages. Free memory is readily 
-> > available on demand if one calls reclaim. Your scheme introduces complex 
-> > negotiations over a few scraps of memory when large amounts of memory 
-> > would still be readily available if one would do the right thing and call 
-> > into reclaim.
-> 
-> This is the thing I contend, there need not be large amounts of memory
-> around. In my test prog the hot code path fits into a single page, the
-> rest can be anonymous.
-
-Thats a bit extreme.... We need to make sure that there are larger amounts 
-of memory around. Pages are used for all shorts of short term uses (like 
-slab shrinking etc etc.). If memory is that low that a single page matters
-then we are in very bad shape anyways.
-
-> > Sounds like you would like to change the way we handle memory in general 
-> > in the VM? Reclaim (and thus finding freeable pages) is basic to Linux 
-> > memory management.
-> 
-> Not quite, currently we have free pages in the reserves, if you want to
-> replace some (or all) of that by freeable pages then that is a change.
-
-We have free pages primarily to optimize the allocation. Meaning we do not 
-have to run reclaim on every call. We want to use all of memory. The 
-reserves are there for the case that we cannot call into reclaim. The easy 
-solution if that is problematic is to enhance the reclaim to work in the
-critical situations that we care about.
-
-
-> > Sorry I just got into this a short time ago and I may need a few cycles 
-> > to get this all straight. An approach that uses memory instead of 
-> > ignoring available memory is certainly better.
-> 
-> Sure if and when possible. There will always be need to fall back to the
-> reserves.
-
-Maybe. But we can certainly avoid that as much as possible which would 
-also increase our ability to use all available memory instead of leaving 
-some of it unused./
-
-> A bit off-topic, re that reclaim from atomic context:
-> Currently we try to hold spinlocks only for short periods of time so
-> that reclaim can be preempted, if you run all of reclaim from a
-> non-preemptible context you get very large preemption latencies and if
-> done from int context it'd also generate large int latencies.
-
-If you call into the page allocator from an interrupt context then you are 
-already in bad shape since we may check pcps lists and then potentially 
-have to traverse the zonelists and check all sorts of things. If we 
-would implement atomic reclaim then the reserves may become a latency 
-optimizations. At least we will not fail anymore if the reserves are out.
-
+Alan
