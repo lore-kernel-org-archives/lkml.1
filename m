@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbXHUSg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbXHUSlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932183AbXHUSg4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 14:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760509AbXHUSgr
+	id S932185AbXHUSlS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 14:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761414AbXHUSlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 14:36:47 -0400
-Received: from smtp108.sbc.mail.re2.yahoo.com ([68.142.229.97]:35497 "HELO
-	smtp108.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757191AbXHUSgr (ORCPT
+	Tue, 21 Aug 2007 14:41:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35576 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760526AbXHUSlJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 14:36:47 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=JcNqHb8o4zCn0POQ7/JHZWpgzftB39BMcxaF/8giB24ewDLDfQx2vYbBSD9XgNLEI6x0U/SsDy8B4wbhOqNB2XK1zBR8efVIEOvPpCz9+nmSE8tG6oNy1XbkQ7RKJbpkiQRsKwyOo78cbBIIr2XkGUtFItJsKeArpgwRvIF7sjM=  ;
-X-YMail-OSG: Y1fRhH4VM1k3fCIah2ZoZw016crS3s7SFJxxfAdWBA_fWsxTfdPn_GHwrUe_oAA6J9muoWHjvAF1rEVQHt6smIur.EggZ_WK3UxeHbMCkK_FcN0qjR2iauniHwufvaePp9kNA73GOEAg8w0-
-From: David Brownell <david-b@pacbell.net>
-To: Tony Jones <tonyj@suse.de>
-Subject: Re: [patch 09/14] Convert from class_device to device for SPI
-Date: Tue, 21 Aug 2007 11:28:28 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
-References: <20070820224806.154198000@suse.de> <20070820225122.627806000@suse.de> <20070821150119.GH26519@suse.de>
-In-Reply-To: <20070821150119.GH26519@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 21 Aug 2007 14:41:09 -0400
+Date: Tue, 21 Aug 2007 11:40:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Daniel Walker <dwalker@mvista.com>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [12/58] x86_64: Add vDSO for x86-64 with
+ gettimeofday/clock_gettime/getcpu
+Message-Id: <20070821114026.41d5c9d7.akpm@linux-foundation.org>
+In-Reply-To: <20070821184543.GK32640@bingen.suse.de>
+References: <200707191154.642492000@suse.de>
+	<20070719095456.B996214E03@wotan.suse.de>
+	<1187713502.7732.65.camel@imap.mvista.com>
+	<20070821184543.GK32640@bingen.suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708211128.28552.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 21 August 2007, Tony Jones wrote:
-> On Mon, Aug 20, 2007 at 03:48:15PM -0700, tonyj@suse.de wrote:
-> > 
-> > Convert from class_device to device for drivers/spi.  This is part of the work 
-> > to eliminate struct class_device.
+On Tue, 21 Aug 2007 20:45:43 +0200 Andi Kleen <ak@suse.de> wrote:
+
+> > In the -mm kernel there is some debugging that gets injected into the
+> > likely/unlikely macros .. If they get called from userspace it causes a
 > 
-> Signed-off-by: Tony Jones <tonyj@suse.de>
+> They should likely define a __likely()/__unlikely() then that doesn't
+> do this.
+> 
+> > hang .. We might want to add some new set of macros to specifically
+> > denote that they are called from userspace, not just likely/unlikely but
+> > all the macros so we don't get mixed usage ..
+> 
+> and add a hunk to change the vDSO code. Note that i386 is not the 
+> only architecture that has such code.
+> 
 
-Yeah, "no signoff" was one of my first reactions to that.  :)
-
-
-Can you update the Documentation/spi/spi-summary text which is
-invalidated by this change?  That's part of why I rejected an
-earlier version of this patch:  since it broke the documentation,
-it was incomplete.
-
-The other reason was to explore removing the "struct class" too,
-since it's not necessary.  But it turns out to be simpler to
-keep it in there to allocate the bus IDs.  So I've changed my
-mind, and will merge a patch like $SUBJECT if it's complete
-(i.e. doesn't leave broken/invalid docs).
-
-- Dave
-
+Yes, the simplest fix would be to remove all the troublesome likely/unlikely
+calls within that debug patch.  I'll take a look at that, see if it fixes
+the compile.
