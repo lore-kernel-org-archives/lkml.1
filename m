@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762404AbXHUHAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762826AbXHUG7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762404AbXHUHAX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 03:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761894AbXHUG6I
+	id S1762826AbXHUG7y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 02:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756596AbXHUGzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:58:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47570
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761667AbXHUG6G (ORCPT
+	Tue, 21 Aug 2007 02:55:53 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:44390 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761124AbXHUGzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:58:06 -0400
-Date: Mon, 20 Aug 2007 23:58:04 -0700 (PDT)
-Message-Id: <20070820.235804.85409183.davem@davemloft.net>
-To: rdreier@cisco.com
-Cc: tom@opengridcomputing.com, jeff@garzik.org, swise@opengridcomputing.com,
-       mshefty@ichips.intel.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports
- from the host TCP port space.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <adalkc5u1o9.fsf@cisco.com>
-References: <adatzqxwh56.fsf@cisco.com>
-	<20070817.234405.66176298.davem@davemloft.net>
-	<adalkc5u1o9.fsf@cisco.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Aug 2007 02:55:51 -0400
+Date: Mon, 20 Aug 2007 23:56:11 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Josh Boyer <jwboyer@gmail.com>,
+       Joakim.Tjernlund@transmode.se,
+       giulio fedel <giulio.fedel@andorsystems.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 20/20] JFFS2 locking regression fix.
+Message-ID: <20070821065611.GU5275@kroah.com>
+References: <20070821064251.972690753@blue.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="jffs2-locking-regression-fix.patch"
+In-Reply-To: <20070821065210.GA5275@kroah.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 20 Aug 2007 18:16:54 -0700
+-stable review patch.  If anyone has any objections, please let us know.
 
-> And direct data placement really does give you a factor of two at
-> least, because otherwise you're stuck receiving the data in one
-> buffer, looking at some of the data at least, and then figuring out
-> where to copy it.  And memory bandwidth is if anything becoming more
-> valuable; maybe LRO + header splitting + page remapping tricks can get
-> you somewhere but as NCPUS grows then it seems the TLB shootdown cost
-> of page flipping is only going to get worse.
+------------------
 
-As Herbert has said already, people can code for this just like
-they have to code for RDMA.
+Commit a491486a2087ac3dfc00efb4f838c8d684afaf54 introduced a locking
+problem in JFFS2 -- we up() the alloc_sem when we weren't previously
+holding it. This leads to all kinds of fun behaviour later.
 
-There is no fundamental difference from converting an application
-to sendfile or similar.
+There was a _reason_ for the
+	if (1 /* alternative path needs testing */ ||
+which the above-mentioned commit removed :)
 
-The only thing this needs is a
-"recvmsg_I_dont_care_where_the_data_is()" call.  There are no alignment
-issues unless you are trying to push this data directly into the
-page cache.
+Discovered and debugged by Giulio Fedel <giulio.fedel@andorsystems.com>
 
-Couple this with a card that makes sure that on a per-page basis, only
-data for a particular flow (or group of flows) will accumulate.
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-People already make cards that can do stuff like this, it can be done
-statelessly with an on-chip dynamically maintained flow table.
+---
+ fs/jffs2/write.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-And best yet it doesn't turn off every feature in the networking nor
-bypass it for the actual protocol processing.
+--- a/fs/jffs2/write.c
++++ b/fs/jffs2/write.c
+@@ -553,6 +553,9 @@ int jffs2_do_unlink(struct jffs2_sb_info
+ 		struct jffs2_full_dirent **prev = &dir_f->dents;
+ 		uint32_t nhash = full_name_hash(name, namelen);
+ 
++		/* We don't actually want to reserve any space, but we do
++		   want to be holding the alloc_sem when we write to flash */
++		down(&c->alloc_sem);
+ 		down(&dir_f->sem);
+ 
+ 		while ((*prev) && (*prev)->nhash <= nhash) {
+
+-- 
