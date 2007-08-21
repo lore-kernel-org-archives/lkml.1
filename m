@@ -1,117 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760847AbXHUAmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbXHUAns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760847AbXHUAmf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 20:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbXHUAm1
+	id S1762063AbXHUAns (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 20:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbXHUAnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 20:42:27 -0400
-Received: from tetsuo.zabbo.net ([207.173.201.20]:51707 "EHLO tetsuo.zabbo.net"
+	Mon, 20 Aug 2007 20:43:41 -0400
+Received: from ozlabs.org ([203.10.76.45]:45536 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754501AbXHUAm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 20:42:27 -0400
-X-Greylist: delayed 1790 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Aug 2007 20:42:26 EDT
-Date: Mon, 20 Aug 2007 17:12:01 -0700
-From: Zach Brown <zach.brown@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Joe Jin <joe.jin@oracle.com>
-Subject: [PATCH] dio: zero struct dio with kzalloc instead of manually
-Message-ID: <20070821001201.GA20626@mami.zabbo.net>
+	id S1751314AbXHUAnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 20:43:40 -0400
+Subject: Re: [patch 1/4] Linux Kernel Markers - Architecture Independent
+	Code
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070820202758.850703563@polymtl.ca>
+References: <20070820202704.927923667@polymtl.ca>
+	 <20070820202758.850703563@polymtl.ca>
+Content-Type: text/plain
+Date: Tue, 21 Aug 2007 10:43:07 +1000
+Message-Id: <1187656987.19435.163.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch uses kzalloc to zero all of struct dio rather than manually trying
-to track which fields we rely on being zero.   It passed aio+dio stress testing
-and some bug regression testing on ext3.
+On Mon, 2007-08-20 at 16:27 -0400, Mathieu Desnoyers wrote:
+> The marker activation functions sits in kernel/marker.c. A hash table is used
+> to keep track of the registered probes and armed markers, so the markers within
+> a newly loaded module that should be active can be activated at module load
+> time.
 
-This patch was introduced by Linus in the conversation that lead up to Badari's
-minimal fix to manually zero .map_bh.b_state in commit:
+Hi Mathieu!
 
-  6a648fa72161d1f6468dabd96c5d3c0db04f598a
+	Just reading through this patch, a couple of comments:
 
-It makes the code a bit smaller.  Maybe a couple fewer cachelines to
-load, if we're lucky:
+> +/* To be used for string format validity checking with gcc */
+> +static inline void __mark_check_format(const char *fmt, ...)
+> +		__attribute__ ((format (printf, 1, 2)));
+> +static inline void __mark_check_format(const char *fmt, ...) { }
 
-   text    data     bss     dec     hex filename
-3285925  568506 1304616 5159047  4eb887 vmlinux
-3285797  568506 1304616 5158919  4eb807 vmlinux.patched
+If you place the __attribute__() before the function name, you can do
+this in the definition.
 
-I was unable to measure a stable difference in the number of cpu cycles spent
-in blockdev_direct_IO() when pushing aio+dio 256K reads at ~340MB/s.
+> ===================================================================
+> --- linux-2.6-lttng.orig/kernel/module.c	2007-08-10 19:44:18.000000000 -0400
+> +++ linux-2.6-lttng/kernel/module.c	2007-08-10 23:54:38.000000000 -0400
+> @@ -1980,6 +1986,10 @@ static struct module *load_module(void _
+>  			sechdrs[immediateindex].sh_size / sizeof(*mod->immediate);
+>  	}
+>  #endif
+> +	if (markersindex)
+> +		sechdrs[markersindex].sh_flags |= SHF_ALLOC;
+> +	if (markersstringsindex)
+> +		sechdrs[markersstringsindex].sh_flags |= SHF_ALLOC;
+>  
 
-So the resulting intent of the patch isn't a performance gain but to
-avoid exposing ourselves to the risk of finding another field like
-.map_bh.b_state where we rely on zeroing but don't enforce it in the
-code.
+Perhaps I'm missing something, but I don't see why these sections
+wouldn't be SHF_ALLOC already.
 
-Signed-off-by: Zach Brown <zach.brown@oracle.com>
+>  	mod->unused_syms = (void *)sechdrs[unusedindex].sh_addr;
+>  	if (unusedcrcindex)
+> @@ -2021,6 +2031,13 @@ static struct module *load_module(void _
+>  		if (err < 0)
+>  			goto cleanup;
+>  	}
+> +#ifdef CONFIG_MARKERS
+> +	if (markersindex) {
+> +		mod->markers = (void *)sechdrs[markersindex].sh_addr;
+> +		mod->num_markers =
+> +			sechdrs[markersindex].sh_size / sizeof(*mod->markers);
+> +	}
+> +#endif
 
----
+Because of the wonders of ELF, section 0 has sh_addr and sh_size 0.  So
+the if (markersindex) is unnecessary here.
 
- fs/direct-io.c |   18 +-----------------
- 1 files changed, 1 insertions(+), 17 deletions(-)
+> +/*
+> + * Get marker if the marker is present in the marker hash table.
+> + * Must be called with markers_mutex held.
+> + * Returns NULL if not present.
+> + */
+> +static struct marker_entry *_get_marker(const char *name)
 
-diff --git a/fs/direct-io.c b/fs/direct-io.c
-index 1d0bdf0..be86702 100644
---- a/fs/direct-io.c
-+++ b/fs/direct-io.c
-@@ -958,36 +958,22 @@ direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode,
- 	ssize_t ret2;
- 	size_t bytes;
- 
--	dio->bio = NULL;
- 	dio->inode = inode;
- 	dio->rw = rw;
- 	dio->blkbits = blkbits;
- 	dio->blkfactor = inode->i_blkbits - blkbits;
--	dio->start_zero_done = 0;
--	dio->size = 0;
- 	dio->block_in_file = offset >> blkbits;
--	dio->blocks_available = 0;
--	dio->cur_page = NULL;
- 
--	dio->boundary = 0;
--	dio->reap_counter = 0;
- 	dio->get_block = get_block;
- 	dio->end_io = end_io;
--	dio->map_bh.b_private = NULL;
--	dio->map_bh.b_state = 0;
- 	dio->final_block_in_bio = -1;
- 	dio->next_block_for_io = -1;
- 
--	dio->page_errors = 0;
--	dio->io_error = 0;
--	dio->result = 0;
- 	dio->iocb = iocb;
- 	dio->i_size = i_size_read(inode);
- 
- 	spin_lock_init(&dio->bio_lock);
- 	dio->refcount = 1;
--	dio->bio_list = NULL;
--	dio->waiter = NULL;
- 
- 	/*
- 	 * In case of non-aligned buffers, we may need 2 more
-@@ -995,8 +981,6 @@ direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode,
- 	 */
- 	if (unlikely(dio->blkfactor))
- 		dio->pages_in_io = 2;
--	else
--		dio->pages_in_io = 0;
- 
- 	for (seg = 0; seg < nr_segs; seg++) {
- 		user_addr = (unsigned long)iov[seg].iov_base;
-@@ -1194,7 +1178,7 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
- 		}
- 	}
- 
--	dio = kmalloc(sizeof(*dio), GFP_KERNEL);
-+	dio = kzalloc(sizeof(*dio), GFP_KERNEL);
- 	retval = -ENOMEM;
- 	if (!dio)
- 		goto out;
+You seem to really enjoy underscores, yet I'm having trouble
+understanding why this would have an underscore in it.
+
+> +{
+> +	struct hlist_head *head;
+> +	struct hlist_node *node;
+> +	struct marker_entry *e;
+> +	size_t len = strlen(name) + 1;
+> +	u32 hash = jhash(name, len-1, 0);
+> +
+> +	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
+> +	hlist_for_each_entry(e, node, head, hlist) {
+> +		if (!strcmp(name, e->name))
+> +			return e;
+> +	}
+> +	return NULL;
+> +}
+
+OK, don't understand the strlen, len, len-1 dance here?
+
+> +/*
+> + * Updates the probe callback corresponding to a range of markers.
+> + * Must be called with markers_mutex held.
+> + */
+> +static void _marker_update_probe_range(
+
+And yet:
+
+> +void module_marker_update(struct module *mod)
+> +{
+> +	if (!mod->taints)
+> +		_marker_update_probe_range(mod->markers,
+> +			mod->markers+mod->num_markers, NULL, NULL);
+> +}
+
+This doesn't hold the markers_mutex.
+
+Cheers,
+Rusty.
+
