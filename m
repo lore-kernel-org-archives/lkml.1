@@ -1,97 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762663AbXHUS3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932391AbXHUSag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762663AbXHUS3I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 14:29:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761521AbXHUS24
+	id S932391AbXHUSag (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 14:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932191AbXHUSa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 14:28:56 -0400
-Received: from mx34.mail.ru ([194.67.23.200]:11954 "EHLO mx34.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760790AbXHUS2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 14:28:54 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [2.6.23-rc3 possible regression] 8250 claims nonexisting device blocking IO port
-Date: Tue, 21 Aug 2007 22:28:49 +0400
-User-Agent: KMail/1.9.7
-Cc: linux-serial@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-References: <200708181107.56087.arvidjaar@mail.ru> <200708202028.22806.arvidjaar@mail.ru> <200708201111.19023.bjorn.helgaas@hp.com>
-In-Reply-To: <200708201111.19023.bjorn.helgaas@hp.com>
+	Tue, 21 Aug 2007 14:30:27 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:56273 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932158AbXHUSa0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 14:30:26 -0400
+Date: Tue, 21 Aug 2007 20:29:32 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jarek Poplawski <jarkao2@o2.pl>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: RFC: drop support for gcc < 4.0
+Message-ID: <20070821182932.GD30705@stusta.de>
+References: <20070821132038.GA22254@ff.dom.local> <20070821093103.3c097d4a.randy.dunlap@oracle.com> <20070821173550.GC30705@stusta.de> <20070821175453.GB19819@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3276310.YK32pzLCBs";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200708212228.50877.arvidjaar@mail.ru>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070821175453.GB19819@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3276310.YK32pzLCBs
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, Aug 21, 2007 at 06:54:53PM +0100, Russell King wrote:
+> On Tue, Aug 21, 2007 at 07:35:50PM +0200, Adrian Bunk wrote:
+> > On Tue, Aug 21, 2007 at 09:31:03AM -0700, Randy Dunlap wrote:
+> > > On Tue, 21 Aug 2007 15:20:38 +0200 Jarek Poplawski wrote:
+> > > 
+> > > > Here are some more of, probably well-known, warnings with attached
+> > > > testing-only .config.
+> > > >...
+> > > > drivers/pci/msi.c:686: warning: weak declaration of `arch_msi_check_device' after first use results in unspecified behavior
+> > > > drivers/pci/msi.c:698: warning: weak declaration of `arch_setup_msi_irqs' after first use results in unspecified behavior
+> > > > drivers/pci/msi.c:718: warning: weak declaration of `arch_teardown_msi_irqs' after first use results in unspecified behavior
+> > > >...
+> > > 
+> > > What gcc version?  I don't get the arch_ warnings in drivers/pci/msi.c.
+> > 
+> > Obviously a gcc <= 3.4 [1], and therefore no unit-at-a-time.
+> > 
+> > You can reproduce it with a more recent gcc when adding 
+> > -fno-unit-at-a-time to the CFLAGS.
+> > 
+> > And it's becoming a real maintainance problem that not only this problem 
+> > but also other problems like some section mismatches [2] are only 
+> > present without unit-at-a-time.
+> > 
+> > Currently we support 6 different stable gcc release series, and it might 
+> > be the right time to consider dropping support for the older ones.
+> > 
+> > Are there any architectures still requiring a gcc < 4.0 ?
+> 
+> I want to keep support for gcc 3.4.3 for ARM for the forseeable future.
+> >From my point of view, gcc 4 compilers have been something of a development
+> thing as far as the ARM architecture goes.
+>...
 
-On Monday 20 August 2007, Bjorn Helgaas wrote:
-> On Monday 20 August 2007 10:28:22 am Andrey Borzenkov wrote:
-> > This worked in 2.6.22 with the same quirks. I will test without later b=
-ut
-> > I fail to see how they are related.
->
-> OK, let me know what happens.  The way it's related is that the quirk
-> fiddles with the IRDA device, and it probably changes the SIR config
-> so that it starts responding at the ttyS3 address.
+It is an option to say "gcc >= 4.0 on i386 and >= 3.4 on all other 
+architectures is required".
 
-You are probably right. Disabling quirk makes it work again (with pnp off i=
-n=20
-smsc-ircc2 of course).
+> Russell King
 
-Hmm ... is there any reason why this quirk is in PnP core in the first plac=
-e?=20
-Would not it be more logical to have it in (PnP) part of smsc-ircc2? This w=
-ay=20
-it could share code with legacy detection; and it even may have chance to=20
-work - assuming BIOS is aware that 0x100 is claimed by PCMCIA it could=20
-allocate different port when we try to activate device after that ... shoul=
-d=20
-I give it a try?
+cu
+Adrian
 
-> In your 2.6.23=20
-> log, I see this:
->
-> [  512.476243] pnp: Device 00:0a activated.
-> [  512.476301]  00:0a: SMCf010 not responding at SIR 0x100, FIR 0x2e8;
-> auto-configuring [  512.477861] pnp: Device 00:0a disabled.
-> [  512.483492] pnp: Device 00:0a activated.
-> [  512.483520]  00:0a: not responding at SIR 0x100, FIR 0x2e8; swapping
-> SIR/FIR and reconfiguring [  512.485056] pnp: Device 00:0a disabled.
-> [  512.491652] pnp: Device 00:0a activated.
-> [  512.491679]  00:0a: responds at SIR 0x2e8, FIR 0x100
->
-> After the quirk, the FIR part is enabled at 0x100 and we assume (the
-> quirk doesn't actually check) the SIR part is enabled at 0x2e8.  The
-> 8250 driver will claim a SIR device at 0x2e8 as ttyS3.
->
-> Without the quirk, the SIR device seems to be either at 0x100 (where
-> the 8250 driver will not look) or is not enabled at all.
->
-> Bjorn
+-- 
 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-
---nextPart3276310.YK32pzLCBs
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGyy7iR6LMutpd94wRAhm0AJ99m5OU8XmfnfLembjDrZQXhvqugACfZ4Dc
-HLoSrpNSL1PcciWe1de6oqM=
-=gMS8
------END PGP SIGNATURE-----
-
---nextPart3276310.YK32pzLCBs--
