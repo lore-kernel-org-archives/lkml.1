@@ -1,73 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbXHUBRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbXHUBZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759473AbXHUBRP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 21:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbXHUBQ5
+	id S1760089AbXHUBZT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 21:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbXHUBZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 21:16:57 -0400
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:12670 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbXHUBQ4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 21:16:56 -0400
-X-IronPort-AV: i="4.19,286,1183359600"; 
-   d="scan'208"; a="393318490:sNHT55475706"
-To: David Miller <davem@davemloft.net>
-Cc: tom@opengridcomputing.com, jeff@garzik.org, swise@opengridcomputing.com,
-       mshefty@ichips.intel.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports from the host TCP port space.
-X-Message-Flag: Warning: May contain useful information
-References: <adafy2hyc04.fsf@cisco.com>
-	<20070817.170033.63993876.davem@davemloft.net>
-	<adatzqxwh56.fsf@cisco.com>
-	<20070817.234405.66176298.davem@davemloft.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 20 Aug 2007 18:16:54 -0700
-In-Reply-To: <20070817.234405.66176298.davem@davemloft.net> (David Miller's message of "Fri, 17 Aug 2007 23:44:05 -0700 (PDT)")
-Message-ID: <adalkc5u1o9.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Mon, 20 Aug 2007 21:25:06 -0400
+Received: from ns.suse.de ([195.135.220.2]:39364 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752395AbXHUBZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 21:25:05 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [accounting regression since rc1]  scheduler updates
+References: <20070812163225.GA11996@elte.hu>
+	<200708141037.48001.borntraeger@de.ibm.com>
+	<20070820154529.GA300@elte.hu> <1187629438.8541.40.camel@localhost>
+	<20070820180810.GA25160@elte.hu>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 21 Aug 2007 04:18:57 +0200
+In-Reply-To: <20070820180810.GA25160@elte.hu>
+Message-ID: <p73lkc5zl2m.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 21 Aug 2007 01:16:54.0735 (UTC) FILETIME=[F61EADF0:01C7E390]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[TSO / LRO discussion snipped -- it's not the main point so no sense
-spending energy arguing about it]
+Ingo Molnar <mingo@elte.hu> writes:
 
- > Just be realistic and accept that RDMA is a point in time solution,
- > and like any other such technology takes flexibility away from users.
- > 
- > Horizontal scaling of cpus up to huge arity cores, network devices
- > using large numbers of transmit and receive queues and classification
- > based queue selection, are all going to work to make things like RDMA
- > even more irrelevant than they already are.
+You should just be using idle notifiers instead instead of adding more
+and more custom hooks (like NOHZ has already) x86-64 still has them
+and there is a old patch around to add them to i386.
 
-To me there is a real fundamental difference between RDMA and
-traditional SOCK_STREAM / SOCK_DATAGRAM networking, namely that
-messages can carry the address where they're supposed to be
-delivered (what the IETF calls "direct data placement").  And on top
-of that you can build one-sided operations aka put/get aka RDMA.
-
-And direct data placement really does give you a factor of two at
-least, because otherwise you're stuck receiving the data in one
-buffer, looking at some of the data at least, and then figuring out
-where to copy it.  And memory bandwidth is if anything becoming more
-valuable; maybe LRO + header splitting + page remapping tricks can get
-you somewhere but as NCPUS grows then it seems the TLB shootdown cost
-of page flipping is only going to get worse.
-
-Don't get too hung up on the fact that current iWARP (RDMA over IP)
-implementations are using TCP offload -- to me that is just a side
-effect of doing enough processing on the NIC side of the PCI bus to be
-able to do direct data placement.  InfiniBand with competely different
-transport, link and physical layers is one way to implement RDMA
-without TCP offload and I'm sure there will be others -- eg Intel's
-IOAT stuff could probably evolve to the point where you could
-implement iWARP with software TCP and the data placement offloaded to
-some DMA engine.
-
- - R.
+-Andi
