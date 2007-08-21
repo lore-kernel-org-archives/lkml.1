@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbXHUVWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbXHUV3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756632AbXHUVWf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 17:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbXHUVW1
+	id S1755370AbXHUV3z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 17:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbXHUV3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 17:22:27 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:52962 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752598AbXHUVW0 (ORCPT
+	Tue, 21 Aug 2007 17:29:46 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53140 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752226AbXHUV3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 17:22:26 -0400
-Date: Tue, 21 Aug 2007 23:21:29 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jarek Poplawski <jarkao2@o2.pl>, Andi Kleen <ak@suse.de>,
-       linux-arch@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: RFC: drop support for gcc < 4.0
-Message-ID: <20070821212129.GG30705@stusta.de>
-References: <20070821132038.GA22254@ff.dom.local> <20070821093103.3c097d4a.randy.dunlap@oracle.com> <20070821173550.GC30705@stusta.de> <20070821191959.GC2642@bingen.suse.de> <20070821195433.GE30705@stusta.de> <alpine.LFD.0.999.0708211306560.30176@woody.linux-foundation.org> <20070821202113.GF30705@stusta.de> <27c412eea99f1f80a3002e9668bd31f8@kernel.crashing.org>
+	Tue, 21 Aug 2007 17:29:45 -0400
+Date: Tue, 21 Aug 2007 14:29:44 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
+In-Reply-To: <1187730812.5463.12.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com>
+References: <20070820215040.937296148@sgi.com>  <1187692586.6114.211.camel@twins>
+  <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com>
+ <1187730812.5463.12.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <27c412eea99f1f80a3002e9668bd31f8@kernel.crashing.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 21, 2007 at 10:49:49PM +0200, Segher Boessenkool wrote:
->> How many people e.g. test -rc kernels compiled with gcc 3.2?
->
-> Why would that matter?  It either works or not.  If it doesn't
-> work, it can either be fixed, or support for that old compiler
-> version can be removed.
+On Tue, 21 Aug 2007, Peter Zijlstra wrote:
 
-One bug report "kernel doesn't work / crash / ... when compiled with
-gcc 3.2, but works when compiled with gcc 4.2" will most likely be lost 
-in the big pile of unhandled bugs, not cause the removal of gcc 3.2 
-support...
+> It quickly ends up with all of memory in the laundry list and then
+> recursing into __alloc_pages which will fail to make progress and OOMs.
 
-> The only other policy than "only remove support if things are
-> badly broken" would be "only support what the GCC team supports",
-> which would be >= 4.1 now; and there are very good arguments for
-> supporting more than that with the Linux kernel.
+Hmmmm... Okay that needs to be addressed. Reserves need to be used and we 
+only should enter reclaim if that runs out (like the first patch that I 
+did).
 
-No, it's not about bugs in gcc, it's about kernel+gcc combinations that 
-are mostly untested but officially supported.
+> But aside from the numerous issues with the patch set as presented, I'm
+> not seeing the seeing the big picture, why are you doing this.
 
-E.g. how many kernel developers use kernels compiled without 
-unit-at-a-time? And unit-at-a-time does paper over some bugs,
-e.g. at about half a dozen section mismatch bugs I've fixed
-recently are not present with it.
+I want general improvements to reclaim to address the issues that you see 
+and other issues related to reclaim instead of the strange code that makes 
+PF_MEMALLOC allocs compete for allocations from a single slab and putting 
+logic into the kernel to decide which allocs to fail. We can reclaim after 
+all. Its just a matter of finding the right way to do this. 
 
-But as the discussions have shown gcc 4.0 is currently too high for 
-making a cut, and it is not yet the right time for raising the minimum 
-required gcc version.
+> Anonymous pages are a there to stay, and we cannot tell people how to
+> use them. So we need some free or freeable pages in order to avoid the
+> vm deadlock that arises from all memory dirty.
 
-> Segher
+No one is trying to abolish Anonymous pages. Free memory is readily 
+available on demand if one calls reclaim. Your scheme introduces complex 
+negotiations over a few scraps of memory when large amounts of memory 
+would still be readily available if one would do the right thing and call 
+into reclaim.
 
-cu
-Adrian
+> 'Optimizing' this by switching to freeable pages has mainly
+> disadvantages IMHO, finding them scrambles LRU order and complexifies
+> relcaim and all that for a relatively small gain in space for clean
+> pagecache pages.
 
--- 
+Sounds like you would like to change the way we handle memory in general 
+in the VM? Reclaim (and thus finding freeable pages) is basic to Linux 
+memory management.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> Please, stop writing patches and write down a solid proposal of how you
+> envision the VM working in the various scenarios and why its better than
+> the current approach.
 
+Sorry I just got into this a short time ago and I may need a few cycles 
+to get this all straight. An approach that uses memory instead of 
+ignoring available memory is certainly better.
