@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbXHUURw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbXHUUSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272AbXHUURw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 16:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXHUURo
+	id S1754346AbXHUUSS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 16:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbXHUUSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 16:17:44 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:61289 "EHLO
-	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751310AbXHUURn (ORCPT
+	Tue, 21 Aug 2007 16:18:04 -0400
+Received: from spirit.analogic.com ([204.178.40.4]:4205 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbXHUUSB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 16:17:43 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
-Message-ID: <46CB4862.9020601@am.sony.com>
-Date: Tue, 21 Aug 2007 13:17:38 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Tue, 21 Aug 2007 16:18:01 -0400
 MIME-Version: 1.0
-To: Rene Herman <rene.herman@gmail.com>
-CC: Joe Perches <joe@perches.com>, cbe-oss-dev-owner@ozlabs.org,
-       Satyam Sharma <satyam@infradead.org>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>,
-       mokuno@sm.sony.co.jp
-Subject: Re: [PATCH] PS3: Update MAINTAINERS
-References: <20070816211551.11839.patches@notabene>	 <1070816112100.12182@suse.de>	 <Pine.LNX.4.62.0708170910120.8381@pademelon.sonytel.be>	 <alpine.LFD.0.999.0708181953560.29105@enigma.security.iitk.ac.in>	 <Pine.LNX.4.64.0708181628350.5186@fbirervta.pbzchgretzou.qr>	 <alpine.LFD.0.999.0708182016000.29105@enigma.security.iitk.ac.in>	 <Pine.LNX.4.62.0708201313260.6197@pademelon.sonytel.be>	 <alpine.LFD.0.999.0708210523470.2774@enigma.security.iitk.ac.in>	 <Pine.LNX.4.62.0708210904220.11703@pademelon.sonytel.be>	 <alpine.LFD.0.999.0708211500100.2774@enigma.security.iitk.ac.in>	 <Pine.LNX.4.62.0708211148040.6982@pademelon.sonytel.be>	 <alpine.LFD.0.999.0708211605320.2774@enigma.security.iitk.ac.in>	 <46CB3679.3070403@am.sony.com> <1187726479.5963.118.camel@localhost> <46CB45D8.9020801@gmail.com>
-In-Reply-To: <46CB45D8.9020801@gmail.com>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Aug 2007 20:17:39.0337 (UTC) FILETIME=[52481F90:01C7E430]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 21 Aug 2007 20:17:58.0284 (UTC) FILETIME=[5D9334C0:01C7E430]
+Content-class: urn:content-classes:message
+Subject: Re: Software based ECC ?
+Date: Tue, 21 Aug 2007 16:17:58 -0400
+Message-ID: <Pine.LNX.4.61.0708211559540.4841@chaos.analogic.com>
+In-Reply-To: <E1INYht-0000Xw-Ay@be1.lrz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Software based ECC ?
+Thread-Index: AcfkMF2c7UotH0fZR3q86wgHNWpJFA==
+References: <8QK3R-kc-9@gated-at.bofh.it> <8QSuw-4J2-9@gated-at.bofh.it> <8RoXy-3NJ-13@gated-at.bofh.it> <E1INYht-0000Xw-Ay@be1.lrz>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Bodo Eggert" <7eggert@gmx.de>
+Cc: "Folkert van Heusden" <folkert@vanheusden.com>, <Valdis.Kletnieks@vt.edu>,
+       "roland" <devzero@web.de>, <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> On 08/21/2007 10:01 PM, Joe Perches wrote:
-> 
->> On Tue, 2007-08-21 at 12:01 -0700, Geoff Levand wrote:
-> 
->>> Could you verify that cbe-oss-dev is a subscriber's
->>> only list?  I didn't see anything that said it
->>> specifically in the listinfo.
->> 
->> This is the "hold" message I got on posting to that list.
->> 
->> Your mail to 'cbe-oss-dev' with the subject
->> 
->>     Re: [PATCH] [392/2many] MAINTAINERS - PS3 PLATFORM SUPPORT
->> 
->> Is being held until the list moderator can review it for approval.
->> 
->> The reason it is being held:
->> 
->>     Post by non-member to a members-only list
-> 
-> That means it's not a subcriber-only list -- the message wasn't rejected, 
-> just subjected to moderation.
-> 
 
-So maybe it would be more precise to have something like this:
+On Tue, 21 Aug 2007, Bodo Eggert wrote:
 
--L:	cbe-oss-dev@ozlabs.org
-+L:	cbe-oss-dev@ozlabs.org	(moderated)
+> Folkert van Heusden <folkert@vanheusden.com> wrote:
+>
+>>>> http://pdos.csail.mit.edu/papers/softecc:ddopson-meng
+> softecc_ddopson-meng.pdf
+>>>> "SoftECC : A System for Software Memory Integrity Checking"
+>>>
+>>> Personally, I'd recommend just shelling out the bucks for hardware ECC if
+>>> the reliability matters.
+>>
+>> a question and an idea: Q: is ecc guaranteed to detect all bitflips?
+>
+> It's guaranteed not to.
+>
+> Having n extra bits, you can detect n-bit-flips and correct n/2-bit-flips
+> (provided you use an optimal code).
+>
+> These extra bits can flip, too, so if you have m >= 1 data bits and any
+> finite number n of extra bits, it's possible to have an undetectable
+> n+1-bit-flip.
+> -- 
+> If you can't remember, then the claymore IS pointed at you.
+>
+Of course common ECC codes detect and correct single bit errors.
+When used in memory, bits in a word are never adjacent so a cosmic
+ray or other stray particle which could upset bits usually result
+in bits being upset in different words so they remain correctable.
 
+The MIT paper is noticeably deficient in its ability to do anything
+useful. It proposes checking things at 100 Hz intervals and trapping
+each memory access as though these things happen only once in
+awhile and, of course, assumes that the code doing the checking will
+never be corrupted. Further, it ignores the cache(s).
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
