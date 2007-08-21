@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbXHUUlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbXHUUme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701AbXHUUlo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 16:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbXHUUlK
+	id S1755146AbXHUUme (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 16:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbXHUUm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 16:41:10 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:54706 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754775AbXHUUlI (ORCPT
+	Tue, 21 Aug 2007 16:42:26 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56466 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752184AbXHUUmZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 16:41:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cN4tXoYMxt/nrUp0m8GRowxotWIePfjMMlyUXlSbA+oCc1bAnsrAPg191j7/xlp63WkmmT4ozcxwCUqsoSPewHIxmCy3GrPYXtIBuP3NwfUZnU2dFopbUyY+WfXhUtyRqfywpVBMpwhGD9/XpDuRjCQzWXtYb9u9IDJ7vrNpstA=
-Message-ID: <5d6222a80708211341s63f8c1eau922f018e66db49f4@mail.gmail.com>
-Date: Tue, 21 Aug 2007 17:41:04 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Chris Wedgwood" <cw@f00f.org>
-Subject: Re: RFC: drop support for gcc < 4.0
-Cc: "Adrian Bunk" <bunk@kernel.org>, "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jarek Poplawski" <jarkao2@o2.pl>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux-mips@linux-mips.org
-In-Reply-To: <20070821182505.GA20968@puku.stupidest.org>
+	Tue, 21 Aug 2007 16:42:25 -0400
+Date: Tue, 21 Aug 2007 22:42:24 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dtor@mail.ru
+Subject: Re: [PATCH] Console keyboard events and accessibility
+In-Reply-To: <20070821005718.GD3658@interface.famille.thibault.fr>
+Message-ID: <Pine.LNX.4.64.0708210732270.5333@fbirervta.pbzchgretzou.qr>
+References: <20070821005718.GD3658@interface.famille.thibault.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070821132038.GA22254@ff.dom.local>
-	 <20070821093103.3c097d4a.randy.dunlap@oracle.com>
-	 <20070821173550.GC30705@stusta.de>
-	 <20070821182505.GA20968@puku.stupidest.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/21/07, Chris Wedgwood <cw@f00f.org> wrote:
-> On Tue, Aug 21, 2007 at 07:35:50PM +0200, Adrian Bunk wrote:
+
+On Aug 21 2007 02:57, Samuel Thibault wrote:
 >
-> > Are there any architectures still requiring a gcc < 4.0 ?
+>Some external modules like Speakup need to use the PC keyboard to control
+>them and also need to get keyboard feedback (caps lock status, etc.)
 >
-> Yes, sadly in some places (embedded) there are people with older
-> compiler who want newer kernels.
+>This adds a keyboard notifier that such modules can use to get the keyboard
+>events and possibly eat them, at several stages:
+>
+>- keycodes: even before translation into keysym.
 
-Last time I tried a mips build, it would fail the compile unless I was
-using _exactly_ 3.4.4 (I didn't tried older versions, but did try
-3.4.6, for ex.). So I also think the 3.4 series will still have to be
-around for a while.
+They can use the raw xlation for that. The "showkeys" utility and Xorg are
+likely to do that. (In fact, there is a helping sysrq called Unraw in case
+there are problems.)
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+>- unbound keycodes: when no keysym is bound.
+>- unicode: when the keycode would get translated into a unicode character.
+>- keysym: when the keycode would get translated into a keysym.
+>- post_keysym: after the keysym got interpreted, so as to see the result
+>  (caps lock, etc.)
 
-"The less confident you are, the more serious you have to act."
+For all these, I think new xlats should be added that have the desired
+behavior.
+
+>+	int shift;		/* Current shift mask */
+>+	unsigned int value;	/* keycode, unicode value or keysym */
+>+};
+>+
+>+extern int register_keyboard_notifier(struct notifier_block *nb);
+>+extern int unregister_keyboard_notifier(struct notifier_block *nb);
+> #endif
+> 
