@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbXHUKQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbXHUKUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758009AbXHUKQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 06:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbXHUKQU
+	id S1756501AbXHUKUs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 06:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbXHUKUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 06:16:20 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:10742 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753918AbXHUKQT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 06:16:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=njq6vQuD6m2rbhYUamALYq4xdxSiiN9oQ076oUNRanQcM4GrBMX5jtFF9zecQj8hGv6t7H1+cr9jyyMmpksp4oJ1Y5D0Nfx81IpqxVAZ62+oLXqzPX24mjMxuQgjUyAy0BfPIH2V8Far7V+9a6p/20/LQ+mweJH5hg+SbvMdNVU=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Jan Hubicka <jh@suse.cz>
-Subject: Re: [discuss] [PATCH] x86-64: memset optimization
-Date: Tue, 21 Aug 2007 11:16:10 +0100
-User-Agent: KMail/1.9.1
-Cc: Roland Dreier <rdreier@cisco.com>, Arjan van de Ven <arjan@infradead.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
-       linux-kernel@vger.kernel.org
-References: <20070817163446.3e63f208@freepuppy.rosehill.hemminger.net> <adamywmw32l.fsf@cisco.com> <20070820185637.GL27714@kam.mff.cuni.cz>
-In-Reply-To: <20070820185637.GL27714@kam.mff.cuni.cz>
+	Tue, 21 Aug 2007 06:20:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52131 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753534AbXHUKUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 06:20:40 -0400
+Date: Tue, 21 Aug 2007 12:20:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [accounting regression since rc1]  scheduler updates
+Message-ID: <20070821102023.GA24111@elte.hu>
+References: <20070812163225.GA11996@elte.hu> <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu> <1187629438.8541.40.camel@localhost> <20070820180810.GA25160@elte.hu> <p73lkc5zl2m.fsf@bingen.suse.de> <20070821070922.GA16695@elte.hu> <20070821100717.GA692@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708211116.11035.vda.linux@googlemail.com>
+In-Reply-To: <20070821100717.GA692@one.firstfloor.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.0.3
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.2358]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 20 August 2007 19:56, Jan Hubicka wrote:
-> >  > > The problem is with the optimization flags: passing -Os causes the
-> >  > > compiler to be stupid and not inline any memset/memcpy functions.
-> >  >
-> >  > you get what you ask for.. if you don't want that then don't ask for
-> >  > it ;)
-> >
-> > Well, the compiler is really being dumb about -Os and in fact it's
-> > giving bigger code, so I'm not really getting what I ask for.
-> >
-> > With my gcc at least (x86_64, gcc (GCC) 4.1.3 20070812 (prerelease)
-> > (Ubuntu 4.1.2-15ubuntu2)) and Andi's example:
-> >
-> > #include <string.h>
-> >
-> > f(char x[6]) {
-> >         memset(x, 1, 6);
-> > }
-> >
-> > compiling with -O2 gives
-> >
-> > 0000000000000000 <f>:
-> >    0:	c7 07 01 01 01 01    	movl   $0x1010101,(%rdi)
-> >    6:	66 c7 47 04 01 01    	movw   $0x101,0x4(%rdi)
-> >    c:	c3                   	retq
->
-> GCC mainline (ie future GCC4.3.0) now give:
-> 0000000000000000 <f>:
->    0:   b0 01                   mov    $0x1,%al
->    2:   b9 06 00 00 00          mov    $0x6,%ecx
->    7:   f3 aa                   rep stos %al,%es:(%rdi)
->    9:   c3                      retq
-> That is smallest, definitly not fastest.
-> GCC up to 4.3.0 won't be able to inline memset with non-0 operand...
 
-No, it's not smallest. This one is smaller by 1 byte, maybe faster
-(rep ... prefix is microcoded -> slower) and frees %ecx for other uses:
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-        mov    $0x01010101,%eax  # 5 bytes
-        stosl                    # 1 byte
-        stosw                    # 2 bytes
-        retq
---
-vda
+> On Tue, Aug 21, 2007 at 09:09:22AM +0200, Ingo Molnar wrote:
+> > 
+> > * Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > > You should just be using idle notifiers instead instead of adding 
+> > > more and more custom hooks (like NOHZ has already) x86-64 still 
+> > > has them and there is a old patch around to add them to i386.
+> > 
+> > these are specially placed callbacks that we want to call from 
+> > certain ACPI codepaths but not from all of them.
+> 
+> Because you believe TSC only stops in C2 and C3? That's not correct on 
+> all systems.
+
+i know there are some incredibly broken (but rare) boxes where the bios 
+will report it only knows C1 and do C2? Is that the case you are 
+referring to, or is there something else too?
+
+	Ingo
