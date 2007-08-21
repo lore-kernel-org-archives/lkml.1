@@ -1,94 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbXHUNSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759786AbXHUNTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757253AbXHUNSR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 09:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757180AbXHUNSB
+	id S1759786AbXHUNTu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 09:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758473AbXHUNTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 09:18:01 -0400
-Received: from iucha.net ([209.98.146.184]:59649 "EHLO mail.iucha.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758831AbXHUNSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 09:18:00 -0400
-Date: Tue, 21 Aug 2007 08:17:59 -0500
-From: Florin Iucha <florin@iucha.net>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: linux-usb-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
-	v2.6.23-rc3-50-g28e8351
-Message-ID: <20070821131759.GI10422@iucha.net>
-References: <20070815133147.GA7124@iucha.net> <Pine.LNX.4.64.0708151647540.2460@twin.jikos.cz> <20070815145313.GC7124@iucha.net> <Pine.LNX.4.64.0708151656070.2460@twin.jikos.cz> <20070821115115.GD10422@iucha.net> <20070821125718.GH10422@iucha.net> <Pine.LNX.4.64.0708211502330.2460@twin.jikos.cz>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="TKYYegg/GYAC5JIZ"
+	Tue, 21 Aug 2007 09:19:38 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:49541 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756948AbXHUNTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 09:19:37 -0400
+Date: Tue, 21 Aug 2007 15:20:38 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.23-rc3-git3 make warnings
+Message-ID: <20070821132038.GA22254@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="Nq2Wo0NMKNjxTN9z"
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708211502330.2460@twin.jikos.cz>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---TKYYegg/GYAC5JIZ
+--Nq2Wo0NMKNjxTN9z
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Aug 21, 2007 at 03:05:25PM +0200, Jiri Kosina wrote:
-> > I have rebuilt 2.6.23-rc3 with 'CONFIG_USB_EHCI_HCD=3Dm' and=20
-> > 'CONFIG_USB_SUSPEND is not set' and will use it for a while, to see if=
-=20
-> > the keyboard/usb behaves or not.
->=20
-> Thanks. If this doesn't give us any hint, it would be useful if you could=
-=20
-> do git-bisect between rc2 and rc3, I really can't immediately see anythin=
-g=20
-> in the list of commits that might directly cause the behavior you are=20
-> seeing (most importantly because there were no USB and no HID updates in=
-=20
-> this window).
+Here are some more of, probably well-known, warnings with attached
+testing-only .config.
 
-The keyboard still locked up.  There is absolutely nothing in the
-kernel log.
+Regards,
+Jarek P.
 
-> There are approximately 290 commits, so it shouldn't require more than 9=
-=20
-> reboots plus the time needed to check whether the bug triggers or not.
 
-The top commit is not v2.6.23-rc3 but
+sed: -e expression #1, char 154: Unknown option to 's'
+drivers/acpi/ec.c: In function `acpi_ec_ecdt_probe':
+drivers/acpi/ec.c:873: warning: passing arg 1 of `acpi_get_devices' discards qualifiers from pointer target type
+drivers/pci/search.c: In function `pci_find_slot':
+drivers/pci/search.c:99: warning: `pci_find_device' is deprecated (declared at include/linux/pci.h:480)
+drivers/pci/search.c: At top level:
+drivers/pci/search.c:437: warning: `pci_find_device' is deprecated (declared at drivers/pci/search.c:244)
+drivers/pci/search.c:437: warning: `pci_find_device' is deprecated (declared at drivers/pci/search.c:244)
+drivers/pci/search.c:438: warning: `pci_find_slot' is deprecated (declared at drivers/pci/search.c:96)
+drivers/pci/search.c:438: warning: `pci_find_slot' is deprecated (declared at drivers/pci/search.c:96)
+drivers/pci/msi.c:686: warning: weak declaration of `arch_msi_check_device' after first use results in unspecified behavior
+drivers/pci/msi.c:698: warning: weak declaration of `arch_setup_msi_irqs' after first use results in unspecified behavior
+drivers/pci/msi.c:718: warning: weak declaration of `arch_teardown_msi_irqs' after first use results in unspecified behavior
+In file included from drivers/usb/host/ohci-hcd.c:859:
+drivers/usb/host/ohci-pci.c: In function `ohci_pci_start':
+drivers/usb/host/ohci-pci.c:202: warning: unused variable `pdev'
+Root device is (8, 1)
+Setup is 11036 bytes (padded to 11264 bytes).
+System is 2428 kB
 
-   commit 28e8351ac22de25034e048c680014ad824323c65
-   Merge: 3b993e8... d18c4d6...
-   Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-   Date:   Tue Aug 14 10:00:29 2007 -0700
+--Nq2Wo0NMKNjxTN9z
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=".config.bz2"
+Content-Transfer-Encoding: base64
 
-       Merge git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-f=
-ixes
+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
+Sig=
 
-I'll try to make time to bisect it...
-
-Thanks,
-florin
-
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
-
---TKYYegg/GYAC5JIZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGyuYGND0rFCN2b1sRAuU3AJ40id1ghVbsYjp4RPyih7jKm991QgCfaepq
-LhQ0wTHPI3ermlhZZeoVLAw=
-=Z9t0
------END PGP SIGNATURE-----
-
---TKYYegg/GYAC5JIZ--
+--Nq2Wo0NMKNjxTN9z--
