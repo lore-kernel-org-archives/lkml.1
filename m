@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752742AbXHUUBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbXHUUD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752742AbXHUUBy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 16:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXHUUBq
+	id S1753213AbXHUUD2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 16:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXHUUDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 16:01:46 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3017 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750814AbXHUUBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 16:01:45 -0400
-Subject: Re: [PATCH] PS3: Update MAINTAINERS
-From: Joe Perches <joe@perches.com>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: cbe-oss-dev-owner@ozlabs.org, Satyam Sharma <satyam@infradead.org>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>,
-       mokuno@sm.sony.co.jp
-In-Reply-To: <46CB3679.3070403@am.sony.com>
-References: <20070816211551.11839.patches@notabene>
-	 <1070816112100.12182@suse.de>
-	 <Pine.LNX.4.62.0708170910120.8381@pademelon.sonytel.be>
-	 <alpine.LFD.0.999.0708181953560.29105@enigma.security.iitk.ac.in>
-	 <Pine.LNX.4.64.0708181628350.5186@fbirervta.pbzchgretzou.qr>
-	 <alpine.LFD.0.999.0708182016000.29105@enigma.security.iitk.ac.in>
-	 <Pine.LNX.4.62.0708201313260.6197@pademelon.sonytel.be>
-	 <alpine.LFD.0.999.0708210523470.2774@enigma.security.iitk.ac.in>
-	 <Pine.LNX.4.62.0708210904220.11703@pademelon.sonytel.be>
-	 <alpine.LFD.0.999.0708211500100.2774@enigma.security.iitk.ac.in>
-	 <Pine.LNX.4.62.0708211148040.6982@pademelon.sonytel.be>
-	 <alpine.LFD.0.999.0708211605320.2774@enigma.security.iitk.ac.in>
-	 <46CB3679.3070403@am.sony.com>
-Content-Type: text/plain
-Date: Tue, 21 Aug 2007 13:01:19 -0700
-Message-Id: <1187726479.5963.118.camel@localhost>
+	Tue, 21 Aug 2007 16:03:21 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36684 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751127AbXHUUDU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 16:03:20 -0400
+Date: Tue, 21 Aug 2007 13:02:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       dtor@mail.ru, Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH] Console keyboard events and accessibility
+Message-Id: <20070821130233.58faaa8a.akpm@linux-foundation.org>
+In-Reply-To: <20070821005718.GD3658@interface.famille.thibault.fr>
+References: <20070821005718.GD3658@interface.famille.thibault.fr>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-21 at 12:01 -0700, Geoff Levand wrote:
-> Could you verify that cbe-oss-dev is a subscriber's
-> only list?  I didn't see anything that said it
-> specifically in the listinfo.
+On Tue, 21 Aug 2007 02:57:18 +0200
+Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
 
-This is the "hold" message I got on posting to that list.
+> Some external modules like Speakup need to use the PC keyboard to control
+> them and also need to get keyboard feedback (caps lock status, etc.)
+> 
+> This adds a keyboard notifier that such modules can use to get the keyboard
+> events and possibly eat them, at several stages:
 
-Your mail to 'cbe-oss-dev' with the subject
+Adding hooks for non-merged modules is considered sinful.  Making these new
+exports EXPORT_SYMBOL_GPL might ease the pain.
 
-    Re: [PATCH] [392/2many] MAINTAINERS - PS3 PLATFORM SUPPORT
-
-Is being held until the list moderator can review it for approval.
-
-The reason it is being held:
-
-    Post by non-member to a members-only list
-
+Is there any prospect of getting at least one of these "external modules
+like Speakup" merged into mainline?
 
