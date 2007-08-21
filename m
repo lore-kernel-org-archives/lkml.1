@@ -1,35 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762185AbXHUSIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762307AbXHUSXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762185AbXHUSIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 14:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757583AbXHUSII
+	id S1762307AbXHUSXT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 14:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761521AbXHUSXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 14:08:08 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58746 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755662AbXHUSIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 14:08:07 -0400
-Date: Tue, 21 Aug 2007 11:06:31 -0700
-From: Tony Jones <tonyj@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: gregkh@suse.de, kay.sievers@vrfy.org
-Subject: Re: [patch 11/14] Convert from class_device to device for USB host
-Message-ID: <20070821180631.GA28070@suse.de>
-References: <20070820224806.154198000@suse.de> <20070820225131.546468000@suse.de>
+	Tue, 21 Aug 2007 14:23:09 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42854 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758393AbXHUSXI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 14:23:08 -0400
+From: Jonathan Lim <jlim@sgi.com>
+Message-Id: <200708211824.l7LIO10g379050@sabah.engr.sgi.com>
+Subject: Re: [PATCH] Send exit code through for taskstats.ac_exitcode
+To: balbir@linux.vnet.ibm.com
+Date: Tue, 21 Aug 2007 11:24:01 -0700 (PDT)
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46CA5F8D.20104@linux.vnet.ibm.com> from "Balbir Singh" at Aug 21, 2007 09:14:13 AM
+X-Mailer: ELM [version 2.5 PL6]
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070820225131.546468000@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 20, 2007 at 03:48:17PM -0700, tonyj@suse.de wrote:
-> -- 
-> Content-Disposition: inline; filename=usb-host.patch
+On Mon Aug 20 20:44:13 2007, balbir@linux.vnet.ibm.com wrote:
 > 
-> Convert from class_device to device for drivers/ide/usb/host.   Greg, not
-> sure if you're looking for a patch for this. Kay mentioned maybe it was to
-> be superceded by a diff mechanism.  Free free to drop if so. Thanks!
+> Jonathan Lim wrote:
+> > taskstats.ac_exitcode is assigned to task_struct.exit_code in
+> > bacct_add_tsk() through the following kernel function calls: 
+> > 
+> >   do_exit()
+> >     taskstats_exit_send()
+> >       fill_pid()
+> >         bacct_add_tsk()
+> > 
+> > The problem is that in do_exit(), task_struct.exit_code is set to 'code' 
+> > only after taskstats_exit_send() has been called.  So we need to send
+> > 'code' through to bacct_add_tsk().
+> 
+> Hi, Jonathan,
+> 
+> The patches look like a step in the right direction, I would suggest an
+> alternate implementation
+> 
+> Why can't we assign tsk->exit_code to code earlier? Can we not move up the
+> assignment to before taskstats_exit()? Wouldn't that be much simpler?
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
+Hi Balbir,
+
+That was what I wanted to do at first, but there was some concern over whether
+it would affect any of the intervening function calls.  If there's no
+particular reason why the tsk->exit_code assignment is placed where it's at
+now, then yes, I would much rather move it to before taskstats_exit().
+
+I looked at the following functions involving tsk:
+
+  exit_mm
+    mm_release
+      deactivate_mm
+  exit_sem
+  __exit_files
+  __exit_fs
+  cpuset_exit
+  exit_keys
+
+and don't see anything that setting exit_code would affect.  What do you think?
+
+Jonathan
