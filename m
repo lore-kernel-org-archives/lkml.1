@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbXHUIHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbXHUIRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbXHUIHI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 04:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbXHUIGw
+	id S1755019AbXHUIRk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 04:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbXHUIRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 04:06:52 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:5879 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751280AbXHUIGu (ORCPT
+	Tue, 21 Aug 2007 04:17:30 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:42128 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbXHUIR3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 04:06:50 -0400
+	Tue, 21 Aug 2007 04:17:29 -0400
 From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: kvm-devel@lists.sourceforge.net
-Subject: Re: [kvm-devel] =?iso-8859-1?q?R=E9f=2E_=3A_Re=3A_=5BPATCH_0/4=5D_Virtual_Machine_Time?=
- =?iso-8859-1?q?_Accounting?=
-Date: Tue, 21 Aug 2007 10:06:42 +0200
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [accounting regression since rc1]  scheduler updates
+Date: Tue, 21 Aug 2007 10:17:02 +0200
 User-Agent: KMail/1.9.7
-Cc: "Glauber de Oliveira Costa" <glommer@gmail.com>,
-       "laurent.vivier@bull.net" <laurent.vivier@bull.net>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, John Stoffel <john@stoffel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-References: <OF945F7B1F.FF4B4672-ONC125733D.006266E7-C125733D.00626843@frec.bull.fr> <5d6222a80708201334q27fc6cbcr7ce6a9d7147437a2@mail.gmail.com>
-In-Reply-To: <5d6222a80708201334q27fc6cbcr7ce6a9d7147437a2@mail.gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
+       Paul Mackerras <paulus@samba.org>
+References: <20070812163225.GA11996@elte.hu> <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu>
+In-Reply-To: <20070820154529.GA300@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708211006.42938.borntraeger@de.ibm.com>
+Message-Id: <200708211017.02998.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 20. August 2007 schrieb Glauber de Oliveira Costa:
-> Although I don't know KVM to a that deep level, I think it should be
-> possible to keep the virtual cpus in different process (or threads),
-> and take the accounting time from there. Perfectly possible to know
-> the time we spent running (user time), and the time the hypervisor
-> spent doing things on our behalf (system time).
+Am Montag, 20. August 2007 schrieb Ingo Molnar:
+> could you send that precise sched_clock() patch? It should be an order 
+> of magnitude simpler than the high-precision stime/utime tracking you 
+> already do, and it's needed for quality scheduling anyway.
 
-I disagree here. First thing, you dont want to have the virtual cpu in a 
-different process than the hypervisor control code for that cpu. Otherwise  
-communication has to be made via IPC. 
-Secondly, Its not qemu/kvm that does the accouting. Its existing userspace 
-code like top/snmp agents and clients! etc. that would require additional 
-knowledge which thread is guest code.
+I have a question about that. I just played with sched_clock, and even when I 
+intentionally slow down sched_clock by a factor of 2, my cpu bound process 
+gets 100 % in top. If this is intentional, I dont understand how a 
+virtualized sched_clock would fix the accounting change?
 
-I personally like the approach Laurent has taken. Maybe it needs some polish 
-and maybe we want an account_guest_time function, but in general I think he 
-is doing the right thing. 
+Thanks
 
 Christian
