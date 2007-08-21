@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbXHUViZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756379AbXHUVlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756164AbXHUViZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 17:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbXHUViK
+	id S1756379AbXHUVlV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 17:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbXHUVlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 17:38:10 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53934 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753352AbXHUViJ (ORCPT
+	Tue, 21 Aug 2007 17:41:13 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:34543 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752311AbXHUVlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 17:38:09 -0400
-From: akepner@sgi.com
-Date: Tue, 21 Aug 2007 14:37:07 -0700
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Jes Sorensen <jes@sgi.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       rdreier@cisco.com, linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-Message-ID: <20070821213707.GH5592@sgi.com>
-References: <20070818002746.GU1813@sgi.com> <46C94FD5.6000006@sgi.com> <20070821193522.GD5592@sgi.com> <20070821201631.GF9163@parisc-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 21 Aug 2007 17:41:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Dbg5/ksg+XyhkwRhIg6ogCQmBwFX9etUF56C3rNDKrjse2NRsSAYGsb3DD5O1kzyfqgSI7ddAkFtf2+zBlAbYz40GKa99VtSCswgW/OMMtaWS6mxM8g/vvFxpsWe/Sx/AYngVIQ0Ti+hIZV+SBOO90KSFFdyTj35naDDpiRYzg0=
+Message-ID: <6101e8c40708211441g2ae20412u877082eb611f595e@mail.gmail.com>
+Date: Tue, 21 Aug 2007 23:41:10 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: RFC: drop support for gcc < 4.0
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jarek Poplawski" <jarkao2@o2.pl>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+In-Reply-To: <20070821173550.GC30705@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070821201631.GF9163@parisc-linux.org>
-User-Agent: Mutt/1.4.1i
+References: <20070821132038.GA22254@ff.dom.local>
+	 <20070821093103.3c097d4a.randy.dunlap@oracle.com>
+	 <20070821173550.GC30705@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 21, 2007 at 02:16:32PM -0600, Matthew Wilcox wrote:
-> 
-> So, let me try to understand ... your hardware allows writes from the
-> device to pass other writes from the device?  Doesn't that violate the
-> PCI spec?  I'm thinking about this (page 43 of PCI 2.3):
-> ....
+Hi all!
 
-I should have stated this more carefully, but it's not a PCI reordering 
-that's being addressed here, it's a reordering that can occur within 
-the NUMA-interconnect. 
-
--- 
-Arthur
-
+I think it's bad idea, when removing support for gcc3.x, while some
+people using debian 3.1 at now and under debian 3.1 the default
+comiler is 3.3.5, when I good know or not!?
