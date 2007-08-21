@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758469AbXHUMle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbXHUMr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758469AbXHUMle (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 08:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbXHUMl0
+	id S1758803AbXHUMr0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 08:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbXHUMrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 08:41:26 -0400
-Received: from mx1.ciphirelabs.net ([217.72.114.64]:59864 "EHLO
-	mx.dmz.ciphirelabs.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752690AbXHUMlZ (ORCPT
+	Tue, 21 Aug 2007 08:47:17 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:46802 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751641AbXHUMrQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 08:41:25 -0400
-From: "Andreas Jellinghaus [c]" <aj@ciphirelabs.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [linux-usb-devel] why was MODALIAS removed from usb kernel events? [u]
-Date: Tue, 21 Aug 2007 14:41:14 +0200
-User-Agent: KMail/1.9.6
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-References: <200708171622.05115.aj@ciphirelabs.com> <20070821073656.GA6691@kroah.com> <1187696468.2489.10.camel@lov.localdomain>
-In-Reply-To: <1187696468.2489.10.camel@lov.localdomain>
+	Tue, 21 Aug 2007 08:47:16 -0400
+Message-ID: <46CADD1D.9090901@linux.vnet.ibm.com>
+Date: Tue, 21 Aug 2007 18:09:57 +0530
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+CC: ltp-announce@lists.sourceforge.net, ltp-list@lists.sourceforge.net,
+       linux-audit <linux-audit@redhat.com>,
+       redhat-lspp <redhat-lspp@redhat.com>, SELinux <selinux@tycho.nsa.gov>,
+       linux-kernel@vger.kernel.org, klausk@br.ibm.com, reddenr@us.ibm.com,
+       gcwilson@us.ibm.com
+Subject: [Announce] RHEL5 LSPP/EAL4 Certification Testsuite has been released
+ again
+References: <46C549AC.70804@linux.vnet.ibm.com>
+In-Reply-To: <46C549AC.70804@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708211441.15645.aj@ciphirelabs.com>
-X-Ciphire-Security: plain
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks, the patch works great!
-would be nice if it could be send to the stable team as well
-(I think a number of distributions want to use 2.6.22 as base
-for there next release, and I would be happy if users had the patch
-in it).
+The Red Hat Enterprise Linux 5 LSPP/EAL4 Certification Testsuite 
+(rhel5_ibm_eal4_cert_suite2.tgz) has been released again and can be 
+found at http://ltp.sourceforge.net/ or 
+http://sourceforge.net/project/showfiles.php?group_id=3382. More details 
+about this testsuite can be found @'lspp/README' inside the package.
 
-sorry for creating confusion: initially I thought MODALIAS had been removed,
-as I looked at the event with DEVICE and in 2.6.21 it has MODALIAS= and in 
-2.6.22 it doesn't. that was wrong, I should have looked at the MODALIAS event
-to find out that DEVICE, TYPE and PRODUCT where missing. sorry again.
-
-> Andreas, do I read this right, you miss:
->   DEVICE, PRODUCT, TYPE
-> in the usb-interface event, and they only exist in the usb-device event?
-
-yes, in 2.6.21 two events have DEVICE (one of them has also MODALIAS), in 
-2.6.22 one event has DEVICE and PRODUCT and TYPE, the other one MODALIAS,
-no event has both. your patch fixes this, thanks!
-
-> +#ifdef CONFIG_USB_DEVICEFS
-
-does this depend on USB_CLASS_DEVICE? i.e. will it break if USB_CLASS_DEVICE
-is turned off? a migration plan / what shall I do so my code still works
-when that is done, would be very nice. and enough time so I can get new
-versions out to the users. so far the kernel was faster and I got bug reports
-about openct not working with 2.6.22 :(
-
-Regards, Andreas
+Regards & Thanks--
+Subrata Modak
