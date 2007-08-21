@@ -1,40 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbXHUFcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbXHUFdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757256AbXHUFcU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 01:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbXHUFcI
+	id S1756919AbXHUFdT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 01:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbXHUFdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 01:32:08 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:42100 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751949AbXHUFcH (ORCPT
+	Tue, 21 Aug 2007 01:33:10 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:48891 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751821AbXHUFdJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 01:32:07 -0400
-Date: Tue, 21 Aug 2007 07:32:06 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Xin Zhao <uszhaoxin@gmail.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: How Linux /proc filesystem convert a fd to the actual pathname?
-In-Reply-To: <4ae3c140708201958x3c88b317o2ba9be64177978f5@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0708210730070.5333@fbirervta.pbzchgretzou.qr>
-References: <4ae3c140708201958x3c88b317o2ba9be64177978f5@mail.gmail.com>
+	Tue, 21 Aug 2007 01:33:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=rsOutNUk2oevee1C0oiQxQz5CxXxzo+tr64eUWCXeaTQacPGHRwSXNZpaKf/8nAyYxVhCt3wVokIY4UL8I7Lp75qHeik9VI+E2qAhk7Pgg+XSjx4Rr9yMhbR3iMMtPHE8j+x8Lzbs/JeinggVc6b7dpqXptVKkcDFJFd8lvLbsw=
+Date: Tue, 21 Aug 2007 14:33:01 +0900
+From: Tejun Heo <htejun@gmail.com>
+To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: [PATCH] PCI: disable MSI on RX790
+Message-ID: <20070821053301.GC2909@htj.dyndns.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+RX790 can't do MSI like its predecessors.  Disable MSI on RX790.
 
->In the Linux proc filesystem,  /proc/[pid]/fd is a link to the
->actually the actual pathname of the opened file.
->
->I am curious how Linux convert an fd to the pathname?  Does it
->recursively walk back from current dentry to the root?
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+---
+Okay, another one from ATI which can't do MSI.  2.6.23 material.
 
-AFAICS the fd has a pointer to the vma of the file (don't ask me why), 
-which in turn has a 'struct file' pointer, which in turn has the 
-required 'struct dentry' in it.
+ drivers/pci/quirks.c    |    1 +
+ include/linux/pci_ids.h |    1 +
+ 2 files changed, 2 insertions(+)
 
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 67e375d..d8a2e44 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1651,6 +1651,7 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_HT1
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS400_200, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RD580, quirk_disable_all_msi);
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RX790, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS690, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VT3351, quirk_disable_all_msi);
+ 
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index dc79fea..5acfeb7 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -361,6 +361,7 @@
+ #define PCI_DEVICE_ID_ATI_RS400_200     0x5a33
+ #define PCI_DEVICE_ID_ATI_RS480         0x5950
+ #define PCI_DEVICE_ID_ATI_RD580		0x5952
++#define PCI_DEVICE_ID_ATI_RX790		0x5957
+ #define PCI_DEVICE_ID_ATI_RS690		0x7910
+ /* ATI IXP Chipset */
+ #define PCI_DEVICE_ID_ATI_IXP200_IDE	0x4349
 
-	Jan
--- 
