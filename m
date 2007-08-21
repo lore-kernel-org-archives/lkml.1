@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758616AbXHUGwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758407AbXHUGxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758616AbXHUGwi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 02:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757543AbXHUGwX
+	id S1758407AbXHUGxD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 02:53:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758307AbXHUGw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:52:23 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:51464 "EHLO
+	Tue, 21 Aug 2007 02:52:29 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:51475 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757442AbXHUGwV (ORCPT
+	with ESMTP id S1758013AbXHUGw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:52:21 -0400
-Date: Mon, 20 Aug 2007 23:53:44 -0700
+	Tue, 21 Aug 2007 02:52:27 -0400
+Date: Mon, 20 Aug 2007 23:53:53 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,14 +21,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Jean Delvare <khali@linux-fr.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 02/20] hwmon: (smsc47m1) restore missing name attribute
-Message-ID: <20070821065344.GC5275@kroah.com>
+       netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 03/20] sky2: restore workarounds for lost interrupts
+Message-ID: <20070821065353.GD5275@kroah.com>
 References: <20070821064251.972690753@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hwmon-restore-missing-name-attribute.patch"
+Content-Disposition: inline; filename="sky2-lost-irq.patch"
 In-Reply-To: <20070821065210.GA5275@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,34 +39,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-From: Jean Delvare <khali@linux-fr.org>
+Backport of commit c59697e06058fc2361da8cefcfa3de85ac107582
 
-The smsc47m1 driver no longer creates the name attribute used by
-libsensors to identify chip types. It was lost during the conversion
-to a platform driver. I was fooled by the fact that we do have a
-group with all attributes, but only to delete them all at once. The
-group is not used to create the attributes, so we have to explicitly
-create the name attribute.
+This patch restores a couple of workarounds from 2.6.16:
+ * restart transmit moderation timer in case it expires during IRQ routine
+ * default to having 10 HZ watchdog timer.
+At this point it more important not to hang than to worry about the
+power cost.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Signed-off-by: Mark M. Hoffman <mhoffman@lightlink.com>
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hwmon/smsc47m1.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/sky2.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
---- a/drivers/hwmon/smsc47m1.c
-+++ b/drivers/hwmon/smsc47m1.c
-@@ -585,6 +585,8 @@ static int __devinit smsc47m1_probe(stru
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -96,7 +96,7 @@ static int disable_msi = 0;
+ module_param(disable_msi, int, 0);
+ MODULE_PARM_DESC(disable_msi, "Disable Message Signaled Interrupt (MSI)");
  
- 	if ((err = device_create_file(dev, &dev_attr_alarms)))
- 		goto error_remove_files;
-+	if ((err = device_create_file(dev, &dev_attr_name)))
-+		goto error_remove_files;
+-static int idle_timeout = 0;
++static int idle_timeout = 100;
+ module_param(idle_timeout, int, 0);
+ MODULE_PARM_DESC(idle_timeout, "Watchdog timer for lost interrupts (ms)");
  
- 	data->class_dev = hwmon_device_register(dev);
- 	if (IS_ERR(data->class_dev)) {
+@@ -2442,6 +2442,13 @@ static int sky2_poll(struct net_device *
+ 
+ 	work_done = sky2_status_intr(hw, work_limit);
+ 	if (work_done < work_limit) {
++		/* Bug/Errata workaround?
++		 * Need to kick the TX irq moderation timer.
++		 */
++		if (sky2_read8(hw, STAT_TX_TIMER_CTRL) == TIM_START) {
++			sky2_write8(hw, STAT_TX_TIMER_CTRL, TIM_STOP);
++			sky2_write8(hw, STAT_TX_TIMER_CTRL, TIM_START);
++		}
+ 		netif_rx_complete(dev0);
+ 
+ 		/* end of interrupt, re-enables also acts as I/O synchronization */
 
 -- 
