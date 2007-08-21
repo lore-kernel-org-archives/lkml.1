@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932359AbXHUSxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932437AbXHUS4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932359AbXHUSxm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 14:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760696AbXHUSxe
+	id S932437AbXHUS4U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 14:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759522AbXHUS4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 14:53:34 -0400
-Received: from smtp118.sbc.mail.re3.yahoo.com ([66.196.96.91]:44574 "HELO
-	smtp118.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760371AbXHUSxe (ORCPT
+	Tue, 21 Aug 2007 14:56:13 -0400
+Received: from straum.hexapodia.org ([64.81.70.185]:29693 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756641AbXHUS4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 14:53:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=WTlQ3YhNIc7jmFwgRGHI8DfHpy9bBudUAnIJJsmRZhAbKrISyTgtmbG5uzNNcgs0ltAlFvQ4qmN5KmP0No2peeZDinEb7xP1WQmoPDoT67lIr+GDaq6mrEDdxmbTdeXt/Vj0WUiBJgtVGZPwhUoP1LC+qtOqfH1vfbWI456eFgY=  ;
-X-YMail-OSG: aBLT8nQVM1mGgFDZ4Jo2LLfGvt5mu9CccSM6G712tXq.0Nw7UDjjiMei0sTmBDHjfQSFT0XD2kywQJet6Ztn.KCRRwep9486S90vp19BmWAfaemRgqWaCGVjUKrPqWxP8iLBlXR4tBX0
-From: David Brownell <david-b@pacbell.net>
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] ptrdiff_t is not uintptr_t, damnit
-Date: Tue, 21 Aug 2007 11:53:27 -0700
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20070819225546.GV21089@ftp.linux.org.uk>
-In-Reply-To: <20070819225546.GV21089@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+	Tue, 21 Aug 2007 14:56:12 -0400
+Date: Tue, 21 Aug 2007 11:56:11 -0700
+From: Andy Isaacson <adi@hexapodia.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Neil Horman <nhorman@tuxdriver.com>, Valdis.Kletnieks@vt.edu,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH]: proc: export a processes resource limits via proc/<pid>
+Message-ID: <20070821185611.GA17822@hexapodia.org>
+References: <20070813140044.GB1960@hmsreliant.think-freely.org> <20070816123538.GA10430@hmsreliant.think-freely.org> <4379.1187338166@turing-police.cc.vt.edu> <20070817105918.GA13937@hmsreliant.think-freely.org> <20070817124547.5415a839.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708211153.27371.david-b@pacbell.net>
+In-Reply-To: <20070817124547.5415a839.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
+X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
+X-Domestic-Surveillance: money launder bomb tax evasion
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 19 August 2007, Al Viro wrote:
-> Use unsigned long or uintptr_t instead.  There are several places misusing
-> ptrdiff_t (one - in a very odd way; WTF did that cast to __user ptrdiff_t 
-> in ntfs expect to happen, anyway?)   Fixed...
+On Fri, Aug 17, 2007 at 12:45:47PM -0700, Andrew Morton wrote:
+> On Fri, 17 Aug 2007 06:59:18 -0400
+> Neil Horman <nhorman@tuxdriver.com> wrote:
+> > Currently, there exists no method for a process to query the resource
+> > limits of another process.  They can be inferred via some mechanisms
+> > but they cannot be explicitly determined.  Given that this
+> > information can be usefull to know during the debugging of an
+> > application, I've written this patch which exports all of a
+> > processes limits via /proc/<pid>/limits.
 > 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> I'm struggling with this a bit.  Sure, it _might_ be handy on some
+> occasions to be able to get at this information.  But I've never seen
+> anyone ask for it before, and it _is_ determinable by other means, if only
+> strace.
 
-By the way:  ACK.  Glad there's now always a "uintptr_t".
+I've wanted this information on multiple occasions in the past and was
+mystified that there was no way to determine it.  And no, I don't feel
+that strace is an answer -- given a running process, how do I use strace
+to find out what its current ulimits are?
+
+-andy
