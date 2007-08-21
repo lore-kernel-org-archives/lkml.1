@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762281AbXHUG5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760317AbXHUG6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762281AbXHUG5m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 02:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761261AbXHUGyv
+	id S1760317AbXHUG6B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 02:58:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759047AbXHUGzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:54:51 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:44298 "EHLO
+	Tue, 21 Aug 2007 02:55:00 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:44308 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760722AbXHUGyt (ORCPT
+	with ESMTP id S1761458AbXHUGy6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:54:49 -0400
-Date: Mon, 20 Aug 2007 23:55:37 -0700
+	Tue, 21 Aug 2007 02:54:58 -0400
+Date: Mon, 20 Aug 2007 23:55:43 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jbeulich@novell.com,
+       patches@x86-64.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 14/20] Hibernation: do not try to mark invalid PFNs as
-	nosave
-Message-ID: <20070821065537.GO5275@kroah.com>
+       Andi Kleen <ak@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 15/20] i386: allow debuggers to access the vsyscall page
+	with compat vDSO
+Message-ID: <20070821065543.GP5275@kroah.com>
 References: <20070821064251.972690753@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hibernation-do-not-try-to-mark-invalid-pfns-as-nosave.patch"
+Content-Disposition: inline; filename="i386-allow-debuggers-to-access-the-vsyscall-page-with-compat-vdso.patch"
 In-Reply-To: <20070821065210.GA5275@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,35 +39,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Jan Beulich <jbeulich@novell.com>
 
-On some systems some PFNs reported by the early initialization code as 'nosave'
-may be invalid. =A0If we try to set the corresponding bits in the hibernation
-bitmap, BUG_ON() in memory_bm_find_bit() will be triggered and the system
-won't be able to boot (cf. https://bugzilla.novell.com/show_bug.cgi?id=296242).
 
-Prevent this from happening by verifying if the 'nosave' PFNs are valid in
-mark_nosave_pages().
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
+From: Jan Beulich <jbeulich@novell.com>
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Signed-off-by: Andi Kleen <ak@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/power/snapshot.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/i386/kernel/sysenter.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -709,7 +709,8 @@ static void mark_nosave_pages(struct mem
- 				region->end_pfn << PAGE_SHIFT);
+--- a/arch/i386/kernel/sysenter.c
++++ b/arch/i386/kernel/sysenter.c
+@@ -336,7 +336,9 @@ struct vm_area_struct *get_gate_vma(stru
  
- 		for (pfn = region->start_pfn; pfn < region->end_pfn; pfn++)
--			memory_bm_set_bit(bm, pfn);
-+			if (pfn_valid(pfn))
-+				memory_bm_set_bit(bm, pfn);
- 	}
+ int in_gate_area(struct task_struct *task, unsigned long addr)
+ {
+-	return 0;
++	const struct vm_area_struct *vma = get_gate_vma(task);
++
++	return vma && addr >= vma->vm_start && addr < vma->vm_end;
  }
  
+ int in_gate_area_no_task(unsigned long addr)
 
 -- 
