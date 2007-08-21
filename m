@@ -1,91 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbXHUJgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbXHUJgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758670AbXHUJgh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 05:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755187AbXHUJfO
+	id S1758877AbXHUJgz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 05:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758598AbXHUJgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 05:35:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57282 "EHLO mx2.mail.elte.hu"
+	Tue, 21 Aug 2007 05:36:35 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:40504 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754772AbXHUJfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 05:35:11 -0400
-Date: Tue, 21 Aug 2007 11:34:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [accounting regression since rc1]  scheduler updates
-Message-ID: <20070821093434.GB12025@elte.hu>
-References: <20070812163225.GA11996@elte.hu> <200708141037.48001.borntraeger@de.ibm.com> <20070820154529.GA300@elte.hu> <200708211017.02998.borntraeger@de.ibm.com> <20070821084243.GB1144@elte.hu> <1187687476.7623.8.camel@localhost>
+	id S1757813AbXHUJgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 05:36:33 -0400
+Message-ID: <46CAB0EC.4000406@openvz.org>
+Date: Tue, 21 Aug 2007 13:31:24 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187687476.7623.8.camel@localhost>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4999]
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Daniel Pittman <daniel@rimspace.net>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Kirill Korotaev <dev@sw.ru>,
+       Roland McGrath <roland@redhat.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH] fix /sbin/init signal handling
+References: <20070819150822.GA7772@tv-sign.ru>
+In-Reply-To: <20070819150822.GA7772@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-
-> > hm, does on s390 scheduler_tick() get driven in virtual time or in 
-> > real time? The very latest scheduler code will enforce a minimum 
-> > rate of sched_clock() across two scheduler_tick() calls (in rc3 and 
-> > later kernels). If sched_clock() "slows down" but scheduler_tick() 
-> > still has a real-time frequency then that impacts the quality of 
-> > scheduling. So scheduler_tick() and sched_clock() must really have 
-> > the same behavior (either both are virtual or both are real), so 
-> > that scheduling becomes invariant to steal-time.
+Oleg Nesterov wrote:
+> (Not for inclusion yet, against 2.6.23-rc2, untested)
 > 
-> scheduler_tick() is based on the HZ timer which uses the TOD clock = 
-> real time. sched_clock() currently uses the TOD clock as well so in 
-> regard to the new scheduler we currently do not have a problem. We 
-> have a problem with cpu time accounting, the change to the /proc code 
-> breaks the precise accounting on s390. To solve the cpu time 
-> accounting we need to change sched_clock() to the cpu timer = virtual 
-> time. To change the scheduler_tick() as well requires another patch 
-> and I fear it would complicate things in the s390 backend.
+> Currently, /sbin/init is protected from unhandled signals by the
+> "current == child_reaper(current)" check in get_signal_to_deliver().
+> This is not enough, we have multiple problems:
+> 
+> 	- this doesn't work for multi-threaded inits, and we can't
+> 	  fix this by simply making this check group-wide.
+> 
+> 	- /sbin/init and kernel threads are not protected from
+> 	  handle_stop_signal(). Minor problem, but not good and
+> 	  allows to "steal" SIGCONT or change ->signal->flags.
+> 
+> 	- /sbin/init is not protected from __group_complete_signal(),
+> 	  sig_fatal() can set SIGNAL_GROUP_EXIT and block exec(), kill
+> 	  sub-threads, set ->group_stop_count, etc.
+> 
+> Also, with support for multiple pid namespaces, we need an ability to
+> actually kill the sub-namespace's init from the parent namespace. In
+> this case it is not possible (without painful and intrusive changes)
+> to make the "should we honor this signal" decision on the receiver's
+> side.
+> 
+> Hopefully this patch (adds 43 bytes to kernel/signal.o) can solve
+> these problems.
+> 
+> Notes:
+> 
+> 	- Blocked signals are never ignored, so init still can receive
+> 	  a pending blocked signal after sigprocmask(SIG_UNBLOCK).
+> 	  Easy to fix, but probably we can ignore this issue.
+> 
+> 	- this patch allows us to simplify de_thread() playing games
+> 	  with pid_ns->child_reaper.
+> 
+> (Side note: the current behaviour of things like force_sig_info_fault()
+>  is not very good, init should not ignore these signals and go to the
+>  endless loop. Exit + panic is imho better, easy to chamge)
+> 
+> Oleg.
+> 
+> --- t/kernel/signal.c~INITSIGS	2007-08-19 14:39:35.000000000 +0400
+> +++ t/kernel/signal.c	2007-08-19 19:00:27.000000000 +0400
+> @@ -39,11 +39,35 @@
+>  
+>  static struct kmem_cache *sigqueue_cachep;
+>  
+> +static int sig_init_ignore(struct task_struct *tsk)
+> +{
+> +	// Currently this check is a bit racy with exec(),
+> +	// we can _simplify_ de_thread and close the race.
+> +	if (likely(!is_init(tsk->group_leader)))
+> +		return 0;
+> +
+> +	// ---------------- Multiple pid namespaces ----------------
+> +	// if (current is from tsk's parent pid_ns && !in_interrupt())
+> +	//	return 0;
+> +
+> +	return 1;
+> +}
+> +
+> +static int sig_task_ignore(struct task_struct *tsk, int sig)
+> +{
+> +	void __user * handler = tsk->sighand->action[sig-1].sa.sa_handler;
+> +
+> +	if (handler == SIG_IGN)
+> +		return 1;
+> +
+> +	if (handler != SIG_DFL)
+> +		return 0;
+> +
+> +	return sig_kernel_ignore(sig) || sig_init_ignore(tsk);
+> +}
 
-my feeling is that it gives us generally higher-quality scheduling if we 
-drive all things scheduler via virtual time. Do you agree with that?
+These two look like the init ignores "less" than a usual task,
+i.e. the decision of whether a task has to ignore a signal depends
+on whether the init has and some more. This is... strange :)
 
-> And if you say that the scheduling becomes invariant to steal-time, 
-> how is the cpu time accounting via sum_exec supposed to work if it 
-> does not take steal-time into account ?
+>  static int sig_ignored(struct task_struct *t, int sig)
+>  {
+> -	void __user * handler;
+> -
+>  	/*
+>  	 * Tracers always want to know about signals..
+>  	 */
+> @@ -58,10 +82,7 @@ static int sig_ignored(struct task_struc
+>  	if (sigismember(&t->blocked, sig))
+>  		return 0;
+>  
+> -	/* Is it explicitly or implicitly ignored? */
+> -	handler = t->sighand->action[sig-1].sa.sa_handler;
+> -	return   handler == SIG_IGN ||
+> -		(handler == SIG_DFL && sig_kernel_ignore(sig));
+> +	return sig_task_ignore(t, sig);
+>  }
+>  
+>  /*
+> @@ -569,6 +590,9 @@ static void handle_stop_signal(int sig, 
+>  		 */
+>  		return;
+>  
+> +	if (sig_init_ignore(p))
+> +		return;
+> +
 
-right now there are two distinct and independent things: scheduler 
-behavior (the scheduling decisions the scheduler makes) and accounting 
-behavior.
+Why do we need for explicit stop handling for init? Shouldn't
+it be automatically checked in get_signal_to_deliver()?
 
-the 'invariant' i mentioned only covers scheduler behavior, not 
-accounting behavior. Accounting is separate in theory, but coupled in 
-practice now via sum_exec_runtime.
+>  	if (sig_kernel_stop(sig)) {
+>  		/*
+>  		 * This is a stop signal.  Remove SIGCONT from all queues.
+> @@ -1841,14 +1865,6 @@ relock:
+>  		if (sig_kernel_ignore(signr)) /* Default is nothing. */
+>  			continue;
+>  
+> -		/*
+> -		 * Init of a pid space gets no signals it doesn't want from
+> -		 * within that pid space. It can of course get signals from
+> -		 * its parent pid space.
+> -		 */
+> -		if (current == child_reaper(current))
+> -			continue;
+> -
+>  		if (sig_kernel_stop(signr)) {
+>  			/*
+>  			 * The default action is to stop all threads in
+> @@ -2300,13 +2316,10 @@ int do_sigaction(int sig, struct k_sigac
+>  	k = &current->sighand->action[sig-1];
+>  
+>  	spin_lock_irq(&current->sighand->siglock);
+> -	if (signal_pending(current)) {
+> -		/*
+> -		 * If there might be a fatal signal pending on multiple
+> -		 * threads, make sure we take it before changing the action.
+> -		 */
+> +	if (current->signal->flags & SIGNAL_GROUP_EXIT) {
+>  		spin_unlock_irq(&current->sighand->siglock);
+> -		return -ERESTARTNOINTR;
+> +		/* The return value doesn't matter, SIGKILL is pending */
+> +		return -EINTR;
+>  	}
+>  
+>  	if (oact)
+> @@ -2327,8 +2340,7 @@ int do_sigaction(int sig, struct k_sigac
+>  		 *   (for example, SIGCHLD), shall cause the pending signal to
+>  		 *   be discarded, whether or not it is blocked"
+>  		 */
+> -		if (act->sa.sa_handler == SIG_IGN ||
+> -		   (act->sa.sa_handler == SIG_DFL && sig_kernel_ignore(sig))) {
+> +		if (sig_task_ignore(current, sig)) {
+>  			struct task_struct *t = current;
+>  			sigemptyset(&mask);
+>  			sigaddset(&mask, sig);
+> 
+> 
 
-Before we do a patch to decouple them again, lets make sure we agree on 
-the direction to take here. There are two ways to account within a 
-virtual machine: either in real time or in virtual time.
-
-it seems you'd like accounting to be sensitive to 'external load' - i.e. 
-you'd like an 'internal' top to show the 'real' CPU accounting, right? 
-
-Wouldnt it be more consistent if a virtual box would not show any 
-dependency on external load? (i.e. it would slow down all of its 
-internal functionality transparently, without exposing it via /proc. The 
-only way to observe that would be the TOD interfaces: gettimeofday and 
-real-time clock driven POSIX timers. Even timer_list could be driven via 
-virtual time - although that would probably break user expectations, 
-right?) Or would accounting-in-virtual-time break user expectations too? 
-(most of the other hypervisors let guests account in virtual time.)
-
-	Ingo
