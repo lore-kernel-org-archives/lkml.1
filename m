@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759917AbXHUOk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbXHUOpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759917AbXHUOk3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 10:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758088AbXHUOkT
+	id S1760154AbXHUOpH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 10:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757253AbXHUOov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 10:40:19 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:58403 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758051AbXHUOkR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 10:40:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=X5Mpd0UUBEV80pAa7VyfSIpAOxYY2iTIhUDklTVcJT3PiuB1OcrbDFRZnjX4YfV+Pgd8GBaiAJ4f/1aOZwlgtUasQIXGzj2Nwdjluh8RTS67YwMzsSlXsssgJTUhFxsQrBNQUeg0fPQOhL1VXcMxrKVv4SHPBZCdM8L8F6IuhLE=
-Message-ID: <52dd17640708210740k2f7e16ccu8b159c513d1d1589@mail.gmail.com>
-Date: Tue, 21 Aug 2007 09:40:15 -0500
-From: "Guy Streeter" <guy.streeter@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: 4096 byte limit to /proc/PID/environ ?
-Cc: "James Pearson" <james-p@moving-picture.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <46C33700.1060605@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 21 Aug 2007 10:44:51 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42512 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756336AbXHUOou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 10:44:50 -0400
+In-Reply-To: <20070821070555.GA32036@flint.arm.linux.org.uk>
+References: <46C516BA.60700@yahoo.com.au> <alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org> <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au> <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com> <46C997B1.1010800@redhat.com> <417ebba299a7ad3c4b7a31c4f860a814@kernel.crashing.org> <20070820224859.GA16162@flint.arm.linux.org.uk> <2bdb04581125f22122f1d230e991ea92@kernel.crashing.org> <20070821070555.GA32036@flint.arm.linux.org.uk>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <0e3d1956b0b85feb2bdbdba07fad6a08@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4474B7DB.8000304@moving-picture.com>
-	 <200605242029.k4OKTn9C031700@terminus.zytor.com>
-	 <447EF58C.6000605@moving-picture.com>
-	 <52dd17640708150954q798d137cn1b07739785917c5b@mail.gmail.com>
-	 <46C33700.1060605@zytor.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
+       heiko.carstens@de.ibm.com, horms@verge.net.au,
+       linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
+       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
+       rpjday@mindspring.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, satyam@infradead.org,
+       zlynx@acm.org, schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Tue, 21 Aug 2007 16:39:15 +0200
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/15/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> Guy Streeter wrote:
-> > On 6/1/06, James Pearson <james-p@moving-picture.com> wrote:
-> >> H. Peter Anvin wrote:
-> >>> I think this is the wrong approach.
-> >>>
-> >>> Many of these should probably be converted to seq_file, but in the
-> >>> particular case of environ, the right approach is to observe the fact
-> >>> that reading environ is just like reading /proc/PID/mem, except:
-> >>>
-> >>>  a. the access restrictions are less strict, and
-> >>>  b. there is a range restriction, which needs to be enforced, and
-> >>>  c. there is an offset.
-> >>>
-> >>> Pretty much, take the guts from /proc/PID/mem and generalize it
-> >>> slightly, and you have the code that can run either /proc/PID/mem or
-> >>> /proc/PID/environ.
-> >> The following patch is based on the /proc/PID/mem code appears to work fine.
-> >>
-> >
-> > This thread has gone stale. The PAGE_SIZE limit still exists. Is this
-> > solution acceptable?
-> >
+>>>> And no, RMW on MMIO isn't "problematic" at all, either.
+>>>>
+>>>> An RMW op is a read op, a modify op, and a write op, all rolled
+>>>> into one opcode.  But three actual operations.
+>>>
+>>> Maybe for some CPUs, but not all.  ARM for instance can't use the
+>>> load exclusive and store exclusive instructions to MMIO space.
+>>
+>> Sure, your CPU doesn't have RMW instructions -- how to emulate
+>> those if you don't have them is a totally different thing.
 >
-> Can we avoid the code duplication?
->
->
+> Let me say it more clearly: On ARM, it is impossible to perform atomic
+> operations on MMIO space.
 
-I hope you're not asking me. I don't know the proc fs code well enough
-to re-write this.
+It's all completely beside the point, see the other subthread, but...
 
---Guy
+Yeah, you can't do LL/SC to MMIO space; ARM isn't alone in that.
+You could still implement atomic operations on MMIO space by taking
+a lock elsewhere, in normal cacheable memory space.  Why you would
+do this is a separate question, you probably don't want it :-)
+
+
+Segher
+
