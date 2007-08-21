@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755705AbXHUJPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbXHUJQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755705AbXHUJPT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 05:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbXHUJPF
+	id S1756045AbXHUJQP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 05:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbXHUJQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 05:15:05 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:16926 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752355AbXHUJPC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 05:15:02 -0400
-Subject: Re: [accounting regression since rc1]  scheduler updates
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <200708210900.54549.borntraeger@de.ibm.com>
-References: <20070812163225.GA11996@elte.hu>
-	 <20070820180810.GA25160@elte.hu> <1187634782.4028.10.camel@localhost>
-	 <200708210900.54549.borntraeger@de.ibm.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Tue, 21 Aug 2007 11:18:46 +0200
-Message-Id: <1187687926.7623.10.camel@localhost>
+	Tue, 21 Aug 2007 05:16:00 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:39731 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751420AbXHUJP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 05:15:58 -0400
+Date: Tue, 21 Aug 2007 11:17:00 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: [PATCH] genirq: handle_fasteoi_irq vs IRQ_INPROGRESS && IRQ_DISABLED
+Message-ID: <20070821091700.GB1778@ff.dom.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-21 at 09:00 +0200, Christian Borntraeger wrote:
-> Am Montag, 20. August 2007 schrieb Martin Schwidefsky:
-> > On Mon, 2007-08-20 at 20:08 +0200, Ingo Molnar wrote:
-> > Ok, that would mean that sched_clock can just return the virtual cpu
-> > time and the two hooks starts and stops the idle periods as far as the
-> > scheduler is concerned. In this case we can use the patch from Jan with
-> > the new implementation for sched_clock and add the two hooks to the
-> > places where the cpu-idle notifiers are done (do_monitor_call and
-> > default_idle). In fact this could be an idle-notifier. Hmm, I take a
-> > closer look tomorrow when I'm back at the office.
-> > 
-> > > If a virtual CPU is idle then i think the "real = steal, virtual = 0" 
-> > > way of thinking about idle looks a bit unnatural to me - wouldnt it be 
-> > > better to think in terms of "steal = 0, virtual = real" ? Basically a 
-> > > virtual CPU can idle at "perfect speed", without the host "stealing" any 
-> > > cycles from it. And with that way of thinking, if s390 passed in the 
-> > > real-idle-time value to the new callbacks below it would all fall into 
-> > > place. Hm?
-> 
-> Martin,
-> 
-> I think we already do something like this. If you look at cpustat in 2.6.22 
-> and earlier we already have steal increase = 0, idle increase = 100 % on an 
-> idle cpu, even on s390. So while from the hardware perspective steal is 
-> growing, we do the right thing in Linux, no?
 
-This is done in kernel/sched.c:account_steal_time(). If the architecture
-backend reports steal time for idle it is accounted as idle time.
+Hi,
 
--- 
-blue skies,
-  Martin.
+I've still some doubts about these irq handlers and I hope somebody
+could explain some of these (despite my problems with earlier such
+explanations, sorry...):
 
-"Reality continues to ruin my life." - Calvin.
+1. According to some well-known Intel's manual (vol.3A page 8-41)
+lapic can interrupt irq handler dispatching higher-priority irq; it
+seems, such an event is possible during handle_IRQ_event, and would
+be treated by "common" handlers with IRQ_INPROGRESS; but:
 
+a) handle_level_irq and handle_edge_irq do unconditional ack-masking
+and return; so, I wonder how, after finishing with this current one,
+the higher-priority level type and masked irq could find it's way
+home/cpu? (edge type would be retriggered, of course)
 
+b) handle_fasteoi_irq acks but doesn't mask, so isn't it possible
+this irq would be repeated by ioapic soon, maybe with some looping?
+BTW: below is my patch proposal to exclude such thing at least when
+IRQ_DISABLED.
+
+2. I wonder, why handle_edge_irq kstat_cpu counter works different
+than others (i.e. counts less).
+
+Thanks,
+Jarek P.
+
+-------->
+
+Don't let handle_fasteoi_irq() delay irq masking when IRQ_INPROGRESS
+&& IRQ_DISABLED.
+
+Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+
+---
+
+diff -Nurp 2.6.23-rc2-/kernel/irq/chip.c 2.6.23-rc2/kernel/irq/chip.c
+--- 2.6.23-rc2-/kernel/irq/chip.c	2007-07-09 01:32:17.000000000 +0200
++++ 2.6.23-rc2/kernel/irq/chip.c	2007-08-21 08:50:36.000000000 +0200
+@@ -392,7 +392,8 @@ handle_fasteoi_irq(unsigned int irq, str
+ 
+ 	spin_lock(&desc->lock);
+ 
+-	if (unlikely(desc->status & IRQ_INPROGRESS))
++	if (unlikely((desc->status & (IRQ_INPROGRESS | IRQ_DISABLED))
++			== IRQ_INPROGRESS))
+ 		goto out;
+ 
+ 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
