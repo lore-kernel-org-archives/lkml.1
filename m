@@ -1,69 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761341AbXHUQse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761588AbXHUQvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761341AbXHUQse (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 12:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759501AbXHUQs1
+	id S1761588AbXHUQvp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 12:51:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759789AbXHUQve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 12:48:27 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:51039 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759457AbXHUQs0 (ORCPT
+	Tue, 21 Aug 2007 12:51:34 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35508 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759459AbXHUQvc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 12:48:26 -0400
-Date: Tue, 21 Aug 2007 09:44:29 -0700
-From: Greg KH <greg@kroah.com>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Jarek Poplawski <jarkao2@o2.pl>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc3-git3 make warnings
-Message-ID: <20070821164429.GA18324@kroah.com>
-References: <20070821132038.GA22254@ff.dom.local> <20070821161723.GA8323@hacking>
+	Tue, 21 Aug 2007 12:51:32 -0400
+Date: Tue, 21 Aug 2007 09:43:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Chris Snook <csnook@redhat.com>
+cc: David Miller <davem@davemloft.net>, piggin@cyberone.com.au,
+       satyam@infradead.org, herbert@gondor.apana.org.au, paulus@samba.org,
+       clameter@sgi.com, ilpo.jarvinen@helsinki.fi, paulmck@linux.vnet.ibm.com,
+       stefanr@s5r6.in-berlin.de, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <46CAED8B.9030006@redhat.com>
+Message-ID: <alpine.LFD.0.999.0708210922290.30176@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0708170929580.30176@woody.linux-foundation.org>
+ <46C993DF.4080400@redhat.com> <alpine.LFD.0.999.0708202244520.30176@woody.linux-foundation.org>
+ <20070821.000404.39159401.davem@davemloft.net>
+ <46CAED8B.9030006@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070821161723.GA8323@hacking>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 12:17:23AM +0800, WANG Cong wrote:
-> On Tue, Aug 21, 2007 at 03:20:38PM +0200, Jarek Poplawski wrote:
-> >Here are some more of, probably well-known, warnings with attached
-> >testing-only .config.
-> >
-> >Regards,
-> >Jarek P.
-> >
-> >
-> >sed: -e expression #1, char 154: Unknown option to 's'
-> >drivers/acpi/ec.c: In function `acpi_ec_ecdt_probe':
-> >drivers/acpi/ec.c:873: warning: passing arg 1 of `acpi_get_devices' discards qualifiers from pointer target type
-> >drivers/pci/search.c: In function `pci_find_slot':
-> >drivers/pci/search.c:99: warning: `pci_find_device' is deprecated (declared at include/linux/pci.h:480)
-> >drivers/pci/search.c: At top level:
-> >drivers/pci/search.c:437: warning: `pci_find_device' is deprecated (declared at drivers/pci/search.c:244)
-> >drivers/pci/search.c:437: warning: `pci_find_device' is deprecated (declared at drivers/pci/search.c:244)
-> >drivers/pci/search.c:438: warning: `pci_find_slot' is deprecated (declared at drivers/pci/search.c:96)
-> >drivers/pci/search.c:438: warning: `pci_find_slot' is deprecated (declared at drivers/pci/search.c:96)
-> >drivers/pci/msi.c:686: warning: weak declaration of `arch_msi_check_device' after first use results in unspecified behavior
-> >drivers/pci/msi.c:698: warning: weak declaration of `arch_setup_msi_irqs' after first use results in unspecified behavior
-> >drivers/pci/msi.c:718: warning: weak declaration of `arch_teardown_msi_irqs' after first use results in unspecified behavior
-> >In file included from drivers/usb/host/ohci-hcd.c:859:
-> >drivers/usb/host/ohci-pci.c: In function `ohci_pci_start':
-> >drivers/usb/host/ohci-pci.c:202: warning: unused variable `pdev'
-> 				^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 
-> This warning is suspicious. In fact, 'pdev' is used when CONFIG_PM is defined.
-> See the following:
-> 
-> <snip>
->                 if (device_may_wakeup(&pdev->dev))
->                         ohci->hc_control |= OHCI_CTRL_RWC;
-> <snip>
-> 
-> Or a bug of gcc?
 
-gcc bug, I have a patch for this queued up.
 
-thanks,
+On Tue, 21 Aug 2007, Chris Snook wrote:
+> 
+> Moore's law is definitely working against us here.  Register counts, pipeline
+> depths, core counts, and clock multipliers are all increasing in the long run.
+> At some point in the future, barrier() will be universally regarded as a
+> hammer too big for most purposes.
 
-greg k-h
+Note that "barrier()" is purely a compiler barrier. It has zero impact on 
+the CPU pipeline itself, and also has zero impact on anything that gcc 
+knows isn't visible in memory (ie local variables that don't have their 
+address taken), so barrier() really is pretty cheap.
+
+Now, it's possible that gcc messes up in some circumstances, and that the 
+memory clobber will cause gcc to also do things like flush local registers 
+unnecessarily to their stack slots, but quite frankly, if that happens, 
+it's a gcc problem, and I also have to say that I've not seen that myself.
+
+So in a very real sense, "barrier()" will just make sure that there is a 
+stronger sequence point for the compiler where things are stable. In most 
+cases it has absolutely zero performance impact - apart from the 
+-intended- impact of making sure that the compiler doesn't re-order or 
+cache stuff around it.
+
+And sure, we could make it more finegrained, and also introduce a 
+per-variable barrier, but the fact is, people _already_ have problems with 
+thinking about these kinds of things, and adding new abstraction issues 
+with subtle semantics is the last thing we want.
+
+So I really think you'd want to show a real example of real code that 
+actually gets noticeably slower or bigger.
+
+In removing "volatile", we have shown that. It may not have made a big 
+difference on powerpc, but it makes a real difference on x86 - and more 
+importantly, it removes something that people clearly don't know how it 
+works, and incorrectly expect to just fix bugs.
+
+[ There are *other* barriers - the ones that actually add memory barriers 
+  to the CPU - that really can be quite expensive. The good news is that 
+  the expense is going down rather than up: both Intel and AMD are not 
+  only removing the need for some of them (ie "smp_rmb()" will become a 
+  compiler-only barrier), but we're _also_ seeing the whole "pipeline 
+  flush" approach go away, and be replaced by the CPU itself actually 
+  being better - so even the actual CPU pipeline barriers are getting
+  cheaper, not more expensive. ]
+
+For example, did anybody even _test_ how expensive "barrier()" is? Just 
+as a lark, I did
+
+	#undef barrier
+	#define barrier() do { } while (0)
+
+in kernel/sched.c (which only has three of them in it, but hey, that's 
+more than most files), and there were _zero_ code generation downsides. 
+One instruction was moved (and a few line numbers changed), so it wasn't 
+like the assembly language was identical, but the point is, barrier() 
+simply doesn't have the same kinds of downsides that "volatile" has.
+
+(That may not be true on other architectures or in other source files, of 
+course. This *does* depend on code generation details. But anybody who 
+thinks that "barrier()" is fundamentally expensive is simply incorrect. It 
+is *fundamnetally* a no-op).
+
+		Linus
