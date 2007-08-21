@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbXHUGJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759458AbXHUGJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759034AbXHUGJG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 02:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbXHUGI4
+	id S1759458AbXHUGJm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 02:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbXHUGJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:08:56 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:50541 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753378AbXHUGIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:08:55 -0400
-Date: Tue, 21 Aug 2007 08:09:56 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Dan Aloni <da-x@monatomic.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Eric W\. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] tty_io.c: don't use flush_scheduled_work()
-Message-ID: <20070821060956.GA1778@ff.dom.local>
-References: <20070701153749.GA111@tv-sign.ru> <20070816115349.GA26908@localdomain>
+	Tue, 21 Aug 2007 02:09:35 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35672 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754867AbXHUGJe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 02:09:34 -0400
+Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Brownell <david-b@pacbell.net>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Stuart_Hayes@Dell.com" <Stuart_Hayes@dell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Exner <dex@dragonslave.de>
+In-Reply-To: <1187675488.2676.3.camel@laptopd505.fenrus.org>
+References: <46C098FD.1030601@googlemail.com>
+	 <200708202102.58508.david-b@pacbell.net>
+	 <alpine.LFD.0.999.0708202106290.30176@woody.linux-foundation.org>
+	 <200708202148.45575.david-b@pacbell.net>
+	 <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org>
+	 <1187675488.2676.3.camel@laptopd505.fenrus.org>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Mon, 20 Aug 2007 23:04:14 -0700
+Message-Id: <1187676254.2676.6.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070816115349.GA26908@localdomain>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.11.90 (2.11.90-1.fc8) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 16, 2007 at 02:53:50PM +0300, Dan Aloni wrote:
-> On Sun, Jul 01, 2007 at 07:37:49PM +0400, Oleg Nesterov wrote:
-> > I don't know how to test this patch, the ack/nack from maintainer is wanted.
-> > 
-> > flush_scheduled_work() is evil and should be avoided. Change tty_set_ldisc()
-> > and release_dev() to use cancel_delayed_work_sync/cancel_work_sync.
-> > 
-> > I am not sure we really need to call do_tty_hangup() when cancel_work_sync()
-> > returns true, but this matches the current behaviour.
-> 
-> I also noticed this problem recently with 2.6.22, on a 2-CPU box where there 
-> was one SCHED_RR userspace process stuck in a busy loop. The box was completely 
 
-IMHO, it was rather a busy sleep.
+On Mon, 2007-08-20 at 22:51 -0700, Arjan van de Ven wrote:
+> and the C-state code will honor it. CPUFREQ doesn't honor it yet but
+> that's easy to add..
 
-> responsive but had this annoyance where all tty closings were stuck in 
-> flush_scheduled_work(). It's especially noticable when you ssh to the machine
-> and then try to log out.
-> 
-> A temporary workaround was to give just the workqueue events/* threads a 
-> SCHED_FIFO static priority of 99, but I have kept that small patch to 
-> myself (figured it's just too nasty).
+untested patch to add this to cpufreq; this is probably a good idea in
+general even if using the latency framework doesn't end up being used
+for fixing this regression...
 
-It looks like there was something more than this one SCHED_RR:
-probably some high priority task(s) could have preempted workqueue
-thread, delaying run_workqueues. Then it should be an interesting test
-for this new, 2.6.23 scheduler.
 
-Regards,
-Jarek P.
+--- linux-2.6.23-rc2/drivers/cpufreq/cpufreq.c.org	2007-08-20 22:58:32.000000000 -0700
++++ linux-2.6.23-rc2/drivers/cpufreq/cpufreq.c	2007-08-20 23:02:21.000000000 -0700
+@@ -1604,6 +1604,12 @@ static int __cpufreq_set_policy(struct c
+ 	if (ret)
+ 		goto error_out;
+ 
++
++	if (system_latency_constraint() < policy->cpuinfo.transition_latency) {
++		ret = -EINVAL;
++		goto error_out;
++	}
++
+ 	/* notification of the new policy */
+ 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+ 			CPUFREQ_NOTIFY, policy);
 
-PS: sorry for so delayed responsing.
+
