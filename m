@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbXHUSlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761983AbXHUSoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932185AbXHUSlS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 14:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761414AbXHUSlK
+	id S1761983AbXHUSoe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 14:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758593AbXHUSo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 14:41:10 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35576 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760526AbXHUSlJ (ORCPT
+	Tue, 21 Aug 2007 14:44:27 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:57895 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758393AbXHUSo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 14:41:09 -0400
-Date: Tue, 21 Aug 2007 11:40:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Daniel Walker <dwalker@mvista.com>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [12/58] x86_64: Add vDSO for x86-64 with
- gettimeofday/clock_gettime/getcpu
-Message-Id: <20070821114026.41d5c9d7.akpm@linux-foundation.org>
-In-Reply-To: <20070821184543.GK32640@bingen.suse.de>
-References: <200707191154.642492000@suse.de>
-	<20070719095456.B996214E03@wotan.suse.de>
-	<1187713502.7732.65.camel@imap.mvista.com>
-	<20070821184543.GK32640@bingen.suse.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Aug 2007 14:44:26 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Software based ECC ?
+To: Folkert van Heusden <folkert@vanheusden.com>, Valdis.Kletnieks@vt.edu,
+       roland <devzero@web.de>, linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Tue, 21 Aug 2007 20:44:01 +0200
+References: <8QK3R-kc-9@gated-at.bofh.it> <8QSuw-4J2-9@gated-at.bofh.it> <8RoXy-3NJ-13@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1INYht-0000Xw-Ay@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX19PA7WmRTDCs3JW2++YGIGogQN4tkOX3JWfdPC
+ T9tA7RrZo4U5zpLeMW36Lzrz8vh4Nh+YP38/TuGAmsaPNi/a1Y
+ jFiG00FIybqlAkmQR7BzQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Aug 2007 20:45:43 +0200 Andi Kleen <ak@suse.de> wrote:
+Folkert van Heusden <folkert@vanheusden.com> wrote:
 
-> > In the -mm kernel there is some debugging that gets injected into the
-> > likely/unlikely macros .. If they get called from userspace it causes a
+>> > http://pdos.csail.mit.edu/papers/softecc:ddopson-meng
+softecc_ddopson-meng.pdf
+>> > "SoftECC : A System for Software Memory Integrity Checking"
+>> 
+>> Personally, I'd recommend just shelling out the bucks for hardware ECC if
+>> the reliability matters.
 > 
-> They should likely define a __likely()/__unlikely() then that doesn't
-> do this.
-> 
-> > hang .. We might want to add some new set of macros to specifically
-> > denote that they are called from userspace, not just likely/unlikely but
-> > all the macros so we don't get mixed usage ..
-> 
-> and add a hunk to change the vDSO code. Note that i386 is not the 
-> only architecture that has such code.
-> 
+> a question and an idea: Q: is ecc guaranteed to detect all bitflips?
 
-Yes, the simplest fix would be to remove all the troublesome likely/unlikely
-calls within that debug patch.  I'll take a look at that, see if it fixes
-the compile.
+It's guaranteed not to.
+
+Having n extra bits, you can detect n-bit-flips and correct n/2-bit-flips
+(provided you use an optimal code).
+
+These extra bits can flip, too, so if you have m >= 1 data bits and any
+finite number n of extra bits, it's possible to have an undetectable
+n+1-bit-flip.
+-- 
+If you can't remember, then the claymore IS pointed at you. 
+
+Friﬂ, Spammer: W@2fzbe.7eggert.dyndns.org k@-.7eggert.dyndns.org
+ Rtc@Ytzq.7eggert.dyndns.org 9qKSiPo@ZesTis.7eggert.dyndns.org
