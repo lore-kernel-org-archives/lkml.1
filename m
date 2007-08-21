@@ -1,62 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761962AbXHUAjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760847AbXHUAmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761962AbXHUAjd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 20:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbXHUAjY
+	id S1760847AbXHUAmf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 20:42:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbXHUAm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 20:39:24 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37565 "EHLO mx1.suse.de"
+	Mon, 20 Aug 2007 20:42:27 -0400
+Received: from tetsuo.zabbo.net ([207.173.201.20]:51707 "EHLO tetsuo.zabbo.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752928AbXHUAjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 20:39:23 -0400
-Date: Tue, 21 Aug 2007 02:39:22 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Christoph Lameter <clameter@sgi.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dkegel@google.com,
-       David Miller <davem@davemloft.net>
-Subject: Re: [RFC 2/9] Use NOMEMALLOC reclaim to allow reclaim if PF_MEMALLOC is set
-Message-ID: <20070821003922.GD8414@wotan.suse.de>
-References: <20070814153021.446917377@sgi.com> <20070814153501.305923060@sgi.com> <20070818071035.GA4667@ucw.cz> <Pine.LNX.4.64.0708201158270.28863@schroedinger.engr.sgi.com> <1187641056.5337.32.camel@lappy> <Pine.LNX.4.64.0708201323590.30053@schroedinger.engr.sgi.com> <1187644449.5337.48.camel@lappy>
+	id S1754501AbXHUAm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 20:42:27 -0400
+X-Greylist: delayed 1790 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Aug 2007 20:42:26 EDT
+Date: Mon, 20 Aug 2007 17:12:01 -0700
+From: Zach Brown <zach.brown@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Joe Jin <joe.jin@oracle.com>
+Subject: [PATCH] dio: zero struct dio with kzalloc instead of manually
+Message-ID: <20070821001201.GA20626@mami.zabbo.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1187644449.5337.48.camel@lappy>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 20, 2007 at 11:14:08PM +0200, Peter Zijlstra wrote:
-> On Mon, 2007-08-20 at 13:27 -0700, Christoph Lameter wrote:
-> > On Mon, 20 Aug 2007, Peter Zijlstra wrote:
-> > 
-> > > > Plus the same issue can happen today. Writes are usually not completed 
-> > > > during reclaim. If the writes are sufficiently deferred then you have the 
-> > > > same issue now.
-> > > 
-> > > Once we have initiated (disk) writeout we do not need more memory to
-> > > complete it, all we need to do is wait for the completion interrupt.
-> > 
-> > We cannot reclaim the page as long as the I/O is not complete. If you 
-> > have too many anonymous pages and the rest of memory is dirty then you can 
-> > get into OOM scenarios even without this patch.
-> 
-> As long as the reserve is large enough to completely initialize writeout
-> of a single page we can make progress. Once writeout is initialized the
-> completion interrupt is guaranteed to happen (assuming working
-> hardware).
+This patch uses kzalloc to zero all of struct dio rather than manually trying
+to track which fields we rely on being zero.   It passed aio+dio stress testing
+and some bug regression testing on ext3.
 
-Although interestingly, we are not guaranteed to have enough memory to
-completely initialise writeout of a single page.
+This patch was introduced by Linus in the conversation that lead up to Badari's
+minimal fix to manually zero .map_bh.b_state in commit:
 
-The buffer layer doesn't require disk blocks to be allocated at page
-dirty-time. Allocating disk blocks can require complex filesystem operations
-and readin of buffer cache pages. The buffer_head structures themselves may
-not even be present and must be allocated :P
+  6a648fa72161d1f6468dabd96c5d3c0db04f598a
 
-In _practice_, this isn't such a problem because we have dirty limits, and
-we're almost guaranteed to have some clean pages to be reclaimed. In this
-same way, networked filesystems are not a problem in practice. However
-network swap, because there is no dirty limits on swap, can actually see
-the deadlock problems.
+It makes the code a bit smaller.  Maybe a couple fewer cachelines to
+load, if we're lucky:
+
+   text    data     bss     dec     hex filename
+3285925  568506 1304616 5159047  4eb887 vmlinux
+3285797  568506 1304616 5158919  4eb807 vmlinux.patched
+
+I was unable to measure a stable difference in the number of cpu cycles spent
+in blockdev_direct_IO() when pushing aio+dio 256K reads at ~340MB/s.
+
+So the resulting intent of the patch isn't a performance gain but to
+avoid exposing ourselves to the risk of finding another field like
+.map_bh.b_state where we rely on zeroing but don't enforce it in the
+code.
+
+Signed-off-by: Zach Brown <zach.brown@oracle.com>
+
+---
+
+ fs/direct-io.c |   18 +-----------------
+ 1 files changed, 1 insertions(+), 17 deletions(-)
+
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index 1d0bdf0..be86702 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -958,36 +958,22 @@ direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode,
+ 	ssize_t ret2;
+ 	size_t bytes;
+ 
+-	dio->bio = NULL;
+ 	dio->inode = inode;
+ 	dio->rw = rw;
+ 	dio->blkbits = blkbits;
+ 	dio->blkfactor = inode->i_blkbits - blkbits;
+-	dio->start_zero_done = 0;
+-	dio->size = 0;
+ 	dio->block_in_file = offset >> blkbits;
+-	dio->blocks_available = 0;
+-	dio->cur_page = NULL;
+ 
+-	dio->boundary = 0;
+-	dio->reap_counter = 0;
+ 	dio->get_block = get_block;
+ 	dio->end_io = end_io;
+-	dio->map_bh.b_private = NULL;
+-	dio->map_bh.b_state = 0;
+ 	dio->final_block_in_bio = -1;
+ 	dio->next_block_for_io = -1;
+ 
+-	dio->page_errors = 0;
+-	dio->io_error = 0;
+-	dio->result = 0;
+ 	dio->iocb = iocb;
+ 	dio->i_size = i_size_read(inode);
+ 
+ 	spin_lock_init(&dio->bio_lock);
+ 	dio->refcount = 1;
+-	dio->bio_list = NULL;
+-	dio->waiter = NULL;
+ 
+ 	/*
+ 	 * In case of non-aligned buffers, we may need 2 more
+@@ -995,8 +981,6 @@ direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode,
+ 	 */
+ 	if (unlikely(dio->blkfactor))
+ 		dio->pages_in_io = 2;
+-	else
+-		dio->pages_in_io = 0;
+ 
+ 	for (seg = 0; seg < nr_segs; seg++) {
+ 		user_addr = (unsigned long)iov[seg].iov_base;
+@@ -1194,7 +1178,7 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
+ 		}
+ 	}
+ 
+-	dio = kmalloc(sizeof(*dio), GFP_KERNEL);
++	dio = kzalloc(sizeof(*dio), GFP_KERNEL);
+ 	retval = -ENOMEM;
+ 	if (!dio)
+ 		goto out;
