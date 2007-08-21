@@ -1,115 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbXHUHq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758307AbXHUHpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760731AbXHUHq1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 03:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759534AbXHUHp5
+	id S1758307AbXHUHpy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 03:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbXHUHpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 03:45:57 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:42721 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757340AbXHUHpv (ORCPT
+	Tue, 21 Aug 2007 03:45:44 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:53426 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751964AbXHUHpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 03:45:51 -0400
-Message-ID: <46CA9831.4080309@bull.net>
-Date: Tue, 21 Aug 2007 09:45:53 +0200
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+	Tue, 21 Aug 2007 03:45:43 -0400
+Message-ID: <46CA97FE.90505@ah.jp.nec.com>
+Date: Tue, 21 Aug 2007 16:45:02 +0900
+From: Takenori Nagano <t-nagano@ah.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Glauber de Oliveira Costa <glommer@gmail.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, John Stoffel <john@stoffel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: =?ISO-8859-1?Q?R=E9f=2E_=3A_Re=3A_=5BPATCH_0/4=5D_?=
- =?ISO-8859-1?Q?Virtual_Machine_Time_Accounting?=
-References: <OF945F7B1F.FF4B4672-ONC125733D.006266E7-C125733D.00626843@frec.bull.fr> <5d6222a80708201334q27fc6cbcr7ce6a9d7147437a2@mail.gmail.com>
-In-Reply-To: <5d6222a80708201334q27fc6cbcr7ce6a9d7147437a2@mail.gmail.com>
-X-Enigmail-Version: 0.94.0.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 21/08/2007 09:51:05,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 21/08/2007 09:51:06,
-	Serialize complete at 21/08/2007 09:51:06
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4E28FF2019D37A8E3FBFDFA8"
+To: vgoyal@in.ibm.com
+CC: Keith Owens <kaos@ocs.com.au>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       k-miyoshi@cb.jp.nec.com, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [patch] add kdump_after_notifier
+References: <20070802112852.GA7054@in.ibm.com> <31687.1186113947@kao2.melbourne.sgi.com> <20070805110746.GA12540@in.ibm.com> <46C1691E.7090708@ah.jp.nec.com> <20070814083710.GA14538@suse.de> <20070814132454.GA8293@in.ibm.com> <46C4184B.5030303@ah.jp.nec.com> <20070817105630.GA18167@in.ibm.com>
+In-Reply-To: <20070817105630.GA18167@in.ibm.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4E28FF2019D37A8E3FBFDFA8
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Glauber de Oliveira Costa wrote:
->> by doing this at kernel level, we can:
->> - measure exactly the guest time,
->> - move this part of system time to user time (as you think it should b=
-e
->> user time),
->> - have consistency between system, user and guest time,
->> - report values in /proc/state and /proc/<pid>/state, at system wide l=
-evel
+Vivek Goyal wrote:
+> On Thu, Aug 16, 2007 at 06:26:35PM +0900, Takenori Nagano wrote:
+>> Vivek Goyal wrote:
+>>  > So for the time being I think we can put RAS tools on die notifier list
+>>> and if it runs into issues we can always think of creating a separate list.
+>>>
+>>> Few things come to mind.
+>>>
+>>> - Why there is a separate panic_notifier_list? Can't it be merged with
+>>>   die_chain? die_val already got one of the event type as PANIC. If there
+>>>   are no specific reasons then we should merge the two lists. Registering
+>>>   RAS tools on a single list is easier.
+>> I think it is difficult, because die_chain is defined by each architecture.
 >>
->> I'm not sure we can measure the guest time at the qemu user level.
->>
->> Perhaps Rusty can say what he thinks about this ?
->>
-> Even if we cannot _now_, isn't that an easier, and safer change? (and
-> I don't think we lose anything by design).
+> 
+> I think die_chain is arch independent definition (kernel/die_notifier.c)? 
+> But anyway, to begin with it can be done only for panic_notifier.
 
-Could you explain ? How should I do this ?
-I'm _sure_ it is not easier to do that at qemu level.
+I think die_val (notify_die() argument) values are arch independent.
+They are defined in include/asm-<arch>/kdebug.h.
 
-I don't like to patch kernel (it is the last thing I do to solve a proble=
-m: I
-know there is always at least one guy to not agree the patch :-P ) but in=
- this
-case I think this is the best way to do that.
+Your idea is good, but I think it has very large impact. It is very hard to fix
+them at the same time. So, how about putting off merging two lists?
 
-I think the virtualization notion should be introduced at the kernel leve=
-l, at
-least in the kernel statistics: it is generic, it can be used by other
-virtualization tools. As I said, until know CPUs have got only two states=
+ > I think Bernhard's suggestion looks better here. I noticed that
+> /sys/kernel/debug is already present. So how about following.
+> 
+> /sys/kernel/debug/kdump/priority
+> /sys/kernel/debug/kdb/priority
+> /sys/kernel/debug/IPMI/priority
 
-reflected in statistics by "user time" and "system time". Since recently,=
- they
-have introduced a third state, the virtual CPU, that, in my opinion, shou=
-ld be
-also reflected in the CPU statistics as the "guest time".
+Good.
 
->=20
-> Although I don't know KVM to a that deep level, I think it should be
-> possible to keep the virtual cpus in different process (or threads),
-> and take the accounting time from there. Perfectly possible to know
-> the time we spent running (user time), and the time the hypervisor
-> spent doing things on our behalf (system time).
+> 
+> I think at some point of time we shall have to create another file say
+> description.
+> 
+> /sys/kernel/debug/IPMI/description
+> 
+> Which can tell what does this tool do? Other a user might not have any
+> clue how to prioritize various things.
 
-But we have always user time accounted as system time. CPU stats are wron=
-g if we
-do not modify the kernel. Can you live with wrong statistics ? (yes, I th=
-ink,
-you can, but perhaps someone else not)
+Good idea. :-)
 
-Laurent
---=20
-------------- Laurent.Vivier@bull.net  --------------
-          "Software is hard" - Donald Knuth
-
-
---------------enig4E28FF2019D37A8E3FBFDFA8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.7 (GNU/Linux)
-
-iD8DBQFGypg19Kffa9pFVzwRAh/rAJ4gRO+jIoCW3YunaSuWka1NIDRGTACfYcPO
-ITXJR0IHlYzs5DNekLzHEaA=
-=kv8o
------END PGP SIGNATURE-----
-
---------------enig4E28FF2019D37A8E3FBFDFA8--
+Thanks
