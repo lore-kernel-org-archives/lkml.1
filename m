@@ -1,140 +1,511 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758034AbXHUCV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbXHUCyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758034AbXHUCV0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Aug 2007 22:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbXHUCVR
+	id S1755385AbXHUCyi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Aug 2007 22:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbXHUCy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Aug 2007 22:21:17 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43028 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753028AbXHUCVR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Aug 2007 22:21:17 -0400
-From: Jonathan Lim <jlim@sgi.com>
-Message-Id: <200708210222.l7L2MFcJ377626@sabah.engr.sgi.com>
-Subject: [PATCH] Send exit code through for taskstats.ac_exitcode
+	Mon, 20 Aug 2007 22:54:29 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2358 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751312AbXHUCy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Aug 2007 22:54:28 -0400
+Subject: [PATCH] scripts/get_maintainer.pl
+From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Date: Mon, 20 Aug 2007 19:22:15 -0700 (PDT)
-X-Mailer: ELM [version 2.5 PL6]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Chris Snook <csnook@redhat.com>
+Content-Type: text/plain
+Date: Mon, 20 Aug 2007 19:54:24 -0700
+Message-Id: <1187664864.5963.81.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-taskstats.ac_exitcode is assigned to task_struct.exit_code in bacct_add_tsk()
-through the following kernel function calls: 
+Find maintainer info for a patch or a file
 
-  do_exit()
-    taskstats_exit_send()
-      fill_pid()
-        bacct_add_tsk()
+Changes since last submission: (in for a penny...)
+Might as well do them all.
 
-The problem is that in do_exit(), task_struct.exit_code is set to 'code' 
-only after taskstats_exit_send() has been called.  So we need to send 'code'
-through to bacct_add_tsk().
+Added --status - Print the status information
+Added --subsystem - Print the subsystem title
 
-Diff'd against: linux/kernel/git/stable/linux-2.6.22.y.git
+Signed-off-by: Joe Perches <joe@perches.com>
 
-Signed-off-by: Jonathan Lim <jlim@sgi.com>
+diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+new file mode 100755
+index 0000000..d503467
+--- /dev/null
++++ b/scripts/get_maintainer.pl
+@@ -0,0 +1,468 @@
++#!/usr/bin/perl -w
++# (c) 2007, Joe Perches <joe@perches.com>
++#           created from checkpatch.pl
++#
++# Print selected MAINTAINERS information for
++# the files modified in a patch or for a file
++#
++# usage: perl scripts/get_maintainers.pl [OPTIONS] <patch>
++#        perl scripts/get_maintainers.pl [OPTIONS] -f <file>
++#
++# Licensed under the terms of the GNU GPL License version 2
++
++use strict;
++
++my $P = $0;
++my $V = '0.12';
++
++use Getopt::Long qw(:config no_auto_abbrev);
++
++my $lk_path = "./";
++my $email = 1;
++my $email_usename = 1;
++my $email_maintainer = 1;
++my $email_list = 1;
++my $email_subscriber_list = 0;
++my $email_git = 1;
++my $email_git_penguin_chiefs = 0;
++my $output_multiline = 1;
++my $output_separator = ", ";
++my $scm = 0;
++my $web = 0;
++my $subsystem = 0;
++my $status = 0;
++my $onefile = 0;
++
++my $exit = 0;
++
++my @penguin_chief = ();
++push(@penguin_chief,"Linus Torvalds:torvalds\@linux-foundation.org");
++push(@penguin_chief,"Andrew Morton:akpm\@linux-foundation.org");
++
++my @penguin_chief_names = ();
++foreach my $chief (@penguin_chief) {
++    if ($chief =~ m/^(.*):(.*)/) {
++	my $chief_name = $1;
++	my $chief_addr = $2;
++	push(@penguin_chief_names, $chief_name);
++    }
++}
++my $penguin_chiefs = "\(" . join("|",@penguin_chief_names) . "\)";
++
++if (!GetOptions(
++		'email!' => \$email,
++		'git!' => \$email_git,
++		'git-chief-penguins!' => \$email_git_penguin_chiefs,
++		'm!' => \$email_maintainer,
++		'n!' => \$email_usename,
++		'l!' => \$email_list,
++		's!' => \$email_subscriber_list,
++		'multiline!' => \$output_multiline,
++		'separator=s' => \$output_separator,
++		'subsystem!' => \$subsystem,
++		'status!' => \$status,
++		'scm!' => \$scm,
++		'web!' => \$web,
++		'f' => \$onefile,
++		)) {
++    usage();
++    die "$P: invalid argument\n";
++}
++
++my $infile = $ARGV[0];
++
++if ($#ARGV < 0) {
++    usage();
++    die "$P: argument missing: patchfile or -f file please\n";
++}
++
++my $selections = $email + $scm + $status + $subsystem + $web;
++if ($selections == 0 || $selections > 1) {
++    usage();
++    die "$P: Please select one of email, scm, status, subsystem or web\n";
++}
++
++if ($email && ($email_maintainer + $email_list + $email_subscriber_list
++	       + $email_git + $email_git_penguin_chiefs) == 0) {
++    usage();
++    die "$P: Please select at least 1 email option\n";
++}
++
++if (!top_of_kernel_tree($lk_path)) {
++    die "$P: The current directory does not appear to be "
++	. "a linux kernel source tree.\n";
++}
++
++## Read MAINTAINERS for type/value pairs
++
++my @typevalue = ();
++open(MAINT, "<${lk_path}MAINTAINERS") || die "$P: Can't open MAINTAINERS\n";
++while (<MAINT>) {
++    my $line = $_;
++
++    if ($line =~ m/^(\C):\s*(.*)/) {
++	my $type = $1;
++	my $value = $2;
++
++	##Filename pattern matching
++	if ($type eq "F" || $type eq "X") {
++	    $value =~ s@\.@\\\.@g;       ##Convert . to \.
++	    $value =~ s/\*/\.\*/g;       ##Convert * to .*
++	}
++	push(@typevalue, "$type:$value");
++    } elsif (!/^(\s)*$/) {
++	$line =~ s/\n$//g;
++	push(@typevalue, $line);
++    }
++}
++close(MAINT);
++
++## use the filename on the command line or find the filenames in the patchfile
++
++my @files = ();
++
++if ($onefile) {
++    if (!(-f $infile)) {
++	die "$P: file '${infile}' not found\n";
++    }
++    push(@files, $infile);
++} else {
++    open(PATCH, "<$infile") or die "$P: Can't open ${infile}\n";
++    while (<PATCH>) {
++	if (m/^\+\+\+\s+(\S+)/) {
++	    my $file = $1;
++	    $file =~ s@^[^/]*/@@;
++	    $file =~ s@\n@@;
++	    push(@files, $file);
++	}
++    }
++    close(PATCH);
++    my $file_cnt = @files;
++    if ($file_cnt == 0) {
++	die "$P: file '${infile}' doesn't appear to be a patch.  "
++	    . "Add -f to options?\n";
++    }
++    @files = sort_and_uniq(@files);
++}
++
++my @email_to = ();
++my @scm = ();
++my @web = ();
++my @subsystem = ();
++my @status = ();
++
++# Find responsible parties
++
++foreach my $file (@files) {
++    my $exclude = 0;
++
++#Git
++
++    if ($email_git_penguin_chiefs) {
++	foreach my $chief (@penguin_chief) {
++	    if ($chief =~ m/^(.*):(.*)/) {
++		my $chief_name = $1;
++		my $chief_addr = $2;
++		if ($email_usename) {
++		    push(@email_to, format_email($chief_name, $chief_addr));
++		} else {
++		    push(@email_to, $chief_addr);
++		}
++	    }
++	}
++    }
++
++    if ($email_git) {
++	recent_git_signoffs($file);
++    }
++
++#Do not match excluded file patterns
++
++    foreach my $line (@typevalue) {
++	if ($line =~ m/^(\C):(.*)/) {
++	    my $type = $1;
++	    my $value = $2;
++	    if ($type eq 'X') {
++		if (file_match_pattern($file, $value)) {
++		    $exclude = 1;
++		}
++	    }
++	}
++    }
++
++    if (!$exclude) {
++	my $tvi = 0;
++	foreach my $line (@typevalue) {
++	    if ($line =~ m/^(\C):(.*)/) {
++		my $type = $1;
++		my $value = $2;
++		if ($type eq 'F') {
++		    if (file_match_pattern($file, $value)) {
++			add_categories($tvi);
++		    }
++		}
++	    }
++	    $tvi++;
++	}
++    }
++}
++
++if ($email) {
++    my $address_cnt = @email_to;
++    if ($address_cnt == 0 && $email_list) {
++	push(@email_to, "linux-kernel\@vger.kernel.org");
++    }
++    @email_to = sort_and_uniq(@email_to);
++    output(@email_to);
++}
++
++if ($scm) {
++    if (!$onefile) {
++	@scm = sort_and_uniq(@scm);
++    }
++    output(@scm);
++}
++
++if ($status) {
++    if (!$onefile) {
++	@status = sort_and_uniq(@status);
++    }
++    output(@status);
++}
++
++if ($subsystem) {
++    if (!$onefile) {
++	@subsystem = sort_and_uniq(@subsystem);
++    }
++    output(@subsystem);
++}
++
++if ($web) {
++    if (!$onefile) {
++	@web = sort_and_uniq(@web);
++    }
++    output(@web);
++}
++
++exit($exit);
++
++sub file_match_pattern {
++    my ($file, $pattern) = @_;
++    if (substr($pattern, -1) eq "/") {
++	if ($file =~ m@^$pattern@) {
++	    return 1;
++	}
++    } else {
++	if ($file =~ m@^$pattern@) {
++	    my $s1 = ($file =~ tr@/@@);
++	    my $s2 = ($pattern =~ tr@/@@);
++	    if ($s1 == $s2) {
++		return 1;
++	    }
++	}
++    }
++    return 0;
++}
++
++sub usage {
++    print <<EOT;
++usage: $P [options] patchfile 
++       $P [options] -f file
++version: $V
++
++MAINTAINER field selection options:
++  --email => print email address(es) if any
++    --git => include recent git \*-by: signers
++    --git-chief-penguins => include ${penguin_chiefs}
++    --m => include maintainer(s) if any
++    --n => include name 'Full Name <addr\@domain.tld>'
++    --l => include list(s) if any
++    --s => include subscriber only list(s) if any
++  --scm => print SCM tree(s) if any
++  --status => print status if any
++  --subsystem => print subsystem name if any
++  --web => print website(s) if any
++
++Output type options:
++  --separator [, ] => separator for multiple entries on 1 line
++  --multiline => print 1 entry per line
++
++Default options:
++  [--email --git --m --l --multiline]
++
++EOT
++}
++
++sub top_of_kernel_tree {
++	my ($lk_path) = @_;
++
++	if ($lk_path ne "" && substr($lk_path,length($lk_path)-1,1) ne "/") {
++	    $lk_path .= "/";
++	}
++	if (   (-f "${lk_path}COPYING")
++	    && (-f "${lk_path}CREDITS")
++	    && (-f "${lk_path}Kbuild")
++	    && (-f "${lk_path}MAINTAINERS")
++	    && (-f "${lk_path}Makefile")
++	    && (-f "${lk_path}README")
++	    && (-d "${lk_path}Documentation")
++	    && (-d "${lk_path}arch")
++	    && (-d "${lk_path}include")
++	    && (-d "${lk_path}drivers")
++	    && (-d "${lk_path}fs")
++	    && (-d "${lk_path}init")
++	    && (-d "${lk_path}ipc")
++	    && (-d "${lk_path}kernel")
++	    && (-d "${lk_path}lib")
++	    && (-d "${lk_path}scripts")) {
++		return 1;
++	}
++	return 0;
++}
++
++sub format_email {
++    my ($name, $email) = @_;
++
++    my $formatted_email = "";
++
++    if ($name =~ /[^a-z0-9 \.\-]/i) {    ##has "must quote" chars
++	$name =~ s/(?<!\\)"/\\"/g;       ##escape quotes
++	$formatted_email = "\"${name}\"\ \<${email}\>";
++    } else {
++	$formatted_email = "${name} \<${email}\>";
++    }
++    return $formatted_email;
++}
++
++sub add_categories {
++    my ($index) = @_;
++
++    $index = $index - 1;
++    while ($index >= 0) {
++	my $tv = $typevalue[$index];
++	if ($tv =~ m/^(\C):(.*)/) {
++	    my $ptype = $1;
++	    my $pvalue = $2;
++	    if ($ptype eq "L") {
++		my $subscr = $pvalue;
++		if ($subscr =~ m/\s*\(subscribers-only\)/) {
++		    if ($email_subscriber_list) {
++			$subscr =~ s/\s*\(subscribers-only\)//g;
++			push(@email_to, $subscr);
++		    }
++		} else {
++		    if ($email_list) {
++			push(@email_to, $pvalue);
++		    }
++		}
++	    } elsif ($ptype eq "M") {
++		if ($email_maintainer) {
++		    if ($index >= 0) {
++			my $tv = $typevalue[$index - 1];
++			if ($tv =~ m/^(\C):(.*)/) {
++			    if ($1 eq "P" && $email_usename) {
++				push(@email_to, format_email($2, $pvalue));
++			    } else {
++				push(@email_to, $pvalue);
++			    }
++			}
++		    } else {
++			push(@email_to, $pvalue);
++		    }
++		}
++	    } elsif ($ptype eq "T") {
++		push(@scm, $pvalue);
++	    } elsif ($ptype eq "W") {
++		push(@web, $pvalue);
++	    } elsif ($ptype eq "S") {
++		push(@status, $pvalue);
++	    }
++	    
++	    $index--;
++	} else {
++	    push(@subsystem,$tv);
++	    $index = -1;
++	}
++    }
++}
++
++sub which {
++    my ($bin) = @_;
++
++    foreach my $path (split /:/, $ENV{PATH}) {
++	if (-e "$path/$bin") {
++	    return "$path/$bin";
++	}
++    }
++    
++    return "";
++}
++
++sub recent_git_signoffs {
++    my ($file) = @_;
++
++    my $sign_offs = "";
++    my $cmd = "";
++    my $output = "";
++
++    my @lines = ();
++
++    if (which("git") eq "") {
++	die("$P: git not found.  Add --nogit to options?\n");
++    }
++
++    $cmd = "git log --since=12.months.ago -- ${file}";
++    $cmd .= " | grep -i '^    [-a-z]*by:.*\\\@'";
++    if (!$email_git_penguin_chiefs) {
++	$cmd .= " | grep -E -v \"${penguin_chiefs}\"";
++    }
++    $cmd .= " | sort | uniq -c | sort -r -n | head -n 5";
++    $cmd .= " | cut -f 2 -d ':' -s";
++
++    $output = `${cmd}`;
++
++    $output =~ s/^\s*//gm;
++
++    @lines = split("\n", $output);
++    foreach my $line (@lines) {
++	if ($line =~ m/(.*) <(.*)>/) {
++	    my $git_name = $1;
++	    my $git_addr = $2;
++	    $git_name =~ tr/^\"//;
++	    $git_name =~ tr/\"$//;
++	    if ($email_usename) {
++		push(@email_to, format_email($git_name, $git_addr));
++	    } else {
++		push(@email_to, $git_addr);
++	    }
++	} elsif ($line =~ m/<(.*)>/) {
++	    my $git_addr = $1;
++	    push(@email_to, $git_addr);
++	} else {
++	    push(@email_to, $line);
++	}
++    }
++    return $output;
++}
++
++sub sort_and_uniq {
++    my @parms = @_;
++
++    my %saw;
++    @parms = sort @parms;
++    @parms = grep(!$saw{$_}++, @parms);
++    return @parms;
++}
++
++sub output {
++    my @parms = @_;
++
++    if ($output_multiline) {
++	foreach my $line (@parms) {
++	    print("${line}\n");
++	}
++    } else {
++	print(join($output_separator, @parms));
++	print("\n");
++    }
++}
 
---- a/kernel/exit.c	2007-08-20 16:37:55.000000000 -0700
-+++ b/kernel/exit.c	2007-08-20 16:37:55.000000000 -0700
-@@ -941,7 +941,7 @@ fastcall NORET_TYPE void do_exit(long co
- 	if (unlikely(tsk->audit_context))
- 		audit_free(tsk);
- 
--	taskstats_exit(tsk, group_dead);
-+	taskstats_exit(code, tsk, group_dead);
- 
- 	exit_mm(tsk);
- 
---- a/kernel/taskstats.c	2007-08-20 16:37:55.000000000 -0700
-+++ b/kernel/taskstats.c	2007-08-20 16:37:55.000000000 -0700
-@@ -168,7 +168,7 @@ static void send_cpu_listeners(struct sk
- 	up_write(&listeners->sem);
- }
- 
--static int fill_pid(pid_t pid, struct task_struct *tsk,
-+static int fill_pid(long exitcode, pid_t pid, struct task_struct *tsk,
- 		struct taskstats *stats)
- {
- 	int rc = 0;
-@@ -196,7 +196,7 @@ static int fill_pid(pid_t pid, struct ta
- 
- 	/* fill in basic acct fields */
- 	stats->version = TASKSTATS_VERSION;
--	bacct_add_tsk(stats, tsk);
-+	bacct_add_tsk(exitcode, stats, tsk);
- 
- 	/* fill in extended acct fields */
- 	xacct_add_tsk(stats, tsk);
-@@ -452,7 +452,7 @@ ret:
- }
- 
- /* Send pid data out on exit */
--void taskstats_exit(struct task_struct *tsk, int group_dead)
-+void taskstats_exit(long exitcode, struct task_struct *tsk, int group_dead)
- {
- 	int rc;
- 	struct listener_list *listeners;
-@@ -490,7 +490,7 @@ void taskstats_exit(struct task_struct *
- 	if (!stats)
- 		goto err;
- 
--	rc = fill_pid(tsk->pid, tsk, stats);
-+	rc = fill_pid(exitcode, tsk->pid, tsk, stats);
- 	if (rc < 0)
- 		goto err;
- 
---- a/kernel/tsacct.c	2007-08-20 16:37:55.000000000 -0700
-+++ b/kernel/tsacct.c	2007-08-20 16:37:55.000000000 -0700
-@@ -25,7 +25,7 @@
- /*
-  * fill in basic accounting fields
-  */
--void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
-+void bacct_add_tsk(long exitcode, struct taskstats *stats, struct task_struct *tsk)
- {
- 	struct timespec uptime, ts;
- 	s64 ac_etime;
-@@ -41,7 +41,7 @@ void bacct_add_tsk(struct taskstats *sta
- 	stats->ac_etime = ac_etime;
- 	stats->ac_btime = xtime.tv_sec - ts.tv_sec;
- 	if (thread_group_leader(tsk)) {
--		stats->ac_exitcode = tsk->exit_code;
-+		stats->ac_exitcode = exitcode;
- 		if (tsk->flags & PF_FORKNOEXEC)
- 			stats->ac_flag |= AFORK;
- 	}
 
---- a/include/linux/taskstats_kern.h	2007-08-20 18:13:11.000000000 -0700
-+++ b/include/linux/taskstats_kern.h	2007-08-20 18:16:12.000000000 -0700
-@@ -26,10 +26,10 @@ static inline void taskstats_tgid_free(s
-                kmem_cache_free(taskstats_cache, sig->stats);
- }
- 
--extern void taskstats_exit(struct task_struct *, int group_dead);
-+extern void taskstats_exit(long exitcode, struct task_struct *, int group_dead);
- extern void taskstats_init_early(void);
- #else
--static inline void taskstats_exit(struct task_struct *tsk, int group_dead)
-+static inline void taskstats_exit(long exitcode, struct task_struct *tsk, int group_dead)
- {}
- static inline void taskstats_tgid_init(struct signal_struct *sig)
- {}
-
---- a/include/linux/tsacct_kern.h	2007-08-20 18:13:11.000000000 -0700
-+++ b/include/linux/tsacct_kern.h	2007-08-20 18:17:55.000000000 -0700
-@@ -10,9 +10,9 @@
- #include <linux/taskstats.h>
- 
- #ifdef CONFIG_TASKSTATS
--extern void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk);
-+extern void bacct_add_tsk(long exitcode, struct taskstats *stats, struct task_struct *tsk);
- #else
--static inline void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
-+static inline void bacct_add_tsk(long exitcode, struct taskstats *stats, struct task_struct *tsk)
- {}
- #endif /* CONFIG_TASKSTATS */
- 
