@@ -1,107 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbXHUP3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762585AbXHUPaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761477AbXHUP3k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 11:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbXHUP3b
+	id S1762585AbXHUPaA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 11:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760589AbXHUP3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 11:29:31 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:23229 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751476AbXHUP3a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 11:29:30 -0400
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dkegel@google.com, David Miller <davem@davemloft.net>,
-       Daniel Phillips <phillips@google.com>
-In-Reply-To: <20070821002830.GB8414@wotan.suse.de>
-References: <20070814142103.204771292@sgi.com>
-	 <20070815122253.GA15268@wotan.suse.de> <1187183526.6114.45.camel@twins>
-	 <20070816032921.GA32197@wotan.suse.de> <1187581894.6114.169.camel@twins>
-	 <20070821002830.GB8414@wotan.suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ZNJWDQnY3kzIDRTM3ekU"
-Date: Tue, 21 Aug 2007 17:29:27 +0200
-Message-Id: <1187710167.6114.258.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 21 Aug 2007 11:29:49 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1233 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761645AbXHUP3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 11:29:46 -0400
+Date: Tue, 21 Aug 2007 17:29:36 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Andres Salomon <dilinger@queued.net>
+cc: kbuild-devel@lists.sourceforge.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig: add *_silentdefconfig feature for config targets
+In-Reply-To: <20070820204020.7cde776e.dilinger@queued.net>
+Message-ID: <Pine.LNX.4.64.0708211717180.1817@scrub.home>
+References: <20070820204020.7cde776e.dilinger@queued.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---=-ZNJWDQnY3kzIDRTM3ekU
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Mon, 20 Aug 2007, Andres Salomon wrote:
 
-[ now with CCs ]
+> AFAICT, there is nothing similar when using *_defconfig; one must copy
+> a .config manually, and then run silentoldconfig.  Simply running the
+> associated _defconfig will quietly update the config (which may silently
+> drop config options).  This patch adds a *_silentdefconfig target, with
+> semantics similar to silentoldconfig.  It will take the defconfig from
+> arch/$(ARCH)/configs/$x_defconfig, check for changes, and if there are
+> none, write out a .config.  If there have been changes and stdin is
+> valid, it will prompt for updates.  If there have been changes and
+> stdin is not valid, it will bail out with an error.
 
-On Tue, 2007-08-21 at 02:28 +0200, Nick Piggin wrote:
+I would really like to avoid another input mode.
+I think it be better to implement this as a combination of "-s -D 
+<default>" and the silent mode is adjusted to read another config instead 
+of .config if defconfig_file is set.
 
-> I do of course. There is one thing to have a real lock deadlock
-> in some core path, and another to have this memory deadlock in a
-> known-to-be-dodgy configuration (Linus said last year that he didn't
-> want to go out of our way to support this, right?)... But if you can
-> solve it without impacting fastpaths etc. then I don't see any
-> objection to it.
+> A few things to note:
+>   - Using getopt() in scripts/kconfig/conf.c would likely simplify things,
+>     but that's a much larger patch.  Is there a reason we don't use it?
 
-That has been my intention, getting the problem solved without touching
-fast paths and with minimal changes to how things are currently done.
+Not really.
 
-> I don't mean for correctness, but for throughput. If you're doing a
-> lot of network operations right near the memory limit, then it could
-> be possible that these deadlock paths get triggered relatively often.
-> With Christoph's patches, I think it would tend to be less.
+>   - To make it truly silent, I had to change conf_write() to accept an
+>     additional arg.  The alternative is to not have conf_write spit out
+>     any information when it writes a file.  Personally, I don't see the need
+>     for it to spit out information, but I figured I'd take the more cautious
+>     route.  If folks don't care, I can update this patch to remove it.
 
-Christoph's patches all rely on file backed memory being predominant.
-[ and to a certain degree fully ignore anonymous memory loads :-( ]
+I rather want to keep this print. The .config is already only written, 
+when it has to be in this mode and then I also want to be notified about 
+it.
 
-Whereas quite a few realistic loads strive to minimise these - I'll
-again fall back to my MPI cluster example, they would want to use so
-much anonymous memory to preform their calculations that everything
-except the hot paths of code are present in memory. In these scenarios 1
-MB of text would already be a lot.
+>   - We seem to switch between using _() and not using it for strings; I'm
+>     assuming that we don't actually care about i18n in conf.c, and that the
+>     _() stuff was just copied from elsewhere.  If that's not the case, I
+>     can update the patch to wrap strings properly.
 
-> > > How are your deadlock patches going anyway? AFAIK they are mostly a n=
-etwork
-> > > issue and I haven't been keeping up with them for a while.=20
-> >=20
-> > They really do rely on some VM interaction too, network does not have
-> > enough information to break out of the deadlock on its own.
->=20
-> The thing I don't much like about your patches is the addition of more
-> of these global reserve type things in the allocators. They kind of
-> suck (not your code, just the concept of them in general -- ie. including
-> the PF_MEMALLOC reserve). I'd like to eventually reach a model where
-> reclaimable memory from a given subsystem is always backed by enough
-> resources to be able to reclaim it. What stopped you from going that
-> route with the network subsystem? (too much churn, or something
-> fundamental?)
+I try to keep this uptodate, but I don't really check for this.
 
-I'm wanting to keep the patches as non-intrusive as possible, exactly
-because some people consider this a fringe functionality. Doing as you
-say does sound like a noble goal, but would require massive overhauls.
-
-Also, I'm not quite sure how this would apply to networking. It
-generally doesn't have much reclaimable memory sitting around, and it
-heavily relies on kmalloc so an alloc/free cycle accounting system would
-quickly involve a lot of the things I'm already doing.
-
-(also one advantage of keeping it all in the buddy allocator is that it
-can more easily form larger order pages)
-
---=-ZNJWDQnY3kzIDRTM3ekU
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGywTXXA2jU0ANEf4RAppFAJ0V/mw9mDGzP+eCcHKqZudcAMOWRACbByj7
-JZLUK76DwTil61gpPo6ommw=
-=weiH
------END PGP SIGNATURE-----
-
---=-ZNJWDQnY3kzIDRTM3ekU--
-
+bye, Roman
