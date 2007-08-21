@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756852AbXHUWx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbXHUXA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756852AbXHUWx6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 18:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbXHUWxs
+	id S1756428AbXHUXA3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 19:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbXHUXAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 18:53:48 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:37548 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753158AbXHUWxq (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 18:53:46 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: paulmck@linux.vnet.ibm.com
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
-       horms@verge.net.au, linux-kernel@vger.kernel.org, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       rpjday@mindspring.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, satyam@infradead.org,
-       zlynx@acm.org, schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-In-Reply-To: Your message of "Tue, 21 Aug 2007 09:16:43 PDT."
-             <20070821161643.GA7574@linux.vnet.ibm.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070818000913.GA25585@gondor.apana.org.au> <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com> <46C997B1.1010800@redhat.com> <417ebba299a7ad3c4b7a31c4f860a814@kernel.crashing.org> <20070820224859.GA16162@flint.arm.linux.org.uk> <2bdb04581125f22122f1d230e991ea92@kernel.crashing.org> <20070821070555.GA32036@flint.arm.linux.org.uk> <18122.45437.807239.395869@cargo.ozlabs.ibm.com> <33412cad5894a9cbdc85482db5e9a0a0@kernel.crashing.org>
-            <20070821161643.GA7574@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1187736676_2990P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 21 Aug 2007 19:00:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51406 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752571AbXHUXAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 19:00:18 -0400
+Message-ID: <46CB6E7F.9080104@redhat.com>
+Date: Tue, 21 Aug 2007 19:00:15 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: input: limit memory allocated by uinput ff drivers
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Tue, 21 Aug 2007 18:51:16 -0400
-Message-ID: <28709.1187736676@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1187736676_2990P
-Content-Type: text/plain; charset=us-ascii
+input: limit memory allocated by uinput ff drivers
 
-On Tue, 21 Aug 2007 09:16:43 PDT, "Paul E. McKenney" said:
+Don't let force feedback drivers allocate more than 256K of kernel
+memory. On kernel 2.6.22 this causes a kernel OOPS with the SLUB
+memory allocator; on later kernels the drivers may allocate large
+amounts of memory.
 
-> I agree that instant gratification is hard to come by when synching
-> up compiler and kernel versions.  Nonetheless, it should be possible
-> to create APIs that are are conditioned on the compiler version.
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
 
-We've tried that, sort of.  See the mess surrounding the whole
-extern/static/inline/__whatever boondogle, which seems to have
-changed semantics in every single gcc release since 2.95 or so.
+---
+ drivers/input/ff-core.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-And recently mention was made that gcc4.4 will have *new* semantics
-in this area. Yee. Hah.
-
-
-
-
-
-
---==_Exmh_1187736676_2990P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGy2xkcC3lWbTT17ARAhlSAKDNaADYU7Xmy2nbLFMctFnTdjkAeACfSEbb
-OM4uGVrXvWzztHDShpVKgVU=
-=U3M2
------END PGP SIGNATURE-----
-
---==_Exmh_1187736676_2990P--
+--- linux-2.6.22.noarch.orig/drivers/input/ff-core.c
++++ linux-2.6.22.noarch/drivers/input/ff-core.c
+@@ -306,6 +306,7 @@ int input_ff_create(struct input_dev *de
+ {
+ 	struct ff_device *ff;
+ 	int i;
++	int needed_mem;
+ 
+ 	if (!max_effects) {
+ 		printk(KERN_ERR
+@@ -313,8 +314,11 @@ int input_ff_create(struct input_dev *de
+ 		return -EINVAL;
+ 	}
+ 
+-	ff = kzalloc(sizeof(struct ff_device) +
+-		     max_effects * sizeof(struct file *), GFP_KERNEL);
++	needed_mem = sizeof(struct ff_device) + max_effects * sizeof(struct file *);
++	if (needed_mem > 256 * 1024)
++		return -ENOMEM;
++
++	ff = kzalloc(needed_mem, GFP_KERNEL);
+ 	if (!ff)
+ 		return -ENOMEM;
+ 
