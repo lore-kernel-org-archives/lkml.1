@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbXHUXEd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbXHUXM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754516AbXHUXEd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 19:04:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbXHUXE0
+	id S1756567AbXHUXM2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 19:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbXHUXMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 19:04:26 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:54507 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbXHUXEZ (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 19:04:25 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: John Stoffel <john@stoffel.org>
-Cc: Peter Staubach <staubach@redhat.com>,
-       Robin Lee Powell <rlpowell@digitalkingdom.org>,
+	Tue, 21 Aug 2007 19:12:19 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:48001 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753556AbXHUXMS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 19:12:18 -0400
+Message-ID: <46CB702D.8020102@gmail.com>
+Date: Wed, 22 Aug 2007 01:07:25 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: =?ISO-8859-15?Q?Jos=E9_Luis_Pati=F1o_Andr=E9s?= 
+	<jopan@alumni.uv.es>,
        linux-kernel@vger.kernel.org
-Subject: Re: NFS hang + umount -f: better behaviour requested.
-In-Reply-To: Your message of "Tue, 21 Aug 2007 14:50:42 EDT."
-             <18123.13314.43009.263383@stoffel.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070820225415.GL3956@digitalkingdom.org> <18123.5699.405125.137517@stoffel.org> <46CB1A78.7040102@redhat.com>
-            <18123.13314.43009.263383@stoffel.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1187737456_2990P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Subject: Re: Problems with IDE on linux 2.6.22.X
+References: <200708212149.12912.jopan@alumni.uv.es>	<46CB626F.8020801@gmail.com> <20070822000003.6c561407@the-village.bc.nu>
+In-Reply-To: <20070822000003.6c561407@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Tue, 21 Aug 2007 19:04:16 -0400
-Message-ID: <29735.1187737456@turing-police.cc.vt.edu>
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1187737456_2990P
-Content-Type: text/plain; charset=us-ascii
+On 08/22/2007 01:00 AM, Alan Cox wrote:
 
-On Tue, 21 Aug 2007 14:50:42 EDT, John Stoffel said:
+>> "Intel ESB, ICH, PIIX3, PIIX4 PATA/SATA support"
+> 
+> Not for the newer chips. You want ATA/SATA (PIIX and possibly AHCI)
+> support from the new drivers, SCSI disk and SCSI cd.
 
-> Now maybe those issues are raised when you have a Linux NFS server
-> with Solaris clients.  But in my book, reliable NFS servers are key,
-> and if they are reliable, 'soft,intr' works just fine.
+That _is_ the *config description for the new (CONFIG_ATA_PIIX) driver (in 
+2.6.22.x).
 
-And you don't need all that ext3 journal overhead if your disk drives
-are reliable too.  Gotcha. :)
+>> where you may need to boot with a "libata.atapi_enabled=0" kernel parameter.
+> 
+> Why deliberately disable atapi when you need atapi ?
 
---==_Exmh_1187737456_2990P
-Content-Type: application/pgp-signature
+Because he described the problem that if he got his (SATA) disk supported he 
+lost his (PATA) DVD drive. Although I'm as said not completely sure it would 
+actually work, I suggested compiling in both ATA_PIIX (yes, and sd) for his 
+drive and the IDE PIIX/ICH driver and ide-cd for his DVD, where if it works 
+at all, passing the above option may or may not be useful.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+But his report, although expansive, was a little unclear. Let's wait for 
+what happens with only ATA_PIIIX.
 
-iD8DBQFGy29wcC3lWbTT17ARAhFOAKCCJj/nxKB3NUKFJfrhllOu09U0jwCdHrep
-06s5Rz0QmZwPMVH7kCTMfSE=
-=GGCg
------END PGP SIGNATURE-----
-
---==_Exmh_1187737456_2990P--
+Rene.
