@@ -1,95 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760371AbXHUOBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbXHUOH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760371AbXHUOBt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 10:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbXHUOBg
+	id S1759384AbXHUOH1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 10:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbXHUOHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 10:01:36 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:49032 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758598AbXHUOBL convert rfc822-to-8bit (ORCPT
+	Tue, 21 Aug 2007 10:07:16 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:13400 "EHLO
+	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752618AbXHUOHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 10:01:11 -0400
-Date: Tue, 21 Aug 2007 10:01:09 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Hirokazu Takata <takata@linux-m32r.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-m32r@ml.linux-m32r.org
-Subject: Re: [patch 12/23] local_t m32r use architecture specific cmpxchg_local
-Message-ID: <20070821140109.GA5743@Krystal>
-References: <20070820201519.512791382@polymtl.ca> <20070820201827.341565823@polymtl.ca> <swfr6lxw7re.wl%takata.hirokazu@renesas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <swfr6lxw7re.wl%takata.hirokazu@renesas.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:58:51 up 22 days, 14:17,  2 users,  load average: 1.94, 1.17, 0.64
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 21 Aug 2007 10:07:15 -0400
+Subject: Re: [RFC 2/9] Use NOMEMALLOC reclaim to allow reclaim if
+	PF_MEMALLOC is set
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dkegel@google.com, David Miller <davem@davemloft.net>,
+       Nick Piggin <npiggin@suse.de>
+In-Reply-To: <Pine.LNX.4.64.0708201415260.31167@schroedinger.engr.sgi.com>
+References: <20070814153021.446917377@sgi.com>
+	 <20070814153501.305923060@sgi.com> <20070818071035.GA4667@ucw.cz>
+	 <Pine.LNX.4.64.0708201158270.28863@schroedinger.engr.sgi.com>
+	 <1187641056.5337.32.camel@lappy>
+	 <Pine.LNX.4.64.0708201323590.30053@schroedinger.engr.sgi.com>
+	 <1187644449.5337.48.camel@lappy>
+	 <Pine.LNX.4.64.0708201415260.31167@schroedinger.engr.sgi.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-niSah3lF9HtkpNpdlAU2"
+Date: Tue, 21 Aug 2007 16:07:11 +0200
+Message-Id: <1187705231.6114.245.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Hirokazu Takata (takata@linux-m32r.org) wrote:
-> BTW, I need an additional patch to fix a build error, 
-> caused by the above patch.
-> 
-> -- Takata
-> 
-> 
-> [PATCH] m32r: build fix of arch/m32r/kernel/smpboot.c
-> 
-> This patch is for Mathieu Desnoyers's include/asm-m32r/local.h.
-> Applying the new include/asm-m32r/local.h, inclusion of linux/sched.h
-> is needed to fix a build error of arch/m32r/kernel/smpboot.c.
-> 
-> <--  snip  -->
->   ...
->   CC      arch/m32r/kernel/smpboot.o
-> /project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c: In function 'do_boot_cpu':
-> /project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:279: error: implicit declaration of function 'fork_idle'
-> /project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:279: warning: assignment makes pointer from integer without a cast
-> /project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:283: error: dereferencing pointer to incomplete type
-> /project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:289: error: dereferencing pointer to incomplete type
-> /project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:290: error: implicit declaration of function 'task_thread_info'
-> /project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:290: error: invalid type argument of '->'
-> /project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c: In function 'start_secondary':
-> /project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:429: error: implicit declaration of function 'cpu_init'
-> make[2]: *** [arch/m32r/kernel/smpboot.o] Error 1
-> <--  snip  -->
-> 
-> Signed-off-by: Hirokazu Takata <takata@linux-m32r.org>
-> ---
->  arch/m32r/kernel/smpboot.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/m32r/kernel/smpboot.c b/arch/m32r/kernel/smpboot.c
-> index 9dae410..b41aa78 100644
-> --- a/arch/m32r/kernel/smpboot.c
-> +++ b/arch/m32r/kernel/smpboot.c
-> @@ -43,6 +43,7 @@
->  #include <linux/init.h>
->  #include <linux/kernel.h>
->  #include <linux/mm.h>
-> +#include <linux/sched.h>
->  #include <linux/err.h>
->  #include <linux/irq.h>
->  #include <linux/bootmem.h>
-> -- 
-> 1.5.2.4
-> 
 
-Yes, it seems like m32r smpboot.c depended upon the include hardirq.h
-from asm-generic/local.h, which disappears in the architecture specific
-implementation. You fix is therefore needed and appropriate (it's not a
-circular dependency).
+--=-niSah3lF9HtkpNpdlAU2
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Thanks!
+On Mon, 2007-08-20 at 14:17 -0700, Christoph Lameter wrote:
+> On Mon, 20 Aug 2007, Peter Zijlstra wrote:
+>=20
+> > > Its not that different.
+> >=20
+> > Yes it is, disk based completion does not require memory, network based
+> > completion requires unbounded memory.
+>=20
+> Disk based completion only require no memory if its not on a stack of=20
+> other devices and if the interrupt handles is appropriately shaped. If=20
+> there are multile levels below or there is some sort of complex=20
+> completion handling then this also may require memory.
 
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+I'm not aware of such a scenario - but it could well be. Still if it
+would it would take a _bounded_ amount of memory per page.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Network would still differ in that it requires an _unbounded_ amount of
+packets to receive and process in order to receive that completion.
+
+--=-niSah3lF9HtkpNpdlAU2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGyvGPXA2jU0ANEf4RAuOWAJ49JV4ljK+gdOLW/2nTnFEC9qGVpgCfWwPr
+IFXxD4k0PwA0Ynkv2tGmELY=
+=u2JR
+-----END PGP SIGNATURE-----
+
+--=-niSah3lF9HtkpNpdlAU2--
+
