@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758237AbXHUXRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbXHUXVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758237AbXHUXRa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 19:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755245AbXHUXRX
+	id S1757365AbXHUXVn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 19:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbXHUXVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 19:17:23 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59801 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755213AbXHUXRW (ORCPT
+	Tue, 21 Aug 2007 19:21:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34232
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755369AbXHUXVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 19:17:22 -0400
-Date: Tue, 21 Aug 2007 16:17:16 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [PATCH] SLUB use cmpxchg_local
-In-Reply-To: <20070821231216.GA29691@Krystal>
-Message-ID: <Pine.LNX.4.64.0708211614370.6062@schroedinger.engr.sgi.com>
-References: <20070820201822.597720007@polymtl.ca>
- <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com>
- <20070820204126.GA22507@Krystal> <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com>
- <20070820212922.GA27011@Krystal> <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
- <20070820215413.GA28452@Krystal> <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
- <20070821173849.GA8360@Krystal> <Pine.LNX.4.64.0708211404290.3082@schroedinger.engr.sgi.com>
- <20070821231216.GA29691@Krystal>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 21 Aug 2007 19:21:35 -0400
+Date: Tue, 21 Aug 2007 16:21:33 -0700 (PDT)
+Message-Id: <20070821.162133.32095611.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: + git-net-fix-export.patch added to -mm tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200708212308.l7LN8E6s016058@imap1.linux-foundation.org>
+References: <200708212308.l7LN8E6s016058@imap1.linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Aug 2007, Mathieu Desnoyers wrote:
+From: akpm@linux-foundation.org
+Date: Tue, 21 Aug 2007 16:03:06 -0700
 
-> SLUB Use cmpxchg() everywhere.
+> Subject: git-net fix export
+> From: Andrew Morton <akpm@linux-foundation.org>
 > 
-> It applies to "SLUB: Single atomic instruction alloc/free using
-> cmpxchg".
+> Must be silly season or something.
+> 
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-> +++ slab/mm/slub.c	2007-08-20 18:42:28.000000000 -0400
-> @@ -1682,7 +1682,7 @@ redo:
->  
->  	object[c->offset] = freelist;
->  
-> -	if (unlikely(cmpxchg_local(&c->freelist, freelist, object) != freelist))
-> +	if (unlikely(cmpxchg(&c->freelist, freelist, object) != freelist))
->  		goto redo;
->  	return;
->  slow:
 
-Ok so regular cmpxchg, no cmpxchg_local. cmpxchg_local does not bring 
-anything more? My measurements did not show any difference. I measured on 
-Athlon64. What processor is being used?
-
+I've applied this to net-2.6.24, thanks Andrew.
