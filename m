@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbXHULD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbXHULN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758601AbXHULD5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 07:03:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbXHULDt
+	id S1757442AbXHULN2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 07:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755731AbXHULNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 07:03:49 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:60720 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755051AbXHULDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 07:03:49 -0400
-Date: Tue, 21 Aug 2007 12:03:47 +0100
-To: nigel@suspend2.net
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Should GFP_ATOMIC fail when we're below low watermark?
-Message-ID: <20070821110346.GB11329@skynet.ie>
-References: <200708201138.50508.nigel@nigel.suspend2.net> <200708201838.50262.nigel@nigel.suspend2.net> <1187600376.6114.186.camel@twins> <200708202055.03058.nigel@nigel.suspend2.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <200708202055.03058.nigel@nigel.suspend2.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	Tue, 21 Aug 2007 07:13:18 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59672 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755512AbXHULNR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 07:13:17 -0400
+Date: Tue, 21 Aug 2007 20:15:07 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: "tony.luck@intel.com" <tony.luck@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Subject: [PATCH][2.6.23-rc2-mm2] small fix for ia64 icache sync patch
+Message-Id: <20070821201507.36641d76.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (20/08/07 20:55), Nigel Cunningham didst pronounce:
-> Hi.
-> 
-> On Monday 20 August 2007 18:59:36 Peter Zijlstra wrote:
-> > On Mon, 2007-08-20 at 18:38 +1000, Nigel Cunningham wrote:
-> > > Hi.
-> > > 
-> > > On Monday 20 August 2007 12:43:50 Peter Zijlstra wrote:
-> > > > On Mon, 2007-08-20 at 11:38 +1000, Nigel Cunningham wrote:
-> > > > > Hi all.
-> > > > > 
-> > > > > In current git (and for a while now), an attempt to allocate memory 
-> with 
-> > > > > GFP_ATOMIC will fail if we're below the low watermark level. The only 
-> way 
-> > > to 
-> > > > > access that memory that I can see (not that I've looked that hard) is 
-> to 
-> > > have 
-> > > > > PF_MEMALLOC set (ie from kswapd). I'm wondering if this behaviour is 
-> > > correct. 
-> > > > > Shouldn't GFP_ATOMIC allocations ignore watermarks too? How about 
-> > > GFP_KERNEL?
-> > > > > 
-> > > > > The following patch is a potential fix for GFP_ATOMIC.
-> > > > 
-> > > > Sorry, no.
-> > > > 
-> > > > GFP_ATOMIC must fail when below the watermark. GFP_KERNEL has __GFP_WAIT
-> > > > and hence can sleep and wait for reclaim so that should not be a problem
-> > > > (usually).
-> > > > 
-> > > > GFP_ATOMIC may not access the reserves because the reserves are needed
-> > > > to get out of OOM deadlocks within the VM. Consider the fact that
-> > > > freeing memory needs memory - if there is no memory free, you cannot
-> > > > free memory and you're pretty much stuck.
-> > > 
-> > > I guess, then, the question should be whether the watermark values are 
-> > > appropriate. Do we need high order allocations watermarked if this is the 
-> > > only purpose, particularly considering that whatever memory is allocated 
-> for 
-> > > this purpose is essentially useless 99.9% of the time?
-> > 
-> > Could you perhaps explain what you're trying to do? No matter what we
-> > do, GFP_ATOMIC will fail eventually, there is only so much one can do
-> > without blocking.
-> > 
-> > As for higher order allocations, until we have a full online defrag
-> > solution those too can fail at any moment (even with __GFP_WAIT).
-> 
-> I was just trying to make hibernation more reliable in sitations where there's 
-> low amounts of memory available. I guess the amount of memory that's reserved 
-> for this has increased, because some users have been reporting issues that 
-> hadn't appeared before. No problem. I'll work around it.
+Fixing 2 small issues pointed by Tony Luck.
 
-Where are these reports? I'm not familiar with how hibernation works but
-why does it need a large number of GFP_ATOMIC allocations?
+* removing redundant BUG_ON in __ia64_sync_icache_dcache().
+* check pte_present() first.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+---
+ arch/ia64/mm/init.c        |    2 --
+ include/asm-ia64/pgtable.h |    4 ++--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+Index: linux-2.6.23-rc2-mm2/include/asm-ia64/pgtable.h
+===================================================================
+--- linux-2.6.23-rc2-mm2.orig/include/asm-ia64/pgtable.h
++++ linux-2.6.23-rc2-mm2/include/asm-ia64/pgtable.h
+@@ -327,8 +327,8 @@ ia64_phys_addr_valid (unsigned long addr
+ extern void __ia64_sync_icache_dcache(pte_t pteval);
+ static inline void set_pte(pte_t *ptep, pte_t pteval)
+ {
+-	if (pte_exec(pteval) &&    // flush only new executable page.
+-	    pte_present(pteval) && // swap out ?
++	if (pte_present(pteval) &&// swap out ?
++	    pte_exec(pteval) &&    // flush only new executable page.
+ 	    pte_user(pteval) &&    // ignore kernel page
+ 	    (!pte_present(*ptep) ||// do_no_page or swap in, migration,
+ 		pte_pfn(*ptep) != pte_pfn(pteval))) // do_wp_page(), page copy
+Index: linux-2.6.23-rc2-mm2/arch/ia64/mm/init.c
+===================================================================
+--- linux-2.6.23-rc2-mm2.orig/arch/ia64/mm/init.c
++++ linux-2.6.23-rc2-mm2/arch/ia64/mm/init.c
+@@ -60,8 +60,6 @@ __ia64_sync_icache_dcache (pte_t pte)
+ 	struct page *page;
+ 	unsigned long order;
+ 
+-	BUG_ON(!pte_exec(pte));
+-
+ 	page = pte_page(pte);
+ 	addr = (unsigned long) page_address(page);
+ 
+
