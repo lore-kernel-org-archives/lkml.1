@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932108AbXHUPPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762212AbXHUPSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932108AbXHUPPn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 11:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761408AbXHUPPT
+	id S1762212AbXHUPSd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 11:18:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760181AbXHUPSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 11:15:19 -0400
-Received: from mail.tor.primus.ca ([216.254.136.21]:41462 "EHLO
-	mail-05.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761348AbXHUPPR (ORCPT
+	Tue, 21 Aug 2007 11:18:24 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:47825 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760295AbXHUPSX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 11:15:17 -0400
-X-Greylist: delayed 1842 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Aug 2007 11:15:17 EDT
-Date: Tue, 21 Aug 2007 10:44:33 -0400
-From: Nick Bowler <nbowler@ellipticsemi.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] AH4: Update IPv4 options handling to conform to RFC 4302.
-Message-ID: <20070821144433.GA5015@totient.ellipticsemi.com>
+	Tue, 21 Aug 2007 11:18:23 -0400
+Date: Tue, 21 Aug 2007 16:18:20 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, Jarek Poplawski <jarkao2@o2.pl>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       len.brown@intel.com, Andrew Morton <akpm@osdl.org>
+Subject: Re: [Git Patch] ACPI: Fix a warning of discarding qualifiers from pointer target type
+Message-ID: <20070821151820.GB21089@ftp.linux.org.uk>
+References: <20070821132038.GA22254@ff.dom.local> <20070821150714.GA7591@hacking> <46CB0169.7090207@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <46CB0169.7090207@suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In testing our ESP/AH offload hardware, I discovered an issue with how AH
-handles mutable fields in IPv4.  RFC 4302 (AH) states the following on the
-subject:
+On Tue, Aug 21, 2007 at 07:14:49PM +0400, Alexey Starikovskiy wrote:
+> WANG Cong wrote:
+> > Fix this warning:
+> >
+> > drivers/acpi/ec.c: In function `acpi_ec_ecdt_probe':
+> > drivers/acpi/ec.c:873: warning: passing arg 1 of `acpi_get_devices' discards qualifiers from pointer target type
+> >
+> > (I don't know whether this fix hits the real problem.)
+> >   
+> It is safe to give acpi_get_devices() const string, as it should not
+> modify it in any condition.
 
-        For IPv4, the entire option is viewed as a unit; so even
-        though the type and length fields within most options are immutable
-        in transit, if an option is classified as mutable, the entire option
-        is zeroed for ICV computation purposes.
-
-The current implementation does not zero the type and length fields, resulting
-in authentication failures when communicating with hosts that do (i.e. FreeBSD).
-
-I have tested record route and timestamp options (ping -R and ping -T) on a
-small network involving Windows XP, FreeBSD 6.2, and Linux hosts, with one
-router.  In the presence of these options, the FreeBSD and Linux hosts (with
-the patch or with the hardware) can communicate.  The Windows XP host simply
-fails to accept these packets with or without the patch.
-
-I have also been trying to test source routing options (using traceroute -g),
-but haven't had much luck getting this option to work *without* AH, let alone
-with.
-
-Signed-off-by: Nick Bowler <nbowler@ellipticsemi.com>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- net/ipv4/ah4.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/net/ipv4/ah4.c b/net/ipv4/ah4.c
-index 7a23e59..39f6211 100644
---- a/net/ipv4/ah4.c
-+++ b/net/ipv4/ah4.c
-@@ -46,7 +46,7 @@ static int ip_clear_mutable_options(struct iphdr *iph, __be32 *daddr)
- 			memcpy(daddr, optptr+optlen-4, 4);
- 			/* Fall through */
- 		default:
--			memset(optptr+2, 0, optlen-2);
-+			memset(optptr, 0, optlen);
- 		}
- 		l -= optlen;
- 		optptr += optlen;
--- 
-1.5.2.2
-
--- 
-Nick Bowler, Elliptic Semiconductor (http://www.ellipticsemi.com/)
-
+diff --git a/drivers/acpi/namespace/nsxfeval.c b/drivers/acpi/namespace/nsxfeval.c
+index ab65b2c..f39fbc6 100644
+--- a/drivers/acpi/namespace/nsxfeval.c
++++ b/drivers/acpi/namespace/nsxfeval.c
+@@ -540,7 +540,7 @@ acpi_ns_get_device_callback(acpi_handle obj_handle,
+  ******************************************************************************/
+ 
+ acpi_status
+-acpi_get_devices(char *HID,
++acpi_get_devices(const char *HID,
+ 		 acpi_walk_callback user_function,
+ 		 void *context, void **return_value)
+ {
+diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
+index b5cca5d..3d7ab9e 100644
+--- a/include/acpi/acpixf.h
++++ b/include/acpi/acpixf.h
+@@ -130,7 +130,7 @@ acpi_walk_namespace(acpi_object_type type,
+ 		    void *context, void **return_value);
+ 
+ acpi_status
+-acpi_get_devices(char *HID,
++acpi_get_devices(const char *HID,
+ 		 acpi_walk_callback user_function,
+ 		 void *context, void **return_value);
+ 
+diff --git a/include/acpi/acstruct.h b/include/acpi/acstruct.h
+index aeb4498..8848265 100644
+--- a/include/acpi/acstruct.h
++++ b/include/acpi/acstruct.h
+@@ -146,7 +146,7 @@ struct acpi_init_walk_info {
+ struct acpi_get_devices_info {
+ 	acpi_walk_callback user_function;
+ 	void *context;
+-	char *hid;
++	const char *hid;
+ };
+ 
+ union acpi_aml_operands {
