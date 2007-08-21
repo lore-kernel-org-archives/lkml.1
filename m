@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbXHUJeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbXHUJep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756238AbXHUJeK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 05:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbXHUJdz
+	id S1757060AbXHUJep (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 05:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbXHUJea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 05:33:55 -0400
-Received: from ozlabs.org ([203.10.76.45]:39949 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752140AbXHUJdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 05:33:54 -0400
+	Tue, 21 Aug 2007 05:34:30 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55087 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754239AbXHUJeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 05:34:02 -0400
+Date: Tue, 21 Aug 2007 09:37:10 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>, linux-security-module@vger.kernel.org,
+       LKML Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
+Message-ID: <20070821073710.GB7258@elf.ucw.cz>
+References: <CB1BB3E1-68AB-4F7E-B8F8-466C4E471856@mac.com> <766922.14722.qm@web36601.mail.mud.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18122.45437.807239.395869@cargo.ozlabs.ibm.com>
-Date: Tue, 21 Aug 2007 19:33:49 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-       Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
-       horms@verge.net.au, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       rpjday@mindspring.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, satyam@infradead.org,
-       zlynx@acm.org, schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-In-Reply-To: <20070821070555.GA32036@flint.arm.linux.org.uk>
-References: <46C516BA.60700@yahoo.com.au>
-	<alpine.LFD.0.999.0708162045150.30176@woody.linux-foundation.org>
-	<20070817235912.GA24314@linux.vnet.ibm.com>
-	<20070818000913.GA25585@gondor.apana.org.au>
-	<20070818010818.GQ8464@linux.vnet.ibm.com>
-	<Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com>
-	<46C997B1.1010800@redhat.com>
-	<417ebba299a7ad3c4b7a31c4f860a814@kernel.crashing.org>
-	<20070820224859.GA16162@flint.arm.linux.org.uk>
-	<2bdb04581125f22122f1d230e991ea92@kernel.crashing.org>
-	<20070821070555.GA32036@flint.arm.linux.org.uk>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <766922.14722.qm@web36601.mail.mud.yahoo.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King writes:
+Hi!
 
-> Let me say it more clearly: On ARM, it is impossible to perform atomic
-> operations on MMIO space.
+> > Ergo the only  
+> > people who should be writing security policy for deployment are those  
+> > people who have studied and trained in the stuff.  Those people are  
+> > also known as "security professionals".
+> 
+> If only security professionals can use the system you have failed
+> to provide a general purpose facility. It may have value in limited
+> circumstances but it is not for everybody.
 
-Actually, no one is suggesting that we try to do that at all.
+But that's okay. Maybe SElinux is not simple enough to use for
+everyone, but that does not mean you can't auto-generate policy from
+something else, "easy to understand".
 
-The discussion about RMW ops on MMIO space started with a comment
-attributed to the gcc developers that one reason why gcc on x86
-doesn't use instructions that do RMW ops on volatile variables is that
-volatile is used to mark MMIO addresses, and there was some
-uncertainty about whether (non-atomic) RMW ops on x86 could be used on
-MMIO.  This is in regard to the question about why gcc on x86 always
-moves a volatile variable into a register before doing anything to it.
-
-So the whole discussion is irrelevant to ARM, PowerPC and any other
-architecture except x86[-64].
-
-Paul.
+IOW smack may be great idea, but you written it in wrong language. You
+written it in C, while you should have written it in SELinux policy
+language (and your favourite scripting language as frontend).
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
