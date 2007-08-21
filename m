@@ -1,48 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbXHUGDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758605AbXHUGEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757891AbXHUGDw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 02:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbXHUGDo
+	id S1758605AbXHUGEZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 02:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbXHUGEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:03:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43516 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754571AbXHUGDn (ORCPT
+	Tue, 21 Aug 2007 02:04:08 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:53977 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758130AbXHUGD7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:03:43 -0400
-Date: Mon, 20 Aug 2007 23:03:08 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Stuart_Hayes@Dell.com" <Stuart_Hayes@dell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Exner <dex@dragonslave.de>
-Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
-In-Reply-To: <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0708202255130.30176@woody.linux-foundation.org>
-References: <46C098FD.1030601@googlemail.com> <200708202102.58508.david-b@pacbell.net>
- <alpine.LFD.0.999.0708202106290.30176@woody.linux-foundation.org>
- <200708202148.45575.david-b@pacbell.net>
- <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org>
+	Tue, 21 Aug 2007 02:03:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NviepWFXmZcCcZnVJcrsJXzAHfn3VM+sxQOXs4kvbE+YGewtI8mzYCOc5GD+D5vwNCfoKyfhjx1t48PvvV8AZrvSHP2FbZQ4i2j35WkoLRVEyLKrBG0MhLsSrrgi0oJhlOhJZoNg0vPipK+IQFg+SYilm8Nn6+naBQ/Lo5MOl2Y=
+Message-ID: <8dd980de0708202303l2d3be5bj6682a98df4a40d99@mail.gmail.com>
+Date: Tue, 21 Aug 2007 14:03:58 +0800
+From: "Kevin Hao" <haokexin@gmail.com>
+To: "Xin Zhao" <uszhaoxin@gmail.com>
+Subject: Re: How Linux /proc filesystem convert a fd to the actual pathname?
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <4ae3c140708201958x3c88b317o2ba9be64177978f5@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4ae3c140708201958x3c88b317o2ba9be64177978f5@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 20 Aug 2007, Linus Torvalds wrote:
-> 
-> Ok. But in the meantime, I really think we should just revert the code 
-> that causes a known regression.
-
-Side note: one reason I'm interested in this is that my mac mini (now used 
-by the kids) has had a very flaky USB mouse lately. Is it related? I have 
-no idea, and probably not, but as a result I'm very interested in any USB 
-regressions. There's *something* rotten with that mouse, and while it 
-could be the mouse itself going bad, I think it started happening only 
-after updating that machine to 2.6.23-rc1.
-
-			Linus
+> I am curious how Linux convert an fd to the pathname?  Does it
+> recursively walk back from current dentry to the root?
+Using d_path.
+> Can someone point me to the right place in the kernel where this
+> functionality is implemented?
+do_proc_readlink may be the function you want.
