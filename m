@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759443AbXHUGhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759195AbXHUGlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759443AbXHUGhH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 02:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbXHUGg4
+	id S1759195AbXHUGlU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 02:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbXHUGlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 02:36:56 -0400
-Received: from smtp122.sbc.mail.re3.yahoo.com ([66.196.96.95]:35980 "HELO
-	smtp122.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752539AbXHUGgz (ORCPT
+	Tue, 21 Aug 2007 02:41:09 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:3307 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754867AbXHUGlI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 02:36:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=sbGc2dYpR5zmncT7ykNYueEuyZ9WVORIjoj3QNSIcGmZtnsQgD8aAf0L/QbCFdM45IwVXKL2OGyt1PMxC+knKyktjjt7V2jEYwEGXKjLNGATliZrFpxvGn3N0Qbde+R44a3ahN0uYHopBemzKwL/rtJEpYFfGQ7K8ID3TDmiLvA=  ;
-X-YMail-OSG: .rEYTSIVM1kAfVYBZEDTxDkTScSDlfYB.UvrYj44HgalhzslyXGsTL5_u6VJt_5fGJiH_80vUw--
-From: David Brownell <david-b@pacbell.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
-Date: Mon, 20 Aug 2007 23:34:37 -0700
-User-Agent: KMail/1.9.6
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Stuart_Hayes@Dell.com" <Stuart_Hayes@dell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Exner <dex@dragonslave.de>
-References: <46C098FD.1030601@googlemail.com> <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708202255130.30176@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0708202255130.30176@woody.linux-foundation.org>
+	Tue, 21 Aug 2007 02:41:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Z2TRcSr1WgoLlv4WjlsN/Ic3BRe/B5KZX3Hd1yu+smc86dZ5gqM1+dUOCutklI0mT0QVFNn1HnOsEN3CBrhBsxVyXEnTOwAF/16YN8ERl98J3liFYz8Onk9AwxE6Lge9Ygh0cASmEc8Yan8OxQfB9SUvVZHpHovS3myX1JzXM/g=
+Message-ID: <4ae3c140708202341x13c8accfq5ad6f747c216dffe@mail.gmail.com>
+Date: Tue, 21 Aug 2007 02:41:07 -0400
+From: "Xin Zhao" <uszhaoxin@gmail.com>
+To: "Kevin Hao" <haokexin@gmail.com>
+Subject: Re: How Linux /proc filesystem convert a fd to the actual pathname?
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <8dd980de0708202303l2d3be5bj6682a98df4a40d99@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708202334.38261.david-b@pacbell.net>
+References: <4ae3c140708201958x3c88b317o2ba9be64177978f5@mail.gmail.com>
+	 <8dd980de0708202303l2d3be5bj6682a98df4a40d99@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 20 August 2007, Linus Torvalds wrote:
-> 
-> On Mon, 20 Aug 2007, Linus Torvalds wrote:
-> > 
-> > Ok. But in the meantime, I really think we should just revert the code 
-> > that causes a known regression.
-> 
-> Side note: one reason I'm interested in this is that my mac mini (now used 
-> by the kids) has had a very flaky USB mouse lately. Is it related? I have 
-> no idea, and probably not, but as a result I'm very interested in any USB 
-> regressions. There's *something* rotten with that mouse, and while it 
-> could be the mouse itself going bad, I think it started happening only 
-> after updating that machine to 2.6.23-rc1.
+Thanks! That perfectly answered my question.
 
-Try disabling USB_SUSPEND ... the rather aggressive powersave
-mechanism (autosuspend defaulting to always ON) has made lots
-of trouble.  I think that default will change...
+-x
 
-- Dave
+On 8/21/07, Kevin Hao <haokexin@gmail.com> wrote:
+> > I am curious how Linux convert an fd to the pathname?  Does it
+> > recursively walk back from current dentry to the root?
+> Using d_path.
+> > Can someone point me to the right place in the kernel where this
+> > functionality is implemented?
+>
+ may be the function you want.
+>
