@@ -1,55 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbXHUQ3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760786AbXHUQaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760866AbXHUQ3j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 12:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757625AbXHUQ3c
+	id S1760786AbXHUQaL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 12:30:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758528AbXHUQ3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 12:29:32 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:17268 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756214AbXHUQ3c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 12:29:32 -0400
-Subject: Re: [PATCH] [12/58] x86_64: Add vDSO for x86-64 with
-	gettimeofday/clock_gettime/getcpu
-From: Daniel Walker <dwalker@mvista.com>
-To: Andi Kleen <ak@suse.de>
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20070719095456.B996214E03@wotan.suse.de>
-References: <200707191154.642492000@suse.de>
-	 <20070719095456.B996214E03@wotan.suse.de>
-Content-Type: text/plain
-Date: Tue, 21 Aug 2007 09:25:01 -0700
-Message-Id: <1187713502.7732.65.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Aug 2007 12:29:53 -0400
+Received: from styx.suse.cz ([82.119.242.94]:57075 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757625AbXHUQ3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 12:29:52 -0400
+Date: Tue, 21 Aug 2007 18:48:15 +0200
+From: Jan Kara <jack@suse.cz>
+To: Josef Bacik <jbacik@redhat.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix panic in jbd by adding locks
+Message-ID: <20070821164815.GI18718@duck.suse.cz>
+References: <20070814152255.GB24127@dhcp-243-37.rdu.redhat.com> <20070815113737.GC7642@atrey.karlin.mff.cuni.cz> <20070815121704.GL24127@dhcp-243-37.rdu.redhat.com> <20070816160835.GB26703@atrey.karlin.mff.cuni.cz> <20070816163744.GB10817@dhcp-243-37.rdu.redhat.com> <20070820152021.GF3784@duck.suse.cz> <20070821154311.GE27557@dhcp-243-37.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070821154311.GE27557@dhcp-243-37.rdu.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-19 at 11:54 +0200, Andi Kleen wrote:
-> +
-> +static noinline int do_realtime(struct timespec *ts)
-> +{
-> +       unsigned long seq, ns;
-> +       do {
-> +               seq = read_seqbegin(&gtod->lock);
-> +               ts->tv_sec = gtod->wall_time_sec;
-> +               ts->tv_nsec = gtod->wall_time_nsec;
-> +               ns = vgetns();
-> +       } while (unlikely(read_seqretry(&gtod->lock, seq)));
-> +       timespec_add_ns(ts, ns);
-> +       return 0;
-> +} 
+On Tue 21-08-07 11:43:12, Josef Bacik wrote:
+> On Mon, Aug 20, 2007 at 05:20:21PM +0200, Jan Kara wrote:
+> >   OK, thanks. So record probably points to an already freed memory which has
+> > been overwritten by garbage...
+> > 
+> > > >   Thanks for details. I'm still not convinced. What they essentially
+> > > > write is that slab cache revoke_record_cache is not guarded by any spin
+> > > > lock. It's not and that should be fine as slab caches are SMP safe by
+> > > > themselves.
+> > > 
+> > > No its the list_del thats not gaurded, so the hash list gets screwed up outside
+> > > of a lock.  If there are other problems that need to be addressed then ok, but I
+> > > still think that we should be protecting all of the list traversal/changing
+> > > should be protected by the lock.  Thank you,
+> >   But the traversal in journal_write_revoke_records() *is* in fact guarded
+> > by the commit logic in journal_commit_transaction() handling code - it
+> > doesn't allow anybody to mess with revoke lists when a transaction is
+> > committing. So there's no need to guard the hash list again in
+> > journal_write_revoke_records() by the spinlock. And if the logic does not
+> > work and lets somebody modify revoke lists during commit, we have more
+> > serious problems than hash list corruption. That's why I'm trying to find
+> > out where's the real culprit of the Oops. But so far I cannot find out how
+> > the corruption can happen...
+> 
+> I should note here I'm not trying to be argumentative, I just want to
+> understand.  Ok so journal_commit_transaction() will make sure all the
+  I also just want to understand how the oops can happen :).
 
-Some thoughts ,
+> handle_t's are removed and such before processing the revoke lists, but right
+> before we process the revoke lists we set the journals running transaction to
+> NULL, which means we can continue on our merry way.  AFAICS the revoke lists are
+> per journal, not per transaction, so once we give up the j_state_lock after
+> having made sure the handle_t's had done their thing, we set the
+> running_transaction to NULL letting people continue to do their thing, and since
+> the revoke table is on a per journal basis, its completely valid for a new
+> transaction to be started, a handle to be added to it, journal_cancel_revoke()
+> to be run against that handle while still in journal_commit_transaction().  It
+> wouldn't necessarily be a handle_t from the transaction we are in the middle of
+> committing, it would be from a new transaction, and since the revoke list is per
+> journal, both the transaction thats currently being committed and the new
+> transaction would have access to the same revoke list, hence the race.  Is this
+> correct?  If not let me know because I want to understand this code better.
+  The trick is, there are in fact two revoke tables. So the commit code
+does the following:
+  1) It waits until all handles of the running transaction are released
+(this is the while loop waiting checking t_updates).
+  2) It does some cleanup of unused buffers.
+  3) Switches revoke tables - i.e. journal->j_revoke now points to a
+freshly initialized table, the table of the committing transaction is kept
+hidden.
+  4) Transaction state is changed to FLUSH, journal->j_running_transaction
+is set to NULL, etc.
+  5) Data writeout is performed.
+  6) Saved revoke hash table is written.
 
-In the -mm kernel there is some debugging that gets injected into the
-likely/unlikely macros .. If they get called from userspace it causes a
-hang .. We might want to add some new set of macros to specifically
-denote that they are called from userspace, not just likely/unlikely but
-all the macros so we don't get mixed usage ..
+  After 3), journal_revoke() and journal_revoke_cancel() access the new
+hash table and thus have no influence on journal_write_revoke_records(). It
+could possibly be that the pointer to the old hash table would be stored in
+some local variable - but all the places where we store a pointer to the
+hash table seem to be contained inside journal_start(), journal_stop()
+pairs (all functions working with hash tables take a transaction handle
+as an argument) and because all handles were released at some point in time,
+we know that this should not happen either.
+  I hope it is clearer now. If you still have any questions, please ask.
 
-Daniel
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
