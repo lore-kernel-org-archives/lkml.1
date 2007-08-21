@@ -1,55 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbXHUXM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbXHUXMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756567AbXHUXM2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 19:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbXHUXMT
+	id S1758069AbXHUXMo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 19:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbXHUXMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 19:12:19 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:48001 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753556AbXHUXMS (ORCPT
+	Tue, 21 Aug 2007 19:12:20 -0400
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:33369 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753174AbXHUXMS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 21 Aug 2007 19:12:18 -0400
-Message-ID: <46CB702D.8020102@gmail.com>
-Date: Wed, 22 Aug 2007 01:07:25 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: =?ISO-8859-15?Q?Jos=E9_Luis_Pati=F1o_Andr=E9s?= 
-	<jopan@alumni.uv.es>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Problems with IDE on linux 2.6.22.X
-References: <200708212149.12912.jopan@alumni.uv.es>	<46CB626F.8020801@gmail.com> <20070822000003.6c561407@the-village.bc.nu>
-In-Reply-To: <20070822000003.6c561407@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Date: Tue, 21 Aug 2007 19:12:16 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+Message-ID: <20070821231216.GA29691@Krystal>
+References: <20070820201822.597720007@polymtl.ca> <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com> <20070820204126.GA22507@Krystal> <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com> <20070820212922.GA27011@Krystal> <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com> <20070820215413.GA28452@Krystal> <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com> <20070821173849.GA8360@Krystal> <Pine.LNX.4.64.0708211404290.3082@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708211404290.3082@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:07:47 up 22 days, 23:26,  3 users,  load average: 0.34, 0.36, 0.30
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/22/2007 01:00 AM, Alan Cox wrote:
-
->> "Intel ESB, ICH, PIIX3, PIIX4 PATA/SATA support"
+* Christoph Lameter (clameter@sgi.com) wrote:
+> On Tue, 21 Aug 2007, Mathieu Desnoyers wrote:
 > 
-> Not for the newer chips. You want ATA/SATA (PIIX and possibly AHCI)
-> support from the new drivers, SCSI disk and SCSI cd.
-
-That _is_ the *config description for the new (CONFIG_ATA_PIIX) driver (in 
-2.6.22.x).
-
->> where you may need to boot with a "libata.atapi_enabled=0" kernel parameter.
+> > - Fixed an erroneous test in slab_free() (logic was flipped from the 
+> >   original code when testing for slow path. It explains the wrong 
+> >   numbers you have with big free).
 > 
-> Why deliberately disable atapi when you need atapi ?
+> If you look at the numbers that I posted earlier then you will see that 
+> even the measurements without free were not up to par.
+> 
 
-Because he described the problem that if he got his (SATA) disk supported he 
-lost his (PATA) DVD drive. Although I'm as said not completely sure it would 
-actually work, I suggested compiling in both ATA_PIIX (yes, and sd) for his 
-drive and the IDE PIIX/ICH driver and ide-cd for his DVD, where if it works 
-at all, passing the above option may or may not be useful.
+I seem to get a clear performance improvement in the kmalloc fast path.
 
-But his report, although expansive, was a little unclear. Let's wait for 
-what happens with only ATA_PIIIX.
+> > It applies on top of the 
+> > "SLUB Use cmpxchg() everywhere" patch.
+> 
+> Which one is that?
+> 
 
-Rene.
+This one:
+
+
+SLUB Use cmpxchg() everywhere.
+
+It applies to "SLUB: Single atomic instruction alloc/free using
+cmpxchg".
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ mm/slub.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: slab/mm/slub.c
+===================================================================
+--- slab.orig/mm/slub.c	2007-08-20 18:42:16.000000000 -0400
++++ slab/mm/slub.c	2007-08-20 18:42:28.000000000 -0400
+@@ -1682,7 +1682,7 @@ redo:
+ 
+ 	object[c->offset] = freelist;
+ 
+-	if (unlikely(cmpxchg_local(&c->freelist, freelist, object) != freelist))
++	if (unlikely(cmpxchg(&c->freelist, freelist, object) != freelist))
+ 		goto redo;
+ 	return;
+ slow:
+
+> >              |     slab.git HEAD slub (min-max)    |  cmpxchg_local slub
+> > kmalloc(8)   |         190 - 201                   |         83
+> > kfree(8)     |         351 - 351                   |        363
+> > kmalloc(64)  |         224 - 245                   |        115
+> > kfree(64)    |         389 - 394                   |        397
+> > kmalloc(16384)|        713 - 741                   |        724
+> > kfree(16384) |         843 - 856                   |        843
+> > 
+> > Therefore, there seems to be a repeatable gain on the kmalloc fast path
+> > (more than twice faster). No significant performance hit for the kfree
+> > case, but no gain neither, same for large kmalloc, as expected.
+> 
+> There is a consistent loss on slab_free it seems. The 16k numbers are 
+> irrelevant since we do not use slab_alloc/slab_free due to the direct pass 
+> through patch but call the page allocator directly. That also explains 
+> that there is no loss there.
+> 
+
+Yes. slab_free in these tests falls mostly into __slab_free() slow path
+(I instrumented the number of slow and fast path to get this). The small
+performance hit (~10 cycles) can be explained by the added
+preempt_disable()/preempt_enable().
+
+> The kmalloc numbers look encouraging. I will check to see if I can 
+> reproduce it once I sort out the patches.
+
+Ok.
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
