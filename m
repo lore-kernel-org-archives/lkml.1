@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757022AbXHUUzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbXHUU7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757022AbXHUUzz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 16:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbXHUUzj
+	id S1755200AbXHUU7e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 16:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbXHUU7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 16:55:39 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:44280 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753926AbXHUUzh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 16:55:37 -0400
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: akepner@sgi.com, Jes Sorensen <jes@sgi.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-In-Reply-To: <20070821130515.6e745b17.randy.dunlap@oracle.com>
-References: <20070818002746.GU1813@sgi.com> <46C94FD5.6000006@sgi.com>
-	 <20070821193522.GD5592@sgi.com>
-	 <20070821130515.6e745b17.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Tue, 21 Aug 2007 15:55:29 -0500
-Message-Id: <1187729729.18410.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Tue, 21 Aug 2007 16:59:25 -0400
+Received: from gate.crashing.org ([63.228.1.57]:41937 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752066AbXHUU7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 16:59:23 -0400
+In-Reply-To: <5d6222a80708211341s63f8c1eau922f018e66db49f4@mail.gmail.com>
+References: <20070821132038.GA22254@ff.dom.local> <20070821093103.3c097d4a.randy.dunlap@oracle.com> <20070821173550.GC30705@stusta.de> <20070821182505.GA20968@puku.stupidest.org> <5d6222a80708211341s63f8c1eau922f018e66db49f4@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ea37408ece5ef8d2382ad551f74912eb@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, "Jarek Poplawski" <jarkao2@o2.pl>,
+       "Adrian Bunk" <bunk@kernel.org>, "Chris Wedgwood" <cw@f00f.org>,
+       linux-arch@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: RFC: drop support for gcc < 4.0
+Date: Tue, 21 Aug 2007 22:56:52 +0200
+To: "Glauber de Oliveira Costa" <glommer@gmail.com>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-21 at 13:05 -0700, Randy Dunlap wrote:
-> > diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
-> > index cc7a8c3..e117b72 100644
-> > --- a/Documentation/DMA-API.txt
-> > +++ b/Documentation/DMA-API.txt
-> > @@ -392,6 +392,28 @@ Notes:  You must do this:
-> >  
-> >  See also dma_map_single().
-> >  
-> > +int
-> > +dma_flags_set_dmaflush(int dir)
-> > +
-> > +Amend dir (one of the enum dma_data_direction values), with a platform-
-> 
-> no comma.
-> 
-> > +specific "dmaflush" attribute. Unless the platform supports "posted DMA" 
-> 
-> add comma after "posted DMA" and drop lots of trailing spaces.
-> 
-> > +this is a no-op
+> Last time I tried a mips build, it would fail the compile unless I was
+> using _exactly_ 3.4.4 (I didn't tried older versions, but did try
+> 3.4.6, for ex.).
 
-Almost every platform supports posted DMA ... its a property of most PCI
-bridge chips.
+If 3.4.4 works where 3.4.6 doesn't, you should report this as a
+bug; either here, or to the GCC team (but please be aware that the
+3.4 series isn't supported anymore), or to whoever built that
+compiler for you.
 
-> > +On platforms that support posted DMA, dma_flags_set_dmaflush() causes 
-> > +device writes to the associated memory region to flush in-flight DMA. 
-> > +This can be important, for example, when (DMA) writes to the memory 
-> > +region indicate that DMA of data is complete. If DMA of data and DMA of 
-> > +the completion indication race, as they can do when the platform supports 
-> > +posted DMA, then the completion indication may arrive in host memory 
-> > +ahead of some data.
+> So I also think the 3.4 series will still have to be
+> around for a while.
 
-This isn't possible on most platforms.  PCI write posting can only be
-flushed by a read transaction on the device (or sometimes any device on
-the bridge).  Either this interface is misnamed and misdescribed, or it
-can't work for most systems.
+Huh?  3.4 doesn't work for you, so that's why it should stay
+a supported compiler?
 
-> > +To prevent this, you might map the memory region used for completion 
-> > +indications as follows:
-> > +
-> > +	int count, flags = dma_flags_set_dmaflush(DMA_BIDIRECTIONAL);
-> > +	.....
-> > +	count = dma_map_sg(dev, sglist, nents, flags);
 
-James
-
+Segher
 
