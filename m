@@ -1,60 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbXHUPfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932292AbXHUPkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932086AbXHUPfw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 11:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759345AbXHUPfn
+	id S932292AbXHUPkF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 11:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760922AbXHUPjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 11:35:43 -0400
-Received: from web36611.mail.mud.yahoo.com ([209.191.85.28]:44733 "HELO
-	web36611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760589AbXHUPfn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 11:35:43 -0400
-X-YMail-OSG: NaFKvAoVM1k7jtFZ8A9QnqXZLT1Tm0okYv38sa4r6nel9yaT
-X-RocketYMMF: rancidfat
-Date: Tue, 21 Aug 2007 08:35:40 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Smack: Simplified Mandatory Access Control Kernel
-To: Pavel Machek <pavel@ucw.cz>, Casey Schaufler <casey@schaufler-ca.com>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, linux-security-module@vger.kernel.org,
-       LKML Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070821073710.GB7258@elf.ucw.cz>
-MIME-Version: 1.0
+	Tue, 21 Aug 2007 11:39:54 -0400
+Received: from mail.queued.net ([207.210.101.209]:2334 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760831AbXHUPjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 11:39:53 -0400
+Date: Tue, 21 Aug 2007 11:41:29 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: kbuild-devel@lists.sourceforge.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: UNS: Re: [PATCH] kconfig: add *_silentdefconfig feature for
+ config targets
+Message-Id: <20070821114129.fe2737b4.dilinger@queued.net>
+In-Reply-To: <Pine.LNX.4.64.0708211717180.1817@scrub.home>
+References: <20070820204020.7cde776e.dilinger@queued.net>
+	<Pine.LNX.4.64.0708211717180.1817@scrub.home>
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <497654.62822.qm@web36611.mail.mud.yahoo.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 21 Aug 2007 17:29:36 +0200 (CEST)
+Roman Zippel <zippel@linux-m68k.org> wrote:
 
---- Pavel Machek <pavel@ucw.cz> wrote:
-
-> Hi!
+> Hi,
 > 
-> > > Ergo the only  
-> > > people who should be writing security policy for deployment are those  
-> > > people who have studied and trained in the stuff.  Those people are  
-> > > also known as "security professionals".
-> > 
-> > If only security professionals can use the system you have failed
-> > to provide a general purpose facility. It may have value in limited
-> > circumstances but it is not for everybody.
+> On Mon, 20 Aug 2007, Andres Salomon wrote:
 > 
-> But that's okay. Maybe SElinux is not simple enough to use for
-> everyone, but that does not mean you can't auto-generate policy from
-> something else, "easy to understand". IOW smack may be great idea,
+> > AFAICT, there is nothing similar when using *_defconfig; one must copy
+> > a .config manually, and then run silentoldconfig.  Simply running the
+> > associated _defconfig will quietly update the config (which may silently
+> > drop config options).  This patch adds a *_silentdefconfig target, with
+> > semantics similar to silentoldconfig.  It will take the defconfig from
+> > arch/$(ARCH)/configs/$x_defconfig, check for changes, and if there are
+> > none, write out a .config.  If there have been changes and stdin is
+> > valid, it will prompt for updates.  If there have been changes and
+> > stdin is not valid, it will bail out with an error.
+> 
+> I would really like to avoid another input mode.
+> I think it be better to implement this as a combination of "-s -D 
+> <default>" and the silent mode is adjusted to read another config instead 
+> of .config if defconfig_file is set.
+> 
 
-Thank you.
+As would I; however, that requires using getopt() (or equivalent).  I wasn't
+sure if there was some opposition to this..
 
-> but you written it in wrong language. You
-> written it in C, while you should have written it in SELinux policy
-> language (and your favourite scripting language as frontend).
-
-I have often marvelled at the notion of a simplification layer.
-I believe that you build complex things on top of simple things,
-not the other way around.
+Of course, we'll still need some way from the makefile to call it.  I take
+it you're not opposed to 'make foo_silentdefconfig'?
 
 
-Casey Schaufler
-casey@schaufler-ca.com
+> > A few things to note:
+> >   - Using getopt() in scripts/kconfig/conf.c would likely simplify things,
+> >     but that's a much larger patch.  Is there a reason we don't use it?
+> 
+> Not really.
+> 
+
+Cool, I'll submit a patch that does this.
+
+
+> >   - To make it truly silent, I had to change conf_write() to accept an
+> >     additional arg.  The alternative is to not have conf_write spit out
+> >     any information when it writes a file.  Personally, I don't see the need
+> >     for it to spit out information, but I figured I'd take the more cautious
+> >     route.  If folks don't care, I can update this patch to remove it.
+> 
+> I rather want to keep this print. The .config is already only written, 
+> when it has to be in this mode and then I also want to be notified about 
+> it.
+> 
+> >   - We seem to switch between using _() and not using it for strings; I'm
+> >     assuming that we don't actually care about i18n in conf.c, and that the
+> >     _() stuff was just copied from elsewhere.  If that's not the case, I
+> >     can update the patch to wrap strings properly.
+> 
+> I try to keep this uptodate, but I don't really check for this.
+> 
+
+I'm not sure I follow; should I use _(), or no?
+
+
+> bye, Roman
+
+
+
+-- 
+Andres Salomon <dilinger@queued.net>
