@@ -1,76 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932350AbXHUSvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932359AbXHUSxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932350AbXHUSvA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 14:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761067AbXHUSuw
+	id S932359AbXHUSxm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 14:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760696AbXHUSxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 14:50:52 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:45556 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760968AbXHUSuv (ORCPT
+	Tue, 21 Aug 2007 14:53:34 -0400
+Received: from smtp118.sbc.mail.re3.yahoo.com ([66.196.96.91]:44574 "HELO
+	smtp118.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760371AbXHUSxe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 14:50:51 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18123.13314.43009.263383@stoffel.org>
-Date: Tue, 21 Aug 2007 14:50:42 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Peter Staubach <staubach@redhat.com>
-Cc: John Stoffel <john@stoffel.org>,
-       Robin Lee Powell <rlpowell@digitalkingdom.org>,
+	Tue, 21 Aug 2007 14:53:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=WTlQ3YhNIc7jmFwgRGHI8DfHpy9bBudUAnIJJsmRZhAbKrISyTgtmbG5uzNNcgs0ltAlFvQ4qmN5KmP0No2peeZDinEb7xP1WQmoPDoT67lIr+GDaq6mrEDdxmbTdeXt/Vj0WUiBJgtVGZPwhUoP1LC+qtOqfH1vfbWI456eFgY=  ;
+X-YMail-OSG: aBLT8nQVM1mGgFDZ4Jo2LLfGvt5mu9CccSM6G712tXq.0Nw7UDjjiMei0sTmBDHjfQSFT0XD2kywQJet6Ztn.KCRRwep9486S90vp19BmWAfaemRgqWaCGVjUKrPqWxP8iLBlXR4tBX0
+From: David Brownell <david-b@pacbell.net>
+To: Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] ptrdiff_t is not uintptr_t, damnit
+Date: Tue, 21 Aug 2007 11:53:27 -0700
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: NFS hang + umount -f: better behaviour requested.
-In-Reply-To: <46CB1A78.7040102@redhat.com>
-References: <20070820225415.GL3956@digitalkingdom.org>
-	<18123.5699.405125.137517@stoffel.org>
-	<46CB1A78.7040102@redhat.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+References: <20070819225546.GV21089@ftp.linux.org.uk>
+In-Reply-To: <20070819225546.GV21089@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200708211153.27371.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Peter" == Peter Staubach <staubach@redhat.com> writes:
+On Sunday 19 August 2007, Al Viro wrote:
+> Use unsigned long or uintptr_t instead.  There are several places misusing
+> ptrdiff_t (one - in a very odd way; WTF did that cast to __user ptrdiff_t 
+> in ntfs expect to happen, anyway?)   Fixed...
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-Peter> John Stoffel wrote:
-Robin> I'm bringing this up again (I know it's been mentioned here
-Robin> before) because I had been told that NFS support had gotten
-Robin> better in Linux recently, so I have been (for my $dayjob)
-Robin> testing the behaviour of NFS (autofs NFS, specifically) under
-Robin> Linux with hard,intr and using iptables to simulate a hang.
->> 
->> So why are you mouting with hard,intr semantics?  At my current
->> SysAdmin job, we mount everything (solaris included) with 'soft,intr'
->> and it works well.  If an NFS server goes down, clients don't hang for
->> large periods of time. 
-
-Peter> Wow!  That's _really_ a bad idea.  NFS READ operations which
-Peter> timeout can lead to executables which mysteriously fail, file
-Peter> corruption, etc.  NFS WRITE operations which fail may or may
-Peter> not lead to file corruption.
-
-Peter> Anything writable should _always_ be mounted "hard" for safety
-Peter> purposes.  Readonly mounted file systems _may_ be mounted
-Peter> "soft", depending upon what is located on them.
-
-Not in my experience.  We use NetApps as our backing NFS servers, so
-maybe my experience isn't totally relevant.  But with a mix of Linux
-and Solaris clients, we've never had problems with soft,intr on our
-NFS clients.
-
-We also don't see file corruption, mysterious executables failing to
-run, etc.  
-
-Now maybe those issues are raised when you have a Linux NFS server
-with Solaris clients.  But in my book, reliable NFS servers are key,
-and if they are reliable, 'soft,intr' works just fine.
-
-Now maybe if we had NFS exported directories everywhere, and stuff
-cross mounted all over the place with autofs, then we might change our
-minds.  
-
-In any case, I don't dis-agree with the fundamental request to make
-the NFS client code on Linux easier to work with.  I bet Trond (who
-works at NetApp) will have something to say on this issue.
-
-
-John
+By the way:  ACK.  Glad there's now always a "uintptr_t".
