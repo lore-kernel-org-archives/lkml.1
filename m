@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbXHUKnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759595AbXHUKoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759306AbXHUKnu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 06:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbXHUKnm
+	id S1759595AbXHUKoZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 06:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756358AbXHUKoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 06:43:42 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:50097 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755409AbXHUKnm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 06:43:42 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [accounting regression since rc1]  scheduler updates
-Date: Tue, 21 Aug 2007 12:43:15 +0200
-User-Agent: KMail/1.9.7
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
-       Paul Mackerras <paulus@samba.org>
-References: <20070812163225.GA11996@elte.hu> <1187687476.7623.8.camel@localhost> <20070821093434.GB12025@elte.hu>
-In-Reply-To: <20070821093434.GB12025@elte.hu>
+	Tue, 21 Aug 2007 06:44:11 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57770 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756252AbXHUKoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 06:44:07 -0400
+Date: Tue, 21 Aug 2007 13:37:51 +0200
+From: Andi Kleen <ak@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ak@suse.de,
+       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
+       rpjday@mindspring.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, satyam@infradead.org,
+       zlynx@acm.org, schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070821113751.GG32640@bingen.suse.de>
+References: <20070817235912.GA24314@linux.vnet.ibm.com> <20070818000913.GA25585@gondor.apana.org.au> <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com> <46C997B1.1010800@redhat.com> <417ebba299a7ad3c4b7a31c4f860a814@kernel.crashing.org> <20070820224859.GA16162@flint.arm.linux.org.uk> <2bdb04581125f22122f1d230e991ea92@kernel.crashing.org> <20070821070555.GA32036@flint.arm.linux.org.uk> <18122.45437.807239.395869@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708211243.15223.borntraeger@de.ibm.com>
+In-Reply-To: <18122.45437.807239.395869@cargo.ozlabs.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 21. August 2007 schrieb Ingo Molnar:
-> the 'invariant' i mentioned only covers scheduler behavior, not 
-> accounting behavior. Accounting is separate in theory, but coupled in 
-> practice now via sum_exec_runtime.
+On Tue, Aug 21, 2007 at 07:33:49PM +1000, Paul Mackerras wrote:
+> So the whole discussion is irrelevant to ARM, PowerPC and any other
+> architecture except x86[-64].
 
-Forgot to answer about that: That means that the current design does not cover 
-our requirement of showing process real time, even if we implement 
-sched_clock? In that case I would suggest to merge my patch as a quick but 
-correct solution and do it properly for 2.6.24. Of course better solutions 
-are welcome :-)
+It's even irrelevant on x86 because all modifying operations on atomic_t 
+are coded in inline assembler and will always be RMW no matter
+if atomic_t is volatile or not.
 
-Christian
+[ignoring atomic_set(x, atomic_read(x) + 1) which nobody should do]
+
+The only issue is if atomic_t should have a implicit barrier or not.
+My personal opinion is yes -- better safe than sorry. And any code
+impact it may have is typically dwarved by the next cache miss anyways,
+so it doesn't matter much.
+
+-Andi
+
