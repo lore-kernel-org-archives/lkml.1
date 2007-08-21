@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbXHUMEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbXHUMGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757068AbXHUMEr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 08:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbXHUMEj
+	id S1758888AbXHUMGn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 08:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXHUMGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 08:04:39 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:39778 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750742AbXHUMEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 08:04:38 -0400
-Date: Tue, 21 Aug 2007 14:04:26 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Florin Iucha <florin@iucha.net>
-cc: linux-usb-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [linux-usb-devel] USB-related oops in sysfs with linux
- v2.6.23-rc3-50-g28e8351
+	Tue, 21 Aug 2007 08:06:35 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:35368 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751157AbXHUMGf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 08:06:35 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>
+Subject: Re: [linux-usb-devel] USB-related oops in sysfs with =?utf-8?q?linux=09v2=2E6=2E23-rc3-50-g28e8351?=
+Date: Tue, 21 Aug 2007 14:06:31 +0200
+User-Agent: KMail/1.9.7
+Cc: Florin Iucha <florin@iucha.net>, Jiri Kosina <jikos@jikos.cz>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20070815133147.GA7124@iucha.net> <Pine.LNX.4.64.0708151656070.2460@twin.jikos.cz> <20070821115115.GD10422@iucha.net>
 In-Reply-To: <20070821115115.GD10422@iucha.net>
-Message-ID: <Pine.LNX.4.64.0708211402000.2460@twin.jikos.cz>
-References: <20070815133147.GA7124@iucha.net> <Pine.LNX.4.64.0708151647540.2460@twin.jikos.cz>
- <20070815145313.GC7124@iucha.net> <Pine.LNX.4.64.0708151656070.2460@twin.jikos.cz>
- <20070821115115.GD10422@iucha.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708211406.31726.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Aug 2007, Florin Iucha wrote:
-
+Am Dienstag 21 August 2007 schrieb Florin Iucha:
+> On Wed, Aug 15, 2007 at 04:58:33PM +0200, Jiri Kosina wrote:
+> > On Wed, 15 Aug 2007, Florin Iucha wrote:
+> > 
+> > > [See my message to Alan]: It happened twice, within 15 minutes of 
+> > > boot+login, with 2.6.23-rc3-$whatever .  I does not happen with 
+> > > 2.6.2[123](-rc*)?  After the two incidents, I rebooted in 2.6.23-rc2 and 
+> > > it is working for an hour now.
+> > 
+> > It is not immediately clear what might be causing this, 2.6.23-rc3 didn't 
+> > get any USB nor HID updates at all compared to 2.6.23-rc2.
+> > 
+> > Could you please enable USB and HID debugging to see whether we can see 
+> > anything spurious in the logs at the time the keyboard gets stuck?
+> 
+> Jiri,
+> 
 > I have enabled USB debugging and I see a bunch (=46) of these messages:
-
+> 
 >    [  $timestamp] usb 1-9: usb auto-suspend
 >    [  $timestamp] usb 1-9: usb auto-resume
 >    [  $timestamp] ehci_hcd 0000:00:02.1: GetStatus port 9 status 001005 POWER sig=se0 PE CONNECT
 >    [  $timestamp] usb 1-9: finish resume
+> 
 > The messages continued to be logged, even after the keyboard has
 > become unresponsive.
 
-I guess that this is the card reader being suspended and resumed 
-afterwards. Do you by any chance see any improvement when you
+[   60.756730] usb 1-9: usb auto-resume
+Did you hit a key at that time?
 
-- rmmod ehci_hcd
-- disable USB_AUTOSUSPEND
 
-please? Thanks,
+It looks like your keyboard gets autosuspended. But how can that happen?
+Keyboards should never autosuspend, as they are always open.
+The patch for minimum autosuspend support in HID did get in earlier,
+didn't it?
 
--- 
-Jiri Kosina
+	Regards
+		Oliver
+
+
