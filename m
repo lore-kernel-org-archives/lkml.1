@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbXHUW3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757582AbXHUW3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbXHUW3G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 18:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbXHUW2z
+	id S1757582AbXHUW3d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 18:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbXHUW3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 18:28:55 -0400
-Received: from [212.12.190.80] ([212.12.190.80]:32918 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752631AbXHUW2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 18:28:55 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: CFS review
-Date: Wed, 22 Aug 2007 01:27:30 +0300
-User-Agent: KMail/1.5
-Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <200708111344.42934.a1426z@gawab.com> <200708122243.05191.a1426z@gawab.com> <20070821105858.GC26598@elte.hu>
-In-Reply-To: <20070821105858.GC26598@elte.hu>
+	Tue, 21 Aug 2007 18:29:24 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:39058 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752631AbXHUW3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 18:29:23 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] add some Blackfin specific checks to checkpatch.pl
+Date: Tue, 21 Aug 2007 18:29:59 -0400
+User-Agent: KMail/1.9.7
+Cc: LKML <linux-kernel@vger.kernel.org>, bryan.wu@analog.com, apw@shadowen.org
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708220127.30698.a1426z@gawab.com>
+Content-Disposition: inline
+Message-Id: <200708211829.59975.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Al Boldi <a1426z@gawab.com> wrote:
-> > There is one workload that still isn't performing well; it's a
-> > web-server workload that spawns 1K+ client procs.  It can be emulated
-> > by using this:
-> >
-> >   for i in `seq 1 to 3333`; do ping 10.1 -A > /dev/null & done
->
-> on bash i did this as:
->
->   for ((i=0; i<3333; i++)); do ping 10.1 -A > /dev/null & done
->
-> and this quickly creates a monster-runqueue with tons of ping tasks
-> pending. (i replaced 10.1 with the IP of another box on the same LAN as
-> the testbox) Is this what should happen?
+Check for a few common errors in Blackfin-specific code wrt MMR loading in
+assembly and doing core/system syncs.
 
-Yes, sometimes they start pending and sometimes they run immediately.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+CC: Bryan Wu <bryan.wu@analog.com>
+CC: Andy Whitcroft <apw@shadowen.org>
+---
+ scripts/checkpatch.pl |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
-> > The problem is that consecutive runs don't give consistent results and
-> > sometimes stalls.  You may want to try that.
->
-> well, there's a natural saturation point after a few hundred tasks
-> (depending on your CPU's speed), at which point there's no idle time
-> left. From that point on things get slower progressively (and the
-> ability of the shell to start new ping tasks is impacted as well), but
-> that's expected on an overloaded system, isnt it?
-
-Of course, things should get slower with higher load, but it should be 
-consistent without stalls.
-
-To see this problem, make sure you boot into /bin/sh with the normal VGA 
-console (ie. not fb-console).  Then try each loop a few times to show 
-different behaviour; loops like:
-
-# for ((i=0; i<3333; i++)); do ping 10.1 -A > /dev/null & done
-
-# for ((i=0; i<3333; i++)); do nice -99 ping 10.1 -A > /dev/null & done
-
-# { for ((i=0; i<3333; i++)); do
-        ping 10.1 -A > /dev/null &
-    done } > /dev/null 2>&1
-
-Especially the last one sometimes causes a complete console lock-up, while 
-the other two sometimes stall then surge periodically.
-
-BTW, I am also wondering how one might test threading behaviour wrt to 
-startup and sync-on-exit with parent thread.  This may not show any problems 
-with small number of threads, but how does it scale with 1K+?
-
-
-Thanks!
-
---
-Al
-
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index dae7d30..ead9675 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -486,9 +486,29 @@ sub process {
+ 			WARN("line over 80 characters\n" . $herecurr);
+ 		}
+ 
++# Blackfin: use hi/lo macros
++		if ($line =~ /\.[lL][[:space:]]*=.*&[[:space:]]*0x[fF][fF][fF][fF]/) {
++			my $herevet = "$here\n" . cat_vet($line) . "\n";
++			ERROR("use the LO() macro, not (... & 0xFFFF)\n" . $herevet);
++		}
++		if ($line =~ /\.[hH][[:space:]]*=.*>>[[:space:]]*16/) {
++			my $herevet = "$here\n" . cat_vet($line) . "\n";
++			ERROR("use the HI() macro, not (... >> 16)\n" . $herevet);
++		}
++
+ # check we are in a valid source file *.[hc] if not then ignore this hunk
+ 		next if ($realfile !~ /\.[hc]$/);
+ 
++# Blackfin: don't use __builtin_bfin_[cs]sync
++		if ($line =~ /__builtin_bfin_csync/) {
++			my $herevet = "$here\n" . cat_vet($line) . "\n";
++			ERROR("use the CSYNC() macro in asm/blackfin.h\n" . $herevet);
++		}
++		if ($line =~ /__builtin_bfin_ssync/) {
++			my $herevet = "$here\n" . cat_vet($line) . "\n";
++			ERROR("use the SSYNC() macro in asm/blackfin.h\n" . $herevet);
++		}
++
+ # at the beginning of a line any tabs must come first and anything
+ # more than 8 must use tabs.
+ 		if ($line=~/^\+\s* \t\s*\S/ or $line=~/^\+\s*        \s*/) {
+-- 
+1.5.3.rc5
