@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761390AbXHUQRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761584AbXHUQST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761390AbXHUQRB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 12:17:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759552AbXHUQQv
+	id S1761584AbXHUQST (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 12:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759713AbXHUQSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 12:16:51 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:55657 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758945AbXHUQQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 12:16:49 -0400
-Date: Tue, 21 Aug 2007 09:16:43 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Christoph Lameter <clameter@sgi.com>, heiko.carstens@de.ibm.com,
-       horms@verge.net.au, linux-kernel@vger.kernel.org, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       rpjday@mindspring.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-arch@vger.kernel.org, jesper.juhl@gmail.com, satyam@infradead.org,
-       zlynx@acm.org, schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
-       wjiang@resilience.com
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Message-ID: <20070821161643.GA7574@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070818000913.GA25585@gondor.apana.org.au> <20070818010818.GQ8464@linux.vnet.ibm.com> <Pine.LNX.4.64.0708171817050.15427@schroedinger.engr.sgi.com> <46C997B1.1010800@redhat.com> <417ebba299a7ad3c4b7a31c4f860a814@kernel.crashing.org> <20070820224859.GA16162@flint.arm.linux.org.uk> <2bdb04581125f22122f1d230e991ea92@kernel.crashing.org> <20070821070555.GA32036@flint.arm.linux.org.uk> <18122.45437.807239.395869@cargo.ozlabs.ibm.com> <33412cad5894a9cbdc85482db5e9a0a0@kernel.crashing.org>
+	Tue, 21 Aug 2007 12:18:05 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:4895 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754005AbXHUQSD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 12:18:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=mO6fo162iPFSAy7jdFAKfCuKPXzAoh19VBHLccRpaMpQm/9I0iuROvPfZYsvLw9GqGXU/4EXZDYlQ+E+QqmzKlh7usFOTrZ/4ThLQxK5x4SOZm+GKwCMUw4/yIGh5zLu3UzsPu353k6tOYwqcEFbq65jxG0EE7kRWoU6iXxQLKo=
+Date: Wed, 22 Aug 2007 00:17:23 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc3-git3 make warnings
+Message-ID: <20070821161723.GA8323@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20070821132038.GA22254@ff.dom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <33412cad5894a9cbdc85482db5e9a0a0@kernel.crashing.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070821132038.GA22254@ff.dom.local>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 21, 2007 at 04:48:51PM +0200, Segher Boessenkool wrote:
-> >>Let me say it more clearly: On ARM, it is impossible to perform atomic
-> >>operations on MMIO space.
-> >
-> >Actually, no one is suggesting that we try to do that at all.
-> >
-> >The discussion about RMW ops on MMIO space started with a comment
-> >attributed to the gcc developers that one reason why gcc on x86
-> >doesn't use instructions that do RMW ops on volatile variables is that
-> >volatile is used to mark MMIO addresses, and there was some
-> >uncertainty about whether (non-atomic) RMW ops on x86 could be used on
-> >MMIO.  This is in regard to the question about why gcc on x86 always
-> >moves a volatile variable into a register before doing anything to it.
-> 
-> This question is GCC PR33102, which was incorrectly closed as a 
-> duplicate
-> of PR3506 -- and *that* PR was closed because its reporter seemed to
-> claim the GCC generated code for an increment on a volatile (namely, 
-> three
-> machine instructions: load, modify, store) was incorrect, and it has to
-> be one machine instruction.
-> 
-> >So the whole discussion is irrelevant to ARM, PowerPC and any other
-> >architecture except x86[-64].
-> 
-> And even there, it's not something the kernel can take advantage of
-> before GCC 4.4 is in widespread use, if then.  Let's move on.
+On Tue, Aug 21, 2007 at 03:20:38PM +0200, Jarek Poplawski wrote:
+>Here are some more of, probably well-known, warnings with attached
+>testing-only .config.
+>
+>Regards,
+>Jarek P.
+>
+>
+>sed: -e expression #1, char 154: Unknown option to 's'
+>drivers/acpi/ec.c: In function `acpi_ec_ecdt_probe':
+>drivers/acpi/ec.c:873: warning: passing arg 1 of `acpi_get_devices' discards qualifiers from pointer target type
+>drivers/pci/search.c: In function `pci_find_slot':
+>drivers/pci/search.c:99: warning: `pci_find_device' is deprecated (declared at include/linux/pci.h:480)
+>drivers/pci/search.c: At top level:
+>drivers/pci/search.c:437: warning: `pci_find_device' is deprecated (declared at drivers/pci/search.c:244)
+>drivers/pci/search.c:437: warning: `pci_find_device' is deprecated (declared at drivers/pci/search.c:244)
+>drivers/pci/search.c:438: warning: `pci_find_slot' is deprecated (declared at drivers/pci/search.c:96)
+>drivers/pci/search.c:438: warning: `pci_find_slot' is deprecated (declared at drivers/pci/search.c:96)
+>drivers/pci/msi.c:686: warning: weak declaration of `arch_msi_check_device' after first use results in unspecified behavior
+>drivers/pci/msi.c:698: warning: weak declaration of `arch_setup_msi_irqs' after first use results in unspecified behavior
+>drivers/pci/msi.c:718: warning: weak declaration of `arch_teardown_msi_irqs' after first use results in unspecified behavior
+>In file included from drivers/usb/host/ohci-hcd.c:859:
+>drivers/usb/host/ohci-pci.c: In function `ohci_pci_start':
+>drivers/usb/host/ohci-pci.c:202: warning: unused variable `pdev'
+				^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-I agree that instant gratification is hard to come by when synching
-up compiler and kernel versions.  Nonetheless, it should be possible
-to create APIs that are are conditioned on the compiler version.
+This warning is suspicious. In fact, 'pdev' is used when CONFIG_PM is defined.
+See the following:
 
-						Thanx, Paul
+<snip>
+                if (device_may_wakeup(&pdev->dev))
+                        ohci->hc_control |= OHCI_CTRL_RWC;
+<snip>
+
+Or a bug of gcc?
+
+-- 
+_   /|
+\'o.O'
+=(___)=
+   U    ack!
