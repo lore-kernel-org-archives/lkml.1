@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbXHUUDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXHUUH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753634AbXHUUDv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 16:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbXHUUDk
+	id S1753413AbXHUUH2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 16:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbXHUUHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 16:03:40 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:49088 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751385AbXHUUDj (ORCPT
+	Tue, 21 Aug 2007 16:07:15 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:60121 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbXHUUHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 16:03:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=e1UjPluPUYXeFQ3ra0/MCR41fzpTjCQV8ggVv7txBclFuwY8B42alB/PEQVxgKLWGXW10gbnjTPnMkwY597OYiXAtnbemaCFLc2D6yBNPO78nzkPKp/GRiMlf/QaPIJF1TxPxUG7GVa7C3Ii8JwXGpUbW9Ty1xxmCfm8nt5KmXU=
-Message-ID: <5dc6fd9e0708211303h235256b2ra71c2025f101478@mail.gmail.com>
-Date: Tue, 21 Aug 2007 13:03:37 -0700
-From: "Hex Star" <hexstar@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org
-Subject: Re: Trouble booting with new 2.6.22.3 kernel
-In-Reply-To: <Pine.LNX.4.64.0708212157530.20435@fbirervta.pbzchgretzou.qr>
+	Tue, 21 Aug 2007 16:07:13 -0400
+Date: Tue, 21 Aug 2007 14:07:11 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andi Kleen <ak@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jarek Poplawski <jarkao2@o2.pl>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [RFC][PATCH] introduce TASK_SIZE_OF() for all arches
+Message-ID: <20070821200711.GE9163@parisc-linux.org>
+References: <20070821132038.GA22254@ff.dom.local> <20070821093103.3c097d4a.randy.dunlap@oracle.com> <20070821173550.GC30705@stusta.de> <20070821191959.GC2642@bingen.suse.de> <20070821195433.GE30705@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <5dc6fd9e0708211219p679116a4n48765e72e2253ddc@mail.gmail.com>
-	 <5dc6fd9e0708211226k3f931579x6f8b3ab275f93c35@mail.gmail.com>
-	 <5dc6fd9e0708211227k22f9e214vd8132913214716b3@mail.gmail.com>
-	 <200708212256.59281.ismail@pardus.org.tr>
-	 <Pine.LNX.4.64.0708212157530.20435@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <20070821195433.GE30705@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/21/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> - which is why people use initramfs. It's all perfect.
->
-> >Perfect is the enemy of good
->
->
->         Jan
-> --
+On Tue, Aug 21, 2007 at 09:54:33PM +0200, Adrian Bunk wrote:
+> We currently support 6 different stable gcc release series plus heavily 
+> modified vendor branches like 3.3-hammer. We can discuss whether it is 
+> now already the right time, and where to make the cut, but medium-term 
+> we must reduce the number of supported compilers.
 
-How would I go about setting up a initramfs for the kernel? The book
-I'm referring to to help me learn kernel compilation and installation,
-"Linux Kernel In A Nutshell" by Greg Kroah-Hartman doesn't mention how
-to create a initramfs... Thanks! :)
+I don't think that's feasible.  We're dealing with a situation where:
+
+ - GCC aim to release a new compiler series every 6 months.
+   Fortunately, they don't achieve this goal, but they do release every
+   12 months or thereabouts [1].
+ - Enterprise distros are supported for seven years
+ - We still care about people being able to compile kernels on
+   enterprise distros that are still supported by their vendor.
+
+Yes, it causes us some pain to support all these different compilers,
+but it's not *that* big a pain.
+
+[1] Release dates, according to the GCC website
+
+2007-05-17 4.2.0	(14 months)
+2006-02-28 4.1.0	(10 months)
+2005-04-20 4.0.0	(12 months)
+2004-04-20 3.4.0	(11 months)
+2003-05-20 3.3		(12 months, ignoring gcc 3.2 which was really 3.1.2)
+2002-05-15 3.1		(11 months)
+2001-06-18 3.0
+
+-- 
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
