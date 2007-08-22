@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934335AbXHVXy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933681AbXHVX6D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934335AbXHVXy7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 19:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932398AbXHVXyt
+	id S933681AbXHVX6D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 19:58:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762384AbXHVX5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 19:54:49 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60950 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932325AbXHVXys (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 19:54:48 -0400
-Date: Wed, 22 Aug 2007 16:54:45 -0700
-From: Jeremy Higdon <jeremy@sgi.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-ia64@vger.kernel.org
-Subject: Re: [BUG] 2.6.23-rc3-mm1 Kernel panic - not syncing: DMA: Memory would be corrupted
-Message-ID: <20070822235445.GG89849@sgi.com>
-References: <46CC48FD.4000607@linux.vnet.ibm.com> <20070822091959.aa38fd3e.akpm@linux-foundation.org> <20070822172541.GA8058@bingen.suse.de> <46CC811C.9010600@linux.vnet.ibm.com> <617E1C2C70743745A92448908E030B2A023B2D39@scsmsx411.amr.corp.intel.com> <46CCB79E.7070109@linux.vnet.ibm.com> <617E1C2C70743745A92448908E030B2A023B2F6A@scsmsx411.amr.corp.intel.com> <20070822231111.GD89849@sgi.com> <617E1C2C70743745A92448908E030B2A023B2FD5@scsmsx411.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 22 Aug 2007 19:57:54 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49697 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761412AbXHVX5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 19:57:53 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: 2.6.23-rc3-mm1: cannot stat `vdso.so.dbg'
+Date: Thu, 23 Aug 2007 01:57:48 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+References: <20070822231632.9A7D54D0418@magilla.localdomain>
+In-Reply-To: <20070822231632.9A7D54D0418@magilla.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <617E1C2C70743745A92448908E030B2A023B2FD5@scsmsx411.amr.corp.intel.com>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200708230157.48526.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 04:27:09PM -0700, Luck, Tony wrote:
-> > The more ioc's you have, the more space you will use.
+On Thursday 23 August 2007 01:16:32 Roland McGrath wrote:
+> > How come they have identical subjects and identical description? How is 
+> > anybody supposed to make sense of this?
 > 
-> Default SW IOTLB allocation is 64MB ... how much should we see
-> used per ioc?
+> Sorry, I asked Andrew and he said to send replacement patches.
+> I thought I was following instructions.
+
+The problem is they're two patching consecutively patching the same
+file with 100% identical subject/description.
+
+So either: they should be merged together into one patch
+or the second (or first) needs a new description/subject
+
+I right now got the second as 
+
+vdso-do-something-more-with-unstripped-copies-on-disk:
+
+Do something with vdsos and debug information
+
+From: Roland McGrath <roland@redhat.com>
+
+TBD this needs a proper changelog/subject from Roland. I have no idea what 
+it does
 
 
-Hmm.  Must be something else going on then.  It should be less than 1MB
-per ioc plus whatever is used for streaming I/O.
+But clearly that's not an satisfactionary state. Which of the
+options do you prefer?
 
-| mptbase: Initiating ioc2 bringup                              | GSI 16 (level, low) -> CPU 2 (0xc418) vector 50
-| ioc2: LSI53C1030 C0: Capabilities={Initiator}                 | ACPI: PCI Interrupt 0000:00:1d.0[A] -> GSI 16 (level, low) ->
-| DMA: Out of SW-IOMMU space for 263200 bytes at device ?       | uhci_hcd 0000:00:1d.0: UHCI Host Controller
-| Kernel panic - not syncing: DMA: Memory would be corrupted    | uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus n
+-Andi
+
+
