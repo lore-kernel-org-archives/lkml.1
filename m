@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763163AbXHVTLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764557AbXHVTMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763163AbXHVTLs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 15:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbXHVTLk
+	id S1764557AbXHVTMO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 15:12:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbXHVTLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 15:11:40 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58309 "EHLO
+	Wed, 22 Aug 2007 15:11:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58315 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750709AbXHVTLj (ORCPT
+	with ESMTP id S1763446AbXHVTLv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 15:11:39 -0400
-Date: Wed, 22 Aug 2007 11:55:44 -0700
+	Wed, 22 Aug 2007 15:11:51 -0400
+Date: Wed, 22 Aug 2007 11:59:41 -0700
 From: Greg KH <greg@kroah.com>
-To: Nate <stoddarn@msoe.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Restricting CDC-ACM devices
-Message-ID: <20070822185544.GA6002@kroah.com>
-References: <1187716018.731090.165620@j4g2000prf.googlegroups.com> <20070821171018.C964B5F778@attila.bofh.it> <39877.198.169.188.225.1187733834.squirrel@myweb.msoe.edu> <20070822054615.GA23336@kroah.com> <45719.198.169.188.225.1187793693.squirrel@myweb.msoe.edu>
+To: Eric Van Hensbergen <ericvh@gmail.com>
+Cc: Willy Tarreau <w@1wt.eu>, Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
+Subject: Re: [stable] [2.6.20.17 review 32/58] fs: 9p/conv.c error path fix
+Message-ID: <20070822185941.GA6129@kroah.com>
+References: <20070822083844.%N@1wt.eu> <20070822084023.%N@1wt.eu> <a4e6962a0708220853n7689985fj71ba19b67e17ae5d@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45719.198.169.188.225.1187793693.squirrel@myweb.msoe.edu>
+In-Reply-To: <a4e6962a0708220853n7689985fj71ba19b67e17ae5d@mail.gmail.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 09:41:33AM -0500, Nate wrote:
+On Wed, Aug 22, 2007 at 10:53:02AM -0500, Eric Van Hensbergen wrote:
+> On 8/22/07, Willy Tarreau <w@1wt.eu> wrote:
+> > When buf_check_overflow() returns != 0 we will hit kfree(ERR_PTR(err))
+> > and it will not be happy about it.
+> >
+> > Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+> > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > Signed-off-by: Willy Tarreau <w@1wt.eu>
+> Acked-by: Eric Van Hensbergen <ericvh@gmail.com>
 > 
-> > Why do you not want to modify the driver?
-> 
-> Modifying the cdc-acm driver is an alternative; however, I would like to
-> avoid that when I'm adding my vendor specific restrictions.  My hope is
-> that when patches are made to that file, I don't need to worry about
-> someone merging them over the my previous ones.  Is this a bad goal?
+> This seems to be in the current code as well, I'll forward-port the patch...
 
-Well, just messing with the device ids is not that tough of a patch to
-keep up to date over time, so you might just try that if necessary.
+Huh?  It's not already in mainline?  Then how did it ever get into the
+stable queue?
 
-> > You can disconnect the device from the driver from userspace for any
-> > device you just don't want to have connected by using the sysfs
-> > bind/unbind files.  That doesn't require any kernel changes at all.
-> 
-> I don't fully follow you here.  Are you saying that I can disconnect the
-> CDC-ACM driver from my USB device and allow my driver to get a call probe?
-
-Yes.  You can manually bind and unbind all PCI and USB devices from
-their drivers from userspace.  So you do have full control over this
-already, no kernel changes needed.
-
-thanks,
+Ugh.
 
 greg k-h
