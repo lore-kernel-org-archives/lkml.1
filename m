@@ -1,126 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760678AbXHVQFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763817AbXHVQGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760678AbXHVQFQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 12:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758856AbXHVQFE
+	id S1763817AbXHVQGT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 12:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759145AbXHVQGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 12:05:04 -0400
-Received: from styx.suse.cz ([82.119.242.94]:56264 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753183AbXHVQFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 12:05:03 -0400
-Date: Wed, 22 Aug 2007 18:05:01 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Jakub Jelinek <jakub@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>, Kees Cook <kees@outflux.net>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: [PATCH] i386 and x86_64: randomize brk()
-Message-ID: <Pine.LNX.4.64.0708221750340.7792@jikos.suse.cz>
+	Wed, 22 Aug 2007 12:06:10 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50721 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758856AbXHVQGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 12:06:09 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH -mm 4/4] Hibernation: Use temporary page tables for kernel text mapping on x86_64
+Date: Wed, 22 Aug 2007 18:16:05 +0200
+User-Agent: KMail/1.9.5
+Cc: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200708221015.16493.rjw@sisk.pl> <200708221021.28877.rjw@sisk.pl> <20070822082948.GD2479@elf.ucw.cz>
+In-Reply-To: <20070822082948.GD2479@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708221816.05846.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Kosina <jkosina@suse.cz>
+On Wednesday, 22 August 2007 10:29, Pavel Machek wrote:
+> Hi!
+> 
+> > Use temporary page tables for the kernel text mapping during hibernation restore
+> > on x86_64.
+> > 
+> > Without the patch, the original boot kernel's page tables that represent the
+> > kernel text mapping are used while the core of the image kernel is being
+> > restored.  However, in principle, if the boot kernel is not identical to the
+> > image kernel, the location of these page tables in the image kernel need not be
+> > the same, so we should create a safe copy of the kernel text mapping prior to
+> > restoring the core of the image kernel.
+> 
+> 
+> > @@ -190,25 +190,42 @@ static int res_phys_pud_init(pud_t *pud,
+> >  	return 0;
+> >  }
+> >  
+> > +static int res_kernel_text_pud_init(pud_t *pud, unsigned long start)
+> > +{
+> > +	pmd_t *pmd;
+> > +	unsigned long paddr;
+> > +
+> > +	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
+> > +	if (!pmd)
+> > +		return -ENOMEM;
+> > +	set_pud(pud + pud_index(start), __pud(__pa(pmd) | _KERNPG_TABLE));
+> > +	for (paddr = 0; paddr < KERNEL_TEXT_SIZE; pmd++, paddr += PMD_SIZE) {
+> > +		unsigned long pe;
+> > +
+> > +		pe = __PAGE_KERNEL_LARGE_EXEC | _PAGE_GLOBAL | paddr;
+> > +		pe &= __supported_pte_mask;
+> > +		set_pmd(pmd, __pmd(pe));
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >  static int set_up_temporary_mappings(void)
+> >  {
+> >  	unsigned long start, end, next;
+> > +	pud_t *pud;
+> >  	int error;
+> >  
+> >  	temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
+> >  	if (!temp_level4_pgt)
+> >  		return -ENOMEM;
+> >  
+> > -	/* It is safe to reuse the original kernel mapping */
+> > -	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
+> > -		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
+> > -
+> >  	/* Set up the direct mapping from scratch */
+> >  	start = (unsigned long)pfn_to_kaddr(0);
+> >  	end = (unsigned long)pfn_to_kaddr(end_pfn);
+> >  
+> >  	for (; start < end; start = next) {
+> > -		pud_t *pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> > +		pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> >  		if (!pud)
+> >  			return -ENOMEM;
+> 
+> I believe we leak temp_level4_pgt here.
+> 
+> > +	/* Set up the kernel text mapping from scratch */
+> > +	pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> > +	if (!pud)
+> > +		return -ENOMEM;
+> 
+> ...and some more memory here :-(. 
 
-i386 and x86_64: randomize brk()
+No, these pages will be freed by swsusp_free(), thanks to the get_safe_page().
 
-This patch randomizes the location of the heap (brk) for i386 and x86_64. 
-The range is randomized in the range starting at current brk location up 
-to 0x02000000 offset on both architectures. This, together with 
-pie-executable-randomization.patch and 
-pie-executable-randomization-fix.patch, should make the address space 
-randomization on i386 and x86_64 complete (modulo vDSO randomization).
+I'm not _that_ careless. ;-)
 
-The code is based on execshield code written by Ingo Molnar.
-
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jakub Jelinek <jakub@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Kees Cook <kees@outflux.net>
-Cc: Arjan van de Ven <arjan@infradead.org>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-
-diff --git a/arch/i386/kernel/process.c b/arch/i386/kernel/process.c
-index 8466471..21edde5 100644
---- a/arch/i386/kernel/process.c
-+++ b/arch/i386/kernel/process.c
-@@ -949,3 +949,15 @@ unsigned long arch_align_stack(unsigned long sp)
- 		sp -= get_random_int() % 8192;
- 	return sp & ~0xf;
- }
-+
-+void arch_randomize_brk(void)
-+{
-+	unsigned long new_brk, range_start, range_end;
-+
-+	range_start = current->mm->brk;
-+	range_end = range_start + 0x02000000;
-+	new_brk = randomize_range(range_start, range_end, 0);
-+	if (new_brk)
-+		current->mm->brk = current->mm->start_brk = new_brk;
-+}
-+
-diff --git a/arch/x86_64/kernel/process.c b/arch/x86_64/kernel/process.c
-index 2842f50..37613f3 100644
---- a/arch/x86_64/kernel/process.c
-+++ b/arch/x86_64/kernel/process.c
-@@ -902,3 +902,15 @@ unsigned long arch_align_stack(unsigned long sp)
- 		sp -= get_random_int() % 8192;
- 	return sp & ~0xf;
- }
-+
-+void arch_randomize_brk(void)
-+{
-+	unsigned long new_brk, range_start, range_end;
-+
-+	range_start = current->mm->brk;
-+	range_end = range_start + 0x02000000;
-+	new_brk = randomize_range(range_start, range_end, 0);
-+	if (new_brk)
-+		current->mm->brk = current->mm->start_brk = new_brk;
-+}
-+
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index d65f1d9..790b09e 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -1073,6 +1073,11 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 	current->mm->end_data = end_data;
- 	current->mm->start_stack = bprm->p;
- 
-+#ifdef ARCH_HAS_RANDOMIZE_BRK
-+	if (current->flags & PF_RANDOMIZE)
-+		arch_randomize_brk();
-+#endif
-+
- 	if (current->personality & MMAP_PAGE_ZERO) {
- 		/* Why this, you ask???  Well SVr4 maps page 0 as read-only,
- 		   and some applications "depend" upon this behavior.
-diff --git a/include/asm-i386/elf.h b/include/asm-i386/elf.h
-index b32df3a..34752bc 100644
---- a/include/asm-i386/elf.h
-+++ b/include/asm-i386/elf.h
-@@ -160,4 +160,7 @@ do if (vdso_enabled) {							\
- 
- #endif
- 
-+#define ARCH_HAS_RANDOMIZE_BRK
-+extern void arch_randomize_brk(void);
-+
- #endif
-diff --git a/include/asm-x86_64/elf.h b/include/asm-x86_64/elf.h
-index b4fbe47..ec56e67 100644
---- a/include/asm-x86_64/elf.h
-+++ b/include/asm-x86_64/elf.h
-@@ -177,4 +177,7 @@ do if (vdso_enabled) {						\
- 
- #endif
- 
-+#define ARCH_HAS_RANDOMIZE_BRK
-+extern void arch_randomize_brk(void);
-+
- #endif
+Greetings,
+Rafael
