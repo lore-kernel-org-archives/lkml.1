@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbXHVHU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbXHVHUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756716AbXHVHU1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 03:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbXHVHUT
+	id S1757845AbXHVHUt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 03:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757319AbXHVHUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 03:20:19 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:9049 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754016AbXHVHUR (ORCPT
+	Wed, 22 Aug 2007 03:20:40 -0400
+Received: from ns.oss.ntt.co.jp ([222.151.198.98]:58159 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756599AbXHVHUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 03:20:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cq72yfIxJK7jPgto59t+vW2l+j1/67ED3keZ90sNLxB77mMw2chSEh5MmS/P1wZ51aR1Xx7UXQXTuQ609cWDnvAOeo8oyPrIlX38hcltZQVLeS6fpGoS1W53FaO+jsfvsizFUOmg+Y3LVwWuyM22ZjRYpUOpBHZlHXWItIRBaSg=
-Message-ID: <86802c440708220020u14c49a33r668228b6064e9631@mail.gmail.com>
-Date: Wed, 22 Aug 2007 00:20:14 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Huang, Ying" <ying.huang@intel.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Chandramouli Narayanan" <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org, "Aaron Durbin" <adurbin@google.com>
-In-Reply-To: <20070822012216.GN32640@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 22 Aug 2007 03:20:39 -0400
+Subject: [PATCH] ppc: remove unused amiga_request_irq and mach_request_irq
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, galak@kernel.crashing.org
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Wed, 22 Aug 2007 16:20:37 +0900
+Message-Id: <1187767237.25624.11.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1187250664.15063.0.camel@caritas-dev.intel.com>
-	 <1187313920.28497.1.camel@caritas-dev.intel.com>
-	 <46C5C8C4.4060407@zytor.com>
-	 <1187580031.27947.67.camel@caritas-dev.intel.com>
-	 <46C9CB89.7020603@zytor.com> <20070821113310.GF32640@bingen.suse.de>
-	 <46CAC168.7090102@zytor.com> <20070821114548.GI32640@bingen.suse.de>
-	 <86802c440708211658j1fb2a8caj41e1bb8bffa4baf4@mail.gmail.com>
-	 <20070822012216.GN32640@bingen.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/21/07, Andi Kleen <ak@suse.de> wrote:
-> > current LinuxBIOS's path: the elfboot in LinuxBIOS will prepare the
-> > e820 table, and jump to startup_32 in kernel. is that not good and
-> > simple?
->
-> The problem is that the zero page cannot be changed at all in this
-> setup. Or rather it can be only changed by breaking LinuxBios.
+amiga_request_irq and mach_request_irq are never used, so delete them.
 
-FYI.
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
-current mkelfImage is using
-#define REAL_MODE_DATA_LOC      0x20000
-the %esi will be 0x20000
+diff -urNp linux-2.6.23-rc3-orig/arch/ppc/amiga/config.c linux-2.6.23-rc3/arch/ppc/amiga/config.c
+--- linux-2.6.23-rc3-orig/arch/ppc/amiga/config.c	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.23-rc3/arch/ppc/amiga/config.c	2007-08-22 15:45:51.000000000 +0900
+@@ -72,10 +72,6 @@ static void amiga_sched_init(irqreturn_t
+ /* amiga specific irq functions */
+ extern void amiga_init_IRQ (void);
+ extern void (*amiga_default_handler[]) (int, void *, struct pt_regs *);
+-extern int amiga_request_irq (unsigned int irq,
+-			      void (*handler)(int, void *, struct pt_regs *),
+-                              unsigned long flags, const char *devname,
+-			      void *dev_id);
+ extern void amiga_free_irq (unsigned int irq, void *dev_id);
+ extern void amiga_enable_irq (unsigned int);
+ extern void amiga_disable_irq (unsigned int);
+@@ -382,7 +378,6 @@ void __init config_amiga(void)
+   mach_init_IRQ        = amiga_init_IRQ;
+ #ifndef CONFIG_APUS
+   mach_default_handler = &amiga_default_handler;
+-  mach_request_irq     = amiga_request_irq;
+   mach_free_irq        = amiga_free_irq;
+   enable_irq           = amiga_enable_irq;
+   disable_irq          = amiga_disable_irq;
 
-YH
+
