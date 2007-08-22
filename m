@@ -1,76 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761981AbXHVOxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762909AbXHVOx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761981AbXHVOxb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 10:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759541AbXHVOxU
+	id S1762909AbXHVOx7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 10:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762447AbXHVOxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 10:53:20 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:43620 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758722AbXHVOxT (ORCPT
+	Wed, 22 Aug 2007 10:53:46 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:16289 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761900AbXHVOxo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 10:53:19 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: [PATCH 1/4] ehea: fix interface to DLPAR tools
-Date: Wed, 22 Aug 2007 16:20:58 +0200
-User-Agent: KMail/1.8.2
+	Wed, 22 Aug 2007 10:53:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ektMQW4dZzP0y1SlU0eyMlr24dnHhb38EIVt+AzC65dCq6LubMakUv3moQNjqbCPHaR3knHYWsR32Wd/ssPI/bPrNLwzeAATsDL0XnM7VvHmSsUFb2M1fI3cTWqOsX2vH4saLZE7p06K7z2a/mXEt5H4ISmKdb4JsAceffrRUmE=
+Message-ID: <ab40e9c0708220753l1861cde2wccb58ba931f04b2c@mail.gmail.com>
+Date: Wed, 22 Aug 2007 16:53:41 +0200
+From: "Xu Yang" <risingsunxy@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Subject: how is the boot process of the multicore system
 MIME-Version: 1.0
-Content-Disposition: inline
-To: Jeff Garzik <jeff@garzik.org>
-Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708221620.59078.ossthema@de.ibm.com>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Userspace DLPAR tool expects decimal numbers to be written to
-and read from sysfs entries.
+Hi everyone,
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+I am just wondering how is the boot process of the multicore system exactly.
+let's say there are 4 cores , what is the booting sequence? and how
+does linux realise the booting process?
 
 
----
- drivers/net/ehea/ehea_main.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+anyone has any idea?
 
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index 9756211..22d000f 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -2490,7 +2490,7 @@ static ssize_t ehea_show_port_id(struct device *dev,
- 				 struct device_attribute *attr, char *buf)
- {
- 	struct ehea_port *port = container_of(dev, struct ehea_port, ofdev.dev);
--	return sprintf(buf, "0x%X", port->logical_port_id);
-+	return sprintf(buf, "%d", port->logical_port_id);
- }
- 
- static DEVICE_ATTR(log_port_id, S_IRUSR | S_IRGRP | S_IROTH, ehea_show_port_id,
-@@ -2781,7 +2781,7 @@ static ssize_t ehea_probe_port(struct device *dev,
- 
- 	u32 logical_port_id;
- 
--	sscanf(buf, "%X", &logical_port_id);
-+	sscanf(buf, "%d", &logical_port_id);
- 
- 	port = ehea_get_port(adapter, logical_port_id);
- 
-@@ -2834,7 +2834,7 @@ static ssize_t ehea_remove_port(struct device *dev,
- 	int i;
- 	u32 logical_port_id;
- 
--	sscanf(buf, "%X", &logical_port_id);
-+	sscanf(buf, "%d", &logical_port_id);
- 
- 	port = ehea_get_port(adapter, logical_port_id);
- 
--- 
-1.5.2
+thanks
 
+regards,
+
+Yang
