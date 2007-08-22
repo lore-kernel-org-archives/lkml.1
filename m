@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761531AbXHVJQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764069AbXHVJQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761531AbXHVJQT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759922AbXHVJAL
+	id S1764069AbXHVJQl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbXHVJC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 05:00:11 -0400
-Received: from 1wt.eu ([62.212.114.60]:2202 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759745AbXHVJAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 05:00:09 -0400
-From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20070822084019.%N@1wt.eu>
-References: <20070822083844.%N@1wt.eu>
-User-Agent: quilt/0.46-1
-Date: Wed, 22 Aug 2007 11:39:13 +0200
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Jean Tourrilhes <jt@hpl.hp.com>, Michael Buesch <mb@bu3sch.de>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>
-Subject: [2.6.20.17 review 29/58] softmac: Fix ESSID problem
-Content-Disposition: inline; filename=0029-softmac-Fix-ESSID-problem.patch
+	Wed, 22 Aug 2007 05:02:57 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:57283 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1762746AbXHVJCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 05:02:55 -0400
+Message-ID: <387773371.00311@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Wed, 22 Aug 2007 17:02:51 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Dan Aloni <da-x@monatomic.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org, Ollie Wild <aaw@google.com>,
+       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [patch 3/3] mm: variable length argument support
+Message-ID: <20070822090251.GA7038@mail.ustc.edu.cn>
+References: <20070613100334.635756997@chello.nl> <20070613100835.014096712@chello.nl> <20070822084852.GA12314@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070822084852.GA12314@localdomain>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Victor Porton reported that the SoftMAC layer had random problem when setting the ESSID :
-http://bugzilla.kernel.org/show_bug.cgi?id=8686 After investigation, it turned out to be
-worse, the SoftMAC layer is left in an inconsistent state. The fix is pretty trivial.
+On Wed, Aug 22, 2007 at 11:48:52AM +0300, Dan Aloni wrote:
+> On Wed, Jun 13, 2007 at 12:03:37PM +0200, Peter Zijlstra wrote:
+> > From: Ollie Wild <aaw@google.com>
+> > 
+> > Remove the arg+env limit of MAX_ARG_PAGES by copying the strings directly
+> > from the old mm into the new mm.
+> > 
+> [...]
+> > +static int __bprm_mm_init(struct linux_binprm *bprm)
+> > +{
+> [...]
+> > +	vma->vm_flags = VM_STACK_FLAGS;
+> > +	vma->vm_page_prot = protection_map[vma->vm_flags & 0x7];
+> > +	err = insert_vm_struct(mm, vma);
+> > +	if (err) {
+> > +		up_write(&mm->mmap_sem);
+> > +		goto err;
+> > +	}
+> > +
+> 
+> That change causes a crash in khelper when overcommit_memory = 2 
+> under 2.6.23-rc3.
+> 
+> When a khelper execs, at __bprm_mm_init() current->mm is still NULL.
+> insert_vm_struct() calls security_vm_enough_memory(), which calls 
+> __vm_enough_memory(), and that's where current->mm->total_vm gets 
+> dereferenced.
+> 
+> 
+> Signed-off-by: Dan Aloni <da-x@monatomic.org>
+> 
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index 906ed40..6e021df 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -163,10 +163,12 @@ int __vm_enough_memory(long pages, int cap_sys_admin)
+>  	if (!cap_sys_admin)
+>  		allowed -= allowed / 32;
+>  	allowed += total_swap_pages;
+> -
+> -	/* Don't let a single process grow too big:
+> -	   leave 3% of the size of this process for other processes */
+> -	allowed -= current->mm->total_vm / 32;
+> +
+> +	if (current->mm) {
+> +		/* Don't let a single process grow too big:
+> +		   leave 3% of the size of this process for other processes */
+> +		allowed -= current->mm->total_vm / 32;
+> +	}
+>  
+>  	/*
+>  	 * cast `allowed' as a signed long because vm_committed_space
+> 
 
-Signed-off-by: Jean Tourrilhes <jt@hpl.hp.com>
-Acked-by: Michael Buesch <mb@bu3sch.de>
-Acked-by: Larry Finger <Larry.Finger@lwfinger.net>
-Acked-by: John W. Linville <linville@tuxdriver.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Willy Tarreau <w@1wt.eu>
----
- net/ieee80211/softmac/ieee80211softmac_assoc.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+FYI: This bug has been fixed by Alan Cox: http://lkml.org/lkml/2007/8/13/782.
 
-diff --git a/net/ieee80211/softmac/ieee80211softmac_assoc.c b/net/ieee80211/softmac/ieee80211softmac_assoc.c
-index a824852..dadb65c 100644
---- a/net/ieee80211/softmac/ieee80211softmac_assoc.c
-+++ b/net/ieee80211/softmac/ieee80211softmac_assoc.c
-@@ -271,8 +271,11 @@ ieee80211softmac_assoc_work(struct work_struct *work)
- 			 */
- 			dprintk(KERN_INFO PFX "Associate: Scanning for networks first.
-");
- 			ieee80211softmac_notify(mac->dev, IEEE80211SOFTMAC_EVENT_SCAN_FINISHED, ieee80211softmac_assoc_notify_scan, NULL);
--			if (ieee80211softmac_start_scan(mac))
-+			if (ieee80211softmac_start_scan(mac)) {
- 				dprintk(KERN_INFO PFX "Associate: failed to initiate scan. Is device up?
-");
-+				mac->associnfo.associating = 0;
-+				mac->associnfo.associated = 0;
-+			}
- 			goto out;
- 		} else {
- 			mac->associnfo.associating = 0;
--- 
-1.5.2.5
+But thanks anyway~
 
--- 
