@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764814AbXHVQS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764918AbXHVQSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764814AbXHVQS0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 12:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763208AbXHVQST
+	id S1764918AbXHVQSo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 12:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764840AbXHVQSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 12:18:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34221 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763264AbXHVQST (ORCPT
+	Wed, 22 Aug 2007 12:18:30 -0400
+Received: from mail.tor.primus.ca ([216.254.136.21]:38269 "EHLO
+	mail-09.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764762AbXHVQS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 12:18:19 -0400
-Date: Wed, 22 Aug 2007 09:17:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>,
-       Greg KH <greg@kroah.com>
-Subject: Re: 2.6.23-rc3-mm1
-Message-Id: <20070822091755.59d3af01.akpm@linux-foundation.org>
-In-Reply-To: <6bffcb0e0708220719j7b07adabl74959c36256df2e@mail.gmail.com>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	<6bffcb0e0708220719j7b07adabl74959c36256df2e@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 22 Aug 2007 12:18:29 -0400
+Date: Wed, 22 Aug 2007 12:18:28 -0400
+From: Nick Bowler <nbowler@ellipticsemi.com>
+To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
+Cc: linux-kernel@vger.kernel.org,
+       =?iso-8859-1?Q?G=E9lineau=2CSamuel_=5BMontreal=5D?= 
+	<samuel.gelineau@EC.GC.CA>
+Subject: Re: Patch for Apani Nortel VPN Client to build against kernel 2.6.22  help/review
+Message-ID: <20070822161828.GA16063@totient.ellipticsemi.com>
+Mail-Followup-To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>,
+	linux-kernel@vger.kernel.org,
+	=?iso-8859-1?Q?G=E9lineau=2CSamuel_=5BMontreal=5D?= <samuel.gelineau@EC.GC.CA>
+References: <F1D642E5A91BC94D9504EC83AE19E6B0128B34@ecqcmtlmail3.quebec.int.ec.gc.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B0128B34@ecqcmtlmail3.quebec.int.ec.gc.ca>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007 16:19:33 +0200 "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com> wrote:
+I haven't read too much into the patch, but some quick comments.  Most applies
+throughout:
 
-> On 22/08/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
-> >
-> 
-> allyesconfig
-> 
->   RELOCS  arch/i386/boot/compressed/vmlinux.relocs
-> WARNING: Absolute relocations present
-> Offset     Info     Type     Sym.Value Sym.Name
-> c06018f3 02ee1f01   R_386_32 c14adad0  _sdata
-> 
+> +#if (LINUX_VERSION_CODE >= 0x020616)
+KERNEL_VERSION(2,6,22) is much more readable than 0x020616.
 
-Yeah, that's Greg's pestiferous
-gregkh-driver-warn-when-statically-allocated-kobjects-are-used.patch acting
-up.
+> +  return (struct iphdr*) skb->network_header;
+Should be return ip_hdr(skb);
 
-I previously suggested that something like kallsyms_lookup() could be used
-for this, but I was cruelly ignored.
+> +    skb->network_header = skb->data;
+Should be skb_reset_network_header(skb);
+
+> +    iph = skb->network_header.iph;
+Probably meant skb->nh.iph.
+
+> +  if ( iph->protocol == 17 )            /* if UDP, */
+(snip)
+> +  if ( iph->protocol == 6 )             /* if TCP, */
+Could use IPPROTO_UDP and IPPROTO_TCP instead of 17 and 6, respectively.
+
+Instead of littering the code with #if blah #else blah, you could also simply
+provide implementations for the 2.6.22 functions #if LINUX_VERSION_CODE <
+KERNEL_VERSION(2,6,22).
+
+-- 
+Nick Bowler, Elliptic Semiconductor (http://www.ellipticsemi.com/)
 
