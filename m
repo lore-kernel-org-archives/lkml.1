@@ -1,100 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765560AbXHVRNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765643AbXHVRRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765560AbXHVRNJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 13:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763500AbXHVRM5
+	id S1765643AbXHVRRf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 13:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763163AbXHVRR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 13:12:57 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:59859 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763779AbXHVRM4 (ORCPT
+	Wed, 22 Aug 2007 13:17:26 -0400
+Received: from outbound-mail-44.bluehost.com ([69.89.18.13]:42533 "HELO
+	outbound-mail-44.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759842AbXHVRRZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 13:12:56 -0400
-Message-ID: <46CC6D63.2010204@vmware.com>
-Date: Wed, 22 Aug 2007 10:07:47 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 22 Aug 2007 13:17:25 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
+Date: Wed, 22 Aug 2007 10:17:11 -0700
+User-Agent: KMail/1.9.7
+Cc: Jes Sorensen <jes@sgi.com>, akepner@sgi.com,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+References: <20070818002746.GU1813@sgi.com> <200708220951.05101.jbarnes@virtuousgeek.org> <1187802272.3410.58.camel@localhost.localdomain>
+In-Reply-To: <1187802272.3410.58.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
-References: <46CBC842.4070100@vmware.com> <20070822102217.GE2642@bingen.suse.de> <46CC68D9.5060200@vmware.com> <20070822175918.GB8058@bingen.suse.de>
-In-Reply-To: <20070822175918.GB8058@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708221017.11805.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - box128.bluehost.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - virtuousgeek.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Wed, Aug 22, 2007 at 09:48:25AM -0700, Zachary Amsden wrote:
->   
->> Andi Kleen wrote:
->>     
->>> On Tue, Aug 21, 2007 at 10:23:14PM -0700, Zachary Amsden wrote:
->>>  
->>>       
->>>> In general, I/O in a virtual guest is subject to performance problems.  
->>>> The I/O can not be completed physically, but must be virtualized.  This 
->>>> means trapping and decoding port I/O instructions from the guest OS.  
->>>> Not only is the trap for a #GP heavyweight, both in the processor and 
->>>> the hypervisor (which usually has a complex #GP path), but this forces 
->>>> the hypervisor to decode the individual instruction which has faulted.  
->>>>    
->>>>         
->>> Is that really that expensive? Hard to imagine.
->>>  
->>>       
->> You have an expensive (16x cost of hypercall on some processors) 
->>     
->
-> Where is the difference comming from? Are you using SYSENTER
-> for the hypercall?  I can't really see you using SYSENTER,
-> because how would you do system calls then? I bet system calls
-> are more frequent than in/out, so if you have decide between the
-> two using them for syscalls is likely faster.
->   
+On Wednesday, August 22, 2007 10:04:32 am James Bottomley wrote:
+> The spec isn't ambiguous ... it says if the device and bridge agree on
+> relaxed ordering, then it *may* be observed in the transaction.  If
+> there's a disagreement or neither wishes to support relaxed ordering
+> then the transaction *must* be strict.
 
-We use sysenter for hypercalls and also for system calls.  :)
+Arg, don't make me dig out my spec, I don't have it handy...
 
-> Also I fail to see the fundamental speed difference between
->
-> mov index,register
-> int 0x...
-> ...
-> switch (register) 
-> case xxxx: do emulation
->   
+> I really don't think a work around for a PCI spec violation belongs in
+> the generic DMA code, do you?  The correct fix for this should be to set
+> the device hints to strict ordering, which presumably altix respects?
 
-Int (on p4 == ~680 cycles).
+Well, the Altix hw by itself won't honor device hints (I'm not even sure if 
+there are devices that honor order hints like you outline above).  However, 
+Altix could track per-device ordering as long as arch code was called from 
+such a hook.
 
-> versus
->
-> out ...
-> #gp
-> -> switch (*eip) {
-> case 0xee:  /* etc. */ 
-> 	do emulation
->   
+> In which case, it sounds like what needs exposing are access to the PCI
+> device hints.  I believe both PCI-X and PCIe have these hints as
+> optional specifiers in the bridges, so it should be in a current Rev of
+> the PCI spec.  Or are you proposing adding an additional PCI API that
+> allows transaction flushes to be inserted into the stream for devices
+> and bridges that have already negotiated relaxed ordering? ... in which
+> case we need to take this to the PCI list.
 
-GP = ~2000 cycles.
+I think it would have to be the latter, since otherwise it would be hard to 
+setup just completion queue requests to be ordered.
 
->> to verify protection in the page tables mapping the page allows 
->> execution (P, !NX, and U/S check).  This is a lot more expensive than a 
->>     
->
-> When the page is not executable or not present you get #PF not #GP. 
-> So the hardware already checks that.
->
-> The only case where you would need to check yourself is if you emulate
-> NX on non NX capable hardware, but I can't see you doing that.
->   
+Jesse
 
-No, it doesn't.  Between the #GP and decode, you have an SMP race where 
-another processor can rewrite the instruction.
 
-Zach
