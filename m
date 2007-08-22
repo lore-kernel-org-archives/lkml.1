@@ -1,107 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbXHVJNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764072AbXHVJNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757845AbXHVJNA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbXHVIx7
+	id S1764072AbXHVJNf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759197AbXHVIyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 04:53:59 -0400
-Received: from iona.labri.fr ([147.210.8.143]:52029 "EHLO iona.labri.fr"
+	Wed, 22 Aug 2007 04:54:06 -0400
+Received: from 1wt.eu ([62.212.114.60]:2182 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759074AbXHVIx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 04:53:57 -0400
-Date: Wed, 22 Aug 2007 10:53:55 +0200
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Console events and accessibility
-Message-ID: <20070822085355.GB3359@implementation.labri.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-References: <20070821212939.GD3658@interface.famille.thibault.fr> <20070822054855.GB23336@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070822054855.GB23336@kroah.com>
-User-Agent: Mutt/1.5.11
+	id S1759173AbXHVIyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 04:54:05 -0400
+From: Willy Tarreau <w@1wt.eu>
+Message-Id: <20070822084042.%N@1wt.eu>
+References: <20070822083844.%N@1wt.eu>
+User-Agent: quilt/0.46-1
+Date: Wed, 22 Aug 2007 11:39:37 +0200
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Badari Pulavarty <pbadari@us.ibm.com>, Joe Jin <joe.jin@oracle.com>,
+       Zach Brown <zach.brown@oracle.com>,
+       gurudas pai <gurudas.pai@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>
+Subject: [2.6.20.17 review 53/58] direct-io: fix error-path crashes
+Content-Disposition: inline; filename=0053-direct-io-fix-error-path-crashes.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH, le Tue 21 Aug 2007 22:48:55 -0700, a écrit :
-> On Tue, Aug 21, 2007 at 11:29:39PM +0200, Samuel Thibault wrote:
-> > Some external modules like Speakup need to monitor console output.
-> > 
-> > This adds a VT notifier that such modules can use to get console output events:
-> > allocation, deallocation, writes, other updates (cursor position, switch, etc.)
-> > 
-> > Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
-> 
-> Will speakup work with this kind of change?
+Need to initialize map_bh.b_state to zero.  Otherwise, in case of a faulty
+user-buffer its possible to go into dio_zero_block() and submit a page by
+mistake - since it checks for buffer_new().
 
-Here are the last needed bits.
+http://marc.info/?l=linux-kernel&m=118551339032528&w=2
 
-Samuel
+akpm: Linus had a (better) patch to just do a kzalloc() in there, but it got
+lost.  Probably this version is better for -stable anwyay.
 
-Export inverse_translate, kd_mksound and screen_glyph for speakup. Also
-reserve KT_SPKUP.
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+Acked-by: Joe Jin <joe.jin@oracle.com>
+Acked-by: Zach Brown <zach.brown@oracle.com>
+Cc: gurudas pai <gurudas.pai@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Willy Tarreau <w@1wt.eu>
+---
+ fs/direct-io.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/char/consolemap.c b/drivers/char/consolemap.c
-index 4b3916f..37c7980 100644
---- a/drivers/char/consolemap.c
-+++ b/drivers/char/consolemap.c
-@@ -277,6 +277,7 @@
- 			return p->inverse_translations[m][glyph];
- 	}
- }
-+EXPORT_SYMBOL_GPL(inverse_translate);
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index d9d0833..0286993 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -978,6 +978,7 @@ direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode,
+ 	dio->get_block = get_block;
+ 	dio->end_io = end_io;
+ 	dio->map_bh.b_private = NULL;
++	dio->map_bh.b_state = 0;
+ 	dio->final_block_in_bio = -1;
+ 	dio->next_block_for_io = -1;
  
- static void update_user_maps(void)
- {
---- a/drivers/char/keyboard.c
-+++ b/drivers/char/keyboard.c
-@@ -101,7 +101,7 @@
- const int max_vals[] = {
- 	255, ARRAY_SIZE(func_table) - 1, ARRAY_SIZE(fn_handler) - 1, NR_PAD - 1,
- 	NR_DEAD - 1, 255, 3, NR_SHIFT - 1, 255, NR_ASCII - 1, NR_LOCK - 1,
--	255, NR_LOCK - 1, 255, NR_BRL - 1
-+	255, NR_LOCK - 1, 255, NR_BRL - 1, NR_SPKUP - 1
- };
- 
- const int NR_TYPES = ARRAY_SIZE(max_vals);
-@@ -240,6 +240,7 @@
- 	} else
- 		kd_nosound(0);
- }
-+EXPORT_SYMBOL_GPL(kd_mksound);
- 
- /*
-  * Setting the keyboard rate.
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -3934,6 +3934,7 @@
- 		c |= 0x100;
- 	return c;
- }
-+EXPORT_SYMBOL_GPL(screen_glyph);
- 
- /* used by vcs - note the word offset */
- unsigned short *screen_pos(struct vc_data *vc, int w_offset, int viewed)
---- a/include/linux/keyboard.h
-+++ b/include/linux/keyboard.h
-@@ -45,6 +45,7 @@
- #define KT_LOCK		10
- #define KT_SLOCK	12
- #define KT_BRL		14
-+#define KT_SPKUP	15
- 
- #define K(t,v)		(((t)<<8)|(v))
- #define KTYP(x)		((x) >> 8)
-@@ -442,5 +443,7 @@
- 
- #define NR_BRL		11
- 
-+#define NR_SPKUP	0x56
-+
- #define MAX_DIACR	256
- #endif
+-- 
+1.5.2.5
+
+-- 
