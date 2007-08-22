@@ -1,123 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932934AbXHVUr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933342AbXHVUsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932934AbXHVUr5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 16:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759911AbXHVUrt
+	id S933342AbXHVUsj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 16:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756434AbXHVUsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 16:47:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49379 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758654AbXHVUrs (ORCPT
+	Wed, 22 Aug 2007 16:48:30 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39542 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759288AbXHVUs3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 16:47:48 -0400
-Date: Thu, 23 Aug 2007 02:30:33 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Sam Ravnborg <sam@ravnborg.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       wbrana@gmail.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][bugzilla #8679] therm_throt.c: Fix section mismatch
-In-Reply-To: <20070820220328.438e8a4d.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0708211103090.2774@enigma.security.iitk.ac.in>
-References: <alpine.LFD.0.999.0708211003390.2774@enigma.security.iitk.ac.in>
- <20070820220328.438e8a4d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 22 Aug 2007 16:48:29 -0400
+Date: Wed, 22 Aug 2007 13:48:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
+       linux-mm@kvack.org
+Subject: Re: [BUG] 2.6.23-rc3-mm1 kernel BUG at mm/page_alloc.c:2876!
+Message-Id: <20070822134800.ce5a5a69.akpm@linux-foundation.org>
+In-Reply-To: <46CC9A7A.2030404@linux.vnet.ibm.com>
+References: <46CC9A7A.2030404@linux.vnet.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 23 Aug 2007 01:50:10 +0530
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-
-On Mon, 20 Aug 2007, Andrew Morton wrote:
-
-> On Tue, 21 Aug 2007 10:07:31 +0530 (IST) Satyam Sharma <satyam@infradead.org> wrote:
-> > 
-> > WARNING: arch/i386/kernel/built-in.o(.data+0x2148): Section mismatch: reference
-> > to .init.text: (between 'thermal_throttle_cpu_notifier' and 'mtrr_mutex')
-> > 
-> > comes because struct notifier_block thermal_throttle_cpu_notifier in
-> > arch/i386/kernel/cpu/mcheck/therm_throt.c goes in .data section but
-> > the notifier callback function itself has been marked __cpuinit which
-> > becomes __init == .init.text when HOTPLUG_CPU=n. The warning is bogus
-> > because the callback will never be called out if HOTPLUG_CPU=n in the
-> > first place (as one can see from kernel/cpu.c, the cpu_chain itself
-> > is __cpuinitdata :-)
-> > 
-> > So, let's mark thermal_throttle_cpu_notifier as __cpuinitdata to fix
-> > the section mismatch warning.
-> > [...]
+> Hi Andrew,
 > 
-> okay...  However we're not being very consistent here.
+> I see call trace followed by the kernel bug with the 2.6.23-rc3-mm1
+> kernel and have attached the boot log and config file.
 > 
-> register_hotcpu_notifier() is cunning.  If CONFIG_HOTPLUG_CPU=y, we need
-> the notifier block and the function to which it points to be in .data and
-> in .text.  If CONFIG_HOTPLUG_CPU=n, we don't need them to be present at all.
+> =======================================================
+> SLUB: Genslabs=12, HWalign=128, Order=0-1, MinObjects=4, CPUs=4, Nodes=16
+> Bad page state in process 'swapper'
+> page:cf00000000015818 flags:0x0000020000000400 mapping:0000000000000000 
+> mapcount:0 count:0
+> Trying to fix it up, but a reboot is needed
+> Backtrace:
+> Call Trace:
+> [c0000000005cbab0] [c000000000010344] .show_stack+0x68/0x1b4 (unreliable)
+> [c0000000005cbb60] [c0000000000a6c54] .bad_page+0x84/0x138
+> [c0000000005cbbf0] [c0000000000aa9e0] .free_hot_cold_page+0xdc/0x21c
+> [c0000000005cbc90] [c0000000000ad7ec] .put_page+0x158/0x180
+> [c0000000005cbd30] [c0000000000d4de8] .kfree+0x74/0xf0
+> [c0000000005cbdb0] [c0000000000a866c] .process_zones+0x1a8/0x1f8
+> [c0000000005cbe60] [c0000000004b5160] .setup_per_cpu_pageset+0x24/0x48
+> [c0000000005cbee0] [c0000000004978d8] .start_kernel+0x304/0x3f4
+> [c0000000005cbf90] [c0000000003bef10] .start_here_common+0x54/0x58
+> Hexdump:
+> 000: cf 00 00 00 00 01 57 d0 00 00 02 00 00 00 04 00
+> 010: 00 00 00 01 ff ff ff ff 00 00 00 00 00 00 00 00
+> 020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 030: cf 00 00 00 00 01 58 08 cf 00 00 00 00 01 58 08
+> 040: 00 00 02 00 00 00 04 00 00 00 00 00 ff ff ff ff
+> 050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 060: 00 00 00 00 00 00 00 00 cf 00 00 00 00 01 58 40
+> 070: cf 00 00 00 00 01 58 40 00 00 02 00 00 00 04 00
+> 080: 00 00 00 01 ff ff ff ff 00 00 00 00 00 00 00 00
+> 090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 0a0: cf 00 00 00 00 01 58 78 cf 00 00 00 00 01 58 78
+> 0b0: 00 00 02 00 00 00 04 00 00 00 00 01 ff ff ff ff
+> ------------[ cut here ]------------
+> kernel BUG at mm/page_alloc.c:2876!
+> cpu 0x0: Vector: 700 (Program Check) at [c0000000005cbbe0]
+>     pc: c0000000004b5160: .setup_per_cpu_pageset+0x24/0x48
+>     lr: c0000000004b5160: .setup_per_cpu_pageset+0x24/0x48
+>     sp: c0000000005cbe60
+>    msr: 8000000000029032
+>   current = 0xc0000000004fd1b0
+>   paca    = 0xc0000000004fdd80
+>     pid   = 0, comm = swapper
+> kernel BUG at mm/page_alloc.c:2876!
 > 
-> So what we can do is to just leave the notifier block in .data and the
-> function in .text and then the compiler/linker will notice that nothing
-> references them and they will be omitted at build time.
-> 
-> So basically, the register_hotcpu_notifier() implementation (in league with
-> the compiler) is taking the place of the manual notations.
 
-Ok, I can see where you're getting at. When CONFIG_HOTPLUG_CPU=n,
-the compiler will just optimize away the reference to (void)(nb);
-and with it, the reference to the callback function too, entirely.
+Looks like process_zones() got a kmalloc_node() failure and then crashed in
+the recovery code.
 
-[ BTW I wonder if we should make the HOTPLUG_CPU=y implementation of
-  register_cpu_notifier as void-returning (notifier_chain_register()
-  never fails anyway) to preserve symmetry with the HOTPLUG_CPU=n stub.
-  Because of the do {} while, no callsite out there can ever check the
-  return from register_hotcpu_notifier() without breaking builds when
-  HOTPLUG_CPU=n. But that goes against the taste of register_foo()
-  functions in the kernel. So probably it is the HOTPLUG_CPU=n stub
-  that should be made "static inline int {return 0;}" instead? However,
-  on doing that, the compiler may fail to optimize away the callback
-  function, at least that's what the testcase I wrote to experiment
-  with all this proved:
-			http://www.cse.iitk.ac.in/users/ssatyam/xyz.c ]
+This:
 
-  Curiously, notifier_chain_unregister() _can_ return errors, but I bet
-  *none* of the unregister_foo_notifer()'s out there ever check its
-  return anyway. All the unregister_foo() and exit_foo() functions in the
-  kernel tend to be void-returning for good reason, so I wonder if we
-  should make notifier_chain_unregister() void-returning as well, and go
-  BUG() there (instead of returning -ENOENT which noone checks) when asked
-  to unregister a notifier block that didn't even exist. That does sound
-  BUG-worthy to me, and in all probability, we would've oopsed when trying
-  to call out the callback of said non-existent notifier_block already.
-  In fact, making notifier_chain_unregister() go BUG() on that error will
-  even catch certain bugs (such as somebody annotating the notifier_block
-  incorrectly with __init when he should not have) early, irrespective of
-  whether or not that notifier was actually ever even called out on! ]
+--- a/mm/page_alloc.c~a
++++ a/mm/page_alloc.c
+@@ -2814,6 +2814,8 @@ static int __cpuinit process_zones(int c
+ 	return 0;
+ bad:
+ 	for_each_zone(dzone) {
++		if (!populated_zone(zone))
++			continue;		
+ 		if (dzone == zone)
+ 			break;
+ 		kfree(zone_pcp(dzone, cpu));
+_
+
+might help avoid the crash, but why did kmalloc_node() fail?
 
 
-> Note that because this works at compile time, it is also effective within
-> modules.
-
-I must say, this is an amazingly cunning idea. Only things I can think of
-against this would be: the dropping of unneeded code is not guaranteed,
-but depends on compiler. And we saw from the "static inline {return 0;}"
-testcase that gcc can sometimes be not-so-smart.
-
-
-> I'm not sure that we discard the unneeded sections from within
-> modules? (I forget).
-
-Didn't quite get this, but yes, __cpu{init,exit} can only become __init
-or __exit at most, neither of which can be dropped from a module.
-
-
-> So...  what to do?  I guess for consistency one could hunt down all the
-> register_hotcpu_notifier() sites and remove all the __initfoo tags from all of
-> them.  But that makes register_hotcpu_notifier() inconsistent from
-> everything else, so there's an argument that we should make all these
-> things __cpuinit and __cpuinitdata for consistency rather than relying upon
-> register_hotcpu_notifier()'s magical properties as a special case.  Dunno.
-
-I also like the above idea because it eliminates the need for authors
-to have to mark their functions appropriately -- nobody gets that right
-anyway, as we see from the zillions of section mismatch warnings every
--rc cycle. But the __cpuinit and __cpuinitdata consistency argument does
-sound "safe". Sigh.
