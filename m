@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764830AbXHVTVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763957AbXHVTXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764830AbXHVTVb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 15:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbXHVTVY
+	id S1763957AbXHVTXy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 15:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757306AbXHVTXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 15:21:24 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:45326 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754567AbXHVTVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 15:21:23 -0400
-Subject: Re: [2.6.20.17 review 00/58] 2.6.20.17 -stable review
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: James Morris <jmorris@namei.org>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-In-Reply-To: <6bffcb0e0708221050s68975158k7a3b27c7c30f455d@mail.gmail.com>
-References: <20070822083844.%N@1wt.eu>
-	 <6bffcb0e0708220410u4ab3978eq18786ac186e88c7d@mail.gmail.com>
-	 <Xine.LNX.4.64.0708220621550.28878@us.intercode.com.au>
-	 <1187789765.1451.310.camel@moss-spartans.epoch.ncsc.mil>
-	 <1187790174.1451.315.camel@moss-spartans.epoch.ncsc.mil>
-	 <Xine.LNX.4.64.0708220707390.9414@us.intercode.com.au>
-	 <6bffcb0e0708220729j7b9afcf3v4edef68cc974c08d@mail.gmail.com>
-	 <Xine.LNX.4.64.0708220929370.4968@us.intercode.com.au>
-	 <6bffcb0e0708220946hc2943f5jdb33215cdfab08d1@mail.gmail.com>
-	 <6bffcb0e0708221050s68975158k7a3b27c7c30f455d@mail.gmail.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 22 Aug 2007 15:15:14 -0400
-Message-Id: <1187810114.1451.453.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Wed, 22 Aug 2007 15:23:45 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:20545 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919AbXHVTXo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 15:23:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=LZvmjiqb76Cjqy90HfKu3k9CaP7onEBSW388vvh9smwrWIu2XWmVBEDO5YSoAN1vPz8j5ARwjk4MW3/FvoSIIlIjFUXQUXhtBcmKyBiBBL/XPWiR9xlIukyJSOI0i4uW3sSRAPJWH4thM7lBJACCsBPKv6DcoAEMOkLjh3oS4eY=
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Subject: Re: 2.6.23-rc3-mm1: net/wireless/rt2x00mac.c build failure
+Date: Wed, 22 Aug 2007 21:31:24 +0200
+User-Agent: KMail/1.9.7
+Cc: John Linville <linville@tuxdriver.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <200708222116.22386.m.kozlowski@tuxland.pl>
+In-Reply-To: <200708222116.22386.m.kozlowski@tuxland.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708222131.24882.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 19:50 +0200, Michal Piotrowski wrote:
-> On 22/08/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> > On 22/08/07, James Morris <jmorris@namei.org> wrote:
-> [snip]
-> > > The previous problem is theoretically unrelated.  It arose via a separate
-> > > mechanism which can't be used at the same as the one you're seeing now in
-> > > the logs.
-> > >
-> > > So this either looks like a problem which has gone unnoticed and was
-> > > inadvertently fixed at some point, or is unique to the 2.6.20 stable
-> > > series.
-> >
-> > Yup, it is very interesting why no one noticed it. Binary search in progress:
-> > good - 2.6.20.4
-> > bad - 2.6.20.8
-> 
-> Ok, I narrowed the problem to 2.6.20.7. There are a few net changes
-> http://eu.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.20.7
-> any suggestions?
-> 
-> I also have seen this avc on 2.6.20.6 during reboot
-> 
-> [ 2333.905944] audit(1187803699.273:271): avc:  denied  { send } for
-> saddr=192.168.1.70 src=48591 daddr=72.14.217.189 dest=80 netif=eth0
-> scontext=user_u:system_r:unconfined_t:s0
-> tcontext=system_u:system_r:kernel_t:s0 tclass=packet
-> [ 2334.420598] audit(1187803699.789:272): avc:  denied  { send } for
-> saddr=192.168.1.70 src=47248 daddr=66.249.91.18 dest=80 netif=eth0
-> scontext=user_u:system_r:unconfined_t:s0
-> tcontext=system_u:system_r:kernel_t:s0 tclass=packet
-> 
-> so the roots of the problem may lie between 2.6.20.4 and 2.6.20.6
-> 
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.20.17-rc1/console2.log
+Hi,
 
-Might be related to this:
-http://marc.info/?l=git-commits-head&m=118271540932264&w=2
+>   CC [M]  drivers/net/wireless/rt2x00mac.o
+> drivers/net/wireless/rt2x00mac.c: In function `rt2x00mac_tx_rts_cts':
+> drivers/net/wireless/rt2x00mac.c:61: warning: passing arg 2 of `ieee80211_ctstoself_get' makes pointer from integer without a cast
+> drivers/net/wireless/rt2x00mac.c:61: warning: passing arg 3 of `ieee80211_ctstoself_get' makes integer from pointer without a cast
+> drivers/net/wireless/rt2x00mac.c:61: warning: passing arg 4 of `ieee80211_ctstoself_get' makes pointer from integer without a cast
+> drivers/net/wireless/rt2x00mac.c:61: warning: passing arg 5 of `ieee80211_ctstoself_get' from incompatible pointer type
+> drivers/net/wireless/rt2x00mac.c:61: error: too many arguments to function `ieee80211_ctstoself_get'
+> drivers/net/wireless/rt2x00mac.c:65: warning: passing arg 2 of `ieee80211_rts_get' makes pointer from integer without a cast
+> drivers/net/wireless/rt2x00mac.c:65: warning: passing arg 3 of `ieee80211_rts_get' makes integer from pointer without a cast
+> drivers/net/wireless/rt2x00mac.c:65: warning: passing arg 4 of `ieee80211_rts_get' makes pointer from integer without a cast
+> drivers/net/wireless/rt2x00mac.c:65: warning: passing arg 5 of `ieee80211_rts_get' from incompatible pointer type
+> drivers/net/wireless/rt2x00mac.c:65: error: too many arguments to function `ieee80211_rts_get'
+> make[3]: *** [drivers/net/wireless/rt2x00mac.o] Error 1
+> make[2]: *** [drivers/net/wireless] Error 2
+> make[1]: *** [drivers/net] Error 2
+> make: *** [drivers] Error 2
 
--- 
-Stephen Smalley
-National Security Agency
+This has been fixed for quite some time already.
+John, I can't check this myself now, but which rt2x00
+patches have gone into the -mm tree? Since I believe
+the patch that changed ieee80211_ctstoself_get was
+followed by a patch to fix rt2x00 within the same series...
 
+Ivo
