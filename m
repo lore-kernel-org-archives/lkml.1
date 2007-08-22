@@ -1,107 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbXHVC3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbXHVCkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbXHVC3d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 22:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbXHVC3O
+	id S1754822AbXHVCkb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 22:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbXHVCkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 22:29:14 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35783 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751756AbXHVC3K (ORCPT
+	Tue, 21 Aug 2007 22:40:21 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:53464 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817AbXHVCkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 22:29:10 -0400
-Date: Wed, 22 Aug 2007 11:31:04 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: "LKML" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-ia64@vger.kernel.org>
-Subject: Re: [PATCH][2.6.23-rc2-mm2] small fix for ia64 icache sync patch
-Message-Id: <20070822113104.3450d203.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <617E1C2C70743745A92448908E030B2A023B2254@scsmsx411.amr.corp.intel.com>
-References: <20070821201507.36641d76.kamezawa.hiroyu@jp.fujitsu.com>
-	<617E1C2C70743745A92448908E030B2A023B2254@scsmsx411.amr.corp.intel.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Aug 2007 22:40:20 -0400
+Message-ID: <46CBA0F0.70503@gmail.com>
+Date: Wed, 22 Aug 2007 04:35:28 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: =?ISO-8859-15?Q?Jos=E9_Luis_Pati=F1o_Andr=E9s?= 
+	<jopan@alumni.uv.es>
+CC: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Problems with IDE on linux 2.6.22.X
+References: <200708212149.12912.jopan@alumni.uv.es> <46CB626F.8020801@gmail.com> <200708220339.45138.jopan@alumni.uv.es>
+In-Reply-To: <200708220339.45138.jopan@alumni.uv.es>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is updated version. 
+On 08/22/2007 03:39 AM, José Luis Patiño Andrés wrote:
 
-Andrew, could you repleace ?
+>> You have a SATA harddrive (Hitachi Travelstar 5K100 100GB SATA/2.5") and an
+>> IDE (also known as PATA) DVD drive (LG GMA-4082N). That is, your disk
+>> should be driven by the:
+>>
+>> "Intel ESB, ICH, PIIX3, PIIX4 PATA/SATA support"
+>>
+>> under the "Serial ATA (prod) and Parallel ATA (experimental) drivers" menu,
+>> and it seems this driver should also take care of your DVD. Not sure from
+>> your report what you are using -- first try with only that driver, and
+>> nothing from the old "ATA/ATAPI/MFM/RLL support" menu selected.
+>>
+>> In that situation, your harddrive works, but your DVD does not?
+> 
+> Okay, now it's tested as you said. In fact, in this way with only the SATA 
+> drivers activated and ATA/ATAPI support completely unselected, my HDD works 
+> but my DVD not.
 
--Kame
-==
-Fixing 2 small issues pointed by Tony Luck.
+Okay. Jeff, Alan -- 2.6.20.15 apparently working. A few weeks ago there was 
+another report of a DVD drive failing detection on pata_amd (my CD and DVD 
+drives work fine on pata_amd). Did some ATAPI timeouts change or something?
 
-Changelog v1 -> v2
-* add pte_present_exec_user()
-* remove pte_user
-* fixed comments.
+He's using:
 
-v1.
-* removing redundant BUG_ON in __ia64_sync_icache_dcache().
-* check pte_present() first.
+00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) Serial 
+ATA Storage Controller IDE (rev 02) (prog-if 80 [Master])
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> And so...
+> 
+>> If so, this should be fixed in the driver, but to get things working I
+>> believe you may try with both the above driver for your harddisk and the
+>> old IDE driver for the DVD:
+>>
+>> <*>   Enhanced IDE/MFM/RLL disk/cdrom/tape/floppy support
+>> <*>     Include IDE/ATAPI CDROM support (NEW)
+>> [*]     PCI IDE chipset support
+>> [*]     Generic PCI bus-master DMA support
+>> <*>       Intel PIIXn chipsets support
+> 
+> Checked.
+> 
+>> (do not select IDE/ATA-2 disk support)
+> 
+> Unselected.
+> 
+> Now, I have this kernel panic:
+> ###################
+> #VFS: cannot open root device "sda3" or unknown-block (0,0)
+> #Please, append a correct "root=" boot option; here are the available 
+> #partitions:
+> #1600 4194302 hdc driver: ide-cdrom
 
----
- arch/ia64/mm/init.c        |    2 --
- include/asm-ia64/pgtable.h |   17 +++++++++++------
- 2 files changed, 11 insertions(+), 8 deletions(-)
+Okay, makes sense, seems the new driver simply can't grab the SATA part 
+anymore when the old driver already's got the IDE part -- I wasn't sure 
+about that (not a SATA user myself -- just noticed your report due to 
+noticing that previous one due to pata_amd...).
 
-Index: linux-2.6.23-rc2-mm2/include/asm-ia64/pgtable.h
-===================================================================
---- linux-2.6.23-rc2-mm2.orig/include/asm-ia64/pgtable.h
-+++ linux-2.6.23-rc2-mm2/include/asm-ia64/pgtable.h
-@@ -297,7 +297,6 @@ ia64_phys_addr_valid (unsigned long addr
- /*
-  * The following have defined behavior only work if pte_present() is true.
-  */
--#define pte_user(pte)	((pte_val(pte) & _PAGE_PL_MASK) == _PAGE_PL_3)
- #define pte_write(pte)	((unsigned) (((pte_val(pte) & _PAGE_AR_MASK) >> _PAGE_AR_SHIFT) - 2) <= 4)
- #define pte_exec(pte)		((pte_val(pte) & _PAGE_AR_RX) != 0)
- #define pte_dirty(pte)		((pte_val(pte) & _PAGE_D) != 0)
-@@ -324,14 +323,20 @@ ia64_phys_addr_valid (unsigned long addr
-  *  set_pte() is also called by the kernel, but we can expect that the kernel
-  *  flushes icache explicitly if necessary.
-  */
-+#define pte_present_exec_user(pte)\
-+	((pte_val(pte) & (_PAGE_P | _PAGE_PL_MASK | _PAGE_AR_RX)) == \
-+		(_PAGE_P | _PAGE_PL_3 | _PAGE_AR_RX))
-+
- extern void __ia64_sync_icache_dcache(pte_t pteval);
- static inline void set_pte(pte_t *ptep, pte_t pteval)
- {
--	if (pte_exec(pteval) &&    // flush only new executable page.
--	    pte_present(pteval) && // swap out ?
--	    pte_user(pteval) &&    // ignore kernel page
--	    (!pte_present(*ptep) ||// do_no_page or swap in, migration,
--		pte_pfn(*ptep) != pte_pfn(pteval))) // do_wp_page(), page copy
-+	/* page is present && page is user  && page is executable
-+	 * && (page swapin or new page or page migraton
-+	 *	|| copy_on_write with page copying.)
-+	 */
-+	if (pte_present_exec_user(pteval) &&
-+	    (!pte_present(*ptep) ||
-+		pte_pfn(*ptep) != pte_pfn(pteval)))
- 		/* load_module() calles flush_icache_range() explicitly*/
- 		__ia64_sync_icache_dcache(pteval);
- 	*ptep = pteval;
-Index: linux-2.6.23-rc2-mm2/arch/ia64/mm/init.c
-===================================================================
---- linux-2.6.23-rc2-mm2.orig/arch/ia64/mm/init.c
-+++ linux-2.6.23-rc2-mm2/arch/ia64/mm/init.c
-@@ -60,8 +60,6 @@ __ia64_sync_icache_dcache (pte_t pte)
- 	struct page *page;
- 	unsigned long order;
- 
--	BUG_ON(!pte_exec(pte));
--
- 	page = pte_page(pte);
- 	addr = (unsigned long) page_address(page);
- 
+The old SATA driver available from the IDE menu also does not support your 
+chip, so I don't believe there are any workarounds -- you'll need the issue 
+fixed.
+
+Rene.
 
