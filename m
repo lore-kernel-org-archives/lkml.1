@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762374AbXHVNxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762176AbXHVOCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762374AbXHVNxw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 09:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbXHVNxp
+	id S1762176AbXHVOCy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 10:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758667AbXHVOCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 09:53:45 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:33812 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758077AbXHVNxo (ORCPT
+	Wed, 22 Aug 2007 10:02:44 -0400
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:42610 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751978AbXHVOCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 09:53:44 -0400
-Message-ID: <46CC3F94.4050609@linux.vnet.ibm.com>
-Date: Wed, 22 Aug 2007 19:22:20 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: [BUG] 2.6.23-rc3-mm1 Kernel panic - not syncing: Can't create pid_1
- cachep
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 22 Aug 2007 10:02:43 -0400
+Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jes Sorensen <jes@sgi.com>
+Cc: akepner@sgi.com, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+In-Reply-To: <46CBE838.4000302@sgi.com>
+References: <20070818002746.GU1813@sgi.com> <46C94FD5.6000006@sgi.com>
+	 <20070821193522.GD5592@sgi.com>
+	 <20070821130515.6e745b17.randy.dunlap@oracle.com>
+	 <1187729729.18410.48.camel@localhost.localdomain>
+	 <20070822003450.GM5592@sgi.com>
+	 <1187745249.18410.67.camel@localhost.localdomain>
+	 <46CBE838.4000302@sgi.com>
+Content-Type: text/plain
+Date: Wed, 22 Aug 2007 09:02:38 -0500
+Message-Id: <1187791358.3410.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Wed, 2007-08-22 at 09:39 +0200, Jes Sorensen wrote:
+> James Bottomley wrote:
+> > On Tue, 2007-08-21 at 17:34 -0700, akepner@sgi.com wrote:
+> >> The term "posted DMA" is used to describe this behavior in the Altix 
+> >> Device Driver Writer's Guide, but it may be confusing things here. 
+> >> Maybe a better term will suggest itself if I can clarify....
+> > 
+> > OK, but posted DMA has a pretty specific meaning in terms of PCI, hence
+> > the confusion.
+> 
+> Maybe it would be more better to refer to this as 'out of order DMA'?
 
-Following Kernel panic is raised while booting up with 2.6.23-rc3-mm1 
-kernel.
+Or Relaxed ordering DMA ... that's why the readX_relaxed()?
 
-============================================================
-Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-Initializing HighMem for node 0 (00038000:001fbe00)
-Initializing HighMem for node 1 (00200000:003fbe00)
-Initializing HighMem for node 2 (00400000:005fbe00)
-Initializing HighMem for node 3 (00600000:007fbe00)
-Memory: 32480436k/33554432k available (2146k kernel code, 278984k 
-reserved, 1203k data, 216k init, 31842304k highmem)
-virtual kernel memory layout:
-    fixmap  : 0xffe1a000 - 0xfffff000   (1940 kB)
-    pkmap   : 0xffc00000 - 0xffe00000   (2048 kB)
-    vmalloc : 0xf8800000 - 0xffbfe000   ( 115 MB)
-    lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
-      .init : 0xc134c000 - 0xc1382000   ( 216 kB)
-      .data : 0xc12189e1 - 0xc1345758   (1203 kB)
-      .text : 0xc1000000 - 0xc12189e1   (2146 kB)
-Checking if this processor honours the WP bit even in supervisor mode... Ok.
-SLUB: Genslabs=12, HWalign=32, Order=0-3, MinObjects=16, CPUs=16, Nodes=16
-Calibrating delay using timer specific routine.. 1401.55 BogoMIPS 
-(lpj=2803105)
-Kernel panic - not syncing: Can't create pid_1 cachep
+> >> On Altix, DMA from a device isn't guaranteed to arrive in host memory 
+> >> in the order it was sent from the device. This reordering can happen 
+> >> in the NUMA interconnect (it's specifically not a PCI reordering.)
+> > 
+> > This is mmiowb and read_relaxed() again, isn't it?
+> 
+> I believe it's the same problem, except this time it's when exposing
+> structures to userland.
+
+Hmm, so how does another kernel API exposing mmiowb in a different way
+help with this?  Surely, if the driver is exporting something to user
+space, it's simply up to the driver to call mmiowb when the user says
+it's done?
+
+James
 
 
-Thanks & Regards,
-Kamalesh Babulal.
