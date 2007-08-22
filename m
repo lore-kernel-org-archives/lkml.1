@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758389AbXHVJ5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758400AbXHVKB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758389AbXHVJ5d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbXHVJ50
+	id S1758400AbXHVKB6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 06:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbXHVKBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 05:57:26 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:60243 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbXHVJ5Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 05:57:25 -0400
-Date: Wed, 22 Aug 2007 11:57:24 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Bodo Eggert <7eggert@gmx.de>
-cc: Andy Whitcroft <apw@shadowen.org>, Eugene Teo <eugeneteo@kernel.sg>,
-       linux-kernel@vger.kernel.org, auke-jan.h.kok@intel.com
-Subject: Re: [PATCH] Make checkpatch rant about trailing ; at the end of "if"
-  expr
-In-Reply-To: <Pine.LNX.4.58.0708221026500.2539@be1.lrz>
-Message-ID: <Pine.LNX.4.64.0708221156330.20435@fbirervta.pbzchgretzou.qr>
-References: <8SGSb-2Kk-9@gated-at.bofh.it> <8SJQ6-7pj-13@gated-at.bofh.it>
- <8T8Oy-3D0-13@gated-at.bofh.it> <E1IN5oB-0000qw-6S@be1.lrz>
- <Pine.LNX.4.64.0708201438180.30570@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.58.0708221026500.2539@be1.lrz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 22 Aug 2007 06:01:49 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:33851 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751060AbXHVKBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 06:01:48 -0400
+Date: Wed, 22 Aug 2007 14:02:10 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] do_sigaction: don't worry about signal_pending()
+Message-ID: <20070822100210.GA139@tv-sign.ru>
+References: <20070820160157.GA1279@tv-sign.ru> <20070822094325.GF1684@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070822094325.GF1684@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Aug 22 2007 11:21, Bodo Eggert wrote:
+On 08/22, Jarek Poplawski wrote:
 >
->> >> But. The above regex does not seem to handle
->> >> 
->> >> if ((a = b));
->> >> oops;
->> >> 
->> >> I have tried to come up with a superduper regex that handles multiple
->> >> (), but my regex fu seems to stop above two pairs of ().
->> >
->> >This is because you can't do that using finite regular expressions.
->> >
->> >Regular expressions are Type-3 grammars, but you'd need a Type-2
->> >grammar to express the Dyck language (and you need to parse a Dyck
->> >Language, ignoring the non-dyck-parts).
->> 
->> So what about this then...
->> 
->> $s = shift @ARGV;
->> $r = qr/a(??{ $r })?b/;
->
->This is not a regular expression, because it can't be parsed by a
->finite state machine (DFA/NFA) without a stack.
->http://en.wikipedia.org/wiki/Deterministic_finite_state_machine
->
->Obviously perl does allow non-regular expressions.
+> On 20-08-2007 18:01, Oleg Nesterov wrote:
+> > do_sigaction() returns -ERESTARTNOINTR if signal_pending(). The comment says:
+> > 
+> > 	* If there might be a fatal signal pending on multiple
+> > 	* threads, make sure we take it before changing the action.
+> > 	
+> > I think this is not needed. We should only worry about SIGNAL_GROUP_EXIT case,
+> > bit it implies a pending SIGKILL which can't be cleared by do_sigaction.
+> 
+> Isn't it for optimization e.g., to skip this 'do while' loop below for
+> such multiple threads, which would get SIGKILL or SIGSTOP anyway?
 
-Exactly, and which is why my idea was to use a (??{ }) block to match if((()));
-but for some reason, it did not fly, and I do not know either why.
+Yes, in that case this 'do while' doesn't make sense. But this is very
+unlikely, sigaction() shouldn't be called too much often, better to save
+a couple of bytes from icache.
 
+Also, please note that sigaction() is not special, almost any system call
+could be started with
 
-	Jan
--- 
+	if (current->signal->flags & SIGNAL_GROUP_EXIT)
+		return ANYVALUE;
+
+to "optimize" for the case when the task is dying.
+
+Oleg.
+
