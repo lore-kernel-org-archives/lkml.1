@@ -1,72 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763910AbXHVOmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763972AbXHVOni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763910AbXHVOmj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 10:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758571AbXHVOma
+	id S1763972AbXHVOni (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 10:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758248AbXHVOna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 10:42:30 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:14589 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757638AbXHVOm3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 10:42:29 -0400
-DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=dB01lX/G+/NevVROpiEIif0no8//SKbj+iXbryXnuC8JxoAhPkAwb3SZzJdVDc8uW6nMfu8aCRO9qkSKZfST1nvJuLrhwShI6EAsCs0FRA3KpOUp5rhOXfifXrrubuAF;
-X-IronPort-AV: E=Sophos;i="4.19,294,1183352400"; 
-   d="scan'208";a="325960682"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 22 Aug 2007 10:43:30 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:20947 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751978AbXHVOn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 10:43:29 -0400
+Message-ID: <46CC4AD2.2080306@openvz.org>
+Date: Wed, 22 Aug 2007 18:40:18 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
-Date: Wed, 22 Aug 2007 09:42:01 -0500
-Message-ID: <DFEF91B22ED07447AB6AA4B237F913F9B18F2A@ausx3mpc125.aus.amer.dell.com>
-In-Reply-To: <alpine.LFD.0.999.0708212026200.30176@woody.linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
-Thread-Index: AcfkbXMiD0n91I2RS1ej+8nBJ7tRMAAXJSpg
-References: <46C098FD.1030601@googlemail.com> <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708202255130.30176@woody.linux-foundation.org> <200708202334.38261.david-b@pacbell.net> <alpine.LFD.0.999.0708202348460.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708210016420.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708212026200.30176@woody.linux-foundation.org>
-From: <Stuart_Hayes@Dell.com>
-To: <torvalds@linux-foundation.org>, <david-b@pacbell.net>
-Cc: <michal.k.k.piotrowski@gmail.com>, <linux-usb-devel@lists.sourceforge.net>,
-       <gregkh@suse.de>, <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>, <dex@dragonslave.de>
-X-OriginalArrivalTime: 22 Aug 2007 14:42:26.0739 (UTC) FILETIME=[A8A6F830:01C7E4CA]
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Alexey Dobriyan <adobriyan@openvz.org>
+Subject: Re: [BUG] 2.6.23-rc3-mm1 Kernel panic - not syncing: Can't create
+ pid_1 cachep
+References: <46CC3F94.4050609@linux.vnet.ibm.com>
+In-Reply-To: <46CC3F94.4050609@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Tue, 21 Aug 2007, Linus Torvalds wrote:
->> 
->> Side note: after reverting 196705c9bb I can't get the mouse to skip
->> any more on that mac mini. But since the bad behaviour wasn't 100%
->> reliable to begin with, that's not really a guarantee of anything.
->> Two out of three kids are off on camp this week, so that machine
->> probably won't be getting a lot of testing ;/
-> 
-> Well, my one remaining child said today that "I got so much time on
-> webkinz today - yesterday the mouse locked up after five minutes". 
-> 
-> Apparently it hadn't had the mouse lock up at all today.
-> 
-> So I really do believe that that 196705c9bb commit caused problems on
-> intel-only USB machines too ("ondemand" cpufreq governor, switching
-> between 1.0-1.66 Ghz using acpi-cpufreq: totally bog-standard in all
-> respects, in other words).   
-> 
-> 		Linus
+Kamalesh Babulal wrote:
 
-If you were running 2.6.26-rc3, that's quite possibly because you didn't
-have the follow-up patch that fixed my original patch... it wasn't in
-2.6.26-rc3
-(http://www.mail-archive.com/linux-usb-devel@lists.sourceforge.net/msg56
-523.html).  It fixed a bug with my patch that wasn't necessary with
-Broadcom, but was with nVidia (and Intel, I believe).
+The creation of this cache consists of allocating ~30
+bytes and creating a new kmem cache. This looks strange
+that one of these allocation falied...
 
-That could definitely cause mouse lock-ups.  Sorry, that should have
-occurred to me yesterday when you mentioned the problem your kids were
-seeing, but it didn't for some reason.
+Could you please check what has happened with this patch:
 
-Stuart
+diff --git a/kernel/pid.c b/kernel/pid.c
+index d267775..9d594eb 100644
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -458,15 +458,22 @@ static struct kmem_cache *create_pid_cac
+ 			goto out;
+ 
+ 	pcache = kmalloc(sizeof(struct pid_cache), GFP_KERNEL);
+-	if (pcache == NULL)
++	if (pcache == NULL) {
++		printk("Can't alloc pcache size %d\n",
++				sizeof(struct pid_cache));
+ 		goto err_alloc;
++	}
+ 
+ 	snprintf(pcache->name, sizeof(pcache->name), "pid_%d", nr_ids);
+ 	cachep = kmem_cache_create(pcache->name,
+ 			sizeof(struct pid) + (nr_ids - 1) * sizeof(struct upid),
+ 			0, SLAB_HWCACHE_ALIGN, NULL);
+-	if (cachep == NULL)
++	if (cachep == NULL) {
++		printk("Can't create cachep size %d\n",
++				sizeof(struct pid) +
++				(nr_ids - 1) * sizeof(struct upid));
+ 		goto err_cachep;
++	}
+ 
+ 	pcache->nr_ids = nr_ids;
+ 	pcache->cachep = cachep;
+
+
+
+> Hi Andrew,
+> 
+> Following Kernel panic is raised while booting up with 2.6.23-rc3-mm1 
+> kernel.
+> 
+> ============================================================
+> Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+> Initializing HighMem for node 0 (00038000:001fbe00)
+> Initializing HighMem for node 1 (00200000:003fbe00)
+> Initializing HighMem for node 2 (00400000:005fbe00)
+> Initializing HighMem for node 3 (00600000:007fbe00)
+> Memory: 32480436k/33554432k available (2146k kernel code, 278984k 
+> reserved, 1203k data, 216k init, 31842304k highmem)
+> virtual kernel memory layout:
+>    fixmap  : 0xffe1a000 - 0xfffff000   (1940 kB)
+>    pkmap   : 0xffc00000 - 0xffe00000   (2048 kB)
+>    vmalloc : 0xf8800000 - 0xffbfe000   ( 115 MB)
+>    lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
+>      .init : 0xc134c000 - 0xc1382000   ( 216 kB)
+>      .data : 0xc12189e1 - 0xc1345758   (1203 kB)
+>      .text : 0xc1000000 - 0xc12189e1   (2146 kB)
+> Checking if this processor honours the WP bit even in supervisor mode... 
+> Ok.
+> SLUB: Genslabs=12, HWalign=32, Order=0-3, MinObjects=16, CPUs=16, Nodes=16
+> Calibrating delay using timer specific routine.. 1401.55 BogoMIPS 
+> (lpj=2803105)
+> Kernel panic - not syncing: Can't create pid_1 cachep
+> 
+> 
+> Thanks & Regards,
+> Kamalesh Babulal.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
