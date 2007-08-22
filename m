@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765290AbXHVQma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764882AbXHVQo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765290AbXHVQma (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 12:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762966AbXHVQmX
+	id S1764882AbXHVQo6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 12:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762514AbXHVQov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 12:42:23 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:42305 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761908AbXHVQmW (ORCPT
+	Wed, 22 Aug 2007 12:44:51 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58535 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762064AbXHVQou (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 12:42:22 -0400
-Date: Wed, 22 Aug 2007 17:42:20 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: adaplas@gmail.com, linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [VIDEO] Fix font dependency for SGI Newport console driver.
-Message-ID: <20070822164220.GB29751@linux-mips.org>
+	Wed, 22 Aug 2007 12:44:50 -0400
+Message-ID: <46CC67F1.9020005@zytor.com>
+Date: Wed, 22 Aug 2007 09:44:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andi Kleen <ak@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org, Aaron Durbin <adurbin@google.com>
+Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
+References: <1187313920.28497.1.camel@caritas-dev.intel.com>	<46C5C8C4.4060407@zytor.com>	<1187580031.27947.67.camel@caritas-dev.intel.com>	<46C9CB89.7020603@zytor.com> <20070821113310.GF32640@bingen.suse.de>	<46CAC168.7090102@zytor.com> <20070821114548.GI32640@bingen.suse.de>	<86802c440708211658j1fb2a8caj41e1bb8bffa4baf4@mail.gmail.com>	<20070822012216.GN32640@bingen.suse.de>	<86802c440708212343x3b1438d3m4bbbfbd04db1f1ef@mail.gmail.com>	<20070822111155.GP32640@bingen.suse.de> <m1absjpr6w.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1absjpr6w.fsf@ebiederm.dsl.xmission.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We better select a font when the newport driver is a module or the user
-experience might suffer.
+Eric W. Biederman wrote:
+> I need to review HPA changes a little more from his rewrite in C.
+> I think he messed up with the guarantee of initialization in that
+> rewrite, but I'm not quite certain.
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+I beg to differ, sir!
 
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index 4964396..70cbb7c 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -182,7 +182,7 @@ config FONT_8x8
- 
- config FONT_8x16
- 	bool "VGA 8x16 font" if FONTS
--	depends on FRAMEBUFFER_CONSOLE || SGI_NEWPORT_CONSOLE=y || STI_CONSOLE || USB_SISUSBVGA_CON 
-+	depends on FRAMEBUFFER_CONSOLE || SGI_NEWPORT_CONSOLE || STI_CONSOLE || USB_SISUSBVGA_CON 
- 	default y if !SPARC && !FONTS
- 	help
- 	  This is the "high resolution" font for the VGA frame buffer (the one
+In my rewritten code, the "zeropage" is 4K of zero-initialized .bss,
+into which the setup header is copied.
+
+So any undefined field will be initialized to zero, not to whatever
+assembly code happened to be there.
+
+You know that with the old code, we got boot failures after changing the
+error message in the dummy boot sector?
+
+	-hpa
