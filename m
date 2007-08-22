@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbXHVG0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbXHVG2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756801AbXHVG0o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 02:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbXHVG0f
+	id S1755192AbXHVG2e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 02:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbXHVG21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 02:26:35 -0400
-Received: from ozlabs.org ([203.10.76.45]:40810 "EHLO ozlabs.org"
+	Wed, 22 Aug 2007 02:28:27 -0400
+Received: from gw.goop.org ([64.81.55.164]:50807 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754208AbXHVG0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 02:26:34 -0400
-Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Zachary Amsden <zach@vmware.com>, Andrew Morton <akpm@osdl.org>,
+	id S1750919AbXHVG2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 02:28:25 -0400
+Message-ID: <46CBD78C.3020804@goop.org>
+Date: Tue, 21 Aug 2007 23:28:28 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Zachary Amsden <zach@vmware.com>
+CC: Virtualization Mailing List <virtualization@lists.osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-In-Reply-To: <46CBCADF.2070400@qumranet.com>
-References: <46CBC842.4070100@vmware.com>  <46CBCADF.2070400@qumranet.com>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 16:25:56 +1000
-Message-Id: <1187763956.6174.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+       Linus Torvalds <torvalds@osdl.org>, Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@osdl.org>, Ben Collins <ben.collins@ubuntu.com>
+Subject: Re: [PATCH] Fix lazy mode vmalloc synchronization for paravirt
+References: <46CB91BC.2010808@vmware.com>
+In-Reply-To: <46CB91BC.2010808@vmware.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 08:34 +0300, Avi Kivity wrote:
-> Zachary Amsden wrote:
-> > This patch provides hypercalls for the i386 port I/O instructions,
-> > which vastly helps guests which use native-style drivers.  For certain
-> > VMI workloads, this provides a performance boost of up to 30%.  We
-> > expect KVM and lguest to be able to achieve similar gains on I/O
-> > intensive workloads.
-> 
-> Won't these workloads be better off using paravirtualized drivers? 
-> i.e., do the native drivers with paravirt I/O instructions get anywhere
-> near the performance of paravirt drivers?
+Zachary Amsden wrote:
+> Found this looping Ubuntu installs with VMI.
+>
+> If unlucky enough to hit a vmalloc sync fault during a lazy mode
+> operation (from an IRQ handler for a module which was not yet
+> populated in current page directory, or from inside copy_one_pte,
+> which touches swap_map, and hit in an unused 4M region), the required
+> PDE update would never get flushed, causing an infinite page fault loop.
 
-This patch also means I can kill off the emulation code in
-drivers/lguest/core.c, which is a real relief.
+Ah, good catch.
 
-Cheers,
-Rusty.
+> This bug affects any paravirt-ops backend which uses lazy updates, I
+> believe that makes it a bug in Xen, VMI and lguest.  It only happens
+> on LOWMEM kernels. 
 
+No, under Xen the kernel/hypervisor PMD is not shared between processes,
+so this is still used when PAE is enabled.
 
+    J
