@@ -1,41 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbXHVJj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760059AbXHVJlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761972AbXHVJj6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750747AbXHVJjt
+	id S1760059AbXHVJlR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbXHVJlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 05:39:49 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52144 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751792AbXHVJjs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 05:39:48 -0400
-Date: Wed, 22 Aug 2007 11:39:45 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [PATCH] SLUB use cmpxchg_local
-Message-ID: <20070822093945.GA7539@one.firstfloor.org>
-References: <20070821231216.GA29691@Krystal> <Pine.LNX.4.64.0708211614370.6062@schroedinger.engr.sgi.com> <20070821233938.GD29691@Krystal> <Pine.LNX.4.64.0708211640430.6225@schroedinger.engr.sgi.com> <20070821234702.GE29691@Krystal> <Pine.LNX.4.64.0708211649260.6886@schroedinger.engr.sgi.com> <20070822000323.GG29691@Krystal> <p73fy2cz7bs.fsf@bingen.suse.de> <20070822003834.GB1400@Krystal> <Pine.LNX.4.64.0708211757360.3118@schroedinger.engr.sgi.com>
+	Wed, 22 Aug 2007 05:41:06 -0400
+Received: from ns2.tasking.nl ([195.193.207.10]:1464 "EHLO ns2.tasking.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750747AbXHVJlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 05:41:04 -0400
+X-Greylist: delayed 773 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Aug 2007 05:41:04 EDT
+To: linux-kernel@vger.kernel.org
 Mime-Version: 1.0
+X-Newsreader: knews 1.0b.1
+Reply-To: dick.streefland@altium.nl (Dick Streefland)
+Organization: Altium BV
+X-Face: "`*@3nW;mP[=Z(!`?W;}cn~3M5O_/vMjX&Pe!o7y?xi@;wnA&Tvx&kjv'N\P&&5Xqf{2CaT 9HXfUFg}Y/TT^?G1j26Qr[TZY%v-1A<3?zpTYD5E759Q?lEoR*U1oj[.9\yg_o.~O.$wj:t(B+Q_?D XX57?U,#b,iM$[zX'I(!'VCQM)N)x~knSj>M*@l}y9(tK\rYwdv%~+&*jV"epphm>|q~?ys:g:K#R" 2PuAzy-N9cKM<Ml/%yPQxpq"Ttm{GzBn-*:;619QM2HLuRX4]~361+,[uFp6f"JF5R`y
+References: <20070821071938.GA17761@localhost.sw.ru> <9a8748490708210256v31a0ca00oa0d83dc401aeb98f@mail.gmail.com> <20070821231533.GE21089@ftp.linux.org.uk> <9a8748490708211702q7ed2649ft978cea8ab07b63fa@mail.gmail.com> <9a8748490708211702q7ed2649ft978cea8ab07b63fa@mail.gmail.com> <20070822005236.GF21089@ftp.linux.org.uk>
+From: dick.streefland@altium.nl (Dick Streefland)
+Subject: Re: [PATCH] ver_linux is [censored]
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708211757360.3118@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+NNTP-Posting-Host: 172.17.1.66
+Message-ID: <3cbe.46cc01a9.1e88c@altium.nl>
+Date: Wed, 22 Aug 2007 09:28:09 -0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 21, 2007 at 06:06:19PM -0700, Christoph Lameter wrote:
-> Ok. Measurements vs. simple cmpxchg on a Intel(R) Pentium(R) 4 CPU 3.20GHz 
+Al Viro <viro@ftp.linux.org.uk> wrote:
+| or, simpler yet,
+| 
+| sed -n -e '/^.*\/libc-\([^/]*\)\.so$/{s//\1/;p;q}' </proc/self/maps
 
-Note the P4 is a extreme case in that "unusual" instructions are
-quite slow (basically anything that falls out of the trace cache). Core2 
-tends to be much more benign and generally acts more like a K8 in latencies.
+Or:
 
-There are millions and millions of P4s around of course and we
-shouldn't disregard them, but they're not the future and not
-highest priority.
+sed -n 's/^.*\/libc-\([^/]*\)\.so$/\1/p; T; q' < /proc/self/maps
 
--Andi
+-- 
+Dick Streefland                      ////                      Altium BV
+dick.streefland@altium.nl           (@ @)          http://www.altium.com
+--------------------------------oOO--(_)--OOo---------------------------
+
