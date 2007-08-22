@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765740AbXHVRYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934315AbXHVR0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765740AbXHVRYw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 13:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762987AbXHVRYm
+	id S934315AbXHVR0y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 13:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764386AbXHVR0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 13:24:42 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:34306 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759745AbXHVRYk (ORCPT
+	Wed, 22 Aug 2007 13:26:45 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:65517 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764380AbXHVR0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 13:24:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=saRIN/CXJwc/V39qGQTyDOPvvZfx7/wV2ade87Wdphajp1qjpoo4Q1FaJdvgy22GEMCcguhBD06SpoLZBF7+w6jJSByKn+meymOwgqiJjirk4+5ogMyyqzR+GS1yKw4HXk93D3SFtRUoI6v41STviLOrFfWyqtH36uPnc3GUW2c=
-Message-ID: <64bb37e0708221024p5184aa65x5d36c7c049049124@mail.gmail.com>
-Date: Wed, 22 Aug 2007 19:24:39 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc3-mm1
-Cc: "Kuan Luo" <kluo@nvidia.com>, "Peer Chen" <pchen@nvidia.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	Wed, 22 Aug 2007 13:26:44 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: paulus@samba.org
+Subject: git tree, Re: [patch 0/5] (hopefully) final 2.6.23 fixes for cell platform
+Date: Wed, 22 Aug 2007 19:15:12 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       cbe-oss-dev@ozlabs.org
+References: <20070822170124.764128591@arndb.de>
+In-Reply-To: <20070822170124.764128591@arndb.de>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+Message-Id: <200708221915.12355.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19SXy1hiCHZRJQlaZWxDsqRxtvgbhd3H1LCMbw
+ mWRwhGQrIHrresS0F7mQJw5X7oCfd64W1k245U7VzaWRWLKQJ9
+ zkJBS+hMLTUhiyz1NyPFQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/22/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
-[snip]
-> -ata-add-the-sw-ncq-support-to-sata_nv-for-mcp51-mcp55-mcp61.patch
-> -ata-add-the-sw-ncq-support-to-sata_nv-for-mcp51-mcp55-mcp61-fix.patch
-[snip]
->  Merged into mainline or a subsystem tree
+On Wednesday 22 August 2007, Arnd Bergmann wrote:
+> Hi Paul,
+> 
+> A few bugs came up on the cell platform when testing on the lastest
+> prototype version of a future hardware. The first three patches are
+> all meant to track changes required for the fixes that have gone
+> into the firmware. Patch 4 is for a bug that showed up during testing,
+> and the final patch is the defconfig update that you probably want
+> to do for the other platforms as well.
+> 
+> Please forward for inclusion in 2.6.23!
 
-That patch is no longer in 2.6.23-rc3-mm1, my bootlog says:
-[    0.000000] Unknown boot option `sata_nv.swncq=1': ignoring
+If you prefer the git tree, please pull from
 
-I could not find this patch in any git trees I looked and its removal
-mail from mm-commit said:
-"This patch was dropped because Changes in Jeff's tree destroyed it."
+git://git.kernel.org/pub/scm/linux/kernel/git/arnd/cell-2.6.git for-2.6.23
 
-
-I only found out about the swncq=1 command line option yesterday and
-so tested it only one day.
-But I did not have any trouble with it, even as my drive was made by Maxtor.
-
-The chipset:
-00:05.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
-00:05.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
-00:05.2 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
-
-The drive:
-Device Model:     MAXTOR STM3320820AS
-Serial Number:    5QF2E698
-Firmware Version: 3.AAE
-
-As it worked for me, I hope that patch will be picked up by someone. :)
-
-Torsten
+	Arnd <><
