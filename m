@@ -1,54 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763365AbXHVOou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbXHVOpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763365AbXHVOou (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 10:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758711AbXHVOon
+	id S1764074AbXHVOpo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 10:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760971AbXHVOph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 10:44:43 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:3502 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758077AbXHVOon (ORCPT
+	Wed, 22 Aug 2007 10:45:37 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:21440 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760226AbXHVOpg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 10:44:43 -0400
+	Wed, 22 Aug 2007 10:45:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FkMGyHtiy4YMNeOTZSs1n5v5UzY8TuQssDAAKlqCCyuatwGrwV8zukAaMyNGt27pCOQJ/iYQiw/V2hmdKmXDu95Yyau0X8VRZJv9iG7+G+KZ9N3CXRtdEYrJPXO3o5+ZMDVyzOq3s/icjK3ac8Jm8j0s11g0KPUzXBam4KMUSeE=
-Message-ID: <f9d2a5e10708220744h7b0c86dbs34c3aee24ec610b2@mail.gmail.com>
-Date: Wed, 22 Aug 2007 07:44:39 -0700
-From: "Russ Dill" <russ.dill@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: What must I do to get HPET
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <p73y7g3yfzv.fsf@bingen.suse.de>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=b6zjFBZ9gog+GiFj0oLKOaDRqHNVNKLWbs2/SjBqAfw/lO/3IjOIPnKd+Z2ET2F3F2bYVujdPZ0w+A+ef7qThgK9aiccurlGJ6b0O0Q8OZOagJN5FUQvwt9guQoOzwj/mBKCcmsClvfmh0GxqxA27+xVtSGbU/pLYYNauvnlvSw=
+Message-ID: <46CC4C08.1020408@gmail.com>
+Date: Wed, 22 Aug 2007 23:45:28 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: cornelia.huck@de.ibm.com, greg@kroah.com, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, stern@rowland.harvard.edu,
+       containers@lists.osdl.org
+Subject: Re: [PATCHSET] Sysfs cleanups from Eric W. Biederman
+References: <11876133893720-git-send-email-htejun@gmail.com> <m1ejhvpsx4.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1ejhvpsx4.fsf@ebiederm.dsl.xmission.com>
+X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <loom.20070822T045428-445@post.gmane.org>
-	 <p73y7g3yfzv.fsf@bingen.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22 Aug 2007 13:18:28 +0200, Andi Kleen <andi@firstfloor.org> wrote:
-> Russ Dill <Russ.Dill@gmail.com> writes:
->
-> > I have an Acer Ferrari 5000 laptop, it has an AMD64 TL-60 processor, and an
-> > RS480 host bridge. I'm running 2.6.22, I get no HPET.
->
-> Actually it needs the 'HPET' table.
->
-> > Do I need to get Acer to update the BIOS to include a PNP0103 entry? Is there
-> > some way I can force this?
->
-> Yes they'll need to update the BIOS. They likely have one available
-> unless it's an old box because AFAIK getting a Vista logo requires HPET.
->
+Hello,
 
-It came pre-installed with vista ultimate. I can't seem to locate a
-vista logo on the box or in the manual. However, the webpage does
-clearly show a windows vista logo:
+Eric W. Biederman wrote:
+>> * fix-i_mutex-locking-in-sysfs_get_dentry patch is added at the top
+>>   and #14-Don_t-use-lookup_one_len_kern and
+>>   #15-vfs-Remove-lookup_one_len_kern are dropped.  This is because #14
+>>   contained had a bug where it might created dentry/inode for an
+>>   already deleted sysfs_dirent.  I think it's benefitial to keep
+>>   single lookup path.
+> 
+> I think I disagree with the bug spotting.
+> 
+> At least in net we the sysfs_rename_mutex which keeps parent
+> directories from disappearing.  Further we have a reference
+> to the leaf sysfs_dirent and are actively manipulating it, so
+> the sysfs_dirent should not disappear on us.
 
-http://global.acer.com/products/notebook/fr5000.htm
+sysfs_rename_mutex() keeps out renaming and moving not removing.  Also,
+reference prevents sysfs_dirent from being released not from being
+removed.  The different in lookup path is that it searches the children
+list - sd's are unlinked from children list on removal.
 
-I have the latest BIOS, what gives?
+>> * Rewrote simplify-sysfs_get_dentry patch and
+>>   #08-Implement-__sysfs_get_dentry,
+>>   #09-Move-sysfs_get_dentry-below-__sysfs_get_dentry and
+>>   #10-Rewrite-sysfs_get_dentry-in-terms-of-__sysfs_get_dentry are
+>>   omitted as __sysfs_get_dentry() isn't used by anyone.
+> 
+> Right.  __sysfs_get_dentry is an optimization that has makes
+> the best case for sysfs_get_dentry O(1) instead of O(depth).
+> However this doesn't matter because sysfs_get_dentry is not
+> on any fast path and the maximum depth of sysfs directories
+> is fairly shallow and programmer controlled.
+
+The reason why sysfs_get_dentry() climbed up first then climbed down was
+not because of performance.  It was to support the original shadow
+implementation.  Because there was no reliable way to reach a leaf node
+from the root, dentries of all shadows are pinned such that they can
+serve as the starting point for dentry lookup and the climing up was to
+reach that starting point.  Now that the dentry-multiplexing shadow
+support is gone, there's no need to do the climing up.
+
+> The only user other user of __sysfs_get_dentry is in the tagged
+> directory support, and even that user doesn't strictly need it.
+> Although it is a bit silly to populate the dcache just so you
+> can invalidate it a moment later...
+
+Yeah, actually the only essential user of that kind of look up is
+sysfs_drop_dentry() which is in deletion path and can't fail due to
+allocation failure and has the logic open-coded.  I have nothing against
+__sysfs_get_dentry().  It was just not needed by the patches I forwarded
+this time.  Feel free to include it as you see fit.
+
+I'm currently working on kobj/sysfs separation.  As most internal
+implementation is sd based already, the changes are mostly confined to
+interface functions but it's still a big change.  I think I'll be able
+to post the patches in this week or early next week at the latest.
+
+Thanks.
+
+-- 
+tejun
