@@ -1,41 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764747AbXHVQRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764814AbXHVQS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764747AbXHVQRP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 12:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763858AbXHVQQ6
+	id S1764814AbXHVQS0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 12:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763208AbXHVQST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 12:16:58 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:49954 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763707AbXHVQQ5 (ORCPT
+	Wed, 22 Aug 2007 12:18:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34221 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763264AbXHVQST (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 12:16:57 -0400
-Date: Wed, 22 Aug 2007 09:15:50 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Xu Yang" <risingsunxy@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: lists
-Message-Id: <20070822091550.bdc8d640.randy.dunlap@oracle.com>
-In-Reply-To: <ab40e9c0708220810r152ef9b0w546d66746dac09e2@mail.gmail.com>
-References: <ab40e9c0708220810r152ef9b0w546d66746dac09e2@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 22 Aug 2007 12:18:19 -0400
+Date: Wed, 22 Aug 2007 09:17:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>,
+       Greg KH <greg@kroah.com>
+Subject: Re: 2.6.23-rc3-mm1
+Message-Id: <20070822091755.59d3af01.akpm@linux-foundation.org>
+In-Reply-To: <6bffcb0e0708220719j7b07adabl74959c36256df2e@mail.gmail.com>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<6bffcb0e0708220719j7b07adabl74959c36256df2e@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007 17:10:08 +0200 Xu Yang wrote:
+On Wed, 22 Aug 2007 16:19:33 +0200 "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com> wrote:
 
-> lists
+> On 22/08/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
+> >
+> 
+> allyesconfig
+> 
+>   RELOCS  arch/i386/boot/compressed/vmlinux.relocs
+> WARNING: Absolute relocations present
+> Offset     Info     Type     Sym.Value Sym.Name
+> c06018f3 02ee1f01   R_386_32 c14adad0  _sdata
+> 
 
-see http://vger.kernel.org/vger-lists.html
+Yeah, that's Greg's pestiferous
+gregkh-driver-warn-when-statically-allocated-kobjects-are-used.patch acting
+up.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+I previously suggested that something like kallsyms_lookup() could be used
+for this, but I was cruelly ignored.
+
