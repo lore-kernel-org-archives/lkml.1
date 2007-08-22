@@ -1,62 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932627AbXHVUOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932779AbXHVUQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932627AbXHVUOv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 16:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761754AbXHVUOj
+	id S932779AbXHVUQZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 16:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759900AbXHVUQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 16:14:39 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2366 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760777AbXHVUOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 16:14:38 -0400
-Date: Wed, 22 Aug 2007 15:58:14 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Re: 2.6.23-rc3-mm1: net/wireless/rt2x00mac.c build failure
-Message-ID: <20070822195814.GG2926@tuxdriver.com>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <200708222116.22386.m.kozlowski@tuxland.pl> <200708222131.24882.IvDoorn@gmail.com>
+	Wed, 22 Aug 2007 16:16:18 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49918 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758416AbXHVUQR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 16:16:17 -0400
+Date: Wed, 22 Aug 2007 13:16:16 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, riel <riel@redhat.com>
+Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
+In-Reply-To: <1187813025.5463.85.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0708221306080.15775@schroedinger.engr.sgi.com>
+References: <20070820215040.937296148@sgi.com>  <1187692586.6114.211.camel@twins>
+  <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com> 
+ <1187730812.5463.12.camel@lappy>  <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com>
+  <1187734144.5463.35.camel@lappy>  <Pine.LNX.4.64.0708211532560.5728@schroedinger.engr.sgi.com>
+  <1187766156.6114.280.camel@twins>  <Pine.LNX.4.64.0708221157180.13813@schroedinger.engr.sgi.com>
+ <1187813025.5463.85.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708222131.24882.IvDoorn@gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 09:31:24PM +0200, Ivo van Doorn wrote:
+On Wed, 22 Aug 2007, Peter Zijlstra wrote:
 
-> >   CC [M]  drivers/net/wireless/rt2x00mac.o
-> > drivers/net/wireless/rt2x00mac.c: In function `rt2x00mac_tx_rts_cts':
-> > drivers/net/wireless/rt2x00mac.c:61: warning: passing arg 2 of `ieee80211_ctstoself_get' makes pointer from integer without a cast
-> > drivers/net/wireless/rt2x00mac.c:61: warning: passing arg 3 of `ieee80211_ctstoself_get' makes integer from pointer without a cast
-> > drivers/net/wireless/rt2x00mac.c:61: warning: passing arg 4 of `ieee80211_ctstoself_get' makes pointer from integer without a cast
-> > drivers/net/wireless/rt2x00mac.c:61: warning: passing arg 5 of `ieee80211_ctstoself_get' from incompatible pointer type
-> > drivers/net/wireless/rt2x00mac.c:61: error: too many arguments to function `ieee80211_ctstoself_get'
-> > drivers/net/wireless/rt2x00mac.c:65: warning: passing arg 2 of `ieee80211_rts_get' makes pointer from integer without a cast
-> > drivers/net/wireless/rt2x00mac.c:65: warning: passing arg 3 of `ieee80211_rts_get' makes integer from pointer without a cast
-> > drivers/net/wireless/rt2x00mac.c:65: warning: passing arg 4 of `ieee80211_rts_get' makes pointer from integer without a cast
-> > drivers/net/wireless/rt2x00mac.c:65: warning: passing arg 5 of `ieee80211_rts_get' from incompatible pointer type
-> > drivers/net/wireless/rt2x00mac.c:65: error: too many arguments to function `ieee80211_rts_get'
-> > make[3]: *** [drivers/net/wireless/rt2x00mac.o] Error 1
-> > make[2]: *** [drivers/net/wireless] Error 2
-> > make[1]: *** [drivers/net] Error 2
-> > make: *** [drivers] Error 2
+> > That is an extreme case that AFAIK we currently ignore and could be 
+> > avoided with some effort.
 > 
-> This has been fixed for quite some time already.
-> John, I can't check this myself now, but which rt2x00
-> patches have gone into the -mm tree? Since I believe
-> the patch that changed ieee80211_ctstoself_get was
-> followed by a patch to fix rt2x00 within the same series...
+> Its not extreme, not even rare, and its handled now. Its what
+> PF_MEMALLOC is for.
 
-Andrew had a lot of problems working-out conflicts between wireless-dev
-and net-2.6.24.  I have since taken steps to help with this, but I
-think his pull was from before the wireless-dev rebase.  Hopefully the
-next -mm will be better.
+No its not. If you have all pages allocated as anonymous pages and your 
+writeout requires more pages than available in the reserves then you are 
+screwed either way regardless if you have PF_MEMALLOC set or not.
 
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+> > The initial PF_MEMALLOC patchset seems to be 
+> > still enough to deal with your issues.
+> 
+> Take the anonyous workload, user-space will block once the page
+> allocator hits ALLOC_MIN. Network will be able to receive until
+> ALLOC_MIN|ALLOC_HIGH - if the completion doesn't arrive by then it will
+> start dropping all packets until there is memory again. But userspace is
+> wedged and hence will not consume the network traffic, hence we
+> deadlock.
+> 
+> Even if there is something to reclaim initially, if the pressure
+> persists that can eventually be exhausted.
+
+Sure ultimately you will end up with pages that are all unreclaimable if 
+you reclaim all reclaimable memory.
+
+> > multiple critical tasks on various devices that have various memory needs. 
+> > So multiple critical spots can happen concurrently in multiple 
+> > application contexts.
+> 
+> yes, reclaim can be unbounded concurrent, and that is one of the
+> (theoretically) major problems we currently have.
+
+So your patchset is not fixing it?
+
+> > We have that with PF_MEMALLOC.
+> 
+> Exactly. But if you recognise the need for PF_MEMALLOC then what is this
+> argument about?
+
+The PF_MEMALLOC patchset f.e. is about avoiding to go out of 
+memory when there is still memory available even if we are doing a 
+PF_MEMALLOC allocation and would OOM otherwise.
+
+> Networking can currently be seen as having two states:
+> 
+>  1 receive packets and consume memory
+>  2 drop all packets (when out of memory)
+> 
+> I need a 3rd state:
+> 
+>  3 receiving packets but not consuming memory
+
+So far a good idea. If you are not consuming memory then why are the 
+allocators involved?
+ 
+> Now, I need this state when we're in PF_MEMALLOC territory, because I
+> need to be able to process an unspecified amount of network traffic in
+> order to receive the writeout completion.
+> 
+> In order to operate this 3rd network state, some memory is needed in
+> which packets can be received and when deemed not important freed and
+> reused.
+> 
+> It needs a bounded amount of memory in order to process an unbounded
+> amount of network traffic.
+> 
+> What exactly is not clear about this? If you accept the need for
+> PF_MEMALLOC you surely must also agree that at the point you're using it
+> running reclaim is useless.
+
+Yes looks like you would like to add something to the network layer to 
+filter important packets. As long as you stay within PF_MEMALLOC 
+boundaries you can allocate and throw packets away. If you want to have a 
+reserve that is secure and just for you then you need to take it away from 
+the reserves (which in turn will lead reclaim to restore them).
+
+> > > Also, failing a memory allocation isn't bad, why are you so worried
+> > > about that? It happens all the time.
+> > 
+> > Its a performance impact and plainly does not make sense if there is 
+> > reclaimable memory availble. The common action of the vm is to reclaim if 
+> > there is a demand for memory. Now we suddenly abandon that approach?
+> 
+> I'm utterly confused by this, on one hand you recognise the need for
+> PF_MEMALLOC but on the other hand you're saying its not needed and
+> anybody needing memory (even reclaim itself) should use reclaim.
+
+The VM reclaims memory on demand but in exceptional limited cases where we 
+cannot do so we use the reserves. I am sure you know this.
+
+
