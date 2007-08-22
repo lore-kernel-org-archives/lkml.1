@@ -1,79 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763498AbXHVJPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764271AbXHVJPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763498AbXHVJPb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760424AbXHVI4o
+	id S1764271AbXHVJPz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760844AbXHVI5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 04:56:44 -0400
-Received: from 1wt.eu ([62.212.114.60]:2189 "EHLO 1wt.eu"
+	Wed, 22 Aug 2007 04:57:38 -0400
+Received: from 1wt.eu ([62.212.114.60]:2195 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760380AbXHVI4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 04:56:42 -0400
+	id S1758038AbXHVI5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 04:57:36 -0400
 From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20070822084031.%N@1wt.eu>
+Message-Id: <20070822083951.%N@1wt.eu>
 References: <20070822083844.%N@1wt.eu>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Aug 2007 11:39:25 +0200
+Date: Wed, 22 Aug 2007 11:38:58 +0200
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Adrian Bunk <bunk@stusta.de>, "Antonino A. Daplas" <adaplas@pol.net>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+Cc: Alan Stern <stern@rowland.harvard.edu>,
        Greg Kroah-Hartman <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>
-Subject: [2.6.20.17 review 41/58] drivers/video/macmodes.c:mac_find_mode() mustnt be __devinit
-Content-Disposition: inline; filename=0041-drivers-video-macmodes.c-mac_find_mode-mustn-t-be.patch
+Subject: [2.6.20.17 review 14/58] USB: fix warning caused by autosuspend counter going negative
+Content-Disposition: inline; filename=0014-USB-fix-warning-caused-by-autosuspend-counter-going.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If it's EXPORT_SYMBOL'ed it can't be __devinit.
+This patch (as937) fixes a minor bug in the autosuspend usage-counting
+code.  Each hub's usage counter keeps track of the number of
+unsuspended children.  However the current driver increments the
+counter after registering a new child, by which time the child may
+already have been suspended and caused the counter to go negative.
+The obvious solution is to increment the counter before registering
+the child.
 
-Reported by Mikael Pettersson.
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-Cc: "Antonino A. Daplas" <adaplas@pol.net>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Willy Tarreau <w@1wt.eu>
 ---
- drivers/video/macmodes.c |    5 ++---
- drivers/video/macmodes.h |    8 ++++----
- 2 files changed, 6 insertions(+), 7 deletions(-)
+ drivers/usb/core/hub.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/macmodes.c b/drivers/video/macmodes.c
-index ab21495..083f603 100644
---- a/drivers/video/macmodes.c
-+++ b/drivers/video/macmodes.c
-@@ -369,9 +369,8 @@ EXPORT_SYMBOL(mac_map_monitor_sense);
-  *
-  */
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index 8ddeed3..d5890d5 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -1356,6 +1356,10 @@ static int __usb_new_device(void *void_data)
+ 	}
+ #endif
  
--int __devinit mac_find_mode(struct fb_var_screeninfo *var,
--			    struct fb_info *info, const char *mode_option,
--			    unsigned int default_bpp)
-+int mac_find_mode(struct fb_var_screeninfo *var, struct fb_info *info,
-+		  const char *mode_option, unsigned int default_bpp)
- {
-     const struct fb_videomode *db = NULL;
-     unsigned int dbsize = 0;
-diff --git a/drivers/video/macmodes.h b/drivers/video/macmodes.h
-index babeb81..b86ba08 100644
---- a/drivers/video/macmodes.h
-+++ b/drivers/video/macmodes.h
-@@ -55,10 +55,10 @@ extern int mac_vmode_to_var(int vmode, int cmode,
- extern int mac_var_to_vmode(const struct fb_var_screeninfo *var, int *vmode,
- 			    int *cmode);
- extern int mac_map_monitor_sense(int sense);
--extern int __devinit mac_find_mode(struct fb_var_screeninfo *var,
--				   struct fb_info *info,
--				   const char *mode_option,
--				   unsigned int default_bpp);
-+extern int mac_find_mode(struct fb_var_screeninfo *var,
-+			 struct fb_info *info,
-+			 const char *mode_option,
-+			 unsigned int default_bpp);
++	/* Increment the parent's count of unsuspended children */
++	if (udev->parent)
++		usb_autoresume_device(udev->parent);
++
+ 	/* Register the device.  The device driver is responsible
+ 	 * for adding the device files to usbfs and sysfs and for
+ 	 * configuring the device.
+@@ -1363,13 +1367,11 @@ static int __usb_new_device(void *void_data)
+ 	err = device_add (&udev->dev);
+ 	if (err) {
+ 		dev_err(&udev->dev, "can't device_add, error %d
+", err);
++		if (udev->parent)
++			usb_autosuspend_device(udev->parent);
+ 		goto fail;
+ 	}
  
- 
-     /*
+-	/* Increment the parent's count of unsuspended children */
+-	if (udev->parent)
+-		usb_autoresume_device(udev->parent);
+-
+ exit:
+ 	module_put(THIS_MODULE);
+ 	return err;
 -- 
 1.5.2.5
 
