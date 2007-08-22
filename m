@@ -1,121 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbXHVLFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759618AbXHVLJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758946AbXHVLFz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 07:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755786AbXHVLFq
+	id S1759618AbXHVLJp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 07:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755786AbXHVLJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 07:05:46 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:39103 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752631AbXHVLFp (ORCPT
+	Wed, 22 Aug 2007 07:09:38 -0400
+Received: from aa011msr.fastwebnet.it ([85.18.95.71]:49256 "EHLO
+	aa011msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752631AbXHVLJh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 07:05:45 -0400
-X-Sasl-enc: UxHXehIro7B8cMPfgIovPt2FjMvwodyp2WXYH0x/0ERL 1187780743
-Subject: Re: [autofs] [PATCH] autofs4: reinstate negatitive timeout of
-	mount fails
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Staubach <staubach@redhat.com>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1187776503.3899.16.camel@raven.themaw.net>
-References: <1187688369.3318.12.camel@raven.themaw.net>
-	 <46CAF484.80501@redhat.com>  <1187776503.3899.16.camel@raven.themaw.net>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 19:05:38 +0800
-Message-Id: <1187780738.3899.20.camel@raven.themaw.net>
+	Wed, 22 Aug 2007 07:09:37 -0400
+Date: Wed, 22 Aug 2007 13:09:13 +0200
+From: Paolo Ornati <ornati@fastwebnet.it>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "Jeffrey W. Baker" <jwbaker@acm.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: huge improvement with per-device dirty throttling
+Message-ID: <20070822130913.643c39be@localhost>
+In-Reply-To: <p733aybzv6e.fsf@bingen.suse.de>
+References: <1187764638.6869.17.camel@hannibal>
+	<p733aybzv6e.fsf@bingen.suse.de>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 17:55 +0800, Ian Kent wrote:
-> On Tue, 2007-08-21 at 10:19 -0400, Peter Staubach wrote:
-> > Ian Kent wrote:
-> > > Hi,
-> > >
-> > > Due to a change to fs/dcache.c:d_lookup() in the 2.6 kernel whereby only
-> > > hashed dentrys are returned the negative caching of mount failures
-> > > stopped working in the autofs4 module for nobrowse mount (ie. directory
-> > > created at mount time and removed at umount or following a mount
-> > > failure).
-> > >
-> > > This patch keeps track of the dentrys from mount fails in order to be
-> > > able check the timeout since the last fail and return the appropriate
-> > > status. In addition the timeout value is settable at load time as a
-> > > module option and via sysfs using the module
-> > > parameter /sys/module/autofs4/parameters/negative_timeout.
-> > >
-> > > Signed-off-by: Ian Kent <raven@themaw.net>
-> > >
-> > > ---
-> > > --- linux-2.6.23-rc2-mm2/fs/autofs4/init.c.negative-timeout	2007-07-09 07:32:17.000000000 +0800
-> > > +++ linux-2.6.23-rc2-mm2/fs/autofs4/init.c	2007-08-21 15:44:34.000000000 +0800
-> > > @@ -14,6 +14,10 @@
-> > >  #include <linux/init.h>
-> > >  #include "autofs_i.h"
-> > >  
-> > > +unsigned int negative_timeout = AUTOFS_NEGATIVE_TIMEOUT;
-> > > +module_param(negative_timeout, uint, S_IRUGO | S_IWUSR);
-> > > +MODULE_PARM_DESC(negative_timeout, "Cache mount fails negatively for this many seconds");
-> > > +
-> > >  static int autofs_get_sb(struct file_system_type *fs_type,
-> > >  	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
-> > >  {
-> > > --- linux-2.6.23-rc2-mm2/fs/autofs4/inode.c.negative-timeout	2007-08-17 11:52:33.000000000 +0800
-> > > +++ linux-2.6.23-rc2-mm2/fs/autofs4/inode.c	2007-08-21 15:44:34.000000000 +0800
-> > > @@ -46,6 +46,7 @@ struct autofs_info *autofs4_init_ino(str
-> > >  	ino->inode = NULL;
-> > >  	ino->dentry = NULL;
-> > >  	ino->size = 0;
-> > > +	ino->negative_timeout = negative_timeout;
-> > >  
-> > >  	INIT_LIST_HEAD(&ino->rehash);
-> > >  
-> > > @@ -98,11 +99,24 @@ void autofs4_free_ino(struct autofs_info
-> > >  static void autofs4_force_release(struct autofs_sb_info *sbi)
-> > >  {
-> > >  	struct dentry *this_parent = sbi->sb->s_root;
-> > > -	struct list_head *next;
-> > > +	struct list_head *p, *next;
-> > >  
-> > >  	if (!sbi->sb->s_root)
-> > >  		return;
-> > >  
-> > > +	/* Cleanup the negative dentry cache */
-> > > +	spin_lock(&sbi->rehash_lock);
-> > > +	list_for_each_safe(p, next, &sbi->rehash_list) {
-> > > +		struct autofs_info *ino;
-> > > +		struct dentry *dentry;
-> > > +		ino = list_entry(p, struct autofs_info, rehash);
-> > > +		dentry = ino->dentry;
-> > > +		spin_unlock(&sbi->rehash_lock);
-> > > +		dput(ino->dentry);
-> > >   
+On 22 Aug 2007 13:05:13 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
+
+> "Jeffrey W. Baker" <jwbaker@acm.org> writes:
 > > 
-> > Should this be dput(dentry);?
+> > My system is a Core 2 Duo, 2GB, single SATA disk.  
 > 
-> Addressed in this simple (first) cleanup patch.
-> 
+> Hmm, I thought the patch was only supposed to make a real difference
+> if you have multiple devices? But you only got a single disk.  
 
-Scratch that first cleanup.
-I missed removing the definition of the no longer used dentry.
-Please use this instead.
-Ian
+No, there's also:
+[PATCH 22/23] mm: dirty balancing for tasks
 
----
---- linux-2.6.23-rc2-mm2/fs/autofs4/inode.c.negative-timeout-cleanup	2007-08-22 17:46:33.000000000 +0800
-+++ linux-2.6.23-rc2-mm2/fs/autofs4/inode.c	2007-08-22 18:57:49.000000000 +0800
-@@ -108,9 +108,7 @@ static void autofs4_force_release(struct
- 	spin_lock(&sbi->rehash_lock);
- 	list_for_each_safe(p, next, &sbi->rehash_list) {
- 		struct autofs_info *ino;
--		struct dentry *dentry;
- 		ino = list_entry(p, struct autofs_info, rehash);
--		dentry = ino->dentry;
- 		spin_unlock(&sbi->rehash_lock);
- 		dput(ino->dentry);
- 		spin_lock(&sbi->rehash_lock);
+:)
 
-
+-- 
+	Paolo Ornati
+	Linux 2.6.23-rc3-g2a677896-dirty on x86_64
