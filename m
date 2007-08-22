@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763751AbXHVTS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764915AbXHVTSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763751AbXHVTS3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 15:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757246AbXHVTSV
+	id S1764915AbXHVTSo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 15:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761044AbXHVTSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 15:18:21 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:39522 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbXHVTSU (ORCPT
+	Wed, 22 Aug 2007 15:18:24 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:48261 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759261AbXHVTSX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 15:18:20 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Agf2pfKT+c3/yfUt7T3CM8KmBty6hrkYzWJnimlq8CVTJZ90t0V12kFCClKbvmGLU
-	oycoNy9sal6txyEO5p6ew==
-Message-ID: <6599ad830708221218t3c1eae51o1605f00b8f204b02@mail.gmail.com>
-Date: Wed, 22 Aug 2007 12:18:03 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Memory controller Add Documentation
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
-       "Dave Hansen" <haveblue@us.ibm.com>,
-       "Linux MM Mailing List" <linux-mm@kvack.org>,
-       "Nick Piggin" <npiggin@suse.de>,
-       "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>,
-       "Pavel Emelianov" <xemul@openvz.org>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Eric W Biederman" <ebiederm@xmission.com>
-In-Reply-To: <20070822130612.18981.58696.sendpatchset@balbir-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 22 Aug 2007 15:18:23 -0400
+Date: Wed, 22 Aug 2007 12:17:31 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: 2.6.23-rc3-mm1
+Message-Id: <20070822121731.011cd263.randy.dunlap@oracle.com>
+In-Reply-To: <20070822193857.GC8058@bingen.suse.de>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<20070822110348.8fd6a937.randy.dunlap@oracle.com>
+	<20070822113211.9ac85162.akpm@linux-foundation.org>
+	<20070822193857.GC8058@bingen.suse.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070822130612.18981.58696.sendpatchset@balbir-laptop>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/22/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->
->
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
->
->  Documentation/memcontrol.txt |  193 +++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 193 insertions(+)
->
-> diff -puN /dev/null Documentation/memcontrol.txt
-> --- /dev/null   2007-06-01 20:42:04.000000000 +0530
-> +++ linux-2.6.23-rc2-mm2-balbir/Documentation/memcontrol.txt    2007-08-22 18:29:29.000000000 +0530
-> @@ -0,0 +1,193 @@
-> +Memory Controller
-> +
-> +0. Salient features
-> +
-> +a. Enable control of both RSS and Page Cache pages
+On Wed, 22 Aug 2007 21:38:58 +0200 Andi Kleen wrote:
 
-s/RSS/anonymous/ (and generally throughout the document)? RSS can
-include pages that are part of the page cache too.
+> On Wed, Aug 22, 2007 at 11:32:11AM -0700, Andrew Morton wrote:
+> > > On Wed, 22 Aug 2007 02:06:48 -0700 Andrew Morton wrote:
+> > > 
+> > > > 
+> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
+> > > 
+> > > allyesconfig on x86_64 says:
+> > > 
+> > > kernel/unwind.c:1016:31: error: undefined identifier '__builtin_labs'
+> > > kernel/unwind.c:1232:25: error: undefined identifier '__builtin_labs'
+> > > 
+> > 
+> 
+> Why does that compiler not know __builtin_abs?
 
-Paul
+I dunno:
+
+> gcc --version
+gcc (GCC) 4.1.0 (SUSE Linux)
+
+
+> > One wonders why x86_64-mm-unwinder.patch has an open-coded call to
+> > __builtin_labs(), when include/linux/kernel.h:abs() should do a fine job.
+> 
+> I'll fix.
+> 
+> > 
+> > And what's this stuff, anyway?
+> > 
+> > +typedef unsigned long uleb128_t;
+> > +typedef   signed long sleb128_t;
+> > +#define sleb128abs __builtin_labs
+> > 
+> > unsigned and signed little-endian 128-bit types?  Nope, they're 32-bit or
+> > 64-bit.   All very mysterious.
+> 
+> dwarf2 uses a magic compressing encoding for numbers that uses less bytes
+> for small numbers and more bytes for larger numbers. These are the base
+> types for this.
+> 
+> It's similar to fs/reiser4/dscale.h in your tree.
+> 
+> -Andi
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
