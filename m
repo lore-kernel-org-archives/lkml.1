@@ -1,40 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761396AbXHVJmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760237AbXHVJpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761396AbXHVJmo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757749AbXHVJmX
+	id S1760237AbXHVJpR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:45:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756734AbXHVJpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 05:42:23 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:41194 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756750AbXHVJmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 05:42:21 -0400
-Date: Wed, 22 Aug 2007 11:43:25 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] do_sigaction: don't worry about signal_pending()
-Message-ID: <20070822094325.GF1684@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070820160157.GA1279@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 22 Aug 2007 05:45:04 -0400
+Received: from ozlabs.org ([203.10.76.45]:50518 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755619AbXHVJpC convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 05:45:02 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <18124.1417.743332.974941@cargo.ozlabs.ibm.com>
+Date: Wed, 22 Aug 2007 19:44:41 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       galak@kernel.crashing.org
+Subject: Re: [PATCH] ppc: remove unused amiga_request_irq and mach_request_irq
+In-Reply-To: <1187767237.25624.11.camel@sebastian.kern.oss.ntt.co.jp>
+References: <1187767237.25624.11.camel@sebastian.kern.oss.ntt.co.jp>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20-08-2007 18:01, Oleg Nesterov wrote:
-> do_sigaction() returns -ERESTARTNOINTR if signal_pending(). The comment says:
-> 
-> 	* If there might be a fatal signal pending on multiple
-> 	* threads, make sure we take it before changing the action.
-> 	
-> I think this is not needed. We should only worry about SIGNAL_GROUP_EXIT case,
-> bit it implies a pending SIGKILL which can't be cleared by do_sigaction.
+Fernando Luis Vázquez Cao writes:
 
-Isn't it for optimization e.g., to skip this 'do while' loop below for
-such multiple threads, which would get SIGKILL or SIGSTOP anyway?
+> amiga_request_irq and mach_request_irq are never used, so delete them.
 
-Regards,
-Jarek P.
+OK, but is there a particular reason you want to do this?
+
+The whole of arch/ppc is going away eventually, so I don't think we
+need to remove it piece by piece.
+
+Paul.
