@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933901AbXHVXMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934263AbXHVXOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933901AbXHVXMy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 19:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763246AbXHVXMp
+	id S934263AbXHVXOv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 19:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763259AbXHVXOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 19:12:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46591 "EHLO mx1.redhat.com"
+	Wed, 22 Aug 2007 19:14:41 -0400
+Received: from gw.goop.org ([64.81.55.164]:39625 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763120AbXHVXMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 19:12:45 -0400
-Date: Wed, 22 Aug 2007 19:09:51 -0400
-From: Dave Jones <davej@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [Announce] Unified x86 architecture, arch/x86 - V2
-Message-ID: <20070822230951.GI17546@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-	Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Chris Wright <chrisw@sous-sol.org>,
-	Steven Rostedt <rostedt@goodmis.org>
-References: <1187819782.3316.8.camel@chaos>
+	id S1761913AbXHVXOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 19:14:40 -0400
+Message-ID: <46CCC361.6020600@goop.org>
+Date: Wed, 22 Aug 2007 16:14:41 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187819782.3316.8.camel@chaos>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: James Courtier-Dutton <James@superbug.demon.co.uk>
+CC: Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@qumranet.com>
+Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
+References: <46CBC842.4070100@vmware.com> <46CCB088.8070606@goop.org> <46CCB56F.8090308@superbug.co.uk> <20070822222036.GD3672@sequoia.sous-sol.org> <46CCB8BA.6060007@superbug.demon.co.uk>
+In-Reply-To: <46CCB8BA.6060007@superbug.demon.co.uk>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 11:56:22PM +0200, Thomas Gleixner wrote:
- > We are pleased to announce v2 of the unified arch/x86 project we are 
- > working on.
- > 
- > To recap: the core idea behind our project is simple to describe: we 
- > introduce a new arch/x86/ and include/asm-x86/ file hierarchy that 
- > includes all the existing 32-bit and 64-bit x86 code and allows the 
- > building of either a 32-bit (i386) kernel or a 64-bit (x86_64) kernel. 
- > No code is lost and almost no code is modified. We want the window 
- > for regressions and tree incompatibilities to be zero. (The full initial 
- > announcement can be found at http://lkml.org/lkml/2007/7/20/447)
- > 
- > The main technical request for improvement we received was the lack of a 
- > patch-series, and this v2 release does that, in form of a 600+ commits 
- > git tree:
- > 
- >  git://git.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-x86.git
+James Courtier-Dutton wrote:
+> Ok, so I need to get a new CPU like the Intel Core Duo that has VT
+> features? I have an old Pentium 4 at the moment, without any VT features.
+>   
 
-Nice work.  cpufreq bits look sane from a quick eyeball.
+No, VT-d (as opposed to VT) is a chipset feature which allows the
+hypervisor to control who's allowed to DMA where.  So you'd need a very
+new machine with a VT-d capable chipset (which would also have VT, since
+all new processors do).
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+    J
