@@ -1,38 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756961AbXHVGwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757085AbXHVG5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756961AbXHVGwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 02:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbXHVGwY
+	id S1757085AbXHVG5g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 02:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbXHVG53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 02:52:24 -0400
-Received: from ozlabs.org ([203.10.76.45]:56682 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753222AbXHVGwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 02:52:23 -0400
-Subject: Re: [Lguest] [PATCH] turn err into errx in lguest call sites
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-Cc: linux-kernel@vger.kernel.org, rusty@rustycorp.com.au,
-       akpm@linux-foundation.org, ak@suse.de, lguest@ozlabs.org
-In-Reply-To: <1187728117715-git-send-email-gcosta@redhat.com>
-References: <1187728117715-git-send-email-gcosta@redhat.com>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 16:51:43 +1000
-Message-Id: <1187765503.6174.58.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 22 Aug 2007 02:57:29 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:56600 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753605AbXHVG52 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 02:57:28 -0400
+Message-ID: <46CBDD25.5050909@vmware.com>
+Date: Tue, 21 Aug 2007 23:52:21 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Fix lazy mode vmalloc synchronization for paravirt
+References: <46CB91BC.2010808@vmware.com> <46CBD78C.3020804@goop.org>
+In-Reply-To: <46CBD78C.3020804@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-21 at 17:28 -0300, Glauber de Oliveira Costa wrote:
-> These two callsites should really be errx instead of err, since there is
-> no errno associated with them in the moment they are issued.
-> 
-> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+Jeremy Fitzhardinge wrote:
+> No, under Xen the kernel/hypervisor PMD is not shared between processes,
+> so this is still used when PAE is enabled.
+>   
 
-Thanks, applied!
+Ahh, yes.  So this was a lucky catch for us.  Non-PAE kernels seem to be 
+increasing in value at antique sales.
 
-Rusty.
-
+Zach
 
