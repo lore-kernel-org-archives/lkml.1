@@ -1,110 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763704AbXHVOmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763910AbXHVOmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763704AbXHVOmS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 10:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757638AbXHVOmA
+	id S1763910AbXHVOmj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 10:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758571AbXHVOma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 10:42:00 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39613 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757386AbXHVOl7 (ORCPT
+	Wed, 22 Aug 2007 10:42:30 -0400
+Received: from ausc60ps301.us.dell.com ([143.166.148.206]:14589 "EHLO
+	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757638AbXHVOm3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 10:41:59 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <ak@suse.de>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org, Aaron Durbin <adurbin@google.com>
-Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
-References: <1187313920.28497.1.camel@caritas-dev.intel.com>
-	<46C5C8C4.4060407@zytor.com>
-	<1187580031.27947.67.camel@caritas-dev.intel.com>
-	<46C9CB89.7020603@zytor.com> <20070821113310.GF32640@bingen.suse.de>
-	<46CAC168.7090102@zytor.com> <20070821114548.GI32640@bingen.suse.de>
-	<86802c440708211658j1fb2a8caj41e1bb8bffa4baf4@mail.gmail.com>
-	<20070822012216.GN32640@bingen.suse.de>
-	<86802c440708212343x3b1438d3m4bbbfbd04db1f1ef@mail.gmail.com>
-	<20070822111155.GP32640@bingen.suse.de>
-Date: Wed, 22 Aug 2007 08:41:27 -0600
-In-Reply-To: <20070822111155.GP32640@bingen.suse.de> (Andi Kleen's message of
-	"Wed, 22 Aug 2007 13:11:55 +0200")
-Message-ID: <m1absjpr6w.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 22 Aug 2007 10:42:29 -0400
+DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=dB01lX/G+/NevVROpiEIif0no8//SKbj+iXbryXnuC8JxoAhPkAwb3SZzJdVDc8uW6nMfu8aCRO9qkSKZfST1nvJuLrhwShI6EAsCs0FRA3KpOUp5rhOXfifXrrubuAF;
+X-IronPort-AV: E=Sophos;i="4.19,294,1183352400"; 
+   d="scan'208";a="325960682"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
+Date: Wed, 22 Aug 2007 09:42:01 -0500
+Message-ID: <DFEF91B22ED07447AB6AA4B237F913F9B18F2A@ausx3mpc125.aus.amer.dell.com>
+In-Reply-To: <alpine.LFD.0.999.0708212026200.30176@woody.linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
+Thread-Index: AcfkbXMiD0n91I2RS1ej+8nBJ7tRMAAXJSpg
+References: <46C098FD.1030601@googlemail.com> <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708202255130.30176@woody.linux-foundation.org> <200708202334.38261.david-b@pacbell.net> <alpine.LFD.0.999.0708202348460.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708210016420.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708212026200.30176@woody.linux-foundation.org>
+From: <Stuart_Hayes@Dell.com>
+To: <torvalds@linux-foundation.org>, <david-b@pacbell.net>
+Cc: <michal.k.k.piotrowski@gmail.com>, <linux-usb-devel@lists.sourceforge.net>,
+       <gregkh@suse.de>, <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>, <dex@dragonslave.de>
+X-OriginalArrivalTime: 22 Aug 2007 14:42:26.0739 (UTC) FILETIME=[A8A6F830:01C7E4CA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> writes:
-
-> On Tue, Aug 21, 2007 at 11:43:38PM -0700, Yinghai Lu wrote:
->> On 8/21/07, Andi Kleen <ak@suse.de> wrote:
->> > > current LinuxBIOS's path: the elfboot in LinuxBIOS will prepare the
->> > > e820 table, and jump to startup_32 in kernel. is that not good and
->> > > simple?
->> >
->> > The problem is that the zero page cannot be changed at all in this
->> > setup. Or rather it can be only changed by breaking LinuxBios.
+Linus Torvalds wrote:
+> On Tue, 21 Aug 2007, Linus Torvalds wrote:
 >> 
->> So you want to construct e820 table in x86_boot_params from LinuxBIOS
->> memmap in head64.c?
->
-> The short term fix is probably to just add a version number to
-> the zero page and make sure new changes only add stuff to the
-> end and the kernel has reasonable compat code for old versions.
->
-> Then LinuxBIOS would need to be changed to supply that version number.
+>> Side note: after reverting 196705c9bb I can't get the mouse to skip
+>> any more on that mac mini. But since the bad behaviour wasn't 100%
+>> reliable to begin with, that's not really a guarantee of anything.
+>> Two out of three kids are off on camp this week, so that machine
+>> probably won't be getting a lot of testing ;/
+> 
+> Well, my one remaining child said today that "I got so much time on
+> webkinz today - yesterday the mouse locked up after five minutes". 
+> 
+> Apparently it hadn't had the mouse lock up at all today.
+> 
+> So I really do believe that that 196705c9bb commit caused problems on
+> intel-only USB machines too ("ondemand" cpufreq governor, switching
+> between 1.0-1.66 Ghz using acpi-cpufreq: totally bog-standard in all
+> respects, in other words).   
+> 
+> 		Linus
 
-To clear up a small misconception.  It isn't LinuxBIOS but the LinuxBIOS
-bootloaders that need to be changed.  A subtle distinction. 
+If you were running 2.6.26-rc3, that's quite possibly because you didn't
+have the follow-up patch that fixed my original patch... it wasn't in
+2.6.26-rc3
+(http://www.mail-archive.com/linux-usb-devel@lists.sourceforge.net/msg56
+523.html).  It fixed a bug with my patch that wasn't necessary with
+Broadcom, but was with nVidia (and Intel, I believe).
 
-> Perhaps it could also include a checksum just to detect old BIOS
-> that don't supply a version number.
->
-> Long term I'm not sure. Adding LinuxBIOS specific tables also doesn't
-> sound very attractive.
+That could definitely cause mouse lock-ups.  Sorry, that should have
+occurred to me yesterday when you mentioned the problem your kids were
+seeing, but it didn't for some reason.
 
-Second thinking of this as the empty_zero_page is probably the wrong
-mental model of how things work.
-
-At least until HPA's recent changes bzImage is organized as follows:
-
-bootsector (512 bytes)
-Various boot protocol variables.
-  Some filled in or read by bootloaders 
-  some filled in by the real mode code.
-real mode code.
-32bit Data+Code to load at 1MB.
-
-The empty zero page really is the first 4K or whatever of
-the current setup.S.  Any sane bootloader loading the bzImage
-will just load the 16bit portion and overwrite the variables
-it knows how to fill in.
-
-To ensure there was enough space the code did:
-
-> trampoline:    call    start_of_setup
->                .align 16
->                                        # The offset at this point is 0x240
->                .space  (0xeff-0x240+1) # E820 & EDD space (ending at 0xeff)
-
-We already have the boot protocol revision and if this is something we
-are going to support that should be enough of a revision field.  If
-the bootloader can't support what the kernel is doing the bootloader
-should just give up.  We have major and minor fields there so we can
-distinguish between compatible and incompatible changes as well.
-
-Further that arrangement ensures all of the data fields are initialized.
-
-Further there is no 4K limit when used that way except as a convention
-and as an implementation detail.  The bootloaders don't care.  The
-have to load all of the 16bit real mode section.
-
-I need to review HPA changes a little more from his rewrite in C.
-I think he messed up with the guarantee of initialization in that
-rewrite, but I'm not quite certain.
-
-Eric
-
+Stuart
