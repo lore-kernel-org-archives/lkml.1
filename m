@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933459AbXHVREs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933561AbXHVRFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933459AbXHVREs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 13:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932185AbXHVREh
+	id S933561AbXHVRFh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 13:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764281AbXHVRF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 13:04:37 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:57274 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764308AbXHVREg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 13:04:36 -0400
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Jes Sorensen <jes@sgi.com>, akepner@sgi.com,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-In-Reply-To: <200708220951.05101.jbarnes@virtuousgeek.org>
-References: <20070818002746.GU1813@sgi.com>
-	 <200708220903.23702.jbarnes@virtuousgeek.org>
-	 <1187801095.3410.49.camel@localhost.localdomain>
-	 <200708220951.05101.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 12:04:32 -0500
-Message-Id: <1187802272.3410.58.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Aug 2007 13:05:29 -0400
+Received: from mx1.suse.de ([195.135.220.2]:58693 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758144AbXHVRF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 13:05:28 -0400
+Date: Wed, 22 Aug 2007 19:59:18 +0200
+From: Andi Kleen <ak@suse.de>
+To: Zachary Amsden <zach@vmware.com>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
+Message-ID: <20070822175918.GB8058@bingen.suse.de>
+References: <46CBC842.4070100@vmware.com> <20070822102217.GE2642@bingen.suse.de> <46CC68D9.5060200@vmware.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46CC68D9.5060200@vmware.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 09:51 -0700, Jesse Barnes wrote:
-> On Wednesday, August 22, 2007 9:44:55 am James Bottomley wrote:
-> > > The problem is a DMA write (say to a completion queue) from a device may
-> > > imply something about another DMA write from the same device (say the
-> > > actual data). If the completion queue write arrives first (which can
-> > > happen on sn2), the driver must ensure that the rest of the outstanding
-> > > DMA is complete prior to looking at the completion queue status.  It can
-> > > either use a regular PIO read to do this (i.e. a non-relaxed one) or set
-> > > a flag on the completion queue DMA address that makes it act as a barrier
-> > > wrt other DMA, which is what akepner's patch does (which should be much
-> > > more efficient that using a PIO read to guarantee DMA writes have
-> > > completed).
+On Wed, Aug 22, 2007 at 09:48:25AM -0700, Zachary Amsden wrote:
+> Andi Kleen wrote:
+> >On Tue, Aug 21, 2007 at 10:23:14PM -0700, Zachary Amsden wrote:
+> >  
+> >>In general, I/O in a virtual guest is subject to performance problems.  
+> >>The I/O can not be completed physically, but must be virtualized.  This 
+> >>means trapping and decoding port I/O instructions from the guest OS.  
+> >>Not only is the trap for a #GP heavyweight, both in the processor and 
+> >>the hypervisor (which usually has a complex #GP path), but this forces 
+> >>the hypervisor to decode the individual instruction which has faulted.  
+> >>    
 > >
-> > This is a violation of the PCI spec, isn't it, like Matthew pointed out?
-> > The only time a device->host DMA transaction shouldn't follow strict
-> > ordering is when the device sets the relaxed hint in its PCI registers.
+> >Is that really that expensive? Hard to imagine.
+> >  
 > 
-> Yeah, it is.  Whether its allowed in PCIe depends on how you read the spec 
-> (but either way it would need to be explicitly enabled).
-> 
-> For better or for worse, Altix hardware always behaves this way (well mostly 
-> for the better, since most device protocols don't care as they involve PIO, 
-> and out of order completion is *much* faster on Altix than strict ordering).
-> 
-> Arthur's patch is pretty straightfoward though, so unless someone can think of 
-> a better way of hiding this architectural detail in lower level code it's 
-> probably a good thing to add (especially given that future revs of PCIe will 
-> probably allow this behavior, and hopefully less ambiguously than the current 
-> spec).
+> You have an expensive (16x cost of hypercall on some processors) 
 
-The spec isn't ambiguous ... it says if the device and bridge agree on
-relaxed ordering, then it *may* be observed in the transaction.  If
-there's a disagreement or neither wishes to support relaxed ordering
-then the transaction *must* be strict.
+Where is the difference comming from? Are you using SYSENTER
+for the hypercall?  I can't really see you using SYSENTER,
+because how would you do system calls then? I bet system calls
+are more frequent than in/out, so if you have decide between the
+two using them for syscalls is likely faster.
 
-I really don't think a work around for a PCI spec violation belongs in
-the generic DMA code, do you?  The correct fix for this should be to set
-the device hints to strict ordering, which presumably altix respects?
-In which case, it sounds like what needs exposing are access to the PCI
-device hints.  I believe both PCI-X and PCIe have these hints as
-optional specifiers in the bridges, so it should be in a current Rev of
-the PCI spec.  Or are you proposing adding an additional PCI API that
-allows transaction flushes to be inserted into the stream for devices
-and bridges that have already negotiated relaxed ordering? ... in which
-case we need to take this to the PCI list.
+For an int XYZ gate i wouldn't expect that much difference to
+a #GP fault.
 
-James
+Also I fail to see the fundamental speed difference between
 
+mov index,register
+int 0x...
+...
+switch (register) 
+case xxxx: do emulation
+
+versus
+
+out ...
+#gp
+-> switch (*eip) {
+case 0xee:  /* etc. */ 
+	do emulation
+
+> privilege transition, you have to decode the instruction, then you have 
+
+out is usually a single byte. Shouldn't be very expensive
+to decode. In fact it should be roughly equivalent to your
+hypercall multiplex.
+
+> to verify protection in the page tables mapping the page allows 
+> execution (P, !NX, and U/S check).  This is a lot more expensive than a 
+
+When the page is not executable or not present you get #PF not #GP. 
+So the hardware already checks that.
+
+The only case where you would need to check yourself is if you emulate
+NX on non NX capable hardware, but I can't see you doing that.
+
+> There are 24 different possible I/O operations; sometimes with a port 
+> encoded in the instruction, sometimes with input in the DX register, 
+> sometimes with a rep prefix, and for 3 different operand sizes.
+
+Most of this is a single byte which is the same as the hypercall
+demux. Essentially a table lookup if you use the obvious switch()
+
+-Andi
 
