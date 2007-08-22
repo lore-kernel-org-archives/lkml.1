@@ -1,88 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933217AbXHVW6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932758AbXHVW7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933217AbXHVW6y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 18:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762735AbXHVW6o
+	id S932758AbXHVW7Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 18:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932861AbXHVW6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 18:58:44 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3869 "EHLO perches.com"
+	Wed, 22 Aug 2007 18:58:49 -0400
+Received: from ns2.suse.de ([195.135.220.15]:46860 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762503AbXHVW6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 18:58:43 -0400
-Subject: Re: [PATCH] MAINTTAINERS: update DCO info
-From: Joe Perches <joe@perches.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       torvalds <torvalds@linux-foundation.org>,
-       akpm <akpm@linux-foundation.org>
-In-Reply-To: <20070822082421.5c20b3da.randy.dunlap@oracle.com>
-References: <20070822082421.5c20b3da.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 15:57:56 -0700
-Message-Id: <1187823476.24819.52.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+	id S1762994AbXHVW6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 18:58:47 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: 2.6.23-rc3-mm1: cannot stat `vdso.so.dbg'
+Date: Thu, 23 Aug 2007 00:58:43 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+References: <20070822215639.02D154D0418@magilla.localdomain>
+In-Reply-To: <20070822215639.02D154D0418@magilla.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708230058.43782.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 08:24 -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wednesday 22 August 2007 23:56:38 Roland McGrath wrote:
+> > Those patches are in Andi's tree.  His tree has the old versions.  The
+> > patches are inter-tangled so it is non-trivial for me to generate
+> > incremental patches on top of Andi's tree which bring his old patches up to
+> > date with the new ones.  I could of course do so, but it'd be better if
+> > Andi's tree weren't carrying old versions of
+> > x86_64-ia32-vdso-install-unstripped-copies-on-disk and
+> > x86_64-vdso-install-unstripped-copies-on-disk
+> > 
+> > Please resend those patches to Andi.
 > 
-> Update URL for DCO (old URL is invalid).
-> Also, point to SubmittingPatches for the current DCO.
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  MAINTAINERS |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.23-rc3-git2.orig/MAINTAINERS
-> +++ linux-2.6.23-rc3-git2/MAINTAINERS
-> @@ -45,8 +45,11 @@ trivial patch so apply some common sense
->  
->  	PLEASE remember that submissions must be made under the terms
->  	of the OSDL certificate of contribution
-> -	(http://www.osdl.org/newsroom/press_releases/2004/2004_05_24_dco.html)
-> +	(http://old.linux-foundation.org/newsroom/press_releases/2004/2004_05_24_dco.html)
->  	and should include a Signed-off-by: line.
-> +	The current certificate is also documented in
-> +	Documentation/SubmittingPatches as the Developer's Certificate
-> +	of Origin (DCO).
+> These haven't changed since I sent them (including to Andi) on August 12.
 
-Why have an external link which may go out of date
-when we already have the cert?
+How come they have identical subjects and identical description? How is 
+anybody supposed to make sense of this?
 
-It's really short, we could just quote it.
-
-Maybe it should be a separate file
-Documentation/Developer_Certificate_of_Origin
-and referenced directly.
-
-	Developer's Certificate of Origin 1.1
-
-	By making a contribution to this project, I certify that:
-
-	(a) The contribution was created in whole or in part by me and I
-	    have the right to submit it under the open source license
-	    indicated in the file; or
-
-	(b) The contribution is based upon previous work that, to the best
-	    of my knowledge, is covered under an appropriate open source
-	    license and I have the right under that license to submit that
-	    work with modifications, whether created in whole or in part
-	    by me, under the same open source license (unless I am
-	    permitted to submit under a different license), as indicated
-	    in the file; or
-
-	(c) The contribution was provided directly to me by some other
-	    person who certified (a), (b) or (c) and I have not modified
-	    it.
-
-	(d) I understand and agree that this project and the contribution
-	    are public and that a record of the contribution (including all
-	    personal information I submit with it, including my sign-off) is
-	    maintained indefinitely and may be redistributed consistent with
-	    this project or the open source license(s) involved.
-
-
+-Andi
