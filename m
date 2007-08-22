@@ -1,87 +1,311 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933145AbXHVQxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbXHVQxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933145AbXHVQxq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 12:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764635AbXHVQxf
+	id S933017AbXHVQxI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 12:53:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764655AbXHVQwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 12:53:35 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:46096 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764432AbXHVQxe (ORCPT
+	Wed, 22 Aug 2007 12:52:46 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:16921 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764583AbXHVQwp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 12:53:34 -0400
-Message-ID: <46CC68D9.5060200@vmware.com>
-Date: Wed, 22 Aug 2007 09:48:25 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@osdl.org>,
+	Wed, 22 Aug 2007 12:52:45 -0400
+Date: Wed, 22 Aug 2007 09:46:33 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Containers <containers@lists.osdl.org>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
-References: <46CBC842.4070100@vmware.com> <20070822102217.GE2642@bingen.suse.de>
-In-Reply-To: <20070822102217.GE2642@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Eric W Biederman <ebiederm@xmission.com>
+Subject: Re: [PATCH] Memory controller Add Documentation
+Message-Id: <20070822094633.733614c5.randy.dunlap@oracle.com>
+In-Reply-To: <20070822130612.18981.58696.sendpatchset@balbir-laptop>
+References: <20070822130612.18981.58696.sendpatchset@balbir-laptop>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Tue, Aug 21, 2007 at 10:23:14PM -0700, Zachary Amsden wrote:
->   
->> In general, I/O in a virtual guest is subject to performance problems.  
->> The I/O can not be completed physically, but must be virtualized.  This 
->> means trapping and decoding port I/O instructions from the guest OS.  
->> Not only is the trap for a #GP heavyweight, both in the processor and 
->> the hypervisor (which usually has a complex #GP path), but this forces 
->> the hypervisor to decode the individual instruction which has faulted.  
->>     
->
-> Is that really that expensive? Hard to imagine.
->   
+On Wed, 22 Aug 2007 18:36:12 +0530 Balbir Singh wrote:
 
- You have an expensive (16x cost of hypercall on some processors) 
-privilege transition, you have to decode the instruction, then you have 
-to verify protection in the page tables mapping the page allows 
-execution (P, !NX, and U/S check).  This is a lot more expensive than a 
-hypercall.
+>  Documentation/memcontrol.txt |  193 +++++++++++++++++++++++++++++++++++++++++++
 
-> e.g. you could always have a fast check for inb/outb at the beginning
-> of the #GP handler. And is your initial #GP entry really more expensive
-> than a hypercall? 
->   
+Is there some sub-dir that is appropriate for this, such as
+vm/ or accounting/ or containers/ (new) ?
 
-The number of reasons for #GP is enormous, and there are too many paths 
-to optimize with fast checks.  We do have a fast check for inb/outb; 
-it's just not fast enough.
 
-On P4, hypercall entry is 120 cycles.  #GP is about 2000.  Modern 
-processors are better, but a hypercall is always faster than a fault.  
-Many times, the hypercall can be handled and ready to return before a 
-#GP would even complete.
+>  1 file changed, 193 insertions(+)
+> 
+> diff -puN /dev/null Documentation/memcontrol.txt
+> --- /dev/null	2007-06-01 20:42:04.000000000 +0530
+> +++ linux-2.6.23-rc2-mm2-balbir/Documentation/memcontrol.txt	2007-08-22 18:29:29.000000000 +0530
+> @@ -0,0 +1,193 @@
+> +Memory Controller
+> +
+> +0. Salient features
+> +
+> +a. Enable control of both RSS and Page Cache pages
+> +b. The infrastructures allows easy addition of other types of memory to control
 
-On workloads that sit there and hammer network cards, these costs become 
-significant, and latency sensitive network benchmarks suffer.
+          infrastructure
 
->> Worse, even with hardware assist such as VT, the exit reason alone is 
->> not sufficient to determine the true nature of the faulting instruction, 
->> requiring a complex and costly instruction decode and simulation.
->>     
->
-> It's unclear to me why that should be that costly.
->
-> Worst case it's a switch()
->   
+> +c. Provides *zero overhead* for non memory controller users
+> +d. Provides a double LRU, global memory pressure causes reclaim from the
+> +   global LRU, a container on hitting a limit, reclaims from the per
+> +   container LRU
 
-There are 24 different possible I/O operations; sometimes with a port 
-encoded in the instruction, sometimes with input in the DX register, 
-sometimes with a rep prefix, and for 3 different operand sizes.
+Punctuation:
 
-Combine that with the MMU checks required, and it's complex and branchy 
-enough to justify short-circuiting the whole thing with a simple hypercall.
+  Provides a double LRU: global memory pressure causes reclaim from the
+  global LRU; a container, on hitting a limit, reclaims from the per-
+  container LRU
 
-Zach
+> +
+> +1. History
+> +
+> +The memory controller has a long history. A request for comments for the memory
+> +controller was posted by Balbir Singh [1]. At the time the RFC was posted
+> +there were several implementations for memory control, the goal of the
+
+s/, the/. The/
+
+> +RFC was to build consensus and agreement for the minimal features required
+> +for memory control. The first RSS controller was posted by Balbir Singh[2]
+> +in Feb 2007. Pavel Emelianov [3][4][5] has since posted three versions of the
+> +RSS controller. At OLS, at the resource management BoF, everyone suggested
+> +that we handle both page cache and RSS together. Another request was raised
+> +to allow user space handling of OOM. The current memory controller is
+> +at version 6, it combines both RSS and Page Cache Control [11].
+
+s/,/;/
+
+> +
+> +2. Memory Control
+> +
+> +Memory is a unique resource in the sense that it is present in a limited
+> +amount. If a task requires a lot of CPU processing, the task can spread
+> +its processing over a period of hours, days, months or years, but with
+> +memory, the same physical memory needs to be reused to accomplish the task.
+> +
+> +The memory controller implementation has been divided into phases, these
+> +are
+
+Punctuation:
+
+The memory controller implementation has been divided into phases. These
+are:
+
+> +
+> +1. Memory controller
+> +2. mlock(2) controller
+> +3. Kernel user memory accounting and slab control
+> +4. user mappings length controller
+> +
+> +The memory controller is the first controller developed.
+> +
+> +2.1. Design
+> +
+> +The core of the design is a counter called the res_counter. The res_counter
+> +tracks the current memory usage and limit of the group of processes associated
+> +with the controller. Each container has a memory controller specific data
+> +structure (mem_container) associated with it.
+> +
+> +2.2. Accounting
+> +
+> +		+--------------------+
+> +		|  mem_container     |
+> +		|  (res_counter)     |
+> +		+--------------------+
+> +		 /            ^      \
+> +		/             |       \
+> +           +---------------+  |        +---------------+
+> +           | mm_struct     |  |....    | mm_struct     |
+> +           |               |  |        |               |
+> +           +---------------+  |        +---------------+
+> +                              |
+> +                              + --------------+
+> +                                              |
+> +           +---------------+           +------+--------+
+> +           | page          +---------->  page_container|
+> +           |               |           |               |
+> +           +---------------+           +---------------+
+> +
+> +             (Figure 1: Hierarchy of Accounting)
+> +
+> +
+> +Figure 1 shows the important aspects of the controller
+> +
+> +1. Accounting happens per container
+> +2. Each mm_struct knows about which container they belong to
+
+                                                 it belongs to
+
+> +3. Each page has a pointer to the page_container, which in turn knows the
+> +   container it belongs to
+> +
+> +The accounting is done as follows, mem_container_charge() is invoked to setup
+
+                          as follows:
+
+> +the necessary data structures and check if the container that is being charged
+> +is over its limit. If it is then reclaim is invoked on the container.
+> +More details can be found in the reclaim section of this document.
+> +If everything goes well, a page meta-data-structure called page_container is
+> +allocated and associated with the page.  This routine also adds the page to
+> +the per container LRU.
+> +
+> +2.3 Shared Page Accounting
+> +
+> +Shared pages are accounted on the basis of the first touch approach. The
+> +container that first touches a page is accounted for the page. The principle
+> +behind this approach is that a container that aggressively uses a shared
+> +page, will eventually get charged for it (once it is uncharged from
+
+  drop comma
+
+> +the container that brought it in -- this will happen on memory pressure).
+> +
+> +2.4 Reclaim
+> +
+> +Each container maintains a per container LRU that consists of an active
+> +and inactive list. When a container goes over its limit, we first try
+> +and reclaim memory from the container so as to make space for the new
+
+   to reclaim memory 
+
+> +pages that the container has touched. If the reclaim is unsuccessful,
+> +an OOM routine is invoked to select and kill the bulkiest task in the
+> +container.
+> +
+> +The reclaim algorithm has not been modified for containers, except that
+> +pages that are selected for reclaiming come from the per container LRU
+> +list.
+> +
+> +2.5
+> +
+> +3. User Interface
+> +
+> +0. Configuration
+> +
+> +a. Enable CONFIG_CONTAINERS
+> +b. Enable CONFIG_RESOURCE_COUNTERS
+> +c. Enable CONFIG_CONTAINER_MEM_CONT
+> +
+> +1. Prepare the containers
+> +# mkdir -p /containers
+> +# mount -t container none /containers -o memory
+> +
+> +2. Make the new group and move bash into it
+> +# mkdir /containers/0
+> +# echo $$ >  /containers/0/tasks
+> +
+> +Since now we're in the 0 container.
+
+                                     s/./,/
+
+> +We can alter the memory limit
+
+   we can alter the memory limit:
+
+> +# echo -n 6000 > /containers/0/memory.limit
+> +
+> +We can check the usage
+
+                         :
+
+> +# cat /containers/0/memory.usage
+> +25
+> +
+> +The memory.failcnt gives the number of times that the container limit was
+
+       memory.failcnt field (?)
+
+> +exceeded.
+> +
+> +4. Testing
+> +
+> +Balbir posted lmbench, AIM9, LTP and vmmstress results [10] and [11].
+> +Apart from that v6 has been tested with several applications and regular
+> +daily use. The controller has also been tested on the PPC64, x86_64 and
+> +UML platforms.
+> +
+> +4.1 Troubleshooting
+> +
+> +Sometimes a user might find that the application under a container is
+> +terminated, there are several causes for this
+
+Punctuation + wording:
+
+  Sometimes a user might find that the application under a container is
+  terminated. There are several possible causes of this:
+
+> +
+> +1. The container limit is too low (just too low to do anything useful)
+> +2. The user is using anonymous memory and swap is turned off or too low
+> +
+> +echo 1 > /proc/sys/vm/drop_pages will help get rid of some of the pages
+> +cached in the container (page cache pages).
+> +
+> +5. TODO
+> +
+> +1. Add support for accounting huge pages (as a separate controller)
+> +2. Improve the user interface to accept/display memory limits in KB or MB
+> +   rather than pages (since page sizes can differ across platforms/machines).
+> +3. Make container lists per-zone
+> +4. Make per-container scanner reclaim not-shared pages first
+> +5. Teach controller to account for shared-pages
+> +6. Start reclamation when the limit is lowered
+> +7. Start reclamation in the background when the limit is
+> +   not yet hit but the usage is getting closer
+> +8. Create per zone LRU lists per container
+> +
+> +Summary
+> +
+> +Overall, the memory controller has been a stable controller and has been
+> +commented and discussed on quite extensively in the community.
+
+                     drop "on"
+
+> +
+> +References
+> +
+> +1. Singh, Balbir. RFC: Memory Controller, http://lwn.net/Articles/206697/
+> +2. Singh, Balbir. Memory Controller (RSS Control),
+> +   http://lwn.net/Articles/222762/
+> +3. Emelianov, Pavel. Resource controllers based on process containers
+> +   http://lkml.org/lkml/2007/3/6/198
+> +4. Emelianov, Pavel. RSS controller based on process containers (v2)
+> +   http://lkml.org/lkml/2007/4/9/74
+> +5. Emelianov, Pavel. RSS controller based on process containers (v3)
+> +   http://lkml.org/lkml/2007/5/30/244
+> +6. Menage, Paul. Containers v10, http://lwn.net/Articles/236032/
+> +7. Vaidyanathan, Srinivasan, Containers: Pagecache accounting and control
+> +   subsystem (v3), http://lwn.net/Articles/235534/
+> +8. Singh, Balbir. RSS controller V2 test results (lmbench),
+> +   http://lkml.org/lkml/2007/5/17/232
+> +9. Singh, Balbir. RSS controller V2 AIM9 results
+> +   http://lkml.org/lkml/2007/5/18/1
+> +10. Singh, Balbir. Memory controller v6 results,
+> +    http://lkml.org/lkml/2007/8/19/36
+> +11. Singh, Balbir. Memory controller v6, http://lkml.org/lkml/2007/8/17/69
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
