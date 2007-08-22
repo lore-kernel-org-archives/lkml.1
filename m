@@ -1,61 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933694AbXHVRUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933488AbXHVRVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933694AbXHVRUS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 13:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761775AbXHVRUF
+	id S933488AbXHVRVB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 13:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763975AbXHVRUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 13:20:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51050 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759341AbXHVRUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 13:20:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc3-mm1: WARNING: during resume from suspend on x86_64
-Date: Wed, 22 Aug 2007 19:30:01 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-In-Reply-To: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708221930.01620.rjw@sisk.pl>
+	Wed, 22 Aug 2007 13:20:48 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:54863 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761775AbXHVRUr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 13:20:47 -0400
+Message-Id: <20070822170732.141665324@arndb.de>
+References: <20070822170124.764128591@arndb.de>
+User-Agent: quilt/0.45-1
+Date: Wed, 22 Aug 2007 19:01:26 +0200
+From: Arnd Bergmann <arnd@arndb.de>
+To: paulus@samba.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Subject: [patch 2/5] cell: support pinhole-reset on IBM cell blades
+Content-Disposition: inline; filename=34342.diff
+X-Provags-ID: V01U2FsdGVkX1+W7fiDjH6nEy3mfJlaDZ58JqQ8K3UJ/pNBEI2
+ +Zgq/69/a9g9EAkNiIf4LRtOqvvirkS1gFQiiMHnTwgVWZK3MW
+ LVbNjhg0v+Ey7kTO5dWNw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 22 August 2007 11:06, Andrew Morton wrote:
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+The Cell Broadband Engine has a method of injecting a
+system-reset-exception from an external source into the
+operating system, which should trigger the regular behaviour
+of entering xmon or kdump.
 
-I get this during resume from suspend to RAM and during hibernation:
+Unfortunately, the exception handler cannot distinguish it from
+other interrupt causes by the SRR1 register, which gets used
+for this on Power 6 and others.
 
-WARNING: at /home/rafael/src/mm/linux-2.6.23-rc3-mm1/arch/x86_64/kernel/smp.c:380 smp_call_function_single()
+IBM Blade servers that want to support triggering the
+system reset exception using a pinhole button in the front
+panel therefore use an extra register to determine the
+reset cause.
 
-Call Trace:
- [<ffffffff8021a97d>] smp_call_function_single+0x52/0xff
- [<ffffffff8022e703>] task_rq_lock+0x3d/0x6f
- [<ffffffff80230fc0>] set_cpus_allowed+0xbf/0xcc
- [<ffffffff802141ab>] sc_freq_event+0x5f/0x63
- [<ffffffff80431c38>] notifier_call_chain+0x33/0x65
- [<ffffffff8024c11f>] __srcu_notifier_call_chain+0x4b/0x69
- [<ffffffff8024c14c>] srcu_notifier_call_chain+0xf/0x11
- [<ffffffff803bcfa4>] cpufreq_resume+0x131/0x157
- [<ffffffff8038151c>] __sysdev_resume+0x34/0x73
- [<ffffffff80381b76>] sysdev_resume+0x1f/0x61
- [<ffffffff803865e8>] device_power_up+0x9/0x10
- [<ffffffff80256620>] suspend_devices_and_enter+0xbf/0xf7
- [<ffffffff802567bb>] enter_state+0x163/0x1e5
- [<ffffffff802568e1>] state_store+0xa4/0xc2
- [<ffffffff802d7bc5>] subsys_attr_store+0x31/0x33
- [<ffffffff802d7e8d>] sysfs_write_file+0xe0/0x11c
- [<ffffffff80293b77>] vfs_write+0xc7/0x150
- [<ffffffff802940f8>] sys_write+0x47/0x70
- [<ffffffff8020bdce>] system_call+0x7e/0x83
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Apparently, smp_call_function_single() is unhappy, because it's called with
-interrupts disabled by sc_freq_event() executed (as a notifier) by
-cpufreq_resume().  However, cpufreq_resume() is always run with one CPU on
-line, so all this stuff should be handled differently.  Oh, dear.
+Index: linux-2.6/arch/powerpc/platforms/cell/cbe_regs.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/cbe_regs.h
++++ linux-2.6/arch/powerpc/platforms/cell/cbe_regs.h
+@@ -113,10 +113,14 @@ struct cbe_pmd_regs {
+ 	u64	checkstop_fir;					/* 0x0c00 */
+ 	u64	recoverable_fir;				/* 0x0c08 */
+ 	u64	spec_att_mchk_fir;				/* 0x0c10 */
+-	u64	fir_mode_reg;					/* 0x0c18 */
++	u32	fir_mode_reg;					/* 0x0c18 */
++	u8	pad_0x0c1c_0x0c20 [4];				/* 0x0c1c */
++#define CBE_PMD_FIR_MODE_M8		0x00800
+ 	u64	fir_enable_mask;				/* 0x0c20 */
+ 
+-	u8	pad_0x0c28_0x1000 [0x1000 - 0x0c28];		/* 0x0c28 */
++	u8	pad_0x0c28_0x0ca8 [0x0ca8 - 0x0c28];		/* 0x0c28 */
++	u64	ras_esc_0;					/* 0x0ca8 */
++	u8	pad_0x0cb0_0x1000 [0x1000 - 0x0cb0];		/* 0x0cb0 */
+ };
+ 
+ extern struct cbe_pmd_regs __iomem *cbe_get_pmd_regs(struct device_node *np);
+Index: linux-2.6/arch/powerpc/platforms/cell/pervasive.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/pervasive.c
++++ linux-2.6/arch/powerpc/platforms/cell/pervasive.c
+@@ -38,6 +38,8 @@
+ #include "pervasive.h"
+ #include "cbe_regs.h"
+ 
++static int sysreset_hack;
++
+ static void cbe_power_save(void)
+ {
+ 	unsigned long ctrl, thread_switch_control;
+@@ -85,6 +87,9 @@ static void cbe_power_save(void)
+ 
+ static int cbe_system_reset_exception(struct pt_regs *regs)
+ {
++	int cpu;
++	struct cbe_pmd_regs __iomem *pmd;
++
+ 	switch (regs->msr & SRR1_WAKEMASK) {
+ 	case SRR1_WAKEEE:
+ 		do_IRQ(regs);
+@@ -93,6 +98,18 @@ static int cbe_system_reset_exception(st
+ 		timer_interrupt(regs);
+ 		break;
+ 	case SRR1_WAKEMT:
++		/*
++		 * The BMC can inject user triggered system reset exceptions,
++		 * but cannot set the system reset reason in srr1,
++		 * so check an extra register here.
++		 */
++		if (sysreset_hack && (cpu = smp_processor_id()) == 0) {
++			pmd = cbe_get_cpu_pmd_regs(cpu);
++			if (in_be64(&pmd->ras_esc_0) & 0xffff) {
++				out_be64(&pmd->ras_esc_0, 0);
++				return 0;
++			}
++		}
+ 		break;
+ #ifdef CONFIG_CBE_RAS
+ 	case SRR1_WAKESYSERR:
+@@ -113,9 +130,12 @@ static int cbe_system_reset_exception(st
+ void __init cbe_pervasive_init(void)
+ {
+ 	int cpu;
++
+ 	if (!cpu_has_feature(CPU_FTR_PAUSE_ZERO))
+ 		return;
+ 
++	sysreset_hack = machine_is_compatible("IBM,CBPLUS-1.0");
++
+ 	for_each_possible_cpu(cpu) {
+ 		struct cbe_pmd_regs __iomem *regs = cbe_get_cpu_pmd_regs(cpu);
+ 		if (!regs)
+@@ -124,6 +144,12 @@ void __init cbe_pervasive_init(void)
+ 		 /* Enable Pause(0) control bit */
+ 		out_be64(&regs->pmcr, in_be64(&regs->pmcr) |
+ 					    CBE_PMD_PAUSE_ZERO_CONTROL);
++
++		/* Enable JTAG system-reset hack */
++		if (sysreset_hack)
++			out_be32(&regs->fir_mode_reg,
++				in_be32(&regs->fir_mode_reg) |
++				CBE_PMD_FIR_MODE_M8);
+ 	}
+ 
+ 	ppc_md.power_save = cbe_power_save;
+
+--
+
