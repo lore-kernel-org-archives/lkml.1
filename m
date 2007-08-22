@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764167AbXHVUwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933575AbXHVUwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764167AbXHVUwW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 16:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763542AbXHVUvz
+	id S933575AbXHVUwo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 16:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932507AbXHVUv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 16:51:55 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:62232 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763556AbXHVUvy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 16:51:54 -0400
-Subject: Re: [BUG] 2.6.23-rc3-mm1 - kernel BUG at net/core/skbuff.c:95!
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: balbir@linux.vnet.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-In-Reply-To: <46CC88B3.6080000@linux.vnet.ibm.com>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	 <46CC33EC.1040803@linux.vnet.ibm.com>
-	 <20070822085002.8a116f72.akpm@linux-foundation.org>
-	 <1187805493.5303.11.camel@lov.localdomain>
-	 <46CC88B3.6080000@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 22:55:49 +0200
-Message-Id: <1187816149.5303.44.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+fGUlXmxUXs4S+jzZic57sx0H+xd95OyV7g5R
- gnan5Uj11//XC8OXMZlTfLIBijb0GuBpM7fKUhUh5NW6YGN/q1
- YwAf5Zhk/DCSOdyzyO/XgRiciLE9WPI
+	Wed, 22 Aug 2007 16:51:59 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:60933 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763839AbXHVUv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 16:51:57 -0400
+Message-id: <2698018635706419125@wsc.cz>
+Subject: [PATCH 1/2] Net: ath5k, no printk after STA->IBSS switch
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Cc: <netdev@vger.kernel.org>
+Cc: <linville@tuxdriver.com>
+Cc: <linux-wireless@vger.kernel.org>
+Cc: <jeff@garzik.org>
+Date: Wed, 22 Aug 2007 22:53:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-23 at 00:34 +0530, Balbir Singh wrote:
-> Kay Sievers wrote:
-> >> gargh, sorry, that's probably due to my screwed up attempt to fix Kay's
-> >> screwed up
-> >> gregkh-driver-driver-core-change-add_uevent_var-to-use-a-struct.patch.
-> >>
-> >> Kay sent an update patch but it didn't arrive in time.
-> >>
-> >> Greg, if you haven't yet merged that, please do so asap?
-> >>
-> >> So what _should_ this:
-> >>
-> >> --- a/arch/powerpc/kernel/vio.c~fix-4-gregkh-driver-driver-core-change-add_uevent_var-to-use-a-struct
-> >> +++ a/arch/powerpc/kernel/vio.c
-> >> @@ -373,7 +373,7 @@ static int vio_hotplug(struct device *de
-> >>  	dn = dev->archdata.of_node;
-> >>  	if (!dn)
-> >>  		return -ENODEV;
-> >> -	cp = of_get_property(dn, "compatible", &length);
-> >> +	cp = of_get_property(dn, "compatible", &env->buflen);
-> >>  	if (!cp)
-> >>  		return -ENODEV;
-> >>  
-> >> _
-> >>
-> >> have done?
-> > 
-> > Does replacing "&length" with "NULL" work? That's what's in the updated
-> > patch.
+ath5k, no printk after STA->IBSS switch
 
-> replacing &length with NULL does not work for me. I get a message saying that
-> init terminated with signal 7.
+If STA->IBSS switch was done, but beacon_update weas not called so far, do
+not emit a warning about non-existent skbuf.
 
-Hi Balbir,
-ugh, I can't see what's going wrong here.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
-Care to just "return 0" for the whole function, and try again? Just to
-rule out that this is the cause of the problem.
+---
+commit b01c0e9a02b248c3e2f2923da9728ba2c3961dee
+tree c3e10a57aed39698f20c346679854aa3a9a54639
+parent 8c5f91fb39c6208b23306687343cc5fbf830fa17
+author Jiri Slaby <jirislaby@gmail.com> Wed, 22 Aug 2007 22:47:06 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Wed, 22 Aug 2007 22:47:06 +0200
 
-Thanks,
-Kay
+ drivers/net/wireless/ath5k_base.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/net/wireless/ath5k_base.c b/drivers/net/wireless/ath5k_base.c
+index 847218b..2ce82ed 100644
+--- a/drivers/net/wireless/ath5k_base.c
++++ b/drivers/net/wireless/ath5k_base.c
+@@ -655,7 +655,9 @@ static void ath_beacon_config(struct ath_softc *sc)
+ 	DPRINTF(sc, ATH_DEBUG_BEACON, "%s: intval %u hw tsftu %u\n", __func__,
+ 			intval, tsftu);
+ 
+-	if (sc->opmode == IEEE80211_IF_TYPE_STA) {
++	if (sc->opmode == IEEE80211_IF_TYPE_STA ||
++			(sc->opmode == IEEE80211_IF_TYPE_IBSS &&
++				!sc->bbuf->skb)) {
+ 		ath5k_hw_set_intr(ah, 0);
+ 		sc->imask |= AR5K_INT_BMISS;
+ 		sc->bmisscount = 0;
