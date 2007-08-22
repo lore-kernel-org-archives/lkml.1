@@ -1,311 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbXHVQxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbXHVQ6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933017AbXHVQxI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 12:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764655AbXHVQwq
+	id S933017AbXHVQ6r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 12:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761894AbXHVQ6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 12:52:46 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:16921 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764583AbXHVQwp (ORCPT
+	Wed, 22 Aug 2007 12:58:37 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:9043 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759929AbXHVQ6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 12:52:45 -0400
-Date: Wed, 22 Aug 2007 09:46:33 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Containers <containers@lists.osdl.org>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric W Biederman <ebiederm@xmission.com>
-Subject: Re: [PATCH] Memory controller Add Documentation
-Message-Id: <20070822094633.733614c5.randy.dunlap@oracle.com>
-In-Reply-To: <20070822130612.18981.58696.sendpatchset@balbir-laptop>
-References: <20070822130612.18981.58696.sendpatchset@balbir-laptop>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 22 Aug 2007 12:58:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=kmOH3D+XL/MyT7j05ykJE6NFfuian1Rq/P8t+6L7h00WK/utqrGiVH192j8bfbIdo2XCFFGB2RIu0Qr33au8YHWM3a/Nz2k7O6ss+H7O1cLrs5d3lDu0FWDa5j1EMyYvbgkolSYuWZ6NuXpNF0JCrE6KhkGMXli12PhbhWNk7Ks=
+Message-ID: <46CC6AE7.1070005@googlemail.com>
+Date: Wed, 22 Aug 2007 18:57:11 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: drivers/scsi/advansys.c - ld error ( Re: 2.6.23-rc3-mm1 )
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46CC6112.9030705@googlemail.com> <20070822162802.GJ9163@parisc-linux.org>
+In-Reply-To: <20070822162802.GJ9163@parisc-linux.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007 18:36:12 +0530 Balbir Singh wrote:
-
->  Documentation/memcontrol.txt |  193 +++++++++++++++++++++++++++++++++++++++++++
-
-Is there some sub-dir that is appropriate for this, such as
-vm/ or accounting/ or containers/ (new) ?
-
-
->  1 file changed, 193 insertions(+)
+Matthew Wilcox wrote:
+> On Wed, Aug 22, 2007 at 06:15:14PM +0200, Gabriel C wrote:
+>> advansys.c:(.init.text+0x38ea): undefined reference to `isa_register_driver'
+>> I guess advansys_{init,exit} is missing some #ifdef's ..
 > 
-> diff -puN /dev/null Documentation/memcontrol.txt
-> --- /dev/null	2007-06-01 20:42:04.000000000 +0530
-> +++ linux-2.6.23-rc2-mm2-balbir/Documentation/memcontrol.txt	2007-08-22 18:29:29.000000000 +0530
-> @@ -0,0 +1,193 @@
-> +Memory Controller
-> +
-> +0. Salient features
-> +
-> +a. Enable control of both RSS and Page Cache pages
-> +b. The infrastructures allows easy addition of other types of memory to control
+> That's one conclusion.  I prefer to think that the ISA support should
+> behave the same as the PCI and EISA support:
 
-          infrastructure
+Yes right , your patch fixes the problem.
 
-> +c. Provides *zero overhead* for non memory controller users
-> +d. Provides a double LRU, global memory pressure causes reclaim from the
-> +   global LRU, a container on hitting a limit, reclaims from the per
-> +   container LRU
-
-Punctuation:
-
-  Provides a double LRU: global memory pressure causes reclaim from the
-  global LRU; a container, on hitting a limit, reclaims from the per-
-  container LRU
-
+> 
+> ----
+> 
+> When CONFIG_ISA is disabled, the isa_driver support will not be compiled
+> in.  Define stubs so that we don't get link-time errors.
+> 
+> Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+> 
+> diff --git a/include/linux/isa.h b/include/linux/isa.h
+> index 1b85533..b0270e3 100644
+> --- a/include/linux/isa.h
+> +++ b/include/linux/isa.h
+> @@ -22,7 +22,18 @@ struct isa_driver {
+>  
+>  #define to_isa_driver(x) container_of((x), struct isa_driver, driver)
+>  
+> +#ifdef CONFIG_ISA
+>  int isa_register_driver(struct isa_driver *, unsigned int);
+>  void isa_unregister_driver(struct isa_driver *);
+> +#else
+> +static inline int isa_register_driver(struct isa_driver *d, unsigned int i)
+> +{
+> +	return 0;
+> +}
 > +
-> +1. History
-> +
-> +The memory controller has a long history. A request for comments for the memory
-> +controller was posted by Balbir Singh [1]. At the time the RFC was posted
-> +there were several implementations for memory control, the goal of the
-
-s/, the/. The/
-
-> +RFC was to build consensus and agreement for the minimal features required
-> +for memory control. The first RSS controller was posted by Balbir Singh[2]
-> +in Feb 2007. Pavel Emelianov [3][4][5] has since posted three versions of the
-> +RSS controller. At OLS, at the resource management BoF, everyone suggested
-> +that we handle both page cache and RSS together. Another request was raised
-> +to allow user space handling of OOM. The current memory controller is
-> +at version 6, it combines both RSS and Page Cache Control [11].
-
-s/,/;/
-
-> +
-> +2. Memory Control
-> +
-> +Memory is a unique resource in the sense that it is present in a limited
-> +amount. If a task requires a lot of CPU processing, the task can spread
-> +its processing over a period of hours, days, months or years, but with
-> +memory, the same physical memory needs to be reused to accomplish the task.
-> +
-> +The memory controller implementation has been divided into phases, these
-> +are
-
-Punctuation:
-
-The memory controller implementation has been divided into phases. These
-are:
-
-> +
-> +1. Memory controller
-> +2. mlock(2) controller
-> +3. Kernel user memory accounting and slab control
-> +4. user mappings length controller
-> +
-> +The memory controller is the first controller developed.
-> +
-> +2.1. Design
-> +
-> +The core of the design is a counter called the res_counter. The res_counter
-> +tracks the current memory usage and limit of the group of processes associated
-> +with the controller. Each container has a memory controller specific data
-> +structure (mem_container) associated with it.
-> +
-> +2.2. Accounting
-> +
-> +		+--------------------+
-> +		|  mem_container     |
-> +		|  (res_counter)     |
-> +		+--------------------+
-> +		 /            ^      \
-> +		/             |       \
-> +           +---------------+  |        +---------------+
-> +           | mm_struct     |  |....    | mm_struct     |
-> +           |               |  |        |               |
-> +           +---------------+  |        +---------------+
-> +                              |
-> +                              + --------------+
-> +                                              |
-> +           +---------------+           +------+--------+
-> +           | page          +---------->  page_container|
-> +           |               |           |               |
-> +           +---------------+           +---------------+
-> +
-> +             (Figure 1: Hierarchy of Accounting)
-> +
-> +
-> +Figure 1 shows the important aspects of the controller
-> +
-> +1. Accounting happens per container
-> +2. Each mm_struct knows about which container they belong to
-
-                                                 it belongs to
-
-> +3. Each page has a pointer to the page_container, which in turn knows the
-> +   container it belongs to
-> +
-> +The accounting is done as follows, mem_container_charge() is invoked to setup
-
-                          as follows:
-
-> +the necessary data structures and check if the container that is being charged
-> +is over its limit. If it is then reclaim is invoked on the container.
-> +More details can be found in the reclaim section of this document.
-> +If everything goes well, a page meta-data-structure called page_container is
-> +allocated and associated with the page.  This routine also adds the page to
-> +the per container LRU.
-> +
-> +2.3 Shared Page Accounting
-> +
-> +Shared pages are accounted on the basis of the first touch approach. The
-> +container that first touches a page is accounted for the page. The principle
-> +behind this approach is that a container that aggressively uses a shared
-> +page, will eventually get charged for it (once it is uncharged from
-
-  drop comma
-
-> +the container that brought it in -- this will happen on memory pressure).
-> +
-> +2.4 Reclaim
-> +
-> +Each container maintains a per container LRU that consists of an active
-> +and inactive list. When a container goes over its limit, we first try
-> +and reclaim memory from the container so as to make space for the new
-
-   to reclaim memory 
-
-> +pages that the container has touched. If the reclaim is unsuccessful,
-> +an OOM routine is invoked to select and kill the bulkiest task in the
-> +container.
-> +
-> +The reclaim algorithm has not been modified for containers, except that
-> +pages that are selected for reclaiming come from the per container LRU
-> +list.
-> +
-> +2.5
-> +
-> +3. User Interface
-> +
-> +0. Configuration
-> +
-> +a. Enable CONFIG_CONTAINERS
-> +b. Enable CONFIG_RESOURCE_COUNTERS
-> +c. Enable CONFIG_CONTAINER_MEM_CONT
-> +
-> +1. Prepare the containers
-> +# mkdir -p /containers
-> +# mount -t container none /containers -o memory
-> +
-> +2. Make the new group and move bash into it
-> +# mkdir /containers/0
-> +# echo $$ >  /containers/0/tasks
-> +
-> +Since now we're in the 0 container.
-
-                                     s/./,/
-
-> +We can alter the memory limit
-
-   we can alter the memory limit:
-
-> +# echo -n 6000 > /containers/0/memory.limit
-> +
-> +We can check the usage
-
-                         :
-
-> +# cat /containers/0/memory.usage
-> +25
-> +
-> +The memory.failcnt gives the number of times that the container limit was
-
-       memory.failcnt field (?)
-
-> +exceeded.
-> +
-> +4. Testing
-> +
-> +Balbir posted lmbench, AIM9, LTP and vmmstress results [10] and [11].
-> +Apart from that v6 has been tested with several applications and regular
-> +daily use. The controller has also been tested on the PPC64, x86_64 and
-> +UML platforms.
-> +
-> +4.1 Troubleshooting
-> +
-> +Sometimes a user might find that the application under a container is
-> +terminated, there are several causes for this
-
-Punctuation + wording:
-
-  Sometimes a user might find that the application under a container is
-  terminated. There are several possible causes of this:
-
-> +
-> +1. The container limit is too low (just too low to do anything useful)
-> +2. The user is using anonymous memory and swap is turned off or too low
-> +
-> +echo 1 > /proc/sys/vm/drop_pages will help get rid of some of the pages
-> +cached in the container (page cache pages).
-> +
-> +5. TODO
-> +
-> +1. Add support for accounting huge pages (as a separate controller)
-> +2. Improve the user interface to accept/display memory limits in KB or MB
-> +   rather than pages (since page sizes can differ across platforms/machines).
-> +3. Make container lists per-zone
-> +4. Make per-container scanner reclaim not-shared pages first
-> +5. Teach controller to account for shared-pages
-> +6. Start reclamation when the limit is lowered
-> +7. Start reclamation in the background when the limit is
-> +   not yet hit but the usage is getting closer
-> +8. Create per zone LRU lists per container
-> +
-> +Summary
-> +
-> +Overall, the memory controller has been a stable controller and has been
-> +commented and discussed on quite extensively in the community.
-
-                     drop "on"
-
-> +
-> +References
-> +
-> +1. Singh, Balbir. RFC: Memory Controller, http://lwn.net/Articles/206697/
-> +2. Singh, Balbir. Memory Controller (RSS Control),
-> +   http://lwn.net/Articles/222762/
-> +3. Emelianov, Pavel. Resource controllers based on process containers
-> +   http://lkml.org/lkml/2007/3/6/198
-> +4. Emelianov, Pavel. RSS controller based on process containers (v2)
-> +   http://lkml.org/lkml/2007/4/9/74
-> +5. Emelianov, Pavel. RSS controller based on process containers (v3)
-> +   http://lkml.org/lkml/2007/5/30/244
-> +6. Menage, Paul. Containers v10, http://lwn.net/Articles/236032/
-> +7. Vaidyanathan, Srinivasan, Containers: Pagecache accounting and control
-> +   subsystem (v3), http://lwn.net/Articles/235534/
-> +8. Singh, Balbir. RSS controller V2 test results (lmbench),
-> +   http://lkml.org/lkml/2007/5/17/232
-> +9. Singh, Balbir. RSS controller V2 AIM9 results
-> +   http://lkml.org/lkml/2007/5/18/1
-> +10. Singh, Balbir. Memory controller v6 results,
-> +    http://lkml.org/lkml/2007/8/19/36
-> +11. Singh, Balbir. Memory controller v6, http://lkml.org/lkml/2007/8/17/69
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+> +static inline void isa_unregister_driver(struct isa_driver *d)
+> +{
+> +}
+> +#endif
+>  
+>  #endif /* __LINUX_ISA_H */
+> 
