@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761577AbXHVKQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761058AbXHVKR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761577AbXHVKQW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 06:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757589AbXHVKP5
+	id S1761058AbXHVKR1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 06:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbXHVKRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 06:15:57 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:37680 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757419AbXHVKP4 (ORCPT
+	Wed, 22 Aug 2007 06:17:20 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:32552 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752794AbXHVKRT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 06:15:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=YxBIs/PMP6l9DgqRYkJnFU9u28zh+MKkvINwUxM4TEu5Ss44dkyCdUdjJF/7hFVm7Awn4qVjPpWpi/8mS2RVNqccheVdYgblUuWKDviINL0trHA/XfUtORgTDsG8eRDS4FDlbaAL7ONmUoPcvYQzajpFkZggpFKDwJIKlCDjEeo=
-Message-ID: <661de9470708220315l24c5313by50b9c027d0e38ba2@mail.gmail.com>
-Date: Wed, 22 Aug 2007 15:45:54 +0530
-From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [ANNOUNCE] GCOV & LCOV Packages Released
-Cc: "Subrata Modak" <subrata@linux.vnet.ibm.com>,
-       ltp-announce@lists.sourceforge.net, ltp-coverage@lists.sourceforge.net,
-       ltp-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <p737innzvis.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 22 Aug 2007 06:17:19 -0400
+X-IronPort-AV: i="4.19,294,1183348800"; 
+   d="scan'208"; a="37724667:sNHT686564501"
+Subject: [PATCH] MAINTAINTERS: use  our mail list as Blackfin arch
+	maintainters.
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: joe@perches.com
+Cc: yi.li@analog.com, vivi.li@analog.com, torvalds@linux-foundation.org,
+       sonic.zhang@analog.com, roy.huang@analog.com, robin.getz@analog.com,
+       michael.hennerich@analog.com, michael.frysinger@analog.com,
+       marc.hoffman@analog.com, linux-kernel@vger.kernel.org,
+       jie.zhang@analog.com, grace.pan@analog.com, bryan.wu@analog.com,
+       bernd.schmidt@analog.com, akpm@linux-foundation.org
+In-Reply-To: <46bff904.ANPWrqncsP8VpmBH%joe@perches.com>
+References: <46bff904.ANPWrqncsP8VpmBH%joe@perches.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46CC0216.4040200@linux.vnet.ibm.com>
-	 <p737innzvis.fsf@bingen.suse.de>
-X-Google-Sender-Auth: 4ffd95886f41d58e
+Organization: Analog Devices, Inc.
+Date: Wed, 22 Aug 2007 18:15:06 +0800
+Message-Id: <1187777706.24914.2.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 22 Aug 2007 10:17:03.0545 (UTC) FILETIME=[95B06290:01C7E4A5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22 Aug 2007 12:57:47 +0200, Andi Kleen <andi@firstfloor.org> wrote:
-> Subrata Modak <subrata@linux.vnet.ibm.com> writes:
->
-> > New GCOV and LCOV Packages(Patches) has been released and the same can
-> > picked up from:
-> > https://sourceforge.net/project/showfiles.php?group_id=3382
-> > The older releases has been moved to LCOV-Archives and Gcov-Kernel-Archives.
->
-> Have you considered submitting these patches for review to mainline?
->
-> I always thought it was a nice feature that might be mainline
-> worthy.
->
-> -Andi
+Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+---
+ MAINTAINERS |   28 ----------------------------
+ 1 files changed, 0 insertions(+), 28 deletions(-)
 
-I second that, it would be nice to have these features in mainline instead of
-maintaining them for every kernel release.
-
-Warm Regards,
-Balbir Singh
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e4dde7f..55ac8e5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -717,34 +717,6 @@ M:	rpurdie@rpsys.net
+ S:	Maintained
+ 
+ BLACKFIN ARCHITECTURE
+-P:	Aubrey Li
+-M:	aubrey.li@analog.com
+-P:	Bernd Schmidt
+-M:	bernd.schmidt@analog.com
+-P:	Bryan Wu
+-M:	bryan.wu@analog.com
+-P:	Grace Pan
+-M:	grace.pan@analog.com
+-P:	Marc Hoffman
+-M:	marc.hoffman@analog.com
+-P:	Michael Hennerich
+-M:	michael.hennerich@analog.com
+-P:	Mike Frysinger
+-M:	michael.frysinger@analog.com
+-P:	Jerry Zeng
+-M:	jerry.zeng@analog.com
+-P:	Jie Zhang
+-M:	jie.zhang@analog.com
+-P:	Robin Getz
+-M:	robin.getz@analog.com
+-P:	Roy Huang
+-M:	roy.huang@analog.com
+-P:	Sonic Zhang
+-M:	sonic.zhang@analog.com
+-P:	Vivi Li
+-M:	vivi.li@analog.com
+-P:	Yi Li
+-M:	yi.li@analog.com
+ L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+ W:	http://blackfin.uclinux.org
+ S:	Supported
+-- 
+1.5.2.4
