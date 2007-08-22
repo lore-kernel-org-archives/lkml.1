@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757832AbXHVIKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758281AbXHVIMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757832AbXHVIKf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 04:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbXHVIKT
+	id S1758281AbXHVIMY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 04:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbXHVIML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 04:10:19 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:60892 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751442AbXHVIKR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 04:10:17 -0400
-Date: Wed, 22 Aug 2007 10:10:16 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jarek Poplawski <jarkao2@o2.pl>
-cc: Oliver Pinter <oliver.pntr@gmail.com>, Adrian Bunk <bunk@kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: RFC: drop support for gcc < 4.0
-In-Reply-To: <20070822080854.GD1684@ff.dom.local>
-Message-ID: <Pine.LNX.4.64.0708221009010.20435@fbirervta.pbzchgretzou.qr>
-References: <20070821132038.GA22254@ff.dom.local> <20070821093103.3c097d4a.randy.dunlap@oracle.com>
- <20070821173550.GC30705@stusta.de> <6101e8c40708211441g2ae20412u877082eb611f595e@mail.gmail.com>
- <Pine.LNX.4.64.0708220956540.20435@fbirervta.pbzchgretzou.qr>
- <20070822080854.GD1684@ff.dom.local>
+	Wed, 22 Aug 2007 04:12:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48173 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752168AbXHVIMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 04:12:09 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: [RFC][PATCH -mm 0/4] Hibernation: Arbitrary boot kernel support on x86_64
+Date: Wed, 22 Aug 2007 10:15:15 +0200
+User-Agent: KMail/1.9.5
+Cc: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200708221015.16493.rjw@sisk.pl>
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Aug 22 2007 10:08, Jarek Poplawski wrote:
->On Wed, Aug 22, 2007 at 09:57:04AM +0200, Jan Engelhardt wrote:
->> 
->> On Aug 21 2007 23:41, Oliver Pinter wrote:
->> >I think it's bad idea, when removing support for gcc3.x, while some
->> >people using debian 3.1 at now and under debian 3.1 the default
->> >comiler is 3.3.5, when I good know or not!?
->> 
->> They always lag behind.
->
->Yes! Probably that's why they are so darn good!
+The following patches make it possible to restore a hibernation image with the
+help of a kernel different from the image one.
 
-ISTR that even Ubuntu overtook Debian... what about Debian 4.x?
+The first patch adds the generic, platform independent code needed for that.
+The second patch implements the idea on x86_64 and the two remaining patches
+are generalizations.
+
+Details in the changelogs, comments welcome.
+
+Greetings,
+Rafael
 
 
-	Jan
 -- 
+"Premature optimization is the root of all evil." - Donald Knuth
+
