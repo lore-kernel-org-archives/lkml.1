@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933328AbXHVSPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932980AbXHVSVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933328AbXHVSPu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 14:15:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763680AbXHVSPj
+	id S932980AbXHVSVG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 14:21:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762710AbXHVSUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 14:15:39 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:52701 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759745AbXHVSPh (ORCPT
+	Wed, 22 Aug 2007 14:20:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47621 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759541AbXHVSUx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 14:15:37 -0400
-Date: Wed, 22 Aug 2007 19:15:32 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Glauber de Oliveira Costa <glommer@gmail.com>
-Cc: Chris Wedgwood <cw@f00f.org>, Adrian Bunk <bunk@kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jarek Poplawski <jarkao2@o2.pl>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: RFC: drop support for gcc < 4.0
-Message-ID: <20070822181532.GB3362@linux-mips.org>
-References: <20070821132038.GA22254@ff.dom.local> <20070821093103.3c097d4a.randy.dunlap@oracle.com> <20070821173550.GC30705@stusta.de> <20070821182505.GA20968@puku.stupidest.org> <5d6222a80708211341s63f8c1eau922f018e66db49f4@mail.gmail.com>
+	Wed, 22 Aug 2007 14:20:53 -0400
+Date: Wed, 22 Aug 2007 11:20:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+cc: Chris Snook <csnook@redhat.com>, Hirokazu Takata <takata@linux-m32r.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, "Luck, Tony" <tony.luck@intel.com>,
+       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       Chris Friesen <cfriesen@nortel.com>
+Subject: Re: [PATCH 11/23] make atomic_read() and atomic_set() behavior
+ consistent on m32r
+In-Reply-To: <8fc86c23579e12b012891d6e69b1b107@kernel.crashing.org>
+Message-ID: <alpine.LFD.0.999.0708221116310.30176@woody.linux-foundation.org>
+References: <46C03885.7000109@redhat.com> <20070813112452.GK24018@shell.boston.redhat.com>
+ <swfhcmswcux.wl%takata.hirokazu@renesas.com> <swfejhww4cs.wl%takata.hirokazu@renesas.com>
+ <46CC42EF.3030602@redhat.com>
+ <8fc86c23579e12b012891d6e69b1b107@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5d6222a80708211341s63f8c1eau922f018e66db49f4@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 21, 2007 at 05:41:04PM -0300, Glauber de Oliveira Costa wrote:
 
-> Last time I tried a mips build, it would fail the compile unless I was
-> using _exactly_ 3.4.4 (I didn't tried older versions, but did try
-> 3.4.6, for ex.). So I also think the 3.4 series will still have to be
-> around for a while.
 
-I don't know what broken MIPS platform you've tried.  I keep changing
-between compiler versions all the time just so I can ensure builds with
-older compilers keep working until we officially deciede to drop support
-for them.  So the minimum compiler version for 32-bit MIPS kernels is
-gcc 3.2 and for 64-bit kernel gcc 3.3.
+On Wed, 22 Aug 2007, Segher Boessenkool wrote:
 
-But for sake of sanity and productivity I definately don't mind dumping
-support for gcc < 4.0 or maybe even 4.1.  And while we're at it, let's
-deprecate ancient binutils version as well.  A minimum version of 2.17
-would be nice as I could get rid of lads of .word sillyness which is
-needed to support older binutils.
+> > > I also tried to rewrite it with inline asm code, but the kernel text size
+> > > bacame roughly 2kB larger. So, I prefer C version.
+> 
+> Could you send me the source code diff between the two versions
+> you tested?  2kB difference is way too much, the asm version should
+> be smaller if anything.
 
-  Ralf
+Segher, can you please drop out of this discussion?
+
+Your points are all wrong.
+
+The inline asm version has the EXACT SAME PROBLEM as the "volatile" 
+version has: it means that the compiler is unable to combine trivial 
+instructions. There's no way that is acceptable.
+
+So why the *hell* you'd expect the asm version to be smaller, I can't 
+imagine. It's obvkously not going to be true.
+
+So here's a clue to everybody in this thread:
+
+   THE CURRENT x86 BEHAVIOUR IS THE CORRECT ONE
+
+where we don't have any "volatile" and no inline asm and no barriers, and 
+we let the compiler do the right thing. If the code needs barriers, the 
+code should damn well add them.
+
+It's worked for the past 8 months, on the most common platform there is.
+
+Stop this *idiotic* thread already.
+
+			Linus
