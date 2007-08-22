@@ -1,96 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbXHVOpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764132AbXHVOq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764074AbXHVOpo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 10:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760971AbXHVOph
+	id S1764132AbXHVOq3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 10:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761409AbXHVOqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 10:45:37 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:21440 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760226AbXHVOpg (ORCPT
+	Wed, 22 Aug 2007 10:46:21 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:25191 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761199AbXHVOqU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 10:45:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=b6zjFBZ9gog+GiFj0oLKOaDRqHNVNKLWbs2/SjBqAfw/lO/3IjOIPnKd+Z2ET2F3F2bYVujdPZ0w+A+ef7qThgK9aiccurlGJ6b0O0Q8OZOagJN5FUQvwt9guQoOzwj/mBKCcmsClvfmh0GxqxA27+xVtSGbU/pLYYNauvnlvSw=
-Message-ID: <46CC4C08.1020408@gmail.com>
-Date: Wed, 22 Aug 2007 23:45:28 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: cornelia.huck@de.ibm.com, greg@kroah.com, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, stern@rowland.harvard.edu,
-       containers@lists.osdl.org
-Subject: Re: [PATCHSET] Sysfs cleanups from Eric W. Biederman
-References: <11876133893720-git-send-email-htejun@gmail.com> <m1ejhvpsx4.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1ejhvpsx4.fsf@ebiederm.dsl.xmission.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 22 Aug 2007 10:46:20 -0400
+X-IronPort-AV: i="4.19,294,1183348800"; 
+   d="scan'208"; a="37742961:sNHT26940830"
+Subject: Re: [PATCH] MAINTAINTERS: use our mail list as Blackfin arch
+	maintainters.
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, bryan.wu@analog.com,
+       joe@perches.com, yi.li@analog.com, vivi.li@analog.com,
+       torvalds@linux-foundation.org, sonic.zhang@analog.com,
+       roy.huang@analog.com, robin.getz@analog.com,
+       michael.hennerich@analog.com, michael.frysinger@analog.com,
+       marc.hoffman@analog.com, linux-kernel@vger.kernel.org,
+       jie.zhang@analog.com, grace.pan@analog.com, bernd.schmidt@analog.com,
+       akpm@linux-foundation.org
+In-Reply-To: <8bd0f97a0708220345g26c35288g5e96b6f1f8491f0e@mail.gmail.com>
+References: <46bff904.ANPWrqncsP8VpmBH%joe@perches.com>
+	 <1187777706.24914.2.camel@roc-desktop>
+	 <6bffcb0e0708220323w5592df25n9c21c7e3aca1dbfb@mail.gmail.com>
+	 <8bd0f97a0708220345g26c35288g5e96b6f1f8491f0e@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Ltd.
+Date: Wed, 22 Aug 2007 22:45:59 +0800
+Message-Id: <1187793959.6805.1.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 22 Aug 2007 14:46:18.0335 (UTC) FILETIME=[32B1B6F0:01C7E4CB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Eric W. Biederman wrote:
->> * fix-i_mutex-locking-in-sysfs_get_dentry patch is added at the top
->>   and #14-Don_t-use-lookup_one_len_kern and
->>   #15-vfs-Remove-lookup_one_len_kern are dropped.  This is because #14
->>   contained had a bug where it might created dentry/inode for an
->>   already deleted sysfs_dirent.  I think it's benefitial to keep
->>   single lookup path.
+On Wed, 2007-08-22 at 06:45 -0400, Mike Frysinger wrote:
+> On 8/22/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> > On 22/08/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> > > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> > >  L:     uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+> >
+> > It is subscribers-only - I do not want to subscribe list only for
+> > sending/forwarding messages/bug reports/known regressions weekly
+> > newsletter.
 > 
-> I think I disagree with the bug spotting.
-> 
-> At least in net we the sysfs_rename_mutex which keeps parent
-> directories from disappearing.  Further we have a reference
-> to the leaf sysfs_dirent and are actively manipulating it, so
-> the sysfs_dirent should not disappear on us.
+> it is moderated which means you do not need to subscribe, we will
+> forward any relevant messages
+> -mike
 
-sysfs_rename_mutex() keeps out renaming and moving not removing.  Also,
-reference prevents sysfs_dirent from being released not from being
-removed.  The different in lookup path is that it searches the children
-list - sd's are unlinked from children list on removal.
+So, I will delete "(subscribers-only)" and post a patch later.
 
->> * Rewrote simplify-sysfs_get_dentry patch and
->>   #08-Implement-__sysfs_get_dentry,
->>   #09-Move-sysfs_get_dentry-below-__sysfs_get_dentry and
->>   #10-Rewrite-sysfs_get_dentry-in-terms-of-__sysfs_get_dentry are
->>   omitted as __sysfs_get_dentry() isn't used by anyone.
-> 
-> Right.  __sysfs_get_dentry is an optimization that has makes
-> the best case for sysfs_get_dentry O(1) instead of O(depth).
-> However this doesn't matter because sysfs_get_dentry is not
-> on any fast path and the maximum depth of sysfs directories
-> is fairly shallow and programmer controlled.
-
-The reason why sysfs_get_dentry() climbed up first then climbed down was
-not because of performance.  It was to support the original shadow
-implementation.  Because there was no reliable way to reach a leaf node
-from the root, dentries of all shadows are pinned such that they can
-serve as the starting point for dentry lookup and the climing up was to
-reach that starting point.  Now that the dentry-multiplexing shadow
-support is gone, there's no need to do the climing up.
-
-> The only user other user of __sysfs_get_dentry is in the tagged
-> directory support, and even that user doesn't strictly need it.
-> Although it is a bit silly to populate the dcache just so you
-> can invalidate it a moment later...
-
-Yeah, actually the only essential user of that kind of look up is
-sysfs_drop_dentry() which is in deletion path and can't fail due to
-allocation failure and has the logic open-coded.  I have nothing against
-__sysfs_get_dentry().  It was just not needed by the patches I forwarded
-this time.  Feel free to include it as you see fit.
-
-I'm currently working on kobj/sysfs separation.  As most internal
-implementation is sd based already, the changes are mostly confined to
-interface functions but it's still a big change.  I think I'll be able
-to post the patches in this week or early next week at the latest.
-
-Thanks.
-
--- 
-tejun
+- Bryan Wu
