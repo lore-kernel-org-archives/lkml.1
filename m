@@ -1,31 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759918AbXHVNjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760234AbXHVNmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759918AbXHVNjI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 09:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbXHVNi5
+	id S1760234AbXHVNmQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 09:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbXHVNmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 09:38:57 -0400
-Received: from namei.org ([69.55.235.186]:34478 "EHLO us.intercode.com.au"
+	Wed, 22 Aug 2007 09:42:06 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:57428 "EHLO jazzhorn.ncsc.mil"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752962AbXHVNi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 09:38:56 -0400
-Date: Wed, 22 Aug 2007 06:38:42 -0700 (PDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org, stable@kernel.org
+	id S1755759AbXHVNmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 09:42:05 -0400
 Subject: Re: [2.6.20.17 review 00/58] 2.6.20.17 -stable review
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: James Morris <jmorris@namei.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
 In-Reply-To: <Xine.LNX.4.64.0708220621550.28878@us.intercode.com.au>
-Message-ID: <Xine.LNX.4.64.0708220637400.16288@us.intercode.com.au>
-References: <20070822083844.%N@1wt.eu> <6bffcb0e0708220410u4ab3978eq18786ac186e88c7d@mail.gmail.com>
- <Xine.LNX.4.64.0708220621550.28878@us.intercode.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <20070822083844.%N@1wt.eu>
+	 <6bffcb0e0708220410u4ab3978eq18786ac186e88c7d@mail.gmail.com>
+	 <Xine.LNX.4.64.0708220621550.28878@us.intercode.com.au>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 22 Aug 2007 09:36:05 -0400
+Message-Id: <1187789765.1451.310.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007, James Morris wrote:
-
+On Wed, 2007-08-22 at 06:23 -0700, James Morris wrote:
 > On Wed, 22 Aug 2007, Michal Piotrowski wrote:
 > 
 > > I got a problem with SELinux
@@ -38,10 +42,14 @@ On Wed, 22 Aug 2007, James Morris wrote:
 > You don't have complete policy for the new network controls, which are not 
 > enabled by default and not integreated fully into distros yet.
 
-Actually, this looks to be a bug where the secmark field of the skb is not 
-being initialized correctly.  Patch coming soon...
+Still, that denial shouldn't be against kernel_t unless he has iptables
+SECMARK rules that assign that value.
 
+It's the change to the skb allocator - no longer clears up through
+truesize and thus secmark is garbage initially.  That would apply to
+mainline too.
 
 -- 
-James Morris
-<jmorris@namei.org>
+Stephen Smalley
+National Security Agency
+
