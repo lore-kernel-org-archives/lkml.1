@@ -1,135 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763341AbXHVMgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763430AbXHVMgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763341AbXHVMgf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 08:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761286AbXHVMdR
+	id S1763430AbXHVMgy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 08:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761592AbXHVMfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 08:33:17 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:40049 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760681AbXHVMc6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 08:32:58 -0400
-Message-Id: <20070822123643.731305505@de.ibm.com>
-References: <20070822123603.501231302@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 22 Aug 2007 14:36:11 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Michael Holzheu <holzheu@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 08/10] hypfs: inode corruption due to missing locking
-Content-Disposition: inline; filename=008-hypfs.diff
+	Wed, 22 Aug 2007 08:35:42 -0400
+Received: from 1wt.eu ([62.212.114.60]:2238 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762915AbXHVMfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 08:35:41 -0400
+Date: Wed, 22 Aug 2007 14:22:11 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Herton Ronaldo Krzesinski <herton@mandriva.com.br>,
+       Gustavo de Nardin <gustavodn@mandriva.com.br>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [2.6.20.17 review 27/58] Include serial_reg.h with userspace headers
+Message-ID: <20070822122211.GB10979@1wt.eu>
+References: <20070822083844.%N@1wt.eu> <20070822084015.%N@1wt.eu> <20070822092331.GA17947@flint.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070822092331.GA17947@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Holzheu <holzheu@de.ibm.com>
+Hi Russell,
 
-hypfs removes the whole hypfs directory tree and creates a new one, when a
-process triggers an update by writing to the "update" attribute. When removing
-and creating files, it is necessary to lock the inode of the parent directory
-where the files live. Currently hypfs does not lock the parent inode, which
-can lead to inode corruption. This patch:
- * Introduces correct locking
- * Fixes i_nlink reference counting for inodes, when creating directories
- * Adds info printk, when hypfs filesystem has been mounted
+On Wed, Aug 22, 2007 at 10:23:32AM +0100, Russell King wrote:
+> On Wed, Aug 22, 2007 at 11:39:11AM +0200, Willy Tarreau wrote:
+> > As reported by Gustavo de Nardin <gustavodn@mandriva.com.br>, while trying to
+> > compile xosview (http://xosview.sourceforge.net/) with upstream kernel
+> > headers being used you get the following errors:
+> > serialmeter.cc:48:30: error: linux/serial_reg.h: No such file or directory
+> > serialmeter.cc: In member function 'virtual void
+> > SerialMeter::checkResources()':
+> > serialmeter.cc:71: error: 'UART_LSR' was not declared in this scope
+> > serialmeter.cc:71: error: 'UART_MSR' was not declared in this scope
+> > ..
+> 
+> It's probably a good thing to repeat what I said privately about this,
+> which is:
+> 
+> | It should be noted that reading the MSR or LSR of an active 8250 UART
+> | has side effects.  In the case of MSR, it clears the bits which indicate
+> | that the modem status signals have changed, and clears the associated
+> | interrupt.  This can result in loss of hardware flow control on the port.
+(...)
+> | For a tool which presumably is to assist diagnosing serial problems, it
+> | would seem to have the capability of causing further additional problems.
+> 
+> I leave it up to others to decide that keeping backwards compatibility
+> with userspace which is quite obviously broken is more important than
+> providing userspace with the persuasion to fix their broken code.
 
-Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
+While I agree with you that side effects may be undesirable, I still think
+it's important to ensure backwards compatibility in -stable branch, for the
+following reasons :
 
- arch/s390/hypfs/inode.c |   33 +++++++++++++++++++++++++--------
- 1 file changed, 25 insertions(+), 8 deletions(-)
+  - people who use -stable want to ensure that they can upgrade in order to
+    fix security issues or other bugs without risking (much) regression
 
-Index: quilt-2.6/arch/s390/hypfs/inode.c
-===================================================================
---- quilt-2.6.orig/arch/s390/hypfs/inode.c
-+++ quilt-2.6/arch/s390/hypfs/inode.c
-@@ -60,17 +60,28 @@ static void hypfs_add_dentry(struct dent
- 	hypfs_last_dentry = dentry;
- }
- 
-+static inline int hypfs_positive(struct dentry *dentry)
-+{
-+	return dentry->d_inode && !d_unhashed(dentry);
-+}
-+
- static void hypfs_remove(struct dentry *dentry)
- {
- 	struct dentry *parent;
- 
- 	parent = dentry->d_parent;
--	if (S_ISDIR(dentry->d_inode->i_mode))
--		simple_rmdir(parent->d_inode, dentry);
--	else
--		simple_unlink(parent->d_inode, dentry);
-+	if (!parent || !parent->d_inode)
-+		return;
-+	mutex_lock(&parent->d_inode->i_mutex);
-+	if (hypfs_positive(dentry)) {
-+		if (S_ISDIR(dentry->d_inode->i_mode))
-+			simple_rmdir(parent->d_inode, dentry);
-+		else
-+			simple_unlink(parent->d_inode, dentry);
-+	}
- 	d_delete(dentry);
- 	dput(dentry);
-+	mutex_unlock(&parent->d_inode->i_mutex);
- }
- 
- static void hypfs_delete_tree(struct dentry *root)
-@@ -315,6 +326,7 @@ static int hypfs_fill_super(struct super
- 	}
- 	hypfs_update_update(sb);
- 	sb->s_root = root_dentry;
-+	printk(KERN_INFO "hypfs: Hypervisor filesystem mounted\n");
- 	return 0;
- 
- err_tree:
-@@ -356,13 +368,17 @@ static struct dentry *hypfs_create_file(
- 	qname.name = name;
- 	qname.len = strlen(name);
- 	qname.hash = full_name_hash(name, qname.len);
-+	mutex_lock(&parent->d_inode->i_mutex);
- 	dentry = lookup_one_len(name, parent, strlen(name));
--	if (IS_ERR(dentry))
--		return ERR_PTR(-ENOMEM);
-+	if (IS_ERR(dentry)) {
-+		dentry = ERR_PTR(-ENOMEM);
-+		goto fail;
-+	}
- 	inode = hypfs_make_inode(sb, mode);
- 	if (!inode) {
- 		dput(dentry);
--		return ERR_PTR(-ENOMEM);
-+		dentry = ERR_PTR(-ENOMEM);
-+		goto fail;
- 	}
- 	if (mode & S_IFREG) {
- 		inode->i_fop = &hypfs_file_ops;
-@@ -379,6 +395,8 @@ static struct dentry *hypfs_create_file(
- 	inode->i_private = data;
- 	d_instantiate(dentry, inode);
- 	dget(dentry);
-+fail:
-+	mutex_unlock(&parent->d_inode->i_mutex);
- 	return dentry;
- }
- 
-@@ -391,7 +409,6 @@ struct dentry *hypfs_mkdir(struct super_
- 	if (IS_ERR(dentry))
- 		return dentry;
- 	hypfs_add_dentry(dentry);
--	parent->d_inode->i_nlink++;
- 	return dentry;
- }
- 
+  - you do not prevent buggy programs from doing wrong things by removing
+    headers. What you will end up with is xosview using the quite common
+    #ifndef UART_LSR / #define UART_LSR / #endif. In fact, there *may* be
+    some legitimate uses of those defines, eventhough this program abuses
+    its capabilities.
 
--- 
-blue skies,
-   Martin.
+Eventhough it's not a good practise to rely on kernel headers for userspace,
+at least we should limit build regressions on the user side, as it does not
+help the end user understand that the program he builds is wrong.
 
-"Reality continues to ruin my life." - Calvin.
+Thanks,
+Willy
 
