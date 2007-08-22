@@ -1,136 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764190AbXHVOyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764284AbXHVOzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764190AbXHVOyv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 10:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763151AbXHVOyH
+	id S1764284AbXHVOzc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 10:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761386AbXHVOzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 10:54:07 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:9538 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763010AbXHVOyE (ORCPT
+	Wed, 22 Aug 2007 10:55:20 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:17553 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761076AbXHVOzR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 10:54:04 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: [PATCH 4/4] ehea: show physical port state
-Date: Wed, 22 Aug 2007 16:21:32 +0200
-User-Agent: KMail/1.8.2
-MIME-Version: 1.0
-Content-Disposition: inline
-To: Jeff Garzik <jeff@garzik.org>
-Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 22 Aug 2007 10:55:17 -0400
+X-IronPort-AV: i="4.19,294,1183348800"; 
+   d="scan'208"; a="37743991:sNHT69731207"
+Subject: [PATCH take #2] MAINTAINTERS: use our mail list as Blackfin arch
+	maintainters.
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, bryan.wu@analog.com,
+       joe@perches.com, yi.li@analog.com, vivi.li@analog.com,
+       torvalds@linux-foundation.org, sonic.zhang@analog.com,
+       roy.huang@analog.com, robin.getz@analog.com,
+       michael.hennerich@analog.com, michael.frysinger@analog.com,
+       marc.hoffman@analog.com, linux-kernel@vger.kernel.org,
+       jie.zhang@analog.com, grace.pan@analog.com, bernd.schmidt@analog.com,
+       akpm@linux-foundation.org
+In-Reply-To: <8bd0f97a0708220345g26c35288g5e96b6f1f8491f0e@mail.gmail.com>
+References: <46bff904.ANPWrqncsP8VpmBH%joe@perches.com>
+	 <1187777706.24914.2.camel@roc-desktop>
+	 <6bffcb0e0708220323w5592df25n9c21c7e3aca1dbfb@mail.gmail.com>
+	 <8bd0f97a0708220345g26c35288g5e96b6f1f8491f0e@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708221621.32549.ossthema@de.ibm.com>
+Organization: Analog Devices, Ltd.
+Date: Wed, 22 Aug 2007 22:55:11 +0800
+Message-Id: <1187794511.6805.3.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 22 Aug 2007 14:55:15.0258 (UTC) FILETIME=[72B9A9A0:01C7E4CC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduces a module parameter to decide whether the physical
-port link state is propagated to the network stack or not.
-It makes sense not to take the physical port state into account
-on machines with more logical partitions that communicate
-with each other. This is always possible no matter what the physical
-port state is. Thus eHEA can be considered as a switch there.
-
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
-
+Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- drivers/net/ehea/ehea.h      |    5 ++++-
- drivers/net/ehea/ehea_main.c |   14 +++++++++++++-
- 2 files changed, 17 insertions(+), 2 deletions(-)
+ MAINTAINERS |   30 +-----------------------------
+ 1 files changed, 1 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
-index d67f97b..8d58be5 100644
---- a/drivers/net/ehea/ehea.h
-+++ b/drivers/net/ehea/ehea.h
-@@ -39,7 +39,7 @@
- #include <asm/io.h>
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 371fe67..982e51a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -717,35 +717,7 @@ M:	rpurdie@rpsys.net
+ S:	Maintained
  
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0073"
-+#define DRV_VERSION	"EHEA_0074"
+ BLACKFIN ARCHITECTURE
+-P:	Aubrey Li
+-M:	aubrey.li@analog.com
+-P:	Bernd Schmidt
+-M:	bernd.schmidt@analog.com
+-P:	Bryan Wu
+-M:	bryan.wu@analog.com
+-P:	Grace Pan
+-M:	grace.pan@analog.com
+-P:	Marc Hoffman
+-M:	marc.hoffman@analog.com
+-P:	Michael Hennerich
+-M:	michael.hennerich@analog.com
+-P:	Mike Frysinger
+-M:	michael.frysinger@analog.com
+-P:	Jerry Zeng
+-M:	jerry.zeng@analog.com
+-P:	Jie Zhang
+-M:	jie.zhang@analog.com
+-P:	Robin Getz
+-M:	robin.getz@analog.com
+-P:	Roy Huang
+-M:	roy.huang@analog.com
+-P:	Sonic Zhang
+-M:	sonic.zhang@analog.com
+-P:	Vivi Li
+-M:	vivi.li@analog.com
+-P:	Yi Li
+-M:	yi.li@analog.com
+-L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
++L:	uclinux-dist-devel@blackfin.uclinux.org
+ W:	http://blackfin.uclinux.org
+ S:	Supported
  
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-@@ -402,6 +402,8 @@ struct ehea_mc_list {
- 
- #define EHEA_PORT_UP 1
- #define EHEA_PORT_DOWN 0
-+#define EHEA_PHY_LINK_UP 1
-+#define EHEA_PHY_LINK_DOWN 0
- #define EHEA_MAX_PORT_RES 16
- struct ehea_port {
- 	struct ehea_adapter *adapter;	 /* adapter that owns this port */
-@@ -427,6 +429,7 @@ struct ehea_port {
- 	u32 msg_enable;
- 	u32 sig_comp_iv;
- 	u32 state;
-+	u8 phy_link;
- 	u8 full_duplex;
- 	u8 autoneg;
- 	u8 num_def_qps;
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index db57474..1804c99 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -53,17 +53,21 @@ static int rq3_entries = EHEA_DEF_ENTRIES_RQ3;
- static int sq_entries = EHEA_DEF_ENTRIES_SQ;
- static int use_mcs = 0;
- static int num_tx_qps = EHEA_NUM_TX_QP;
-+static int show_phys_link = 0;
- 
- module_param(msg_level, int, 0);
- module_param(rq1_entries, int, 0);
- module_param(rq2_entries, int, 0);
- module_param(rq3_entries, int, 0);
- module_param(sq_entries, int, 0);
-+module_param(show_phys_link, int, 0);
- module_param(use_mcs, int, 0);
- module_param(num_tx_qps, int, 0);
- 
- MODULE_PARM_DESC(num_tx_qps, "Number of TX-QPS");
- MODULE_PARM_DESC(msg_level, "msg_level");
-+MODULE_PARM_DESC(show_phys_link, "Show link state of external port"
-+		 "1:yes, 0: no.  Default = 0 ");
- MODULE_PARM_DESC(rq3_entries, "Number of entries for Receive Queue 3 "
- 		 "[2^x - 1], x = [6..14]. Default = "
- 		 __MODULE_STRING(EHEA_DEF_ENTRIES_RQ3) ")");
-@@ -814,7 +818,9 @@ int ehea_set_portspeed(struct ehea_port *port, u32 port_speed)
- 			ehea_error("Failed setting port speed");
- 		}
- 	}
--	netif_carrier_on(port->netdev);
-+	if (!show_phys_link || (port->phy_link == EHEA_PHY_LINK_UP))
-+		netif_carrier_on(port->netdev);
-+
- 	kfree(cb4);
- out:
- 	return ret;
-@@ -869,13 +875,19 @@ static void ehea_parse_eqe(struct ehea_adapter *adapter, u64 eqe)
- 			}
- 
- 		if (EHEA_BMASK_GET(NEQE_EXTSWITCH_PORT_UP, eqe)) {
-+			port->phy_link = EHEA_PHY_LINK_UP;
- 			if (netif_msg_link(port))
- 				ehea_info("%s: Physical port up",
- 					  port->netdev->name);
-+			if (show_phys_link)
-+				netif_carrier_on(port->netdev);
- 		} else {
-+			port->phy_link = EHEA_PHY_LINK_DOWN;
- 			if (netif_msg_link(port))
- 				ehea_info("%s: Physical port down",
- 					  port->netdev->name);
-+			if (show_phys_link)
-+				netif_carrier_off(port->netdev);
- 		}
- 
- 		if (EHEA_BMASK_GET(NEQE_EXTSWITCH_PRIMARY, eqe))
 -- 
 1.5.2
-
