@@ -1,93 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933211AbXHVSwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932499AbXHVSy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933211AbXHVSwu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 14:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764011AbXHVSwn
+	id S932499AbXHVSy2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 14:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761127AbXHVSyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 14:52:43 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60248 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763446AbXHVSwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 14:52:42 -0400
-Date: Wed, 22 Aug 2007 21:46:32 +0200
-From: Andi Kleen <ak@suse.de>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
-Message-ID: <20070822194632.GD8058@bingen.suse.de>
-References: <46CBC842.4070100@vmware.com> <20070822102217.GE2642@bingen.suse.de> <46CC68D9.5060200@vmware.com> <20070822175918.GB8058@bingen.suse.de> <46CC6D63.2010204@vmware.com>
+	Wed, 22 Aug 2007 14:54:21 -0400
+Received: from empbedex1.empirix.com ([12.38.203.54]:5121 "EHLO
+	empbedex1.empirix.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762873AbXHVSyU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 14:54:20 -0400
+X-Greylist: delayed 973 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Aug 2007 14:54:20 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46CC6D63.2010204@vmware.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: NFS/RPC Hangs after updating time...
+Date: Wed, 22 Aug 2007 14:37:22 -0400
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90108F975FB@EMPBEDEX.empirix.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: NFS/RPC Hangs after updating time...
+Thread-Index: Acfk63oF49kAy+KLQXaklISLZ3XJCw==
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <nfs@lists.sourceforge.net>
+Cc: <linux-kernel@vger.kernel.org>, "Rushton, Matt" <Mrushton@empirix.com>
+X-OriginalArrivalTime: 22 Aug 2007 18:38:04.0634 (UTC) FILETIME=[937E8BA0:01C7E4EB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 10:07:47AM -0700, Zachary Amsden wrote:
-> >Also I fail to see the fundamental speed difference between
-> >
-> >mov index,register
-> >int 0x...
-> >...
-> >switch (register) 
-> >case xxxx: do emulation
-> >  
-> 
-> Int (on p4 == ~680 cycles).
-> 
-> >versus
-> >
-> >out ...
-> >#gp
-> >-> switch (*eip) {
-> >case 0xee:  /* etc. */ 
-> >	do emulation
-> >  
-> 
-> GP = ~2000 cycles.
+Hi, 
 
-How is that measured? In a loop? In the same pipeline state?
+I've got an unusual problem with a corner case that I 
+am investigating. I've tried 'googling' around to 
+find if someone has discussed this before, but 
+I have yet to find any discussion close to this - 
+so I bring it to your collective minds...
 
-It seems a little dubious to me.
+I am working with a 2.6.11++ kernel on an embedded 
+server platform that is NFS serving Linux rootfs 
+for other embedded NFS Client boards.
 
-> 
-> >>to verify protection in the page tables mapping the page allows 
-> >>execution (P, !NX, and U/S check).  This is a lot more expensive than a 
-> >>    
-> >
-> >When the page is not executable or not present you get #PF not #GP. 
-> >So the hardware already checks that.
-> >
-> >The only case where you would need to check yourself is if you emulate
-> >NX on non NX capable hardware, but I can't see you doing that.
-> >  
-> 
-> No, it doesn't.  Between the #GP and decode, you have an SMP race where 
-> another processor can rewrite the instruction.
+Everything works fine when the system time on the 
+server board is relatively synchronized with the real-time. 
 
-That can be ignored imho. If the page goes away you'll notice
-when you handle the page fault on read. If it becomes NX then the execution
-just happened to be logically a little earlier.
+It hangs after attempting to update the time from a 
+nonsensical time (e.g.: 2 months ago) - the most significant
+part of it is that it only hangs IFF it has started 
+serving its NFS client boards before I attempt to 
+update the time.
 
-My other objection to this scheme is that you'll change a zillion
-drivers you'll never emulate which seems just stupid. You could
-just change the small handful that you emulate to use hypercalls.
 
-Or easier to just write a backend for the lguest virtio drivers,
-that will be likely faster in the end anyways than this gross
-hack.
+The most significant output (when turning on 
+RPC debugging) is from:
 
-Really LinuxHAL^wparavirt ops is already so complicated that
-any new hooks need an extremly good justification and that is
-just not here for this.
+  linux/net/sunrpc/cache.c (cache_check) - line 90:
 
-We can add it if you find an equivalent number of hooks
-to eliminate.
+         >> Want update, refage=1800, age=4288285
 
--Andi
+It continually loops through this method - and the cache
+never gets updated...even thought with some additional
+sleuthing (aka: additional debug printks - it thinks 
+that there is an cache update pending).
 
+Thanks for any ideas you have on this subject.
+
+Sincerely,
+
+      
+         
+         
+
+Tom Morrison
+Principal S/W Engineer
+Empirix, Inc (www.empirix.com)
+tmorrison@empirix.com
+(781) 266 - 3567
+ 
+ 
