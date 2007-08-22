@@ -1,133 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932419AbXHVUEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932638AbXHVUFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932419AbXHVUEU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 16:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759055AbXHVUEM
+	id S932638AbXHVUFL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 16:05:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760132AbXHVUE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 16:04:12 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49575 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756434AbXHVUEL (ORCPT
+	Wed, 22 Aug 2007 16:04:58 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:63541 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760093AbXHVUE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 16:04:11 -0400
-Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water
-	marks
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, riel <riel@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0708221157180.13813@schroedinger.engr.sgi.com>
-References: <20070820215040.937296148@sgi.com>
-	 <1187692586.6114.211.camel@twins>
-	 <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com>
-	 <1187730812.5463.12.camel@lappy>
-	 <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com>
-	 <1187734144.5463.35.camel@lappy>
-	 <Pine.LNX.4.64.0708211532560.5728@schroedinger.engr.sgi.com>
-	 <1187766156.6114.280.camel@twins>
-	 <Pine.LNX.4.64.0708221157180.13813@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 22:03:45 +0200
-Message-Id: <1187813025.5463.85.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 22 Aug 2007 16:04:57 -0400
+Message-ID: <46CC9696.1070107@oracle.com>
+Date: Wed, 22 Aug 2007 13:03:34 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: 2.6.23-rc3-mm1
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <20070822110348.8fd6a937.randy.dunlap@oracle.com> <20070822113211.9ac85162.akpm@linux-foundation.org> <20070822193857.GC8058@bingen.suse.de> <20070822121731.011cd263.randy.dunlap@oracle.com> <20070822205311.GH8058@bingen.suse.de>
+In-Reply-To: <20070822205311.GH8058@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 12:04 -0700, Christoph Lameter wrote:
-> On Wed, 22 Aug 2007, Peter Zijlstra wrote:
+Andi Kleen wrote:
+> On Wed, Aug 22, 2007 at 12:17:31PM -0700, Randy Dunlap wrote:
+>>> Why does that compiler not know __builtin_abs?
+>> I dunno:
+>>
+>>> gcc --version
+>> gcc (GCC) 4.1.0 (SUSE Linux)
 > 
-> > Its unavoidable, at some point it just happens. Also using reclaim
-> > doesn't seem like the ideal way to get out of live-locks since reclaim
-> > itself can live-lock on these large boxen.
+> Hmm I use the same compiler from SUSE10.2 and it works for me (with both
+> mm and only my tree applied) 
 > 
-> If reclaim can live lock then it needs to be fixed.
-
-Riel is working on that.
-
-> > As shown, there are cases where there just isn't any memory to reclaim.
-> > Please accept this.
+> Ok mm fails with some errors in the wireless drivers but with 
+> wireless disabled it compiles.
 > 
-> That is an extreme case that AFAIK we currently ignore and could be 
-> avoided with some effort.
-
-Its not extreme, not even rare, and its handled now. Its what
-PF_MEMALLOC is for.
-
-> The initial PF_MEMALLOC patchset seems to be 
-> still enough to deal with your issues.
-
-No it isnt. 
-
-Take the anonyous workload, user-space will block once the page
-allocator hits ALLOC_MIN. Network will be able to receive until
-ALLOC_MIN|ALLOC_HIGH - if the completion doesn't arrive by then it will
-start dropping all packets until there is memory again. But userspace is
-wedged and hence will not consume the network traffic, hence we
-deadlock.
-
-Even if there is something to reclaim initially, if the pressure
-persists that can eventually be exhausted.
-
-> > Also, by reclaiming memory and getting out of the tight spot you give
-> > the rest of the system access to that memory, and it can be used for
-> > other things than getting out of the tight spot.
+> When you compile a simple test program like
 > 
-> The rest of the system may have their own tights spots. Language the "the 
-> tight spot" sets up all sort of alarms over here since you seem to be 
-> thinking about a system doing a single task.
-
-reclaim
-
->  The system may be handling 
-> multiple critical tasks on various devices that have various memory needs. 
-> So multiple critical spots can happen concurrently in multiple 
-> application contexts.
-
-yes, reclaim can be unbounded concurrent, and that is one of the
-(theoretically) major problems we currently have.
-
-> > You really want a separate allocation state that allows only reclaim to
-> > access memory.
+> main() { printf("%lu\n", __builtin_labs(-1)); }
 > 
-> We have that with PF_MEMALLOC.
+> does it work?
 
-Exactly. But if you recognise the need for PF_MEMALLOC then what is this
-argument about?
+Yes, that works.
 
-Networking can currently be seen as having two states:
-
- 1 receive packets and consume memory
- 2 drop all packets (when out of memory)
-
-I need a 3rd state:
-
- 3 receiving packets but not consuming memory
-
-Now, I need this state when we're in PF_MEMALLOC territory, because I
-need to be able to process an unspecified amount of network traffic in
-order to receive the writeout completion.
-
-In order to operate this 3rd network state, some memory is needed in
-which packets can be received and when deemed not important freed and
-reused.
-
-It needs a bounded amount of memory in order to process an unbounded
-amount of network traffic.
-
-What exactly is not clear about this? If you accept the need for
-PF_MEMALLOC you surely must also agree that at the point you're using it
-running reclaim is useless.
-
-> > Also, failing a memory allocation isn't bad, why are you so worried
-> > about that? It happens all the time.
+>>>> One wonders why x86_64-mm-unwinder.patch has an open-coded call to
+>>>> __builtin_labs(), when include/linux/kernel.h:abs() should do a fine job.
 > 
-> Its a performance impact and plainly does not make sense if there is 
-> reclaimable memory availble. The common action of the vm is to reclaim if 
-> there is a demand for memory. Now we suddenly abandon that approach?
+> Andrew, I actually checked that and the abs() there is just abs()
+> not a labs(). So it wouldn't work on 64bit platform.
+> 
+> We could opencode it of course, but __builtin_labs should be really 
+> there.
+> 
+> -Andi
 
-I'm utterly confused by this, on one hand you recognise the need for
-PF_MEMALLOC but on the other hand you're saying its not needed and
-anybody needing memory (even reclaim itself) should use reclaim.
 
-
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
