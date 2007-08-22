@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763460AbXHVJIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763531AbXHVJIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763460AbXHVJIZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758839AbXHVIxp
+	id S1763531AbXHVJIk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757749AbXHVIxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 04:53:45 -0400
-Received: from 1wt.eu ([62.212.114.60]:2156 "EHLO 1wt.eu"
+	Wed, 22 Aug 2007 04:53:46 -0400
+Received: from 1wt.eu ([62.212.114.60]:2158 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758765AbXHVIxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757565AbXHVIxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Aug 2007 04:53:43 -0400
 From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20070822084041.%N@1wt.eu>
+Message-Id: <20070822084046.%N@1wt.eu>
 References: <20070822083844.%N@1wt.eu>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Aug 2007 11:39:36 +0200
+Date: Wed, 22 Aug 2007 11:39:42 +0200
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Tejun Heo <htejun@gmail.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Jeff Garzik <jeff@garzik.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Willy Tarreau <w@1wt.eu>
-Subject: [2.6.20.17 review 52/58] ata_piix: update map 10b for ich8m
-Content-Disposition: inline; filename=0052-ata_piix-update-map-10b-for-ich8m.patch
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>
+Subject: [2.6.20.17 review 58/58] Reset current->pdeath_signal on SUID binary execution (CVE-2007-3848)
+Content-Disposition: inline; filename=0058-Reset-current-pdeath_signal-on-SUID-binary-executio.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix map entry 10b for ich8.  It's [P0 P2 IDE IDE] like ich6 / ich6m.
+This fixes a vulnerability in the "parent process death signal"
+implementation discoverd by Wojciech Purczynski of COSEINC PTE Ltd.
+and iSEC Security Research.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Acked-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Jeff Garzik <jeff@garzik.org>
+http://marc.info/?l=bugtraq&m=118711306802632&w=2
+
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Willy Tarreau <w@1wt.eu>
 ---
- drivers/ata/ata_piix.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/exec.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
-index 57c0db3..0c646dc 100644
---- a/drivers/ata/ata_piix.c
-+++ b/drivers/ata/ata_piix.c
-@@ -431,7 +431,7 @@ static const struct piix_map_db ich8_map_db = {
- 		/* PM   PS   SM   SS       MAP */
- 		{  P0,  P2,  P1,  P3 }, /* 00b (hardwired when in AHCI) */
- 		{  RV,  RV,  RV,  RV },
--		{  IDE,  IDE,  NA,  NA }, /* 10b (IDE mode) */
-+		{  P0,  P2, IDE, IDE }, /* 10b (IDE mode) */
- 		{  RV,  RV,  RV,  RV },
- 	},
- };
+diff --git a/fs/exec.c b/fs/exec.c
+index 0f8573a..bd1ab3f 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -881,9 +881,12 @@ int flush_old_exec(struct linux_binprm * bprm)
+ 	 */
+ 	current->mm->task_size = TASK_SIZE;
+ 
+-	if (bprm->e_uid != current->euid || bprm->e_gid != current->egid || 
+-	    file_permission(bprm->file, MAY_READ) ||
+-	    (bprm->interp_flags & BINPRM_FLAGS_ENFORCE_NONDUMP)) {
++	if (bprm->e_uid != current->euid || bprm->e_gid != current->egid) {
++		suid_keys(current);
++		current->mm->dumpable = suid_dumpable;
++		current->pdeath_signal = 0;
++	} else if (file_permission(bprm->file, MAY_READ) ||
++			(bprm->interp_flags & BINPRM_FLAGS_ENFORCE_NONDUMP)) {
+ 		suid_keys(current);
+ 		current->mm->dumpable = suid_dumpable;
+ 	}
+@@ -974,8 +977,10 @@ void compute_creds(struct linux_binprm *bprm)
+ {
+ 	int unsafe;
+ 
+-	if (bprm->e_uid != current->uid)
++	if (bprm->e_uid != current->uid) {
+ 		suid_keys(current);
++		current->pdeath_signal = 0;
++	}
+ 	exec_keys(current);
+ 
+ 	task_lock(current);
 -- 
 1.5.2.5
 
