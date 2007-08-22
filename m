@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763723AbXHVTF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763163AbXHVTLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763723AbXHVTF5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 15:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760356AbXHVTEy
+	id S1763163AbXHVTLs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 15:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbXHVTLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 15:04:54 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42814 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764974AbXHVTEw (ORCPT
+	Wed, 22 Aug 2007 15:11:40 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58309 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750709AbXHVTLj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 15:04:52 -0400
-Date: Wed, 22 Aug 2007 12:04:51 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, riel <riel@redhat.com>
-Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
-In-Reply-To: <1187766156.6114.280.camel@twins>
-Message-ID: <Pine.LNX.4.64.0708221157180.13813@schroedinger.engr.sgi.com>
-References: <20070820215040.937296148@sgi.com>  <1187692586.6114.211.camel@twins>
-  <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com> 
- <1187730812.5463.12.camel@lappy>  <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com>
-  <1187734144.5463.35.camel@lappy>  <Pine.LNX.4.64.0708211532560.5728@schroedinger.engr.sgi.com>
- <1187766156.6114.280.camel@twins>
+	Wed, 22 Aug 2007 15:11:39 -0400
+Date: Wed, 22 Aug 2007 11:55:44 -0700
+From: Greg KH <greg@kroah.com>
+To: Nate <stoddarn@msoe.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Restricting CDC-ACM devices
+Message-ID: <20070822185544.GA6002@kroah.com>
+References: <1187716018.731090.165620@j4g2000prf.googlegroups.com> <20070821171018.C964B5F778@attila.bofh.it> <39877.198.169.188.225.1187733834.squirrel@myweb.msoe.edu> <20070822054615.GA23336@kroah.com> <45719.198.169.188.225.1187793693.squirrel@myweb.msoe.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45719.198.169.188.225.1187793693.squirrel@myweb.msoe.edu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007, Peter Zijlstra wrote:
+On Wed, Aug 22, 2007 at 09:41:33AM -0500, Nate wrote:
+> 
+> > Why do you not want to modify the driver?
+> 
+> Modifying the cdc-acm driver is an alternative; however, I would like to
+> avoid that when I'm adding my vendor specific restrictions.  My hope is
+> that when patches are made to that file, I don't need to worry about
+> someone merging them over the my previous ones.  Is this a bad goal?
 
-> Its unavoidable, at some point it just happens. Also using reclaim
-> doesn't seem like the ideal way to get out of live-locks since reclaim
-> itself can live-lock on these large boxen.
+Well, just messing with the device ids is not that tough of a patch to
+keep up to date over time, so you might just try that if necessary.
 
-If reclaim can live lock then it needs to be fixed.
+> > You can disconnect the device from the driver from userspace for any
+> > device you just don't want to have connected by using the sysfs
+> > bind/unbind files.  That doesn't require any kernel changes at all.
+> 
+> I don't fully follow you here.  Are you saying that I can disconnect the
+> CDC-ACM driver from my USB device and allow my driver to get a call probe?
 
-> As shown, there are cases where there just isn't any memory to reclaim.
-> Please accept this.
+Yes.  You can manually bind and unbind all PCI and USB devices from
+their drivers from userspace.  So you do have full control over this
+already, no kernel changes needed.
 
-That is an extreme case that AFAIK we currently ignore and could be 
-avoided with some effort. The initial PF_MEMALLOC patchset seems to be 
-still enough to deal with your issues.
+thanks,
 
-> Also, by reclaiming memory and getting out of the tight spot you give
-> the rest of the system access to that memory, and it can be used for
-> other things than getting out of the tight spot.
-
-The rest of the system may have their own tights spots. Language the "the 
-tight spot" sets up all sort of alarms over here since you seem to be 
-thinking about a system doing a single task. The system may be handling 
-multiple critical tasks on various devices that have various memory needs. 
-So multiple critical spots can happen concurrently in multiple 
-application contexts.
-
-> You really want a separate allocation state that allows only reclaim to
-> access memory.
-
-We have that with PF_MEMALLOC.
-
-> Also, failing a memory allocation isn't bad, why are you so worried
-> about that? It happens all the time.
-
-Its a performance impact and plainly does not make sense if there is 
-reclaimable memory availble. The common action of the vm is to reclaim if 
-there is a demand for memory. Now we suddenly abandon that approach?
+greg k-h
