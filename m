@@ -1,91 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764069AbXHVJQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764563AbXHVJQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764069AbXHVJQl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbXHVJC5
+	id S1764563AbXHVJQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762957AbXHVJGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 05:02:57 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:57283 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1762746AbXHVJCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 05:02:55 -0400
-Message-ID: <387773371.00311@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Wed, 22 Aug 2007 17:02:51 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Dan Aloni <da-x@monatomic.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+	Wed, 22 Aug 2007 05:06:18 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37457 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762673AbXHVJGR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 05:06:17 -0400
+Date: Wed, 22 Aug 2007 02:05:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Dan Aloni <da-x@monatomic.org>, linux-kernel@vger.kernel.org,
        parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
        linux-arch@vger.kernel.org, Ollie Wild <aaw@google.com>,
-       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [patch 3/3] mm: variable length argument support
-Message-ID: <20070822090251.GA7038@mail.ustc.edu.cn>
-References: <20070613100334.635756997@chello.nl> <20070613100835.014096712@chello.nl> <20070822084852.GA12314@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070822084852.GA12314@localdomain>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <20070822020515.792c6bb0.akpm@linux-foundation.org>
+In-Reply-To: <1187772842.6114.282.camel@twins>
+References: <20070613100334.635756997@chello.nl>
+	<20070613100835.014096712@chello.nl>
+	<20070822084852.GA12314@localdomain>
+	<1187772842.6114.282.camel@twins>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 11:48:52AM +0300, Dan Aloni wrote:
-> On Wed, Jun 13, 2007 at 12:03:37PM +0200, Peter Zijlstra wrote:
-> > From: Ollie Wild <aaw@google.com>
-> > 
-> > Remove the arg+env limit of MAX_ARG_PAGES by copying the strings directly
-> > from the old mm into the new mm.
-> > 
-> [...]
-> > +static int __bprm_mm_init(struct linux_binprm *bprm)
-> > +{
-> [...]
-> > +	vma->vm_flags = VM_STACK_FLAGS;
-> > +	vma->vm_page_prot = protection_map[vma->vm_flags & 0x7];
-> > +	err = insert_vm_struct(mm, vma);
-> > +	if (err) {
-> > +		up_write(&mm->mmap_sem);
-> > +		goto err;
-> > +	}
-> > +
-> 
-> That change causes a crash in khelper when overcommit_memory = 2 
-> under 2.6.23-rc3.
-> 
-> When a khelper execs, at __bprm_mm_init() current->mm is still NULL.
-> insert_vm_struct() calls security_vm_enough_memory(), which calls 
-> __vm_enough_memory(), and that's where current->mm->total_vm gets 
-> dereferenced.
-> 
-> 
-> Signed-off-by: Dan Aloni <da-x@monatomic.org>
-> 
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index 906ed40..6e021df 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -163,10 +163,12 @@ int __vm_enough_memory(long pages, int cap_sys_admin)
->  	if (!cap_sys_admin)
->  		allowed -= allowed / 32;
->  	allowed += total_swap_pages;
-> -
-> -	/* Don't let a single process grow too big:
-> -	   leave 3% of the size of this process for other processes */
-> -	allowed -= current->mm->total_vm / 32;
-> +
-> +	if (current->mm) {
-> +		/* Don't let a single process grow too big:
-> +		   leave 3% of the size of this process for other processes */
-> +		allowed -= current->mm->total_vm / 32;
-> +	}
->  
->  	/*
->  	 * cast `allowed' as a signed long because vm_committed_space
-> 
+On Wed, 22 Aug 2007 10:54:02 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-FYI: This bug has been fixed by Alan Cox: http://lkml.org/lkml/2007/8/13/782.
+> Alan proposed this patch:
 
-But thanks anyway~
-
+yeah, I have a great pile of stuff queued for Linus.  I'm bad.  Tomorrow.
