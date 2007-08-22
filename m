@@ -1,84 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933995AbXHVRWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934075AbXHVRWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933995AbXHVRWG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 13:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765592AbXHVRU4
+	id S934075AbXHVRWf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 13:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765676AbXHVRU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 13:20:56 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:65129 "EHLO
+	Wed, 22 Aug 2007 13:20:57 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:50864 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765514AbXHVRUy (ORCPT
+	with ESMTP id S1765508AbXHVRUy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Aug 2007 13:20:54 -0400
-Message-Id: <20070822170731.984791109@arndb.de>
+Message-Id: <20070822170732.371327244@arndb.de>
 References: <20070822170124.764128591@arndb.de>
 User-Agent: quilt/0.45-1
-Date: Wed, 22 Aug 2007 19:01:25 +0200
+Date: Wed, 22 Aug 2007 19:01:27 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: paulus@samba.org
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       cbe-oss-dev@ozlabs.org, Christian Krafft <krafft@de.ibm.com>,
-       Jeremy Kerr <jk@ozlabs.org>, Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Subject: [patch 1/5] spu_manage: use newer physical-id attribute
-Content-Disposition: inline; filename=36162.diff
-X-Provags-ID: V01U2FsdGVkX18zNPpc3UphdVps06XldlI+QfBSAe+em/Lf//m
- 17srn7tpB9bPz/Hm5+7Lfp75J4GQz9NwNreGsypnm/egQFbXtn
- hhFmVuqMylZepZM9IU/Zg==
+       cbe-oss-dev@ozlabs.org, Maximilian <maxim@de.ibm.com>,
+       Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Subject: [patch 3/5] Axonram module modification for latest firmware API changes
+Content-Disposition: inline; filename=35766.diff
+X-Provags-ID: V01U2FsdGVkX1/NL/RiSTHcDvrFIkqJ4E+SNd6ZQxcB6y4zDSc
+ HiCSMUyRckagf9YaamO7XFwj/HfAxeXvGRtbl7pPME7tqEmi3c
+ cyiR0+ba60+EIkIXvrlzw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Krafft <krafft@de.ibm.com>
-Legacy device tree used the reg property for the physical id of an spe.
-On newer device tree layouts the reg property contains the "correct" value
-in the reg attribute. So there has been intoduced the "physical-id" on newer
-devicetree layouts. The id is stored by spu_manage into the spu struct as spe_id.
-cbe_thermal has been changed to use the spu->spe_id.
-There's no need for the thermal code has to check devicetree attributes for itself.
+From: Maxim Shchetynin <maxim@de.ibm.com>
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-Cc: Jeremy Kerr <jk@ozlabs.org>
+Firmware would not deliver two interrupt numbers in device-tree any more
+but only one, for correctable ECC, because uncorrectable ECC from now
+handles firmware itself.
+Changes in the axonram module are necessary because in the old version, if
+it is not allowed to fetch the second interrupt number from device-tree,
+it interpretes this as an error case and exits.
+
+Signed-off-by: Maximilian <maxim@de.ibm.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-
 ---
 
-Jeremy, please Ack
-
-Index: linux-2.6/arch/powerpc/platforms/cell/cbe_thermal.c
+Index: linux-2.6/arch/powerpc/sysdev/axonram.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/cbe_thermal.c
-+++ linux-2.6/arch/powerpc/platforms/cell/cbe_thermal.c
-@@ -88,17 +88,13 @@ static struct cbe_pmd_regs __iomem *get_
- /* returns the value for a given spu in a given register */
- static u8 spu_read_register_value(struct sys_device *sysdev, union spe_reg __iomem *reg)
- {
--	const unsigned int *id;
- 	union spe_reg value;
- 	struct spu *spu;
+--- linux-2.6.orig/arch/powerpc/sysdev/axonram.c
++++ linux-2.6/arch/powerpc/sysdev/axonram.c
+@@ -59,8 +59,7 @@
+ struct axon_ram_bank {
+ 	struct of_device	*device;
+ 	struct gendisk		*disk;
+-	unsigned int		irq_correctable;
+-	unsigned int		irq_uncorrectable;
++	unsigned int		irq_id;
+ 	unsigned long		ph_addr;
+ 	unsigned long		io_addr;
+ 	unsigned long		size;
+@@ -93,16 +92,9 @@ axon_ram_irq_handler(int irq, void *dev)
  
--	/* getting the id from the reg attribute will not work on future device-tree layouts
--	 * in future we should store the id to the spu struct and use it here */
- 	spu = container_of(sysdev, struct spu, sysdev);
--	id = of_get_property(spu_devnode(spu), "reg", NULL);
- 	value.val = in_be64(&reg->val);
+ 	BUG_ON(!bank);
  
--	return value.spe[*id];
-+	return value.spe[spu->spe_id];
+-	if (irq == bank->irq_correctable) {
+-		dev_err(&device->dev, "Correctable memory error occured\n");
+-		bank->ecc_counter++;
+-		return IRQ_HANDLED;
+-	} else if (irq == bank->irq_uncorrectable) {
+-		dev_err(&device->dev, "Uncorrectable memory error occured\n");
+-		panic("Critical ECC error on %s", device->node->full_name);
+-	}
+-
+-	return IRQ_NONE;
++	dev_err(&device->dev, "Correctable memory error occured\n");
++	bank->ecc_counter++;
++	return IRQ_HANDLED;
  }
  
- static ssize_t spu_show_temp(struct sys_device *sysdev, char *buf)
-Index: linux-2.6/arch/powerpc/platforms/cell/spu_manage.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spu_manage.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spu_manage.c
-@@ -48,7 +48,7 @@ static u64 __init find_spu_unit_number(s
- {
- 	const unsigned int *prop;
- 	int proplen;
--	prop = of_get_property(spe, "unit-id", &proplen);
-+	prop = of_get_property(spe, "physical-id", &proplen);
- 	if (proplen == 4)
- 		return (u64)*prop;
+ /**
+@@ -259,28 +251,18 @@ axon_ram_probe(struct of_device *device,
+ 	blk_queue_hardsect_size(bank->disk->queue, AXON_RAM_SECTOR_SIZE);
+ 	add_disk(bank->disk);
  
+-	bank->irq_correctable = irq_of_parse_and_map(device->node, 0);
+-	bank->irq_uncorrectable = irq_of_parse_and_map(device->node, 1);
+-	if ((bank->irq_correctable <= 0) || (bank->irq_uncorrectable <= 0)) {
++	bank->irq_id = irq_of_parse_and_map(device->node, 0);
++	if (bank->irq_id == NO_IRQ) {
+ 		dev_err(&device->dev, "Cannot access ECC interrupt ID\n");
+ 		rc = -EFAULT;
+ 		goto failed;
+ 	}
+ 
+-	rc = request_irq(bank->irq_correctable, axon_ram_irq_handler,
+-			AXON_RAM_IRQ_FLAGS, bank->disk->disk_name, device);
+-	if (rc != 0) {
+-		dev_err(&device->dev, "Cannot register ECC interrupt handler\n");
+-		bank->irq_correctable = bank->irq_uncorrectable = 0;
+-		rc = -EFAULT;
+-		goto failed;
+-	}
+-
+-	rc = request_irq(bank->irq_uncorrectable, axon_ram_irq_handler,
++	rc = request_irq(bank->irq_id, axon_ram_irq_handler,
+ 			AXON_RAM_IRQ_FLAGS, bank->disk->disk_name, device);
+ 	if (rc != 0) {
+ 		dev_err(&device->dev, "Cannot register ECC interrupt handler\n");
+-		bank->irq_uncorrectable = 0;
++		bank->irq_id = NO_IRQ;
+ 		rc = -EFAULT;
+ 		goto failed;
+ 	}
+@@ -296,10 +278,8 @@ axon_ram_probe(struct of_device *device,
+ 
+ failed:
+ 	if (bank != NULL) {
+-		if (bank->irq_uncorrectable > 0)
+-			free_irq(bank->irq_uncorrectable, device);
+-		if (bank->irq_correctable > 0)
+-			free_irq(bank->irq_correctable, device);
++		if (bank->irq_id != NO_IRQ)
++			free_irq(bank->irq_id, device);
+ 		if (bank->disk != NULL) {
+ 			if (bank->disk->queue != NULL)
+ 				blk_cleanup_queue(bank->disk->queue);
+@@ -329,8 +309,7 @@ axon_ram_remove(struct of_device *device
+ 	BUG_ON(!bank || !bank->disk);
+ 
+ 	device_remove_file(&device->dev, &dev_attr_ecc);
+-	free_irq(bank->irq_uncorrectable, device);
+-	free_irq(bank->irq_correctable, device);
++	free_irq(bank->irq_id, device);
+ 	blk_cleanup_queue(bank->disk->queue);
+ 	unregister_blkdev(bank->disk->major, bank->disk->disk_name);
+ 	del_gendisk(bank->disk);
 
 --
 
