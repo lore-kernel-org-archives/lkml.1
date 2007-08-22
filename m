@@ -1,77 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933120AbXHVSOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933212AbXHVSP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933120AbXHVSOx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 14:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763680AbXHVSOo
+	id S933212AbXHVSP1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 14:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759745AbXHVSPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 14:14:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43902 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761707AbXHVSOn (ORCPT
+	Wed, 22 Aug 2007 14:15:13 -0400
+Received: from mail-in-12.arcor-online.net ([151.189.21.52]:42392 "EHLO
+	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761484AbXHVSPK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 14:14:43 -0400
-Date: Wed, 22 Aug 2007 11:14:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-Cc: "Kuan Luo" <kluo@nvidia.com>, "Peer Chen" <pchen@nvidia.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc3-mm1
-Message-Id: <20070822111428.ad3f437c.akpm@linux-foundation.org>
-In-Reply-To: <64bb37e0708221024p5184aa65x5d36c7c049049124@mail.gmail.com>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	<64bb37e0708221024p5184aa65x5d36c7c049049124@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 22 Aug 2007 14:15:10 -0400
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Willy Tarreau <w@1wt.eu>
+Subject: Re: [2.6.20.17 review 35/58] forcedeth bug fix: realtek phy
+Date: Wed, 22 Aug 2007 20:15:03 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>, Greg Kroah-Hartman <gregkh@suse.de>
+References: <20070822083844.%N@1wt.eu> <20070822084026.%N@1wt.eu>
+In-Reply-To: <20070822084026.%N@1wt.eu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart3351992.1b2ERlbxTu";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200708222015.04141.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007 19:24:39 +0200
-"Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+--nextPart3351992.1b2ERlbxTu
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> On 8/22/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
-> [snip]
-> > -ata-add-the-sw-ncq-support-to-sata_nv-for-mcp51-mcp55-mcp61.patch
-> > -ata-add-the-sw-ncq-support-to-sata_nv-for-mcp51-mcp55-mcp61-fix.patch
-> [snip]
-> >  Merged into mainline or a subsystem tree
-> 
-> That patch is no longer in 2.6.23-rc3-mm1, my bootlog says:
-> [    0.000000] Unknown boot option `sata_nv.swncq=1': ignoring
-> 
-> I could not find this patch in any git trees I looked and its removal
-> mail from mm-commit said:
-> "This patch was dropped because Changes in Jeff's tree destroyed it."
-> 
-> 
-> I only found out about the swncq=1 command line option yesterday and
-> so tested it only one day.
-> But I did not have any trouble with it, even as my drive was made by Maxtor.
-> 
-> The chipset:
-> 00:05.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
-> 00:05.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
-> 00:05.2 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
-> 
-> The drive:
-> Device Model:     MAXTOR STM3320820AS
-> Serial Number:    5QF2E698
-> Firmware Version: 3.AAE
-> 
-> As it worked for me, I hope that patch will be picked up by someone. :)
-> 
+Hi,
 
-This is a fairly regular occurrence in ata land: patches from maintainers
-don't get merged, so I merge them for testing, then some fairly pointless
-cleanup-style patch goes on a great tree-wide rampage thus destabilising or
-simply destroying the more important, mysteriously-not-merged patch.
+even if Greg is waiting for some special invitation=20
+(http://lkml.org/lkml/2007/8/14/229), I suggest putting this patch by Ayaz =
+on=20
+top:
 
-Nobody knows why this happens.
+http://lkml.org/lkml/2007/8/10/296
 
-Peer and Kuan: can you please redo that patch against the current ata
-development tree?
+Perhaps Ayaz wants to give Greg the clarification he needs... :sigh:
 
-Thanks.
+bye,
 
+Prakash
+
+
+On the day of Wednesday 22 August 2007 Willy Tarreau hast written:
+> This patch contains errata fixes for the realtek phy. It only renamed the
+> defines to be phy specific.
+>
+> Signed-off-by: Ayaz Abdulla <aabdulla@nvidia.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> Signed-off-by: Willy Tarreau <w@1wt.eu>
+> ---
+>  drivers/net/forcedeth.c |   54
+> +++++++++++++++++++++++++++++++++++++++++++++++ 1 files changed, 54
+> insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+> index c383dc3..dbfdbed 100644
+> --- a/drivers/net/forcedeth.c
+> +++ b/drivers/net/forcedeth.c
+> @@ -554,6 +554,7 @@ union ring_type {
+>  #define PHY_OUI_MARVELL	0x5043
+>  #define PHY_OUI_CICADA	0x03f1
+>  #define PHY_OUI_VITESSE	0x01c1
+> +#define PHY_OUI_REALTEK	0x01c1
+>  #define PHYID1_OUI_MASK	0x03ff
+>  #define PHYID1_OUI_SHFT	6
+>  #define PHYID2_OUI_MASK	0xfc00
+> @@ -583,6 +584,13 @@ union ring_type {
+>  #define PHY_VITESSE_INIT8	0x0100
+>  #define PHY_VITESSE_INIT9	0x8f82
+>  #define PHY_VITESSE_INIT10	0x0
+> +#define PHY_REALTEK_INIT_REG1	0x1f
+> +#define PHY_REALTEK_INIT_REG2	0x19
+> +#define PHY_REALTEK_INIT_REG3	0x13
+> +#define PHY_REALTEK_INIT1	0x0000
+> +#define PHY_REALTEK_INIT2	0x8e00
+> +#define PHY_REALTEK_INIT3	0x0001
+> +#define PHY_REALTEK_INIT4	0xad17
+>
+>  #define PHY_GIGABIT	0x0100
+>
+> @@ -1106,6 +1114,28 @@ static int phy_init(struct net_device *dev)
+>  			return PHY_ERROR;
+>  		}
+>  	}
+> +	if (np->phy_oui =3D=3D PHY_OUI_REALTEK) {
+> +		if (mii_rw(dev, np->phyaddr, PHY_REALTEK_INIT_REG1, PHY_REALTEK_INIT1))
+> { +			printk(KERN_INFO "%s: phy init failed.
+> ", pci_name(np->pci_dev));
+> +			return PHY_ERROR;
+> +		}
+> +		if (mii_rw(dev, np->phyaddr, PHY_REALTEK_INIT_REG2, PHY_REALTEK_INIT2))
+> { +			printk(KERN_INFO "%s: phy init failed.
+> ", pci_name(np->pci_dev));
+> +			return PHY_ERROR;
+> +		}
+> +		if (mii_rw(dev, np->phyaddr, PHY_REALTEK_INIT_REG1, PHY_REALTEK_INIT3))
+> { +			printk(KERN_INFO "%s: phy init failed.
+> ", pci_name(np->pci_dev));
+> +			return PHY_ERROR;
+> +		}
+> +		if (mii_rw(dev, np->phyaddr, PHY_REALTEK_INIT_REG3, PHY_REALTEK_INIT4))
+> { +			printk(KERN_INFO "%s: phy init failed.
+> ", pci_name(np->pci_dev));
+> +			return PHY_ERROR;
+> +		}
+> +		if (mii_rw(dev, np->phyaddr, PHY_REALTEK_INIT_REG1, PHY_REALTEK_INIT1))
+> { +			printk(KERN_INFO "%s: phy init failed.
+> ", pci_name(np->pci_dev));
+> +			return PHY_ERROR;
+> +		}
+> +	}
+>
+>  	/* set advertise register */
+>  	reg =3D mii_rw(dev, np->phyaddr, MII_ADVERTISE, MII_READ);
+> @@ -1242,6 +1272,30 @@ static int phy_init(struct net_device *dev)
+>  			return PHY_ERROR;
+>  		}
+>  	}
+> +	if (np->phy_oui =3D=3D PHY_OUI_REALTEK) {
+> +		/* reset could have cleared these out, set them back */
+> +		if (mii_rw(dev, np->phyaddr, PHY_REALTEK_INIT_REG1, PHY_REALTEK_INIT1))
+> { +			printk(KERN_INFO "%s: phy init failed.
+> ", pci_name(np->pci_dev));
+> +			return PHY_ERROR;
+> +		}
+> +		if (mii_rw(dev, np->phyaddr, PHY_REALTEK_INIT_REG2, PHY_REALTEK_INIT2))
+> { +			printk(KERN_INFO "%s: phy init failed.
+> ", pci_name(np->pci_dev));
+> +			return PHY_ERROR;
+> +		}
+> +		if (mii_rw(dev, np->phyaddr, PHY_REALTEK_INIT_REG1, PHY_REALTEK_INIT3))
+> { +			printk(KERN_INFO "%s: phy init failed.
+> ", pci_name(np->pci_dev));
+> +			return PHY_ERROR;
+> +		}
+> +		if (mii_rw(dev, np->phyaddr, PHY_REALTEK_INIT_REG3, PHY_REALTEK_INIT4))
+> { +			printk(KERN_INFO "%s: phy init failed.
+> ", pci_name(np->pci_dev));
+> +			return PHY_ERROR;
+> +		}
+> +		if (mii_rw(dev, np->phyaddr, PHY_REALTEK_INIT_REG1, PHY_REALTEK_INIT1))
+> { +			printk(KERN_INFO "%s: phy init failed.
+> ", pci_name(np->pci_dev));
+> +			return PHY_ERROR;
+> +		}
+> +	}
+> +
+>  	/* some phys clear out pause advertisment on reset, set it back */
+>  	mii_rw(dev, np->phyaddr, MII_ADVERTISE, reg);
+>
+> --
+> 1.5.2.5
+
+
+
+=2D-=20
+(=B0=3D                 =3D=B0)
+//\ Prakash Punnoor /\\
+V_/                 \_V
+
+--nextPart3351992.1b2ERlbxTu
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.6 (GNU/Linux)
+
+iD8DBQBGzH0oxU2n/+9+t5gRAt9gAKD3Eaclsfc4CxaD3YoYgSdN9w3hWACeOXzB
+9xc0brrJMNNvRT9iekxOm04=
+=lfnj
+-----END PGP SIGNATURE-----
+
+--nextPart3351992.1b2ERlbxTu--
