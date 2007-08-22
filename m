@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764017AbXHVJLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbXHVJMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764017AbXHVJLp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758959AbXHVIxx
+	id S1760023AbXHVJMK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759079AbXHVIx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 04:53:53 -0400
-Received: from 1wt.eu ([62.212.114.60]:2174 "EHLO 1wt.eu"
+	Wed, 22 Aug 2007 04:53:57 -0400
+Received: from 1wt.eu ([62.212.114.60]:2178 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758164AbXHVIxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 04:53:48 -0400
+	id S1758977AbXHVIx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 04:53:56 -0400
 From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20070822084022.%N@1wt.eu>
+Message-Id: <20070822084028.%N@1wt.eu>
 References: <20070822083844.%N@1wt.eu>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Aug 2007 11:39:15 +0200
+Date: Wed, 22 Aug 2007 11:39:22 +0200
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, Steven Pratt <slpratt@austin.ibm.com>,
-       Ram Pai <linuxram@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+Cc: Jan Kara <jack@suse.cz>, Chuck Ebbert <cebbert@redhat.com>,
+       Kirill Korotaev <dev@openvz.org>, <linux-ext4@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>
-Subject: [2.6.20.17 review 31/58] readahead: MIN_RA_PAGES/MAX_RA_PAGES macros
-Content-Disposition: inline; filename=0031-readahead-MIN_RA_PAGES-MAX_RA_PAGES-macros.patch
+Subject: [2.6.20.17 review 38/58] jbd2 commit: fix transaction dropping
+Content-Disposition: inline; filename=0038-jbd2-commit-fix-transaction-dropping.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Define two convenient macros for read-ahead:
-	- MAX_RA_PAGES: rounded down counterpart of VM_MAX_READAHEAD
-	- MIN_RA_PAGES: rounded _up_ counterpart of VM_MIN_READAHEAD
+We have to check that also the second checkpoint list is non-empty before
+dropping the transaction.
 
-Note that the rounded up MIN_RA_PAGES will work flawlessly with _large_
-page sizes like 64k.
-
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Steven Pratt <slpratt@austin.ibm.com>
-Cc: Ram Pai <linuxram@us.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Jan Kara <jack@suse.cz>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Cc: Kirill Korotaev <dev@openvz.org>
+Cc: <linux-ext4@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Willy Tarreau <w@1wt.eu>
 ---
- mm/readahead.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
+ fs/jbd2/commit.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/mm/readahead.c b/mm/readahead.c
-index 0f539e8..f26cdea 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -21,8 +21,16 @@ void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
- }
- EXPORT_SYMBOL(default_unplug_io_fn);
+diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+index 6bd8005..7d29549 100644
+--- a/fs/jbd2/commit.c
++++ b/fs/jbd2/commit.c
+@@ -897,7 +897,8 @@ restart_loop:
+ 	journal->j_committing_transaction = NULL;
+ 	spin_unlock(&journal->j_state_lock);
  
-+/*
-+ * Convienent macros for min/max read-ahead pages.
-+ * Note that MAX_RA_PAGES is rounded down, while MIN_RA_PAGES is rounded up.
-+ * The latter is necessary for systems with large page size(i.e. 64k).
-+ */
-+#define MAX_RA_PAGES	(VM_MAX_READAHEAD*1024 / PAGE_CACHE_SIZE)
-+#define MIN_RA_PAGES	DIV_ROUND_UP(VM_MIN_READAHEAD*1024, PAGE_CACHE_SIZE)
-+
- struct backing_dev_info default_backing_dev_info = {
--	.ra_pages	= (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE,
-+	.ra_pages	= MAX_RA_PAGES,
- 	.state		= 0,
- 	.capabilities	= BDI_CAP_MAP_COPY,
- 	.unplug_io_fn	= default_unplug_io_fn,
-@@ -51,7 +59,7 @@ static inline unsigned long get_max_readahead(struct file_ra_state *ra)
- 
- static inline unsigned long get_min_readahead(struct file_ra_state *ra)
- {
--	return (VM_MIN_READAHEAD * 1024) / PAGE_CACHE_SIZE;
-+	return MIN_RA_PAGES;
- }
- 
- static inline void reset_ahead_window(struct file_ra_state *ra)
+-	if (commit_transaction->t_checkpoint_list == NULL) {
++	if (commit_transaction->t_checkpoint_list == NULL &&
++	    commit_transaction->t_checkpoint_io_list == NULL) {
+ 		__jbd2_journal_drop_transaction(journal, commit_transaction);
+ 	} else {
+ 		if (journal->j_checkpoint_transactions == NULL) {
 -- 
 1.5.2.5
 
