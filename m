@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbXHVBO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbXHVBSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756004AbXHVBO4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 21:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbXHVBOs
+	id S1755442AbXHVBSS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 21:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbXHVBSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 21:14:48 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:15719 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751039AbXHVBOr (ORCPT
+	Tue, 21 Aug 2007 21:18:09 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:42654 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbXHVBSI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 21:14:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=eNImBXb2CuiaZJGhbD5yhAuzXCcyB/nWMM7ZtUnzXZzsJ3qStyp7rXke5mqPMprmqcVwCWAhMbzg/EzoOWfO1TnopaBNc50rNsxaID8V85UMjTPVcDYFL0Dk+vTQHw/KT24W3j4pz9kJZb9vYc4mOZLEl1GIr9W3ORR2qA5VQH0=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] ver_linux is [censored]
-Date: Wed, 22 Aug 2007 03:11:56 +0200
-User-Agent: KMail/1.9.7
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, sam@ravnborg.org, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-References: <20070821071938.GA17761@localhost.sw.ru> <9a8748490708211702q7ed2649ft978cea8ab07b63fa@mail.gmail.com> <20070822005236.GF21089@ftp.linux.org.uk>
-In-Reply-To: <20070822005236.GF21089@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 21 Aug 2007 21:18:08 -0400
+Date: Tue, 21 Aug 2007 21:18:05 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+Message-ID: <20070822011805.GB4124@Krystal>
+References: <20070821231216.GA29691@Krystal> <Pine.LNX.4.64.0708211614370.6062@schroedinger.engr.sgi.com> <20070821233938.GD29691@Krystal> <Pine.LNX.4.64.0708211640430.6225@schroedinger.engr.sgi.com> <20070821234702.GE29691@Krystal> <Pine.LNX.4.64.0708211649260.6886@schroedinger.engr.sgi.com> <20070822000323.GG29691@Krystal> <Pine.LNX.4.64.0708211704260.7852@schroedinger.engr.sgi.com> <20070822002616.GA1400@Krystal> <Pine.LNX.4.64.0708211731410.3354@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708220311.56736.jesper.juhl@gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0708211731410.3354@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 21:13:55 up 23 days,  1:32,  3 users,  load average: 0.54, 0.33, 0.28
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Christoph Lameter (clameter@sgi.com) wrote:
+> On Tue, 21 Aug 2007, Mathieu Desnoyers wrote:
+> 
+> > As I am going back through the initial cmpxchg_local implementation, it
+> > seems like it was executing __slab_alloc() with preemption disabled,
+> > which is wrong. new_slab() is not designed for that.
+> 
+> The version I send you did not use preemption.
+> 
+> We need to make a decision if we want to go without preemption and cmpxchg 
+> or with preemption and cmpxchg_local.
+> 
 
-Fix ver_linux glibc version printing (for real this time)
+I don't expect any performance improvements with cmpxchg() over irq
+disable/restore. I think we'll have to use cmpxchg_local
 
-Alexey Dobriyan reported that commit 
-4a645d5ea65baaa5736bcb566673bf4a351b2ad8
-broke ver_linux when glibc has a 3 digit 
-version number, and proposed a patch.
-Al Viro then suggested a simpler way to 
-solve the problem which I've then simply 
-put into patch form.
+Also, we may argue that locked cmpxchg will have more scalability impact
+than cmpxchg_local. Actually, I expect the LOCK prefix to have a bigger
+scalability impact than the irq save/restore pair.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
-Signed-off-by: Al Viro <viro@ftp.linux.org.uk>
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+> If we really want to do this then the implementation of all of these 
+> components need to result in competitive performance on all platforms.
+> 
 
- scripts/ver_linux |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+The minor issue I see here is on architectures where we have to simulate
+cmpxchg_local with irq save/restore. Depending on how we implement the
+code, it may result in two irq save/restore pairs instead of one, which
+could make the code slower. However, if we are clever enough in our
+low-level primitive usage, I think we could make the code use
+cmpxchg_local when available and fall back on only _one_ irq disabled
+section surrounding the whole code for other architectures.
 
-diff --git a/scripts/ver_linux b/scripts/ver_linux
-index 8f8df93..5a16bad 100755
---- a/scripts/ver_linux
-+++ b/scripts/ver_linux
-@@ -65,9 +65,8 @@ isdnctrl 2>&1 | grep version | awk \
- showmount --version 2>&1 | grep nfs-utils | awk \
- 'NR==1{print "nfs-utils             ", $NF}'
- 
--ls -l `ldd /bin/sh | awk '/libc/{print $3}'` | sed \
---e 's/\.so$//' | sed -e 's/>//' | \
--awk -F'[.-]' '{print "Linux C Library        "$(NF-1)"."$NF}'
-+echo -n "Linux C Library        "
-+sed -n -e '/^.*\/libc-\([^/]*\)\.so$/{s//\1/;p;q}' < /proc/self/maps
- 
- ldd -v > /dev/null 2>&1 && ldd -v || ldd --version |head -n 1 | awk \
- 'NR==1{print "Dynamic linker (ldd)  ", $NF}'
+Mathieu
 
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
