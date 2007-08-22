@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbXHVS7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762127AbXHVS7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758821AbXHVS7U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 14:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbXHVS7K
+	id S1762127AbXHVS7d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 14:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbXHVS7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 14:59:10 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40466 "EHLO
+	Wed, 22 Aug 2007 14:59:11 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42344 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752928AbXHVS7J (ORCPT
+	with ESMTP id S1752919AbXHVS7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Aug 2007 14:59:09 -0400
-Message-Id: <20070822172101.138513000@sgi.com>
+Message-Id: <20070822172124.217932000@sgi.com>
+References: <20070822172101.138513000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Aug 2007 10:21:01 -0700
+Date: Wed, 22 Aug 2007 10:21:07 -0700
 From: travis@sgi.com
 To: Andi Kleen <ak@suse.de>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        Christoph Lameter <clameter@sgi.com>
-Subject: [PATCH 0/6] x86: Reduce Memory Usage and Inter-Node message traffic
+Subject: [PATCH 6/6] x86: acpi-use-cpu_physical_id
+Content-Disposition: inline; filename=acpi-use-cpu_physical_id
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In x86_64 and i386 architectures most arrays that are sized
-using NR_CPUS lay in local memory on node 0.  Not only will most
-(99%?) of the systems not use all the slots in these arrays,
-particularly when NR_CPUS is increased to accommodate future
-very high cpu count systems, but a number of cache lines are
-passed unnecessarily on the system bus when these arrays are
-referenced by cpus on other nodes.
+This is from an earlier message from Christoph Lameter:
 
-Typically, the values in these arrays are referenced by the cpu
-accessing it's own values, though when passing IPI interrupts,
-the cpu does access the data relevant to the targeted cpu/node.
-Of course, if the referencing cpu is not on node 0, then the
-reference will still require cross node exchanges of cache
-lines.  A common use of this is for an interrupt service
-routine to pass the interrupt to other cpus local to that node.
+    processor_core.c currently tries to determine the apicid by special casing
+    for IA64 and x86. The desired information is readily available via
 
-Ideally, all the elements in these arrays should be moved to the
-per_cpu data area.  In some cases (such as x86_cpu_to_apicid)
-the array is referenced before the per_cpu data areas are setup.
-In this case, a static array is declared in the __initdata
-area and initialized by the booting cpu (BSP).  The values are
-then moved to the per_cpu area after it is initialized and the
-original static array is freed with the rest of the __initdata.
+	    cpu_physical_id()
 
-Patches applied to: linux-2.6.23-rc2-mm2
+    on IA64, i386 and x86_64.
+
+    Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ drivers/acpi/processor_core.c |    8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+--- a/drivers/acpi/processor_core.c
++++ b/drivers/acpi/processor_core.c
+@@ -420,12 +420,6 @@ static int map_lsapic_id(struct acpi_sub
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_IA64
+-#define arch_cpu_to_apicid 	ia64_cpu_to_sapicid
+-#else
+-#define arch_cpu_to_apicid 	x86_cpu_to_apicid
+-#endif
+-
+ static int map_madt_entry(u32 acpi_id)
+ {
+ 	unsigned long madt_end, entry;
+@@ -499,7 +493,7 @@ static int get_cpu_id(acpi_handle handle
+ 		return apic_id;
+ 
+ 	for (i = 0; i < NR_CPUS; ++i) {
+-		if (arch_cpu_to_apicid[i] == apic_id)
++		if (cpu_physical_id(i) == apic_id)
+ 			return i;
+ 	}
+ 	return -1;
+
 -- 
