@@ -1,174 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933241AbXHVUkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932710AbXHVUlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933241AbXHVUkA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 16:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763533AbXHVUjq
+	id S932710AbXHVUlx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 16:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbXHVUlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 16:39:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51772 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932508AbXHVUjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 16:39:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] Re: [RFC][PATCH -mm 3/4] Hibernation: Pass CR3 in the image header on x86_64
-Date: Wed, 22 Aug 2007 22:49:51 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-pm@lists.linux-foundation.org, Andi Kleen <ak@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200708221015.16493.rjw@sisk.pl> <20070822082825.GC2479@elf.ucw.cz> <200708221817.51334.rjw@sisk.pl>
-In-Reply-To: <200708221817.51334.rjw@sisk.pl>
+	Wed, 22 Aug 2007 16:41:45 -0400
+Received: from ausc60pc101.us.dell.com ([143.166.85.206]:42863 "EHLO
+	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750747AbXHVUlo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 16:41:44 -0400
+DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=GBcVpbDTgPUe8IfrOlwWqXg6LGPq29ACDSVmhmnP8MSsJRMnYGyKnh77d/qQWfO6Fo++//L16mw8b074wFCwSrbMrfDvYZv/yn48Q1FmeTQl7LUaXAiun7rr3S9JQEIN;
+X-IronPort-AV: E=Sophos;i="4.19,295,1183352400"; 
+   d="scan'208";a="349001965"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708222249.51616.rjw@sisk.pl>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
+Date: Wed, 22 Aug 2007 15:41:38 -0500
+Message-ID: <DFEF91B22ED07447AB6AA4B237F913F9B18F45@ausx3mpc125.aus.amer.dell.com>
+In-Reply-To: <alpine.LFD.0.999.0708221122180.30176@woody.linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
+Thread-Index: Acfk7B3ZyfNnS7OwSR+nq1svOBa8jgAEDgbA
+References: <46C098FD.1030601@googlemail.com> <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708202255130.30176@woody.linux-foundation.org> <200708202334.38261.david-b@pacbell.net> <alpine.LFD.0.999.0708202348460.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708210016420.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708212026200.30176@woody.linux-foundation.org> <DFEF91B22ED07447AB6AA4B237F913F9B18F2A@ausx3mpc125.aus.amer.dell.com> <alpine.LFD.0.999.0708221122180.30176@woody.linux-foundation.org>
+From: <Stuart_Hayes@Dell.com>
+To: <torvalds@linux-foundation.org>
+Cc: <david-b@pacbell.net>, <michal.k.k.piotrowski@gmail.com>,
+       <linux-usb-devel@lists.sourceforge.net>, <gregkh@suse.de>,
+       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
+       <dex@dragonslave.de>
+X-OriginalArrivalTime: 22 Aug 2007 20:41:42.0867 (UTC) FILETIME=[D91B1230:01C7E4FC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 22 August 2007 18:17, Rafael J. Wysocki wrote:
-> On Wednesday, 22 August 2007 10:28, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > Since we already pass the address of restore_registers() in the image header,
-> > > we can also pass the value of the CR3 register from before the hibernation in
-> > > the same way.  This will allow us to avoid using init_level4_pgt page tables
-> > > during the restore.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > > @@ -253,10 +262,13 @@ int arch_hibernation_header_save(void *a
-> > >  {
-> > >  	struct restore_data_record *rdr = addr;
-> > >  
-> > > -	if (max_size < sizeof(struct restore_data_record))
-> > > +	if (max_size < sizeof(*rdr))
-> > >  		return -EOVERFLOW;
-> > >  	rdr->jump_address = restore_jump_address;
-> > > -	rdr->control = (restore_jump_address ^ RESTORE_MAGIC);
-> > > +	rdr->cr3 = restore_cr3;
-> > > +	rdr->magic = RESTORE_MAGIC;
-> > > +	rdr->crc = 0;
-> > > +	rdr->crc = crc32_le(0, addr, sizeof(*rdr));
-> > >  	return 0;
-> > >  }
-> > 
-> > No, I do not think I like that. I believe both -> control and -> crc
-> > is just useless paranoia. Bitflip in this area is not going to be any
-> > worse than bitflip anywhere else, we should not pretend this is
-> > somehow "more important".
-> > 
-> > -> control should really be "protocol version"... probably should
-> > contain some field that is easy to increment.
+
+>> That could definitely cause mouse lock-ups.  Sorry, that should have
+>> occurred to me yesterday when you mentioned the problem your kids
+>> were seeing, but it didn't for some reason.
 > 
-> OK
+> Btw, could it have caused the USB stack to be *really* confused? Some
+> of those mouse lockups ended up also locking the machine hard (ie no
+> ping, no nothing), and I'm a bit worried that there was something
+> else going on too..   
 > 
-> Perhaps I'll just remove the crc field.
 
-Like in the patch below.
+Unfortunately, yes, that sounds exactly like what happened with the
+nVidia controller.  The problem was with my patch, but was fixed with
+the later patch.  I doubt there was anything else going on.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+> That said, if you can actually re-create the MMF problems, could you
+> please try the patch that Arjan suggested? Ie add a 
+> 
+> 	/*
+> 	 * Some broadcom chips are buggy and can't take more than 5 usec
+as
+> DMA 
+> 	 * latency; inform the rest of kernel of this.
+> 	 */
+> 	if (weird_broadcom_chip())
+> 		set_acceptable_latency("ehci", 5);
+> 
+> to the USB driver, and then add something like
+> 
+> 	static inline int cpufreq_acceptable_latency(struct
+cpufreq_policy
+> 	*policy) {
+> 		unsigned long latency;
+> 
+> 		/* Policy latency in usec */
+> 		latency = policy->cpuinfo.transition_latency / 1000;
+> 
+> 		if (latency > system_latency_constraint())
+> 			return -EINVAL;
+> 
+> 		return 0;
+> 	}
+> 
+> adn then add calls to this from both the "__cpufreq_set_policy()"
+> function and the "__cpufreq_driver_target()" one too.. 
+> 
+> That should disable cpufreq with that broken chip, which is perhaps a
+> big draconian, but it's certainly better than having the USB layer
+> know about cpufreq internals directly.  
+> 
+> In the longer run, I think we can move the
+> "system_latency_constraint()" 
+> checking from the policy registration into each CPU frequency driver,
+> so that it could be more dynamically decide about "can we do it right
+> _now_"  
+> rather than globally saying "we can't do it with this hardware".
+> 
+> 				Linus
 
-Since we already pass the address of restore_registers() in the image header,
-we can also pass the value of the CR3 register from before the hibernation in
-the same way.  This will allow us to avoid using init_level4_pgt page tables
-during the restore.
+I will work on that, thank you for the help.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86_64/kernel/suspend.c     |   17 +++++++++++++----
- arch/x86_64/kernel/suspend_asm.S |    8 +++++---
- 2 files changed, 18 insertions(+), 7 deletions(-)
-
-Index: linux-2.6.23-rc3/arch/x86_64/kernel/suspend.c
-===================================================================
---- linux-2.6.23-rc3.orig/arch/x86_64/kernel/suspend.c
-+++ linux-2.6.23-rc3/arch/x86_64/kernel/suspend.c
-@@ -9,6 +9,7 @@
- 
- #include <linux/smp.h>
- #include <linux/suspend.h>
-+#include <linux/crc32.h>
- #include <asm/proto.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
-@@ -150,6 +151,12 @@ extern int restore_image(void);
-  */
- unsigned long restore_jump_address;
- 
-+/*
-+ * Value of the cr3 register from before the hibernation (this value is passed
-+ * in the image header).
-+ */
-+unsigned long restore_cr3;
-+
- pgd_t *temp_level4_pgt;
- 
- static int res_phys_pud_init(pud_t *pud, unsigned long address, unsigned long end)
-@@ -239,7 +246,8 @@ int pfn_is_nosave(unsigned long pfn)
- 
- struct restore_data_record {
- 	unsigned long jump_address;
--	unsigned long control;
-+	unsigned long cr3;
-+	unsigned long magic;
- };
- 
- #define RESTORE_MAGIC	0x0123456789ABCDEFUL
-@@ -256,7 +264,8 @@ int arch_hibernation_header_save(void *a
- 	if (max_size < sizeof(struct restore_data_record))
- 		return -EOVERFLOW;
- 	rdr->jump_address = restore_jump_address;
--	rdr->control = (restore_jump_address ^ RESTORE_MAGIC);
-+	rdr->cr3 = restore_cr3;
-+	rdr->magic = RESTORE_MAGIC;
- 	return 0;
- }
- 
-@@ -270,7 +279,7 @@ int arch_hibernation_header_restore(void
- 	struct restore_data_record *rdr = addr;
- 
- 	restore_jump_address = rdr->jump_address;
--	return (rdr->control == (restore_jump_address ^ RESTORE_MAGIC)) ?
--			0 : -EINVAL;
-+	restore_cr3 = rdr->cr3;
-+	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
- }
- #endif /* CONFIG_HIBERNATION */
-Index: linux-2.6.23-rc3/arch/x86_64/kernel/suspend_asm.S
-===================================================================
---- linux-2.6.23-rc3.orig/arch/x86_64/kernel/suspend_asm.S
-+++ linux-2.6.23-rc3/arch/x86_64/kernel/suspend_asm.S
-@@ -39,6 +39,9 @@ ENTRY(swsusp_arch_suspend)
- 	/* save the address of restore_registers */
- 	movq	$restore_registers, %rax
- 	movq	%rax, restore_jump_address(%rip)
-+	/* save cr3 */
-+	movq	%cr3, %rax
-+	movq	%rax, restore_cr3(%rip)
- 
- 	call swsusp_save
- 	ret
-@@ -66,6 +69,7 @@ ENTRY(restore_image)
- 
- 	/* prepare to jump to the image kernel */
- 	movq	restore_jump_address(%rip), %rax
-+	movq	restore_cr3(%rip), %rbx
- 
- 	/* copy image data to their original locations */
- 	xorq	%r10, %r10
-@@ -116,9 +120,7 @@ ENTRY(restore_registers)
- 	movsq
- 
- 	/* go back to the original page tables */
--1:	movq    $(init_level4_pgt - __START_KERNEL_map), %rax
--	addq    phys_base(%rip), %rax
--	movq    %rax, %cr3
-+1:	movq    %rbx, %cr3
- 
- 	/* Flush TLB, including "global" things (vmalloc) */
- 	movq	mmu_cr4_features(%rip), %rax
+Stuart
