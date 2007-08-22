@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764246AbXHVP1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764565AbXHVPbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764246AbXHVP1m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 11:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759394AbXHVP1f
+	id S1764565AbXHVPbr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 11:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761181AbXHVPbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 11:27:35 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:52977 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759356AbXHVP1e (ORCPT
+	Wed, 22 Aug 2007 11:31:37 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:8994 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760233AbXHVPbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 11:27:34 -0400
+	Wed, 22 Aug 2007 11:31:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=VSss2vbV99b3ehasK4DBS+B7xo7dtp6D/V0FdOJN/9m32ofz1rv1Nyf6Tm6Mj2awH82QiqgxNOY4+NGeuX2LBdRqPK/457vfAacXLxS75feUzFjbIG7gCIABy1SHAq/cpp3e3oYBJsTrCZGxfa9UjvCiidLVyHlM9khBdtEr6h8=
+Message-ID: <46CC5685.7090500@googlemail.com>
+Date: Wed, 22 Aug 2007 17:30:13 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
+Subject: net/ipv4/fib_trie.c - compile error (Re: 2.6.23-rc3-mm1)
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+In-Reply-To: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18124.21940.10785.831274@stoffel.org>
-Date: Wed, 22 Aug 2007 11:26:44 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: John Stoffel <john@stoffel.org>, Peter Staubach <staubach@redhat.com>,
-       Robin Lee Powell <rlpowell@digitalkingdom.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: NFS hang + umount -f: better behaviour requested.
-In-Reply-To: <29735.1187737456@turing-police.cc.vt.edu>
-References: <20070820225415.GL3956@digitalkingdom.org>
-	<18123.5699.405125.137517@stoffel.org>
-	<46CB1A78.7040102@redhat.com>
-	<18123.13314.43009.263383@stoffel.org>
-	<29735.1187737456@turing-police.cc.vt.edu>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Valdis" == Valdis Kletnieks <Valdis.Kletnieks@vt.edu> writes:
+Got it with a randconfig ( http://194.231.229.228/kernel/mm/2.6.23-rc3-mm1/r/randconfig-8 )
 
-Valdis> On Tue, 21 Aug 2007 14:50:42 EDT, John Stoffel said:
->> Now maybe those issues are raised when you have a Linux NFS server
->> with Solaris clients.  But in my book, reliable NFS servers are key,
->> and if they are reliable, 'soft,intr' works just fine.
+...
 
-Valdis> And you don't need all that ext3 journal overhead if your disk
-Valdis> drives are reliable too.  Gotcha. :)
+net/ipv4/fib_trie.c: In function 'trie_rebalance':
+net/ipv4/fib_trie.c:969: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c:971: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c:977: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c:980: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c: In function 'fib_insert_node':
+net/ipv4/fib_trie.c:1034: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c:1034: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c:1034: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c: In function 'fn_trie_lookup':
+net/ipv4/fib_trie.c:1498: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c:1502: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c:1502: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c:1503: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c: In function 'trie_leaf_remove':
+net/ipv4/fib_trie.c:1539: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c:1539: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c:1539: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c:1554: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c: In function 'nextleaf':
+net/ipv4/fib_trie.c:1706: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c:1743: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c: In function 'fib_trie_get_next':
+net/ipv4/fib_trie.c:2046: error: lvalue required as unary '&' operand
+net/ipv4/fib_trie.c: In function 'fib_trie_seq_show':
+net/ipv4/fib_trie.c:2320: error: lvalue required as unary '&' operand
+make[2]: *** [net/ipv4/fib_trie.o] Error 1
+make[1]: *** [net/ipv4] Error 2
+make: *** [net] Error 2
+make: *** Waiting for unfinished jobs....
 
-Yeah yeah... you got me.  *grin*   In a way.  How to say this.  NFS is
-like ext2 in some ways.  No real protection from errors unless you
-turn on possibly performance killing aspects of the code.  
-
-Ext3 takes it to a higher level of consistency without compromising as
-much on the performance.  
-
-RAID can be the base of both of these things, and that helps alot.  If
-your RAID is reliable.  
-
-So, my NetApps are reliable because they have NVRAM for performance,
-and it's battery backed for reliability.  On that they build the
-Volume and Filesystem stuff, which also has performance and
-reliability built-in.  
-
-On top of this, they have NFS (or CIFS or other protocols, but I use
-only NFS).  And we actually default to "proto=tcp,soft,intr" for all
-our mounts.  We do this for performance, because we're confident of
-the underlying reliability of the layers below it.  All the way down
-to the Network switches in a way.  Though I admit we don't dual-path
-everything since we don't have enough need for that level of
-reliability.
-
-So that's where I'm coming from.  Now, I'd be happy to be proven
-wrong, but I'd like to see people giving test scripts which can be run
-on a client to simulate failures and such so I can run them here in my
-environment as test.  Maybe I'll change my mind.  Maybe I won't.  
-
-At least we've got choice.  :]
-
-John
+...
