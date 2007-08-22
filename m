@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933462AbXHVRjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763921AbXHVRu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933462AbXHVRjV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 13:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763809AbXHVRjK
+	id S1763921AbXHVRu1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 13:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761713AbXHVRuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 13:39:10 -0400
-Received: from namei.org ([69.55.235.186]:42240 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762840AbXHVRjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 13:39:09 -0400
-Date: Wed, 22 Aug 2007 10:38:54 -0700 (PDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: Stephen Smalley <sds@tycho.nsa.gov>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [2.6.20.17 review 00/58] 2.6.20.17 -stable review
-In-Reply-To: <6bffcb0e0708220946hc2943f5jdb33215cdfab08d1@mail.gmail.com>
-Message-ID: <Xine.LNX.4.64.0708221038030.5819@us.intercode.com.au>
-References: <20070822083844.%N@1wt.eu>  <6bffcb0e0708220410u4ab3978eq18786ac186e88c7d@mail.gmail.com>
-  <Xine.LNX.4.64.0708220621550.28878@us.intercode.com.au> 
- <1187789765.1451.310.camel@moss-spartans.epoch.ncsc.mil> 
- <1187790174.1451.315.camel@moss-spartans.epoch.ncsc.mil> 
- <Xine.LNX.4.64.0708220707390.9414@us.intercode.com.au> 
- <6bffcb0e0708220729j7b9afcf3v4edef68cc974c08d@mail.gmail.com> 
- <Xine.LNX.4.64.0708220929370.4968@us.intercode.com.au>
- <6bffcb0e0708220946hc2943f5jdb33215cdfab08d1@mail.gmail.com>
+	Wed, 22 Aug 2007 13:50:18 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1079 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759745AbXHVRuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 13:50:17 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm] move-a-few-definitions-to-au1000_xxs1500c.patch fix
+Date: Wed, 22 Aug 2007 19:50:12 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, yoichi_yuasa@tripeaks.co.jp,
+       linux@dominikbrodowski.net, ralf@linux-mips.org
+References: <200708172027.l7HKRg8T028011@imap1.linux-foundation.org>
+In-Reply-To: <200708172027.l7HKRg8T028011@imap1.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708221950.13223.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007, Michal Piotrowski wrote:
+Hello,
 
-> Yup, it is very interesting why no one noticed it. 
+	This patch fixes unbalanced parenthesis introduced by:
 
-The new network controls are not enabled by default yet in distros.
+move-a-few-definitions-to-au1000_xxs1500c.patch
 
+Regards,
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+	Mariusz
+
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+
+ drivers/pcmcia/au1000_xxs1500.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.23-rc3-mm1-a/drivers/pcmcia/au1000_xxs1500.c	2007-08-22 17:18:28.000000000 +0200
++++ linux-2.6.23-rc3-mm1-b/drivers/pcmcia/au1000_xxs1500.c	2007-08-22 17:20:34.000000000 +0200
+@@ -52,7 +52,7 @@
+ #include <asm/au1000_pcmcia.h>
+
+ #define PCMCIA_MAX_SOCK		0
+-#define PCMCIA_NUM_SOCKS	PCMCIA_MAX_SOCK + 1)
++#define PCMCIA_NUM_SOCKS	(PCMCIA_MAX_SOCK + 1)
+ #define PCMCIA_IRQ		AU1000_GPIO_4
+
+ #if 0
