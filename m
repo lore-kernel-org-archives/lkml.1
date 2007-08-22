@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932605AbXHVTu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932239AbXHVTyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932605AbXHVTu5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 15:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761368AbXHVTus
+	id S932239AbXHVTyT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 15:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbXHVTyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 15:50:48 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36858 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761115AbXHVTur (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 15:50:47 -0400
-Date: Wed, 22 Aug 2007 12:49:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dean Nelson <dcn@sgi.com>, Andy Whitcroft <apw@shadowen.org>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, tony.luck@intel.com, jes@sgi.com
-Subject: Re: [RFC 3/3] SGI Altix cross partition memory (XPMEM)
-Message-Id: <20070822124928.19bf0431.akpm@linux-foundation.org>
-In-Reply-To: <20070822191516.GA24018@sgi.com>
-References: <20070810010659.GA25427@sgi.com>
-	<20070810011435.GD25427@sgi.com>
-	<20070809231542.f6dcce8c.akpm@linux-foundation.org>
-	<20070822170011.GA20155@sgi.com>
-	<20070822110422.65c990e5.akpm@linux-foundation.org>
-	<20070822191516.GA24018@sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 22 Aug 2007 15:54:10 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4293 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760013AbXHVTyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 15:54:09 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Subject: Re: 2.6.23-rc3-mm1: net/wireless/rt2x00mac.c build failure
+Date: Wed, 22 Aug 2007 21:54:02 +0200
+User-Agent: KMail/1.9.7
+Cc: John Linville <linville@tuxdriver.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <200708222116.22386.m.kozlowski@tuxland.pl> <200708222131.24882.IvDoorn@gmail.com>
+In-Reply-To: <200708222131.24882.IvDoorn@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708222154.03663.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007 14:15:16 -0500
-Dean Nelson <dcn@sgi.com> wrote:
-
-> On Wed, Aug 22, 2007 at 11:04:22AM -0700, Andrew Morton wrote:
-> > On Wed, 22 Aug 2007 12:00:11 -0500
-> > Dean Nelson <dcn@sgi.com> wrote:
-> > 
-> > > 
-> > >   3) WARNING: declaring multiple variables together should be avoided
-> > > 
-> > > checkpatch.pl is erroneously commplaining about the following found in five
-> > > different functions in arch/ia64/sn/kernel/xpmem_pfn.c.
-> > > 
-> > > 	int n_pgs = xpmem_num_of_pages(vaddr, size);
-> > 
-> > What warning does it generate here?
+> >   CC [M]  drivers/net/wireless/rt2x00mac.o
+> > drivers/net/wireless/rt2x00mac.c: In function `rt2x00mac_tx_rts_cts':
+> > drivers/net/wireless/rt2x00mac.c:61: warning: passing arg 2 of `ieee80211_ctstoself_get' makes pointer from integer without a cast
+> > drivers/net/wireless/rt2x00mac.c:61: warning: passing arg 3 of `ieee80211_ctstoself_get' makes integer from pointer without a cast
+> > drivers/net/wireless/rt2x00mac.c:61: warning: passing arg 4 of `ieee80211_ctstoself_get' makes pointer from integer without a cast
+> > drivers/net/wireless/rt2x00mac.c:61: warning: passing arg 5 of `ieee80211_ctstoself_get' from incompatible pointer type
+> > drivers/net/wireless/rt2x00mac.c:61: error: too many arguments to function `ieee80211_ctstoself_get'
+> > drivers/net/wireless/rt2x00mac.c:65: warning: passing arg 2 of `ieee80211_rts_get' makes pointer from integer without a cast
+> > drivers/net/wireless/rt2x00mac.c:65: warning: passing arg 3 of `ieee80211_rts_get' makes integer from pointer without a cast
+> > drivers/net/wireless/rt2x00mac.c:65: warning: passing arg 4 of `ieee80211_rts_get' makes pointer from integer without a cast
+> > drivers/net/wireless/rt2x00mac.c:65: warning: passing arg 5 of `ieee80211_rts_get' from incompatible pointer type
+> > drivers/net/wireless/rt2x00mac.c:65: error: too many arguments to function `ieee80211_rts_get'
+> > make[3]: *** [drivers/net/wireless/rt2x00mac.o] Error 1
+> > make[2]: *** [drivers/net/wireless] Error 2
+> > make[1]: *** [drivers/net] Error 2
+> > make: *** [drivers] Error 2
 > 
-> The WARNING #3 above "declaring multiple variables together should be avoided".
-> There is only one variable being declared, which happens to be initialized by
-> the function xpmem_num_of_pages().
+> This has been fixed for quite some time already.
+> John, I can't check this myself now, but which rt2x00
+> patches have gone into the -mm tree? Since I believe
+> the patch that changed ieee80211_ctstoself_get was
+> followed by a patch to fix rt2x00 within the same series...
 
-Ah, I think I recall seeing a report of that earlier.  Maybe it's been fixed?
+Ok. Thanks. What about this one?
 
-> ...
-> > > I've switched from using nopage to using fault. I read that it is intended
-> > > that nopfn also goes away. If this is the case, then the BUG_ON if VM_PFNMAP
-> > > is set would make __do_fault() a rather unfriendly replacement for do_no_pfn().
-> > > 
-> > > > - xpmem_attach() does smp_processor_id() in preemptible code.  Lucky that
-> > > >   ia64 doesn't do preempt?
-> > > 
-> > > Actually, the code is fine as is even with preemption configured on. All it's
-> > > doing is ensuring that the thread was previously pinned to the CPU it's
-> > > currently running on. If it is, it can't be moved to another CPU via
-> > > preemption, and if it isn't, the check will fail and we'll return -EINVAL
-> > > and all is well.
-> > 
-> > OK.  Running smp_processor_id() from within preemptible code will generate
-> > a warning, but the code is sneaky enough to prevent that warning if the
-> > calling task happens to be pinned to a single CPU.
-> 
-> Would it make more sense in this particular case to replace the call to
-> smp_processor_id() in xpmem_attach() with a call to raw_smp_processor_id()
-> instead, and add a comment explaining why?
+  CC [M]  drivers/net/wireless/zd1211rw-mac80211/zd_mac.o
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c: In function `zd_op_erp_ie_changed':
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c:822: error: `IEEE80211_ERP_CHANGE_PREAMBLE' undeclared (first use in this function)
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c:822: error: (Each undeclared identifier is reported only once
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c:822: error: for each function it appears in.)
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c: At top level:
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c:844: error: unknown field `erp_ie_changed' specified in initializer
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c:844: warning: initialization from incompatible pointer type
+make[4]: *** [drivers/net/wireless/zd1211rw-mac80211/zd_mac.o] Error 1
+make[3]: *** [drivers/net/wireless/zd1211rw-mac80211] Error 2
+make[2]: *** [drivers/net/wireless] Error 2
+make[1]: *** [drivers/net] Error 2
+make: *** [drivers] Error 2
 
-Your call ;)  Either will be OK, I expect.
+Regards,
+
+	Mariusz
