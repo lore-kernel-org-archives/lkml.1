@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934001AbXHVXgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933471AbXHVXiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934001AbXHVXgV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 19:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763324AbXHVXgL
+	id S933471AbXHVXiT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 19:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763575AbXHVXiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 19:36:11 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:23273 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762786AbXHVXgK (ORCPT
+	Wed, 22 Aug 2007 19:38:08 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44274 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763171AbXHVXiG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 19:36:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ET2/c2RKp7FuecyCEBgk/JLdtquw73MttwdOpKk62zingYe317oZ0CDDkcgW1PaUC2J1p9hFJwINWodaQQ0Vy8QoJA07BDnCl/qTIC2RtDQ7mlNAS0OwYVA6UU1mfriRmsa/vZFAQcb3OX2yLhdY+T7ACDxusFWguLGe/kSeofc=
-Message-ID: <46CCC811.6050601@googlemail.com>
-Date: Thu, 23 Aug 2007 01:34:41 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+	Wed, 22 Aug 2007 19:38:06 -0400
+Date: Thu, 23 Aug 2007 05:20:58 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: H Peter Anvin <hpa@zytor.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86 msr driver: Misc cpuinit annotations
+Message-ID: <alpine.LFD.0.999.0708230520070.2049@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com, xfs@oss.sgi.com
-Subject: fs/xfs/xfs_bmap_btree.c - compile error  (Re: 2.6.23-rc3-mm1)
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-In-Reply-To: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-config : http://194.231.229.228/kernel/mm/2.6.23-rc3-mm1/r/randconfig-18
+msr_class_cpu_callback() can be marked __cpuinit, being the notifier
+callback for a __cpuinitdata notifier_block. So can be marked
+msr_device_create() too, called only from the newly-__cpuinit
+msr_class_cpu_callback() or from __init-marked msr_init().
 
-...
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
 
-fs/xfs/xfs_bmap_btree.c: In function 'xfs_bmbt_set_allf':
-fs/xfs/xfs_bmap_btree.c:2312: error: 'b' undeclared (first use in this function)
-fs/xfs/xfs_bmap_btree.c:2312: error: (Each undeclared identifier is reported only once
-fs/xfs/xfs_bmap_btree.c:2312: error: for each function it appears in.)
-fs/xfs/xfs_bmap_btree.c: In function 'xfs_bmbt_disk_set_allf':
-fs/xfs/xfs_bmap_btree.c:2372: error: 'b' undeclared (first use in this function)
-make[2]: *** [fs/xfs/xfs_bmap_btree.o] Error 1
-make[2]: *** Waiting for unfinished jobs....
-  CC      fs/reiser4/safe_link.o
-  CC      fs/reiser4/plugin/plugin.o
-make[1]: *** [fs/xfs] Error 2
-make[1]: *** Waiting for unfinished jobs....
+---
 
-...
+ arch/i386/kernel/msr.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/i386/kernel/msr.c b/arch/i386/kernel/msr.c
+index 0c1069b..ac55d85 100644
+--- a/arch/i386/kernel/msr.c
++++ b/arch/i386/kernel/msr.c
+@@ -135,7 +135,7 @@ static const struct file_operations msr_fops = {
+ 	.open = msr_open,
+ };
+ 
+-static int msr_device_create(int i)
++static int __cpuinit msr_device_create(int i)
+ {
+ 	int err = 0;
+ 	struct device *dev;
+@@ -146,7 +146,7 @@ static int msr_device_create(int i)
+ 	return err;
+ }
+ 
+-static int msr_class_cpu_callback(struct notifier_block *nfb,
++static int __cpuinit msr_class_cpu_callback(struct notifier_block *nfb,
+ 				unsigned long action, void *hcpu)
+ {
+ 	unsigned int cpu = (unsigned long)hcpu;
