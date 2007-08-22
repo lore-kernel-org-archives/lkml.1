@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755066AbXHVBO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbXHVBO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755066AbXHVBO0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 21:14:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbXHVBOR
+	id S1756004AbXHVBO4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 21:14:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbXHVBOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 21:14:17 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:40174 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752315AbXHVBOQ (ORCPT
+	Tue, 21 Aug 2007 21:14:48 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:15719 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751039AbXHVBOr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 21:14:16 -0400
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: akepner@sgi.com
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Jes Sorensen <jes@sgi.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-In-Reply-To: <20070822003450.GM5592@sgi.com>
-References: <20070818002746.GU1813@sgi.com> <46C94FD5.6000006@sgi.com>
-	 <20070821193522.GD5592@sgi.com>
-	 <20070821130515.6e745b17.randy.dunlap@oracle.com>
-	 <1187729729.18410.48.camel@localhost.localdomain>
-	 <20070822003450.GM5592@sgi.com>
-Content-Type: text/plain
-Date: Tue, 21 Aug 2007 20:14:09 -0500
-Message-Id: <1187745249.18410.67.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Tue, 21 Aug 2007 21:14:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=eNImBXb2CuiaZJGhbD5yhAuzXCcyB/nWMM7ZtUnzXZzsJ3qStyp7rXke5mqPMprmqcVwCWAhMbzg/EzoOWfO1TnopaBNc50rNsxaID8V85UMjTPVcDYFL0Dk+vTQHw/KT24W3j4pz9kJZb9vYc4mOZLEl1GIr9W3ORR2qA5VQH0=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] ver_linux is [censored]
+Date: Wed, 22 Aug 2007 03:11:56 +0200
+User-Agent: KMail/1.9.7
+Cc: Alexey Dobriyan <adobriyan@sw.ru>, sam@ravnborg.org, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+References: <20070821071938.GA17761@localhost.sw.ru> <9a8748490708211702q7ed2649ft978cea8ab07b63fa@mail.gmail.com> <20070822005236.GF21089@ftp.linux.org.uk>
+In-Reply-To: <20070822005236.GF21089@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708220311.56736.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-21 at 17:34 -0700, akepner@sgi.com wrote:
-> On Tue, Aug 21, 2007 at 03:55:29PM -0500, James Bottomley wrote:
-> 
-> > .....
-> > Almost every platform supports posted DMA ... its a property of most PCI
-> > bridge chips.
-> > 
-> 
-> The term "posted DMA" is used to describe this behavior in the Altix 
-> Device Driver Writer's Guide, but it may be confusing things here. 
-> Maybe a better term will suggest itself if I can clarify....
 
-OK, but posted DMA has a pretty specific meaning in terms of PCI, hence
-the confusion.
+Fix ver_linux glibc version printing (for real this time)
 
-> On Altix, DMA from a device isn't guaranteed to arrive in host memory 
-> in the order it was sent from the device. This reordering can happen 
-> in the NUMA interconnect (it's specifically not a PCI reordering.)
+Alexey Dobriyan reported that commit 
+4a645d5ea65baaa5736bcb566673bf4a351b2ad8
+broke ver_linux when glibc has a 3 digit 
+version number, and proposed a patch.
+Al Viro then suggested a simpler way to 
+solve the problem which I've then simply 
+put into patch form.
 
-This is mmiowb and read_relaxed() again, isn't it?
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+Signed-off-by: Al Viro <viro@ftp.linux.org.uk>
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-> > ......
-> > This isn't possible on most platforms.  PCI write posting can only be
-> > flushed by a read transaction on the device (or sometimes any device on
-> > the bridge).  Either this interface is misnamed and misdescribed, or it
-> > can't work for most systems.
-> > 
-> 
-> Clearly it wasn't described adequately...
-> 
-> A read transaction on the device will flush pending writes to the 
-> device. But I'm worried about DMA from the device to host memory. 
-> On Altix, there are two mechanisms that flush all in-flight DMA 
-> to host memory: 1) an interrupt, and 2) a write to a memory region 
-> which has a "barrier" attribute set. Obviously option 1 isn't 
-> viable for performance reasons. This new interface is about making 
-> "option 2" generally available. (As it is now, the only way to get 
-> memory with the "barrier" attribute is to allocate it with 
-> dma_alloc_coherent().)
+ scripts/ver_linux |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-Which sounds exactly what mmiowb does ... is there a need for a new API;
-can't you just use mmiowb()?
-
-James
+diff --git a/scripts/ver_linux b/scripts/ver_linux
+index 8f8df93..5a16bad 100755
+--- a/scripts/ver_linux
++++ b/scripts/ver_linux
+@@ -65,9 +65,8 @@ isdnctrl 2>&1 | grep version | awk \
+ showmount --version 2>&1 | grep nfs-utils | awk \
+ 'NR==1{print "nfs-utils             ", $NF}'
+ 
+-ls -l `ldd /bin/sh | awk '/libc/{print $3}'` | sed \
+--e 's/\.so$//' | sed -e 's/>//' | \
+-awk -F'[.-]' '{print "Linux C Library        "$(NF-1)"."$NF}'
++echo -n "Linux C Library        "
++sed -n -e '/^.*\/libc-\([^/]*\)\.so$/{s//\1/;p;q}' < /proc/self/maps
+ 
+ ldd -v > /dev/null 2>&1 && ldd -v || ldd --version |head -n 1 | awk \
+ 'NR==1{print "Dynamic linker (ldd)  ", $NF}'
 
 
