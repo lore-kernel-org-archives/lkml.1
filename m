@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934037AbXHVVw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934211AbXHVVxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934037AbXHVVw1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 17:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763710AbXHVVwT
+	id S934211AbXHVVxB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 17:53:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763358AbXHVVwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 17:52:19 -0400
-Received: from dax.msoe.edu ([155.92.194.41]:39312 "EHLO mx.msoe.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763597AbXHVVwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 17:52:19 -0400
-Message-ID: <17603.12.191.136.2.1187819526.squirrel@myweb.msoe.edu>
-In-Reply-To: <20070822185544.GA6002@kroah.com>
-References: <1187716018.731090.165620@j4g2000prf.googlegroups.com>
-    <20070821171018.C964B5F778@attila.bofh.it>
-    <39877.198.169.188.225.1187733834.squirrel@myweb.msoe.edu>
-    <20070822054615.GA23336@kroah.com>
-    <45719.198.169.188.225.1187793693.squirrel@myweb.msoe.edu>
-    <20070822185544.GA6002@kroah.com>
-Date: Wed, 22 Aug 2007 16:52:06 -0500 (CDT)
-Subject: Re: Restricting CDC-ACM devices
-From: "Nate" <stoddarn@msoe.edu>
-To: "Greg KH" <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.10a
+	Wed, 22 Aug 2007 17:52:51 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:59422 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763465AbXHVVwu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 17:52:50 -0400
+Date: Wed, 22 Aug 2007 23:51:48 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
+Cc: linux-kernel@vger.kernel.org, mchehab@infradead.org,
+       v4l-dvb-maintainer@linuxtv.org
+Subject: Re: TV card detected wrongly by the kernel. Any chance to get this
+	fixed?
+Message-ID: <20070822215148.GL30705@stusta.de>
+References: <fai89b$ms1$1@sea.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-MSOE-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
-X-MSOE-MailScanner-From: stoddarn@msoe.edu
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <fai89b$ms1$1@sea.gmane.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for your responses.  Please don't take my repeated questioning
-of your answers as me being difficult, I'm just trying to get a better
-understanding.
+On Wed, Aug 22, 2007 at 11:08:00PM +0200, Manuel Reimer wrote:
+> Hello,
+>
+> I have a BT878 based TV card (was sold by a german discounter some years 
+> ago).
+>
+> Unfortunately this card gets detected wrongly and so I'm unable to watch 
+> tv, if I allow the kernel to auto-detect the card.
+>
+> If I unload the module and reload it using the right "card=" value, then 
+> anything works well. So one of the first steps, I do if I install a new 
+> version of my distribution, is to place the "unload module and reload with 
+> the right value" code to my "rc.local" file.
+>
+> Is there any chance to get this card added to the kernel, so the right 
+> value gets auto-loaded?
 
+It might be possible, but the driver maintainer (Cc'ed) should know best.
 
-> Well, just messing with the device ids is not that tough of a patch to
-> keep up to date over time, so you might just try that if necessary.
+What is the "card=" value you use?
+What is the line for yor card in the "lspci -nn" output?
 
-That is a good point.  I may also be adding some extra logic to check
-other fields to confirm compatibility before allowing a usb device to be
-bound to the CDC-ACM driver.  That is still probably pretty small piece of
-code in the probe function, but I'm just concerned that over time more
-logic would be added and other developers will be maintaining the code.
+> Thanks in advance
+>
+> Yours
+>
+> Manuel Reimer
 
+cu
+Adrian
 
-> Yes.  You can manually bind and unbind all PCI and USB devices from
-> their drivers from userspace.  So you do have full control over this
-> already, no kernel changes needed.
+-- 
 
-Does this require my userspace applications to poll the USB devices
-(/proc/bus/usb/devices) and then disconnect/connect my driver every time a
-USB device using CDC-ACM is connected?  Is this what is normally done? 
-Does this cause a noticeable performance hit when the driver is cycled
-like this?  If I don't enable CDC-ACM in make menuconfig, can I still bind
-it to a USB device from userspace?
-
-
-I don't know if this matters, but I wanted to add some use case details:
-This driver will be running on a <200 MHz processor and there can be a
-number of connects/disconnect of the device in a short time from the
-users.
-
-Thanks,
--Nate
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
