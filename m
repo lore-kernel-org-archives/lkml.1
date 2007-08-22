@@ -1,41 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758887AbXHVLjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbXHVMJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758887AbXHVLjq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 07:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757679AbXHVLjh
+	id S1758650AbXHVMJI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 08:09:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757662AbXHVMI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 07:39:37 -0400
-Received: from 78-32-9-130.no-dns-yet.enta.net ([78.32.9.130]:39364 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756571AbXHVLjg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 07:39:36 -0400
-Date: Wed, 22 Aug 2007 12:39:27 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: =?utf-8?B?UmFmYcWC?= Maj <forlist@limcore.com>
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <20070822113927.GA7633@srcf.ucam.org>
-References: <20070822094915.41afa2af@lore.lcone>
+	Wed, 22 Aug 2007 08:08:57 -0400
+Received: from il.qumranet.com ([82.166.9.18]:60015 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756434AbXHVMI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 08:08:57 -0400
+Message-ID: <46CC2766.7020602@qumranet.com>
+Date: Wed, 22 Aug 2007 15:09:10 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070822094915.41afa2af@lore.lcone>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: Calling BIOS interrupt from kernel (and debugging / reverse engeneering)
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+To: Andi Kleen <ak@suse.de>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
+References: <46CBC842.4070100@vmware.com> <46CBCADF.2070400@qumranet.com> <1187763956.6174.48.camel@localhost.localdomain> <20070822103545.GG2642@bingen.suse.de> <46CC0719.2080103@qumranet.com> <20070822110810.GO32640@bingen.suse.de> <46CC0EAF.3000805@qumranet.com> <20070822112352.GQ32640@bingen.suse.de>
+In-Reply-To: <20070822112352.GQ32640@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 09:49:15AM +0200, Rafał Maj wrote:
+Andi Kleen wrote:
+> On Wed, Aug 22, 2007 at 01:23:43PM +0300, Avi Kivity wrote:
+>   
+>> Andi Kleen wrote:
+>>     
+>>>> I don't see why it's intrusive -- they all use the APIs, right?
+>>>>    
+>>>>         
+>>> Yes, but it still changes them. It might have a larger impact
+>>> on code size for example. 
+>>>  
+>>>       
+>> Only if CONFIG_PARAVIRT is defined.  
+>>     
+>
+> Which eventually distribution kernels will do.
+>
+>   
+>> And even then, all the performance 
+>> sensitive stuff uses mmio, no?
+>>     
+>
+> Not worried about performance, but just impact on code size etc.
+>   
 
-> AFAIK vm86() is one step to do it, but its hard to find good complete
-> example at least for me.
+Ah.  But that's mostly modules, so real in-core changes should be very 
+small (say 10 bytes per call site X 10 callsites per driver X 10 
+drivers... even if off by an order of magnitude it's still tiny)
 
-Take a look at lrmi.
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+error compiling committee.c: too many arguments to function
+
