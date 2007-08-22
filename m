@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933873AbXHVVNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933222AbXHVVSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933873AbXHVVNA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 17:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762053AbXHVVMw
+	id S933222AbXHVVSM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 17:18:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762980AbXHVVR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 17:12:52 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48965 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758557AbXHVVMv (ORCPT
+	Wed, 22 Aug 2007 17:17:58 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:59517 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758545AbXHVVR5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 17:12:51 -0400
-Date: Thu, 23 Aug 2007 02:55:44 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ll_rw_blk: blk_cpu_notifier should be __cpuinitdata
-Message-ID: <alpine.LFD.0.999.0708230248330.2049@enigma.security.iitk.ac.in>
+	Wed, 22 Aug 2007 17:17:57 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46CCA7F3.3070404@s5r6.in-berlin.de>
+Date: Wed, 22 Aug 2007 23:17:39 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: linux-kernel@vger.kernel.org
+CC: linux1394-user@lists.sourceforge.net
+Subject: Notes on migrating to the new FireWire driver stack
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+As many of you certainly noticed, Linux 2.6.22 has got a new FireWire
+driver subsystem (nicknamed Juju) which is available as an independent
+alternative to the classic IEEE 1394 subsystem.  Prompted by incoming
+feedback, I now posted some basic hints on /if/ and /how/ to migrate to
+the new FireWire drivers at
+    http://wiki.linux1394.org/JujuMigration
 
+In short, kernel packagers who want to provide FireWire support in Linux
+2.6.22 and 2.6.23 should
+  - build only the old drivers, or
+  - build the old and the new drivers but blacklist the new drivers
+    like described on the wiki, or
+  - implement the necessary userspace integration for the new drivers.
+    (That's what was done in Fedora 7.)  NB, neither does the wiki
+    currently cover everything necessary for complete userspace
+    integration, nor are the new drivers and respective compatibility
+    extensions in FireWire userspace libraries feature-complete yet.
 
-On Mon, 20 Aug 2007, Andrew Morton wrote:
-> 
-> <looks at blk_cpu_notifier>
-> 
-> There are a few things to clear up here...
-
-Patch below:
-
-
-blk_cpu_notifier is marked as __devinitdata, but __devinitdata need not
-be __init even if HOTPLUG_CPU=n, which wastes space. It should be marked
-__cpuinitdata, and the callback itself as __cpuinit.
-
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
-
----
-
- block/ll_rw_blk.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index a15845c..91ec907 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -3563,7 +3563,7 @@ static void blk_done_softirq(struct softirq_action *h)
- 	}
- }
- 
--static int blk_cpu_notify(struct notifier_block *self, unsigned long action,
-+static int __cpuinit blk_cpu_notify(struct notifier_block *self, unsigned long action,
- 			  void *hcpu)
- {
- 	/*
-@@ -3584,7 +3584,7 @@ static int blk_cpu_notify(struct notifier_block *self, unsigned long action,
- }
- 
- 
--static struct notifier_block __devinitdata blk_cpu_notifier = {
-+static struct notifier_block blk_cpu_notifier __cpuinitdata = {
- 	.notifier_call	= blk_cpu_notify,
- };
- 
+Kudos to all you out there who reported problems with the new drivers,
+are helping us debugging the drivers, and contributed migration how-tos.
+You know who you are.
+-- 
+Stefan Richter
+-=====-=-=== =--- =-==-
+http://arcgraph.de/sr/
