@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964778AbXHVXQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934503AbXHVXRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964778AbXHVXQt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 19:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXHVXQk
+	id S934503AbXHVXRg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 19:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932600AbXHVXR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 19:16:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47521 "EHLO mx1.redhat.com"
+	Wed, 22 Aug 2007 19:17:29 -0400
+Received: from mx1.suse.de ([195.135.220.2]:57135 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932322AbXHVXQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 19:16:39 -0400
+	id S932419AbXHVXR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 19:17:28 -0400
+Date: Wed, 22 Aug 2007 16:05:26 -0700
+From: Greg KH <gregkh@suse.de>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Prakash Punnoor <prakash@punnoor.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>
+Subject: Re: [2.6.20.17 review 35/58] forcedeth bug fix: realtek phy
+Message-ID: <20070822230526.GC32121@suse.de>
+References: <20070822083844.%N@1wt.eu> <20070822084026.%N@1wt.eu> <200708222015.04141.prakash@punnoor.de> <20070822204225.GD14132@1wt.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andi Kleen <ak@suse.de>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc3-mm1: cannot stat `vdso.so.dbg'
-In-Reply-To: Andi Kleen's message of  Thursday, 23 August 2007 00:58:43 +0200 <200708230058.43782.ak@suse.de>
-X-Shopping-List: (1) Chivalrous assumption ghost-melts
-   (2) Parasitic sodium
-   (3) Blunt assumption buds
-   (4) Cynical eruptions
-   (5) Commodious Johnny Carson lookalikes
-Message-Id: <20070822231632.9A7D54D0418@magilla.localdomain>
-Date: Wed, 22 Aug 2007 16:16:32 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20070822204225.GD14132@1wt.eu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> How come they have identical subjects and identical description? How is 
-> anybody supposed to make sense of this?
+On Wed, Aug 22, 2007 at 10:42:25PM +0200, Willy Tarreau wrote:
+> On Wed, Aug 22, 2007 at 08:15:03PM +0200, Prakash Punnoor wrote:
+> > Hi,
+> > 
+> > even if Greg is waiting for some special invitation 
+> > (http://lkml.org/lkml/2007/8/14/229), I suggest putting this patch by Ayaz on 
+> > top:
+> > 
+> > http://lkml.org/lkml/2007/8/10/296
+> 
+> That's what I prepare first, but then noticed it's not in mainline.
+> 
+> > Perhaps Ayaz wants to give Greg the clarification he needs... :sigh:
+> 
+> He should, as the fix is not in mainline either :-(
+> I don't think Greg asks for specific clarification, just a plain patch
+> with a short commit log on its own which does not include remains of
+> older mails.
 
-Sorry, I asked Andrew and he said to send replacement patches.
-I thought I was following instructions.
+Exactly, that is what I am waiting for.
 
+And also I need the change to go into mainline first, as we can not
+diverge with the -stable releases.
 
-Thanks,
-Roland
+thanks,
+
+greg k-h
