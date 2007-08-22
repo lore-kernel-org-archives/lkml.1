@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbXHVGGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbXHVGIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756553AbXHVGGV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 02:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbXHVGGL
+	id S1757005AbXHVGIb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 02:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXHVGIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 02:06:11 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:53073 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751817AbXHVGGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 02:06:10 -0400
-Date: Wed, 22 Aug 2007 08:07:13 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       linux-arch@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>,
-       Chris Wedgwood <cw@f00f.org>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       linux-mips@linux-mips.org, Oliver Pinter <oliver.pntr@gmail.com>,
-       Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
-       len.brown@intel.com
-Subject: Re: RFC: drop support for gcc < 4.0
-Message-ID: <20070822060713.GA1684@ff.dom.local>
-References: <20070821132038.GA22254@ff.dom.local> <20070821093103.3c097d4a.randy.dunlap@oracle.com> <20070821173550.GC30705@stusta.de> <20070821191959.GC2642@bingen.suse.de> <20070821195433.GE30705@stusta.de> <alpine.LFD.0.999.0708211306560.30176@woody.linux-foundation.org> <20070821202113.GF30705@stusta.de> <27c412eea99f1f80a3002e9668bd31f8@kernel.crashing.org> <20070821212129.GG30705@stusta.de> <17c0b56b663fce6f28b46e3c42dfbaf9@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <17c0b56b663fce6f28b46e3c42dfbaf9@kernel.crashing.org>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 22 Aug 2007 02:08:24 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53150 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754173AbXHVGIX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 02:08:23 -0400
+Message-ID: <46CBD1A5.8070702@vmware.com>
+Date: Tue, 21 Aug 2007 23:03:17 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
+References: <46CBC842.4070100@vmware.com> <46CBD0F5.2080709@zytor.com>
+In-Reply-To: <46CBD0F5.2080709@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 02:08:33AM +0200, Segher Boessenkool wrote:
-> >>>How many people e.g. test -rc kernels compiled with gcc 3.2?
+H. Peter Anvin wrote:
+> Zachary Amsden wrote:
+>   
+>> In general, I/O in a virtual guest is subject to performance problems. 
+>> The I/O can not be completed physically, but must be virtualized.  This
+>> means trapping and decoding port I/O instructions from the guest OS. 
+>> Not only is the trap for a #GP heavyweight, both in the processor and
+>> the hypervisor (which usually has a complex #GP path), but this forces
+>> the hypervisor to decode the individual instruction which has faulted. 
+>> Worse, even with hardware assist such as VT, the exit reason alone is
+>> not sufficient to determine the true nature of the faulting instruction,
+>> requiring a complex and costly instruction decode and simulation.
+>>
+>> This patch provides hypercalls for the i386 port I/O instructions, which
+>> vastly helps guests which use native-style drivers.  For certain VMI
+>> workloads, this provides a performance boost of up to 30%.  We expect
+>> KVM and lguest to be able to achieve similar gains on I/O intensive
+>> workloads.
+>>
+>>     
+>
+> What about cost on hardware?
+>   
 
-I confirm gcc version:
+On modern hardware, port I/O is about the most expensive thing you can 
+do.  The extra function call cost is totally masked by the stall.  We 
+have measured with port I/O converted like this on real hardware, and 
+have seen zero measurable impact on macro-benchmarks.  Micro-benchmarks 
+that generate massively repeated port I/O might show some effect on 
+ancient hardware, but I can't even imagine a workload which does such a 
+thing, other than a polling port I/O loop perhaps - which would not be 
+performance critical in any case I can reasonably imagine.
 
-~/src/linux-2.6.23-rc3$ gcc -v
-Reading specs from /usr/lib/gcc-lib/i486-slackware-linux/3.2.3/specs
-Configured with: ../gcc-3.2.3/configure --prefix=/usr --enable-shared
- --enable-threads=posix --enable-__cxa_atexit --disable-checkingi
- --with-gnu-ld --verbose --target=i486-slackware-linux
- --host=i486-slackware-linux
-Thread model: posix
-gcc version 3.2.3
-
-glibc-2.3.2
-
-Sorry, you have to guess this, but, after reporting long time ago some
-acpi make warnings, I didn't even suspect anybody would be interested
-more this time...
-
-It's an old box with Slackware 9.1, and this make is the last stage
-of testing such a hot kernel version... But, according to README gcc
-3.2 seems to be legal. (I hope there would be some warning about gcc
-too old, anyway.)
-
-Cheers,
-Jarek P.
+Zach
