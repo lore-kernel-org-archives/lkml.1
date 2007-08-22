@@ -1,45 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbXHVALx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbXHVASN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755254AbXHVALx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 20:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750843AbXHVALp
+	id S1753056AbXHVASN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 20:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbXHVAR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 20:11:45 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35204 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750779AbXHVALp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 20:11:45 -0400
-Date: Tue, 21 Aug 2007 17:11:44 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [PATCH] SLUB use cmpxchg_local
-In-Reply-To: <20070822000323.GG29691@Krystal>
-Message-ID: <Pine.LNX.4.64.0708211704260.7852@schroedinger.engr.sgi.com>
-References: <20070820215413.GA28452@Krystal>
- <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
- <20070821173849.GA8360@Krystal> <Pine.LNX.4.64.0708211404290.3082@schroedinger.engr.sgi.com>
- <20070821231216.GA29691@Krystal> <Pine.LNX.4.64.0708211614370.6062@schroedinger.engr.sgi.com>
- <20070821233938.GD29691@Krystal> <Pine.LNX.4.64.0708211640430.6225@schroedinger.engr.sgi.com>
- <20070821234702.GE29691@Krystal> <Pine.LNX.4.64.0708211649260.6886@schroedinger.engr.sgi.com>
- <20070822000323.GG29691@Krystal>
+	Tue, 21 Aug 2007 20:17:58 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58606 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750769AbXHVAR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 20:17:57 -0400
+Date: Tue, 21 Aug 2007 19:18:00 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: Linus Torvalds <torvalds@osdl.org>
+cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Please pull from 'fixes-2.6.23' branch
+Message-ID: <Pine.LNX.4.64.0708211917250.14411@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Aug 2007, Mathieu Desnoyers wrote:
+Please pull from 'fixes-2.6.23' branch of
 
-> - Rounding error.. you seem to round at 0.1ms, but I keep the values in
->   cycles. The times that you get (1.1ms) seems strangely higher than
->   mine, which are under 1000 cycles on a 3GHz system (less than 333ns).
->   I guess there is both a ms - ns error there and/or not enough
->   precision in your numbers.
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git fixes-2.6.23
 
-Nope the rounding for output is depending on the amount. Rounds to one 
-digit after whatever unit we figured out is best to display.
+to receive the following updates:
 
-And multiplications (cyc2ns) do not result in rounding errors.
+ arch/powerpc/sysdev/fsl_pci.c |    2 ++
+ include/linux/pci_ids.h       |    6 ++++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+Kumar Gala (1):
+      [POWERPC] Fix PCI Device ID for MPC8544/8533 processors
+
+commit 15f6ddc7d9cf96f2ee88897c7164198ed6e45a77
+Author: Kumar Gala <galak@kernel.crashing.org>
+Date:   Tue Aug 21 19:15:31 2007 -0500
+
+    [POWERPC] Fix PCI Device ID for MPC8544/8533 processors
+
+    The initial user manuals for MPC8544/8533 had some issues with properly
+    documenting the device IDs for MPC8544/8533.  These processors are almost
+    identical and both show up on the reference boards.
+
+    Fix up the quirks for PCIe support to handle MPC8533/E.
+
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 9fb0ce5..114c90f 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -251,6 +251,8 @@ DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8568E, quirk_fsl_pcie_transpare
+ DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8568, quirk_fsl_pcie_transparent);
+ DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8567E, quirk_fsl_pcie_transparent);
+ DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8567, quirk_fsl_pcie_transparent);
++DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8533E, quirk_fsl_pcie_transparent);
++DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8533, quirk_fsl_pcie_transparent);
+ DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8544E, quirk_fsl_pcie_transparent);
+ DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8544, quirk_fsl_pcie_transparent);
+ DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8641, quirk_fsl_pcie_transparent);
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 07fc574..8938d59 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2092,8 +2092,10 @@
+ #define PCI_DEVICE_ID_MPC8568		0x0021
+ #define PCI_DEVICE_ID_MPC8567E		0x0022
+ #define PCI_DEVICE_ID_MPC8567		0x0023
+-#define PCI_DEVICE_ID_MPC8544E		0x0030
+-#define PCI_DEVICE_ID_MPC8544		0x0031
++#define PCI_DEVICE_ID_MPC8533E		0x0030
++#define PCI_DEVICE_ID_MPC8533		0x0031
++#define PCI_DEVICE_ID_MPC8544E		0x0032
++#define PCI_DEVICE_ID_MPC8544		0x0033
+ #define PCI_DEVICE_ID_MPC8641		0x7010
+ #define PCI_DEVICE_ID_MPC8641D		0x7011
 
