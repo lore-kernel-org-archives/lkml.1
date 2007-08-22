@@ -1,87 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762673AbXHVJGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762439AbXHVJGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762673AbXHVJGU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758762AbXHVIxl
+	id S1762439AbXHVJGl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758770AbXHVIxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 04:53:41 -0400
-Received: from 1wt.eu ([62.212.114.60]:2130 "EHLO 1wt.eu"
+	Wed, 22 Aug 2007 04:53:42 -0400
+Received: from 1wt.eu ([62.212.114.60]:2139 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757350AbXHVIxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 04:53:36 -0400
+	id S1758659AbXHVIxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 04:53:38 -0400
 From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20070822084038.%N@1wt.eu>
+Message-Id: <20070822084011.%N@1wt.eu>
 References: <20070822083844.%N@1wt.eu>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Aug 2007 11:39:33 +0200
+Date: Wed, 22 Aug 2007 11:39:10 +0200
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Jeff Dike <jdike@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Willy Tarreau <w@1wt.eu>
-Subject: [2.6.20.17 review 49/58] UML: exports for hostfs
-Content-Disposition: inline; filename=0049-UML-exports-for-hostfs.patch
+Cc: Mingming Cao <cmm@us.ibm.com>, Yan Zheng <yanzheng@21cn.com>,
+       <linux-ext4@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>
+Subject: [2.6.20.17 review 26/58] "ext4_ext_put_in_cache" uses __u32 to receive physical block number
+Content-Disposition: inline; filename=0026-ext4_ext_put_in_cache-uses-__u32-to-receive-physic.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some exports for hostfs that are required after Alberto Bertogli's
-fixes for accessing unlinked host files.
+Yan Zheng wrote:
 
-Also did some style cleanups while I was here.
+> I think I found a bug in ext4/extents.c, "ext4_ext_put_in_cache" uses
+> "__u32" to receive physical block number.  "ext4_ext_put_in_cache" is
+> used in "ext4_ext_get_blocks", it sets ext4 inode's extent cache
+> according most recently tree lookup (higher 16 bits of saved physical
+> block number are always zero). when serving a mapping request,
+> "ext4_ext_get_blocks" first check whether the logical block is in
+> inode's extent cache. if the logical block is in the cache and the
+> cached region isn't a gap, "ext4_ext_get_blocks" gets physical block
+> number by using cached region's physical block number and offset in
+> the cached region.  as described above, "ext4_ext_get_blocks" may
+> return wrong result when there are physical block numbers bigger than
+> 0xffffffff.
+>
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+You are right.  Thanks for reporting this!
+
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+Cc: Yan Zheng <yanzheng@21cn.com>
+Cc: <linux-ext4@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Willy Tarreau <w@1wt.eu>
 ---
- arch/um/os-Linux/user_syms.c |   20 ++++++++------------
- 1 files changed, 8 insertions(+), 12 deletions(-)
+ fs/ext4/extents.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/um/os-Linux/user_syms.c b/arch/um/os-Linux/user_syms.c
-index 3f33165..419b2d5 100644
---- a/arch/um/os-Linux/user_syms.c
-+++ b/arch/um/os-Linux/user_syms.c
-@@ -5,7 +5,8 @@
-  * so I *must* declare good prototypes for them and then EXPORT them.
-  * The kernel code uses the macro defined by include/linux/string.h,
-  * so I undef macros; the userspace code does not include that and I
-- * add an EXPORT for the glibc one.*/
-+ * add an EXPORT for the glibc one.
-+ */
+diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
+index dc2724f..14b0b49 100644
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -1397,7 +1397,7 @@ int ext4_ext_walk_space(struct inode *inode, unsigned long block,
  
- #undef strlen
- #undef strstr
-@@ -61,12 +62,18 @@ EXPORT_SYMBOL_PROTO(dup2);
- EXPORT_SYMBOL_PROTO(__xstat);
- EXPORT_SYMBOL_PROTO(__lxstat);
- EXPORT_SYMBOL_PROTO(__lxstat64);
-+EXPORT_SYMBOL_PROTO(__fxstat64);
- EXPORT_SYMBOL_PROTO(lseek);
- EXPORT_SYMBOL_PROTO(lseek64);
- EXPORT_SYMBOL_PROTO(chown);
-+EXPORT_SYMBOL_PROTO(fchown);
- EXPORT_SYMBOL_PROTO(truncate);
-+EXPORT_SYMBOL_PROTO(ftruncate64);
- EXPORT_SYMBOL_PROTO(utime);
-+EXPORT_SYMBOL_PROTO(utimes);
-+EXPORT_SYMBOL_PROTO(futimes);
- EXPORT_SYMBOL_PROTO(chmod);
-+EXPORT_SYMBOL_PROTO(fchmod);
- EXPORT_SYMBOL_PROTO(rename);
- EXPORT_SYMBOL_PROTO(__xmknod);
- 
-@@ -102,14 +109,3 @@ EXPORT_SYMBOL(__stack_smash_handler);
- 
- extern long __guard __attribute__((weak));
- EXPORT_SYMBOL(__guard);
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
+ static void
+ ext4_ext_put_in_cache(struct inode *inode, __u32 block,
+-			__u32 len, __u32 start, int type)
++			__u32 len, ext4_fsblk_t start, int type)
+ {
+ 	struct ext4_ext_cache *cex;
+ 	BUG_ON(len == 0);
 -- 
 1.5.2.5
 
