@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761814AbXHVJD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762678AbXHVJEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761814AbXHVJD6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758211AbXHVIxh
+	id S1762678AbXHVJEc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758744AbXHVIxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 22 Aug 2007 04:53:37 -0400
-Received: from 1wt.eu ([62.212.114.60]:2114 "EHLO 1wt.eu"
+Received: from 1wt.eu ([62.212.114.60]:2119 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758659AbXHVIxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 04:53:33 -0400
+	id S1758698AbXHVIxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 04:53:34 -0400
 From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20070822084029.%N@1wt.eu>
+Message-Id: <20070822084030.%N@1wt.eu>
 References: <20070822083844.%N@1wt.eu>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Aug 2007 11:39:23 +0200
+Date: Wed, 22 Aug 2007 11:39:24 +0200
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Gurudas Pai <gurudas.pai@oracle.com>,
+Cc: Herbert van den Bergh <herbert.van.den.bergh@oracle.com>,
+       Chris Mason <chris.mason@oracle.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>
-Subject: [2.6.20.17 review 39/58] hugetlb: fix race in alloc_fresh_huge_page()
-Content-Disposition: inline; filename=0039-hugetlb-fix-race-in-alloc_fresh_huge_page.patch
+Subject: [2.6.20.17 review 40/58] do not limit locked memory when RLIMIT_MEMLOCK is RLIM_INFINITY
+Content-Disposition: inline; filename=0040-do-not-limit-locked-memory-when-RLIMIT_MEMLOCK-is-RL.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That static `nid' index needs locking.  Without it we can end up calling
-alloc_pages_node() with an illegal node ID and the kernel crashes.
+Fix a bug in mm/mlock.c on 32-bit architectures that prevents a user from
+locking more than 4GB of shared memory, or allocating more than 4GB of
+shared memory in hugepages, when rlim[RLIMIT_MEMLOCK] is set to
+RLIM_INFINITY.
 
-Acked-by: Gurudas Pai <gurudas.pai@oracle.com>
+Signed-off-by: Herbert van den Bergh <herbert.van.den.bergh@oracle.com>
+Acked-by: Chris Mason <chris.mason@oracle.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Willy Tarreau <w@1wt.eu>
 ---
- mm/hugetlb.c |   15 +++++++++++----
- 1 files changed, 11 insertions(+), 4 deletions(-)
+ mm/mlock.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 36db012..7c07eb2 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -101,13 +101,20 @@ static void free_huge_page(struct page *page)
+diff --git a/mm/mlock.c b/mm/mlock.c
+index 3446b7e..ef8fc94 100644
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -233,9 +233,12 @@ int user_shm_lock(size_t size, struct user_struct *user)
  
- static int alloc_fresh_huge_page(void)
- {
--	static int nid = 0;
-+	static int prev_nid;
- 	struct page *page;
--	page = alloc_pages_node(nid, GFP_HIGHUSER|__GFP_COMP|__GFP_NOWARN,
--					HUGETLB_PAGE_ORDER);
--	nid = next_node(nid, node_online_map);
-+	static DEFINE_SPINLOCK(nid_lock);
-+	int nid;
-+
-+	spin_lock(&nid_lock);
-+	nid = next_node(prev_nid, node_online_map);
- 	if (nid == MAX_NUMNODES)
- 		nid = first_node(node_online_map);
-+	prev_nid = nid;
-+	spin_unlock(&nid_lock);
-+
-+	page = alloc_pages_node(nid, GFP_HIGHUSER|__GFP_COMP|__GFP_NOWARN,
-+					HUGETLB_PAGE_ORDER);
- 	if (page) {
- 		set_compound_page_dtor(page, free_huge_page);
- 		spin_lock(&hugetlb_lock);
+ 	locked = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+ 	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
++	if (lock_limit == RLIM_INFINITY)
++		allowed = 1;
+ 	lock_limit >>= PAGE_SHIFT;
+ 	spin_lock(&shmlock_user_lock);
+-	if (locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
++	if (!allowed &&
++	    locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
+ 		goto out;
+ 	get_uid(user);
+ 	user->locked_shm += locked;
 -- 
 1.5.2.5
 
