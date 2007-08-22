@@ -1,109 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934621AbXHVWVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934394AbXHVWWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934621AbXHVWVz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 18:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934433AbXHVWVe
+	id S934394AbXHVWWa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 18:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934036AbXHVWVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 18:21:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45131 "EHLO mx2.suse.de"
+	Wed, 22 Aug 2007 18:21:39 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54031 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934574AbXHVWVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 18:21:32 -0400
+	id S933400AbXHVWVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 18:21:37 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 1/5] sysfs: fix locking in sysfs_lookup() and sysfs_rename_dir()
-Date: Wed, 22 Aug 2007 15:10:16 -0700
-Message-Id: <1187820620110-git-send-email-gregkh@suse.de>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 2/5] Fix Off-by-one in /sys/module/*/refcnt
+Date: Wed, 22 Aug 2007 15:10:17 -0700
+Message-Id: <11878206273940-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.rc5
-In-Reply-To: <20070822220747.GA30603@kroah.com>
+In-Reply-To: <1187820620110-git-send-email-gregkh@suse.de>
 References: <20070822220747.GA30603@kroah.com>
+ <1187820620110-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tejun Heo <htejun@gmail.com>
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
-sd children list walking in sysfs_lookup() and sd renaming in
-sysfs_rename_dir() were left out during i_mutex -> sysfs_mutex
-conversion.  Fix them.
+sysfs internals were changed to not pin module in question.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Acked-by: Kay Sievers <kay.sievers@vrfy.org>
+Acked-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c |   21 ++++++++++++---------
- 1 files changed, 12 insertions(+), 9 deletions(-)
+ kernel/module.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 048e605..83e76b3 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -762,12 +762,15 @@ static int sysfs_count_nlink(struct sysfs_dirent *sd)
- static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 				struct nameidata *nd)
+diff --git a/kernel/module.c b/kernel/module.c
+index 33c04ad..db0ead0 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -784,8 +784,7 @@ EXPORT_SYMBOL_GPL(symbol_put_addr);
+ static ssize_t show_refcnt(struct module_attribute *mattr,
+ 			   struct module *mod, char *buffer)
  {
-+	struct dentry *ret = NULL;
- 	struct sysfs_dirent * parent_sd = dentry->d_parent->d_fsdata;
- 	struct sysfs_dirent * sd;
- 	struct bin_attribute *bin_attr;
- 	struct inode *inode;
- 	int found = 0;
- 
-+	mutex_lock(&sysfs_mutex);
-+
- 	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling) {
- 		if (sysfs_type(sd) &&
- 		    !strcmp(sd->s_name, dentry->d_name.name)) {
-@@ -778,14 +781,14 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 
- 	/* no such entry */
- 	if (!found)
--		return NULL;
-+		goto out_unlock;
- 
- 	/* attach dentry and inode */
- 	inode = sysfs_get_inode(sd);
--	if (!inode)
--		return ERR_PTR(-ENOMEM);
--
--	mutex_lock(&sysfs_mutex);
-+	if (!inode) {
-+		ret = ERR_PTR(-ENOMEM);
-+		goto out_unlock;
-+	}
- 
- 	if (inode->i_state & I_NEW) {
- 		/* initialize inode according to type */
-@@ -815,9 +818,9 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 	sysfs_instantiate(dentry, inode);
- 	sysfs_attach_dentry(sd, dentry);
- 
-+ out_unlock:
- 	mutex_unlock(&sysfs_mutex);
--
--	return NULL;
-+	return ret;
+-	/* sysfs holds a reference */
+-	return sprintf(buffer, "%u\n", module_refcount(mod)-1);
++	return sprintf(buffer, "%u\n", module_refcount(mod));
  }
  
- const struct inode_operations sysfs_dir_inode_operations = {
-@@ -942,6 +945,8 @@ int sysfs_rename_dir(struct kobject *kobj, struct sysfs_dirent *new_parent_sd,
- 	if (error)
- 		goto out_drop;
- 
-+	mutex_lock(&sysfs_mutex);
-+
- 	dup_name = sd->s_name;
- 	sd->s_name = new_name;
- 
-@@ -949,8 +954,6 @@ int sysfs_rename_dir(struct kobject *kobj, struct sysfs_dirent *new_parent_sd,
- 	d_add(new_dentry, NULL);
- 	d_move(sd->s_dentry, new_dentry);
- 
--	mutex_lock(&sysfs_mutex);
--
- 	sysfs_unlink_sibling(sd);
- 	sysfs_get(new_parent_sd);
- 	sysfs_put(sd->s_parent);
+ static struct module_attribute refcnt = {
 -- 
 1.5.3.rc5
 
