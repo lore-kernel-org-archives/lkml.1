@@ -1,90 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934396AbXHVV6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934365AbXHVV7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934396AbXHVV6z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 17:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933055AbXHVV6k
+	id S934365AbXHVV7z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 17:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764534AbXHVV7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 17:58:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53229 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932324AbXHVV6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 17:58:38 -0400
-Date: Wed, 22 Aug 2007 17:58:16 -0400
-From: Dave Jones <davej@redhat.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Tech-board-discuss] Re: Linux Foundation Technical Advisory
-	Board Elections
-Message-ID: <20070822215816.GG17546@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	Tech Board Discuss <Tech-board-discuss@lists.linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <1187796179.3410.32.camel@localhost.localdomain> <20070822212202.GE17546@redhat.com> <1187819038.3410.114.camel@localhost.localdomain>
+	Wed, 22 Aug 2007 17:59:43 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48966 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764509AbXHVV7m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 17:59:42 -0400
+Date: Thu, 23 Aug 2007 03:42:30 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] intel_cacheinfo: Misc section annotation fixes /
+ cleanups
+Message-ID: <alpine.LFD.0.999.0708230340480.2049@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187819038.3410.114.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 04:43:58PM -0500, James Bottomley wrote:
- > >  > The elections for five of the ten members of the Linux Foundation
- > >  > Technical Advisory Board[TAB] are held every year, currently the
- > >  > election will be at the 2007 Kernel Summit in a BOF session.
- > >  > 
- > >  > Anyone is eligible to stand for election, simply send your nomination
- > >  > to:
- > >  > 
- > >  > Tech-board-discuss@lists.linux-foundation.org
- > >  > 
- > >  > Only people invited to the kernel summit will be there in person (and
- > >  > therefore able to vote), but if you cannot attend, your nomination email
- > >  > will be read out before the voting begins.
- > >  > 
- > >  > We currently have Three nominees:
- > >  > 
- > >  > Arjan van de Ven <arjan@infradead.org>
- > >  > Greg Kroah Hartman <greg@kroah.com>
- > >  > Christoph Lameter <christoph@lameter.com>
- > >  > 
- > >  > The deadline for receiving nominations is up until the BOF where the
- > >  > election is held (on the evening of either the 5th or 6th of September.
- > >  > Although, please remember if you're not going to be present that things
- > >  > go wrong with both networks and mailing lists, so get your nomination in
- > >  > early).
- > > 
- > > I have a reservation about voting for any of the above.
- > > Normally during any process involving votes, there exists some sort
- > > of "why you should vote for me" type statement.  Does such a thing
- > > exist for this process ?
- > > 
- > > Not that I've anything against any of the above candidates, but this
- > > should probably be more than just a popularity contest.
- > 
- > Yes ... well, there was a need to get away from the cronyism of OSDL in
- > the past.  The problem was to come up with a mechanism that did away
- > with this.  The elected one was about the best we could find, but if
- > you've an alternative suggestion, by all means let's hear it.
+cache_sysfs_init() is only ever called at device_initcall() time. Marking it
+__cpuinit is quite wrong, and wasteful when HOTPLUG_CPU=y. It must be __init.
 
-Possibly I'm confused about the actual role that these nominees are
-running for.  If it's a rigid position in which they don't get to
-do anything outside of a specific mandate, then any of the above
-would be qualified to represent the kernel community.
+cache_shared_cpu_map_setup() and cache_remove_shared_cpu_map(), OTOH, are
+functions called from another function that is __cpuinit. But the !CONFIG_SMP
+empty-body stubs of these functions are unconditionally marked __init, which
+is actively wrong, and will lead to oops. But we never saw this oops, because
+they always managed to get inlined in their callsites, by virtue of being
+empty-body stubs! They should still be __cpuinit, of course.
 
-However, if there's flexability for a candidate to bring something
-new to the position, an online statement from each nominee _Before_ 
-the voting begins declaring what they intend to do should they get elected.
-Reading out the statement before the summit and also asking people
-to vote before that happens seems a little disingenuous.
+assocs[], levels[] and types[] are only referenced from function that is
+__cpuinit. So these are candidates for being marked __cpuinitdata.
 
-Can you explain more about what the succesful candidate would actually
-do for me, and why I (and others) would want to vote one way or the other?
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
 
-	Dave
+---
 
--- 
-http://www.codemonkey.org.uk
+ arch/i386/kernel/cpu/intel_cacheinfo.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/arch/i386/kernel/cpu/intel_cacheinfo.c b/arch/i386/kernel/cpu/intel_cacheinfo.c
+index d5a456d..16499fe 100644
+--- a/arch/i386/kernel/cpu/intel_cacheinfo.c
++++ b/arch/i386/kernel/cpu/intel_cacheinfo.c
+@@ -170,15 +170,15 @@ union l3_cache {
+ 	unsigned val;
+ };
+ 
+-static const unsigned short assocs[] = {
++static const unsigned short assocs[] __cpuinitdata = {
+ 	[1] = 1, [2] = 2, [4] = 4, [6] = 8,
+ 	[8] = 16, [0xa] = 32, [0xb] = 48,
+ 	[0xc] = 64,
+ 	[0xf] = 0xffff // ??
+ };
+ 
+-static const unsigned char levels[] = { 1, 1, 2, 3 };
+-static const unsigned char types[] = { 1, 2, 3, 3 };
++static const unsigned char levels[] __cpuinitdata = { 1, 1, 2, 3 };
++static const unsigned char types[] __cpuinitdata = { 1, 2, 3, 3 };
+ 
+ static void __cpuinit amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
+ 		       union _cpuid4_leaf_ebx *ebx,
+@@ -493,8 +493,8 @@ static void __cpuinit cache_remove_shared_cpu_map(unsigned int cpu, int index)
+ 	}
+ }
+ #else
+-static void __init cache_shared_cpu_map_setup(unsigned int cpu, int index) {}
+-static void __init cache_remove_shared_cpu_map(unsigned int cpu, int index) {}
++static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index) {}
++static void __cpuinit cache_remove_shared_cpu_map(unsigned int cpu, int index) {}
+ #endif
+ 
+ static void free_cache_attributes(unsigned int cpu)
+@@ -782,7 +782,7 @@ static struct notifier_block __cpuinitdata cacheinfo_cpu_notifier =
+     .notifier_call = cacheinfo_cpu_callback,
+ };
+ 
+-static int __cpuinit cache_sysfs_init(void)
++static int __init cache_sysfs_init(void)
+ {
+ 	int i;
+ 
