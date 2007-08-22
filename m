@@ -1,75 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933002AbXHVSNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933120AbXHVSOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933002AbXHVSNW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 14:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763582AbXHVSNM
+	id S933120AbXHVSOx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 14:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763680AbXHVSOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 14:13:12 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:34323 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761154AbXHVSNL (ORCPT
+	Wed, 22 Aug 2007 14:14:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43902 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761707AbXHVSOn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 14:13:11 -0400
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Jes Sorensen <jes@sgi.com>, akepner@sgi.com,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-In-Reply-To: <200708221017.11805.jbarnes@virtuousgeek.org>
-References: <20070818002746.GU1813@sgi.com>
-	 <200708220951.05101.jbarnes@virtuousgeek.org>
-	 <1187802272.3410.58.camel@localhost.localdomain>
-	 <200708221017.11805.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 13:13:04 -0500
-Message-Id: <1187806384.3410.70.camel@localhost.localdomain>
+	Wed, 22 Aug 2007 14:14:43 -0400
+Date: Wed, 22 Aug 2007 11:14:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+Cc: "Kuan Luo" <kluo@nvidia.com>, "Peer Chen" <pchen@nvidia.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc3-mm1
+Message-Id: <20070822111428.ad3f437c.akpm@linux-foundation.org>
+In-Reply-To: <64bb37e0708221024p5184aa65x5d36c7c049049124@mail.gmail.com>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<64bb37e0708221024p5184aa65x5d36c7c049049124@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 10:17 -0700, Jesse Barnes wrote:
-> On Wednesday, August 22, 2007 10:04:32 am James Bottomley wrote:
-> > The spec isn't ambiguous ... it says if the device and bridge agree on
-> > relaxed ordering, then it *may* be observed in the transaction.  If
-> > there's a disagreement or neither wishes to support relaxed ordering
-> > then the transaction *must* be strict.
+On Wed, 22 Aug 2007 19:24:39 +0200
+"Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+
+> On 8/22/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
+> [snip]
+> > -ata-add-the-sw-ncq-support-to-sata_nv-for-mcp51-mcp55-mcp61.patch
+> > -ata-add-the-sw-ncq-support-to-sata_nv-for-mcp51-mcp55-mcp61-fix.patch
+> [snip]
+> >  Merged into mainline or a subsystem tree
 > 
-> Arg, don't make me dig out my spec, I don't have it handy...
-
-Well ... I don't have one either.  However, Grant Grundler did a
-presentation to OLS about relaxed ordering, and I went over it pretty
-thoroughly with him a while ago.  The bottom line is that the default is
-always strict unless both the bridge and the device agree otherwise.
-
-> > I really don't think a work around for a PCI spec violation belongs in
-> > the generic DMA code, do you?  The correct fix for this should be to set
-> > the device hints to strict ordering, which presumably altix respects?
+> That patch is no longer in 2.6.23-rc3-mm1, my bootlog says:
+> [    0.000000] Unknown boot option `sata_nv.swncq=1': ignoring
 > 
-> Well, the Altix hw by itself won't honor device hints (I'm not even sure if 
-> there are devices that honor order hints like you outline above).  However, 
-> Altix could track per-device ordering as long as arch code was called from 
-> such a hook.
+> I could not find this patch in any git trees I looked and its removal
+> mail from mm-commit said:
+> "This patch was dropped because Changes in Jeff's tree destroyed it."
 > 
-> > In which case, it sounds like what needs exposing are access to the PCI
-> > device hints.  I believe both PCI-X and PCIe have these hints as
-> > optional specifiers in the bridges, so it should be in a current Rev of
-> > the PCI spec.  Or are you proposing adding an additional PCI API that
-> > allows transaction flushes to be inserted into the stream for devices
-> > and bridges that have already negotiated relaxed ordering? ... in which
-> > case we need to take this to the PCI list.
 > 
-> I think it would have to be the latter, since otherwise it would be hard to 
-> setup just completion queue requests to be ordered.
+> I only found out about the swncq=1 command line option yesterday and
+> so tested it only one day.
+> But I did not have any trouble with it, even as my drive was made by Maxtor.
+> 
+> The chipset:
+> 00:05.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+> 00:05.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+> 00:05.2 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+> 
+> The drive:
+> Device Model:     MAXTOR STM3320820AS
+> Serial Number:    5QF2E698
+> Firmware Version: 3.AAE
+> 
+> As it worked for me, I hope that patch will be picked up by someone. :)
+> 
 
-OK ... I think this is definitely a PCI specific API ... and probably a
-generic one for requesting order flushes in devices that have negotiated
-relaxed ordering.  Do you want to start a new thread on linux-pci and cc
-me?
+This is a fairly regular occurrence in ata land: patches from maintainers
+don't get merged, so I merge them for testing, then some fairly pointless
+cleanup-style patch goes on a great tree-wide rampage thus destabilising or
+simply destroying the more important, mysteriously-not-merged patch.
 
-James
+Nobody knows why this happens.
 
+Peer and Kuan: can you please redo that patch against the current ata
+development tree?
+
+Thanks.
 
