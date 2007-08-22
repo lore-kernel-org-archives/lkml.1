@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbXHVHfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbXHVHl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbXHVHfb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 03:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbXHVHfV
+	id S1756750AbXHVHl0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 03:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbXHVHlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 03:35:21 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:42517 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750888AbXHVHfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 03:35:20 -0400
-X-Greylist: delayed 5349 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Aug 2007 03:35:19 EDT
-Date: Wed, 22 Aug 2007 09:36:22 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Andi Kleen <ak@suse.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: RFC: drop support for gcc < 4.0
-Message-ID: <20070822073622.GB1684@ff.dom.local>
-References: <20070821132038.GA22254@ff.dom.local> <20070821093103.3c097d4a.randy.dunlap@oracle.com> <20070821173550.GC30705@stusta.de> <20070821191959.GC2642@bingen.suse.de> <20070821195433.GE30705@stusta.de> <alpine.LFD.0.999.0708211306560.30176@woody.linux-foundation.org> <20070821202113.GF30705@stusta.de> <alpine.LFD.0.999.0708211332330.30176@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708211332330.30176@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 22 Aug 2007 03:41:18 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55659 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751454AbXHVHlR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 03:41:17 -0400
+Message-ID: <46CBE838.4000302@sgi.com>
+Date: Wed, 22 Aug 2007 09:39:36 +0200
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: akepner@sgi.com, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
+References: <20070818002746.GU1813@sgi.com> <46C94FD5.6000006@sgi.com>	 <20070821193522.GD5592@sgi.com>	 <20070821130515.6e745b17.randy.dunlap@oracle.com>	 <1187729729.18410.48.camel@localhost.localdomain>	 <20070822003450.GM5592@sgi.com> <1187745249.18410.67.camel@localhost.localdomain>
+In-Reply-To: <1187745249.18410.67.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 21, 2007 at 01:32:50PM -0700, Linus Torvalds wrote:
+James Bottomley wrote:
+> On Tue, 2007-08-21 at 17:34 -0700, akepner@sgi.com wrote:
+>> The term "posted DMA" is used to describe this behavior in the Altix 
+>> Device Driver Writer's Guide, but it may be confusing things here. 
+>> Maybe a better term will suggest itself if I can clarify....
 > 
+> OK, but posted DMA has a pretty specific meaning in terms of PCI, hence
+> the confusion.
+
+Maybe it would be more better to refer to this as 'out of order DMA'?
+
+>> On Altix, DMA from a device isn't guaranteed to arrive in host memory 
+>> in the order it was sent from the device. This reordering can happen 
+>> in the NUMA interconnect (it's specifically not a PCI reordering.)
 > 
-> On Tue, 21 Aug 2007, Adrian Bunk wrote:
-> > 
-> > How many people e.g. test -rc kernels compiled with gcc 3.2?
-> 
-> How could anybody know?
+> This is mmiowb and read_relaxed() again, isn't it?
 
-It shouldn't be so hard:
+I believe it's the same problem, except this time it's when exposing
+structures to userland.
 
-a) statistically: by doing some random math with:
-
-int number_of_seemingly_gcc3.2_reports_eg_per_rc;
-int number_of_all_such_reports_eg_per_rc;
-int estimated_number_of_all_users_or_developers;
-(or maybe some more...)
-
-b) precisely (or even more): by adding proper and often updated
-announcements, e.g:
-
-"drivers/usb/host/ohci-pci.c:202: warning: unused variable `pdev'
-(BTW, Angelina and Brad will be very suprised this warning is
-yet possible!!!)"
-
-Regards,
-Jarek P.
+Cheers,
+Jes
