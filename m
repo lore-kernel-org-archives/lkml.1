@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764707AbXHVPh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764371AbXHVPmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764707AbXHVPh6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 11:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763712AbXHVPhs
+	id S1764371AbXHVPmW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 11:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762804AbXHVPmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 11:37:48 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54174 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763747AbXHVPhr (ORCPT
+	Wed, 22 Aug 2007 11:42:12 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:40025 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761110AbXHVPmL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 11:37:47 -0400
-Date: Wed, 22 Aug 2007 08:36:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, ak@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc3-mm1: cannot stat `vdso.so.dbg'
-Message-Id: <20070822083650.85fdfcea.akpm@linux-foundation.org>
-In-Reply-To: <20070822102434.D82B84D04B2@magilla.localdomain>
-References: <20070822101529.GE7228@localhost.sw.ru>
-	<20070822102434.D82B84D04B2@magilla.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Aug 2007 11:42:11 -0400
+Date: Wed, 22 Aug 2007 17:41:11 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: net/ipv4/fib_trie.c - compile error (Re: 2.6.23-rc3-mm1)
+Message-ID: <20070822154111.GI30705@stusta.de>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46CC5685.7090500@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46CC5685.7090500@googlemail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007 03:24:34 -0700 (PDT) Roland McGrath <roland@redhat.com> wrote:
-
-> That is fixed by the later version of the vdso-install patches I sent later.
-> I thought Andrew had already incorporated the fixed versions.
+On Wed, Aug 22, 2007 at 05:30:13PM +0200, Gabriel C wrote:
+> Got it with a randconfig ( http://194.231.229.228/kernel/mm/2.6.23-rc3-mm1/r/randconfig-8 )
 > 
+> ...
+> 
+> net/ipv4/fib_trie.c: In function 'trie_rebalance':
+> net/ipv4/fib_trie.c:969: error: lvalue required as unary '&' operand
+> net/ipv4/fib_trie.c:971: error: lvalue required as unary '&' operand
+> net/ipv4/fib_trie.c:977: error: lvalue required as unary '&' operand
+> net/ipv4/fib_trie.c:980: error: lvalue required as unary '&' operand
+>...
 
-Those patches are in Andi's tree.  His tree has the old versions.  The
-patches are inter-tangled so it is non-trivial for me to generate
-incremental patches on top of Andi's tree which bring his old patches up to
-date with the new ones.  I could of course do so, but it'd be better if
-Andi's tree weren't carrying old versions of
-x86_64-ia32-vdso-install-unstripped-copies-on-disk and
-x86_64-vdso-install-unstripped-copies-on-disk
+Side effect of the git-net removal, temporarily removing 
+immunize-rcu_dereference-against-crazy-compiler-writers.patch should 
+work around it.
 
-Please resend those patches to Andi.
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
