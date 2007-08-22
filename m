@@ -1,151 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934282AbXHVWBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934406AbXHVWDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934282AbXHVWBu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 18:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764199AbXHVWBh
+	id S934406AbXHVWDU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 18:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762528AbXHVWDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 18:01:37 -0400
-Received: from mx1.of.net-lab.net ([80.69.37.105]:53265 "EHLO
-	imap.internetcave.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763011AbXHVWBg (ORCPT
+	Wed, 22 Aug 2007 18:03:00 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48991 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761713AbXHVWC6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 18:01:36 -0400
-Message-ID: <46CCB23E.1000506@aj.net-lab.net>
-Date: Thu, 23 Aug 2007 00:01:34 +0200
-From: Andreas John <lists@aj.net-lab.net>
-User-Agent: IceDove 1.5.0.10 (X11/20070329)
+	Wed, 22 Aug 2007 18:02:58 -0400
+Date: Thu, 23 Aug 2007 03:45:50 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2] intel_cacheinfo: Call cache_add_dev from cache_sysfs_init
+ explicitly
+In-Reply-To: <alpine.LFD.0.999.0708230340480.2049@enigma.security.iitk.ac.in>
+Message-ID: <alpine.LFD.0.999.0708230342590.2049@enigma.security.iitk.ac.in>
+References: <alpine.LFD.0.999.0708230340480.2049@enigma.security.iitk.ac.in
+ >
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Conke Hu <conke.hu@gmail.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] ahci.c: fix ati sb600 sata IRQ_TF_ERR
-References: <5767b9100703140222k79dbed9dq6419b4f35d276242@mail.gmail.com>	 <45F7E7E9.6010703@gmail.com>	 <5767b9100703150500t1c34dfb0kc6a199b5374a8d78@mail.gmail.com>	 <45F93888.1080207@gmail.com> <5767b9100703270253j2ac3b543y499323b42c6402b@mail.gmail.com> <46CCA483.4080105@aj.net-lab.net>
-In-Reply-To: <46CCA483.4080105@aj.net-lab.net>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hm,
-I should add that on 2.6.22-amd64 (ubuntu gutsy) the log entry is as
-follows:
+Call cache_add_dev() from cache_sysfs_init() explicitly, instead of
+referencing the CPU notifier callback directly from generic startup
+code. Looks cleaner (to me at least) this way, and also makes it
+possible to use other tricks to replace __cpuinit{data} annotations,
+as recently discussed on this list.
 
-----8<------
-ata2.00 excetion Emask 0x40 SAct 0x0 SErr 0x800 action 0x2 frozen
-ata2.00 tag 0 cmd 0xea Emask 0x44 stat 0x40 err 0x0 timeout
-1st FIS failed
-----8<------
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
 
-rgds,
-Andreas
+---
 
+ arch/i386/kernel/cpu/intel_cacheinfo.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Andreas John schrieb:
-> Hi SB600-folks,
-> 
-> we bought some AMD690/sb600 based mobos and try go get them working. I
-> followed the patches on LKML and switched from Debian Etch 2.6.18-x
-> kernel to 2.6.22, just to ensure that all patches are already applied.
-> But we still have strange errors/lockups and we found a way to reproduce
-> them: simply run checkarry --all and do some dd if=/dev/sda ....
-> parallely. We notive load avg going up and then boom ... lockup,
-> softraid broken:
-> 
-> ---<8----
-> ata2.00: exception Emask 0x0 SAct 0X2 SErr 0x= action 0x0
-> ata2.00: (irq_stat 0x40000008)
-> ata2.00: cmd 60/00:00:00:69:71/01:00:06:00:00/40 tag 0 cdb 0x0 data
-> 131072 in
-> ---<8----
-> 
-> This appears with ahci. If I switch to atiixp I only see the cdrom and
-> one harddisk, the second does not appear at all and -depending on the
-> setting in BIOS setup ahci->sata, native ide, legacy ide- only the cdrom
-> appears.
-> 
-> I might note that I first ran into that trouble on amd64 with 4GB RAM.
-> Then I swicthed back to 2 GB and back to i386 / 2 GB. The error message
-> above is from the i386 / 2 GB variant, but all suffer from this strange
-> sata pain, I am not 100% sure, if the log entriea read the same of onyl
-> similar. I also tried pci=nomsi some times, but I was still able to
-> trigger the bug. I might also note, that I noticed the problem on amd64
-> arch and it was simply to trigger it there, but with the checkarry --all
-> trick I was also able to trigger it on i386.
-> 
-> Is there anything I can further test? I you provide a patch, I will
-> glady test it.
-> 
-> best regards,
-> Andreas
-> 
-> 
-> Conke Hu schrieb:
->> On 3/15/07, Tejun Heo <htejun@gmail.com> wrote:
->>> Conke Hu wrote:
->>>>> E  Internal error: The host bus adapter experienced an internal error
->>>>> that caused the operation to fail and may have put the host bus
->>> adapter
->>>>> into an error state. Host software should reset the interface before
->>>>> re-trying the operation. If the condition persists, the host bus
->>> adapter
->>>>> may suffer from a design issue rendering it incompatible with the
->>>>> attached device.
->>>>>
->>>> Yes, I saw this too :) and I am contacting the hardware engineers to
->>>> check if there is any hardware bug.
->>>> But, even though this were a hardware bug and could be fixed, we would
->>>> still need this patch since many SB600 boards have already come into
->>>> the market and those ASICs can never be fixed :(
->>> Yeap, we certainly need the workaround.  I was just having a little fun.
->>>  :-)
->>>
->>>>> 4381 isn't affected while 4380 is?
->>>> I never see such an ID, and plan to remove 0x4381.
->>>> The patch which added the PCI IDs was not sent out by myself. I
->>>> checked all SB600 boards, and not found any 0x4381 controller, only
->>>> 0x4380 instead. In fact, SB600 RAID and Non-RAID share the same PCI
->>>> device ID, only with class code different.
->>> I see.
->>>
->>>>> Anyways, Conke Hu, can you please take a look at my patch from a month
->>>>> ago?  It's almost identical but SERR_INTERNAL is always ignored on
->>> both
->>>>> SB600 PCI IDs, which I think is safer.  Does this fix what you're
->>> seeing?
->>>> I just read your patch. Another difference is that my patch ignores
->>>> SERR_INTERNAL only when the command is ATAPI and IRQ_TF_ERR occurs. In
->>>> other cases, I think, we'd better not ignore the SERR_INTERNEL. Right?
->>> Yeah, I noticed the difference.  I don't really care but I was thinking
->>> that SERR_INTERNAL might be set in other similar situations too.  e.g.
->>> TF error from ATA device or what not, so I thought it would be safer to
->>> ignore the bit altogether.  You probably need to consult your hardware
->>> people about when exactly the bit misbehaves but unless proven
->>> otherwise, I'd prefer to always ignore the bit.  Also, please rename the
->>> enum constant and flag name.
->>>
->> Thank you, Tejun!
->> I was discussing with our HW designers on this topic. It is a HW
->> design issue and will be fixed in SB700, the next generation of
->> AMD/ATI southbridge.
->>
->> The correct walkaround/solution for SB600 SATA is:
->> 1. ignore SERR_INTERNAL for both ATA and ATAPI device (as you suggested
->> :p ).
->> 2. ignore SERR_INTERNAL only on IRQ_TF_ERR.
->>
->> I'll re-create the patch.
->>
->> Conke
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+diff --git a/arch/i386/kernel/cpu/intel_cacheinfo.c b/arch/i386/kernel/cpu/intel_cacheinfo.c
+index 16499fe..79e9c4f 100644
+--- a/arch/i386/kernel/cpu/intel_cacheinfo.c
++++ b/arch/i386/kernel/cpu/intel_cacheinfo.c
+@@ -792,8 +792,8 @@ static int __init cache_sysfs_init(void)
+ 	register_hotcpu_notifier(&cacheinfo_cpu_notifier);
+ 
+ 	for_each_online_cpu(i) {
+-		cacheinfo_cpu_callback(&cacheinfo_cpu_notifier, CPU_ONLINE,
+-			(void *)(long)i);
++		struct sys_device *sys_dev = get_cpu_sysdev((unsigned int)i);
++		cache_add_dev(sys_dev);
+ 	}
+ 
+ 	return 0;
