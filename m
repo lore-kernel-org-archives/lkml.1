@@ -1,259 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964798AbXHVV1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933957AbXHVVbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964798AbXHVV1n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 17:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932988AbXHVV1a
+	id S933957AbXHVVbP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 17:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762655AbXHVVa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 17:27:30 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:51006 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932878AbXHVV12 (ORCPT
+	Wed, 22 Aug 2007 17:30:59 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:64301 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758557AbXHVVa6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 17:27:28 -0400
-Date: Wed, 22 Aug 2007 17:25:28 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Alberto Pires de Oliveira Neto <apon1@terra.com.br>,
-       Sam Ravnborg <sam@ravnborg.org>, giedrius@su.lt
-Subject: [PATCH 1/2] UML - Fix linker script alignment bugs
-Message-ID: <20070822212528.GA14473@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Wed, 22 Aug 2007 17:30:58 -0400
+Message-ID: <46CCAB0D.80507@linux.vnet.ibm.com>
+Date: Thu, 23 Aug 2007 03:00:53 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.23-rc3-mm1 oom-killer gets invoked
+References: <46CCA14A.6060103@linux.vnet.ibm.com>
+In-Reply-To: <46CCA14A.6060103@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a class of bugs in the UML linker scripts which caused section
-boundary variables to sometimes not line up with their sections.
+Kamalesh Babulal wrote:
+> Hi Andrew,
+> 
+> I see the oom-killer getting invoked many times on the
+> 2.6.23-rc3-mm1 kernel and have attached the complete console
+> log and config file.
+> 
+> ========================================================
+> cc1 invoked oom-killer: gfp_mask=0x280d2, order=0, oomkilladj=0
+> 
+> [<c0147386>] out_of_memory+0x70/0xf6
+> 
+> [<c01484c4>] <4>cc1 invoked oom-killer: gfp_mask=0x201d2, order=0,
+> oomkilladj=0
+> 
+> [<c0147386>] out_of_memory+0x70/0xf6
+> 
+> [<c01484c4>] __alloc_pages+0x21b/0x2a8
+> 
+> [<c0173168>] mntput_no_expire+0x11/0x6e
+> 
+> [<c0149f29>] __do_page_cache_readahead+0xc8/0x13a
+> 
+> [<c014535b>] filemap_nopage+0x164/0x30d
+> 
+> [<c0150c7d>] do_no_page+0x91/0x2fb
+> 
+> [<c0151201>] __handle_mm_fault+0x151/0x2bc
+> 
+> [<c016000f>] do_filp_open+0x25/0x39
+> 
+> [<c0115990>] do_page_fault+0x2a3/0x5f7
+> 
+> [<c01156ed>] do_page_fault+0x0/0x5f7
+> 
+> [<c03336c4>] error_code+0x7c/0x84
+> 
+> [<c0330000>] packet_rcv+0xfd/0x2d7
+> 
+> =======================
+> 
+> DMA per-cpu:
+> 
+> CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1
+> usd:   0
+> 
+> CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1
+> usd:   0
+> 
+> CPU    2: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1
+> usd:   0
+> 
+> CPU    3: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1
+> usd:   0
+> 
+> Normal per-cpu:
+> 
+> CPU    0: Hot: hi:  186, btch:  31 usd:  67   Cold: hi:   62, btch:  15
+> usd:  57
+> 
+> CPU    1: Hot: hi:  186, btch:  31 usd: 170   Cold: hi:   62, btch:  15
+> usd:  57
+> 
+> CPU    2: Hot: hi:  186, btch:  31 usd: 126   Cold: hi:   62, btch:  15
+> usd:  50
+> 
+> CPU    3: Hot: hi:  186, btch:  31 usd:  50   Cold: hi:   62, btch:  15
+> usd:  19
+> 
+> HighMem per-cpu:
+> 
+> CPU    0: Hot: hi:  186, btch:  31 usd:  21   Cold: hi:   62, btch:  15
+> usd:  10
+> 
+> CPU    1: Hot: hi:  186, btch:  31 usd:  23   Cold: hi:   62, btch:  15
+> usd:  19
+> 
+> CPU    2: Hot: hi:  186, btch:  31 usd:   7   Cold: hi:   62, btch:  15
+> usd:  27
+> 
+> CPU    3: Hot: hi:  186, btch:  31 usd:  20   Cold: hi:   62, btch:  15
+> usd:  56
+> 
+> Active:228916 inactive:238880 dirty:0 writeback:0 unstable:0
+> 
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/kernel/dyn.lds.S    |   12 ++--
- arch/um/kernel/uml.lds.S    |   11 ++-
- include/asm-um/common.lds.S |  128 +++++++++++++++++++++++++++-----------------
- 3 files changed, 92 insertions(+), 59 deletions(-)
+Hmm... looks very interesting looks like you have ~1.8 GB (assuming page size
+is equal to 4k). The log shows that OOM occurred several times.
 
-Index: linux-2.6.22/arch/um/kernel/dyn.lds.S
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/dyn.lds.S	2007-08-17 13:36:34.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/dyn.lds.S	2007-08-17 13:37:30.000000000 -0400
-@@ -69,11 +69,13 @@ SECTIONS
-     *(.gnu.warning)
- 
-     . = ALIGN(4096);
--    __syscall_stub_start = .;
--    *(.__syscall_stub*)
--    __syscall_stub_end = .;
--    . = ALIGN(4096);
-   } =0x90909090
-+  . = ALIGN(4096);
-+  .syscall_stub : {
-+	__syscall_stub_start = .;
-+	*(.__syscall_stub*)
-+	__syscall_stub_end = .;
-+  }
-   .fini           : {
-     KEEP (*(.fini))
-   } =0x90909090
-@@ -136,8 +138,8 @@ SECTIONS
-   .got            : { *(.got.plt) *(.got) }
-   _edata = .;
-   PROVIDE (edata = .);
--  __bss_start = .;
-   .bss            : {
-+   __bss_start = .;
-    *(.dynbss)
-    *(.bss .bss.* .gnu.linkonce.b.*)
-    *(COMMON)
-Index: linux-2.6.22/arch/um/kernel/uml.lds.S
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/uml.lds.S	2007-08-17 13:36:34.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/uml.lds.S	2007-08-17 13:37:30.000000000 -0400
-@@ -37,12 +37,13 @@ SECTIONS
-     /* .gnu.warning sections are handled specially by elf32.em.  */
-     *(.gnu.warning)
-     *(.gnu.linkonce.t*)
-+  }
- 
--    . = ALIGN(4096);
--    __syscall_stub_start = .;
--    *(.__syscall_stub*)
--    __syscall_stub_end = .;
--    . = ALIGN(4096);
-+  . = ALIGN(4096);
-+  .syscall_stub : {
-+	__syscall_stub_start = .;
-+	*(.__syscall_stub*)
-+	__syscall_stub_end = .;
-   }
- 
-   #include "asm/common.lds.S"
-Index: linux-2.6.22/include/asm-um/common.lds.S
-===================================================================
---- linux-2.6.22.orig/include/asm-um/common.lds.S	2007-08-17 13:36:34.000000000 -0400
-+++ linux-2.6.22/include/asm-um/common.lds.S	2007-08-17 13:37:30.000000000 -0400
-@@ -16,82 +16,112 @@
- 
-   . = ALIGN(4096);
-   .note : { *(.note.*) }
--  __start___ex_table = .;
--  __ex_table : { *(__ex_table) }
--  __stop___ex_table = .;
-+  __ex_table : {
-+	__start___ex_table = .;
-+	*(__ex_table)
-+	__stop___ex_table = .;
-+  }
- 
-   BUG_TABLE
- 
--  __uml_setup_start = .;
--  .uml.setup.init : { *(.uml.setup.init) }
--  __uml_setup_end = .;
-+  .uml.setup.init : {
-+	__uml_setup_start = .;
-+	*(.uml.setup.init)
-+	__uml_setup_end = .;
-+  }
- 	
--  __uml_help_start = .;
--  .uml.help.init : { *(.uml.help.init) }
--  __uml_help_end = .;
-+  .uml.help.init : {
-+	__uml_help_start = .;
-+	*(.uml.help.init)
-+	__uml_help_end = .;
-+  }
- 	
--  __uml_postsetup_start = .;
--  .uml.postsetup.init : { *(.uml.postsetup.init) }
--  __uml_postsetup_end = .;
-+  .uml.postsetup.init : {
-+	__uml_postsetup_start = .;
-+	*(.uml.postsetup.init)
-+	__uml_postsetup_end = .;
-+  }
- 	
--  __setup_start = .;
--  .init.setup : { *(.init.setup) }
--  __setup_end = .;
-+  .init.setup : {
-+	__setup_start = .;
-+	*(.init.setup)
-+	__setup_end = .;
-+  }
- 
-   . = ALIGN(32);
--  __per_cpu_start = . ; 
--  .data.percpu : { *(.data.percpu) }
--  __per_cpu_end = . ;
-+  .data.percpu : {
-+	__per_cpu_start = . ;
-+	*(.data.percpu)
-+	__per_cpu_end = . ;
-+  }
- 	
--  __initcall_start = .;
-   .initcall.init : {
-+	__initcall_start = .;
- 	INITCALLS
-+	__initcall_end = .;
-+  }
-+
-+  .con_initcall.init : {
-+	__con_initcall_start = .;
-+	*(.con_initcall.init)
-+	__con_initcall_end = .;
-   }
--  __initcall_end = .;
- 
--  __con_initcall_start = .;
--  .con_initcall.init : { *(.con_initcall.init) }
--  __con_initcall_end = .;
--
--  __uml_initcall_start = .;
--  .uml.initcall.init : { *(.uml.initcall.init) }
--  __uml_initcall_end = .;
-+  .uml.initcall.init : {
-+	__uml_initcall_start = .;
-+	*(.uml.initcall.init)
-+	__uml_initcall_end = .;
-+  }
-   __init_end = .;
- 
-   SECURITY_INIT
- 
--  __exitcall_begin = .;
--  .exitcall : { *(.exitcall.exit) }
--  __exitcall_end = .;
--
--  __uml_exitcall_begin = .;
--  .uml.exitcall : { *(.uml.exitcall.exit) }
--  __uml_exitcall_end = .;
-+  .exitcall : {
-+	__exitcall_begin = .;
-+	*(.exitcall.exit)
-+	__exitcall_end = .;
-+  }
-+
-+  .uml.exitcall : {
-+	__uml_exitcall_begin = .;
-+	*(.uml.exitcall.exit)
-+	__uml_exitcall_end = .;
-+  }
- 
-   . = ALIGN(4);
--  __alt_instructions = .;
--  .altinstructions : { *(.altinstructions) }
--  __alt_instructions_end = .;
-+  .altinstructions : {
-+	__alt_instructions = .;
-+	*(.altinstructions)
-+	__alt_instructions_end = .;
-+  }
-   .altinstr_replacement : { *(.altinstr_replacement) }
-   /* .exit.text is discard at runtime, not link time, to deal with references
-      from .altinstructions and .eh_frame */
-   .exit.text : { *(.exit.text) }
-   .exit.data : { *(.exit.data) }
- 
--  __preinit_array_start = .;
--  .preinit_array : { *(.preinit_array) }
--  __preinit_array_end = .;
--  __init_array_start = .;
--  .init_array : { *(.init_array) }
--  __init_array_end = .;
--  __fini_array_start = .;
--  .fini_array : { *(.fini_array) }
--  __fini_array_end = .;
-+  .preinit_array : {
-+	__preinit_array_start = .;
-+	*(.preinit_array)
-+	__preinit_array_end = .;
-+  }
-+  .init_array : {
-+	__init_array_start = .;
-+	*(.init_array)
-+	__init_array_end = .;
-+  }
-+  .fini_array : {
-+	__fini_array_start = .;
-+	*(.fini_array)
-+	__fini_array_end = .;
-+  }
- 
-    . = ALIGN(4096);
--  __initramfs_start = .;
--  .init.ramfs : { *(.init.ramfs) }
--  __initramfs_end = .;
-+  .init.ramfs : {
-+	__initramfs_start = .;
-+	*(.init.ramfs)
-+	__initramfs_end = .;
-+  }
- 
-   /* Sections to be discarded */
-   /DISCARD/ : {
+Kamalesh, how much memory do you have the on the system and what test were
+you running when you hit this problem? Is the problem reproducible? What is
+the configured swap size?
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
