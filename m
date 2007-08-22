@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762472AbXHVPzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763285AbXHVP5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762472AbXHVPzm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 11:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756610AbXHVPze
+	id S1763285AbXHVP5Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 11:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756902AbXHVP5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 11:55:34 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55483 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756506AbXHVPzd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 11:55:33 -0400
-From: akepner@sgi.com
-Date: Wed, 22 Aug 2007 08:54:30 -0700
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Jes Sorensen <jes@sgi.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-Message-ID: <20070822155430.GO5592@sgi.com>
-References: <20070818002746.GU1813@sgi.com> <46C94FD5.6000006@sgi.com> <20070821193522.GD5592@sgi.com> <20070821130515.6e745b17.randy.dunlap@oracle.com> <1187729729.18410.48.camel@localhost.localdomain> <20070822003450.GM5592@sgi.com> <1187745249.18410.67.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187745249.18410.67.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+	Wed, 22 Aug 2007 11:57:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36413 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756610AbXHVP5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 11:57:02 -0400
+Message-ID: <46CC5CBA.2050901@redhat.com>
+Date: Wed, 22 Aug 2007 11:56:42 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Willy Tarreau <w@1wt.eu>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [2.6.20.17 review 35/58] forcedeth bug fix: realtek phy
+References: <20070822083844.%N@1wt.eu> <20070822084026.%N@1wt.eu>
+In-Reply-To: <20070822084026.%N@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 21, 2007 at 08:14:09PM -0500, James Bottomley wrote:
-> On Tue, 2007-08-21 at 17:34 -0700, akepner@sgi.com wrote:
-> .....
-> > On Altix, DMA from a device isn't guaranteed to arrive in host memory 
-> > in the order it was sent from the device. This reordering can happen 
-> > in the NUMA interconnect (it's specifically not a PCI reordering.)
+On 08/22/2007 05:39 AM, Willy Tarreau wrote:
+> This patch contains errata fixes for the realtek phy. It only renamed the
+> defines to be phy specific.
 > 
-> This is mmiowb and read_relaxed() again, isn't it?
-> .....
+> Signed-off-by: Ayaz Abdulla <aabdulla@nvidia.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> Signed-off-by: Willy Tarreau <w@1wt.eu>
+> ---
+>  drivers/net/forcedeth.c |   54 +++++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 54 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+> index c383dc3..dbfdbed 100644
+> --- a/drivers/net/forcedeth.c
+> +++ b/drivers/net/forcedeth.c
+> @@ -554,6 +554,7 @@ union ring_type {
+>  #define PHY_OUI_MARVELL	0x5043
+>  #define PHY_OUI_CICADA	0x03f1
+>  #define PHY_OUI_VITESSE	0x01c1
+> +#define PHY_OUI_REALTEK	0x01c1
+>  #define PHYID1_OUI_MASK	0x03ff
+>  #define PHYID1_OUI_SHFT	6
+>  #define PHYID2_OUI_MASK	0xfc00
 
-No, this is different. 
+Realtek is 0x0732
 
-This problem here has do with ordering writes from the device 
-to host memory. Specifically this problem can be manifested with 
-Infiniband - when a Completion Queue Entry is written by the IB 
-device, it indicates that data is available in host memory. But 
-the write to the Completion Queue can race with DMA of data. 
+This is still wrong upstream -- what happened to the patch to fix it?
 
-(Completion Queues can be allocated by the kernel or in userspace. 
-The race described above can only happen when they are allocated 
-in userspace - kernel allocations of CQs use dma_alloc_coherent() 
-and so get the "barrier" attribute that's needed to prevent the 
-race. The proposed new interface would allow CQs, or anything else, 
-allocated with plain old malloc(), to set the barrier attribute.)
-
--- 
-Arthur
 
