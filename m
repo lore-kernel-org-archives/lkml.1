@@ -1,41 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764015AbXHVPZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764439AbXHVP0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764015AbXHVPZx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 11:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761287AbXHVPZq
+	id S1764439AbXHVP0U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 11:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761287AbXHVP0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 11:25:46 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59729 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759856AbXHVPZp (ORCPT
+	Wed, 22 Aug 2007 11:26:06 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:29849 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764125AbXHVP0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 11:25:45 -0400
-Date: Wed, 22 Aug 2007 16:33:54 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Xu Yang" <risingsunxy@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: how is the boot process of the multicore system
-Message-ID: <20070822163354.4b57f501@the-village.bc.nu>
-In-Reply-To: <ab40e9c0708220753l1861cde2wccb58ba931f04b2c@mail.gmail.com>
-References: <ab40e9c0708220753l1861cde2wccb58ba931f04b2c@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 22 Aug 2007 11:26:04 -0400
+Date: Wed, 22 Aug 2007 08:24:21 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: torvalds <torvalds@linux-foundation.org>, akpm <akpm@linux-foundation.org>
+Subject: [PATCH] MAINTTAINERS: update DCO info
+Message-Id: <20070822082421.5c20b3da.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007 16:53:41 +0200
-"Xu Yang" <risingsunxy@googlemail.com> wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> Hi everyone,
-> 
-> I am just wondering how is the boot process of the multicore system exactly.
-> let's say there are 4 cores , what is the booting sequence? and how
-> does linux realise the booting process?
+Update URL for DCO (old URL is invalid).
+Also, point to SubmittingPatches for the current DCO.
 
-For PC type systems read the Intel MP 1.4 specification, available on the
-intel developer web site
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ MAINTAINERS |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+--- linux-2.6.23-rc3-git2.orig/MAINTAINERS
++++ linux-2.6.23-rc3-git2/MAINTAINERS
+@@ -45,8 +45,11 @@ trivial patch so apply some common sense
+ 
+ 	PLEASE remember that submissions must be made under the terms
+ 	of the OSDL certificate of contribution
+-	(http://www.osdl.org/newsroom/press_releases/2004/2004_05_24_dco.html)
++	(http://old.linux-foundation.org/newsroom/press_releases/2004/2004_05_24_dco.html)
+ 	and should include a Signed-off-by: line.
++	The current certificate is also documented in
++	Documentation/SubmittingPatches as the Developer's Certificate
++	of Origin (DCO).
+ 
+ 6.	Make sure you have the right to send any changes you make. If you
+ 	do changes at work you may find your employer owns the patch
