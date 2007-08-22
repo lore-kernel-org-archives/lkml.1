@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933839AbXHVVSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933274AbXHVVTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933839AbXHVVSp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 17:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763382AbXHVVSe
+	id S933274AbXHVVTG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 17:19:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933902AbXHVVSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 17:18:34 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35403 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763201AbXHVVSd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 17:18:33 -0400
-Date: Wed, 22 Aug 2007 22:25:28 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <ak@suse.de>
-Cc: Zachary Amsden <zach@vmware.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
-Message-ID: <20070822222528.7c58f1e9@the-village.bc.nu>
-In-Reply-To: <20070822220451.GJ8058@bingen.suse.de>
-References: <46CBC842.4070100@vmware.com>
-	<20070822102217.GE2642@bingen.suse.de>
-	<46CC68D9.5060200@vmware.com>
-	<20070822175918.GB8058@bingen.suse.de>
-	<46CC6D63.2010204@vmware.com>
-	<20070822194632.GD8058@bingen.suse.de>
-	<46CC9FF2.3040406@vmware.com>
-	<20070822220451.GJ8058@bingen.suse.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 22 Aug 2007 17:18:45 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3700 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933839AbXHVVSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 17:18:43 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: 2.6.23-rc3-mm1: inlining failures in sound/pci/hda/hda_codec.c
+Date: Wed, 22 Aug 2007 23:18:37 +0200
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <200708222223.04610.m.kozlowski@tuxland.pl> <s5h6437nuqy.wl%tiwai@suse.de>
+In-Reply-To: <s5h6437nuqy.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708222318.38607.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I still think it's preferable to change some drivers than everybody.
+> > 	This is from x86_32 with gcc 3.4.6:
+> > 
+> >   CC [M]  sound/pci/hda/hda_codec.o
+> > sound/pci/hda/hda_codec.c: In function `snd_hda_codec_free':
+> > sound/pci/hda/hda_codec.c:517: sorry, unimplemented: inlining failed in call to 'free_hda_cache': function body not available
+> > sound/pci/hda/hda_codec.c:534: sorry, unimplemented: called from here
+> > sound/pci/hda/hda_codec.c:517: sorry, unimplemented: inlining failed in call to 'free_hda_cache': function body not available
+> > sound/pci/hda/hda_codec.c:535: sorry, unimplemented: called from here
+> > make[3]: *** [sound/pci/hda/hda_codec.o] Error 1
+> > make[2]: *** [sound/pci/hda] Error 2
+> > make[1]: *** [sound/pci] Error 2
+> > make: *** [sound] Error 2
 > 
-> AFAIK BusLogic as real hardware is pretty much dead anyways,
-> so you're probably the only primary user of it anyways.
-> Go wild on it!
+> Since it doesn't happen with gcc-4.x, this looks like a gcc-3.x
+> specific problem.   Does the patch below fix?
 
-I don't believe anyone is materially maintaining the buslogic driver and
-in time its going to break completely.
+Yes - it does.
 
-> Well that might be. I just think it would be a mistake
-> to design paravirt_ops based on someone's short term release engineering
-> considerations.
+Thanks,
 
-Agreed, especially as an interface where each in or out traps into the
-hypervisor is broken even for the model of virtualising hardware. 
-
-> I thought we had that already?  But can't find it now :/
-
-pci_iomap() and friends. 
-
-Alan
+	Mariusz
+ 
+> diff -r db9001b20d29 pci/hda/hda_codec.c
+> --- a/pci/hda/hda_codec.c	Wed Aug 22 14:19:45 2007 +0200
+> +++ b/pci/hda/hda_codec.c	Wed Aug 22 23:06:00 2007 +0200
+> @@ -514,7 +514,7 @@ static int read_widget_caps(struct hda_c
+>  
+>  static void init_hda_cache(struct hda_cache_rec *cache,
+>  			   unsigned int record_size);
+> -static inline void free_hda_cache(struct hda_cache_rec *cache);
+> +static void free_hda_cache(struct hda_cache_rec *cache);
+>  
+>  /*
+>   * codec destructor
+> @@ -707,7 +707,7 @@ static void __devinit init_hda_cache(str
+>  	cache->record_size = record_size;
+>  }
+>  
+> -static inline void free_hda_cache(struct hda_cache_rec *cache)
+> +static void free_hda_cache(struct hda_cache_rec *cache)
+>  {
+>  	kfree(cache->buffer);
+>  }
+> -
