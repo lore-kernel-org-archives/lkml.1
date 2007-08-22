@@ -1,111 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932991AbXHVUXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932966AbXHVUYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932991AbXHVUXr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 16:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763839AbXHVUXh
+	id S932966AbXHVUYl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 16:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763204AbXHVUYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 16:23:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45394 "EHLO mx1.redhat.com"
+	Wed, 22 Aug 2007 16:24:32 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:36475 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758298AbXHVUXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 16:23:35 -0400
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [patch] fix the max path calculation in radix-tree.c
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-References: <x49d4xgy8h1.fsf@segfault.boston.devel.redhat.com>
-	<20070822013546.GB6799@wotan.suse.de>
-From: Jeff Moyer <jmoyer@redhat.com>
-Date: Wed, 22 Aug 2007 16:23:28 -0400
-In-Reply-To: <20070822013546.GB6799@wotan.suse.de> (Nick Piggin's message of "Wed\, 22 Aug 2007 03\:35\:46 +0200")
-Message-ID: <x49zm0jb9of.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1762043AbXHVUYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 16:24:30 -0400
+Subject: Re: [PATCH RFC] Priority boosting for preemptible RCU
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: paulmck@linux.vnet.ibm.com, Andy Whitcroft <apw@shadowen.org>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       mingo@elte.hu, dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       tglx@linutronix.de
+In-Reply-To: <20070822124340.16a891f2.akpm@linux-foundation.org>
+References: <20070822190254.GA1135@linux.vnet.ibm.com>
+	 <20070822124340.16a891f2.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 22 Aug 2007 13:23:55 -0700
+Message-Id: <1187814235.3223.43.camel@josh-work.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <npiggin@suse.de> writes:
+On Wed, 2007-08-22 at 12:43 -0700, Andrew Morton wrote:
+> On Wed, 22 Aug 2007 12:02:54 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > This patch is a forward-port of RCU priority boosting (described in
+> > http://lwn.net/Articles/220677/).  It applies to 2.6.22 on top of
+> > the patches sent in the http://lkml.org/lkml/2007/8/7/276 series and
+> > the hotplug patch (http://lkml.org/lkml/2007/8/17/262).  Passes several
+> > hours of rcutorture on x86_64 and POWER, so OK for experimentation but
+> > not ready for inclusion.
+> 
+> It'd be nice to have a brief summary of why we might want this code in Linux.
 
-> On Tue, Aug 21, 2007 at 03:48:42PM -0400, Jeff Moyer wrote:
->> Hi,
->> 
->> A while back, Nick Piggin introduced a patch to reduce the node memory
->> usage for small files (commit cfd9b7df4abd3257c9e381b0e445817b26a51c0c):
->> 
->> -#define RADIX_TREE_MAP_SHIFT	6
->> +#define RADIX_TREE_MAP_SHIFT	(CONFIG_BASE_SMALL ? 4 : 6)
->> 
->> Unfortunately, he didn't take into account the fact that the
->> calculation of the maximum path was based on an assumption of having
->> to round up:
->> 
->> #define RADIX_TREE_MAX_PATH (RADIX_TREE_INDEX_BITS/RADIX_TREE_MAP_SHIFT + 2)
->> 
->> So, if CONFIG_BASE_SMALL is set, you will end up with a
->> RADIX_TREE_MAX_PATH that is one greater than necessary.  The practical
->> upshot of this is just a bit of wasted memory (one long in the
->> height_to_maxindex array, an extra pre-allocated radix tree node per
->> cpu, and extra stack usage in a couple of functions), but it seems
->> worth getting right.
->> 
->> It's also worth noting that I never build with CONFIG_BASE_SMALL.
->> What I did to test this was duplicate the code in a small user-space
->> program and check the results of the calculations for max path and the
->> contents of the height_to_maxindex array.
->> 
->> Cheers.
->> 
->> Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
->> 
->> diff --git a/lib/radix-tree.c b/lib/radix-tree.c
->> index 514efb2..67c908f 100644
->> --- a/lib/radix-tree.c
->> +++ b/lib/radix-tree.c
->> @@ -60,7 +60,8 @@ struct radix_tree_path {
->>  };
->>  
->>  #define RADIX_TREE_INDEX_BITS  (8 /* CHAR_BIT */ * sizeof(unsigned long))
->> -#define RADIX_TREE_MAX_PATH (RADIX_TREE_INDEX_BITS/RADIX_TREE_MAP_SHIFT + 2)
->> +#define RADIX_TREE_MAX_PATH (DIV_ROUND_UP(RADIX_TREE_INDEX_BITS, \
->> +					  RADIX_TREE_MAP_SHIFT) + 1)
->>  
->>  static unsigned long height_to_maxindex[RADIX_TREE_MAX_PATH] __read_mostly;
->>  
->
-> OK, after you DIV_ROUND_UP, what is the extra 1 for? For paths, it is because
-> they are NULL terminated paths I guess (without remembering too hard), and for
+RCU reclamation callbacks have to wait for all current RCU readers to
+finish.  With preemptible RCU read-side critical sections, other tasks
+may block an RCU reader for an arbitrarily long time, and thus
+indirectly block the execution of memory reclamation callbacks
+(including anything using synchronize_rcu), leading to an OOM situation.
+This patch adds priority boosting of RCU readers to avoid this scenario.
 
-Yep.
+> > +#ifdef CONFIG_PREEMPT_RCU_BOOST
+> 
+> Do we really need this?  Why not just enable the feature all the time?
 
-> height_to_maxindex array it is needed for 0-height trees I think. So it would
+It involves both space and computation overhead, which you might want to
+avoid if you don't need it.  That said, it might make sense to turn it
+on by default.
 
-Exactly.
+> > +config PREEMPT_RCU_BOOST_STATS_INTERVAL
+> 
+> Four new config options?  Sob.  Zero would be preferable.
 
-> be kinda cleaner to have the _real_ MAX_PATH, and two other constants for
-> this array and the paths arrays (that just happen to be identical due to
-> implementation). Don't you think?
+I only saw three new options.
 
-Yes.  I despise seeing these mystical '+ n' constructs in #defines.
-But, I don't know what I'd name these constants.  I think it might be
-better to just add a comment explaining the use of 'RADIX_TREE_MAX_PATH + 1'.
+At a minimum, having the debug toggle as a config option would make
+debugging this significantly simpler.
 
-Looking at this further, it may be that the nodes[] array in the
-struct radix_tree_preload only needs RADIX_TREE_MAX_PATH elements
-(since you don't have to allocate the 0'th level).
+> > +	struct list_head rbs_toboost;
+> > +	struct list_head rbs_boosted;
+> > +	unsigned long rbs_blocked;
+> > +	unsigned long rbs_boost_attempt;
+> > +	unsigned long rbs_boost;
+> > +	unsigned long rbs_unlock;
+> > +	unsigned long rbs_unboosted;
+> > +#ifdef CONFIG_PREEMPT_RCU_BOOST_STATS
+> > +	unsigned long rbs_stats[N_RCU_BOOST_DAT_EVENTS][N_RCU_BOOST_STATE];
+> > +#endif /* #ifdef CONFIG_PREEMPT_RCU_BOOST_STATS */
+> > +};
+> > +#define RCU_BOOST_ELEMENTS 4
+> > +
+> > +int rcu_boost_idx = -1; /* invalid value in case someone uses RCU early. */
+> > +DEFINE_PER_CPU(struct rcu_boost_dat, rcu_boost_dat[RCU_BOOST_ELEMENTS]);
+> 
+> Do these need global scope?
 
-That change will require some testing and further verification.  I'll
-work on it.
+No, neither one does.  They should both become static.
 
-> But that's not to nack this patch. On the contrary I think your logic is
-> correct, and it should be fixed. I didn't check the maths myself but I trust
-> you :)
+> > +void init_rcu_boost_late(void)
+> > +{
+> > +
+> > +	/* Spawn RCU-boost task. */
+> > +
+> > +	printk(KERN_INFO "Starting RCU priority booster\n");
+> > +	rcu_boost_task = kthread_run(rcu_booster, NULL, "RCU Prio Booster");
+> > +	if (IS_ERR(rcu_boost_task)) {
+> > +		printk(KERN_ALERT
+> > +		       "Unable to create RCU Priority Booster, errno %ld\n",
+> > +		       -PTR_ERR(rcu_boost_task));
+> > +
+> > +		/*
+> > +		 * Continue running, but tasks permanently blocked
+> > +		 * in RCU read-side critical sections will be able
+> > +		 * to stall grace-period processing, potentially
+> > +		 * OOMing the machine.
+> > +		 */
+> 
+> I don't think we want to try to struggle along like that.  This thread is a
+> piece of core infrastructure: if we couldn't start it then just panic
+> rather than trying to run the kernel in unknown and untested regions of
+> operation.
 
-Thanks.  ;)  I'll post more complete testing information with the next
-patch, to take out the guess-work.
+In this situation, the kernel would behave precisely as it would with
+CONFIG_RCU_BOOST=n.  However, I agree that with CONFIG_RCU_BOOST=y you
+would expect to always have priority boosting available, so I think
+panic() makes sense here.
 
-Thanks for the review.
+- Josh Triplett
 
--Jeff
+
