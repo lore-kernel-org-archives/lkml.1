@@ -1,36 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbXHVCRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbXHVC3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756271AbXHVCRM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 22:17:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753919AbXHVCQ4
+	id S1754825AbXHVC3d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 22:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbXHVC3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 22:16:56 -0400
-Received: from mga01.intel.com ([192.55.52.88]:42894 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753953AbXHVCQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 22:16:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,291,1183359600"; 
-   d="scan'208";a="286157473"
-Subject: bug in migrate page
-From: Shaohua Li <shaohua.li@intel.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 10:08:09 +0800
-Message-Id: <1187748489.8474.21.camel@sli10-conroe.sh.intel.com>
+	Tue, 21 Aug 2007 22:29:14 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35783 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751756AbXHVC3K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 22:29:10 -0400
+Date: Wed, 22 Aug 2007 11:31:04 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: "LKML" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-ia64@vger.kernel.org>
+Subject: Re: [PATCH][2.6.23-rc2-mm2] small fix for ia64 icache sync patch
+Message-Id: <20070822113104.3450d203.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <617E1C2C70743745A92448908E030B2A023B2254@scsmsx411.amr.corp.intel.com>
+References: <20070821201507.36641d76.kamezawa.hiroyu@jp.fujitsu.com>
+	<617E1C2C70743745A92448908E030B2A023B2254@scsmsx411.amr.corp.intel.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit dc386d4d1e98bb39fb967ee156cd456c802fc692 adds rcu_read_lock, but
-some routines in the lock range might sleep (like lock_buffer,
-aops->writepage), I saw a 'sleep in atomic' warning. It appears the
-patch has several versions before. Doing rcu_read_lock in PageAnon
-sounds break the case of PageAnon(page) && PageSwapCache(page),
-as .writepage might be called. The dummy anon patch maybe is ok.
+This is updated version. 
 
-Thanks,
-Shaohua
+Andrew, could you repleace ?
+
+-Kame
+==
+Fixing 2 small issues pointed by Tony Luck.
+
+Changelog v1 -> v2
+* add pte_present_exec_user()
+* remove pte_user
+* fixed comments.
+
+v1.
+* removing redundant BUG_ON in __ia64_sync_icache_dcache().
+* check pte_present() first.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+---
+ arch/ia64/mm/init.c        |    2 --
+ include/asm-ia64/pgtable.h |   17 +++++++++++------
+ 2 files changed, 11 insertions(+), 8 deletions(-)
+
+Index: linux-2.6.23-rc2-mm2/include/asm-ia64/pgtable.h
+===================================================================
+--- linux-2.6.23-rc2-mm2.orig/include/asm-ia64/pgtable.h
++++ linux-2.6.23-rc2-mm2/include/asm-ia64/pgtable.h
+@@ -297,7 +297,6 @@ ia64_phys_addr_valid (unsigned long addr
+ /*
+  * The following have defined behavior only work if pte_present() is true.
+  */
+-#define pte_user(pte)	((pte_val(pte) & _PAGE_PL_MASK) == _PAGE_PL_3)
+ #define pte_write(pte)	((unsigned) (((pte_val(pte) & _PAGE_AR_MASK) >> _PAGE_AR_SHIFT) - 2) <= 4)
+ #define pte_exec(pte)		((pte_val(pte) & _PAGE_AR_RX) != 0)
+ #define pte_dirty(pte)		((pte_val(pte) & _PAGE_D) != 0)
+@@ -324,14 +323,20 @@ ia64_phys_addr_valid (unsigned long addr
+  *  set_pte() is also called by the kernel, but we can expect that the kernel
+  *  flushes icache explicitly if necessary.
+  */
++#define pte_present_exec_user(pte)\
++	((pte_val(pte) & (_PAGE_P | _PAGE_PL_MASK | _PAGE_AR_RX)) == \
++		(_PAGE_P | _PAGE_PL_3 | _PAGE_AR_RX))
++
+ extern void __ia64_sync_icache_dcache(pte_t pteval);
+ static inline void set_pte(pte_t *ptep, pte_t pteval)
+ {
+-	if (pte_exec(pteval) &&    // flush only new executable page.
+-	    pte_present(pteval) && // swap out ?
+-	    pte_user(pteval) &&    // ignore kernel page
+-	    (!pte_present(*ptep) ||// do_no_page or swap in, migration,
+-		pte_pfn(*ptep) != pte_pfn(pteval))) // do_wp_page(), page copy
++	/* page is present && page is user  && page is executable
++	 * && (page swapin or new page or page migraton
++	 *	|| copy_on_write with page copying.)
++	 */
++	if (pte_present_exec_user(pteval) &&
++	    (!pte_present(*ptep) ||
++		pte_pfn(*ptep) != pte_pfn(pteval)))
+ 		/* load_module() calles flush_icache_range() explicitly*/
+ 		__ia64_sync_icache_dcache(pteval);
+ 	*ptep = pteval;
+Index: linux-2.6.23-rc2-mm2/arch/ia64/mm/init.c
+===================================================================
+--- linux-2.6.23-rc2-mm2.orig/arch/ia64/mm/init.c
++++ linux-2.6.23-rc2-mm2/arch/ia64/mm/init.c
+@@ -60,8 +60,6 @@ __ia64_sync_icache_dcache (pte_t pte)
+ 	struct page *page;
+ 	unsigned long order;
+ 
+-	BUG_ON(!pte_exec(pte));
+-
+ 	page = pte_page(pte);
+ 	addr = (unsigned long) page_address(page);
+ 
+
