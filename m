@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbXHVD16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbXHVDfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756046AbXHVD16 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 23:27:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbXHVD1s
+	id S1756113AbXHVDfj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 23:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXHVDfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 23:27:48 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:53967 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754421AbXHVD1s (ORCPT
+	Tue, 21 Aug 2007 23:35:30 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42033 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754454AbXHVDf3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 23:27:48 -0400
-X-Sasl-enc: 76AZo10+ZFugP05mH75iRq8b6m7egHfVTnpR2tR7qzKB 1187753267
-Subject: Re: [autofs] [PATCH] autofs4: reinstate negatitive timeout of
-	mount fails
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: autofs mailing list <autofs@linux.kernel.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1187751415.3899.9.camel@raven.themaw.net>
-References: <1187688369.3318.12.camel@raven.themaw.net>
-	 <20070821131551.4026fb96.akpm@linux-foundation.org>
-	 <1187751415.3899.9.camel@raven.themaw.net>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 11:27:42 +0800
-Message-Id: <1187753262.3899.13.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Aug 2007 23:35:29 -0400
+Date: Tue, 21 Aug 2007 20:34:31 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Stuart_Hayes@Dell.com" <Stuart_Hayes@dell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Exner <dex@dragonslave.de>
+Subject: Re: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
+In-Reply-To: <alpine.LFD.0.999.0708210016420.30176@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0708212026200.30176@woody.linux-foundation.org>
+References: <46C098FD.1030601@googlemail.com>
+ <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0708202255130.30176@woody.linux-foundation.org>
+ <200708202334.38261.david-b@pacbell.net> <alpine.LFD.0.999.0708202348460.30176@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0708210016420.30176@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 10:56 +0800, Ian Kent wrote:
-> On Tue, 2007-08-21 at 13:15 -0700, Andrew Morton wrote:
-> > 
-> > It seems to use a lot of list_for_each[_safe] which could
-> > have been coded as list_for_each_entry[_safe], btw.
+
+
+On Tue, 21 Aug 2007, Linus Torvalds wrote:
 > 
-> Mmm .. good point. I've not noticed the list_for_each_entry* macros.
+> Side note: after reverting 196705c9bb I can't get the mouse to skip any 
+> more on that mac mini. But since the bad behaviour wasn't 100% reliable to 
+> begin with, that's not really a guarantee of anything. Two out of three 
+> kids are off on camp this week, so that machine probably won't be getting 
+> a lot of testing ;/
 
-A good idea but that change would cover more than just this patch so I'd
-rather leave the patch as is and submit a cleanup patch to cover this
-later.
+Well, my one remaining child said today that "I got so much time on 
+webkinz today - yesterday the mouse locked up after five minutes".
 
-Ian
+Apparently it hadn't had the mouse lock up at all today.
 
+So I really do believe that that 196705c9bb commit caused problems on 
+intel-only USB machines too ("ondemand" cpufreq governor, switching 
+between 1.0-1.66 Ghz using acpi-cpufreq: totally bog-standard in all 
+respects, in other words).
 
+		Linus
