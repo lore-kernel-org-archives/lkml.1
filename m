@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750954AbXHVAKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbXHVALx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750954AbXHVAKZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 20:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbXHVAJv
+	id S1755254AbXHVALx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 20:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750843AbXHVALp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 20:09:51 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60348 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbXHVAJs (ORCPT
+	Tue, 21 Aug 2007 20:11:45 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35204 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750779AbXHVALp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 20:09:48 -0400
-Date: Wed, 22 Aug 2007 09:11:29 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: "LKML" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-ia64@vger.kernel.org>
-Subject: Re: [PATCH][2.6.23-rc2-mm2] small fix for ia64 icache sync patch
-Message-Id: <20070822091129.8c300281.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <617E1C2C70743745A92448908E030B2A023B2254@scsmsx411.amr.corp.intel.com>
-References: <20070821201507.36641d76.kamezawa.hiroyu@jp.fujitsu.com>
-	<617E1C2C70743745A92448908E030B2A023B2254@scsmsx411.amr.corp.intel.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Aug 2007 20:11:45 -0400
+Date: Tue, 21 Aug 2007 17:11:44 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+In-Reply-To: <20070822000323.GG29691@Krystal>
+Message-ID: <Pine.LNX.4.64.0708211704260.7852@schroedinger.engr.sgi.com>
+References: <20070820215413.GA28452@Krystal>
+ <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
+ <20070821173849.GA8360@Krystal> <Pine.LNX.4.64.0708211404290.3082@schroedinger.engr.sgi.com>
+ <20070821231216.GA29691@Krystal> <Pine.LNX.4.64.0708211614370.6062@schroedinger.engr.sgi.com>
+ <20070821233938.GD29691@Krystal> <Pine.LNX.4.64.0708211640430.6225@schroedinger.engr.sgi.com>
+ <20070821234702.GE29691@Krystal> <Pine.LNX.4.64.0708211649260.6886@schroedinger.engr.sgi.com>
+ <20070822000323.GG29691@Krystal>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Aug 2007 14:12:02 -0700
-"Luck, Tony" <tony.luck@intel.com> wrote:
+On Tue, 21 Aug 2007, Mathieu Desnoyers wrote:
 
-> > +	if (pte_present(pteval) &&// swap out ?
-> > +	    pte_exec(pteval) &&    // flush only new executable page.
-> > 	    pte_user(pteval) &&    // ignore kernel page
-> > 	    (!pte_present(*ptep) ||// do_no_page or swap in, migration,
-> > 		pte_pfn(*ptep) != pte_pfn(pteval))) // do_wp_page(), page copy
-> 
-> David Mosberger was concerned about the increase in code
-> size from this inline function.  We can reduce the bloat
-> a bit by defining a macro that tests for "present &&
-> executable && user-mode" in one go:
-> 
-> #define pte_pux(pte)            ((pte_val(pte) & (_PAGE_P|_PAGE_PL_MASK|_PAGE_AR_RX)) == \
->                                         (_PAGE_P|_PAGE_PL_3|_PAGE_AR_RX))
-> 
-Hmm, ok.
+> - Rounding error.. you seem to round at 0.1ms, but I keep the values in
+>   cycles. The times that you get (1.1ms) seems strangely higher than
+>   mine, which are under 1000 cycles on a 3GHz system (less than 333ns).
+>   I guess there is both a ms - ns error there and/or not enough
+>   precision in your numbers.
 
-> Perhaps there is a better name than "pte_pux"?  I don't know whether
-> the code that this generates is faster, but it is smaller (bloat
-> is only 3k instead of 4k).
-> 
-> One last cleanup needed ... don't use C-99/C++ style comments.
-> 
-ok.
+Nope the rounding for output is depending on the amount. Rounds to one 
+digit after whatever unit we figured out is best to display.
 
--Kame
+And multiplications (cyc2ns) do not result in rounding errors.
 
