@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932589AbXHVQpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbXHVQrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932589AbXHVQpm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 12:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762514AbXHVQpe
+	id S932785AbXHVQrO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 12:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762291AbXHVQrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 12:45:34 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:47576 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760431AbXHVQpd (ORCPT
+	Wed, 22 Aug 2007 12:47:04 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:19591 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763493AbXHVQrB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 12:45:33 -0400
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Jes Sorensen <jes@sgi.com>, akepner@sgi.com,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-In-Reply-To: <200708220903.23702.jbarnes@virtuousgeek.org>
-References: <20070818002746.GU1813@sgi.com> <46CBE838.4000302@sgi.com>
-	 <1187791358.3410.1.camel@localhost.localdomain>
-	 <200708220903.23702.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 11:44:55 -0500
-Message-Id: <1187801095.3410.49.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Wed, 22 Aug 2007 12:47:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XQP5/oKGCVSVv37C0ZOaKEPF1f2eoiGFPCWbUnG/zIWihIC1wO0B8FxrfzkJNhSNWorh9ONKXbsaUfHSIcW7+uK/1c+TNhxylzRPn8fHjmRmX0AkEv+RrZav3Uc28cXlgHS71mifFRbGTwODscrUyuAr+47FM9ZxKCmSWjroR8w=
+Message-ID: <6bffcb0e0708220946hc2943f5jdb33215cdfab08d1@mail.gmail.com>
+Date: Wed, 22 Aug 2007 18:46:58 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "James Morris" <jmorris@namei.org>
+Subject: Re: [2.6.20.17 review 00/58] 2.6.20.17 -stable review
+Cc: "Stephen Smalley" <sds@tycho.nsa.gov>, "Willy Tarreau" <w@1wt.eu>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+In-Reply-To: <Xine.LNX.4.64.0708220929370.4968@us.intercode.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070822083844.%N@1wt.eu>
+	 <6bffcb0e0708220410u4ab3978eq18786ac186e88c7d@mail.gmail.com>
+	 <Xine.LNX.4.64.0708220621550.28878@us.intercode.com.au>
+	 <1187789765.1451.310.camel@moss-spartans.epoch.ncsc.mil>
+	 <1187790174.1451.315.camel@moss-spartans.epoch.ncsc.mil>
+	 <Xine.LNX.4.64.0708220707390.9414@us.intercode.com.au>
+	 <6bffcb0e0708220729j7b9afcf3v4edef68cc974c08d@mail.gmail.com>
+	 <Xine.LNX.4.64.0708220929370.4968@us.intercode.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 09:03 -0700, Jesse Barnes wrote:
-> On Wednesday, August 22, 2007 7:02:38 am James Bottomley wrote:
-> > On Wed, 2007-08-22 at 09:39 +0200, Jes Sorensen wrote:
-> > > James Bottomley wrote:
-> > > > On Tue, 2007-08-21 at 17:34 -0700, akepner@sgi.com wrote:
-> > > >> The term "posted DMA" is used to describe this behavior in the Altix
-> > > >> Device Driver Writer's Guide, but it may be confusing things here.
-> > > >> Maybe a better term will suggest itself if I can clarify....
-> > > >
-> > > > OK, but posted DMA has a pretty specific meaning in terms of PCI, hence
-> > > > the confusion.
+On 22/08/07, James Morris <jmorris@namei.org> wrote:
+> On Wed, 22 Aug 2007, Michal Piotrowski wrote:
+>
+> > On 22/08/07, James Morris <jmorris@namei.org> wrote:
+> > > On Wed, 22 Aug 2007, Stephen Smalley wrote:
 > > >
-> > > Maybe it would be more better to refer to this as 'out of order DMA'?
-> >
-> > Or Relaxed ordering DMA ... that's why the readX_relaxed()?
-> >
-> > > >> On Altix, DMA from a device isn't guaranteed to arrive in host memory
-> > > >> in the order it was sent from the device. This reordering can happen
-> > > >> in the NUMA interconnect (it's specifically not a PCI reordering.)
-> > > >
-> > > > This is mmiowb and read_relaxed() again, isn't it?
+> > > > Oops, never mind - tail still follows secmark, so that shouldn't matter.
+> > > > So I'm not sure why we are getting a bad value for secmark here - should
+> > > > be initialized to zero and never modified unless there is an iptables
+> > > > secmark rule.
 > > >
-> > > I believe it's the same problem, except this time it's when exposing
-> > > structures to userland.
+> > > Michal, do you see this in current git?
 > >
-> > Hmm, so how does another kernel API exposing mmiowb in a different way
-> > help with this?  Surely, if the driver is exporting something to user
-> > space, it's simply up to the driver to call mmiowb when the user says
-> > it's done?
-> 
-> mmiowb() is for PIO->device.  This interface is for DMA->memory (see akepner's 
-> other mail).
-> 
-> The problem is a DMA write (say to a completion queue) from a device may imply 
-> something about another DMA write from the same device (say the actual data).  
-> If the completion queue write arrives first (which can happen on sn2), the 
-> driver must ensure that the rest of the outstanding DMA is complete prior to 
-> looking at the completion queue status.  It can either use a regular PIO read 
-> to do this (i.e. a non-relaxed one) or set a flag on the completion queue DMA 
-> address that makes it act as a barrier wrt other DMA, which is what akepner's 
-> patch does (which should be much more efficient that using a PIO read to 
-> guarantee DMA writes have completed).
+> > No, I do not see this problem in 2.6.23. I had similar problem last
+> > month, but it is fixed now.
+> >
+> > http://lkml.org/lkml/2007/7/12/362
+>
+> The previous problem is theoretically unrelated.  It arose via a separate
+> mechanism which can't be used at the same as the one you're seeing now in
+> the logs.
+>
+> So this either looks like a problem which has gone unnoticed and was
+> inadvertently fixed at some point, or is unique to the 2.6.20 stable
+> series.
 
-This is a violation of the PCI spec, isn't it, like Matthew pointed out?
-The only time a device->host DMA transaction shouldn't follow strict
-ordering is when the device sets the relaxed hint in its PCI registers.
+Yup, it is very interesting why no one noticed it. Binary search in progress:
+good - 2.6.20.4
+bad - 2.6.20.8
 
-James
+Regards,
+Michal
 
-
-
-
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
