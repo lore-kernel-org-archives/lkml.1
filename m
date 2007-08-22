@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932624AbXHVVqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964833AbXHVVqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932624AbXHVVqX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 17:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932866AbXHVVpi
+	id S964833AbXHVVqu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 17:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933970AbXHVVq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 17:45:38 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:44060 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932898AbXHVVpg (ORCPT
+	Wed, 22 Aug 2007 17:46:26 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:46830 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933678AbXHVVqY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 17:45:36 -0400
-Date: Wed, 22 Aug 2007 23:44:35 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc3-mm1: inlining failures in sound/pci/hda/hda_codec.c
-Message-ID: <20070822214435.GK30705@stusta.de>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <200708222223.04610.m.kozlowski@tuxland.pl> <s5h6437nuqy.wl%tiwai@suse.de>
+	Wed, 22 Aug 2007 17:46:24 -0400
+Message-ID: <46CCAD7A.80505@vmware.com>
+Date: Wed, 22 Aug 2007 14:41:14 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <s5h6437nuqy.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
+References: <46CBC842.4070100@vmware.com>	<20070822102217.GE2642@bingen.suse.de>	<46CC68D9.5060200@vmware.com>	<20070822175918.GB8058@bingen.suse.de>	<46CC6D63.2010204@vmware.com>	<20070822194632.GD8058@bingen.suse.de>	<46CC9FF2.3040406@vmware.com>	<20070822220451.GJ8058@bingen.suse.de> <20070822222528.7c58f1e9@the-village.bc.nu>
+In-Reply-To: <20070822222528.7c58f1e9@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 11:07:33PM +0200, Takashi Iwai wrote:
-> At Wed, 22 Aug 2007 22:23:03 +0200,
-> Mariusz Kozlowski wrote:
-> > 
-> > Hello,
-> > 
-> > 	This is from x86_32 with gcc 3.4.6:
-> > 
-> >   CC [M]  sound/pci/hda/hda_codec.o
-> > sound/pci/hda/hda_codec.c: In function `snd_hda_codec_free':
-> > sound/pci/hda/hda_codec.c:517: sorry, unimplemented: inlining failed in call to 'free_hda_cache': function body not available
-> > sound/pci/hda/hda_codec.c:534: sorry, unimplemented: called from here
-> > sound/pci/hda/hda_codec.c:517: sorry, unimplemented: inlining failed in call to 'free_hda_cache': function body not available
-> > sound/pci/hda/hda_codec.c:535: sorry, unimplemented: called from here
-> > make[3]: *** [sound/pci/hda/hda_codec.o] Error 1
-> > make[2]: *** [sound/pci/hda] Error 2
-> > make[1]: *** [sound/pci] Error 2
-> > make: *** [sound] Error 2
-> 
-> Since it doesn't happen with gcc-4.x, this looks like a gcc-3.x
-> specific problem.
->...
+Alan Cox wrote:
+>> I still think it's preferable to change some drivers than everybody.
+>>
+>> AFAIK BusLogic as real hardware is pretty much dead anyways,
+>> so you're probably the only primary user of it anyways.
+>> Go wild on it!
+>>     
+>
+> I don't believe anyone is materially maintaining the buslogic driver and
+> in time its going to break completely.
+>   
 
-It happens because gcc doesn't see the whole file without 
-unit-at-a-time and we disable unit-at-a-time with gcc 3.4 on i386 due 
-to stack usage problems (and older GNU gcc versions don't support 
-unit-at-a-time at all).
+I think I was actually the last person to touch it ;)
 
-cu
-Adrian
+>   
+>> Well that might be. I just think it would be a mistake
+>> to design paravirt_ops based on someone's short term release engineering
+>> considerations.
+>>     
+>
+> Agreed, especially as an interface where each in or out traps into the
+> hypervisor is broken even for the model of virtualising hardware. 
+>   
 
--- 
+Well, it's not necessarily broken, it's just a different model.  At some 
+point the cost of maintaining a whole suite of virtual drivers becomes 
+greater than leveraging a bunch of legacy drivers.  If you can eliminate 
+most of the performance cost of that by changing something at a layer 
+below (port I/O), it is a win even if it is not a perfect solution.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+But I think I've lost the argument anyways; it doesn't seem to be for 
+the greater good of Linux, and there are alternatives we can take.  
+Unfortunately for me, they require a lot more work.
 
+Zach
