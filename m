@@ -1,84 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764214AbXHVJNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764251AbXHVJOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764214AbXHVJNz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbXHVIyJ
+	id S1764251AbXHVJOw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759930AbXHVIzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 04:54:09 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:3270 "EHLO
-	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759195AbXHVIyH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 04:54:07 -0400
-Subject: Re: [patch 3/3] mm: variable length argument support
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dan Aloni <da-x@monatomic.org>
-Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       Ollie Wild <aaw@google.com>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070822084852.GA12314@localdomain>
-References: <20070613100334.635756997@chello.nl>
-	 <20070613100835.014096712@chello.nl>  <20070822084852.GA12314@localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WTREF37w6MqqyimV8o8b"
-Date: Wed, 22 Aug 2007 10:54:02 +0200
-Message-Id: <1187772842.6114.282.camel@twins>
+	Wed, 22 Aug 2007 04:55:50 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:38419 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758870AbXHVIzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 04:55:48 -0400
+Date: Wed, 22 Aug 2007 10:56:51 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Oliver Pinter <oliver.pntr@gmail.com>, Adrian Bunk <bunk@kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: RFC: drop support for gcc < 4.0
+Message-ID: <20070822085651.GE1684@ff.dom.local>
+References: <20070821132038.GA22254@ff.dom.local> <20070821093103.3c097d4a.randy.dunlap@oracle.com> <20070821173550.GC30705@stusta.de> <6101e8c40708211441g2ae20412u877082eb611f595e@mail.gmail.com> <Pine.LNX.4.64.0708220956540.20435@fbirervta.pbzchgretzou.qr> <20070822080854.GD1684@ff.dom.local> <Pine.LNX.4.64.0708221009010.20435@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708221009010.20435@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 22, 2007 at 10:10:16AM +0200, Jan Engelhardt wrote:
+> 
+> On Aug 22 2007 10:08, Jarek Poplawski wrote:
+> >On Wed, Aug 22, 2007 at 09:57:04AM +0200, Jan Engelhardt wrote:
+> >> 
+> >> On Aug 21 2007 23:41, Oliver Pinter wrote:
+> >> >I think it's bad idea, when removing support for gcc3.x, while some
+> >> >people using debian 3.1 at now and under debian 3.1 the default
+> >> >comiler is 3.3.5, when I good know or not!?
+> >> 
+> >> They always lag behind.
+> >
+> >Yes! Probably that's why they are so darn good!
+> 
+> ISTR that even Ubuntu overtook Debian... what about Debian 4.x?
 
---=-WTREF37w6MqqyimV8o8b
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I'm glad with KNOPPIX 4.0 too. But, I hope we don't think about Debian
+3.1 etc. for a new box & new installation!
 
-On Wed, 2007-08-22 at 11:48 +0300, Dan Aloni wrote:
-> On Wed, Jun 13, 2007 at 12:03:37PM +0200, Peter Zijlstra wrote:
-> > From: Ollie Wild <aaw@google.com>
-> >=20
-> > Remove the arg+env limit of MAX_ARG_PAGES by copying the strings direct=
-ly
-> > from the old mm into the new mm.
-> >=20
-> [...]
-> > +static int __bprm_mm_init(struct linux_binprm *bprm)
-> > +{
-> [...]
-> > +	vma->vm_flags =3D VM_STACK_FLAGS;
-> > +	vma->vm_page_prot =3D protection_map[vma->vm_flags & 0x7];
-> > +	err =3D insert_vm_struct(mm, vma);
-> > +	if (err) {
-> > +		up_write(&mm->mmap_sem);
-> > +		goto err;
-> > +	}
-> > +
->=20
-> That change causes a crash in khelper when overcommit_memory =3D 2=20
-> under 2.6.23-rc3.
->=20
-> When a khelper execs, at __bprm_mm_init() current->mm is still NULL.
-> insert_vm_struct() calls security_vm_enough_memory(), which calls=20
-> __vm_enough_memory(), and that's where current->mm->total_vm gets=20
-> dereferenced.
+Since I've found lynx or links plus some html tool is not enough (too
+dangerous) to configure locally cups or samba (don't remember now,
+it was around the beginning of Ubuntu), and there is X and probably
+gnome necessary for this, and it wasn't like this with other distros,
+I think Ubuntu's way of thinking is definitely too good for me...
 
-Alan proposed this patch:
+Jarek P.
 
-http://lkml.org/lkml/2007/8/13/782
-
-
---=-WTREF37w6MqqyimV8o8b
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGy/mqXA2jU0ANEf4RAoVpAKCSMxZaGuYNAynaPsaVWiuvpJUuIACfY3+N
-NkHk8qBgDocjzHNb6QoNC80=
-=zANN
------END PGP SIGNATURE-----
-
---=-WTREF37w6MqqyimV8o8b--
-
+PS: this could look like some flame war, or something, so let's say
+all (GPL2) Linux distros and all gcc versions are extremely nice!
+(...at least not less nice than BSDs...)
