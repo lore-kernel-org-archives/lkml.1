@@ -1,136 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764865AbXHVRye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932317AbXHVRzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764865AbXHVRye (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 13:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761484AbXHVRy0
+	id S932317AbXHVRzm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 13:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762840AbXHVRze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 13:54:26 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:55173 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761362AbXHVRyZ (ORCPT
+	Wed, 22 Aug 2007 13:55:34 -0400
+Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:63504 "EHLO
+	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761078AbXHVRze (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 13:54:25 -0400
-Subject: Re: [BUG] 2.6.23-rc3-mm1 - kernel BUG at net/core/skbuff.c:95!
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-In-Reply-To: <20070822085002.8a116f72.akpm@linux-foundation.org>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	 <46CC33EC.1040803@linux.vnet.ibm.com>
-	 <20070822085002.8a116f72.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 19:58:13 +0200
-Message-Id: <1187805493.5303.11.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18MctraZGgrtQtrStlA88ItJ3Czxj/2NwslrZ0
- IwyYrWJH410OhAJFG92x8nG78mvyyiv56OUHLrLr8aB2//DBwg
- JaFVh5gqEWdrS72OdqqhiJeJeQKEv/M
+	Wed, 22 Aug 2007 13:55:34 -0400
+X-Greylist: delayed 4193 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Aug 2007 13:55:34 EDT
+Date: Wed, 22 Aug 2007 19:45:36 +0300
+From: Sami Farin <safari-kernel@safari.iki.fi>
+To: linux-kernel@vger.kernel.org, netfilter-devel@lists.netfilter.org
+Subject: Re: Kernel oops during netfilter memory allocation
+Message-ID: <20070822164536.m7fihwju7bku7lll@m.safari.iki.fi>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	netfilter-devel@lists.netfilter.org
+References: <200708201808.08880.thomas.jarosch@intra2net.com> <20070820193103.GC2488@martell.zuzino.mipt.ru> <200708211133.56261.thomas.jarosch@intra2net.com> <200708221709.04992.thomas.jarosch@intra2net.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708221709.04992.thomas.jarosch@intra2net.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 08:50 -0700, Andrew Morton wrote:
-> On Wed, 22 Aug 2007 18:32:36 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+On Wed, Aug 22, 2007 at 17:09:04 +0200, Thomas Jarosch wrote:
+> Hello,
 > 
-> > Hi Andrew,
-> > 
-> > Following Kernel Bug was raised when i tried compiling and booting ppc64 
-> > machine
-> > with 2.6.23-rc3-mm1 kernel.
-> > 
-> > =================================================================
-> > 
-> > Freeing initrd memory: 908k freed
-> > 
-> > sysctl table check failed: /kernel .1 Writable sysctl directory
-> > 
-> > skb_over_panic: text:c0000000002bf840 len:139 put:29 head:c00000000ffe7400 data:c00000000ffe7400 tail:0x8b end:0x80 dev:<NULL>
-> > 
-> > ------------[ cut here ]------------
-> > 
-> > kernel BUG at net/core/skbuff.c:95!
-> > 
-> > Oops: Exception in kernel mode, sig: 5 [#1]
-> > 
-> > SMP NR_CPUS=128 NUMA pSeries
-> > 
-> > Modules linked in:
-> > 
-> > NIP: c0000000003fd7c4 LR: c0000000003fd7c0 CTR: 80000000000f97dc
-> > 
-> > REGS: c0000000027f3850 TRAP: 0700   Not tainted  (2.6.23-rc3-mm1-autokern1)
-> > 
-> > MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 24288024  XER: 00000010
-> > 
-> > TASK = c000000009fc0000[1] 'swapper' THREAD: c0000000027f0000 CPU: 0
-> > 
-> > GPR00: c0000000003fd7c0 c0000000027f3ad0 c000000000737710 0000000000000082 
-> > 
-> > GPR04: 0000000000000001 0000000000000001 0000000000000000 c00000000062bb3c 
-> > 
-> > GPR08: 0000000000000000 c00000000067b2e0 0000000000002100 c00000000077b110 
-> > 
-> > GPR12: 0000000000004000 c000000000649f00 0000000000000000 0000000000000000 
-> > 
-> > GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> > 
-> > GPR20: 0000000000000000 c00000000802a0c0 c00000000052ea30 c0000000005392a8 
-> > 
-> > GPR24: c000000009f6b908 c0000000006a4000 c0000000026e2000 0000000000000020 
-> > 
-> > GPR28: c00000000ffe746e 0000000000000004 c0000000006f5340 c000000009f6a900 
-> > 
-> > NIP [c0000000003fd7c4] .skb_over_panic+0x50/0x58
-> > 
-> > LR [c0000000003fd7c0] .skb_over_panic+0x4c/0x58
-> > 
-> > Call Trace:
-> > 
-> > [c0000000027f3ad0] [c0000000003fd7c0] .skb_over_panic+0x4c/0x58 (unreliable)
-> > 
-> > [c0000000027f3b60] [c0000000002bf848] .kobject_uevent_env+0x4f8/0x528
-> > 
-> > [c0000000027f3c80] [c00000000032512c] .device_add+0x2bc/0x730
-> > 
-> > [c0000000027f3d50] [c000000000022330] .vio_register_device_node+0x1a4/0x274
-> > 
-> > [c0000000027f3e00] [c0000000005d34a8] .vio_bus_init+0xa0/0xec
-> > 
-> > [c0000000027f3e80] [c0000000005c8c6c] .kernel_init+0x20c/0x4b8
-> > 
-> > [c0000000027f3f90] [c0000000000267b0] .kernel_thread+0x4c/0x68
-> > 
+> > > 	kernel BUG at arch/i386/mm/highmem.c:38
+> > >
+> > > Try this.
 > 
-> gargh, sorry, that's probably due to my screwed up attempt to fix Kay's
-> screwed up
-> gregkh-driver-driver-core-change-add_uevent_var-to-use-a-struct.patch.
+> I just tried kernel 2.6.22.4 and 2.6.23-rc3. Using 2.6.23-rc3 vanilla,
+> the box survives only 3 seconds with ipt_CRASH. Here's the backtrace,
+> it's only slightly different:
 > 
-> Kay sent an update patch but it didn't arrive in time.
-> 
-> Greg, if you haven't yet merged that, please do so asap?
-> 
-> So what _should_ this:
-> 
-> --- a/arch/powerpc/kernel/vio.c~fix-4-gregkh-driver-driver-core-change-add_uevent_var-to-use-a-struct
-> +++ a/arch/powerpc/kernel/vio.c
-> @@ -373,7 +373,7 @@ static int vio_hotplug(struct device *de
->  	dn = dev->archdata.of_node;
->  	if (!dn)
->  		return -ENODEV;
-> -	cp = of_get_property(dn, "compatible", &length);
-> +	cp = of_get_property(dn, "compatible", &env->buflen);
->  	if (!cp)
->  		return -ENODEV;
->  
-> _
-> 
-> have done?
+> ------------[ cut here ]------------
+> kernel BUG at arch/i386/mm/highmem.c:38!
+> invalid opcode: 0000 [#1]
+> Modules linked in: ipt_CRASH iptable_filter ip_tables x_tables deflate 
+> zlib_deflate twofish twofish_common serpent blowfish des cbc ecb blkcipher 
+> aes xcbcd
 
-Does replacing "&length" with "NULL" work? That's what's in the updated
-patch.
+What are you using crypto stuff for?
+Hopefully you are not calling crypto functions from
+IRQ context.
 
-Thanks,
-Kay
+-- 
+Do what you love because life is too short for anything else.
 
