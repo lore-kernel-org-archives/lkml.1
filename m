@@ -1,90 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762101AbXHVJAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762188AbXHVJBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762101AbXHVJAr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757016AbXHVIxT
+	id S1762188AbXHVJBI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:01:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758578AbXHVIxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 04:53:19 -0400
-Received: from 1wt.eu ([62.212.114.60]:2032 "EHLO 1wt.eu"
+	Wed, 22 Aug 2007 04:53:23 -0400
+Received: from 1wt.eu ([62.212.114.60]:2049 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758389AbXHVIxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 04:53:16 -0400
+	id S1758389AbXHVIxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 04:53:22 -0400
 From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20070822084024.%N@1wt.eu>
+Message-Id: <20070822084021.%N@1wt.eu>
 References: <20070822083844.%N@1wt.eu>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Aug 2007 11:39:17 +0200
+Date: Wed, 22 Aug 2007 11:39:14 +0200
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Willy Tarreau <w@1wt.eu>
-Subject: [2.6.20.17 review 33/58] forcedeth bug fix: cicada phy
-Content-Disposition: inline; filename=0033-forcedeth-bug-fix-cicada-phy.patch
+Cc: Greg Banks <gnb@melbourne.sgi.com>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>, NeilBrown <neilb@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>
+Subject: [2.6.20.17 review 30/58] nfsd: fix possible read-ahead cache and export table corruption
+Content-Disposition: inline; filename=0030-nfsd-fix-possible-read-ahead-cache-and-export-table.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains errata fixes for the cicada phy. It only renamed the
-defines to be phy specific.
+The value of nperbucket calculated here is too small--we should be rounding up
+instead of down--with the result that the index j in the following loop can
+overflow the raparm_hash array.  At least in my case, the next thing in memory
+turns out to be export_table, so the symptoms I see are crashes caused by the
+appearance of four zeroed-out export entries in the first bucket of the hash
+table of exports (which were actually entries in the readahead cache, a
+pointer to which had been written to the export table in this initialization
+code).
 
-Signed-off-by: Ayaz Abdulla <aabdulla@nvidia.com>
+It looks like the bug was probably introduced with commit
+fce1456a19f5c08b688c29f00ef90fdfa074c79b ("knfsd: make the readahead params
+cache SMP-friendly").
+
+Cc: Greg Banks <gnb@melbourne.sgi.com>
+Signed-off-by: "J. Bruce Fields" <bfields@citi.umich.edu>
+Acked-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Willy Tarreau <w@1wt.eu>
 ---
- drivers/net/forcedeth.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+ fs/nfsd/vfs.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
-index 952a6bd..63f4c58 100644
---- a/drivers/net/forcedeth.c
-+++ b/drivers/net/forcedeth.c
-@@ -560,12 +560,12 @@ union ring_type {
- #define PHYID2_MODEL_MASK		0x03f0
- #define PHY_MODEL_MARVELL_E3016		0x220
- #define PHY_MARVELL_E3016_INITMASK	0x0300
--#define PHY_INIT1	0x0f000
--#define PHY_INIT2	0x0e00
--#define PHY_INIT3	0x01000
--#define PHY_INIT4	0x0200
--#define PHY_INIT5	0x0004
--#define PHY_INIT6	0x02000
-+#define PHY_CICADA_INIT1	0x0f000
-+#define PHY_CICADA_INIT2	0x0e00
-+#define PHY_CICADA_INIT3	0x01000
-+#define PHY_CICADA_INIT4	0x0200
-+#define PHY_CICADA_INIT5	0x0004
-+#define PHY_CICADA_INIT6	0x02000
- #define PHY_GIGABIT	0x0100
- 
- #define PHY_TIMEOUT	0x1
-@@ -1133,14 +1133,14 @@ static int phy_init(struct net_device *dev)
- 	/* phy vendor specific configuration */
- 	if ((np->phy_oui == PHY_OUI_CICADA) && (phyinterface & PHY_RGMII) ) {
- 		phy_reserved = mii_rw(dev, np->phyaddr, MII_RESV1, MII_READ);
--		phy_reserved &= ~(PHY_INIT1 | PHY_INIT2);
--		phy_reserved |= (PHY_INIT3 | PHY_INIT4);
-+		phy_reserved &= ~(PHY_CICADA_INIT1 | PHY_CICADA_INIT2);
-+		phy_reserved |= (PHY_CICADA_INIT3 | PHY_CICADA_INIT4);
- 		if (mii_rw(dev, np->phyaddr, MII_RESV1, phy_reserved)) {
- 			printk(KERN_INFO "%s: phy init failed.
-", pci_name(np->pci_dev));
- 			return PHY_ERROR;
- 		}
- 		phy_reserved = mii_rw(dev, np->phyaddr, MII_NCONFIG, MII_READ);
--		phy_reserved |= PHY_INIT5;
-+		phy_reserved |= PHY_CICADA_INIT5;
- 		if (mii_rw(dev, np->phyaddr, MII_NCONFIG, phy_reserved)) {
- 			printk(KERN_INFO "%s: phy init failed.
-", pci_name(np->pci_dev));
- 			return PHY_ERROR;
-@@ -1148,7 +1148,7 @@ static int phy_init(struct net_device *dev)
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index 8283236..d8b773a 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1887,7 +1887,7 @@ nfsd_racache_init(int cache_size)
+ 		raparm_hash[i].pb_head = NULL;
+ 		spin_lock_init(&raparm_hash[i].pb_lock);
  	}
- 	if (np->phy_oui == PHY_OUI_CICADA) {
- 		phy_reserved = mii_rw(dev, np->phyaddr, MII_SREVISION, MII_READ);
--		phy_reserved |= PHY_INIT6;
-+		phy_reserved |= PHY_CICADA_INIT6;
- 		if (mii_rw(dev, np->phyaddr, MII_SREVISION, phy_reserved)) {
- 			printk(KERN_INFO "%s: phy init failed.
-", pci_name(np->pci_dev));
- 			return PHY_ERROR;
+-	nperbucket = cache_size >> RAPARM_HASH_BITS;
++	nperbucket = DIV_ROUND_UP(cache_size, RAPARM_HASH_SIZE);
+ 	for (i = 0; i < cache_size - 1; i++) {
+ 		if (i % nperbucket == 0)
+ 			raparm_hash[j++].pb_head = raparml + i;
 -- 
 1.5.2.5
 
