@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933617AbXHVRLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933697AbXHVRLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933617AbXHVRLR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 13:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764907AbXHVRLA
+	id S933697AbXHVRLz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 13:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765405AbXHVRLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 13:11:00 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35454 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762562AbXHVRK7 (ORCPT
+	Wed, 22 Aug 2007 13:11:42 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:27984 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764907AbXHVRLk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 13:10:59 -0400
-Message-ID: <46CC6C4B.1030202@sgi.com>
-Date: Wed, 22 Aug 2007 19:03:07 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 22 Aug 2007 13:11:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=azWg/hYIxPpfoE4whLn7R9BQj306DvUD8nkO+M3jTIwUMHvE1/mH0Iumbu0cEIIuuM3aqRJQXK+V9EM6cRiPdySrUnmR6+S4vkYjZdNLnMgo/KQVDXaEfewyNmvsFDTYo6tt2O5vz0VdIFFc6VyxE+MbDywOBtO6cQAiAf+yoI0=
+Message-ID: <46CC6DF8.1090504@googlemail.com>
+Date: Wed, 22 Aug 2007 19:10:16 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, akepner@sgi.com,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-References: <20070818002746.GU1813@sgi.com>	 <200708220903.23702.jbarnes@virtuousgeek.org>	 <1187801095.3410.49.camel@localhost.localdomain>	 <200708220951.05101.jbarnes@virtuousgeek.org> <1187802272.3410.58.camel@localhost.localdomain>
-In-Reply-To: <1187802272.3410.58.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
+Subject: drivers/net/ppp_generic - __modpost error ( Re: 2.6.23-rc3-mm1 )
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+In-Reply-To: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> I really don't think a work around for a PCI spec violation belongs in
-> the generic DMA code, do you?  The correct fix for this should be to set
-> the device hints to strict ordering, which presumably altix respects?
-> In which case, it sounds like what needs exposing are access to the PCI
-> device hints.  I believe both PCI-X and PCIe have these hints as
-> optional specifiers in the bridges, so it should be in a current Rev of
-> the PCI spec.  Or are you proposing adding an additional PCI API that
-> allows transaction flushes to be inserted into the stream for devices
-> and bridges that have already negotiated relaxed ordering? ... in which
-> case we need to take this to the PCI list.
+Got it with a randconfig ( http://194.231.229.228/kernel/mm/2.6.23-rc3-mm1/r/randconfig-9 )
+( patch from http://lkml.org/lkml/2007/8/22/273 is needed too or CONFIG_SCSI_ADVANSYS need be N)
 
-James,
 
-I don't believe it respects those hints - I agree, it's a pita, but
-thats the state of the situation. Even if it did, it would make
-performance suck as Jesse also pointed out.
+...
 
-As I pointed out in my email to Willy is that the NUMA fabric is routed,
-there's not one path through the system, which is what makes this
-happen.
+ERROR: "slhc_init" [drivers/net/ppp_generic.ko] undefined!
+ERROR: "slhc_remember" [drivers/net/ppp_generic.ko] undefined!
+ERROR: "slhc_uncompress" [drivers/net/ppp_generic.ko] undefined!
+ERROR: "slhc_free" [drivers/net/ppp_generic.ko] undefined!
+ERROR: "slhc_compress" [drivers/net/ppp_generic.ko] undefined!
+ERROR: "slhc_toss" [drivers/net/ppp_generic.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
 
-Jes
+...
+
+
+Regards,
+
+Gabriel
