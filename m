@@ -1,236 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbXHVAip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754421AbXHVAsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754593AbXHVAip (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 20:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbXHVAih
+	id S1754421AbXHVAsa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 20:48:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbXHVAsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 20:38:37 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:33308 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751055AbXHVAig (ORCPT
+	Tue, 21 Aug 2007 20:48:20 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:37324 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbXHVAsU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 20:38:36 -0400
-Date: Tue, 21 Aug 2007 20:38:34 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [PATCH] SLUB use cmpxchg_local
-Message-ID: <20070822003834.GB1400@Krystal>
-References: <20070821173849.GA8360@Krystal> <Pine.LNX.4.64.0708211404290.3082@schroedinger.engr.sgi.com> <20070821231216.GA29691@Krystal> <Pine.LNX.4.64.0708211614370.6062@schroedinger.engr.sgi.com> <20070821233938.GD29691@Krystal> <Pine.LNX.4.64.0708211640430.6225@schroedinger.engr.sgi.com> <20070821234702.GE29691@Krystal> <Pine.LNX.4.64.0708211649260.6886@schroedinger.engr.sgi.com> <20070822000323.GG29691@Krystal> <p73fy2cz7bs.fsf@bingen.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 21 Aug 2007 20:48:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LmB38pVgyaBBvUSSqpzU18271KHtR9fcPfY/UKMyU6bZqBwIa2ryGn29UdwerQRhD38pgPJVebhQRHhmp3E4CJMcrT4wDRGIvCcM3PcLhXJQzJnEVmYkm4OickVlRqECCp2e4U2QBa9izO+fVUpeaTyyqgJiBCzFEZCfpHkRgTg=
+Message-ID: <9a8748490708211748v4c1aacbak3a44f893d08381ae@mail.gmail.com>
+Date: Wed, 22 Aug 2007 02:48:16 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Noud Aldenhoven" <jwaixs@gmail.com>
+Subject: Re: How to learn Linux Kernel Programming
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <cb63d1e10708211229n18cc154ep43912a671ca1bfee@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <p73fy2cz7bs.fsf@bingen.suse.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 20:36:11 up 23 days, 55 min,  2 users,  load average: 0.32, 0.56, 0.46
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <cb63d1e10708211228u383240a2l4af811f72b8858c0@mail.gmail.com>
+	 <cb63d1e10708211229n18cc154ep43912a671ca1bfee@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen (andi@firstfloor.org) wrote:
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
-> > 
-> > The measurements I get (in cycles):
-> >              enable interrupts (STI)   disable interrupts (CLI)   local CMPXCHG
-> > IA32 (P4)    112                        82                         26
-> > x86_64 AMD64 125                       102                         19
-> 
-> What exactly did you benchmark here? On K8 CLI/STI are only supposed
-> to be a few cycles. pushf/popf might me more expensive, but not that much.
-> 
+On 21/08/07, Noud Aldenhoven <jwaixs@gmail.com> wrote:
+> Hello Kernel Develop mailing list,
+>
+...
+>
+> I'm a simple Math/Computer Science student and would like to learn
+> more about linux and it's kernel.
+> To be more precise, I'd to learn how to program in the linux kernel
+> and maybe become a developer,
+> if everything goes fine.
+> But where do I start?
 
-Hi Andi,
-
-I benchmarked cmpxchg_local vs local_irq_save/local_irq_restore.
-Details, and code, follow.
-
-* cpuinfo:
-
-processor	: 0
-vendor_id	: AuthenticAMD
-cpu family	: 15
-model		: 35
-model name	: AMD Athlon(tm)64 X2 Dual Core Processor  3800+
-stepping	: 2
-cpu MHz		: 2009.204
-cache size	: 512 KB
-physical id	: 0
-siblings	: 2
-core id		: 0
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 1
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt lm 3dnowext 3dnow pni lahf_lm cmp_legacy
-bogomips	: 4023.38
-TLB size	: 1024 4K pages
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management: ts fid vid ttp
-
-processor	: 1
-vendor_id	: AuthenticAMD
-cpu family	: 15
-model		: 35
-model name	: AMD Athlon(tm)64 X2 Dual Core Processor  3800+
-stepping	: 2
-cpu MHz		: 2009.204
-cache size	: 512 KB
-physical id	: 0
-siblings	: 2
-core id		: 1
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 1
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt lm 3dnowext 3dnow pni lahf_lm cmp_legacy
-bogomips	: 4018.49
-TLB size	: 1024 4K pages
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management: ts fid vid ttp
+Start by reading Documentation/HOWTO from a recent copy of the kernel source.
 
 
-* Test ran:
+> Almost all information I found on the Internet
+> if from before 2005
+
+There's lots of good kernel related material to be found online. See
+for example :
+
+http://kernelnewbies.org/
+http://janitor.kernelnewbies.org/
+http://lwn.net/Kernel/LDD3/
+http://lwn.net/Kernel/
+http://kerneltrap.org/
+http://kerneltraffic.org/
 
 
-/* test-cmpxchg-nolock.c
- *
- * Compare local cmpxchg with irq disable / enable.
- */
+> and I think that
+> means it's out-of-date.
+
+That's not always true.
 
 
-#include <linux/jiffies.h>
-#include <linux/compiler.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/calc64.h>
-#include <asm/timex.h>
-#include <asm/system.h>
+> Are there up-to-date documentations that are
+> use full to read and explain how
+> the kernel is build. (for example, is /usr/src/linux/Documentation a
+> use full dir?)
 
-#define NR_LOOPS 20000
-
-int test_val;
-
-static void do_test_cmpxchg(void)
-{
-	int ret;
-	long flags;
-	unsigned int i;
-	cycles_t time1, time2, time;
-	long rem;
-
-	local_irq_save(flags);
-	preempt_disable();
-	time1 = get_cycles();
-	for (i = 0; i < NR_LOOPS; i++) {
-		ret = cmpxchg_local(&test_val, 0, 0);
-	}
-	time2 = get_cycles();
-	local_irq_restore(flags);
-	preempt_enable();
-	time = time2 - time1;
-
-	printk(KERN_ALERT "test results: time for non locked cmpxchg\n");
-	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
-	printk(KERN_ALERT "total time: %llu\n", time);
-	time = div_long_long_rem(time, NR_LOOPS, &rem);
-	printk(KERN_ALERT "-> non locked cmpxchg takes %llu cycles\n", time);
-	printk(KERN_ALERT "test end\n");
-}
-
-/*
- * This test will have a higher standard deviation due to incoming interrupts.
- */
-static void do_test_enable_int(void)
-{
-	long flags;
-	unsigned int i;
-	cycles_t time1, time2, time;
-	long rem;
-
-	local_irq_save(flags);
-	preempt_disable();
-	time1 = get_cycles();
-	for (i = 0; i < NR_LOOPS; i++) {
-		local_irq_restore(flags);
-	}
-	time2 = get_cycles();
-	local_irq_restore(flags);
-	preempt_enable();
-	time = time2 - time1;
-
-	printk(KERN_ALERT "test results: time for enabling interrupts (STI)\n");
-	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
-	printk(KERN_ALERT "total time: %llu\n", time);
-	time = div_long_long_rem(time, NR_LOOPS, &rem);
-	printk(KERN_ALERT "-> enabling interrupts (STI) takes %llu cycles\n",
-					time);
-	printk(KERN_ALERT "test end\n");
-}
-
-static void do_test_disable_int(void)
-{
-	unsigned long flags, flags2;
-	unsigned int i;
-	cycles_t time1, time2, time;
-	long rem;
-
-	local_irq_save(flags);
-	preempt_disable();
-	time1 = get_cycles();
-	for ( i = 0; i < NR_LOOPS; i++) {
-		local_irq_save(flags2);
-	}
-	time2 = get_cycles();
-	local_irq_restore(flags);
-	preempt_enable();
-	time = time2 - time1;
-
-	printk(KERN_ALERT "test results: time for disabling interrupts (CLI)\n");
-	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
-	printk(KERN_ALERT "total time: %llu\n", time);
-	time = div_long_long_rem(time, NR_LOOPS, &rem);
-	printk(KERN_ALERT "-> disabling interrupts (CLI) takes %llu cycles\n",
-				time);
-	printk(KERN_ALERT "test end\n");
-}
+Yes it is useful.  Not everything in there is 100% up-to-date, but
+there is still a *LOT* of useful documentation to be found there.
 
 
-
-static int ltt_test_init(void)
-{
-	printk(KERN_ALERT "test init\n");
-	
-	do_test_cmpxchg();
-	do_test_enable_int();
-	do_test_disable_int();
-	return -EAGAIN; /* Fail will directly unload the module */
-}
-
-static void ltt_test_exit(void)
-{
-	printk(KERN_ALERT "test exit\n");
-}
-
-module_init(ltt_test_init)
-module_exit(ltt_test_exit)
-
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Mathieu Desnoyers");
-MODULE_DESCRIPTION("Cmpxchg vs int Test");
-
+> An other question I'd like to ask is how and where did you start? I'd
+> like to know how you manage to became
+> linux kernel developers.
+>
+Most people start out fixing small bugs, cleanups etc or by
+implementing some small feature or driver that they need. There's no
+fixed way.
 
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
