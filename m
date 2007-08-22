@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934465AbXHVR1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933816AbXHVR3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934465AbXHVR1w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 13:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933219AbXHVR1j
+	id S933816AbXHVR3O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 13:29:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763875AbXHVR25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 13:27:39 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51613 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933144AbXHVR1i (ORCPT
+	Wed, 22 Aug 2007 13:28:57 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:33694 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764133AbXHVR24 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 13:27:38 -0400
-Date: Wed, 22 Aug 2007 18:34:31 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <ak@suse.de>
-Cc: Zachary Amsden <zach@vmware.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@osdl.org>,
+	Wed, 22 Aug 2007 13:28:56 -0400
+Message-ID: <46CC724A.7020305@linux.vnet.ibm.com>
+Date: Wed, 22 Aug 2007 22:58:42 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Containers <containers@lists.osdl.org>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
-Message-ID: <20070822183431.133f056c@the-village.bc.nu>
-In-Reply-To: <20070822175918.GB8058@bingen.suse.de>
-References: <46CBC842.4070100@vmware.com>
-	<20070822102217.GE2642@bingen.suse.de>
-	<46CC68D9.5060200@vmware.com>
-	<20070822175918.GB8058@bingen.suse.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+       Eric W Biederman <ebiederm@xmission.com>
+Subject: Re: [PATCH] Memory controller Add Documentation
+References: <20070822130612.18981.58696.sendpatchset@balbir-laptop> <20070822094633.733614c5.randy.dunlap@oracle.com>
+In-Reply-To: <20070822094633.733614c5.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> out is usually a single byte. Shouldn't be very expensive
-> to decode. In fact it should be roughly equivalent to your
-> hypercall multiplex.
+Randy Dunlap wrote:
+> On Wed, 22 Aug 2007 18:36:12 +0530 Balbir Singh wrote:
+> 
+>>  Documentation/memcontrol.txt |  193 +++++++++++++++++++++++++++++++++++++++++++
+> 
+> Is there some sub-dir that is appropriate for this, such as
+> vm/ or accounting/ or containers/ (new) ?
+> 
+> 
 
-Why is a performance critical path on a paravirt kernel even using I/O
-instructions and not paravirtual device drivers ?
+<snip>
 
-It clearly makes sense to virtualise I/O operations if you are doing that
-(so you can do posting, triggers and predicted reply handling guest side
-to keep the trap rate sane) but I don't see why this situation occurs in
-the first place for paravirt.
+Hi, Randy,
 
+Thanks for the detailed review. Most of the comments seem valid,
+I will fix them in the next release.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
