@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760189AbXHVLKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760107AbXHVLMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760189AbXHVLKw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 07:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757806AbXHVLKp
+	id S1760107AbXHVLMr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 07:12:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756481AbXHVLMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 07:10:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:10807 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755786AbXHVLKo (ORCPT
+	Wed, 22 Aug 2007 07:12:40 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:53297 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752631AbXHVLMj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 07:10:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cPN685tJsjTrfJgxXS6QrUD3u/SycLcsUl9BGWNeXbrjFYFGD1ooth8+Zo+9AOGoYq3uIJ5XNjk+MnQ2il+I2nPHpGHrLkFrkXJ+obvogy2STocgHyfRL86i3VfQq6NxBmjZnCI/WdKzouQ8meLYoPcAXJVxvvVGwuPZaBA00dk=
-Message-ID: <6bffcb0e0708220410u4ab3978eq18786ac186e88c7d@mail.gmail.com>
-Date: Wed, 22 Aug 2007 13:10:44 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: Re: [2.6.20.17 review 00/58] 2.6.20.17 -stable review
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org
-In-Reply-To: <20070822083844.%N@1wt.eu>
+	Wed, 22 Aug 2007 07:12:39 -0400
+Message-ID: <46CC1A24.5030509@de.ibm.com>
+Date: Wed, 22 Aug 2007 13:12:36 +0200
+From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: Andi Kleen <andi@firstfloor.org>, ltp-announce@lists.sourceforge.net,
+       ltp-list@lists.sourceforge.net, ltp-coverage@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Ltp-coverage] [ANNOUNCE] GCOV & LCOV Packages Released
+References: <46CC0216.4040200@linux.vnet.ibm.com>	<p737innzvis.fsf@bingen.suse.de> <661de9470708220315l24c5313by50b9c027d0e38ba2@mail.gmail.com>
+In-Reply-To: <661de9470708220315l24c5313by50b9c027d0e38ba2@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070822083844.%N@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Willy,
+Balbir Singh wrote:
+> On 22 Aug 2007 12:57:47 +0200, Andi Kleen <andi@firstfloor.org> wrote:
+>> Have you considered submitting these patches for review to mainline?
+> I second that, it would be nice to have these features in mainline instead of
+> maintaining them for every kernel release.
 
-On 22/08/07, Willy Tarreau <w@1wt.eu> wrote:
-> This is the start of the review cycle for the stable 2.6.20.17
-> kernel release. This version catches up with 2.6.22.4, and 58
-> patches will be posted as a response to this message.
->
-> The following security issues are solved :
->   CVE-2007-3105
->   CVE-2007-3848
->   CVE-2007-3851
->
-> The rolled up patch can be found here :
->    ftp.kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.20.17-rc1.gz
->
-> Responses should be made by August 24, 2007, 19:00:00 UTC. Anything
-> received after that time might be too late.
+Actually yes, I did and am still considering to do that. Still I feel that there are a few things that need to be changed in the gcov-kernel code before it's suitable for inclusion into mainline (e.g. move from use of /proc to debugfs, use of seqfile mechanism instead of custom code). Part of that work has already been done by yyangcdl@cn.ibm.com and myself but we've stalled about half-way due to a lack of time.
 
-I got a problem with SELinux
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.20.17-rc1/console.log
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.20.17-rc1/stable-config
+Seeing that there seems to be some support for the idea, I'll try to come up with a patch for further discussion.
 
-rpm -qa selinux-policy*
-selinux-policy-devel-2.6.4-33.fc7
-selinux-policy-2.6.4-33.fc7
-selinux-policy-targeted-2.6.4-33.fc7
-
-I didn't tested 2.6.20.* since 2.6.20 release so it might take some
-time to figure out.
 
 Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+  Peter Oberparleiter
