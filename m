@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765489AbXHVSLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933002AbXHVSNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765489AbXHVSLp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 14:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763820AbXHVSLZ
+	id S933002AbXHVSNW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 14:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763582AbXHVSNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 14:11:25 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:27394 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763537AbXHVSLX (ORCPT
+	Wed, 22 Aug 2007 14:13:12 -0400
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:34323 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761154AbXHVSNL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 14:11:23 -0400
-Date: Wed, 22 Aug 2007 11:11:18 -0700
-From: Brandon Philips <brandon@ifup.org>
-To: postfail@hushmail.com
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH ] /drivers/ata ioremap returncode check
-Message-ID: <20070822181118.GA15764@ifup.org>
-References: <387498.11798.qm@web44905.mail.sp1.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <387498.11798.qm@web44905.mail.sp1.yahoo.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 22 Aug 2007 14:13:11 -0400
+Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Jes Sorensen <jes@sgi.com>, akepner@sgi.com,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+In-Reply-To: <200708221017.11805.jbarnes@virtuousgeek.org>
+References: <20070818002746.GU1813@sgi.com>
+	 <200708220951.05101.jbarnes@virtuousgeek.org>
+	 <1187802272.3410.58.camel@localhost.localdomain>
+	 <200708221017.11805.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Wed, 22 Aug 2007 13:13:04 -0500
+Message-Id: <1187806384.3410.70.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20:31 Mon 13 Aug 2007, Scott Thompson wrote:
-> patchset against 2.6.23-rc3.  corrects missing ioremap return checks.
+On Wed, 2007-08-22 at 10:17 -0700, Jesse Barnes wrote:
+> On Wednesday, August 22, 2007 10:04:32 am James Bottomley wrote:
+> > The spec isn't ambiguous ... it says if the device and bridge agree on
+> > relaxed ordering, then it *may* be observed in the transaction.  If
+> > there's a disagreement or neither wishes to support relaxed ordering
+> > then the transaction *must* be strict.
 > 
-> Warning -- cleanup handler here may miss additional required cleanup as has occurred on other
-> portions of ioremap audit.
+> Arg, don't make me dig out my spec, I don't have it handy...
+
+Well ... I don't have one either.  However, Grant Grundler did a
+presentation to OLS about relaxed ordering, and I went over it pretty
+thoroughly with him a while ago.  The bottom line is that the default is
+always strict unless both the bridge and the device agree otherwise.
+
+> > I really don't think a work around for a PCI spec violation belongs in
+> > the generic DMA code, do you?  The correct fix for this should be to set
+> > the device hints to strict ordering, which presumably altix respects?
 > 
-> This patch had been submitted previously but hushmail client caused wordwrap issues, resending
-> with different mail client.
+> Well, the Altix hw by itself won't honor device hints (I'm not even sure if 
+> there are devices that honor order hints like you outline above).  However, 
+> Altix could track per-device ordering as long as arch code was called from 
+> such a hook.
 > 
-> Signed-off-by: Scott Thompson <postfail <at> hushmail.com>
-> ----------------------------------------------------------
+> > In which case, it sounds like what needs exposing are access to the PCI
+> > device hints.  I believe both PCI-X and PCIe have these hints as
+> > optional specifiers in the bridges, so it should be in a current Rev of
+> > the PCI spec.  Or are you proposing adding an additional PCI API that
+> > allows transaction flushes to be inserted into the stream for devices
+> > and bridges that have already negotiated relaxed ordering? ... in which
+> > case we need to take this to the PCI list.
 > 
-> diff --git a/drivers/ata/pata_ixp4xx_cf.c b/drivers/ata/pata_ixp4xx_cf.c
-> index 4ca7fd6..eaebc4d 100644
-> --- a/drivers/ata/pata_ixp4xx_cf.c
-> +++ b/drivers/ata/pata_ixp4xx_cf.c
-> @@ -189,6 +189,14 @@ static __devinit int ixp4xx_pata_probe(struct platform_device *pdev)
->  	data->cs0 = devm_ioremap(&pdev->dev, cs0->start, 0x1000);
->  	data->cs1 = devm_ioremap(&pdev->dev, cs1->start, 0x1000);
->  
-> +	if (!data->cs0 || !data->cs1) {
-> +		if (data->cs0)
-> +			iounmap(data->cs0);
-> +		if (data->cs1)
-> +			iounmap(data->cs1);
-> +		return -ENOMEM;
-> +	}
-> +
->  	irq = platform_get_irq(pdev, 0);
->  	if (irq)
->  		set_irq_type(irq, IRQT_RISING);
+> I think it would have to be the latter, since otherwise it would be hard to 
+> setup just completion queue requests to be ordered.
 
-The iounmap calls are unnecessary since devm_ioremap will un-allocate
-the space if you return an error from probe.  See
-Documentation/driver-model/devres.txt
+OK ... I think this is definitely a PCI specific API ... and probably a
+generic one for requesting order flushes in devices that have negotiated
+relaxed ordering.  Do you want to start a new thread on linux-pci and cc
+me?
 
-But, something like this is needed.
+James
 
-+	if (!data->cs0 || !data->cs1)
-+		return -ENOMEM;
 
-Thanks,
-
-	Brandon
