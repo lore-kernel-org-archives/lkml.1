@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765018AbXHVSK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932810AbXHVSLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765018AbXHVSK1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 14:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762987AbXHVSKN
+	id S932810AbXHVSLc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 14:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762792AbXHVSLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 14:10:13 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:34316 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760361AbXHVSKL (ORCPT
+	Wed, 22 Aug 2007 14:11:22 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42884 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761078AbXHVSLV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 14:10:11 -0400
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jes Sorensen <jes@sgi.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, akepner@sgi.com,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-In-Reply-To: <46CC6C4B.1030202@sgi.com>
-References: <20070818002746.GU1813@sgi.com>
-	 <200708220903.23702.jbarnes@virtuousgeek.org>
-	 <1187801095.3410.49.camel@localhost.localdomain>
-	 <200708220951.05101.jbarnes@virtuousgeek.org>
-	 <1187802272.3410.58.camel@localhost.localdomain> <46CC6C4B.1030202@sgi.com>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 13:10:05 -0500
-Message-Id: <1187806205.3410.66.camel@localhost.localdomain>
+	Wed, 22 Aug 2007 14:11:21 -0400
+Date: Wed, 22 Aug 2007 11:10:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.23-rc3-mm1
+Message-Id: <20070822111029.46db0ab7.akpm@linux-foundation.org>
+In-Reply-To: <46CC6FB2.1010801@csn.ul.ie>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<46CC6FB2.1010801@csn.ul.ie>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 19:03 +0200, Jes Sorensen wrote:
-> James Bottomley wrote:
-> > I really don't think a work around for a PCI spec violation belongs in
-> > the generic DMA code, do you?  The correct fix for this should be to set
-> > the device hints to strict ordering, which presumably altix respects?
-> > In which case, it sounds like what needs exposing are access to the PCI
-> > device hints.  I believe both PCI-X and PCIe have these hints as
-> > optional specifiers in the bridges, so it should be in a current Rev of
-> > the PCI spec.  Or are you proposing adding an additional PCI API that
-> > allows transaction flushes to be inserted into the stream for devices
-> > and bridges that have already negotiated relaxed ordering? ... in which
-> > case we need to take this to the PCI list.
+On Wed, 22 Aug 2007 18:17:38 +0100
+Mel Gorman <mel@csn.ul.ie> wrote:
+
+> Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
+> > 
+> > - git-ixgbe.patch got dropped - git-net.patch destroyed it
+> > 
+> > - then git-net got dropped as it doesn't work
+> > 
+> > - the -mm import-to-git engine still isn't working
+> > 
 > 
-> James,
+> >From elm3b6 on test.kernel.org, we get the following build error
 > 
-> I don't believe it respects those hints - I agree, it's a pita, but
-> thats the state of the situation. Even if it did, it would make
-> performance suck as Jesse also pointed out.
+> 08/22/07-07:01:07 building kernel - make bzImage
+>   CHK     include/linux/version.h
+>   UPD     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   UPD     include/linux/utsrelease.h
+>   SYMLINK include/asm -> include/asm-x86_64
+>   CC      arch/x86_64/kernel/asm-offsets.s
+> arch/x86_64/kernel/asm-offsets.c:1: error: -mpreferred-stack-boundary=3
+> is not between 4 and 12
+> make[1]: *** [arch/x86_64/kernel/asm-offsets.s] Error 1
+> make: *** [prepare0] Error 2
+> 08/22/07-07:01:08 Build the kernel. Failed rc = 2
+> 08/22/07-07:01:08 build: Building kernel... Failed rc = 1
+> Failed and terminated the run
+> 08/22/07-07:01:08 command complete: (1) rc=126 (TEST ABORT)
+>  Fatal error, aborting autorun
 > 
-> As I pointed out in my email to Willy is that the NUMA fabric is routed,
-> there's not one path through the system, which is what makes this
-> happen.
+> config file at: http://test.kernel.org/abat/107411/build/dotconfig
+> gcc version is 3.4.4
+> 
+> This does not occur when using a cross-compiler gcc 3.4.0
+> 
 
-Hmm, didn't see the email ... but I'm probably not cc'd on all the
-thread.  However ... it isn't that you couldn't do it ... it's that you
-don't want to do it because it's faster to violate the spec ... like all
-those nice ATA devices that lie about having a cache and then let you
-power down with uncommitted data still in it ... they work much faster
-for HDIO tests ... and who ever switches their box off?
+x86_64-mm-less-stack-alignment.patch has
 
-James
+cflags-y += $(call cc-option,-mpreferred-stack-boundary=3)
 
+So we _should_ have detected that gcc didn't like =3, so it
+should not have been used.
 
+I am suspecting a kbuild glitch: asm-offsets.c tends to be handled
+in special ways (ie: it's usually the thing which blows up first)
+so perhaps it is somehow avoiding the above does-gcc-support-this test.
+
+Suitable cc's added ;)
