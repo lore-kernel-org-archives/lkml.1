@@ -1,146 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754102AbXHVBMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755066AbXHVBO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754102AbXHVBMi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 21:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbXHVBM2
+	id S1755066AbXHVBO0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 21:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbXHVBOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 21:12:28 -0400
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:44269 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751124AbXHVBM1 (ORCPT
+	Tue, 21 Aug 2007 21:14:17 -0400
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:40174 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752315AbXHVBOQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 21:12:27 -0400
-Date: Tue, 21 Aug 2007 21:12:25 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [PATCH] SLUB use cmpxchg_local
-Message-ID: <20070822011225.GA4124@Krystal>
-References: <20070821231216.GA29691@Krystal> <Pine.LNX.4.64.0708211614370.6062@schroedinger.engr.sgi.com> <20070821233938.GD29691@Krystal> <Pine.LNX.4.64.0708211640430.6225@schroedinger.engr.sgi.com> <20070821234702.GE29691@Krystal> <Pine.LNX.4.64.0708211649260.6886@schroedinger.engr.sgi.com> <20070822000323.GG29691@Krystal> <p73fy2cz7bs.fsf@bingen.suse.de> <20070822003834.GB1400@Krystal> <Pine.LNX.4.64.0708211757360.3118@schroedinger.engr.sgi.com>
+	Tue, 21 Aug 2007 21:14:16 -0400
+Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: akepner@sgi.com
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Jes Sorensen <jes@sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+In-Reply-To: <20070822003450.GM5592@sgi.com>
+References: <20070818002746.GU1813@sgi.com> <46C94FD5.6000006@sgi.com>
+	 <20070821193522.GD5592@sgi.com>
+	 <20070821130515.6e745b17.randy.dunlap@oracle.com>
+	 <1187729729.18410.48.camel@localhost.localdomain>
+	 <20070822003450.GM5592@sgi.com>
+Content-Type: text/plain
+Date: Tue, 21 Aug 2007 20:14:09 -0500
+Message-Id: <1187745249.18410.67.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708211757360.3118@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 21:11:29 up 23 days,  1:30,  3 users,  load average: 0.20, 0.23, 0.25
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> Ok. Measurements vs. simple cmpxchg on a Intel(R) Pentium(R) 4 CPU 3.20GHz 
-> (hyperthreading enabled). Test run with your module show only minor 
-> performance improvements and lots of regressions. So we must have 
-> cmpxchg_local to see any improvements? Some kind of a recent optimization 
-> of cmpxchg performance that we do not see on older cpus?
+On Tue, 2007-08-21 at 17:34 -0700, akepner@sgi.com wrote:
+> On Tue, Aug 21, 2007 at 03:55:29PM -0500, James Bottomley wrote:
 > 
+> > .....
+> > Almost every platform supports posted DMA ... its a property of most PCI
+> > bridge chips.
+> > 
+> 
+> The term "posted DMA" is used to describe this behavior in the Altix 
+> Device Driver Writer's Guide, but it may be confusing things here. 
+> Maybe a better term will suggest itself if I can clarify....
 
-I did not expect the cmpxchg with LOCK prefix to be faster than irq
-save/restore. You will need to run these tests using cmpxchg_local to
-see an improvement.
+OK, but posted DMA has a pretty specific meaning in terms of PCI, hence
+the confusion.
 
-Mathieu
+> On Altix, DMA from a device isn't guaranteed to arrive in host memory 
+> in the order it was sent from the device. This reordering can happen 
+> in the NUMA interconnect (it's specifically not a PCI reordering.)
 
-> 
-> Code of kmem_cache_alloc (to show you that there are no debug options on):
-> 
-> Dump of assembler code for function kmem_cache_alloc:
-> 0x4015cfa9 <kmem_cache_alloc+0>:        push   %ebp
-> 0x4015cfaa <kmem_cache_alloc+1>:        mov    %esp,%ebp
-> 0x4015cfac <kmem_cache_alloc+3>:        push   %edi
-> 0x4015cfad <kmem_cache_alloc+4>:        push   %esi
-> 0x4015cfae <kmem_cache_alloc+5>:        push   %ebx
-> 0x4015cfaf <kmem_cache_alloc+6>:        sub    $0x10,%esp
-> 0x4015cfb2 <kmem_cache_alloc+9>:        mov    %eax,%esi
-> 0x4015cfb4 <kmem_cache_alloc+11>:       mov    %edx,0xffffffe8(%ebp)
-> 0x4015cfb7 <kmem_cache_alloc+14>:       mov    0x4(%ebp),%eax
-> 0x4015cfba <kmem_cache_alloc+17>:       mov    %eax,0xfffffff0(%ebp)
-> 0x4015cfbd <kmem_cache_alloc+20>:       mov    %fs:0x404af008,%eax
-> 0x4015cfc3 <kmem_cache_alloc+26>:       mov    0x90(%esi,%eax,4),%edi
-> 0x4015cfca <kmem_cache_alloc+33>:       mov    (%edi),%ecx
-> 0x4015cfcc <kmem_cache_alloc+35>:       test   %ecx,%ecx
-> 0x4015cfce <kmem_cache_alloc+37>:       je     0x4015d00a <kmem_cache_alloc+97>
-> 0x4015cfd0 <kmem_cache_alloc+39>:       mov    0xc(%edi),%eax
-> 0x4015cfd3 <kmem_cache_alloc+42>:       mov    (%ecx,%eax,4),%eax
-> 0x4015cfd6 <kmem_cache_alloc+45>:       mov    %eax,%edx
-> 0x4015cfd8 <kmem_cache_alloc+47>:       mov    %ecx,%eax
-> 0x4015cfda <kmem_cache_alloc+49>:       lock cmpxchg %edx,(%edi)
-> 0x4015cfde <kmem_cache_alloc+53>:       mov    %eax,%ebx
-> 0x4015cfe0 <kmem_cache_alloc+55>:       cmp    %ecx,%eax
-> 0x4015cfe2 <kmem_cache_alloc+57>:       jne    0x4015cfbd <kmem_cache_alloc+20>
-> 0x4015cfe4 <kmem_cache_alloc+59>:       cmpw   $0x0,0xffffffe8(%ebp)
-> 0x4015cfe9 <kmem_cache_alloc+64>:       jns    0x4015d006 <kmem_cache_alloc+93>
-> 0x4015cfeb <kmem_cache_alloc+66>:       mov    0x10(%edi),%edx
-> 0x4015cfee <kmem_cache_alloc+69>:       xor    %eax,%eax
-> 0x4015cff0 <kmem_cache_alloc+71>:       mov    %edx,%ecx
-> 0x4015cff2 <kmem_cache_alloc+73>:       shr    $0x2,%ecx
-> 0x4015cff5 <kmem_cache_alloc+76>:       mov    %ebx,%edi
-> 
-> Base
-> 
-> 1. Kmalloc: Repeatedly allocate then free test
-> 10000 times kmalloc(8) -> 332 cycles kfree -> 422 cycles
-> 10000 times kmalloc(16) -> 218 cycles kfree -> 360 cycles
-> 10000 times kmalloc(32) -> 214 cycles kfree -> 368 cycles
-> 10000 times kmalloc(64) -> 244 cycles kfree -> 390 cycles
-> 10000 times kmalloc(128) -> 320 cycles kfree -> 417 cycles
-> 10000 times kmalloc(256) -> 438 cycles kfree -> 550 cycles
-> 10000 times kmalloc(512) -> 527 cycles kfree -> 626 cycles
-> 10000 times kmalloc(1024) -> 678 cycles kfree -> 775 cycles
-> 10000 times kmalloc(2048) -> 748 cycles kfree -> 822 cycles
-> 10000 times kmalloc(4096) -> 641 cycles kfree -> 650 cycles
-> 10000 times kmalloc(8192) -> 741 cycles kfree -> 817 cycles
-> 10000 times kmalloc(16384) -> 872 cycles kfree -> 927 cycles
-> 2. Kmalloc: alloc/free test
-> 10000 times kmalloc(8)/kfree -> 332 cycles
-> 10000 times kmalloc(16)/kfree -> 327 cycles
-> 10000 times kmalloc(32)/kfree -> 323 cycles
-> 10000 times kmalloc(64)/kfree -> 320 cycles
-> 10000 times kmalloc(128)/kfree -> 320 cycles
-> 10000 times kmalloc(256)/kfree -> 333 cycles
-> 10000 times kmalloc(512)/kfree -> 332 cycles
-> 10000 times kmalloc(1024)/kfree -> 330 cycles
-> 10000 times kmalloc(2048)/kfree -> 334 cycles
-> 10000 times kmalloc(4096)/kfree -> 674 cycles
-> 10000 times kmalloc(8192)/kfree -> 1155 cycles
-> 10000 times kmalloc(16384)/kfree -> 1226 cycles
-> 
-> Slub cmpxchg.
-> 
-> 1. Kmalloc: Repeatedly allocate then free test
-> 10000 times kmalloc(8) -> 296 cycles kfree -> 515 cycles
-> 10000 times kmalloc(16) -> 193 cycles kfree -> 412 cycles
-> 10000 times kmalloc(32) -> 188 cycles kfree -> 422 cycles
-> 10000 times kmalloc(64) -> 222 cycles kfree -> 441 cycles
-> 10000 times kmalloc(128) -> 292 cycles kfree -> 476 cycles
-> 10000 times kmalloc(256) -> 414 cycles kfree -> 589 cycles
-> 10000 times kmalloc(512) -> 513 cycles kfree -> 673 cycles
-> 10000 times kmalloc(1024) -> 694 cycles kfree -> 825 cycles
-> 10000 times kmalloc(2048) -> 739 cycles kfree -> 878 cycles
-> 10000 times kmalloc(4096) -> 636 cycles kfree -> 653 cycles
-> 10000 times kmalloc(8192) -> 715 cycles kfree -> 799 cycles
-> 10000 times kmalloc(16384) -> 855 cycles kfree -> 927 cycles
-> 2. Kmalloc: alloc/free test
-> 10000 times kmalloc(8)/kfree -> 354 cycles
-> 10000 times kmalloc(16)/kfree -> 336 cycles
-> 10000 times kmalloc(32)/kfree -> 335 cycles
-> 10000 times kmalloc(64)/kfree -> 337 cycles
-> 10000 times kmalloc(128)/kfree -> 337 cycles
-> 10000 times kmalloc(256)/kfree -> 355 cycles
-> 10000 times kmalloc(512)/kfree -> 354 cycles
-> 10000 times kmalloc(1024)/kfree -> 337 cycles
-> 10000 times kmalloc(2048)/kfree -> 339 cycles
-> 10000 times kmalloc(4096)/kfree -> 674 cycles
-> 10000 times kmalloc(8192)/kfree -> 1128 cycles
-> 10000 times kmalloc(16384)/kfree -> 1240 cycles
-> 
-> 
+This is mmiowb and read_relaxed() again, isn't it?
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > ......
+> > This isn't possible on most platforms.  PCI write posting can only be
+> > flushed by a read transaction on the device (or sometimes any device on
+> > the bridge).  Either this interface is misnamed and misdescribed, or it
+> > can't work for most systems.
+> > 
+> 
+> Clearly it wasn't described adequately...
+> 
+> A read transaction on the device will flush pending writes to the 
+> device. But I'm worried about DMA from the device to host memory. 
+> On Altix, there are two mechanisms that flush all in-flight DMA 
+> to host memory: 1) an interrupt, and 2) a write to a memory region 
+> which has a "barrier" attribute set. Obviously option 1 isn't 
+> viable for performance reasons. This new interface is about making 
+> "option 2" generally available. (As it is now, the only way to get 
+> memory with the "barrier" attribute is to allocate it with 
+> dma_alloc_coherent().)
+
+Which sounds exactly what mmiowb does ... is there a need for a new API;
+can't you just use mmiowb()?
+
+James
+
+
