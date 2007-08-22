@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbXHVFeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbXHVFn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbXHVFeg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 01:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXHVFe1
+	id S1755579AbXHVFn3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 01:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbXHVFnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 01:34:27 -0400
-Received: from il.qumranet.com ([82.166.9.18]:37414 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752264AbXHVFe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 01:34:26 -0400
-Message-ID: <46CBCADF.2070400@qumranet.com>
-Date: Wed, 22 Aug 2007 08:34:23 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 22 Aug 2007 01:43:21 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:51853 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752185AbXHVFnU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 01:43:20 -0400
+Date: Tue, 21 Aug 2007 22:46:15 -0700
+From: Greg KH <greg@kroah.com>
+To: Nate <stoddarn@msoe.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Restricting CDC-ACM devices
+Message-ID: <20070822054615.GA23336@kroah.com>
+References: <1187716018.731090.165620@j4g2000prf.googlegroups.com> <20070821171018.C964B5F778@attila.bofh.it> <39877.198.169.188.225.1187733834.squirrel@myweb.msoe.edu>
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
-References: <46CBC842.4070100@vmware.com>
-In-Reply-To: <46CBC842.4070100@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Wed, 22 Aug 2007 08:34:24 +0300 (IDT)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <39877.198.169.188.225.1187733834.squirrel@myweb.msoe.edu>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> In general, I/O in a virtual guest is subject to performance
-> problems.  The I/O can not be completed physically, but must be
-> virtualized.  This means trapping and decoding port I/O instructions
-> from the guest OS.  Not only is the trap for a #GP heavyweight, both
-> in the processor and the hypervisor (which usually has a complex #GP
-> path), but this forces the hypervisor to decode the individual
-> instruction which has faulted.  Worse, even with hardware assist such
-> as VT, the exit reason alone is not sufficient to determine the true
-> nature of the faulting instruction, requiring a complex and costly
-> instruction decode and simulation.
->
-> This patch provides hypercalls for the i386 port I/O instructions,
-> which vastly helps guests which use native-style drivers.  For certain
-> VMI workloads, this provides a performance boost of up to 30%.  We
-> expect KVM and lguest to be able to achieve similar gains on I/O
-> intensive workloads.
->
+On Tue, Aug 21, 2007 at 05:03:54PM -0500, Nate wrote:
+> I would like to use the cdc-acm driver in the Linux kernel (2.6.22-rc1),
+> but restrict the access to only my VID/PID devices.  Is there an easy way
+> to do with without modifying cdc-acm.c?
 
+Why do you not want to modify the driver?
 
-Won't these workloads be better off using paravirtualized drivers? 
-i.e., do the native drivers with paravirt I/O instructions get anywhere
-near the performance of paravirt drivers?
+> In a past prototype I made a simple wrapper driver for usb serial by
+> adding my VID/PID numbers to the wrapper driver's id_table.  Then when
+> that usb driver was accessed on connection, the driver just pointed to the
+> usb_serial_* functions (probe, disconnect, etc).  I tried to do the same
+> with the cdc-acm driver, but the cdc-acm driver's probe function was
+> called before my driver's probe.  I noticed that the cdc-amc driver will
+> attach when it detects the two CDC-ACM interfaces, so I removed the
+> cdc-acm driver with "make menuconfig".  This didn't work because the
+> cdc-acm functions I was attempting to call from my driver do not exist.
 
+You can disconnect the device from the driver from userspace for any
+device you just don't want to have connected by using the sysfs
+bind/unbind files.  That doesn't require any kernel changes at all.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+Why do you want to do this, what are you expecting to achieve with such
+a change?
 
+thanks,
+
+greg k-h
