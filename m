@@ -1,121 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934273AbXHVXPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964778AbXHVXQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934273AbXHVXPw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 19:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763660AbXHVXPl
+	id S964778AbXHVXQt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 19:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXHVXQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 19:15:41 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53691 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763601AbXHVXPl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 19:15:41 -0400
-Date: Thu, 23 Aug 2007 04:58:30 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>, Roland Dreier <rolandd@cisco.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ehca_irq: Misc cpuinit section annotations and #ifdef
- cleanups
-Message-ID: <alpine.LFD.0.999.0708230456100.2049@enigma.security.iitk.ac.in>
+	Wed, 22 Aug 2007 19:16:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47521 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932322AbXHVXQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 19:16:39 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andi Kleen <ak@suse.de>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc3-mm1: cannot stat `vdso.so.dbg'
+In-Reply-To: Andi Kleen's message of  Thursday, 23 August 2007 00:58:43 +0200 <200708230058.43782.ak@suse.de>
+X-Shopping-List: (1) Chivalrous assumption ghost-melts
+   (2) Parasitic sodium
+   (3) Blunt assumption buds
+   (4) Cynical eruptions
+   (5) Commodious Johnny Carson lookalikes
+Message-Id: <20070822231632.9A7D54D0418@magilla.localdomain>
+Date: Wed, 22 Aug 2007 16:16:32 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> How come they have identical subjects and identical description? How is 
+> anybody supposed to make sense of this?
 
-* Replace {un}register_cpu_notifier with {un}register_hotcpu_notifier
-  thereby losing a couple of #ifdef HOTPLUG_CPU pairs.
-* Move comp_pool_callback_nb declaration to below that of callback
-  function so that initialization of .notifier_call and .priority can
-  occur at build time itself and not runtime.
-* Mark the notifier_block (and callback function, and another static
-  function used by it) as __cpuinit{data} for the sake of consistency
-  and remove enclosing #ifdef. (This may increase size for modular
-  build of this module, however, because these are no longer dropped
-  unconditionally now.)
+Sorry, I asked Andrew and he said to send replacement patches.
+I thought I was following instructions.
 
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
 
----
-
- drivers/infiniband/hw/ehca/ehca_irq.c |   29 +++++++++++------------------
- 1 files changed, 11 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
-index ee06d8b..8137de6 100644
---- a/drivers/infiniband/hw/ehca/ehca_irq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.c
-@@ -69,9 +69,6 @@
- static void queue_comp_task(struct ehca_cq *__cq);
- 
- static struct ehca_comp_pool *pool;
--#ifdef CONFIG_HOTPLUG_CPU
--static struct notifier_block comp_pool_callback_nb;
--#endif
- 
- static inline void comp_event_callback(struct ehca_cq *cq)
- {
-@@ -746,9 +743,7 @@ static void destroy_comp_task(struct ehca_comp_pool *pool,
- 		kthread_stop(task);
- }
- 
--#ifdef CONFIG_HOTPLUG_CPU
--static void take_over_work(struct ehca_comp_pool *pool,
--			   int cpu)
-+static void __cpuinit take_over_work(struct ehca_comp_pool *pool, int cpu)
- {
- 	struct ehca_cpu_comp_task *cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu);
- 	LIST_HEAD(list);
-@@ -771,9 +766,9 @@ static void take_over_work(struct ehca_comp_pool *pool,
- 
- }
- 
--static int comp_pool_callback(struct notifier_block *nfb,
--			      unsigned long action,
--			      void *hcpu)
-+static int __cpuinit comp_pool_callback(struct notifier_block *nfb,
-+					unsigned long action,
-+					void *hcpu)
- {
- 	unsigned int cpu = (unsigned long)hcpu;
- 	struct ehca_cpu_comp_task *cct;
-@@ -819,7 +814,11 @@ static int comp_pool_callback(struct notifier_block *nfb,
- 
- 	return NOTIFY_OK;
- }
--#endif
-+
-+static struct notifier_block comp_pool_callback_nb __cpuinitdata = {
-+	.notifier_call	= comp_pool_callback,
-+	.priority	= 0,
-+};
- 
- int ehca_create_comp_pool(void)
- {
-@@ -850,11 +849,7 @@ int ehca_create_comp_pool(void)
- 		}
- 	}
- 
--#ifdef CONFIG_HOTPLUG_CPU
--	comp_pool_callback_nb.notifier_call = comp_pool_callback;
--	comp_pool_callback_nb.priority = 0;
--	register_cpu_notifier(&comp_pool_callback_nb);
--#endif
-+	register_hotcpu_notifier(&comp_pool_callback_nb);
- 
- 	printk(KERN_INFO "eHCA scaling code enabled\n");
- 
-@@ -868,9 +863,7 @@ void ehca_destroy_comp_pool(void)
- 	if (!ehca_scaling_code)
- 		return;
- 
--#ifdef CONFIG_HOTPLUG_CPU
--	unregister_cpu_notifier(&comp_pool_callback_nb);
--#endif
-+	unregister_hotcpu_notifier(&comp_pool_callback_nb);
- 
- 	for (i = 0; i < NR_CPUS; i++) {
- 		if (cpu_online(i))
+Thanks,
+Roland
