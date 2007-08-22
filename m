@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933400AbXHVU4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932713AbXHVU4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933400AbXHVU4M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 16:56:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759317AbXHVUzz
+	id S932713AbXHVU4p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 16:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763236AbXHVU4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 16:55:55 -0400
-Received: from 1wt.eu ([62.212.114.60]:2268 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759288AbXHVUzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 16:55:53 -0400
-Date: Wed, 22 Aug 2007 22:42:25 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Prakash Punnoor <prakash@punnoor.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Ayaz Abdulla <aabdulla@nvidia.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [2.6.20.17 review 35/58] forcedeth bug fix: realtek phy
-Message-ID: <20070822204225.GD14132@1wt.eu>
-References: <20070822083844.%N@1wt.eu> <20070822084026.%N@1wt.eu> <200708222015.04141.prakash@punnoor.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 22 Aug 2007 16:56:33 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:19906 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762980AbXHVU4b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 16:56:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MF8LxNmh3MqNsJVrtzYGUoLTNIjtBI/q370wTDvuByfu7RnNm3V0RI+ASjQFDHyHCvc0kYBI+up3qxpbTZkkohWxSQroLoBiqI7q/DYHfOvnCSn+G9XvirjJ91Jyjrs3R4eQ4uTa96kIsedpuwZ3IslfKylMj+h13sXUYphIUDU=
+Message-ID: <7b69d1470708221356p37fa8d17t2c00e5948a75fd0a@mail.gmail.com>
+Date: Wed, 22 Aug 2007 15:56:27 -0500
+From: "Scott Preece" <sepreece@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: Linux Foundation Technical Advisory Board Elections
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       ksummit-2007-discuss@thunk.org,
+       "Tech Board Discuss" <Tech-board-discuss@lists.linux-foundation.org>
+In-Reply-To: <1187796179.3410.32.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200708222015.04141.prakash@punnoor.de>
-User-Agent: Mutt/1.5.11
+References: <1187796179.3410.32.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 08:15:03PM +0200, Prakash Punnoor wrote:
-> Hi,
-> 
-> even if Greg is waiting for some special invitation 
-> (http://lkml.org/lkml/2007/8/14/229), I suggest putting this patch by Ayaz on 
-> top:
-> 
-> http://lkml.org/lkml/2007/8/10/296
+On 8/22/07, James Bottomley <James.Bottomley@hansenpartnership.com> wrote:
+> The elections for five of the ten members of the Linux Foundation
+> Technical Advisory Board[TAB] are held every year, currently the
+> election will be at the 2007 Kernel Summit in a BOF session.
+>
+> Anyone is eligible to stand for election, simply send your nomination
+> to:
+>
+> Tech-board-discuss@lists.linux-foundation.org
+> ...
 
-That's what I prepare first, but then noticed it's not in mainline.
+Could you post the list of who the current members are and which ones
+hold the seats that are open this year?
 
-> Perhaps Ayaz wants to give Greg the clarification he needs... :sigh:
+thanks,
+scott
 
-He should, as the fix is not in mainline either :-(
-I don't think Greg asks for specific clarification, just a plain patch
-with a short commit log on its own which does not include remains of
-older mails.
-
-I'm holding up the patch until I get confirmation that it is *at least*
-queued for mainline, otherwise it will definitely be missing from
-mainline.
-
-Thanks Prakash for the pointers above.
-Willy
-
+-- 
+scott preece
