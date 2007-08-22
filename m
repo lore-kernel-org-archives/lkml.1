@@ -1,94 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbXHVBSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756239AbXHVBgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756298AbXHVBSy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 21:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbXHVBSq
+	id S1756239AbXHVBgb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 21:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbXHVBgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 21:18:46 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:33364 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1753091AbXHVBSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 21:18:44 -0400
-Message-ID: <387745522.02814@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Wed, 22 Aug 2007 09:18:41 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Andrew Morton <akpm@osdl.org>, Ken Chen <kenchen@google.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0/6] writeback time order/delay fixes take 3
-Message-ID: <20070822011841.GA8090@mail.ustc.edu.cn>
-References: <386910467.21100@ustc.edu.cn> <20070821202314.335e86ec@think.oraclecorp.com>
-MIME-Version: 1.0
+	Tue, 21 Aug 2007 21:36:19 -0400
+Received: from cantor.suse.de ([195.135.220.2]:50556 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754190AbXHVBfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 21:35:48 -0400
+Date: Wed, 22 Aug 2007 03:35:46 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [patch] fix the max path calculation in radix-tree.c
+Message-ID: <20070822013546.GB6799@wotan.suse.de>
+References: <x49d4xgy8h1.fsf@segfault.boston.devel.redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070821202314.335e86ec@think.oraclecorp.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <x49d4xgy8h1.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 21, 2007 at 08:23:14PM -0400, Chris Mason wrote:
-> On Sun, 12 Aug 2007 17:11:20 +0800
-> Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+On Tue, Aug 21, 2007 at 03:48:42PM -0400, Jeff Moyer wrote:
+> Hi,
 > 
-> > Andrew and Ken,
-> > 
-> > Here are some more experiments on the writeback stuff.
-> > Comments are highly welcome~ 
+> A while back, Nick Piggin introduced a patch to reduce the node memory
+> usage for small files (commit cfd9b7df4abd3257c9e381b0e445817b26a51c0c):
 > 
-> I've been doing benchmarks lately to try and trigger fragmentation, and
-> one of them is a simulation of make -j N.  It takes a list of all
-> the .o files in the kernel tree, randomly sorts them and then
-> creates bogus files with the same names and sizes in clean kernel trees.
+> -#define RADIX_TREE_MAP_SHIFT	6
+> +#define RADIX_TREE_MAP_SHIFT	(CONFIG_BASE_SMALL ? 4 : 6)
 > 
-> This is basically creating a whole bunch of files in random order in a
-> whole bunch of subdirectories.
+> Unfortunately, he didn't take into account the fact that the
+> calculation of the maximum path was based on an assumption of having
+> to round up:
 > 
-> The results aren't pretty:
+> #define RADIX_TREE_MAX_PATH (RADIX_TREE_INDEX_BITS/RADIX_TREE_MAP_SHIFT + 2)
 > 
-> http://oss.oracle.com/~mason/compilebench/makej/compare-compile-dirs-0.png
+> So, if CONFIG_BASE_SMALL is set, you will end up with a
+> RADIX_TREE_MAX_PATH that is one greater than necessary.  The practical
+> upshot of this is just a bit of wasted memory (one long in the
+> height_to_maxindex array, an extra pre-allocated radix tree node per
+> cpu, and extra stack usage in a couple of functions), but it seems
+> worth getting right.
 > 
-> The top graph shows one dot for each write over time.  It shows that
-> ext3 is basically writing all over the place the whole time.  But, ext3
-> actually wins the read phase, so the layout isn't horrible.  My guess
-> is that if we introduce some write clustering by sending a group of
-> inodes down at the same time, it'll go much much better.
+> It's also worth noting that I never build with CONFIG_BASE_SMALL.
+> What I did to test this was duplicate the code in a small user-space
+> program and check the results of the calculations for max path and the
+> contents of the height_to_maxindex array.
 > 
-> Andrew has mentioned bringing a few radix trees into the writeback paths
-> before, it seems like file servers and other general uses will benefit
-> from better clustering here.
+> Cheers.
 > 
-> I'm hoping to talk you into trying it out ;)
+> Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
+> 
+> diff --git a/lib/radix-tree.c b/lib/radix-tree.c
+> index 514efb2..67c908f 100644
+> --- a/lib/radix-tree.c
+> +++ b/lib/radix-tree.c
+> @@ -60,7 +60,8 @@ struct radix_tree_path {
+>  };
+>  
+>  #define RADIX_TREE_INDEX_BITS  (8 /* CHAR_BIT */ * sizeof(unsigned long))
+> -#define RADIX_TREE_MAX_PATH (RADIX_TREE_INDEX_BITS/RADIX_TREE_MAP_SHIFT + 2)
+> +#define RADIX_TREE_MAX_PATH (DIV_ROUND_UP(RADIX_TREE_INDEX_BITS, \
+> +					  RADIX_TREE_MAP_SHIFT) + 1)
+>  
+>  static unsigned long height_to_maxindex[RADIX_TREE_MAX_PATH] __read_mostly;
+>  
 
-Thank you for the description of problem. So far I have a similar one
-in mind: if we are to delay writeback of atime-dirty-only inodes to
-above 1 hour, some grouping/piggy-backing scenario would be
-beneficial.  (Which I guess does not deserve the complexity now that
-we have Ingo's make-reltime-default patch.)
+OK, after you DIV_ROUND_UP, what is the extra 1 for? For paths, it is because
+they are NULL terminated paths I guess (without remembering too hard), and for
+height_to_maxindex array it is needed for 0-height trees I think. So it would
+be kinda cleaner to have the _real_ MAX_PATH, and two other constants for
+this array and the paths arrays (that just happen to be identical due to
+implementation). Don't you think?
 
-My vague idea is to
-- keep the s_io/s_more_io as a FIFO/cyclic writeback dispatching queue.
-- convert s_dirty to some radix-tree/rbtree based data structure.
-  It would have dual functions: delayed-writeback and clustered-writeback.
-  
-clustered-writeback:
-- Use inode number as clue of locality, hence the key for the sorted
-  tree.
-- Drain some more s_dirty inodes into s_io on every kupdate wakeup,
-  but do it in the ascending order of inode number instead of
-  ->dirtied_when. 
-
-delayed-writeback:
-- Make sure that a full scan of the s_dirty tree takes <=30s, i.e.
-  dirty_expire_interval.
-
-Notes:
-(1) I'm not sure inode number is correlated to disk location in
-    filesystems other than ext2/3/4. Or parent dir?
-(2) It duplicates some function of elevators. Why is it necessary?
-    Maybe we have no clue on the exact data location at this time?
-
-Fengguang
+But that's not to nack this patch. On the contrary I think your logic is
+correct, and it should be fixed. I didn't check the maths myself but I trust
+you :)
 
