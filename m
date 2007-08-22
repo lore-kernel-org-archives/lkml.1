@@ -1,124 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759239AbXHVPud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760299AbXHVPwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759239AbXHVPud (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 11:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbXHVPuX
+	id S1760299AbXHVPwT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 11:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbXHVPwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 11:50:23 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38216 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750814AbXHVPuW (ORCPT
+	Wed, 22 Aug 2007 11:52:08 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43461 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750938AbXHVPwG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 11:50:22 -0400
-Date: Wed, 22 Aug 2007 08:50:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>
-Subject: Re: [BUG] 2.6.23-rc3-mm1 - kernel BUG at net/core/skbuff.c:95!
-Message-Id: <20070822085002.8a116f72.akpm@linux-foundation.org>
-In-Reply-To: <46CC33EC.1040803@linux.vnet.ibm.com>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	<46CC33EC.1040803@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Aug 2007 11:52:06 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Tejun Heo <htejun@gmail.com>
+Cc: cornelia.huck@de.ibm.com, greg@kroah.com, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, stern@rowland.harvard.edu,
+       containers@lists.osdl.org
+Subject: Re: [PATCHSET] Sysfs cleanups from Eric W. Biederman
+References: <11876133893720-git-send-email-htejun@gmail.com>
+	<m1ejhvpsx4.fsf@ebiederm.dsl.xmission.com>
+	<46CC4C08.1020408@gmail.com>
+Date: Wed, 22 Aug 2007 09:51:35 -0600
+In-Reply-To: <46CC4C08.1020408@gmail.com> (Tejun Heo's message of "Wed, 22 Aug
+	2007 23:45:28 +0900")
+Message-ID: <m16437pny0.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007 18:32:36 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Tejun Heo <htejun@gmail.com> writes:
 
-> Hi Andrew,
-> 
-> Following Kernel Bug was raised when i tried compiling and booting ppc64 
-> machine
-> with 2.6.23-rc3-mm1 kernel.
-> 
-> =================================================================
-> 
-> Freeing initrd memory: 908k freed
-> 
-> sysctl table check failed: /kernel .1 Writable sysctl directory
-> 
-> skb_over_panic: text:c0000000002bf840 len:139 put:29 head:c00000000ffe7400 data:c00000000ffe7400 tail:0x8b end:0x80 dev:<NULL>
-> 
-> ------------[ cut here ]------------
-> 
-> kernel BUG at net/core/skbuff.c:95!
-> 
-> Oops: Exception in kernel mode, sig: 5 [#1]
-> 
-> SMP NR_CPUS=128 NUMA pSeries
-> 
-> Modules linked in:
-> 
-> NIP: c0000000003fd7c4 LR: c0000000003fd7c0 CTR: 80000000000f97dc
-> 
-> REGS: c0000000027f3850 TRAP: 0700   Not tainted  (2.6.23-rc3-mm1-autokern1)
-> 
-> MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 24288024  XER: 00000010
-> 
-> TASK = c000000009fc0000[1] 'swapper' THREAD: c0000000027f0000 CPU: 0
-> 
-> GPR00: c0000000003fd7c0 c0000000027f3ad0 c000000000737710 0000000000000082 
-> 
-> GPR04: 0000000000000001 0000000000000001 0000000000000000 c00000000062bb3c 
-> 
-> GPR08: 0000000000000000 c00000000067b2e0 0000000000002100 c00000000077b110 
-> 
-> GPR12: 0000000000004000 c000000000649f00 0000000000000000 0000000000000000 
-> 
-> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> 
-> GPR20: 0000000000000000 c00000000802a0c0 c00000000052ea30 c0000000005392a8 
-> 
-> GPR24: c000000009f6b908 c0000000006a4000 c0000000026e2000 0000000000000020 
-> 
-> GPR28: c00000000ffe746e 0000000000000004 c0000000006f5340 c000000009f6a900 
-> 
-> NIP [c0000000003fd7c4] .skb_over_panic+0x50/0x58
-> 
-> LR [c0000000003fd7c0] .skb_over_panic+0x4c/0x58
-> 
-> Call Trace:
-> 
-> [c0000000027f3ad0] [c0000000003fd7c0] .skb_over_panic+0x4c/0x58 (unreliable)
-> 
-> [c0000000027f3b60] [c0000000002bf848] .kobject_uevent_env+0x4f8/0x528
-> 
-> [c0000000027f3c80] [c00000000032512c] .device_add+0x2bc/0x730
-> 
-> [c0000000027f3d50] [c000000000022330] .vio_register_device_node+0x1a4/0x274
-> 
-> [c0000000027f3e00] [c0000000005d34a8] .vio_bus_init+0xa0/0xec
-> 
-> [c0000000027f3e80] [c0000000005c8c6c] .kernel_init+0x20c/0x4b8
-> 
-> [c0000000027f3f90] [c0000000000267b0] .kernel_thread+0x4c/0x68
-> 
+> Hello,
+>
+> Eric W. Biederman wrote:
+>>> * fix-i_mutex-locking-in-sysfs_get_dentry patch is added at the top
+>>>   and #14-Don_t-use-lookup_one_len_kern and
+>>>   #15-vfs-Remove-lookup_one_len_kern are dropped.  This is because #14
+>>>   contained had a bug where it might created dentry/inode for an
+>>>   already deleted sysfs_dirent.  I think it's benefitial to keep
+>>>   single lookup path.
+>> 
+>> I think I disagree with the bug spotting.
+>> 
+>> At least in net we the sysfs_rename_mutex which keeps parent
+>> directories from disappearing.  Further we have a reference
+>> to the leaf sysfs_dirent and are actively manipulating it, so
+>> the sysfs_dirent should not disappear on us.
+>
+> sysfs_rename_mutex() keeps out renaming and moving not removing.  Also,
+> reference prevents sysfs_dirent from being released not from being
+> removed.  The different in lookup path is that it searches the children
+> list - sd's are unlinked from children list on removal.
 
-gargh, sorry, that's probably due to my screwed up attempt to fix Kay's
-screwed up
-gregkh-driver-driver-core-change-add_uevent_var-to-use-a-struct.patch.
+True.   I guess what I was seeing was not a code but a usages
+restriction which may not be enforced.
 
-Kay sent an update patch but it didn't arrive in time.
+If we are using sysfs_get_dentry the sd is not deleted because
+it is alive and being used, likewise the path to it should also be
+alive.  Once you add in classic unix delete behaviour allowing for
+alive but deleted files this no longer applies.  But I don't think
+that makes sense for sysfs, but I may be confused.
 
-Greg, if you haven't yet merged that, please do so asap?
+>>> * Rewrote simplify-sysfs_get_dentry patch and
+>>>   #08-Implement-__sysfs_get_dentry,
+>>>   #09-Move-sysfs_get_dentry-below-__sysfs_get_dentry and
+>>>   #10-Rewrite-sysfs_get_dentry-in-terms-of-__sysfs_get_dentry are
+>>>   omitted as __sysfs_get_dentry() isn't used by anyone.
+>> 
+>> Right.  __sysfs_get_dentry is an optimization that has makes
+>> the best case for sysfs_get_dentry O(1) instead of O(depth).
+>> However this doesn't matter because sysfs_get_dentry is not
+>> on any fast path and the maximum depth of sysfs directories
+>> is fairly shallow and programmer controlled.
+>
+> The reason why sysfs_get_dentry() climbed up first then climbed down was
+> not because of performance.  It was to support the original shadow
+> implementation.  Because there was no reliable way to reach a leaf node
+> from the root, dentries of all shadows are pinned such that they can
+> serve as the starting point for dentry lookup and the climing up was to
+> reach that starting point.  Now that the dentry-multiplexing shadow
+> support is gone, there's no need to do the climing up.
 
-So what _should_ this:
+Reasonable.  The reason I kept the climbing up was the performance
+benefit I saw.
 
---- a/arch/powerpc/kernel/vio.c~fix-4-gregkh-driver-driver-core-change-add_uevent_var-to-use-a-struct
-+++ a/arch/powerpc/kernel/vio.c
-@@ -373,7 +373,7 @@ static int vio_hotplug(struct device *de
- 	dn = dev->archdata.of_node;
- 	if (!dn)
- 		return -ENODEV;
--	cp = of_get_property(dn, "compatible", &length);
-+	cp = of_get_property(dn, "compatible", &env->buflen);
- 	if (!cp)
- 		return -ENODEV;
- 
-_
+>> The only user other user of __sysfs_get_dentry is in the tagged
+>> directory support, and even that user doesn't strictly need it.
+>> Although it is a bit silly to populate the dcache just so you
+>> can invalidate it a moment later...
+>
+> Yeah, actually the only essential user of that kind of look up is
+> sysfs_drop_dentry() which is in deletion path and can't fail due to
+> allocation failure and has the logic open-coded.  I have nothing against
+> __sysfs_get_dentry().  It was just not needed by the patches I forwarded
+> this time.  Feel free to include it as you see fit.
 
-have done?
+Sure.
+
+> I'm currently working on kobj/sysfs separation.  As most internal
+> implementation is sd based already, the changes are mostly confined to
+> interface functions but it's still a big change.  I think I'll be able
+> to post the patches in this week or early next week at the latest.
+
+Ok.
+
+I'd like to make certain we have a path to tagged support or something
+like it if we can.
+
+Eric
