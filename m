@@ -1,73 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761449AbXHVJja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbXHVJj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761449AbXHVJja (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbXHVJjW
+	id S1761972AbXHVJj6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750747AbXHVJjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 05:39:22 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:12461 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751728AbXHVJjV (ORCPT
+	Wed, 22 Aug 2007 05:39:49 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52144 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751792AbXHVJjs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 05:39:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Ydfzamxx97Xxvu3lhU5fpkIqnZmhQmje5ZuqHIMFtdVAD2d+Po1rVAF8szFCBf10JK1sTCzGgWEwcf1+aDTFwX+XF2ILn0Diw+n8dK+vt8H/MI6fULcfT6VF22RrqYxA/SjQaC12OlZK646S9JelBBzL8obgG7y7zOwzwVcwCfk=
-Message-ID: <46CC043F.4090005@gmail.com>
-Date: Wed, 22 Aug 2007 18:39:11 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-CC: ebiederm@xmission.com, greg@kroah.com, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, stern@rowland.harvard.edu,
-       containers@lists.osdl.org
-Subject: Re: [PATCHSET] Sysfs cleanups from Eric W. Biederman
-References: <11876133893720-git-send-email-htejun@gmail.com> <20070822112608.1645030c@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070822112608.1645030c@gondolin.boeblingen.de.ibm.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Aug 2007 05:39:48 -0400
+Date: Wed, 22 Aug 2007 11:39:45 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+Message-ID: <20070822093945.GA7539@one.firstfloor.org>
+References: <20070821231216.GA29691@Krystal> <Pine.LNX.4.64.0708211614370.6062@schroedinger.engr.sgi.com> <20070821233938.GD29691@Krystal> <Pine.LNX.4.64.0708211640430.6225@schroedinger.engr.sgi.com> <20070821234702.GE29691@Krystal> <Pine.LNX.4.64.0708211649260.6886@schroedinger.engr.sgi.com> <20070822000323.GG29691@Krystal> <p73fy2cz7bs.fsf@bingen.suse.de> <20070822003834.GB1400@Krystal> <Pine.LNX.4.64.0708211757360.3118@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708211757360.3118@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck wrote:
-> On Mon, 20 Aug 2007 21:36:29 +0900,
-> Tejun Heo <htejun@gmail.com> wrote:
-> 
->> Hello, all.
->>
->> This is subset of Eric W. Biederman's "Sysfs cleanups & tagged
->> directory support" patchset[1] with the following modifications.
->>
->> * fix-i_mutex-locking-in-sysfs_get_dentry patch is added at the top
->>   and #14-Don_t-use-lookup_one_len_kern and
->>   #15-vfs-Remove-lookup_one_len_kern are dropped.  This is because #14
->>   contained had a bug where it might created dentry/inode for an
->>   already deleted sysfs_dirent.  I think it's benefitial to keep
->>   single lookup path.
->>
->> * Rewrote simplify-sysfs_get_dentry patch and
->>   #08-Implement-__sysfs_get_dentry,
->>   #09-Move-sysfs_get_dentry-below-__sysfs_get_dentry and
->>   #10-Rewrite-sysfs_get_dentry-in-terms-of-__sysfs_get_dentry are
->>   omitted as __sysfs_get_dentry() isn't used by anyone.
->>
->> * #16, 19-25 are omitted as it isn't clear yet how the tagged entry
->>   support will end up.
->>
->> * readdir simplification fixed.
->>
->> * sysfs_mutex double locking fixed.
->>
->> The patchset is on top of the current -gregkh.
-> 
-> Survives some casual testing (including moving devices). Patches look
-> sane to me at a cursory glance as well (sorry, don't have much time at
-> the moment).
+On Tue, Aug 21, 2007 at 06:06:19PM -0700, Christoph Lameter wrote:
+> Ok. Measurements vs. simple cmpxchg on a Intel(R) Pentium(R) 4 CPU 3.20GHz 
 
-Thanks.
+Note the P4 is a extreme case in that "unusual" instructions are
+quite slow (basically anything that falls out of the trace cache). Core2 
+tends to be much more benign and generally acts more like a K8 in latencies.
 
--- 
-tejun
+There are millions and millions of P4s around of course and we
+shouldn't disregard them, but they're not the future and not
+highest priority.
+
+-Andi
