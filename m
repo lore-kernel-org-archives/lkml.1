@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763821AbXHVPXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764015AbXHVPZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763821AbXHVPXS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 11:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759968AbXHVPXG
+	id S1764015AbXHVPZx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 11:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761287AbXHVPZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 11:23:06 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:41908 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761110AbXHVPXF (ORCPT
+	Wed, 22 Aug 2007 11:25:46 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59729 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759856AbXHVPZp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 11:23:05 -0400
-Subject: Linux Foundation Technical Advisory Board Elections
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       ksummit-2007-discuss@thunk.org,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 10:22:59 -0500
-Message-Id: <1187796179.3410.32.camel@localhost.localdomain>
+	Wed, 22 Aug 2007 11:25:45 -0400
+Date: Wed, 22 Aug 2007 16:33:54 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Xu Yang" <risingsunxy@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: how is the boot process of the multicore system
+Message-ID: <20070822163354.4b57f501@the-village.bc.nu>
+In-Reply-To: <ab40e9c0708220753l1861cde2wccb58ba931f04b2c@mail.gmail.com>
+References: <ab40e9c0708220753l1861cde2wccb58ba931f04b2c@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The elections for five of the ten members of the Linux Foundation
-Technical Advisory Board[TAB] are held every year, currently the
-election will be at the 2007 Kernel Summit in a BOF session.
+On Wed, 22 Aug 2007 16:53:41 +0200
+"Xu Yang" <risingsunxy@googlemail.com> wrote:
 
-Anyone is eligible to stand for election, simply send your nomination
-to:
+> Hi everyone,
+> 
+> I am just wondering how is the boot process of the multicore system exactly.
+> let's say there are 4 cores , what is the booting sequence? and how
+> does linux realise the booting process?
 
-Tech-board-discuss@lists.linux-foundation.org
-
-Only people invited to the kernel summit will be there in person (and
-therefore able to vote), but if you cannot attend, your nomination email
-will be read out before the voting begins.
-
-We currently have Three nominees:
-
-Arjan van de Ven <arjan@infradead.org>
-Greg Kroah Hartman <greg@kroah.com>
-Christoph Lameter <christoph@lameter.com>
-
-The deadline for receiving nominations is up until the BOF where the
-election is held (on the evening of either the 5th or 6th of September.
-Although, please remember if you're not going to be present that things
-go wrong with both networks and mailing lists, so get your nomination in
-early).
-
-James Bottomley (TAB Chair)
-
-
+For PC type systems read the Intel MP 1.4 specification, available on the
+intel developer web site
