@@ -1,125 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932779AbXHVUQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbXHVUTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932779AbXHVUQZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 16:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759900AbXHVUQS
+	id S932555AbXHVUTZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 16:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759962AbXHVUTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 16:16:18 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49918 "EHLO
+	Wed, 22 Aug 2007 16:19:18 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50085 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758416AbXHVUQR (ORCPT
+	with ESMTP id S1756434AbXHVUTR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 16:16:17 -0400
-Date: Wed, 22 Aug 2007 13:16:16 -0700 (PDT)
+	Wed, 22 Aug 2007 16:19:17 -0400
+Date: Wed, 22 Aug 2007 13:19:16 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, riel <riel@redhat.com>
-Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
-In-Reply-To: <1187813025.5463.85.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0708221306080.15775@schroedinger.engr.sgi.com>
-References: <20070820215040.937296148@sgi.com>  <1187692586.6114.211.camel@twins>
-  <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com> 
- <1187730812.5463.12.camel@lappy>  <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com>
-  <1187734144.5463.35.camel@lappy>  <Pine.LNX.4.64.0708211532560.5728@schroedinger.engr.sgi.com>
-  <1187766156.6114.280.camel@twins>  <Pine.LNX.4.64.0708221157180.13813@schroedinger.engr.sgi.com>
- <1187813025.5463.85.camel@lappy>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+In-Reply-To: <20070822200910.GA25687@Krystal>
+Message-ID: <Pine.LNX.4.64.0708221316240.15775@schroedinger.engr.sgi.com>
+References: <20070821233938.GD29691@Krystal> <Pine.LNX.4.64.0708211640430.6225@schroedinger.engr.sgi.com>
+ <20070821234702.GE29691@Krystal> <Pine.LNX.4.64.0708211649260.6886@schroedinger.engr.sgi.com>
+ <20070822000323.GG29691@Krystal> <p73fy2cz7bs.fsf@bingen.suse.de>
+ <20070822003834.GB1400@Krystal> <Pine.LNX.4.64.0708211757360.3118@schroedinger.engr.sgi.com>
+ <20070822134532.GA3769@Krystal> <Pine.LNX.4.64.0708221224550.14795@schroedinger.engr.sgi.com>
+ <20070822200910.GA25687@Krystal>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007, Peter Zijlstra wrote:
+On Wed, 22 Aug 2007, Mathieu Desnoyers wrote:
 
-> > That is an extreme case that AFAIK we currently ignore and could be 
-> > avoided with some effort.
+> * Christoph Lameter (clameter@sgi.com) wrote:
+> >  void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+> > @@ -1577,7 +1590,10 @@ static void __slab_free(struct kmem_cach
+> >  {
+> >  	void *prior;
+> >  	void **object = (void *)x;
+> > +	unsigned long flags;
+> >  
+> > +	local_irq_save(flags);
+> > +	put_cpu_no_resched();
 > 
-> Its not extreme, not even rare, and its handled now. Its what
-> PF_MEMALLOC is for.
+> Those two lines may skip a preempt_check.
 
-No its not. If you have all pages allocated as anonymous pages and your 
-writeout requires more pages than available in the reserves then you are 
-screwed either way regardless if you have PF_MEMALLOC set or not.
-
-> > The initial PF_MEMALLOC patchset seems to be 
-> > still enough to deal with your issues.
-> 
-> Take the anonyous workload, user-space will block once the page
-> allocator hits ALLOC_MIN. Network will be able to receive until
-> ALLOC_MIN|ALLOC_HIGH - if the completion doesn't arrive by then it will
-> start dropping all packets until there is memory again. But userspace is
-> wedged and hence will not consume the network traffic, hence we
-> deadlock.
-> 
-> Even if there is something to reclaim initially, if the pressure
-> persists that can eventually be exhausted.
-
-Sure ultimately you will end up with pages that are all unreclaimable if 
-you reclaim all reclaimable memory.
-
-> > multiple critical tasks on various devices that have various memory needs. 
-> > So multiple critical spots can happen concurrently in multiple 
-> > application contexts.
-> 
-> yes, reclaim can be unbounded concurrent, and that is one of the
-> (theoretically) major problems we currently have.
-
-So your patchset is not fixing it?
-
-> > We have that with PF_MEMALLOC.
-> 
-> Exactly. But if you recognise the need for PF_MEMALLOC then what is this
-> argument about?
-
-The PF_MEMALLOC patchset f.e. is about avoiding to go out of 
-memory when there is still memory available even if we are doing a 
-PF_MEMALLOC allocation and would OOM otherwise.
-
-> Networking can currently be seen as having two states:
-> 
->  1 receive packets and consume memory
->  2 drop all packets (when out of memory)
-> 
-> I need a 3rd state:
-> 
->  3 receiving packets but not consuming memory
-
-So far a good idea. If you are not consuming memory then why are the 
-allocators involved?
+Yes we cannot execute something else here.
  
-> Now, I need this state when we're in PF_MEMALLOC territory, because I
-> need to be able to process an unspecified amount of network traffic in
-> order to receive the writeout completion.
+> Could we change them to this instead ?
+>   
+>   put_cpu();
+>   local_irq_save(flags);
+
+Then the thread could be preempted and rescheduled on a different cpu 
+between put_cpu and local_irq_save() which means that we loose the
+state information of the kmem_cache_cpu structure.
+
+> Otherwise, it would be good to call
 > 
-> In order to operate this 3rd network state, some memory is needed in
-> which packets can be received and when deemed not important freed and
-> reused.
+>   preempt_check_resched();
 > 
-> It needs a bounded amount of memory in order to process an unbounded
-> amount of network traffic.
-> 
-> What exactly is not clear about this? If you accept the need for
-> PF_MEMALLOC you surely must also agree that at the point you're using it
-> running reclaim is useless.
+>   After each local_irq_restore() in this function.
 
-Yes looks like you would like to add something to the network layer to 
-filter important packets. As long as you stay within PF_MEMALLOC 
-boundaries you can allocate and throw packets away. If you want to have a 
-reserve that is secure and just for you then you need to take it away from 
-the reserves (which in turn will lead reclaim to restore them).
-
-> > > Also, failing a memory allocation isn't bad, why are you so worried
-> > > about that? It happens all the time.
-> > 
-> > Its a performance impact and plainly does not make sense if there is 
-> > reclaimable memory availble. The common action of the vm is to reclaim if 
-> > there is a demand for memory. Now we suddenly abandon that approach?
-> 
-> I'm utterly confused by this, on one hand you recognise the need for
-> PF_MEMALLOC but on the other hand you're saying its not needed and
-> anybody needing memory (even reclaim itself) should use reclaim.
-
-The VM reclaims memory on demand but in exceptional limited cases where we 
-cannot do so we use the reserves. I am sure you know this.
-
-
+We could do that but maybe the frequency of these checks would be too 
+high? When should the resched checks be used?
