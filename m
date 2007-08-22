@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933222AbXHVVDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933455AbXHVVEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933222AbXHVVDK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 17:03:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932434AbXHVVCy
+	id S933455AbXHVVEf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 17:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759962AbXHVVE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 17:02:54 -0400
-Received: from main.gmane.org ([80.91.229.2]:47156 "EHLO ciao.gmane.org"
+	Wed, 22 Aug 2007 17:04:26 -0400
+Received: from mga09.intel.com ([134.134.136.24]:43376 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932426AbXHVVCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 17:02:54 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
-Subject: TV card detected wrongly by the kernel. Any chance to get this fixed?
-Date: Wed, 22 Aug 2007 23:08:00 +0200
-Message-ID: <fai89b$ms1$1@sea.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: p4fd4c3cb.dip0.t-ipconnect.de
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.6) Gecko/20070809 SeaMonkey/1.1.4
+	id S1757527AbXHVVEY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 17:04:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,295,1183359600"; 
+   d="scan'208";a="120396188"
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [BUG] 2.6.23-rc3-mm1 Kernel panic - not syncing: DMA: Memory would be corrupted
+Date: Wed, 22 Aug 2007 14:04:22 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A023B2D39@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <46CC811C.9010600@linux.vnet.ibm.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [BUG] 2.6.23-rc3-mm1 Kernel panic - not syncing: DMA: Memory would be corrupted
+Thread-Index: Acfk6sMGn7PUZ2pTRICSHh/+xfMfwgAEn3tQ
+References: <46CC48FD.4000607@linux.vnet.ibm.com> <20070822091959.aa38fd3e.akpm@linux-foundation.org> <20070822172541.GA8058@bingen.suse.de> <46CC811C.9010600@linux.vnet.ibm.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
+       "Andi Kleen" <ak@suse.de>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       <linux-ia64@vger.kernel.org>
+X-OriginalArrivalTime: 22 Aug 2007 21:04:23.0209 (UTC) FILETIME=[03EEC990:01C7E500]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+> Attached the boot log and config file.
 
-I have a BT878 based TV card (was sold by a german discounter some years 
-ago).
+Kamelesh,
 
-Unfortunately this card gets detected wrongly and so I'm unable to watch 
-tv, if I allow the kernel to auto-detect the card.
+I don't see anything obvious in the boot_log.
 
-If I unload the module and reload it using the right "card=" value, then 
-anything works well. So one of the first steps, I do if I install a new 
-version of my distribution, is to place the "unload module and reload 
-with the right value" code to my "rc.local" file.
+I used your "dotconfig" file to build a 2.6.23-rc3-mm1 kernel
+and booted it on my test system ... it worked just fine
+(except that for some reason the network did not come up :-( )
 
-Is there any chance to get this card added to the kernel, so the right 
-value gets auto-loaded?
+I tried to compare my boot log with yours ... you have some
+different devices (E.g. your ethernet links are Tigon3 while
+mine are e1000) ... so the memory leak in a driver theory
+is a possibility.
 
-Thanks in advance
+Try adding a dump_stack() call to lib/swiotlb.c where the
+"DMA: Out of SW-IOMMU space ..." message is printed.  That
+would tell us who is making the call that fails (they
+might be an innocent bystander after someone else has
+used all the space ... but this is unlikely).
 
-Yours
-
-Manuel Reimer
-
+-Ton
