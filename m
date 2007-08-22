@@ -1,42 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbXHVHqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbXHVHwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756750AbXHVHqY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 03:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbXHVHqO
+	id S1757510AbXHVHwa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 03:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbXHVHwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 03:46:14 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55920 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751026AbXHVHqM (ORCPT
+	Wed, 22 Aug 2007 03:52:22 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:41581 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751289AbXHVHwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 03:46:12 -0400
-Message-ID: <46CBE960.4090702@sgi.com>
-Date: Wed, 22 Aug 2007 09:44:32 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
+	Wed, 22 Aug 2007 03:52:21 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [accounting regression since rc1]  scheduler updates
+Date: Wed, 22 Aug 2007 09:50:34 +0200
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Jan Glauber <jang@linux.vnet.ibm.com>, heiko.carstens@de.ibm.com,
+       Paul Mackerras <paulus@samba.org>
+References: <20070812163225.GA11996@elte.hu> <200708211017.02998.borntraeger@de.ibm.com> <20070821112529.GB648@elte.hu>
+In-Reply-To: <20070821112529.GB648@elte.hu>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: akepner@sgi.com, linux-kernel <linux-kernel@vger.kernel.org>,
-       rdreier@cisco.com, linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-References: <20070818002746.GU1813@sgi.com> <46C94FD5.6000006@sgi.com> <20070821193522.GD5592@sgi.com> <20070821201631.GF9163@parisc-linux.org>
-In-Reply-To: <20070821201631.GF9163@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708220950.35044.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> So, let me try to understand ... your hardware allows writes from the
-> device to pass other writes from the device?  Doesn't that violate the
-> PCI spec?  I'm thinking about this (page 43 of PCI 2.3):
+Am Dienstag, 21. August 2007 schrieben Sie:
+> could you try the patch below, does it work any better?
 
-Hi Matthew,
+I looked again at the scheduler code and things are getting better when I run 
+the patch below on top of your patch and with our sched_clock prototype. I 
+guess there is a reason why you want rq->clock advanced by at least one tick?
 
-Yes I believe this behavior on sn2 is 'bending' the PCI spec a bit. The
-problem is that the NUMA fabric is a routed network in itself so there
-can be multiple paths between the device and the physical memory it DMAs
-to/from.
+We discussed calling scheduler_tick with virtual time as well.
+Would it have the same result?
+What would be the impact on latency?
 
-Cheers,
-Jes
+After looking at the current s390 timer code, it seems that this kind of 
+change is not trivial enough to be rc3+ ready. 
+I personally think, that for 2.6.23 we should use the patch against 
+fs/proc/array.c and everything else for 2.6.24?
+
+Christian
+
+---
+ kernel/sched.c |    6 ------
+ 1 file changed, 6 deletions(-)
+
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -3321,15 +3321,9 @@ void scheduler_tick(void)
+ 	int cpu = smp_processor_id();
+ 	struct rq *rq = cpu_rq(cpu);
+ 	struct task_struct *curr = rq->curr;
+-	u64 next_tick = rq->tick_timestamp + TICK_NSEC;
+ 
+ 	spin_lock(&rq->lock);
+ 	__update_rq_clock(rq);
+-	/*
+-	 * Let rq->clock advance by at least TICK_NSEC:
+-	 */
+-	if (unlikely(rq->clock < next_tick))
+-		rq->clock = next_tick;
+ 	rq->tick_timestamp = rq->clock;
+ 	update_cpu_load(rq);
+ 	if (curr != rq->idle) /* FIXME: needed? */
+
+
