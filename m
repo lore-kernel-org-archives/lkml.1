@@ -1,278 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764652AbXHVPoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759239AbXHVPud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764652AbXHVPoZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 11:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761819AbXHVPoS
+	id S1759239AbXHVPud (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 11:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbXHVPuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 11:44:18 -0400
-Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:21736 "EHLO
-	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759208AbXHVPoR convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 11:44:17 -0400
-X-Greylist: delayed 334 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Aug 2007 11:44:16 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
+	Wed, 22 Aug 2007 11:50:23 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38216 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750814AbXHVPuW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 11:50:22 -0400
+Date: Wed, 22 Aug 2007 08:50:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg KH <greg@kroah.com>
+Subject: Re: [BUG] 2.6.23-rc3-mm1 - kernel BUG at net/core/skbuff.c:95!
+Message-Id: <20070822085002.8a116f72.akpm@linux-foundation.org>
+In-Reply-To: <46CC33EC.1040803@linux.vnet.ibm.com>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<46CC33EC.1040803@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: Patch for Apani Nortel VPN Client to build against kernel 2.6.22  help/review
-Date: Wed, 22 Aug 2007 11:38:14 -0400
-Message-ID: <F1D642E5A91BC94D9504EC83AE19E6B0128B34@ecqcmtlmail3.quebec.int.ec.gc.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Patch for Apani Nortel VPN Client to build against kernel 2.6.22  help/review
-Thread-Index: AcfkI91Mib5iMlt8QGC9HK0Uc0OIOwAAA8ggACLD+YA=
-From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-To: <linux-kernel@vger.kernel.org>
-Cc: =?iso-8859-1?Q?G=E9lineau=2CSamuel_=5BMontreal=5D?= 
-	<samuel.gelineau@EC.GC.CA>
-X-OriginalArrivalTime: 22 Aug 2007 15:38:14.0547 (UTC) FILETIME=[7419EE30:01C7E4D2]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, 22 Aug 2007 18:32:36 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-Sadly I have to use the Apani/Nortel VPN linux client to connect to my office.  The latest version (3.5) stopped being compatible with the latest stable 2.6.22 kernel (how suprising :().
+> Hi Andrew,
+> 
+> Following Kernel Bug was raised when i tried compiling and booting ppc64 
+> machine
+> with 2.6.23-rc3-mm1 kernel.
+> 
+> =================================================================
+> 
+> Freeing initrd memory: 908k freed
+> 
+> sysctl table check failed: /kernel .1 Writable sysctl directory
+> 
+> skb_over_panic: text:c0000000002bf840 len:139 put:29 head:c00000000ffe7400 data:c00000000ffe7400 tail:0x8b end:0x80 dev:<NULL>
+> 
+> ------------[ cut here ]------------
+> 
+> kernel BUG at net/core/skbuff.c:95!
+> 
+> Oops: Exception in kernel mode, sig: 5 [#1]
+> 
+> SMP NR_CPUS=128 NUMA pSeries
+> 
+> Modules linked in:
+> 
+> NIP: c0000000003fd7c4 LR: c0000000003fd7c0 CTR: 80000000000f97dc
+> 
+> REGS: c0000000027f3850 TRAP: 0700   Not tainted  (2.6.23-rc3-mm1-autokern1)
+> 
+> MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 24288024  XER: 00000010
+> 
+> TASK = c000000009fc0000[1] 'swapper' THREAD: c0000000027f0000 CPU: 0
+> 
+> GPR00: c0000000003fd7c0 c0000000027f3ad0 c000000000737710 0000000000000082 
+> 
+> GPR04: 0000000000000001 0000000000000001 0000000000000000 c00000000062bb3c 
+> 
+> GPR08: 0000000000000000 c00000000067b2e0 0000000000002100 c00000000077b110 
+> 
+> GPR12: 0000000000004000 c000000000649f00 0000000000000000 0000000000000000 
+> 
+> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> 
+> GPR20: 0000000000000000 c00000000802a0c0 c00000000052ea30 c0000000005392a8 
+> 
+> GPR24: c000000009f6b908 c0000000006a4000 c0000000026e2000 0000000000000020 
+> 
+> GPR28: c00000000ffe746e 0000000000000004 c0000000006f5340 c000000009f6a900 
+> 
+> NIP [c0000000003fd7c4] .skb_over_panic+0x50/0x58
+> 
+> LR [c0000000003fd7c0] .skb_over_panic+0x4c/0x58
+> 
+> Call Trace:
+> 
+> [c0000000027f3ad0] [c0000000003fd7c0] .skb_over_panic+0x4c/0x58 (unreliable)
+> 
+> [c0000000027f3b60] [c0000000002bf848] .kobject_uevent_env+0x4f8/0x528
+> 
+> [c0000000027f3c80] [c00000000032512c] .device_add+0x2bc/0x730
+> 
+> [c0000000027f3d50] [c000000000022330] .vio_register_device_node+0x1a4/0x274
+> 
+> [c0000000027f3e00] [c0000000005d34a8] .vio_bus_init+0xa0/0xec
+> 
+> [c0000000027f3e80] [c0000000005c8c6c] .kernel_init+0x20c/0x4b8
+> 
+> [c0000000027f3f90] [c0000000000267b0] .kernel_thread+0x4c/0x68
+> 
 
-Since
-1) I'm stuck using that closed source/proprietary software
-2) there will most probably not be a new release from apani until year 2013
-3) support from apani is near zero
-we got used with previous version (aka 3.3) to hack the linux_wrapper.c file to try to keep the module compatible (http://www.fedoraforum.org/forum/showpost.php?p=742619&postcount=26)
+gargh, sorry, that's probably due to my screwed up attempt to fix Kay's
+screwed up
+gregkh-driver-driver-core-change-add_uevent_var-to-use-a-struct.patch.
 
-Based on the horrors that showed up while compiling against a 2.6.22 kernel (see below), I was wondering if somebody would be kind enough to review our not-yet-working patch that converts dev_base/skb calls to the new API.  A collegue of mine made all the required changes but when the netlock service gets fired-up the machine hang.
+Kay sent an update patch but it didn't arrive in time.
 
-Are there any ways to debug this black box?
+Greg, if you haven't yet merged that, please do so asap?
 
-Help very much appreciated.
+So what _should_ this:
 
-----------------------
-
-Here is the not-yet-working patch against the linux_wrapper.c file:
-
---- cvc_linux-rh-gcc3-3.5.orig/src/linux_wrapper.c	2007-02-07 19:10:41.000000000 +0000
-+++ cvc_linux-rh-gcc3-3.5/src/linux_wrapper.c	2007-08-21 17:42:30.000000000 +0000
-@@ -136,6 +136,8 @@ int nl_open(struct inode *inode, struct 
- /* some necessary globals... */
- #if ((LINUX_VERSION_CODE >= 0x020200) && (LINUX_VERSION_CODE < 0x020300))
- typedef struct device net_device_t;
-+#elif (LINUX_VERSION_CODE >= 0x020616)
-+typedef struct list_head net_device_t;
- #else
- typedef struct net_device net_device_t;
- #endif
-@@ -306,8 +308,11 @@ nl_copy_to_user(void *to, const void *fr
+--- a/arch/powerpc/kernel/vio.c~fix-4-gregkh-driver-driver-core-change-add_uevent_var-to-use-a-struct
++++ a/arch/powerpc/kernel/vio.c
+@@ -373,7 +373,7 @@ static int vio_hotplug(struct device *de
+ 	dn = dev->archdata.of_node;
+ 	if (!dn)
+ 		return -ENODEV;
+-	cp = of_get_property(dn, "compatible", &length);
++	cp = of_get_property(dn, "compatible", &env->buflen);
+ 	if (!cp)
+ 		return -ENODEV;
  
- void init_misc(void)
- {
--
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+        nl_dev_base = &dev_base_head;
-+#else
-         nl_dev_base = dev_base;
-+#endif
- }
- 
- #if ((LINUX_VERSION_CODE >= 0x020200) && (LINUX_VERSION_CODE < 0x020300))
-@@ -430,8 +435,13 @@ void nl_skb_put(struct sk_buff *skb, int
- int nl_ip_rcv(struct sk_buff *skb, struct packet_type *pt)
- {
- #if (LINUX_VERSION_CODE > 0x02060c)
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+    struct net_device *dev = skb->dev;
-+    struct iphdr *iph = (struct iphdr*) skb->network_header;
-+#else
-     struct net_device *dev = skb->dev;
-     struct iphdr *iph = skb->nh.iph;
-+#endif
- 
-     if (skb->dst == NULL)
-         {
-@@ -469,28 +479,52 @@ int nl_unregister_netdevice_notifier(str
- 
- char *dev_name (net_device_t *dev)
- {
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+  return (net_device_entry(dev)->name);
-+#else
-   return (dev->name);
-+#endif
- }
- 
- int dev_name_len (net_device_t *dev)
- {
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+  return (strlen(net_device_entry(dev)->name));
-+#else
-   return (strlen(dev->name));
-+#endif
- }
- unsigned *dev_mtu_ptr (net_device_t *dev)
- {
--  return (&dev->mtu);
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+  return &(net_device_entry(dev)->mtu);
-+#else
-+  return &(dev->mtu);
-+#endif
- }
- unsigned dev_mtu (net_device_t *dev)
- {
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+  return (net_device_entry(dev)->mtu);
-+#else
-   return (dev->mtu);
-+#endif
- }
- int dev_ifindex (net_device_t *dev)
- {
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+  return (net_device_entry(dev)->ifindex);
-+#else
-   return (dev->ifindex);
-+#endif
- }
- void *dev_ip_ptr (net_device_t *dev)
- {
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+  return (net_device_entry(dev)->ip_ptr);
-+#else
-   return (dev->ip_ptr);
-+#endif
- }
- net_device_t *dev_next (net_device_t *dev)
- {
-@@ -546,9 +580,15 @@ void nl_skb_dup (struct sk_buff *new_skb
-     head_offset = new_skb->head - skb->head;
-     new_skb->dev = skb->dev;
-     new_skb->dst = dst_clone(skb->dst);
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+    new_skb->transport_header = skb->transport_header+head_offset;
-+    new_skb->network_header = skb->network_header+head_offset;
-+    new_skb->mac_header = skb->mac_header+head_offset;
-+#else
-     new_skb->h.raw = skb->h.raw+head_offset;
-     new_skb->nh.raw = skb->nh.raw+head_offset;
-     new_skb->mac.raw = skb->mac.raw+head_offset;
-+#endif
-     memcpy(new_skb->cb, skb->cb, sizeof(skb->cb));
-     new_skb->priority = skb->priority;
-     new_skb->protocol = skb->protocol;
-@@ -573,9 +613,15 @@ void nl_skb_hdr_copy (struct sk_buff *sk
- {
-   skb_to->dev = skb_from->dev;
-   skb_to->dst = skb_from->dst;
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+  skb_to->transport_header = skb_from->transport_header;
-+  skb_to->network_header = skb_from->network_header;
-+  skb_to->mac_header = skb_from->mac_header;
-+#else
-   skb_to->h.raw = skb_from->h.raw;
-   skb_to->nh.raw = skb_from->nh.raw;
-   skb_to->mac.raw = skb_from->mac.raw;
-+#endif
-   memcpy(skb_to->cb, skb_from->cb, sizeof(skb_from->cb));
-   skb_to->priority = skb_from->priority;
-   skb_to->protocol = skb_from->protocol;
-@@ -592,7 +638,11 @@ void nl_skb_hdr_copy (struct sk_buff *sk
- 
- struct iphdr * nl_skb_iph (struct sk_buff *skb)
- {
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+  return (struct iphdr*) skb->network_header;
-+#else
-   return skb->nh.iph;
-+#endif
- }
- 
- net_device_t * nl_skb_dev (struct sk_buff *skb)
-@@ -613,10 +663,14 @@ void nl_send_skb (struct sk_buff *skb, n
- 
-   if (skb)
-     {
--    skb->nh.iph = (struct iphdr *) skb->data;
-     skb->dev = dev;
--                                                                                
--    iph = skb->nh.iph;
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+    skb->network_header = skb->data;
-+    iph = (struct iphdr*) skb->network_header;
-+#else
-+    skb->nh.iph = (struct iphdr *) skb->data;
-+    iph = skb->network_header.iph;
-+#endif
-                                               
-     rval = ip_route_output (&rt, iph->daddr, 0, RT_TOS(iph->tos), 0);
-                                                                                 
-@@ -749,7 +803,11 @@ void do_checksum_offload( struct sk_buff
-     {
-     goto done_exit;
-     }
-+#if (LINUX_VERSION_CODE >= 0x020616)
-+  iph = (struct iphdr*) skb->network_header;
-+#else
-   iph = skb->nh.iph;
-+#endif
-   header_length = iph->ihl << 2;                /* get the ip header length */
-   h_ptr = (char*)iph + header_length;           /* get pointer to proto header */
-   frag_ptr = skb_shinfo( skb )->frag_list;      /* at most, one frag */
-@@ -765,11 +823,11 @@ void do_checksum_offload( struct sk_buff
-     csum = csum_partial( h_ptr, ntohs(iph->tot_len) - header_length, 0 );
-     check = csum_fold( csum_partial( frag_ptr->data, nl_data_len( frag_ptr ), csum ) );
-     }
--  if ( skb->nh.iph->protocol == 17 )            /* if UDP, */
-+  if ( iph->protocol == 17 )            /* if UDP, */
-     {
-     ((struct udphdr*)h_ptr)->check = check;
-     }
--  if ( skb->nh.iph->protocol == 6 )             /* if TCP, */
-+  if ( iph->protocol == 6 )             /* if TCP, */
-     {
-     ((struct tcphdr*)h_ptr)->check = check;
-     }
+_
 
-----------------------
-
-Here are the "horrors" out of a make on the original linux_wrapper.c file against 2.6.22 kernel:
-
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c: In function 'init_misc':
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:310: error: 'dev_base' undeclared (first use in this function) /usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrap
-per.c:310: error: (Each undeclared identifier is reported only once /usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrap
-per.c:310: error: for each function it appears in.) /usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrap
-per.c: In function 'nl_ip_rcv':/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrap
-per.c:434: error: 'struct sk_buff' has no member named 'nh'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c: In function 'dev_next':
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:497: error: 'net_device_t' has no member named 'next'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c: In function 'nl_skb_dup':
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:549: error: 'struct sk_buff' has no member named 'h'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:549: error: 'struct sk_buff' has no member named 'h'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:550: error: 'struct sk_buff' has no member named 'nh'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:550: error: 'struct sk_buff' has no member named 'nh'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:551: error: 'struct sk_buff' has no member named 'mac'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:551: error: 'struct sk_buff' has no member named 'mac'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c: In function 'nl_skb_hdr_copy':
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:576: error: 'struct sk_buff' has no member named 'h'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:576: error: 'struct sk_buff' has no member named 'h'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:577: error: 'struct sk_buff' has no member named 'nh'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:577: error: 'struct sk_buff' has no member named 'nh'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:578: error: 'struct sk_buff' has no member named 'mac'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:578: error: 'struct sk_buff' has no member named 'mac'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c: In function 'nl_skb_iph':
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:595: error: 'struct sk_buff' has no member named 'nh'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c: In function 'nl_send_skb':
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:616: error: 'struct sk_buff' has no member named 'nh'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:619: error: 'struct sk_buff' has no member named 'nh'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c: In function 'nl_data_len':
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:658: error: invalid operands to binary - /usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrap
-per.c: In function 'do_checksum_offload':
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:752: error: 'struct sk_buff' has no member named 'nh'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:768: error: 'struct sk_buff' has no member named 'nh'
-/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.c:772: error: 'struct sk_buff' has no member named 'nh'
-make[3]: ***
-[/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6/linux_wrapper.o] Error 1
-make[2]: ***
-[_module_/usr/src/Nortel/Apani_VPN_v3.5/cvc_linux-rh-gcc3-3.5/src/k2.6]
-Error 2
-
-- vin
+have done?
