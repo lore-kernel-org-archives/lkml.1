@@ -1,102 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932810AbXHVSF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764647AbXHVSIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932810AbXHVSF4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 14:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932387AbXHVSFS
+	id S1764647AbXHVSIm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 14:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763159AbXHVSIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 14:05:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43304 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763776AbXHVSFG (ORCPT
+	Wed, 22 Aug 2007 14:08:34 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:24615 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763120AbXHVSId (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 14:05:06 -0400
-Date: Wed, 22 Aug 2007 11:04:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dean Nelson <dcn@sgi.com>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, tony.luck@intel.com, jes@sgi.com
-Subject: Re: [RFC 3/3] SGI Altix cross partition memory (XPMEM)
-Message-Id: <20070822110422.65c990e5.akpm@linux-foundation.org>
-In-Reply-To: <20070822170011.GA20155@sgi.com>
-References: <20070810010659.GA25427@sgi.com>
-	<20070810011435.GD25427@sgi.com>
-	<20070809231542.f6dcce8c.akpm@linux-foundation.org>
-	<20070822170011.GA20155@sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 22 Aug 2007 14:08:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BqoBVG6x+R8lBYa4ntSqlER225xHdz3/iJoaoOWF3viuKjvvsJ2m8mrT2BaIdb8VG49+3as0smAJcpo7Eu19ViRd68vPvI+TBXyRZlrri923Qoc8QSR3Mu+Oobm3Y2R3jUsaGixlU7UIzFRQfavErfK8oO67GAEUaYZ9yfRmDAU=
+Message-ID: <6bffcb0e0708221108q7e4db8e6sba5e3845ccc0a9aa@mail.gmail.com>
+Date: Wed, 22 Aug 2007 20:08:32 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "James Morris" <jmorris@namei.org>
+Subject: Re: [2.6.20.17 review 00/58] 2.6.20.17 -stable review
+Cc: "Stephen Smalley" <sds@tycho.nsa.gov>, "Willy Tarreau" <w@1wt.eu>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+In-Reply-To: <Xine.LNX.4.64.0708221038030.5819@us.intercode.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070822083844.%N@1wt.eu>
+	 <6bffcb0e0708220410u4ab3978eq18786ac186e88c7d@mail.gmail.com>
+	 <Xine.LNX.4.64.0708220621550.28878@us.intercode.com.au>
+	 <1187789765.1451.310.camel@moss-spartans.epoch.ncsc.mil>
+	 <1187790174.1451.315.camel@moss-spartans.epoch.ncsc.mil>
+	 <Xine.LNX.4.64.0708220707390.9414@us.intercode.com.au>
+	 <6bffcb0e0708220729j7b9afcf3v4edef68cc974c08d@mail.gmail.com>
+	 <Xine.LNX.4.64.0708220929370.4968@us.intercode.com.au>
+	 <6bffcb0e0708220946hc2943f5jdb33215cdfab08d1@mail.gmail.com>
+	 <Xine.LNX.4.64.0708221038030.5819@us.intercode.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007 12:00:11 -0500
-Dean Nelson <dcn@sgi.com> wrote:
+On 22/08/07, James Morris <jmorris@namei.org> wrote:
+> On Wed, 22 Aug 2007, Michal Piotrowski wrote:
+>
+> > Yup, it is very interesting why no one noticed it.
+>
+> The new network controls are not enabled by default yet in distros.
 
-> 
->   3) WARNING: declaring multiple variables together should be avoided
-> 
-> checkpatch.pl is erroneously commplaining about the following found in five
-> different functions in arch/ia64/sn/kernel/xpmem_pfn.c.
-> 
-> 	int n_pgs = xpmem_num_of_pages(vaddr, size);
+That's why I enable most of these unsupported features :)
 
-What warning does it generate here?
+Unfortunately, I don't have time to test all stable/development releases.
 
-> > - xpmem_fault_handler() appears to have imposed a kernel-wide rule that
-> >   when taking multiple mmap_sems, one should take the lowest-addressed one
-> >   first?  If so, that probably wants a mention in that locking comment in
-> >   filemap.c
-> 
-> Sure. After looking at the lock ordering comment block in mm/filemap.c, it
-> wasn't clear to me how best to document this. Any suggestions/help would
-> be most appreciated.
+Regards,
+Michal
 
-umm,
-
- * when taking multiple mmap_sems, one should take the lowest-addressed one
- * first
-
- ;)
-
-> > - xpmem_fault_handler() does atomic_dec(&seg_tg->mm->mm_users).  What
-> >   happens if that was the last reference?
-> 
-> When /dev/xpmem is opened by a user process, xpmem_open() incs mm_users
-> and when it is flushed, xpmem_flush() decs it (via mmput()) after having
-> ensured that no XPMEM attachments exist of this mm. Thus the dec in
-> xpmem_fault_handler() will never take it to 0.
-
-OK.  Generally if a reviewer asks a question like this, it indicates that a
-code comment is needed.  Because it is likely that others will later wonder
-the same thing.
-
-> > - Has it all been tested with lockdep enabled?  Jugding from all the use
-> >   of SPIN_LOCK_UNLOCKED, it has not.
-> >
-> >   Oh, ia64 doesn't implement lockdep.  For this code, that is deeply
-> >   regrettable.
-> 
-> No, it hasn't been tested with lockdep. But I have switched it from using
-> SPIN_LOCK_UNLOCKED to spin_lock_init().
-> 
-> > ! This code all predates the nopage->fault conversion and won't work in
-> >   current kernels.
-> 
-> I've switched from using nopage to using fault. I read that it is intended
-> that nopfn also goes away. If this is the case, then the BUG_ON if VM_PFNMAP
-> is set would make __do_fault() a rather unfriendly replacement for do_no_pfn().
-> 
-> > - xpmem_attach() does smp_processor_id() in preemptible code.  Lucky that
-> >   ia64 doesn't do preempt?
-> 
-> Actually, the code is fine as is even with preemption configured on. All it's
-> doing is ensuring that the thread was previously pinned to the CPU it's
-> currently running on. If it is, it can't be moved to another CPU via
-> preemption, and if it isn't, the check will fail and we'll return -EINVAL
-> and all is well.
-
-OK.  Running smp_processor_id() from within preemptible code will generate
-a warning, but the code is sneaky enough to prevent that warning if the
-calling task happens to be pinned to a single CPU.
-
-
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
