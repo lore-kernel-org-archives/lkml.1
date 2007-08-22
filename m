@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934019AbXHVVuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934037AbXHVVw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934019AbXHVVuu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 17:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761234AbXHVVul
+	id S934037AbXHVVw1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 17:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763710AbXHVVwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 17:50:41 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:54671 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763508AbXHVVuk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 17:50:40 -0400
-Message-ID: <46CCAE7A.7000206@vmware.com>
-Date: Wed, 22 Aug 2007 14:45:30 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 22 Aug 2007 17:52:19 -0400
+Received: from dax.msoe.edu ([155.92.194.41]:39312 "EHLO mx.msoe.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763597AbXHVVwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 17:52:19 -0400
+Message-ID: <17603.12.191.136.2.1187819526.squirrel@myweb.msoe.edu>
+In-Reply-To: <20070822185544.GA6002@kroah.com>
+References: <1187716018.731090.165620@j4g2000prf.googlegroups.com>
+    <20070821171018.C964B5F778@attila.bofh.it>
+    <39877.198.169.188.225.1187733834.squirrel@myweb.msoe.edu>
+    <20070822054615.GA23336@kroah.com>
+    <45719.198.169.188.225.1187793693.squirrel@myweb.msoe.edu>
+    <20070822185544.GA6002@kroah.com>
+Date: Wed, 22 Aug 2007 16:52:06 -0500 (CDT)
+Subject: Re: Restricting CDC-ACM devices
+From: "Nate" <stoddarn@msoe.edu>
+To: "Greg KH" <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.10a
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
-References: <46CBC842.4070100@vmware.com> <20070822102217.GE2642@bingen.suse.de> <46CC68D9.5060200@vmware.com> <20070822175918.GB8058@bingen.suse.de> <46CC6D63.2010204@vmware.com> <20070822194632.GD8058@bingen.suse.de> <46CC9FF2.3040406@vmware.com> <20070822220451.GJ8058@bingen.suse.de>
-In-Reply-To: <20070822220451.GJ8058@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-MSOE-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
+X-MSOE-MailScanner-From: stoddarn@msoe.edu
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->
->> We might benefit from it, but would the 
->> BusLogic driver?  It sets a nasty precedent for maintenance as different 
->> hypervisors and emulators hack up different drivers for their own 
->> performance.
->>     
->
-> I still think it's preferable to change some drivers than everybody.
->
-> AFAIK BusLogic as real hardware is pretty much dead anyways,
-> so you're probably the only primary user of it anyways.
-> Go wild on it!
->   
+Thank you for your responses.  Please don't take my repeated questioning
+of your answers as me being difficult, I'm just trying to get a better
+understanding.
 
-It is looking juicy.  Maybe another day.
 
-Zach
+> Well, just messing with the device ids is not that tough of a patch to
+> keep up to date over time, so you might just try that if necessary.
+
+That is a good point.  I may also be adding some extra logic to check
+other fields to confirm compatibility before allowing a usb device to be
+bound to the CDC-ACM driver.  That is still probably pretty small piece of
+code in the probe function, but I'm just concerned that over time more
+logic would be added and other developers will be maintaining the code.
+
+
+> Yes.  You can manually bind and unbind all PCI and USB devices from
+> their drivers from userspace.  So you do have full control over this
+> already, no kernel changes needed.
+
+Does this require my userspace applications to poll the USB devices
+(/proc/bus/usb/devices) and then disconnect/connect my driver every time a
+USB device using CDC-ACM is connected?  Is this what is normally done? 
+Does this cause a noticeable performance hit when the driver is cycled
+like this?  If I don't enable CDC-ACM in make menuconfig, can I still bind
+it to a USB device from userspace?
+
+
+I don't know if this matters, but I wanted to add some use case details:
+This driver will be running on a <200 MHz processor and there can be a
+number of connects/disconnect of the device in a short time from the
+users.
+
+Thanks,
+-Nate
+
