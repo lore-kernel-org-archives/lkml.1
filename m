@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762840AbXHVOHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762983AbXHVOIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762840AbXHVOHZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 10:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758860AbXHVOHL
+	id S1762983AbXHVOIh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 10:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760494AbXHVOIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 10:07:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47611 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758159AbXHVOHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 10:07:10 -0400
-Message-ID: <46CC42EF.3030602@redhat.com>
-Date: Wed, 22 Aug 2007 10:06:39 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 22 Aug 2007 10:08:30 -0400
+Received: from namei.org ([69.55.235.186]:35448 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760232AbXHVOI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 10:08:29 -0400
+Date: Wed, 22 Aug 2007 07:08:16 -0700 (PDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Stephen Smalley <sds@tycho.nsa.gov>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [2.6.20.17 review 00/58] 2.6.20.17 -stable review
+In-Reply-To: <1187790174.1451.315.camel@moss-spartans.epoch.ncsc.mil>
+Message-ID: <Xine.LNX.4.64.0708220707390.9414@us.intercode.com.au>
+References: <20070822083844.%N@1wt.eu>  <6bffcb0e0708220410u4ab3978eq18786ac186e88c7d@mail.gmail.com>
+  <Xine.LNX.4.64.0708220621550.28878@us.intercode.com.au> 
+ <1187789765.1451.310.camel@moss-spartans.epoch.ncsc.mil>
+ <1187790174.1451.315.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-To: Hirokazu Takata <takata@linux-m32r.org>
-CC: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       "Luck, Tony" <tony.luck@intel.com>, Chris Friesen <cfriesen@nortel.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: [PATCH 11/23] make atomic_read() and atomic_set() behavior consistent
- on m32r
-References: <46C03885.7000109@redhat.com> <20070813112452.GK24018@shell.boston.redhat.com> <swfhcmswcux.wl%takata.hirokazu@renesas.com> <swfejhww4cs.wl%takata.hirokazu@renesas.com>
-In-Reply-To: <swfejhww4cs.wl%takata.hirokazu@renesas.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hirokazu Takata wrote:
-> I think the parameter of atomic_read() should have "const" 
-> qualifier to avoid these warnings, and IMHO this modification might be
-> worth applying on other archs.
+On Wed, 22 Aug 2007, Stephen Smalley wrote:
 
-I agree.
+> Oops, never mind - tail still follows secmark, so that shouldn't matter.
+> So I'm not sure why we are getting a bad value for secmark here - should
+> be initialized to zero and never modified unless there is an iptables
+> secmark rule.
 
-> Here is an additional patch to revise the previous one for m32r.
+Michal, do you see this in current git?
 
-I'll incorporate this change if we get enough consensus to justify a 
-re-re-re-submit.  Since the patch is intended to be a functional no-op on m32r, 
-I'm inclined to leave it alone at the moment.
 
-> I also tried to rewrite it with inline asm code, but the kernel text size
-> bacame roughly 2kB larger. So, I prefer C version.
-
-You're not the only arch maintainer who prefers doing it in C.  If you trust 
-your compiler (a big "if", apparently), inline asm only improves code generation 
-if you have a whole bunch of general purpose registers for the optimizer to play 
-with.
-
-	-- Chris
+-- 
+James Morris
+<jmorris@namei.org>
