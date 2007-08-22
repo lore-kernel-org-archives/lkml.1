@@ -1,60 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbXHVC5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbXHVC6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755163AbXHVC5Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 22:57:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbXHVC5D
+	id S1756153AbXHVC6m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 22:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbXHVC6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 22:57:03 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58674 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752475AbXHVC5B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 22:57:01 -0400
-X-Sasl-enc: XO5WPvmlv0Ot9f7KYHEFXijwjz+f7rPiIrhq88TGTLr7 1187751420
-Subject: Re: [PATCH] autofs4: reinstate negatitive timeout of mount fails
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>
-In-Reply-To: <20070821131551.4026fb96.akpm@linux-foundation.org>
-References: <1187688369.3318.12.camel@raven.themaw.net>
-	 <20070821131551.4026fb96.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 10:56:55 +0800
-Message-Id: <1187751415.3899.9.camel@raven.themaw.net>
+	Tue, 21 Aug 2007 22:58:35 -0400
+Received: from main.gmane.org ([80.91.229.2]:46220 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752657AbXHVC6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 22:58:34 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Russ Dill <Russ.Dill@gmail.com>
+Subject: What must I do to get HPET
+Date: Wed, 22 Aug 2007 02:58:24 +0000 (UTC)
+Message-ID: <loom.20070822T045428-445@post.gmane.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 70.190.164.204 (Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.6) Gecko/20070810 Galeon/2.0.2 (Ubuntu package 2.0.2-4ubuntu1) (gutsy) Firefox/2.0.0.6)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-21 at 13:15 -0700, Andrew Morton wrote:
-> On Tue, 21 Aug 2007 17:26:09 +0800
-> Ian Kent <raven@themaw.net> wrote:
-> 
-> > Due to a change to fs/dcache.c:d_lookup() in the 2.6 kernel whereby only
-> > hashed dentrys are returned the negative caching of mount failures
-> > stopped working in the autofs4 module for nobrowse mount (ie. directory
-> > created at mount time and removed at umount or following a mount
-> > failure).
-> > 
-> > This patch keeps track of the dentrys from mount fails in order to be
-> > able check the timeout since the last fail and return the appropriate
-> > status. In addition the timeout value is settable at load time as a
-> > module option and via sysfs using the module
-> > parameter /sys/module/autofs4/parameters/negative_timeout.
-> 
-> Boy, that's a complex-looking patch.  I think I'll sit on this one
-> for 2.6.24 ;)
+I have an Acer Ferrari 5000 laptop, it has an AMD64 TL-60 processor, and an
+RS480 host bridge. I'm running 2.6.22, I get no HPET.
 
-Yes, that's fine .. the principle isn't that complex.
+>From looking at the kernel source, the HPET driver is looking for PNP0103. I see
+no PNP0103 entry on my machine, just PNP0100. Searching around, it looks like
+kernels running on other RS480 systems are finding HPETs.
 
-> 
-> It seems to use a lot of list_for_each[_safe] which could
-> have been coded as list_for_each_entry[_safe], btw.
+http://lists.openwall.net/linux-kernel/2007/03/26/215
 
-Mmm .. good point. I've not noticed the list_for_each_entry* macros.
-
-Ian
-
+Do I need to get Acer to update the BIOS to include a PNP0103 entry? Is there
+some way I can force this?
 
