@@ -1,70 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764374AbXHVQHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763985AbXHVQJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764374AbXHVQHn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 12:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760227AbXHVQHd
+	id S1763985AbXHVQJu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 12:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758740AbXHVQJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 12:07:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50730 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760170AbXHVQHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 12:07:33 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 3/4] Hibernation: Pass CR3 in the image header on x86_64
-Date: Wed, 22 Aug 2007 18:17:50 +0200
-User-Agent: KMail/1.9.5
-Cc: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200708221015.16493.rjw@sisk.pl> <200708221020.34988.rjw@sisk.pl> <20070822082825.GC2479@elf.ucw.cz>
-In-Reply-To: <20070822082825.GC2479@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 22 Aug 2007 12:09:43 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51566 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758578AbXHVQJm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 12:09:42 -0400
+Date: Wed, 22 Aug 2007 09:08:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [BUG] 2.6.23-rc3-mm1 Oops: Machine check, sig: 7 [#1]
+Message-Id: <20070822090858.b8f62539.akpm@linux-foundation.org>
+In-Reply-To: <46CC387D.4000605@linux.vnet.ibm.com>
+References: <46CC387D.4000605@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708221817.51334.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 22 August 2007 10:28, Pavel Machek wrote:
-> Hi!
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Since we already pass the address of restore_registers() in the image header,
-> > we can also pass the value of the CR3 register from before the hibernation in
-> > the same way.  This will allow us to avoid using init_level4_pgt page tables
-> > during the restore.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> > @@ -253,10 +262,13 @@ int arch_hibernation_header_save(void *a
-> >  {
-> >  	struct restore_data_record *rdr = addr;
-> >  
-> > -	if (max_size < sizeof(struct restore_data_record))
-> > +	if (max_size < sizeof(*rdr))
-> >  		return -EOVERFLOW;
-> >  	rdr->jump_address = restore_jump_address;
-> > -	rdr->control = (restore_jump_address ^ RESTORE_MAGIC);
-> > +	rdr->cr3 = restore_cr3;
-> > +	rdr->magic = RESTORE_MAGIC;
-> > +	rdr->crc = 0;
-> > +	rdr->crc = crc32_le(0, addr, sizeof(*rdr));
-> >  	return 0;
-> >  }
-> 
-> No, I do not think I like that. I believe both -> control and -> crc
-> is just useless paranoia. Bitflip in this area is not going to be any
-> worse than bitflip anywhere else, we should not pretend this is
-> somehow "more important".
-> 
-> -> control should really be "protocol version"... probably should
-> contain some field that is easy to increment.
+On Wed, 22 Aug 2007 18:52:05 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-OK
+> Hi Andrew,
+> 
+> Following oops is generated on ppc64 machine while booting with
+> the 2.6.23-rc3-mm1 kernel.
+> 
+> ===========================================================
+> [    5.341499] PowerMac i2c bus u3 0 registered
+> [    5.354201] TCP cubic registered
+> [    5.364880] input: PMU as /class/input/input0
+> [    5.400152] RAMDISK: cramfs filesystem found at block 0
+> [    5.414336] RAMDISK: Loading 4688KiB [1 disk] into ram disk... done.
+> [    5.533921] VFS: Mounted root (cramfs filesystem) readonly.
+> [    5.549385] Machine check in kernel mode.
+> [    5.560880] Caused by (from SRR1=9000000000009032): Transfer error 
+> ack signal
+> [    5.578607] Oops: Machine check, sig: 7 [#1]
+> [    5.590736] SMP NR_CPUS=32 NUMA PowerMac
+> [    5.602052] Modules linked in:
+> [    5.611551] NIP: c000000000279ee0 LR: c0000000000ab1c4 CTR: 
+> c000000000092cc8
+> [    5.629323] REGS: c00000000dcdf040 TRAP: 0200   Not tainted  
+> (2.6.23-rc3-mm1-autokern1)
+> [    5.653218] MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 24000022  XER: 
+> 00000000
+> [    5.671260] TASK = c00000000e176000[774] 'linuxrc' THREAD: 
+> c00000000dcdc000 CPU: 0
+> [    5.690056] GPR00: c00000000e207b08 c00000000dcdf2c0 c0000000005bfac0 
+> c00000000e207848
+> [    5.714493] GPR04: c00000000e10fb08 c00000000e207900 c00000000e2078f8 
+> c00000000e2078f8
+> [    5.739017] GPR08: 0000000000000000 c00000000e2078f8 c00000000e2078f8 
+> 0000000000000000
+> [    5.763600] GPR12: c00000000e2078f8 c000000000505280 0000000010028230 
+> 0000000000000000
+> [    5.788276] GPR16: 0000000000000002 0000000000000000 0000000000000000 
+> 0000000000000802
+> [    5.813137] GPR20: 0000000000029000 0000000000000029 0000000000000000 
+> 0000000000000001
+> [    5.838609] GPR24: 0000000000000000 c00000000e10fb00 c00000000e2078f8 
+> c00000000e10fb08
+> [    5.864713] GPR28: c00000000e207848 c00000000e207848 c00000000055af48 
+> c00000000e207b08
+> [    5.897143] NIP [c000000000279ee0] .rb_insert_color+0x5c/0x194
+> [    5.914305] LR [c0000000000ab1c4] .__vma_link_rb+0x30/0x44
+> [    5.930736] Call Trace:
+> [    5.941092] [c00000000dcdf2c0] [c00000000e004580] 0xc00000000e004580 
+> (unreliable)
+> [    5.966930] [c00000000dcdf360] [c0000000000ab1c4] 
+> .__vma_link_rb+0x30/0x44
+> [    5.986182] [c00000000dcdf3e0] [c0000000000ab230] .__vma_link+0x58/0x78
+> [    6.004896] [c00000000dcdf460] [c0000000000ab79c] .vma_link+0x94/0x1b8
+> [    6.023345] [c00000000dcdf510] [c0000000000ada44] 
+> .mmap_region+0x330/0x4d8
+> [    6.042415] [c00000000dcdf620] [c000000000011fcc] .elf_map+0xb8/0x19c
+> [    6.060511] [c00000000dcdf6d0] [c000000000013064] 
+> .load_elf_binary+0xfb4/0x1a4c
+> [    6.085519] [c00000000dcdf830] [c0000000000d0c1c] 
+> .search_binary_handler+0x104/0x310
+> [    6.111417] [c00000000dcdf8e0] [c000000000111cc0] 
+> .load_script+0x278/0x2b4
+> [    6.130289] [c00000000dcdfa10] [c0000000000d0c1c] 
+> .search_binary_handler+0x104/0x310
+> [    6.155961] [c00000000dcdfac0] [c0000000000d0fac] .do_execve+0x184/0x244
+> [    6.174367] [c00000000dcdfb70] [c00000000000f278] .sys_execve+0x70/0xf4
+> [    6.192490] [c00000000dcdfc10] [c00000000000852c] syscall_exit+0x0/0x40
+> [    6.210486] --- Exception: c01 at .kernel_execve+0x8/0x14
+> [    6.226093]     LR = .do_linuxrc+0xa4/0xc0
+> [    6.239060] [c00000000dcdff00] [c0000000004b31f4] 
+> .do_linuxrc+0x90/0xc0 (unreliable)
+> [    6.263900] [c00000000dcdff90] [c000000000023ef4] 
+> .kernel_thread+0x4c/0x68
+> [    6.282270] Instruction dump:
+> [    6.292794] e97f0010 7fa95800 409e0070 e97f0008 2fab0000 419e0010 
+> e80b0000 780807e1
+> [    6.317509] 4182006c eba90008 7fbde000 409e0018 <7d234b78> 7f64db78 
+> 7d3c4b78 4bffff1d
+> 
 
-Perhaps I'll just remove the crc field.  What do you think?
+It would be great if you could fix that wordwrapping problem.
 
-Rafael
+Dunno, it beats me.  powerpc booted OK for me.  Ben, have you been playing
+around in powerpc mmap code?  How come the oops claims it died at
+kernel_execve+0x8/0x14 but the call trace points up into the vma management
+code?
+
+Kamalesh, can you send the config please?
