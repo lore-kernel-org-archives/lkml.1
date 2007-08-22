@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764072AbXHVJNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764214AbXHVJNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764072AbXHVJNf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 05:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759197AbXHVIyG
+	id S1764214AbXHVJNz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 05:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbXHVIyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 04:54:06 -0400
-Received: from 1wt.eu ([62.212.114.60]:2182 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759173AbXHVIyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 04:54:05 -0400
-From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20070822084042.%N@1wt.eu>
-References: <20070822083844.%N@1wt.eu>
-User-Agent: quilt/0.46-1
-Date: Wed, 22 Aug 2007 11:39:37 +0200
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Badari Pulavarty <pbadari@us.ibm.com>, Joe Jin <joe.jin@oracle.com>,
-       Zach Brown <zach.brown@oracle.com>,
-       gurudas pai <gurudas.pai@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>
-Subject: [2.6.20.17 review 53/58] direct-io: fix error-path crashes
-Content-Disposition: inline; filename=0053-direct-io-fix-error-path-crashes.patch
+	Wed, 22 Aug 2007 04:54:09 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:3270 "EHLO
+	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759195AbXHVIyH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 04:54:07 -0400
+Subject: Re: [patch 3/3] mm: variable length argument support
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Dan Aloni <da-x@monatomic.org>
+Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       Ollie Wild <aaw@google.com>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070822084852.GA12314@localdomain>
+References: <20070613100334.635756997@chello.nl>
+	 <20070613100835.014096712@chello.nl>  <20070822084852.GA12314@localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WTREF37w6MqqyimV8o8b"
+Date: Wed, 22 Aug 2007 10:54:02 +0200
+Message-Id: <1187772842.6114.282.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Need to initialize map_bh.b_state to zero.  Otherwise, in case of a faulty
-user-buffer its possible to go into dio_zero_block() and submit a page by
-mistake - since it checks for buffer_new().
 
-http://marc.info/?l=linux-kernel&m=118551339032528&w=2
+--=-WTREF37w6MqqyimV8o8b
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-akpm: Linus had a (better) patch to just do a kzalloc() in there, but it got
-lost.  Probably this version is better for -stable anwyay.
+On Wed, 2007-08-22 at 11:48 +0300, Dan Aloni wrote:
+> On Wed, Jun 13, 2007 at 12:03:37PM +0200, Peter Zijlstra wrote:
+> > From: Ollie Wild <aaw@google.com>
+> >=20
+> > Remove the arg+env limit of MAX_ARG_PAGES by copying the strings direct=
+ly
+> > from the old mm into the new mm.
+> >=20
+> [...]
+> > +static int __bprm_mm_init(struct linux_binprm *bprm)
+> > +{
+> [...]
+> > +	vma->vm_flags =3D VM_STACK_FLAGS;
+> > +	vma->vm_page_prot =3D protection_map[vma->vm_flags & 0x7];
+> > +	err =3D insert_vm_struct(mm, vma);
+> > +	if (err) {
+> > +		up_write(&mm->mmap_sem);
+> > +		goto err;
+> > +	}
+> > +
+>=20
+> That change causes a crash in khelper when overcommit_memory =3D 2=20
+> under 2.6.23-rc3.
+>=20
+> When a khelper execs, at __bprm_mm_init() current->mm is still NULL.
+> insert_vm_struct() calls security_vm_enough_memory(), which calls=20
+> __vm_enough_memory(), and that's where current->mm->total_vm gets=20
+> dereferenced.
 
-Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-Acked-by: Joe Jin <joe.jin@oracle.com>
-Acked-by: Zach Brown <zach.brown@oracle.com>
-Cc: gurudas pai <gurudas.pai@oracle.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Willy Tarreau <w@1wt.eu>
----
- fs/direct-io.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Alan proposed this patch:
 
-diff --git a/fs/direct-io.c b/fs/direct-io.c
-index d9d0833..0286993 100644
---- a/fs/direct-io.c
-+++ b/fs/direct-io.c
-@@ -978,6 +978,7 @@ direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode,
- 	dio->get_block = get_block;
- 	dio->end_io = end_io;
- 	dio->map_bh.b_private = NULL;
-+	dio->map_bh.b_state = 0;
- 	dio->final_block_in_bio = -1;
- 	dio->next_block_for_io = -1;
- 
--- 
-1.5.2.5
+http://lkml.org/lkml/2007/8/13/782
 
--- 
+
+--=-WTREF37w6MqqyimV8o8b
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGy/mqXA2jU0ANEf4RAoVpAKCSMxZaGuYNAynaPsaVWiuvpJUuIACfY3+N
+NkHk8qBgDocjzHNb6QoNC80=
+=zANN
+-----END PGP SIGNATURE-----
+
+--=-WTREF37w6MqqyimV8o8b--
+
