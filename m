@@ -1,102 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932710AbXHVUlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933112AbXHVUnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932710AbXHVUlx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 16:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbXHVUlp
+	id S933112AbXHVUnW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 16:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbXHVUnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 16:41:45 -0400
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:42863 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750747AbXHVUlo convert rfc822-to-8bit (ORCPT
+	Wed, 22 Aug 2007 16:43:15 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:50763 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750747AbXHVUnO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 16:41:44 -0400
-DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=GBcVpbDTgPUe8IfrOlwWqXg6LGPq29ACDSVmhmnP8MSsJRMnYGyKnh77d/qQWfO6Fo++//L16mw8b074wFCwSrbMrfDvYZv/yn48Q1FmeTQl7LUaXAiun7rr3S9JQEIN;
-X-IronPort-AV: E=Sophos;i="4.19,295,1183352400"; 
-   d="scan'208";a="349001965"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
-Date: Wed, 22 Aug 2007 15:41:38 -0500
-Message-ID: <DFEF91B22ED07447AB6AA4B237F913F9B18F45@ausx3mpc125.aus.amer.dell.com>
-In-Reply-To: <alpine.LFD.0.999.0708221122180.30176@woody.linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [linux-usb-devel] [4/4] 2.6.23-rc3: known regressions
-Thread-Index: Acfk7B3ZyfNnS7OwSR+nq1svOBa8jgAEDgbA
-References: <46C098FD.1030601@googlemail.com> <alpine.LFD.0.999.0708202201580.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708202255130.30176@woody.linux-foundation.org> <200708202334.38261.david-b@pacbell.net> <alpine.LFD.0.999.0708202348460.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708210016420.30176@woody.linux-foundation.org> <alpine.LFD.0.999.0708212026200.30176@woody.linux-foundation.org> <DFEF91B22ED07447AB6AA4B237F913F9B18F2A@ausx3mpc125.aus.amer.dell.com> <alpine.LFD.0.999.0708221122180.30176@woody.linux-foundation.org>
-From: <Stuart_Hayes@Dell.com>
-To: <torvalds@linux-foundation.org>
-Cc: <david-b@pacbell.net>, <michal.k.k.piotrowski@gmail.com>,
-       <linux-usb-devel@lists.sourceforge.net>, <gregkh@suse.de>,
-       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
-       <dex@dragonslave.de>
-X-OriginalArrivalTime: 22 Aug 2007 20:41:42.0867 (UTC) FILETIME=[D91B1230:01C7E4FC]
+	Wed, 22 Aug 2007 16:43:14 -0400
+Date: Wed, 22 Aug 2007 16:42:54 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Mike Mohr <akihana@gmail.com>
+Cc: Rene Herman <rene.herman@home.nl>, linux-kernel@vger.kernel.org,
+       Guido Guenther <agx@sigxcpu.org>, Bodo Eggert <7eggert@gmx.de>
+Subject: Re: group ownership of tun devices -- nonfunctional?
+Message-ID: <20070822204254.GA13410@c2.user-mode-linux.org>
+References: <8Tpwf-3Nb-1@gated-at.bofh.it> <E1IMnHK-00012c-VC@be1.lrz> <46C86B6C.8090209@home.nl> <Pine.LNX.4.58.0708192333170.2426@be1.lrz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0708192333170.2426@be1.lrz>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I can create devices that are owned by my user account (tunctl -u
+> `whoami` -t tap0) and it works fine.  However, if I use group
+> permissions with -g it stops working.  In all cases, if I pass -g
+> <group>, the interface is created correctly but it is unusable as a
+> non-root user.
 
->> That could definitely cause mouse lock-ups.  Sorry, that should have
->> occurred to me yesterday when you mentioned the problem your kids
->> were seeing, but it didn't for some reason.
-> 
-> Btw, could it have caused the USB stack to be *really* confused? Some
-> of those mouse lockups ended up also locking the machine hard (ie no
-> ping, no nothing), and I'm a bit worried that there was something
-> else going on too..   
-> 
+I can't reproduce this - it seems to work fine on -rc3-mm1:
 
-Unfortunately, yes, that sounds exactly like what happened with the
-nVidia controller.  The problem was with my patch, but was fixed with
-the later patch.  I doubt there was anything else going on.
+As root:
+	./tunctl -u user -g user -t tap1
+	ifconfig tap1 192.168.0.130 up
+	route add -host 192.168.0.131 dev tap1
+	chmod 666 /dev/net/tun
 
-> That said, if you can actually re-create the MMF problems, could you
-> please try the patch that Arjan suggested? Ie add a 
-> 
-> 	/*
-> 	 * Some broadcom chips are buggy and can't take more than 5 usec
-as
-> DMA 
-> 	 * latency; inform the rest of kernel of this.
-> 	 */
-> 	if (weird_broadcom_chip())
-> 		set_acceptable_latency("ehci", 5);
-> 
-> to the USB driver, and then add something like
-> 
-> 	static inline int cpufreq_acceptable_latency(struct
-cpufreq_policy
-> 	*policy) {
-> 		unsigned long latency;
-> 
-> 		/* Policy latency in usec */
-> 		latency = policy->cpuinfo.transition_latency / 1000;
-> 
-> 		if (latency > system_latency_constraint())
-> 			return -EINVAL;
-> 
-> 		return 0;
-> 	}
-> 
-> adn then add calls to this from both the "__cpufreq_set_policy()"
-> function and the "__cpufreq_driver_target()" one too.. 
-> 
-> That should disable cpufreq with that broken chip, which is perhaps a
-> big draconian, but it's certainly better than having the USB layer
-> know about cpufreq internals directly.  
-> 
-> In the longer run, I think we can move the
-> "system_latency_constraint()" 
-> checking from the policy registration into each CPU frequency driver,
-> so that it could be more dynamically decide about "can we do it right
-> _now_"  
-> rather than globally saying "we can't do it with this hardware".
-> 
-> 				Linus
+As a normal user:
+	./tunread # tunread source is below
 
-I will work on that, thank you for the help.
+As root again:
+	ping 192.168.0.131
 
-Stuart
+tunread output:
+	0xffffffff 0xffffffff 0xffffffff 0xffffffff 0xffffffff 0xffffffff 0x0 0xffffffff 0xffffff9b 0x51 0xffffffb9 0xffffffd9 0x8 0x6 0x0 0x1 0x8 0x0 0x6 0x4 0x0 0x1 0x0 0xffffffff 0xffffff9b 0x51 0xffffffb9 0xffffffd9 0xffffffc0 0xffffffa8 0x0 0xffffff82 
+0x0 0x0 0x0 0x0 0x0 0x0 0xffffffc0 0xffffffa8 0x0 0xffffff83 0xffffffff 0xffffffff 0xffffffff 0xffffffff 0xffffffff 0xffffffff 0x0 0xffffffff 0xffffff9b 0x51 0xffffffb9 0xffffffd9 0x8 0x6 0x0 0x1 0x8 0x0 0x6 0x4 0x0 0x1 0x0 0xffffffff 0xffffff9b 0x51 0xffffffb9 0xffffffd9 0xffffffc0 0xffffffa8 0x0 0xffffff82 
+0x0 0x0 0x0 0x0 0x0 0x0 0xffffffc0 0xffffffa8 0x0 0xffffff83 0xffffffff 0xffffffff 0xffffffff 0xffffffff 0xffffffff 0xffffffff 0x0 0xffffffff 0xffffff9b 0x51 0xffffffb9 0xffffffd9 0x8 0x6 0x0 0x1 0x8 0x0 0x6 0x4 0x0 0x1 0x0 0xffffffff 0xffffff9b 0x51 0xffffffb9 0xffffffd9 0xffffffc0 0xffffffa8 0x0 0xffffff82 
+
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
+
+#include <stdio.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#define __KERNEL__
+#include <linux/socket.h>
+#include <linux/if.h>
+#include <linux/if_tun.h>
+
+int main(int argc, char **argv)
+{
+  char packet[1600];
+  struct ifreq ifr;
+  int fd, err, i, n;
+
+  if((fd = open("/dev/net/tun", O_RDWR)) < 0){
+    perror("Opening /dev/net/tun");
+    exit(1);
+  }
+
+  memset(&ifr, 0, sizeof(ifr));
+
+  /* Flags: IFF_TUN   - TUN device (no Ethernet headers) 
+   *        IFF_TAP   - TAP device  
+   *
+   *        IFF_NO_PI - Do not provide packet information  
+   */ 
+  ifr.ifr_flags = IFF_TUN; 
+  strncpy(ifr.ifr_name, "tap1", IFNAMSIZ);
+
+  if((err = ioctl(fd, TUNSETIFF, (void *) &ifr)) < 0){
+    perror("TUNSETIFF");
+    exit(1);
+  }
+
+  while(1){
+    n = read(fd, packet, sizeof(packet));
+    if(n < 0){
+      perror("read");
+      exit(1);
+    }
+    else if(n == 0)
+      break;
+
+    for(i = 0; i < n; i++){
+      printf("0x%x ", packet[i]);
+      if((i % 32) == 31)
+        printf("\n");
+    }
+  }
+}
