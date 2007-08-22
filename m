@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764694AbXHVQLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763714AbXHVQQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764694AbXHVQLX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 12:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758224AbXHVQLQ
+	id S1763714AbXHVQQr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 12:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761196AbXHVQQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 12:11:16 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38348 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758180AbXHVQLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 12:11:15 -0400
-Message-ID: <46CC601A.4010005@garzik.org>
-Date: Wed, 22 Aug 2007 12:11:06 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 22 Aug 2007 12:16:38 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:11823 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760227AbXHVQQh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 12:16:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=rCekpY181nuaDkM6UTTWPlzAPAdvVCSBzpLumL0KICm7E1QYdR8MilziDmLN2bmT7MjyAVLCA2J/AjvS07i6AFdCcV+yY/C8eaaVgQOFtJtONPyjSKN5GLSEoZFjnPyphMUoPojZgs++0Wn/93fTw9GUoZBcb7kTtfqK3b8BjIM=
+Message-ID: <46CC6112.9030705@googlemail.com>
+Date: Wed, 22 Aug 2007 18:15:14 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
 MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-CC: Andi Kleen <ak@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
-References: <46CBC842.4070100@vmware.com> <46CBCADF.2070400@qumranet.com> <1187763956.6174.48.camel@localhost.localdomain> <20070822103545.GG2642@bingen.suse.de> <46CC0719.2080103@qumranet.com> <20070822110810.GO32640@bingen.suse.de> <46CC0EAF.3000805@qumranet.com>
-In-Reply-To: <46CC0EAF.3000805@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+       linux-scsi@vger.kernel.org
+Subject: drivers/scsi/advansys.c - ld error ( Re: 2.6.23-rc3-mm1 )
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+In-Reply-To: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> And even then, all the performance 
-> sensitive stuff uses mmio, no?
+CONFIG_SCSI_ADVANSYS=y && CONFIG_ISA=n results in :
+
+...
+
+drivers/built-in.o: In function `advansys_init':
+advansys.c:(.init.text+0x38ea): undefined reference to `isa_register_driver'
+advansys.c:(.init.text+0x38ff): undefined reference to `isa_register_driver'
+advansys.c:(.init.text+0x3926): undefined reference to `isa_unregister_driver'
+advansys.c:(.init.text+0x3930): undefined reference to `isa_unregister_driver'
+drivers/built-in.o: In function `advansys_exit':
+advansys.c:(.exit.text+0x340): undefined reference to `isa_unregister_driver'
+advansys.c:(.exit.text+0x34a): undefined reference to `isa_unregister_driver'
+make: *** [.tmp_vmlinux1] Error 1
+
+...
 
 
-Depends on the hardware.
+I guess advansys_{init,exit} is missing some #ifdef's ..
 
-	Jeff
 
+config : http://194.231.229.228/kernel/mm/2.6.23-rc3-mm1/r/randconfig-9
+
+
+Gabriel
 
