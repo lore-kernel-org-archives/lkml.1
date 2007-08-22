@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbXHVCvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbXHVC5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755844AbXHVCvw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 22:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXHVCvo
+	id S1755163AbXHVC5Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 22:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbXHVC5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 22:51:44 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37662 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753278AbXHVCvn (ORCPT
+	Tue, 21 Aug 2007 22:57:03 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58674 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752475AbXHVC5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 22:51:43 -0400
-Date: Wed, 22 Aug 2007 11:52:58 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, clameter@sgi.com
-Subject: Re: bug in migrate page
-Message-Id: <20070822115258.7d59aaa1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1187748489.8474.21.camel@sli10-conroe.sh.intel.com>
-References: <1187748489.8474.21.camel@sli10-conroe.sh.intel.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Tue, 21 Aug 2007 22:57:01 -0400
+X-Sasl-enc: XO5WPvmlv0Ot9f7KYHEFXijwjz+f7rPiIrhq88TGTLr7 1187751420
+Subject: Re: [PATCH] autofs4: reinstate negatitive timeout of mount fails
+From: Ian Kent <raven@themaw.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>
+In-Reply-To: <20070821131551.4026fb96.akpm@linux-foundation.org>
+References: <1187688369.3318.12.camel@raven.themaw.net>
+	 <20070821131551.4026fb96.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 22 Aug 2007 10:56:55 +0800
+Message-Id: <1187751415.3899.9.camel@raven.themaw.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007 10:08:09 +0800
-Shaohua Li <shaohua.li@intel.com> wrote:
-
-> commit dc386d4d1e98bb39fb967ee156cd456c802fc692 adds rcu_read_lock, but
-> some routines in the lock range might sleep (like lock_buffer,
-> aops->writepage), I saw a 'sleep in atomic' warning. It appears the
-> patch has several versions before. Doing rcu_read_lock in PageAnon
-> sounds break the case of PageAnon(page) && PageSwapCache(page),
-> as .writepage might be called. The dummy anon patch maybe is ok.
+On Tue, 2007-08-21 at 13:15 -0700, Andrew Morton wrote:
+> On Tue, 21 Aug 2007 17:26:09 +0800
+> Ian Kent <raven@themaw.net> wrote:
 > 
+> > Due to a change to fs/dcache.c:d_lookup() in the 2.6 kernel whereby only
+> > hashed dentrys are returned the negative caching of mount failures
+> > stopped working in the autofs4 module for nobrowse mount (ie. directory
+> > created at mount time and removed at umount or following a mount
+> > failure).
+> > 
+> > This patch keeps track of the dentrys from mount fails in order to be
+> > able check the timeout since the last fail and return the appropriate
+> > status. In addition the timeout value is settable at load time as a
+> > module option and via sysfs using the module
+> > parameter /sys/module/autofs4/parameters/negative_timeout.
+> 
+> Boy, that's a complex-looking patch.  I think I'll sit on this one
+> for 2.6.24 ;)
 
-Thank you for catching.
+Yes, that's fine .. the principle isn't that complex.
 
-Maybe you're correct.
+> 
+> It seems to use a lot of list_for_each[_safe] which could
+> have been coded as list_for_each_entry[_safe], btw.
 
-BTW, in PageAnon(page) && PageSwapCache(page) case, I can't find when
-.writepage is called. Could you explain ?
+Mmm .. good point. I've not noticed the list_for_each_entry* macros.
 
-In my understanding,
+Ian
 
-rcu_read_lock()
-	-> try_to_unmap()
-	-> move_to_new_page()
-		-> migrate_page() // swap has .migratepage member.
-			-> migrate_page_move_mapping().
-			-> migrate_page_copy().
-		-> remove_migration_ptes().
-
-
-At quick glance, above path has no writepage() ops.
-just replace swap's radix tree entry.
-
-Thanks,
--Kame
 
