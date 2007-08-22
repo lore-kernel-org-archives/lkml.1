@@ -1,192 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964771AbXHVV4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934234AbXHVV52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964771AbXHVV4j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 17:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763063AbXHVV41
+	id S934234AbXHVV52 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 17:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759688AbXHVV5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 17:56:27 -0400
-Received: from www.osadl.org ([213.239.205.134]:36137 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758557AbXHVV40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 17:56:26 -0400
-Subject: [Announce] Unified x86 architecture, arch/x86 - V2
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 23:56:22 +0200
-Message-Id: <1187819782.3316.8.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Wed, 22 Aug 2007 17:57:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52860 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760147AbXHVV5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 17:57:16 -0400
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="ogdEvcULkB"
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: Alexey Dobriyan <adobriyan@sw.ru>, ak@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc3-mm1: cannot stat `vdso.so.dbg'
+In-Reply-To: Andrew Morton's message of  Wednesday, 22 August 2007 08:36:50 -0700 <20070822083650.85fdfcea.akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+X-Windows: it was hard to write; it should be hard to use.
+Message-Id: <20070822215639.02D154D0418@magilla.localdomain>
+Date: Wed, 22 Aug 2007 14:56:38 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce v2 of the unified arch/x86 project we are 
-working on.
 
-To recap: the core idea behind our project is simple to describe: we 
-introduce a new arch/x86/ and include/asm-x86/ file hierarchy that 
-includes all the existing 32-bit and 64-bit x86 code and allows the 
-building of either a 32-bit (i386) kernel or a 64-bit (x86_64) kernel. 
-No code is lost and almost no code is modified. We want the window 
-for regressions and tree incompatibilities to be zero. (The full initial 
-announcement can be found at http://lkml.org/lkml/2007/7/20/447)
+--ogdEvcULkB
+Content-Type: text/plain; charset=us-ascii
+Content-Description: message body text
+Content-Transfer-Encoding: 7bit
 
-The main technical request for improvement we received was the lack of a 
-patch-series, and this v2 release does that, in form of a 600+ commits 
-git tree:
+> Those patches are in Andi's tree.  His tree has the old versions.  The
+> patches are inter-tangled so it is non-trivial for me to generate
+> incremental patches on top of Andi's tree which bring his old patches up to
+> date with the new ones.  I could of course do so, but it'd be better if
+> Andi's tree weren't carrying old versions of
+> x86_64-ia32-vdso-install-unstripped-copies-on-disk and
+> x86_64-vdso-install-unstripped-copies-on-disk
+> 
+> Please resend those patches to Andi.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-x86.git
-
-One (large!) combo patch is available at:
-
- http://kernel.org/pub/linux/kernel/people/tglx/linux-x86.2.6.23-rc3-git-cb00e99c-combo.patch.bz2
-
-The tree is fully bisectable and it does a finegrained, gradual 
-move-over from arch/i386, arch/x86_64 into the unified arch/x86 tree, 
-with a total effect of:
-
- 1735 files changed, 167230 insertions(+), 170368 deletions(-)
-
-On file level:
-
-               mainline   arch/x86    delta
-  Total             905        842     - 63  files
-
-(see the full stats further below)
-
-The tree (and the combo patch) is against commit 
-cb00e99c0abd844b884c64c6b54aa3b7d345ebb1 of Linus's git tree.
-
-More details about v2:
-
-The patch series contains 9 steps of modifications:
-
-1) Preparatory patches, which simplify the scripted conversion
-   (Makefile cleanups, Kbuild infrastructure changes)
-
-2) Scripted analysis of the i386 and the x86_64 source tree to
-   identify source files, which exist in both trees with the same
-   name. These files are checked, whether they are identical or simply
-   include the corresponding source file from the other tree. If the
-   files are different and do not include the other file, the file is
-   renamed with a _32 resp. _64 extension and the Makefiles are fixed
-   up. Makefiles in corresponding directories are renamed as well and
-   a stub Makefile which selects the include of the _32 or the _64
-   Makefile variants depending on the config option CONFIG_X86_32 is
-   created.
-
-3) Scripted move of the files on a per directory basis from arch/i386
-   and arch/x86_64 to arch/x86. The files which are just providing an
-   include of the corresponding source file in the other source tree
-   are eliminated. In each step a fixup of the Makefiles is done to
-   keep the tree intact.
-
-   The only remaining files in arch/i386 and arch/x86_64 are the main
-   Makefiles, Kconfig files and the defconfigs.
-
-4) Scripted analysis of the exported headers in include/asm-i386 and
-   include/asm-x86_64. This is similar to step 2). The identical
-   header files are identified along with those, which just include
-   the corresponding header file from the other include path. The
-   header files which have the same name in both directories and which
-   are different are renamed with a _32 resp. _64 extension and a stub
-   header file which includes the 32 or the 64 bit version depending
-   on the __i386__ define is created. The Kbuild files are updated.
-
-5) Scripted analysis of the not exported headers in include/asm-i386
-   and include/asm-x86_64. This is mostly the same as step 4). The
-   stub file include switch depends on the config option
-   CONFIG_X86_32.
-
-6) Scripted move of all header files in include/asm-i386 and
-   include/asm/x86_64 to include/asm-x86. Makefile references are
-   fixed up automatically, the Kbuild file is unified and a patch to
-   the build system is applied which fixes the header check and
-   exports. After this step the header export is not longer a bi-arch
-   export. All headers along with the stub files are exported in one
-   go.
-
-7) Scripted fixup of Makefile references. During the conversion cross
-   tree references like "../../i386/kernel/" have been replaced by
-   "../../x86/kernel". This script makes these references relative to
-   the new unified source path.
-
-8) Scripted analysis of _32 and _64 header files in include/asm-x86.
-   The script replaces the defines and ifdefs, which protect from
-   recursive includes, by a unified automatically generated version
-   and removes white space damage from the files. After this the files
-   are compared. If they are identical the newly created file is
-   written instead of the _32 and _64 files. Otherwise the original
-   files are left intact. After this commit a second commit is done
-   which replaces the stub header file by the new unified variant and
-   removes the _32 and _64 variants.
-
-9) Semi scripted unification of _32 and _64 file variants. The script
-   identified files which are not really different, e.g. white space
-   damage, comment changes, small modifications. The result of the
-   script is manually fixed up and patches are generated. These steps
-   have been carefully verified. The unified files are header files,
-   source files and Makefiles.
-
-All 600+ bisection points have been build-tested (and a number of 
-boot-tests were done too), the end-result was build and boot tested on 
-x86-32 and x86-64 as well, and passes allyesconfig, allmodconfig and 
-allnoconfig builds.
-
-Some statistical information:
-
-arch/i386          unique    files:    255
-arch/x86_64        unique    files:     76
-arch/x86_64        reused    files:     65 (Makefile ref to arch/i386/..)
-       	           equal     files:      0
-       	           included  files:      6
-                   same name files:    124
-
-include/asm-i386   unique    headers:  138
-include/asm-x86_64 unique    headers:   45
-include/asm-x86_64 orphaned  headers:    1 (deleted)
-                   equal     headers:    7
-                   included  headers:   14
-                   same name headers:  254
-
-Unified headerfiles by script:          21
-
-Unified Makefiles (script aided)	 4
-Unified header files (script aided)	59
-Unified source files (script aided)	 3
-
-               mainline   arch/x86    delta
---------------------------------------------------
-Source i386         335          6     -329  files
-Source x86_64       153          4     -149  files
-Source x86            0        465     +465  files
-Source total        488        475     - 13  files
-Header i386         243          0     -243  files
-Header x86_64       174          0     -174  files
-Header x86            0        367     +367  files
-Header total        417        367     - 50  files
---------------------------------------------------
-Total               905        842     - 63  files
-
-Source i386       97918       3420  - 94498  lines
-Source x86_64     41309       2394  - 38915  lines
-Source x86            0     133062  +133062  lines
-Source total     139227     138876  -   351  lines
-Header i386       22779          0  - 22779  lines
-Header x86_64     14105          0  - 14105  lines
-Header x86            0      34092  + 34092  lines
-Header total      36884      34092  -  2792  lines
---------------------------------------------------
-Total            176111     172968  -  3143  lines
-
-As usual, comments and suggestions are welcome!
-
-	Thomas, Ingo
+These haven't changed since I sent them (including to Andi) on August 12.
 
 
+Thanks,
+Roland
+
+
+
+--ogdEvcULkB
+Content-Type: multipart/digest; boundary="ENA7miwK/g"
+Content-Transfer-Encoding: 7bit
+
+This is a digest, 2 messages, MIME encapsulation.
+
+--ENA7miwK/g
+
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Cc: ak@suse.de, sam@ravnborg.org
+Subject: [PATCH 1/2] x86_64 ia32 vDSO: install unstripped copies on disk
+Date: Sun, 12 Aug 2007 19:17:00 -0700 (PDT)
+Message-Id: <20070813021700.10E054D057D@magilla.localdomain>
+
+While integrating these with the Fedora kernel build, I worked out a few kinks.
+This patch replaces x86_64-ia32-vdso-install-unstripped-copies-on-disk.patch
+
+
+Thanks,
+Roland
+
+---
+
+This keeps an unstripped copy of the vDSO images built before they are
+stripped and embedded in the kernel.  The unstripped copies get installed
+in $(MODLIB)/vdso/ by "make install" (or you can explicitly use the
+subtarget "make vdso_install").  These files can be useful when they
+contain source-level debugging information.
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andi Kleen <ak@suse.de>
+---
+
+ arch/x86_64/Makefile      |    3 +++
+ arch/x86_64/ia32/Makefile |   25 +++++++++++++++++++++----
+ 2 files changed, 24 insertions(+), 4 deletions(-)
+
+diff -puN arch/x86_64/Makefile~x86_64-ia32-vdso-install-unstripped-copies-on-disk arch/x86_64/Makefile
+--- a/arch/x86_64/Makefile~x86_64-ia32-vdso-install-unstripped-copies-on-disk
++++ a/arch/x86_64/Makefile
+@@ -105,9 +105,14 @@ bzdisk: vmlinux
+ fdimage fdimage144 fdimage288 isoimage: vmlinux
+ 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(BOOTIMAGE) $@
+ 
+-install:
++install: vdso_install
+ 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(BOOTIMAGE) $@ 
+ 
++vdso_install:
++ifeq ($(CONFIG_IA32_EMULATION),y)
++	$(Q)$(MAKE) $(build)=arch/x86_64/ia32 $@
++endif
++
+ archclean:
+ 	$(Q)$(MAKE) $(clean)=$(boot)
+
+diff -puN arch/x86_64/ia32/Makefile~x86_64-ia32-vdso-install-unstripped-copies-on-disk arch/x86_64/ia32/Makefile
+--- a/arch/x86_64/ia32/Makefile~x86_64-ia32-vdso-install-unstripped-copies-on-disk
++++ a/arch/x86_64/ia32/Makefile
+@@ -18,18 +18,35 @@ $(obj)/syscall32_syscall.o: \
+ 	$(foreach F,sysenter syscall,$(obj)/vsyscall-$F.so)
+ 
+ # Teach kbuild about targets
+-targets := $(foreach F,sysenter syscall,vsyscall-$F.o vsyscall-$F.so)
++targets := $(foreach F,$(addprefix vsyscall-,sysenter syscall),\
++		     $F.o $F.so $F.so.dbg)
+ 
+ # The DSO images are built using a special linker script
+ quiet_cmd_syscall = SYSCALL $@
+-      cmd_syscall = $(CC) -m32 -nostdlib -shared -s \
++      cmd_syscall = $(CC) -m32 -nostdlib -shared \
+ 			  $(call ld-option, -Wl$(comma)--hash-style=sysv) \
+ 			   -Wl,-soname=linux-gate.so.1 -o $@ \
+ 			   -Wl,-T,$(filter-out FORCE,$^)
+ 
+-$(obj)/vsyscall-sysenter.so $(obj)/vsyscall-syscall.so: \
+-$(obj)/vsyscall-%.so: $(src)/vsyscall.lds $(obj)/vsyscall-%.o FORCE
++$(obj)/%.so: OBJCOPYFLAGS := -S
++$(obj)/%.so: $(obj)/%.so.dbg FORCE
++	$(call if_changed,objcopy)
++
++$(obj)/vsyscall-sysenter.so.dbg $(obj)/vsyscall-syscall.so.dbg: \
++$(obj)/vsyscall-%.so.dbg: $(src)/vsyscall.lds $(obj)/vsyscall-%.o FORCE
+ 	$(call if_changed,syscall)
+ 
+ AFLAGS_vsyscall-sysenter.o = -m32 -Wa,-32
+ AFLAGS_vsyscall-syscall.o = -m32 -Wa,-32
++
++vdsos := vdso32-sysenter.so vdso32-syscall.so
++
++quiet_cmd_vdso_install = INSTALL $@
++      cmd_vdso_install = cp $(@:vdso32-%.so=$(obj)/vsyscall-%.so.dbg) \
++			    $(MODLIB)/vdso/$@
++
++$(vdsos):
++	@mkdir -p $(MODLIB)/vdso
++	$(call cmd,vdso_install)
++
++vdso_install: $(vdsos)
+
+
+--ENA7miwK/g
+
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Cc: ak@suse.de
+Subject: [PATCH 2/2] x86_64 vDSO: install unstripped copies on disk
+Date: Sun, 12 Aug 2007 19:19:31 -0700 (PDT)
+Message-Id: <20070813021931.1406A4D057D@magilla.localdomain>
+
+While integrating these with the Fedora kernel build, I worked out a few kinks.
+This patch replaces x86_64-vdso-install-unstripped-copies-on-disk.patch
+and expects x86_64-ia32-vdso-install-unstripped-copies-on-disk.patch
+was applied first.
+
+
+Thanks,
+Roland
+
+---
+
+This keeps an unstripped copy of the vDSO images built before they are
+stripped and embedded in the kernel.  The unstripped copies get installed
+in $(MODLIB)/vdso/ by "make install" (or you can explicitly use the
+subtarget "make vdso_install").  These files can be useful when they
+contain source-level debugging information.
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/x86_64/Makefile      |    1 +
+ arch/x86_64/vdso/Makefile |   20 ++++++++++++++++----
+ 2 files changed, 17 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86_64/Makefile b/arch/x86_64/Makefile
+index 93fc1f2..c0905ae 100644
+--- a/arch/x86_64/Makefile
++++ b/arch/x86_64/Makefile
+@@ -112,6 +112,7 @@ vdso_install:
+ ifeq ($(CONFIG_IA32_EMULATION),y)
+ 	$(Q)$(MAKE) $(build)=arch/x86_64/ia32 $@
+ endif
++	$(Q)$(MAKE) $(build)=arch/x86_64/vdso $@
+ 
+ archclean:
+ 	$(Q)$(MAKE) $(clean)=$(boot)
+
+diff --git a/arch/x86_64/vdso/Makefile b/arch/x86_64/vdso/Makefile
+index faaa72f..20ecf05 100644
+--- a/arch/x86_64/vdso/Makefile
++++ b/arch/x86_64/vdso/Makefile
+@@ -13,7 +13,7 @@ vobjs := $(foreach F,$(vobjs-y),$(obj)/$F)
+ 
+ $(obj)/vdso.o: $(obj)/vdso.so
+ 
+-targets += vdso.so vdso.lds $(vobjs-y) vdso-syms.o
++targets += vdso.so vdso.so.dbg vdso.lds $(vobjs-y) vdso-syms.o
+ 
+ # The DSO images are built using a special linker script.
+ quiet_cmd_syscall = SYSCALL $@
+@@ -25,14 +25,18 @@ export CPPFLAGS_vdso.lds += -P -C -U$(ARCH)
+ vdso-flags = -fPIC -shared -Wl,-soname=linux-vdso.so.1 \
+ 		 $(call ld-option, -Wl$(comma)--hash-style=sysv) \
+ 		-Wl,-z,max-page-size=4096 -Wl,-z,common-page-size=4096
+-SYSCFLAGS_vdso.so = $(vdso-flags)
++SYSCFLAGS_vdso.so.dbg = $(vdso-flags)
+ 
+ $(obj)/vdso.o: $(src)/vdso.S $(obj)/vdso.so
+ 
+-$(obj)/vdso.so: $(src)/vdso.lds $(vobjs) FORCE
++$(obj)/vdso.so.dbg: $(src)/vdso.lds $(vobjs) FORCE
+ 	$(call if_changed,syscall)
+ 
+-CFL := $(PROFILING) -mcmodel=small -fPIC -g0 -O2 -fasynchronous-unwind-tables -m64
++$(obj)/%.so: OBJCOPYFLAGS := -S
++$(obj)/%.so: $(obj)/%.so.dbg FORCE
++	$(call if_changed,objcopy)
++
++CFL := $(PROFILING) -mcmodel=small -fPIC $(if $(CONFIG_DEBUG_INFO),-g,-g0) -O2 -fasynchronous-unwind-tables -m64
+ 
+ $(obj)/vclock_gettime.o: CFLAGS = $(CFL)
+ $(obj)/vgetcpu.o: CFLAGS = $(CFL)
+@@ -47,3 +51,11 @@ $(obj)/built-in.o: ld_flags += -R $(obj)/vdso-syms.o
+ SYSCFLAGS_vdso-syms.o = -r -d
+ $(obj)/vdso-syms.o: $(src)/vdso.lds $(vobjs) FORCE
+ 	$(call if_changed,syscall)
++
++quiet_cmd_vdso_install = INSTALL $@
++      cmd_vdso_install = cp $(obj)/$@.dbg $(MODLIB)/vdso/$@
++vdso.so:
++	@mkdir -p $(MODLIB)/vdso
++	$(call cmd,vdso_install)
++
++vdso_install: vdso.so
+
+--ENA7miwK/g--
+
+--ogdEvcULkB--
