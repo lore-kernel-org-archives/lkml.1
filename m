@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbXHUVOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbXHUVPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758701AbXHUVOp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Aug 2007 17:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbXHUVOg
+	id S1758877AbXHUVPd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Aug 2007 17:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbXHUVPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Aug 2007 17:14:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49318 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751376AbXHUVOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Aug 2007 17:14:36 -0400
-Message-ID: <46CB55A8.4030501@redhat.com>
-Date: Tue, 21 Aug 2007 17:14:16 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dkegel@google.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
-References: <20070820215040.937296148@sgi.com> <46CB01B7.3050201@redhat.com> <Pine.LNX.4.64.0708211355430.3082@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0708211355430.3082@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Aug 2007 17:15:24 -0400
+Received: from [221.202.118.17] ([221.202.118.17]:3305 "HELO 221.202.118.17"
+	rhost-flags-FAIL-FAIL-FAIL-FAIL) by vger.kernel.org with SMTP
+	id S1751275AbXHUVPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Aug 2007 17:15:23 -0400
+Message-Id: <NL8W1TON.79E21BD@gmail.com>
+From: "Gordon Cox" <sales.1188@gmail.com>
+Subject: RE: Office Supplies enquiry
+To: "Postmaster" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+Reply-To: "Gordon Cox" <sales.1188@gmail.com>
+Date: Tue, 21 Aug 2007 14:26:11 -1000
+X-Priority: 3
+X-Mailer: MIME-tools 5.503 (Entity 5.501)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 21 Aug 2007, Rik van Riel wrote:
-> 
->> Christoph Lameter wrote:
->>
->>> 1. First reclaiming non dirty pages. Dirty pages are deferred until reclaim
->>>    has reestablished the high marks. Then all the dirty pages (the laundry)
->>>    is written out.
->> That sounds like a horrendously bad idea.  While one process
->> is busy freeing all the non dirty pages, other processes can
->> allocate those pages, leaving you with no memory to free up
->> the dirty pages!
-> 
-> What is preventing that from occurring right now? If the dirty pags are 
-> aligned in the right way you can have the exact same situation.
+Dear All Customers,
 
-For one, dirty page writeout is done even when free memory
-is low.  The kernel will dig into the PF_MEMALLOC reserves,
-instead of deciding not to do writeout unless there is lots
-of free memory.
+===============================================
+OEM COMPATIBLE TONER CARTRIDGES PROMOTION
+===============================================
 
-Secondly, why would you want to recreate this worst case on
-purpose every time the pageout code runs?
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+HP toner:
+1) Q2612A = RM 1?5;
+2) Q5949A = RM 1?0;
+
+Samsung toner:
+1) ML-1610  = RM 1?0;
+2) ML-1710 = RM 1?0;
+3) ML-2010 = RM 1?0;
+4) ML-2150 = RM 2?5;
+5) SCX-4216 = RM 1?5;
+
+Xerox toner:
+1) 203A = RM 1?0;
+
+
+**************************************************************
+ADVANTAGES : Printer repairs & services available
+**************************************************************
+
+Our new compatible cartridges are sold as new cartridges and are produced by a manufacturer other than your printer manufacturer and like the OEM, are manufactured with new and recycled parts. Our new premium compatibles are produced under stringent quality controls and are built to meet or exceed your OEM's specifications. This means simply that our new compatibles deliver the highest quality print as well as the longest possible life and at a fraction of the cost of an OEM.
+
+To REDUCE or SAVE more cost, please do not hesitate to contact us for more information.
+
+regards,
+
+Mr Ken
+Tel: 012-366 2818
+
+IT CITY COMPUTER
+46M, Jalan Wangsa 2/5, Taman Wangsa Permai,
+Kepong 52100. Kuala Lumpur.
+Tel: 03-6276 3561
+Fax: 03-6272 9718
+Email: prolaser_toner@yahoo.com
+
+-----------------------------------------------------------------------------------------
