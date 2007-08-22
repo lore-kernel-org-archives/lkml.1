@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758782AbXHVKml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759295AbXHVKpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758782AbXHVKml (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 06:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbXHVKmc
+	id S1759295AbXHVKpg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 06:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbXHVKp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 06:42:32 -0400
-Received: from ns.firmix.at ([62.141.48.66]:39638 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753655AbXHVKmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 06:42:31 -0400
-Subject: Re: How to learn Linux Kernel Programming
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Noud Aldenhoven <jwaixs@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <cb63d1e10708212347y251a34fah739c4b42ab49609e@mail.gmail.com>
-References: <cb63d1e10708211228u383240a2l4af811f72b8858c0@mail.gmail.com>
-	 <cb63d1e10708211229n18cc154ep43912a671ca1bfee@mail.gmail.com>
-	 <5d6222a80708212015w260a2fcdr64227eb740b8d933@mail.gmail.com>
-	 <cb63d1e10708212346l746111dcic584b4bb5fe461fc@mail.gmail.com>
-	 <cb63d1e10708212347y251a34fah739c4b42ab49609e@mail.gmail.com>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Wed, 22 Aug 2007 12:42:20 +0200
-Message-Id: <1187779340.3206.0.camel@tara.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Wed, 22 Aug 2007 06:45:29 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:46060 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756629AbXHVKp2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 06:45:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DIo7mwBqZD2KRY+O72f1mDnFnoeQFTlKgrpdgdH2y9BsbM3zNkzaaBs1TV+vSrGB/anwhJ/fJrFBmRGfHQpd5qYgy1FLNs6a2wblutQxI2uSGHGnQ0uV2cWxbNv7gwFso9+y6wUnlfVF7gumekN0XKR0OVZsXoD94Rj3BoBNUZ4=
+Message-ID: <8bd0f97a0708220345g26c35288g5e96b6f1f8491f0e@mail.gmail.com>
+Date: Wed, 22 Aug 2007 06:45:27 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [PATCH] MAINTAINTERS: use our mail list as Blackfin arch maintainters.
+Cc: bryan.wu@analog.com, joe@perches.com, yi.li@analog.com, vivi.li@analog.com,
+       torvalds@linux-foundation.org, sonic.zhang@analog.com,
+       roy.huang@analog.com, robin.getz@analog.com,
+       michael.hennerich@analog.com, michael.frysinger@analog.com,
+       marc.hoffman@analog.com, linux-kernel@vger.kernel.org,
+       jie.zhang@analog.com, grace.pan@analog.com, bernd.schmidt@analog.com,
+       akpm@linux-foundation.org
+In-Reply-To: <6bffcb0e0708220323w5592df25n9c21c7e3aca1dbfb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.327 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.327 required=5
-X-Spam-Score: -2.327 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
+References: <46bff904.ANPWrqncsP8VpmBH%joe@perches.com>
+	 <1187777706.24914.2.camel@roc-desktop>
+	 <6bffcb0e0708220323w5592df25n9c21c7e3aca1dbfb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 06:47 +0000, Noud Aldenhoven wrote:
-> Thank you for your information and help,
-> 
-> I think it's a lot more clear for me now.
-> I've seen the ldd3 some time ago, but someone told me that book was
-> out-of-date. Guess he was wrong. Would it also be use full to use some
-> kind of cross-compiler? (don't know if that's the right word for it)
+On 8/22/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> On 22/08/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> >  L:     uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+>
+> It is subscribers-only - I do not want to subscribe list only for
+> sending/forwarding messages/bug reports/known regressions weekly
+> newsletter.
 
-No.
-
-> So I can run my stable kernel and on top of it a new experimental
-> kernel where I can experiment with?
-
-Then you want to use UserModeLinux.
-
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
-
+it is moderated which means you do not need to subscribe, we will
+forward any relevant messages
+-mike
