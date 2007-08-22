@@ -1,49 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbXHWM1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763528AbXHWM2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760252AbXHWM1d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 08:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761626AbXHWM1N
+	id S1763528AbXHWM2e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 08:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760866AbXHWM2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 08:27:13 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:42739 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760908AbXHWM1L (ORCPT
+	Thu, 23 Aug 2007 08:28:22 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:57242 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760861AbXHWM2V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 08:27:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d/Ln4Fa7PDXDa2bC6TqMAgcbJTRJUVQuOiUE7Wi7tPqQHVTzufMZsGwqCrBGcpFyb9rcee38A+p2FGgyQe4JwoRHMSrx9dExfYgsnOXr8suTE62hbRxb8bsHjbkg6Woomi55SSEGIXEmsG9GbKe2UDyxptHi8OjP68Sw+E9hoxk=
-Message-ID: <9a8748490708230527n753f1c32x2e1c75cd0c090807@mail.gmail.com>
-Date: Thu, 23 Aug 2007 14:27:09 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: postfail@hushmail.com
-Subject: Re: Ideas on column length in kernel "problem"?
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-In-Reply-To: <20070823035442.6FD0DDA81F@mailserver7.hushmail.com>
+	Thu, 23 Aug 2007 08:28:21 -0400
+Date: Wed, 22 Aug 2007 23:35:07 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org
+Subject: Re: [PATCH 1/6] mips: irix_getcontext will always fail EFAULT
+Message-ID: <20070822223507.GD4473@linux-mips.org>
+References: <exportbomb.1187270320@pinky> <0b4bc89aa61d97708ca0f79ba02f6e60@pinky>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <20070823035442.6FD0DDA81F@mailserver7.hushmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <0b4bc89aa61d97708ca0f79ba02f6e60@pinky>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23/08/07, Scott Thompson <postfail@hushmail.com> wrote:
-> I haven't seen any recent solutions to this "problem"...
->
-> Many free (and not-free) mail clients wordwrap.  Hushmail wraps at
-> 68 (verified), Yahoo has options to wrap at a max of 99, and Gmail
-> was somewhere around 85-90 as I recall.  Not sure on other free /
-> inexpensive clients.
->
-At least for gmail the wrap problem only exists if you try and use the
-web interface for sending your patches. If you use a real mail client
-like pine, kmail etc to send your patches through gmail (and remember
-to use their read/insert file functionality instead of cut'n'paste)
-then there is no problem.
+On Thu, Aug 16, 2007 at 02:18:45PM +0100, Andy Whitcroft wrote:
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+> Seems that a trailing ';' has slipped onto the end of the access_ok
+> check here, such that we will always return -EFAULT.
+
+Ilpo Järvinen has sent an identical patch earlier which I have already
+applied.  Thanks anyway,
+
+  Ralf
