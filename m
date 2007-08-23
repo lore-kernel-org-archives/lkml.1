@@ -1,122 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762868AbXHWM1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbXHWM1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762868AbXHWM1U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 08:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758430AbXHWM1I
+	id S1760252AbXHWM1d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 08:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761626AbXHWM1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 08:27:08 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:52271 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760232AbXHWM1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 08:27:06 -0400
-Date: Thu, 23 Aug 2007 14:28:25 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.23-rc3-mm1
-Message-ID: <20070823122825.GA29724@uranus.ravnborg.org>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46CC6FB2.1010801@csn.ul.ie> <20070822111029.46db0ab7.akpm@linux-foundation.org> <20070823120318.GA7506@shadowen.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 23 Aug 2007 08:27:13 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:42739 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760908AbXHWM1L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 08:27:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=d/Ln4Fa7PDXDa2bC6TqMAgcbJTRJUVQuOiUE7Wi7tPqQHVTzufMZsGwqCrBGcpFyb9rcee38A+p2FGgyQe4JwoRHMSrx9dExfYgsnOXr8suTE62hbRxb8bsHjbkg6Woomi55SSEGIXEmsG9GbKe2UDyxptHi8OjP68Sw+E9hoxk=
+Message-ID: <9a8748490708230527n753f1c32x2e1c75cd0c090807@mail.gmail.com>
+Date: Thu, 23 Aug 2007 14:27:09 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: postfail@hushmail.com
+Subject: Re: Ideas on column length in kernel "problem"?
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+In-Reply-To: <20070823035442.6FD0DDA81F@mailserver7.hushmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070823120318.GA7506@shadowen.org>
-User-Agent: Mutt/1.4.2.1i
+References: <20070823035442.6FD0DDA81F@mailserver7.hushmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 01:03:18PM +0100, Andy Whitcroft wrote:
-> On Wed, Aug 22, 2007 at 11:10:29AM -0700, Andrew Morton wrote:
-> [...]
-> > >   CC      arch/x86_64/kernel/asm-offsets.s
-> > > arch/x86_64/kernel/asm-offsets.c:1: error: -mpreferred-stack-boundary=3
-> > > is not between 4 and 12
-> > > make[1]: *** [arch/x86_64/kernel/asm-offsets.s] Error 1
-> [...]
-> > x86_64-mm-less-stack-alignment.patch has
-> > 
-> > cflags-y += $(call cc-option,-mpreferred-stack-boundary=3)
-> > 
-> > So we _should_ have detected that gcc didn't like =3, so it
-> > should not have been used.
-> > 
-> > I am suspecting a kbuild glitch: asm-offsets.c tends to be handled
-> > in special ways (ie: it's usually the thing which blows up first)
-> > so perhaps it is somehow avoiding the above does-gcc-support-this test.
-> > 
-> > Suitable cc's added ;)
-> 
-> It seems that this is a problem caused by the way we check for
-> compiler options in x86_64.  Each compiler flag is checked for
-> individually and if available added to cflags-y, later that is
-> added to CFLAGS.  However, this means that each flag is checked
-> in total isolation.  On x86_64 (on this compiler at least) the
-> -mpreferred-stack-boundary and -m{32,64} flags are actually mutually
-> dependant, the alignment constraints vary based on the word size.
-> This leads to the compile failure:
-> 
->     # gcc -mpreferred-stack-boundary=3 -S -xc /dev/null  -o FOO
->     # echo $?
->     0
->     # gcc -m64 -mpreferred-stack-boundary=3 -S -xc /dev/null  -o FOO
->     /dev/null:1: error: -mpreferred-stack-boundary=3 is not between 4 and 12
->     # echo $?
->     1
+On 23/08/07, Scott Thompson <postfail@hushmail.com> wrote:
+> I haven't seen any recent solutions to this "problem"...
+>
+> Many free (and not-free) mail clients wordwrap.  Hushmail wraps at
+> 68 (verified), Yahoo has options to wrap at a max of 99, and Gmail
+> was somewhere around 85-90 as I recall.  Not sure on other free /
+> inexpensive clients.
+>
+At least for gmail the wrap problem only exists if you try and use the
+web interface for sending your patches. If you use a real mail client
+like pine, kmail etc to send your patches through gmail (and remember
+to use their read/insert file functionality instead of cut'n'paste)
+then there is no problem.
 
-Thats makes sense - good catch.
-
-> 
-> In the main Makefile we always add each flag directly to CFLAGS
-> which means we check them all in combination, perhaps this is
-> prudent here also?  Either way I suspect that changing the -m64
-> check to add itself directly to CFLAGS will fix this us.
-
-Something like this then:
-[PATCH] x86_64: fix preferred-stack-boundary check
-
-gcc has different interpretation of the -preferred-stack-boundary flag
-dependent on the option -m64 is present or not as seen in the following:
-     # gcc -mpreferred-stack-boundary=3 -S -xc /dev/null  -o FOO
-     # echo $?
-     0
-     # gcc -m64 -mpreferred-stack-boundary=3 -S -xc /dev/null  -o FOO
-     /dev/null:1: error: -mpreferred-stack-boundary=3 is not between 4 and 12
-     # echo $?
-     1
-
-Adding the -m64 to CFLAGS let cc-option do the right thing.
-
-Thanks to Andy Whitcroft <apw@shadowen.org> for spotting the root cause.
-
-Cc: Andy Whitcroft <apw@shadowen.org> 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-diff --git a/arch/x86_64/Makefile b/arch/x86_64/Makefile
-index 128561d..5402c0a 100644
---- a/arch/x86_64/Makefile
-+++ b/arch/x86_64/Makefile
-@@ -25,6 +25,8 @@ LDFLAGS		:= -m elf_x86_64
- OBJCOPYFLAGS	:= -O binary -R .note -R .comment -S
- LDFLAGS_vmlinux :=
- CHECKFLAGS      += -D__x86_64__ -m64
-+AFLAGS          += -m64
-+CFLAGS          += -m64
- 
- cflags-y	:=
- cflags-kernel-y	:=
-@@ -36,7 +38,6 @@ cflags-$(CONFIG_MCORE2) += \
- 	$(call cc-option,-march=core2,$(call cc-option,-mtune=generic))
- cflags-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=generic)
- 
--cflags-y += -m64
- cflags-y += -mno-red-zone
- cflags-y += -mcmodel=kernel
- cflags-y += -pipe
-@@ -69,7 +70,6 @@ cflags-$(CONFIG_CC_STACKPROTECTOR_ALL) += $(shell $(CONFIG_SHELL) $(srctree)/scr
- 
- CFLAGS += $(cflags-y)
- CFLAGS_KERNEL += $(cflags-kernel-y)
--AFLAGS += -m64
- 
- head-y := arch/x86_64/kernel/head.o arch/x86_64/kernel/head64.o arch/x86_64/kernel/init_task.o
- 
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
