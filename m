@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763148AbXHWNR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763777AbXHWNRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763148AbXHWNR0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 09:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760861AbXHWNRT
+	id S1763777AbXHWNRn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 09:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762225AbXHWNRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 09:17:19 -0400
-Received: from lazybastard.de ([212.112.238.170]:36670 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760883AbXHWNRS convert rfc822-to-8bit (ORCPT
+	Thu, 23 Aug 2007 09:17:35 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:18656 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763386AbXHWNRe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 09:17:18 -0400
-Date: Thu, 23 Aug 2007 15:13:02 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: andre@finow14.de, joern@logfs.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/1] fix a trivial typo in scripts/checkstack.pl
-Message-ID: <20070823131302.GA24870@lazybastard.org>
-References: <20070823125227.294913273@finow14.de> <20070823125540.GA19389@ahaupt-debian-vm.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20070823125540.GA19389@ahaupt-debian-vm.localdomain>
-User-Agent: Mutt/1.5.9i
+	Thu, 23 Aug 2007 09:17:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=htFuB+ca2knL3LyvqPgOAN9kWQa5of3yWv4weIUXFPc9DHnBi/4xnoheZ2AEJpj+6R5yy5jLnYr8VQXIxYvruh/ETujexJF6b8ge6ALI1ajVc/+0KRP7EgM1qg7JMNtHVgQ/Tl0hLKmGoVkWeeZPo8ko4x3wUsglrVCM4n+8Ipw=
+Message-ID: <46CD888A.6020605@googlemail.com>
+Date: Thu, 23 Aug 2007 15:15:54 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: lguest modpost errors
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trivial change in a comment.
+Hi Rusty,
 
-Signed-off-by: Jörn Engel <joern@logfs.org>
-Signed-off-by: Andre Haupt <andre@finow14.de>
----
-Index: linus/scripts/checkstack.pl
-===================================================================
---- linus.orig/scripts/checkstack.pl	2007-08-23 14:25:03.000000000 +0200
-+++ linus/scripts/checkstack.pl	2007-08-23 14:42:13.000000000 +0200
-@@ -14,7 +14,7 @@
- #	M68k port by Geert Uytterhoeven and Andreas Schwab
- #
- #	Usage:
--#	objdump -d vmlinux | stackcheck.pl [arch]
-+#	objdump -d vmlinux | scripts/checkstack.pl [arch]
- #
- #	TODO :	Port to all architectures (one regex per arch)
- 
+I got the following modpost errors with a randconfig on current git head ( b377fd3982ad957c796758a90e2988401a884241 )
 
-Jörn
+...
 
--- 
-Correctness comes second.
-Features come third.
-Performance comes last.
-Maintainability is easily forgotten.
+Kernel: arch/i386/boot/bzImage is ready  (#267)
+ERROR: "get_futex_key" [drivers/lguest/lg.ko] undefined!
+ERROR: "drop_futex_key_refs" [drivers/lguest/lg.ko] undefined!
+ERROR: "get_futex_key_refs" [drivers/lguest/lg.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
+
+...
+
+config : http://194.231.229.228/kernel/randconfig-lguest
+
+
+
+Regards,
+
+Gabriel
