@@ -1,93 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933000AbXHWVnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbXHWVre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933000AbXHWVnH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 17:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932818AbXHWVmV
+	id S932855AbXHWVre (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 17:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761493AbXHWVr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 17:42:21 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:37187 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933061AbXHWVmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 17:42:16 -0400
-Subject: RE: "double" hpet clocksource && hard freeze [bisected]
-From: john stultz <johnstul@us.ibm.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Paolo Ornati <ornati@fastwebnet.it>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Bob Picco <bob.picco@hp.com>
-In-Reply-To: <1187903135.6024.18.camel@localhost.localdomain>
-References: <20070823222115.122a37ca@localhost>
-	 <617E1C2C70743745A92448908E030B2A023EB2E1@scsmsx411.amr.corp.intel.com>
-	 <1187903135.6024.18.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 23 Aug 2007 14:41:45 -0700
-Message-Id: <1187905306.6024.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Aug 2007 17:47:26 -0400
+Received: from khc.piap.pl ([195.187.100.11]:44783 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756049AbXHWVrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 17:47:25 -0400
+To: Chris Snook <csnook@redhat.com>
+Cc: Anand Jahagirdar <anandjigar@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Fork Bombing Patch
+References: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com>
+	<46C4BC46.7000305@redhat.com>
+	<25ae38200708200724sbce2749m7eb27565d7c84e5e@mail.gmail.com>
+	<46C9A867.6090509@redhat.com>
+	<25ae38200708212317h7776768v33a82f646ac6b749@mail.gmail.com>
+	<m3d4xeii2z.fsf@maximus.localdomain> <46CDD98F.2020208@redhat.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 23 Aug 2007 23:47:22 +0200
+In-Reply-To: <46CDD98F.2020208@redhat.com> (Chris Snook's message of "Thu, 23 Aug 2007 15:01:35 -0400")
+Message-ID: <m34pipgbyt.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-23 at 14:05 -0700, john stultz wrote:
-> On Thu, 2007-08-23 at 13:41 -0700, Luck, Tony wrote:
-> > > I have a double "hpet" entry in "available_clocksource":
-> > >	$ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-> > >	tsc hpet hpet acpi_pm jiffies
-> > 
-> > Oops.  If seems that both drivers/char/hpet.c and arch/x86_64/kernel/hpet.c
-> > both register a clocksource named "hpet".  Probably a result of bringing
-> > back to life a long lost patch, and having someone else (John Stultz, according
-> > to git blame) make a similar change to a different file in the intervening
-> > time.
-> > 
-> > Presumably the thing to do would be merge the x86_64 specific version
-> > into the drivers/char/hpet.c version?
-> 
-> Ugh. Yea. i386 has an hpet clocksource as well. We should kill the
-> duplication, but at the moment I'm not comfortable that the
-> driver/char/hpet.c is ok to be used for i386/x86_64 (Bob: Do you know
-> why the shift value is only 10?).
-> 
-> 
-> I'm a little surprised by this, as the clocksource code use to prevent
-> duplicate named clocksources from being registered, so I'm not sure how
-> that check got dropped.  Also I'm not quite sure I see where the hard
-> freeze is coming from.
-> 
-> My initial reaction would be to either ifdef ia64 implementation in
-> drivers/char/hpet.c or move the code under the ia64 arch dir until it is
-> really usable by all arches.
+Chris Snook <csnook@redhat.com> writes:
 
-Here is a possible quick fix. I'm open to other approaches, but I also
-want to avoid too much churn before 2.6.23 goes out.
+> Wrapping a single printk that's unrelated to debugging in an #ifdef
+> CONFIG_* or a sysctl strikes me as abuse of those configuration
+> facilities.
 
-Paolo, could you verify this fixes the issue for you?
+Abuse, probably not (if a thing is required on one system and must
+not be on another, it has to be configurable). If the printk is
+a good idea... IMHO hardly, at best. We don't warn about trying to
+write to /vmlinuz after all.
 
-thanks
--john
-
-diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
-index 77bf4aa..c782d8c 100644
---- a/drivers/char/hpet.c
-+++ b/drivers/char/hpet.c
-@@ -78,7 +78,17 @@ static struct clocksource clocksource_hpet = {
-         .shift          = 10,
-         .flags          = CLOCK_SOURCE_IS_CONTINUOUS,
- };
-+
-+/* XXX - FIXME: i386, x86_64 and ia64 all have separate 
-+ * hpet clocksource implementations. They should be merged 
-+ * and this would be a good place for it.
-+ * Right now this is ia64 only.
-+ */
-+#ifdef CONFIG_IA64
- static struct clocksource *hpet_clocksource;
-+#else /* this isn't generic enough to use for everyone yet */
-+static struct clocksource *hpet_clocksource = (struct clocksource*)0xdead;
-+#endif
- 
- /* A lock for concurrent access by app and isr hpet activity. */
- static DEFINE_SPINLOCK(hpet_lock);
-
-
+ulimit/pam_limits should fix the (IMHO nonexistent) problem nicely.
+One has to plug all the holes, though (e.g. $HOME/.forward).
+-- 
+Krzysztof Halasa
