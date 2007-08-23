@@ -1,134 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbXHWIzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760822AbXHWIzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759402AbXHWIzW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 04:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbXHWIzI
+	id S1760822AbXHWIzt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 04:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757306AbXHWIzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 04:55:08 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:44535 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755434AbXHWIzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 04:55:04 -0400
-Date: Thu, 23 Aug 2007 01:54:56 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
-       tglx@linutronix.de
-Subject: Re: [PATCH RFC] Priority boosting for preemptible RCU
-Message-ID: <20070823085456.GA18627@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070822190254.GA1135@linux.vnet.ibm.com> <20070823042639.GA28026@in.ibm.com>
+	Thu, 23 Aug 2007 04:55:39 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:27756 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756230AbXHWIzh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 04:55:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=LYGAAcCBo+P7lWGu8vIsL9Iwl9I5Xuxqi40wDb+tck3KBjiJBVKwl3CpZ/PmQMPZ+a50lxigLd5SXLUeRLxdx3BWdpPqxHiSh0fkINT+OwX5VkxEeGgWcm7m2K77FYP/8mNdwkFqpgFjUzQQwdWCz+JlYG+a05/kWYLC07T70Ms=
+Message-ID: <6278d2220708230155j18248f2cr3cc697a7acbaa930@mail.gmail.com>
+Date: Thu, 23 Aug 2007 09:55:36 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Richard Ballantyne" <richardballantyne@gmail.com>
+Subject: Re: file system for solid state disks
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070823042639.GA28026@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 09:56:39AM +0530, Gautham R Shenoy wrote:
-> Hi Paul, 
-> On Wed, Aug 22, 2007 at 12:02:54PM -0700, Paul E. McKenney wrote:
-> > +/*
-> > + * Print out RCU booster task statistics at the specified interval.
-> > + */
-> > +static void rcu_boost_dat_stat_print(void)
-> > +{
-> > +	/* Three decimal digits per byte plus spacing per number and line. */
-> > +	char buf[N_RCU_BOOST_STATE * (sizeof(long) * 3 + 2) + 2];
-> > +	int cpu;
-> > +	int event;
-> > +	int i;
-> > +	static time_t lastprint = 0;
-> > +	struct rcu_boost_dat *rbdp;
-> > +	int state;
-> > +	struct rcu_boost_dat sum;
-> > +
-> > +	/* Wait a graceful interval between printk spamming. */
-> > +
-> > +	if (xtime.tv_sec - lastprint <
-> > +	    CONFIG_PREEMPT_RCU_BOOST_STATS_INTERVAL)
-> > +		return;
-> > +
-> > +	/* Sum up the state/event-independent counters. */
-> > +
-> > +	sum.rbs_blocked = 0;
-> > +	sum.rbs_boost_attempt = 0;
-> > +	sum.rbs_boost = 0;
-> > +	sum.rbs_unlock = 0;
-> > +	sum.rbs_unboosted = 0;
-> > +	for_each_possible_cpu(cpu)
-> > +		for (i = 0; i < RCU_BOOST_ELEMENTS; i++) {
-> > +			rbdp = per_cpu(rcu_boost_dat, cpu);
-> > +			sum.rbs_blocked += rbdp[i].rbs_blocked;
-> > +			sum.rbs_boost_attempt += rbdp[i].rbs_boost_attempt;
-> > +			sum.rbs_boost += rbdp[i].rbs_boost;
-> > +			sum.rbs_unlock += rbdp[i].rbs_unlock;
-> > +			sum.rbs_unboosted += rbdp[i].rbs_unboosted;
-> > +		}
-> 
-> I feel we should still be able to use for_each_online_cpu(cpu) instead
-> of for_each_possible_cpu. Again, there's a good chance that I might
-> be mistaken!
-> 
-> How about the following ?
-> 
-> 	preempt_disable(); /* We Dont want cpus going down here */
-> 	for_each_online_cpu(cpu) 
-> 		for (i = 0; i < RCU_BOOST_ELEMENTS; i++) {
-> 			rbdp = per_cpu(rcu_boost_dat, cpu);
-> 			sum.rbs_blocked += rbdp[i].rbs_blocked;
-> 			sum.rbs_boost_attempt += rbdp[i].rbs_boost_attempt;
-> 			sum.rbs_boost += rbdp[i].rbs_boost;
-> 			sum.rbs_unlock += rbdp[i].rbs_unlock;
-> 			sum.rbs_unboosted += rbdp[i].rbs_unboosted;
-> 		}
-> 	preempt_enable(); 
-> 
-> 
-> 	static int rcu_boost_cpu_callback(struct notifier_bloack *nb, 
-> 					unsigned long action, void *hcpu) 
-> 	{
-> 		int this_cpu, cpu;
-> 		rcu_boost_data *rbdp, *this_rbdp;
-> 
-> 		switch (action) {
-> 		case CPU_DEAD:
-> 			this_cpu = get_cpu();
-> 			cpu = (long)hcpu;
-> 			this_cpu = smp_processor_id();
-> 			rbdp = per_cpu(rcu_boost_dat, cpu);
-> 			this_rbdp = per_cpu(rcu_boost_dat, cpu);
-> 			/* 
-> 			 *  Transfer all of rbdp's statistics to
-> 			 *  this_rbdp here.
-> 			 */	
-> 			 put_cpu();
-> 	
-> 			return NOTIFY_OK;
-> 		}
-> 	}
-> 
-> 
-> Won't this work in this case?
+On 23 Aug, 07:00, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+> On Aug 23 2007 01:01, Richard Ballantyne wrote:
+> >What file system that is already in the linux kernel do people recommend
+> >I use for my laptop that now contains a solid state disk?
+>
+> If I had to choose, the list of options seems to be:
+>
+> - logfs
+>   [unmerged]
+>
+> - UBI layer with any fs you like
+>   [just a guess]
+>
+> - UDF in Spared Flavor (mkudffs --media-type=cdrw --utf8)
+>   [does not support ACLs/quotas]
 
-Hello, Gautham,
+Isn't it that with modern rotational wear-levelling, re-writing hot
+blocks many times is not an issue, as they are internally moved around
+anyway? So, using a journalled filesystem such as ext3 is still good
+(robustness and maturity in mind). Due to lack of write buffering,
+perhaps a wandering log (journal) filesystem would be more suitable
+though? I use ext3 on my >35MB/s compact flash filesystem.
 
-We could do something similar.  If there was a global rcu_boost_data
-variable that held the sums of the fields of the rcu_boost_data
-structures for all offline CPUs, and if we used a new lock to protect
-that global rcu_boost data variable (both when reading and when
-CPU hotplugging), then we could indeed scan only the online CPUs'
-rcu_boost_data elements.
+I can see there being advantage in selecting a filesystem which is
+lower complexity due to no additional spatial optimisation complexity,
+but those advantages do buy other efficiency (eg the Orlov allocator
+reducing fragmentation, thus less overhead), right?
 
-We would also have to maintain a cpumask_t for this purpose, and
-we would need to add a CPU's contribution when it went offline and
-subtract it when that CPU came back online.
+Also, it would be natural to employ 'elevator=none', but perhaps there
+is a small advantage in holding a group of flash blocks 'ready' (like
+SDRAM pages being selected on-chip for lower bus access latency) -
+however this no longer holds when logical->physical remapping is
+performed, so perhaps it's better without an elevator.
 
-The lock should not be a problem even on very large systems because
-of the low frequency of statistics printing -- and of hotplug operations,
-for that matter.
+Clearly, benchmarks speak...but perhaps it would make sense to have
+libata disable the elevator for the (compact) flash block device?
 
-						Thanx, Paul
+Daniel
+-- 
+Daniel J Blueman
