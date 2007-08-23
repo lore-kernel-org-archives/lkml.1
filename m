@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763262AbXHWTak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764328AbXHWTay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763262AbXHWTak (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 15:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756677AbXHWTaQ
+	id S1764328AbXHWTay (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 15:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757665AbXHWTaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 15:30:16 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:20992 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755909AbXHWTaO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 15:30:14 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [patch 2/2] Let process accouting trust sched_clock.
-Date: Thu, 23 Aug 2007 21:29:54 +0200
-User-Agent: KMail/1.9.7
-Cc: Jan Glauber <jan.glauber@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-References: <200708232126.36475.borntraeger@de.ibm.com>
-In-Reply-To: <200708232126.36475.borntraeger@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 23 Aug 2007 15:30:18 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54517 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756302AbXHWTaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 15:30:15 -0400
+In-Reply-To: <alpine.LFD.0.999.0708221116310.30176@woody.linux-foundation.org>
+References: <46C03885.7000109@redhat.com> <20070813112452.GK24018@shell.boston.redhat.com> <swfhcmswcux.wl%takata.hirokazu@renesas.com> <swfejhww4cs.wl%takata.hirokazu@renesas.com> <46CC42EF.3030602@redhat.com> <8fc86c23579e12b012891d6e69b1b107@kernel.crashing.org> <alpine.LFD.0.999.0708221116310.30176@woody.linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e8b5ee6194ed619c245eb884c5ae6b11@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708232129.54612.borntraeger@de.ibm.com>
+Cc: Hirokazu Takata <takata@linux-m32r.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, "Luck, Tony" <tony.luck@intel.com>,
+       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       Chris Snook <csnook@redhat.com>, Chris Friesen <cfriesen@nortel.com>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 11/23] make atomic_read() and atomic_set() behavior consistent on m32r
+Date: Thu, 23 Aug 2007 21:29:41 +0200
+To: Linus Torvalds <torvalds@linux-foundation.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the scheduler does sanity checking on sched_clock and corrects
-the values. Remove some of these checks to make steal time influence the
-process time.  
-This patch is probably nothing for upstream but with this patch the
-accouting for s390 seems to work regarding steal time, even without
-CONFIG_VIRT_CPU_TIME (as long as CONFIG_VIRT_TIMER is y).
+> The inline asm version has the EXACT SAME PROBLEM as the "volatile"
+> version has: it means that the compiler is unable to combine trivial
+> instructions.
 
----
- kernel/sched.c |    6 ------
- 1 file changed, 6 deletions(-)
+This simply isn't true.  The compiler *can* combine asm stuff:
 
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -3310,19 +3310,13 @@ void account_steal_time(struct task_stru
- void scheduler_tick(void)
- {
- 	int cpu = smp_processor_id();
- 	struct rq *rq = cpu_rq(cpu);
- 	struct task_struct *curr = rq->curr;
--	u64 next_tick = rq->tick_timestamp + TICK_NSEC;
- 
- 	spin_lock(&rq->lock);
- 	__update_rq_clock(rq);
--	/*
--	 * Let rq->clock advance by at least TICK_NSEC:
--	 */
--	if (unlikely(rq->clock < next_tick))
--		rq->clock = next_tick;
- 	rq->tick_timestamp = rq->clock;
- 	update_cpu_load(rq);
- 	if (curr != rq->idle) /* FIXME: needed? */
- 		curr->sched_class->task_tick(rq, curr);
- 	spin_unlock(&rq->lock);
+
+typedef struct { int counter; } atomic_t;
+
+static inline __attribute__((pure)) int atomic_read(const atomic_t *v)
+{
+         int x;
+         asm("ld %0,@%1" : "=r"(x) : "r"(&v->counter), "m"(v->counter));
+         return x;
+}
+
+int f(atomic_t *x)
+{
+         return atomic_read(x) + atomic_read(x);
+}
+
+int g(atomic_t *x)
+{
+         return 0 * atomic_read(x);
+}
+
+
+generates
+
+
+f:
+         ld r0,@r0
+         slli r0,#1
+         jmp lr
+
+g:
+         ldi r0,#0
+         jmp lr
+
+
+> So why the *hell* you'd expect the asm version to be smaller, I can't
+> imagine.
+
+I expect it to be smaller than the current code, which uses the
+"big hammer" volatile version.  We're talking about m32r here,
+not x86.  Even when using "volatile asm" it shouldn't generate
+much bigger code.
+
+Anyhow, I answered my own question: on m32r, you cannot use "m"
+with ld/st insns, since autoincrement modes don't work there (the
+assembler complains, at least). So you have to force the address
+into a reg instead, and _that_ causes the size increase.
+
+> If the code needs barriers, the code should damn well add them.
+
+Sure.  I'm not suggesting otherwise.
+
+
+Segher
 
