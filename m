@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762661AbXHWMZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763389AbXHWM0F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762661AbXHWMZk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 08:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbXHWMZd
+	id S1763389AbXHWM0F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 08:26:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760861AbXHWMZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 08:25:33 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:4560 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760029AbXHWMZc (ORCPT
+	Thu, 23 Aug 2007 08:25:51 -0400
+Received: from re01.intra2net.com ([82.165.28.202]:2412 "EHLO
+	re01.intra2net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758085AbXHWMZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 08:25:32 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: RE: [patch] CFS scheduler, -v20, for v2.6.22.5, v2.6.21.7,v2.6.20.16
-Date: Thu, 23 Aug 2007 05:24:41 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKMENNGFAC.davids@webmaster.com>
+	Thu, 23 Aug 2007 08:25:50 -0400
+From: Thomas Jarosch <thomas.jarosch@intra2net.com>
+Organization: Intra2net AG
+To: linux-kernel@vger.kernel.org
+Subject: Re: Kernel oops during netfilter memory allocation
+Date: Thu, 23 Aug 2007 14:25:43 +0200
+User-Agent: KMail/1.9.6
+References: <200708201808.08880.thomas.jarosch@intra2net.com> <200708211133.56261.thomas.jarosch@intra2net.com> <200708221709.04992.thomas.jarosch@intra2net.com>
+In-Reply-To: <200708221709.04992.thomas.jarosch@intra2net.com>
+Cc: netfilter-devel@lists.netfilter.org
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20070823102523.GA5430@elte.hu>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 23 Aug 2007 05:25:20 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 23 Aug 2007 05:25:20 -0700
+Content-Disposition: inline
+Message-Id: <200708231425.43910.thomas.jarosch@intra2net.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello together,
 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > By popular demand, here is release -v20 of the CFS scheduler. It is a 
-> > full backport of the latest & greatest v2.6.23-rc3 CFS code to 
-> > v2.6.22.5, v2.6.21.7 and v2.6.20.16. The patches can be downloaded 
-> > from the usual place:
-> 
-> update: i missed a small SMP balancing fix so i've updated the patches 
-> to -v20.1.
-> 
-> 	Ingo
+I've found an easier way to demonstrate the bug
+and filed a report at bugzilla.kernel.org:
 
-$ diff sched-cfs-v2.6.23-v20.patch sched-cfs-v2.6.23-v20.1.patch 
-$ 
+http://bugzilla.kernel.org/show_bug.cgi?id=8928
 
-It's not funny unless you change something, IMO.
+Hope there will be a quick resolution for this issue
+as the boxes crashing serve 800 users and more.
 
-DS
-
-
+Best regards,
+Thomas
