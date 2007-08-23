@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbXHWLjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbXHWLne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760252AbXHWLjs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 07:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbXHWLjj
+	id S1760561AbXHWLne (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 07:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbXHWLn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 07:39:39 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:47035 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757344AbXHWLji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 07:39:38 -0400
-Date: Thu, 23 Aug 2007 12:39:36 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.23-rc3-mm1
-Message-ID: <20070823113936.GB18456@skynet.ie>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46CC6FB2.1010801@csn.ul.ie> <20070822111029.46db0ab7.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070822111029.46db0ab7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	Thu, 23 Aug 2007 07:43:27 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:35729 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with SMTP id S1753032AbXHWLn0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 07:43:26 -0400
+Date: Thu, 23 Aug 2007 15:49:36 +0400
+From: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+To: vgoyal@in.ibm.com
+Cc: RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] kexec: reenable HPET before kexec
+Message-ID: <20070823154936.3b7ae498@windmill.dev.rtsoft.ru>
+In-Reply-To: <20070823090845.GA13065@in.ibm.com>
+References: <20070820205530.1ffd5876@windmill.dev.rtsoft.ru>
+	<20070823090845.GA13065@in.ibm.com>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.19; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (22/08/07 11:10), Andrew Morton didst pronounce:
-> On Wed, 22 Aug 2007 18:17:38 +0100
-> Mel Gorman <mel@csn.ul.ie> wrote:
+On Thu, 23 Aug 2007 14:38:45 +0530
+Vivek Goyal <vgoyal@in.ibm.com> wrote:
+> Does your kernel 2 boot normally? I mean through BIOS and boot-loader?
+> This explanation seems to be suggesting that because PM and ACPI is
+> disabled, kernel 2 does not search for HPET. If this is the case,
+> this kernel will not boot even through normal boot-loader and will
+> try to use PIT instead?
 > 
-> > Andrew Morton wrote:
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
-> > > 
-> > > - git-ixgbe.patch got dropped - git-net.patch destroyed it
-> > > 
-> > > - then git-net got dropped as it doesn't work
-> > > 
-> > > - the -mm import-to-git engine still isn't working
-> > > 
-> > 
-> > >From elm3b6 on test.kernel.org, we get the following build error
-> > 
-> > 08/22/07-07:01:07 building kernel - make bzImage
-> >   CHK     include/linux/version.h
-> >   UPD     include/linux/version.h
-> >   CHK     include/linux/utsrelease.h
-> >   UPD     include/linux/utsrelease.h
-> >   SYMLINK include/asm -> include/asm-x86_64
-> >   CC      arch/x86_64/kernel/asm-offsets.s
-> > arch/x86_64/kernel/asm-offsets.c:1: error: -mpreferred-stack-boundary=3
-> > is not between 4 and 12
-> > make[1]: *** [arch/x86_64/kernel/asm-offsets.s] Error 1
-> > make: *** [prepare0] Error 2
-> > 08/22/07-07:01:08 Build the kernel. Failed rc = 2
-> > 08/22/07-07:01:08 build: Building kernel... Failed rc = 1
-> > Failed and terminated the run
-> > 08/22/07-07:01:08 command complete: (1) rc=126 (TEST ABORT)
-> >  Fatal error, aborting autorun
-> > 
-> > config file at: http://test.kernel.org/abat/107411/build/dotconfig
-> > gcc version is 3.4.4
-> > 
-> > This does not occur when using a cross-compiler gcc 3.4.0
-> > 
+> If so, it is not an kexec issue at all.
 > 
-> x86_64-mm-less-stack-alignment.patch has
-> 
-> cflags-y += $(call cc-option,-mpreferred-stack-boundary=3)
-> 
-> So we _should_ have detected that gcc didn't like =3, so it
-> should not have been used.
-> 
-> I am suspecting a kbuild glitch: asm-offsets.c tends to be handled
-> in special ways (ie: it's usually the thing which blows up first)
-> so perhaps it is somehow avoiding the above does-gcc-support-this test.
-> 
-> Suitable cc's added ;)
+> Thanks
+> Vivek
 
-Reverting the patch does allow the kernel to build and boot on that
-machine.
+kernel 2 boots normally through BIOS and boot-loader. I agree with your
+explanation.
+It seems that kernel 2 can't enable PIT, when it is executed by kexec.
+As kernel 1 disabled HPET(IRQ0 source) and PIT is "broken"(or isn't
+enabled) IRQ0 are not triggered at all, and kernel 2 hangs.
+As kernel 2 boots normally through BIOS and boot-loader, than
+additional code needed(in Linux kernel init code) for PIT or ACPI
+or APIC initialization, I mean the same code as executed on BIOS stage.
+I agree that it's not an kexec issue. But can we use my fix as a
+workaround(to make kexec work) until PIT will be fixed?
+Everything above is correct for i386/x86_64 RT(2.6.23-rc2-rt2) kernel
+and for i368 "plain"(2.6.23-rc3) kernel. Bug isn't reproduced in 2.6.23-rc3
+x86_64 kernel, because x86_64 code never disables HPET. So on every
+boot(initiated by kexec or BIOS) IRQ0 are triggered.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
