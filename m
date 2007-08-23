@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764637AbXHWTbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762735AbXHWTew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764637AbXHWTbg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 15:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758648AbXHWTb0
+	id S1762735AbXHWTew (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 15:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756313AbXHWTeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 15:31:26 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:52011 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756302AbXHWTb0 (ORCPT
+	Thu, 23 Aug 2007 15:34:44 -0400
+Received: from n6.bullet.re3.yahoo.com ([68.142.237.91]:31936 "HELO
+	n6.bullet.re3.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756378AbXHWTen (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 15:31:26 -0400
-Date: Thu, 23 Aug 2007 20:31:21 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Renumber AUDIT_TTY_[GS]ET
-Message-ID: <20070823193121.GM21089@ftp.linux.org.uk>
-References: <20070823091953.GK21089@ftp.linux.org.uk> <20070823073241.2c470cb5@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070823073241.2c470cb5@laptopd505.fenrus.org>
-User-Agent: Mutt/1.4.1i
+	Thu, 23 Aug 2007 15:34:43 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 167328.75634.bm@rrr4.mail.re1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Received:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=Kk5sjRv675/ReFozOIGj5UpM0Na/UoY/87EfFBdbtZkzWXjZP8xylgPfTiyHkgRLn+x2HR/skVR6jFh4ryLB2257CWvLGp0Wd/OSE70T74ldQveNwPxjg1YF3dtCr+RyZqrBvH8bLmF8yuf8sQlqim74eaYRhGmoS6/MO/eoJ8U=;
+Date: Thu, 23 Aug 2007 12:34:31 -0700 (PDT)
+From: Scott Thompson <postfailathushmaildotcom@yahoo.com>
+Reply-To: postfail@hushmail.com
+Subject: [PATCH resubmit] /drivers/ata ioremap returncode check
+To: brandon@ifup.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-ide@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <648310.70195.qm@web44903.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 07:32:41AM -0700, Arjan van de Ven wrote:
-> On Thu, 23 Aug 2007 10:19:53 +0100
-> Al Viro <viro@ftp.linux.org.uk> wrote:
-> 
-> > From: Miloslav Trmac <mitr@redhat.com>
-> > 
-> > Renumber AUDIT_TTY_[GS]ET to avoid a conflict with netlink message
-> > types already used in the wild.
-> 
-> which are these? Were they in mainline or -mm before?
-> 
-> also, if this is so sensitive, at least add something that says to never ever use 1014/1015...
+Patchset against 2.6.23-rc3.  corrects missing ioremap return 
+checks, resending after fixing for documentation making changes suggested...
 
-AUDIT_TTY_*ET went into mainline directly and I'd missed the conflict with
-the numbers already in use by audit-subtree patches.  I *had* noticed when
-pushing audit-subtree to -mm, swore at myself and renumbered those.  Alas,
-there's userland to deal with.
-	* auditctl has subtree support merged
-	* auditctl still doesn't have tty... support merged
-	* it's built with numbers matching the original patchset (1014/1015)
-and binaries are released
-	* audit-subtree patchset is in RH beta kernel, also released
+As for suggestions, I did fix the {} that weren't needed.  I did not add in a
+"printk" err or warn statement as the rest of the module does not contain these
+messages.  When auditing (as I am for ioremap checking here) I am attempting
+to keep changes "in the style of their surroundings".  Otherwise it's massive
+scope screep on these patches.
+ 
+Signed-off-by: Scott Thompson <postfail <at> hushmail.com>
+---------------------------------------------------------------
+diff --git a/drivers/ata/pata_ixp4xx_cf.c b/drivers/ata/pata_ixp4xx_cf.c
+index 4ca7fd6..6f9a2b7 100644
+--- a/drivers/ata/pata_ixp4xx_cf.c
++++ b/drivers/ata/pata_ixp4xx_cf.c
+@@ -189,6 +189,9 @@ static __devinit int ixp4xx_pata_probe(struct platform_device *pdev)
+ 	data->cs0 = devm_ioremap(&pdev->dev, cs0->start, 0x1000);
+ 	data->cs1 = devm_ioremap(&pdev->dev, cs1->start, 0x1000);
+ 
++	if (!data->cs0 || !data->cs1) 
++		return -ENOMEM;
++	
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq)
+ 		set_irq_type(irq, IRQT_RISING);
 
-Vote of auditctl maintainer had been "renumber tty_...* until it's too late,
-since that's the one userland doesn't support yet".  The author of tty patches
-agrees (see above) and I also think that this is the best way out of that mess.
 
-Again, it's largely my fault - I'd missed the conflict in the first place and
-hadn't reacted immediately.
+       
+____________________________________________________________________________________
+Moody friends. Drama queens. Your life? Nope! - their life, your story. Play Sims Stories at
+Yahoo! Games.
+http://sims.yahoo.com/  
+
+
+       
+____________________________________________________________________________________
+Looking for a deal? Find great prices on flights and hotels with Yahoo! FareChase.
+http://farechase.yahoo.com/
+
