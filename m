@@ -1,195 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760822AbXHWJ1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761637AbXHWJ2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760822AbXHWJ1J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 05:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758711AbXHWJ0y
+	id S1761637AbXHWJ2p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 05:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbXHWJ2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 05:26:54 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:30682 "EHLO
-	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758505AbXHWJ0w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 05:26:52 -0400
-Subject: Re: [RFC 2/9] Use NOMEMALLOC reclaim to allow reclaim if
-	PF_MEMALLOC is set
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christoph Lameter <clameter@sgi.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dkegel@google.com,
-       David Miller <davem@davemloft.net>,
-       Nikita Danilov <nikita@clusterfs.com>
-In-Reply-To: <20070823033826.GE18788@wotan.suse.de>
-References: <20070814153021.446917377@sgi.com>
-	 <20070814153501.305923060@sgi.com> <20070818071035.GA4667@ucw.cz>
-	 <Pine.LNX.4.64.0708201158270.28863@schroedinger.engr.sgi.com>
-	 <1187641056.5337.32.camel@lappy>
-	 <Pine.LNX.4.64.0708201323590.30053@schroedinger.engr.sgi.com>
-	 <1187644449.5337.48.camel@lappy> <20070821003922.GD8414@wotan.suse.de>
-	 <1187705235.6114.247.camel@twins>  <20070823033826.GE18788@wotan.suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-bgXRuoc8BMLrMxujQ051"
-Date: Thu, 23 Aug 2007 11:26:48 +0200
-Message-Id: <1187861208.6114.342.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 23 Aug 2007 05:28:37 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:35170 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756623AbXHWJ2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 05:28:36 -0400
+Date: Thu, 23 Aug 2007 11:28:25 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Zan Lynx <zlynx@acm.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc3-mm1 - memory layout change?  - lost support for
+ MAP_32BIT? - mono crashes
+In-Reply-To: <1187834905.190825.16.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0708231126380.2460@twin.jikos.cz>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+ <1187834905.190825.16.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 22 Aug 2007, Zan Lynx wrote:
 
---=-bgXRuoc8BMLrMxujQ051
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> After installing this new wonder kernel on my AMD-64 laptop, I 
+> discovered that Beagle wouldn't start.  While enjoying how fast my 
+> system felt ( :) ) I also discovered that Evolution wouldn't start 
+> because it was built with mono integration.
+[...]
+> Mono claims to mmap with the MAP_32BIT option.
+> In -rc3-mm1 strace shows mono's mmap like this:
+> mmap(NULL, 65536, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANONYMOUS|MAP_32BIT, -1, 0) = 0x7fa21f5cb000
 
-On Thu, 2007-08-23 at 05:38 +0200, Nick Piggin wrote:
-> On Tue, Aug 21, 2007 at 04:07:15PM +0200, Peter Zijlstra wrote:
-> > On Tue, 2007-08-21 at 02:39 +0200, Nick Piggin wrote:
-> > >=20
-> > > Although interestingly, we are not guaranteed to have enough memory t=
-o
-> > > completely initialise writeout of a single page.
-> >=20
-> > Yes, that is due to the unbounded nature of direct reclaim, no?
-> =20
-> Even writing out a single page to a plain old block backed filesystem
-> can take a fair chunk of memory. I'm not really sure how problematic
-> this is with a "real" filesystem, but even with something pretty simple,
-> you might have to do block allocation, which itself might have to do
-> indirect block allocation (which itself can be 3 or 4 levels), all of
-> which have to actually update block bitmaps (which themselves may be
-> many pages big). Then you also may have to even just allocate the
-> buffer_head structure itself. And that's just to write out a single
-> buffer in the page (on a 64K page system, there might be 64 of these).
+Hi Zan,
 
-Right, nikita once talked me though all that when we talked about
-clustered writeout.
+thanks for an excellent bugreport. Rather than throwing the whole 
+pie-randomization and flexmmap support away, could you please test the 
+patch below and let me know whether it fixes all your issues? Thanks.
 
-IIRC filesystems were supposed to keep mempools big enough to do this
-for a single writepage at a time. Not sure its actually done though.
 
-One advantage here is that swap writeout is very simple, so for
-swap_writepage() the overhead is minimal, and we can free up space to
-make progress with the fs writeout. And if there is little anonymous in
-the system it must have a lot clean because of the dirty limit.
+From: Jiri Kosina <jkosina@suse.cz>
 
-But yeah, there are some nasty details left here.
+Handle MAP_32BIT flags properly in x86_64 flexmmap
 
-> > I've been meaning to write some patches to address this problem in a wa=
-y
-> > that does not introduce the hard wall Linus objects to. If only I had
-> > this extra day in the week :-/
->=20
-> For this problem I think the right way to go is to ensure everything
-> is allocated to do writeout at page-dirty-time. This is what fsblock
-> does (or at least _allows_ for: filesystems that do journalling or
-> delayed allocation etc. themselves will have to ensure they have
-> sufficient preallocations to do the manipulations they need at writeout
-> time).
->=20
-> But again, on the pragmatic side, the best behaviour I think is just
-> to have writeouts not allocate from reserves without first trying to
-> reclaim some clean memory, and also limit the number of users of the
-> reserve. We want this anyway, right, because we don't want regular
-> reclaim to start causing things like atomic allocation failures when
-> load goes up.
+We need to handle MAP_32BIT flags of mmap() properly for 64bit 
+applications with filexible mmap layout.
 
-My idea is to extend kswapd, run cpus_per_node instances of kswapd per
-node for each of GFP_KERNEL, GFP_NOFS, GFP_NOIO. (basically 3 kswapds
-per cpu)
+This patch introduces x86_64-specific version of 
+arch_get_unmapped_area_topdown() which differs from the generic one in 
+handling of the MAP_32BIT flag -- when this flag is passed to mmap(), we 
+stick back to the legacy layout for this particular mmap, which gives 
+proper 32bit range.
 
-whenever we would hit direct reclaim, add ourselves to a special
-waitqueue corresponding to the type of GFP and kick all the
-corresponding kswapds.
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-Now Linus' big objection is that all these processes would hit a wall
-and not progress until the watermarks are high again.
-
-Here is were the 'special' part of the waitqueue comes into order.
-
-Instead of freeing pages to the page allocator, these kswapds would hand
-out pages to the waiting processes in a round robin fashion. Only if
-there are no more waiting processes left, would the page go to the buddy
-system.
-
-> > And then there is the deadlock in add_to_swap() that I still have to
-> > look into, I hope it can eventually be solved using reserve based
-> > allocation.
->=20
-> Yes it should have a reserve. It wouldn't be hard, all you need is
-> enough memory to be able to swap out a single page I would think (ie.
-> one preload's worth).
-
-Yeah, just need to look at the locking an batching, and ensure it has
-enough preload to survive one batch, once all the locks are dropped it
-can breathe again :-)
-=20
-> > > The buffer layer doesn't require disk blocks to be allocated at page
-> > > dirty-time. Allocating disk blocks can require complex filesystem ope=
-rations
-> > > and readin of buffer cache pages. The buffer_head structures themselv=
-es may
-> > > not even be present and must be allocated :P
-> > >=20
-> > > In _practice_, this isn't such a problem because we have dirty limits=
-, and
-> > > we're almost guaranteed to have some clean pages to be reclaimed. In =
-this
-> > > same way, networked filesystems are not a problem in practice. Howeve=
-r
-> > > network swap, because there is no dirty limits on swap, can actually =
-see
-> > > the deadlock problems.
-> >=20
-> > The main problem with networked swap is not so much sending out the
-> > pages (this has similar problems like the filesystems but is all bounde=
-d
-> > in its memory use).
-> >=20
-> > The biggest issue is receiving the completion notification. Network
-> > needs to fall back to a state where it does not blindly consumes memory
-> > or drops _all_ packets. An intermediate state is required, one where we
-> > can receive and inspect incoming packets but commit to very few.
-> =20
-> Yes, I understand this is the main problem. But it is not _helped_ by
-> the fact that reclaim reserves include the atomic allocation reserves.
-> I haven't run this problem for a long time, but I'd venture to guess the
-> _main_ reason the deadlock is hit is not because of networking allocating
-> a lot of other irrelevant data, but because of reclaim using up most of
-> the atomic allocation reserves.
-
-Ah, interesting notion.
-
-> And this observation is not tied to recurisve reclaim: if we somehow had
-> a reserve for atomic allocations that was aside from the reclaim reserve,
-> I think such a system would be practically free of deadlock for more
-> anonymous-intensive workloads too.
-
-One could get quite far, however the scenario of shutting down the
-remote swap server while other network traffic is present will surely
-still deadlock.
-
-> > In order to create such a network state and for it to be stable, a
-> > certain amount of memory needs to be available and an external trigger
-> > is needed to enter and leave this state - currently provided by there
-> > being more memory available than needed or not.
->=20
-> I do appreciate the deadlock and solution.  I'm puzzled by your last line
-> though? Currently we do not provide the required reserves in the network
-> layer, *at all*, right?
-
-Right, I was speaking of a kernel with my patches applied. Sorry for the
-confusion.
-
---=-bgXRuoc8BMLrMxujQ051
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGzVLYXA2jU0ANEf4RAouCAJ9VTASsbOOBjNidlIezHfTytRzmnwCfRuGa
-Ve8o+AN1odZcCy4f0hRZEdI=
-=/FVg
------END PGP SIGNATURE-----
-
---=-bgXRuoc8BMLrMxujQ051--
-
+diff --git a/arch/x86_64/kernel/sys_x86_64.c b/arch/x86_64/kernel/sys_x86_64.c
+index 4770b7a..0e44d08 100644
+--- a/arch/x86_64/kernel/sys_x86_64.c
++++ b/arch/x86_64/kernel/sys_x86_64.c
+@@ -16,6 +16,7 @@
+ #include <linux/file.h>
+ #include <linux/utsname.h>
+ #include <linux/personality.h>
++#include <linux/random.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/ia32.h>
+@@ -69,6 +70,7 @@ static void find_start_end(unsigned long flags, unsigned long *begin,
+ 			   unsigned long *end)
+ {
+ 	if (!test_thread_flag(TIF_IA32) && (flags & MAP_32BIT)) {
++		unsigned long new_begin;
+ 		/* This is usually used needed to map code in small
+ 		   model, so it needs to be in the first 31bit. Limit
+ 		   it to that.  This means we need to move the
+@@ -78,6 +80,11 @@ static void find_start_end(unsigned long flags, unsigned long *begin,
+ 		   of playground for now. -AK */ 
+ 		*begin = 0x40000000; 
+ 		*end = 0x80000000;		
++		if (current->flags & PF_RANDOMIZE) {
++			new_begin = randomize_range(*begin, *begin + 0x02000000, 0);
++			if (new_begin)
++				*begin = new_begin;
++		}
+ 	} else {
+ 		*begin = TASK_UNMAPPED_BASE;
+ 		*end = TASK_SIZE; 
+@@ -147,6 +154,97 @@ full_search:
+ 	}
+ }
+ 
++
++unsigned long
++arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
++			  const unsigned long len, const unsigned long pgoff,
++			  const unsigned long flags)
++{
++	struct vm_area_struct *vma;
++	struct mm_struct *mm = current->mm;
++	unsigned long addr = addr0;
++
++	/* requested length too big for entire address space */
++	if (len > TASK_SIZE)
++		return -ENOMEM;
++
++	if (flags & MAP_FIXED)
++		return addr;
++
++	/* for MAP_32BIT mappings we force the legact mmap base */
++	if (!test_thread_flag(TIF_IA32) && (flags & MAP_32BIT))
++		goto bottomup;
++
++	/* requesting a specific address */
++	if (addr) {
++		addr = PAGE_ALIGN(addr);
++		vma = find_vma(mm, addr);
++		if (TASK_SIZE - len >= addr &&
++				(!vma || addr + len <= vma->vm_start))
++			return addr;
++	}
++
++	/* check if free_area_cache is useful for us */
++	if (len <= mm->cached_hole_size) {
++ 	        mm->cached_hole_size = 0;
++ 		mm->free_area_cache = mm->mmap_base;
++ 	}
++
++	/* either no address requested or can't fit in requested address hole */
++	addr = mm->free_area_cache;
++
++	/* make sure it can fit in the remaining address space */
++	if (addr > len) {
++		vma = find_vma(mm, addr-len);
++		if (!vma || addr <= vma->vm_start)
++			/* remember the address as a hint for next time */
++			return (mm->free_area_cache = addr-len);
++	}
++
++	if (mm->mmap_base < len)
++		goto bottomup;
++
++	addr = mm->mmap_base-len;
++
++	do {
++		/*
++		 * Lookup failure means no vma is above this address,
++		 * else if new region fits below vma->vm_start,
++		 * return with success:
++		 */
++		vma = find_vma(mm, addr);
++		if (!vma || addr+len <= vma->vm_start)
++			/* remember the address as a hint for next time */
++			return (mm->free_area_cache = addr);
++
++ 		/* remember the largest hole we saw so far */
++ 		if (addr + mm->cached_hole_size < vma->vm_start)
++ 		        mm->cached_hole_size = vma->vm_start - addr;
++
++		/* try just below the current vma->vm_start */
++		addr = vma->vm_start-len;
++	} while (len < vma->vm_start);
++
++bottomup:
++	/*
++	 * A failed mmap() very likely causes application failure,
++	 * so fall back to the bottom-up function here. This scenario
++	 * can happen with large stack limits and large mmap()
++	 * allocations.
++	 */
++	mm->cached_hole_size = ~0UL;
++  	mm->free_area_cache = TASK_UNMAPPED_BASE;
++	addr = arch_get_unmapped_area(filp, addr0, len, pgoff, flags);
++	/*
++	 * Restore the topdown base:
++	 */
++	mm->free_area_cache = mm->mmap_base;
++	mm->cached_hole_size = ~0UL;
++
++	return addr;
++}
++
++
+ asmlinkage long sys_uname(struct new_utsname __user * name)
+ {
+ 	int err;
+diff --git a/include/asm-x86_64/pgtable.h b/include/asm-x86_64/pgtable.h
+index c9d8764..8863d04 100644
+--- a/include/asm-x86_64/pgtable.h
++++ b/include/asm-x86_64/pgtable.h
+@@ -409,6 +409,7 @@ pte_t *lookup_address(unsigned long addr);
+ 		remap_pfn_range(vma, vaddr, pfn, size, prot)
+ 
+ #define HAVE_ARCH_UNMAPPED_AREA
++#define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
+ 
+ #define pgtable_cache_init()   do { } while (0)
+ 
