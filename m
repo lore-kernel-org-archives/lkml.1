@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764263AbXHWQfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759787AbXHWQjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764263AbXHWQfJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 12:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764760AbXHWQe4
+	id S1759787AbXHWQjd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 12:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbXHWQjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 12:34:56 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:64370 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764953AbXHWQez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 12:34:55 -0400
-Message-ID: <46CDB733.2000506@cfl.rr.com>
-Date: Thu, 23 Aug 2007 12:34:59 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 23 Aug 2007 12:39:25 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:56989 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752795AbXHWQjZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 12:39:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=Ss1Xlc5a2NzYocVsNIYAqcE7STqOxtQg70sDLLYwojmAMA5FVnGdfotNPfsfY3BKaWFM1xf+dIOOYmAZVmdjjcErqPCkB1DhmloS0wEhKT2erdzX0MRwrNxOZj+UXBnK3GlAXKnZnHQc4E8z4cBjHDg7vtWmd5CPHUu+H8Mh/Sg=
+Date: Thu, 23 Aug 2007 20:39:17 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Steve French <sfrench@samba.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] CIFS: fix unbalanced calls to Get/FreeXid
+Message-ID: <20070823163917.GB7222@cvg>
 MIME-Version: 1.0
-To: Martin Vogt <vogt@itwm.fraunhofer.de>
-CC: reiserfs-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: fs corruption by doing nothing
-References: <46CD92B6.5090900@itwm.fraunhofer.de>
-In-Reply-To: <46CD92B6.5090900@itwm.fraunhofer.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Aug 2007 16:35:02.0321 (UTC) FILETIME=[8DB4BA10:01C7E5A3]
-X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1021-15380.000
-X-TM-AS-Result: No--6.803100-5.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Vogt wrote:
-> 
-> Hello,
-> 
-> this bug report describes the following scenario:
-> 
-> - Insert a Knoppix 5.1.1 CD
->   into a fileserver with a clean reiserfs system and
->   Knoppix completely destroys the reiser filesystem on the fileserver,
->   just by booting Knoppix.
-> 
-> 
-> Its unclear if this is a knoppix bug, but reiserfs
-> simply tries to "correct something" which is wrong.
-> 
->> ReiserFS: sda2: found reiserfs format "3.6" with standard journal
->> ReiserFS: sda2: using ordered data mode
->> ReiserFS: sda2: warning: sh-461: journal_init: wrong transaction max size
->> (144767). Changed to 1024
-> 
-> ^^^^^^^^^^here
-> 
->> ReiserFS: sdb2: found reiserfs format "3.6" with standard journal
->> ReiserFS: sdb2: using ordered data mode
->> ReiserFS: sdb2: warning: sh-461: journal_init: wrong transaction max size
->> (144767). Changed to 1024
-> 
-> ^^^^^^^^^^here
-> 
-> After that the filesystem is completely broken.
+This patch fixes unbalanced calls to GetXid/FreeXid.
 
-Looks to me that there are two bugs here.  The first is with knoppix as 
-it is mounting each individual mirrored disk instead of the raid device. 
-  The second appears to be in the kernel as it is detecting and 
-correcting what it thinks is an error but isn't.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
+ fs/cifs/cifsfs.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
+index cabb6a5..2493cc4 100644
+--- a/fs/cifs/cifsfs.c
++++ b/fs/cifs/cifsfs.c
+@@ -346,7 +346,7 @@ int cifs_xquota_set(struct super_block *sb, int quota_type, qid_t qid,
+ 	if (pTcon) {
+ 		cFYI(1, ("set type: 0x%x id: %d", quota_type, qid));
+ 	} else {
+-		return -EIO;
++		rc = -EIO;
+ 	}
+ 
+ 	FreeXid(xid);
