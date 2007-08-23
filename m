@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765709AbXHWUll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764868AbXHWUtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765709AbXHWUll (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 16:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765475AbXHWUl3
+	id S1764868AbXHWUtG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 16:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760304AbXHWUsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 16:41:29 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:52156 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765379AbXHWUl2 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 16:41:28 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Hirokazu Takata <takata@linux-m32r.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, "Luck, Tony" <tony.luck@intel.com>,
-       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       Chris Snook <csnook@redhat.com>, Chris Friesen <cfriesen@nortel.com>
-Subject: Re: [PATCH 11/23] make atomic_read() and atomic_set() behavior consistent on m32r
-In-Reply-To: Your message of "Thu, 23 Aug 2007 21:29:41 +0200."
-             <e8b5ee6194ed619c245eb884c5ae6b11@kernel.crashing.org>
-From: Valdis.Kletnieks@vt.edu
-References: <46C03885.7000109@redhat.com> <20070813112452.GK24018@shell.boston.redhat.com> <swfhcmswcux.wl%takata.hirokazu@renesas.com> <swfejhww4cs.wl%takata.hirokazu@renesas.com> <46CC42EF.3030602@redhat.com> <8fc86c23579e12b012891d6e69b1b107@kernel.crashing.org> <alpine.LFD.0.999.0708221116310.30176@woody.linux-foundation.org>
-            <e8b5ee6194ed619c245eb884c5ae6b11@kernel.crashing.org>
+	Thu, 23 Aug 2007 16:48:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33341 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757650AbXHWUsx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 16:48:53 -0400
+Date: Thu, 23 Aug 2007 13:47:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ego@in.ibm.com
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       Ingo Molnar <mingo@elte.hu>, johnstul@us.ibm.com
+Subject: Re: x86_64-dynticks-disable-hpet_id_legsup-hpets.patch hangs the
+ system
+Message-Id: <20070823134726.8f2c508a.akpm@linux-foundation.org>
+In-Reply-To: <20070823112423.GA26084@in.ibm.com>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<20070823112423.GA26084@in.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1187901648_3088P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Thu, 23 Aug 2007 16:40:48 -0400
-Message-ID: <20267.1187901648@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1187901648_3088P
-Content-Type: text/plain; charset=us-ascii
+On Thu, 23 Aug 2007 16:54:23 +0530
+Gautham R Shenoy <ego@in.ibm.com> wrote:
 
-On Thu, 23 Aug 2007 21:29:41 +0200, Segher Boessenkool said:
-> int f(atomic_t *x)
-> {
->         return atomic_read(x) + atomic_read(x);
-> }
+> 2.6.23-rc3-mm1 renders my machine unresponsive during bootup.
+> I've been observing this problem in 2.6.22-rc2-mm2 as well.
+> The boot log, the cpuinfo and .config have been appened at the
+> end
+> 
+> After embedding a few debug printk's in start_kernel, I noticed that
+> the last function to be executed was calibrate_delay()
+> 
+> Further, from the mm-bisect, the following patch turned out to be the
+> culprit:
+> 
+> x86_64-dynticks-disable-hpet_id_legsup-hpets.patch 
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: john stultz <johnstul@us.ibm.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  arch/i386/kernel/hpet.c |    2 +-
+>  1 files changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff -puN arch/i386/kernel/hpet.c~x86_64-dynticks-disable-hpet_id_legsup-hpets arch/i386/kernel/hpet.c
+> --- a/arch/i386/kernel/hpet.c~x86_64-dynticks-disable-hpet_id_legsup-hpets
+> +++ a/arch/i386/kernel/hpet.c
+> @@ -336,7 +336,7 @@ int __init hpet_enable(void)
+>  
+>  	clocksource_register(&clocksource_hpet);
+>  
+> -	if (id & HPET_ID_LEGSUP) {
+> +	if (0 && (id & HPET_ID_LEGSUP)) {
+>  		hpet_enable_int();
+>  		hpet_reserve_platform_timers(id);
+>  		/*
+> 
+> Any particular reason for this patch [There is no changelog :-)]? 
+> Without this patch the mm-kernel seems to behave just fine for me.
 
->          ld r0,@r0
->          slli r0,#1
->          jmp lr
+Oh damn.  That patch is required to prevent a boot-time div-by-zero
+on my old nocona machine.
 
-Looks like peephole optimization at work.
-
---==_Exmh_1187901648_3088P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGzfDQcC3lWbTT17ARAiesAKCt9DXTeV4fcq6jVhYUSt1B15F98gCfV5ig
-WNElhd+utJOGg504suZT3t4=
-=aRpd
------END PGP SIGNATURE-----
-
---==_Exmh_1187901648_3088P--
+I have a new set of x86_64-dynticks patches from Thomas to look at
+so I guess it's reset-and-start-again time on that front.
