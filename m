@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765802AbXHWVux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765933AbXHWVyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765802AbXHWVux (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 17:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761493AbXHWVup
+	id S1765933AbXHWVyt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 17:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761493AbXHWVyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 17:50:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51356 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760979AbXHWVuo (ORCPT
+	Thu, 23 Aug 2007 17:54:41 -0400
+Received: from smtp109.sbc.mail.re2.yahoo.com ([68.142.229.96]:46129 "HELO
+	smtp109.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761454AbXHWVyk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 17:50:44 -0400
-Date: Thu, 23 Aug 2007 14:50:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Frederik Deweerdt <deweerdt@free.fr>
-Cc: linux-kernel@vger.kernel.org, jeremy@goop.org
-Subject: Re: [-mm patch] enforce noreplace-smp in alternative_instructions()
-Message-Id: <20070823145038.9895784f.akpm@linux-foundation.org>
-In-Reply-To: <20070822202551.GB31846@slug>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	<20070822202551.GB31846@slug>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 23 Aug 2007 17:54:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ZaExSnicR0ls2ytdCaXMQPnczLHRxG98vWIzaT+jATlr8gF3dz2N9uQoua1hRZwpsVlZXEC/DlkQaokZqvjrHuASaSBRLoCV1NTIlXwgsywNZ2HMktACLUImt1+jU/Fk/Ju9G1r1hBVhyfEbkSoa6y6INmvj00gBqubtTd6ACtM=  ;
+X-YMail-OSG: q7r8wwQVM1kf2W7A0RQwBxn_c9wXP4ooD3cmJ0Il5KwvWdjW7CJpGZjB6BHg5m7UOBGJIdyrqQ--
+From: David Brownell <david-b@pacbell.net>
+To: Tony Jones <tonyj@suse.de>
+Subject: Re: [patch 09/14] Convert from class_device to device for SPI
+Date: Thu, 23 Aug 2007 14:03:52 -0700
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+References: <20070820224806.154198000@suse.de> <200708211128.28552.david-b@pacbell.net> <20070822030515.GA32136@suse.de>
+In-Reply-To: <20070822030515.GA32136@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708231403.52846.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007 22:25:51 +0200
-Frederik Deweerdt <deweerdt@free.fr> wrote:
+On Tuesday 21 August 2007, Tony Jones wrote:
+> I believe this is the necessary documentation changes.
 
-> On Wed, Aug 22, 2007 at 02:06:48AM -0700, Andrew Morton wrote:
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
-> > 
-> Hi Jeremy,
-> 
-> arch/i386/kernel/alternative.c:alternative_instructions() doesn't
-> check for noreplace-smp before setting capability bits and freeing the
-> __smp_locks section.
+Thanks.  I have an update, plus updates for the mmc_spi
+driver (now in MM) which you didn't update.
 
-umm, so?  What happens then?  What bug is being fixed here, and what are
-its consequences?
+By the way, it's worth noting an incompatibility introduced
+through these conversions and CONFIG_SYSFS_DEPRECATED=n:
 
-> Every call to alternatives_smp_unlock() checks for noreplace-smp
-> beforehand, so remove the check from there.
-> 
-> Boot tested on i386 with UP+noreplace-smp (lguest) and SMP (real hardware)
-> 
-> Regards,
-> Frederik
-> 
-> Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
-> 
-> diff --git a/arch/i386/kernel/alternative.c b/arch/i386/kernel/alternative.c
-> index 9f4ac8b..7c5af80 100644
-> --- a/arch/i386/kernel/alternative.c
-> +++ b/arch/i386/kernel/alternative.c
-> @@ -221,9 +221,6 @@ static void alternatives_smp_unlock(u8 **start, u8 **end, u8 *text, u8 *text_end
->  	u8 **ptr;
->  	char insn[1];
->  
-> -	if (noreplace_smp)
-> -		return;
-> -
->  	add_nops(insn, 1);
->  	for (ptr = start; ptr < end; ptr++) {
->  		if (*ptr < text)
-> @@ -406,7 +403,7 @@ void __init alternative_instructions(void)
->  #endif
->  
->  #ifdef CONFIG_SMP
-> -	if (smp_alt_once) {
-> +	if (smp_alt_once && !noreplace_smp) {
->  		if (1 == num_possible_cpus()) {
->  			printk(KERN_INFO "SMP alternatives: switching to UP code\n");
->  			set_bit(X86_FEATURE_UP, boot_cpu_data.x86_capability);
+ - previously .../controller/spi_master:spi2 would be a
+   symlink to /sys/class/spi_master/spi2
 
-You refer to rc3-mm1 and this is described as a "-mm patch" but it seems to
-also be applicable to mainline?
+ - now, /sys/class/spi_master/spi2 is a symlink to
+   .../controller/spi_master (with DEPRECATED=n).
+
+The symlink direction is just noise ... the issue is that with
+this approach it's no longer possible to have one controller
+handle multiple SPI busses!  A fix would involve maintaining
+the original "spi_master:spi2" name.
+
+I don't happen to know of such a controller, and one would
+surprise me a bit.  Exactly like the fact that several I2C
+adapters work that way was a surprise:  one PCI function
+controlling several different I2C busses, rather than one
+function per bus.
+
+- Dave
+
