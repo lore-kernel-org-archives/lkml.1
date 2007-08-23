@@ -1,87 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbXHWLOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760000AbXHWLXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759290AbXHWLOU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 07:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbXHWLOI
+	id S1760000AbXHWLXI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 07:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbXHWLW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 07:14:08 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:43876 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752631AbXHWLOG (ORCPT
+	Thu, 23 Aug 2007 07:22:58 -0400
+Received: from gw.unix-scripts.info ([62.212.121.204]:34995 "EHLO
+	gw.unix-scripts.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753329AbXHWLW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 07:14:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=PvdwFI/m6O5uCctd8SEu9j7PjjQBMjjLkaRy3yyoKfIHjO/wtEQ++pWvnyRXdKak2CJYWQyoRU3ioOwRJlr2T6UXvofJA6URHwtqpxSWYkWDOvoxFms/chi81sulXJ9aap1qXAqn0d8V5YVrPnxLObJrD6JZiGvJg8/fZkWi2NU=
-Message-ID: <46CD6BF4.2080101@googlemail.com>
-Date: Thu, 23 Aug 2007 13:13:56 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 23 Aug 2007 07:22:57 -0400
+X-Greylist: delayed 454 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Aug 2007 07:22:56 EDT
+Message-ID: <46CD6C40.7070403@unix-scripts.info>
+Date: Thu, 23 Aug 2007 13:15:12 +0200
+From: Laurent CARON <lcaron@unix-scripts.info>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Stephen Smalley <sds@tycho.nsa.gov>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [2.6.20.17 review 00/58] 2.6.20.17 -stable review
-References: <6bffcb0e0708220410u4ab3978eq18786ac186e88c7d@mail.gmail.com> <Xine.LNX.4.64.0708220621550.28878@us.intercode.com.au> <1187789765.1451.310.camel@moss-spartans.epoch.ncsc.mil> <1187790174.1451.315.camel@moss-spartans.epoch.ncsc.mil> <Xine.LNX.4.64.0708220707390.9414@us.intercode.com.au> <6bffcb0e0708220729j7b9afcf3v4edef68cc974c08d@mail.gmail.com> <Xine.LNX.4.64.0708220929370.4968@us.intercode.com.au> <6bffcb0e0708220946hc2943f5jdb33215cdfab08d1@mail.gmail.com> <6bffcb0e0708221050s68975158k7a3b27c7c30f455d@mail.gmail.com> <1187810114.1451.453.camel@moss-spartans.epoch.ncsc.mil> <20070822201634.GB14132@1wt.eu>
-In-Reply-To: <20070822201634.GB14132@1wt.eu>
-X-Enigmail-Version: 0.95.3
+To: linux-kernel@vger.kernel.org
+Subject: PROBLEM: Server crashes unexpectedly
+X-Enigmail-Version: 0.95.2
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau pisze:
-> On Wed, Aug 22, 2007 at 03:15:14PM -0400, Stephen Smalley wrote:
->> On Wed, 2007-08-22 at 19:50 +0200, Michal Piotrowski wrote:
->>> On 22/08/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
->>>> On 22/08/07, James Morris <jmorris@namei.org> wrote:
->>> [snip]
->>>>> The previous problem is theoretically unrelated.  It arose via a separate
->>>>> mechanism which can't be used at the same as the one you're seeing now in
->>>>> the logs.
->>>>>
->>>>> So this either looks like a problem which has gone unnoticed and was
->>>>> inadvertently fixed at some point, or is unique to the 2.6.20 stable
->>>>> series.
->>>> Yup, it is very interesting why no one noticed it. Binary search in progress:
->>>> good - 2.6.20.4
->>>> bad - 2.6.20.8
->>> Ok, I narrowed the problem to 2.6.20.7. There are a few net changes
->>> http://eu.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.20.7
->>> any suggestions?
->>>
->>> I also have seen this avc on 2.6.20.6 during reboot
->>>
->>> [ 2333.905944] audit(1187803699.273:271): avc:  denied  { send } for
->>> saddr=192.168.1.70 src=48591 daddr=72.14.217.189 dest=80 netif=eth0
->>> scontext=user_u:system_r:unconfined_t:s0
->>> tcontext=system_u:system_r:kernel_t:s0 tclass=packet
->>> [ 2334.420598] audit(1187803699.789:272): avc:  denied  { send } for
->>> saddr=192.168.1.70 src=47248 daddr=66.249.91.18 dest=80 netif=eth0
->>> scontext=user_u:system_r:unconfined_t:s0
->>> tcontext=system_u:system_r:kernel_t:s0 tclass=packet
->>>
->>> so the roots of the problem may lie between 2.6.20.4 and 2.6.20.6
->>>
->>> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.20.17-rc1/console2.log
->> Might be related to this:
->> http://marc.info/?l=git-commits-head&m=118271540932264&w=2
-> 
-> Interesting, this one was fixed in 2.6.22-rc6, but is neither in 2.6.20
-> nor in 2.6.21. Michal, could you please try to apply the patch ? I include
-> it here for your convenience. If it fixes your problem, I can queue it for
-> next 2.6.20-stable, and forward it to the -stable team for 2.6.21 in case
-> Greg and Chris plan to release another one.
-> 
+Hi,
 
-I confirm that this patch fixes the problem.
+One of my server crashes randomly.
 
-Regards,
-Michal
+I suspect a filesystem corruption.
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+Can you please confirm this ?
+
+Thanks
+
+Here is the relevant part from /var/log/syslog
+
+
+
+Aug 23 12:10:55 berlin kernel: BUG: unable to handle kernel paging
+request at virtual address 74c1803d
+Aug 23 12:10:55 berlin kernel: printing eip:
+Aug 23 12:10:55 berlin kernel: c014fd25
+Aug 23 12:10:55 berlin kernel: *pde = 00000000
+Aug 23 12:10:55 berlin kernel: Oops: 0002 [#1]
+Aug 23 12:10:55 berlin kernel: SMP
+Aug 23 12:10:55 berlin kernel: Modules linked in: xt_helper xt_state
+iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack camellia xcbc
+dm_mirror hisax
+Aug 23 12:10:55 berlin kernel: CPU:    1
+Aug 23 12:10:55 berlin kernel: EIP:    0060:[<c014fd25>]    Not tainted VLI
+Aug 23 12:10:55 berlin kernel: EFLAGS: 00010082   (2.6.22-berlin #1)
+Aug 23 12:10:55 berlin kernel: EIP is at free_block+0x61/0xfb
+Aug 23 12:10:55 berlin kernel: eax: df2c0000   ebx: 00000024   ecx:
+d64ae080   edx: 74c18039
+Aug 23 12:10:55 berlin kernel: esi: d64ae000   edi: dfe4b880   ebp:
+dfe48840   esp: dff9df40
+Aug 23 12:10:55 berlin kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0000
+ ss: 0068
+Aug 23 12:10:55 berlin kernel: Process events/1 (pid: 8, ti=dff9c000
+task=dff8e540 task.ti=dff9c000)
+Aug 23 12:10:55 berlin kernel: Stack: 00000009 00000000 0000000b
+00000001 dfe35cd8 dfe35cd4 0000000b dfe35cc0
+Aug 23 12:10:55 berlin kernel: dfe4b880 c014fe37 00000000 dfe48840
+dfe4b880 dfe48840 c1413a60 00000000
+Aug 23 12:10:55 berlin kernel: c0150b36 00000000 00000000 dffcd4c0
+c1413a60 c0150aed c0127dd0 000000ff
+Aug 23 12:10:55 berlin kernel: Call Trace:
+Aug 23 12:10:55 berlin kernel: [<c014fe37>] drain_array+0x78/0x97
+Aug 23 12:10:55 berlin kernel: [<c0150b36>] cache_reap+0x49/0xe5
+Aug 23 12:10:55 berlin kernel: [<c0150aed>] cache_reap+0x0/0xe5
+Aug 23 12:10:55 berlin kernel: [<c0127dd0>] run_workqueue+0x73/0xf5
+Aug 23 12:10:55 berlin kernel: [<c01284f2>] worker_thread+0x0/0xc6
+Aug 23 12:10:55 berlin kernel: [<c01285ac>] worker_thread+0xba/0xc6
+Aug 23 12:10:55 berlin kernel: [<c012aaa1>]
+autoremove_wake_function+0x0/0x35
+Aug 23 12:10:55 berlin kernel: [<c012a9db>] kthread+0x38/0x5d
+Aug 23 12:10:55 berlin kernel: [<c012a9a3>] kthread+0x0/0x5d
+Aug 23 12:10:55 berlin kernel: [<c01030e7>] kernel_thread_helper+0x7/0x10
+Aug 23 12:10:55 berlin kernel: =======================
+Aug 23 12:10:55 berlin kernel: Code: 8b 02 25 00 40 02 00 3d 00 40 02 00
+75 03 8b 52 0c 8b 02 84 c0 78 04 0f 0b eb fe 8b 72 1c 8b 54 24 28 8b 7c
+95 68 8b 16 8b 46 04 <89>
+ 42 04 89 10 c7 06 00 01 10 00 c7 46 04 00 02 20 00 2b 4e 0c
+Aug 23 12:10:55 berlin kernel: EIP: [<c014fd25>] free_block+0x61/0xfb
+SS:ESP 0068:dff9df40
+
+
+Thanks
+
+Laurent
