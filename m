@@ -1,219 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbXHWD46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbXHWEGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758114AbXHWD46 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 23:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757385AbXHWD4u
+	id S1753287AbXHWEGV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 00:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbXHWEGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 23:56:50 -0400
-Received: from mail.spacing-guild.net ([72.29.67.242]:60608 "EHLO
-	mail.spacing-guild.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756843AbXHWD4t (ORCPT
+	Thu, 23 Aug 2007 00:06:12 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:46577 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750927AbXHWEGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 23:56:49 -0400
-Message-ID: <46CD057C.3080106@fuster.org>
-Date: Wed, 22 Aug 2007 23:56:44 -0400
-From: Joel Fuster <j@fuster.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070621)
+	Thu, 23 Aug 2007 00:06:11 -0400
+Date: Thu, 23 Aug 2007 06:05:04 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Scott Thompson <postfail@hushmail.com>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: Ideas on column length in kernel "problem"?
+Message-ID: <20070823040504.GM30705@stusta.de>
+References: <20070823035442.6FD0DDA81F@mailserver7.hushmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Joel Fuster <j@fuster.org>
-Subject: Re: sysfs_dir_cache growing out of control
-References: <46CCD3DF.4080303@fuster.org>
-In-Reply-To: <46CCD3DF.4080303@fuster.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070823035442.6FD0DDA81F@mailserver7.hushmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joel Fuster wrote:
-> Hi,
+On Wed, Aug 22, 2007 at 11:54:41PM -0400, Scott Thompson wrote:
+> I haven't seen any recent solutions to this "problem"...
 > 
-> I am running 2.6.22.3.  For reasons that escape me, over time (days) the 
-> sysfs_dir_cache, dentry, and inode_cache SLUB entries grow until they 
-> consume all the memory on my system, requiring a reboot.
+> Many free (and not-free) mail clients wordwrap.  Hushmail wraps at 
+> 68 (verified), Yahoo has options to wrap at a max of 99, and Gmail 
+> was somewhere around 85-90 as I recall.  Not sure on other free / 
+> inexpensive clients.  
 > 
-> Although I did not record objective evidence of this at the time, I 
-> suspect I had the same problem with 2.6.18 and 2.6.20...I certainly had 
-> the same symptoms.
+> However, several code modules have code lines with column lengths 
+> well over 80 (the worst I have seen was 211).  This prevents people 
+> with "minimal function" email clients (I'm being generous) from 
+> making changes in the area of these long code lines, or from even 
+> submitting fixes for the line length problem in modules themselves.
+> 
+> I don't have an easy solution short of finding volunteer(s) who can 
+> submit patches to resolve this or peer-pressuring module owners 
+> into resolving, so opening this issue up to the list for ideas 
+> here.  In the meantime I'll run a quick review to assess just how 
+> many changes this would be ...
 
-An update to this...it seems to be related to "scanbuttond" which is an 
-app that uses libusb to poll a scanner for button presses on the scanner 
-itself.  The number of objects in sysfs_dir_cache stops growing when I 
-kill the scanbuttond process.
+Most people get it right, so there must be a solution available that
+doesn't involve changing the kernel. ;-)
 
-An strace of one poll loop for scanbuttond follows:
+Most likely the problem is that you cut'n'paste your patches into your  
+email client (or the editor your email client opens). If your client has 
+some "Insert File" functionality use this instead.
 
+> Note -- I am well aware that us 'poor users' could just 'get a real 
+> email service', and if anyone knows of a free/inexpensive mail 
+> client that will be able to handle the wordwrap requirements for 
+> the current state of the linux tree please advise.
 
-nanosleep({0, 333000000}, NULL)         = 0
-open("/dev/bus/usb", O_RDONLY|O_NONBLOCK|O_DIRECTORY) = 1
-fstat(1, {st_mode=S_IFDIR|0755, st_size=80, ...}) = 0
-fcntl(1, F_SETFD, FD_CLOEXEC)           = 0
-getdents(1, /* 4 entries */, 4096)      = 96
-getdents(1, /* 0 entries */, 4096)      = 0
-close(1)                                = 0
-open("/dev/bus/usb/002", O_RDONLY|O_NONBLOCK|O_DIRECTORY) = 1
-fstat(1, {st_mode=S_IFDIR|0755, st_size=60, ...}) = 0
-fcntl(1, F_SETFD, FD_CLOEXEC)           = 0
-getdents(1, /* 3 entries */, 4096)      = 72
-open("/dev/bus/usb/002/001", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/002/001", O_RDONLY)  = 2
-ioctl(2, USBDEVFS_CONNECTINFO, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-read(2, "\22\1\0\2\t\0\1@\0\0\0\0\6\2\3\2\1\1", 18) = 18
-read(2, "\t\2\31\0\1\1\0\340", 8)       = 8
-read(2, "\0\t\4\0\0\1\t\0\0\0\7\5\201\3\4\0\f", 17) = 17
-close(2)                                = 0
-getdents(1, /* 0 entries */, 4096)      = 0
-close(1)                                = 0
-open("/dev/bus/usb/002/001", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/002/001", O_RDONLY)  = 1
-ioctl(1, USBDEVFS_IOCTL, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-close(1)                                = 0
-open("/dev/bus/usb/001", O_RDONLY|O_NONBLOCK|O_DIRECTORY) = 1
-fstat(1, {st_mode=S_IFDIR|0755, st_size=100, ...}) = 0
-fcntl(1, F_SETFD, FD_CLOEXEC)           = 0
-getdents(1, /* 4 entries */, 4096)      = 96
-getdents(1, /* 0 entries */, 4096)      = 0
-close(1)                                = 0
-open("/dev/bus/usb/002", O_RDONLY|O_NONBLOCK|O_DIRECTORY) = 1
-fstat(1, {st_mode=S_IFDIR|0755, st_size=60, ...}) = 0
-fcntl(1, F_SETFD, FD_CLOEXEC)           = 0
-getdents(1, /* 3 entries */, 4096)      = 72
-open("/dev/bus/usb/002/001", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/002/001", O_RDONLY)  = 2
-ioctl(2, USBDEVFS_CONNECTINFO, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-read(2, "\22\1\0\2\t\0\1@\0\0\0\0\6\2\3\2\1\1", 18) = 18
-read(2, "\t\2\31\0\1\1\0\340", 8)       = 8
-read(2, "\0\t\4\0\0\1\t\0\0\0\7\5\201\3\4\0\f", 17) = 17
-close(2)                                = 0
-getdents(1, /* 0 entries */, 4096)      = 0
-close(1)                                = 0
-open("/dev/bus/usb/002/001", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/002/001", O_RDONLY)  = 1
-ioctl(1, USBDEVFS_IOCTL, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-close(1)                                = 0
-open("/dev/bus/usb/001", O_RDONLY|O_NONBLOCK|O_DIRECTORY) = 1
-fstat(1, {st_mode=S_IFDIR|0755, st_size=100, ...}) = 0
-fcntl(1, F_SETFD, FD_CLOEXEC)           = 0
-getdents(1, /* 5 entries */, 4096)      = 120
-open("/dev/bus/usb/001/004", O_RDWR)    = 2
-ioctl(2, USBDEVFS_CONNECTINFO, 0x7fffb3a08420) = 0
-read(2, "\22\1\20\1\0\0\0@\330\5\3@\0\1\0\0\0\1", 18) = 18
-read(2, "\t\2 \0\1\1\0\240", 8)         = 8
-read(2, "\372\t\4\0\0\2\377\377\377\0\7\5\201\2@\0\0\7\5\2\2@\0"..., 24) 
-= 24
-close(2)                                = 0
-open("/dev/bus/usb/001/003", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/001/003", O_RDONLY)  = 2
-ioctl(2, USBDEVFS_CONNECTINFO, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-read(2, "\22\1\20\1\0\0\0@{\6\3#\0\3\1\2\0\1", 18) = 18
-read(2, "\t\2\'\0\1\1\0\200", 8)        = 8
-read(2, "2\t\4\0\0\3\377\0\0\0\7\5\201\3\n\0\1\7\5\2\2@\0\0\7\5"..., 31) 
-= 31
-close(2)                                = 0
-open("/dev/bus/usb/001/001", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/001/001", O_RDONLY)  = 2
-ioctl(2, USBDEVFS_CONNECTINFO, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-read(2, "\22\1\20\1\t\0\0@\0\0\0\0\6\2\3\2\1\1", 18) = 18
-read(2, "\t\2\31\0\1\1\0\340", 8)       = 8
-read(2, "\0\t\4\0\0\1\t\0\0\0\7\5\201\3\2\0\377", 17) = 17
-close(2)                                = 0
-getdents(1, /* 0 entries */, 4096)      = 0
-close(1)                                = 0
-open("/dev/bus/usb/001/004", O_RDWR)    = 1
-ioctl(1, USBDEVFS_IOCTL, 0x7fffb3a08420) = -1 ENOTTY (Inappropriate 
-ioctl for device)
-close(1)                                = 0
-open("/dev/bus/usb/001/003", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/001/003", O_RDONLY)  = 1
-ioctl(1, USBDEVFS_IOCTL, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-close(1)                                = 0
-open("/dev/bus/usb/001/001", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/001/001", O_RDONLY)  = 1
-ioctl(1, USBDEVFS_IOCTL, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-close(1)                                = 0
-open("/dev/bus/usb", O_RDONLY|O_NONBLOCK|O_DIRECTORY) = 1
-fstat(1, {st_mode=S_IFDIR|0755, st_size=80, ...}) = 0
-fcntl(1, F_SETFD, FD_CLOEXEC)           = 0
-getdents(1, /* 4 entries */, 4096)      = 96
-getdents(1, /* 0 entries */, 4096)      = 0
-close(1)                                = 0
-open("/dev/bus/usb/002", O_RDONLY|O_NONBLOCK|O_DIRECTORY) = 1
-fstat(1, {st_mode=S_IFDIR|0755, st_size=60, ...}) = 0
-fcntl(1, F_SETFD, FD_CLOEXEC)           = 0
-getdents(1, /* 3 entries */, 4096)      = 72
-open("/dev/bus/usb/002/001", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/002/001", O_RDONLY)  = 2
-ioctl(2, USBDEVFS_CONNECTINFO, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-read(2, "\22\1\0\2\t\0\1@\0\0\0\0\6\2\3\2\1\1", 18) = 18
-read(2, "\t\2\31\0\1\1\0\340", 8)       = 8
-read(2, "\0\t\4\0\0\1\t\0\0\0\7\5\201\3\4\0\f", 17) = 17
-close(2)                                = 0
-getdents(1, /* 0 entries */, 4096)      = 0
-close(1)                                = 0
-open("/dev/bus/usb/002/001", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/002/001", O_RDONLY)  = 1
-ioctl(1, USBDEVFS_IOCTL, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-close(1)                                = 0
-open("/dev/bus/usb/001", O_RDONLY|O_NONBLOCK|O_DIRECTORY) = 1
-fstat(1, {st_mode=S_IFDIR|0755, st_size=100, ...}) = 0
-fcntl(1, F_SETFD, FD_CLOEXEC)           = 0
-getdents(1, /* 5 entries */, 4096)      = 120
-open("/dev/bus/usb/001/004", O_RDWR)    = 2
-ioctl(2, USBDEVFS_CONNECTINFO, 0x7fffb3a08420) = 0
-read(2, "\22\1\20\1\0\0\0@\330\5\3@\0\1\0\0\0\1", 18) = 18
-read(2, "\t\2 \0\1\1\0\240", 8)         = 8
-read(2, "\372\t\4\0\0\2\377\377\377\0\7\5\201\2@\0\0\7\5\2\2@\0"..., 24) 
-= 24
-close(2)                                = 0
-open("/dev/bus/usb/001/003", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/001/003", O_RDONLY)  = 2
-ioctl(2, USBDEVFS_CONNECTINFO, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-read(2, "\22\1\20\1\0\0\0@{\6\3#\0\3\1\2\0\1", 18) = 18
-read(2, "\t\2\'\0\1\1\0\200", 8)        = 8
-read(2, "2\t\4\0\0\3\377\0\0\0\7\5\201\3\n\0\1\7\5\2\2@\0\0\7\5"..., 31) 
-= 31
-close(2)                                = 0
-open("/dev/bus/usb/001/001", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/001/001", O_RDONLY)  = 2
-ioctl(2, USBDEVFS_CONNECTINFO, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-read(2, "\22\1\20\1\t\0\0@\0\0\0\0\6\2\3\2\1\1", 18) = 18
-read(2, "\t\2\31\0\1\1\0\340", 8)       = 8
-read(2, "\0\t\4\0\0\1\t\0\0\0\7\5\201\3\2\0\377", 17) = 17
-close(2)                                = 0
-getdents(1, /* 0 entries */, 4096)      = 0
-close(1)                                = 0
-open("/dev/bus/usb/001/004", O_RDWR)    = 1
-ioctl(1, USBDEVFS_IOCTL, 0x7fffb3a08420) = -1 ENOTTY (Inappropriate 
-ioctl for device)
-close(1)                                = 0
-open("/dev/bus/usb/001/003", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/001/003", O_RDONLY)  = 1
-ioctl(1, USBDEVFS_IOCTL, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-close(1)                                = 0
-open("/dev/bus/usb/001/001", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/001/001", O_RDONLY)  = 1
-ioctl(1, USBDEVFS_IOCTL, 0x7fffb3a08420) = -1 EPERM (Operation not 
-permitted)
-close(1)                                = 0
-open("/dev/bus/usb/001/004", O_RDWR)    = 1
-ioctl(1, USBDEVFS_CLAIMINTERFACE, 0x7fffb3a0848c) = 0
-ioctl(1, USBDEVFS_CONTROL, 0x7fffb3a08420) = 64
-ioctl(1, USBDEVFS_CONTROL, 0x7fffb3a08420) = 8
-ioctl(1, USBDEVFS_RELEASEINTERFACE, 0x7fffb3a08494) = 0
-close(1)                                = 0
-nanosleep({0, 333000000},  <unfinished ...>
+Open source email clients I have personally used to send patches are 
+(al)pine with the included pico as editor and mutt with nano as editor, 
+but it might be harder to find ones that don't work than ones that do 
+work...
 
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
