@@ -1,42 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbXHWGg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758287AbXHWGiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756829AbXHWGg6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 02:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbXHWGgs
+	id S1758287AbXHWGiG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 02:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbXHWGhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 02:36:48 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:4598 "EHLO
+	Thu, 23 Aug 2007 02:37:53 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:15074 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753186AbXHWGgr (ORCPT
+	with ESMTP id S1754380AbXHWGhw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 02:36:47 -0400
-Message-ID: <46CD2AA8.9070507@chelsio.com>
-Date: Wed, 22 Aug 2007 23:35:20 -0700
+	Thu, 23 Aug 2007 02:37:52 -0400
 From: Divy Le Ray <divy@chelsio.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+Subject: [PATCH 12/11] cxgb3 - remove false positive in xgmac workaround
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Date: Wed, 22 Aug 2007 23:37:49 -0700
+Message-ID: <20070823063749.30184.51329.stgit@speedy5>
+User-Agent: StGIT/0.12
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH 0/3] cxgb3 driver update
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Aug 2007 06:35:22.0212 (UTC) FILETIME=[C7E3CA40:01C7E54F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff,
+From: Divy Le Ray <divy@chelsio.com>
 
-I'm submitting three more patches for inclusion in netdev#upstream.
-These patches are built over the series I resent yesterday night.
-The patch numbering reflects the stacking.
+Qualify toggling of xgmac tx enable with not getting pause frames, 
+we might not make forward progress because the peer is sending 
+lots of pause frames.
 
-Here is a brief description:
--   avoid false positives in the xgmac hang workaround
--   Properly set the CQ_ERR bit in RDMA CQ contexts.
--   Update CQ context operations time out values
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
 
-Cheers,
-Divy
+ drivers/net/cxgb3/common.h |    1 +
+ drivers/net/cxgb3/xgmac.c  |    4 +++-
+ 2 files changed, 4 insertions(+), 1 deletions(-)
 
-
+diff --git a/drivers/net/cxgb3/common.h b/drivers/net/cxgb3/common.h
+index ff867c2..3e5b0db 100644
+--- a/drivers/net/cxgb3/common.h
++++ b/drivers/net/cxgb3/common.h
+@@ -514,6 +514,7 @@ struct cmac {
+ 	u64 rx_mcnt;
+ 	unsigned int toggle_cnt;
+ 	unsigned int txen;
++	u64 rx_pause;
+ 	struct mac_stats stats;
+ };
+ 
+diff --git a/drivers/net/cxgb3/xgmac.c b/drivers/net/cxgb3/xgmac.c
+index 1d1c391..ff9e9dc 100644
+--- a/drivers/net/cxgb3/xgmac.c
++++ b/drivers/net/cxgb3/xgmac.c
+@@ -452,6 +452,7 @@ int t3_mac_enable(struct cmac *mac, int which)
+ 						A_XGM_TX_SPI4_SOP_EOP_CNT +
+ 						oft)));
+ 		mac->rx_mcnt = s->rx_frames;
++		mac->rx_pause = s->rx_pause;
+ 		mac->rx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
+ 						A_XGM_RX_SPI4_SOP_EOP_CNT +
+ 						oft)));
+@@ -504,7 +505,7 @@ int t3b2_mac_watchdog_task(struct cmac *mac)
+ 	tx_xcnt = 1;		/* By default tx_xcnt is making progress */
+ 	tx_tcnt = mac->tx_tcnt;	/* If tx_mcnt is progressing ignore tx_tcnt */
+ 	rx_xcnt = 1;		/* By default rx_xcnt is making progress */
+-	if (tx_mcnt == mac->tx_mcnt) {
++	if (tx_mcnt == mac->tx_mcnt && mac->rx_pause == s->rx_pause) {
+ 		tx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
+ 						A_XGM_TX_SPI4_SOP_EOP_CNT +
+ 					       	mac->offset)));
+@@ -560,6 +561,7 @@ out:
+ 	mac->tx_mcnt = s->tx_frames;
+ 	mac->rx_xcnt = rx_xcnt;
+ 	mac->rx_mcnt = s->rx_frames;
++	mac->rx_pause = s->rx_pause;
+ 	if (status == 1) {
+ 		t3_write_reg(adap, A_XGM_TX_CTRL + mac->offset, 0);
+ 		t3_read_reg(adap, A_XGM_TX_CTRL + mac->offset);  /* flush */
