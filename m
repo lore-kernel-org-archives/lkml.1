@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbXHWDOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759121AbXHWDPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbXHWDOe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 23:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbXHWDOZ
+	id S1759121AbXHWDPW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 23:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753965AbXHWDPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 23:14:25 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4019 "EHLO perches.com"
+	Wed, 22 Aug 2007 23:15:05 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4695 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752168AbXHWDOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 23:14:25 -0400
-Subject: Re: tpmdd maintainers
-From: Joe Perches <joe@perches.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kent Yoder <shpedoikal@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <200708230259.l7N2x4X1023596@hera.kernel.org>
-References: <200708230259.l7N2x4X1023596@hera.kernel.org>
-Content-Type: text/plain
-Date: Wed, 22 Aug 2007 20:14:22 -0700
-Message-Id: <1187838862.32738.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	id S1758391AbXHWDOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 23:14:52 -0400
+Date: Wed, 22 Aug 2007 22:56:15 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Broadcom Linux <bcm43xx-dev@lists.berlios.de>
+Subject: Re: 2.6.23-rc3-mm1: fix b43 compilation
+Message-ID: <20070823025614.GA4855@tuxdriver.com>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <200708221833.59375.rjw@sisk.pl> <200708222356.44088.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708222356.44088.mb@bu3sch.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-23 at 02:59 +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8e81cc13a88ce486a6b0a6ca56aba6985824917a
-> Commit:     8e81cc13a88ce486a6b0a6ca56aba6985824917a
-> Parent:     85770ffe4f0cdd4396b17f14762adc25a571a348
-> Author:     Kent Yoder <shpedoikal@gmail.com>
-> AuthorDate: Wed Aug 22 14:01:04 2007 -0700
-> Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
-> CommitDate: Wed Aug 22 19:52:44 2007 -0700
+On Wed, Aug 22, 2007 at 11:56:43PM +0200, Michael Buesch wrote:
+> On Wednesday 22 August 2007 18:33:58 Rafael J. Wysocki wrote:
+> > On Wednesday, 22 August 2007 11:06, Andrew Morton wrote:
+> > > 
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
+> > > 
+> > > - git-ixgbe.patch got dropped - git-net.patch destroyed it
+> > > 
+> > > - then git-net got dropped as it doesn't work
+> > 
+> > Apparently, the b43 driver is expecting another version of mac80211.
+> > 
+> > This patch fixes the compilation, but I'm not sure what about the
+> > functionality. ;-)
 > 
->     tpmdd maintainers
->     
->     Fix up the maintainers info in the tpm drivers.  Kylene will be out for
->     some time, so copying the sourceforge list is the best way to get some
->     attention.
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 371fe67..abe5fa7 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3452,7 +3452,7 @@ S:	Maintained
->  
->  TPM DEVICE DRIVER
->  P:	Kylene Hall
-> -M:	kjhall@us.ibm.com
-> +M:	tpmdd-devel@lists.sourceforge.net
->  W:	http://tpmdd.sourceforge.net
->  P:	Marcel Selhorst
->  M:	tpm@selhorst.net
+> There seems to be a screwup somehow.
+> These mac80211 API functions were recently changed to include
+> the additional parameter. So it seems you carry an old version of mac80211.
 
-Perhaps you should take Kylene's name off too.
+I think what happened is because Andrew dropped Dave M.'s net tree.
+Since mac80211 has been getting merged through Dave M., crucial bits
+are missing which then break the bits from wireless-dev.
 
+Andrew, if you find that you need to drop git-net again then I'll be
+happy to provide you with a wireless-dev patch that does not depend on
+Dave's tree.  The mm-master branch in wireless-dev has dropped those
+patches which have gone to Dave M. in the hopes of avoiding conflicts.
+Dependencies are another matter... :-)
 
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
