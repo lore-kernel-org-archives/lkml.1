@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932621AbXHWXvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932958AbXHWXxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932621AbXHWXvj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 19:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761807AbXHWXvc
+	id S932958AbXHWXxW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 19:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbXHWXxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 19:51:32 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:54564 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758824AbXHWXvb (ORCPT
+	Thu, 23 Aug 2007 19:53:14 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41640 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758824AbXHWXxO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 19:51:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:resent-from:resent-to:resent-date:resent-message-id:message-id:in-reply-to:references:from:date:subject:to:cc:mime-version:content-transfer-encoding:content-disposition;
-        b=qwchboW3Uj9y1OZZ6PTZtmpFX4Nj4FceEG8vwKeLG1AJhj6g4BgN579WbJutgJEa9Jx9HEN6Faief2l7JkAVdHwO2Cox4Z5rovXCeBcUwRRlDy5gTQ7u7HWnmAhIOoSsNO8gvEVTDuY2qmJ9BL1psgGRq+CVzfEONvM04YbRHio=
-Message-Id: <6f21fd93088e3f3b8876b322ab6f87f824472696.1187912217.git.jesper.juhl@gmail.com>
-In-Reply-To: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
-References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
-From: Jesper Juhl <jesper.juhl@gmail.com>
-Date: Fri, 24 Aug 2007 01:48:36 +0200
-Subject: [PATCH 06/30] i2o: No need to cast kmalloc() return value in cfg_open()
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jesper Juhl <jesper.juhl@gmail.com>
-MIME-Version: 1.0
+	Thu, 23 Aug 2007 19:53:14 -0400
+Date: Thu, 23 Aug 2007 16:52:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Zan Lynx <zlynx@acm.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       Jakub Jelinek <jakub@redhat.com>
+Subject: Re: 2.6.23-rc3-mm1 - memory layout change?  - lost support for
+ MAP_32BIT? - mono crashes
+Message-Id: <20070823165201.717ed62d.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0708231126380.2460@twin.jikos.cz>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<1187834905.190825.16.camel@localhost>
+	<Pine.LNX.4.64.0708231126380.2460@twin.jikos.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In drivers/message/i2o/i2o_config.c::cfg_open() there's a completely
-pointless cast of kmalloc()'s return value. This patch removes it.
+On Thu, 23 Aug 2007 11:28:25 +0200 (CEST)
+Jiri Kosina <jkosina@suse.cz> wrote:
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
- drivers/message/i2o/i2o_config.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+> Handle MAP_32BIT flags properly in x86_64 flexmmap
+> 
+> We need to handle MAP_32BIT flags of mmap() properly for 64bit 
+> applications with filexible mmap layout.
+> 
+> This patch introduces x86_64-specific version of 
+> arch_get_unmapped_area_topdown() which differs from the generic one in 
+> handling of the MAP_32BIT flag -- when this flag is passed to mmap(), we 
+> stick back to the legacy layout for this particular mmap, which gives 
+> proper 32bit range.
+> 
 
-diff --git a/drivers/message/i2o/i2o_config.c b/drivers/message/i2o/i2o_config.c
-index 84e046e..fb8c668 100644
---- a/drivers/message/i2o/i2o_config.c
-+++ b/drivers/message/i2o/i2o_config.c
-@@ -1053,10 +1053,9 @@ static int i2o_cfg_ioctl(struct inode *inode, struct file *fp, unsigned int cmd,
- 
- static int cfg_open(struct inode *inode, struct file *file)
- {
--	struct i2o_cfg_info *tmp =
--	    (struct i2o_cfg_info *)kmalloc(sizeof(struct i2o_cfg_info),
--					   GFP_KERNEL);
- 	unsigned long flags;
-+	struct i2o_cfg_info *tmp =
-+		kmalloc(sizeof(struct i2o_cfg_info), GFP_KERNEL);
- 
- 	if (!tmp)
- 		return -ENOMEM;
--- 
-1.5.2.2
+ arch/x86_64/kernel/sys_x86_64.c |   98 ++++++++++++++++++++++++++++++++++++++++
+ include/asm-x86_64/pgtable.h    |    1 
 
+well that's another hunk of code for us to maintain and to slow all our
+computers down.
+
+It is quite unobvious to me that the whole pie-randomization thing is
+worth merging.  Why shouldn't we just drop the lot?
+
+
+<looks at the changelog>
+
+  This patch is using mmap()'s randomization functionality in such a way
+  that it maps the main executable of (specially compiled/linked
+  -pie/-fpie) ET_DYN binaries onto a random address (in cases in which
+  mmap() is allowed to perform a randomization).
+
+  The code has been extraced from Ingo's exec-shield patch
+  http://people.redhat.com/mingo/exec-shield/
+
+that certainly doesn't tell anyone why we should merge this code into Linux.
