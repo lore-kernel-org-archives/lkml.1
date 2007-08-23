@@ -1,51 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760323AbXHWIrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbXHWIzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760323AbXHWIrX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 04:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbXHWIrO
+	id S1759402AbXHWIzW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 04:55:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbXHWIzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 04:47:14 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56704 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751050AbXHWIrN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 04:47:13 -0400
-Message-ID: <46CD4927.2080505@sgi.com>
-Date: Thu, 23 Aug 2007 10:45:27 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
+	Thu, 23 Aug 2007 04:55:08 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:44535 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755434AbXHWIzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 04:55:04 -0400
+Date: Thu, 23 Aug 2007 01:54:56 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       tglx@linutronix.de
+Subject: Re: [PATCH RFC] Priority boosting for preemptible RCU
+Message-ID: <20070823085456.GA18627@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070822190254.GA1135@linux.vnet.ibm.com> <20070823042639.GA28026@in.ibm.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, akepner@sgi.com,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-References: <20070818002746.GU1813@sgi.com>	 <200708220903.23702.jbarnes@virtuousgeek.org>	 <1187801095.3410.49.camel@localhost.localdomain>	 <200708220951.05101.jbarnes@virtuousgeek.org>	 <1187802272.3410.58.camel@localhost.localdomain> <46CC6C4B.1030202@sgi.com> <1187806205.3410.66.camel@localhost.localdomain>
-In-Reply-To: <1187806205.3410.66.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070823042639.GA28026@in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> Hmm, didn't see the email ... but I'm probably not cc'd on all the
-> thread.  However ... it isn't that you couldn't do it ... it's that you
-> don't want to do it because it's faster to violate the spec ... like all
-> those nice ATA devices that lie about having a cache and then let you
-> power down with uncommitted data still in it ... they work much faster
-> for HDIO tests ... and who ever switches their box off?
+On Thu, Aug 23, 2007 at 09:56:39AM +0530, Gautham R Shenoy wrote:
+> Hi Paul, 
+> On Wed, Aug 22, 2007 at 12:02:54PM -0700, Paul E. McKenney wrote:
+> > +/*
+> > + * Print out RCU booster task statistics at the specified interval.
+> > + */
+> > +static void rcu_boost_dat_stat_print(void)
+> > +{
+> > +	/* Three decimal digits per byte plus spacing per number and line. */
+> > +	char buf[N_RCU_BOOST_STATE * (sizeof(long) * 3 + 2) + 2];
+> > +	int cpu;
+> > +	int event;
+> > +	int i;
+> > +	static time_t lastprint = 0;
+> > +	struct rcu_boost_dat *rbdp;
+> > +	int state;
+> > +	struct rcu_boost_dat sum;
+> > +
+> > +	/* Wait a graceful interval between printk spamming. */
+> > +
+> > +	if (xtime.tv_sec - lastprint <
+> > +	    CONFIG_PREEMPT_RCU_BOOST_STATS_INTERVAL)
+> > +		return;
+> > +
+> > +	/* Sum up the state/event-independent counters. */
+> > +
+> > +	sum.rbs_blocked = 0;
+> > +	sum.rbs_boost_attempt = 0;
+> > +	sum.rbs_boost = 0;
+> > +	sum.rbs_unlock = 0;
+> > +	sum.rbs_unboosted = 0;
+> > +	for_each_possible_cpu(cpu)
+> > +		for (i = 0; i < RCU_BOOST_ELEMENTS; i++) {
+> > +			rbdp = per_cpu(rcu_boost_dat, cpu);
+> > +			sum.rbs_blocked += rbdp[i].rbs_blocked;
+> > +			sum.rbs_boost_attempt += rbdp[i].rbs_boost_attempt;
+> > +			sum.rbs_boost += rbdp[i].rbs_boost;
+> > +			sum.rbs_unlock += rbdp[i].rbs_unlock;
+> > +			sum.rbs_unboosted += rbdp[i].rbs_unboosted;
+> > +		}
+> 
+> I feel we should still be able to use for_each_online_cpu(cpu) instead
+> of for_each_possible_cpu. Again, there's a good chance that I might
+> be mistaken!
+> 
+> How about the following ?
+> 
+> 	preempt_disable(); /* We Dont want cpus going down here */
+> 	for_each_online_cpu(cpu) 
+> 		for (i = 0; i < RCU_BOOST_ELEMENTS; i++) {
+> 			rbdp = per_cpu(rcu_boost_dat, cpu);
+> 			sum.rbs_blocked += rbdp[i].rbs_blocked;
+> 			sum.rbs_boost_attempt += rbdp[i].rbs_boost_attempt;
+> 			sum.rbs_boost += rbdp[i].rbs_boost;
+> 			sum.rbs_unlock += rbdp[i].rbs_unlock;
+> 			sum.rbs_unboosted += rbdp[i].rbs_unboosted;
+> 		}
+> 	preempt_enable(); 
+> 
+> 
+> 	static int rcu_boost_cpu_callback(struct notifier_bloack *nb, 
+> 					unsigned long action, void *hcpu) 
+> 	{
+> 		int this_cpu, cpu;
+> 		rcu_boost_data *rbdp, *this_rbdp;
+> 
+> 		switch (action) {
+> 		case CPU_DEAD:
+> 			this_cpu = get_cpu();
+> 			cpu = (long)hcpu;
+> 			this_cpu = smp_processor_id();
+> 			rbdp = per_cpu(rcu_boost_dat, cpu);
+> 			this_rbdp = per_cpu(rcu_boost_dat, cpu);
+> 			/* 
+> 			 *  Transfer all of rbdp's statistics to
+> 			 *  this_rbdp here.
+> 			 */	
+> 			 put_cpu();
+> 	
+> 			return NOTIFY_OK;
+> 		}
+> 	}
+> 
+> 
+> Won't this work in this case?
 
-James,
+Hello, Gautham,
 
-I didn't do it, I don't know who did it, but sure we can try and track
-them down and line them up outside .....
+We could do something similar.  If there was a global rcu_boost_data
+variable that held the sums of the fields of the rcu_boost_data
+structures for all offline CPUs, and if we used a new lock to protect
+that global rcu_boost data variable (both when reading and when
+CPU hotplugging), then we could indeed scan only the online CPUs'
+rcu_boost_data elements.
 
-Point is that this is how the chips were done and they are out there in
-numbers. It makes things a *lot* faster to violate the spec in such a
-system, yes it sucks, but thats how things are. It wouldn't be the first
-time someone violated the PCI spec in their implementation and I am
-pretty sure it won't be the last.
+We would also have to maintain a cpumask_t for this purpose, and
+we would need to add a CPU's contribution when it went offline and
+subtract it when that CPU came back online.
 
-Cheers,
-Jes
+The lock should not be a problem even on very large systems because
+of the low frequency of statistics printing -- and of hotplug operations,
+for that matter.
+
+						Thanx, Paul
