@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbXHWBjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757066AbXHWBka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755673AbXHWBjw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 21:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbXHWBjp
+	id S1757066AbXHWBka (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 21:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbXHWBkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 21:39:45 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:36673 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750820AbXHWBjo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 21:39:44 -0400
-Date: Wed, 22 Aug 2007 18:44:20 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] x86: use num_online_nodes to get physical cpus numbers for
- powernow_k8
-To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Dave Jones <davej@redhat.com>, Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200708221844.22205.yinghai.lu@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.8.2
+	Wed, 22 Aug 2007 21:40:17 -0400
+Received: from mail.suse.de ([195.135.220.2]:36403 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751340AbXHWBkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 21:40:15 -0400
+Date: Thu, 23 Aug 2007 04:34:04 +0200
+From: Andi Kleen <ak@suse.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>,
+       James Courtier-Dutton <James@superbug.demon.co.uk>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
+Message-ID: <20070823023404.GL8058@bingen.suse.de>
+References: <46CBC842.4070100@vmware.com> <46CCB088.8070606@goop.org> <46CCB56F.8090308@superbug.co.uk> <20070822222036.GD3672@sequoia.sous-sol.org> <46CCB8BA.6060007@superbug.demon.co.uk> <46CCC361.6020600@goop.org> <20070823004700.GR2642@bingen.suse.de> <46CCD707.1090009@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46CCD707.1090009@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86: use num_online_nodes to get physical cpus numbers for powernow_k8
+On Wed, Aug 22, 2007 at 05:38:31PM -0700, Jeremy Fitzhardinge wrote:
+> Andi Kleen wrote:
+> > On Wed, Aug 22, 2007 at 04:14:41PM -0700, Jeremy Fitzhardinge wrote:
+> >   
+> >> (which would also have VT, since
+> >> all new processors do).
+> >>     
+> >
+> > Not true unfortunately. The Intel low end parts like Celerons (which 
+> > are actually shipped in very large numbers) don't. Also Intel
+> > is still shipping some CPUs that don't support it at all, like
+> > the ULV Centrinos which are based on an older core.
+> >   
+> 
+> Likely to be missing VT-d too, right?
 
-For opteron based system, don't assume all physical cpus have the same booted cpus even same cores. esp for downcore case.
+VT-d is chipset functionality. So it depends on the chipset.
 
-Signed-off-by: Yinghai Lu <yinghai.sun.com>
+At least initially the non Intel chipsets and lowend chips are unlikely
+to get IOMMUs I guess.
 
-diff --git a/arch/i386/kernel/cpu/cpufreq/powernow-k8.c b/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-index 34ed53a..372df6e 100644
---- a/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-@@ -1325,21 +1325,16 @@ static struct cpufreq_driver cpufreq_amd64_driver = {
- static int __cpuinit powernowk8_init(void)
- {
- 	unsigned int i, supported_cpus = 0;
--	unsigned int booted_cores = 1;
- 
- 	for_each_online_cpu(i) {
- 		if (check_supported_cpu(i))
- 			supported_cpus++;
- 	}
- 
--#ifdef CONFIG_SMP
--	booted_cores = cpu_data[0].booted_cores;
--#endif
--
- 	if (supported_cpus == num_online_cpus()) {
- 		printk(KERN_INFO PFX "Found %d %s "
- 			"processors (%d cpu cores) (" VERSION ")\n",
--			supported_cpus/booted_cores,
-+			num_online_nodes(),
- 			boot_cpu_data.x86_model_id, supported_cpus);
- 		return cpufreq_register_driver(&cpufreq_amd64_driver);
- 	}
+There might be some exceptions. e.g. the GPU vendors seem
+to want to to their own IOMMUs, so perhaps graphic devices
+might have them anyways.
+
+-Andi
